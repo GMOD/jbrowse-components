@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
-import { ipcMain } from 'electron'
 import parseJson from 'json-parse-even-better-errors'
 
 import { getThumbnailPath, stringify } from '../paths.ts'
+import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
 import type { RecentSession, SessionSnap } from './channels.ts'
@@ -51,15 +51,14 @@ export function registerSessionHandlers(
   paths: AppPaths,
   getMainWindow: () => Electron.BrowserWindow | null,
 ) {
-  ipcMain.handle('listSessions', async (_, showAutosaves: boolean) => {
+  ipcHandle('listSessions', async (_, showAutosaves) => {
     const sessions = await readRecentSessions(paths.recentSessionsPath)
-
     return showAutosaves
       ? sessions
       : sessions.filter(f => !f.path.startsWith(paths.autosaveDir))
   })
 
-  ipcMain.handle('loadSession', async (_, sessionPath: string) => {
+  ipcHandle('loadSession', async (_, sessionPath) => {
     const sessionSnapshot = await readSession(sessionPath)
     if (!sessionSnapshot.assemblies) {
       throw new Error(
@@ -69,7 +68,7 @@ export function registerSessionHandlers(
     return sessionSnapshot
   })
 
-  ipcMain.handle('createInitialAutosaveFile', async (_, snap: SessionSnap) => {
+  ipcHandle('createInitialAutosaveFile', async (_, snap) => {
     const rows = await readRecentSessions(paths.recentSessionsPath)
     const autosavePath = path.join(paths.autosaveDir, `${Date.now()}.json`)
     const entry: RecentSession = {
@@ -88,33 +87,30 @@ export function registerSessionHandlers(
     return autosavePath
   })
 
-  ipcMain.handle(
-    'saveSession',
-    async (_, sessionPath: string, snap: SessionSnap) => {
-      const mainWindow = getMainWindow()
-      const [page, rows] = await Promise.all([
-        mainWindow?.capturePage(),
-        readRecentSessions(paths.recentSessionsPath),
-      ])
+  ipcHandle('saveSession', async (_, sessionPath, snap) => {
+    const mainWindow = getMainWindow()
+    const [page, rows] = await Promise.all([
+      mainWindow?.capturePage(),
+      readRecentSessions(paths.recentSessionsPath),
+    ])
 
-      const png = page?.resize({ width: THUMBNAIL_WIDTH }).toDataURL()
-      const entry: RecentSession = {
-        path: sessionPath,
-        updated: Date.now(),
-        name: snap.defaultSession?.name,
-      }
+    const png = page?.resize({ width: THUMBNAIL_WIDTH }).toDataURL()
+    const entry: RecentSession = {
+      path: sessionPath,
+      updated: Date.now(),
+      name: snap.defaultSession?.name,
+    }
 
-      upsertRecentSession(rows, entry)
+    upsertRecentSession(rows, entry)
 
-      await Promise.all([
-        ...(png ? [writeFile(getThumbnailPath(paths, sessionPath), png)] : []),
-        writeFile(paths.recentSessionsPath, stringify(rows)),
-        writeFile(sessionPath, stringify(snap)),
-      ])
-    },
-  )
+    await Promise.all([
+      ...(png ? [writeFile(getThumbnailPath(paths, sessionPath), png)] : []),
+      writeFile(paths.recentSessionsPath, stringify(rows)),
+      writeFile(sessionPath, stringify(snap)),
+    ])
+  })
 
-  ipcMain.handle('deleteSessions', async (_, sessionPaths: string[]) => {
+  ipcHandle('deleteSessions', async (_, sessionPaths) => {
     const sessions = await readRecentSessions(paths.recentSessionsPath)
     const remaining = sessions.filter(s => !sessionPaths.includes(s.path))
 
@@ -131,32 +127,29 @@ export function registerSessionHandlers(
     ])
   })
 
-  ipcMain.handle(
-    'renameSession',
-    async (_, sessionPath: string, newName: string) => {
-      const sessions = await readRecentSessions(paths.recentSessionsPath)
-      const session = parseJson(await readFile(sessionPath, ENCODING))
-      const idx = sessions.findIndex(row => row.path === sessionPath)
+  ipcHandle('renameSession', async (_, sessionPath, newName) => {
+    const sessions = await readRecentSessions(paths.recentSessionsPath)
+    const session = parseJson(await readFile(sessionPath, ENCODING))
+    const idx = sessions.findIndex(row => row.path === sessionPath)
 
-      if (idx === -1) {
-        throw new Error(`Session at ${sessionPath} not found`)
-      }
+    if (idx === -1) {
+      throw new Error(`Session at ${sessionPath} not found`)
+    }
 
-      if (!session.defaultSession) {
-        throw new Error('Session has no defaultSession')
-      }
+    if (!session.defaultSession) {
+      throw new Error('Session has no defaultSession')
+    }
 
-      sessions[idx]!.name = newName
-      session.defaultSession.name = newName
+    sessions[idx]!.name = newName
+    session.defaultSession.name = newName
 
-      await Promise.all([
-        writeFile(paths.recentSessionsPath, stringify(sessions)),
-        writeFile(sessionPath, stringify(session)),
-      ])
-    },
-  )
+    await Promise.all([
+      writeFile(paths.recentSessionsPath, stringify(sessions)),
+      writeFile(sessionPath, stringify(session)),
+    ])
+  })
 
-  ipcMain.handle('loadThumbnail', async (_, name: string) => {
+  ipcHandle('loadThumbnail', async (_, name) => {
     try {
       return await readFile(getThumbnailPath(paths, name), ENCODING)
     } catch {
@@ -164,7 +157,7 @@ export function registerSessionHandlers(
     }
   })
 
-  ipcMain.handle('reset', async _ => {
+  ipcHandle('reset', async () => {
     const [autosaveFiles, thumbnailFiles] = await Promise.all([
       fs.promises.readdir(paths.autosaveDir).catch(() => [] as string[]),
       fs.promises.readdir(paths.thumbnailDir).catch(() => [] as string[]),
