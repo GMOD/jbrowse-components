@@ -38,13 +38,12 @@ function getLastLocalFileDir() {
 
 function setLastLocalFileDir(filePath: string) {
   try {
-    // works for both / and \ path separators
     const idx = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'))
     if (idx > 0) {
       localStorage.setItem(LAST_LOCAL_FILE_DIR_KEY, filePath.slice(0, idx))
     }
   } catch {
-    // ignore storage errors
+    // storage unavailable (e.g. private browsing)
   }
 }
 
@@ -115,10 +114,11 @@ function FilePickerButton({
         onClick={async () => {
           // @ts-ignore - electron injects require onto window, needs to be ignore for now
           const { ipcRenderer } = window.require('electron')
-          const filePath = (await ipcRenderer.invoke(
+          const result: unknown = await ipcRenderer.invoke(
             'promptOpenLocalFile',
             getLastLocalFileDir(),
-          )) as string | undefined
+          )
+          const filePath = typeof result === 'string' ? result : undefined
           if (filePath) {
             setLastLocalFileDir(filePath)
             setLocation({ localPath: filePath, locationType: 'LocalPathLocation' })
