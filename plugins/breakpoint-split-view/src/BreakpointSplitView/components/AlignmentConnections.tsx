@@ -74,8 +74,11 @@ const AlignmentConnections = observer(function AlignmentConnections({
           const p1 = c1[s1 === -1 ? LEFT : RIGHT]
           const sn2 = s2 === -1
           const p2 = hasPaired ? c2[sn2 ? LEFT : RIGHT] : c2[sn2 ? RIGHT : LEFT]
-          const x1 = getX(level1, f1ref, p1) ?? 0
-          const x2 = getX(level2, f2ref, p2) ?? 0
+          const x1 = getX(level1, f1ref, p1)
+          const x2 = getX(level2, f2ref, p2)
+          if (x1 == null || x2 == null) {
+            return []
+          }
           const rf1 = views[level1]!.pxToBp(x1).reversed ? -1 : 1
           const rf2 = views[level2]!.pxToBp(x2).reversed ? -1 : 1
           const y1 = getY(level1, c1)

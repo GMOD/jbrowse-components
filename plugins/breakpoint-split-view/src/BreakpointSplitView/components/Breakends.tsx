@@ -39,8 +39,11 @@ export default function Breakends(props: OverlayProps) {
             if (!refs) {
               return []
             }
-            const x1 = getX(level1, refs.f1ref, c1[LEFT]) ?? 0
-            const x2 = getX(level2, refs.f2ref, c2[LEFT]) ?? 0
+            const x1 = getX(level1, refs.f1ref, c1[LEFT])
+            const x2 = getX(level2, refs.f2ref, c2[LEFT])
+            if (x1 == null || x2 == null) {
+              return []
+            }
             const y1 = getY(level1, c1)
             const y2 = getY(level2, c2)
             const reversed1 = views[level1]!.pxToBp(x1).reversed

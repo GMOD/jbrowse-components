@@ -20,6 +20,7 @@ type BSV = BreakpointViewModel
 
 // render LGV to SVG
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
+  await when(() => model.initialized)
   const {
     textHeight = 18,
     headerHeight = 30,
@@ -49,7 +50,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           data: await Promise.all(
             view.tracks.map(async track => {
               const d = track.displays[0]
-              await when(() => d.ready ?? true)
               return { track, result: await d.renderSvg({ ...opts, theme }) }
             }),
           ),
@@ -69,16 +69,14 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   )
   const w = width + trackLabelOffset
   const t = createJBrowseTheme(theme)
-  const tracksHeights = views.map(v =>
-    totalHeight(v.tracks, textHeight, trackLabels),
-  )
+  const tracksHeights = heights.map(h => h - offset)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
     <ThemeProvider theme={t}>
       <Wrapper>
         <svg
-          width={width}
+          width={w + shift * 2}
           height={totalHeightSvg}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -116,7 +114,12 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
 
           <defs>
             <clipPath id="clip-bsv">
-              <rect x={0} y={0} width={width} height={totalHeightSvg} />
+              <rect
+                x={trackLabelOffset + shift}
+                y={0}
+                width={width}
+                height={totalHeightSvg}
+              />
             </clipPath>
           </defs>
           <g

@@ -21,12 +21,12 @@ export function getTrackNameMaxLen(
 export function getTrackOffsets(
   view: LinearGenomeViewModel,
   textOffset: number,
-  extra = 0,
+  baseY = 0,
 ) {
   const offsets: Record<string, number> = {}
   let curr = textOffset
   for (const track of view.tracks) {
-    offsets[track.configuration.trackId] = curr + extra
+    offsets[track.configuration.trackId] = curr + baseY
     curr += track.displays[0].height + textOffset
   }
   return offsets

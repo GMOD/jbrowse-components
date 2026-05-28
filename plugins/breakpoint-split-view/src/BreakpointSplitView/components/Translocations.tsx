@@ -39,7 +39,10 @@ export default function Translocations(props: OverlayProps) {
                 return []
               }
               const c2: LayoutRecord = [x2, 0, x2 + 1, 0]
-              const x1 = getX(level1, f1.get('refName'), c1[LEFT]) ?? 0
+              const x1 = getX(level1, f1.get('refName'), c1[LEFT])
+              if (x1 == null) {
+                return []
+              }
               const y1 = getY(level1, c1)
               const y2 = getY(level2, c2)
               const reversed1 = views[level1]!.pxToBp(x1).reversed

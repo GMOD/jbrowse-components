@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { OverlayMatch } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
-export const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
+export const LEFT = 0
+export const RIGHT = 2
 
 export interface OverlayProps {
   model: BreakpointViewModel
@@ -137,6 +139,7 @@ export const VariantOverlay = observer(function VariantOverlay({
   render,
 }: VariantOverlayProps) {
   const { interactiveOverlay, views, assembly } = model
+  const theme = useTheme()
   const session = getSession(model)
   const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
   const match = model.overlayMatches.get(trackId)
@@ -151,7 +154,7 @@ export const VariantOverlay = observer(function VariantOverlay({
   const specs = render({ match, assembly, views, ...overlayData })
   return (
     <g
-      stroke="green"
+      stroke={theme.palette.success.main}
       strokeWidth={5}
       fill="none"
       data-testid={getTestId(trackId, match.layoutMatches.length > 0)}
