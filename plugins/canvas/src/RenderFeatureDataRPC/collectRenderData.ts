@@ -123,17 +123,16 @@ function emitCodonRects(
   overlayItems: AminoAcidOverlayItem[],
 ) {
   const baseHex = formatHEX(parseCssColor(baseColor))
-  const color1 = lighten(baseHex, 0.2)
-  const color2 = darken(baseHex, 0.1)
+  const color1 = colorToUint32(lighten(baseHex, 0.2))
+  const color2 = colorToUint32(darken(baseHex, 0.1))
 
   for (const [i, aa] of aminoAcids.entries()) {
-    const bgColor = i % 2 === 1 ? color2 : color1
     rects.push({
       start: aa.startBp,
       end: aa.endBp,
       y,
       height,
-      color: colorToUint32(bgColor),
+      color: i % 2 === 1 ? color2 : color1,
       flatbushIdx,
     })
     overlayItems.push({

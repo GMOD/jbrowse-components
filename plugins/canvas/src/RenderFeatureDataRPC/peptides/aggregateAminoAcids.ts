@@ -17,23 +17,24 @@ export function aggregateAminos(
   const len = featureEnd - featureStart
 
   let groupElt = -1
-  let groupAA = ''
   let groupStart = 0
-  let prevI = -1
+  let groupEnd = 0
 
-  const pushGroup = (endI: number) => {
+  const flush = (endI: number) => {
+    if (groupElt === -1) {
+      return
+    }
+    const aa = protein[groupElt] ?? '&'
     const length = endI - groupStart + 1
-    const startBp =
-      strand === -1 ? featureEnd - 1 - endI : featureStart + groupStart
-    const endBp =
-      strand === -1 ? featureEnd - groupStart : featureStart + endI + 1
     aggregated.push({
-      aminoAcid: groupAA,
-      startBp,
-      endBp,
+      aminoAcid: aa,
+      startBp:
+        strand === -1 ? featureEnd - 1 - endI : featureStart + groupStart,
+      endBp: strand === -1 ? featureEnd - groupStart : featureStart + endI + 1,
       proteinIndex: groupElt,
-      isStopOrNonTriplet: groupAA === '*' || length !== 3,
+      isStopOrNonTriplet: aa === '*' || length !== 3,
     })
+    groupElt = -1
   }
 
   for (let i = 0; i < len; i++) {
@@ -41,25 +42,17 @@ export function aggregateAminos(
     const elt = g2p[pos]
     if (elt === undefined) {
       console.warn(`No g2p mapping for position ${pos}`)
+      flush(groupEnd)
       continue
     }
-
-    if (groupElt === -1) {
+    if (elt !== groupElt) {
+      flush(groupEnd)
       groupElt = elt
-      groupAA = protein[elt] ?? '&'
-      groupStart = i
-    } else if (groupElt !== elt) {
-      pushGroup(prevI)
-      groupElt = elt
-      groupAA = protein[elt] ?? '&'
       groupStart = i
     }
-    prevI = i
+    groupEnd = i
   }
-
-  if (groupElt !== -1) {
-    pushGroup(prevI)
-  }
+  flush(groupEnd)
 
   return aggregated
 }

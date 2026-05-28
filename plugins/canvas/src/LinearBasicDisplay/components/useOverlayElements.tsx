@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
@@ -210,59 +211,61 @@ export function useAminoAcidOverlay(
   bpPerPx: number,
 ) {
   const { classes } = useStyles()
-  return useMemo(() => {
-    if (
-      !viewInitialized ||
-      !width ||
-      !bpPerPx ||
-      !shouldRenderPeptideText(bpPerPx) ||
-      visibleRegions.length === 0
-    ) {
-      return null
+  const theme = useTheme()
+
+  if (
+    !viewInitialized ||
+    !width ||
+    !bpPerPx ||
+    !shouldRenderPeptideText(bpPerPx) ||
+    visibleRegions.length === 0
+  ) {
+    return null
+  }
+
+  const elements: React.ReactElement[] = []
+
+  for (const vr of visibleRegions) {
+    const data = laidOutDataMap.get(vr.displayedRegionIndex)
+    if (!data?.aminoAcidOverlay) {
+      continue
     }
 
-    const elements: React.ReactElement[] = []
+    const toScreen = makeBpMapper(vr)
 
-    for (const vr of visibleRegions) {
-      const data = laidOutDataMap.get(vr.displayedRegionIndex)
-      if (!data?.aminoAcidOverlay) {
+    for (const [i, item] of data.aminoAcidOverlay.entries()) {
+      if (item.endBp < vr.start || item.startBp > vr.end) {
         continue
       }
 
-      const toScreen = makeBpMapper(vr)
+      const pxStart = toScreen(item.startBp)
+      const pxEnd = toScreen(item.endBp)
+      const fontSize = Math.min(item.heightPx, 16)
+      const showIndex = Math.abs(pxEnd - pxStart) >= 20
 
-      for (const [i, item] of data.aminoAcidOverlay.entries()) {
-        if (item.endBp < vr.start || item.startBp > vr.end) {
-          continue
-        }
-
-        const pxStart = toScreen(item.startBp)
-        const pxEnd = toScreen(item.endBp)
-        const fontSize = Math.min(item.heightPx, 16)
-        const showIndex = Math.abs(pxEnd - pxStart) >= 20
-
-        elements.push(
-          <div
-            key={`${vr.displayedRegionIndex}-${i}`}
-            className={classes.aminoAcid}
-            style={{
-              left: (pxStart + pxEnd) / 2,
-              top: item.topPx,
-              height: item.heightPx,
-              fontSize,
-              lineHeight: `${item.heightPx}px`,
-              color: item.isStopOrNonTriplet ? 'red' : 'black',
-            }}
-          >
-            {item.aminoAcid}
-            {showIndex ? item.proteinIndex + 1 : null}
-          </div>,
-        )
-      }
+      elements.push(
+        <div
+          key={`${vr.displayedRegionIndex}-${i}`}
+          className={classes.aminoAcid}
+          style={{
+            left: (pxStart + pxEnd) / 2,
+            top: item.topPx,
+            height: item.heightPx,
+            fontSize,
+            lineHeight: `${item.heightPx}px`,
+            color: item.isStopOrNonTriplet
+              ? theme.palette.error.main
+              : theme.palette.text.primary,
+          }}
+        >
+          {item.aminoAcid}
+          {showIndex ? item.proteinIndex + 1 : null}
+        </div>,
+      )
     }
+  }
 
-    return elements.length > 0 ? elements : null
-  }, [laidOutDataMap, viewInitialized, width, bpPerPx, visibleRegions, classes])
+  return elements.length > 0 ? elements : null
 }
 
 export function useHighlightOverlays(
