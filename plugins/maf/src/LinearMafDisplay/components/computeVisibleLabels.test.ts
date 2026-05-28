@@ -23,6 +23,7 @@ function regionData(refSeq: string, alignment: string): MafRegionData {
       snpPackedBuffer: new ArrayBuffer(0),
       interbasePackedBuffer: new ArrayBuffer(0),
       interbaseMaxCount: 0,
+      indicatorPackedBuffer: new ArrayBuffer(0),
     },
   }
 }
