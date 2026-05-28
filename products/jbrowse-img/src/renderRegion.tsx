@@ -24,91 +24,137 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   const display = currentTrack.displays[0]
   for (const opt of opts) {
     const [prefix, val1 = '', val2] = opt.split(':')
-
-    if (prefix === 'height') {
-      if (val1) {
-        display.setHeight(+val1)
-      }
-    } else if (prefix === 'sort') {
-      display.setSortedBy?.(val1, val2)
-    } else if (prefix === 'color') {
-      if (display.setColorScheme) {
-        display.setColorScheme({ type: val1, tag: val2 })
-      } else {
-        display.setColor?.(val1)
-      }
-    } else if (prefix === 'arcs') {
-      // 'off' | 'up' | 'down' | 'samplot' — paired-end arcs / samplot view
-      display.setPairedArcs?.(val1)
-    } else if (prefix === 'linkedReads') {
-      // 'off' | 'normal' | 'bezier' — 10x/linked-read chain overlay
-      display.setLinkedReads?.(val1)
-    } else if (prefix === 'sashimi') {
-      // 'off' | 'up' | 'down' — splice-junction arcs
-      display.setSashimiArcs?.(val1)
-    } else if (prefix === 'coverage') {
-      display.setShowCoverage?.(booleanize(val1 || 'true'))
-    } else if (prefix === 'coverageHeight') {
-      if (val1) {
-        display.setCoverageHeight?.(+val1)
-      }
-    } else if (prefix === 'arcsHeight') {
-      if (val1) {
-        display.setArcsHeight?.(+val1)
-      }
-    } else if (prefix === 'lineWidth') {
-      if (val1) {
-        display.setLineWidth?.(+val1)
-      }
-    } else if (prefix === 'featureHeight') {
-      if (val1 === 'normal' || val1 === 'compact' || val1 === 'super-compact') {
-        // setCompactness is the authoritative cross-display API (alignments,
-        // basic features, comparative views all implement it)
-        display.setCompactness?.(val1)
-      } else if (val1) {
-        const n = +val1
-        if (isNaN(n)) {
-          throw new Error(
-            `Invalid featureHeight "${val1}". Use normal, compact, super-compact, or a number.`,
-          )
+    switch (prefix) {
+      case 'height': {
+        if (val1) {
+          display.setHeight(+val1)
         }
-        display.setFeatureHeight?.(n)
+        break
       }
-    } else if (prefix === 'featureSpacing') {
-      if (val1) {
-        display.setFeatureSpacing?.(+val1)
+      case 'sort': {
+        display.setSortedBy?.(val1, val2)
+        break
       }
-    } else if (prefix === 'noSpacing') {
-      // Legacy boolean: true → 0px spacing, false → 2px spacing (the value
-      // the pre-unification override branch baked in for noSpacing=false).
-      display.setFeatureSpacing?.(booleanize(val1 || 'true') ? 0 : 2)
-    } else if (prefix === 'softClipping') {
-      if (booleanize(val1 || 'true') !== display.showSoftClipping) {
-        display.toggleSoftClipping?.()
+      case 'color': {
+        if (display.setColorScheme) {
+          display.setColorScheme({ type: val1, tag: val2 })
+        } else {
+          display.setColor?.(val1)
+        }
+        break
       }
-    } else if (prefix === 'force') {
-      if (booleanize(val1 || 'true')) {
-        display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
+      // 'off' | 'up' | 'down' | 'samplot' — paired-end arcs / samplot view
+      case 'arcs': {
+        display.setPairedArcs?.(val1)
+        break
       }
-    } else if (prefix === 'autoscale') {
-      display.setAutoscale(val1)
-    } else if (prefix === 'minmax') {
-      if (val1) {
-        display.setMinScore(+val1)
+      // 'off' | 'normal' | 'bezier' — 10x/linked-read chain overlay
+      case 'linkedReads': {
+        display.setLinkedReads?.(val1)
+        break
       }
-      if (val2) {
-        display.setMaxScore(+val2)
+      // 'off' | 'up' | 'down' — splice-junction arcs
+      case 'sashimi': {
+        display.setSashimiArcs?.(val1)
+        break
       }
-    } else if (prefix === 'scaletype') {
-      display.setScaleType(val1)
-    } else if (prefix === 'crosshatch') {
-      display.setCrossHatches(booleanize(val1 || 'true'))
-    } else if (prefix === 'fill') {
-      display.setFill(booleanize(val1 || 'true'))
-    } else if (prefix === 'resolution') {
-      const val =
-        val1 === 'fine' ? 10 : val1 === 'superfine' ? 100 : Number(val1)
-      display.setResolution(Number.isNaN(val) ? 1 : val)
+      case 'coverage': {
+        display.setShowCoverage?.(booleanize(val1 || 'true'))
+        break
+      }
+      case 'coverageHeight': {
+        if (val1) {
+          display.setCoverageHeight?.(+val1)
+        }
+        break
+      }
+      case 'arcsHeight': {
+        if (val1) {
+          display.setArcsHeight?.(+val1)
+        }
+        break
+      }
+      case 'lineWidth': {
+        if (val1) {
+          display.setLineWidth?.(+val1)
+        }
+        break
+      }
+      case 'featureHeight': {
+        if (
+          val1 === 'normal' ||
+          val1 === 'compact' ||
+          val1 === 'super-compact'
+        ) {
+          // setCompactness is the authoritative cross-display API (alignments,
+          // basic features, comparative views all implement it)
+          display.setCompactness?.(val1)
+        } else if (val1) {
+          const n = +val1
+          if (isNaN(n)) {
+            throw new Error(
+              `Invalid featureHeight "${val1}". Use normal, compact, super-compact, or a number.`,
+            )
+          }
+          display.setFeatureHeight?.(n)
+        }
+        break
+      }
+      case 'featureSpacing': {
+        if (val1) {
+          display.setFeatureSpacing?.(+val1)
+        }
+        break
+      }
+      case 'noSpacing': {
+        // Legacy boolean: true → 0px spacing, false → 2px spacing (the value
+        // the pre-unification override branch baked in for noSpacing=false).
+        display.setFeatureSpacing?.(booleanize(val1 || 'true') ? 0 : 2)
+        break
+      }
+      case 'softClipping': {
+        if (booleanize(val1 || 'true') !== display.showSoftClipping) {
+          display.toggleSoftClipping?.()
+        }
+        break
+      }
+      case 'force': {
+        if (booleanize(val1 || 'true')) {
+          display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
+        }
+        break
+      }
+      case 'autoscale': {
+        display.setAutoscale(val1)
+        break
+      }
+      case 'minmax': {
+        if (val1) {
+          display.setMinScore(+val1)
+        }
+        if (val2) {
+          display.setMaxScore(+val2)
+        }
+        break
+      }
+      case 'scaletype': {
+        display.setScaleType(val1)
+        break
+      }
+      case 'crosshatch': {
+        display.setCrossHatches(booleanize(val1 || 'true'))
+        break
+      }
+      case 'fill': {
+        display.setFill(booleanize(val1 || 'true'))
+        break
+      }
+      case 'resolution': {
+        const val =
+          val1 === 'fine' ? 10 : val1 === 'superfine' ? 100 : Number(val1)
+        display.setResolution(Number.isNaN(val) ? 1 : val)
+        break
+      }
     }
   }
   // snpcov is a "show only coverage" pseudo-mode. The unified
