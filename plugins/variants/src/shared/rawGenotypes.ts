@@ -136,7 +136,10 @@ export function encodeGenotypeFromRaw(
   if (nonRef === 0) {
     return 0
   }
-  return nonRef === total - uncalled ? 2 : 1
+  // Compare against total (not total-uncalled) to match classifyGenotypeDosage:
+  // "./1" → nonRef=1, total=2 → het(1). Using total-uncalled would give
+  // hom-alt(2), diverging from the string-genotype code path.
+  return nonRef === total ? 2 : 1
 }
 
 export function getPhasedColorFromRaw(

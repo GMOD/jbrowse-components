@@ -162,9 +162,13 @@ export async function executeVariantCellData({
 
   const genotypesCache = new Map<string, Record<string, string>>()
 
-  // Group rawFeatures by region using a sorted pointer advance (O(N+R)).
-  // Features from adapters are position-sorted; regions are also sorted.
-  // This avoids any per-feature lookup when computing per-region cells.
+  // Group rawFeatures by region. Uses binary search per feature so the
+  // assignment is correct regardless of emission order from merge() — a
+  // monotonic pointer advance would silently drop features when the same
+  // refName appears in two non-contiguous visible regions and the second
+  // region's observable resolves before the first.
+  // Regions are sorted by start so the binary search invariant holds even
+  // when displayedRegions lists the same refName in non-genomic screen order.
   let perRegionRawFeatures: Map<number, typeof rawFeatures> | undefined
   if (regionLookup) {
     const regionsByRefName = new Map<string, typeof regionLookup>()
@@ -176,8 +180,10 @@ export async function executeVariantCellData({
       }
       list.push(r)
     }
+    for (const list of regionsByRefName.values()) {
+      list.sort((a, b) => a.start - b.start)
+    }
     perRegionRawFeatures = new Map()
-    const ptrs = new Map<string, number>()
     for (const feature of rawFeatures) {
       const refName = feature.get('refName')
       const start = feature.get('start')
@@ -185,12 +191,18 @@ export async function executeVariantCellData({
       if (!candidates) {
         continue
       }
-      let p = ptrs.get(refName) ?? 0
-      while (p < candidates.length && candidates[p]!.end <= start) {
-        p++
+      // Binary search: find the leftmost region whose end > start
+      let lo = 0
+      let hi = candidates.length
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1
+        if (candidates[mid]!.end <= start) {
+          lo = mid + 1
+        } else {
+          hi = mid
+        }
       }
-      ptrs.set(refName, p)
-      const region = candidates[p]
+      const region = candidates[lo]
       if (!region || start < region.start) {
         continue
       }

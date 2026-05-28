@@ -198,7 +198,7 @@ export function computeVariantMatrixCells({
 
       if (isPhasedMode) {
         for (let j = 0; j < numSources; j++) {
-          const { name, HP } = sources[j]!
+          const { sampleName, HP } = sources[j]!
           const si = sampleIndices[j]!
           if (si < 0) {
             continue
@@ -210,11 +210,11 @@ export function computeVariantMatrixCells({
             const c = getPhasedColorFromRaw(allele, mostFreqAltInt)
             if (c) {
               addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
-              genotypes[name] = gtStr
+              genotypes[sampleName] = gtStr
             }
           } else {
             addCell(idx, j, BLACK_ABGR, false)
-            genotypes[name] = gtStr
+            genotypes[sampleName] = gtStr
           }
         }
       } else {

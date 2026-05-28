@@ -692,7 +692,7 @@ export default function MultiSampleVariantBaseModelF(
             return undefined
           }
           const { coord, refName } = centerInfo
-          let bestFeature = features[0]!
+          let bestFeature: Feature | undefined
           let bestDist = Infinity
           for (const f of features) {
             if (f.get('refName') === refName) {
@@ -1103,6 +1103,9 @@ export default function MultiSampleVariantBaseModelF(
             try {
               const { setupMultiSampleVariantAutoruns } =
                 await import('./setupMultiSampleVariantAutoruns.ts')
+              if (!isAlive(self)) {
+                return
+              }
               setupMultiSampleVariantAutoruns(self)
             } catch (e) {
               if (isAlive(self)) {
