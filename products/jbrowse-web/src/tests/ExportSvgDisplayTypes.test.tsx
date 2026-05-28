@@ -133,3 +133,24 @@ test('alignments display SVG vector export', async () => {
   // SvgCanvas paths emit as <g>/<path>; rasterized path would emit <image>.
   expect(svg).not.toContain('<image')
 }, 45000)
+
+test('arc display SVG export renders bezier arcs for BND variants', async () => {
+  const { view, findByTestId, findByText } = await createView()
+  await view.navToLocString('ctgA:1..50000')
+  fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
+
+  // switch to the paired-arc display type
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await findByText('Display types', ...opts))
+  fireEvent.click(await findByText('Variant display arcs', ...opts))
+
+  await findByTestId('arc-display-done', ...opts)
+
+  // renderArcSvg awaits model.fetchSettled internally
+  await view.exportSvg({ rasterizeLayers: false })
+  const svg = getSavedSvg()
+  fs.writeFileSync(`${snapshotDir}/arc_sv_snapshot.svg`, svg)
+  // BND arcs are rendered as SVG bezier cubic paths
+  expect(svg).toContain(' C ')
+  expect(normalizeSvg(svg)).toMatchSnapshot()
+}, 45000)

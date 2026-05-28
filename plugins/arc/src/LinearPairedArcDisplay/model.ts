@@ -48,9 +48,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
     .views(self => ({
       get fetchSettled() {
-        const fetchWillNotRun =
-          !!self.error || !self.featureDensityStatsReadyAndRegionNotTooLarge
-        return !self.loading && (self.features !== undefined || fetchWillNotRun)
+        return (
+          self.features !== undefined || !!self.error || self.regionTooLarge
+        )
       },
     }))
 
