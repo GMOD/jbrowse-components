@@ -240,6 +240,35 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Push a new genome row and grow the levels array to keep the N views ->
+       * N-1 levels invariant. The new trailing level starts with no synteny
+       * tracks.
+       */
+      addView(view: SnapshotIn<LinearGenomeViewModel>) {
+        self.views.push(view)
+        while (self.levels.length < self.views.length - 1) {
+          self.levels.push(cast({ level: self.levels.length }))
+        }
+      },
+
+      /**
+       * #action
+       * Drop the bottom genome row and its synteny level. Only terminal removal
+       * is supported: a level's `level` index addresses views[level]/[level+1],
+       * so removing a middle row would require reindexing every level below it.
+       * Growth and shrinkage both happen at the end of the chain.
+       */
+      removeLastRow() {
+        if (self.views.length > 0) {
+          self.views.pop()
+          while (self.levels.length > Math.max(self.views.length - 1, 0)) {
+            self.levels.pop()
+          }
+        }
+      },
+
+      /**
+       * #action
        */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
@@ -353,6 +382,39 @@ function stateModelFactory(pluginManager: PluginManager) {
         const targetHeight = Math.max(40, Math.min(100, 400 / numLevels))
         for (const level of self.levels) {
           level.setHeight(targetHeight)
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Append an assembly to the bottom of the stack and optionally show a
+       * synteny track on the new level connecting it to the previous bottom
+       * row. A synteny dataset is an edge between two adjacent assemblies, so
+       * rows are only ever added at the chain's end.
+       *
+       * The new row is created with a LinearGenomeView `init` — its own
+       * afterAttach autorun loads the assembly regions and navigates (whole
+       * genome, or `loc` when given), so we don't reimplement that imperatively
+       * here.
+       */
+      appendRow({
+        assembly,
+        loc,
+        syntenyTrackId,
+      }: {
+        assembly: string
+        loc?: string
+        syntenyTrackId?: string
+      }) {
+        const level = self.views.length - 1
+        self.addView({
+          type: 'LinearGenomeView',
+          hideHeader: true,
+          init: { assembly, loc },
+        })
+        if (syntenyTrackId) {
+          self.showTrack(syntenyTrackId, level)
         }
       },
     }))

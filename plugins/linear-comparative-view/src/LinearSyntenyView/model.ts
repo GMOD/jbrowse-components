@@ -2,9 +2,11 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import RemoveIcon from '@mui/icons-material/Remove'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { autorun, observable, when } from 'mobx'
 
@@ -26,6 +28,7 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const DiagonalizationProgressDialog = lazy(
   () => import('./components/DiagonalizationProgressDialog.tsx'),
 )
+const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
 
 /**
  * #stateModel LinearSyntenyView
@@ -68,6 +71,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         alpha: types.optional(types.number, 0.2),
         /**
          * #property
+         * Hide alignment blocks shorter than this many bp. Enforced per-feature
+         * by its own span in buildSyntenyGeometry, then culled in the shader
+         * (isCulled) and pick engine. Cuts whole-genome hairball noise.
          */
         minAlignmentLength: types.optional(types.number, 0),
         /**
@@ -353,6 +359,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.squareView,
               icon: CropFreeIcon,
             },
+            {
+              label: 'Add assembly row...',
+              icon: AddIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  AddRowDialog,
+                  {
+                    handleClose,
+                    model: self,
+                  },
+                ])
+              },
+            },
+            ...(self.views.length > 2
+              ? [
+                  {
+                    label: 'Remove bottom row',
+                    icon: RemoveIcon,
+                    onClick: () => {
+                      self.removeLastRow()
+                    },
+                  },
+                ]
+              : []),
             {
               label: 'Re-order chromosomes',
               onClick: () => {
