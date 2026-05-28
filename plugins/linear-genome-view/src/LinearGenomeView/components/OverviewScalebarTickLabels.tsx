@@ -42,7 +42,8 @@ const OverviewScalebarTickLabels = observer(
 
     const tickLabels = Array.from(
       { length: Math.floor((end - start) / majorPitch) },
-      (_, i) => (reversed ? end - (i + 1) * majorPitch : start + (i + 1) * majorPitch),
+      (_, i) =>
+        reversed ? end - (i + 1) * majorPitch : start + (i + 1) * majorPitch,
     )
     return tickLabels.map((tickLabel, labelIdx) => (
       <Typography

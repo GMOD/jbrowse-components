@@ -85,7 +85,6 @@ export type { Region } from '@jbrowse/core/util'
 
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 
-
 // rgba string used when outline is toggled on via the menu; schema stores the
 // raw color so users can still set their own via setOverride('outline', '#...').
 const OUTLINE_DEFAULT_RGBA = 'rgba(0,0,0,0.3)'
@@ -273,7 +272,11 @@ export default function baseStateModelFactory(
         rpcProps() {
           // showLabels/showDescriptions are display-only — exclude them so
           // toggling label visibility doesn't invalidate the RPC cache.
-          const { showLabels: _l, showDescriptions: _d, ...rest } = {
+          const {
+            showLabels: _l,
+            showDescriptions: _d,
+            ...rest
+          } = {
             ...getConfSnapshot(self.configuration),
             ...self.configOverrides,
           }

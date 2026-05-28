@@ -54,7 +54,9 @@ export async function createPIF(
         })
         for (const seg of segments) {
           const de =
-            seg.blockLen > 0 ? (1 - seg.numMatches / seg.blockLen).toFixed(6) : '0'
+            seg.blockLen > 0
+              ? (1 - seg.numMatches / seg.blockLen).toFixed(6)
+              : '0'
           await write(
             `${[`T${c2}`, l2, seg.tstart, seg.tend, strand, c1, l1, seg.qstart, seg.qend, seg.numMatches, seg.blockLen, '60', `de:f:${de}`].join('\t')}\n`,
           )

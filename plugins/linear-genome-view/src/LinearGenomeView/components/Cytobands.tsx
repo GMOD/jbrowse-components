@@ -100,7 +100,7 @@ const Cytobands = observer(function Cytobands({
         ? naColorIndices[index]! % 2
           ? 'black'
           : '#a77'
-        : colorMap[type] ?? 'black'
+        : (colorMap[type] ?? 'black')
     return { args, s, e, color, isFirstAcen: index === firstAcenIdx }
   })
 
