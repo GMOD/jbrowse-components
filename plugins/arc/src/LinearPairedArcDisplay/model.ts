@@ -46,22 +46,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       loading: false,
     }))
 
-    .views(() => ({
-      get featureWidgetType() {
-        return {
-          type: 'VariantFeatureWidget',
-          id: 'variantFeature',
-        }
-      },
-    }))
-
     .actions(self => ({
       /**
        * #action
        */
       selectFeature(feature: Feature) {
         openFeatureWidget(self, feature.toJSON(), {
-          widget: self.featureWidgetType,
+          widget: { type: 'VariantFeatureWidget', id: 'variantFeature' },
         })
       },
       /**

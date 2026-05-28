@@ -16,7 +16,15 @@ export async function renderArcSvg(
     rasterizeLayers?: boolean
   },
 ) {
-  await when(() => !model.loading)
+  // wait until a fetch has completed (or cannot be attempted)
+  await when(
+    () =>
+      !model.loading &&
+      (model.features !== undefined ||
+        model.regionTooLarge ||
+        !model.featureDensityStatsReadyAndRegionNotTooLarge ||
+        !!model.error),
+  )
   const view = getContainingView(model) as LinearGenomeViewModel
   return (
     <SvgClipRect

@@ -1,57 +1,34 @@
 import { assembleLocString } from '@jbrowse/core/util'
-import { parseSvAlt } from '@jbrowse/sv-core'
+import { SV_SYMBOLIC_ALLELES, parseSvAlt } from '@jbrowse/sv-core'
 
 import type { Feature } from '@jbrowse/core/util'
 
-const SV_SYMBOLIC_ALLELES = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
-
 export function makeFeaturePair(feature: Feature, alt?: string) {
-  const start = feature.get('start')
-  let end = feature.get('end')
-  const strand = feature.get('strand')!
+  const start = feature.get('start') as number
+  const refName = feature.get('refName') as string
+  const strand = feature.get('strand') as number
   const mate = feature.get('mate') as
-    | {
-        refName: string
-        start: number
-        end: number
-        mateDirection?: number
-      }
+    | { refName: string; start: number; end: number; mateDirection?: number }
     | undefined
-  const refName = feature.get('refName')
-
-  let mateRefName: string | undefined
-  let mateEnd = 0
-  let mateStart = 0
-  let mateDirection = 0
-  let joinDirection = 0
-
   const parsed = parseSvAlt(feature, alt)
-  if (parsed) {
-    mateRefName = parsed.mateRefName
-    mateEnd = parsed.matePos
-    mateStart = parsed.matePos - 1
-    mateDirection = parsed.mateDirection ?? 0
-    joinDirection = parsed.joinDirection ?? 0
-    if (alt && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
-      // re-adjust the arc to be from start to end of feature by re-assigning
-      // end to the 'mate'
-      end = start + 1
-    }
-  }
+  const isSymbolic = alt
+    ? SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))
+    : false
 
   return {
     k1: {
       refName,
       start,
-      end,
+      // symbolic alleles: arc spans start→end, so collapse the local end to start+1
+      end: parsed && isSymbolic ? start + 1 : (feature.get('end') as number),
       strand,
-      mateDirection,
+      mateDirection: parsed?.joinDirection ?? 0,
     },
     k2: mate ?? {
-      refName: mateRefName ?? 'unknown',
-      end: mateEnd,
-      start: mateStart,
-      mateDirection: joinDirection,
+      refName: parsed?.mateRefName ?? 'unknown',
+      end: parsed?.matePos ?? 0,
+      start: parsed ? parsed.matePos - 1 : 0,
+      mateDirection: parsed?.mateDirection ?? 0,
     },
   }
 }
