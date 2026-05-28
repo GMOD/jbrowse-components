@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { getSyntenyTracks } from '../../util/syntenyTracks.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 
@@ -22,14 +23,10 @@ const ImportSyntenyTrackSelector = observer(
     selectedRow: number
   }) {
     const session = getSession(model)
-    const filteredTracks = session.tracks.filter(track => {
-      const assemblyNames = readConfObject(track, 'assemblyNames')
-      return (
-        assemblyNames.includes(assembly1) &&
-        assemblyNames.includes(assembly2) &&
-        track.type.includes('Synteny')
-      )
-    })
+    const filteredTracks = getSyntenyTracks(session.tracks, [
+      assembly1,
+      assembly2,
+    ])
     const resetTrack = filteredTracks[0]?.trackId ?? ''
     const [value, setValue] = useState(resetTrack)
     useEffect(() => {

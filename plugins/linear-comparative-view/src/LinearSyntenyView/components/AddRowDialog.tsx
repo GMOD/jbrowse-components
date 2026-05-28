@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 import {
   Button,
   DialogActions,
@@ -13,6 +11,8 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { getAddRowOptions } from '../util/syntenyTracks.ts'
 
 import type { LinearComparativeViewModel } from '../../LinearComparativeView/model.ts'
 
@@ -26,28 +26,7 @@ const AddRowDialog = observer(function AddRowDialog({
   const session = getSession(model)
   const terminalAssembly =
     model.views[model.views.length - 1]?.assemblyNames[0] ?? ''
-
-  // The chosen synteny dataset is the unit of extension: each dataset is an
-  // edge between two assemblies, so the new row's assembly is whichever
-  // endpoint isn't the current bottom row.
-  const options = session.tracks
-    .filter(track => {
-      const assemblyNames = readConfObject(track, 'assemblyNames') as string[]
-      return (
-        track.type.includes('Synteny') &&
-        assemblyNames.includes(terminalAssembly)
-      )
-    })
-    .map(track => {
-      const assemblyNames = readConfObject(track, 'assemblyNames') as string[]
-      return {
-        trackId: readConfObject(track, 'trackId') as string,
-        name: getTrackName(track, session),
-        newAssembly:
-          assemblyNames.find(name => name !== terminalAssembly) ??
-          terminalAssembly,
-      }
-    })
+  const options = getAddRowOptions(session, terminalAssembly)
 
   const [trackId, setTrackId] = useState(options[0]?.trackId ?? '')
   const selected = options.find(o => o.trackId === trackId)

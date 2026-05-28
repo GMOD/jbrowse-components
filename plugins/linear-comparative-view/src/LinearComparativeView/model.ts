@@ -155,6 +155,23 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * Reconcile the levels array to the views array: exactly one synteny
+       * level per gap between adjacent views (N views -> N-1 levels). Grows or
+       * shrinks from the end, preserving existing levels and their tracks. The
+       * single source of truth for the views/levels invariant.
+       */
+      reconcileLevels() {
+        while (self.levels.length < self.views.length - 1) {
+          self.levels.push(cast({ level: self.levels.length }))
+        }
+        while (self.levels.length > Math.max(self.views.length - 1, 0)) {
+          self.levels.pop()
+        }
+      },
+    }))
+    .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
@@ -240,15 +257,12 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Push a new genome row and grow the levels array to keep the N views ->
-       * N-1 levels invariant. The new trailing level starts with no synteny
+       * Push a new genome row. The new trailing level starts with no synteny
        * tracks.
        */
       addView(view: SnapshotIn<LinearGenomeViewModel>) {
         self.views.push(view)
-        while (self.levels.length < self.views.length - 1) {
-          self.levels.push(cast({ level: self.levels.length }))
-        }
+        self.reconcileLevels()
       },
 
       /**
@@ -261,9 +275,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       removeLastRow() {
         if (self.views.length > 0) {
           self.views.pop()
-          while (self.levels.length > Math.max(self.views.length - 1, 0)) {
-            self.levels.pop()
-          }
+          self.reconcileLevels()
         }
       },
 
