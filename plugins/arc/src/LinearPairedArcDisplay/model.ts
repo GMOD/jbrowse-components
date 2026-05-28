@@ -47,16 +47,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 
     .views(self => ({
-      get fetchWillNotRun() {
-        return !!self.error || !self.featureDensityStatsReadyAndRegionNotTooLarge
-      },
-    }))
-    .views(self => ({
       get fetchSettled() {
-        return (
-          !self.loading &&
-          (self.features !== undefined || self.fetchWillNotRun)
-        )
+        const fetchWillNotRun =
+          !!self.error || !self.featureDensityStatsReadyAndRegionNotTooLarge
+        return !self.loading && (self.features !== undefined || fetchWillNotRun)
       },
     }))
 
