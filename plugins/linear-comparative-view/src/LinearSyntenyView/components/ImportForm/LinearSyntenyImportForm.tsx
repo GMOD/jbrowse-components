@@ -3,12 +3,11 @@ import { useState } from 'react'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Container, Tab, Tabs } from '@mui/material'
+import { Container } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import LeftPanel from './LeftPanel.tsx'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea.tsx'
-import PairwisePanel from './PairwisePanel.tsx'
-import QuickImportPanel from './QuickImportPanel.tsx'
 import { doSubmit } from './doSubmit.tsx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
@@ -40,12 +39,12 @@ const LinearSyntenyViewImportForm = observer(
     const session = getSession(model)
     const { assemblyNames } = session
     const defaultAssemblyName = assemblyNames[0] ?? ''
+    const [selectedRow, setSelectedRow] = useState(0)
     const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
       defaultAssemblyName,
       defaultAssemblyName,
     ])
     const [error, setError] = useState<unknown>()
-    const [importMode, setImportMode] = useState(0)
 
     const handleLaunch = async () => {
       try {
@@ -63,42 +62,33 @@ const LinearSyntenyViewImportForm = observer(
     return (
       <Container className={classes.importFormContainer}>
         {error ? <ErrorBanner error={error} /> : null}
-
-        <Tabs
-          value={importMode}
-          onChange={(_, val) => {
-            setImportMode(val)
-          }}
-          sx={{ mb: 2 }}
-        >
-          <Tab label="Manual setup" />
-          <Tab label="Quick import" />
-        </Tabs>
-
-        {importMode === 1 ? (
-          <QuickImportPanel model={model} />
-        ) : (
-          <div className={classes.flex}>
-            <div className={classes.leftPanel}>
-              <PairwisePanel
-                model={model}
-                selectedAssemblyNames={selectedAssemblyNames}
-                setSelectedAssemblyNames={setSelectedAssemblyNames}
-                onLaunch={() => {
-                  void handleLaunch()
-                }}
-              />
-            </div>
-            <div className={classes.rightPanel}>
-              <div>Configure synteny data</div>
-              <ImportSyntenyTrackSelector
-                model={model}
-                assembly1={selectedAssemblyNames[0]!}
-                assembly2={selectedAssemblyNames[1]!}
-              />
-            </div>
+        <div className={classes.flex}>
+          <div className={classes.leftPanel}>
+            <LeftPanel
+              model={model}
+              selectedAssemblyNames={selectedAssemblyNames}
+              setSelectedAssemblyNames={setSelectedAssemblyNames}
+              selectedRow={selectedRow}
+              setSelectedRow={setSelectedRow}
+              defaultAssemblyName={defaultAssemblyName}
+              onLaunch={() => {
+                void handleLaunch()
+              }}
+            />
           </div>
-        )}
+          <div className={classes.rightPanel}>
+            <div>
+              Synteny dataset to display between row {selectedRow + 1} and{' '}
+              {selectedRow + 2}
+            </div>
+            <ImportSyntenyTrackSelector
+              model={model}
+              selectedRow={selectedRow}
+              assembly1={selectedAssemblyNames[selectedRow]!}
+              assembly2={selectedAssemblyNames[selectedRow + 1]!}
+            />
+          </div>
+        </div>
       </Container>
     )
   },

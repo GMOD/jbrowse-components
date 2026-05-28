@@ -14,10 +14,12 @@ const ImportSyntenyTrackSelector = observer(
     model,
     assembly1,
     assembly2,
+    selectedRow,
   }: {
     model: LinearSyntenyViewModel
     assembly1: string
     assembly2: string
+    selectedRow: number
   }) {
     const session = getSession(model)
     const filteredTracks = session.tracks.filter(track => {
@@ -31,12 +33,11 @@ const ImportSyntenyTrackSelector = observer(
     const resetTrack = filteredTracks[0]?.trackId ?? ''
     const [value, setValue] = useState(resetTrack)
     useEffect(() => {
-      model.setImportFormSyntenyTrack(0, {
+      model.setImportFormSyntenyTrack(selectedRow, {
         type: 'preConfigured',
         value: resetTrack,
       })
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [assembly1, assembly2, resetTrack, selectedRow, model])
     return (
       <Paper style={{ padding: 12 }}>
         <Typography>
@@ -50,7 +51,7 @@ const ImportSyntenyTrackSelector = observer(
             onChange={event => {
               const v = event.target.value
               setValue(v)
-              model.setImportFormSyntenyTrack(0, {
+              model.setImportFormSyntenyTrack(selectedRow, {
                 type: 'preConfigured',
                 value: v,
               })

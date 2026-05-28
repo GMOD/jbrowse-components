@@ -12,10 +12,12 @@ const LinearImportSyntenyOpenCustomTrack = observer(
     model,
     assembly1,
     assembly2,
+    selectedRow,
   }: {
     model: LinearSyntenyViewModel
     assembly1: string
     assembly2: string
+    selectedRow: number
   }) {
     const { pluginManager } = getEnv(model)
     return (
@@ -26,7 +28,7 @@ const LinearImportSyntenyOpenCustomTrack = observer(
         baseFormats={defaultSyntenyFileFormats}
         pluginManager={pluginManager}
         onSetTrack={val => {
-          model.setImportFormSyntenyTrack(0, val)
+          model.setImportFormSyntenyTrack(selectedRow, val)
         }}
       />
     )

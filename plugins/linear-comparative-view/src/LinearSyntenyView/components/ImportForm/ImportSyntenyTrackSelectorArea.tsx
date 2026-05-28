@@ -15,6 +15,7 @@ export interface LinearSyntenyImportFormSyntenyOption {
     model: LinearSyntenyViewModel
     assembly1: string
     assembly2: string
+    selectedRow: number
   }>
 }
 
@@ -27,6 +28,7 @@ declare module '@jbrowse/core/PluginManager' {
         model: LinearSyntenyViewModel
         assembly1: string
         assembly2: string
+        selectedRow: number
       }
     }
   }
@@ -36,10 +38,12 @@ export default function ImportSyntenyTrackSelectorArea({
   model,
   assembly1,
   assembly2,
+  selectedRow,
 }: {
   model: LinearSyntenyViewModel
   assembly1: string
   assembly2: string
+  selectedRow: number
 }) {
   const { pluginManager } = getEnv(model)
   const [choice, setChoice] = useState('tracklist')
@@ -47,7 +51,7 @@ export default function ImportSyntenyTrackSelectorArea({
   const customOptions = pluginManager.evaluateExtensionPoint(
     'LinearSyntenyView-ImportFormSyntenyOptions',
     [],
-    { model, assembly1, assembly2 },
+    { model, assembly1, assembly2, selectedRow },
   )
 
   const selectedCustomOption = customOptions.find(opt => opt.value === choice)
@@ -62,7 +66,7 @@ export default function ImportSyntenyTrackSelectorArea({
             const val = event.target.value
             setChoice(val)
             if (val === 'none' || val === 'custom') {
-              model.setImportFormSyntenyTrack(0, { type: 'none' })
+              model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
             }
           }}
         >
@@ -93,6 +97,7 @@ export default function ImportSyntenyTrackSelectorArea({
           model={model}
           assembly2={assembly2}
           assembly1={assembly1}
+          selectedRow={selectedRow}
         />
       ) : null}
       {choice === 'tracklist' ? (
@@ -101,6 +106,7 @@ export default function ImportSyntenyTrackSelectorArea({
           model={model}
           assembly1={assembly1}
           assembly2={assembly2}
+          selectedRow={selectedRow}
         />
       ) : null}
       {selectedCustomOption ? (
@@ -108,6 +114,7 @@ export default function ImportSyntenyTrackSelectorArea({
           model={model}
           assembly1={assembly1}
           assembly2={assembly2}
+          selectedRow={selectedRow}
         />
       ) : null}
     </div>
