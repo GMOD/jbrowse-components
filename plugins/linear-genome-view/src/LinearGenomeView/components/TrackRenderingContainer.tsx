@@ -42,7 +42,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   const { classes } = useStyles()
   const display = track.displays[0]
   const { height, RenderingComponent, DisplayBlurb } = display
-  const { trackRefs, id } = model
+  const { trackRefs } = model
   const trackId = track.trackId
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
@@ -63,7 +63,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
         height: minimized ? MINIMIZED_TRACK_HEIGHT : height,
       }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
-      data-testid={`trackRenderingContainer-${id}-${trackId}`}
+      data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
     >
       {!minimized ? (
         <>

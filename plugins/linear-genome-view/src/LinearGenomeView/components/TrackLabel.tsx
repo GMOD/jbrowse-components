@@ -46,14 +46,13 @@ const TrackLabel = observer(function TrackLabel({ track, className }: Props) {
   const view = getContainingView(track) as LGV
   const session = getSession(track)
   const { minimized } = track
-  const trackId = track.trackId
   const trackName = getTrackName(track.configuration, session)
 
   return (
     <Paper className={cx(className, classes.root)}>
-      <TrackLabelDragHandle track={track} trackId={trackId} view={view} />
+      <TrackLabelDragHandle track={track} />
       <IconButton
-        onClick={() => view.hideTrack(trackId)}
+        onClick={() => view.hideTrack(track.trackId)}
         className={classes.iconButton}
         title="close this track"
       >

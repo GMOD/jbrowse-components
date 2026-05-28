@@ -51,7 +51,7 @@ const TrackContainer = observer(function TrackContainer({
         if (
           isAlive(display) &&
           draggingTrackId !== undefined &&
-          draggingTrackId !== display.id
+          draggingTrackId !== track.id
         ) {
           const draggingIdx = model.tracks.findIndex(
             t => t.id === draggingTrackId,

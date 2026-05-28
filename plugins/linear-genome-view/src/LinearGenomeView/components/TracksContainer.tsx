@@ -47,7 +47,7 @@ const TracksContainer = observer(function TracksContainer({
 }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
-  const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
+  const { mouseDown: sideScrollMouseDown, mouseUp } = useSideScroll(model)
   const { showGridlines, showCenterLine } = model
   const ref = useRef<HTMLDivElement>(null)
   const range = useRangeSelect(ref, model, true)
@@ -64,7 +64,7 @@ const TracksContainer = observer(function TracksContainer({
       data-testid="tracksContainer"
       className={classes.tracksContainer}
       onMouseDown={event => {
-        mouseDown1(event)
+        sideScrollMouseDown(event)
         range.mouseDown(event)
       }}
       onMouseMove={range.mouseMove}

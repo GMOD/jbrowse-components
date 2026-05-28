@@ -1,3 +1,4 @@
+import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DragIcon from '@mui/icons-material/DragIndicator'
 
@@ -15,16 +16,10 @@ const useStyles = makeStyles()({
   },
 })
 
-function TrackLabelDragHandle({
-  trackId,
-  view,
-  track,
-}: {
-  trackId: string
-  track: BaseTrackModel
-  view: LinearGenomeViewModel
-}) {
+function TrackLabelDragHandle({ track }: { track: BaseTrackModel }) {
   const { classes } = useStyles()
+  const view = getContainingView(track) as LinearGenomeViewModel
+  const trackId = track.trackId
   return (
     <span
       draggable
