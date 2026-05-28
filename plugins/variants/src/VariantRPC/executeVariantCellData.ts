@@ -162,13 +162,10 @@ export async function executeVariantCellData({
 
   const genotypesCache = new Map<string, Record<string, string>>()
 
-  // Group rawFeatures by region. Uses binary search per feature so the
-  // assignment is correct regardless of emission order from merge() — a
-  // monotonic pointer advance would silently drop features when the same
-  // refName appears in two non-contiguous visible regions and the second
-  // region's observable resolves before the first.
-  // Regions are sorted by start so the binary search invariant holds even
-  // when displayedRegions lists the same refName in non-genomic screen order.
+  // Group rawFeatures by region. Uses a linear scan over per-refName
+  // candidates rather than a pointer advance so features are correctly
+  // assigned regardless of emission order from merge(). R (regions per
+  // refName) is almost always 1, so the O(N*R) cost is effectively O(N).
   let perRegionRawFeatures: Map<number, typeof rawFeatures> | undefined
   if (regionLookup) {
     const regionsByRefName = new Map<string, typeof regionLookup>()
@@ -180,9 +177,6 @@ export async function executeVariantCellData({
       }
       list.push(r)
     }
-    for (const list of regionsByRefName.values()) {
-      list.sort((a, b) => a.start - b.start)
-    }
     perRegionRawFeatures = new Map()
     for (const feature of rawFeatures) {
       const refName = feature.get('refName')
@@ -191,27 +185,17 @@ export async function executeVariantCellData({
       if (!candidates) {
         continue
       }
-      // Binary search: find the leftmost region whose end > start
-      let lo = 0
-      let hi = candidates.length
-      while (lo < hi) {
-        const mid = (lo + hi) >>> 1
-        if (candidates[mid]!.end <= start) {
-          lo = mid + 1
-        } else {
-          hi = mid
+      for (const region of candidates) {
+        if (start >= region.start && start < region.end) {
+          let list = perRegionRawFeatures.get(region.displayedRegionIndex)
+          if (!list) {
+            list = []
+            perRegionRawFeatures.set(region.displayedRegionIndex, list)
+          }
+          list.push(feature)
+          break
         }
       }
-      const region = candidates[lo]
-      if (!region || start < region.start) {
-        continue
-      }
-      let list = perRegionRawFeatures.get(region.displayedRegionIndex)
-      if (!list) {
-        list = []
-        perRegionRawFeatures.set(region.displayedRegionIndex, list)
-      }
-      list.push(feature)
     }
   }
 
