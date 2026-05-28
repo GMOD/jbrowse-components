@@ -1,7 +1,12 @@
+import { stripAlpha } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
+
 import {
   type FeatureLabelData,
   calculateFloatingLabelPosition,
 } from '../components/util.ts'
+
+const FONT_SIZE = 11
 
 interface Props {
   featureLabels: Map<string, FeatureLabelData>
@@ -9,60 +14,66 @@ interface Props {
   viewWidth: number
 }
 
-export function SvgFloatingLabels({
-  featureLabels,
-  offsetPx,
-  viewWidth,
-}: Props) {
-  const elements: React.ReactElement[] = []
+function FloatingLabel({
+  x,
+  y,
+  text,
+  color,
+  textWidth,
+  isOverlay,
+}: {
+  x: number
+  y: number
+  text: string
+  color: string
+  textWidth: number
+  isOverlay?: boolean
+}) {
+  const theme = useTheme()
+  return (
+    <g transform={`translate(${x}, ${y})`}>
+      {isOverlay ? (
+        <rect
+          x={-1}
+          y={0}
+          width={textWidth + 2}
+          height={FONT_SIZE + 1}
+          fill={stripAlpha(theme.palette.background.paper)}
+          fillOpacity={0.8}
+        />
+      ) : null}
+      <text x={0} y={FONT_SIZE} fontSize={FONT_SIZE} fill={color}>
+        {text}
+      </text>
+    </g>
+  )
+}
 
-  for (const [
-    key,
-    { leftPx, topPx, totalFeatureHeight, floatingLabels, featureWidth },
-  ] of featureLabels.entries()) {
-    const featureVisualBottom = topPx + totalFeatureHeight
-    const featureRightPx = leftPx + featureWidth
-
-    for (const [
-      i,
-      { text, relativeY, color, textWidth, isOverlay },
-    ] of floatingLabels.entries()) {
-      const y = featureVisualBottom + relativeY
-      const x = calculateFloatingLabelPosition(
-        leftPx,
-        featureRightPx,
-        textWidth,
-        offsetPx,
-      )
-
-      if (x < 0 || x > viewWidth) {
-        continue
-      }
-
-      const fontSize = 11
-      elements.push(
-        <g key={`${key}-${i}`} transform={`translate(${x}, ${y})`}>
-          {isOverlay ? (
-            <rect
-              x={-1}
-              y={0}
-              width={textWidth + 2}
-              height={fontSize + 1}
-              fill="rgba(255, 255, 255, 0.8)"
-            />
-          ) : null}
-          <text
-            x={0}
-            y={fontSize}
-            fontSize={fontSize}
-            fill={color}
-          >
-            {text}
-          </text>
-        </g>,
-      )
-    }
-  }
-
-  return <>{elements}</>
+export function SvgFloatingLabels({ featureLabels, offsetPx, viewWidth }: Props) {
+  return (
+    <>
+      {[...featureLabels.entries()].flatMap(
+        ([key, { leftPx, topPx, totalFeatureHeight, floatingLabels, featureWidth }]) => {
+          const featureVisualBottom = topPx + totalFeatureHeight
+          const featureRightPx = leftPx + featureWidth
+          return floatingLabels.flatMap(({ text, relativeY, color, textWidth, isOverlay }, i) => {
+            const x = calculateFloatingLabelPosition(leftPx, featureRightPx, textWidth, offsetPx)
+            return x < 0 || x > viewWidth
+              ? []
+              : [
+                  <FloatingLabel
+                    key={`${key}-${i}`}
+                    x={x}
+                    y={featureVisualBottom + relativeY}
+                    text={text}
+                    color={color}
+                    textWidth={textWidth}
+                    isOverlay={isOverlay}
+                  />,
+                ]
+          })
+        },
+      )}
+    </>
+  )
 }

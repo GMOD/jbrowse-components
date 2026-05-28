@@ -16,26 +16,14 @@ interface RenderingWithLayout {
   layout?: { getRectangles?: () => Map<string, LayoutRecord> }
 }
 
-/**
- * Extract layout maps from rendering results for floating label calculation.
- * Each rendering may have a layout with getRectangles() that returns feature positions.
- */
 export function collectLayoutsFromRenderings(
   renderings: readonly (readonly [unknown, RenderingWithLayout])[],
 ): Map<string, LayoutRecord>[] {
-  const layoutMaps: Map<string, LayoutRecord>[] = []
-  for (const [, rendering] of renderings) {
-    if (rendering.layout?.getRectangles) {
-      layoutMaps.push(rendering.layout.getRectangles())
-    }
-  }
-  return layoutMaps
+  return renderings.flatMap(([, rendering]) =>
+    rendering.layout?.getRectangles ? [rendering.layout.getRectangles()] : [],
+  )
 }
 
-/**
- * Calculate the left pixel position for a feature given its BP coordinates.
- * Handles reversed regions and cases where one or both ends might be off-screen.
- */
 function calculateFeatureLeftPx(
   view: LinearGenomeViewModel,
   assembly: Assembly | undefined,
@@ -44,7 +32,7 @@ function calculateFeatureLeftPx(
   right: number,
   bpPerPx: number,
 ): number | undefined {
-  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+  const canonicalRefName = assembly?.getCanonicalRefName2(refName) ?? refName
 
   const leftBpPx = view.bpToPx({
     refName: canonicalRefName,
@@ -67,10 +55,7 @@ function calculateFeatureLeftPx(
   return undefined
 }
 
-/**
- * Calculate left pixel position for features that span multiple regions
- * (e.g., genes with collapsed introns where both ends are off-screen)
- */
+// fallback for features whose primary endpoints are both off-screen (e.g. collapsed introns)
 function calculateMultiRegionLeftPx(
   view: LinearGenomeViewModel,
   assembly: Assembly | undefined,
@@ -78,7 +63,7 @@ function calculateMultiRegionLeftPx(
   left: number,
   right: number,
 ): number | undefined {
-  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+  const canonicalRefName = assembly?.getCanonicalRefName2(refName) ?? refName
   const visibleRegions = view.displayedRegions.filter(
     r => r.refName === canonicalRefName && r.start < right && r.end > left,
   )
@@ -193,21 +178,7 @@ export function deduplicateFeatureLabels(
   return featureLabels
 }
 
-/**
- * Calculate the x position for a floating label.
- *
- * Floating labels have two modes:
- * 1. If the label is wider than the feature, it uses a fixed position
- *    (doesn't float) and can extend beyond the feature's right edge.
- * 2. If the label fits within the feature, it floats to stay visible
- *    but is constrained to keep its right edge within the feature's right edge.
- *
- * @param featureLeftPx - Left edge of the feature in pixels
- * @param featureRightPx - Right edge of the feature in pixels
- * @param labelWidth - Width of the label text in pixels
- * @param offsetPx - Current viewport offset in pixels
- * @returns The x position for the label (already offset-adjusted)
- */
+// label wider than feature → fixed at feature left; otherwise floats to stay visible within feature bounds
 export function calculateFloatingLabelPosition(
   featureLeftPx: number,
   featureRightPx: number,
@@ -217,12 +188,9 @@ export function calculateFloatingLabelPosition(
   const featureWidth = featureRightPx - featureLeftPx
 
   if (labelWidth > featureWidth) {
-    // Label doesn't fit within feature - don't float, use fixed position
     return Math.round(featureLeftPx - offsetPx)
   }
 
-  // Label fits within feature - apply floating logic
-  // Viewport left edge: when scrolled left (offsetPx < 0), starts at 0; otherwise at offsetPx
   const viewportLeft = Math.max(0, offsetPx)
   const leftPx = Math.max(featureLeftPx, viewportLeft)
   const naturalX = leftPx - offsetPx

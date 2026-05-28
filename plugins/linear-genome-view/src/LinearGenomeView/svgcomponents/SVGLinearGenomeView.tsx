@@ -48,8 +48,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
-  const height =
-    totalHeight(visibleTracks, textHeight, trackLabels) + offset + 100
+  const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
+  const height = tracksHeight + offset + 100
 
   // Calculate maximum legend width across all displays
   const legendWidth = max(
@@ -82,7 +82,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset + legendWidth
-  const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -93,7 +92,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
           height={height}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, w + shift * 2, height].toString()}
+          viewBox={`0 0 ${w + shift * 2} ${height}`}
         >
           <SVGBackground width={w} height={height} shift={shift} />
           <g transform={`translate(${shift} 0)`}>

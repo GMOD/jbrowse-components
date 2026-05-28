@@ -95,10 +95,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   transform="translate(203.1830988618379,203.1830988618379)"
                 >
                   <text
-                    class="css-138va87"
                     dominant-baseline="middle"
                     fill="#996600"
                     fill-opacity="1"
+                    font-size="0.8rem"
+                    font-weight="500"
+                    letter-spacing="0.0075em"
                     text-anchor="middle"
                     transform="translate(-51.604261030352276,117.33672518582992) rotate(203.73971705749446)"
                     x="0"
@@ -117,10 +119,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                     stroke-width="2"
                   />
                   <text
-                    class="css-138va87"
                     dominant-baseline="middle"
                     fill="#666600"
                     fill-opacity="1"
+                    font-size="0.8rem"
+                    font-weight="500"
+                    letter-spacing="0.0075em"
                     text-anchor="middle"
                     transform="translate(51.60426103035232,-117.3367251858299) rotate(383.7397170574945)"
                     x="0"

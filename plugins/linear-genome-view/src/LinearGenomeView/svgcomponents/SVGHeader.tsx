@@ -52,9 +52,11 @@ export default function SVGHeader({
   const y = +showCytobands * cytobandHeight
   return (
     <g id="header">
-      <text x={0} y={0} dominantBaseline="hanging" fontSize={fontSize} fill={c}>
-        {assemblyName}
-      </text>
+      {assemblyName ? (
+        <text x={0} y={0} dominantBaseline="hanging" fontSize={fontSize} fill={c}>
+          {assemblyName}
+        </text>
+      ) : null}
 
       {showCytobands && span ? (
         <g transform={`translate(0 ${rulerHeight})`}>

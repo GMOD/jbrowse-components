@@ -27,51 +27,44 @@ function Ruler({
   hideText?: boolean
   widthPx: number
 }) {
-  const ticks = makeTicks(start, end, bpPerPx, major, minor)
   const theme = useTheme()
   const c = stripAlpha(theme.palette.text.secondary)
+  const ticks = makeTicks(start, end, bpPerPx, major, minor).map(tick => ({
+    ...tick,
+    x: (reversed ? end - tick.base : tick.base - start) / bpPerPx,
+  }))
   return (
     <>
-      {ticks.map(tick => {
-        const x = (reversed ? end - tick.base : tick.base - start) / bpPerPx
-        return (
-          <line
-            key={`tick-${tick.base}`}
-            x1={x}
-            x2={x}
-            y1={0}
-            y2={tick.type === 'major' ? 6 : 4}
-            strokeWidth={1}
-            stroke={c}
-          />
-        )
-      })}
+      {ticks.map(({ base, type, x }) => (
+        <line
+          key={`tick-${base}`}
+          x1={x}
+          x2={x}
+          y1={0}
+          y2={type === 'major' ? 6 : 4}
+          strokeWidth={1}
+          stroke={c}
+        />
+      ))}
       {!hideText
         ? ticks
-            .filter(tick => tick.type === 'major')
-            .filter(tick => {
-              const x =
-                (reversed ? end - tick.base : tick.base - start) / bpPerPx
-              const labelText = getTickDisplayStr(tick.base + 1, bpPerPx)
-              const labelWidth = measureText(labelText, 11) + 4
-              const leftEdge = x - 3
-              const rightEdge = leftEdge + labelWidth
-              return leftEdge >= 0 && rightEdge <= widthPx
-            })
-            .map(tick => {
-              const x =
-                (reversed ? end - tick.base : tick.base - start) / bpPerPx
-              return (
-                <text
-                  key={`label-${tick.base}`}
-                  x={x - 3}
-                  y={7 + 11}
-                  fontSize={11}
-                  fill={c}
-                >
-                  {getTickDisplayStr(tick.base + 1, bpPerPx)}
-                </text>
-              )
+            .filter(({ type }) => type === 'major')
+            .flatMap(({ base, x }) => {
+              const label = getTickDisplayStr(base + 1, bpPerPx)
+              const labelWidth = measureText(label, 11) + 4
+              return x - 3 >= 0 && x - 3 + labelWidth <= widthPx
+                ? [
+                    <text
+                      key={`label-${base}`}
+                      x={x - 3}
+                      y={7 + 11}
+                      fontSize={11}
+                      fill={c}
+                    >
+                      {label}
+                    </text>,
+                  ]
+                : []
             })
         : null}
     </>

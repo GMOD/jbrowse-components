@@ -20,10 +20,6 @@ export interface FloatingLabelData {
   tooltip?: string
 }
 
-/**
- * Metadata attached to layout rectangles for floating label rendering.
- * Used by both parent features and subfeatures.
- */
 export interface LayoutFeatureMetadata {
   refName: string
   floatingLabels?: FloatingLabelData[]
@@ -36,9 +32,6 @@ export interface LayoutFeatureMetadata {
   featureEndBp?: number
 }
 
-/**
- * Creates metadata for floating label rendering on subfeatures.
- */
 export function createSubfeatureLabelMetadata(args: {
   refName: string
   floatingLabels: FloatingLabelData[]

@@ -1,9 +1,11 @@
-import { measureText } from '@jbrowse/core/util'
+import { stripAlpha } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 
 import {
   LEGEND_BOX_SIZE,
   LEGEND_FONT_SIZE,
   LEGEND_PADDING,
+  legendBoxWidth,
 } from './calculateSvgLegendWidth.ts'
 
 import type { LegendItem } from './components/FloatingLegend.tsx'
@@ -17,33 +19,25 @@ export default function SVGLegend({
   width: number
   legendAreaWidth?: number
 }) {
+  const theme = useTheme()
   if (items.length === 0) {
     return null
   }
 
   const itemHeight = LEGEND_BOX_SIZE + 2
+  const legendWidth = legendBoxWidth(items)
   const legendHeight = items.length * itemHeight + LEGEND_PADDING * 2
-
-  // Calculate legend width based on longest label
-  const maxLabelWidth = Math.max(
-    ...items.map(item => measureText(item.label, LEGEND_FONT_SIZE)),
-  )
-  const legendWidth = LEGEND_BOX_SIZE + 8 + maxLabelWidth + LEGEND_PADDING * 2
-
-  // If legendAreaWidth is provided, position legend to the right of the figure
-  // Otherwise, position it inside the figure area (top-right corner)
   const x = legendAreaWidth ? width + 10 : width - legendWidth - 10
-  const y = 10
 
   return (
-    <g transform={`translate(${x}, ${y})`}>
+    <g transform={`translate(${x}, 10)`}>
       <rect
         x={0}
         y={0}
         width={legendWidth}
         height={legendHeight}
-        fill="rgba(255,255,255,0.9)"
-        stroke="#ccc"
+        fill={stripAlpha(theme.palette.background.paper)}
+        stroke={stripAlpha(theme.palette.divider)}
         strokeWidth={1}
         rx={4}
       />
@@ -65,7 +59,7 @@ export default function SVGLegend({
             x={LEGEND_BOX_SIZE + 6}
             y={LEGEND_BOX_SIZE - 2}
             fontSize={LEGEND_FONT_SIZE}
-            fill="black"
+            fill={stripAlpha(theme.palette.text.primary)}
           >
             {item.label}
           </text>

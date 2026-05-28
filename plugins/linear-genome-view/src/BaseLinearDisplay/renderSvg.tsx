@@ -55,8 +55,7 @@ export async function renderBaseLinearDisplaySvg(
         region,
       })
 
-      // regionCannotBeRendered can return jsx so look for plaintext
-      // version, or just get the default if none available
+      // regionCannotBeRendered can return jsx so look for plaintext version
       const cannotBeRenderedReason =
         self.regionCannotBeRenderedText(region) ||
         self.regionCannotBeRendered(region)
@@ -67,7 +66,7 @@ export async function renderBaseLinearDisplaySvg(
           {
             reactElement: (
               <>
-                <rect x={0} y={0} width={width} height={20} fill="#aaa" />
+                <rect x={0} y={0} width={block.widthPx} height={20} fill="#aaa" />
                 <text x={0} y={15}>
                   {cannotBeRenderedReason}
                 </text>
@@ -105,13 +104,9 @@ export async function renderBaseLinearDisplaySvg(
     }),
   )
 
-  // Collect layout data from the renderings for floating labels
-  // This is needed because in standalone SVG export (e.g., jbrowse-img),
-  // the model's blockState is not populated with rendering results
   const layoutMaps = collectLayoutsFromRenderings(renderings)
   const layoutFeatures = new CompositeMap<string, LayoutRecord>(layoutMaps)
 
-  // Calculate floating label data using the rendering results
   const { assemblyManager } = getSession(self)
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
@@ -122,23 +117,20 @@ export async function renderBaseLinearDisplaySvg(
     bpPerPx,
   )
 
-  // Create a clip path ID for the labels that covers the entire view
   const labelsClipId = getId(id, 'labels')
-
-  // Get legend items if legend is enabled
   const theme = createJBrowseTheme(opts.theme)
   const legendItems = self.showLegend ? self.legendItems(theme) : []
 
   const blockHeight = overrideHeight ?? height
   return (
     <>
-      {renderings.map(([block, rendering], index) => {
-        const { offsetPx, widthPx } = block
+      {renderings.map(([block, rendering]) => {
+        const { key, offsetPx, widthPx } = block
         const offset = offsetPx - viewOffsetPx
         return (
-          <g key={`block-${index}`} transform={`translate(${offset} 0)`}>
+          <g key={key} transform={`translate(${offset} 0)`}>
             <SvgClipRect
-              id={getId(id, index)}
+              id={getId(id, key)}
               width={widthPx}
               height={blockHeight}
             >
