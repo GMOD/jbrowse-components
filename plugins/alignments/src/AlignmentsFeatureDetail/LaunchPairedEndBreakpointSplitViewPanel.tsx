@@ -1,6 +1,7 @@
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
+import { ActionLink } from '@jbrowse/core/ui'
 import { getAssemblyName, launchBreakpointSplitView } from '@jbrowse/sv-core'
-import { Link, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
@@ -19,10 +20,8 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
   return assemblyName && next_ref !== undefined && next_pos !== undefined ? (
     <div>
       <Typography>Launch split view</Typography>
-      <Link
-        href="#"
-        onClick={event => {
-          event.preventDefault()
+      <ActionLink
+        onClick={() =>
           launchBreakpointSplitView({
             session,
             view: model.view,
@@ -42,11 +41,11 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
               },
             }),
           })
-        }}
+        }
       >
         {refName}:{toLocale(start)} -&gt; {next_ref}:{toLocale(next_pos)}{' '}
         (breakpoint split view)
-      </Link>
+      </ActionLink>
     </div>
   ) : null
 }

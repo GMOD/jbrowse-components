@@ -1,7 +1,8 @@
 import { getLengthOnRef } from '@jbrowse/alignments-core'
 import { toLocale } from '@jbrowse/core/util'
+import { ActionLink } from '@jbrowse/core/ui'
 import { navToLoc } from '@jbrowse/sv-core'
-import { Link, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 
@@ -18,7 +19,7 @@ export default function SupplementaryAlignmentsLocStrings({
       <ul>
         {tag
           .split(';')
-          .filter(SA => !!SA)
+          .filter(Boolean)
           .map((SA, idx) => {
             const [saRef, saStart, saStrand, saCigar] = SA.split(',')
             if (!saRef || !saStart || !saStrand || !saCigar) {
@@ -29,19 +30,13 @@ export default function SupplementaryAlignmentsLocStrings({
             const start = +saStart
             const end = start + saLength
             const locString = `${saRef}:${Math.max(1, start - extra)}-${end + extra}`
-            const displayString = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]`
+            const label = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]`
             return (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <li key={`${locString}-${idx}`}>
-                <Link
-                  href="#"
-                  onClick={event => {
-                    event.preventDefault()
-                    navToLoc(locString, model)
-                  }}
-                >
-                  {displayString}
-                </Link>
+                <ActionLink onClick={() => navToLoc(locString, model)}>
+                  {label}
+                </ActionLink>
               </li>
             )
           })}

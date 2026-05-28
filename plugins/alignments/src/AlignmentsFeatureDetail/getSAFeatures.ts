@@ -64,16 +64,12 @@ export async function getSAFeatures({
       end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
     },
   }
-  const features = [feat, ...suppAlns] as ReducedFeature[]
-
-  for (let i = 0; i < features.length; i++) {
-    const f = features[i]!
-    f.refName = assembly.getCanonicalRefName2(f.refName)
-    f.syntenyId = i
-    f.mate.syntenyId = i
-    f.mate.uniqueId = `${f.uniqueId}_mate`
-  }
-  return features.toSorted(
-    (a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
-  )
+  return ([feat, ...suppAlns] as ReducedFeature[])
+    .map((f, i) => ({
+      ...f,
+      refName: assembly.getCanonicalRefName2(f.refName),
+      syntenyId: i,
+      mate: { ...f.mate, syntenyId: i, uniqueId: `${f.uniqueId}_mate` },
+    }))
+    .toSorted((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
 }
