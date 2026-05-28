@@ -83,7 +83,7 @@ export default function calculateDynamicBlocks(
       const widthPx = (end - start) * invBpPerPx
       const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
 
-      if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
+      if (padding && displayedRegionIndex === 0 && isLeftEndOfDisplayedRegion) {
         blocks.push(
           makeInterRegionPaddingBlock({
             key: `${key}-beforeFirstRegion`,

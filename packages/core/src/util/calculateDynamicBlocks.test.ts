@@ -88,6 +88,27 @@ test('inter-region padding correct when bpPerPx causes float drift on region rig
   )
 })
 
+test('no negative-width boundary block when scrolled to left edge of non-first region', () => {
+  // Bug: blocks.length===0 && isLeftEndOfDisplayedRegion fired for non-first regions,
+  // producing a beforeFirstRegion block with widthPx = -offsetPx < 0
+  const regions = [
+    { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
+    { assemblyName: 'test', refName: 'chr2', start: 0, end: 1000 },
+    { assemblyName: 'test', refName: 'chr3', start: 0, end: 1000 },
+  ]
+  const blockSet = calculateDynamicBlocks({
+    offsetPx: 2004,
+    width: 800,
+    displayedRegions: regions,
+    bpPerPx: 1,
+    minimumBlockWidth: 3,
+    interRegionPaddingWidth: 2,
+  })
+  for (const b of blockSet.blocks) {
+    expect(b.widthPx).toBeGreaterThanOrEqual(0)
+  }
+})
+
 test('off-screen regions contribute padding to block positions', () => {
   const regions = [
     { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
