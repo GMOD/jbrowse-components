@@ -1,27 +1,36 @@
-import {
-  type AlignmentRecord,
-  splitCigarOnLargeGaps,
-} from './structural-summary.ts'
+import { splitCigarOnLargeGaps } from './structural-summary.ts'
 
-function makeRec(over: Partial<AlignmentRecord>): AlignmentRecord {
-  return {
-    qname: 'q1',
-    qlen: '1000',
-    qstart: 0,
-    qend: 100,
-    strand: '+',
-    tname: 't1',
-    tlen: '1000',
-    tstart: 0,
-    tend: 100,
-    cigar: '100M',
-    ...over,
-  }
+function call({
+  cigar = '100M',
+  strand = '+',
+  tstart = 0,
+  tend = 100,
+  qstart = 0,
+  qend = 100,
+  splitGap,
+}: {
+  cigar?: string | undefined
+  strand?: string
+  tstart?: number
+  tend?: number
+  qstart?: number
+  qend?: number
+  splitGap: number | undefined
+}) {
+  return splitCigarOnLargeGaps({
+    cigar,
+    strand,
+    tstart,
+    tend,
+    qstart,
+    qend,
+    splitGap,
+  })
 }
 
 describe('splitCigarOnLargeGaps', () => {
   test('returns a single segment when no qualifying gap', () => {
-    const segs = splitCigarOnLargeGaps(makeRec({ cigar: '100M' }), 50)
+    const segs = call({ cigar: '100M', splitGap: 50 })
     expect(segs).toHaveLength(1)
     expect(segs[0]).toMatchObject({
       tstart: 0,
@@ -36,14 +45,12 @@ describe('splitCigarOnLargeGaps', () => {
   test('splits on a large deletion (target gap)', () => {
     // 30M then 1000D then 30M — target advances over the 1000bp gap;
     // query does not. With splitGap=500 we expect two segments.
-    const segs = splitCigarOnLargeGaps(
-      makeRec({
-        cigar: '30M1000D30M',
-        qend: 60,
-        tend: 1060,
-      }),
-      500,
-    )
+    const segs = call({
+      cigar: '30M1000D30M',
+      qend: 60,
+      tend: 1060,
+      splitGap: 500,
+    })
     expect(segs).toHaveLength(2)
     expect(segs[0]).toMatchObject({
       tstart: 0,
@@ -62,14 +69,12 @@ describe('splitCigarOnLargeGaps', () => {
   })
 
   test('splits on a large insertion (query gap)', () => {
-    const segs = splitCigarOnLargeGaps(
-      makeRec({
-        cigar: '20M1000I20M',
-        qend: 1040,
-        tend: 40,
-      }),
-      500,
-    )
+    const segs = call({
+      cigar: '20M1000I20M',
+      qend: 1040,
+      tend: 40,
+      splitGap: 500,
+    })
     expect(segs).toHaveLength(2)
     expect(segs[0]).toMatchObject({
       tstart: 0,
@@ -89,17 +94,15 @@ describe('splitCigarOnLargeGaps', () => {
 
   test('handles minus strand by walking query backward', () => {
     // '-' strand: walk target forward, query backward in forward-strand coords
-    const segs = splitCigarOnLargeGaps(
-      makeRec({
-        cigar: '20M1000D20M',
-        strand: '-',
-        qstart: 0,
-        qend: 40,
-        tstart: 0,
-        tend: 1040,
-      }),
-      500,
-    )
+    const segs = call({
+      cigar: '20M1000D20M',
+      strand: '-',
+      qstart: 0,
+      qend: 40,
+      tstart: 0,
+      tend: 1040,
+      splitGap: 500,
+    })
     expect(segs).toHaveLength(2)
     // First segment: target 0..20, query walks from 40 down to 20
     expect(segs[0]).toMatchObject({
@@ -118,14 +121,12 @@ describe('splitCigarOnLargeGaps', () => {
   })
 
   test('does not split when splitGap is 0 (strip-only)', () => {
-    const segs = splitCigarOnLargeGaps(
-      makeRec({
-        cigar: '20M1000D20M',
-        qend: 40,
-        tend: 1040,
-      }),
-      0,
-    )
+    const segs = call({
+      cigar: '20M1000D20M',
+      qend: 40,
+      tend: 1040,
+      splitGap: 0,
+    })
     expect(segs).toHaveLength(1)
     expect(segs[0]).toMatchObject({
       tstart: 0,
@@ -136,14 +137,12 @@ describe('splitCigarOnLargeGaps', () => {
   })
 
   test('multiple large gaps yield N+1 segments', () => {
-    const segs = splitCigarOnLargeGaps(
-      makeRec({
-        cigar: '10M1000D10M1000I10M',
-        qend: 1030,
-        tend: 1030,
-      }),
-      500,
-    )
+    const segs = call({
+      cigar: '10M1000D10M1000I10M',
+      qend: 1030,
+      tend: 1030,
+      splitGap: 500,
+    })
     expect(segs).toHaveLength(3)
     expect(segs[0]).toMatchObject({ tstart: 0, tend: 10, qstart: 0, qend: 10 })
     expect(segs[1]).toMatchObject({
@@ -161,14 +160,12 @@ describe('splitCigarOnLargeGaps', () => {
   })
 
   test('counts = as matches and X as block-only', () => {
-    const segs = splitCigarOnLargeGaps(
-      makeRec({
-        cigar: '50=10X40=',
-        qend: 100,
-        tend: 100,
-      }),
-      0,
-    )
+    const segs = call({
+      cigar: '50=10X40=',
+      qend: 100,
+      tend: 100,
+      splitGap: 0,
+    })
     expect(segs).toHaveLength(1)
     expect(segs[0]).toMatchObject({
       numMatches: 90,
@@ -177,14 +174,12 @@ describe('splitCigarOnLargeGaps', () => {
   })
 
   test('missing cigar returns a single passthrough record', () => {
-    const segs = splitCigarOnLargeGaps(
-      makeRec({
-        cigar: undefined,
-        qend: 100,
-        tend: 100,
-      }),
-      500,
-    )
+    const segs = call({
+      cigar: undefined,
+      qend: 100,
+      tend: 100,
+      splitGap: 500,
+    })
     expect(segs).toHaveLength(1)
     expect(segs[0]).toMatchObject({
       tstart: 0,

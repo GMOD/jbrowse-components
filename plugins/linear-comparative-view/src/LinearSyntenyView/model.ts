@@ -170,23 +170,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * flicker between renders.
        */
       get hasCigarData() {
+        let anyDataLoaded = false
         for (const level of self.levels) {
           for (const display of level.linearSyntenyDisplays) {
             if (display.featureData?.hasCigar) {
               return true
             }
-          }
-        }
-        // No display has reported data yet — keep the menu visible so it
-        // doesn't pop in/out across fetches.
-        for (const level of self.levels) {
-          for (const display of level.linearSyntenyDisplays) {
             if (display.featureData) {
-              return false
+              anyDataLoaded = true
             }
           }
         }
-        return true
+        return !anyDataLoaded
       },
     }))
     .views(self => ({
