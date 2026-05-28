@@ -19,7 +19,7 @@ export function findCellAtBp(
   const targetBp = Math.floor(bp)
   for (const block of region.blocks) {
     if (block.startBp > targetBp) {
-      continue
+      break
     }
     const refSeqBytes = block.refSeqBytes
     const len = refSeqBytes.length

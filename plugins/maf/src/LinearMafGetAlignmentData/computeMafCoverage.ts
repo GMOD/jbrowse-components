@@ -1,13 +1,9 @@
-import { DASH, SPACE } from '../util/asciiBytes.ts'
+import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
 
 import type { MafBlock } from '../LinearMafRenderer/mafBackendTypes.ts'
 import type { InsertionEntry, MismatchEntry } from '@jbrowse/alignments-core'
 
-const N_UPPER = 78
-
-function toUpper(b: number) {
-  return b >= 97 && b <= 122 ? b - 32 : b
-}
+const N_UPPER = 78 // 'N'
 
 export interface MafCoverageResult {
   depths: Float32Array
@@ -67,12 +63,12 @@ export function computeMafCoverage(
         flushPending(refPos)
         const depthIdx = refPos - regionStart
         if (depthIdx >= 0 && depthIdx < length) {
-          const refUpper = toUpper(refByte)
+          const refUpper = refByte & ~LOWER_BIT
           for (const row of block.rows) {
             const sampleByte = row.alignmentBytes[col]!
             if (sampleByte !== DASH && sampleByte !== SPACE) {
               depths[depthIdx]! += 1
-              const sampleUpper = toUpper(sampleByte)
+              const sampleUpper = sampleByte & ~LOWER_BIT
               if (
                 sampleUpper !== refUpper &&
                 sampleUpper !== N_UPPER &&

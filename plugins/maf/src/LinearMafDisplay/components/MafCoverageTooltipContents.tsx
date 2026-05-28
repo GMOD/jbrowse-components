@@ -57,7 +57,7 @@ export default function MafCoverageTooltipContents({
             <td>{base.toUpperCase()}</td>
             <td className={classes.td}>
               {data.count}/{depth} (
-              {((data.count / (depth || 1)) * 100).toFixed(1)}%)
+              {((data.count / depth) * 100).toFixed(1)}%)
             </td>
           </tr>
         ))}

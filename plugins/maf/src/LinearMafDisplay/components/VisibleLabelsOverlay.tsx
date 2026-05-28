@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 
+import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -34,11 +35,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
     if (!ctx) {
       return
     }
-    const dpr = window.devicePixelRatio
-    canvas.width = width * dpr
-    canvas.height = height * dpr
-    ctx.scale(dpr, dpr)
-    ctx.clearRect(0, 0, width, height)
+    prepareCanvas(canvas, ctx, width, height)
     drawMafLabels(ctx, labels, contrastForBase, mismatchRendering)
   }, [labels, width, height, mismatchRendering, contrastForBase])
 

@@ -44,6 +44,7 @@ export interface LinearMafGetAlignmentDataArgs {
   region: Region
   stopToken?: StopToken
   statusCallback?: (msg: string) => void
+  samples?: Sample[]
 }
 
 export interface LinearMafGetAlignmentDataResult {
