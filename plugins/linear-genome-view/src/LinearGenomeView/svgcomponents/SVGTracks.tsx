@@ -19,6 +19,16 @@ interface DisplayResult {
   result: React.ReactNode
 }
 
+function getOffsets(displayResults: DisplayResult[], textOffset: number) {
+  return displayResults.reduce<{ offsets: number[]; total: number }>(
+    ({ offsets, total }, { track }) => ({
+      offsets: [...offsets, total],
+      total: total + track.displays[0]!.height + textOffset + trackSpacing,
+    }),
+    { offsets: [], total: 0 },
+  ).offsets
+}
+
 export default function SVGTracks({
   displayResults,
   model,
@@ -39,13 +49,7 @@ export default function SVGTracks({
   const session = getSession(model)
   const textOffset = trackLabels === 'offset' ? textHeight : 0
   const x = Math.max(-model.offsetPx, 0)
-  const { offsets } = displayResults.reduce<{ offsets: number[]; total: number }>(
-    ({ offsets, total }, { track }) => ({
-      offsets: [...offsets, total],
-      total: total + track.displays[0]!.height + textOffset + trackSpacing,
-    }),
-    { offsets: [], total: 0 },
-  )
+  const offsets = getOffsets(displayResults, textOffset)
   return (
     <>
       {displayResults.map(({ track, result }, i) => {
