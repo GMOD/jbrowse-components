@@ -71,40 +71,16 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #getter
        */
-      get blockDefinitions() {
-        const view = getContainingView(self) as CircularViewModel
-        const origSlices = view.staticSlices
-        if (!self.refNameMap) {
-          return origSlices
-        }
-
-        const slices = structuredClone(origSlices)
-
-        for (const slice of slices) {
-          const regions = slice.region.elided
-            ? slice.region.regions
-            : [slice.region]
-          for (const region of regions) {
-            const renamed = self.refNameMap[region.refName]
-            if (renamed && region.refName !== renamed) {
-              region.refName = renamed
-            }
-          }
-        }
-        return slices
-      },
-
-      /**
-       * #getter
-       */
       get blocksForRefs(): Record<string, Block> {
+        const view = getContainingView(self) as CircularViewModel
         const result: Record<string, Block> = {}
-        for (const block of this.blockDefinitions) {
+        for (const block of view.staticSlices) {
           const regions = block.region.elided
             ? block.region.regions
             : [block.region]
           for (const region of regions) {
-            result[region.refName] = block
+            const refName = self.refNameMap?.[region.refName] ?? region.refName
+            result[refName] = block
           }
         }
         return result
@@ -134,7 +110,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         /**
          * #action
          */
-        setFeatures(features: Feature[]) {
+        setFeatures(features: Feature[] | undefined) {
           self.features = features
           self.error = undefined
         },
@@ -169,7 +145,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
                 const stopToken = createStopToken()
                 renderStopToken = stopToken
 
-                self.setFeatures([])
+                self.setFeatures(undefined)
 
                 try {
                   const feats = await rpcManager.call(

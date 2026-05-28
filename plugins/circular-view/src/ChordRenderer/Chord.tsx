@@ -98,10 +98,10 @@ const Chord = observer(function Chord({
       onClick={() => {
         onClick(feature)
       }}
-      onMouseOver={() => {
+      onPointerEnter={() => {
         setHovered(true)
       }}
-      onMouseOut={() => {
+      onPointerLeave={() => {
         setHovered(false)
       }}
     />

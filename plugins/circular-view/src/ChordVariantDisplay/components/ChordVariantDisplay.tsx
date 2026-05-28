@@ -14,7 +14,6 @@ interface DisplayModel {
   id: string
   error: unknown
   features: Feature[] | undefined
-  blockDefinitions: Block[]
   blocksForRefs: Record<string, Block>
   selectedFeatureId: string | undefined
   configuration: { renderer: AnyConfigurationModel }
@@ -33,7 +32,7 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   if (display.error) {
     return <DisplayError model={display} radius={radius} />
   }
-  if (!display.features || !display.blockDefinitions.length) {
+  if (!display.features) {
     return <Loading radius={radius} />
   }
 
