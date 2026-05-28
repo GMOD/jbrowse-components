@@ -50,7 +50,6 @@ export interface VariantCellData {
   flatbushFeatureIndices: Uint32Array
   featureIdList: string[]
   sourceNameList: string[]
-  inputKey: string
 }
 
 function getShapeType(featureType: string, featureStrand?: number) {
@@ -88,14 +87,12 @@ export function computeVariantCells({
   renderingMode,
   referenceDrawingMode,
   genotypesCache,
-  inputKey,
 }: {
   mafs: MAFFilteredFeature[]
   sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode: string
   genotypesCache: Map<string, Record<string, string>>
-  inputKey: string
 }): VariantCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
   const rawColorCache = new Map<number, string>()
@@ -486,6 +483,5 @@ export function computeVariantCells({
     flatbushFeatureIndices: outFbFeatureIndices,
     featureIdList,
     sourceNameList,
-    inputKey,
   }
 }
