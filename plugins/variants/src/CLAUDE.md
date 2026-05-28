@@ -35,3 +35,27 @@ This applies specifically to:
 
 The discipline above is only for the _huge_ loops. Don't apply it everywhere —
 the codebase as a whole prefers declarative iteration.
+
+## RPC ↔ model boundary: genotype maps must be keyed by `sampleName`
+
+`ProcessedSource` has two name fields:
+
+- **`name`** — display/rendering identity. In phased mode this is HP-suffixed:
+  `"HG001 HP0"`, `"HG001 HP1"`. Used for `sourceNameList`, `sourceMap` keys,
+  and row-index lookups inside the canvas renderer.
+- **`sampleName`** — VCF sample identity. Always the bare sample name `"HG001"`.
+  Used to look up genotype data in the VCF feature object.
+
+Any `Record<string, string>` that maps a sample to a genotype string and crosses
+(or is consumed by) the RPC → state-model boundary **must be keyed by
+`sampleName`**. Keying by `name` silently breaks in phased mode because the
+consumer (`sortSourcesByGenotype`, hover lookup) does not know the HP suffix.
+
+Concretely:
+
+- `featureGenotypeMap[id].genotypes` in `computeVariantCells.ts` and
+  `computeVariantMatrixCells.ts` → keyed by `sampleName`.
+- Hover lookup in `VariantComponent.tsx` → resolve `source.sampleName` from
+  `sourceMap` before indexing into `genotypes`.
+- `sortSourcesByGenotype` → already uses `a.sampleName` as the lookup key;
+  don't change it to `a.name`.
