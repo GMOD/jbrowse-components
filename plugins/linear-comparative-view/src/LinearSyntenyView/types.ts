@@ -1,5 +1,6 @@
 import type React from 'react'
 
+import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
@@ -39,6 +40,6 @@ export interface ExportSvgOptions {
   headerHeight?: number
   cytobandHeight?: number
   themeName?: string
-  trackLabels?: string
+  trackLabels?: TrackLabelMode
   showGridlines?: boolean
 }

@@ -140,6 +140,7 @@ export type {
   InitState,
   NavLocation,
   TrackInit,
+  TrackLabelMode,
   VolatileGuide,
 } from './LinearGenomeView/types.ts'
 export {

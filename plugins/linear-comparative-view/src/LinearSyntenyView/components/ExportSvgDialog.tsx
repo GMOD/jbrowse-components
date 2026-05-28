@@ -2,6 +2,7 @@ import { BaseExportSvgDialog, useExportSvgPreference } from '@jbrowse/core/ui'
 import { Checkbox, FormControlLabel, MenuItem, TextField } from '@mui/material'
 
 import type { ExportSvgOptions } from '../types.ts'
+import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
 export default function ExportSvgDialog({
   model,
@@ -10,7 +11,7 @@ export default function ExportSvgDialog({
   model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
   handleClose: () => void
 }) {
-  const [trackLabels, setTrackLabels] = useExportSvgPreference(
+  const [trackLabels, setTrackLabels] = useExportSvgPreference<TrackLabelMode>(
     'tracklabels',
     'offset',
   )
@@ -31,10 +32,10 @@ export default function ExportSvgDialog({
           select
           label="Track label positioning"
           variant="outlined"
-          style={{ width: 150 }}
+          sx={{ width: 150 }}
           value={trackLabels}
           onChange={event => {
-            setTrackLabels(event.target.value)
+            setTrackLabels(event.target.value as TrackLabelMode)
           }}
         >
           <MenuItem value="offset">Offset</MenuItem>

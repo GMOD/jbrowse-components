@@ -19,13 +19,19 @@ export async function renderToSvg(
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
 
-  const { width, tracks, height } = model
-  const shift = 50
+  const { tracks, figureSize } = model
   const displayResults = await Promise.all(
-    tracks.map(async track => {
+    tracks.flatMap(track => {
       const display = track.displays[0]
-      await when(() => display.ready)
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
+      if (!display) {
+        return []
+      }
+      return [
+        when(() => display.ready).then(async () => ({
+          track,
+          result: await display.renderSvg({ ...opts, theme }),
+        })),
+      ]
     }),
   )
 
@@ -37,13 +43,12 @@ export async function renderToSvg(
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
         <svg
-          width={width}
-          height={height}
+          width={figureSize}
+          height={figureSize}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, width + shift * 2, height].toString()}
         >
-          <SVGBackground width={width} height={height} shift={shift} />
+          <SVGBackground width={figureSize} height={figureSize} />
           <g transform={`translate(${centerXY}) rotate(${deg})`}>
             {staticSlices.map(slice => (
               <Ruler key={slice.key} model={model} slice={slice} />

@@ -4,16 +4,14 @@ import { useTheme } from '@mui/material'
 export default function SVGBackground({
   width,
   height,
-  shift,
 }: {
   width: number
   height: number
-  shift: number
 }) {
   const theme = useTheme()
   return (
     <rect
-      width={width + shift * 2}
+      width={width}
       height={height}
       fill={stripAlpha(theme.palette.background.default)}
     />

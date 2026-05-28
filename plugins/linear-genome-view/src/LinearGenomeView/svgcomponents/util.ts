@@ -1,5 +1,7 @@
 import { sum } from '@jbrowse/core/util'
 
+import type { TrackLabelMode } from '../types.ts'
+
 interface Display {
   height: number
 }
@@ -12,7 +14,7 @@ export const trackSpacing = 2
 export function totalHeight(
   tracks: Track[],
   textHeight: number,
-  trackLabels: string,
+  trackLabels: TrackLabelMode,
 ) {
   return sum(
     tracks.map(

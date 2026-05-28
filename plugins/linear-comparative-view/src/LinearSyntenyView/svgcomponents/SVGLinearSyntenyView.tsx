@@ -15,6 +15,7 @@ import { when } from 'mobx'
 
 import SVGBackground from './SVGBackground.tsx'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
+import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
@@ -22,7 +23,7 @@ import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
 
 interface TrackEntry {
-  displays: unknown[]
+  displays: LinearSyntenyDisplayModel[]
 }
 
 // render LGV to SVG
@@ -75,7 +76,7 @@ export async function renderToSvg(
       const { tracks } = level
       return Promise.all(
         tracks.map(async (track: TrackEntry) => {
-          const d = track.displays[0] as LinearSyntenyDisplayModel
+          const d = track.displays[0]!
           await when(() => !d.loading)
           return renderSyntenyDisplaySvg(d, opts)
         }),
@@ -105,7 +106,7 @@ export async function renderToSvg(
       shift={shift}
       textHeight={textHeight}
       trackLabels={trackLabels}
-      displayResults={displayResults[0]}
+      displayResults={displayResults[0]!}
       key={views[0]!.id}
       view={views[0]!}
       fontSize={fontSize}
@@ -116,45 +117,28 @@ export async function renderToSvg(
   let currOffset = heights[0]! + fontSize + rulerHeight
   for (let i = 1; i < views.length; i++) {
     const view = views[i]!
-    const level = levels[i - 1]!
-    const rendering = renderings[i - 1]
-    const height = heights[i]!
-    const levelHeight = level.height
+    const levelHeight = levels[i - 1]!.height
     RenderList.push(
-      <g key={view.id} transform={`translate(0 ${currOffset})`}>
-        {levelHeight ? (
-          <defs>
-            <clipPath id={`synclip-${i}`}>
-              <rect x={0} y={0} width={width} height={levelHeight} />
-            </clipPath>
-          </defs>
-        ) : null}
-        <g
-          transform={`translate(${shift + trackLabelOffset} ${fontSize})`}
-          clipPath={`url(#synclip-${i})`}
-        >
-          {rendering?.map((r, i) => (
-            <React.Fragment key={i}>{r}</React.Fragment>
-          ))}
-        </g>
-        <g transform={`translate(0 ${levelHeight})`}>
-          <SVGLinearGenomeView
-            rulerHeight={rulerHeight}
-            shift={shift}
-            trackLabelOffset={trackLabelOffset}
-            textHeight={textHeight}
-            trackLabels={trackLabels}
-            displayResults={displayResults[i]}
-            key={view.id}
-            view={view}
-            fontSize={fontSize}
-            showGridlines={showGridlines}
-            tracksHeight={tracksHeights[i]!}
-          />
-        </g>
-      </g>,
+      <SVGSyntenyLevel
+        key={view.id}
+        clipId={`synclip-${i}`}
+        yOffset={currOffset}
+        width={width}
+        levelHeight={levelHeight}
+        shift={shift}
+        trackLabelOffset={trackLabelOffset}
+        fontSize={fontSize}
+        rendering={renderings[i - 1] ?? []}
+        rulerHeight={rulerHeight}
+        textHeight={textHeight}
+        trackLabels={trackLabels}
+        displayResults={displayResults[i]!}
+        view={view}
+        showGridlines={showGridlines}
+        tracksHeight={tracksHeights[i]!}
+      />,
     )
-    currOffset += height + fontSize + rulerHeight + levelHeight
+    currOffset += heights[i]! + fontSize + rulerHeight + levelHeight
   }
 
   // the xlink namespace is used for rendering <image> tag

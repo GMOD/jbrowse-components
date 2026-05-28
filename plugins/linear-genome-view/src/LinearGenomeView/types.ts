@@ -9,6 +9,8 @@ export interface BpOffset {
   assemblyName?: string
   oob?: boolean
 }
+export type TrackLabelMode = 'offset' | 'overlay' | 'left' | 'none'
+
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
@@ -20,7 +22,7 @@ export interface ExportSvgOptions {
   paddingHeight?: number
   headerHeight?: number
   cytobandHeight?: number
-  trackLabels?: string
+  trackLabels?: TrackLabelMode
   themeName?: string
   showGridlines?: boolean
   createCanvas?: (width: number, height: number) => HTMLCanvasElement

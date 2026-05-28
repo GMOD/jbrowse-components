@@ -6,6 +6,7 @@ import SVGTrackLabel from './SVGTrackLabel.tsx'
 import { trackSpacing } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { TrackLabelMode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 type LGV = LinearGenomeViewModel
@@ -32,7 +33,7 @@ export default function SVGTracks({
   model: LGV
   textHeight: number
   fontSize: number
-  trackLabels?: string
+  trackLabels?: TrackLabelMode
   trackLabelOffset?: number
   leftBuffer?: number
 }) {

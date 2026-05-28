@@ -7,7 +7,6 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
@@ -17,15 +16,6 @@ import type {
   SliceElidedRegion,
   SliceNonElidedRegion,
 } from '../slices.ts'
-
-const useStyles = makeStyles()({
-  rulerLabel: {
-    fontSize: '0.8rem',
-    fontWeight: 500,
-    lineHeight: 1.6,
-    letterSpacing: '0.0075em',
-  },
-})
 
 function sliceArcPath(
   slice: Slice,
@@ -118,7 +108,6 @@ const RulerLabel = observer(function RulerLabel({
   title?: string
   color: string
 }) {
-  const { classes } = useStyles()
   if (!text || maxWidthPx <= 4) {
     return null
   }
@@ -136,7 +125,9 @@ const RulerLabel = observer(function RulerLabel({
     <text
       x={0}
       y={0}
-      className={classes.rulerLabel}
+      fontSize="0.8rem"
+      fontWeight={500}
+      letterSpacing="0.0075em"
       textAnchor={textAnchor}
       dominantBaseline="middle"
       transform={`translate(${textXY}) rotate(${rotation})`}

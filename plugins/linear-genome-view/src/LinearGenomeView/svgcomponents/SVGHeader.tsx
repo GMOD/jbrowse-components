@@ -33,8 +33,8 @@ export default function SVGHeader({
     minimumBlockWidth,
   } = model
   const { assemblyManager } = getSession(model)
-  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]!
-  const assembly = assemblyManager.get(assemblyName)
+  const assemblyName = assemblyNames.length === 1 ? assemblyNames[0]! : ''
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const theme = useTheme()
   const c = stripAlpha(theme.palette.text.primary)
   const visibleRegions = model.dynamicBlocks.contentBlocks

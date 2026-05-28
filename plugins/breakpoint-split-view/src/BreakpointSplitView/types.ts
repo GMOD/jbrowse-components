@@ -1,3 +1,8 @@
+import type { Feature } from '@jbrowse/core/util'
+import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+
+
+
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
@@ -9,7 +14,7 @@ export interface ExportSvgOptions {
   paddingHeight?: number
   headerHeight?: number
   cytobandHeight?: number
-  trackLabels?: string
+  trackLabels?: TrackLabelMode
   themeName?: string
   showGridlines?: boolean
 }
@@ -24,8 +29,6 @@ export interface BreakpointSplitViewInit {
 
 export type LayoutRecord = [number, number, number, number]
 
-import type { Feature } from '@jbrowse/core/util'
-
 export interface LayoutMatch {
   feature: Feature
   layout: LayoutRecord
@@ -39,3 +42,5 @@ export interface OverlayMatch {
   layoutMatches: LayoutMatch[][]
   hasPairedReads?: boolean
 }
+
+export {type TrackLabelMode} from '@jbrowse/plugin-linear-genome-view'

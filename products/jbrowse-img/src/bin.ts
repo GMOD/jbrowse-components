@@ -14,6 +14,8 @@ import {
   trackTypes,
 } from './index.ts'
 
+import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+
 const knownOptions = new Set([
   ...trackTypes,
   'fasta',
@@ -160,7 +162,7 @@ async function main() {
     cytobands: argv.cytobands,
     themeName: argv.themeName,
     showGridlines: argv.showGridlines,
-    trackLabels: argv.trackLabels,
+    trackLabels: argv.trackLabels as TrackLabelMode | undefined,
     refseq: argv.refseq,
     trackList,
   }

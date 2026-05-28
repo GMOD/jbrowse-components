@@ -1,10 +1,12 @@
 import { measureText } from '@jbrowse/core/util'
 
-import type { LegendItem } from './components/FloatingLegend.tsx'
+import {
+  LEGEND_BOX_SIZE,
+  LEGEND_FONT_SIZE,
+  LEGEND_PADDING,
+} from './calculateSvgLegendWidth.ts'
 
-const LEGEND_FONT_SIZE = 10
-const LEGEND_BOX_SIZE = 12
-const LEGEND_PADDING = 3
+import type { LegendItem } from './components/FloatingLegend.tsx'
 
 export default function SVGLegend({
   items,

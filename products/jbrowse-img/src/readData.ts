@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import type { Entry } from './parseArgv.ts'
+import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
 export interface Opts {
   noRasterize?: boolean
@@ -18,7 +19,7 @@ export interface Opts {
   tracks?: string
   themeName?: string
   showGridlines?: boolean
-  trackLabels?: string
+  trackLabels?: TrackLabelMode
   refseq?: boolean
 }
 

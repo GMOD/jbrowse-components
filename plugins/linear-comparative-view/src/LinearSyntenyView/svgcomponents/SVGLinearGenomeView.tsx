@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import { getFillProps } from '@jbrowse/core/util'
 import {
   SVGGridlines,
@@ -6,7 +8,19 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel, TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+
+export interface ViewDisplayResults {
+  view: LinearGenomeViewModel
+  data: {
+    track: {
+      configuration: AnyConfigurationModel
+      displays: { height: number }[]
+    }
+    result: ReactNode
+  }[]
+}
 
 export default function SVGLinearGenomeView({
   trackLabelOffset,
@@ -21,11 +35,11 @@ export default function SVGLinearGenomeView({
   tracksHeight,
 }: {
   textHeight: number
-  trackLabels: string
+  trackLabels: TrackLabelMode
   trackLabelOffset: number
   fontSize: number
   view: LinearGenomeViewModel
-  displayResults: any
+  displayResults: ViewDisplayResults
   rulerHeight: number
   shift: number
   showGridlines?: boolean

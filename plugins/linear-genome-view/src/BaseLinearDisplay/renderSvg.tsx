@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   ReactRendering,
@@ -38,7 +36,12 @@ export async function renderBaseLinearDisplaySvg(
   const { height, id } = self
   const { overrideHeight } = opts
   const view = getContainingView(self) as LinearGenomeViewModel
-  const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
+  const {
+    offsetPx: viewOffsetPx,
+    roundedDynamicBlocks,
+    width,
+    bpPerPx,
+  } = view
 
   if (self.error) {
     return <SVGErrorBox error={self.error} width={width} height={height} />
@@ -110,7 +113,6 @@ export async function renderBaseLinearDisplaySvg(
 
   // Calculate floating label data using the rendering results
   const { assemblyManager } = getSession(self)
-  const { offsetPx, bpPerPx } = view
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const featureLabels = deduplicateFeatureLabels(
@@ -134,24 +136,22 @@ export async function renderBaseLinearDisplaySvg(
         const { offsetPx, widthPx } = block
         const offset = offsetPx - viewOffsetPx
         return (
-          <Fragment key={`frag-${index}`}>
-            <g transform={`translate(${offset} 0)`}>
-              <SvgClipRect
-                id={getId(id, index)}
-                width={widthPx}
-                height={blockHeight}
-              >
-                <ReactRendering rendering={rendering} />
-              </SvgClipRect>
-            </g>
-          </Fragment>
+          <g key={`block-${index}`} transform={`translate(${offset} 0)`}>
+            <SvgClipRect
+              id={getId(id, index)}
+              width={widthPx}
+              height={blockHeight}
+            >
+              <ReactRendering rendering={rendering} />
+            </SvgClipRect>
+          </g>
         )
       })}
       {/* Floating labels share one clip across the whole view */}
       <SvgClipRect id={labelsClipId} width={width} height={blockHeight}>
         <SvgFloatingLabels
           featureLabels={featureLabels}
-          offsetPx={offsetPx}
+          offsetPx={viewOffsetPx}
           viewWidth={width}
         />
       </SvgClipRect>

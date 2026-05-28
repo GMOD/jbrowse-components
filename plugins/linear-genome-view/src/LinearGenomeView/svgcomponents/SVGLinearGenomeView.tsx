@@ -89,7 +89,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     <ThemeProvider theme={jbrowseTheme}>
       <Wrapper>
         <svg
-          width={w}
+          width={w + shift * 2}
           height={height}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"

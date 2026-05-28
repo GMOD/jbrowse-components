@@ -56,7 +56,6 @@ export function SvgFloatingLabels({
             y={fontSize}
             fontSize={fontSize}
             fill={color}
-            style={{ pointerEvents: 'none' }}
           >
             {text}
           </text>

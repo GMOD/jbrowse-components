@@ -1,6 +1,8 @@
 import { coarseStripHTML, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
+import type { TrackLabelMode } from '../types.ts'
+
 export default function SVGTrackLabel({
   trackLabels,
   trackName,
@@ -9,7 +11,7 @@ export default function SVGTrackLabel({
   x,
 }: {
   trackName: string
-  trackLabels: string
+  trackLabels: TrackLabelMode
   fontSize: number
   trackLabelOffset: number
   x: number
