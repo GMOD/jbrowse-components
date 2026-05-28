@@ -38,15 +38,17 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Tracked deps that SHOULD trigger refetch when changed:
         //   - displayedRegions (per view) — region set drives cumBp output
         //   - adapterConfig and CIGAR drawing options
-        // Tracking `v.bpPerPx`, `v.offsetPx`, `v.width`,
-        // `v.interRegionPaddingWidth`, or `v.minimumBlockWidth` directly
-        // here would refire the autorun on every scroll frame even though
-        // the worker output is in absolute genomic coords and does not
-        // depend on those values (the worker uses them only for viewport
-        // culling, with a 50% buffer that absorbs typical scroll moves).
-        // See agent-docs/ARCHITECTURE.md "Coordinate convention".
+        //   - a log2 bucket of bpPerPx (per view) — the worker's viewport
+        //     cull is sized in px at fetch-time, so zooming out by ~2x
+        //     leaves features missing beyond the previous cull window.
+        //     Bucketing on log2 avoids refetching on smooth scroll-zoom
+        //     bursts within the same half-decade.
+        // Not tracked: raw `bpPerPx`, `offsetPx`, `width`,
+        // `interRegionPaddingWidth`, `minimumBlockWidth`. Scroll moves are
+        // absorbed by the worker's 50% px buffer.
         for (const v of view.views) {
           void v.displayedRegions
+          void Math.floor(Math.log2(Math.max(v.bpPerPx, 1)))
         }
         const adapterConfig = self.adapterConfig
         const {
