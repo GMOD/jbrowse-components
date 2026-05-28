@@ -152,7 +152,7 @@ export function useRangeSelect(
       anchorPosition,
     }
   }
-  const right = anchorPosition ? anchorPosition.offsetX : (currentX ?? 0)
+  const right = anchorPosition ? anchorPosition.offsetX : (currentX ?? startX)
   const left = Math.min(right, startX)
   const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)

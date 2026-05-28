@@ -40,14 +40,13 @@ const OverviewScalebarTickLabels = observer(
     const assembly = assemblyManager.get(assemblyName)
     const refNameColor = assembly?.getRefNameColor(refName)
 
-    const tickLabels = []
-    for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {
-      const offsetLabel = (i + 1) * majorPitch
-      tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
-    }
+    const tickLabels = Array.from(
+      { length: Math.floor((end - start) / majorPitch) },
+      (_, i) => (reversed ? end - (i + 1) * majorPitch : start + (i + 1) * majorPitch),
+    )
     return tickLabels.map((tickLabel, labelIdx) => (
       <Typography
-        key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
+        key={`${tickLabel}`}
         className={classes.scalebarLabel}
         variant="body2"
         style={{

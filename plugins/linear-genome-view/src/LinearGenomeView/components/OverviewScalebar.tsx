@@ -120,7 +120,7 @@ const OverviewBox = observer(function OverviewBox({
   const refNameColor = assembly?.getRefNameColor(refName)
 
   const canDisplayCytobands =
-    showCytobands && getCytobands(assembly, block.refName).length
+    showCytobands && getCytobands(assembly, block.refName).length > 0
 
   if (canDisplayCytobands) {
     return (
@@ -240,9 +240,9 @@ const Scalebar = observer(function Scalebar({
       />
       {/* this is the entire scale bar */}
       {overviewVisibleRegions.map((block, idx) => {
-        return !(block.type === 'ContentBlock') ? (
+        return block.type !== 'ContentBlock' ? (
           <div
-            key={`${JSON.stringify(block)}-${idx}`}
+            key={`${block.offsetPx}-${idx}`}
             className={cx(classes.scalebarContig, classes.elidedOverviewBlock)}
             style={{
               width: block.widthPx,
@@ -255,7 +255,7 @@ const Scalebar = observer(function Scalebar({
             block={block}
             model={model}
             overview={overview}
-            key={`${JSON.stringify(block)}-${idx}`}
+            key={`${block.refName}-${block.offsetPx}`}
           />
         )
       })}

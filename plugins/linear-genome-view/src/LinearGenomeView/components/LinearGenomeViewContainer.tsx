@@ -80,7 +80,6 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         if (!c) {
           return
         }
-        const { tracks } = model
         const leftPx = event.clientX - c.getBoundingClientRect().left
         const hoverPosition = model.pxToBp(leftPx)
         const hoverFeature = tracks.find(t => t.displays[0].featureUnderMouse)

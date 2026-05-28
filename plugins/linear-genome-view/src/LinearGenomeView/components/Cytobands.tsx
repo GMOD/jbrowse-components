@@ -31,19 +31,19 @@ function leftRoundedRect(
   return `M${x + radius},${y}h${width - radius}v${height}h${radius - width}a${radius},${radius} 0 0 1 ${-radius},${-radius}v${2 * radius - height}a${radius},${radius} 0 0 1 ${radius},${-radius}z`
 }
 
-function leftTriangle(x: number, _y: number, width: number, height: number) {
+function leftTriangle(x: number, y: number, width: number, height: number) {
   return [
-    [x, 0],
-    [x + width, height / 2],
-    [x, height],
+    [x, y],
+    [x + width, y + height / 2],
+    [x, y + height],
   ].toString()
 }
 
-function rightTriangle(x: number, _y: number, width: number, height: number) {
+function rightTriangle(x: number, y: number, width: number, height: number) {
   return [
-    [x, height / 2],
-    [x + width, 0],
-    [x + width, height],
+    [x, y + height / 2],
+    [x + width, y],
+    [x + width, y + height],
   ].toString()
 }
 
@@ -75,40 +75,39 @@ const Cytobands = observer(function Cytobands({
   const rcap = reversed ? 0 : cytobands.length - 1
   const h = HEADER_OVERVIEW_HEIGHT
 
-  // Precompute per-band derived data so render is a pure map over already-
-  // resolved state (no mutable accumulators during JSX construction).
-  let centromereSeen = false
+  const firstAcenIdx = cytobands.findIndex(({ type }) => type === 'acen')
+  const naColorIndices: number[] = []
   let prevNaKey = ''
-  let naIdx = 0
-  const bands = cytobands.map(args => {
-    const { refName, name, type, start, end } = args
-    const s = layoutBpToPx(overview, { refName, coord: start }) ?? 0
-    const e = layoutBpToPx(overview, { refName, coord: end }) ?? 0
+  let naColorIdx = 0
+  for (const { name, type } of cytobands) {
     if (type === 'n/a') {
-      const [, naDigits, naLetter] = name?.match(/^(\d+)([A-Za-z])/) ?? []
-      const key = naDigits && naLetter ? naDigits + naLetter : ''
+      const [, digits, letter] = name?.match(/^(\d+)([A-Za-z])/) ?? []
+      const key = digits && letter ? digits + letter : ''
       if (key && key !== prevNaKey) {
         prevNaKey = key
-        naIdx++
+        naColorIdx++
       }
     }
+    naColorIndices.push(naColorIdx)
+  }
+
+  const bands = cytobands.map((args, index) => {
+    const { refName, type, start, end } = args
+    const s = layoutBpToPx(overview, { refName, coord: start }) ?? 0
+    const e = layoutBpToPx(overview, { refName, coord: end }) ?? 0
     const color =
       type === 'n/a'
-        ? naIdx % 2
+        ? naColorIndices[index]! % 2
           ? 'black'
           : '#a77'
-        : colorMap[type] || 'black'
-    const isFirstAcen = type === 'acen' && !centromereSeen
-    if (type === 'acen') {
-      centromereSeen = true
-    }
-    return { args, s, e, color, isFirstAcen }
+        : colorMap[type] ?? 'black'
+    return { args, s, e, color, isFirstAcen: index === firstAcenIdx }
   })
 
   return (
     <g transform={`translate(-${offsetPx})`}>
       {bands.map(({ args, s, e, color, isFirstAcen }, index) => {
-        const k = JSON.stringify(args)
+        const k = args.name
         const { type } = args
         const l = Math.min(s, e)
         const w = Math.abs(e - s)

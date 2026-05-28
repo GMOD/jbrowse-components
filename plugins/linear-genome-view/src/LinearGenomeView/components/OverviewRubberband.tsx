@@ -128,7 +128,6 @@ const OverviewRubberband = observer(function OverviewRubberband({
       {!mouseDragging && guideX !== undefined ? (
         <OverviewRubberbandHoverTooltip
           model={model}
-          open
           overview={overview}
           guideX={guideX}
         />

@@ -22,12 +22,10 @@ const useStyles = makeStyles()({
 const OverviewRubberbandHoverTooltip = observer(
   function OverviewRubberbandHoverTooltip({
     model,
-    open,
     guideX,
     overview,
   }: {
     model: LGV
-    open: boolean
     guideX: number
     overview: ViewLayout
   }) {
@@ -46,13 +44,11 @@ const OverviewRubberbandHoverTooltip = observer(
 
     return (
       <Tooltip
-        open={open}
+        open
         placement="top"
-        title={[
-          stringify(px),
-          cytoband?.get('name'),
-          cytoband?.get('type'),
-        ].join(' ')}
+        title={[stringify(px), cytoband?.get('name'), cytoband?.get('type')]
+          .filter(Boolean)
+          .join(' ')}
         arrow
       >
         <div
