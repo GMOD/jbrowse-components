@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -12,6 +12,12 @@ import { rowsToViewInits, swap } from './importFormUtils.ts'
 
 import type { ImportFormRowData } from './importFormUtils.ts'
 import type { BreakpointViewModel } from '../model.ts'
+
+// Stable per-row id so React keys (and AssemblySelector's internal state) follow
+// a row through reorder/remove instead of being pinned to the array index.
+interface Row extends ImportFormRowData {
+  id: string
+}
 
 const useStyles = makeStyles()(theme => ({
   container: {
@@ -35,10 +41,13 @@ const BreakpointSplitViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const defaultAssembly = session.assemblyNames[0] ?? ''
-    const [rows, setRows] = useState<ImportFormRowData[]>([
-      { assembly: defaultAssembly, loc: '' },
-      { assembly: defaultAssembly, loc: '' },
-    ])
+    const idCounter = useRef(0)
+    const newRow = () => ({
+      id: `row-${idCounter.current++}`,
+      assembly: defaultAssembly,
+      loc: '',
+    })
+    const [rows, setRows] = useState<Row[]>(() => [newRow(), newRow()])
     const [trackId, setTrackId] = useState('')
     const [error, setError] = useState<unknown>()
     const canLaunch = rows.every(r => r.assembly)
@@ -56,7 +65,7 @@ const BreakpointSplitViewImportForm = observer(
         <div className={classes.section}>
           {rows.map((row, idx) => (
             <ImportFormRow
-              key={idx}
+              key={row.id}
               idx={idx}
               count={rows.length}
               assembly={row.assembly}
@@ -95,7 +104,7 @@ const BreakpointSplitViewImportForm = observer(
             className={classes.button}
             variant="outlined"
             onClick={() => {
-              setRows([...rows, { assembly: defaultAssembly, loc: '' }])
+              setRows([...rows, newRow()])
             }}
           >
             Add row
