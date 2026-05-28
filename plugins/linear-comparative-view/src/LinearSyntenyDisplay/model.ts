@@ -37,6 +37,10 @@ export interface SyntenyFeatureData {
   mateEnds: Uint32Array
   mateRefNames: string[]
   mateAssemblyNames: string[]
+  // True when at least one feature in this RPC response carried a CIGAR
+  // string. Used to gate CIGAR-related menu items so they don't appear when
+  // the resolved tier (coarse PIF, or a CIGAR-less PAF) has no per-row ops.
+  hasCigar: boolean
 }
 
 export interface FeatPos {

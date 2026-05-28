@@ -175,6 +175,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const mateRefNames: string[] = []
   const mateAssemblyNames: string[] = []
   const parsedCigars: Uint32Array[] = []
+  let hasCigar = false
   // Viewport culling: skip features entirely outside the visible area in
   // both views. A synteny parallelogram is visible when at least one of its
   // edges (top=view1, bottom=view2) overlaps the viewport.
@@ -280,6 +281,9 @@ export async function executeSyntenyFeaturesAndPositions({
     // alignment narrower than minCigarPxWidth=4 means the visitor never fires,
     // and addLocationMarkers operates on bp coords without needing the CIGAR.
     const cigarStr = f.get('CIGAR') as string | undefined
+    if (cigarStr) {
+      hasCigar = true
+    }
     const widthPx0 = topMaxX - topMinX
     const widthPx1 = botMaxX - botMinX
     const willNeedCigar =
@@ -314,6 +318,7 @@ export async function executeSyntenyFeaturesAndPositions({
     mateEnds: mateEndsArray.subarray(0, validCount),
     mateRefNames,
     mateAssemblyNames,
+    hasCigar,
   }
 
   // colorBy lives on the main thread; the worker emits geometry +

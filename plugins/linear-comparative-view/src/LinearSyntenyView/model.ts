@@ -74,7 +74,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * Level-of-detail tier selection for PIF adapters. 'auto' uses the
          * adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier
-         * (t/q); 'coarse' forces the merged-block tier (T/Q) when present.
+         * (t/q); 'coarse' forces the no-CIGAR tier (T/Q) when present.
          */
         lodMode: types.optional(
           types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
@@ -143,6 +143,50 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get drawCIGARMatchesOnly() {
         return self.cigarMode === 'matches'
+      },
+      /**
+       * #getter
+       * True if any track on any level has an adapter that declares the
+       * 'lod' capability. Used to gate the LOD menu — adapters without
+       * tiered storage (e.g. PAFAdapter, BlastTabularAdapter) have nothing
+       * to switch between.
+       */
+      get hasLodCapableAdapter() {
+        for (const level of self.levels) {
+          for (const track of level.tracks) {
+            if (track.adapterType.adapterCapabilities.includes('lod')) {
+              return true
+            }
+          }
+        }
+        return false
+      },
+      /**
+       * #getter
+       * True if any currently-loaded synteny display has at least one
+       * feature with a CIGAR. Used to gate CIGAR-related menu items —
+       * coarse-tier PIF files and CIGAR-less PAFs have nothing to show.
+       * Returns true while no data has loaded yet so the menu doesn't
+       * flicker between renders.
+       */
+      get hasCigarData() {
+        for (const level of self.levels) {
+          for (const display of level.linearSyntenyDisplays) {
+            if (display.featureData?.hasCigar) {
+              return true
+            }
+          }
+        }
+        // No display has reported data yet — keep the menu visible so it
+        // doesn't pop in/out across fetches.
+        for (const level of self.levels) {
+          for (const display of level.linearSyntenyDisplays) {
+            if (display.featureData) {
+              return false
+            }
+          }
+        }
+        return true
       },
     }))
     .views(self => ({
@@ -389,40 +433,48 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ]
               : []),
-            {
-              label: 'CIGAR display mode',
-              subMenu: (
-                [
-                  { label: 'Colorize indels', mode: 'full' },
-                  { label: "Don't colorize indels", mode: 'matches' },
-                  { label: "Don't draw CIGAR", mode: 'off' },
-                ] as const
-              ).map(({ label, mode }) => ({
-                label,
-                type: 'radio' as const,
-                checked: self.cigarMode === mode,
-                onClick: () => {
-                  self.setCigarMode(mode)
-                },
-              })),
-            },
-            {
-              label: 'Level of detail',
-              subMenu: (
-                [
-                  { label: 'Auto (scale with zoom)', value: 'auto' },
-                  { label: 'Fine (per-row CIGAR)', value: 'fine' },
-                  { label: 'Coarse (merged blocks)', value: 'coarse' },
-                ] as const
-              ).map(({ label, value }) => ({
-                label,
-                type: 'radio' as const,
-                checked: self.lodMode === value,
-                onClick: () => {
-                  self.setLodMode(value)
-                },
-              })),
-            },
+            ...(self.hasCigarData
+              ? [
+                  {
+                    label: 'CIGAR display mode',
+                    subMenu: (
+                      [
+                        { label: 'Colorize indels', mode: 'full' },
+                        { label: "Don't colorize indels", mode: 'matches' },
+                        { label: "Don't draw CIGAR", mode: 'off' },
+                      ] as const
+                    ).map(({ label, mode }) => ({
+                      label,
+                      type: 'radio' as const,
+                      checked: self.cigarMode === mode,
+                      onClick: () => {
+                        self.setCigarMode(mode)
+                      },
+                    })),
+                  },
+                ]
+              : []),
+            ...(self.hasLodCapableAdapter
+              ? [
+                  {
+                    label: 'Level of detail',
+                    subMenu: (
+                      [
+                        { label: 'Auto (scale with zoom)', value: 'auto' },
+                        { label: 'Fine (per-row CIGAR)', value: 'fine' },
+                        { label: 'Coarse (no CIGAR)', value: 'coarse' },
+                      ] as const
+                    ).map(({ label, value }) => ({
+                      label,
+                      type: 'radio' as const,
+                      checked: self.lodMode === value,
+                      onClick: () => {
+                        self.setLodMode(value)
+                      },
+                    })),
+                  },
+                ]
+              : []),
             {
               // Post-fetch feature filter — orthogonal to the LOD tier above.
               label: 'Filter by alignment span',
