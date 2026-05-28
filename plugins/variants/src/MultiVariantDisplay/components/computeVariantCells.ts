@@ -206,7 +206,7 @@ export function computeVariantCells({
         }
 
         for (let j = 0; j < numSources; j++) {
-          const { name, HP, sampleName } = sources[j]!
+          const { HP, sampleName } = sources[j]!
           let genotype: string | undefined
           let PS: string | undefined
           if (samp) {
@@ -238,7 +238,7 @@ export function computeVariantCells({
                 c === REFERENCE_COLOR,
                 featureIdx,
               )
-              renderedGenotypes[name] = genotype
+              renderedGenotypes[sampleName] = genotype
             }
           } else {
             addCell(
@@ -251,7 +251,7 @@ export function computeVariantCells({
               false,
               featureIdx,
             )
-            renderedGenotypes[name] = genotype
+            renderedGenotypes[sampleName] = genotype
           }
         }
       } else {
@@ -262,7 +262,7 @@ export function computeVariantCells({
         const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
 
         for (let j = 0; j < numSources; j++) {
-          const { name, HP } = sources[j]!
+          const { HP, sampleName } = sources[j]!
           const si = sampleIndices[j]!
           if (si < 0) {
             continue
@@ -290,7 +290,7 @@ export function computeVariantCells({
                 c === REFERENCE_COLOR,
                 featureIdx,
               )
-              renderedGenotypes[name] = gtStr
+              renderedGenotypes[sampleName] = gtStr
             }
           } else {
             addCell(
@@ -303,7 +303,7 @@ export function computeVariantCells({
               false,
               featureIdx,
             )
-            renderedGenotypes[name] = gtStr
+            renderedGenotypes[sampleName] = gtStr
           }
         }
       }
@@ -316,7 +316,7 @@ export function computeVariantCells({
         const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
 
         for (let j = 0; j < numSources; j++) {
-          const { name } = sources[j]!
+          const { sampleName } = sources[j]!
           const si = sampleIndices[j]!
           if (si < 0) {
             continue
@@ -372,7 +372,7 @@ export function computeVariantCells({
               c === REFERENCE_COLOR,
               featureIdx,
             )
-            renderedGenotypes[name] = genotypeStringFromRaw(
+            renderedGenotypes[sampleName] = genotypeStringFromRaw(
               callGt,
               si,
               ploidy,
@@ -388,7 +388,7 @@ export function computeVariantCells({
         }
 
         for (let j = 0; j < numSources; j++) {
-          const { name, sampleName } = sources[j]!
+          const { sampleName } = sources[j]!
           const genotype = samp[sampleName]
           if (genotype) {
             const c = getAlleleColor(
@@ -408,7 +408,7 @@ export function computeVariantCells({
                 c === REFERENCE_COLOR,
                 featureIdx,
               )
-              renderedGenotypes[name] = genotype
+              renderedGenotypes[sampleName] = genotype
             }
           }
         }

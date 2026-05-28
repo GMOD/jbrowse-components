@@ -157,8 +157,8 @@ function getFeatureUnderMouse(
   const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
   const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
   const info = regionCellData.featureGenotypeMap[featureId]!
-  const genotype = info.genotypes[sourceName]!
   const source = model.sourceMap?.[sourceName]
+  const genotype = info.genotypes[source?.sampleName ?? sourceName]!
   return {
     genotype,
     alleles: makeSimpleAltString(genotype, info.ref, info.alt),

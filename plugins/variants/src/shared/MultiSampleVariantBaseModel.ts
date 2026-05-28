@@ -683,32 +683,6 @@ export default function MultiSampleVariantBaseModelF(
           return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
         },
       }))
-      .views(self => ({
-        get featureNearestCenter() {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          const centerInfo = view.centerLineInfo
-          const features = self.featuresVolatile
-          if (!centerInfo || !features?.length) {
-            return undefined
-          }
-          const { coord, refName } = centerInfo
-          let bestFeature: Feature | undefined
-          let bestDist = Infinity
-          for (const f of features) {
-            if (f.get('refName') === refName) {
-              const start = f.get('start')
-              const end = f.get('end')
-              const mid = (start + end) / 2
-              const dist = Math.abs(mid - coord)
-              if (dist < bestDist) {
-                bestDist = dist
-                bestFeature = f
-              }
-            }
-          }
-          return bestFeature
-        },
-      }))
       .actions(self => ({
         sortByGenotype(featureId: string) {
           const sources = self.sourcesWithoutLayout
