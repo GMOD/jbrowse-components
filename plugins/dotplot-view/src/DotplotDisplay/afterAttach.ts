@@ -43,7 +43,8 @@ export function doAfterAttach(
           return
         }
         const regions = view.hview.dynamicBlocks.contentBlocks
-        const { adapterConfig, lodMode } = self
+        const { adapterConfig } = self
+        const { lodMode } = view
         const hViewSnap = makeViewSnap(view.hview)
         const vViewSnap = makeViewSnap(view.vview)
 

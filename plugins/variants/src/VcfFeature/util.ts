@@ -79,12 +79,8 @@ function formatGroupDescription(
   if (alts.every(isSymbolic)) {
     const descriptions = alts.map(a => {
       if (a === '<TRA>' && info?.CHR2 && info.END) {
-        const chr2 = Array.isArray(info.CHR2)
-          ? info.CHR2[0]
-          : info.CHR2
-        const end = Array.isArray(info.END)
-          ? info.END[0]
-          : info.END
+        const chr2 = Array.isArray(info.CHR2) ? info.CHR2[0] : info.CHR2
+        const end = Array.isArray(info.END) ? info.END[0] : info.END
         return `translocation ${chr2}:${end}`
       }
       return altTypeToSO[a] ?? a

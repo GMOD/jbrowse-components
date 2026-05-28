@@ -4,9 +4,9 @@ import { SV_SYMBOLIC_ALLELES, parseSvAlt } from '@jbrowse/sv-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export function makeFeaturePair(feature: Feature, alt?: string) {
-  const start = feature.get('start') as number
-  const refName = feature.get('refName') as string
-  const strand = feature.get('strand') as number
+  const start = feature.get('start')
+  const refName = feature.get('refName')
+  const strand = feature.get('strand')!
   const mate = feature.get('mate') as
     | { refName: string; start: number; end: number; mateDirection?: number }
     | undefined
@@ -20,7 +20,7 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
       refName,
       start,
       // symbolic alleles: arc spans start→end, so collapse the local end to start+1
-      end: parsed && isSymbolic ? start + 1 : (feature.get('end') as number),
+      end: parsed && isSymbolic ? start + 1 : feature.get('end'),
       strand,
       mateDirection: parsed?.joinDirection ?? 0,
     },

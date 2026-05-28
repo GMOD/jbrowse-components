@@ -152,14 +152,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * to switch between.
        */
       get hasLodCapableAdapter() {
-        for (const level of self.levels) {
-          for (const track of level.tracks) {
-            if (track.adapterType.adapterCapabilities.includes('lod')) {
-              return true
-            }
-          }
-        }
-        return false
+        return self.levels
+          .flatMap(l => l.tracks)
+          .some(t => t.adapterType.adapterCapabilities.includes('lod'))
       },
       /**
        * #getter
@@ -170,18 +165,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * flicker between renders.
        */
       get hasCigarData() {
-        let anyDataLoaded = false
-        for (const level of self.levels) {
-          for (const display of level.linearSyntenyDisplays) {
-            if (display.featureData?.hasCigar) {
-              return true
-            }
-            if (display.featureData) {
-              anyDataLoaded = true
-            }
-          }
-        }
-        return !anyDataLoaded
+        return self.levels
+          .flatMap(l => l.linearSyntenyDisplays)
+          .some(d => d.featureData?.hasCigar)
       },
     }))
     .views(self => ({
@@ -479,25 +465,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ]
               : []),
             {
-              // Post-fetch feature filter — orthogonal to the LOD tier above.
-              label: 'Filter by alignment span',
-              subMenu: (
-                [
-                  { label: 'No filter', value: 0 },
-                  { label: '100 kb', value: 100_000 },
-                  { label: '1 Mb', value: 1_000_000 },
-                  { label: '10 Mb', value: 10_000_000 },
-                ] as const
-              ).map(({ label, value }) => ({
-                label,
-                type: 'radio' as const,
-                checked: self.minAlignmentLength === value,
-                onClick: () => {
-                  self.setMinAlignmentLength(value)
-                },
-              })),
-            },
-            {
               label: 'Link views',
               type: 'checkbox',
               checked: self.linkViews,
@@ -702,6 +669,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers,
         overdrawPx,
         lodMode,
+        alpha,
+        minAlignmentLength,
+        colorBy,
+        opacityByIdentity,
         ...rest
       } = snap
       return {
@@ -711,6 +682,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
         ...(overdrawPx !== DEFAULT_OVERDRAW_PX ? { overdrawPx } : {}),
         ...(lodMode !== 'auto' ? { lodMode } : {}),
+        ...(alpha !== 0.2 ? { alpha } : {}),
+        ...(minAlignmentLength ? { minAlignmentLength } : {}),
+        ...(colorBy !== 'default' ? { colorBy } : {}),
+        ...(opacityByIdentity ? { opacityByIdentity } : {}),
       } as typeof snap
     })
 }

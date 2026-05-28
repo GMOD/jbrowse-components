@@ -6,7 +6,14 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-export const SV_SYMBOLIC_ALLELES = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
+export const SV_SYMBOLIC_ALLELES = [
+  '<TRA',
+  '<DEL',
+  '<INV',
+  '<INS',
+  '<DUP',
+  '<CNV',
+]
 
 /**
  * Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
