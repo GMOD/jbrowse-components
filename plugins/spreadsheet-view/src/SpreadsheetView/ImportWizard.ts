@@ -10,7 +10,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const IMPORT_SIZE_LIMIT = 100_000_000
 
-const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion'] as const
+export const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion'] as const
 const fileTypeParsers = {
   VCF: () =>
     import('./importAdapters/VcfImport.ts').then(r => r.parseVcfBuffer),
@@ -85,14 +85,6 @@ export default function stateModelFactory() {
       /**
        * #property
        */
-      hasColumnNameLine: true,
-      /**
-       * #property
-       */
-      columnNameLineNumber: 1,
-      /**
-       * #property
-       */
       selectedAssemblyName: types.maybe(types.string),
 
       /**
@@ -102,10 +94,6 @@ export default function stateModelFactory() {
       cachedFileLocation: types.frozen<FileLocation | undefined>(),
     })
     .volatile(() => ({
-      /**
-       * #volatile
-       */
-      fileTypes,
       /**
        * #volatile
        */
@@ -140,24 +128,6 @@ export default function stateModelFactory() {
        */
       get fileName() {
         return self.fileSource ? getFileSourceName(self.fileSource) : undefined
-      },
-
-      /**
-       * #getter
-       */
-      get requiresUnzip() {
-        const name = this.fileName
-        return typeof name === 'string' && name.endsWith('gz')
-      },
-
-      /**
-       * #method
-       */
-      isValidRefName(refName: string, assemblyName?: string) {
-        const { assemblyManager } = getSession(self)
-        return !assemblyName
-          ? false
-          : assemblyManager.isValidRefName(refName, assemblyName)
       },
 
       /**
@@ -231,15 +201,6 @@ export default function stateModelFactory() {
         const detected = name ? detectFileType(name) : undefined
         if (detected) {
           self.fileType = detected
-        }
-      },
-
-      /**
-       * #action
-       */
-      setColumnNameLineNumber(newnumber: number) {
-        if (newnumber > 0) {
-          self.columnNameLineNumber = newnumber
         }
       },
 

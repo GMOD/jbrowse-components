@@ -22,6 +22,7 @@ import {
 import { observer } from 'mobx-react'
 
 import TrackSelector from './TrackSelector.tsx'
+import { fileTypes } from '../ImportWizard.ts'
 
 import type { ImportWizardModel } from '../ImportWizard.ts'
 import type { AbstractRootModel } from '@jbrowse/core/util'
@@ -42,11 +43,12 @@ const ImportWizard = observer(function ImportWizard({
   const session = getSession(model)
   const { classes } = useStyles()
   const { assemblyNames, assemblyManager } = session
-  const { loading, fileType, fileSource, isReadyToOpen, fileTypes, error } =
-    model
-  const [selectedAssembly, setSelectedAssembly] = useState(assemblyNames[0])
+  const { loading, fileType, fileSource, isReadyToOpen, error } = model
+  const [selectedAssembly, setSelectedAssembly] = useState(
+    model.selectedAssemblyName ?? assemblyNames[0],
+  )
   const [selectorType, setSelectorType] = useState('custom')
-  const err = assemblyManager.get(selectedAssembly!)?.error || error
+  const err = assemblyManager.get(selectedAssembly!)?.error ?? error
   const rootModel = getRoot(model)
 
   return (
