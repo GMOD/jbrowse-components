@@ -11,7 +11,6 @@ import {
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -26,7 +25,7 @@ import {
   getNiceDomain,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
-import { observable } from 'mobx'
+import { autorun, observable  } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
 
@@ -303,7 +302,7 @@ export function stateModelFactory(
       },
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self as LinearManhattanDisplayModel, opts)
+        return renderSvg(self, opts)
       },
       // Identity encode — RPC result is the upload payload.
       startBackend(backend: ManhattanBackend) {

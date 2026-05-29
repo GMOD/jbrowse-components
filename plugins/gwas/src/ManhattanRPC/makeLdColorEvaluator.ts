@@ -1,5 +1,5 @@
-import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 import { posKey } from './ldToIndex.ts'
+import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 
 import type { LdToIndex } from './ldToIndex.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -14,7 +14,7 @@ export function makeLdColorEvaluator(
   refName: string,
 ): (feature: Feature) => number {
   return feature => {
-    const name = feature.get('name') as string | undefined
+    const name = feature.get('name')
     const key = posKey(refName, feature.get('start'))
     if (name === indexSnp || key === indexSnp) {
       return ldIndexColor

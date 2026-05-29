@@ -1,5 +1,5 @@
-import type { PlinkLDRecord } from '@jbrowse/ld-core'
 import type { Region } from '@jbrowse/core/util'
+import type { PlinkLDRecord } from '@jbrowse/ld-core'
 
 // Both PlinkLDAdapter and PlinkLDTabixAdapter expose this — structural typing
 // keeps the GWAS worker decoupled from the variants plugin (only the record

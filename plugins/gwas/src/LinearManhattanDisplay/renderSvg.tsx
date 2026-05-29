@@ -12,16 +12,31 @@ import {
 
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 
-import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
+import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
+import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 
+// Duck-typed model contract: importing the full LinearManhattanDisplayModel
+// here would close a type cycle (factory return type → renderSvg action →
+// model instance → factory return type), so we depend only on the fields read.
+interface RenderSvgModel {
+  id: string
+  height: number
+  ticks?: YScaleTicks
+  rpcDataMap: ReadonlyMap<number, ManhattanRpcResult>
+  renderState?: ManhattanRenderState
+  error: unknown
+  regionTooLarge: boolean
+}
+
 export async function renderSvg(
-  model: LinearManhattanDisplayModel,
+  model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
