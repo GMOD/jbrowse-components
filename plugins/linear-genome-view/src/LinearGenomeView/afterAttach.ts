@@ -87,34 +87,18 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
           }
 
           if (init.tracks) {
-            const idsNotFound: string[] = []
+            // showTrack funnels through showTrackGeneric, which surfaces any
+            // failure (unresolved id, bad config, etc) as its own snackbar
             for (const t of init.tracks) {
-              try {
-                if (typeof t === 'string') {
-                  self.showTrack(t)
-                } else {
-                  self.showTrack(
-                    t.trackId,
-                    t.trackSnapshot ?? {},
-                    t.displaySnapshot ?? {},
-                  )
-                }
-              } catch (e) {
-                const trackId = typeof t === 'string' ? t : t.trackId
-                if (/Could not resolve identifier/.exec(`${e}`)) {
-                  idsNotFound.push(trackId)
-                } else {
-                  throw e
-                }
+              if (typeof t === 'string') {
+                self.showTrack(t)
+              } else {
+                self.showTrack(
+                  t.trackId,
+                  t.trackSnapshot ?? {},
+                  t.displaySnapshot ?? {},
+                )
               }
-            }
-            if (idsNotFound.length) {
-              session.notifyError(
-                `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-                new Error(
-                  `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-                ),
-              )
             }
           }
 

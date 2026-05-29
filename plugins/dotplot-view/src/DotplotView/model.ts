@@ -870,22 +870,16 @@ export default function stateModelFactory(pm: PluginManager) {
                 }
                 initRunning = true
 
-                const session = getSession(self)
-
                 try {
                   // Set assembly names from init
                   const assemblyNames = init.views.map(v => v.assembly)
                   self.setAssemblyNames(assemblyNames[0]!, assemblyNames[1]!)
 
-                  // Show tracks
+                  // Show tracks; showTrack surfaces its own failures via
+                  // showTrackGeneric's notifyError snackbar
                   if (init.tracks) {
                     for (const trackId of init.tracks) {
-                      try {
-                        self.showTrack(trackId)
-                      } catch (e) {
-                        console.error(e)
-                        session.notifyError(`${e}`, e)
-                      }
+                      self.showTrack(trackId)
                     }
                   }
 

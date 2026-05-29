@@ -49,7 +49,7 @@ test('nonexist', async () => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:6,000..7,000')
   }, delay)
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
-  await findByText(/Could not resolve identifiers: nonexist/)
+  await findByText(/Could not resolve identifier "nonexist"/)
 }, 60000)
 
 test('shows whole genome when no loc is specified', async () => {

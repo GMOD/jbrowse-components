@@ -62,6 +62,13 @@ code (toggle/hide/find/menus) never has to defend against a config that throws:
 `notifyError` is available to the first two because `SnackbarModel` is composed
 into `BaseSessionModel`.
 
+`showTrackGeneric` catches its own failures and returns `undefined` — it does
+**not** throw. Callers must not wrap `showTrack`/`showTrackGeneric` in a
+try/catch that re-`notifyError`s: that catch is dead (nothing throws) and would
+double-notify. Just call it in a loop and let the choke point report. A
+surrounding try is only legitimate when it guards *other* work (e.g.
+`navToLocString`).
+
 ### Reference resolution
 
 Track and display state models hold their config via `ConfigurationReference`.
