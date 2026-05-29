@@ -19,8 +19,8 @@ sequence together for you. Options:
   UTR and CDS highlighted
 - **Genomic w/ full introns +/- Nbp up+down stream** — the above plus N bases
   upstream and downstream (shown in light red)
-- **Genomic w/ Nbp intron** — spliced gene sequence keeping N bases around each
-  splice site
+- **Genomic w/ Nbp intron** — the exon sequence plus N intronic bases flanking
+  each splice site
 - **Genomic w/ Nbp intron +/- Nbp up+down stream** — combines the
   upstream/downstream extension with the splice-site flanks
 

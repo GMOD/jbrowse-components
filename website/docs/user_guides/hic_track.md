@@ -10,8 +10,8 @@ of genomic regions that are physically co-located in the nucleus. JBrowse
 renders these as a triangular contact matrix where color intensity indicates
 contact frequency — brighter means more interactions.
 
-JBrowse reads `.hic` files produced by Juicer, Juicebox, and compatible
-pipelines, using the hic-straw module.
+JBrowse reads `.hic` files produced by Juicer and compatible pipelines, via the
+hic-straw module.
 
 ## Loading a Hi-C track
 
@@ -21,7 +21,7 @@ triangular contact matrix below the chromosome ruler.
 
 ## Reading the contact matrix
 
-<Figure caption="Hi-C contact matrix for a region of hg19 (~chr19:50–60 Mb). The diagonal (brightest red strip) represents self-interactions. Triangular blocks of elevated signal along the diagonal are topologically associating domains (TADs) — genomic regions whose loci contact each other more than they contact flanking regions. Off-diagonal bright spots are chromatin loops connecting specific pairs of loci." src="/img/hic_track.png" />
+<Figure caption="Hi-C contact matrix for a region of hg19 (~chr19:50–60 Mb). The diagonal (brightest red strip) represents self-interactions." src="/img/hic_track.png" />
 
 Key features to interpret:
 

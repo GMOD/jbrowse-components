@@ -42,8 +42,7 @@ lets you:
 - Add and edit connections
 
 All changes are written to the JBrowse config file (usually `config.json`). This
-only works while the `admin-server` is running — it is **not meant for
-production use**.
+only works while the `admin-server` is running.
 
 To start the `admin-server`, navigate into your JBrowse 2 directory and run:
 
@@ -96,8 +95,8 @@ assembly manager.
 
 ## Adding a track
 
-To add a new track or connection, you can use the menu bar in the app to open
-the form for adding a track `File > Open Track`:
+To add a new track or connection, you can open the Add Track form from the menu
+bar in the app:
 
 <Figure caption="JBrowse 2 file menu with the 'Add track' form" src="/img/add_track_form.png"/>
 
@@ -134,8 +133,7 @@ index file explicitly.
 
 ### Editing a track
 
-First, open a Linear Genome View using the navigation bar
-(`File > Add > Linear Genome View`), and click on the "Select Tracks" button.
+First, open a Linear Genome View, and click on the "Select Tracks" button.
 
 The configuration settings are accessible by clicking on the ellipses by each
 track.
@@ -150,8 +148,7 @@ value for a given track.
 
 It is also possible to use the graphical admin server to set the default session
 of your JBrowse 2 instance. This is the session that will appear when JBrowse 2
-is first visited. To do so, open the form to set the default session
-(`Admin > Set default session`):
+is first visited. To do so, open the Set default session form (Admin menu):
 
 <Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session." src="/img/default_session_form.png"/>
 
@@ -162,14 +159,3 @@ session, or any of your previously saved sessions.
 
 There are a number of additional features for configuring JBrowse 2. Make sure
 to refer to the [config guide](/docs/config_guide) for more topics.
-
-## Conclusion
-
-This guide showed how to launch the `admin-server` in the JBrowse CLI to perform
-graphical configuration of your application. Specifically, we looked at how to
-access and use the assembly manager, as well as how to access the configuration
-editor for tracks. Importantly, all tracks have different configuration options
-available in the configuration editor.
-
-Make sure to take a look at any tracks you add to JBrowse 2 that you might want
-to further configure!

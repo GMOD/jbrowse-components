@@ -43,8 +43,8 @@ clusters of soft-clipped bases often mark a breakpoint.
 
 The pileup can be re-ordered so that reads crossing **the center line** of the
 view are grouped by a specific attribute — base pair, read strand, mapping
-quality, or BAM tag. The center line is the reference point for the sort, so
-turning it on (next section) makes it much clearer what's happening.
+quality, or BAM tag. Reads are grouped by their value at the view's center line.
+Showing the center line (next section) makes the sort reference point visible.
 
 ### Showing the center line
 
@@ -93,7 +93,7 @@ variants. See IGV's
 [paired-end alignments guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/#pair-orientation)
 for a reference of which orientation patterns map to which colors.
 
-<Figure caption="An inverted duplication. Green arrows are reads pointing in opposite directions (--&gt; &lt;--), characteristic of tandem duplication; blue arrows point in the same direction (--&gt; --&gt;), characteristic of inversion." src="/img/inverted_duplication.png" />
+<Figure caption="An inverted duplication, where pair-orientation coloring highlights reads whose mates point in unexpected directions. See the SV visualization guide for the full color-to-orientation table." src="/img/inverted_duplication.png" />
 
 ### Sashimi-style arcs
 
@@ -102,7 +102,7 @@ Sashimi-style arcs are drawn automatically over spliced alignments (reads with
 
 <Figure caption="Sashimi-style arcs over spliced alignments. Drawn by default for both short-read (RNA-seq) and long-read (Iso-Seq) data." src="/img/alignments_track_arcs.png" />
 
-The SNPCoverage options in the track menu can turn them off.
+They can be turned off from the track menu.
 
 ### Insertion and clipping indicators
 
@@ -118,19 +118,10 @@ prominent with long reads, which span larger insertions.
 
 <Figure caption="Large-insertion indicator from long reads; 'show soft clipping' is also enabled on a short-read track for comparison." src="/img/insertion_indicators.png" />
 
-The indicators and counts can be toggled independently from the SNPCoverage
-options in the track menu.
+The indicators and counts can be toggled independently from the track menu.
 
-#### How the indicator threshold works
-
-A triangle indicator is drawn when an event (insertion, soft clip, or hard clip)
-exceeds a depth-dependent threshold: about 80% at low coverage (depth below 10),
-interpolating down to about 30% at high coverage (depth 30 and above). This
-avoids spurious indicators when only a few reads are present. The depth used is
-`max(coverageDepth[pos - 1], coverageDepth[pos])` — the larger of the two bases
-flanking the interbase position. This correctly handles cliffs where reads pile
-up on one side and then stop, such as when many reads end with soft clipping at
-the same boundary. The tooltip percentage uses the same local depth.
+The threshold scales with depth (roughly 80% at low coverage down to ~30% at
+high coverage) to suppress spurious indicators.
 
 ### Arc display
 

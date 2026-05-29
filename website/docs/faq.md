@@ -62,8 +62,8 @@ the folder to your web server (e.g. `/var/www/html/`) or Amazon S3.
 
 If you use Django, put jbrowse-web in the static resources folder, but serve
 data files from a separate server (Django's static resources folder won't serve
-them correctly). See
-https://github.com/cmdcolin/django-jbrowse2-nonworking-example for notes.
+them correctly). For some informal troubleshooting notes, see
+https://github.com/cmdcolin/django-jbrowse2-nonworking-example.
 
 Note that the server that you use should support byte-range requests (e.g. the
 [Range HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range))
@@ -142,8 +142,8 @@ You can use the command, after installing:
 jbrowse upgrade /path/to/your/jbrowse2
 ```
 
-This will download the latest release from github and overwrite it onto your
-jbrowse-web instance.
+This downloads the latest release from GitHub and overwrites your jbrowse-web
+instance.
 
 If you've manually downloaded jbrowse-web, the newest releases can be found
 [here](https://github.com/GMOD/jbrowse-components/releases).
@@ -213,19 +213,10 @@ making a color callback.
 
 ### Adding color callbacks in the GUI
 
-In brief, to add a configuration callback to a track using the GUI, perform the
-following steps:
-
-1. On the track you intend to color, click on the three vertical dots '...' on
-   the right side of the track label
-2. Click "Settings" (if this option is greyed out, copy the track with "Copy
-   Track", then open up the track under "Session Tracks" and repeat steps 1-2)
-3. Scroll down to the "display 1 renderer" heading (this is typically the
-   display you want to edit, if not scroll to display 2)
-4. Click on the circle to the right of the color you'd like to change
-5. In this text box, enter in the [Jexl](https://github.com/TomFrost/Jexl)
-   callback for the feature coloration, e.g.
-   `get(feature,'strand') == -1 ? 'red' : 'blue'`
+To add a color callback in the GUI, open the track's settings and set the color
+callback on the renderer/display. The callback is a
+[Jexl](https://github.com/TomFrost/Jexl) expression, e.g.
+`get(feature,'strand') == -1 ? 'red' : 'blue'`.
 
 ### Adding color callbacks via the command line
 
@@ -257,7 +248,7 @@ faceted track selector:
   ...
   "metadata": {
     "origin": "public",
-    "data_added": "2024-02-20"
+    "date_added": "2024-02-20"
   }
 }
 ```
@@ -268,8 +259,8 @@ You can set up your server to serve zipped files. Most cloud-based services,
 like AWS Amplify and AWS CloudFront, already do this automatically. However, for
 Apache and Nginx, you need to configure them manually.
 
-For Nginx, you can enable gzip compression by editing the config.template. See
-for instance for a set of reasonable nginx defaults:
+For Nginx, enable gzip compression in your server config. See this gist for
+reasonable defaults:
 https://gist.github.com/sydcanem/3e00c09b3361927b2fd1#file-nginx-gzip-conf
 
 ```
@@ -361,7 +352,8 @@ JBrowse uses "stats estimation" rules to decide when to show this message:
 If you need to customize your particular track, you can set config variables on
 the "display" section of your config
 
-- `maxFeatureScreenDensity` - number of features times bpPerPx
+- `maxFeatureScreenDensity` - the maximum number of features per pixel allowed
+  before the "zoom in to see features" message is shown (default 0.3)
 - `fetchSizeLimit` - this config variable exists on the adapters (can increase
   size limit)
 

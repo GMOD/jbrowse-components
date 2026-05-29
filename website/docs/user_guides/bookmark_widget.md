@@ -9,7 +9,7 @@ The bookmark widget stores genomic regions for easy navigation. Each bookmark is
 a single region (chromosome, start, end); clicking one navigates a linear genome
 view to it.
 
-<Figure caption="The bookmark widget can be accessed via the Tools menu, or in the view menu 'Bookmarks' submenu." src="/img/bookmark_widget_open.png"/>
+<Figure caption="The bookmark widget can be accessed from the Tools menu, or from a view's 'Bookmarks' menu." src="/img/bookmark_widget_open.png"/>
 
 The dropdown menu above the table of bookmarks can be used to view a subset of
 all assemblies with bookmarks.
@@ -48,12 +48,12 @@ and displayed on the LGV via highlights.
 
 New bookmarks are assigned a highlight color by default. You can change it
 directly in the Highlight field, or change multiple bookmarks in bulk via the
-hamburger menu → "Edit colors".
+"Edit colors" option in the bookmark widget's menu.
 
 <Figure caption="Highlight colors can be modified in the bookmarks widget." src="/img/bookmark_widget_edit_colors.png"/>
 
-Highlights and labels can be toggled app-wide (via "Edit colors" menu) or
-per-view (via the view menu → "Bookmarks").
+Highlights and labels can be toggled app-wide (via the "Edit colors" dialog) or
+per-view (via a view's "Bookmarks" menu).
 
 ### Sharing bookmarks
 

@@ -26,12 +26,12 @@ The following formats are supported:
 
 <Figure caption="The import form for getting started with the SV inspector." src="/img/sv_inspector_importform.png" />
 
-### Sources of data for SV inspector
+### What the SV inspector is good for
 
-Best for long-range SV records — VCF entries with `SVTYPE=BND` (breakends; the
-VCF-spec way to encode translocations) or the caller-specific `SVTYPE=TRA` used
-by some tools. Single-locus deletions and duplications load fine but don't show
-up usefully in the circular overview.
+The SV inspector is best for long-range SV records — VCF entries with
+`SVTYPE=BND` (breakends; the VCF-spec way to encode translocations) or the
+caller-specific `SVTYPE=TRA` used by some tools. Single-locus deletions and
+duplications load fine but don't show up usefully in the circular overview.
 
 Compatible variant callers:
 
@@ -76,7 +76,8 @@ to open the breakpoint split view for that variant.
 
 ### Loading alignment tracks
 
-The breakpoint split view opens with empty top and bottom views. Add alignment
+The breakpoint split view is two stacked linear genome views showing the two
+breakpoint regions. It opens with empty top and bottom views. Add alignment
 tracks to both views using their track selectors (the tracks button in each view
 header). Read arcs and splines connecting supporting reads then appear
 automatically.

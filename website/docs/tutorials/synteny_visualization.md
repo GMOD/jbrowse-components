@@ -57,8 +57,9 @@ passed to `add-assembly`:
 jbrowse add-track alignment.paf -a query,reference --out $OUT --load copy
 ```
 
-**Important:** Assembly order in `-a` must match minimap2 argument order:
-`minimap2 reference.fa query.fa` → `add-track -a query,reference`.
+**Important:** the `-a` order is the **reverse** of the minimap2 argument order
+— the query assembly comes first: `minimap2 reference.fa query.fa` →
+`add-track -a query,reference`.
 
 ## Dotplot view
 

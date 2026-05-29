@@ -31,8 +31,12 @@ npm install -g @jbrowse/cli
 jbrowse --version
 ```
 
-:::note To avoid a global install, replace `jbrowse` with `npx @jbrowse/cli` in
-any command below. :::
+:::note
+
+To avoid a global install, replace `jbrowse` with `npx @jbrowse/cli` in any
+command below.
+
+:::
 
 ## Download JBrowse 2
 
@@ -154,17 +158,23 @@ jbrowse add-assembly grape.fa --load copy -n grape --out /var/www/html/jbrowse
 jbrowse add-assembly peach.fa --load copy -n peach --out /var/www/html/jbrowse
 ```
 
-Note: `--assemblyNames` order is **reversed** from the `minimap2` argument
-order. If minimap2 was run as `minimap2 grape.fa peach.fa`, load with
+Note: `--assemblyNames` order is `query,target` — the **reverse** of the
+`minimap2` argument order (`minimap2 target query`). For
+`minimap2 grape.fa peach.fa`, peach is the query, so load with
 `--assemblyNames peach,grape`:
 
 ```bash
 jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy --out /var/www/html/jbrowse
 ```
 
-The `-cx asm20` preset is appropriate for cross-species comparisons (~5%
-divergence). Use `asm5` for same-species or `asm10` for moderately diverged
-strains. See the [minimap2 docs](https://github.com/lh3/minimap2) for details.
+To sidestep the ordering question, you can instead set the named `queryAssembly`
+and `targetAssembly` fields on the adapter in `config.json` (see the
+[synteny track config guide](/docs/config_guides/synteny_track)).
+
+The `-cx asm20` preset suits divergent / cross-species comparisons (up to ~20%
+divergence). Use `asm5` for closely related assemblies (up to ~5%) or `asm10`
+for moderately diverged ones. See the
+[minimap2 docs](https://github.com/lh3/minimap2) for details.
 
 ## Indexing feature names for searching
 
@@ -175,7 +185,7 @@ jbrowse text-index --out /var/www/html/jbrowse
 ```
 
 This indexes GFF3Tabix and VCFTabix tracks. Once complete, names can be typed
-directly into the LGV search box. See the
+directly into the location search box. See the
 [text-index docs](/docs/cli#jbrowse-text-index) and
 [FAQ](/docs/faq#text-searching) for more.
 

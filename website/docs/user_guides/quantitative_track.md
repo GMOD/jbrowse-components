@@ -43,8 +43,8 @@ The **Autoscale type** option controls the Y-axis range:
 
 - **Scale type** — switch the Y axis between linear and log scaling; log is
   useful when signal spans several orders of magnitude
-- **Resolution** — manually increase or decrease the data resolution; JBrowse
-  auto-selects resolution based on view width but you can override it
+- **Resolution** — JBrowse auto-selects resolution from the view width; use this
+  to override it
 - **Set min/max score** — pin the Y axis to specific values for side-by-side
   comparison across samples
 

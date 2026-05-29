@@ -22,8 +22,8 @@ can edit colors and ordering from the track menu.
 
 <Figure caption="The color/arrangement editor lets you change subtrack colors and reorder them in the row-based layouts." src="/img/multiwig/multi_colorselect.png" />
 
-An outlier on one subtrack can blow out the shared Y axis. "Autoscale type →
-Local +/- 3SD" clips to three standard deviations of the visible data, which
+An outlier on one subtrack can blow out the shared Y axis. The "Local ± 3σ"
+autoscale type clips to three standard deviations of the visible data, which
 usually gives a more readable view. You can also pin the min and max from the
 track menu.
 
@@ -54,9 +54,9 @@ subtrack per modification type.
 ### Generating the file
 
 ```bash
-modkit pileup sample.bam output.bed --ref reference.fa --preset traditional
-bgzip output.bed
-tabix -p bed output.bed.gz
+modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
+bgzip output.bedmethyl
+tabix -p bed output.bedmethyl.gz
 ```
 
 `--preset traditional` produces 5mC calls (5hmC is combined into the 5mC
@@ -79,11 +79,11 @@ detects the `.bedmethyl.gz` extension and selects **BedTabixAdapter** and
   "adapter": {
     "type": "BedTabixAdapter",
     "bedGzLocation": {
-      "uri": "https://yourhost/sample_modkit.bed.gz"
+      "uri": "https://yourhost/sample_modkit.bedmethyl.gz"
     },
     "index": {
       "location": {
-        "uri": "https://yourhost/sample_modkit.bed.gz.tbi"
+        "uri": "https://yourhost/sample_modkit.bedmethyl.gz.tbi"
       }
     }
   }

@@ -1,12 +1,11 @@
 ---
 id: config_guide
-title: Introduction - Config guide
+title: Config guide
 toplevel: true
 ---
 
-The following guide provides comprehensive information regarding the anatomy and
-usage of the `config.json` file that is critical for running a JBrowse 2
-session.
+This guide covers the structure and usage of the `config.json` file that drives
+a JBrowse 2 session.
 
 ## Getting started
 

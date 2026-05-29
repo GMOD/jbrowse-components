@@ -9,6 +9,10 @@ The in-app plugin store installs community plugins into the current session.
 Plugins can add new track types, view types, data adapters, custom menu items,
 and more.
 
+You can browse and search the available plugins, which are drawn from the public
+plugin store. To write your own plugin, see the
+[developer guide](/docs/developer_guide).
+
 Where the install persists depends on the context:
 
 - **web session** — saved into the session and travels with the share link

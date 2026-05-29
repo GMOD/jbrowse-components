@@ -12,9 +12,8 @@ segments; translocations and rearrangements appear as off-diagonal blocks.
 
 ### Opening a dotplot view
 
-1. Navigate on the header bar `Add` → `Dotplot view`
-2. Select the genome assemblies of interest
-3. Optionally, add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
+1. Launch a new Dotplot view, then select the two assemblies to compare
+2. Optionally, add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
    .anchors.simple (MCScan) file
 
 <Figure caption="Adding a new dotplot or synteny view via the menubar." src="/img/dotplot_menu.png" />
@@ -22,8 +21,6 @@ segments; translocations and rearrangements appear as off-diagonal blocks.
 <Figure caption="Screenshot of the import form for a dotplot or synteny view. You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
 
 <Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes. Diagonal streaks are syntenic blocks where the two genomes are collinear. Off-diagonal blocks indicate chromosomal rearrangements; reverse-diagonal segments indicate inversions." src="/img/dotplot.png" />
-
-<Figure caption="Linear synteny view of the grape vs peach genome generated from the same PAF file as the dotplot. Colored ribbons connect collinear blocks between the two assemblies — red ribbons are forward-strand alignments, blue are inverted. The alignment depth and extent of synteny are clearer at this scale than in the dotplot." src="/img/linear_synteny.png" />
 
 ### Opening a synteny view from a dotplot view
 

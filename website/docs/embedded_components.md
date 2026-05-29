@@ -31,12 +31,12 @@ React component.
 
 Bundler examples for `@jbrowse/react-app2`:
 
-| Bundler   | Demo                                            | Source code                                                             | Note                                                                                                                     |
-| --------- | ----------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| next.js   | [demo](https://jbrowse.org/demos/app-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-app-nextjs-demo)    | Uses next.js. Currently is hardcoded to use /demos/app-nextjs/ as sub-uri, update next.config.js to customize as needed. |
-| vite      | [demo](https://jbrowse.org/demos/app-vite)      | [source code](https://github.com/GMOD/jbrowse-react-app-vite-demo)      | Uses vite. This demo was updated to utilize the webworkers in 2024                                                       |
-| rsbuild   | [demo](https://jbrowse.org/demos/app-rsbuild)   | [source code](https://github.com/GMOD/jbrowse-react-app-rsbuild-demo)   | Uses rsbuild (https://rsbuild.dev/)                                                                                      |
-| vanillajs | [demo](https://jbrowse.org/demos/app-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-app-vanillajs-demo) |                                                                                                                          |
+| Bundler   | Demo                                            | Source code                                                             | Note                                                                                         |
+| --------- | ----------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| next.js   | [demo](https://jbrowse.org/demos/app-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-app-nextjs-demo)    | Hardcoded to use /demos/app-nextjs/ as sub-uri, update next.config.js to customize as needed |
+| vite      | [demo](https://jbrowse.org/demos/app-vite)      | [source code](https://github.com/GMOD/jbrowse-react-app-vite-demo)      | Includes webworker support                                                                   |
+| rsbuild   | [demo](https://jbrowse.org/demos/app-rsbuild)   | [source code](https://github.com/GMOD/jbrowse-react-app-rsbuild-demo)   | See https://rsbuild.dev/                                                                     |
+| vanillajs | [demo](https://jbrowse.org/demos/app-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-app-vanillajs-demo) |                                                                                              |
 
 ## @jbrowse/react-linear-genome-view2
 
@@ -49,12 +49,12 @@ A single linear genome view as an npm-installable React component.
 
 Bundler examples for `@jbrowse/react-linear-genome-view2`:
 
-| Bundler    | Demo                                            | Source code                                                                            | Note                                                                                                                                                                                      |
-| ---------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| vite       | [demo](https://jbrowse.org/demos/lgv-vite)      | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vite-demo)      | Uses vite. This demo was updated to utilize webworkers in 2024                                                                                                                            |
-| rsbuild    | [demo](https://jbrowse.org/demos/lgv-rsbuild)   | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-rsbuild-demo)   | Uses rsbuild (https://rsbuild.dev/)                                                                                                                                                       |
-| next.js    | [demo](https://jbrowse.org/demos/lgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-nextjs-demo)    | Uses next.js. Currently is hardcoded to use /demos/lgv-nextjs/ as sub-uri, update next.config.js to customize as needed. This demo was updated to use webworkers in 2024                  |
-| vanilla js | [demo](https://jbrowse.org/demos/lgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, and doesn't require any transpilation or bundling. see also dev tutorial here https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/ |
+| Bundler    | Demo                                            | Source code                                                                            | Note                                                                                                                                                  |
+| ---------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| vite       | [demo](https://jbrowse.org/demos/lgv-vite)      | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vite-demo)      | Includes webworker support                                                                                                                            |
+| rsbuild    | [demo](https://jbrowse.org/demos/lgv-rsbuild)   | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-rsbuild-demo)   | See https://rsbuild.dev/                                                                                                                              |
+| next.js    | [demo](https://jbrowse.org/demos/lgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-nextjs-demo)    | Hardcoded to use /demos/lgv-nextjs/ as sub-uri, update next.config.js to customize as needed. Includes webworker support                              |
+| vanilla js | [demo](https://jbrowse.org/demos/lgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, no transpilation or bundling needed. See also the [dev tutorial](/docs/tutorials/embed_linear_genome_view) |
 
 ## @jbrowse/react-circular-genome-view2
 
@@ -67,7 +67,7 @@ A single JBrowse 2 circular view as an npm-installable React component.
 
 Bundler examples for `@jbrowse/react-circular-genome-view2`:
 
-| Syntax     | Demo                                            | Source code                                                                              | Note                                                                                         |
-| ---------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| vanilla js | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, and doesn't require any transpilation or bundling |
-| nextjs     | [demo](https://jbrowse.org/demos/cgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-nextjs-demo)    | Uses next.js                                                                                 |
+| Bundler    | Demo                                            | Source code                                                                              | Note                                                                           |
+| ---------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| vanilla js | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, no transpilation or bundling needed |
+| nextjs     | [demo](https://jbrowse.org/demos/cgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-nextjs-demo)    |                                                                                |

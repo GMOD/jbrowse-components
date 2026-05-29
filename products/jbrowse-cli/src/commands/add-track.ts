@@ -61,7 +61,8 @@ export async function run(args?: string[]) {
     assemblyNames: {
       type: 'string',
       short: 'a',
-      description: 'Assembly name or names for track as comma separated string',
+      description:
+        'Assembly name or names for track as comma separated string. For synteny tracks the order is query,target (reverse of minimap2/nucmer argument order)',
     },
     category: {
       type: 'string',

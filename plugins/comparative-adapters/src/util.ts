@@ -6,6 +6,11 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
+// assemblyNames is ordered [query, target]: index 0 is the PAF/delta/chain
+// query, index 1 is the target/reference. This is the reverse of the order
+// minimap2/nucmer take their inputs. The queryAssembly/targetAssembly config
+// fields are an explicit alternative to the positional array. Do not reorder
+// without updating PAFAdapter and the synteny docs.
 export function getAssemblyNamesFromConf(adapter: BaseFeatureDataAdapter) {
   const assemblyNames = adapter.getConf('assemblyNames') as string[]
   if (assemblyNames.length === 0) {

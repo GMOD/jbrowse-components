@@ -40,13 +40,20 @@ minimap2 -cx asm5 target.fa query.fa > alignment.paf
 
 ```bash
 jbrowse add-track alignment.paf \
-  --assemblyNames target,query \
+  --assemblyNames query,target \
   --load copy \
   --out /var/www/html/jbrowse2
 ```
 
-The first assembly name is the **target** (reference/row axis) and the second is
-the **query** (column axis in dotplot, second row in linear synteny).
+The first assembly name is the **query** and the second is the **target** — this
+is the **reverse** of the minimap2 argument order. minimap2 takes
+`target.fa query.fa`, but `--assemblyNames` takes `query,target`. The query is
+drawn on the horizontal axis of the dotplot (top row in linear synteny); the
+target is on the vertical axis (bottom row).
+
+To avoid the ordering confusion entirely, you can set the named `queryAssembly`
+and `targetAssembly` fields on the adapter instead of the positional
+`assemblyNames` array (see [Adapter reference](#adapter-reference) below).
 
 This produces a config entry like:
 
@@ -54,26 +61,27 @@ This produces a config entry like:
 {
   "type": "SyntenyTrack",
   "trackId": "alignment",
-  "assemblyNames": ["target", "query"],
+  "assemblyNames": ["query", "target"],
   "name": "alignment",
   "adapter": {
     "type": "PAFAdapter",
     "pafLocation": { "uri": "alignment.paf" },
-    "assemblyNames": ["target", "query"]
+    "assemblyNames": ["query", "target"]
   }
 }
 ```
 
-See
-[adding a synteny track from a PAF file](/docs/quickstart_web/#adding-a-synteny-track-from-a-paf-file)
+See [adding a synteny track from a PAF file](/docs/quickstart_web/#synteny-paf)
 for more CLI options.
 
 ## Adapter reference
 
-All adapters accept `assemblyNames` as a two-element array
-`["target", "query"]`, or equivalently the `targetAssembly` and `queryAssembly`
-fields separately. All file locations accept gzip-compressed input and are read
-into memory in full (none of these formats are indexed).
+All adapters accept `assemblyNames` as a two-element array `["query", "target"]`
+(query first), or equivalently the `queryAssembly` and `targetAssembly` fields
+separately. Query first is the reverse of the order minimap2/nucmer take their
+inputs (`target query`), so double-check it. All file locations accept
+gzip-compressed input and are read into memory in full (none of these formats
+are indexed).
 
 ### PAFAdapter
 
@@ -83,7 +91,7 @@ Used for `.paf` files from minimap2, wfmash, and similar aligners.
 {
   "type": "PAFAdapter",
   "pafLocation": { "uri": "alignment.paf.gz" },
-  "assemblyNames": ["target", "query"]
+  "assemblyNames": ["query", "target"]
 }
 ```
 
@@ -103,7 +111,7 @@ nucmer target.fa query.fa -p alignment
 {
   "type": "DeltaAdapter",
   "deltaLocation": { "uri": "alignment.delta.gz" },
-  "assemblyNames": ["target", "query"]
+  "assemblyNames": ["query", "target"]
 }
 ```
 
@@ -118,7 +126,7 @@ or liftOver pipelines.
 {
   "type": "ChainAdapter",
   "chainLocation": { "uri": "alignment.chain.gz" },
-  "assemblyNames": ["target", "query"]
+  "assemblyNames": ["query", "target"]
 }
 ```
 

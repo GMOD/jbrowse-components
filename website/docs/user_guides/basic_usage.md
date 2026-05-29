@@ -77,7 +77,7 @@ that can also be used to access the "Add a track" form.
 
 In the "Add a track" form, you can provide a URL or open a file from your local
 machine. Some formats require an index (BAM/CRAM and tabix-indexed files like
-VCF/GFF/BED do; BigWig does not). For remote files, the index is inferred
+VCF/GFF/BED do; BigWig/BigBed do not). For remote files, the index is inferred
 automatically when the filename follows standard conventions (e.g. `file.bam` →
 `file.bam.bai`), but must be supplied manually for local files or non-standard
 names.
@@ -119,10 +119,8 @@ The following file formats are supported in core JBrowse 2:
 Additional data formats can be supported via plugins; check out the
 [plugin store](/plugin_store).
 
-For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
-Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
-as `filename+'.bai'` for example, but if it is different from this, make sure to
-specify the index file explicitly.
+Index types: BAM accepts BAI or CSI; CRAM requires CRAI; tabix files accept TBI
+or CSI.
 
 :::info Note
 
@@ -142,9 +140,8 @@ You can undo any action via Tools → Undo/Redo, or with the keyboard shortcuts
 On JBrowse Web, the "Share" button in the main menu bar generates a URL you can
 send to other users.
 
-The browser's address bar URL does not encode the full session state, so copying
-it will not work for sharing — always use the Share button to get a proper
-shareable link.
+The address-bar URL does not capture full session state — always use the Share
+button to get a shareable link.
 
 :::info Note
 

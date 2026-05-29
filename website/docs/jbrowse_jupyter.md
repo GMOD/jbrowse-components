@@ -3,6 +3,9 @@ id: jbrowse_jupyter
 title: JBrowse Jupyter
 ---
 
+JBrowse Jupyter is a Python package providing a Dash component for embedding
+JBrowse 2 in Jupyter notebooks.
+
 Comprehensive documentation for JBrowse Jupyter is found off-site,
 [here](https://gmod.github.io/jbrowse-jupyter/docs/html/index.html).
 

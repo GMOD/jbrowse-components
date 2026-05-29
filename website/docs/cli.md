@@ -32,8 +32,7 @@ It is also possible to do one-off executions using npx, e.g.
 npx @jbrowse/cli create myfolder
 ```
 
-It is likely preferable in most cases to install the tools globally with
-`npm install @jbrowse/cli -g` however
+In most cases, installing globally (shown above) is preferable to using `npx`.
 
 ```
 

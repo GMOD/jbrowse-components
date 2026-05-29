@@ -43,9 +43,8 @@ Example
 
 `&assembly=hg19`
 
-The &assembly parameter refers to an assembly's "name" field one of the
-"assemblies" array in the config.json. This is only used for launching a single
-linear genome view.
+`&assembly=` refers to the `name` field of an entry in the `assemblies` array of
+config.json. Only used when launching a single linear genome view.
 
 ### &loc=
 
@@ -53,8 +52,8 @@ Example
 
 `&loc=chr1:6000-7000`
 
-This performs a navigation to this region on load, which can be specified using
-the syntax. This is only used for launching a single linear genome view.
+Navigates to this region on load. Accepts the formats shown below. This is only
+used for launching a single linear genome view.
 
 Example strings
 
@@ -128,7 +127,7 @@ Example
 
 `&tracklist=true`
 
-This opens the track selector by default. Default false
+Opens the track selector on load. Default: false.
 
 ### &nav=
 
@@ -136,7 +135,8 @@ Example
 
 `&nav=false`
 
-Turns off the navigation bar of the linear genome view
+Turns off the navigation bar of the linear genome view. Default true. This is
+only used for launching a single linear genome view.
 
 ### &tracks=
 
@@ -144,7 +144,7 @@ Example
 
 `&tracks=gene_track,vcf_track`
 
-This is a comma separated list of trackIds. You can see your trackId's in the
+This is a comma separated list of trackIds. You can find your trackIds in the
 config.json. Note, you can also refer to a trackId added by &sessionTracks=
 here. This is only used for launching a single linear genome view.
 
@@ -153,7 +153,7 @@ here. This is only used for launching a single linear genome view.
 If you want to dynamically add a track to the session, you can do so with
 `&sessionTracks=`
 
-You can also use this method to add a `FromConfigAdapter` track, which let's you
+You can also use this method to add a `FromConfigAdapter` track, which lets you
 specify features in JSON format, so you can e.g. add BLAST hits via the URL bar
 
 Example
