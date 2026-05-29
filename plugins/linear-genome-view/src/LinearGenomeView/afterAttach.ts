@@ -124,8 +124,12 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
           if (init.highlight) {
             for (const h of init.highlight) {
               // accept either a loc string ("chr1:100-200") or a JSON object
-              // ({refName, start, end, assemblyName?, color?, label?}) so URL
-              // highlights can carry color/label like session-authored ones
+              // ({refName, start, end, assemblyName?, color?, label?}) to carry
+              // color/label like session-authored highlights. note: the
+              // jbrowse-web &highlight= URL param is space-split, so the JSON
+              // form is only reliable for programmatic init.highlight entries
+              // (createViewState/session JSON) or space-free JSON; a JSON value
+              // containing a space (e.g. a label) is shattered by the split
               const json = h.trim().startsWith('{') && tryParseJson(h)
               if (
                 json &&

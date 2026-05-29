@@ -11,6 +11,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import { DEFAULT_HIGHLIGHT } from '../model.ts'
 import { navToBookmark } from '../utils.ts'
 
 import type { GridBookmarkModel } from '../model.ts'
@@ -121,7 +122,7 @@ const BookmarkGrid = observer(function BookmarkGrid({
             width: widths[4],
             renderCell: ({ value, row }) => (
               <PopoverPicker
-                color={value ?? 'rgba(247, 129, 192, 0.35)'}
+                color={value ?? DEFAULT_HIGHLIGHT}
                 onChange={event => {
                   model.updateBookmarkHighlight(row, event)
                 }}

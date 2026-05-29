@@ -14,12 +14,11 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
   )
   pluginManager.addToExtensionPoint(
     'LinearGenomeView-OverviewScalebarComponent',
-    (rest, { model, overview }) => [
+    (rest, { model }) => [
       ...rest,
       <OverviewHighlight
         key="overview_highlight_grid_bookmark"
         model={model as IExtendedLGV}
-        overview={overview}
       />,
     ],
   )

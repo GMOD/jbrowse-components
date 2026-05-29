@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
@@ -21,12 +19,6 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
     | GridBookmarkModel
     | undefined
 
-  useEffect(() => {
-    if (!bookmarkWidget) {
-      session.addWidget('GridBookmarkWidget', 'GridBookmark')
-    }
-  }, [session, bookmarkWidget])
-
   const viewAssemblies = new Set(model.assemblyNames)
 
   return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
@@ -40,8 +32,11 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
           const chipAlpha = bandColor.alpha() === 0 ? 0 : 0.8
           return coords ? (
             <HighlightBand
-              /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              key={`${coords.left}_${coords.width}_${idx}`}
+              // region fields keep the key stable across pan/zoom (unlike
+              // pixel coords); idx disambiguates duplicate bookmarks on the
+              // same region
+              // biome-ignore lint/suspicious/noArrayIndexKey: idx is a suffix
+              key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
               coords={coords}
               background={r.highlight}
             >

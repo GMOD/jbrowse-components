@@ -55,6 +55,36 @@ export async function fetchRemoteConfig(configPath: string) {
   return { config, configUri }
 }
 
+// split a space-separated &highlight= URL param into individual highlights.
+// spaces inside a JSON object ({...}) are not treated as delimiters, so a
+// highlight like {"refName":"chr1","start":1,"end":2,"label":"my region"}
+// survives intact alongside plain loc strings
+export function splitHighlights(str: string) {
+  const out: string[] = []
+  let depth = 0
+  let cur = ''
+  for (const ch of str) {
+    if (ch === '{') {
+      depth++
+    }
+    if (ch === '}') {
+      depth = Math.max(0, depth - 1)
+    }
+    if (ch === ' ' && depth === 0) {
+      if (cur) {
+        out.push(cur)
+      }
+      cur = ''
+    } else {
+      cur += ch
+    }
+  }
+  if (cur) {
+    out.push(cur)
+  }
+  return out
+}
+
 export function buildJb1SessionSpec(args: {
   loc?: string
   tracks?: string
@@ -75,7 +105,7 @@ export function buildJb1SessionSpec(args: {
         assembly: args.assembly,
         tracklist: args.tracklist,
         nav: args.nav,
-        highlight: args.highlight?.split(' '),
+        highlight: args.highlight ? splitHighlights(args.highlight) : undefined,
       },
     ],
   }

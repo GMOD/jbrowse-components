@@ -88,19 +88,17 @@ export default class GridBookmarkPlugin extends Plugin {
                * #action
                */
               bookmarkCurrentRegion() {
-                if (self.id === getSession(self).focusedViewId) {
-                  const blocks = self.dynamicBlocks.contentBlocks
-                  const bookmarkWidget = self.activateBookmarkWidget()
-                  if (!blocks.length) {
-                    throw new Error('no region selected')
-                  } else {
-                    const block = blocks[0]!
-                    bookmarkWidget.addBookmark({
-                      ...block,
-                      start: Math.floor(block.start),
-                      end: Math.ceil(block.end),
-                    })
-                  }
+                const blocks = self.dynamicBlocks.contentBlocks
+                const bookmarkWidget = self.activateBookmarkWidget()
+                if (!blocks.length) {
+                  throw new Error('no region selected')
+                } else {
+                  const block = blocks[0]!
+                  bookmarkWidget.addBookmark({
+                    ...block,
+                    start: Math.floor(block.start),
+                    end: Math.ceil(block.end),
+                  })
                 }
               },
             }))
@@ -218,22 +216,41 @@ export default class GridBookmarkPlugin extends Plugin {
               const keydownListener = (e: KeyboardEvent) => {
                 const activationSequence =
                   (e.ctrlKey || e.metaKey) && e.shiftKey
-                // ctrl+shift+d or cmd+shift+d
-                if (activationSequence && e.code === 'KeyD') {
-                  e.preventDefault()
-                  self.activateBookmarkWidget()
-                  self.bookmarkCurrentRegion()
-                  getSession(self).notify('Bookmark created.', 'success')
-                }
-                // ctrl+shift+m or cmd+shift+m
-                if (activationSequence && e.code === 'KeyM') {
-                  e.preventDefault()
-                  self.navigateNewestBookmark()
+                // this listener is registered on document once per open LGV, so
+                // without a focus guard a single keypress fires the action once
+                // per view (duplicate toasts, every view navigating). only the
+                // focused view responds.
+                const focused = self.id === getSession(self).focusedViewId
+                if (activationSequence && focused) {
+                  // ctrl+shift+d or cmd+shift+d
+                  if (e.code === 'KeyD') {
+                    e.preventDefault()
+                    self.activateBookmarkWidget()
+                    self.bookmarkCurrentRegion()
+                    getSession(self).notify('Bookmark created.', 'success')
+                  }
+                  // ctrl+shift+m or cmd+shift+m
+                  if (e.code === 'KeyM') {
+                    e.preventDefault()
+                    self.navigateNewestBookmark()
+                  }
                 }
               }
               return {
                 afterCreate() {
                   document.addEventListener('keydown', keydownListener)
+                },
+                afterAttach() {
+                  // ensure the bookmark widget exists so its localStorage-backed
+                  // bookmarks can render as highlight overlays without each
+                  // overlay component having to create it on first render
+                  const session = getSession(self)
+                  if (
+                    isSessionModelWithWidgets(session) &&
+                    !session.widgets.get('GridBookmark')
+                  ) {
+                    session.addWidget('GridBookmarkWidget', 'GridBookmark')
+                  }
                 },
                 beforeDestroy() {
                   document.removeEventListener('keydown', keydownListener)

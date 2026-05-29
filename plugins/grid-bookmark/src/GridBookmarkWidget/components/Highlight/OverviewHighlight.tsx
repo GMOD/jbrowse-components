@@ -1,24 +1,19 @@
 import { getSession, notEmpty } from '@jbrowse/core/util'
-import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
 import { OverviewHighlightBand } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 type LGV = IExtendedLGV
 
 const OverviewHighlight = observer(function OverviewHighlight({
   model,
-  overview,
 }: {
   model: LGV
-  overview: ViewLayout
 }) {
   const session = getSession(model) as SessionWithWidgets
-  const { assemblyManager } = session
-  const { cytobandOffset, bookmarkHighlightsVisible, labelsVisible } = model
+  const { bookmarkHighlightsVisible, labelsVisible } = model
   const bookmarkWidget = session.widgets.get('GridBookmark') as
     | GridBookmarkModel
     | undefined
@@ -31,17 +26,17 @@ const OverviewHighlight = observer(function OverviewHighlight({
   return bookmarkWidget.bookmarks
     .filter(r => assemblyNames.has(r.assemblyName))
     .map(r => {
-      const asm = assemblyManager.get(r.assemblyName)
-      const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
-      const coords = getLayoutHighlightCoords(overview, { ...r, refName })
+      const coords = model.getOverviewHighlightCoords(r)
       return coords ? { coords, bookmark: r } : undefined
     })
     .filter(notEmpty)
     .map(({ coords, bookmark: r }, idx) => (
       <OverviewHighlightBand
-        /* biome-ignore lint/suspicious/noArrayIndexKey: */
-        key={`${coords.left}_${coords.width}_${idx}`}
-        coords={{ ...coords, left: coords.left + cytobandOffset }}
+        // region fields keep the key stable across pan/zoom (unlike pixel
+        // coords); idx disambiguates duplicate bookmarks on the same region
+        // biome-ignore lint/suspicious/noArrayIndexKey: idx is a suffix
+        key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
+        coords={coords}
         background={r.highlight}
         borderColor={r.highlight}
         tooltip={labelsVisible ? r.label : undefined}

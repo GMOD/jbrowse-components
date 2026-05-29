@@ -12,12 +12,14 @@ import type { Region } from '@jbrowse/core/util/types'
 import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+export const DEFAULT_HIGHLIGHT = 'rgba(247, 129, 192, 0.35)'
+
 const LabeledRegionModel = types
   .compose(
     RegionModel,
     types.model('Label', {
       label: types.optional(types.string, ''),
-      highlight: types.optional(types.string, 'rgba(247, 129, 192, 0.35)'),
+      highlight: types.optional(types.string, DEFAULT_HIGHLIGHT),
     }),
   )
   .actions(self => ({
@@ -28,6 +30,28 @@ const LabeledRegionModel = types
       self.highlight = color
     },
   }))
+
+interface HighlightToggleView {
+  id: string
+  setBookmarkHighlightsVisible?: (arg: boolean) => void
+  setLabelsVisible?: (arg: boolean) => void
+  views?: HighlightToggleView[]
+}
+
+// recurse the view/subview tree applying fn; mst walk() over the whole session
+// blows the stack ('too much recursion') so we only descend through .views
+function forEachView(
+  views: HighlightToggleView[],
+  fn: (view: HighlightToggleView) => void,
+) {
+  for (const view of views) {
+    fn(view)
+    if (view.views) {
+      forEachView(view.views, fn)
+    }
+  }
+}
+
 
 export interface IExtendedLGV extends LinearGenomeViewModel {
   bookmarkHighlightsVisible: boolean
@@ -284,31 +308,17 @@ export default function f(_pluginManager: PluginManager) {
        * #action
        */
       setBookmarkHighlightsVisible(arg: boolean) {
-        const { views } = getSession(self)
-        // hacky, but mst walk() on session leads to 'too much recursion'
-        for (const view of views) {
-          // @ts-expect-error
+        forEachView(getSession(self).views, view => {
           view.setBookmarkHighlightsVisible?.(arg)
-          // @ts-expect-error
-          for (const subView of view.views ?? []) {
-            subView.setBookmarkHighlightsVisible?.(arg)
-          }
-        }
+        })
       },
       /**
        * #action
        */
       setBookmarkLabelsVisible(arg: boolean) {
-        const { views } = getSession(self)
-        // hacky, but mst walk() on session leads to 'too much recursion'
-        for (const view of views) {
-          // @ts-expect-error
+        forEachView(getSession(self).views, view => {
           view.setLabelsVisible?.(arg)
-          // @ts-expect-error
-          for (const subView of view.views ?? []) {
-            subView.setLabelsVisible?.(arg)
-          }
-        }
+        })
       },
     }))
     .actions(self => ({

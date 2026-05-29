@@ -1941,6 +1941,117 @@ function App() {
 }
 
 // ---------------------------------------------------------------------------
+// WithSessionHighlights
+// ---------------------------------------------------------------------------
+
+// highlights authored directly on the view snapshot (view.highlight) rather
+// than through init.highlight loc-strings: this form carries per-highlight
+// color and label, and is what gets persisted/restored in a session
+const sessionHighlights = [
+  {
+    assemblyName: 'hg38',
+    refName: 'chr1',
+    start: 11_130_000,
+    end: 11_145_000,
+    color: 'rgba(255, 0, 0, 0.25)',
+    label: 'Region of interest',
+  },
+  {
+    assemblyName: 'hg38',
+    refName: 'chr1',
+    start: 11_200_000,
+    end: 11_220_000,
+    color: 'rgba(0, 128, 255, 0.25)',
+    label: 'Promoter',
+  },
+]
+
+function WithSessionHighlightsRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly: hg38Assembly,
+      tracks: hg38Tracks,
+      defaultSession: {
+        name: 'Session highlights',
+        view: {
+          type: 'LinearGenomeView',
+          highlight: sessionHighlights,
+          init: {
+            loc: 'chr1:11,106,077-11,261,675',
+            assembly: 'hg38',
+            tracks: [
+              {
+                trackId: refseqTrackId,
+                displaySnapshot: { height: 200 },
+              },
+            ],
+          },
+        },
+      },
+    }),
+  )
+  return <ViewWithErrorHandling state={state} />
+}
+
+export const WithSessionHighlights = {
+  render: WithSessionHighlightsRender,
+  parameters: {
+    docs: {
+      source: {
+        language: 'tsx',
+        code: `\
+import { useState } from 'react'
+import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+// assembly + tracks defined as in other examples
+
+function App() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      defaultSession: {
+        name: 'Session highlights',
+        view: {
+          type: 'LinearGenomeView',
+          // highlights authored on the view snapshot carry per-highlight color
+          // and label, and round-trip through saved sessions. compare with
+          // init.highlight, which only accepts plain loc-strings
+          highlight: [
+            {
+              assemblyName: 'hg38',
+              refName: 'chr1',
+              start: 11_130_000,
+              end: 11_145_000,
+              color: 'rgba(255, 0, 0, 0.25)',
+              label: 'Region of interest',
+            },
+            {
+              assemblyName: 'hg38',
+              refName: 'chr1',
+              start: 11_200_000,
+              end: 11_220_000,
+              color: 'rgba(0, 128, 255, 0.25)',
+              label: 'Promoter',
+            },
+          ],
+          init: {
+            loc: 'chr1:11,106,077-11,261,675',
+            assembly: 'hg38',
+            tracks: [{ trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } }],
+          },
+        },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}`,
+      },
+    },
+  },
+}
+
+// ---------------------------------------------------------------------------
 // WithInitAlignmentsDisplay
 // ---------------------------------------------------------------------------
 
