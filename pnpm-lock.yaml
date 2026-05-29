@@ -1101,6 +1101,9 @@ importers:
       react:
         specifier: '>=19.0.0'
         version: 19.2.6
+      react-dropzone:
+        specifier: ^15.0.0
+        version: 15.0.0(react@19.2.6)
     devDependencies:
       '@jbrowse/app-core':
         specifier: workspace:*

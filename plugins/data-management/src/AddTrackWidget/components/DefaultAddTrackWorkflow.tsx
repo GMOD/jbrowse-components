@@ -2,14 +2,7 @@ import { useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  Step,
-  StepContent,
-  StepLabel,
-  Stepper,
-  Typography,
-} from '@mui/material'
+import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ConfirmTrack from './ConfirmTrack.tsx'
@@ -34,7 +27,24 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const steps = ['Enter track data', 'Confirm track type']
+const steps = [
+  {
+    label: 'Enter track data',
+    content: (model: AddTrackModel) => <TrackSourceSelect model={model} />,
+    isComplete: (model: AddTrackModel) => !!model.trackData,
+  },
+  {
+    label: 'Confirm track type',
+    content: (model: AddTrackModel) => <ConfirmTrack model={model} />,
+    isComplete: (model: AddTrackModel) =>
+      !!(
+        model.trackName &&
+        model.trackType &&
+        model.trackAdapter?.type &&
+        model.assembly
+      ),
+  },
+]
 
 const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
   model,
@@ -43,27 +53,17 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
 }) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
-  const { assembly, trackAdapter, trackData, trackName, trackType } = model
+  const isLastStep = activeStep === steps.length - 1
 
-  function getStepContent(step: number) {
-    switch (step) {
-      case 0:
-        return <TrackSourceSelect model={model} />
-      case 1:
-        return <ConfirmTrack model={model} />
-      default:
-        return <Typography>Unknown step</Typography>
-    }
-  }
-
-  function isNextDisabled() {
-    switch (activeStep) {
-      case 0:
-        return !trackData
-      case 1:
-        return !(trackName && trackType && trackAdapter?.type && assembly)
-      default:
-        return true
+  function handleNext() {
+    if (isLastStep) {
+      try {
+        doSubmit({ model })
+      } catch (e) {
+        getSession(model).notifyError(`${e}`, e)
+      }
+    } else {
+      setActiveStep(activeStep + 1)
     }
   }
 
@@ -74,11 +74,11 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
         activeStep={activeStep}
         orientation="vertical"
       >
-        {steps.map((label, idx) => (
+        {steps.map(({ label, content, isComplete }) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
             <StepContent>
-              {getStepContent(idx)}
+              {content(model)}
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
@@ -91,24 +91,16 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
                   Back
                 </Button>
                 <Button
-                  disabled={isNextDisabled()}
+                  disabled={!isComplete(model)}
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    if (activeStep !== steps.length - 1) {
-                      setActiveStep(activeStep + 1)
-                    } else {
-                      try {
-                        doSubmit({ model })
-                      } catch (e) {
-                        getSession(model).notifyError(`${e}`, e)
-                      }
-                    }
+                    handleNext()
                   }}
                   className={classes.button}
                   data-testid="addTrackNextButton"
                 >
-                  {activeStep === steps.length - 1 ? 'Add' : 'Next'}
+                  {isLastStep ? 'Add' : 'Next'}
                 </Button>
               </div>
             </StepContent>

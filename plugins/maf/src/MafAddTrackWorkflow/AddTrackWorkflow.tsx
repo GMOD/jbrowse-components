@@ -8,17 +8,9 @@ import {
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
-import {
-  Button,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Paper,
-  Radio,
-  RadioGroup,
-  TextField,
-} from '@mui/material'
+import { Button, Paper, TextField } from '@mui/material'
 
+import RadioSelector from './RadioSelector.tsx'
 import { buildAdapterConfig, parseSampleNames } from './buildAdapterConfig.ts'
 
 import type {
@@ -58,27 +50,14 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
     <Paper className={classes.paper}>
       <Paper>
         {error ? <ErrorMessage error={error} /> : null}
-        <FormControl>
-          <FormLabel>File type</FormLabel>
-          <RadioGroup
-            value={fileTypeChoice}
-            onChange={event => {
-              setFileTypeChoice(event.target.value as AdapterTypeOptions)
-            }}
-          >
-            {['BigMafAdapter', 'MafTabixAdapter', 'BgzipTaffyAdapter'].map(
-              r => (
-                <FormControlLabel
-                  key={r}
-                  value={r}
-                  control={<Radio />}
-                  checked={fileTypeChoice === r}
-                  label={r}
-                />
-              ),
-            )}
-          </RadioGroup>
-        </FormControl>
+        <RadioSelector
+          label="File type"
+          value={fileTypeChoice}
+          options={['BigMafAdapter', 'MafTabixAdapter', 'BgzipTaffyAdapter']}
+          onChange={value => {
+            setFileTypeChoice(value)
+          }}
+        />
         {fileTypeChoice === 'BigMafAdapter' ? (
           <FileSelector
             location={loc}
@@ -90,25 +69,14 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           />
         ) : fileTypeChoice === 'MafTabixAdapter' ? (
           <>
-            <FormControl>
-              <FormLabel>Index type</FormLabel>
-              <RadioGroup
-                value={indexTypeChoice}
-                onChange={event => {
-                  setIndexTypeChoice(event.target.value as IndexTypeOptions)
-                }}
-              >
-                {['TBI', 'CSI'].map(r => (
-                  <FormControlLabel
-                    key={r}
-                    value={r}
-                    control={<Radio />}
-                    checked={indexTypeChoice === r}
-                    label={r}
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
+            <RadioSelector
+              label="Index type"
+              value={indexTypeChoice}
+              options={['TBI', 'CSI']}
+              onChange={value => {
+                setIndexTypeChoice(value)
+              }}
+            />
             <FileSelector
               location={loc}
               name="Path to MAF tabix"
@@ -186,10 +154,14 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           try {
             const session = getSession(model)
             const sampleNames = parseSampleNames(samples)
-            const trackId = [
-              `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
-              session.adminMode ? '' : '-sessionTrack',
-            ].join('')
+            if (!sampleNames.length && !nhLoc) {
+              throw new Error(
+                'Please supply sample names or a newick tree (.nh) file',
+              )
+            }
+            const safeName = trackName.toLowerCase().replaceAll(' ', '_')
+            const sessionSuffix = session.adminMode ? '' : '-sessionTrack'
+            const trackId = `${safeName}-${Date.now()}${sessionSuffix}`
 
             if (isSessionWithAddTracks(session)) {
               session.addTrackConf({

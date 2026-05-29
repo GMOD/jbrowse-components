@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import {
@@ -10,7 +10,7 @@ import {
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { Button, IconButton, Paper, TextField } from '@mui/material'
+import { Button, Paper, TextField, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -54,8 +54,8 @@ function makeFileLocation(file: File) {
     : storeBlobLocation({ blob: file })
 }
 
-function itemToRow(item: TrackItem, id: string): TrackRow {
-  return { id, name: itemToName(item), item }
+function itemToRow(item: TrackItem): TrackRow {
+  return { id: crypto.randomUUID(), name: itemToName(item), item }
 }
 
 function doSubmit({
@@ -95,18 +95,14 @@ const MultiWiggleAddTrackWorkflow = observer(
     const { classes } = useStyles()
     const [inputVal, setInputVal] = useState('')
     const [tracks, setTracks] = useState<TrackRow[]>([])
-    const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
+    const [trackName, setTrackName] = useState('MultiWiggle')
     const [selection, setSelection] = useState<GridRowSelectionModel>({
       type: 'include',
       ids: new Set(),
     })
-    const counter = useRef(0)
 
     function addTracks(items: TrackItem[]) {
-      setTracks(prev => [
-        ...prev,
-        ...items.map(item => itemToRow(item, String(counter.current++))),
-      ])
+      setTracks(prev => [...prev, ...items.map(itemToRow)])
     }
 
     return (
@@ -124,11 +120,10 @@ const MultiWiggleAddTrackWorkflow = observer(
         />
         <Button
           variant="outlined"
+          disabled={!inputVal.trim()}
           onClick={() => {
-            if (inputVal.trim()) {
-              addTracks(parseItems(inputVal))
-              setInputVal('')
-            }
+            addTracks(parseItems(inputVal))
+            setInputVal('')
           }}
         >
           Add tracks
@@ -175,22 +170,6 @@ const MultiWiggleAddTrackWorkflow = observer(
                     flex: 1,
                     renderCell: ({ value }) => <SanitizedHTML html={value} />,
                   },
-                  {
-                    field: 'remove',
-                    headerName: '',
-                    width: 50,
-                    sortable: false,
-                    renderCell: ({ row }) => (
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setTracks(prev => prev.filter(t => t.id !== row.id))
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    ),
-                  },
                 ]}
                 rowHeight={25}
                 columnHeaderHeight={33}
@@ -214,17 +193,21 @@ const MultiWiggleAddTrackWorkflow = observer(
           className={classes.submit}
           disabled={!canSubmit({ tracks, trackName, assembly: model.assembly })}
           onClick={() => {
-            doSubmit({ trackName, tracks, model })
+            try {
+              doSubmit({ trackName, tracks, model })
+            } catch (e) {
+              getSession(model).notifyError(`${e}`, e)
+            }
           }}
         >
           Submit
         </Button>
-        <p>
+        <Typography variant="body2" color="textSecondary">
           The list of bigwig files in the text box can be a list of URLs, or a
           list of elements like{' '}
           <code>{`[{"type":"BigWigAdapter","bigWigLocation":{"uri":"http://host/file.bw"}, "color":"green","source":"name for subtrack"}]`}</code>{' '}
           to apply e.g. the color attribute to the view
-        </p>
+        </Typography>
       </Paper>
     )
   },

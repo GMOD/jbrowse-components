@@ -2,7 +2,7 @@ export type TrackItem = string | Record<string, unknown>
 
 export function lineSplit(val: string) {
   return val
-    .split(/\n|\r\n|\r/)
+    .split(/[\r\n]+/)
     .map(f => f.trim())
     .filter(Boolean)
 }
@@ -13,7 +13,7 @@ export function parseItems(val: string): TrackItem[] {
     if (Array.isArray(parsed)) {
       return parsed as TrackItem[]
     }
-  } catch (e) {}
+  } catch {}
   return lineSplit(val)
 }
 

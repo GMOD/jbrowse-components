@@ -1,6 +1,8 @@
 import { lazy } from 'react'
 
 import Plugin from '@jbrowse/core/Plugin'
+import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import AddConnectionWidgetF from './AddConnectionWidget/index.ts'
 import AddTrackWidgetF from './AddTrackWidget/index.ts'
@@ -27,6 +29,14 @@ export default class DataManagementPlugin extends Plugin {
     HierarchicalTrackSelectorWidgetF(pluginManager)
     AddConnectionWidgetF(pluginManager)
     PluginStoreWidgetF(pluginManager)
+    pluginManager.addAddTrackWorkflowType(
+      () =>
+        new AddTrackWorkflowType({
+          name: 'Add multiple tracks',
+          ReactComponent: lazy(() => import('./BulkAddTracksWorkflow/index.ts')),
+          stateModel: types.model({}),
+        }),
+    )
   }
 
   configure(_pluginManager: PluginManager) {}

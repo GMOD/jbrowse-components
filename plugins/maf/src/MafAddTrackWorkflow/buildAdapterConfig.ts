@@ -16,7 +16,7 @@ export function parseSampleNames(input: string): string[] {
   try {
     const parsed: unknown = JSON.parse(input)
     if (Array.isArray(parsed)) {
-      return parsed.map(String)
+      return parsed.map(String).map(s => s.trim()).filter(Boolean)
     }
   } catch {
     // fall through to line split
@@ -39,6 +39,9 @@ interface BuildArgs {
 export function buildAdapterConfig(args: BuildArgs) {
   const { fileTypeChoice, indexTypeChoice, loc, indexLoc, nhLoc, sampleNames } =
     args
+  if (!loc) {
+    throw new Error('Please supply a data file')
+  }
   switch (fileTypeChoice) {
     case 'BigMafAdapter':
       return {
@@ -48,6 +51,9 @@ export function buildAdapterConfig(args: BuildArgs) {
         nhLocation: nhLoc,
       }
     case 'MafTabixAdapter':
+      if (!indexLoc) {
+        throw new Error('Please supply a MAF tabix index file')
+      }
       return {
         type: fileTypeChoice,
         bedGzLocation: loc,
@@ -59,6 +65,9 @@ export function buildAdapterConfig(args: BuildArgs) {
         samples: sampleNames,
       }
     case 'BgzipTaffyAdapter':
+      if (!indexLoc) {
+        throw new Error('Please supply a TAF index (.tai) file')
+      }
       return {
         type: fileTypeChoice,
         tafGzLocation: loc,
