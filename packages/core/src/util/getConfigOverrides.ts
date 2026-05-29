@@ -56,15 +56,23 @@ export function getEffectiveTrackConfig(
   const displaySnap: Record<string, unknown> = getSnapshot(display)
   const displayConfId = displaySnap.configuration as string | undefined
   const displayType = display.configuration.type as string | undefined
+  // Read overrides from the display's configOverrides map (ConfigOverrideMixin)
+  // rather than resolved model getters: a getter may share a config slot's name
+  // but return a different shape (e.g. showLabels enum vs resolved boolean) and
+  // may depend on view state that throws when the view is not initialized.
+  const getOverride =
+    typeof display.getOverride === 'function'
+      ? (key: string) => display.getOverride(key)
+      : () => undefined
 
   return {
     ...conf,
     displays: trackDisplays.map(d => {
       const dConf = d
       if (dConf.type === displayType) {
-        return buildDisplayEntry(displayConfId, dConf, display)
+        return buildDisplayEntry(displayConfId, dConf, getOverride)
       }
-      return buildDisplayEntry(undefined, dConf, {})
+      return buildDisplayEntry(undefined, dConf, () => undefined)
     }),
   }
 }
@@ -72,7 +80,7 @@ export function getEffectiveTrackConfig(
 function buildDisplayEntry(
   displayId: string | undefined,
   displayConf: Record<string, unknown>,
-  display: Record<string, unknown>,
+  getOverride: (key: string) => unknown,
 ) {
   const entry: Record<string, unknown> = {}
   if (displayId) {
@@ -92,9 +100,9 @@ function buildDisplayEntry(
       continue
     }
     const configValue = readSlotValue(slot)
-    const displayValue = toJS(display[key])
-    if (displayValue !== undefined && displayValue !== configValue) {
-      entry[key] = displayValue
+    const overrideValue = toJS(getOverride(key))
+    if (overrideValue !== undefined && overrideValue !== configValue) {
+      entry[key] = overrideValue
     }
   }
   return entry
