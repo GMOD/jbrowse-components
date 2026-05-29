@@ -81,7 +81,10 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
       <LocationInput
         mode={mode}
-        setMode={setMode}
+        setMode={m => {
+          setMode(m)
+          setRemoved(new Set())
+        }}
         text={text}
         setText={t => {
           setText(t)
@@ -117,7 +120,8 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
       {skippedCount > 0 ? (
         <Typography variant="body2" color="error">
-          {skippedCount} row(s) with unrecognized types will not be added
+          {skippedCount} {skippedCount === 1 ? 'row' : 'rows'} with unrecognized
+          types will not be added
         </Typography>
       ) : null}
       <Button
@@ -133,7 +137,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
           }
         }}
       >
-        Add {okRows.length} track(s)
+        Add {okRows.length} {okRows.length === 1 ? 'track' : 'tracks'}
       </Button>
     </Paper>
   )
