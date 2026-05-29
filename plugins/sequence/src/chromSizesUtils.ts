@@ -16,10 +16,10 @@ export function parseChromSizes(data: string) {
 }
 
 export function refSizesToRegions(refSizes: Record<string, number>) {
-  return Object.keys(refSizes).map(refName => ({
+  return Object.entries(refSizes).map(([refName, end]) => ({
     refName,
     start: 0,
-    end: refSizes[refName]!,
+    end,
   }))
 }
 

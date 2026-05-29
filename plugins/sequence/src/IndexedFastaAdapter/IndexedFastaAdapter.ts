@@ -80,7 +80,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
           const chunkSize = 128000
 
           const s = start - (start % chunkSize)
-          const e = regionEnd + (chunkSize - (regionEnd % chunkSize))
+          const e = Math.ceil(regionEnd / chunkSize) * chunkSize
           const chunkPromises = []
           for (let chunkStart = s; chunkStart < e; chunkStart += chunkSize) {
             const r = {
