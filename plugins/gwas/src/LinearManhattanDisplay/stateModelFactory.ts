@@ -238,6 +238,14 @@ export function stateModelFactory(
       setIndexSnp(snp?: string) {
         self.indexSnp = snp
       },
+      // Right-click "Color by LD to this SNP": switch into LD mode and anchor
+      // the index on the clicked point. Keyed by chr:bp (1-based) to match the
+      // worker's posKey. Both mutations happen in one action so rpcProps
+      // settles once and only a single recolor fetch fires.
+      colorByLdToHit(hit: ManhattanHit) {
+        self.setOverride('colorBy', 'ld')
+        self.indexSnp = `${hit.refName}:${hit.start + 1}`
+      },
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
         self.flatbushes.clear()

@@ -1,5 +1,6 @@
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
 import { parsePlinkLDHeader, parsePlinkLDLine } from '@jbrowse/ld-core'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -15,7 +16,10 @@ export default class PlinkLDAdapter extends BaseAdapter {
 
   private async configurePre(opts?: BaseOptions) {
     const ldLocation = this.getConf('ldLocation')
-    const text = await fetchAndMaybeUnzipText(ldLocation, opts)
+    const text = await fetchAndMaybeUnzipText(
+      openLocation(ldLocation, this.pluginManager),
+      opts,
+    )
     const lines = text.split('\n').filter(line => line.trim())
     if (lines.length === 0) {
       throw new Error('Empty LD file')

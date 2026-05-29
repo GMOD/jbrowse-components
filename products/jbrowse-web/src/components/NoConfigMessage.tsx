@@ -131,7 +131,7 @@ const sampleConfigs: {
   },
   {
     config: 'test_data/config_gwas.json',
-    label: 'GWAS (Manhattan plot)',
+    label: 'GWAS (Manhattan plot + LocusZoom LD coloring)',
   },
   {
     config: 'test_data/volvox/config_main_thread.json',
@@ -278,6 +278,10 @@ const demoSessions = [
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"17:1-83257441","type":"LinearGenomeView","tracks":["hic"]}]}',
     label: 'Hi-C contact matrix (chr17, hg19)',
+  },
+  {
+    href: '?config=test_data/config_gwas.json&session=spec-{"views":[{"assembly":"hg19","loc":"2:191790000-192120000","type":"LinearGenomeView","tracks":["sle_gwas_ld"]}]}',
+    label: 'GWAS LocusZoom-style LD coloring (SLE, STAT4 locus)',
   },
   {
     href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["volvox_bedpe"]}]}',

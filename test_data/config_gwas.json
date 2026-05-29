@@ -1,4 +1,38 @@
 {
+  "defaultSession": {
+    "name": "SLE GWAS LocusZoom demo",
+    "views": [
+      {
+        "id": "sle_lz_view",
+        "type": "LinearGenomeView",
+        "bpPerPx": 408,
+        "offsetPx": 470073,
+        "displayedRegions": [
+          {
+            "refName": "2",
+            "start": 0,
+            "end": 243199373,
+            "assemblyName": "hg19"
+          }
+        ],
+        "tracks": [
+          {
+            "id": "sle_lz_track",
+            "type": "GWASTrack",
+            "configuration": "sle_gwas_ld",
+            "displays": [
+              {
+                "id": "sle_lz_display",
+                "type": "LinearManhattanDisplay",
+                "configuration": "sle_gwas_ld-LinearManhattanDisplay",
+                "height": 250
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "assemblies": [
     {
       "name": "hg19",
@@ -98,6 +132,41 @@
           "displayId": "gwas_display_custom_color_callback_display",
           "type": "LinearManhattanDisplay",
           "color": "jexl:'hsl('+get(feature,'start')/100000+',50%,50%)'"
+        }
+      ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "sle_gwas_ld",
+      "name": "SLE GWAS (LocusZoom-style, LD colored)",
+      "category": ["GWAS"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "gwas/SLE_gwas.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "gwas/SLE_gwas.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "sle_gwas_ld-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay",
+          "colorBy": "ld",
+          "ldAdapter": {
+            "type": "PlinkLDAdapter",
+            "ldLocation": {
+              "uri": "gwas/SLE.ld",
+              "locationType": "UriLocation"
+            }
+          }
         }
       ]
     }

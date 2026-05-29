@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorOverlay } from '@jbrowse/core/ui'
+import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { useRenderingBackend } from '@jbrowse/core/util/useRenderingBackend'
 import {
@@ -21,6 +21,7 @@ import LdColorLegend from './LdColorLegend.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
+import type { ManhattanHit } from '../findManhattanHit.ts'
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -37,24 +38,31 @@ const LinearManhattanDisplayComponent = observer(
     const { canvasRef, error, retry } = useRenderingBackend(ManhattanRenderer, model)
     const view = getContainingView(model) as LGV
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
+    const [contextMenu, setContextMenu] = useState<{
+      coord: [number, number]
+      hit: ManhattanHit
+    }>()
 
-    function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
-      setClientMouseCoord([event.clientX, event.clientY])
+    function hitAt(event: React.MouseEvent<HTMLDivElement>) {
       const state = model.renderState
       if (state) {
         const rect = event.currentTarget.getBoundingClientRect()
-        model.setFeatureUnderMouse(
-          findManhattanHit(
-            event.clientX - rect.left,
-            event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
-            model.renderBlocks,
-            model.rpcDataMap,
-            model.flatbushes,
-            state,
-            model.regionRefNames,
-          ),
+        return findManhattanHit(
+          event.clientX - rect.left,
+          event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
+          model.renderBlocks,
+          model.rpcDataMap,
+          model.flatbushes,
+          state,
+          model.regionRefNames,
         )
       }
+      return undefined
+    }
+
+    function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+      setClientMouseCoord([event.clientX, event.clientY])
+      model.setFeatureUnderMouse(hitAt(event))
     }
 
     function handleMouseLeave() {
@@ -65,6 +73,14 @@ const LinearManhattanDisplayComponent = observer(
       const hit = model.featureUnderMouse
       if (hit) {
         model.selectFeature(hit)
+      }
+    }
+
+    function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
+      const hit = hitAt(event)
+      if (hit) {
+        event.preventDefault()
+        setContextMenu({ coord: [event.clientX, event.clientY], hit })
       }
     }
 
@@ -94,6 +110,9 @@ const LinearManhattanDisplayComponent = observer(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
+        onContextMenu={event => {
+          handleContextMenu(event)
+        }}
       >
         <canvas
           ref={canvasRef}
@@ -130,6 +149,33 @@ const LinearManhattanDisplayComponent = observer(
         <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
         <DisplayErrorBar model={model} />
         <DisplayLoadingOverlay model={model} />
+        {contextMenu ? (
+          <Menu
+            open
+            anchorReference="anchorPosition"
+            anchorPosition={{
+              top: contextMenu.coord[1],
+              left: contextMenu.coord[0],
+            }}
+            onMenuItemClick={(_event, callback) => {
+              callback()
+              setContextMenu(undefined)
+            }}
+            onClose={() => {
+              setContextMenu(undefined)
+            }}
+            menuItems={[
+              {
+                label: `Color by LD to ${contextMenu.hit.refName}:${
+                  contextMenu.hit.start + 1
+                }`,
+                onClick: () => {
+                  model.colorByLdToHit(contextMenu.hit)
+                },
+              },
+            ]}
+          />
+        ) : null}
       </div>
     )
   },
