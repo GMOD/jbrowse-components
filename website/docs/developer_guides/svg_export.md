@@ -29,8 +29,8 @@ const node = paintLayer(width, height, opts, ctx => {
 
 When `opts.rasterizeLayers` is true, `paintLayer` draws to an offscreen canvas
 and embeds the result as a `<image>` PNG in the SVG. When false it draws to
-`SvgCanvas`, a `CanvasRenderingContext2D` duck-type that emits `<rect>`, `<text>`,
-`<path>` etc. The same paint callback works for both.
+`SvgCanvas`, a `CanvasRenderingContext2D` duck-type that emits `<rect>`,
+`<text>`, `<path>` etc. The same paint callback works for both.
 
 Pass `undefined` instead of `opts` to force vector output regardless of user
 preference — always do this for text and labels so they stay crisp.
@@ -78,7 +78,11 @@ export async function renderSvg(
   })
 
   return (
-    <SvgClipRect id={`yourdisplay-clip-${model.id}`} width={view.width} height={height}>
+    <SvgClipRect
+      id={`yourdisplay-clip-${model.id}`}
+      width={view.width}
+      height={height}
+    >
       {featuresNode}
       {labelsNode}
     </SvgClipRect>
@@ -133,7 +137,11 @@ export function drawFeatures(ctx: Ctx2D, data: FeatureData, opts: DrawOpts) {
 
 From simplest to most complex:
 
-- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` — text only
-- `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` — score plot with scale bar
-- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` — features + labels layers
-- `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` — coverage, pileup, arcs
+- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` — text
+  only
+- `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` — score plot with scale
+  bar
+- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` — features + labels
+  layers
+- `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` — coverage,
+  pileup, arcs

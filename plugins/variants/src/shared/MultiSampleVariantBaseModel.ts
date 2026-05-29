@@ -234,8 +234,13 @@ export default function MultiSampleVariantBaseModelF(
         // Strip properties from old BaseLinearDisplay snapshots, plus
         // lengthCutoffFilter (removed — length filtering is now done with
         // general jexl filters, e.g. `jexl:get(feature,'end')-get(feature,'start')<N`).
-        const { blockState, showLegend, showTooltips, lengthCutoffFilter, ...cleaned } =
-          snap
+        const {
+          blockState,
+          showLegend,
+          showTooltips,
+          lengthCutoffFilter,
+          ...cleaned
+        } = snap
         let next = cleaned
 
         // Rewrite "height" from older snapshots to "heightPreConfig"

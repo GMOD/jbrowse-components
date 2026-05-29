@@ -170,14 +170,17 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LGV
         const width = view.trackWidthPx
         const height = self.height
-        return resolveRenderState(self.domain, self.rpcDataMap.size > 0, domain =>
-          makeRenderState(
-            domain,
-            self.scaleType,
-            self.renderingType,
-            width,
-            height,
-          ),
+        return resolveRenderState(
+          self.domain,
+          self.rpcDataMap.size > 0,
+          domain =>
+            makeRenderState(
+              domain,
+              self.scaleType,
+              self.renderingType,
+              width,
+              height,
+            ),
         )
       },
 

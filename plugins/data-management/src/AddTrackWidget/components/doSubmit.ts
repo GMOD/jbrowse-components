@@ -39,7 +39,9 @@ function doTextIndexTrack({
       timestamp: new Date().toISOString(),
     },
     name: indexName,
-    cancelCallback: () => { jobsManager.abortJob() },
+    cancelCallback: () => {
+      jobsManager.abortJob()
+    },
   })
 }
 

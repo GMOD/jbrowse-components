@@ -5,10 +5,8 @@ import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 
-// lazies
 const ConfirmDialog = lazy(() => import('./ConfirmDialog.tsx'))
 
 function makeTrack({

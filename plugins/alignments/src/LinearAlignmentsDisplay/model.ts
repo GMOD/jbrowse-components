@@ -1421,7 +1421,8 @@ export default function stateModelFactory(
                   ? [
                       {
                         label: 'Show long-range pairs',
-                        subLabel: 'reads >100 kb apart or with off-screen mates',
+                        subLabel:
+                          'reads >100 kb apart or with off-screen mates',
                         type: 'checkbox' as const,
                         checked: self.drawLongRange,
                         onClick: () => {
@@ -1430,7 +1431,8 @@ export default function stateModelFactory(
                       },
                       {
                         label: 'Show inter-chromosomal pairs',
-                        subLabel: 'reads whose mate maps to a different chromosome',
+                        subLabel:
+                          'reads whose mate maps to a different chromosome',
                         type: 'checkbox' as const,
                         checked: self.drawInter,
                         onClick: () => {

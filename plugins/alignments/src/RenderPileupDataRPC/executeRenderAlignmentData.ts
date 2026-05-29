@@ -211,7 +211,9 @@ export async function executeRenderAlignmentData({
   const getReadIndex = (id: string) => {
     const idx = featureIdToIndex.get(id)
     if (idx === undefined) {
-      throw new Error(`no read index for feature id ${id} (detail/read mismatch)`)
+      throw new Error(
+        `no read index for feature id ${id} (detail/read mismatch)`,
+      )
     }
     return idx
   }

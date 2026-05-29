@@ -45,7 +45,12 @@ function segments(
   const result = buildSegmentArrays(
     features,
     gaps,
-    { refName: 'ctgA', assemblyName: 'volvox', start: regionStart, end: regionEnd },
+    {
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      start: regionStart,
+      end: regionEnd,
+    },
     id => idToIdx.get(id) ?? 0,
   )
   const segs = []

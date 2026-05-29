@@ -220,8 +220,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       })
 
       const hasPendingAction = sessionRef.current.pendingMove !== undefined
-      const savedLayout =
-        !hasPendingAction && sessionRef.current.dockviewLayout
+      const savedLayout = !hasPendingAction && sessionRef.current.dockviewLayout
 
       if (savedLayout) {
         try {

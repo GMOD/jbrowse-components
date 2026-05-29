@@ -1,9 +1,6 @@
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
-import {
-  parsePlinkLDHeader,
-  parsePlinkLDLine,
-} from '@jbrowse/ld-core'
+import { parsePlinkLDHeader, parsePlinkLDLine } from '@jbrowse/ld-core'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'

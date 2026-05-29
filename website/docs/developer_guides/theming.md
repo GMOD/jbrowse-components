@@ -22,28 +22,28 @@ Set `configuration.theme` to one of these names:
 
 These extend MUI's standard `primary`/`secondary`/`error`/etc:
 
-| Key               | Type           | Default                          | Used for                                       |
-| ----------------- | -------------- | -------------------------------- | ---------------------------------------------- |
-| `tertiary`        | PaletteColor   | `#135560` (forest)               | Accordion headers, some toolbar chrome         |
-| `quaternary`      | PaletteColor   | `#FFB11D` (mandarin)             | FAB secondary background                       |
-| `highlight`       | PaletteColor   | `#FFB11D` (mandarin)             | Selection highlights                           |
-| `coverage`        | `string`       | `grey[400]`                      | Coverage track fill                            |
-| `insertion`       | `string`       | `#800080`                        | Insertion markers in alignments                |
-| `deletion`        | `string`       | `#808080`                        | Deletion markers in alignments                 |
-| `softclip`        | `string`       | `#00f`                           | Soft-clipped bases                             |
-| `hardclip`        | `string`       | `#f00`                           | Hard-clipped bases                             |
-| `skip`            | `string`       | `#009a8a`                        | Skipped regions (introns)                      |
-| `modificationFwd` | `string`       | `#c8c8c8`                        | Base modifications, forward strand             |
-| `modificationRev` | `string`       | `#c8dcc8`                        | Base modifications, reverse strand             |
-| `mutedSnpBase`    | `string`       | `#888`                           | Low-frequency SNP bases                        |
-| `startCodon`      | `string`       | `#3e3`                           | Start codon in gene/CDS tracks                 |
-| `stopCodon`       | `string`       | `#e22`                           | Stop codon in gene/CDS tracks                  |
-| `bases.A`         | PaletteColor   | green                            | Adenine                                        |
-| `bases.C`         | PaletteColor   | blue                             | Cytosine                                       |
-| `bases.G`         | PaletteColor   | orange                           | Guanine                                        |
-| `bases.T`         | PaletteColor   | red                              | Thymine                                        |
-| `frames[1..6]`    | PaletteColor[] | grey shades                      | Reading frame coloring (non-CDS)               |
-| `framesCDS[1..6]` | PaletteColor[] | red/green/blue alternating       | Reading frame coloring (CDS)                   |
+| Key               | Type           | Default                    | Used for                               |
+| ----------------- | -------------- | -------------------------- | -------------------------------------- |
+| `tertiary`        | PaletteColor   | `#135560` (forest)         | Accordion headers, some toolbar chrome |
+| `quaternary`      | PaletteColor   | `#FFB11D` (mandarin)       | FAB secondary background               |
+| `highlight`       | PaletteColor   | `#FFB11D` (mandarin)       | Selection highlights                   |
+| `coverage`        | `string`       | `grey[400]`                | Coverage track fill                    |
+| `insertion`       | `string`       | `#800080`                  | Insertion markers in alignments        |
+| `deletion`        | `string`       | `#808080`                  | Deletion markers in alignments         |
+| `softclip`        | `string`       | `#00f`                     | Soft-clipped bases                     |
+| `hardclip`        | `string`       | `#f00`                     | Hard-clipped bases                     |
+| `skip`            | `string`       | `#009a8a`                  | Skipped regions (introns)              |
+| `modificationFwd` | `string`       | `#c8c8c8`                  | Base modifications, forward strand     |
+| `modificationRev` | `string`       | `#c8dcc8`                  | Base modifications, reverse strand     |
+| `mutedSnpBase`    | `string`       | `#888`                     | Low-frequency SNP bases                |
+| `startCodon`      | `string`       | `#3e3`                     | Start codon in gene/CDS tracks         |
+| `stopCodon`       | `string`       | `#e22`                     | Stop codon in gene/CDS tracks          |
+| `bases.A`         | PaletteColor   | green                      | Adenine                                |
+| `bases.C`         | PaletteColor   | blue                       | Cytosine                               |
+| `bases.G`         | PaletteColor   | orange                     | Guanine                                |
+| `bases.T`         | PaletteColor   | red                        | Thymine                                |
+| `frames[1..6]`    | PaletteColor[] | grey shades                | Reading frame coloring (non-CDS)       |
+| `framesCDS[1..6]` | PaletteColor[] | red/green/blue alternating | Reading frame coloring (CDS)           |
 
 ## Exported color constants
 
@@ -52,10 +52,10 @@ plain constants from `@jbrowse/core/ui/theme`:
 
 ```ts
 import {
-  methylated5mC,     // '#ff0000'
-  unmethylated5mC,   // '#0000ff'
-  methylated5hmC,    // '#ffc0cb'
-  unmethylated5hmC,  // '#800080'
+  methylated5mC, // '#ff0000'
+  unmethylated5mC, // '#0000ff'
+  methylated5hmC, // '#ffc0cb'
+  unmethylated5hmC, // '#800080'
 } from '@jbrowse/core/ui/theme'
 ```
 

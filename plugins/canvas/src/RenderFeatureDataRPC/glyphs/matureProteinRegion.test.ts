@@ -110,8 +110,16 @@ describe('findGlyph routing for CDS', () => {
 
 describe('layoutMatureProteinRegion', () => {
   it('makes one row per mature region, sorted by position', () => {
-    const c1 = mockFeature({ type: 'mature_protein_region', start: 300, end: 400 })
-    const c2 = mockFeature({ type: 'mature_protein_region', start: 100, end: 200 })
+    const c1 = mockFeature({
+      type: 'mature_protein_region',
+      start: 300,
+      end: 400,
+    })
+    const c2 = mockFeature({
+      type: 'mature_protein_region',
+      start: 100,
+      end: 200,
+    })
     const feature = mockFeature({
       type: 'CDS',
       start: 100,
@@ -185,7 +193,10 @@ describe('collectRenderData for mature protein regions', () => {
       'mature_protein_region',
     ])
     const config = mockDisplayConfig()
-    const layout = findGlyph(feature, config)({ feature, reversed: false, config })
+    const layout = findGlyph(
+      feature,
+      config,
+    )({ feature, reversed: false, config })
 
     const result = collectRenderData([layout], 0, 10000, config, theme, false)
 
@@ -211,7 +222,10 @@ describe('collectRenderData for mature protein regions', () => {
       parentFeature: parent,
     })
     const config = mockDisplayConfig()
-    const layout = findGlyph(feature, config)({ feature, reversed: false, config })
+    const layout = findGlyph(
+      feature,
+      config,
+    )({ feature, reversed: false, config })
 
     const result = collectRenderData([layout], 0, 10000, config, theme, false)
     expect(result.rectPositions).toHaveLength(2 * 2)

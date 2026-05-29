@@ -144,9 +144,13 @@ describe('applyInitLayout', () => {
     const session = createSession()
     const { api, addPanelCalls } = createFakeApi()
 
-    const firstPanelId = applyInitLayout(api, session as unknown as SessionArg, {
-      viewIds: ['v1', 'v2'],
-    })
+    const firstPanelId = applyInitLayout(
+      api,
+      session as unknown as SessionArg,
+      {
+        viewIds: ['v1', 'v2'],
+      },
+    )
 
     expect(addPanelCalls).toHaveLength(1)
     expect(firstPanelId).toBeDefined()

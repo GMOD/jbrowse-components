@@ -1,6 +1,8 @@
 ---
 title: RNA-seq analysis
-description: Understand what RNA-seq looks like in the genome browser, from spliced reads to splice arcs
+description:
+  Understand what RNA-seq looks like in the genome browser, from spliced reads
+  to splice arcs
 guide_category: Tutorials
 ---
 
@@ -201,11 +203,10 @@ JBrowse Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
 
 The splice arcs and per-read splicing shown above come for free from the CIGAR
 strings — no extra configuration is needed. For a precomputed coverage signal
-(e.g. a strand-specific BigWig produced by your aligner), load it separately as a
-[quantitative track](/docs/user_guides/quantitative_track). For the full set of
-alignment display options — including the arc display, soft-clipping, and
-coloring — see the
-[alignments track guide](/docs/user_guides/alignments_track).
+(e.g. a strand-specific BigWig produced by your aligner), load it separately as
+a [quantitative track](/docs/user_guides/quantitative_track). For the full set
+of alignment display options — including the arc display, soft-clipping, and
+coloring — see the [alignments track guide](/docs/user_guides/alignments_track).
 
 ## Conclusion
 

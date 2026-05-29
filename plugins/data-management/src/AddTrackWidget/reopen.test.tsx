@@ -12,7 +12,13 @@ function addAsm(session: ReturnType<typeof createTestSession>, name: string) {
       adapter: {
         type: 'FromConfigSequenceAdapter',
         features: [
-          { refName: 'ctg', uniqueId: name, start: 0, end: 10, seq: 'acgtacgtac' },
+          {
+            refName: 'ctg',
+            uniqueId: name,
+            start: 0,
+            end: 10,
+            seq: 'acgtacgtac',
+          },
         ],
       },
     },
@@ -25,10 +31,14 @@ test('reopening add-track widget for a different view resets stale assembly', ()
   addAsm(session, 'asmB')
 
   const viewA = session.addView('LinearGenomeView', {
-    displayedRegions: [{ assemblyName: 'asmA', refName: 'ctg', start: 0, end: 10 }],
+    displayedRegions: [
+      { assemblyName: 'asmA', refName: 'ctg', start: 0, end: 10 },
+    ],
   })
   const viewB = session.addView('LinearGenomeView', {
-    displayedRegions: [{ assemblyName: 'asmB', refName: 'ctg', start: 0, end: 10 }],
+    displayedRegions: [
+      { assemblyName: 'asmB', refName: 'ctg', start: 0, end: 10 },
+    ],
   })
 
   // open from view A and enter some data, then close without submitting
@@ -55,7 +65,9 @@ test('reopening add-track widget for the same view preserves entered data', () =
   addAsm(session, 'asmA')
 
   const viewA = session.addView('LinearGenomeView', {
-    displayedRegions: [{ assemblyName: 'asmA', refName: 'ctg', start: 0, end: 10 }],
+    displayedRegions: [
+      { assemblyName: 'asmA', refName: 'ctg', start: 0, end: 10 },
+    ],
   })
 
   const w1 = session.addWidget('AddTrackWidget', 'addTrackWidget', {

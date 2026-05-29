@@ -1,12 +1,13 @@
 ---
 title: Configuration schema
-description: Slot types, inheritance, preProcessSnapshot, and reading config values
+description:
+  Slot types, inheritance, preProcessSnapshot, and reading config values
 guide_category: Core concepts
 ---
 
-JBrowse configuration is built with `ConfigurationSchema`, a thin wrapper
-around MST models. Every adapter, track, display, and renderer declares a
-schema; instances are created from config JSON and observed reactively.
+JBrowse configuration is built with `ConfigurationSchema`, a thin wrapper around
+MST models. Every adapter, track, display, and renderer declares a schema;
+instances are created from config JSON and observed reactively.
 
 ## Defining a schema
 
@@ -14,7 +15,7 @@ schema; instances are created from config JSON and observed reactively.
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 const MyAdapterConfigSchema = ConfigurationSchema(
-  'MyAdapter',           // schema name, must match the `type` field in config
+  'MyAdapter', // schema name, must match the `type` field in config
   {
     // Slots — each becomes an observable MST property
     endpoint: {
@@ -33,26 +34,26 @@ const MyAdapterConfigSchema = ConfigurationSchema(
     },
   },
   {
-    explicitlyTyped: true,  // requires `type` field in config JSON
+    explicitlyTyped: true, // requires `type` field in config JSON
   },
 )
 ```
 
 ## Slot types
 
-| Type            | JS type              | Notes                                      |
-| --------------- | -------------------- | ------------------------------------------ |
-| `string`        | `string`             |                                            |
-| `text`          | `string`             | Alias for string                           |
-| `number`        | `number`             | Float                                      |
-| `integer`       | `number`             | Integer                                    |
-| `boolean`       | `boolean`            |                                            |
-| `color`         | `string`             | Validated CSS color string                 |
-| `fileLocation`  | `FileLocation`       | `{ uri, locationType }` or `{ localPath }` |
-| `stringArray`   | `string[]`           |                                            |
-| `stringArrayMap`| `Record<string, string[]>` |                                      |
-| `numberMap`     | `Record<string, number>` |                                        |
-| `frozen`        | `unknown`            | Arbitrary JSON; not deeply reactive        |
+| Type             | JS type                    | Notes                                      |
+| ---------------- | -------------------------- | ------------------------------------------ |
+| `string`         | `string`                   |                                            |
+| `text`           | `string`                   | Alias for string                           |
+| `number`         | `number`                   | Float                                      |
+| `integer`        | `number`                   | Integer                                    |
+| `boolean`        | `boolean`                  |                                            |
+| `color`          | `string`                   | Validated CSS color string                 |
+| `fileLocation`   | `FileLocation`             | `{ uri, locationType }` or `{ localPath }` |
+| `stringArray`    | `string[]`                 |                                            |
+| `stringArrayMap` | `Record<string, string[]>` |                                            |
+| `numberMap`      | `Record<string, number>`   |                                            |
+| `frozen`         | `unknown`                  | Arbitrary JSON; not deeply reactive        |
 
 For enums, use `type: 'stringEnum'` and add a `model` field:
 
@@ -72,8 +73,9 @@ Displays inherit base display slots by passing `baseConfiguration`:
 import type { LinearGenomeViewPlugin } from '@jbrowse/plugin-linear-genome-view'
 
 export default function configSchemaF(pluginManager: PluginManager) {
-  const { baseLinearDisplayConfigSchema } =
-    pluginManager.getPlugin('LinearGenomeViewPlugin') as LinearGenomeViewPlugin
+  const { baseLinearDisplayConfigSchema } = pluginManager.getPlugin(
+    'LinearGenomeViewPlugin',
+  ) as LinearGenomeViewPlugin
 
   return ConfigurationSchema(
     'LinearMyDisplay',
@@ -128,8 +130,8 @@ for each display type the track supports.
 
 ## Reading config values
 
-Use `getConf` when you hold a **state model** that has a `.configuration`
-member (a track model, display model, etc.):
+Use `getConf` when you hold a **state model** that has a `.configuration` member
+(a track model, display model, etc.):
 
 ```ts
 import { getConf } from '@jbrowse/core/configuration'
@@ -155,8 +157,8 @@ const displayMode = readConfObject(config, 'displayMode')
 
 Keep them separate. `getConf` requires the model to have a `.configuration`
 wrapper; `readConfObject` takes the raw config node. A TypeScript error
-"Property 'configuration' is missing" is the signal that you have the raw
-config and should be calling `readConfObject`.
+"Property 'configuration' is missing" is the signal that you have the raw config
+and should be calling `readConfObject`.
 
 Both accept a path array for nested access:
 
@@ -178,12 +180,12 @@ types.model('LinearMyDisplay', {
 })
 ```
 
-`ConfigurationReference` is a union of a string ID reference and the full
-config snapshot. At runtime it resolves to the MST config node — either by
-looking up the ID in the session's config registry, or by hydrating the inline
-snapshot.
+`ConfigurationReference` is a union of a string ID reference and the full config
+snapshot. At runtime it resolves to the MST config node — either by looking up
+the ID in the session's config registry, or by hydrating the inline snapshot.
 
 The resolution dispatch is based on `explicitIdentifier` in the schema options:
+
 - `'trackId'` → `TrackConfigurationReference` (looks in `session.tracksById`)
 - `'displayId'` → `DisplayConfigurationReference`
 - anything else → plain reference

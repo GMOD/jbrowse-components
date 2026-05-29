@@ -9,9 +9,9 @@ test('makeTrackId slugifies and marks session tracks', () => {
 
 test('canSubmit requires a GWAS file, a name, and an assembly', () => {
   const ld = uri('a.bed.gz')
-  expect(canSubmit({ gwasLocation: ld, trackName: 'x', assembly: 'hg38' })).toBe(
-    true,
-  )
+  expect(
+    canSubmit({ gwasLocation: ld, trackName: 'x', assembly: 'hg38' }),
+  ).toBe(true)
   expect(
     canSubmit({ gwasLocation: undefined, trackName: 'x', assembly: 'hg38' }),
   ).toBe(false)

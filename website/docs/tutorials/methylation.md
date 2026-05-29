@@ -110,8 +110,8 @@ signal for quick navigation to regions of interest.
 
 - [Alignments track](/docs/user_guides/alignments_track) — per-read modification
   coloring, sorting, and filtering options for BAM/CRAM
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) — display
-  modes for the bedMethyl subtracks (multirow, overlap, shared scales)
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) —
+  display modes for the bedMethyl subtracks (multirow, overlap, shared scales)
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — another
   long-read (PacBio HiFi) workflow using the same COLO829/HG008-style data
 - [modkit documentation](https://nanoporetech.github.io/modkit/) — generating

@@ -89,7 +89,8 @@ conversion.
 Many people have heard of the term "recombination" or "crossing over" with
 regards to DNA, but what is it?
 
-The [NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over)
+The
+[NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over)
 defines it as "the exchange of DNA between paired homologous chromosomes (one
 from each parent) that occurs during the development of egg and sperm cells
 (meiosis)."

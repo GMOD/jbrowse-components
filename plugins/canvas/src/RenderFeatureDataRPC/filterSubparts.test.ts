@@ -69,11 +69,9 @@ describe('getSubparts implied UTRs', () => {
   })
 
   it('implies UTRs for primary_transcript (was previously skipped)', () => {
-    expect(typesOf(getSubparts(transcript('primary_transcript'), config))).toEqual([
-      'CDS',
-      'five_prime_UTR',
-      'three_prime_UTR',
-    ])
+    expect(
+      typesOf(getSubparts(transcript('primary_transcript'), config)),
+    ).toEqual(['CDS', 'five_prime_UTR', 'three_prime_UTR'])
   })
 
   it('implies UTRs around a lowercase cds', () => {

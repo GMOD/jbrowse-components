@@ -46,5 +46,7 @@ test('partner looked up by position when name is absent', () => {
 
 test('SNP absent from the LD data renders grey (undefined r²)', () => {
   const fn = makeLdColorEvaluator(ld, 'rsIndex', 'chr1')
-  expect(fn(feat({ name: 'rsUnknown', start: 999 }))).toBe(ldBinColor(undefined))
+  expect(fn(feat({ name: 'rsUnknown', start: 999 }))).toBe(
+    ldBinColor(undefined),
+  )
 })

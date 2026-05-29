@@ -30,9 +30,23 @@ test('maps r² of the partner SNP, keyed by id and by chr:bp, both orientations'
   const ld = await buildLdToIndex({
     adapter: source([
       // index as snpA
-      rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsB', chrB: 'chr1', bpB: 200, r2: 0.8 }),
+      rec({
+        snpA: 'rsIndex',
+        bpA: 100,
+        snpB: 'rsB',
+        chrB: 'chr1',
+        bpB: 200,
+        r2: 0.8,
+      }),
       // index as snpB
-      rec({ snpA: 'rsC', chrA: 'chr1', bpA: 300, snpB: 'rsIndex', bpB: 100, r2: 0.4 }),
+      rec({
+        snpA: 'rsC',
+        chrA: 'chr1',
+        bpA: 300,
+        snpB: 'rsIndex',
+        bpB: 100,
+        r2: 0.4,
+      }),
     ]),
     region,
     indexSnp: 'rsIndex',
@@ -47,7 +61,14 @@ test('maps r² of the partner SNP, keyed by id and by chr:bp, both orientations'
 test('matches the index SNP by chr:bp as well as by id', async () => {
   const ld = await buildLdToIndex({
     adapter: source([
-      rec({ snpA: 'rsA', chrA: 'chr1', bpA: 100, snpB: 'rsB', bpB: 200, r2: 0.5 }),
+      rec({
+        snpA: 'rsA',
+        chrA: 'chr1',
+        bpA: 100,
+        snpB: 'rsB',
+        bpB: 200,
+        r2: 0.5,
+      }),
     ]),
     region,
     indexSnp: 'chr1:100',

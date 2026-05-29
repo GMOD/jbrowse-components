@@ -85,10 +85,7 @@ describe('loadHubSpec', () => {
 
     void loadHubSpec(
       {
-        hubURL: [
-          'http://example.com/hub1.txt',
-          'http://example.com/hub2.txt',
-        ],
+        hubURL: ['http://example.com/hub1.txt', 'http://example.com/hub2.txt'],
       },
       pluginManager,
     )

@@ -19,7 +19,8 @@ export function makeLdColorEvaluator(
     if (name === indexSnp || key === indexSnp) {
       return ldIndexColor
     }
-    const r2 = (name !== undefined ? ld.r2ByKey.get(name) : undefined) ??
+    const r2 =
+      (name !== undefined ? ld.r2ByKey.get(name) : undefined) ??
       ld.r2ByKey.get(key)
     return ldBinColor(r2)
   }

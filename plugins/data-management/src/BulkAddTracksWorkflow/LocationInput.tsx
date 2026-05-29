@@ -132,7 +132,9 @@ const LocationInput = observer(function LocationInput({
         <TextField
           className={classes.section}
           label="File URLs (one per line)"
-          placeholder={'https://example.com/a.bam\nhttps://example.com/a.bam.bai'}
+          placeholder={
+            'https://example.com/a.bam\nhttps://example.com/a.bam.bai'
+          }
           multiline
           minRows={4}
           fullWidth

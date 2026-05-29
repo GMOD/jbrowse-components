@@ -233,7 +233,9 @@ async function main() {
 
     const prev = report[name]
     if (prev) {
-      console.log(`  previous verdict: ${prev.status}${prev.note ? ` — ${prev.note}` : ''}`)
+      console.log(
+        `  previous verdict: ${prev.status}${prev.note ? ` — ${prev.note}` : ''}`,
+      )
     }
 
     if (exists && !noOpen) {
@@ -276,7 +278,9 @@ async function main() {
 
   const bad = Object.values(report).filter(v => v.status === 'bad')
   console.log('━'.repeat(72))
-  console.log(`Reviewed ${reviewed} this session. Report: ${path.relative(websiteRoot, reportPath)}`)
+  console.log(
+    `Reviewed ${reviewed} this session. Report: ${path.relative(websiteRoot, reportPath)}`,
+  )
   if (bad.length > 0) {
     console.log(`\n${bad.length} marked bad — regenerate with:`)
     for (const v of bad) {

@@ -69,9 +69,7 @@ test('does not overwrite an existing config', async () => {
 test('uses port 9090 if not specified', async () => {
   await runInTmpDir(async () => {
     const { stdout } = await runCommand(['admin-server'])
-    expect(stdout).toMatch(
-      /http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,}/,
-    )
+    expect(stdout).toMatch(/http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,}/)
     await killExpress({ stdout })
   })
 })

@@ -15,7 +15,9 @@ function names(pairs: ReturnType<typeof pairLocations>) {
 
 test('pairs bam with its .bam.bai', () => {
   const pairs = pairLocations([uri('/data/a.bam'), uri('/data/a.bam.bai')])
-  expect(names(pairs)).toEqual([{ file: '/data/a.bam', index: '/data/a.bam.bai' }])
+  expect(names(pairs)).toEqual([
+    { file: '/data/a.bam', index: '/data/a.bam.bai' },
+  ])
 })
 
 test('pairs bam with short-form .bai', () => {

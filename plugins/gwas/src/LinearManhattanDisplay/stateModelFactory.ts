@@ -1,6 +1,9 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, readConfObject } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -25,7 +28,7 @@ import {
   getNiceDomain,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
-import { autorun, observable  } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
 

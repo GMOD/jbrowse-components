@@ -278,7 +278,9 @@ describe('findGlyph', () => {
           type: 'child',
           start: 0,
           end: 500,
-          subfeatures: [mockFeature({ type: 'grandchild', start: 0, end: 100 })],
+          subfeatures: [
+            mockFeature({ type: 'grandchild', start: 0, end: 100 }),
+          ],
         }),
       ],
     })

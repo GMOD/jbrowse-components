@@ -22,10 +22,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type {
-  StopToken,
-  StopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
 const SLASH_CODE = 47 // '/'
 const PIPE_CODE = 124 // '|'
 const ZERO_CODE = 48 // '0'

@@ -96,7 +96,8 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
       const mostFrequentAlt = getMostFrequentAlt(alleleCounts)
       if (
         mostFrequentAlt !== undefined &&
-        calculateMinorAlleleFrequency(alleleCounts) >= minorAlleleFrequencyFilter
+        calculateMinorAlleleFrequency(alleleCounts) >=
+          minorAlleleFrequencyFilter
       ) {
         results.push({ feature, mostFrequentAlt })
       }

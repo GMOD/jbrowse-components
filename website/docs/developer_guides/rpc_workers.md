@@ -6,8 +6,8 @@ guide_category: Core concepts
 
 JBrowse runs data-intensive work (parsing adapters, computing layouts, encoding
 GPU buffers) inside web workers via an RPC layer. The main thread dispatches
-calls by name; a pool of workers receives them and returns results via structured
-clone.
+calls by name; a pool of workers receives them and returns results via
+structured clone.
 
 ## The RPC lifecycle
 
@@ -22,9 +22,8 @@ rpcManager.call('MyMethod', args)
 result
 ```
 
-Sessions are sticky: a `sessionId` is assigned to one worker via round-robin
-and stays there, so adapter caches remain warm across calls from the same
-session.
+Sessions are sticky: a `sessionId` is assigned to one worker via round-robin and
+stays there, so adapter caches remain warm across calls from the same session.
 
 ## Implementing an RPC method
 
@@ -137,8 +136,8 @@ const result = await rpcManager.call(sessionId, 'MyRpcMethod', {
 The worker boundary uses the [Structured Clone Algorithm][sca]. Safe types:
 
 - Primitives — `string`, `number`, `boolean`, `null`, `undefined`
-- `ArrayBuffer`, typed arrays (`Uint8Array`, `Float32Array`, …) — use `rpcResult`
-  transfer list to avoid copying
+- `ArrayBuffer`, typed arrays (`Uint8Array`, `Float32Array`, …) — use
+  `rpcResult` transfer list to avoid copying
 - `File`, `Blob`
 - Plain objects and arrays (recursively)
 - `Map`, `Set`, `Date`, `RegExp`
@@ -205,4 +204,5 @@ override it per-driver in config:
 }
 ```
 
-[sca]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
+[sca]:
+  https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm

@@ -93,7 +93,9 @@ function RecentSessionCard({
           action={
             <>
               <Tooltip
-                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                title={
+                  isFavorite ? 'Remove from favorites' : 'Add to favorites'
+                }
               >
                 <IconButton
                   onClick={event => {

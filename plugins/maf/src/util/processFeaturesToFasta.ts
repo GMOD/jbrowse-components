@@ -126,8 +126,14 @@ export function processFeaturesToFasta({
     )
   }
 
-  const colToGenomePos = Array.from({ length: rlen }, (_, i) => region.start + i)
-  return { rows: outputRowsBytes.map(arr => decoder.decode(arr)), colToGenomePos }
+  const colToGenomePos = Array.from(
+    { length: rlen },
+    (_, i) => region.start + i,
+  )
+  return {
+    rows: outputRowsBytes.map(arr => decoder.decode(arr)),
+    colToGenomePos,
+  }
 }
 
 /**

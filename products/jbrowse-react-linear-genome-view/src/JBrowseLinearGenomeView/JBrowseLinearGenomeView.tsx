@@ -53,8 +53,12 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const viewCol = '1fr'
   const gridColumns =
     drawerPosition === 'left'
-      ? [drawerCol, viewCol].filter((c): c is string => c !== undefined).join(' ')
-      : [viewCol, drawerCol].filter((c): c is string => c !== undefined).join(' ')
+      ? [drawerCol, viewCol]
+          .filter((c): c is string => c !== undefined)
+          .join(' ')
+      : [viewCol, drawerCol]
+          .filter((c): c is string => c !== undefined)
+          .join(' ')
 
   return (
     <ThemeProvider theme={theme}>

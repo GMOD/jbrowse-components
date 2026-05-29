@@ -20,8 +20,14 @@ const LD_BIN_DEFS: (LdSwatch & { min: number })[] = [
   { min: 0, color: '#357ebd', label: '< 0.2' },
 ]
 
-export const LD_INDEX_SWATCH: LdSwatch = { label: 'Index SNP', color: '#9632b8' }
-export const LD_MISSING_SWATCH: LdSwatch = { label: 'No LD data', color: '#b8b8b8' }
+export const LD_INDEX_SWATCH: LdSwatch = {
+  label: 'Index SNP',
+  color: '#9632b8',
+}
+export const LD_MISSING_SWATCH: LdSwatch = {
+  label: 'No LD data',
+  color: '#b8b8b8',
+}
 
 // Legend rows, top → bottom: index, then r² bins high→low, then the no-data grey.
 export const LD_LEGEND: LdSwatch[] = [

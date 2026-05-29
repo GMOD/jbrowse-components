@@ -90,16 +90,16 @@ export default class MyTextSearchAdapter
 
 ## BaseResult fields
 
-| Field           | Type     | Purpose                                                  |
-| --------------- | -------- | -------------------------------------------------------- |
-| `label`         | string   | Primary display text; used for exact-match filtering     |
-| `displayString` | string?  | Alternate display text (falls back to `label`)           |
-| `locString`     | string?  | Location to navigate to, e.g. `chr1:1000..2000`         |
-| `trackId`       | string?  | If set, the view opens or highlights this track          |
-| `results`       | BaseResult[]? | Nested results; shown in a disambiguation dialog   |
+| Field           | Type          | Purpose                                              |
+| --------------- | ------------- | ---------------------------------------------------- |
+| `label`         | string        | Primary display text; used for exact-match filtering |
+| `displayString` | string?       | Alternate display text (falls back to `label`)       |
+| `locString`     | string?       | Location to navigate to, e.g. `chr1:1000..2000`      |
+| `trackId`       | string?       | If set, the view opens or highlights this track      |
+| `results`       | BaseResult[]? | Nested results; shown in a disambiguation dialog     |
 
-Results with `locString` navigate directly. Results with nested `results` show
-a dialog. Results with neither treat the label as a reference name.
+Results with `locString` navigate directly. Results with nested `results` show a
+dialog. Results with neither treat the label as a reference name.
 
 ## Configuration schema
 

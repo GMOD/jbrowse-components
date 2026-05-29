@@ -4,8 +4,8 @@
 
 Adding a track-menu setting? Decide two things.
 
-**Storage:** prefer `configOverrides` (`ConfigOverrideMixin`) for anything that's
-a *display option*. Read with `getConfWithOverride` if it already has a
+**Storage:** prefer `configOverrides` (`ConfigOverrideMixin`) for anything
+that's a _display option_. Read with `getConfWithOverride` if it already has a
 config-schema default, or `getOverride` if not — either way, adding a config
 default later is a one-line schema change with no code edits, so the override
 map is the future-proof home. Plain MST fields are the older mechanism and many
@@ -17,18 +17,19 @@ chasing a crisp rule.
 are auto-wired by MobX; **tier 1 is manual** because the worker boundary defeats
 MobX tracking.
 
-| Tier | Effect | Where to wire it |
-| --- | --- | --- |
-| 1 refetch | clears `rpcDataMap`, worker re-runs | list in `rpcProps()` **and** read in worker |
-| 2 relayout | redo main-thread Y-layout | read in `laidOutPileupMap` getter |
-| 3 arc recompute | rebuild arcs (no refetch) | read in `arcsComputed` getter |
-| 4 rerender | redraw only | read in `renderState` getter |
+| Tier            | Effect                              | Where to wire it                            |
+| --------------- | ----------------------------------- | ------------------------------------------- |
+| 1 refetch       | clears `rpcDataMap`, worker re-runs | list in `rpcProps()` **and** read in worker |
+| 2 relayout      | redo main-thread Y-layout           | read in `laidOutPileupMap` getter           |
+| 3 arc recompute | rebuild arcs (no refetch)           | read in `arcsComputed` getter               |
+| 4 rerender      | redraw only                         | read in `renderState` getter                |
 
-Gotchas: arc settings (`drawInter`/`drawLongRange`/`arcColorByType`/`pairedArcs`)
-stay tier 3 — don't add them to `rpcProps()`. Only `sortedBy.tag` flows to the
-worker (`sortTag` getter), so sort-*position* changes re-layout without
-refetching. Never put a fetch-result derivative in `rpcProps()` (infinite loop —
-see `agent-docs/ARCHITECTURE.md`).
+Gotchas: arc settings
+(`drawInter`/`drawLongRange`/`arcColorByType`/`pairedArcs`) stay tier 3 — don't
+add them to `rpcProps()`. Only `sortedBy.tag` flows to the worker (`sortTag`
+getter), so sort-_position_ changes re-layout without refetching. Never put a
+fetch-result derivative in `rpcProps()` (infinite loop — see
+`agent-docs/ARCHITECTURE.md`).
 
 ## Layout architecture
 
@@ -55,9 +56,9 @@ that matches end-array performance in the common case.
 
 ### Worker contract
 
-`executeRenderAlignmentData.ts` (chain branch) returns chain metadata arrays
-and all Y arrays initialized to 0. The main thread fills real Y values and
-builds connecting lines / Flatbush.
+`executeRenderAlignmentData.ts` (chain branch) returns chain metadata arrays and
+all Y arrays initialized to 0. The main thread fills real Y values and builds
+connecting lines / Flatbush.
 
 ## SVG export pipeline
 

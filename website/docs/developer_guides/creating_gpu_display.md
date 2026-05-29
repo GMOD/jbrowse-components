@@ -1,15 +1,14 @@
 ---
 title: Creating a GPU-accelerated display
-description: Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
+description:
+  Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
 guide_category: Creating pluggable elements
 ---
 
-:::note
-This guide covers the GPU rendering path introduced in the WebGL/WebGPU
-migration. If you only need Canvas2D rendering, the standard
-`createDisplay` path is simpler. Use this guide when you need hardware-
-accelerated rendering for large or dense datasets.
-:::
+:::note This guide covers the GPU rendering path introduced in the WebGL/WebGPU
+migration. If you only need Canvas2D rendering, the standard `createDisplay`
+path is simpler. Use this guide when you need hardware- accelerated rendering
+for large or dense datasets. :::
 
 ## Architecture overview
 
@@ -23,10 +22,11 @@ executeRender()  →    rpcDataMap (per region)   →    upload autorun
                       renderState (frame uniforms)
 ```
 
-The model keeps two autoruns running at all times (owned by `GpuLifecycleMixin`):
+The model keeps two autoruns running at all times (owned by
+`GpuLifecycleMixin`):
 
-- **Upload autorun** — fires when `laidOutDataMap` or the backend changes;
-  calls `backend.uploadRegion()` for regions that changed.
+- **Upload autorun** — fires when `laidOutDataMap` or the backend changes; calls
+  `backend.uploadRegion()` for regions that changed.
 - **Render autorun** — fires when `renderTick` bumps (after every upload) or
   when frame-level state like scroll position changes; calls
   `backend.renderBlocks()`.
@@ -38,9 +38,9 @@ calls WebGPU or WebGL2 directly.
 See `agent-docs/ARCHITECTURE.md` for the full lifecycle spec and
 `packages/core/src/gpu/CLAUDE.md` for HAL invariants.
 
-The simplest concrete reference is
-`plugins/canvas/src/LinearBasicDisplay/` — a generic feature display with
-four shader passes (rectangles, lines, chevrons, arrows).
+The simplest concrete reference is `plugins/canvas/src/LinearBasicDisplay/` — a
+generic feature display with four shader passes (rectangles, lines, chevrons,
+arrows).
 
 ## Files to create
 
@@ -69,7 +69,7 @@ plugins/myplugin/src/LinearMyDisplay/
 // What the RPC worker returns per region
 export interface MyUploadData {
   featureCount: number
-  positionsF32: Float32Array   // interleaved x, width per feature
+  positionsF32: Float32Array // interleaved x, width per feature
   colorsU32: Uint32Array
 }
 
@@ -117,6 +117,7 @@ float4 fragmentMain(...) -> SV_Target {
 ```
 
 Run `pnpm gen:shaders` after every edit. This emits `my.generated.ts` with:
+
 - `WGSL_SOURCE`, `GLSL_VERTEX`, `GLSL_FRAGMENT`
 - `INSTANCE_STRIDE_BYTES`, field offset constants
 - A typed `writeInstance()` packer function
@@ -124,9 +125,9 @@ Run `pnpm gen:shaders` after every edit. This emits `my.generated.ts` with:
 
 **Never hand-edit `*.generated.ts`.**
 
-Use `bpHi`/`bpLo` (high/low float32 split) for genomic positions in shader
-code. In TypeScript outside shader uniform writes, use plain `bp - bpStart` —
-the hi/lo split is only needed inside the shader.
+Use `bpHi`/`bpLo` (high/low float32 split) for genomic positions in shader code.
+In TypeScript outside shader uniform writes, use plain `bp - bpStart` — the
+hi/lo split is only needed inside the shader.
 
 The `canvas_width` / `canvas_height` uniforms are CSS pixels — do not scale by
 `devicePixelRatio` in your uniform writes.
@@ -146,7 +147,10 @@ import type { MyUploadData, MyRenderState } from './myBackendTypes.ts'
 
 const MY_PASS = slangPass('my', MY_SHADER)
 
-export class GpuMyRenderer extends GpuPerRegionBackend<MyUploadData, MyRenderState> {
+export class GpuMyRenderer extends GpuPerRegionBackend<
+  MyUploadData,
+  MyRenderState
+> {
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
   }
@@ -184,8 +188,8 @@ export class GpuMyRenderer extends GpuPerRegionBackend<MyUploadData, MyRenderSta
 
 ## Step 4: Canvas2D renderer (fallback)
 
-Implement the same interface using `ctx.fillRect` etc. This runs when WebGPU
-and WebGL2 are both unavailable:
+Implement the same interface using `ctx.fillRect` etc. This runs when WebGPU and
+WebGL2 are both unavailable:
 
 ```ts
 // Canvas2DMyRenderer.ts
@@ -193,7 +197,10 @@ import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu'
 
 import type { MyUploadData, MyRenderState } from './myBackendTypes.ts'
 
-export class Canvas2DMyRenderer extends Canvas2DPerRegionBackend<MyUploadData, MyRenderState> {
+export class Canvas2DMyRenderer extends Canvas2DPerRegionBackend<
+  MyUploadData,
+  MyRenderState
+> {
   renderBlocks(
     blocks: FeatureRenderBlock[],
     regions: ReadonlyMap<number, MyUploadData>,
@@ -240,8 +247,8 @@ export function MyRendererFactory(canvas: HTMLCanvasElement): MyBackend {
 
 ## Step 6: MST model
 
-Compose `MultiRegionDisplayMixin` (which includes `GpuLifecycleMixin`) and
-add a `startBackend` action:
+Compose `MultiRegionDisplayMixin` (which includes `GpuLifecycleMixin`) and add a
+`startBackend` action:
 
 ```ts
 // model.ts
@@ -289,7 +296,11 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             render: b => {
               if (self.laidOutDataMap.size === 0) return false
-              b.renderBlocks(self.renderBlocks, self.laidOutDataMap, self.renderState)
+              b.renderBlocks(
+                self.renderBlocks,
+                self.laidOutDataMap,
+                self.renderState,
+              )
               return true
             },
           })
@@ -319,7 +330,9 @@ const MyComponent = observer(({ model }: { model: LinearMyDisplayModel }) => {
   const { canvasRef, error } = useGpuBackend(MyRendererFactory, model)
 
   return (
-    <div style={{ position: 'relative', height: model.height, overflow: 'hidden' }}>
+    <div
+      style={{ position: 'relative', height: model.height, overflow: 'hidden' }}
+    >
       <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} />
       {error ? <DisplayErrorBar model={model} /> : null}
     </div>
@@ -336,8 +349,8 @@ export default MyComponent
 
 In your plugin's `install()`, register the display type pointing at your model
 factory and React component (see
-[Creating custom display types](/docs/developer_guides/creating_display) for
-the full registration pattern).
+[Creating custom display types](/docs/developer_guides/creating_display) for the
+full registration pattern).
 
 ## Key invariants
 

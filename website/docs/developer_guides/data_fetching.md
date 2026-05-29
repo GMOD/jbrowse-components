@@ -175,9 +175,10 @@ lifecycle. Each call to `fetchRegions()` rotates the stop token:
 - On completion (success or error), `fetchGeneration` increments once,
   re-triggering `FetchVisibleRegions` to check if anything still needs loading
 
-`isLoading` is `true` while `activeStopToken !== undefined`. `FetchVisibleRegions`
-guards against firing mid-fetch with `untracked(() => self.isLoading)`, which
-reads the value without tracking it as a reactive dependency.
+`isLoading` is `true` while `activeStopToken !== undefined`.
+`FetchVisibleRegions` guards against firing mid-fetch with
+`untracked(() => self.isLoading)`, which reads the value without tracking it as
+a reactive dependency.
 
 ## Composing the mixin
 

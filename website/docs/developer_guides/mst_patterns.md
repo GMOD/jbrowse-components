@@ -75,7 +75,9 @@ const MyDisplay = types
     },
   }))
   .actions(self => ({
-    fetchNeeded(needed: Region[]) { /* ... */ },
+    fetchNeeded(needed: Region[]) {
+      /* ... */
+    },
   }))
 ```
 
@@ -115,8 +117,10 @@ dependency explicit through ordering.
 ## types.frozen
 
 Use `types.frozen()` for data that is:
+
 - Large and doesn't need deep reactivity (e.g., an array of 10k feature objects)
-- Stored as a plain JSON value and hydrated lazily into MST nodes on first access
+- Stored as a plain JSON value and hydrated lazily into MST nodes on first
+  access
 
 ```ts
 const MyModel = types.model({
@@ -134,7 +138,7 @@ For iterating a `types.frozen` field inside an autorun to track changes, just
 
 ```ts
 autorun(() => {
-  void self.displayedRegions  // tracks the reference; fires when the array is replaced
+  void self.displayedRegions // tracks the reference; fires when the array is replaced
   doSomething()
 })
 ```
@@ -181,5 +185,5 @@ flags, cached computed values, maps that are rebuilt from props):
 ```
 
 Observable maps (`.map<K, V>()`) give you reactive key-level tracking — an
-autorun that reads `map.get(key)` re-fires when that specific key changes,
-not on every map write.
+autorun that reads `map.get(key)` re-fires when that specific key changes, not
+on every map write.

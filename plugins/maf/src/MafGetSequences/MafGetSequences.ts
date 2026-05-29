@@ -4,8 +4,8 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
-import type { FastaResult } from '../util/processFeaturesToFasta.ts'
 import type { Sample } from '../types.ts'
+import type { FastaResult } from '../util/processFeaturesToFasta.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'

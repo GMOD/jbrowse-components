@@ -219,8 +219,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return self.assembliesSwapped
           ? [
               {
-                message:
-                  'The assemblies appear to be in the wrong order',
+                message: 'The assemblies appear to be in the wrong order',
                 effect:
                   'The chromosome names in the file match the opposite row. Try re-opening the synteny import form with the assemblies in the opposite order.',
               },
