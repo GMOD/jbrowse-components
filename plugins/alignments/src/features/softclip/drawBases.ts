@@ -1,3 +1,4 @@
+import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -25,6 +26,10 @@ export function drawSoftclipBases(
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
   const baseColors = buildBaseColorMap(state)
+  // Non-A/C/G/T bases (e.g. N) have no palette entry; render them with the
+  // muted SNP color rather than dropping them, matching the GPU shader
+  // (mismatch.slang, shared with the softclip-bases overlay) and MAF.
+  const unknownColor = rgb255(state.colors.colorMutedSnpBase)
 
   for (let i = 0; i < region.softclipBasePositions.length; i++) {
     const bp = region.softclipBasePositions[i]!
@@ -33,10 +38,7 @@ export function drawSoftclipBases(
     const yRow = region.softclipBaseYs[i]!
     const y = pileupRowY(yRow, state)
     const base = region.softclipBaseBases[i]!
-    const color = baseColors[base]
-    if (color) {
-      ctx.fillStyle = color
-      ctx.fillRect(x, y, w, fH)
-    }
+    ctx.fillStyle = baseColors[base] ?? unknownColor
+    ctx.fillRect(x, y, w, fH)
   }
 }

@@ -235,6 +235,7 @@ function writePaletteToUbo(u: Uint32Array, c: ColorPalette, samplot: boolean) {
   u[U.colorShortInsert] = pack(c.colorShortInsert)
   u[U.colorSupplementary] = pack(c.colorSupplementary)
   u[U.colorUnmappedMate] = pack(c.colorUnmappedMate)
+  u[U.colorMutedSnpBase] = pack(c.colorMutedSnpBase)
   const arcPal = getArcPalette(samplot)
   for (let i = 0; i < arcPal.length; i++) {
     u[USLOTS.arcColor[i]!] = pack(arcPal[i]!)

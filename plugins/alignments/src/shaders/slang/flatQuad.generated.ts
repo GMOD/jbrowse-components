@@ -71,25 +71,26 @@ export const UNIFORM_OFFSET_F32 = {
   colorShortInsert: 53,
   colorSupplementary: 54,
   colorUnmappedMate: 55,
-  arcColor0: 56,
-  arcColor1: 57,
-  arcColor2: 58,
-  arcColor3: 59,
-  arcColor4: 60,
-  arcColor5: 61,
-  arcColor6: 62,
-  arcColor7: 63,
-  arcLineColor0: 64,
-  arcLineColor1: 65,
-  linkedReadColor0: 66,
-  linkedReadColor1: 67,
-  linkedReadColor2: 68,
-  linkedReadColor3: 69,
-  linkedReadColor4: 70,
-  linkedReadColor5: 71,
-  linkedReadColor6: 72,
-  linkedReadColor7: 73,
-  pxPerBp: 74,
+  colorMutedSnpBase: 56,
+  arcColor0: 57,
+  arcColor1: 58,
+  arcColor2: 59,
+  arcColor3: 60,
+  arcColor4: 61,
+  arcColor5: 62,
+  arcColor6: 63,
+  arcColor7: 64,
+  arcLineColor0: 65,
+  arcLineColor1: 66,
+  linkedReadColor0: 67,
+  linkedReadColor1: 68,
+  linkedReadColor2: 69,
+  linkedReadColor3: 70,
+  linkedReadColor4: 71,
+  linkedReadColor5: 72,
+  linkedReadColor6: 73,
+  linkedReadColor7: 74,
+  pxPerBp: 75,
 } as const
 
 
@@ -97,9 +98,9 @@ export const UNIFORM_OFFSET_F32 = {
 // fields, indexed into the 4-byte-word uniform buffer (works with
 // either Uint32Array or Float32Array views — the field kind picks).
 export const UNIFORM_SLOT_ARRAYS = {
-  arcColor: [56, 57, 58, 59, 60, 61, 62, 63] as const,
-  arcLineColor: [64, 65] as const,
-  linkedReadColor: [66, 67, 68, 69, 70, 71, 72, 73] as const,
+  arcColor: [57, 58, 59, 60, 61, 62, 63, 64] as const,
+  arcLineColor: [65, 66] as const,
+  linkedReadColor: [67, 68, 69, 70, 71, 72, 73, 74] as const,
 } as const
 
 export interface Uniforms {
@@ -159,6 +160,7 @@ export interface Uniforms {
   colorShortInsert: number
   colorSupplementary: number
   colorUnmappedMate: number
+  colorMutedSnpBase: number
   arcColor0: number
   arcColor1: number
   arcColor2: number
@@ -240,25 +242,26 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[53] = uniforms.colorShortInsert
   u32[54] = uniforms.colorSupplementary
   u32[55] = uniforms.colorUnmappedMate
-  u32[56] = uniforms.arcColor0
-  u32[57] = uniforms.arcColor1
-  u32[58] = uniforms.arcColor2
-  u32[59] = uniforms.arcColor3
-  u32[60] = uniforms.arcColor4
-  u32[61] = uniforms.arcColor5
-  u32[62] = uniforms.arcColor6
-  u32[63] = uniforms.arcColor7
-  u32[64] = uniforms.arcLineColor0
-  u32[65] = uniforms.arcLineColor1
-  u32[66] = uniforms.linkedReadColor0
-  u32[67] = uniforms.linkedReadColor1
-  u32[68] = uniforms.linkedReadColor2
-  u32[69] = uniforms.linkedReadColor3
-  u32[70] = uniforms.linkedReadColor4
-  u32[71] = uniforms.linkedReadColor5
-  u32[72] = uniforms.linkedReadColor6
-  u32[73] = uniforms.linkedReadColor7
-  f32[74] = uniforms.pxPerBp
+  u32[56] = uniforms.colorMutedSnpBase
+  u32[57] = uniforms.arcColor0
+  u32[58] = uniforms.arcColor1
+  u32[59] = uniforms.arcColor2
+  u32[60] = uniforms.arcColor3
+  u32[61] = uniforms.arcColor4
+  u32[62] = uniforms.arcColor5
+  u32[63] = uniforms.arcColor6
+  u32[64] = uniforms.arcColor7
+  u32[65] = uniforms.arcLineColor0
+  u32[66] = uniforms.arcLineColor1
+  u32[67] = uniforms.linkedReadColor0
+  u32[68] = uniforms.linkedReadColor1
+  u32[69] = uniforms.linkedReadColor2
+  u32[70] = uniforms.linkedReadColor3
+  u32[71] = uniforms.linkedReadColor4
+  u32[72] = uniforms.linkedReadColor5
+  u32[73] = uniforms.linkedReadColor6
+  u32[74] = uniforms.linkedReadColor7
+  f32[75] = uniforms.pxPerBp
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

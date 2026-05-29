@@ -27,7 +27,9 @@ float3 baseColor(uint b, Uniforms u) {
   if (b == 67u || b == 99u)  { return unpackRGBA(u.colorBaseC).xyz; }
   if (b == 71u || b == 103u) { return unpackRGBA(u.colorBaseG).xyz; }
   if (b == 84u || b == 116u) { return unpackRGBA(u.colorBaseT).xyz; }
-  return float3(0.5);
+  // Non-A/C/G/T bases (e.g. N): themed muted grey, matching the Canvas2D
+  // path (drawMismatches / drawSoftclipBases) and MAF's resolveCellColor.
+  return unpackRGBA(u.colorMutedSnpBase).xyz;
 }
 
 [shader("vertex")]

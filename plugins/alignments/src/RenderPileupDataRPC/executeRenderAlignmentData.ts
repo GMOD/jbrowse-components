@@ -127,6 +127,7 @@ export async function executeRenderAlignmentData({
     stopToken,
   } = args
   const region = regions[0]!
+  const regionEnd = Math.ceil(region.end)
   const isChain = linkedReads !== 'off'
   // Chain mode never expands soft clips or fetches sequence/sort-tag data.
   const effShowSoftClipping = isChain ? false : showSoftClipping
@@ -195,7 +196,7 @@ export async function executeRenderAlignmentData({
         colorBy,
         colorTagMap,
         showSoftClipping: effShowSoftClipping,
-        region,
+        regionEnd,
         regionStart,
         sortTag: isChain ? undefined : sortTag,
       },
@@ -203,8 +204,6 @@ export async function executeRenderAlignmentData({
   )
 
   checkStopToken2(stopTokenCheck)
-
-  const regionEnd = Math.ceil(region.end)
 
   // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread via
   // `laidOutPileupMap` (pileup) / `computeChainLayout` (chain) — the worker

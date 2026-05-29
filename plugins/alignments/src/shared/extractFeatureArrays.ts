@@ -24,7 +24,7 @@ interface ExtractOpts {
   colorBy: ColorBy | undefined
   colorTagMap: Record<string, string> | undefined
   showSoftClipping: boolean
-  region: { start: number; end: number }
+  regionEnd: number
   regionStart: number
   sortTag?: string
 }
@@ -38,7 +38,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     colorBy,
     colorTagMap,
     showSoftClipping,
-    region,
+    regionEnd,
     regionStart,
     sortTag,
   } = opts
@@ -56,7 +56,6 @@ export function extractFeatureArrays<T extends FeatureData>(
   const modifications: ModificationEntry[] = []
   const perBaseQualities: PerBaseQualityEntry[] = []
   const isPerBaseQualityMode = colorBy?.type === 'perBaseQuality'
-  const regionEnd = Math.ceil(region.end)
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
   const nextRefs: string[] = []

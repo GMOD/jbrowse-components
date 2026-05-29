@@ -90,6 +90,9 @@ public struct Uniforms {
   public uint colorShortInsert;
   public uint colorSupplementary;
   public uint colorUnmappedMate;
+  // Muted grey for non-A/C/G/T mismatch/softclip bases (e.g. N) and the
+  // showModifications palette collapse. Matches the Canvas2D path and MAF.
+  public uint colorMutedSnpBase;
   public uint arcColor0;
   public uint arcColor1;
   public uint arcColor2;

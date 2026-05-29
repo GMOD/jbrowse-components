@@ -51,15 +51,15 @@ export function drawMismatches(
     const y = pileupRowY(yRow, state)
     const base = region.mismatchBases[i]!
     const frequency = region.mismatchFrequencies[i]! / 255
-    const colorTuple = baseColors[base]
-    if (colorTuple) {
-      let alpha = 1
-      if (pxPerBp < 1) {
-        alpha = pxPerBp + frequency * (1 - pxPerBp)
-      }
-      ctx.fillStyle =
-        alpha >= 1 ? rgb255(colorTuple) : rgba255(colorTuple, alpha)
-      ctx.fillRect(x, y, w, fH)
+    // Non-A/C/G/T bases (e.g. N) have no palette entry; render them with the
+    // muted SNP color rather than dropping them, matching the GPU shader
+    // (mismatch.slang) and MAF's resolveCellColor (n -> mutedSnpBase).
+    const colorTuple = baseColors[base] ?? state.colors.colorMutedSnpBase
+    let alpha = 1
+    if (pxPerBp < 1) {
+      alpha = pxPerBp + frequency * (1 - pxPerBp)
     }
+    ctx.fillStyle = alpha >= 1 ? rgb255(colorTuple) : rgba255(colorTuple, alpha)
+    ctx.fillRect(x, y, w, fH)
   }
 }
