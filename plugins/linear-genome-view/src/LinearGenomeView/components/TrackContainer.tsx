@@ -1,14 +1,12 @@
 import { ErrorBanner, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines.tsx'
 import TrackLabel from './TrackLabel.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
-import { shouldSwapTracks } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -51,7 +49,7 @@ const TrackContainer = observer(function TrackContainer({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { draggingTrackId, showTrackOutlines } = model
+  const { showTrackOutlines } = model
   const trackLabelStyle =
     model.trackLabelsSetting !== 'overlapping' || display.prefersOffset
       ? classes.trackLabelOffset
@@ -63,23 +61,7 @@ const TrackContainer = observer(function TrackContainer({
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
       onDragOver={event => {
-        if (
-          isAlive(display) &&
-          draggingTrackId !== undefined &&
-          draggingTrackId !== track.id
-        ) {
-          const draggingIdx = model.tracks.findIndex(
-            t => t.id === draggingTrackId,
-          )
-          const targetIdx = model.tracks.findIndex(t => t.id === track.id)
-          const movingDown = targetIdx > draggingIdx
-          const currentY = event.clientY
-
-          if (shouldSwapTracks(model.lastTrackDragY, currentY, movingDown)) {
-            model.setLastTrackDragY(currentY)
-            model.moveTrack(draggingTrackId, track.id)
-          }
-        }
+        model.onTrackDragOver(track.id, event.clientY)
       }}
     >
       {/* offset 1px since for left track border */}

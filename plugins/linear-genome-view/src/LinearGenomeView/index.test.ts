@@ -1633,3 +1633,53 @@ describe('highlights', () => {
     ).toBeUndefined()
   })
 })
+
+describe('onTrackDragOver reorders tracks', () => {
+  function setup() {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: 'dragOver',
+        type: 'LinearGenomeView',
+        tracks: [
+          { name: 'a', type: 'BasicTrack' },
+          { name: 'b', type: 'BasicTrack' },
+          { name: 'c', type: 'BasicTrack' },
+        ],
+      }),
+    )
+    const [a, b, c] = model.tracks.map(t => t.id)
+    return { model, a: a!, b: b!, c: c! }
+  }
+
+  test('drag down places the track after the target', () => {
+    const { model, a, b, c } = setup()
+    model.setDraggingTrackId(a)
+    model.onTrackDragOver(c, 100)
+    expect(model.tracks.map(t => t.id)).toEqual([b, c, a])
+  })
+
+  test('drag up places the track before the target', () => {
+    const { model, a, b, c } = setup()
+    model.setDraggingTrackId(c)
+    model.onTrackDragOver(b, 100)
+    expect(model.tracks.map(t => t.id)).toEqual([a, c, b])
+  })
+
+  test('does not reorder until cursor moves past the jitter threshold', () => {
+    const { model, a, b, c } = setup()
+    model.setDraggingTrackId(a)
+    model.onTrackDragOver(b, 100)
+    expect(model.tracks.map(t => t.id)).toEqual([b, a, c])
+
+    // small move back up over b is below the threshold, so no swap
+    model.onTrackDragOver(b, 90)
+    expect(model.tracks.map(t => t.id)).toEqual([b, a, c])
+  })
+
+  test('ignores dragover when no track is being dragged', () => {
+    const { model, a, b, c } = setup()
+    model.onTrackDragOver(b, 100)
+    expect(model.tracks.map(t => t.id)).toEqual([a, b, c])
+  })
+})

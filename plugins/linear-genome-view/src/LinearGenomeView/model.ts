@@ -1235,7 +1235,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const movingDown = targetIdx > draggingIdx
             if (shouldSwapTracks(self.lastTrackDragY, currentY, movingDown)) {
               self.lastTrackDragY = currentY
-              self.moveTrack(draggingTrackId, targetId)
+              this.moveTrack(draggingTrackId, targetId)
             }
           }
         }
