@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -51,20 +51,15 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const [removed, setRemoved] = useState(() => new Set<string>())
   const [timestamp] = useState(() => Date.now())
 
-  const remoteLocations = useMemo(() => parseUrlList(text), [text])
+  const remoteLocations = parseUrlList(text)
   const locations = mode === 'remote' ? remoteLocations : localLocations
-
-  const rows = useMemo(
-    () =>
-      buildTrackConfigs({
-        pairs: pairLocations(locations),
-        model,
-        assembly,
-        adminMode,
-        timestamp,
-      }),
-    [locations, model, assembly, adminMode, timestamp],
-  )
+  const rows = buildTrackConfigs({
+    pairs: pairLocations(locations),
+    model,
+    assembly,
+    adminMode,
+    timestamp,
+  })
 
   const visibleRows = rows.filter(row => !removed.has(row.id))
   const okRows = visibleRows.filter(row => row.status === 'ok')
