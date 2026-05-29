@@ -28,6 +28,7 @@ interface FakeGroup {
 interface FakePanelConfig {
   id: string
   title?: string
+  component?: string
   params?: unknown
   position?: unknown
 }
@@ -142,41 +143,29 @@ describe('applyInitLayout', () => {
   it('builds a single panel and assigns its views', () => {
     const session = createSession()
     const { api, addPanelCalls } = createFakeApi()
-    const tracked = new Set<string>()
 
-    const firstPanelId = applyInitLayout(
-      api,
-      session as unknown as SessionArg,
-      { viewIds: ['v1', 'v2'] },
-      tracked,
-    )
+    const firstPanelId = applyInitLayout(api, session as unknown as SessionArg, {
+      viewIds: ['v1', 'v2'],
+    })
 
     expect(addPanelCalls).toHaveLength(1)
     expect(firstPanelId).toBeDefined()
     expect(session.getViewIdsForPanel(firstPanelId!)).toEqual(['v1', 'v2'])
-    expect([...tracked]).toEqual(['v1', 'v2'])
   })
 
   it('builds a nested horizontal layout and distributes width by size', () => {
     const session = createSession()
     const { api, addPanelCalls, setSizeCalls } = createFakeApi({ width: 1000 })
-    const tracked = new Set<string>()
 
-    applyInitLayout(
-      api,
-      session as unknown as SessionArg,
-      {
-        direction: 'horizontal',
-        children: [
-          { viewIds: ['v1'], size: 30 },
-          { viewIds: ['v2'], size: 70 },
-        ],
-      },
-      tracked,
-    )
+    applyInitLayout(api, session as unknown as SessionArg, {
+      direction: 'horizontal',
+      children: [
+        { viewIds: ['v1'], size: 30 },
+        { viewIds: ['v2'], size: 70 },
+      ],
+    })
 
     expect(addPanelCalls).toHaveLength(2)
-    expect([...tracked].sort()).toEqual(['v1', 'v2'])
     expect(setSizeCalls.map(c => c.arg)).toEqual([
       { width: 300 },
       { width: 700 },
@@ -187,18 +176,13 @@ describe('applyInitLayout', () => {
     const session = createSession()
     const { api, setSizeCalls } = createFakeApi({ height: 800 })
 
-    applyInitLayout(
-      api,
-      session as unknown as SessionArg,
-      {
-        direction: 'vertical',
-        children: [
-          { viewIds: ['v1'], size: 1 },
-          { viewIds: ['v2'], size: 3 },
-        ],
-      },
-      new Set(),
-    )
+    applyInitLayout(api, session as unknown as SessionArg, {
+      direction: 'vertical',
+      children: [
+        { viewIds: ['v1'], size: 1 },
+        { viewIds: ['v2'], size: 3 },
+      ],
+    })
 
     expect(setSizeCalls.map(c => c.arg)).toEqual([
       { height: 200 },
@@ -210,15 +194,10 @@ describe('applyInitLayout', () => {
     const session = createSession()
     const { api, setSizeCalls } = createFakeApi()
 
-    applyInitLayout(
-      api,
-      session as unknown as SessionArg,
-      {
-        direction: 'horizontal',
-        children: [{ viewIds: ['v1'], size: 30 }, { viewIds: ['v2'] }],
-      },
-      new Set(),
-    )
+    applyInitLayout(api, session as unknown as SessionArg, {
+      direction: 'horizontal',
+      children: [{ viewIds: ['v1'], size: 30 }, { viewIds: ['v2'] }],
+    })
 
     expect(setSizeCalls).toHaveLength(0)
   })
@@ -227,7 +206,7 @@ describe('applyInitLayout', () => {
 describe('rearrangePanelsWithDirection', () => {
   it('is a no-op with one panel', () => {
     const { api, addPanelCalls } = createFakeApi()
-    api.addPanel({ id: 'panel-1', title: 'a' })
+    api.addPanel({ id: 'panel-1', title: 'a', component: 'default' })
     addPanelCalls.length = 0
 
     rearrangePanelsWithDirection(api, () => undefined)
@@ -237,8 +216,8 @@ describe('rearrangePanelsWithDirection', () => {
 
   it('removes and re-adds panels with positions from the callback', () => {
     const { api, addPanelCalls, panels } = createFakeApi()
-    api.addPanel({ id: 'panel-1', title: 'a' })
-    api.addPanel({ id: 'panel-2', title: 'b' })
+    api.addPanel({ id: 'panel-1', title: 'a', component: 'default' })
+    api.addPanel({ id: 'panel-2', title: 'b', component: 'default' })
     addPanelCalls.length = 0
 
     rearrangePanelsWithDirection(api, (idx, states) =>

@@ -18,6 +18,15 @@ export interface DockviewLayoutNode {
 }
 
 /**
+ * A view move requested before workspaces were enabled. Queued on the session
+ * until the dockview container mounts and consumes it (mirrors `init`).
+ */
+export interface PendingMove {
+  type: 'newTab' | 'splitRight'
+  viewId: string
+}
+
+/**
  * #stateModel DockviewLayoutMixin
  * Session mixin that persists dockview layout state.
  * Each dockview panel can contain multiple views stacked vertically.
@@ -43,6 +52,12 @@ export function DockviewLayoutMixin() {
        * Initial layout configuration from URL params. Processed once then cleared.
        */
       init: types.frozen<DockviewLayoutNode | undefined>(),
+      /**
+       * #property
+       * A view move queued before workspaces were enabled. Consumed once when
+       * the dockview container mounts, then cleared.
+       */
+      pendingMove: types.frozen<PendingMove | undefined>(),
       /**
        * #property
        * The currently active panel ID in dockview
@@ -95,6 +110,14 @@ export function DockviewLayoutMixin() {
        */
       setInit(init: DockviewLayoutNode | undefined) {
         self.init = init
+      },
+
+      /**
+       * #action
+       * Queue a view move to be applied when the dockview container mounts
+       */
+      setPendingMove(pendingMove: PendingMove | undefined) {
+        self.pendingMove = pendingMove
       },
 
       /**
@@ -191,6 +214,7 @@ export function DockviewLayoutMixin() {
         dockviewLayout,
         panelViewAssignments,
         init: _init,
+        pendingMove: _pendingMove,
         activePanelId,
         ...rest
       } = snap

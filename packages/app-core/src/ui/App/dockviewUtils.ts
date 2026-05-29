@@ -1,7 +1,5 @@
 import { createElementId } from '@jbrowse/core/util/types/mst'
 
-import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
-
 import type { DockviewSessionType } from './types.ts'
 import type {
   DockviewLayoutNode,
@@ -12,20 +10,17 @@ import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
 
 export function getViewsForPanel(
   panelId: string,
-  session: DockviewSessionType | undefined,
+  session: DockviewSessionType & SessionWithDockviewLayout,
 ): AbstractViewModel[] {
-  if (!session || !isSessionWithDockviewLayout(session)) {
-    return []
-  }
-  const viewIds = session.getViewIdsForPanel(panelId)
-  return viewIds
+  return session
+    .getViewIdsForPanel(panelId)
     .map(id => session.views.find(v => v.id === id))
     .filter((v): v is AbstractViewModel => v !== undefined)
 }
 
 export function createPanelConfig(
   panelId: string,
-  session: DockviewSessionType,
+  session: DockviewSessionType & SessionWithDockviewLayout,
   title = 'Main',
 ) {
   return {
@@ -59,7 +54,7 @@ export function cleanLayoutForStorage(
 
 export function updatePanelParams(
   api: DockviewApi,
-  session: DockviewSessionType,
+  session: DockviewSessionType & SessionWithDockviewLayout,
 ) {
   for (const panel of api.panels) {
     panel.update({ params: { panelId: panel.id, session } })
@@ -70,25 +65,20 @@ export function getPanelPosition(
   group: DockviewGroupPanel | undefined,
   direction?: 'right' | 'below',
 ) {
-  if (!group) {
-    return undefined
-  }
-  if (direction) {
-    return { referenceGroup: group, direction }
-  }
-  return { referenceGroup: group }
+  return group
+    ? { referenceGroup: group, ...(direction ? { direction } : {}) }
+    : undefined
 }
 
 /**
  * Build dockview panels/groups from a nested init layout (e.g. from URL
- * params), assigning each node's views to its panel and tracking them. Returns
- * the first panel's ID so the caller can mark it active.
+ * params), assigning each node's views to its panel. Returns the first panel's
+ * ID so the caller can mark it active.
  */
 export function applyInitLayout(
   api: DockviewApi,
   session: DockviewSessionType & SessionWithDockviewLayout,
   initLayout: DockviewLayoutNode,
-  trackedViewIds: Set<string>,
 ) {
   let firstPanelId: string | undefined
   const groupSizes: { group: DockviewGroupPanel; size: number }[] = []
@@ -112,7 +102,6 @@ export function applyInitLayout(
       })
       for (const viewId of node.viewIds) {
         session.assignViewToPanel(panelId, viewId)
-        trackedViewIds.add(viewId)
       }
       const group = api.getPanel(panelId)?.group
       if (group && node.size !== undefined) {

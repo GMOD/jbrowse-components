@@ -10,35 +10,15 @@ interface DockviewContextValue {
   moveViewToSplitRight: (viewId: string) => void
 }
 
-// Pending action stored when workspaces not yet enabled
-let pendingMoveAction: {
-  type: 'newTab' | 'splitRight'
-  viewId: string
-} | null = null
-
-export function peekPendingMoveAction() {
-  return pendingMoveAction
-}
-
-export function clearPendingMoveAction() {
-  pendingMoveAction = null
-}
-
-// Functions to set pending actions (used by default context and for testing)
-export function setPendingMoveToNewTab(viewId: string) {
-  pendingMoveAction = { type: 'newTab', viewId }
-}
-
-export function setPendingMoveToSplitRight(viewId: string) {
-  pendingMoveAction = { type: 'splitRight', viewId }
-}
-
+// Defaults are no-ops: before the dockview container mounts there are no panels
+// to move into, so ViewMenu queues the move on the session via setPendingMove
+// instead (see TiledViewsContainer's onReady).
 export const DockviewContext = createContext<DockviewContextValue>({
   api: null,
   rearrangePanels: () => {},
   addEmptyTab: () => {},
-  moveViewToNewTab: setPendingMoveToNewTab,
-  moveViewToSplitRight: setPendingMoveToSplitRight,
+  moveViewToNewTab: () => {},
+  moveViewToSplitRight: () => {},
 })
 
 export function useDockview() {

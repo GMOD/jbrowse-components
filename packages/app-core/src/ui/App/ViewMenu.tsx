@@ -76,7 +76,11 @@ const ViewMenu = observer(function ViewMenu({
               label: 'Move to new tab',
               icon: OpenInNewIcon,
               onClick: () => {
-                moveViewToNewTab(model.id)
+                if (usePanel) {
+                  moveViewToNewTab(model.id)
+                } else {
+                  session.setPendingMove({ type: 'newTab', viewId: model.id })
+                }
                 session.setUseWorkspaces(true)
               },
             },
@@ -84,7 +88,14 @@ const ViewMenu = observer(function ViewMenu({
               label: 'Move to split view (right side of screen)',
               icon: VerticalSplitIcon,
               onClick: () => {
-                moveViewToSplitRight(model.id)
+                if (usePanel) {
+                  moveViewToSplitRight(model.id)
+                } else {
+                  session.setPendingMove({
+                    type: 'splitRight',
+                    viewId: model.id,
+                  })
+                }
                 session.setUseWorkspaces(true)
               },
             },

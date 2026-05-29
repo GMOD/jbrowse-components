@@ -7,11 +7,7 @@ import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import {
-  DockviewContext,
-  clearPendingMoveAction,
-  peekPendingMoveAction,
-} from './DockviewContext.tsx'
+import { DockviewContext } from './DockviewContext.tsx'
 import DockviewLeftHeaderActions from './DockviewLeftHeaderActions.tsx'
 import DockviewRightHeaderActions from './DockviewRightHeaderActions.tsx'
 import JBrowseViewPanel from './JBrowseViewPanel.tsx'
@@ -23,9 +19,9 @@ import {
   getPanelPosition,
   updatePanelParams,
 } from './dockviewUtils.ts'
-import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 
 import type { DockviewSessionType } from './types.ts'
+import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import type {
   DockviewApi,
   DockviewGroupPanel,
@@ -41,7 +37,7 @@ const useStyles = makeStyles()(() => ({
 }))
 
 interface Props {
-  session: DockviewSessionType
+  session: DockviewSessionType & SessionWithDockviewLayout
 }
 
 const components = {
@@ -58,7 +54,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   const { classes } = useStyles()
   const theme = useTheme()
   const [api, setApi] = useState<DockviewApi | null>(null)
-  const trackedViewIdsRef = useRef(new Set<string>())
   const rearrangingRef = useRef(false)
   const sessionRef = useRef(session)
   sessionRef.current = session
@@ -89,17 +84,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         ...createPanelConfig(panelId, session, 'New Tab'),
         position: getPanelPosition(group),
       })
-
-      if (isSessionWithDockviewLayout(session)) {
-        session.setActivePanelId(panelId)
-      }
+      session.setActivePanelId(panelId)
     },
     [api, session],
   )
 
   const moveViewToPanel = useCallback(
     (viewId: string, direction?: 'right') => {
-      if (!api || !isSessionWithDockviewLayout(session)) {
+      if (!api) {
         return
       }
 
@@ -131,21 +123,13 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
   const createInitialPanels = useCallback((dockviewApi: DockviewApi) => {
     const session = sessionRef.current
-    const pendingAction = peekPendingMoveAction()
+    const pendingAction = session.pendingMove
 
     // Handle layout from URL params
-    const initLayout = isSessionWithDockviewLayout(session)
-      ? session.init
-      : undefined
+    const { init: initLayout } = session
 
-    if (initLayout && isSessionWithDockviewLayout(session)) {
-      trackedViewIdsRef.current.clear()
-      const firstPanelId = applyInitLayout(
-        dockviewApi,
-        session,
-        initLayout,
-        trackedViewIdsRef.current,
-      )
+    if (initLayout) {
+      const firstPanelId = applyInitLayout(dockviewApi, session, initLayout)
 
       session.setInit(undefined)
       if (firstPanelId) {
@@ -157,17 +141,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     }
 
     // Clear any stale panel assignments from a previous mount
-    if (isSessionWithDockviewLayout(session)) {
-      for (const panelId of session.panelViewAssignments.keys()) {
-        session.removePanel(panelId)
-      }
+    for (const panelId of session.panelViewAssignments.keys()) {
+      session.removePanel(panelId)
     }
-    trackedViewIdsRef.current.clear()
 
     const pendingViewExists =
       pendingAction && session.views.some(v => v.id === pendingAction.viewId)
 
-    if (pendingViewExists && isSessionWithDockviewLayout(session)) {
+    if (pendingViewExists) {
       const { type, viewId: pendingViewId } = pendingAction
       const otherViewIds = session.views
         .map(v => v.id)
@@ -180,7 +161,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         firstGroup = dockviewApi.getPanel(firstPanelId)?.group
         for (const viewId of otherViewIds) {
           session.assignViewToPanel(firstPanelId, viewId)
-          trackedViewIdsRef.current.add(viewId)
         }
       }
 
@@ -191,7 +171,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         position: getPanelPosition(firstGroup, direction),
       })
       session.assignViewToPanel(pendingPanelId, pendingViewId)
-      trackedViewIdsRef.current.add(pendingViewId)
       session.setActivePanelId(pendingPanelId)
 
       // Save layout synchronously so React Strict Mode's second onReady sees it.
@@ -200,15 +179,12 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // creating a single panel instead of restoring the split.
       session.setDockviewLayout(cleanLayoutForStorage(dockviewApi.toJSON()))
 
-      clearPendingMoveAction()
+      session.setPendingMove(undefined)
     } else {
       const panelId = `panel-${createElementId()}`
       dockviewApi.addPanel(createPanelConfig(panelId, session))
-
-      if (isSessionWithDockviewLayout(session)) {
-        session.setActivePanelId(panelId)
-        session.setDockviewLayout(cleanLayoutForStorage(dockviewApi.toJSON()))
-      }
+      session.setActivePanelId(panelId)
+      session.setDockviewLayout(cleanLayoutForStorage(dockviewApi.toJSON()))
     }
   }, [])
 
@@ -217,16 +193,13 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       setApi(event.api)
 
       event.api.onDidActivePanelChange(e => {
-        if (e?.id && isSessionWithDockviewLayout(sessionRef.current)) {
+        if (e?.id) {
           sessionRef.current.setActivePanelId(e.id)
         }
       })
 
       event.api.onDidRemovePanel(e => {
-        if (rearrangingRef.current) {
-          return
-        }
-        if (isSessionWithDockviewLayout(sessionRef.current)) {
+        if (!rearrangingRef.current) {
           const viewIds = sessionRef.current.getViewIdsForPanel(e.id)
           for (const viewId of viewIds) {
             const view = sessionRef.current.views.find(v => v.id === viewId)
@@ -239,32 +212,22 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       })
 
       event.api.onDidLayoutChange(() => {
-        if (
-          !rearrangingRef.current &&
-          isSessionWithDockviewLayout(sessionRef.current)
-        ) {
+        if (!rearrangingRef.current) {
           sessionRef.current.setDockviewLayout(
             cleanLayoutForStorage(event.api.toJSON()),
           )
         }
       })
 
-      const hasPendingAction = peekPendingMoveAction() !== null
-      const dockviewSession = isSessionWithDockviewLayout(sessionRef.current)
-        ? sessionRef.current
-        : null
-      const savedLayout = !hasPendingAction && dockviewSession?.dockviewLayout
+      const hasPendingAction = sessionRef.current.pendingMove !== undefined
+      const savedLayout =
+        !hasPendingAction && sessionRef.current.dockviewLayout
 
       if (savedLayout) {
         try {
           rearrangingRef.current = true
           event.api.fromJSON(savedLayout)
-          updatePanelParams(event.api, dockviewSession)
-          for (const viewIds of dockviewSession.panelViewAssignments.values()) {
-            for (const viewId of viewIds) {
-              trackedViewIdsRef.current.add(viewId)
-            }
-          }
+          updatePanelParams(event.api, sessionRef.current)
           if (event.api.panels.length === 0) {
             throw new Error('No panels after fromJSON restore')
           }
@@ -289,35 +252,28 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       const { views } = session
       const currentViewIds = new Set(views.map(v => v.id))
-      const trackedIds = trackedViewIdsRef.current
 
       for (const view of views) {
-        if (!trackedIds.has(view.id)) {
-          trackedIds.add(view.id)
-
-          if (isSessionWithDockviewLayout(session)) {
-            let activePanelId = session.activePanelId
-            if (!activePanelId || !api.getPanel(activePanelId)) {
-              const firstPanel = api.panels[0]
-              if (firstPanel) {
-                activePanelId = firstPanel.id
-              } else {
-                activePanelId = `panel-${createElementId()}`
-                api.addPanel(createPanelConfig(activePanelId, session))
-              }
-              session.setActivePanelId(activePanelId)
+        if (!session.getPanelContainingView(view.id)) {
+          let activePanelId = session.activePanelId
+          if (!activePanelId || !api.getPanel(activePanelId)) {
+            const firstPanel = api.panels[0]
+            if (firstPanel) {
+              activePanelId = firstPanel.id
+            } else {
+              activePanelId = `panel-${createElementId()}`
+              api.addPanel(createPanelConfig(activePanelId, session))
             }
-            session.assignViewToPanel(activePanelId, view.id)
+            session.setActivePanelId(activePanelId)
           }
+          session.assignViewToPanel(activePanelId, view.id)
         }
       }
 
-      for (const id of trackedIds) {
+      const assignedViewIds = [...session.panelViewAssignments.values()].flat()
+      for (const id of assignedViewIds) {
         if (!currentViewIds.has(id)) {
-          trackedIds.delete(id)
-          if (isSessionWithDockviewLayout(session)) {
-            session.removeViewFromPanel(id)
-          }
+          session.removeViewFromPanel(id)
         }
       }
     })
@@ -327,7 +283,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
   // React to layout changes from undo/redo
   useEffect(() => {
-    if (!api || !isSessionWithDockviewLayout(session)) {
+    if (!api) {
       return
     }
 
@@ -346,13 +302,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       try {
         api.fromJSON(dockviewLayout)
         updatePanelParams(api, sessionRef.current)
-
-        trackedViewIdsRef.current.clear()
-        for (const viewIds of session.panelViewAssignments.values()) {
-          for (const viewId of viewIds) {
-            trackedViewIdsRef.current.add(viewId)
-          }
-        }
       } catch (e) {
         console.error('Failed to restore dockview layout from undo:', e)
       } finally {

@@ -340,6 +340,34 @@ describe('init configuration', () => {
   })
 })
 
+describe('pending move', () => {
+  it('starts with no pending move', () => {
+    const session = createTestSession()
+    expect(session.pendingMove).toBeUndefined()
+  })
+
+  it('setPendingMove queues a move', () => {
+    const session = createTestSession()
+    session.setPendingMove({ type: 'newTab', viewId: 'view-1' })
+    expect(session.pendingMove).toEqual({ type: 'newTab', viewId: 'view-1' })
+  })
+
+  it('setPendingMove can clear the move', () => {
+    const session = createTestSession()
+    session.setPendingMove({ type: 'splitRight', viewId: 'view-1' })
+    session.setPendingMove(undefined)
+    expect(session.pendingMove).toBeUndefined()
+  })
+
+  it('pendingMove is excluded from snapshot', () => {
+    const session = createTestSession()
+    session.setPendingMove({ type: 'newTab', viewId: 'view-1' })
+    const snapshot = getSnapshot(session)
+
+    expect(snapshot).not.toHaveProperty('pendingMove')
+  })
+})
+
 describe('Move to new tab scenario', () => {
   it('correctly sets up two panels when moving a view to new tab', () => {
     const session = createTestSession()
