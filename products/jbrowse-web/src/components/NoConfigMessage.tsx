@@ -86,6 +86,10 @@ const sampleConfigs: {
     label: 'Volvox (genes + multi-wiggle + BAM)',
   },
   {
+    config: 'test_data/volvox/config_broken.json',
+    label: 'Broken track config (toggle track for error snackbar)',
+  },
+  {
     config: 'test_data/config.json',
     label: 'Human basic',
   },

@@ -1,5 +1,4 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -45,11 +44,7 @@ const TrackCheckbox = observer(function TrackCheckbox({
       className={className}
       checked={model.shownTrackIds.has(trackId)}
       onChange={() => {
-        try {
-          model.view.toggleTrack(trackId)
-        } catch (e) {
-          getSession(model).notifyError(`${e}`, e)
-        }
+        model.view.toggleTrack(trackId)
       }}
       disabled={disabled}
       slotProps={{

@@ -10,7 +10,21 @@ import {
   Snackbar as MUISnackbar,
 } from '@mui/material'
 
+import { makeStyles } from '../util/tss-react/index.ts'
+
 import type { SnackbarMessage } from './SnackbarModel.tsx'
+
+const useStyles = makeStyles()({
+  // preserve newlines in multi-line errors (e.g. MST validation dumps) while
+  // still wrapping long lines and capping height so the snackbar can't grow
+  // off-screen
+  message: {
+    whiteSpace: 'pre-wrap',
+    overflowWrap: 'anywhere',
+    maxHeight: 200,
+    overflowY: 'auto',
+  },
+})
 
 export default function SnackbarContents({
   onClose,
@@ -19,6 +33,7 @@ export default function SnackbarContents({
   onClose: (_event: unknown, reason?: string) => void
   contents: SnackbarMessage
 }) {
+  const { classes } = useStyles()
   const { actions } = contents
   return (
     <MUISnackbar
@@ -51,7 +66,7 @@ export default function SnackbarContents({
         }
         severity={contents.level || 'warning'}
       >
-        {contents.message}
+        <div className={classes.message}>{contents.message}</div>
       </Alert>
     </MUISnackbar>
   )

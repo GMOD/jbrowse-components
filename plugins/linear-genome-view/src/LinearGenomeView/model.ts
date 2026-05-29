@@ -43,6 +43,7 @@ import { handleSelectedRegion } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import Header from './components/Header.tsx'
 import MiniControls from './components/MiniControls.tsx'
+import { shouldSwapTracks } from './components/util.ts'
 import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
@@ -1063,7 +1064,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        toggleTrackGeneric(self, trackId)
+        return toggleTrackGeneric(self, trackId)
       },
 
       /**
@@ -1215,6 +1216,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setLastTrackDragY(y: number) {
         self.lastTrackDragY = y
+      },
+
+      /**
+       * #action
+       * called while dragging a track over the track at `targetId`; reorders
+       * once the cursor has moved far enough (see shouldSwapTracks) to avoid
+       * jitter when a short track is dragged over a tall one
+       */
+      onTrackDragOver(targetId: string, currentY: number) {
+        const { draggingTrackId } = self
+        if (draggingTrackId !== undefined && draggingTrackId !== targetId) {
+          const draggingIdx = self.tracks.findIndex(
+            t => t.id === draggingTrackId,
+          )
+          const targetIdx = self.tracks.findIndex(t => t.id === targetId)
+          if (draggingIdx !== -1 && targetIdx !== -1) {
+            const movingDown = targetIdx > draggingIdx
+            if (shouldSwapTracks(self.lastTrackDragY, currentY, movingDown)) {
+              self.lastTrackDragY = currentY
+              self.moveTrack(draggingTrackId, targetId)
+            }
+          }
+        }
       },
 
       /**

@@ -502,83 +502,101 @@ export function showTrackGeneric(
     return found
   }
 
-  const rawConf = inlineConf ?? session.tracksById[trackId]
-  if (!rawConf) {
-    throw new Error(`Could not resolve identifier "${trackId}"`)
-  }
-
-  // Allow plugins to preprocess the track config (e.g. to add default displays)
-  // Use getSnapshot for MST models, structuredClone for plain objects
-  const confSnapshot = structuredClone(
-    isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
-  )
-  const conf = pluginManager.evaluateExtensionPoint(
-    'Core-preProcessTrackConfig',
-    confSnapshot,
-  ) as typeof rawConf
-
-  const trackType = pluginManager.getTrackType(conf.type)
-  if (!trackType) {
-    throw new Error(`Unknown track type ${conf.type}`)
-  }
-
-  // Eagerly validate the config snapshot so an invalid config throws a clear
-  // error here, before the track is pushed and MobX reactions fire against it.
+  // Any failure here (unresolved id, unknown type, invalid config, no
+  // compatible display) is surfaced as a snackbar instead of an uncaught
+  // throw, so a single broken track never crashes the app. This is the one
+  // choke point every "open a track" path funnels through, so catching here
+  // covers all callers (track selector, session menu, import forms, etc.).
+  //
+  // The build must fully succeed *before* the track is pushed: once pushed,
+  // the display's afterAttach autoruns fire synchronously and a config error
+  // would throw inside a MobX reaction, which crashes rather than propagating
+  // back here. That is why the config is eagerly validated below.
   try {
-    trackType.configSchema.create(conf, getEnv(self))
-  } catch (e) {
-    throw new Error(`Track "${trackId}" has an invalid configuration: ${e}`, {
-      cause: e,
-    })
-  }
+    const rawConf = inlineConf ?? session.tracksById[trackId]
+    if (!rawConf) {
+      throw new Error(`Could not resolve identifier "${trackId}"`)
+    }
 
-  // Find a compatible display for this view type
-  const viewType = pluginManager.getViewType(self.type)!
-  const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
-  const displays = conf.displays ?? []
-  const displayConf = displays.find((d: { type: string }) =>
-    supportedDisplays.has(d.type),
-  )
-
-  // Find a compatible display type for this view
-  // If displayInitialSnapshot specifies a type, use that instead
-  const snapshotType = (displayInitialSnapshot as { type?: string }).type
-  const defaultDisplayType =
-    displayConf?.type ??
-    trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
-  const displayType = snapshotType ?? defaultDisplayType
-
-  if (!displayType) {
-    throw new Error(
-      `Could not find a compatible display for view type ${self.type}`,
+    // Allow plugins to preprocess the track config (e.g. to add default
+    // displays). Use getSnapshot for MST models, structuredClone for plain
+    // objects.
+    const confSnapshot = structuredClone(
+      isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
     )
+    const conf = pluginManager.evaluateExtensionPoint(
+      'Core-preProcessTrackConfig',
+      confSnapshot,
+    ) as typeof rawConf
+
+    const trackType = pluginManager.getTrackType(conf.type)
+    if (!trackType) {
+      throw new Error(`Unknown track type ${conf.type}`)
+    }
+
+    // Eagerly validate the config snapshot so an invalid config throws a clear
+    // error here (synchronously, before the push) rather than inside a later
+    // reaction.
+    try {
+      trackType.configSchema.create(conf, getEnv(self))
+    } catch (e) {
+      throw new Error(`Track "${trackId}" has an invalid configuration: ${e}`, {
+        cause: e,
+      })
+    }
+
+    // Find a compatible display for this view type
+    const viewType = pluginManager.getViewType(self.type)!
+    const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
+    const displays = conf.displays ?? []
+    const displayConf = displays.find((d: { type: string }) =>
+      supportedDisplays.has(d.type),
+    )
+
+    // Find a compatible display type for this view
+    // If displayInitialSnapshot specifies a type, use that instead
+    const snapshotType = (displayInitialSnapshot as { type?: string }).type
+    const defaultDisplayType =
+      displayConf?.type ??
+      trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
+    const displayType = snapshotType ?? defaultDisplayType
+
+    if (!displayType) {
+      throw new Error(
+        `Could not find a compatible display for view type ${self.type}`,
+      )
+    }
+
+    // Generate displayId based on the actual display type being used
+    const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
+
+    // Extract initial state properties from displayConf (excluding
+    // config-specific fields)
+    const {
+      type: _type,
+      displayId: _displayId,
+      ...displayConfState
+    } = displayConf ?? {}
+
+    const track = trackType.stateModel.create({
+      ...initialSnapshot,
+      type: conf.type,
+      configuration: inlineConf ?? trackId,
+      displays: [
+        {
+          type: displayType,
+          configuration: displayId,
+          ...displayConfState,
+          ...displayInitialSnapshot,
+        },
+      ],
+    })
+    self.tracks.push(track)
+    return track
+  } catch (e) {
+    session.notifyError(`${e}`, e)
+    return undefined
   }
-
-  // Generate displayId based on the actual display type being used
-  const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
-
-  // Extract initial state properties from displayConf (excluding config-specific fields)
-  const {
-    type: _type,
-    displayId: _displayId,
-    ...displayConfState
-  } = displayConf ?? {}
-
-  const track = trackType.stateModel.create({
-    ...initialSnapshot,
-    type: conf.type,
-    configuration: inlineConf ?? trackId,
-    displays: [
-      {
-        type: displayType,
-        configuration: displayId,
-        ...displayConfState,
-        ...displayInitialSnapshot,
-      },
-    ],
-  })
-  self.tracks.push(track)
-  return track
 }
 
 export function hideTrackGeneric(self: GenericView, trackId: string) {
@@ -590,9 +608,9 @@ export function hideTrackGeneric(self: GenericView, trackId: string) {
   return 0
 }
 
+// Returns true if the track is now shown, false if it was hidden or failed to
+// open (callers use this to e.g. record only newly-opened tracks as recent).
 export function toggleTrackGeneric(self: GenericView, trackId: string) {
   const hiddenCount = hideTrackGeneric(self, trackId)
-  if (!hiddenCount) {
-    showTrackGeneric(self, trackId)
-  }
+  return hiddenCount ? false : !!showTrackGeneric(self, trackId)
 }
