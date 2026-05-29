@@ -18,6 +18,17 @@
 | `SettingsInvalidate`                 | `self.rpcProps()` (any field it reads); installed only when subclass defines the method                 | `clearAllRpcData()`                                       |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `regionTooLarge` or `error` is set |
 
+All four early-return on `!view.initialized`. The track-vs-region assembly
+mismatch check lives inside `FetchVisibleRegions`, so a mismatch error surfaces
+only after its 600 ms debounce.
+
+`onDisplayedRegionsChange(self, clear, name?)` (exported helper, NOT a 5th
+installed autorun) is opt-in for per-region state keyed by
+`displayedRegionIndex` that must survive `clearAllRpcData` — chromosome nav
+reuses indices, so a stale entry would apply to the wrong chromosome (canvas's
+`densityStatsPerRegion` is the case). Displays cleared via
+`clearDisplaySpecificData` don't need it.
+
 ### Overridable hooks — subclasses must/can override
 
 | Hook                         | Default     | Override to                                                                                                                                                                                                                                                                                  |
