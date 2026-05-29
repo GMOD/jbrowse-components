@@ -1070,28 +1070,28 @@ describe('showLabels auto density gate', () => {
     return { display, view, mockRpcCall: env.mockRpcCall }
   }
 
-  // 50 features across 50kb → 0.001 features/bp, so screenDensity = 0.001 ×
-  // bpPerPx and the 0.02 label threshold trips above bpPerPx ≈ 20.
+  // 125 features across 50kb → 0.0025 features/bp, so screenDensity = 0.0025 ×
+  // bpPerPx and the 0.05 label threshold trips above bpPerPx ≈ 20.
   it('reacts to zoom from cached stats without a refetch', () => {
     const { display, view } = setup()
-    display.setDensityStats(0, { featureCount: 50, regionWidthBp: 50_000 })
+    display.setDensityStats(0, { featureCount: 125, regionWidthBp: 50_000 })
 
-    // zoomTo(62.5) → bpPerPx ≈ 31.7 → density ≈ 0.032 > 0.02 → labels hidden
+    // zoomTo(62.5) → bpPerPx > 20 → density > 0.05 → labels hidden
     view.zoomTo(62.5)
     expect(view.bpPerPx).toBeGreaterThan(20)
     expect(display.showLabels).toBe(false)
 
-    // zoomTo(10) → bpPerPx ≈ 10 → density ≈ 0.01 < 0.02 → labels shown, derived
+    // zoomTo(10) → bpPerPx ≈ 10 → density ≈ 0.025 < 0.05 → labels shown, derived
     // purely from the unchanged cached count × the new bpPerPx.
     view.zoomTo(10)
     expect(view.bpPerPx).toBeLessThan(20)
     expect(display.showLabels).toBe(true)
-    expect(display.densityStatsPerRegion.get(0)?.featureCount).toBe(50)
+    expect(display.densityStatsPerRegion.get(0)?.featureCount).toBe(125)
   })
 
   it('mode "on" shows labels even above the density threshold', () => {
     const { display, view } = setup()
-    display.setDensityStats(0, { featureCount: 50, regionWidthBp: 50_000 })
+    display.setDensityStats(0, { featureCount: 125, regionWidthBp: 50_000 })
     display.setShowLabels('on')
     view.zoomTo(62.5)
     expect(display.showLabels).toBe(true)
@@ -1099,7 +1099,7 @@ describe('showLabels auto density gate', () => {
 
   it('mode "off" hides labels even at low density', () => {
     const { display, view } = setup()
-    display.setDensityStats(0, { featureCount: 50, regionWidthBp: 50_000 })
+    display.setDensityStats(0, { featureCount: 125, regionWidthBp: 50_000 })
     display.setShowLabels('off')
     view.zoomTo(20)
     expect(display.showLabels).toBe(false)

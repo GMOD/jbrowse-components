@@ -44,10 +44,7 @@ import {
 import { createIncrementalLayout } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
-import {
-  MAX_LABEL_FEATURE_DENSITY,
-  shouldRenderPeptideBackground,
-} from '../RenderFeatureDataRPC/zoomThresholds.ts'
+import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -207,7 +204,10 @@ export default function baseStateModelFactory(
           if (mode === 'on') {
             return true
           }
-          return self.visibleFeatureDensityPerPx <= MAX_LABEL_FEATURE_DENSITY
+          return (
+            self.visibleFeatureDensityPerPx <=
+            self.getConfWithOverride<number>('maxLabelFeatureDensity')
+          )
         },
 
         get showDescriptions() {

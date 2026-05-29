@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import { SHOW_LABELS_MODES, legacyShowLabelsToMode } from './showLabelsMode.ts'
+import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -34,6 +35,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: 'auto',
         description:
           'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
+      },
+      maxLabelFeatureDensity: {
+        type: 'number',
+        defaultValue: MAX_LABEL_FEATURE_DENSITY,
+        description:
+          'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
       },
       showDescriptions: {
         type: 'boolean',
