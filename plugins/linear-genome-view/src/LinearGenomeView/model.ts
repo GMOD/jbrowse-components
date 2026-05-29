@@ -1049,6 +1049,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           throw new Error(`Track ID ${targetId} not found`)
         }
 
+        // direction-aware placement: filtering out oldIndex shifts the target
+        // left by one when dragging down (oldIndex < newIndex), so splicing at
+        // newIndex lands the track *after* the target; dragging up leaves the
+        // target's index intact, landing *before* it. This matches the side
+        // the dragged track approaches from.
         const tracks = self.tracks.filter((_, idx) => idx !== oldIndex)
         tracks.splice(newIndex, 0, self.tracks[oldIndex])
         self.tracks = cast(tracks)

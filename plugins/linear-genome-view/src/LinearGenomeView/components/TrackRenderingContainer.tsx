@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useCallback } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -44,17 +44,20 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   const { height, RenderingComponent, DisplayBlurb } = display
   const { trackRefs } = model
   const trackId = track.trackId
-  const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
 
-  useEffect(() => {
-    if (ref.current) {
-      trackRefs[trackId] = ref.current
-    }
-    return () => {
-      delete trackRefs[trackId]
-    }
-  }, [trackRefs, trackId])
+  // callback ref keeps trackRefs in sync as the rendering div mounts/unmounts
+  // (e.g. on minimize/restore), unlike a useEffect that misses the toggle
+  const setRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (el) {
+        trackRefs[trackId] = el
+      } else {
+        delete trackRefs[trackId]
+      }
+    },
+    [trackRefs, trackId],
+  )
 
   return (
     <div
@@ -67,7 +70,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
     >
       {!minimized ? (
         <>
-          <div ref={ref} className={classes.renderingComponentContainer}>
+          <div ref={setRef} className={classes.renderingComponentContainer}>
             <Suspense fallback={<LoadingEllipses />}>
               <RenderingComponent
                 model={display}
