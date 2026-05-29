@@ -2,8 +2,8 @@ import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
 import { getPropertyMembers } from '@jbrowse/mobx-state-tree'
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
-import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
+import CodeIcon from '@mui/icons-material/Code'
+import { IconButton, MenuItem, Paper, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BooleanEditor from './BooleanEditor.tsx'
@@ -26,15 +26,17 @@ import type { FileLocation } from '@jbrowse/core/util'
 import type { ILiteralType } from '@jbrowse/core/util/mst-reflection'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
+interface StringSlot {
+  name: string
+  description: string
+  value: string
+  set: (arg: string) => void
+}
+
 const StringEditor = observer(function StringEditor({
   slot,
 }: {
-  slot: {
-    name: string
-    description: string
-    value: string
-    set: (arg: string) => void
-  }
+  slot: StringSlot
 }) {
   return (
     <ConfigurationTextField
@@ -51,12 +53,7 @@ const StringEditor = observer(function StringEditor({
 const TextEditor = observer(function TextEditor({
   slot,
 }: {
-  slot: {
-    name: string
-    description: string
-    value: string
-    set: (arg: string) => void
-  }
+  slot: StringSlot
 }) {
   return (
     <TextField
@@ -70,13 +67,6 @@ const TextEditor = observer(function TextEditor({
     />
   )
 })
-
-// checked checkbox, looks like a styled (x)
-const SvgCheckbox = () => (
-  <SvgIcon>
-    <path d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z" />
-  </SvgIcon>
-)
 
 const StringEnumEditor = observer(function StringEnumEditor({
   slot,
@@ -132,7 +122,7 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
   )
 })
 
-const valueComponents = {
+const valueComponents: Record<string, React.ComponentType<any>> = {
   string: StringEditor,
   text: TextEditor,
   fileLocation: FileSelectorWrapper,
@@ -157,9 +147,7 @@ const SlotEditor = observer(function SlotEditor({
 }) {
   const { classes } = useSlotEditorStyles()
   const { type } = slot
-  const TypedComponent = (
-    valueComponents as Record<string, React.ComponentType<any>>
-  )[type]
+  const TypedComponent = valueComponents[type]
   if (!slot.editorIsCallback && !TypedComponent) {
     console.warn(`no slot editor defined for ${type}, editing as string`)
   }
@@ -173,22 +161,24 @@ const SlotEditor = observer(function SlotEditor({
       </div>
       {slot.contextVariable.length ? (
         <div className={classes.slotModeSwitch}>
-          <IconButton
-            onClick={() =>
+          <Tooltip
+            title={
               slot.editorIsCallback
-                ? slot.convertToValue()
-                : slot.convertToCallback()
+                ? 'Editing as a callback (Jexl expression). Click to use a fixed value.'
+                : 'Editing as a fixed value. Click to use a callback (Jexl expression).'
             }
-            title={`convert to ${
-              slot.editorIsCallback ? 'regular value' : 'callback'
-            }`}
           >
-            {slot.editorIsCallback ? (
-              <SvgCheckbox />
-            ) : (
-              <RadioButtonUncheckedIcon />
-            )}
-          </IconButton>
+            <IconButton
+              color={slot.editorIsCallback ? 'primary' : 'default'}
+              onClick={() =>
+                slot.editorIsCallback
+                  ? slot.convertToValue()
+                  : slot.convertToCallback()
+              }
+            >
+              <CodeIcon />
+            </IconButton>
+          </Tooltip>
         </div>
       ) : null}
     </Paper>

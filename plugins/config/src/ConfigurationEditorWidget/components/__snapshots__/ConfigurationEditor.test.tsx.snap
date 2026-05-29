@@ -238,10 +238,10 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-r9txlw-MuiListItem-root"
                     >
                       <div
-                        class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
+                        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
                       >
                         <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1hj5hjn-MuiInputBase-root-MuiInput-root"
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-17skhn2-MuiInputBase-root-MuiInput-root"
                         >
                           <input
                             aria-invalid="false"
@@ -278,10 +278,10 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-r9txlw-MuiListItem-root"
                     >
                       <div
-                        class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
+                        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
                       >
                         <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1hj5hjn-MuiInputBase-root-MuiInput-root"
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-17skhn2-MuiInputBase-root-MuiInput-root"
                         >
                           <input
                             aria-invalid="false"
@@ -314,14 +314,49 @@ exports[`renders all the different types of built-in slots 1`] = `
                         </div>
                       </div>
                     </li>
-                    <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
-                      style="margin: 4px;"
-                      tabindex="0"
-                      type="button"
+                    <li
+                      class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-r9txlw-MuiListItem-root"
                     >
-                      Add item
-                    </button>
+                      <div
+                        class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
+                      >
+                        <div
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-17skhn2-MuiInputBase-root-MuiInput-root"
+                        >
+                          <input
+                            aria-invalid="false"
+                            class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                            id="_r_d_"
+                            placeholder="add new"
+                            type="text"
+                            value=""
+                          />
+                          <div
+                            class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
+                          >
+                            <button
+                              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                              data-testid="stringArrayAdd-stringArrayTest"
+                              disabled=""
+                              tabindex="-1"
+                              type="button"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                data-testid="AddIcon"
+                                focusable="false"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
                   </ul>
                   <p
                     class="MuiFormHelperText-root css-uuncon-MuiFormHelperText-root"
@@ -395,15 +430,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                           class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-r9txlw-MuiListItem-root"
                         >
                           <div
-                            class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
+                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1hj5hjn-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-17skhn2-MuiInputBase-root-MuiInput-root"
                             >
                               <input
                                 aria-invalid="false"
                                 class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                id="_r_f_"
+                                id="_r_g_"
                                 type="text"
                                 value="string1"
                               />
@@ -435,15 +470,15 @@ exports[`renders all the different types of built-in slots 1`] = `
                           class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-r9txlw-MuiListItem-root"
                         >
                           <div
-                            class="MuiFormControl-root MuiFormControl-marginDense MuiTextField-root css-jqmkbu-MuiFormControl-root-MuiTextField-root"
+                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
                           >
                             <div
-                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1hj5hjn-MuiInputBase-root-MuiInput-root"
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-17skhn2-MuiInputBase-root-MuiInput-root"
                             >
                               <input
                                 aria-invalid="false"
                                 class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                id="_r_h_"
+                                id="_r_i_"
                                 type="text"
                                 value="string2"
                               />
@@ -471,14 +506,49 @@ exports[`renders all the different types of built-in slots 1`] = `
                             </div>
                           </div>
                         </li>
-                        <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
-                          style="margin: 4px;"
-                          tabindex="0"
-                          type="button"
+                        <li
+                          class="MuiListItem-root MuiListItem-dense MuiListItem-padding css-r9txlw-MuiListItem-root"
                         >
-                          Add item
-                        </button>
+                          <div
+                            class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
+                          >
+                            <div
+                              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-17skhn2-MuiInputBase-root-MuiInput-root"
+                            >
+                              <input
+                                aria-invalid="false"
+                                class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                                id="_r_k_"
+                                placeholder="add new"
+                                type="text"
+                                value=""
+                              />
+                              <div
+                                class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
+                              >
+                                <button
+                                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                                  data-testid="stringArrayAdd-stringArrayMapTest"
+                                  disabled=""
+                                  tabindex="-1"
+                                  type="button"
+                                >
+                                  <svg
+                                    aria-hidden="true"
+                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                    data-testid="AddIcon"
+                                    focusable="false"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
                       </ul>
                       <p
                         class="MuiFormHelperText-root css-uuncon-MuiFormHelperText-root"
@@ -506,7 +576,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                             <input
                               aria-invalid="false"
                               class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                              id="_r_k_"
+                              id="_r_m_"
                               placeholder="add new"
                               type="text"
                               value=""
@@ -558,8 +628,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for="_r_m_"
-                      id="_r_m_-label"
+                      for="_r_o_"
+                      id="_r_o_-label"
                     >
                       numberTest
                     </label>
@@ -567,17 +637,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby="_r_m_-helper-text"
+                        aria-describedby="_r_o_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id="_r_m_"
+                        id="_r_o_"
                         type="text"
                         value="88.5"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id="_r_m_-helper-text"
+                      id="_r_o_-helper-text"
                     >
                       <span>
                         numberTest
@@ -599,8 +669,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for="_r_n_"
-                      id="_r_n_-label"
+                      for="_r_p_"
+                      id="_r_p_-label"
                     >
                       integerTest
                     </label>
@@ -608,17 +678,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby="_r_n_-helper-text"
+                        aria-describedby="_r_p_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id="_r_n_"
+                        id="_r_p_"
                         type="text"
                         value="42"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id="_r_n_-helper-text"
+                      id="_r_p_-helper-text"
                     >
                       <span>
                         integerTest
@@ -644,8 +714,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                       <label
                         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                         data-shrink="true"
-                        for="_r_o_"
-                        id="_r_o_-label"
+                        for="_r_q_"
+                        id="_r_q_-label"
                       >
                         colorTest
                       </label>
@@ -653,17 +723,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                         class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall css-1hj5hjn-MuiInputBase-root-MuiInput-root"
                       >
                         <input
-                          aria-describedby="_r_o_-helper-text"
+                          aria-describedby="_r_q_-helper-text"
                           aria-invalid="false"
                           class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                          id="_r_o_"
+                          id="_r_q_"
                           type="text"
                           value="#396494"
                         />
                       </div>
                       <p
                         class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                        id="_r_o_-helper-text"
+                        id="_r_q_-helper-text"
                       >
                         colorTest
                       </p>

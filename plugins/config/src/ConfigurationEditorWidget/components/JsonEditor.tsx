@@ -42,13 +42,7 @@ const JsonEditor = observer(function JsonEditor({
 }) {
   const { classes } = useStyles()
   const [contents, setContents] = useState(JSON.stringify(slot.value, null, 2))
-
-  let error: unknown
-  try {
-    JSON.parse(contents)
-  } catch (e) {
-    error = e
-  }
+  const [error, setError] = useState<unknown>()
 
   return (
     <>
@@ -68,8 +62,9 @@ const JsonEditor = observer(function JsonEditor({
             setContents(val)
             try {
               slot.set(JSON.parse(val))
-            } catch {
-              // invalid JSON, error displayed via computed error above
+              setError(undefined)
+            } catch (e) {
+              setError(e)
             }
           }}
           style={{ background: error ? '#fdd' : undefined }}

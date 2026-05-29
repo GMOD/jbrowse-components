@@ -1,27 +1,8 @@
-import { useState } from 'react'
-
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import AddIcon from '@mui/icons-material/Add'
-import DeleteIcon from '@mui/icons-material/Delete'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  FormHelperText,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  TextField,
-} from '@mui/material'
+import { FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import MapEntryCard, { MapAddCard } from './MapEntryCard.tsx'
 import NumberEditor from './NumberEditor.tsx'
-
-const useStyles = makeStyles()(theme => ({
-  card: {
-    marginTop: theme.spacing(1),
-  },
-}))
 
 const NumberMapEditor = observer(function NumberMapEditor({
   slot,
@@ -34,69 +15,32 @@ const NumberMapEditor = observer(function NumberMapEditor({
     description: string
   }
 }) {
-  const { classes } = useStyles()
-  const [value, setValue] = useState('')
   return (
     <>
       <InputLabel>{slot.name}</InputLabel>
       {[...slot.value].map(([key, val]) => (
-        <Card raised key={key} className={classes.card}>
-          <CardHeader
-            title={key}
-            action={
-              <IconButton
-                onClick={() => {
-                  slot.remove(key)
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            }
+        <MapEntryCard
+          key={key}
+          title={key}
+          onDelete={() => {
+            slot.remove(key)
+          }}
+        >
+          <NumberEditor
+            slot={{
+              value: val,
+              set: val => {
+                slot.add(key, val)
+              },
+            }}
           />
-          <CardContent>
-            <NumberEditor
-              slot={{
-                value: val,
-                set: (val: number) => {
-                  slot.add(key, val)
-                },
-              }}
-            />
-          </CardContent>
-        </Card>
+        </MapEntryCard>
       ))}
-      <Card raised className={classes.card}>
-        <CardHeader
-          disableTypography
-          title={
-            <TextField
-              fullWidth
-              value={value}
-              placeholder="add new"
-              onChange={event => {
-                setValue(event.target.value)
-              }}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        disabled={value === ''}
-                        onClick={() => {
-                          slot.add(value, 0)
-                          setValue('')
-                        }}
-                      >
-                        <AddIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-          }
-        />
-      </Card>
+      <MapAddCard
+        onAdd={key => {
+          slot.add(key, 0)
+        }}
+      />
       <FormHelperText>{slot.description}</FormHelperText>
     </>
   )

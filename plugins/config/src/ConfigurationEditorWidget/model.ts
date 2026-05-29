@@ -40,6 +40,11 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
             }
           }),
         )
+        // ensure a pending debounced save can't fire after disposal, where
+        // getSession(self) would throw on the now-detached node
+        addDisposer(self, () => {
+          clearTimeout(timeout)
+        })
       },
     }))
 }

@@ -1,8 +1,5 @@
-import { useState } from 'react'
-
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
-  Button,
   FormHelperText,
   IconButton,
   InputAdornment,
@@ -12,6 +9,8 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import AddNewField from './AddNewField.tsx'
 
 const StringArrayEditor = observer(function StringArrayEditor({
   slot,
@@ -25,8 +24,6 @@ const StringArrayEditor = observer(function StringArrayEditor({
     description: string
   }
 }) {
-  const [value, setValue] = useState('')
-  const [addNew, setAddNew] = useState(false)
   return (
     <>
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
@@ -37,6 +34,7 @@ const StringArrayEditor = observer(function StringArrayEditor({
         {slot.value.map((val, idx) => (
           <ListItem key={idx} disableGutters>
             <TextField
+              fullWidth
               value={val}
               onChange={evt => {
                 slot.setAtIndex(idx, evt.target.value)
@@ -59,63 +57,14 @@ const StringArrayEditor = observer(function StringArrayEditor({
             />
           </ListItem>
         ))}
-
-        {addNew ? (
-          <ListItem disableGutters>
-            <TextField
-              value={value}
-              placeholder="add new"
-              onChange={event => {
-                setValue(event.target.value)
-              }}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <>
-                        <Button
-                          color="primary"
-                          variant="contained"
-                          style={{ margin: 2 }}
-                          data-testid={`stringArrayAdd-${slot.name}`}
-                          onClick={() => {
-                            setAddNew(false)
-                            slot.add(value)
-                            setValue('')
-                          }}
-                        >
-                          OK
-                        </Button>
-                        <Button
-                          color="primary"
-                          variant="contained"
-                          style={{ margin: 2 }}
-                          onClick={() => {
-                            setAddNew(false)
-                            setValue('')
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-          </ListItem>
-        ) : null}
-        <Button
-          color="primary"
-          variant="contained"
-          style={{ margin: 4 }}
-          disabled={addNew}
-          onClick={() => {
-            setAddNew(true)
-          }}
-        >
-          Add item
-        </Button>
+        <ListItem disableGutters>
+          <AddNewField
+            testid={`stringArrayAdd-${slot.name}`}
+            onAdd={val => {
+              slot.add(val)
+            }}
+          />
+        </ListItem>
       </List>
       <FormHelperText>{slot.description}</FormHelperText>
     </>

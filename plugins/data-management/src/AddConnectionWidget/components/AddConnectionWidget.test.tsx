@@ -139,7 +139,6 @@ test('can handle a custom JBrowse 1 data directory URL', async () => {
     await findByDisplayValue('http://mysite.com/jbrowse/data/'),
     'http://test.com/jbrowse/data/',
   )
-  await user.click(await findByText('Add item'))
   await user.type(await findByPlaceholderText('add new'), 'volMyt1')
   await user.click(await findByTestId('stringArrayAdd-assemblyNames'))
   await user.click(await findByText('Connect'))
