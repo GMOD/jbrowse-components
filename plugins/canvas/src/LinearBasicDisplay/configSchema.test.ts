@@ -204,5 +204,37 @@ describe('LinearBasicDisplay configSchema', () => {
       )
       expect(readConfObject(config, 'color1')).toBe('purple')
     })
+
+    it('converts boolean showLabels lifted from renderer to enum', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          renderer: { type: 'CanvasFeatureRenderer', showLabels: true },
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'showLabels')).toBe('auto')
+    })
+
+    it('converts boolean showLabels=false to off', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          showLabels: false,
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'showLabels')).toBe('off')
+    })
+
+    it('leaves enum showLabels untouched', () => {
+      const config = schema.create(
+        { displayId: 'test', type: 'LinearBasicDisplay', showLabels: 'on' },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'showLabels')).toBe('on')
+    })
   })
 })

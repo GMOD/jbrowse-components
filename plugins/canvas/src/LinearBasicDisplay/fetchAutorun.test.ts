@@ -1050,3 +1050,58 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
     expect(display.userByteSizeLimit).toBeDefined()
   })
 })
+
+// 'auto' label visibility must be a pure function of cached per-region counts ×
+// the current bpPerPx (same derivation as the regionTooLarge banner). The old
+// imperative scalar was only recomputed on refetch, so zooming into a sparse
+// region without triggering a new fetch left labels hidden from the prior
+// zoomed-out density.
+describe('showLabels auto density gate', () => {
+  function setup() {
+    const env = createTestEnvironment()
+    const { display, view } = env.createDisplay()
+    // Never-resolving RPC: a fetch may be scheduled by the autorun but its
+    // applyFetchResults never runs, so the manually-seeded density stats are
+    // the only ones in play — isolating the derived getter from refetch.
+    env.mockRpcCall.mockReturnValue(new Promise(() => {}))
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
+    ])
+    return { display, view, mockRpcCall: env.mockRpcCall }
+  }
+
+  // 50 features across 50kb → 0.001 features/bp, so screenDensity = 0.001 ×
+  // bpPerPx and the 0.02 label threshold trips above bpPerPx ≈ 20.
+  it('reacts to zoom from cached stats without a refetch', () => {
+    const { display, view } = setup()
+    display.setDensityStats(0, { featureCount: 50, regionWidthBp: 50_000 })
+
+    // zoomTo(62.5) → bpPerPx ≈ 31.7 → density ≈ 0.032 > 0.02 → labels hidden
+    view.zoomTo(62.5)
+    expect(view.bpPerPx).toBeGreaterThan(20)
+    expect(display.showLabels).toBe(false)
+
+    // zoomTo(10) → bpPerPx ≈ 10 → density ≈ 0.01 < 0.02 → labels shown, derived
+    // purely from the unchanged cached count × the new bpPerPx.
+    view.zoomTo(10)
+    expect(view.bpPerPx).toBeLessThan(20)
+    expect(display.showLabels).toBe(true)
+    expect(display.densityStatsPerRegion.get(0)?.featureCount).toBe(50)
+  })
+
+  it('mode "on" shows labels even above the density threshold', () => {
+    const { display, view } = setup()
+    display.setDensityStats(0, { featureCount: 50, regionWidthBp: 50_000 })
+    display.setShowLabels('on')
+    view.zoomTo(62.5)
+    expect(display.showLabels).toBe(true)
+  })
+
+  it('mode "off" hides labels even at low density', () => {
+    const { display, view } = setup()
+    display.setDensityStats(0, { featureCount: 50, regionWidthBp: 50_000 })
+    display.setShowLabels('off')
+    view.zoomTo(20)
+    expect(display.showLabels).toBe(false)
+  })
+})

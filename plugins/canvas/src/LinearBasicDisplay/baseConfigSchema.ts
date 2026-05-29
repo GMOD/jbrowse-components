@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
+import { SHOW_LABELS_MODES, legacyShowLabelsToMode } from './showLabelsMode.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -29,7 +30,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       showLabels: {
         type: 'stringEnum',
-        model: types.enumeration('showLabels', ['auto', 'on', 'off']),
+        model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
         defaultValue: 'auto',
         description:
           'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
@@ -150,15 +151,21 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       // color1: ..., labels: ... }. The renderer concept was removed in the GPU
       // rewrite; these properties now live directly on the display config.
       preProcessSnapshot: (snap: Record<string, unknown>) => {
-        if (!snap.renderer || typeof snap.renderer !== 'object') {
-          return snap
-        }
-        const { type: _type, ...rendererProps } = snap.renderer as Record<
-          string,
-          unknown
-        >
-        const { renderer: _renderer, ...rest } = snap
-        return { ...rendererProps, ...rest }
+        const lifted =
+          snap.renderer && typeof snap.renderer === 'object'
+            ? (() => {
+                const { type: _type, ...rendererProps } =
+                  snap.renderer as Record<string, unknown>
+                const { renderer: _renderer, ...rest } = snap
+                return { ...rendererProps, ...rest }
+              })()
+            : snap
+        // showLabels flipped from boolean to enum (auto/on/off). Old configs
+        // (including the boolean lifted off a renderer above) need converting
+        // so they pass schema validation.
+        return typeof lifted.showLabels === 'boolean'
+          ? { ...lifted, showLabels: legacyShowLabelsToMode(lifted.showLabels) }
+          : lifted
       },
     },
   )

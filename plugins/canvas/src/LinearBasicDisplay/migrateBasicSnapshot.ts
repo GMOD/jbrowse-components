@@ -1,3 +1,5 @@
+import { legacyShowLabelsToMode } from './showLabelsMode.ts'
+
 // Migrate legacy snapshot shapes: strip removed FeatureDensityMixin fields,
 // lift `height` to `heightPreConfig`, and promote the old per-property
 // `track<Setting>` values into the unified configOverrides map.
@@ -69,10 +71,4 @@ export function migrateBasicSnapshot(
       configOverrides: { ...normalizedOverrides, ...migrated },
     }),
   }
-}
-
-// true → 'auto' (new sensible default; preserves "labels visible at sparse
-// zooms" while gaining density-based hide at zoom-out). false → 'off'.
-function legacyShowLabelsToMode(v: unknown): 'auto' | 'off' {
-  return v === false ? 'off' : 'auto'
 }

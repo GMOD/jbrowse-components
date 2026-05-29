@@ -43,6 +43,7 @@ import {
 } from './components/hitTesting.ts'
 import { createIncrementalLayout } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
+import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 import {
   MAX_LABEL_FEATURE_DENSITY,
   shouldRenderPeptideBackground,
@@ -56,6 +57,7 @@ import type {
   FlatbushRegionIndexes,
   VisibleRegion,
 } from './components/hitTesting.ts'
+import type { ShowLabelsMode } from './showLabelsMode.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
 import type {
@@ -133,7 +135,6 @@ export default function baseStateModelFactory(
           | { item: FlatbushItem; displayedRegionIndex: number }
           | undefined,
         userFeatureDensityLimit: undefined as number | undefined,
-        featureDensityPerPx: 0,
         heightBeforeExpand: undefined as number | undefined,
         // Per-instance memo backing `laidOutDataMap`. Stateful (holds the
         // previous per-ref-group layout) so unchanged chromosomes keep stable
@@ -141,6 +142,23 @@ export default function baseStateModelFactory(
         // O(N). The volatile holds a stable reference; mutating its internal
         // cache is invisible to MobX, so reading it in the computed is safe.
         incrementalLayout: createIncrementalLayout(),
+      }))
+      .views(self => ({
+        // Current features-per-pixel across the visible regions, recomputed
+        // from cached per-region counts and the LIVE bpPerPx. Unlike a
+        // fetch-time snapshot, this tracks zoom immediately, so label
+        // visibility and the regionTooLarge banner react together rather than
+        // lagging until the next refetch lands.
+        get visibleFeatureDensityPerPx() {
+          const view = getView(self)
+          return Math.max(
+            0,
+            ...view.visibleRegions.map(r => {
+              const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
+              return ds ? screenDensity(ds, view.bpPerPx) : 0
+            }),
+          )
+        },
       }))
       .views(self => ({
         get renderState() {
@@ -173,7 +191,7 @@ export default function baseStateModelFactory(
         },
 
         get showLabelsMode() {
-          return self.getConfWithOverride<'auto' | 'on' | 'off'>('showLabels')
+          return self.getConfWithOverride<ShowLabelsMode>('showLabels')
         },
 
         // Effective boolean visibility used by layout, hit testing, the DOM
@@ -189,7 +207,7 @@ export default function baseStateModelFactory(
           if (mode === 'on') {
             return true
           }
-          return self.featureDensityPerPx <= MAX_LABEL_FEATURE_DENSITY
+          return self.visibleFeatureDensityPerPx <= MAX_LABEL_FEATURE_DENSITY
         },
 
         get showDescriptions() {
@@ -317,17 +335,9 @@ export default function baseStateModelFactory(
 
         get densityTooLarge() {
           const max = self.maxFeatureDensity
-          if (max === undefined) {
-            return false
-          }
-          const view = getView(self)
-          for (const r of view.visibleRegions) {
-            const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
-            if (ds && screenDensity(ds, view.bpPerPx) > max) {
-              return true
-            }
-          }
-          return false
+          return max === undefined
+            ? false
+            : self.visibleFeatureDensityPerPx > max
         },
       }))
       .views(self => ({
@@ -505,10 +515,6 @@ export default function baseStateModelFactory(
           self.densityStatsPerRegion.set(displayedRegionIndex, stats)
         },
 
-        setFeatureDensityPerPx(value: number) {
-          self.featureDensityPerPx = value
-        },
-
         clearDisplaySpecificData() {
           // Density stats survive viewport-change clearAllRpcData calls so
           // the derived `regionTooLarge` banner stays stable across small
@@ -650,7 +656,7 @@ export default function baseStateModelFactory(
           getSession(self).clearSelection()
         },
 
-        setShowLabels(value: 'auto' | 'on' | 'off') {
+        setShowLabels(value: ShowLabelsMode) {
           self.setOverride('showLabels', value)
         },
 
@@ -829,8 +835,6 @@ export default function baseStateModelFactory(
         }
 
         function applyFetchResults(results: (FetchResult | TooLargeResult)[]) {
-          let totalFeatures = 0
-          let totalSpanPx = 0
           for (const r of results) {
             const regionWidthBp = r.region.end - r.region.start
             if (r.kind === 'ok') {
@@ -839,8 +843,6 @@ export default function baseStateModelFactory(
                 featureCount: r.data.featureCount,
                 regionWidthBp,
               })
-              totalFeatures += r.data.featureCount
-              totalSpanPx += regionWidthBp / r.bpPerPx
             } else {
               self.setDensityStats(r.displayedRegionIndex, {
                 featureCount: r.featureCount,
@@ -848,9 +850,6 @@ export default function baseStateModelFactory(
               })
             }
           }
-          self.setFeatureDensityPerPx(
-            totalSpanPx > 0 ? totalFeatures / totalSpanPx : 0,
-          )
         }
 
         return {
@@ -974,7 +973,7 @@ export default function baseStateModelFactory(
           return [
             {
               label: 'Show labels',
-              subMenu: (['auto', 'on', 'off'] as const).map(mode => ({
+              subMenu: SHOW_LABELS_MODES.map(mode => ({
                 label:
                   mode === 'auto'
                     ? 'Auto (hide when dense)'
