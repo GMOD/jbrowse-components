@@ -1,4 +1,16 @@
+import { colord } from '@jbrowse/core/util/colord'
+
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { Theme } from '@mui/material'
+
+// User-supplied color is used as-is so explicit alpha is preserved; otherwise
+// fall back to the theme highlight color at a standard alpha. Shared between
+// the main-view and overview highlight bands.
+export function getHighlightColor(highlight: { color?: string }, theme: Theme) {
+  return highlight.color
+    ? colord(highlight.color)
+    : colord(theme.palette.highlight.main).alpha(0.35)
+}
 
 // Shared style for elided (collapsed) blocks — striped grey pattern used
 // consistently across OverviewScalebar, ScalebarCoordinateLabels, and Gridlines

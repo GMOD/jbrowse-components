@@ -23,6 +23,11 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData.tsx'))
 
+// label of the "save track data" track-menu entry. Shared so consumers that
+// regroup it (e.g. the LGV track-label menu) match on a constant rather than a
+// literal that can silently drift
+export const SAVE_TRACK_DATA_LABEL = 'Save track data'
+
 interface DisplayConf {
   displayId: string
   type: string
@@ -246,7 +251,7 @@ export function createBaseTrackModel(
         return [
           ...menuItems,
           {
-            label: 'Save track data',
+            label: SAVE_TRACK_DATA_LABEL,
             icon: Save,
             priority: 998,
             onClick: () => {

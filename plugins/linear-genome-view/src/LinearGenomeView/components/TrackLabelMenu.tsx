@@ -8,6 +8,8 @@ import LowPriorityIcon from '@mui/icons-material/LowPriority'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PushPinIcon from '@mui/icons-material/PushPin'
 
+import { SAVE_TRACK_DATA_LABEL } from '@jbrowse/core/pluggableElementTypes/models'
+
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -23,10 +25,10 @@ function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
 
     const trackMenuItems = track.trackMenuItems()
     const saveTrackData = trackMenuItems.find(
-      item => 'label' in item && item.label === 'Save track data',
+      item => 'label' in item && item.label === SAVE_TRACK_DATA_LABEL,
     )
     const remainingTrackMenuItems = trackMenuItems.filter(
-      item => !('label' in item) || item.label !== 'Save track data',
+      item => !('label' in item) || item.label !== SAVE_TRACK_DATA_LABEL,
     )
 
     const effectiveConfig = track.activeDisplay?.effectiveTrackConfig

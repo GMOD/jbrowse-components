@@ -1964,6 +1964,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * like getHighlightCoords but laid out against the overview scalebar and
+       * shifted by the cytoband offset
+       */
+      getOverviewHighlightCoords(region: {
+        assemblyName?: string
+        refName: string
+        start: number
+        end: number
+      }) {
+        const { assemblyManager } = getSession(self)
+        const asm = region.assemblyName
+          ? assemblyManager.get(region.assemblyName)
+          : undefined
+        const refName =
+          asm?.getCanonicalRefName(region.refName) ?? region.refName
+        const coords = getLayoutHighlightCoords(self.overviewLayout, {
+          ...region,
+          refName,
+        })
+        return coords
+          ? { ...coords, left: coords.left + self.cytobandOffset }
+          : undefined
+      },
+
+      /**
+       * #method
        * scrolls the view to center on the given bp. if that is not in any of
        * the displayed regions, does nothing
        *

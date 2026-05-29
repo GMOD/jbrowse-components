@@ -1,11 +1,11 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { colord } from '@jbrowse/core/util/colord'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
 import { Box, Tooltip, Typography, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HighlightBand from './HighlightBand.tsx'
+import { getHighlightColor } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { HighlightType } from '../types.ts'
@@ -21,12 +21,7 @@ const Highlight = observer(function Highlight({
 }) {
   const theme = useTheme()
   const coords = model.getHighlightCoords(highlight)
-
-  // user-supplied color is used as-is so explicit alpha is preserved; fall
-  // back to the theme color with a standard alpha
-  const bandColor = highlight.color
-    ? colord(highlight.color)
-    : colord(theme.palette.highlight.main).alpha(0.35)
+  const bandColor = getHighlightColor(highlight, theme)
   // hide the chip icon color when the band is fully transparent ("label-only"
   // highlight); otherwise bump the band color to 0.8 alpha so the chip is legible
   const chipAlpha = bandColor.alpha() === 0 ? 0 : 0.8

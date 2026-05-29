@@ -1,13 +1,12 @@
-import { getSession, notEmpty } from '@jbrowse/core/util'
-import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
+import { notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import OverviewHighlightBand from './OverviewHighlightBand.tsx'
+import { getHighlightColor } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -17,30 +16,24 @@ const OverviewHighlight = observer(function OverviewHighlight({
   model: LGV
 }) {
   const theme = useTheme()
-  const { highlight, cytobandOffset, overviewLayout: overview } = model
-  const { assemblyManager } = getSession(model) as SessionWithWidgets
   const themed = colord(theme.palette.highlight.main)
 
-  return highlight
-    .map(r => {
-      const asm = r.assemblyName
-        ? assemblyManager.get(r.assemblyName)
-        : undefined
-      const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
-      const coords = getLayoutHighlightCoords(overview, { ...r, refName })
-      return coords ? { coords, highlight: r } : undefined
+  return model.highlight
+    .map(highlight => {
+      const coords = model.getOverviewHighlightCoords(highlight)
+      return coords ? { coords, highlight } : undefined
     })
     .filter(notEmpty)
-    .map(({ coords, highlight: r }, idx) => {
-      const bandColor = r.color ? colord(r.color) : themed.alpha(0.35)
+    .map(({ coords, highlight }, idx) => {
+      const bandColor = getHighlightColor(highlight, theme)
       return (
         <OverviewHighlightBand
           /* biome-ignore lint/suspicious/noArrayIndexKey: */
           key={`${coords.left}_${coords.width}_${idx}`}
-          coords={{ ...coords, left: coords.left + cytobandOffset }}
+          coords={coords}
           background={bandColor.toRgbString()}
-          borderColor={(r.color ? bandColor : themed).toRgbString()}
-          tooltip={r.label}
+          borderColor={(highlight.color ? bandColor : themed).toRgbString()}
+          tooltip={highlight.label}
         />
       )
     })
