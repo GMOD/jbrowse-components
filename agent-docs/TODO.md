@@ -1,5 +1,1 @@
-- sidebar font not right linear-genome-view storybook
-- variants show labels toggles off too soon variants
 - widen storybook area
-- getting started show only genes...no other features
-- validate mst error message simplifying

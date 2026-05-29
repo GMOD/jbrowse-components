@@ -12,13 +12,13 @@
     "review-screenshots": "node --experimental-strip-types scripts/review-screenshots.ts"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.5",
+    "@astrojs/react": "^5.0.6",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@iconify-json/mdi": "^1.2.3",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "astro": "^6.3.8",
+    "astro": "^6.4.0",
     "astro-icon": "^1.1.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
