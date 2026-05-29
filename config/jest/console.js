@@ -13,7 +13,6 @@ console.log = (...args) => {
 console.error = (...args) => {
   const r = String(args)
   if (
-    r.includes('volvox.2bit_404') ||
     r.includes('indexedDB') ||
     r.includes('popupState') ||
     r.includes('Cannot update a component') ||
