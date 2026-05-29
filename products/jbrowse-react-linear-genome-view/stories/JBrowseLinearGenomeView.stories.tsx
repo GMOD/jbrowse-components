@@ -123,27 +123,29 @@ const tracks = [
   },
 ]
 
-export const WithInit = {
-  render: () => {
-    const [state] = useState(() =>
-      createViewState({
-        assembly,
-        tracks,
-        defaultSession: {
-          name: 'My session',
-          view: {
-            type: 'LinearGenomeView',
-            init: {
-              assembly: 'hg38',
-              loc: 'chr1:11,106,077-11,261,675',
-              tracks: ['ncbi-refseq-genes'],
-            },
+function WithInitRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      defaultSession: {
+        name: 'My session',
+        view: {
+          type: 'LinearGenomeView',
+          init: {
+            assembly: 'hg38',
+            loc: 'chr1:11,106,077-11,261,675',
+            tracks: ['ncbi-refseq-genes'],
           },
         },
-      }),
-    )
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithInit = {
+  render: WithInitRender,
   parameters: {
     docs: {
       source: {
@@ -223,26 +225,28 @@ function App() {
 // DefaultSession
 // ---------------------------------------------------------------------------
 
-export const DefaultSession = {
-  render: () => {
-    const { assembly, tracks } = getVolvoxConfig()
-    const state = useCreateViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'My session',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: 'ctgA:1105..1221',
-            assembly: 'volvox',
-            tracks: ['volvox-long-reads-sv-bam'],
-          },
+function DefaultSessionRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    defaultSession: {
+      name: 'My session',
+      view: {
+        type: 'LinearGenomeView',
+        init: {
+          loc: 'ctgA:1105..1221',
+          assembly: 'volvox',
+          tracks: ['volvox-long-reads-sv-bam'],
         },
       },
-    })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const DefaultSession = {
+  render: DefaultSessionRender,
   parameters: {
     docs: {
       source: {
@@ -279,16 +283,18 @@ function App() {
 // DisableAddTrack
 // ---------------------------------------------------------------------------
 
+function DisableAddTrackRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    disableAddTracks: true,
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 export const DisableAddTrack = {
-  render: () => {
-    const { assembly, tracks } = getVolvoxConfig()
-    const state = useCreateViewState({
-      assembly,
-      tracks,
-      disableAddTracks: true,
-    })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+  render: DisableAddTrackRender,
   parameters: {
     docs: {
       source: {
@@ -321,37 +327,39 @@ const bookmarks = [
   { label: 'ctgB — region C', loc: 'ctgB:1..2,000' },
 ]
 
-export const ExternalNavigateLocstring = {
-  render: () => {
-    const { assembly, tracks } = getVolvoxConfig()
-    const [state] = useState(() =>
-      createViewState({
-        assembly,
-        tracks,
-        location: 'ctgA:1,000..5,000',
-      }),
-    )
-    return (
-      <div>
-        <div style={{ marginBottom: 8 }}>
-          {bookmarks.map(b => (
-            <button
-              key={b.loc}
-              style={{ marginRight: 8 }}
-              onClick={() => {
-                state.session.view.navToLocString(b.loc).catch((e: unknown) => {
-                  console.error(e)
-                })
-              }}
-            >
-              {b.label}
-            </button>
-          ))}
-        </div>
-        <JBrowseLinearGenomeView viewState={state} />
+function ExternalNavigateLocstringRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      location: 'ctgA:1,000..5,000',
+    }),
+  )
+  return (
+    <div>
+      <div style={{ marginBottom: 8 }}>
+        {bookmarks.map(b => (
+          <button
+            key={b.loc}
+            style={{ marginRight: 8 }}
+            onClick={() => {
+              state.session.view.navToLocString(b.loc).catch((e: unknown) => {
+                console.error(e)
+              })
+            }}
+          >
+            {b.label}
+          </button>
+        ))}
       </div>
-    )
-  },
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
+}
+
+export const ExternalNavigateLocstring = {
+  render: ExternalNavigateLocstringRender,
   parameters: {
     docs: {
       source: {
@@ -408,41 +416,43 @@ const hits = [
   { label: 'gene3', refName: 'ctgB', start: 100, end: 1500 },
 ]
 
-export const ExternalNavigateObject = {
-  render: () => {
-    const { assembly, tracks } = getVolvoxConfig()
-    const [state] = useState(() =>
-      createViewState({
-        assembly,
-        tracks,
-        location: 'ctgA:1,000..5,000',
-      }),
-    )
-    return (
-      <div>
-        <div style={{ marginBottom: 8 }}>
-          {hits.map(h => (
-            <button
-              key={h.label}
-              style={{ marginRight: 8 }}
-              onClick={() => {
-                state.session.view
-                  .navToLocations([
-                    { refName: h.refName, start: h.start, end: h.end },
-                  ])
-                  .catch((e: unknown) => {
-                    console.error(e)
-                  })
-              }}
-            >
-              {h.label}
-            </button>
-          ))}
-        </div>
-        <JBrowseLinearGenomeView viewState={state} />
+function ExternalNavigateObjectRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      location: 'ctgA:1,000..5,000',
+    }),
+  )
+  return (
+    <div>
+      <div style={{ marginBottom: 8 }}>
+        {hits.map(h => (
+          <button
+            key={h.label}
+            style={{ marginRight: 8 }}
+            onClick={() => {
+              state.session.view
+                .navToLocations([
+                  { refName: h.refName, start: h.start, end: h.end },
+                ])
+                .catch((e: unknown) => {
+                  console.error(e)
+                })
+            }}
+          >
+            {h.label}
+          </button>
+        ))}
       </div>
-    )
-  },
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
+}
+
+export const ExternalNavigateObject = {
+  render: ExternalNavigateObjectRender,
   parameters: {
     docs: {
       source: {
@@ -515,26 +525,28 @@ function FlipButton({ state }: { state: HFlipViewState }) {
   )
 }
 
+function HorizontallyFlippedViaLocstringRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      location: 'ctgA:1-50000[rev]',
+    }),
+  )
+  return (
+    <div>
+      <p>
+        The <code>[rev]</code> suffix in a locstring navigates to that region
+        in the horizontally flipped orientation.
+      </p>
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
+}
+
 export const HorizontallyFlippedViaLocstring = {
-  render: () => {
-    const { assembly, tracks } = getVolvoxConfig()
-    const [state] = useState(() =>
-      createViewState({
-        assembly,
-        tracks,
-        location: 'ctgA:1-50000[rev]',
-      }),
-    )
-    return (
-      <div>
-        <p>
-          The <code>[rev]</code> suffix in a locstring navigates to that region
-          in the horizontally flipped orientation.
-        </p>
-        <JBrowseLinearGenomeView viewState={state} />
-      </div>
-    )
-  },
+  render: HorizontallyFlippedViaLocstringRender,
   parameters: {
     docs: {
       source: {
@@ -556,27 +568,29 @@ function App() {
   },
 }
 
+function HorizontallyFlippedViaButtonRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      location: 'ctgA:1-50000',
+    }),
+  )
+  return (
+    <div>
+      <p>
+        Call <code>state.session.view.horizontallyFlip()</code> at any time to
+        toggle the flipped orientation.
+      </p>
+      <FlipButton state={state} />
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
+}
+
 export const HorizontallyFlippedViaButton = {
-  render: () => {
-    const { assembly, tracks } = getVolvoxConfig()
-    const [state] = useState(() =>
-      createViewState({
-        assembly,
-        tracks,
-        location: 'ctgA:1-50000',
-      }),
-    )
-    return (
-      <div>
-        <p>
-          Call <code>state.session.view.horizontallyFlip()</code> at any time to
-          toggle the flipped orientation.
-        </p>
-        <FlipButton state={state} />
-        <JBrowseLinearGenomeView viewState={state} />
-      </div>
-    )
-  },
+  render: HorizontallyFlippedViaButtonRender,
   parameters: {
     docs: {
       source: {
@@ -626,43 +640,45 @@ function App() {
   },
 }
 
-export const HorizontallyFlippedViaDisplayedRegions = {
-  render: () => {
-    const { assembly, tracks } = getVolvoxConfig()
-    const [state] = useState(() =>
-      createViewState({
-        assembly,
-        tracks,
-        defaultSession: {
-          name: 'Horizontally flipped via displayedRegions',
-          view: {
-            type: 'LinearGenomeView',
-            offsetPx: 0,
-            bpPerPx: 1,
-            displayedRegions: [
-              {
-                refName: 'ctgA',
-                start: 0,
-                end: 50001,
-                reversed: true,
-                assemblyName: 'volvox',
-              },
-            ],
-          },
+function HorizontallyFlippedViaDisplayedRegionsRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      defaultSession: {
+        name: 'Horizontally flipped via displayedRegions',
+        view: {
+          type: 'LinearGenomeView',
+          offsetPx: 0,
+          bpPerPx: 1,
+          displayedRegions: [
+            {
+              refName: 'ctgA',
+              start: 0,
+              end: 50001,
+              reversed: true,
+              assemblyName: 'volvox',
+            },
+          ],
         },
-      }),
-    )
-    return (
-      <div>
-        <p>
-          Set <code>reversed: true</code> on a region in{' '}
-          <code>displayedRegions</code> in your <code>defaultSession</code> to
-          start in the horizontally flipped orientation.
-        </p>
-        <JBrowseLinearGenomeView viewState={state} />
-      </div>
-    )
-  },
+      },
+    }),
+  )
+  return (
+    <div>
+      <p>
+        Set <code>reversed: true</code> on a region in{' '}
+        <code>displayedRegions</code> in your <code>defaultSession</code> to
+        start in the horizontally flipped orientation.
+      </p>
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
+}
+
+export const HorizontallyFlippedViaDisplayedRegions = {
+  render: HorizontallyFlippedViaDisplayedRegionsRender,
   parameters: {
     docs: {
       source: {
@@ -750,27 +766,29 @@ const humanTracks = [
   },
 ]
 
-export const HumanExomeExample = {
-  render: () => {
-    const [state] = useState(() =>
-      createViewState({
-        assembly: humanAssembly,
-        tracks: humanTracks,
-        defaultSession: {
-          name: 'My session',
-          view: {
-            type: 'LinearGenomeView',
-            init: {
-              loc: '1:100,987,269..100,987,368',
-              assembly: 'GRCh38',
-              tracks: ['NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'],
-            },
+function HumanExomeExampleRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly: humanAssembly,
+      tracks: humanTracks,
+      defaultSession: {
+        name: 'My session',
+        view: {
+          type: 'LinearGenomeView',
+          init: {
+            loc: '1:100,987,269..100,987,368',
+            assembly: 'GRCh38',
+            tracks: ['NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'],
           },
         },
-      }),
-    )
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const HumanExomeExample = {
+  render: HumanExomeExampleRender,
   parameters: {
     docs: {
       source: {
@@ -854,31 +872,33 @@ function App() {
 // NextstrainExample
 // ---------------------------------------------------------------------------
 
-export const NextstrainExample = {
-  render: () => {
-    const {
+function NextstrainExampleRender() {
+  const {
+    assembly: nsAssembly,
+    tracks: nsTracks,
+    defaultSession: nsDefaultSession,
+  } = nextstrainConfig
+  const [state] = useState(() =>
+    createViewState({
       assembly: nsAssembly,
       tracks: nsTracks,
       defaultSession: nsDefaultSession,
-    } = nextstrainConfig
-    const [state] = useState(() =>
-      createViewState({
-        assembly: nsAssembly,
-        tracks: nsTracks,
-        defaultSession: nsDefaultSession,
-        location: 'SARS-CoV-2:1..29,903',
-        configuration: {
-          theme: {
-            palette: {
-              primary: { main: '#5da8a3' },
-              secondary: { main: '#333' },
-            },
+      location: 'SARS-CoV-2:1..29,903',
+      configuration: {
+        theme: {
+          palette: {
+            primary: { main: '#5da8a3' },
+            secondary: { main: '#333' },
           },
         },
-      }),
-    )
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const NextstrainExample = {
+  render: NextstrainExampleRender,
   parameters: {
     docs: {
       source: {
@@ -995,18 +1015,20 @@ const JBrowseCustom = () => {
   return createElement(ShadowComponent, null, null)
 }
 
+function ShadowDOMOneLinearGenomeViewRender() {
+  if (customElements.get('jbrowse-linear-view') === undefined) {
+    customElements.define('jbrowse-linear-view', r2wc(JBrowseCustom))
+  }
+  return (
+    <div>
+      {/* @ts-expect-error */}
+      <jbrowse-linear-view />
+    </div>
+  )
+}
+
 export const ShadowDOMOneLinearGenomeView = {
-  render: () => {
-    if (customElements.get('jbrowse-linear-view') === undefined) {
-      customElements.define('jbrowse-linear-view', r2wc(JBrowseCustom))
-    }
-    return (
-      <div>
-        {/* @ts-expect-error */}
-        <jbrowse-linear-view />
-      </div>
-    )
-  },
+  render: ShadowDOMOneLinearGenomeViewRender,
   parameters: {
     docs: {
       source: {
@@ -1090,20 +1112,22 @@ export function App() {
 // UsingLocObject
 // ---------------------------------------------------------------------------
 
+function UsingLocObjectRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    location: {
+      refName: 'ctgA',
+      start: 10000,
+      end: 20000,
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 export const UsingLocObject = {
-  render: () => {
-    const { assembly, tracks } = getVolvoxConfig()
-    const state = useCreateViewState({
-      assembly,
-      tracks,
-      location: {
-        refName: 'ctgA',
-        start: 10000,
-        end: 20000,
-      },
-    })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+  render: UsingLocObjectRender,
   parameters: {
     docs: {
       source: {
@@ -1131,68 +1155,70 @@ function App() {
 // WithAggregateTextSearching
 // ---------------------------------------------------------------------------
 
+function WithAggregateTextSearchingRender() {
+  const { assembly: volvoxAssembly } = getVolvoxConfig()
+  const [state] = useState(() => {
+    const textSearchConfig = {
+      assembly: volvoxAssembly,
+      aggregateTextSearchAdapters: [
+        {
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: 'volvox-index',
+          ixFilePath: { uri: 'storybook_data/volvox.ix' },
+          ixxFilePath: { uri: 'storybook_data/volvox.ixx' },
+          metaFilePath: { uri: 'storybook_data/volvox_meta.json' },
+          assemblyNames: ['volvox'],
+        },
+      ],
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'gff3tabix_genes',
+          assemblyNames: ['volvox'],
+          name: 'GFF3Tabix genes',
+          category: ['Miscellaneous'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'volvox.sort.gff3.gz',
+          },
+        },
+        {
+          type: 'FeatureTrack',
+          trackId: 'single_exon_gene',
+          category: ['Miscellaneous'],
+          name: 'Single exon gene',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'single_exon_gene.sorted.gff.gz',
+          },
+        },
+        {
+          type: 'VariantTrack',
+          trackId: 'volvox.inv.vcf',
+          name: 'volvox inversions',
+          category: ['VCF'],
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'volvox.inv.vcf.gz',
+          },
+        },
+      ],
+      location: 'ctgA:1..800',
+    }
+    const configPath = 'test_data/volvox/config.json'
+    addRelativeUris(
+      textSearchConfig,
+      new URL(configPath, window.location.href).href,
+    )
+    return createViewState(textSearchConfig)
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 export const WithAggregateTextSearching = {
-  render: () => {
-    const { assembly: volvoxAssembly } = getVolvoxConfig()
-    const [state] = useState(() => {
-      const textSearchConfig = {
-        assembly: volvoxAssembly,
-        aggregateTextSearchAdapters: [
-          {
-            type: 'TrixTextSearchAdapter',
-            textSearchAdapterId: 'volvox-index',
-            ixFilePath: { uri: 'storybook_data/volvox.ix' },
-            ixxFilePath: { uri: 'storybook_data/volvox.ixx' },
-            metaFilePath: { uri: 'storybook_data/volvox_meta.json' },
-            assemblyNames: ['volvox'],
-          },
-        ],
-        tracks: [
-          {
-            type: 'FeatureTrack',
-            trackId: 'gff3tabix_genes',
-            assemblyNames: ['volvox'],
-            name: 'GFF3Tabix genes',
-            category: ['Miscellaneous'],
-            adapter: {
-              type: 'Gff3TabixAdapter',
-              uri: 'volvox.sort.gff3.gz',
-            },
-          },
-          {
-            type: 'FeatureTrack',
-            trackId: 'single_exon_gene',
-            category: ['Miscellaneous'],
-            name: 'Single exon gene',
-            assemblyNames: ['volvox'],
-            adapter: {
-              type: 'Gff3TabixAdapter',
-              uri: 'single_exon_gene.sorted.gff.gz',
-            },
-          },
-          {
-            type: 'VariantTrack',
-            trackId: 'volvox.inv.vcf',
-            name: 'volvox inversions',
-            category: ['VCF'],
-            assemblyNames: ['volvox'],
-            adapter: {
-              type: 'VcfTabixAdapter',
-              uri: 'volvox.inv.vcf.gz',
-            },
-          },
-        ],
-        location: 'ctgA:1..800',
-      }
-      const configPath = 'test_data/volvox/config.json'
-      addRelativeUris(
-        textSearchConfig,
-        new URL(configPath, window.location.href).href,
-      )
-      return createViewState(textSearchConfig)
-    })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+  render: WithAggregateTextSearchingRender,
   parameters: {
     docs: {
       source: {
@@ -1232,33 +1258,35 @@ function App() {
 // WithCustomTheme
 // ---------------------------------------------------------------------------
 
-export const WithCustomTheme = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const [state] = useState(() =>
-      createViewState({
-        assembly: volvoxAssembly,
-        tracks: volvoxTracks,
-        configuration: {
-          theme: {
-            palette: {
-              primary: { main: '#311b92' },
-              secondary: { main: '#0097a7' },
-              tertiary: { main: '#f57c00' },
-              quaternary: { main: '#d50000' },
-              bases: {
-                A: { main: '#98FB98' },
-                C: { main: '#87CEEB' },
-                G: { main: '#DAA520' },
-                T: { main: '#DC143C' },
-              },
+function WithCustomThemeRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const [state] = useState(() =>
+    createViewState({
+      assembly: volvoxAssembly,
+      tracks: volvoxTracks,
+      configuration: {
+        theme: {
+          palette: {
+            primary: { main: '#311b92' },
+            secondary: { main: '#0097a7' },
+            tertiary: { main: '#f57c00' },
+            quaternary: { main: '#d50000' },
+            bases: {
+              A: { main: '#98FB98' },
+              C: { main: '#87CEEB' },
+              G: { main: '#DAA520' },
+              T: { main: '#DC143C' },
             },
           },
         },
-      }),
-    )
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithCustomTheme = {
+  render: WithCustomThemeRender,
   parameters: {
     docs: {
       source: {
@@ -1303,26 +1331,28 @@ function App() {
 // WithDarkTheme
 // ---------------------------------------------------------------------------
 
-export const WithDarkTheme = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const [state] = useState(() =>
-      createViewState({
-        assembly: volvoxAssembly,
-        tracks: volvoxTracks,
-        configuration: {
-          theme: {
-            palette: {
-              mode: 'dark',
-              primary: { main: '#333' },
-              secondary: { main: '#444' },
-            },
+function WithDarkThemeRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const [state] = useState(() =>
+    createViewState({
+      assembly: volvoxAssembly,
+      tracks: volvoxTracks,
+      configuration: {
+        theme: {
+          palette: {
+            mode: 'dark',
+            primary: { main: '#333' },
+            secondary: { main: '#444' },
           },
         },
-      }),
-    )
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithDarkTheme = {
+  render: WithDarkThemeRender,
   parameters: {
     docs: {
       source: {
@@ -1383,26 +1413,28 @@ class DisableZoomPlugin extends Plugin {
   configure() {}
 }
 
-export const WithDisableZoomAndSideScroll = {
-  render: () => {
-    const [state] = useState(() => {
-      const { assembly: volvoxAssembly, tracks: volvoxTracks } =
-        getVolvoxConfig()
-      return createViewState({
-        assembly: volvoxAssembly,
-        tracks: volvoxTracks,
-        plugins: [DisableZoomPlugin],
-        location: 'ctgA:1105..1221',
-      })
+function WithDisableZoomAndSideScrollRender() {
+  const [state] = useState(() => {
+    const { assembly: volvoxAssembly, tracks: volvoxTracks } =
+      getVolvoxConfig()
+    return createViewState({
+      assembly: volvoxAssembly,
+      tracks: volvoxTracks,
+      plugins: [DisableZoomPlugin],
+      location: 'ctgA:1105..1221',
     })
-    return (
-      <div>
-        <JBrowseLinearGenomeView viewState={state} />
-        (Note: This is a basic demo that was added for a user request and may
-        not be a complete solution)
-      </div>
-    )
-  },
+  })
+  return (
+    <div>
+      <JBrowseLinearGenomeView viewState={state} />
+      (Note: This is a basic demo that was added for a user request and may
+      not be a complete solution)
+    </div>
+  )
+}
+
+export const WithDisableZoomAndSideScroll = {
+  render: WithDisableZoomAndSideScrollRender,
   parameters: {
     docs: {
       source: {
@@ -1461,39 +1493,41 @@ function App() {
 // WithDrawerWidget
 // ---------------------------------------------------------------------------
 
-export const WithDrawerWidget = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const [state] = useState(() =>
-      createViewState({
-        assembly: volvoxAssembly,
-        tracks: volvoxTracks,
-        location: 'ctgA:1105..1221',
-        drawerViewHeight: '100vh',
-        defaultSession: {
-          name: 'Drawer Widget Example',
-          view: {
-            id: 'linearGenomeView',
-            type: 'LinearGenomeView',
-            init: {
-              // @ts-expect-error assembly guaranteed from getVolvoxConfig
-              assembly: volvoxAssembly.name,
-              tracklist: true,
-            },
+function WithDrawerWidgetRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const [state] = useState(() =>
+    createViewState({
+      assembly: volvoxAssembly,
+      tracks: volvoxTracks,
+      location: 'ctgA:1105..1221',
+      drawerViewHeight: '100vh',
+      defaultSession: {
+        name: 'Drawer Widget Example',
+        view: {
+          id: 'linearGenomeView',
+          type: 'LinearGenomeView',
+          init: {
+            // @ts-expect-error assembly guaranteed from getVolvoxConfig
+            assembly: volvoxAssembly.name,
+            tracklist: true,
           },
         },
-      }),
-    )
-    return (
-      <div>
-        <p>
-          This example demonstrates the drawer widget feature showing a
-          hierarchical track selector.
-        </p>
-        <JBrowseLinearGenomeView viewState={state} />
-      </div>
-    )
-  },
+      },
+    }),
+  )
+  return (
+    <div>
+      <p>
+        This example demonstrates the drawer widget feature showing a
+        hierarchical track selector.
+      </p>
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
+}
+
+export const WithDrawerWidget = {
+  render: WithDrawerWidgetRender,
   parameters: {
     docs: {
       source: {
@@ -1535,41 +1569,43 @@ function App() {
 // WithErrorHandler
 // ---------------------------------------------------------------------------
 
-export const WithErrorHandler = {
-  render: () => {
-    const { assembly: volvoxAssembly } = getVolvoxConfig()
-    const [{ viewState, error }] = useState(() => {
-      try {
-        return {
-          viewState: createViewState({
-            assembly: volvoxAssembly,
-            tracks: [
-              {
-                type: 'BadTrack',
-                notProperTrack: 'error',
-                shouldHaveTrackIdAndStuff: 'test',
-              },
-            ],
-            location: 'ctgA:1105..1221',
-          }),
-          error: undefined as unknown,
-        }
-      } catch (e) {
-        return { viewState: undefined, error: e }
+function WithErrorHandlerRender() {
+  const { assembly: volvoxAssembly } = getVolvoxConfig()
+  const [{ viewState, error }] = useState(() => {
+    try {
+      return {
+        viewState: createViewState({
+          assembly: volvoxAssembly,
+          tracks: [
+            {
+              type: 'BadTrack',
+              notProperTrack: 'error',
+              shouldHaveTrackIdAndStuff: 'test',
+            },
+          ],
+          location: 'ctgA:1105..1221',
+        }),
+        error: undefined as unknown,
       }
-    })
-    return (
-      <div>
-        {error ? (
-          <ErrorBanner error={error} />
-        ) : viewState ? (
-          <JBrowseLinearGenomeView viewState={viewState} />
-        ) : (
-          'Loading...'
-        )}
-      </div>
-    )
-  },
+    } catch (e) {
+      return { viewState: undefined, error: e }
+    }
+  })
+  return (
+    <div>
+      {error ? (
+        <ErrorBanner error={error} />
+      ) : viewState ? (
+        <JBrowseLinearGenomeView viewState={viewState} />
+      ) : (
+        'Loading...'
+      )}
+    </div>
+  )
+}
+
+export const WithErrorHandler = {
+  render: WithErrorHandlerRender,
   parameters: {
     docs: {
       source: {
@@ -1640,55 +1676,57 @@ const hg19Assembly = {
 
 type ExternalPluginViewState = ReturnType<typeof createViewState>
 
-export const WithExternalPlugin = {
-  render: () => {
-    const [error, setError] = useState<unknown>()
-    const [viewState, setViewState] = useState<ExternalPluginViewState>()
+function WithExternalPluginRender() {
+  const [error, setError] = useState<unknown>()
+  const [viewState, setViewState] = useState<ExternalPluginViewState>()
 
-    useEffect(() => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      ;(async () => {
-        try {
-          const plugins = await loadPlugins([
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
+      try {
+        const plugins = await loadPlugins([
+          {
+            name: 'UCSC',
+            url: 'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
+          },
+        ])
+        const state = createViewState({
+          assembly: hg19Assembly,
+          plugins: plugins.map(p => p.plugin),
+          tracks: [
             {
-              name: 'UCSC',
-              url: 'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
-            },
-          ])
-          const state = createViewState({
-            assembly: hg19Assembly,
-            plugins: plugins.map(p => p.plugin),
-            tracks: [
-              {
-                type: 'FeatureTrack',
-                trackId: 'segdups_ucsc_hg19',
-                name: 'UCSC SegDups',
-                category: ['Annotation'],
-                assemblyNames: ['hg19'],
-                adapter: {
-                  type: 'UCSCAdapter',
-                  track: 'genomicSuperDups',
-                },
+              type: 'FeatureTrack',
+              trackId: 'segdups_ucsc_hg19',
+              name: 'UCSC SegDups',
+              category: ['Annotation'],
+              assemblyNames: ['hg19'],
+              adapter: {
+                type: 'UCSCAdapter',
+                track: 'genomicSuperDups',
               },
-            ],
-            location: '1:2,467,681..2,667,681',
-          })
-          state.session.view.showTrack('segdups_ucsc_hg19')
-          setViewState(state)
-        } catch (e) {
-          setError(e)
-        }
-      })()
-    }, [])
+            },
+          ],
+          location: '1:2,467,681..2,667,681',
+        })
+        state.session.view.showTrack('segdups_ucsc_hg19')
+        setViewState(state)
+      } catch (e) {
+        setError(e)
+      }
+    })()
+  }, [])
 
-    return error ? (
-      <div style={{ color: 'red' }}>{`${error}`}</div>
-    ) : !viewState ? (
-      <div>Loading...</div>
-    ) : (
-      <JBrowseLinearGenomeView viewState={viewState} />
-    )
-  },
+  return error ? (
+    <div style={{ color: 'red' }}>{`${error}`}</div>
+  ) : !viewState ? (
+    <div>Loading...</div>
+  ) : (
+    <JBrowseLinearGenomeView viewState={viewState} />
+  )
+}
+
+export const WithExternalPlugin = {
+  render: WithExternalPluginRender,
   parameters: {
     docs: {
       source: {
@@ -1805,35 +1843,37 @@ const hg38Tracks = [
   },
 ]
 
-export const WithInitAdvanced = {
-  render: () => {
-    const [state] = useState(() =>
-      createViewState({
-        assembly: hg38Assembly,
-        tracks: hg38Tracks,
-        defaultSession: {
-          name: 'Advanced init',
-          view: {
-            type: 'LinearGenomeView',
-            init: {
-              loc: 'chr1:11,106,077-11,261,675',
-              assembly: 'hg38',
-              tracklist: true,
-              nav: true,
-              tracks: [
-                {
-                  trackId: refseqTrackId,
-                  displaySnapshot: { height: 200 },
-                },
-              ],
-              highlight: ['chr1:11,170,000-11,190,000'],
-            },
+function WithInitAdvancedRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly: hg38Assembly,
+      tracks: hg38Tracks,
+      defaultSession: {
+        name: 'Advanced init',
+        view: {
+          type: 'LinearGenomeView',
+          init: {
+            loc: 'chr1:11,106,077-11,261,675',
+            assembly: 'hg38',
+            tracklist: true,
+            nav: true,
+            tracks: [
+              {
+                trackId: refseqTrackId,
+                displaySnapshot: { height: 200 },
+              },
+            ],
+            highlight: ['chr1:11,170,000-11,190,000'],
           },
         },
-      }),
-    )
-    return <ViewWithErrorHandling state={state} />
-  },
+      },
+    }),
+  )
+  return <ViewWithErrorHandling state={state} />
+}
+
+export const WithInitAdvanced = {
+  render: WithInitAdvancedRender,
   parameters: {
     docs: {
       source: {
@@ -1944,37 +1984,39 @@ const grch38CramTracks = [
   },
 ]
 
-export const WithInitAlignmentsDisplay = {
-  render: () => {
-    const [state] = useState(() =>
-      createViewState({
-        assembly: grch38Assembly,
-        tracks: grch38CramTracks,
-        defaultSession: {
-          name: 'Alignments display config',
-          view: {
-            type: 'LinearGenomeView',
-            init: {
-              loc: '1:100,987,200..100,987,450',
-              assembly: 'GRCh38',
-              tracks: [
-                {
-                  trackId: cramTrackId,
-                  displaySnapshot: {
-                    type: 'LinearAlignmentsDisplay',
-                    height: 250,
-                    showSoftClipping: true,
-                    colorBySetting: { type: 'pairOrientation' },
-                  },
+function WithInitAlignmentsDisplayRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly: grch38Assembly,
+      tracks: grch38CramTracks,
+      defaultSession: {
+        name: 'Alignments display config',
+        view: {
+          type: 'LinearGenomeView',
+          init: {
+            loc: '1:100,987,200..100,987,450',
+            assembly: 'GRCh38',
+            tracks: [
+              {
+                trackId: cramTrackId,
+                displaySnapshot: {
+                  type: 'LinearAlignmentsDisplay',
+                  height: 250,
+                  showSoftClipping: true,
+                  colorBySetting: { type: 'pairOrientation' },
                 },
-              ],
-            },
+              },
+            ],
           },
         },
-      }),
-    )
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithInitAlignmentsDisplay = {
+  render: WithInitAlignmentsDisplayRender,
   parameters: {
     docs: {
       source: {
@@ -2103,17 +2145,19 @@ class HighlightRegionPlugin extends Plugin {
   configure() {}
 }
 
+function WithInlinePluginsRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const state = useCreateViewState({
+    assembly: volvoxAssembly,
+    plugins: [HighlightRegionPlugin],
+    tracks: volvoxTracks,
+    location: 'ctgA:1105..1221',
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 export const WithInlinePlugins = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const state = useCreateViewState({
-      assembly: volvoxAssembly,
-      plugins: [HighlightRegionPlugin],
-      tracks: volvoxTracks,
-      location: 'ctgA:1105..1221',
-    })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+  render: WithInlinePluginsRender,
   parameters: {
     docs: {
       source: {
@@ -2183,41 +2227,43 @@ function App() {
 // WithInternetAccounts
 // ---------------------------------------------------------------------------
 
-export const WithInternetAccounts = {
-  render: () => {
-    const { assembly: volvoxAssembly } = getVolvoxConfig()
-    const state = useCreateViewState({
-      assembly: volvoxAssembly,
-      tracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'google_bigwig',
-          name: 'Google Drive BigWig',
-          category: ['Authentication'],
-          assemblyNames: ['volvox'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              locationType: 'UriLocation',
-              uri: ' https://www.googleapis.com/drive/v3/files/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk?alt=media',
-              internetAccountId: 'manualGoogleEntry',
-            },
+function WithInternetAccountsRender() {
+  const { assembly: volvoxAssembly } = getVolvoxConfig()
+  const state = useCreateViewState({
+    assembly: volvoxAssembly,
+    tracks: [
+      {
+        type: 'QuantitativeTrack',
+        trackId: 'google_bigwig',
+        name: 'Google Drive BigWig',
+        category: ['Authentication'],
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'BigWigAdapter',
+          bigWigLocation: {
+            locationType: 'UriLocation',
+            uri: ' https://www.googleapis.com/drive/v3/files/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk?alt=media',
+            internetAccountId: 'manualGoogleEntry',
           },
         },
-      ],
-      location: 'ctgA:1105..1221',
-      internetAccounts: [
-        {
-          type: 'ExternalTokenInternetAccount',
-          internetAccountId: 'manualGoogleEntry',
-          name: 'Google Drive Manual Token Entry',
-          description: 'Manually enter a token to access Google Drive files',
-          tokenType: 'Bearer',
-        },
-      ],
-    })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+      },
+    ],
+    location: 'ctgA:1105..1221',
+    internetAccounts: [
+      {
+        type: 'ExternalTokenInternetAccount',
+        internetAccountId: 'manualGoogleEntry',
+        name: 'Google Drive Manual Token Entry',
+        description: 'Manually enter a token to access Google Drive files',
+        tokenType: 'Bearer',
+      },
+    ],
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithInternetAccounts = {
+  render: WithInternetAccountsRender,
   parameters: {
     docs: {
       source: {
@@ -2675,34 +2721,36 @@ const FlipView = observer(function FlipView({ state }: { state: ViewModel }) {
   )
 })
 
-export const WithMultipleDisplayedRegionsFlipped = {
-  render: () => {
-    const [state] = useState(() => {
-      const loc = regionsToLocString(
-        getExonRegionsFromFeature(multiRegionTranscript),
-      )
-      return createViewState({
-        assembly: multiRegionAssembly,
-        tracks: multiRegionTracks,
-        defaultSession: {
-          name: 'Multi-region flipped example',
-          view: {
-            id: 'multi_region_flipped_view',
-            type: 'LinearGenomeView',
-            init: {
-              loc,
-              assembly: 'GRCh38',
-              tracks: [
-                'ncbi-refseq-genes',
-                'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
-              ],
-            },
+function WithMultipleDisplayedRegionsFlippedRender() {
+  const [state] = useState(() => {
+    const loc = regionsToLocString(
+      getExonRegionsFromFeature(multiRegionTranscript),
+    )
+    return createViewState({
+      assembly: multiRegionAssembly,
+      tracks: multiRegionTracks,
+      defaultSession: {
+        name: 'Multi-region flipped example',
+        view: {
+          id: 'multi_region_flipped_view',
+          type: 'LinearGenomeView',
+          init: {
+            loc,
+            assembly: 'GRCh38',
+            tracks: [
+              'ncbi-refseq-genes',
+              'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
+            ],
           },
         },
-      })
+      },
     })
-    return <FlipView state={state} />
-  },
+  })
+  return <FlipView state={state} />
+}
+
+export const WithMultipleDisplayedRegionsFlipped = {
+  render: WithMultipleDisplayedRegionsFlippedRender,
   parameters: {
     docs: {
       source: {
@@ -2832,31 +2880,33 @@ const VisibleFeatures = observer(function VisibleFeatures({
   )
 })
 
-export const WithObserveVisibleFeatures = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const state = useCreateViewState({
-      assembly: volvoxAssembly,
-      tracks: volvoxTracks,
-      defaultSession: {
-        name: 'My session',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: 'ctgA:1105..1221',
-            assembly: 'volvox',
-            tracks: ['volvox_cram'],
-          },
+function WithObserveVisibleFeaturesRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const state = useCreateViewState({
+    assembly: volvoxAssembly,
+    tracks: volvoxTracks,
+    defaultSession: {
+      name: 'My session',
+      view: {
+        type: 'LinearGenomeView',
+        init: {
+          loc: 'ctgA:1105..1221',
+          assembly: 'volvox',
+          tracks: ['volvox_cram'],
         },
       },
-    })
-    return (
-      <div>
-        <JBrowseLinearGenomeView viewState={state} />
-        <VisibleFeatures session={state.session} />
-      </div>
-    )
-  },
+    },
+  })
+  return (
+    <div>
+      <JBrowseLinearGenomeView viewState={state} />
+      <VisibleFeatures session={state.session} />
+    </div>
+  )
+}
+
+export const WithObserveVisibleFeatures = {
+  render: WithObserveVisibleFeaturesRender,
   parameters: {
     docs: {
       source: {
@@ -2964,21 +3014,23 @@ const VisibleRegions = observer(function VisibleRegions({
   ) : null
 })
 
+function WithObserveVisibleRegionsRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const state = useCreateViewState({
+    assembly: volvoxAssembly,
+    tracks: volvoxTracks,
+    location: 'ctgA:1105..1221',
+  })
+  return (
+    <div>
+      <JBrowseLinearGenomeView viewState={state} />
+      <VisibleRegions viewState={state} />
+    </div>
+  )
+}
+
 export const WithObserveVisibleRegions = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const state = useCreateViewState({
-      assembly: volvoxAssembly,
-      tracks: volvoxTracks,
-      location: 'ctgA:1105..1221',
-    })
-    return (
-      <div>
-        <JBrowseLinearGenomeView viewState={state} />
-        <VisibleRegions viewState={state} />
-      </div>
-    )
-  },
+  render: WithObserveVisibleRegionsRender,
   parameters: {
     docs: {
       source: {
@@ -3026,28 +3078,30 @@ function App() {
 // WithOutsideStyling
 // ---------------------------------------------------------------------------
 
+function WithOutsideStylingRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const state = useCreateViewState({
+    assembly: volvoxAssembly,
+    tracks: volvoxTracks,
+    location: 'ctgA:1105..1221',
+  })
+  return (
+    <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
+      <p>
+        This parent container has textAlign:&apos;center&apos; and a monospace
+        font, but these attributes are not affecting the internal LGV
+      </p>
+      <p>
+        The react component takes measures to avoid being affected by styles
+        outside of it on the page.
+      </p>
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
+}
+
 export const WithOutsideStyling = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const state = useCreateViewState({
-      assembly: volvoxAssembly,
-      tracks: volvoxTracks,
-      location: 'ctgA:1105..1221',
-    })
-    return (
-      <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
-        <p>
-          This parent container has textAlign:&apos;center&apos; and a monospace
-          font, but these attributes are not affecting the internal LGV
-        </p>
-        <p>
-          The react component takes measures to avoid being affected by styles
-          outside of it on the page.
-        </p>
-        <JBrowseLinearGenomeView viewState={state} />
-      </div>
-    )
-  },
+  render: WithOutsideStylingRender,
   parameters: {
     docs: {
       source: {
@@ -3074,48 +3128,50 @@ function App() {
 // WithPerTrackTextSearching
 // ---------------------------------------------------------------------------
 
-export const WithPerTrackTextSearching = {
-  render: () => {
-    const { assembly: volvoxAssembly } = getVolvoxConfig()
-    const [state] = useState(() => {
-      const textSearchConfig = {
-        assembly: volvoxAssembly,
-        tracks: [
-          {
-            type: 'FeatureTrack',
-            trackId: 'gff3tabix_genes',
-            assemblyNames: ['volvox'],
-            name: 'GFF3Tabix genes',
-            category: ['Miscellaneous'],
-            adapter: {
-              type: 'Gff3TabixAdapter',
-              uri: 'volvox.sort.gff3.gz',
-            },
-            textSearching: {
-              textSearchAdapter: {
-                type: 'TrixTextSearchAdapter',
-                textSearchAdapterId: 'gff3tabix_genes-index',
-                ixFilePath: { uri: 'storybook_data/gff3tabix_genes.ix' },
-                ixxFilePath: { uri: 'storybook_data/gff3tabix_genes.ixx' },
-                metaFilePath: {
-                  uri: 'storybook_data/gff3tabix_genes_meta.json',
-                },
-                assemblyNames: ['volvox'],
+function WithPerTrackTextSearchingRender() {
+  const { assembly: volvoxAssembly } = getVolvoxConfig()
+  const [state] = useState(() => {
+    const textSearchConfig = {
+      assembly: volvoxAssembly,
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'gff3tabix_genes',
+          assemblyNames: ['volvox'],
+          name: 'GFF3Tabix genes',
+          category: ['Miscellaneous'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'volvox.sort.gff3.gz',
+          },
+          textSearching: {
+            textSearchAdapter: {
+              type: 'TrixTextSearchAdapter',
+              textSearchAdapterId: 'gff3tabix_genes-index',
+              ixFilePath: { uri: 'storybook_data/gff3tabix_genes.ix' },
+              ixxFilePath: { uri: 'storybook_data/gff3tabix_genes.ixx' },
+              metaFilePath: {
+                uri: 'storybook_data/gff3tabix_genes_meta.json',
               },
+              assemblyNames: ['volvox'],
             },
           },
-        ],
-        location: 'ctgA:1..800',
-      }
-      const configPath = 'test_data/volvox/config.json'
-      addRelativeUris(
-        textSearchConfig,
-        new URL(configPath, window.location.href).href,
-      )
-      return createViewState(textSearchConfig)
-    })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+        },
+      ],
+      location: 'ctgA:1..800',
+    }
+    const configPath = 'test_data/volvox/config.json'
+    addRelativeUris(
+      textSearchConfig,
+      new URL(configPath, window.location.href).href,
+    )
+    return createViewState(textSearchConfig)
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithPerTrackTextSearching = {
+  render: WithPerTrackTextSearchingRender,
   parameters: {
     docs: {
       source: {
@@ -3167,20 +3223,22 @@ function App() {
 // WithShowTrack
 // ---------------------------------------------------------------------------
 
-export const WithShowTrack = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const [state] = useState(() => {
-      const s = createViewState({
-        assembly: volvoxAssembly,
-        tracks: volvoxTracks,
-        location: 'ctgA:1105..1221',
-      })
-      s.session.view.showTrack('volvox-long-reads-sv-bam')
-      return s
+function WithShowTrackRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const [state] = useState(() => {
+    const s = createViewState({
+      assembly: volvoxAssembly,
+      tracks: volvoxTracks,
+      location: 'ctgA:1105..1221',
     })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+    s.session.view.showTrack('volvox-long-reads-sv-bam')
+    return s
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithShowTrack = {
+  render: WithShowTrackRender,
   parameters: {
     docs: {
       source: {
@@ -3209,30 +3267,32 @@ function App() {
 // WithTwoLinearGenomeViews
 // ---------------------------------------------------------------------------
 
+function WithTwoLinearGenomeViewsRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const [state1] = useState(() =>
+    createViewState({
+      assembly: volvoxAssembly,
+      tracks: volvoxTracks,
+      location: 'ctgA:1105..1221',
+    }),
+  )
+  const [state2] = useState(() =>
+    createViewState({
+      assembly: volvoxAssembly,
+      tracks: volvoxTracks,
+      location: 'ctgA:5560..30589',
+    }),
+  )
+  return (
+    <div>
+      <JBrowseLinearGenomeView viewState={state1} />
+      <JBrowseLinearGenomeView viewState={state2} />
+    </div>
+  )
+}
+
 export const WithTwoLinearGenomeViews = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const [state1] = useState(() =>
-      createViewState({
-        assembly: volvoxAssembly,
-        tracks: volvoxTracks,
-        location: 'ctgA:1105..1221',
-      }),
-    )
-    const [state2] = useState(() =>
-      createViewState({
-        assembly: volvoxAssembly,
-        tracks: volvoxTracks,
-        location: 'ctgA:5560..30589',
-      }),
-    )
-    return (
-      <div>
-        <JBrowseLinearGenomeView viewState={state1} />
-        <JBrowseLinearGenomeView viewState={state2} />
-      </div>
-    )
-  },
+  render: WithTwoLinearGenomeViewsRender,
   parameters: {
     docs: {
       source: {
@@ -3266,26 +3326,28 @@ function App() {
 // WithWebWorker
 // ---------------------------------------------------------------------------
 
-export const WithWebWorker = {
-  render: () => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
-    const [state] = useState(() => {
-      const s = createViewState({
-        assembly: volvoxAssembly,
-        tracks: volvoxTracks,
-        location: 'ctgA:1105..1221',
-        configuration: {
-          rpc: {
-            defaultDriver: 'WebWorkerRpcDriver',
-          },
+function WithWebWorkerRender() {
+  const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+  const [state] = useState(() => {
+    const s = createViewState({
+      assembly: volvoxAssembly,
+      tracks: volvoxTracks,
+      location: 'ctgA:1105..1221',
+      configuration: {
+        rpc: {
+          defaultDriver: 'WebWorkerRpcDriver',
         },
-        makeWorkerInstance,
-      })
-      s.session.view.showTrack('Deep sequencing')
-      return s
+      },
+      makeWorkerInstance,
     })
-    return <JBrowseLinearGenomeView viewState={state} />
-  },
+    s.session.view.showTrack('Deep sequencing')
+    return s
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithWebWorker = {
+  render: WithWebWorkerRender,
   parameters: {
     docs: {
       source: {

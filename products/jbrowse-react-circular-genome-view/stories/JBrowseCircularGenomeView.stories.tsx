@@ -8,68 +8,70 @@ const JBrowseCircularGenomeViewStories = {
 
 export default JBrowseCircularGenomeViewStories
 
+function VolvoxRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly: {
+        name: 'volvox',
+        aliases: ['vvx'],
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'volvox_refseq',
+          adapter: {
+            type: 'TwoBitAdapter',
+            uri: 'test_data/volvox/volvox.2bit',
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'FromConfigAdapter',
+            adapterId: 'W6DyPGJ0UU',
+            features: [
+              {
+                refName: 'ctgA',
+                uniqueId: 'alias1',
+                aliases: ['A', 'contigA'],
+              },
+              {
+                refName: 'ctgB',
+                uniqueId: 'alias2',
+                aliases: ['B', 'contigB'],
+              },
+            ],
+          },
+        },
+      },
+      tracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'volvox_sv_test',
+          name: 'volvox structural variant test',
+          category: ['VCF'],
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'test_data/volvox/volvox.dup.vcf.gz',
+          },
+        },
+      ],
+      defaultSession: {
+        name: 'Storybook',
+        view: {
+          id: 'circularView',
+          type: 'CircularView',
+          init: {
+            assembly: 'volvox',
+            tracks: ['volvox_sv_test'],
+          },
+        },
+      },
+    }),
+  )
+  return <JBrowseCircularGenomeView viewState={state} />
+}
+
 export const Volvox = {
-  render: () => {
-    const [state] = useState(() =>
-      createViewState({
-        assembly: {
-          name: 'volvox',
-          aliases: ['vvx'],
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: 'volvox_refseq',
-            adapter: {
-              type: 'TwoBitAdapter',
-              uri: 'test_data/volvox/volvox.2bit',
-            },
-          },
-          refNameAliases: {
-            adapter: {
-              type: 'FromConfigAdapter',
-              adapterId: 'W6DyPGJ0UU',
-              features: [
-                {
-                  refName: 'ctgA',
-                  uniqueId: 'alias1',
-                  aliases: ['A', 'contigA'],
-                },
-                {
-                  refName: 'ctgB',
-                  uniqueId: 'alias2',
-                  aliases: ['B', 'contigB'],
-                },
-              ],
-            },
-          },
-        },
-        tracks: [
-          {
-            type: 'VariantTrack',
-            trackId: 'volvox_sv_test',
-            name: 'volvox structural variant test',
-            category: ['VCF'],
-            assemblyNames: ['volvox'],
-            adapter: {
-              type: 'VcfTabixAdapter',
-              uri: 'test_data/volvox/volvox.dup.vcf.gz',
-            },
-          },
-        ],
-        defaultSession: {
-          name: 'Storybook',
-          view: {
-            id: 'circularView',
-            type: 'CircularView',
-            init: {
-              assembly: 'volvox',
-              tracks: ['volvox_sv_test'],
-            },
-          },
-        },
-      }),
-    )
-    return <JBrowseCircularGenomeView viewState={state} />
-  },
+  render: VolvoxRender,
   parameters: {
     docs: {
       source: {
@@ -135,61 +137,63 @@ export const Volvox = () => {
   },
 }
 
-export const ShowTrack = {
-  render: () => {
-    const [state] = useState(() => {
-      const s = createViewState({
-        assembly: {
-          name: 'volvox',
-          aliases: ['vvx'],
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: 'volvox_refseq',
-            adapter: {
-              type: 'TwoBitAdapter',
-              uri: 'test_data/volvox/volvox.2bit',
-            },
-          },
-          refNameAliases: {
-            adapter: {
-              type: 'FromConfigAdapter',
-              adapterId: 'W6DyPGJ0UU',
-              features: [
-                {
-                  refName: 'ctgA',
-                  uniqueId: 'alias1',
-                  aliases: ['A', 'contigA'],
-                },
-                {
-                  refName: 'ctgB',
-                  uniqueId: 'alias2',
-                  aliases: ['B', 'contigB'],
-                },
-              ],
-            },
+function ShowTrackRender() {
+  const [state] = useState(() => {
+    const s = createViewState({
+      assembly: {
+        name: 'volvox',
+        aliases: ['vvx'],
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'volvox_refseq',
+          adapter: {
+            type: 'TwoBitAdapter',
+            uri: 'test_data/volvox/volvox.2bit',
           },
         },
-        tracks: [
-          {
-            type: 'VariantTrack',
-            trackId: 'volvox_sv_test',
-            name: 'volvox structural variant test',
-            category: ['VCF'],
-            assemblyNames: ['volvox'],
-            adapter: {
-              type: 'VcfTabixAdapter',
-              uri: 'test_data/volvox/volvox.dup.vcf.gz',
-            },
+        refNameAliases: {
+          adapter: {
+            type: 'FromConfigAdapter',
+            adapterId: 'W6DyPGJ0UU',
+            features: [
+              {
+                refName: 'ctgA',
+                uniqueId: 'alias1',
+                aliases: ['A', 'contigA'],
+              },
+              {
+                refName: 'ctgB',
+                uniqueId: 'alias2',
+                aliases: ['B', 'contigB'],
+              },
+            ],
           },
-        ],
-      })
-      // open a track imperatively instead of via defaultSession.view.init
-      s.session.view.showTrack('volvox_sv_test')
-      return s
+        },
+      },
+      tracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'volvox_sv_test',
+          name: 'volvox structural variant test',
+          category: ['VCF'],
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'test_data/volvox/volvox.dup.vcf.gz',
+          },
+        },
+      ],
     })
+    // open a track imperatively instead of via defaultSession.view.init
+    s.session.view.showTrack('volvox_sv_test')
+    return s
+  })
 
-    return <JBrowseCircularGenomeView viewState={state} />
-  },
+  return <JBrowseCircularGenomeView viewState={state} />
+}
+
+export const ShowTrack = {
+  render: ShowTrackRender,
   parameters: {
     docs: {
       source: {
@@ -281,27 +285,29 @@ const hg19Tracks = [
   },
 ]
 
-export const Human = {
-  render: () => {
-    const [state] = useState(() =>
-      createViewState({
-        assembly: hg19Assembly,
-        tracks: hg19Tracks,
-        defaultSession: {
-          name: 'this session',
-          view: {
-            id: 'circularView',
-            type: 'CircularView',
-            init: {
-              assembly: 'hg19',
-              tracks: ['pacbio_sv_vcf'],
-            },
+function HumanRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly: hg19Assembly,
+      tracks: hg19Tracks,
+      defaultSession: {
+        name: 'this session',
+        view: {
+          id: 'circularView',
+          type: 'CircularView',
+          init: {
+            assembly: 'hg19',
+            tracks: ['pacbio_sv_vcf'],
           },
         },
-      }),
-    )
-    return <JBrowseCircularGenomeView viewState={state} />
-  },
+      },
+    }),
+  )
+  return <JBrowseCircularGenomeView viewState={state} />
+}
+
+export const Human = {
+  render: HumanRender,
   parameters: {
     docs: {
       source: {
