@@ -25,6 +25,14 @@ function getWorkspaces() {
   ).map(e => e.path)
 }
 
+export const babelOptions = {
+  plugins: ['babel-plugin-react-compiler'],
+  presets: [
+    ['@babel/preset-react', { runtime: 'automatic' }],
+    '@babel/preset-typescript',
+  ],
+}
+
 export default function webpackBuilder(): webpack.Configuration {
   const isEnvDevelopment = process.env.NODE_ENV === 'development'
   const isEnvProduction = process.env.NODE_ENV === 'production'
@@ -63,7 +71,6 @@ export default function webpackBuilder(): webpack.Configuration {
       assetModuleFilename: 'static/media/[name].[hash][ext]',
     },
     resolve: {
-      conditionNames: ['mui-modern', '...'],
       extensions: moduleFileExtensions.map(ext => `.${ext}`),
     },
     module: {
@@ -84,13 +91,7 @@ export default function webpackBuilder(): webpack.Configuration {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
               include: [appSrc, getWorkspaces()],
               loader: 'babel-loader',
-              options: {
-                plugins: ['babel-plugin-react-compiler'],
-                presets: [
-                  ['@babel/preset-react', { runtime: 'automatic' }],
-                  '@babel/preset-typescript',
-                ],
-              },
+              options: babelOptions,
             },
             {
               test: /\.css$/,
