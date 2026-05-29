@@ -6,8 +6,16 @@ export interface GetManhattanDataArgs {
   adapterConfig: Record<string, unknown>
   region: Region
   // CSS color literal or jexl expression (`jexl:...`). Evaluated per feature
-  // on the worker — the result baked into ManhattanRpcResult.colors[].
+  // on the worker — the result baked into ManhattanRpcResult.colors[]. Used in
+  // 'normal' coloring mode.
   color: string
+  // 'ld' colors each point by its r² to `indexSnp`, read from `ldAdapterConfig`
+  // (a PLINK .ld adapter). 'normal' uses `color`.
+  colorBy: 'normal' | 'ld'
+  // Index/lead SNP for LD coloring — a SNP id or `chr:bp` (1-based) string.
+  indexSnp?: string
+  // PLINK .ld adapter config snapshot resolved on the worker for LD coloring.
+  ldAdapterConfig?: Record<string, unknown>
   stopToken?: StopToken
   statusCallback?: (msg: string) => void
 }

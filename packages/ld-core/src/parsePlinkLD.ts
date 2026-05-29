@@ -1,4 +1,4 @@
-import type { PlinkLDHeader, PlinkLDRecord } from './types.ts'
+import type { PlinkLDHeader, PlinkLDRecord } from './plinkLDTypes.ts'
 
 // PLINK header looks like: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
 // With optional: DP, MAF_A, MAF_B, PHASE

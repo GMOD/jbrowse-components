@@ -10,7 +10,10 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
+import { makeLdColorEvaluator } from './makeLdColorEvaluator.ts'
+import { buildLdToIndex } from './ldToIndex.ts'
 
+import type { LDRecordSource } from './ldToIndex.ts'
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -84,6 +87,9 @@ export async function executeGetManhattanData({
     adapterConfig,
     region,
     color,
+    colorBy,
+    indexSnp,
+    ldAdapterConfig,
     stopToken,
     statusCallback = () => {},
   } = args
@@ -100,10 +106,21 @@ export async function executeGetManhattanData({
 
   checkStopToken2(stopTokenCheck)
 
-  const result = buildManhattanResult(
-    features,
-    makeColorEvaluator(color, pluginManager.jexl),
-  )
+  let evalColor: (f: Feature) => number
+  if (colorBy === 'ld' && indexSnp && ldAdapterConfig) {
+    const ldAdapter = (
+      await getAdapter(pluginManager, sessionId, ldAdapterConfig)
+    ).dataAdapter as unknown as LDRecordSource
+    const ld = await updateStatus('Loading LD data', statusCallback, () =>
+      buildLdToIndex({ adapter: ldAdapter, region, indexSnp }),
+    )
+    checkStopToken2(stopTokenCheck)
+    evalColor = makeLdColorEvaluator(ld, indexSnp, region.refName)
+  } else {
+    evalColor = makeColorEvaluator(color, pluginManager.jexl)
+  }
+
+  const result = buildManhattanResult(features, evalColor)
 
   const transferables: Transferable[] = [
     result.positions.buffer,

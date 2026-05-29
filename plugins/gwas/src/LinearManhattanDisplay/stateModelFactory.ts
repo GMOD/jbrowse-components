@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, readConfObject } from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -10,7 +10,8 @@ import {
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -66,6 +67,12 @@ export function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * Index/lead SNP for LD coloring — a SNP id or `chr:bp` (1-based)
+         * string. When unset in LD mode it auto-picks the highest-scoring SNP.
+         */
+        indexSnp: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -87,6 +94,12 @@ export function stateModelFactory(
       },
       get color() {
         return self.getConfWithOverride<string>('color')
+      },
+      get colorBy() {
+        return self.getConfWithOverride<'normal' | 'ld'>('colorBy')
+      },
+      get ldAdapterConfig(): Record<string, unknown> | undefined {
+        return readConfObject(self.configuration, 'ldAdapter')
       },
       get domain(): [number, number] | undefined {
         let scoreMin = Infinity
@@ -124,10 +137,21 @@ export function stateModelFactory(
           minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
         })
       },
-      // SettingsInvalidate watches this shape — only `color` triggers a
-      // refetch (the worker bakes per-feature color into the result).
-      rpcProps(): { color: string } {
-        return { color: self.color }
+      // SettingsInvalidate watches this shape — any change (color, colorBy,
+      // index SNP, LD adapter) triggers a refetch, since the worker bakes
+      // per-feature color into the result.
+      rpcProps(): {
+        color: string
+        colorBy: 'normal' | 'ld'
+        indexSnp: string | undefined
+        ldAdapterConfig: Record<string, unknown> | undefined
+      } {
+        return {
+          color: self.color,
+          colorBy: self.colorBy,
+          indexSnp: self.indexSnp,
+          ldAdapterConfig: self.ldAdapterConfig,
+        }
       },
       // canvasHeight is the inner canvas (between top/bottom YScaleBar
       // label offsets) — this is the area both the GPU renderer and
@@ -152,11 +176,28 @@ export function stateModelFactory(
           view.visibleRegions.map(r => [r.displayedRegionIndex, r.refName]),
         )
       },
-      // Manhattan menu: just the shared Score submenu and cross-hatch toggle.
-      // Rendering type / Resolution / Scale type don't apply to single-point
-      // rendering of pre-transformed -log10 p values.
-      trackMenuItems() {
-        return rendererMenuItems(self)
+    }))
+    .views(self => ({
+      // Highest-scoring loaded SNP as a `chr:bp` (1-based) string — the default
+      // LD index SNP. Derived from loaded data (not a fetch input), so it's
+      // applied via the auto-pick autorun rather than read into rpcProps.
+      get topSnp(): string | undefined {
+        let bestScore = -Infinity
+        let bestPos = 0
+        let bestIdx = -1
+        for (const [idx, d] of self.rpcDataMap) {
+          for (let i = 0; i < d.numFeatures; i++) {
+            const s = d.scores[i]!
+            if (s > bestScore) {
+              bestScore = s
+              bestPos = d.positions[i]!
+              bestIdx = idx
+            }
+          }
+        }
+        const refName =
+          bestIdx === -1 ? undefined : self.regionRefNames.get(bestIdx)
+        return refName ? `${refName}:${bestPos + 1}` : undefined
       },
     }))
     .actions(self => ({
@@ -180,9 +221,42 @@ export function stateModelFactory(
       setFeatureUnderMouse(hit: ManhattanHit | undefined) {
         self.featureUnderMouse = hit
       },
+      setColorBy(mode: 'normal' | 'ld') {
+        self.setOverride('colorBy', mode)
+      },
+      setIndexSnp(snp?: string) {
+        self.indexSnp = snp
+      },
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
         self.flatbushes.clear()
+      },
+    }))
+    .views(self => ({
+      // Manhattan menu: shared Score submenu plus LD-coloring controls.
+      // Rendering type / Resolution / Scale type don't apply to single-point
+      // rendering of pre-transformed -log10 p values. Placed after the
+      // color/index actions so referencing them doesn't make MST inference
+      // circular.
+      trackMenuItems() {
+        return [
+          ...rendererMenuItems(self),
+          {
+            label: 'Color by LD to index SNP',
+            type: 'checkbox' as const,
+            checked: self.colorBy === 'ld',
+            onClick: () => {
+              self.setColorBy(self.colorBy === 'ld' ? 'normal' : 'ld')
+            },
+          },
+          {
+            label: 'Set index SNP to top hit',
+            disabled: self.colorBy !== 'ld' || !self.topSnp,
+            onClick: () => {
+              self.setIndexSnp(self.topSnp)
+            },
+          },
+        ]
       },
     }))
     .actions(self => ({
@@ -249,6 +323,25 @@ export function stateModelFactory(
         )
       },
     }))
+    .actions(self => {
+      const superAfterAttach = self.afterAttach
+      return {
+        afterAttach() {
+          superAfterAttach()
+          // LocusZoom-style default: in LD mode with no explicit index SNP,
+          // adopt the highest-scoring loaded SNP. Setting indexSnp triggers a
+          // single recoloring fetch; topSnp is then stable so it converges.
+          addDisposer(
+            self,
+            autorun(() => {
+              if (self.colorBy === 'ld' && !self.indexSnp && self.topSnp) {
+                self.setIndexSnp(self.topSnp)
+              }
+            }),
+          )
+        },
+      }
+    })
 }
 
 export type LinearManhattanDisplayStateModel = ReturnType<

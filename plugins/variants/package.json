@@ -35,6 +35,7 @@
     "@gmod/tabix": "^3.3.8",
     "@gmod/vcf": "^7.0.8",
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/ld-core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.9.3",
     "@jbrowse/plugin-canvas": "workspace:^",
     "@jbrowse/plugin-circular-view": "workspace:^",

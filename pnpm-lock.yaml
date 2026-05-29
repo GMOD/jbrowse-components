@@ -512,6 +512,8 @@ importers:
         specifier: '>=19.0.0'
         version: 19.2.6(react@19.2.6)
 
+  packages/ld-core: {}
+
   packages/modifications-utils:
     dependencies:
       '@jbrowse/cigar-utils':
@@ -1298,6 +1300,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/ld-core':
+        specifier: workspace:^
+        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.9.3
         version: 5.9.3(mobx@6.15.4)
@@ -1766,6 +1771,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/ld-core':
+        specifier: workspace:^
+        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.9.3
         version: 5.9.3(mobx@6.15.4)

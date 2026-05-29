@@ -1,11 +1,13 @@
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
+import {
+  parsePlinkLDHeader,
+  parsePlinkLDLine,
+} from '@jbrowse/ld-core'
 
-import { parsePlinkLDHeader, parsePlinkLDLine } from './parsePlinkLD.ts'
-
-import type { PlinkLDHeader, PlinkLDRecord } from './types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
 
 export default class PlinkLDAdapter extends BaseAdapter {
   private configured?: Promise<{

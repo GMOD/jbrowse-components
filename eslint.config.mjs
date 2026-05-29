@@ -151,6 +151,7 @@ export default defineConfig(
         },
       ],
       'tss-unused-classes/unused-classes': 'warn',
+      complexity: ['warn', 15],
       curly: 'error',
       'object-shorthand': 'error',
       '@typescript-eslint/no-unnecessary-condition': 'error',

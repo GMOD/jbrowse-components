@@ -2,12 +2,11 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parsePlinkLDHeader, parsePlinkLDLine } from '@jbrowse/ld-core'
 
-import { parsePlinkLDHeader, parsePlinkLDLine } from './parsePlinkLD.ts'
-
-import type { PlinkLDHeader, PlinkLDRecord } from './types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
 
 export default class PlinkLDTabixAdapter extends BaseAdapter {
   private configured?: Promise<{

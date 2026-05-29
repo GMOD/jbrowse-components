@@ -739,6 +739,33 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
+  it('refetches when drawSingletons or drawProperPairs changes (rpcProps fields)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setDrawSingletons(false)
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+
+    const callsBefore2 = mockRpcCall.mock.calls.length
+    display.setDrawProperPairs(false)
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore2)
+    })
+  })
+
   it('refetches when colorBy changes (rpcProps field)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))

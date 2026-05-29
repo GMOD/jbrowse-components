@@ -1417,6 +1417,28 @@ export default function stateModelFactory(
                     self.setPairedArcs(v)
                   },
                 ),
+                ...(self.pairedArcs !== 'off'
+                  ? [
+                      {
+                        label: 'Show long-range pairs',
+                        subLabel: 'reads >100 kb apart or with off-screen mates',
+                        type: 'checkbox' as const,
+                        checked: self.drawLongRange,
+                        onClick: () => {
+                          self.setDrawLongRange(!self.drawLongRange)
+                        },
+                      },
+                      {
+                        label: 'Show inter-chromosomal pairs',
+                        subLabel: 'reads whose mate maps to a different chromosome',
+                        type: 'checkbox' as const,
+                        checked: self.drawInter,
+                        onClick: () => {
+                          self.setDrawInter(!self.drawInter)
+                        },
+                      },
+                    ]
+                  : []),
                 radioModeMenuItem(
                   'Sashimi arcs',
                   ARC_DIRECTION_OPTIONS,
