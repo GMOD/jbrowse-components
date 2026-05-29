@@ -1,15 +1,11 @@
 import { useState } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
-import {
-  getSession,
-  isSessionModelWithWidgets,
-  isSessionWithAddTracks,
-} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, TextField } from '@mui/material'
-import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
+
+import { doPasteConfigSubmit } from './doPasteConfigSubmit.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -50,29 +46,7 @@ const PasteConfigAddTrackWorkflow = observer(
           onClick={() => {
             try {
               setError(undefined)
-              const session = getSession(model)
-              const conf = JSON.parse(val)
-              const confs: { trackId: string; assemblyNames?: string[] }[] =
-                Array.isArray(conf) ? conf : [conf]
-              if (
-                isSessionWithAddTracks(session) &&
-                isSessionModelWithWidgets(session)
-              ) {
-                transaction(() => {
-                  for (const c of confs) {
-                    session.addTrackConf(c)
-                  }
-                  const view = model.view
-                  for (const c of confs) {
-                    const viewAsms: string[] | undefined = view?.assemblyNames
-                    if (viewAsms?.some(a => c.assemblyNames?.includes(a))) {
-                      view.showTrack?.(c.trackId)
-                    }
-                  }
-                  model.clearData()
-                  session.hideWidget(model)
-                })
-              }
+              doPasteConfigSubmit({ model, jsonText: val })
             } catch (e) {
               console.error(e)
               setError(e)

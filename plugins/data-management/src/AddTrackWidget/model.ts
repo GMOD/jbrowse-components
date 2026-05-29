@@ -6,8 +6,9 @@ import {
   guessTrackType,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
+import { reaction } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -66,6 +67,9 @@ export default function f(pluginManager: PluginManager) {
     })
     .volatile(() => ({ ...defaultVolatileState }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setMixinData(arg: Record<string, unknown>) {
         self.mixinData = arg
       },
@@ -134,6 +138,25 @@ export default function f(pluginManager: PluginManager) {
         self.textIndexingConf = defaultVolatileState.textIndexingConf
         self.textIndexTrack = defaultVolatileState.textIndexTrack
         self.mixinData = {}
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // The widget instance is reused (reconciled) across opens because it
+        // is keyed by a fixed id in session.widgets. Reopening it for a
+        // different view updates self.view but leaves the previously entered
+        // form data — including altAssemblyName — in place, which would add
+        // the track to the wrong assembly. Reset the form when the target
+        // view changes.
+        addDisposer(
+          self,
+          reaction(
+            () => self.view?.id,
+            () => {
+              self.clearData()
+            },
+          ),
+        )
       },
     }))
     .views(self => ({
@@ -210,7 +233,7 @@ export default function f(pluginManager: PluginManager) {
       get wrongProtocol() {
         return (
           window.location.protocol === 'https:' &&
-          (this.trackHttp ?? this.indexHttp)
+          (this.trackHttp || this.indexHttp)
         )
       },
 
@@ -228,13 +251,7 @@ export default function f(pluginManager: PluginManager) {
        */
       get adapterHintNotConfigurable() {
         const { adapterHint } = self
-        const adapterType = this.trackAdapter?.type
-        return !!(
-          adapterHint &&
-          (!adapterType ||
-            adapterType === 'UNKNOWN' ||
-            adapterType !== adapterHint)
-        )
+        return !!(adapterHint && this.trackAdapter?.type !== adapterHint)
       },
 
       /**
@@ -264,7 +281,7 @@ export default function f(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
-       * #getter
+       * #method
        */
       getTrackConfig(timestamp: number) {
         const session = getSession(self)

@@ -11,15 +11,14 @@ const TrackAdapterSelector = observer(function ({
 }: {
   model: AddTrackModel
 }) {
-  const { trackAdapter, adapterHintNotConfigurable } = model
-  const { adapterHint } = model
+  const { trackAdapter, adapterHint, adapterHintNotConfigurable } = model
   const { pluginManager } = getEnv(model)
 
   // Show the adapterHint if set (even if config couldn't be built),
-  // otherwise show the resolved adapter type
-  const displayValue =
-    adapterHint ||
-    (trackAdapter?.type !== 'UNKNOWN' ? (trackAdapter?.type ?? '') : '')
+  // otherwise show the resolved adapter type (blank for UNKNOWN)
+  const resolvedType =
+    trackAdapter?.type === 'UNKNOWN' ? '' : trackAdapter?.type
+  const displayValue = adapterHint || resolvedType || ''
 
   return (
     <TextField

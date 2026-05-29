@@ -16,6 +16,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { defaultIndexingConf } from './util.ts'
+
 import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -30,8 +32,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const defaultConf = { attributes: ['Name', 'ID'], exclude: ['CDS', 'exon'] }
-
 const TextIndexingConfig = observer(function TextIndexingConfig({
   model,
 }: {
@@ -40,7 +40,7 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
   const { classes } = useStyles()
   const [attributeInput, setAttributeInput] = useState('')
   const [excludeInput, setExcludeInput] = useState('')
-  const conf = model.textIndexingConf ?? defaultConf
+  const conf = model.textIndexingConf ?? defaultIndexingConf
   const sections = [
     {
       label: 'Indexing attributes',

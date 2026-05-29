@@ -7,7 +7,16 @@ import {
 } from '@jbrowse/core/util'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 
+import { defaultIndexingConf } from './util.ts'
+
 import type { AddTrackModel } from '../model.ts'
+
+interface RootWithJobsManager {
+  jobsManager: {
+    queueJob: (job: unknown) => void
+    abortJob: () => void
+  }
+}
 
 function doTextIndexTrack({
   trackId,
@@ -17,11 +26,8 @@ function doTextIndexTrack({
   model: AddTrackModel
 }) {
   const { textIndexingConf, trackName, assembly } = model
-  const { jobsManager } = getRoot<any>(model)
-  const attr = textIndexingConf ?? {
-    attributes: ['Name', 'ID'],
-    exclude: ['CDS', 'exon'],
-  }
+  const { jobsManager } = getRoot<RootWithJobsManager>(model)
+  const attr = textIndexingConf ?? defaultIndexingConf
   const indexName = `${trackName}-index`
   jobsManager.queueJob({
     indexingParams: {
@@ -33,7 +39,7 @@ function doTextIndexTrack({
       timestamp: new Date().toISOString(),
     },
     name: indexName,
-    cancelCallback: () => jobsManager.abortJob(),
+    cancelCallback: () => { jobsManager.abortJob() },
   })
 }
 
