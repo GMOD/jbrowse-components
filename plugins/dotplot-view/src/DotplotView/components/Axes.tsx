@@ -7,7 +7,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { computeTickPositions, getBlockLabelKeysToHide } from './util.ts'
+import { computeTickPositions } from './util.ts'
 
 import type { PositionedTick } from './util.ts'
 import type { DotplotViewModel } from '../model.ts'
@@ -54,7 +54,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
   const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
   const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
   const blocks = dynamicBlocks.contentBlocks
-  const hide = getBlockLabelKeysToHide(blocks, viewWidth, offsetPx)
+  const hide = model.hblockLabelKeysToHide
   const ticks = computeTickPositions(hview, hticks)
   const theme = useTheme()
   const fill = getFillProps(theme.palette.text.primary)
@@ -146,7 +146,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
   const { viewHeight, borderX, borderY, vview, vtextRotation, vticks } = model
   const { offsetPx, dynamicBlocks, bpPerPx } = vview
   const blocks = dynamicBlocks.contentBlocks
-  const hide = getBlockLabelKeysToHide(blocks, viewHeight, offsetPx)
+  const hide = model.vblockLabelKeysToHide
   const ticks = computeTickPositions(vview, vticks)
   const theme = useTheme()
   const fill = getFillProps(theme.palette.text.primary)

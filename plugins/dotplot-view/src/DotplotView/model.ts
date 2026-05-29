@@ -55,6 +55,7 @@ const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
 type Coord = [number, number]
+type CursorMode = 'crosshair' | 'move'
 
 const LS_CURSOR_MODE = 'dotplot-cursorMode'
 
@@ -206,10 +207,8 @@ export default function stateModelFactory(pm: PluginManager) {
          * these are 'personal preferences', stored in volatile and
          * loaded/written to localStorage
          */
-        cursorMode: localStorageGetItem(LS_CURSOR_MODE) || 'crosshair',
-        /**
-         * #volatile
-         */
+        cursorMode:
+          localStorageGetItem(LS_CURSOR_MODE) === 'move' ? 'move' : 'crosshair',
         /**
          * #volatile
          */
@@ -353,6 +352,23 @@ export default function stateModelFactory(pm: PluginManager) {
         get viewHeight() {
           return self.height - self.borderY
         },
+        // Block-label keys whose tick labels would overlap and are hidden.
+        // Cached as views so the border autorun and the axis components share
+        // one computation per axis instead of recomputing it independently.
+        get hblockLabelKeysToHide() {
+          return getBlockLabelKeysToHide(
+            self.hview.dynamicBlocks.contentBlocks,
+            this.viewWidth,
+            self.hview.offsetPx,
+          )
+        },
+        get vblockLabelKeysToHide() {
+          return getBlockLabelKeysToHide(
+            self.vview.dynamicBlocks.contentBlocks,
+            this.viewHeight,
+            self.vview.offsetPx,
+          )
+        },
         /**
          * #getter
          */
@@ -471,8 +487,8 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setCursorMode(str: string) {
-          self.cursorMode = str
+        setCursorMode(mode: CursorMode) {
+          self.cursorMode = mode
         },
         /**
          * #action
@@ -685,25 +701,17 @@ export default function stateModelFactory(pm: PluginManager) {
           if (self.volatileWidth === undefined) {
             return { borderX: self.borderX, borderY: self.borderY }
           }
-          const { vview, hview, viewHeight, viewWidth } = self
+          const { vview, hview } = self
           const padding = 40
           const hAxis: AxisBundle = {
             blocks: hview.dynamicBlocks.contentBlocks,
             bpPerPx: hview.bpPerPx,
-            hide: getBlockLabelKeysToHide(
-              hview.dynamicBlocks.contentBlocks,
-              viewWidth,
-              hview.offsetPx,
-            ),
+            hide: self.hblockLabelKeysToHide,
           }
           const vAxis: AxisBundle = {
             blocks: vview.dynamicBlocks.contentBlocks,
             bpPerPx: vview.bpPerPx,
-            hide: getBlockLabelKeysToHide(
-              vview.dynamicBlocks.contentBlocks,
-              viewHeight,
-              vview.offsetPx,
-            ),
+            hide: self.vblockLabelKeysToHide,
           }
 
           return {

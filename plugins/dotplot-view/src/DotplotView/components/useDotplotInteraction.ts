@@ -89,6 +89,7 @@ export function useDotplotInteraction(
   const validSelect =
     (cursorMode === 'move' && ctrlKeyWasUsed) ||
     (cursorMode === 'crosshair' && !ctrlKeyWasUsed)
+  const hasDrag = !!mousedownClient && !mouseupClient
 
   // wheel: accumulate per-frame, then zoom in a single transaction
   const distanceX = useRef(0)
@@ -135,12 +136,18 @@ export function useDotplotInteraction(
       vview.scroll(event.clientY - mousecurrClient[1])
     }
   })
+  // Only listen for moves while hovering (crosshair tooltip + wheel-zoom
+  // anchor) or mid-drag (pan/select, which must keep firing even off-element).
+  // Avoids re-rendering the interaction subtree on every window mouse move.
   useEffect(() => {
+    if (!mouseOvered && !hasDrag) {
+      return
+    }
     window.addEventListener('mousemove', onMove)
     return () => {
       window.removeEventListener('mousemove', onMove)
     }
-  }, [])
+  }, [mouseOvered, hasDrag])
 
   // ctrl/meta-key tracking (mode-switch modifier)
   useEffect(() => {
@@ -170,7 +177,6 @@ export function useDotplotInteraction(
       setMouseDownClient(undefined)
     }
   })
-  const hasDrag = !!mousedownClient && !mouseupClient
   useEffect(() => {
     if (!hasDrag) {
       return

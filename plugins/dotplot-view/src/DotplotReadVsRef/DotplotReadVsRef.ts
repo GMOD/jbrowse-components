@@ -1,3 +1,4 @@
+import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/alignments-core'
 import {
   featurizeSA,
   getClip,
@@ -35,10 +36,12 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
     const SA = feature.get('tags')?.SA as string
     const SA2 = featurizeSA(SA, feature.id(), strand, readName, true)
 
-    // if secondary alignment or supplementary, calculate length from SA[0]'s
-    // CIGAR which is the primary alignments. otherwise it is the primary
-    // alignment just use seq.length if primary alignment
-    const totalLength = getLength(flags & 2048 ? SA2[0]!.CIGAR : cigar)
+    // For supplementary alignments the full read length must come from the
+    // primary's CIGAR (carried in SA[0]), since `cigar` here only covers this
+    // alignment's slice of the read.
+    const totalLength = getLength(
+      flags & SAM_FLAG_SUPPLEMENTARY ? SA2[0]!.CIGAR : cigar,
+    )
 
     const features = (
       [

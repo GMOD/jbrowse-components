@@ -22,8 +22,9 @@ export default function SelectionContextMenu({
     setMouseUpClient(undefined)
     setMouseDownClient(undefined)
   }
-  const closeAndUnhover = () => {
-    // unhover prevents the tooltip from sticking after the menu closes
+  // unhover prevents the tooltip from sticking after the menu closes; the
+  // selection itself is cleared by close() via onMenuItemClick/onClose.
+  const unhover = () => {
     setMouseOvered(false)
   }
   return (
@@ -50,7 +51,7 @@ export default function SelectionContextMenu({
             if (mousedown && mouseup) {
               model.zoomInToMouseCoords(mousedown, mouseup)
             }
-            closeAndUnhover()
+            unhover()
           },
         },
         {
@@ -59,7 +60,7 @@ export default function SelectionContextMenu({
             if (mousedown && mouseup) {
               model.onDotplotView(mousedown, mouseup)
             }
-            closeAndUnhover()
+            unhover()
           },
         },
       ]}
