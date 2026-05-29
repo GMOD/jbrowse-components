@@ -45,8 +45,7 @@ function segments(
   const result = buildSegmentArrays(
     features,
     gaps,
-    regionStart,
-    regionEnd,
+    { start: regionStart, end: regionEnd },
     id => idToIdx.get(id) ?? 0,
   )
   const segs = []

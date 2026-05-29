@@ -18,6 +18,7 @@ import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 
 import type { PileupDataResult, RenderAlignmentDataArgs } from './types.ts'
+import type { RegionBounds } from '../shared/types.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -127,7 +128,6 @@ export async function executeRenderAlignmentData({
     stopToken,
   } = args
   const region = regions[0]!
-  const regionEnd = Math.ceil(region.end)
   const isChain = linkedReads !== 'off'
   // Chain mode never expands soft clips or fetches sequence/sort-tag data.
   const effShowSoftClipping = isChain ? false : showSoftClipping
@@ -143,6 +143,10 @@ export async function executeRenderAlignmentData({
       statusCallback,
       stopToken,
     })
+
+  // Integer clamp window every absolute-genomic array filters against. Derived
+  // once here and threaded as one value instead of two loose scalars.
+  const bounds: RegionBounds = { start: regionStart, end: Math.ceil(region.end) }
 
   // Chain mode dedupes + filters reads into chains up front; pileup mode
   // fetches the reference sequence when coloring by methylation/modifications.
@@ -165,7 +169,7 @@ export async function executeRenderAlignmentData({
       sequenceAdapter,
       region,
       featuresArray,
-      regionStart,
+      bounds,
     })
     regionSequence = result.regionSequence?.toLowerCase()
     regionSequenceStart = result.regionSequenceStart
@@ -196,8 +200,7 @@ export async function executeRenderAlignmentData({
         colorBy,
         colorTagMap,
         showSoftClipping: effShowSoftClipping,
-        regionEnd,
-        regionStart,
+        bounds,
         sortTag: isChain ? undefined : sortTag,
       },
     ),
@@ -212,7 +215,13 @@ export async function executeRenderAlignmentData({
     features,
     regionStart,
   )
-  const getReadIndex = (id: string) => featureIdToIndex.get(id)!
+  const getReadIndex = (id: string) => {
+    const idx = featureIdToIndex.get(id)
+    if (idx === undefined) {
+      throw new Error(`no read index for feature id ${id} (detail/read mismatch)`)
+    }
+    return idx
+  }
 
   // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
   const chainFields: Partial<PileupDataResult> = isChain
@@ -241,8 +250,7 @@ export async function executeRenderAlignmentData({
     modifications,
     perBaseQualities,
     detectedModifications,
-    regionStart,
-    regionEnd,
+    bounds,
     getReadIndex,
     showSoftClipping: effShowSoftClipping,
     statusCallback,
@@ -264,8 +272,7 @@ export async function executeRenderAlignmentData({
     softclips,
     hardclips,
     modifications,
-    regionStart,
-    regionEnd,
+    bounds,
     mismatchArrays,
     interbaseArrays,
     gapArrays,

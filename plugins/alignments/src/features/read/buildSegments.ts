@@ -1,3 +1,4 @@
+import type { RegionBounds } from '../../shared/types.ts'
 import type { FeatureData, GapData } from '../../shared/webglRpcTypes.ts'
 
 // Splits each read into per-exon segments at CIGAR skip (N) gaps.
@@ -10,10 +11,10 @@ import type { FeatureData, GapData } from '../../shared/webglRpcTypes.ts'
 export function buildSegmentArrays(
   features: FeatureData[],
   gaps: GapData[],
-  regionStart: number,
-  regionEnd: number,
+  bounds: RegionBounds,
   getReadIndex: (featureId: string) => number,
 ) {
+  const { start: regionStart, end: regionEnd } = bounds
   const skipsByFeature = new Map<string, GapData[]>()
   for (const g of gaps) {
     if (g.type === 'skip') {

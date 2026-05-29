@@ -6,7 +6,7 @@ import {
 } from '../features/modification/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 
-import type { ColorBy } from './types.ts'
+import type { ColorBy, RegionBounds } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -24,8 +24,7 @@ interface ExtractOpts {
   colorBy: ColorBy | undefined
   colorTagMap: Record<string, string> | undefined
   showSoftClipping: boolean
-  regionEnd: number
-  regionStart: number
+  bounds: RegionBounds
   sortTag?: string
 }
 
@@ -34,14 +33,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   buildFeatureData: (feature: Feature) => T,
   opts: ExtractOpts,
 ) {
-  const {
-    colorBy,
-    colorTagMap,
-    showSoftClipping,
-    regionEnd,
-    regionStart,
-    sortTag,
-  } = opts
+  const { colorBy, colorTagMap, showSoftClipping, bounds, sortTag } = opts
   const detectedModifications = new Set<string>()
   const detectedSimplexModifications = new Set<string>()
 
@@ -114,21 +106,14 @@ export function extractFeatureArrays<T extends FeatureData>(
         featureId,
         featureStart,
         strand,
-        regionStart,
-        regionEnd,
+        bounds,
         modData,
         modifications,
       )
     }
 
     if (isPerBaseQualityMode) {
-      extractPerBaseQuality(
-        feature,
-        featureId,
-        regionStart,
-        regionEnd,
-        perBaseQualities,
-      )
+      extractPerBaseQuality(feature, featureId, bounds, perBaseQualities)
     }
   }
 

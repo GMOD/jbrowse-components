@@ -8,6 +8,7 @@ import { buildPerBaseQualityArrays } from '../features/perBaseQuality/buildArray
 import { buildSegmentArrays } from '../features/read/buildSegments.ts'
 import { buildSoftclipBaseArrays } from '../features/softclip/buildArrays.ts'
 
+import type { RegionBounds } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -39,8 +40,7 @@ export async function buildAlignmentDetailArrays({
   modifications,
   perBaseQualities,
   detectedModifications,
-  regionStart,
-  regionEnd,
+  bounds,
   getReadIndex,
   showSoftClipping = false,
   statusCallback,
@@ -54,12 +54,12 @@ export async function buildAlignmentDetailArrays({
   modifications: ModificationEntry[]
   perBaseQualities: PerBaseQualityEntry[]
   detectedModifications: Set<string>
-  regionStart: number
-  regionEnd: number
+  bounds: RegionBounds
   getReadIndex: (id: string) => number
   showSoftClipping?: boolean
   statusCallback: (s: string) => void
 }) {
+  const { start: regionStart } = bounds
   return updateStatus(
     'Building alignment arrays',
     statusCallback,
@@ -91,13 +91,7 @@ export async function buildAlignmentDetailArrays({
         perBaseQualities,
         getReadIndex,
       ),
-      segmentArrays: buildSegmentArrays(
-        features,
-        gaps,
-        regionStart,
-        regionEnd,
-        getReadIndex,
-      ),
+      segmentArrays: buildSegmentArrays(features, gaps, bounds, getReadIndex),
     }),
   )
 }

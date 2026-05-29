@@ -12,6 +12,7 @@ import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
 
+import type { RegionBounds } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -41,8 +42,7 @@ export async function runCoveragePipeline({
   softclips,
   hardclips,
   modifications,
-  regionStart,
-  regionEnd,
+  bounds,
   mismatchArrays,
   interbaseArrays,
   gapArrays,
@@ -59,8 +59,7 @@ export async function runCoveragePipeline({
   softclips: SoftclipData[]
   hardclips: HardclipData[]
   modifications: ModificationEntry[]
-  regionStart: number
-  regionEnd: number
+  bounds: RegionBounds
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
   interbaseArrays: Parameters<typeof computeFrequenciesAndThresholds>[1]
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
@@ -70,6 +69,7 @@ export async function runCoveragePipeline({
   statusCallback: (s: string) => void
   stopTokenCheck: StopTokenChecker
 }) {
+  const { start: regionStart, end: regionEnd } = bounds
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,

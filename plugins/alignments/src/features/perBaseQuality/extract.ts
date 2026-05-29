@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import type { PerBaseQualityEntry } from './types.ts'
+import type { RegionBounds } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Walk CIGAR + NUMERIC_QUAL, emit one entry per ref-aligned base inside the
@@ -17,10 +18,10 @@ import type { Feature } from '@jbrowse/core/util'
 export function extractPerBaseQuality(
   feature: Feature,
   featureId: string,
-  regionStart: number,
-  regionEnd: number,
+  bounds: RegionBounds,
   out: PerBaseQualityEntry[],
 ) {
+  const { start: regionStart, end: regionEnd } = bounds
   const scores = feature.get('NUMERIC_QUAL') as Uint8Array | undefined
   const cigarOps = feature.get('NUMERIC_CIGAR') as ArrayLike<number> | undefined
   if (scores && scores.length > 0 && cigarOps && cigarOps.length > 0) {

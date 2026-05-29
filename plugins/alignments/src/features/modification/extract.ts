@@ -16,6 +16,7 @@ import {
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 
+import type { RegionBounds } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { ParsedModData } from '@jbrowse/modifications-utils'
@@ -109,11 +110,11 @@ export function extractMethylation(
   featureId: string,
   featureStart: number,
   strand: number,
-  regionStart: number,
-  regionEnd: number,
+  bounds: RegionBounds,
   modData: ParsedModData,
   modificationsData: ModificationEntry[],
 ) {
+  const { start: regionStart, end: regionEnd } = bounds
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
     getMethBins(modData)
 

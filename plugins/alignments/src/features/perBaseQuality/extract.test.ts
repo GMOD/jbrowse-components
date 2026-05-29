@@ -41,8 +41,7 @@ function run(opts: {
   extractPerBaseQuality(
     makeFeature(opts),
     'f',
-    opts.regionStart ?? 0,
-    opts.regionEnd ?? 1000,
+    { start: opts.regionStart ?? 0, end: opts.regionEnd ?? 1000 },
     out,
   )
   return out.map(e => [e.position, e.score])
@@ -147,7 +146,7 @@ describe('extractPerBaseQuality', () => {
       id: () => 'f',
       get: () => undefined,
     } as unknown as Feature
-    extractPerBaseQuality(feature, 'f', 0, 1000, out)
+    extractPerBaseQuality(feature, 'f', { start: 0, end: 1000 }, out)
     expect(out).toEqual([])
   })
 })
