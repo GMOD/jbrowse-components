@@ -54,7 +54,7 @@ export {
 } from './models/renderTransform.ts'
 export type { FeatureLabelData } from './components/util.ts'
 export { drawCanvasImageData } from './util.ts'
-export { getDisplayStr } from './models/util.ts'
+export { getDisplayStr } from '../shared/featureDensityUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
 export { default as SVGLegend } from './SVGLegend.tsx'

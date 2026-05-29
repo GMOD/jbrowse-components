@@ -20,13 +20,13 @@ interface DisplayResult {
 }
 
 function getOffsets(displayResults: DisplayResult[], textOffset: number) {
-  return displayResults.reduce<{ offsets: number[]; total: number }>(
-    ({ offsets, total }, { track }) => ({
-      offsets: [...offsets, total],
-      total: total + track.displays[0]!.height + textOffset + trackSpacing,
-    }),
-    { offsets: [], total: 0 },
-  ).offsets
+  const offsets: number[] = []
+  let total = 0
+  for (const { track } of displayResults) {
+    offsets.push(total)
+    total += track.displays[0]!.height + textOffset + trackSpacing
+  }
+  return offsets
 }
 
 export default function SVGTracks({

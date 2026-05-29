@@ -1,4 +1,4 @@
-import { getDisplayStr } from './util.ts'
+import { getDisplayStr } from '../../shared/featureDensityUtils.ts'
 import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
