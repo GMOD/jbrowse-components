@@ -15,6 +15,15 @@ as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). The
 [alignments track guide](/docs/user_guides/alignments_track) covers the general
 features; this page focuses on what to look for when interpreting SVs.
 
+:::info Background
+
+For the read-level signals behind these displays — how split (supplementary)
+alignments, the `SA` tag, pair orientation, `TLEN`, and clipping encode SV
+evidence in the SAM format — see
+[Structural variants and the SAM format](https://cmdcolin.github.io/posts/2022-02-06-sv-sam/).
+
+:::
+
 For end-to-end walkthroughs, see
 [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) (HG008
 tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and

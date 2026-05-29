@@ -1,8 +1,15 @@
 import type React from 'react'
 
+import { observer } from 'mobx-react'
+
 import type PluginManager from '../PluginManager'
 
-export default function PluggableComponent<P extends Record<string, unknown>>({
+// observer so that observable reads inside evaluateExtensionPoint callbacks
+// (e.g. model.trackAdapterType) are tracked here — re-evaluates when they
+// change without relying on the parent being an observer
+const PluggableComponent = observer(function PluggableComponent<
+  P extends Record<string, unknown>,
+>({
   pluginManager,
   name,
   component: DefaultComponent,
@@ -19,4 +26,6 @@ export default function PluggableComponent<P extends Record<string, unknown>>({
     props,
   ) as React.ComponentType<P>
   return <Component {...props} />
-}
+})
+
+export default PluggableComponent

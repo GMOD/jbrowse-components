@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react'
+import { Suspense } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
+import { PluggableComponent } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 import DotplotGrid from './DotplotGrid.tsx'
@@ -15,7 +17,16 @@ declare module '@jbrowse/core/PluginManager' {
       result: ReactNode[]
       props: { model: DotplotViewModel }
     }
+    'DotplotView-OverlayHTMLComponent': {
+      args: ComponentType<{ model: DotplotViewModel }>
+      result: ComponentType<{ model: DotplotViewModel }>
+      props: { model: DotplotViewModel }
+    }
   }
+}
+
+function NoHTMLOverlay(_props: { model: DotplotViewModel }) {
+  return null
 }
 
 const MouseInteractionLayer = observer(function MouseInteractionLayer({
@@ -37,14 +48,14 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
     setCtrlKeyWasUsed,
   } = interaction
   const { pluginManager } = getEnv(model)
-  const additional = pluginManager.evaluateExtensionPoint(
+  const svgOverlays = pluginManager.evaluateExtensionPoint(
     'DotplotView-OverlaySVGComponent',
     [],
     { model },
   )
   return (
     <div
-      style={{ cursor: ctrlKeyDown ? 'pointer' : model.cursorMode }}
+      style={{ cursor: ctrlKeyDown ? 'pointer' : model.cursorMode, position: 'relative' }}
       onMouseDown={event => {
         if (event.button === 0) {
           const { clientX, clientY } = event
@@ -69,9 +80,26 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
               height={Math.abs(ydistance)}
             />
           ) : null}
-          {additional}
+          {svgOverlays}
         </DotplotGrid>
       </svg>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          overflow: 'hidden',
+        }}
+      >
+        <Suspense fallback={null}>
+          <PluggableComponent
+            pluginManager={pluginManager}
+            name="DotplotView-OverlayHTMLComponent"
+            component={NoHTMLOverlay}
+            props={{ model }}
+          />
+        </Suspense>
+      </div>
     </div>
   )
 })

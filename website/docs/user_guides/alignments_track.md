@@ -4,8 +4,6 @@ description: Learn how to show BAM and CRAM files
 guide_category: Track types
 ---
 
-import Figure from '../figure'
-
 The alignments track combines a pileup (one box per read) and a coverage
 histogram (depth at each position, with mismatches highlighted).
 

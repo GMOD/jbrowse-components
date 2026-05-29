@@ -1,3 +1,4 @@
+import DotplotHighlightChipOverlay from './DotplotHighlightChipOverlay.tsx'
 import DotplotHighlights from './DotplotHighlights.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -9,5 +10,9 @@ export default function installDotplotHighlights(pluginManager: PluginManager) {
       ...rest,
       <DotplotHighlights key="dotplot_native_highlights" model={model} />,
     ],
+  )
+  pluginManager.addToExtensionPoint(
+    'DotplotView-OverlayHTMLComponent',
+    () => DotplotHighlightChipOverlay,
   )
 }
