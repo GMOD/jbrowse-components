@@ -1,18 +1,30 @@
 import {
+  applyClassifiedFiles,
+  applyPrimaryFile,
+  applyTwoBitFile,
+  classifyAssemblyFiles,
+  classifyFilename,
+  clearFormFields,
   detectAdapterType,
   getAdapterConfig,
   getAssemblyNameFromFilename,
+  getBaseAssemblyConfig,
   getFilename,
+  initialFormState,
   isBlank,
+  urlTextToLocations,
 } from './util.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const blank = { uri: '' } as FileLocation
 const fasta = { uri: 'https://example.com/hg38.fa' } as FileLocation
+const fastaGz = { uri: 'https://example.com/hg38.fa.gz' } as FileLocation
 const fai = { uri: 'https://example.com/hg38.fa.fai' } as FileLocation
 const gzi = { uri: 'https://example.com/hg38.fa.gz.gzi' } as FileLocation
 const twobit = { uri: 'https://example.com/hg38.2bit' } as FileLocation
+const aliases = { uri: 'https://example.com/aliases.txt' } as FileLocation
+const cytobands = { uri: 'https://example.com/cytobands.txt' } as FileLocation
 const local = {
   localPath: '/data/hg38.fa',
   locationType: 'LocalPathLocation',
@@ -202,5 +214,300 @@ describe('getAdapterConfig', () => {
       type: 'TwoBitAdapter',
       twoBitLocation: twobit,
     })
+  })
+})
+
+describe('applyPrimaryFile', () => {
+  test('sets fastaLocation for plain fasta', () => {
+    const s = applyPrimaryFile(initialFormState(), fasta)
+    expect(s.fastaLocation).toBe(fasta)
+  })
+
+  test('detects BgzipFastaAdapter for .fa.gz', () => {
+    const s = applyPrimaryFile(initialFormState(), fastaGz)
+    expect(s.fastaLocation).toBe(fastaGz)
+    expect(s.adapterSelection).toBe('BgzipFastaAdapter')
+  })
+
+  test('routes .2bit to twoBitLocation and selects TwoBitAdapter', () => {
+    const s = applyPrimaryFile(initialFormState(), twobit)
+    expect(s.twoBitLocation).toBe(twobit)
+    expect(s.adapterSelection).toBe('TwoBitAdapter')
+  })
+
+  test('auto-fills assemblyName from filename', () => {
+    const s = applyPrimaryFile(initialFormState(), fasta)
+    expect(s.assemblyName).toBe('hg38')
+  })
+
+  test('does not overwrite assemblyName when already set', () => {
+    const s = applyPrimaryFile(
+      { ...initialFormState(), assemblyName: 'custom' },
+      fasta,
+    )
+    expect(s.assemblyName).toBe('custom')
+  })
+
+  test('prefills .fai sidecar for indexed fasta URI', () => {
+    const s = applyPrimaryFile(initialFormState(), fasta)
+    expect(s.faiLocation).toEqual({ uri: 'https://example.com/hg38.fa.fai' })
+  })
+
+  test('prefills .fai and .gzi sidecars for bgzip fasta URI', () => {
+    const s = applyPrimaryFile(initialFormState(), fastaGz)
+    expect(s.faiLocation).toEqual({ uri: 'https://example.com/hg38.fa.gz.fai' })
+    expect(s.gziLocation).toEqual({ uri: 'https://example.com/hg38.fa.gz.gzi' })
+  })
+
+  test('does not overwrite a sidecar the user already set', () => {
+    const s = applyPrimaryFile({ ...initialFormState(), faiLocation: fai }, fasta)
+    expect(s.faiLocation).toBe(fai)
+  })
+
+  test('prefills .fai sidecar for local path fasta', () => {
+    const s = applyPrimaryFile(initialFormState(), local)
+    expect(s.faiLocation).toEqual({
+      localPath: '/data/hg38.fa.fai',
+      locationType: 'LocalPathLocation',
+    })
+  })
+})
+
+describe('applyTwoBitFile', () => {
+  test('sets twoBitLocation', () => {
+    const s = applyTwoBitFile(initialFormState(), twobit)
+    expect(s.twoBitLocation).toBe(twobit)
+  })
+
+  test('auto-fills assemblyName from filename', () => {
+    const s = applyTwoBitFile(initialFormState(), twobit)
+    expect(s.assemblyName).toBe('hg38')
+  })
+
+  test('does not overwrite assemblyName when already set', () => {
+    const s = applyTwoBitFile(
+      { ...initialFormState(), assemblyName: 'custom' },
+      twobit,
+    )
+    expect(s.assemblyName).toBe('custom')
+  })
+})
+
+describe('clearFormFields', () => {
+  test('resets file locations and name fields', () => {
+    const s = clearFormFields({
+      ...initialFormState(),
+      fastaLocation: fasta,
+      faiLocation: fai,
+      assemblyName: 'hg38',
+      assemblyDisplayName: 'Homo sapiens',
+    })
+    expect(s.fastaLocation).toEqual(blank)
+    expect(s.faiLocation).toEqual(blank)
+    expect(s.assemblyName).toBe('')
+    expect(s.assemblyDisplayName).toBe('')
+  })
+
+  test('preserves adapterSelection', () => {
+    const s = clearFormFields({
+      ...initialFormState(),
+      adapterSelection: 'BgzipFastaAdapter',
+    })
+    expect(s.adapterSelection).toBe('BgzipFastaAdapter')
+  })
+})
+
+describe('classifyFilename', () => {
+  test.each([
+    ['hg38.fa', 'fasta'],
+    ['hg38.fasta', 'fasta'],
+    ['hg38.fna', 'fasta'],
+    ['hg38.fa.gz', 'fastaGz'],
+    ['hg38.fasta.gz', 'fastaGz'],
+    ['hg38.fa.fai', 'fai'],
+    ['hg38.fa.gz.fai', 'fai'],
+    ['hg38.fa.gz.gzi', 'gzi'],
+    ['hg38.2bit', 'twoBit'],
+    ['hg38.chrom.sizes', 'chromSizes'],
+    ['cytoBandIdeo.txt', 'cytobands'],
+    ['hg38.chromAlias.txt', 'refNameAliases'],
+  ])('classifies %s as %s', (filename, role) => {
+    expect(classifyFilename(filename)).toBe(role)
+  })
+
+  test('returns undefined for unrecognized files', () => {
+    expect(classifyFilename('hg38.bam')).toBeUndefined()
+  })
+
+  test('a fasta named like an alias is still a fasta', () => {
+    expect(classifyFilename('myalias.fa')).toBe('fasta')
+  })
+})
+
+describe('classifyAssemblyFiles', () => {
+  test('sorts a bgzip trio into fields and picks adapter + name', () => {
+    expect(
+      classifyAssemblyFiles([
+        { uri: 'https://example.com/hg38.fa.gz' },
+        { uri: 'https://example.com/hg38.fa.gz.fai' },
+        { uri: 'https://example.com/hg38.fa.gz.gzi' },
+      ] as FileLocation[]),
+    ).toEqual({
+      fastaLocation: { uri: 'https://example.com/hg38.fa.gz' },
+      faiLocation: { uri: 'https://example.com/hg38.fa.gz.fai' },
+      gziLocation: { uri: 'https://example.com/hg38.fa.gz.gzi' },
+      adapterSelection: 'BgzipFastaAdapter',
+      assemblyName: 'hg38',
+    })
+  })
+
+  test('sorts an indexed fasta pair', () => {
+    expect(
+      classifyAssemblyFiles([fasta, fai]),
+    ).toMatchObject({
+      fastaLocation: fasta,
+      faiLocation: fai,
+      adapterSelection: 'IndexedFastaAdapter',
+      assemblyName: 'hg38',
+    })
+  })
+
+  test('a lone fasta with no index falls back to FastaAdapter', () => {
+    expect(classifyAssemblyFiles([fasta])).toMatchObject({
+      fastaLocation: fasta,
+      adapterSelection: 'FastaAdapter',
+      assemblyName: 'hg38',
+    })
+  })
+
+  test('routes a 2bit to TwoBitAdapter', () => {
+    expect(classifyAssemblyFiles([twobit])).toMatchObject({
+      twoBitLocation: twobit,
+      adapterSelection: 'TwoBitAdapter',
+      assemblyName: 'hg38',
+    })
+  })
+
+  test('places aliases and cytobands', () => {
+    const s = classifyAssemblyFiles([
+      { uri: 'https://example.com/hg38.chromAlias.txt' },
+      { uri: 'https://example.com/cytoBandIdeo.txt.gz' },
+    ] as FileLocation[])
+    expect(s.refNameAliasesLocation).toEqual({
+      uri: 'https://example.com/hg38.chromAlias.txt',
+    })
+    expect(s.cytobandsLocation).toEqual({
+      uri: 'https://example.com/cytoBandIdeo.txt.gz',
+    })
+  })
+
+  test('ignores unrecognized files', () => {
+    expect(classifyAssemblyFiles([{ uri: 'x.bam' } as FileLocation])).toEqual({})
+  })
+})
+
+describe('applyClassifiedFiles', () => {
+  test('fills fields, adapter, and name from the file set', () => {
+    const s = applyClassifiedFiles(initialFormState(), [fasta, fai], false)
+    expect(s.fastaLocation).toBe(fasta)
+    expect(s.faiLocation).toBe(fai)
+    expect(s.adapterSelection).toBe('IndexedFastaAdapter')
+    expect(s.assemblyName).toBe('hg38')
+  })
+
+  test('resets fields no longer present in the set (authoritative)', () => {
+    const withBoth = applyClassifiedFiles(initialFormState(), [fasta, fai], false)
+    const withoutFai = applyClassifiedFiles(withBoth, [fasta], false)
+    expect(withoutFai.faiLocation).toEqual(blank)
+    expect(withoutFai.fastaLocation).toBe(fasta)
+  })
+
+  test('keeps a user-edited assembly name when keepName is set', () => {
+    const s = applyClassifiedFiles(
+      { ...initialFormState(), assemblyName: 'custom' },
+      [fasta],
+      true,
+    )
+    expect(s.assemblyName).toBe('custom')
+  })
+
+  test('clears to blank for an empty set', () => {
+    const filled = applyClassifiedFiles(initialFormState(), [fasta, fai], false)
+    const cleared = applyClassifiedFiles(filled, [], false)
+    expect(cleared.fastaLocation).toEqual(blank)
+    expect(cleared.faiLocation).toEqual(blank)
+    expect(cleared.assemblyName).toBe('')
+  })
+})
+
+describe('urlTextToLocations', () => {
+  test('parses non-empty trimmed lines into UriLocations', () => {
+    expect(
+      urlTextToLocations('  https://example.com/a.fa \n\nhttps://example.com/a.fa.fai\n'),
+    ).toEqual([
+      { uri: 'https://example.com/a.fa', locationType: 'UriLocation' },
+      { uri: 'https://example.com/a.fa.fai', locationType: 'UriLocation' },
+    ])
+  })
+})
+
+describe('getBaseAssemblyConfig', () => {
+  test('includes name', () => {
+    expect(
+      getBaseAssemblyConfig({ ...initialFormState(), assemblyName: 'hg38' }),
+    ).toMatchObject({ name: 'hg38' })
+  })
+
+  test('includes displayName when set', () => {
+    expect(
+      getBaseAssemblyConfig({
+        ...initialFormState(),
+        assemblyDisplayName: 'Homo sapiens',
+      }),
+    ).toMatchObject({ displayName: 'Homo sapiens' })
+  })
+
+  test('omits displayName when empty', () => {
+    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty(
+      'displayName',
+    )
+  })
+
+  test('includes refNameAliases when location is set', () => {
+    expect(
+      getBaseAssemblyConfig({
+        ...initialFormState(),
+        refNameAliasesLocation: aliases,
+      }),
+    ).toMatchObject({
+      refNameAliases: {
+        adapter: { type: 'RefNameAliasAdapter', location: aliases },
+      },
+    })
+  })
+
+  test('omits refNameAliases when blank', () => {
+    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty(
+      'refNameAliases',
+    )
+  })
+
+  test('includes cytobands when location is set', () => {
+    expect(
+      getBaseAssemblyConfig({
+        ...initialFormState(),
+        cytobandsLocation: cytobands,
+      }),
+    ).toMatchObject({
+      cytobands: {
+        adapter: { type: 'CytobandAdapter', cytobandLocation: cytobands },
+      },
+    })
+  })
+
+  test('omits cytobands when blank', () => {
+    expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty(
+      'cytobands',
+    )
   })
 })

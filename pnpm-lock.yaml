@@ -2098,6 +2098,9 @@ importers:
       react-dom:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
+      react-dropzone:
+        specifier: ^15.0.0
+        version: 15.0.0(react@19.2.6)
       sanitize-filename:
         specifier: ^1.6.4
         version: 1.6.4
