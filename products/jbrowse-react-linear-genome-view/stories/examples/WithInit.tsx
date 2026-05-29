@@ -38,7 +38,15 @@ export const WithInit = () => {
       assemblyNames: ['hg38'],
       adapter: {
         type: 'Gff3TabixAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+        gffGzLocation: {
+          uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
+        },
+        index: {
+          location: {
+            uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
+          },
+          indexType: 'CSI',
+        },
       },
     },
   ]
