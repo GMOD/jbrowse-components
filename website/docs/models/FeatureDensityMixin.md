@@ -3,9 +3,10 @@ id: featuredensitymixin
 title: FeatureDensityMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 Also note: this document represents the state model API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -19,11 +20,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-Block-based display mixin that adds reactive density-stats checking
-on top of RegionTooLargeMixin.
+Block-based display mixin that adds reactive density-stats checking on top of
+RegionTooLargeMixin.
 
 Runs autorunFeatureDensityStats to RPC for density stats, then computes
 regionTooLarge reactively from bytes/density thresholds.
 
-For canvas/GPU displays, use MultiRegionDisplayMixin instead (which
-also composes RegionTooLargeMixin but uses an imperative check path).
+For canvas/GPU displays, use MultiRegionDisplayMixin instead (which also
+composes RegionTooLargeMixin but uses an imperative check path).

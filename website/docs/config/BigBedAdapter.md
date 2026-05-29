@@ -3,8 +3,8 @@ id: bigbedadapter
 title: BigBedAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,13 +18,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-
-
 ### BigBedAdapter - Pre-processor / simplified config
 
-
-
 preprocessor to allow minimal config:
+
 ```json
 {
   "type": "BigBedAdapter",
@@ -45,6 +42,7 @@ bigBedLocation: {
       },
     }
 ```
+
 #### slot: scoreColumn
 
 ```js
@@ -54,6 +52,7 @@ scoreColumn: {
       defaultValue: '',
     }
 ```
+
 #### slot: aggregateField
 
 ```js
@@ -63,6 +62,7 @@ aggregateField: {
       defaultValue: 'geneName2',
     }
 ```
+
 #### slot: disableGeneHeuristic
 
 ```js
