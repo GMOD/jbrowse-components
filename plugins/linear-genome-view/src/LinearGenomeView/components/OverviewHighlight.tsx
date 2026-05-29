@@ -28,8 +28,10 @@ const OverviewHighlight = observer(function OverviewHighlight({
       const bandColor = getHighlightColor(highlight, theme)
       return (
         <OverviewHighlightBand
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          key={`${coords.left}_${coords.width}_${idx}`}
+          // region fields keep the key stable across pan/zoom (unlike pixel
+          // coords); idx disambiguates duplicate highlights on the same region
+          // biome-ignore lint/suspicious/noArrayIndexKey: idx is a suffix
+          key={`${highlight.assemblyName}_${highlight.refName}_${highlight.start}_${highlight.end}_${idx}`}
           coords={coords}
           background={bandColor.toRgbString()}
           borderColor={(highlight.color ? bandColor : themed).toRgbString()}

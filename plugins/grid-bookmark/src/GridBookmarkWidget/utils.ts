@@ -1,4 +1,9 @@
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getSession,
+  measureGridWidth,
+  measureText,
+} from '@jbrowse/core/util'
 
 import type { GridBookmarkModel } from './model.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util/types'
@@ -7,6 +12,12 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 type MaybeLGV = LGV | undefined
+
+// DataGrid column width fitting the wider of the header text and the cell
+// values, shared by the bookmark and highlight grids
+export function colWidth(header: string, values: string[]) {
+  return Math.max(measureText(header, 12) + 30, measureGridWidth(values))
+}
 
 export async function navToBookmark(
   locString: string,

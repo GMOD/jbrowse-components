@@ -1,18 +1,13 @@
 import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
-import {
-  assembleLocString,
-  getSession,
-  measureGridWidth,
-  measureText,
-} from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import { DEFAULT_HIGHLIGHT } from '../model.ts'
-import { navToBookmark } from '../utils.ts'
+import { colWidth, navToBookmark } from '../utils.ts'
 
 import type { GridBookmarkModel } from '../model.ts'
 
@@ -27,10 +22,6 @@ const useStyles = makeStyles()(() => ({
 // MUI DataGrid default page size for pagination; hide the footer pager when
 // the row count fits in a single page
 const DEFAULT_PAGE_SIZE = 100
-
-function colWidth(header: string, values: string[]) {
-  return Math.max(measureText(header, 12) + 30, measureGridWidth(values))
-}
 
 const BookmarkGrid = observer(function BookmarkGrid({
   model,
