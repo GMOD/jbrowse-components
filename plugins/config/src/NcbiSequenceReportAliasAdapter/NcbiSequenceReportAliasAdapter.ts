@@ -26,9 +26,11 @@ export default class NcbiSequenceReportAliasAdapter
     const seqNameIdx = r.indexOf('Sequence name')
     if (genBankIdx === -1 || refSeqIdx === -1 || ucscIdx === -1) {
       throw new Error(
-        'Header line must include "GenBank seq accession", "RefSeq seq accession", "UCSC style name", and "Sequence name"',
+        'Header line must include "GenBank seq accession", "RefSeq seq accession", and "UCSC style name"',
       )
     }
+    // refName comes from UCSC name, falling back to Sequence name; the filter
+    // guarantees one is present, so every mapped row has a truthy refName
     return lines
       .slice(1)
       .filter(cols => !!cols[ucscIdx] || !!cols[seqNameIdx])
@@ -42,6 +44,5 @@ export default class NcbiSequenceReportAliasAdapter
         ].filter((f): f is string => !!f),
         override,
       }))
-      .filter(f => !!f.refName)
   }
 }

@@ -56,3 +56,13 @@ test('adapter can fetch regions 4', async () => {
     { refName: 'ctgB', start: 50, end: 60 },
   ])
 })
+
+test('a fully-contained feature does not shrink the merged region', async () => {
+  const features = [
+    { uniqueId: 'big', refName: 'ctgA', start: 1, end: 100 },
+    { uniqueId: 'inner', refName: 'ctgA', start: 5, end: 10 },
+  ]
+  const adapter = new Adapter(regionsConfigSchema.create({ features }))
+  const result = await adapter.getRegions()
+  expect(result).toEqual([{ refName: 'ctgA', start: 1, end: 100 }])
+})

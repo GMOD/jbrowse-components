@@ -24,7 +24,9 @@ export function mergeFeaturesToRegions(features: Map<string, Feature[]>) {
         currentRegion.end >= feature.get('start') &&
         currentRegion.start <= feature.get('end')
       ) {
-        currentRegion.end = feature.get('end')
+        // take the max: a fully-contained feature (smaller end) must not
+        // shrink the merged region
+        currentRegion.end = Math.max(currentRegion.end, feature.get('end'))
       } else {
         if (currentRegion) {
           regions.push(currentRegion)
