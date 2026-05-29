@@ -2,20 +2,17 @@ import type { Dispatch, SetStateAction } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import { IconButton } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import type { TrackConfRow } from './buildConfigs.ts'
+import type { TrackStatus, TrackConfRow } from './buildConfigs.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   section: {
     marginTop: theme.spacing(2),
     height: 300,
-  },
-  unrecognized: {
-    color: theme.palette.error.main,
   },
 }))
 
@@ -24,7 +21,7 @@ interface PreviewGridRow {
   name: string
   type: string
   index: string
-  ok: boolean
+  status: TrackStatus
 }
 
 function detectedTypeLabel(row: TrackConfRow) {
@@ -54,7 +51,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     name: customNames[row.id] ?? row.name,
     type: detectedTypeLabel(row),
     index: row.indexName ?? 'auto',
-    ok: row.status === 'ok',
+    status: row.status,
   }))
 
   const columns: GridColDef<PreviewGridRow>[] = [
@@ -68,7 +65,14 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
       field: 'type',
       headerName: 'Detected type',
       flex: 1,
-      cellClassName: ({ row }) => (row.ok ? '' : classes.unrecognized),
+      renderCell: ({ row }) => (
+        <Typography
+          variant="body2"
+          color={row.status === 'ok' ? 'text.primary' : 'error'}
+        >
+          {row.type}
+        </Typography>
+      ),
     },
     {
       field: 'index',
