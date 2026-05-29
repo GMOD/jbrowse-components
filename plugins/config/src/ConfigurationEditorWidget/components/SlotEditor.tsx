@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
@@ -12,6 +10,7 @@ import BooleanEditor from './BooleanEditor.tsx'
 import CallbackEditor from './CallbackEditor.tsx'
 import ColorEditor from './ColorEditor.tsx'
 import ConfigurationTextField from './ConfigurationTextField.tsx'
+import IntegerEditor from './IntegerEditor.tsx'
 import JsonEditor from './JsonEditor.tsx'
 import NumberEditor from './NumberEditor.tsx'
 import NumberMapEditor from './NumberMapEditor.tsx'
@@ -78,34 +77,6 @@ const SvgCheckbox = () => (
     <path d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z" />
   </SvgIcon>
 )
-
-const IntegerEditor = observer(function IntegerEditor({
-  slot,
-}: {
-  slot: {
-    name: string
-    value: number
-    description: string
-    set: (num: number) => void
-  }
-}) {
-  const [val, setVal] = useState(String(slot.value))
-  return (
-    <ConfigurationTextField
-      label={slot.name}
-      helperText={slot.description}
-      value={val}
-      onChange={evt => {
-        const v = evt.target.value
-        setVal(v)
-        const num = Number.parseInt(v, 10)
-        if (!Number.isNaN(num)) {
-          slot.set(num)
-        }
-      }}
-    />
-  )
-})
 
 const StringEnumEditor = observer(function StringEnumEditor({
   slot,

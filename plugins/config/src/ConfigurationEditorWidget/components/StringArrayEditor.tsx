@@ -31,8 +31,11 @@ const StringArrayEditor = observer(function StringArrayEditor({
     <>
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
       <List disablePadding>
+        {/* index keys are safe here: inputs are fully controlled from
+            slot.value with no per-row state, and the list is never reordered.
+            keying by content would remount on every keystroke and drop focus */}
         {slot.value.map((val, idx) => (
-          <ListItem key={`${val}-${idx}`} disableGutters>
+          <ListItem key={idx} disableGutters>
             <TextField
               value={val}
               onChange={evt => {

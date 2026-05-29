@@ -36,7 +36,8 @@ function validateAndSetCode(
   setCodeError: (e: unknown) => void,
 ) {
   // empty buffer is "in progress", not invalid — don't commit and don't warn
-  if (code.trim() === '' || code.trim() === 'jexl:') {
+  const trimmed = code.trim()
+  if (trimmed === '' || trimmed === 'jexl:') {
     setCodeError(undefined)
     return
   }
