@@ -14,7 +14,7 @@ import { getFeatureDescription, getFeatureName } from './labelUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 import { aggregateAminos } from './peptides/aggregateAminoAcids.ts'
 import { isLabelAllowed } from './renderConfig.ts'
-import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
+import { getBoxColor, getStrokeColor, isCDS, isUTR } from './util.ts'
 
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
 import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
@@ -277,10 +277,9 @@ function emitExonRects(
     const childStart = childFeature.get('start')
     const childEnd = childFeature.get('end')
     const childIsUTR = isUTR(childFeature)
-    const childType = childFeature.get('type')
 
     const aminoAcids =
-      childType === 'CDS' && g2p && protein
+      isCDS(childFeature) && g2p && protein
         ? aggregateAminos(protein, g2p, childStart, childEnd, transcriptStrand)
         : undefined
 
@@ -453,8 +452,10 @@ function processFeatureRecord(
       processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
       break
     case 'Subfeatures':
-    case 'MatureProteinRegion':
       processSubfeaturesLayout(layout, flatbushIdx, ctx, collector)
+      break
+    case 'MatureProteinRegion':
+      processMatureProteinLayout(layout, flatbushIdx, ctx, collector)
       break
     case 'Box':
       processDefaultLayout(layout, flatbushIdx, ctx, collector)
@@ -489,6 +490,39 @@ function processSubfeaturesLayout(
         collector.rects,
       )
     }
+  }
+}
+
+// Viral polyproteins: a CDS whose mature_protein_region children tile the ORF,
+// stacked in rows by layoutMatureProteinRegion. Each child already carries its
+// own y/height; draw a strand arrow on the parent CDS when it is top-level so
+// it shows direction like every other glyph.
+function processMatureProteinLayout(
+  layout: FeatureLayout,
+  flatbushIdx: number,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { feature } = layout
+  for (const childLayout of layout.children) {
+    pushBoxRect(
+      childLayout.feature,
+      childLayout.y,
+      childLayout.height,
+      flatbushIdx,
+      ctx,
+      collector.rects,
+    )
+  }
+  if (!feature.parent?.()) {
+    emitStrandArrow(
+      feature,
+      0,
+      layout.height,
+      colorToUint32(strokeColor(feature, ctx)),
+      flatbushIdx,
+      collector.arrows,
+    )
   }
 }
 

@@ -1,3 +1,5 @@
+import { isCDS } from '../util.ts'
+
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -24,6 +26,29 @@ export function sortByPosition(children: FeatureLayout[]) {
 
 export function getFeatureHeightPx(config: DisplayConfig) {
   return config.featureHeight * HEIGHT_MULTIPLIERS[config.displayMode]
+}
+
+// Direct CDS child: picks the ProcessedTranscript layout (CDS + implied UTRs)
+export function hasCDSSubfeature(feature: Feature) {
+  return (feature.get('subfeatures') ?? []).some(isCDS)
+}
+
+// Direct child that is itself a container (has its own subfeatures). This is
+// what distinguishes a feature whose children are multi-part glyphs needing
+// their own rows (gene → transcripts) from one whose children are leaves that
+// share a single row (match → segments).
+export function hasContainerChildren(feature: Feature) {
+  return (feature.get('subfeatures') ?? []).some(
+    (sub: Feature) => sub.get('subfeatures')?.length,
+  )
+}
+
+// CDS anywhere in the subtree: ranks coding transcripts ahead of non-coding
+// ones when stacking, so they render on top
+export function hasCodingSubfeature(feature: Feature): boolean {
+  return (feature.get('subfeatures') ?? []).some(
+    (sub: Feature) => isCDS(sub) || hasCodingSubfeature(sub),
+  )
 }
 
 // Used by main-thread label-fit math in LinearBasicDisplay/layout.ts —

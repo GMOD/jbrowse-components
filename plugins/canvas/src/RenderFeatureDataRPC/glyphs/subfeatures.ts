@@ -1,20 +1,11 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
 import { findGlyph } from './findGlyph.ts'
-import { getFeatureHeightPx } from './glyphUtils.ts'
+import { getFeatureHeightPx, hasCodingSubfeature } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const TRANSCRIPT_PADDING = 2
-const CODING_TYPES = new Set(['CDS', 'cds'])
-
-function hasCodingSubfeature(feature: Feature): boolean {
-  const subfeatures = feature.get('subfeatures') ?? []
-  return subfeatures.some(
-    (sub: Feature) =>
-      CODING_TYPES.has(sub.get('type') ?? '') || hasCodingSubfeature(sub),
-  )
-}
 
 function filterByGeneGlyphMode(
   subfeatures: Feature[],

@@ -66,15 +66,17 @@ export async function executeRenderFeatureData({
   checkStopToken2(stopTokenCheck)
 
   if (showOnlyGenes) {
-    const geneLikeTypes = new Set<string>([
-      ...displayConfig.transcriptTypes,
-      ...displayConfig.containerTypes,
-      'gene',
-      'pseudogene',
-      'CDS',
-    ])
+    const geneLikeTypes = new Set<string>(
+      [
+        ...displayConfig.transcriptTypes,
+        ...displayConfig.containerTypes,
+        'gene',
+        'pseudogene',
+        'CDS',
+      ].map(t => t.toLowerCase()),
+    )
     featuresArray = featuresArray.filter(f =>
-      geneLikeTypes.has(f.get('type') ?? ''),
+      geneLikeTypes.has((f.get('type') ?? '').toLowerCase()),
     )
   }
 

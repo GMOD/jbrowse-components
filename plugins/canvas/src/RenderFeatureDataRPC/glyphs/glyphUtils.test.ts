@@ -196,6 +196,19 @@ describe('findGlyph', () => {
     ).toBe('Subfeatures')
   })
 
+  it('routes a transcript with a lowercase cds child to ProcessedTranscript', () => {
+    const feature = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 1000,
+      subfeatures: [mockFeature({ type: 'cds', start: 100, end: 900 })],
+    })
+    const config = mockDisplayConfig()
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('ProcessedTranscript')
+  })
+
   it('returns Box for leaf features', () => {
     const feature = mockFeature({ type: 'match', start: 0, end: 100 })
     const config = mockDisplayConfig()

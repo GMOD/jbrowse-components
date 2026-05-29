@@ -1,6 +1,6 @@
 import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
-import { isUTR } from './util.ts'
+import { isCDS, isUTR } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 
@@ -39,7 +39,7 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   let haveRightUTR: boolean | undefined
 
   for (const sub of subparts) {
-    if (sub.get('type') === 'CDS') {
+    if (isCDS(sub)) {
       const start = sub.get('start')
       const end = sub.get('end')
       if (start < codeStart) {
@@ -129,7 +129,10 @@ export function getSubparts(f: Feature, config: DisplayConfig) {
     return []
   }
   const hasUTRs = c.some(child => isUTR(child))
-  const isTranscript = ['mRNA', 'transcript'].includes(f.get('type') ?? '')
+  // Use the configured transcriptTypes (which includes primary_transcript by
+  // default) rather than a separate hardcoded list, so every type that routes
+  // to this layout can also get implied UTRs.
+  const isTranscript = config.transcriptTypes.includes(f.get('type') ?? '')
   const impliedUTRs = !hasUTRs && isTranscript
 
   if (impliedUTRs || config.impliedUTRs) {

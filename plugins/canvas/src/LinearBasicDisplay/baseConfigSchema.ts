@@ -134,22 +134,10 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
           contextVariable: ['feature'],
         },
-        nameColor: {
-          type: 'color',
-          description: 'the color of the name label',
-          defaultValue: THEME_DERIVED_COLOR,
-          contextVariable: ['feature'],
-        },
         description: {
           type: 'string',
           description: 'the text description to show',
           defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
-          contextVariable: ['feature'],
-        },
-        descriptionColor: {
-          type: 'color',
-          description: 'the color of the description',
-          defaultValue: 'blue',
           contextVariable: ['feature'],
         },
       }),

@@ -19,9 +19,7 @@ export function mockDisplayConfig(
     outline: '',
     labels: {
       name: '',
-      nameColor: '#f0f',
       description: '',
-      descriptionColor: 'blue',
     },
     ...overrides,
   }

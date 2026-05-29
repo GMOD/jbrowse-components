@@ -106,13 +106,13 @@ describe('LinearBasicDisplay configSchema', () => {
       {
         displayId: 'test',
         type: 'LinearBasicDisplay',
-        labels: { nameColor: 'red' },
+        labels: { name: "jexl:get(feature,'gene_name')" },
       },
       { pluginManager: pm },
     )
     const snap = readConfObject(config)
     expect(snap.labels).toBeDefined()
-    expect(snap.labels.nameColor).toBe('red')
+    expect(snap.labels.name).toBe("jexl:get(feature,'gene_name')")
   })
 
   it('readConfObject with specific key reads from slot correctly', () => {

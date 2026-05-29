@@ -22,6 +22,13 @@ export function isUTR(feature: Feature) {
   return UTR_REGEX.test(feature.get('type') ?? '')
 }
 
+// Case-insensitive: GFF3 mandates uppercase `CDS`, but lowercase `cds` shows up
+// in real-world files. Centralizing avoids the dispatch path matching one case
+// and the layout path matching another.
+export function isCDS(feature: Feature) {
+  return feature.get('type')?.toLowerCase() === 'cds'
+}
+
 export function getBoxColor({
   feature,
   config,

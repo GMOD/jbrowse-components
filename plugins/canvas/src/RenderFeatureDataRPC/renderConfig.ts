@@ -1,11 +1,9 @@
 export { readConfigValue } from '@jbrowse/core/configuration'
 
-// Sentinel used as the config default for color2 (stroke) and labels.nameColor
-// to mean "derive from theme text colour". The runtime check in getStrokeColor
-// compares against this exact string. Using a named constant here makes both
-// sides of the contract explicit. Note: labels.nameColor / descriptionColor are
-// defined in the schema but not yet read by the renderer (floatingLabels.ts
-// uses hardcoded colours); they exist for future per-feature colour support.
+// Sentinel used as the config default for color2 (stroke) to mean "derive from
+// theme text colour". The runtime check in getStrokeColor compares against this
+// exact string. Using a named constant here makes both sides of the contract
+// explicit.
 export const THEME_DERIVED_COLOR = '#f0f'
 
 export interface DisplayConfig {
@@ -30,9 +28,7 @@ export interface DisplayConfig {
   outline: string
   labels: {
     name: string
-    nameColor: string
     description: string
-    descriptionColor: string
   }
 }
 
