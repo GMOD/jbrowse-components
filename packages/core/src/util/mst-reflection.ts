@@ -1,4 +1,5 @@
 import {
+  getUnionSubtypes,
   isArrayType,
   isLateType,
   isMapType,
@@ -10,8 +11,10 @@ import type {
   IAnyComplexType,
   IAnyType,
   IModelReflectionPropertiesData,
+  IOptionalIType,
   ISimpleType,
   UnionStringArray,
+  ValidOptionalValues,
 } from '@jbrowse/mobx-state-tree'
 
 export interface ILiteralType<T> extends ISimpleType<T> {
@@ -23,14 +26,6 @@ export interface ILiteralType<T> extends ISimpleType<T> {
 // real subtype is an IAnyType object, never a string or null.
 function isSubType(t: unknown): t is IAnyType {
   return typeof t === 'object' && t !== null
-}
-
-// getDefaultInstanceOrSnapshot() is a real public method on the optional type at
-// runtime but isn't declared on the published @jbrowse/mobx-state-tree type
-// interface, so it's reached through a typed accessor. A fork release that
-// surfaces it on the optional type interface will let this drop to a plain call.
-interface DefaultValueReflection {
-  getDefaultInstanceOrSnapshot: () => { type: string }
 }
 
 /**
@@ -50,18 +45,10 @@ export function getSubType(type: IAnyType): IAnyType {
 }
 
 /**
- * get the array of the subtypes in a union
+ * get the array of the subtypes in a union (drills through optional/refinement/
+ * late wrappers that inherit the union flag)
  */
-export function getUnionSubTypes(unionType: IAnyType): IAnyType[] {
-  if (!isUnionType(unionType)) {
-    throw new TypeError('not an MST union type')
-  }
-  const t = unionType.getSubTypes()
-  if (!Array.isArray(t)) {
-    throw new Error('failed to extract subtypes from mst union')
-  }
-  return t
-}
+export { getUnionSubtypes as getUnionSubTypes }
 
 /**
  * get the type of one of the properties of the given MST model type
@@ -80,7 +67,11 @@ export function getDefaultValue(type: IAnyType) {
   if (!isOptionalType(type)) {
     throw new TypeError('type must be an optional type')
   }
-  return (type as unknown as DefaultValueReflection).getDefaultInstanceOrSnapshot()
+  // isOptionalType is a same-type guard, so narrow to the optional interface
+  // that publishes getDefaultInstanceOrSnapshot
+  return (
+    type as IOptionalIType<IAnyType, ValidOptionalValues>
+  ).getDefaultInstanceOrSnapshot()
 }
 
 export type IEnumerationType<T extends string> = ISimpleType<
@@ -89,7 +80,7 @@ export type IEnumerationType<T extends string> = ISimpleType<
 
 /** get the string values of an MST enumeration type */
 export function getEnumerationValues(type: IAnyComplexType) {
-  const subtypes = getUnionSubTypes(type) as ILiteralType<string>[]
+  const subtypes = getUnionSubtypes(type) as ILiteralType<string>[]
   // the subtypes should all be literals with a value member
   return subtypes.map(t => t.value)
 }

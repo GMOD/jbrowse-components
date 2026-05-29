@@ -36,7 +36,6 @@ exports[`export session with alignments and gff tracks 1`] = `
                 "drawSingletons": true,
                 "flipStrandLongReadChains": true,
                 "id": "test-id-2",
-                "jexlFilters": [],
                 "linkedReads": "off",
                 "pairedArcs": "off",
                 "sashimiArcs": "up",

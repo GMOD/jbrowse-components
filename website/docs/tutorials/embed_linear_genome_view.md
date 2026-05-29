@@ -7,6 +7,16 @@ This tutorial embeds a single JBrowse linear genome view into a web page using a
 `<script>` tag — no build step or React project required. For the full JBrowse
 app, see the [web quickstart](/docs/quickstart_web) instead.
 
+:::tip Usage examples and API reference
+
+The [LGV Storybook](https://jbrowse.org/storybook/lgv/main/) is the most complete
+source of live, runnable usage examples for this component — props, theming,
+programmatic control, plugins, and more. For an overview of all the embedded
+packages (app, linear, circular) and bundler setups, see the
+[Embedded components](/docs/embedded_components) page.
+
+:::
+
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
 ## What you need
@@ -225,7 +235,7 @@ const state = createViewState({
           type: 'TrixTextSearchAdapter',
           textSearchAdapterId: 'gff3tabix_genes-index',
           uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
-          assemblyNames: ['GRCh38'],
+          assemblyNames: ['hg38'],
         },
       },
     },
@@ -358,6 +368,10 @@ customizing it, and more. Here is some further reading
 
 - Storybook documentation for the linear genome view component, which describes
   many of the customizations you can do https://jbrowse.org/storybook/lgv/main/
+
+- The [Embedded components](/docs/embedded_components) page, which lists every
+  embedded package (app, linear, circular) and ready-to-clone bundler demos
+  (Vite, Next.js, rsbuild, vanilla JS)
 
 - You can also see the "@jbrowse/react-app2" component, which is like this
   tutorial, but it allows loading multiple assemblies, showing synteny, etc

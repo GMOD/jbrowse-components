@@ -22,10 +22,12 @@ color: types.optional(types.union(JexlStringType, ColorType), 'black')
 ```
 
 Per-slot **metadata** (`description`, `type`, `contextVariable`, `defaultValue`)
-moves off every instance into one plain-JS table attached to the schema type —
-`jbrowseSchemaDefinition` is already stashed there (`configurationSchema.ts`).
-The editor reads metadata from that table; renderers/`readConfObject` read the
-raw value and evaluate `jexl:` strings.
+moves off every instance into one plain-JS table attached to the schema type.
+**This table essentially already exists**: `ConfigurationSchema` stashes the raw
+slot definitions on the type as `jbrowseSchemaDefinition` (`configurationSchema.ts`),
+and each entry is a `ConfigSlotDefinition` carrying exactly `type`/`description`/
+`defaultValue`/`contextVariable`/`model`. The editor reads metadata from that
+table; renderers/`readConfObject` read the raw value and evaluate `jexl:` strings.
 
 ## Why it's feasible (the load-bearing facts)
 
@@ -58,11 +60,19 @@ Verified against the current tree:
 - **`convertToCallback` / `convertToValue` / `valueJSON`.** Become free functions
   `(currentValue, type, defaultValue) => ...` that the editor calls instead of
   `slot.method()`. ~25+8 sites, nearly all in `plugins/config`.
-- **`isConfigSlot` discriminator on the hot read path.** `readConfObject`
-  distinguishes slot-vs-subschema by `.getValue` presence today. Without
-  wrappers it keys off the schema metadata table. This is the one change that
-  touches the per-feature read path → **must be benchmarked** (GPU/Canvas
-  per-feature color/height callbacks).
+- **`isConfigSlot` discriminator on the hot read path.** Two consumers in
+  `util.ts` distinguish slot-vs-subschema by `.getValue` presence today:
+  `readConfObject` (line 79) and `getConfSnapshot` (line 127). Without wrappers
+  both key off the schema metadata table. This is the change that touches the
+  per-feature read path → **must be benchmarked** (GPU/Canvas per-feature
+  color/height callbacks). Note the read path must also thread arbitrary `args`
+  to jexl `eval` (not just `{feature}` like `readConfigValue` does today).
+- **Three property categories, not two.** A schema property is a slot, a nested
+  sub-schema, OR a `volatileConstant` (string/number schema entries exposed as
+  `model.someName`, see `configurationSchema.ts` `volatileConstants`). The
+  metadata table / discriminator must keep all three distinct. Slots with a
+  custom `ConfigSlotDefinition.model` (not a builtin type) also need the union
+  `union(JexlString, customModel)` preserved verbatim.
 - **`stringArray.add/removeAtIndex`, `numberMap.add/remove` (5 sites).** Become
   plain MST array/map actions on the parent, or a generic `config.setSlot(name,
   val)` action.
