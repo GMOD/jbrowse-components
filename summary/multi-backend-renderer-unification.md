@@ -1,4 +1,4 @@
-# Multi-Backend Renderer Unification Investigation
+# Multi-RenderingBackend Renderer Unification Investigation
 
 Date: 2026-03-26 Branch: webgl-poc
 
@@ -19,7 +19,7 @@ once and have it target all three?
 - `canvasShaders.ts` (~355 lines) — WGSL shader source for WebGPU
 - `CanvasFeatureRenderer.ts` (~103 lines) — Orchestrator, tries WebGPU then
   WebGL2 then Canvas2D
-- All backends implement the `CanvasFeatureBackend` interface (`uploadRegion`,
+- All backends implement the `CanvasFeatureRenderingBackend` interface (`uploadRegion`,
   `renderBlocks`, `pruneStaleRegions`, `dispose`)
 
 All backends draw the same 4 primitives: rectangles, lines, chevrons, arrows.
@@ -35,7 +35,7 @@ small "shader bits" (composable fragments), then assemble them into full shaders
 via templates. Their architecture:
 
 - Shared abstractions: Geometry, Buffer, Shader, State classes
-- Backend Systems: GlBufferSystem vs GpuBufferSystem, etc.
+- RenderingBackend Systems: GlBufferSystem vs GpuBufferSystem, etc.
 - Adaptors: Convert generic "draw batch" instructions into backend-specific
   calls
 - Auto-detection: dynamically imports only the needed renderer
@@ -111,11 +111,11 @@ dimensions, min rect width, etc.). Extract these into a shared file. This:
 - Takes ~30 minutes, zero risk
 - Keeps backends free to optimize independently
 
-The current architecture (`CanvasFeatureBackend` interface with 3 independent
+The current architecture (`CanvasFeatureRenderingBackend` interface with 3 independent
 implementations) is already the right pattern — it's the strategy pattern that
 PixiJS also uses at its highest level.
 
-## Key Structural Differences Between Backends (why unification is hard)
+## Key Structural Differences Between RenderingBackends (why unification is hard)
 
 | Aspect          | WebGPU                        | WebGL2                         | Canvas2D               |
 | --------------- | ----------------------------- | ------------------------------ | ---------------------- |

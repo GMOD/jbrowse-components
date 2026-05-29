@@ -4,7 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
+import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

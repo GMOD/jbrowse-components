@@ -3,7 +3,7 @@ import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
 import type {
   DotplotGeometryData,
   DotplotRenderState,
-} from './dotplotBackendTypes.ts'
+} from './dotplotRenderingBackendTypes.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 

@@ -1,4 +1,4 @@
-import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
+import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'
@@ -11,7 +11,7 @@ export type { FetchContext } from './FetchMixin.ts'
  * HiC contact matrix, LD triangle, variant matrix, etc.
  *
  * Composes:
- *   - GpuLifecycleMixin (attachBackend, renderNow, …)
+ *   - RenderLifecycleMixin (attachRenderingBackend, renderNow, …)
  *   - RegionTooLargeMixin (regionTooLarge, regionCannotBeRendered, …)
  *   - FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
  *                 fetchGeneration)
@@ -26,14 +26,14 @@ export type { FetchContext } from './FetchMixin.ts'
  *
  * extends
  * - [RegionTooLargeMixin](../regiontoolargemixin)
- * - [GpuLifecycleMixin](../gpulifecyclemixin)
+ * - [RenderLifecycleMixin](../gpulifecyclemixin)
  * - [FetchMixin](../fetchmixin)
  */
 export default function GlobalDataDisplayMixin() {
   return types.compose(
     'GlobalDataDisplayMixin',
     RegionTooLargeMixin(),
-    GpuLifecycleMixin(),
+    RenderLifecycleMixin(),
     FetchMixin(),
     types.model({}),
   )

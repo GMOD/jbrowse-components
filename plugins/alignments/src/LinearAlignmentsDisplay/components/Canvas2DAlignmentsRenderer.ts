@@ -5,7 +5,7 @@ import {
 
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
-  type AlignmentsBackend,
+  type AlignmentsRenderingBackend,
   type AlignmentsSources,
   type CigarUploadData,
   type DrawBlock,
@@ -228,7 +228,7 @@ export function drawAlignmentsToCtx(
  * and export can't drift. `renderBlocks` paints via the pure
  * `drawAlignmentBlocks` entry point.
  */
-export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
+export class Canvas2DAlignmentsRenderer implements AlignmentsRenderingBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private regions: ReadonlyMap<number, Canvas2DRegionData> = new Map()
@@ -283,7 +283,7 @@ export function drawAlignmentBlocks(
 
   const { effectiveArcsHeight, covH } = computeBlockHeights(state)
   const pileupTop = state.pileupTopOffset
-  const arcsDown = state.pairedArcs === 'down'
+  const arcsDown = !!state.pairedConnectionsDown
 
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)

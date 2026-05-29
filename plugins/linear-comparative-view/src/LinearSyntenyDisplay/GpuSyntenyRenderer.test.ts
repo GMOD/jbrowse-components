@@ -4,7 +4,7 @@ import { MockHal } from '../../../../packages/core/src/gpu/hal/mockHal.ts'
 import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
-} from './syntenyBackendTypes.ts'
+} from './syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 function makeMockCanvas(width = 800, height = 100): HTMLCanvasElement {

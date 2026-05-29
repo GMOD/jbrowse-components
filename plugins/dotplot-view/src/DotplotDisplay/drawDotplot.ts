@@ -1,6 +1,6 @@
 import { unpackColorToCSS } from './dotplotColors.ts'
 
-import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
+import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export interface DotplotDrawParams {

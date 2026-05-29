@@ -46,7 +46,7 @@ import {
   ARC_DIRECTION_OPTIONS,
   COMPACTNESS_PRESETS,
   LINKED_READS_OPTIONS,
-  PAIRED_ARCS_OPTIONS,
+  PAIRED_CONNECTIONS_OPTIONS,
   getColorByMenuItem,
   getCoverageMenuItem,
   getFiltersMenuItem,
@@ -63,10 +63,10 @@ import type { ColorPalette } from './components/AlignmentsRenderer.ts'
 import type {
   ArcDirection,
   LinkedReadsMode,
-  PairedArcsMode,
+  PairedConnectionsMode,
 } from './constants.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
-import type { AlignmentsBackend } from './components/rendererTypes.ts'
+import type { AlignmentsRenderingBackend } from './components/rendererTypes.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { ArcsDataResult } from '../features/arcs/compute.ts'
@@ -304,16 +304,21 @@ export default function stateModelFactory(
           ),
           /**
            * #property
+           * paired-end connection rendering mode (orthogonal to direction)
            */
-          pairedArcs: types.optional(
-            types.enumeration<PairedArcsMode>('PairedArcsMode', [
+          pairedConnections: types.optional(
+            types.enumeration<PairedConnectionsMode>('PairedConnectionsMode', [
               'off',
-              'up',
-              'down',
+              'arc',
               'samplot',
             ]),
             'off',
           ),
+          /**
+           * #property
+           * draw paired connections below the coverage band instead of over it
+           */
+          pairedConnectionsDown: false,
           /**
            * #property
            */
@@ -668,7 +673,7 @@ export default function stateModelFactory(
           return getReadDisplayLegendItems(
             this.colorBy,
             undefined,
-            self.pairedArcs === 'samplot',
+            self.pairedConnections === 'samplot',
           )
         },
 
@@ -709,7 +714,7 @@ export default function stateModelFactory(
          * #getter
          */
         get arcsComputed() {
-          if (self.pairedArcs === 'off' || self.rpcDataMap.size === 0) {
+          if (self.pairedConnections === 'off' || self.rpcDataMap.size === 0) {
             return undefined
           }
           const regionInfos = [...self.loadedRegions.entries()]
@@ -725,7 +730,7 @@ export default function stateModelFactory(
             regionInfos,
             {
               colorByType: self.arcColorByType,
-              samplot: self.pairedArcs === 'samplot',
+              samplot: self.pairedConnections === 'samplot',
               drawInter: self.drawInter,
               drawLongRange: self.drawLongRange,
             },
@@ -864,7 +869,9 @@ export default function stateModelFactory(
         get coverageDisplayHeight() {
           return (
             (self.showCoverage ? self.coverageHeight : 0) +
-            (self.pairedArcs === 'down' ? self.arcsHeight : 0) +
+            (self.pairedConnections !== 'off' && self.pairedConnectionsDown
+              ? self.arcsHeight
+              : 0) +
             (self.sashimiArcs === 'down' && self.showCoverage
               ? self.sashimiArcsHeight
               : 0)
@@ -1031,7 +1038,8 @@ export default function stateModelFactory(
             showModifications: self.showModifications,
             showPerBaseQuality: self.showPerBaseQuality,
             showOutline: self.showOutlineSetting,
-            pairedArcs: self.pairedArcs,
+            pairedConnections: self.pairedConnections,
+            pairedConnectionsDown: self.pairedConnectionsDown,
             arcsHeight: self.arcsHeight,
             pileupTopOffset: self.coverageDisplayHeight,
             canvasWidth: view.width,
@@ -1053,7 +1061,7 @@ export default function stateModelFactory(
          * #getter
          */
         get arcsYDomainBp() {
-          if (self.pairedArcs !== 'samplot') {
+          if (self.pairedConnections !== 'samplot') {
             return undefined
           }
           let maxBp = 0
@@ -1073,15 +1081,25 @@ export default function stateModelFactory(
           if (domain === undefined) {
             return undefined
           }
-          // Samplot always overlays the coverage band pointing-up — the
-          // arcsYDomainBp guard above ensures this getter only runs in
-          // samplot mode. Fall back to 0 when coverage is hidden.
-          return computeInsertSizeTicks({
-            arcsYDomainBp: domain,
-            arcsHeight: self.showCoverage ? self.coverageHeight : 0,
-            pairedArcsDown: false,
-            arcsTop: 0,
-          })
+          // arcsYDomainBp is only set in samplot mode, so this runs only then.
+          // Up: overlay the coverage band, anchored at its top. Down: open an
+          // arcsHeight band below coverage, anchored below it.
+          const covH = self.showCoverage ? self.coverageHeight : 0
+          return computeInsertSizeTicks(
+            self.pairedConnectionsDown
+              ? {
+                  arcsYDomainBp: domain,
+                  arcsHeight: self.arcsHeight,
+                  pairedArcsDown: true,
+                  arcsTop: covH,
+                }
+              : {
+                  arcsYDomainBp: domain,
+                  arcsHeight: covH,
+                  pairedArcsDown: false,
+                  arcsTop: 0,
+                },
+          )
         },
       }))
       .views(self => ({
@@ -1442,8 +1460,15 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setPairedArcs(mode: PairedArcsMode) {
-            self.pairedArcs = mode
+          setPairedConnections(mode: PairedConnectionsMode) {
+            self.pairedConnections = mode
+          },
+
+          /**
+           * #action
+           */
+          setPairedConnectionsDown(down: boolean) {
+            self.pairedConnectionsDown = down
           },
 
           /**
@@ -1693,8 +1718,8 @@ export default function stateModelFactory(
         /**
          * #action
          */
-        startBackend(backend: AlignmentsBackend) {
-          self.attachBackend<AlignmentsBackend>(backend, {
+        startRenderingBackend(backend: AlignmentsRenderingBackend) {
+          self.attachRenderingBackend<AlignmentsRenderingBackend>(backend, {
             upload: b => {
               b.sync({
                 laidOutPileupMap: self.laidOutPileupMap,
@@ -1884,14 +1909,14 @@ export default function stateModelFactory(
                   },
                 ),
                 radioModeMenuItem(
-                  'Paired arcs',
-                  PAIRED_ARCS_OPTIONS,
-                  self.pairedArcs,
+                  'Paired connections',
+                  PAIRED_CONNECTIONS_OPTIONS,
+                  self.pairedConnections,
                   v => {
-                    self.setPairedArcs(v)
+                    self.setPairedConnections(v)
                   },
                 ),
-                ...(self.pairedArcs !== 'off'
+                ...(self.pairedConnections !== 'off'
                   ? [
                       {
                         label: 'Show long-range pairs',
@@ -1911,6 +1936,21 @@ export default function stateModelFactory(
                         checked: self.drawInter,
                         onClick: () => {
                           self.setDrawInter(!self.drawInter)
+                        },
+                      },
+                    ]
+                  : []),
+                ...(self.pairedConnections !== 'off'
+                  ? [
+                      {
+                        label: 'Point downward',
+                        subLabel: 'draw connections below the coverage band',
+                        type: 'checkbox' as const,
+                        checked: self.pairedConnectionsDown,
+                        onClick: () => {
+                          self.setPairedConnectionsDown(
+                            !self.pairedConnectionsDown,
+                          )
                         },
                       },
                     ]

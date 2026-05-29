@@ -7,9 +7,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type {
-  VariantBackend,
+  VariantRenderingBackend,
   VariantUploadData,
-} from './components/variantBackendTypes.ts'
+} from './components/variantRenderingBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -103,8 +103,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      startBackend(backend: VariantBackend) {
-        self.attachBackend<VariantBackend>(backend, {
+      startRenderingBackend(backend: VariantRenderingBackend) {
+        self.attachRenderingBackend<VariantRenderingBackend>(backend, {
           upload: b => {
             const active: number[] = []
             for (const [n, v] of self.perRegionCellMap) {

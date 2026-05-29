@@ -11,7 +11,7 @@ real VCFs). Inside them:
 - no `??`/`||` fallbacks wrapping allocating right-sides
 
 Applies to `computeVariantCells.ts`, `computeVariantMatrixCells.ts`, and
-`attachBackend` upload/render callbacks touching per-cell data. NOT to:
+`attachRenderingBackend` upload/render callbacks touching per-cell data. NOT to:
 `perRegionCellData` iteration (1-3 regions), one-shot actions (sort, hover), UI,
 or VCF-parse / RPC-arg-shaping (amortized). Don't apply it everywhere — the rest
 of the codebase prefers declarative iteration.

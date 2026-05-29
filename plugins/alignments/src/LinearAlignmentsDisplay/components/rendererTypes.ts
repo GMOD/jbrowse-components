@@ -1,7 +1,7 @@
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { LinkedReadsMode, PairedArcsMode } from '../constants.ts'
+import type { LinkedReadsMode, PairedConnectionsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
@@ -52,7 +52,8 @@ export interface RenderState {
   // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
   arcsYDomainBp?: number
-  pairedArcs: PairedArcsMode
+  pairedConnections: PairedConnectionsMode
+  pairedConnectionsDown?: boolean
   arcsHeight?: number
   pileupTopOffset: number
   showOutline?: boolean
@@ -63,7 +64,7 @@ export interface AlignmentsSources {
   arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
 }
 
-export interface AlignmentsBackend {
+export interface AlignmentsRenderingBackend {
   sync(sources: AlignmentsSources): void
   renderBlocks(blocks: RenderBlock[], state: RenderState): boolean
   dispose(): void
@@ -87,7 +88,9 @@ export function ensureRegion<T>(
 export function computeBlockHeights(state: RenderState) {
   return {
     effectiveArcsHeight:
-      state.pairedArcs !== 'off' && state.arcsHeight ? state.arcsHeight : 0,
+      state.pairedConnections !== 'off' && state.arcsHeight
+        ? state.arcsHeight
+        : 0,
     covH: state.showCoverage ? state.coverageHeight : 0,
   }
 }

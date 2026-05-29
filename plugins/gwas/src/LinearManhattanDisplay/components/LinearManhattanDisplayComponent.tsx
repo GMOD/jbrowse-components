@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { useGpuBackend } from '@jbrowse/core/util/useGpuBackend'
+import { useRenderingBackend } from '@jbrowse/core/util/useRenderingBackend'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
@@ -34,7 +34,7 @@ const LinearManhattanDisplayComponent = observer(
   }: {
     model: ManhattanDisplayModel
   }) {
-    const { canvasRef, error, retry } = useGpuBackend(ManhattanRenderer, model)
+    const { canvasRef, error, retry } = useRenderingBackend(ManhattanRenderer, model)
     const view = getContainingView(model) as LGV
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
 

@@ -1,6 +1,6 @@
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 
-import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 

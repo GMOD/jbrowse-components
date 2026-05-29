@@ -1,7 +1,7 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-export interface BackendCallbacks<B> {
+export interface RenderingBackendCallbacks<B> {
   upload: (backend: B) => void
   /**
    * Issue draw calls for the current frame. Return `true` if something was
@@ -19,18 +19,18 @@ export interface BackendCallbacks<B> {
  *
  * Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
  * `GlobalDataDisplayMixin`) and call
- * `self.attachBackend(backend, { upload, render })` from their own
- * `startBackend(backend)` action. The mixin owns:
+ * `self.attachRenderingBackend(backend, { upload, render })` from their own
+ * `startRenderingBackend(backend)` action. The mixin owns:
  *
  *  - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes to detect first paint.
- *  - `currentBackend` — the backend reference, updated on context-loss
+ *  - `currentRenderingBackend` — the backend reference, updated on context-loss
  *    recovery. Autoruns read it each tick so they re-fire against the new
  *    one without being reinstalled.
  *  - `renderTick` — counter the render autorun observes; bumped by
  *    `renderNow()` (tab-visibility restore) and after every upload
  *    (ensures render re-fires when an upload happens but renderState
  *    identity stays stable).
- *  - `autorunsInstalled` — guards `attachBackend` so the autorun
+ *  - `autorunsInstalled` — guards `attachRenderingBackend` so the autorun
  *    pair is spawned once per model instance, not once per backend
  *    assignment.
  *
@@ -40,12 +40,12 @@ export interface BackendCallbacks<B> {
  * backend actually painted content (flips `canvasDrawn`), `false` to skip
  * this tick (e.g. `renderState` not yet computed or no regions loaded).
  *
- * #stateModel GpuLifecycleMixin
+ * #stateModel RenderLifecycleMixin
  * #category display
  */
-export function GpuLifecycleMixin() {
+export function RenderLifecycleMixin() {
   return types
-    .model('GpuLifecycle', {})
+    .model('RenderLifecycle', {})
     .volatile(() => ({
       /**
        * #volatile
@@ -57,7 +57,7 @@ export function GpuLifecycleMixin() {
        * current backend reference, updated on context-loss recovery
        */
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      currentBackend: undefined as unknown,
+      currentRenderingBackend: undefined as unknown,
       /**
        * #volatile
        * counter the render autorun observes; bumped to force a re-render
@@ -65,7 +65,7 @@ export function GpuLifecycleMixin() {
       renderTick: 0,
       /**
        * #volatile
-       * guards attachBackend so the autorun pair spawns once per instance
+       * guards attachRenderingBackend so the autorun pair spawns once per instance
        */
       autorunsInstalled: false,
     }))
@@ -89,8 +89,8 @@ export function GpuLifecycleMixin() {
       /**
        * #action
        */
-      stopBackend() {
-        self.currentBackend = undefined
+      stopRenderingBackend() {
+        self.currentRenderingBackend = undefined
         self.canvasDrawn = false
       },
       /**
@@ -108,9 +108,9 @@ export function GpuLifecycleMixin() {
        */
       // `cbs` is captured permanently by the autoruns on first call.
       // Re-calling with a new backend (context-loss recovery) updates
-      // `currentBackend` only — `cbs` from the first call stay in effect.
-      attachBackend<B>(backend: B, cbs: BackendCallbacks<B>) {
-        self.currentBackend = backend
+      // `currentRenderingBackend` only — `cbs` from the first call stay in effect.
+      attachRenderingBackend<B>(backend: B, cbs: RenderingBackendCallbacks<B>) {
+        self.currentRenderingBackend = backend
         if (self.autorunsInstalled) {
           return
         }
@@ -119,7 +119,7 @@ export function GpuLifecycleMixin() {
           self,
           autorun(
             () => {
-              const b = self.currentBackend as B | undefined
+              const b = self.currentRenderingBackend as B | undefined
               if (b === undefined) {
                 return
               }
@@ -133,14 +133,14 @@ export function GpuLifecycleMixin() {
               // shifts a render dep.
               self.renderNow()
             },
-            { name: 'GpuLifecycle:upload' },
+            { name: 'RenderLifecycle:upload' },
           ),
         )
         addDisposer(
           self,
           autorun(
             () => {
-              const b = self.currentBackend as B | undefined
+              const b = self.currentRenderingBackend as B | undefined
               void self.renderTick
               if (b === undefined) {
                 return
@@ -149,7 +149,7 @@ export function GpuLifecycleMixin() {
                 self.markCanvasDrawn()
               }
             },
-            { name: 'GpuLifecycle:render' },
+            { name: 'RenderLifecycle:render' },
           ),
         )
       },

@@ -1,6 +1,6 @@
 import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { GpuPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import {
@@ -17,7 +17,7 @@ import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
 import type {
   FeatureRenderBlock,
   RenderState,
-} from './canvasFeatureBackendTypes.ts'
+} from './canvasFeatureRenderingBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
@@ -82,7 +82,7 @@ function drawRegionBlock(
   hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
 }
 
-export class GpuCanvasFeatureRenderer extends GpuPerRegionBackend<
+export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
   RegionRenderData,
   RenderState
 > {

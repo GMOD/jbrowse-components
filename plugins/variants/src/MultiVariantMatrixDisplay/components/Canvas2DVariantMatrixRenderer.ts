@@ -1,11 +1,11 @@
 import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import { Canvas2DGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import type {
   MatrixRenderState,
   VariantMatrixUploadData,
-} from './variantMatrixBackendTypes.ts'
+} from './variantMatrixRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
@@ -42,7 +42,7 @@ export function drawVariantMatrixBlocks(
   }
 }
 
-export class Canvas2DVariantMatrixRenderer extends Canvas2DMonolithicBackend<
+export class Canvas2DVariantMatrixRenderer extends Canvas2DGlobalRenderingBackend<
   VariantMatrixUploadData,
   MatrixRenderState
 > {

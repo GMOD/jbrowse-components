@@ -1,4 +1,4 @@
-import { createBackend } from '@jbrowse/core/gpu/createBackend'
+import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
 
 import { Canvas2DFeatureRenderer } from './Canvas2DFeatureRenderer.ts'
 import {
@@ -7,12 +7,12 @@ import {
   GpuCanvasFeatureRenderer,
 } from './GpuCanvasFeatureRenderer.ts'
 
-export { type FeatureRenderBlock } from './canvasFeatureBackendTypes.ts'
+export { type FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
 
-import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
+import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
 
 export function CanvasFeatureRenderer(canvas: HTMLCanvasElement) {
-  return createBackend<CanvasFeatureBackend>(
+  return createRenderingBackend<CanvasFeatureRenderingBackend>(
     canvas,
     CANVAS_FEATURE_PASSES,
     CANVAS_FEATURE_UNIFORM_BYTE_SIZE,

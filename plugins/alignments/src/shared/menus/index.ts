@@ -10,7 +10,7 @@ export { getFiltersMenuItem } from './filters.ts'
 export {
   ARC_DIRECTION_OPTIONS,
   LINKED_READS_OPTIONS,
-  PAIRED_ARCS_OPTIONS,
+  PAIRED_CONNECTIONS_OPTIONS,
   radioModeMenuItem,
   radioModeSubMenu,
 } from './menuHelpers.ts'

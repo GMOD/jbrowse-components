@@ -3,7 +3,7 @@ import {
   makeBpMapper,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import { drawVariantShape } from './variantShape.ts'
@@ -12,7 +12,7 @@ import type {
   VariantRenderBlock,
   VariantRenderState,
   VariantUploadData,
-} from './variantBackendTypes.ts'
+} from './variantRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
@@ -77,7 +77,7 @@ export function drawVariantBlocks(
   }
 }
 
-export class Canvas2DVariantRenderer extends Canvas2DPerRegionBackend<
+export class Canvas2DVariantRenderer extends Canvas2DPerRegionRenderingBackend<
   VariantUploadData,
   VariantRenderState
 > {

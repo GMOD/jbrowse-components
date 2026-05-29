@@ -1,14 +1,14 @@
-import { GpuMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import { GpuGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as ldGenomicShader from './shaders/ldGenomic.generated.ts'
 import * as ldUniformShader from './shaders/ldUniform.generated.ts'
 
 import type {
-  LDBackend,
   LDRenderState,
+  LDRenderingBackend,
   LDUploadData,
-} from './ldBackendTypes.ts'
+} from './ldRenderingBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
@@ -65,8 +65,8 @@ export const LD_PASSES: PassDescriptor[] = [
 export { UNIFORMS_SIZE_BYTES as LD_UNIFORM_BYTE_SIZE }
 
 export class GpuLDRenderer
-  extends GpuMonolithicBackend<LDUploadData, LDRenderState>
-  implements LDBackend
+  extends GpuGlobalRenderingBackend<LDUploadData, LDRenderState>
+  implements LDRenderingBackend
 {
   private uniformF32: Float32Array
   private uniformU32: Uint32Array

@@ -22,10 +22,10 @@ change the flag stayed `true` from the previous paint, so tests that waited for
 
 ### `renderBlocks` returns `boolean`
 
-The `AlignmentsBackend.renderBlocks` interface returns `boolean`:  
+The `AlignmentsRenderingBackend.renderBlocks` interface returns `boolean`:  
 `true` — the backend drew content; `false` — nothing to draw (no regions loaded).
 
-The render callback in `startBackend` propagates this directly:
+The render callback in `startRenderingBackend` propagates this directly:
 
 ```ts
 render: b => {
@@ -50,7 +50,7 @@ canvas content stays visible during a background re-fetch.
 
 ### `resetCanvasDrawn` lives in the mixin
 
-The mutation is owned by `GpuLifecycleMixin` via an explicit
+The mutation is owned by `RenderLifecycleMixin` via an explicit
 `resetCanvasDrawn()` action, symmetric with `markCanvasDrawn()`. Direct
 assignment to `canvasDrawn` outside the mixin's own actions is not allowed
 (MST enforces this).

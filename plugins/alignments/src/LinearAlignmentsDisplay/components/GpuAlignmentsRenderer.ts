@@ -87,7 +87,7 @@ import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
 
 import type { ChainBoundsRegion } from './chainOverlayUtils.ts'
 import type {
-  AlignmentsBackend,
+  AlignmentsRenderingBackend,
   AlignmentsSources,
   ColorPalette,
   CoverageUploadData,
@@ -197,7 +197,7 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.bpLo] = lo
   f[U.bpLen] = block.end - block.start
   f[U.lineWidthPx] = state.arcLineWidth ?? 1
-  f[U.pairedArcsDown] = state.pairedArcs === 'down' ? 1 : 0
+  f[U.pairedArcsDown] = state.pairedConnectionsDown ? 1 : 0
   // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior
   // `yBp * pxPerBp` math.
@@ -310,7 +310,7 @@ interface LocalRegion extends ChainBoundsRegion {
 
 const OVERLAY_REGION = 999999
 
-export class GpuAlignmentsRenderer implements AlignmentsBackend {
+export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   private hal: GpuHal
   private uData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uF32 = new Float32Array(this.uData)
@@ -439,7 +439,11 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
   private writeUniforms(state: RenderState, frame: BlockFrame) {
     fillFrameUniforms(this.uF32, this.uU32, this.uI32, state, frame)
-    writePaletteToUbo(this.uU32, state.colors, state.pairedArcs === 'samplot')
+    writePaletteToUbo(
+      this.uU32,
+      state.colors,
+      state.pairedConnections === 'samplot',
+    )
     if (state.showModifications) {
       // Canvas equivalent: buildBaseColorTupleMap / buildCigarOpDrawColors in
       // features/mismatch/baseColors.ts — keep in sync when changing this.
@@ -496,7 +500,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
 
       this.writeUniforms(state, frame)
 
-      const arcsDown = state.pairedArcs === 'down'
+      const arcsDown = !!state.pairedConnectionsDown
       const { effectiveArcsHeight, covH } = computeBlockHeights(state)
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)

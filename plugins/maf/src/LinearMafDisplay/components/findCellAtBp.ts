@@ -1,6 +1,6 @@
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
-import type { MafRegionData } from '../../LinearMafRenderer/mafBackendTypes.ts'
+import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 /**
  * Locate the cell on `rowIndex` at absolute genomic `bp` within a region's

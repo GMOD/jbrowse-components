@@ -30,7 +30,7 @@ export interface SyntenyPickResult {
   featureIndex: number
 }
 
-export interface SyntenyBackend {
+export interface SyntenyRenderingBackend {
   resize(width: number, height: number): void
   uploadGeometry(key: number, data: SyntenyInstanceData): void
   deleteGeometry(key: number): void

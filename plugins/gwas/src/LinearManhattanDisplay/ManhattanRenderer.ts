@@ -1,4 +1,4 @@
-import { createBackend } from '@jbrowse/core/gpu/createBackend'
+import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
 
 import { Canvas2DManhattanRenderer } from './Canvas2DManhattanRenderer.ts'
 import {
@@ -7,10 +7,10 @@ import {
 } from './GpuManhattanRenderer.ts'
 import * as shader from './shaders/manhattan.generated.ts'
 
-import type { ManhattanBackend } from './manhattanBackendTypes.ts'
+import type { ManhattanRenderingBackend } from './manhattanRenderingBackendTypes.ts'
 
 export function ManhattanRenderer(canvas: HTMLCanvasElement) {
-  return createBackend<ManhattanBackend>(
+  return createRenderingBackend<ManhattanRenderingBackend>(
     canvas,
     MANHATTAN_PASSES,
     shader.UNIFORMS_SIZE_BYTES,

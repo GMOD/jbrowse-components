@@ -41,10 +41,10 @@ export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 
 export type {
   SourceRenderData,
-  WiggleBackend,
   WiggleGPURenderState,
+  WiggleRenderingBackend,
   WiggleRenderingType,
-} from './backendTypes.ts'
+} from './renderingBackendTypes.ts'
 
 export type {
   SourceInfo,

@@ -1,11 +1,11 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction } from 'mobx'
 
-import { GpuLifecycleMixin } from './GpuLifecycleMixin.ts'
+import { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
 import { installPerRegionLifecycle } from './installPerRegionLifecycle.ts'
 
 const TestModel = types
-  .compose('TestModel', GpuLifecycleMixin(), types.model({}))
+  .compose('TestModel', RenderLifecycleMixin(), types.model({}))
   .volatile(() => ({}))
 
 interface FakeEncoded {
@@ -18,15 +18,15 @@ interface UploadCall {
   payload: FakeEncoded
 }
 
-interface FakeBackend {
+interface FakeRenderingBackend {
   uploadRegion(key: number, payload: FakeEncoded): void
   pruneRegions(active: Iterable<number>): void
 }
 
-function makeFakeBackend() {
+function makeFakeRenderingBackend() {
   const uploads: UploadCall[] = []
   const prunes: number[][] = []
-  const backend: FakeBackend = {
+  const backend: FakeRenderingBackend = {
     uploadRegion(key, payload) {
       uploads.push({ key, payload })
     },
@@ -44,7 +44,7 @@ beforeEach(() => {
 
 test('N sequential region arrivals trigger N uploads, not N²', () => {
   const model = TestModel.create()
-  const { backend, uploads } = makeFakeBackend()
+  const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
   installPerRegionLifecycle(
@@ -66,7 +66,7 @@ test('N sequential region arrivals trigger N uploads, not N²', () => {
 
 test('encode-tracked observable change re-fires every per-key autorun', () => {
   const model = TestModel.create()
-  const { backend, uploads } = makeFakeBackend()
+  const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, string>(undefined, { deep: false })
   const markerBox = observable.box(0)
 
@@ -101,7 +101,7 @@ test('encode-tracked observable change re-fires every per-key autorun', () => {
 
 test('only the changed key re-uploads when its value mutates', () => {
   const model = TestModel.create()
-  const { backend, uploads } = makeFakeBackend()
+  const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
   installPerRegionLifecycle(
@@ -129,7 +129,7 @@ test('only the changed key re-uploads when its value mutates', () => {
 
 test('removing a key disposes its autorun and prunes from active set', () => {
   const model = TestModel.create()
-  const { backend, uploads, prunes } = makeFakeBackend()
+  const { backend, uploads, prunes } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
   installPerRegionLifecycle(
@@ -165,8 +165,8 @@ test('removing a key disposes its autorun and prunes from active set', () => {
 
 test('backend swap (context-loss recovery) routes uploads to new backend', () => {
   const model = TestModel.create()
-  const a = makeFakeBackend()
-  const b = makeFakeBackend()
+  const a = makeFakeRenderingBackend()
+  const b = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
   installPerRegionLifecycle(
@@ -185,7 +185,7 @@ test('backend swap (context-loss recovery) routes uploads to new backend', () =>
   expect(a.uploads.map(u => u.key)).toEqual([0, 1])
   expect(b.uploads).toHaveLength(0)
 
-  model.attachBackend<FakeBackend>(b.backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(b.backend, {
     upload: () => {},
     render: () => false,
   })
@@ -195,7 +195,7 @@ test('backend swap (context-loss recovery) routes uploads to new backend', () =>
 
 test('render callback receives the cached encoded map', () => {
   const model = TestModel.create()
-  const { backend } = makeFakeBackend()
+  const { backend } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
   let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
 
@@ -228,7 +228,7 @@ test('render callback receives the cached encoded map', () => {
 
 test('encode returning undefined leaves the cached encoded entry untouched', () => {
   const model = TestModel.create()
-  const { backend, uploads } = makeFakeBackend()
+  const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
   const ready = observable.box(true)
   let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined

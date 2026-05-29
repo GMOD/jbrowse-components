@@ -19,7 +19,7 @@ export interface SourceRenderData {
   rowIndex: number
 }
 
-export interface WiggleBackend {
+export interface WiggleRenderingBackend {
   uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]): void
   pruneRegions(activeRegions: number[]): void
   renderBlocks(

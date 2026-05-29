@@ -1,6 +1,6 @@
 import { findCellAtBp } from './findCellAtBp.ts'
 
-import type { MafRegionData } from '../../LinearMafRenderer/mafBackendTypes.ts'
+import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 const enc = new TextEncoder()
 

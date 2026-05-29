@@ -26,7 +26,7 @@ import type {
   HicDataResult,
 } from '../RenderHicDataRPC/types.ts'
 import type { HicColorScheme } from './components/colorRamp.ts'
-import type { HicBackend } from './components/hicBackendTypes.ts'
+import type { HicRenderingBackend } from './components/hicRenderingBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -349,12 +349,12 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Called by the React hook (`useGpuBackend`) when the HAL
+       * Called by the React hook (`useRenderingBackend`) when the HAL
        * resolves. Wires the backend into the mixin-owned autorun pair via
-       * `attachBackend`.
+       * `attachRenderingBackend`.
        */
-      startBackend(backend: HicBackend) {
-        self.attachBackend<HicBackend>(backend, {
+      startRenderingBackend(backend: HicRenderingBackend) {
+        self.attachRenderingBackend<HicRenderingBackend>(backend, {
           upload: b => {
             if (self.rpcData) {
               b.uploadData(self.rpcData)

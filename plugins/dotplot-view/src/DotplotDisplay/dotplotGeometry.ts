@@ -1,7 +1,7 @@
 import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
-import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
 import type { DotplotColorFn } from './dotplotColors.ts'
+import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 
 // Below this on-screen feature width we collapse CIGAR detail to a single

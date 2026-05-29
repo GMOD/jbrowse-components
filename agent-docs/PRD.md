@@ -23,7 +23,7 @@ Verify against source, not memory.
 | Concern                     | Path                                                     |
 | --------------------------- | -------------------------------------------------------- |
 | GPU primitives / HAL        | `packages/core/src/gpu/`                                 |
-| Lifecycle mixin             | `packages/core/src/gpu/GpuLifecycleMixin.ts`  |
+| Lifecycle mixin             | `packages/core/src/gpu/RenderLifecycleMixin.ts`  |
 | Shader codegen              | `scripts/build-shaders.ts`, `scripts/shader-codegen/`    |
 | Shared slang modules        | `packages/core/src/gpu/shaders/`                         |
 | Browser tests               | `products/jbrowse-web/browser-tests/`                    |
@@ -42,16 +42,16 @@ Verify against source, not memory.
 Correctness contracts — violations cause silent bugs.
 
 - **MST owns the upload + render autoruns.** They are spawned by
-  `attachBackend` on `GpuLifecycleMixin`, not by React
+  `attachRenderingBackend` on `RenderLifecycleMixin`, not by React
   `useEffect`.
 - **Per-region upload values must be freshly constructed, never mutated.**
-  Backends diff by reference identity; in-place mutation leaks stale bytes.
+  RenderingBackends diff by reference identity; in-place mutation leaks stale bytes.
 - **Only write MST observables via actions.** Direct writes inside an
   autorun body (e.g. `self.canvasDrawn = true`, `self.maxY = x`) silently
   fail under MST action enforcement. Use the defined action.
-- **Plugins define only `startBackend(backend)`.** Body is
-  one `self.attachBackend(backend, {upload, render})` call.
-  `canvasDrawn`, `renderNow`, `stopBackend`, tab-visibility
+- **Plugins define only `startRenderingBackend(backend)`.** Body is
+  one `self.attachRenderingBackend(backend, {upload, render})` call.
+  `canvasDrawn`, `renderNow`, `stopRenderingBackend`, tab-visibility
   rerender all live in the mixin.
 - **Structural types across lazy boundaries.** Importing MST model types
   across lazy imports is a circular-reference trap — use duck-typed

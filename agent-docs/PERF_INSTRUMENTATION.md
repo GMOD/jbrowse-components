@@ -86,7 +86,7 @@ being **gated** somewhere — not the GPU.
 
 ### 3. Autorun fire counters
 
-Track how often each autorun in `attachBackend` fires:
+Track how often each autorun in `attachRenderingBackend` fires:
 
 ```ts
 autorun(() => {

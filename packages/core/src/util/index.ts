@@ -997,8 +997,8 @@ export * from './stopToken.ts'
 export * from './tracks.ts'
 export * from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
-export { useGpuBackend } from './useGpuBackend.ts'
-export { useGpuRenderer } from './useGpuRenderer.ts'
+export { useRenderingBackend } from './useRenderingBackend.ts'
+export { useRenderer } from './useRenderer.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'
 export {
   type AlignmentData,

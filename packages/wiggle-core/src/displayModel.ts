@@ -1,18 +1,18 @@
 import { when } from 'mobx'
 
-import type { WiggleBackend } from './backendTypes.ts'
 import type { WiggleDataResult } from './dataTypes.ts'
 import type { YScaleTicks } from './index.ts'
-import type { GpuLifecycleModel } from '@jbrowse/core/util/useGpuBackend'
+import type { WiggleRenderingBackend } from './renderingBackendTypes.ts'
+import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 
 // Intersection contract every wiggle-family GPU display model (wiggle,
-// multi-wiggle, manhattan) exposes to its React component. Backend-typed for
+// multi-wiggle, manhattan) exposes to its React component. RenderingBackend-typed for
 // narrowing; TData lets specialized displays (e.g. manhattan) declare their
 // rpcDataMap value shape instead of using WiggleDataResult.
 export interface WiggleGpuDisplayModel<
-  TBackend = WiggleBackend,
+  TRenderingBackend = WiggleRenderingBackend,
   TData = WiggleDataResult,
-> extends GpuLifecycleModel<TBackend> {
+> extends RenderLifecycleModel<TRenderingBackend> {
   rpcDataMap: ReadonlyMap<number, TData>
   ticks?: YScaleTicks
   canvasDrawn: boolean

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import {
   getContainingView,
   getSession,
-  useGpuBackend,
+  useRenderingBackend,
 } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
@@ -49,7 +49,7 @@ const LinearMafDisplay = observer(function (props: {
   const theme = useTheme()
   const session = getSession(model)
 
-  const { canvasRef } = useGpuBackend(MafRendererFactory, model)
+  const { canvasRef } = useRenderingBackend(MafRendererFactory, model)
 
   // Push theme-derived color palette into the model. Drives `gpuProps()`,
   // so theme changes re-encode on the main thread (no RPC refetch). The

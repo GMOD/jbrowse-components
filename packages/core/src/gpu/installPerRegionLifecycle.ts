@@ -1,17 +1,17 @@
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { BackendCallbacks } from './GpuLifecycleMixin.ts'
+import type { RenderingBackendCallbacks } from './RenderLifecycleMixin.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ObservableMap } from 'mobx'
 
 interface LifecycleHost extends IAnyStateTreeNode {
-  attachBackend: <B>(b: B, cbs: BackendCallbacks<B>) => void
+  attachRenderingBackend: <B>(b: B, cbs: RenderingBackendCallbacks<B>) => void
   renderNow: () => void
-  currentBackend: unknown
+  currentRenderingBackend: unknown
 }
 
-interface UploadableBackend<Encoded> {
+interface UploadableRenderingBackend<Encoded> {
   uploadRegion(displayedRegionIndex: number, encoded: Encoded): void
   pruneRegions(active: Iterable<number>): void
 }
@@ -22,7 +22,7 @@ interface UploadableBackend<Encoded> {
  * it because its renderer is stateless and needs the encoded form per
  * frame; plugins whose renderer reads `rpcDataMap` directly (manhattan,
  * MAF, variants) ignore the second argument. Return `true` if anything was
- * drawn (flips `canvasDrawn` — see GpuLifecycle).
+ * drawn (flips `canvasDrawn` — see RenderLifecycle).
  */
 export type PerRegionRender<B, Encoded> = (
   backend: B,
@@ -46,12 +46,12 @@ export type PerRegionRender<B, Encoded> = (
  * ignore the second arg.
  *
  * `render` owns the per-frame draw call and returns whether anything was
- * actually drawn (gates the `canvasDrawn` flag — see BackendCallbacks).
+ * actually drawn (gates the `canvasDrawn` flag — see RenderingBackendCallbacks).
  */
 export function installPerRegionLifecycle<
   Data,
   Encoded,
-  B extends UploadableBackend<Encoded>,
+  B extends UploadableRenderingBackend<Encoded>,
 >(
   self: LifecycleHost,
   rpcDataMap: ObservableMap<number, Data>,
@@ -67,7 +67,7 @@ export function installPerRegionLifecycle<
     }
   })
 
-  self.attachBackend<B>(backend, {
+  self.attachRenderingBackend<B>(backend, {
     upload: b => {
       const activeKeys = new Set(rpcDataMap.keys())
       for (const key of activeKeys) {
@@ -78,7 +78,7 @@ export function installPerRegionLifecycle<
               // `data` may be undefined briefly during a delete race —
               // the outer autorun disposes this one on next tick.
               const data = rpcDataMap.get(key)
-              const bCurrent = self.currentBackend as B | undefined
+              const bCurrent = self.currentRenderingBackend as B | undefined
               if (data !== undefined && bCurrent !== undefined) {
                 const encoded = encode(data)
                 if (encoded !== undefined) {

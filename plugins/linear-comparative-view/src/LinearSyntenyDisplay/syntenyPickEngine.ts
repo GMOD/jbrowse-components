@@ -4,7 +4,7 @@ import type {
   SyntenyPickResult,
   SyntenyRenderState,
   SyntenyTrackRenderParams,
-} from './syntenyBackendTypes.ts'
+} from './syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 // Subset of CanvasRenderingContext2D the draw + pick paths need. SvgCanvas

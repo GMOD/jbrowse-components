@@ -5,7 +5,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
   reducePrecision,
-  useGpuBackend,
+  useRenderingBackend,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -83,7 +83,7 @@ const HicCanvas = observer(function HicCanvas({
   const width = view.totalWidthPx
   const { height, rpcData, yScalar } = model
   const [hover, setHover] = useState<Hover>()
-  const { canvasRef, error, retry } = useGpuBackend(HicRenderer, model)
+  const { canvasRef, error, retry } = useRenderingBackend(HicRenderer, model)
 
   if (error) {
     return (

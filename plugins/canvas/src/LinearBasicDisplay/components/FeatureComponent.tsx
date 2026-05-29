@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react'
 
 import { ErrorOverlay, LoadingOverlay, Menu } from '@jbrowse/core/ui'
-import { getContainingView, useGpuBackend } from '@jbrowse/core/util'
+import { getContainingView, useRenderingBackend } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
@@ -17,7 +17,7 @@ import {
 } from './useOverlayElements.tsx'
 import { useScrollSync } from './useScrollSync.ts'
 
-import type { CanvasFeatureBackend } from './canvasFeatureBackendTypes.ts'
+import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
 import type { FeatureItemEntry, FlatbushRegionIndexes } from './hitTesting.ts'
 import type {
   FeatureDataResult,
@@ -96,8 +96,8 @@ export interface LinearBasicDisplayModel {
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   clearSelection: () => void
-  startBackend: (backend: CanvasFeatureBackend) => void
-  stopBackend: () => void
+  startRenderingBackend: (backend: CanvasFeatureRenderingBackend) => void
+  stopRenderingBackend: () => void
   renderNow: () => void
 }
 
@@ -204,7 +204,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
 
   // The model owns the upload/render autorun and the GPU backend lifecycle —
-  // see startBackend / stopBackend / renderNow on the
+  // see startRenderingBackend / stopRenderingBackend / renderNow on the
   // base canvas display model. scrollTop lives on the model (via
   // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
   // the model so the autorun picks it up as part of `renderState`.
@@ -212,7 +212,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     canvasRef,
     error: gpuError,
     retry,
-  } = useGpuBackend(CanvasFeatureRenderer, model)
+  } = useRenderingBackend(CanvasFeatureRenderer, model)
 
   const error = gpuError || modelError
 

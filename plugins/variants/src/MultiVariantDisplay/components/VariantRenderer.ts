@@ -1,4 +1,4 @@
-import { createBackend } from '@jbrowse/core/gpu/createBackend'
+import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
 
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
 import {
@@ -7,10 +7,10 @@ import {
   VARIANT_UNIFORM_BYTE_SIZE,
 } from './GpuVariantRenderer.ts'
 
-import type { VariantBackend } from './variantBackendTypes.ts'
+import type { VariantRenderingBackend } from './variantRenderingBackendTypes.ts'
 
 export function VariantRenderer(canvas: HTMLCanvasElement) {
-  return createBackend<VariantBackend>(
+  return createRenderingBackend<VariantRenderingBackend>(
     canvas,
     VARIANT_PASSES,
     VARIANT_UNIFORM_BYTE_SIZE,

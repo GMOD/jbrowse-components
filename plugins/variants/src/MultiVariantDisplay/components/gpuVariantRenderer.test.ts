@@ -6,7 +6,7 @@ import { INSTANCE_STRIDE_F32 as INSTANCE_STRIDE } from './shaders/variant.genera
 import type {
   VariantRenderBlock,
   VariantUploadData,
-} from './variantBackendTypes.ts'
+} from './variantRenderingBackendTypes.ts'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,

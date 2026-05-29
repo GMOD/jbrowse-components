@@ -2,13 +2,13 @@
 
 **Status:** Historical proposal. The mixin/lifecycle rename pass in §4
 was adopted with different names than this RFC proposed. As-shipped
-mapping (RFC → adopted): `GpuBackendLifecycleSlotMixin` →
-`GpuLifecycleMixin` (kept "Gpu" prefix); `installGpuDisplay` →
-`attachBackend`; `stopGpuBackendLifecycle` → `stopBackend`;
-`useGpuModelLifecycle` → `useGpuBackend`; `initDualBackend` →
-`createBackend`. The Canvas2D-as-first-class proposal (§3, §4) is not
+mapping (RFC → adopted): `GpuRenderingBackendLifecycleSlotMixin` →
+`RenderLifecycleMixin` (kept "Gpu" prefix); `installGpuDisplay` →
+`attachRenderingBackend`; `stopGpuRenderingBackendLifecycle` → `stopRenderingBackend`;
+`useGpuModelLifecycle` → `useRenderingBackend`; `initDualRenderingBackend` →
+`createRenderingBackend`. The Canvas2D-as-first-class proposal (§3, §4) is not
 yet implemented — current Canvas2D paths use the same
-`attachBackend({ upload, render })` shape as GPU.
+`attachRenderingBackend({ upload, render })` shape as GPU.
 
 **Branch:** `webgl-poc`
 **Scope:** Core, plugin-linear-genome-view, plugin-wiggle, plugin-canvas, all built-in LGV-family plugins still using `FeatureRendererType`. Linear Genome View only — circular, dotplot-shape, and custom views are out of scope.
@@ -79,7 +79,7 @@ For Manhattan plots at whole-genome GWAS scale (millions of points), GPU is requ
 
 A plugin can ship one path or both. Plugins that ship GPU **must also ship a Canvas2D draw function** for SVG export — that's an invariant covered in §6a, not optional.
 
-The architectural shape between the two paths is the same: same MST composition, same RPC method, same `BackendLifecycleSlotMixin`. The differences are local:
+The architectural shape between the two paths is the same: same MST composition, same RPC method, same `RenderingBackendLifecycleSlotMixin`. The differences are local:
 
 - **Canvas2D**: plugin's MST model calls `self.installCanvas2DDisplay(canvas, { render })`. The render callback receives a 2D context and plugin state, calls plugin-defined `drawXxxToCtx`, returns `true`.
 - **GPU**: plugin authors a backend class wrapping `GpuHal`, similar to `GpuCanvasFeatureRenderer`. Plugin's MST model calls `self.installGpuDisplay(backend, { upload, render })`. The backend uses passes from the shared library (§5).
@@ -89,7 +89,7 @@ The architectural shape between the two paths is the same: same MST composition,
 ```ts
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  BackendLifecycleSlotMixin,
+  RenderingBackendLifecycleSlotMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -129,7 +129,7 @@ export function stateModelFactory(configSchema) {
         })
       },
       // GPU path (alternative):
-      startGpuBackendLifecycle(backend) {
+      startGpuRenderingBackendLifecycle(backend) {
         self.installGpuDisplay(backend, {
           upload(b) { /* iterate rpcDataMap, b.uploadRegion(...) */ },
           render(b) { return b.renderBlocks(self.renderBlocks, self.renderState) },
@@ -139,7 +139,7 @@ export function stateModelFactory(configSchema) {
 }
 ```
 
-A plugin chooses one of `startCanvas2DLifecycle` / `startGpuBackendLifecycle` based on its rendering choice. Both can coexist — a plugin can implement both and pick at runtime based on `?renderer=` URL param or device detection.
+A plugin chooses one of `startCanvas2DLifecycle` / `startGpuRenderingBackendLifecycle` based on its rendering choice. Both can coexist — a plugin can implement both and pick at runtime based on `?renderer=` URL param or device detection.
 
 ### 3c. RPC method(s)
 
@@ -185,16 +185,16 @@ Both hooks ship from `@jbrowse/core/util`.
 
 ## 4. Mixin & lifecycle surface
 
-### 4a. Rename: `GpuBackendLifecycleSlotMixin` → `BackendLifecycleSlotMixin`
+### 4a. Rename: `GpuRenderingBackendLifecycleSlotMixin` → `RenderingBackendLifecycleSlotMixin`
 
-The mixin in `packages/core/src/gpu/GpuBackendLifecycleSlotMixin.ts` is already backend-agnostic except for naming. Renames:
+The mixin in `packages/core/src/gpu/GpuRenderingBackendLifecycleSlotMixin.ts` is already backend-agnostic except for naming. Renames:
 
 | Before | After |
 |---|---|
-| `GpuBackendLifecycleSlotMixin` | `BackendLifecycleSlotMixin` |
-| `currentGpuBackend` | `currentBackend` |
+| `GpuRenderingBackendLifecycleSlotMixin` | `RenderingBackendLifecycleSlotMixin` |
+| `currentGpuRenderingBackend` | `currentRenderingBackend` |
 | `gpuAutorunsInstalled` | `autorunsInstalled` |
-| `stopGpuBackendLifecycle` | `stopBackendLifecycle` |
+| `stopGpuRenderingBackendLifecycle` | `stopRenderingBackendLifecycle` |
 | `installGpuDisplay` | (kept as-is — GPU-specific) |
 
 `canvasDrawn`, `renderBump`, `markCanvasDrawn`, `resetCanvasDrawn`, `renderNow` already have generic names; no changes.
@@ -211,7 +211,7 @@ installCanvas2DDisplay(
 
 `installCanvas2DDisplay` spawns one autorun (no upload/render split — Canvas2D has no buffer phase). Inside the autorun:
 
-1. Read `self.currentBackend` (the canvas reference, stored as a volatile by `startCanvas2DLifecycle`).
+1. Read `self.currentRenderingBackend` (the canvas reference, stored as a volatile by `startCanvas2DLifecycle`).
 2. Get the 2D context via `canvas.getContext('2d')` (browser-cached; same object every call).
 3. Call `cbs.render(ctx)`.
 4. `markCanvasDrawn()` if render returns `true`.
@@ -220,7 +220,7 @@ The render callback reads observables (model views, volatiles) **from closure**.
 
 ### 4b. `MultiRegionDisplayMixin` composes the renamed mixin
 
-`MultiRegionDisplayMixin.ts:30` composes `GpuBackendLifecycleSlotMixin()` today. It composes `BackendLifecycleSlotMixin()` after the rename. Both `installGpuDisplay` and `installCanvas2DDisplay` are present on the resulting model; plugins call exactly one. `isReady = canvasDrawn && !isLoading` works identically for both paths.
+`MultiRegionDisplayMixin.ts:30` composes `GpuRenderingBackendLifecycleSlotMixin()` today. It composes `RenderingBackendLifecycleSlotMixin()` after the rename. Both `installGpuDisplay` and `installCanvas2DDisplay` are present on the resulting model; plugins call exactly one. `isReady = canvasDrawn && !isLoading` works identically for both paths.
 
 ### 4c. Hook surface
 
@@ -229,7 +229,7 @@ Add `packages/core/src/util/useCanvas2DModelLifecycle.ts` parallel to `useGpuMod
 ```ts
 export interface Canvas2DLifecycleModel {
   startCanvas2DLifecycle: (canvas: HTMLCanvasElement) => void
-  stopBackendLifecycle: () => void
+  stopRenderingBackendLifecycle: () => void
   renderNow: () => void
 }
 
@@ -238,7 +238,7 @@ export function useCanvas2DModelLifecycle(model: Canvas2DLifecycleModel) {
 }
 ```
 
-`useGpuModelLifecycle` keeps its current shape; the rename of `stopGpuBackendLifecycle` → `stopBackendLifecycle` is a one-line sweep.
+`useGpuModelLifecycle` keeps its current shape; the rename of `stopGpuRenderingBackendLifecycle` → `stopRenderingBackendLifecycle` is a one-line sweep.
 
 ---
 
@@ -273,7 +273,7 @@ import {
 export const MANHATTAN_PASSES = [CirclePass, RectPass]
 export const MANHATTAN_UNIFORM_BYTE_SIZE = circleShader.UNIFORMS_SIZE_BYTES
 
-export class GpuManhattanRenderer implements ManhattanBackend {
+export class GpuManhattanRenderer implements ManhattanRenderingBackend {
   constructor(private hal: GpuHal) {}
 
   uploadRegion(idx: number, data: ManhattanData) {
@@ -296,11 +296,11 @@ export class GpuManhattanRenderer implements ManhattanBackend {
 
 This is intentionally not less work than the canvas plugin's renderer — same shape, same primitives, same coding style. **The point is shared primitives, not easier rendering.** External plugins using GPU compose the same low-level surface core plugins use.
 
-The plugin's `MyPluginRenderer(canvas)` factory uses `initDualBackend` to pick GPU or Canvas2D at construction:
+The plugin's `MyPluginRenderer(canvas)` factory uses `initDualRenderingBackend` to pick GPU or Canvas2D at construction:
 
 ```ts
 export function ManhattanRenderer(canvas: HTMLCanvasElement) {
-  return initDualBackend<ManhattanBackend>(
+  return initDualRenderingBackend<ManhattanRenderingBackend>(
     canvas,
     MANHATTAN_PASSES,
     MANHATTAN_UNIFORM_BYTE_SIZE,
@@ -364,7 +364,7 @@ This matches what core plugins (canvas, alignments) do today.
 
 ### 6c. State ownership
 
-`BackendLifecycleSlotMixin` owns `canvasDrawn`, `currentBackend`, `renderBump`, `autorunsInstalled`, and the autoruns themselves. Plugins own everything else: `rpcDataMap`, derived layout maps, hit-test indices, view-specific volatiles. The lifecycle mixin must not grow plugin-specific state.
+`RenderingBackendLifecycleSlotMixin` owns `canvasDrawn`, `currentRenderingBackend`, `renderBump`, `autorunsInstalled`, and the autoruns themselves. Plugins own everything else: `rpcDataMap`, derived layout maps, hit-test indices, view-specific volatiles. The lifecycle mixin must not grow plugin-specific state.
 
 ---
 
@@ -474,8 +474,8 @@ Same RPC, same MST model, same fetch, same hit-test pattern. Differences are loc
 
 - New `GpuManhattanRenderer` class wrapping `GpuHal` (per §5b). Imports `CirclePass`, `packCircles` from `@jbrowse/core/gpu/passes`.
 - `Canvas2DManhattanRenderer` calls `drawManhattanToCtx` (same one as 10b) — SVG export reuses it automatically.
-- `ManhattanRenderer(canvas)` factory uses `initDualBackend<ManhattanBackend>` to pick GPU or Canvas2D.
-- `startGpuBackendLifecycle(backend)` calls `installGpuDisplay({ upload, render })`.
+- `ManhattanRenderer(canvas)` factory uses `initDualRenderingBackend<ManhattanRenderingBackend>` to pick GPU or Canvas2D.
+- `startGpuRenderingBackendLifecycle(backend)` calls `installGpuDisplay({ upload, render })`.
 - Performance: GPU path handles millions of points; Canvas2D fallback handles smaller datasets and SVG export.
 - React component: `useGpuModelLifecycle(ManhattanRenderer, model)`.
 
@@ -494,7 +494,7 @@ Same RPC, same MST model, same fetch, same hit-test pattern. Differences are loc
 | Step | Scope | Cost (estimated) |
 |---|---|---|
 | **0. Land RFC** | Review, debate, commit to direction | — |
-| **1. Mixin rename + Canvas2D action** | `BackendLifecycleSlotMixin` rename, sweep callers, add `installCanvas2DDisplay`, add `useCanvas2DModelLifecycle` | ~3-4 days (rename touches every GPU plugin and tests stubbing the mixin) |
+| **1. Mixin rename + Canvas2D action** | `RenderingBackendLifecycleSlotMixin` rename, sweep callers, add `installCanvas2DDisplay`, add `useCanvas2DModelLifecycle` | ~3-4 days (rename touches every GPU plugin and tests stubbing the mixin) |
 | **2. Promote shader passes** | Move `rect/line/arrow/chevron` to `packages/core/src/gpu/passes/`; canvas plugin re-imports | ~1-2 days |
 | **3. Author CirclePass** | New `circle.slang` + generated.ts + packer | ~1-2 days |
 | **4. Wiggle refactor** | Extract `ScaleAxisMixin`, update wiggle public surface | ~2 days |
@@ -562,7 +562,7 @@ Three approaches were considered: (1) volatile `pendingBpPerPx` driving uniforms
 ## 14. Open questions for review
 
 1. **Pass library home: `@jbrowse/core` vs. dedicated package.** RFC recommends core. Counter-argument: core has resisted rendering-specific code historically. Counter-counter: passes aren't plugin-specific — they're rendering primitives, alongside the HAL and shared shader modules already in core.
-2. **`stopGpuBackendLifecycle` → `stopBackendLifecycle` rename**: separate sweep PR ahead of the rest, or part of step 1? Affects reviewability of step 1 either way.
+2. **`stopGpuRenderingBackendLifecycle` → `stopRenderingBackendLifecycle` rename**: separate sweep PR ahead of the rest, or part of step 1? Affects reviewability of step 1 either way.
 
 ---
 

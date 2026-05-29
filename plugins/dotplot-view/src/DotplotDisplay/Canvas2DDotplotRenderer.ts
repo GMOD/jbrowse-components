@@ -1,12 +1,12 @@
 import { drawDotplotInstances } from './drawDotplot.ts'
 
 import type {
-  DotplotBackend,
   DotplotGeometryData,
   DotplotRenderState,
-} from './dotplotBackendTypes.ts'
+  DotplotRenderingBackend,
+} from './dotplotRenderingBackendTypes.ts'
 
-export class Canvas2DDotplotRenderer implements DotplotBackend {
+export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private geometries = new Map<number, DotplotGeometryData>()

@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 
-import { useGpuRenderer } from './useGpuRenderer.ts'
+import { useRenderer } from './useRenderer.ts'
 import { onDeviceLost } from '../gpu/gpuDevice.ts'
 
 jest.mock('../gpu/gpuDevice.ts', () => ({
@@ -32,12 +32,12 @@ function createMockFactory(shouldReject = false) {
   }
 }
 
-describe('useGpuRenderer', () => {
+describe('useRenderer', () => {
   test('initializes renderer and sets ready on success', async () => {
     const factory = createMockFactory()
     const canvas = document.createElement('canvas')
 
-    const { result } = renderHook(() => useGpuRenderer(factory))
+    const { result } = renderHook(() => useRenderer(factory))
 
     expect(result.current.ready).toBe(false)
     expect(result.current.error).toBeNull()
@@ -56,7 +56,7 @@ describe('useGpuRenderer', () => {
     const factory = createMockFactory(true)
     const canvas = document.createElement('canvas')
 
-    const { result } = renderHook(() => useGpuRenderer(factory))
+    const { result } = renderHook(() => useRenderer(factory))
     act(() => {
       result.current.canvasRef(canvas)
     })
@@ -70,7 +70,7 @@ describe('useGpuRenderer', () => {
     const factory = createMockFactory(true)
     const canvas = document.createElement('canvas')
 
-    const { result } = renderHook(() => useGpuRenderer(factory))
+    const { result } = renderHook(() => useRenderer(factory))
     act(() => {
       result.current.canvasRef(canvas)
     })
@@ -88,7 +88,7 @@ describe('useGpuRenderer', () => {
   test('does nothing when canvas ref is null', async () => {
     const factory = createMockFactory()
 
-    const { result } = renderHook(() => useGpuRenderer(factory))
+    const { result } = renderHook(() => useRenderer(factory))
     await act(async () => {})
 
     expect(result.current.ready).toBe(false)
@@ -101,7 +101,7 @@ describe('useGpuRenderer', () => {
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
 
-    const { result } = renderHook(() => useGpuRenderer(factory))
+    const { result } = renderHook(() => useRenderer(factory))
     act(() => {
       result.current.canvasRef(canvas)
     })
@@ -125,7 +125,7 @@ describe('useGpuRenderer', () => {
   test('prevents default on webglcontextlost to allow restore', async () => {
     const canvas = document.createElement('canvas')
     const factory = createMockFactory()
-    const { result } = renderHook(() => useGpuRenderer(factory))
+    const { result } = renderHook(() => useRenderer(factory))
     act(() => {
       result.current.canvasRef(canvas)
     })
@@ -142,7 +142,7 @@ describe('useGpuRenderer', () => {
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
 
-    const { result } = renderHook(() => useGpuRenderer(factory))
+    const { result } = renderHook(() => useRenderer(factory))
     act(() => {
       result.current.canvasRef(canvas)
     })
@@ -166,7 +166,7 @@ describe('useGpuRenderer', () => {
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
 
-    const { result } = renderHook(() => useGpuRenderer(factory))
+    const { result } = renderHook(() => useRenderer(factory))
     act(() => {
       result.current.canvasRef(canvas1)
     })
@@ -197,7 +197,7 @@ describe('useGpuRenderer', () => {
     jest.mocked(onDeviceLost).mockReturnValueOnce(cleanup)
 
     const factory = createMockFactory()
-    const { unmount } = renderHook(() => useGpuRenderer(factory))
+    const { unmount } = renderHook(() => useRenderer(factory))
     unmount()
 
     expect(cleanup).toHaveBeenCalledTimes(1)

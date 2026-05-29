@@ -3,7 +3,7 @@ import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
 import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
-} from './syntenyBackendTypes.ts'
+} from './syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 function createMockCanvas() {

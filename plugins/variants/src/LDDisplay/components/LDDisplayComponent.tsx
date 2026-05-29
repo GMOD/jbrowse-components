@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, max, useGpuBackend } from '@jbrowse/core/util'
+import { getContainingView, max, useRenderingBackend } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
@@ -126,7 +126,7 @@ const LDCanvas = observer(function LDCanvas({
     y: number
   }>()
 
-  const { canvasRef, error, retry } = useGpuBackend(LDRenderer, model)
+  const { canvasRef, error, retry } = useRenderingBackend(LDRenderer, model)
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx

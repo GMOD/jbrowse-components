@@ -1,6 +1,6 @@
 import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
 
-import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type Flatbush from '@jbrowse/core/util/flatbush'

@@ -58,6 +58,6 @@ export { WiggleScoreConfigMixin } from './shared/WiggleScoreConfigMixin.ts'
 
 export type {
   SourceRenderData,
-  WiggleBackend,
   WiggleGPURenderState,
+  WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'

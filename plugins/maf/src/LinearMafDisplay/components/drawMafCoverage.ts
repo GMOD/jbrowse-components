@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
-import type { MafRegionData } from '../../LinearMafRenderer/mafBackendTypes.ts'
+import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { Theme } from '@mui/material'

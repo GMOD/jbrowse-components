@@ -19,7 +19,7 @@ import type { RenderBlock } from './renderBlock.ts'
  * push bytes into HAL buffers, and `pruneRegions` to delegate region
  * lifecycle to HAL via `hal.pruneRegions(active)`.
  */
-export interface PerRegionBackend<
+export interface PerRegionRenderingBackend<
   UploadData,
   RenderState,
   Block = RenderBlock,
@@ -36,18 +36,18 @@ export interface PerRegionBackend<
 }
 
 /**
- * Canvas2D-side base for `PerRegionBackend` implementations. Owns the
+ * Canvas2D-side base for `PerRegionRenderingBackend` implementations. Owns the
  * `canvas` + 2D context; stubs the upload/prune/dispose hooks the backend
  * shape requires but Canvas2D doesn't need (everything comes through
  * `renderBlocks` from the model's data map). Subclasses implement
  * `renderBlocks` and nothing else.
  */
-export abstract class Canvas2DPerRegionBackend<
+export abstract class Canvas2DPerRegionRenderingBackend<
   UploadData,
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> implements PerRegionBackend<UploadData, RenderState, Block, RenderData> {
+> implements PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData> {
   protected canvas: HTMLCanvasElement
   protected ctx: CanvasRenderingContext2D
 
@@ -72,18 +72,18 @@ export abstract class Canvas2DPerRegionBackend<
 }
 
 /**
- * GPU-side base for `PerRegionBackend` implementations. Owns the `hal`
+ * GPU-side base for `PerRegionRenderingBackend` implementations. Owns the `hal`
  * reference and a pre-allocated uniform scratch `ArrayBuffer` reused across
  * frames. Provides the shared `pruneRegions` (delegates to HAL) and
  * `dispose` (also delegates) so subclasses implement only `uploadRegion`
  * and `renderBlocks`.
  */
-export abstract class GpuPerRegionBackend<
+export abstract class GpuPerRegionRenderingBackend<
   UploadData,
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> implements PerRegionBackend<UploadData, RenderState, Block, RenderData> {
+> implements PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData> {
   protected hal: GpuHal
   protected uniformData: ArrayBuffer
 

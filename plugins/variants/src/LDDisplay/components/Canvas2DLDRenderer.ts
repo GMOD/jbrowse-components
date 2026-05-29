@@ -3,15 +3,15 @@ import {
   makeRampFillStyleLut,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import { Canvas2DGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 
 import { mapLDValue } from './ldColorRamp.ts'
 
 import type {
-  LDBackend,
   LDRenderState,
+  LDRenderingBackend,
   LDUploadData,
-} from './ldBackendTypes.ts'
+} from './ldRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const COS45 = Math.SQRT1_2
@@ -70,8 +70,8 @@ export function drawLDBlocks(
 }
 
 export class Canvas2DLDRenderer
-  extends Canvas2DMonolithicBackend<LDUploadData, LDRenderState>
-  implements LDBackend
+  extends Canvas2DGlobalRenderingBackend<LDUploadData, LDRenderState>
+  implements LDRenderingBackend
 {
   private colorRamp: Uint8Array | null = null
 

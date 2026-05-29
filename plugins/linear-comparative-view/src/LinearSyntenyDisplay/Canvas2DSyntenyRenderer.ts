@@ -7,12 +7,12 @@ import {
   projectCorners,
 } from './syntenyPickEngine.ts'
 
-import type {
-  SyntenyBackend,
-  SyntenyRenderState,
-  SyntenyTrackRenderParams,
-} from './syntenyBackendTypes.ts'
 import type { CanvasLike, ComputedTransform } from './syntenyPickEngine.ts'
+import type {
+  SyntenyRenderState,
+  SyntenyRenderingBackend,
+  SyntenyTrackRenderParams,
+} from './syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 export type { CanvasLike } from './syntenyPickEngine.ts'
@@ -145,7 +145,7 @@ export function drawSyntenyTrack(
   drawInstances(ctx, ...args)
 }
 
-export class Canvas2DSyntenyRenderer implements SyntenyBackend {
+export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private cache = new SyntenyGeometryCache()

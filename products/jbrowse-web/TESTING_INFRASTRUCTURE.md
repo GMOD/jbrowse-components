@@ -18,7 +18,7 @@ reaches a resource limit where:
 
 - GPU backends ARE properly disposed when tests complete
 - WebGL2Hal.dispose() IS called for each context
-- The disposal chain (useGpuRenderer → GpuWiggleRenderer → WebGL2Hal) works
+- The disposal chain (useRenderer → GpuWiggleRenderer → WebGL2Hal) works
   correctly
 
 The issue is that swiftshader (Chrome's software WebGL implementation) doesn't

@@ -27,7 +27,7 @@ The mixin provides:
   one, runs `work`, and bumps `fetchGeneration` on completion so the autorun
   re-evaluates if the viewport moved while the fetch was in flight
 - `error`, `statusMessage`, `setError`, `setStatusMessage` volatile state
-- `GpuLifecycleMixin` and `RegionTooLargeMixin` included
+- `RenderLifecycleMixin` and `RegionTooLargeMixin` included
 
 Each display's `afterAttach` autorun reads its trigger conditions (viewport,
 `rpcProps()`, display-specific toggles), then calls `self.performXFetch()` which

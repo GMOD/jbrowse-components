@@ -33,11 +33,11 @@ import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 
 import type {
-  MafBackend,
   MafGPURenderState,
   MafGpuProps,
   MafRegionData,
-} from '../LinearMafRenderer/mafBackendTypes.ts'
+  MafRenderingBackend,
+} from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type { Sample } from '../types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -567,7 +567,7 @@ export default function stateModelFactory(
           self.rowHeight = Math.max(1, Math.floor(rowsTarget / sampleCount))
         }
       },
-      startBackend(backend: MafBackend) {
+      startRenderingBackend(backend: MafRenderingBackend) {
         // Per-region streamed upload. The encode callback builds the GPU
         // instance buffer on the main thread from raw region data + gpuProps,
         // so theme / showAllLetters / mismatchRendering changes re-encode

@@ -1,4 +1,4 @@
-import type { DotplotGeometryData } from './dotplotBackendTypes.ts'
+import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // All position values are absolute genomic cumBp coordinates (uint32-scale

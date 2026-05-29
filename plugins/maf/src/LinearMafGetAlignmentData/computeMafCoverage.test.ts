@@ -1,6 +1,6 @@
 import { computeMafCoverage } from './computeMafCoverage.ts'
 
-import type { MafBlock } from '../LinearMafRenderer/mafBackendTypes.ts'
+import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 const enc = new TextEncoder()
 

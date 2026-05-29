@@ -1,13 +1,13 @@
-import { GpuMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import { GpuGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as hicShader from './shaders/hic.generated.ts'
 
 import type {
-  HicBackend,
   HicRenderState,
+  HicRenderingBackend,
   HicUploadData,
-} from './hicBackendTypes.ts'
+} from './hicRenderingBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
@@ -45,8 +45,8 @@ function interleaveHicInstances(data: HicUploadData) {
 }
 
 export class GpuHicRenderer
-  extends GpuMonolithicBackend<HicUploadData, HicRenderState>
-  implements HicBackend
+  extends GpuGlobalRenderingBackend<HicUploadData, HicRenderState>
+  implements HicRenderingBackend
 {
   private uniformF32: Float32Array
   private uniformU32: Uint32Array

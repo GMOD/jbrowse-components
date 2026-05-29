@@ -45,9 +45,9 @@ const firefoxPath = useFirefoxArg
 
 snapshotConfig.updateSnapshots = updateSnapshots
 
-type Backend = 'webgl' | 'webgpu' | 'canvas2d'
+type RenderingBackend = 'webgl' | 'webgpu' | 'canvas2d'
 
-function chromeArgsForBackend(backend?: Backend) {
+function chromeArgsForRenderingBackend(backend?: RenderingBackend) {
   const chromeArgs = [
     '--no-sandbox',
     '--disable-setuid-sandbox',
@@ -164,7 +164,7 @@ async function runTests(
         await test.fn(page, browser)
 
         // GPU backends clean up via the per-component `pagehide` listener in
-        // useGpuRenderer when the next test's page.goto navigates away.
+        // useRenderer when the next test's page.goto navigates away.
 
         const duration = performance.now() - start
         passed++
@@ -312,7 +312,7 @@ async function runTestsWithRestart(
 
 let testStartTime = 0
 
-function isGpuLifecycleNoise(text: string): boolean {
+function isRenderLifecycleNoise(text: string): boolean {
   if (text.includes('[WebGL2Hal #')) {
     return !text.includes('context LOST') && !text.includes('GL error')
   }
@@ -343,7 +343,7 @@ async function setupPage(browser: Browser) {
     if (quiet && type !== 'error') {
       return
     }
-    if (!debug && isGpuLifecycleNoise(text)) {
+    if (!debug && isRenderLifecycleNoise(text)) {
       return
     }
     const elapsed =
@@ -373,9 +373,9 @@ async function setupPage(browser: Browser) {
   return page
 }
 
-async function runWithBackend(
+async function runWithRenderingBackend(
   suites: TestSuite[],
-  backend: Backend | undefined,
+  backend: RenderingBackend | undefined,
 ) {
   snapshotConfig.backend = backend ?? ''
 
@@ -410,7 +410,7 @@ async function runWithBackend(
     return runTestsWithRestart(launchFirefox, suites, runAuthTests)
   }
 
-  const chromeArgs = chromeArgsForBackend(backend)
+  const chromeArgs = chromeArgsForRenderingBackend(backend)
   const browser = await launch({
     headless: useHeadless,
     slowMo,
@@ -468,13 +468,13 @@ async function main() {
     const suites = await discoverSuites()
     console.log(`Found ${suites.length} test suites`)
 
-    let backends: (Backend | undefined)[]
+    let backends: (RenderingBackend | undefined)[]
     if (backendValue === 'all') {
       backends = skipWebGPU
         ? ['canvas2d', 'webgl']
         : ['canvas2d', 'webgl', 'webgpu']
     } else {
-      backends = [backendValue as Backend | undefined]
+      backends = [backendValue as RenderingBackend | undefined]
     }
 
     let totalPassed = 0
@@ -499,7 +499,7 @@ async function main() {
       }
       console.log(`(backend: ${backend ?? 'default'})`)
 
-      const { passed, failed, failures } = await runWithBackend(suites, backend)
+      const { passed, failed, failures } = await runWithRenderingBackend(suites, backend)
       totalPassed += passed
       totalFailed += failed
       for (const f of failures) {
@@ -510,7 +510,7 @@ async function main() {
     console.log(`\n${'─'.repeat(50)}`)
     console.log(`  Tests: ${totalPassed} passed, ${totalFailed} failed`)
     if (backends.length > 1) {
-      console.log(`  Backends tested: ${backends.join(', ')}`)
+      console.log(`  RenderingBackends tested: ${backends.join(', ')}`)
     }
     if (allFailures.length > 0) {
       console.log(`\n  Failed tests:`)

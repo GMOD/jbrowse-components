@@ -1,6 +1,6 @@
 import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
 
-import type { LDUploadData } from './ldBackendTypes.ts'
+import type { LDUploadData } from './ldRenderingBackendTypes.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 

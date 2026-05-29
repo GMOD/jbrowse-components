@@ -48,7 +48,7 @@ import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThres
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type { CanvasFeatureBackend } from './components/canvasFeatureBackendTypes.ts'
+import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
   FeatureItemEntry,
   FlatbushRegionIndexes,
@@ -728,7 +728,7 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        startBackend(backend: CanvasFeatureBackend) {
+        startRenderingBackend(backend: CanvasFeatureRenderingBackend) {
           // Upload only regions whose laid-out data reference changed, so a
           // new chromosome streaming in doesn't re-upload the ones already on
           // the GPU. `laidOutDataMap` keeps stable references for unchanged
@@ -737,9 +737,9 @@ export default function baseStateModelFactory(
           // context-loss reset.
           const syncRegions = createRegionUploadSync<
             FeatureDataResult,
-            CanvasFeatureBackend
+            CanvasFeatureRenderingBackend
           >()
-          self.attachBackend<CanvasFeatureBackend>(backend, {
+          self.attachRenderingBackend<CanvasFeatureRenderingBackend>(backend, {
             upload: b => {
               syncRegions(b, self.laidOutDataMap)
             },

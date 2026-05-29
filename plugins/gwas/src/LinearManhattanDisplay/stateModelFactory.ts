@@ -34,9 +34,9 @@ import TooltipComponent from './components/TooltipComponent.tsx'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
-  ManhattanBackend,
   ManhattanRenderState,
-} from './manhattanBackendTypes.ts'
+  ManhattanRenderingBackend,
+} from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -317,7 +317,7 @@ export function stateModelFactory(
         return renderSvg(self, opts)
       },
       // Identity encode — RPC result is the upload payload.
-      startBackend(backend: ManhattanBackend) {
+      startRenderingBackend(backend: ManhattanRenderingBackend) {
         installPerRegionLifecycle(
           self,
           self.rpcDataMap,

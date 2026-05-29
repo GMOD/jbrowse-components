@@ -1,4 +1,4 @@
-import { GpuMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import { GpuGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as variantMatrixShader from './shaders/variantMatrix.generated.ts'
@@ -7,7 +7,7 @@ import { interleaveMatrixInstances } from './variantMatrixShaders.ts'
 import type {
   MatrixRenderState,
   VariantMatrixUploadData,
-} from './variantMatrixBackendTypes.ts'
+} from './variantMatrixRenderingBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
@@ -25,7 +25,7 @@ export const VARIANT_MATRIX_PASSES: PassDescriptor[] = [
 
 export { UNIFORMS_SIZE_BYTES as VARIANT_MATRIX_UNIFORM_BYTE_SIZE }
 
-export class GpuVariantMatrixRenderer extends GpuMonolithicBackend<
+export class GpuVariantMatrixRenderer extends GpuGlobalRenderingBackend<
   VariantMatrixUploadData,
   MatrixRenderState
 > {

@@ -2,7 +2,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { findManhattanHit } from './findManhattanHit.ts'
 
-import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 

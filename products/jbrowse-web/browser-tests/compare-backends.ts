@@ -11,7 +11,7 @@ const snapshotsDir = path.resolve(__dirname, '__snapshots__')
 
 const BACKENDS = ['webgl', 'webgpu', 'canvas2d'] as const
 
-function getBackendSnapshots(backend: string) {
+function getRenderingBackendSnapshots(backend: string) {
   const dir = path.join(snapshotsDir, backend)
   if (!fs.existsSync(dir)) {
     return null
@@ -113,7 +113,7 @@ function comparePair(
 export function runComparison() {
   const available = BACKENDS.map(b => ({
     name: b,
-    data: getBackendSnapshots(b),
+    data: getRenderingBackendSnapshots(b),
   })).filter(b => b.data !== null)
 
   if (available.length < 2) {
@@ -132,7 +132,7 @@ export function runComparison() {
   }
 
   console.log(
-    `\nBackend snapshot comparison (${available.map(b => b.name).join(', ')})`,
+    `\nRenderingBackend snapshot comparison (${available.map(b => b.name).join(', ')})`,
   )
 
   let totalIdentical = 0

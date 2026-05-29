@@ -5,7 +5,7 @@ import { ErrorBanner } from '@jbrowse/core/ui'
 import {
   getContainingView,
   openFeatureWidget,
-  useGpuBackend,
+  useRenderingBackend,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -117,7 +117,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     canvasRef,
     error: gpuError,
     retry,
-  } = useGpuBackend(SyntenyRendererFactory, model)
+  } = useRenderingBackend(SyntenyRendererFactory, model)
 
   const { scrollingRef } = useWheelScrollZoom(canvas, parentView)
 
@@ -137,7 +137,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function pickAt(coords: { x: number; y: number }) {
-    const backend = model.gpuBackend
+    const backend = model.gpuRenderingBackend
     const state = model.syntenyRenderState
     if (!backend || !state) {
       return undefined

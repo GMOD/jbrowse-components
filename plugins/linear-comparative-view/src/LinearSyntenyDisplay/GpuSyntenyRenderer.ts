@@ -10,10 +10,10 @@ import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 
 import type {
-  SyntenyBackend,
   SyntenyRenderState,
+  SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
-} from './syntenyBackendTypes.ts'
+} from './syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
@@ -63,7 +63,7 @@ function makePickCtx(): CanvasRenderingContext2D | undefined {
   return undefined
 }
 
-export class GpuSyntenyRenderer implements SyntenyBackend {
+export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   private hal: GpuHal
   private canvas: HTMLCanvasElement
   private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)

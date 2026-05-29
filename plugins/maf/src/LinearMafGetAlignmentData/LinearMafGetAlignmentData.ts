@@ -15,7 +15,7 @@ import { subscribeToObservable } from '../util/observableUtils.ts'
 import type {
   MafBlock,
   MafRegionData,
-} from '../LinearMafRenderer/mafBackendTypes.ts'
+} from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { AlignmentRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -55,8 +55,8 @@ export interface LinearMafGetAlignmentDataResult {
 /**
  * Fetch MAF alignment features for a single region. Returns raw
  * `MafRegionData` (one or more blocks; each carries its own ref seq + rows
- * — see `mafBackendTypes.ts`). The GPU instance buffer is built on the
- * main thread (in `startBackend`'s per-region encode) from this raw data plus the
+ * — see `mafRenderingBackendTypes.ts`). The GPU instance buffer is built on the
+ * main thread (in `startRenderingBackend`'s per-region encode) from this raw data plus the
  * current `gpuProps()` — that way color/style toggles never round-trip
  * through the RPC.
  *

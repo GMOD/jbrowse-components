@@ -3,7 +3,7 @@ import {
   makeBpMapper,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import {
@@ -20,7 +20,7 @@ import {
 import type {
   FeatureRenderBlock,
   RenderState,
-} from './canvasFeatureBackendTypes.ts'
+} from './canvasFeatureRenderingBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Canvas2DRenderBlock } from '@jbrowse/core/gpu/canvas2dUtils'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -188,7 +188,7 @@ export function drawFeatureBlocks(
   }
 }
 
-export class Canvas2DFeatureRenderer extends Canvas2DPerRegionBackend<
+export class Canvas2DFeatureRenderer extends Canvas2DPerRegionRenderingBackend<
   RegionRenderData,
   RenderState
 > {

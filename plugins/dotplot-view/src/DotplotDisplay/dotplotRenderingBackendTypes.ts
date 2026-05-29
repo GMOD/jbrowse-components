@@ -22,7 +22,7 @@ export interface DotplotRenderState {
   displayKeys: readonly number[]
 }
 
-export interface DotplotBackend {
+export interface DotplotRenderingBackend {
   resize(width: number, height: number): void
   uploadGeometry(displayKey: number, data: DotplotGeometryData): void
   deleteGeometry(displayKey: number): void

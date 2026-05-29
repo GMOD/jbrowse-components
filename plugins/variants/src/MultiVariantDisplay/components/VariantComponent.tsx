@@ -4,7 +4,7 @@ import { ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
-  useGpuBackend,
+  useRenderingBackend,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -25,7 +25,7 @@ import type {
   FeatureGenotypeInfo,
   VariantCellData,
 } from './computeVariantCells.ts'
-import type { VariantBackend } from './variantBackendTypes.ts'
+import type { VariantRenderingBackend } from './variantRenderingBackendTypes.ts'
 import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -38,8 +38,8 @@ export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellData: PerRegionCellData | undefined
   flatbushIndices: Map<number, Flatbush>
   canvasDrawn: boolean
-  startBackend: (backend: VariantBackend) => void
-  stopBackend: () => void
+  startRenderingBackend: (backend: VariantRenderingBackend) => void
+  stopRenderingBackend: () => void
   renderNow: () => void
   visibleRegions: {
     refName: string
@@ -236,7 +236,7 @@ const VariantComponent = observer(function VariantComponent({
   const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
   const { classes } = useStyles()
 
-  const { canvas, canvasRef, error, retry } = useGpuBackend(
+  const { canvas, canvasRef, error, retry } = useRenderingBackend(
     VariantRenderer,
     model,
   )

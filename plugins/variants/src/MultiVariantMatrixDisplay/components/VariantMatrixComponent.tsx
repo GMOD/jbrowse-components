@@ -2,7 +2,7 @@ import { ErrorOverlay } from '@jbrowse/core/ui'
 import {
   getBpDisplayStr,
   getContainingView,
-  useGpuBackend,
+  useRenderingBackend,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -20,7 +20,7 @@ import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
-import type { VariantMatrixBackend } from './variantMatrixBackendTypes.ts'
+import type { VariantMatrixRenderingBackend } from './variantMatrixRenderingBackendTypes.ts'
 import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -31,8 +31,8 @@ const useStyles = makeStyles()(scrollbarStyles)
 export interface VariantMatrixDisplayModel extends VariantDisplayModelBase {
   cellData: MatrixCellData | undefined
   canvasDrawn: boolean
-  startBackend: (backend: VariantMatrixBackend) => void
-  stopBackend: () => void
+  startRenderingBackend: (backend: VariantMatrixRenderingBackend) => void
+  stopRenderingBackend: () => void
   renderNow: () => void
 }
 
@@ -55,7 +55,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
 }) {
   const { classes } = useStyles()
 
-  const { canvas, canvasRef, error, retry } = useGpuBackend(
+  const { canvas, canvasRef, error, retry } = useRenderingBackend(
     VariantMatrixRenderer,
     model,
   )

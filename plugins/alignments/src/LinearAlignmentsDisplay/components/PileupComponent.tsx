@@ -142,7 +142,8 @@ const PileupInner = observer(function PileupInner({
     height,
     showCoverage,
     coverageHeight,
-    pairedArcs,
+    pairedConnections,
+    pairedConnectionsDown,
     sashimiArcs,
     isChainMode,
     coverageDisplayHeight: topOffset,
@@ -240,7 +241,7 @@ const PileupInner = observer(function PileupInner({
           />
         ) : null}
 
-        {pairedArcs === 'down' ? (
+        {pairedConnections !== 'off' && pairedConnectionsDown ? (
           <ResizeHandle
             className={classes.resizeHandle}
             style={{ top: topOffset - YSCALEBAR_LABEL_OFFSET }}
@@ -369,11 +370,33 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { insertSizeTicks, pairedArcs } = model
+  // insertSizeTicks is only set in samplot mode. Down mode opens its band
+  // below coverage, so the TLEN scalebar reads better on the left.
+  const { insertSizeTicks, pairedConnectionsDown } = model
   if (!insertSizeTicks) {
     return null
   }
-  return (
+  return pairedConnectionsDown ? (
+    <svg
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+        height: model.height,
+        width: 50,
+      }}
+    >
+      <g transform="translate(45, 0)">
+        <YScaleBar ticks={insertSizeTicks} orientation="left" />
+      </g>
+      <TlenAxisLabel
+        yTop={insertSizeTicks.yTop}
+        yBottom={insertSizeTicks.yBottom}
+        x={6}
+      />
+    </svg>
+  ) : (
     <svg
       style={{
         position: 'absolute',
@@ -385,12 +408,10 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
       }}
     >
       <YScaleBar ticks={insertSizeTicks} orientation="right" />
-      {pairedArcs === 'samplot' ? (
-        <TlenAxisLabel
-          yTop={insertSizeTicks.yTop}
-          yBottom={insertSizeTicks.yBottom}
-        />
-      ) : null}
+      <TlenAxisLabel
+        yTop={insertSizeTicks.yTop}
+        yBottom={insertSizeTicks.yBottom}
+      />
     </svg>
   )
 })

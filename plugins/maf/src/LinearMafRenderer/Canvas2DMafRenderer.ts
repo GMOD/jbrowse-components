@@ -1,5 +1,5 @@
 import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 
 import { drawMafBlocks } from './drawMafBlocks.ts'
 
@@ -8,9 +8,9 @@ import type {
   MafRegionData,
   MafRenderBlock,
   MafUploadPayload,
-} from './mafBackendTypes.ts'
+} from './mafRenderingBackendTypes.ts'
 
-export class Canvas2DMafRenderer extends Canvas2DPerRegionBackend<
+export class Canvas2DMafRenderer extends Canvas2DPerRegionRenderingBackend<
   MafUploadPayload,
   MafGPURenderState,
   MafRenderBlock,

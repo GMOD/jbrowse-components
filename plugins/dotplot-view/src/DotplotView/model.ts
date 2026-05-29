@@ -2,7 +2,7 @@ import type React from 'react'
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
+import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -40,9 +40,9 @@ import {
 import type { AxisBundle } from './components/util.ts'
 import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type {
-  DotplotBackend,
   DotplotGeometryData,
-} from '../DotplotDisplay/dotplotBackendTypes.ts'
+  DotplotRenderingBackend,
+} from '../DotplotDisplay/dotplotRenderingBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -91,7 +91,7 @@ export default function stateModelFactory(pm: PluginManager) {
       .compose(
         'DotplotView',
         BaseViewModel,
-        GpuLifecycleMixin(),
+        RenderLifecycleMixin(),
         types.model({
           /**
            * #property
@@ -450,11 +450,11 @@ export default function stateModelFactory(pm: PluginManager) {
       // per-display geometry from `geometryByTrackIndex` and runs both upload
       // and render against the shared backend.
       .actions(self => ({
-        startBackend(backend: DotplotBackend) {
+        startRenderingBackend(backend: DotplotRenderingBackend) {
           // Previously-uploaded keys, so we can fire deleteGeometry for
           // entries that disappear between autorun ticks.
           const lastKeys = new Set<number>()
-          self.attachBackend<DotplotBackend>(backend, {
+          self.attachRenderingBackend<DotplotRenderingBackend>(backend, {
             upload: b => {
               const currentKeys = new Set<number>()
               for (const [key, data] of self.geometryByTrackIndex) {

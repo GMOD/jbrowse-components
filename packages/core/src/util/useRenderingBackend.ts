@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { useGpuRenderer } from './useGpuRenderer.ts'
+import { useRenderer } from './useRenderer.ts'
 import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 
 function nodeAlive(model: unknown) {
@@ -14,12 +14,12 @@ function nodeAlive(model: unknown) {
 
 /**
  * Duck-typed shape of an MST display model that owns a GPU backend
- * lifecycle via `GpuLifecycleMixin`. Plugins pass their own
+ * lifecycle via `RenderLifecycleMixin`. Plugins pass their own
  * model; the hook only touches these three actions.
  */
-export interface GpuLifecycleModel<BackendType> {
-  startBackend: (backend: BackendType) => void
-  stopBackend: () => void
+export interface RenderLifecycleModel<RenderingBackendType> {
+  startRenderingBackend: (backend: RenderingBackendType) => void
+  stopRenderingBackend: () => void
   renderNow: () => void
 }
 
@@ -27,35 +27,35 @@ export interface GpuLifecycleModel<BackendType> {
  * One-call replacement for the boilerplate every GPU display component
  * used to repeat:
  *
- *     const { canvasRef, error, retry } = useGpuRenderer(Factory, {
- *       onReady: backend => model.startBackend(backend),
- *       onDispose: () => model.stopBackend(),
+ *     const { canvasRef, error, retry } = useRenderer(Factory, {
+ *       onReady: backend => model.startRenderingBackend(backend),
+ *       onDispose: () => model.stopRenderingBackend(),
  *     })
  *     useTabVisibilityRerender(() => model.renderNow())
  *
  * The model argument is duck-typed to the slot mixin's contract — the
  * three actions are all the hook touches.
  */
-export function useGpuBackend<BackendType extends { dispose(): void }>(
-  factory: (canvas: HTMLCanvasElement) => Promise<BackendType>,
-  model: GpuLifecycleModel<BackendType>,
+export function useRenderingBackend<RenderingBackendType extends { dispose(): void }>(
+  factory: (canvas: HTMLCanvasElement) => Promise<RenderingBackendType>,
+  model: RenderLifecycleModel<RenderingBackendType>,
 ) {
   const opts = useMemo(
     () => ({
-      onReady: (backend: BackendType) => {
+      onReady: (backend: RenderingBackendType) => {
         if (nodeAlive(model)) {
-          model.startBackend(backend)
+          model.startRenderingBackend(backend)
         }
       },
       onDispose: () => {
         if (nodeAlive(model)) {
-          model.stopBackend()
+          model.stopRenderingBackend()
         }
       },
     }),
     [model],
   )
-  const { canvas, canvasRef, error, retry } = useGpuRenderer(factory, opts)
+  const { canvas, canvasRef, error, retry } = useRenderer(factory, opts)
   useTabVisibilityRerender(() => {
     if (nodeAlive(model)) {
       model.renderNow()

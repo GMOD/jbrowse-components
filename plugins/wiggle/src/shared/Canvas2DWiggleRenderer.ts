@@ -2,7 +2,7 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 
 import {
   RENDERING_TYPE_DENSITY,
@@ -21,8 +21,8 @@ import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   SourceRenderData,
-  WiggleBackend,
   WiggleGPURenderState,
+  WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'
 
 // Pure draw entry point per ARCHITECTURE.md "SVG export pipeline". Paints
@@ -128,8 +128,8 @@ export function drawWiggleToCtx<Data>(
 // per-region lifecycle closure (see installPerRegionLifecycle) and is
 // passed to renderBlocks each frame.
 export class Canvas2DWiggleRenderer
-  extends Canvas2DPerRegionBackend<SourceRenderData[], WiggleGPURenderState>
-  implements WiggleBackend
+  extends Canvas2DPerRegionRenderingBackend<SourceRenderData[], WiggleGPURenderState>
+  implements WiggleRenderingBackend
 {
   renderBlocks(
     blocks: RenderBlock[],

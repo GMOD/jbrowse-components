@@ -5,7 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
-import type { VariantMatrixBackend } from './components/variantMatrixBackendTypes.ts'
+import type { VariantMatrixRenderingBackend } from './components/variantMatrixRenderingBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -72,8 +72,8 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      startBackend(backend: VariantMatrixBackend) {
-        self.attachBackend<VariantMatrixBackend>(backend, {
+      startRenderingBackend(backend: VariantMatrixRenderingBackend) {
+        self.attachRenderingBackend<VariantMatrixRenderingBackend>(backend, {
           upload: b => {
             const { cellData } = self
             if (cellData?.mode === 'matrix') {

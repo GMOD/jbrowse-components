@@ -254,38 +254,59 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(bezier.linkedReads).toBe('bezier')
   })
 
-  test('folds showArcs+pairedArcsDown booleans into pairedArcs enum', () => {
+  test('folds showArcs+pairedArcsDown booleans into pairedConnections', () => {
     const off = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       showArcs: false,
       pairedArcsDown: true,
     })
-    expect(off.pairedArcs).toBe('off')
+    expect(off.pairedConnections).toBe('off')
+    expect(off.pairedConnectionsDown).toBe(false)
     expect(off).not.toHaveProperty('showArcs')
     expect(off).not.toHaveProperty('pairedArcsDown')
+    expect(off).not.toHaveProperty('pairedArcs')
 
     const up = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       showArcs: true,
       pairedArcsDown: false,
     })
-    expect(up.pairedArcs).toBe('up')
+    expect(up.pairedConnections).toBe('arc')
+    expect(up.pairedConnectionsDown).toBe(false)
 
     const down = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       showArcs: true,
       pairedArcsDown: true,
     })
-    expect(down.pairedArcs).toBe('down')
+    expect(down.pairedConnections).toBe('arc')
+    expect(down.pairedConnectionsDown).toBe(true)
   })
 
-  test('migrates legacy arcColorByType=samplot to pairedArcs=samplot', () => {
+  test('splits pairedArcs enum into pairedConnections + direction', () => {
+    const samplot = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      pairedArcs: 'samplot',
+    })
+    expect(samplot.pairedConnections).toBe('samplot')
+    expect(samplot.pairedConnectionsDown).toBe(false)
+    expect(samplot).not.toHaveProperty('pairedArcs')
+
+    const down = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      pairedArcs: 'down',
+    })
+    expect(down.pairedConnections).toBe('arc')
+    expect(down.pairedConnectionsDown).toBe(true)
+  })
+
+  test('migrates legacy arcColorByType=samplot to pairedConnections=samplot', () => {
     const result = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       arcColorByType: 'samplot',
       pairedArcs: 'up',
     })
-    expect(result.pairedArcs).toBe('samplot')
+    expect(result.pairedConnections).toBe('samplot')
     expect(result.arcColorByType).toBe('insertSizeAndOrientation')
   })
 
@@ -296,7 +317,8 @@ describe('migrateAlignmentsSnapshot', () => {
       pairedArcs: 'down',
     })
     expect(result.arcColorByType).toBe('insertSize')
-    expect(result.pairedArcs).toBe('down')
+    expect(result.pairedConnections).toBe('arc')
+    expect(result.pairedConnectionsDown).toBe(true)
   })
 
   test('folds showSashimiArcs+sashimiArcsDown booleans into sashimiArcs enum', () => {

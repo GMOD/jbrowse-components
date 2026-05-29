@@ -1,7 +1,7 @@
 import type {
   ArcDirection,
   LinkedReadsMode,
-  PairedArcsMode,
+  PairedConnectionsMode,
 } from '../../LinearAlignmentsDisplay/constants.ts'
 
 // Single home for each mode-enum's user-visible labels, so menu code never
@@ -12,13 +12,15 @@ export const ARC_DIRECTION_OPTIONS: { value: ArcDirection; label: string }[] = [
   { value: 'down', label: 'Pointing down' },
 ]
 
-// Paired-arcs adds a fourth 'samplot' option (always pointing-up over
-// coverage, with discordant-only filter and DEL/DUP/INV/BND coloring).
-export const PAIRED_ARCS_OPTIONS: {
-  value: PairedArcsMode
+// Paired-connection rendering mode, independent of direction
+// (pairedConnectionsDown). 'arc' = regular arcs; 'samplot' = flat lines,
+// discordant-only, DEL/DUP/INV/BND coloring.
+export const PAIRED_CONNECTIONS_OPTIONS: {
+  value: PairedConnectionsMode
   label: string
 }[] = [
-  ...ARC_DIRECTION_OPTIONS,
+  { value: 'off', label: 'Off' },
+  { value: 'arc', label: 'Arcs' },
   { value: 'samplot', label: 'Samplot (discordant only)' },
 ]
 

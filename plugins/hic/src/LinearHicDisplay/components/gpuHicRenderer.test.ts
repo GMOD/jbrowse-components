@@ -6,7 +6,7 @@ import {
   HIC_PASSES,
 } from './GpuHicRenderer.ts'
 
-import type { HicRenderState } from './hicBackendTypes.ts'
+import type { HicRenderState } from './hicRenderingBackendTypes.ts'
 
 function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
   return {

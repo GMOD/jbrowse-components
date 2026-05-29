@@ -24,17 +24,17 @@ interface RegionUploadTarget<T> {
  * memoizes per ref-group). With an always-fresh map every region re-uploads,
  * which is correct but defeats the optimization.
  *
- * Hold one instance per backend lifecycle (call from `startBackend`); the
+ * Hold one instance per backend lifecycle (call from `startRenderingBackend`); the
  * closure keeps the last-uploaded references.
  */
 export function createRegionUploadSync<T, B extends RegionUploadTarget<T>>() {
   const uploaded = new Map<number, T>()
-  let lastBackend: B | undefined
+  let lastRenderingBackend: B | undefined
 
   return function syncRegions(backend: B, regions: ReadonlyMap<number, T>) {
-    if (backend !== lastBackend) {
+    if (backend !== lastRenderingBackend) {
       uploaded.clear()
-      lastBackend = backend
+      lastRenderingBackend = backend
     }
     const active = new Set<number>()
     for (const [displayedRegionIndex, data] of regions) {

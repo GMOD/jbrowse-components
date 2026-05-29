@@ -1,4 +1,4 @@
-import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
+import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
 import {
   hideTrackGeneric,
   showTrackGeneric,
@@ -9,10 +9,10 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
-  SyntenyBackend,
   SyntenyRenderState,
+  SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
-} from '../LinearSyntenyDisplay/syntenyBackendTypes.ts'
+} from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -31,7 +31,7 @@ export function linearSyntenyViewHelperModelFactory(
   return types
     .compose(
       'LinearSyntenyViewHelper',
-      GpuLifecycleMixin(),
+      RenderLifecycleMixin(),
       types.model({
         /**
          * #property
@@ -60,12 +60,12 @@ export function linearSyntenyViewHelperModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Typed accessor for the slot-mixin-owned `currentBackend`. All
+       * Typed accessor for the slot-mixin-owned `currentRenderingBackend`. All
        * synteny displays within the level upload their geometry to the same
        * backend and render onto one canvas.
        */
-      get gpuBackend(): SyntenyBackend | undefined {
-        return self.currentBackend as SyntenyBackend | undefined
+      get gpuRenderingBackend(): SyntenyRenderingBackend | undefined {
+        return self.currentRenderingBackend as SyntenyRenderingBackend | undefined
       },
     }))
     .actions(self => ({
@@ -189,21 +189,21 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #action
        */
-      startBackend(backend: SyntenyBackend) {
+      startRenderingBackend(backend: SyntenyRenderingBackend) {
         // renderInstanceData is MST-cached; its reference is stable while
         // upstream deps are unchanged. Track what we last uploaded per
         // key so an upload-autorun re-fire from one display doesn't push
         // identical bytes back to the GPU for the others.
         const lastUploaded = new Map<number, SyntenyInstanceData>()
-        let prevUploadBackend: SyntenyBackend | undefined
-        self.attachBackend<SyntenyBackend>(backend, {
+        let prevUploadRenderingBackend: SyntenyRenderingBackend | undefined
+        self.attachRenderingBackend<SyntenyRenderingBackend>(backend, {
           upload: b => {
             // When the backend instance changes (e.g. canvas remounted after
             // context loss or Suspense), the new backend has no geometry —
             // clear the cache to force a full re-upload.
-            if (b !== prevUploadBackend) {
+            if (b !== prevUploadRenderingBackend) {
               lastUploaded.clear()
-              prevUploadBackend = b
+              prevUploadRenderingBackend = b
             }
             const currentKeys = new Set<number>()
             for (const [key, data] of self.geometryByDisplayKey) {

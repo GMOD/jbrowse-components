@@ -1,9 +1,9 @@
 import type { ManhattanRpcResult } from '../../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanHit } from '../findManhattanHit.ts'
 import type {
-  ManhattanBackend,
   ManhattanRenderState,
-} from '../manhattanBackendTypes.ts'
+  ManhattanRenderingBackend,
+} from '../manhattanRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
@@ -12,7 +12,7 @@ import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 // a circular type between stateModelFactory.ts (lazy-imports the component)
 // and the component (which would otherwise import the inferred model type).
 export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
-  ManhattanBackend,
+  ManhattanRenderingBackend,
   ManhattanRpcResult
 > {
   renderBlocks: RenderBlock[]

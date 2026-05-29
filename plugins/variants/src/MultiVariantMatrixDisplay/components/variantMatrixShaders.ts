@@ -4,7 +4,7 @@ import {
   INSTANCE_STRIDE_F32,
 } from './shaders/variantMatrix.generated.ts'
 
-import type { VariantMatrixUploadData } from './variantMatrixBackendTypes.ts'
+import type { VariantMatrixUploadData } from './variantMatrixRenderingBackendTypes.ts'
 
 export function interleaveMatrixInstances(data: VariantMatrixUploadData) {
   const count = data.numCells

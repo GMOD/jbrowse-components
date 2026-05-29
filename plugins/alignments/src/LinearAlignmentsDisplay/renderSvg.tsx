@@ -125,16 +125,26 @@ export async function renderSvg(
         </g>
       ) : null}
       {model.insertSizeTicks ? (
-        // 50 matches the on-screen SVG width for the insert-size scale bar
-        <g transform={`translate(${totalWidth - 50})`}>
-          <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
-          {model.pairedArcs === 'samplot' ? (
+        // 50 matches the on-screen SVG width for the insert-size scale bar.
+        // Down mode puts the TLEN scalebar on the left (matches PileupComponent).
+        model.pairedConnectionsDown ? (
+          <g transform="translate(45)">
+            <YScaleBar ticks={model.insertSizeTicks} orientation="left" />
+            <TlenAxisLabel
+              yTop={model.insertSizeTicks.yTop}
+              yBottom={model.insertSizeTicks.yBottom}
+              x={6}
+            />
+          </g>
+        ) : (
+          <g transform={`translate(${totalWidth - 50})`}>
+            <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
             <TlenAxisLabel
               yTop={model.insertSizeTicks.yTop}
               yBottom={model.insertSizeTicks.yBottom}
             />
-          ) : null}
-        </g>
+          </g>
+        )
       ) : null}
     </>
   )

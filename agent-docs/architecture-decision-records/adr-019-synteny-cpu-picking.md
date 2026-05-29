@@ -58,7 +58,7 @@ Replace the GPU readback path with CPU picking shared between both backends.
 - `GpuSyntenyRenderer` keeps a reference to each region's
   `SyntenyInstanceData` (previously thrown away after `interleaveInstances`)
   and creates a 1×1 `OffscreenCanvas` solely for `isPointInPath` evaluation.
-- `SyntenyBackend.pick` becomes synchronous (`(x, y) => SyntenyPickResult |
+- `SyntenyRenderingBackend.pick` becomes synchronous (`(x, y) => SyntenyPickResult |
   undefined`). The async-callback overload is removed.
 
 Deleted:

@@ -4,7 +4,7 @@ import {
   INSTANCE_STRIDE_F32,
 } from './shaders/variant.generated.ts'
 
-import type { VariantUploadData } from './variantBackendTypes.ts'
+import type { VariantUploadData } from './variantRenderingBackendTypes.ts'
 
 export function interleaveVariantInstances(data: VariantUploadData) {
   const count = data.numCells

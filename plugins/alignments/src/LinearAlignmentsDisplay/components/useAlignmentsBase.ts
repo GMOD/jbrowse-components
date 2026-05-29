@@ -1,7 +1,7 @@
 import type React from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 
-import { clamp, getContainingView, useGpuBackend } from '@jbrowse/core/util'
+import { clamp, getContainingView, useRenderingBackend } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
@@ -46,7 +46,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     canvasRef,
     error: gpuError,
     retry,
-  } = useGpuBackend(AlignmentsRenderer, model)
+  } = useRenderingBackend(AlignmentsRenderer, model)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,

@@ -4,7 +4,7 @@ import {
   INSTANCE_STRIDE_F32,
 } from './shaders/maf.generated.ts'
 
-import type { MafBlock } from './mafBackendTypes.ts'
+import type { MafBlock } from './mafRenderingBackendTypes.ts'
 
 interface DecodedRun {
   startBp: number

@@ -1,6 +1,6 @@
 import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
 
-import type { MafBlock } from '../LinearMafRenderer/mafBackendTypes.ts'
+import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { InsertionEntry, MismatchEntry } from '@jbrowse/alignments-core'
 
 const N_UPPER = 78 // 'N'

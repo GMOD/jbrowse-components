@@ -12,6 +12,7 @@
  *   - showReadCloud → linkedReads enum
  *   - showLinkedReads + showLinkedReadsAsBeziers booleans → linkedReads enum
  *   - showArcs + pairedArcsDown booleans → pairedArcs enum
+ *   - pairedArcs enum → pairedConnections mode + pairedConnectionsDown direction
  *   - showSashimiArcs + sashimiArcsDown booleans → sashimiArcs enum
  *   - height → heightPreConfig
  *   - Individual override properties → configOverrides map
@@ -126,7 +127,7 @@ export function migrateAlignmentsSnapshot(
   result = migrateBooleanPairsToEnum(result)
 
   // arcColorByType: 'samplot' → pairedArcs: 'samplot' (samplot is now a
-  // pairedArcs mode rather than a color scheme).
+  // paired-connections mode rather than a color scheme).
   if (result.arcColorByType === 'samplot') {
     result = {
       ...result,
@@ -135,8 +136,27 @@ export function migrateAlignmentsSnapshot(
     }
   }
 
+  // Split the pairedArcs enum into orthogonal mode + direction fields
+  result = migratePairedConnections(result)
+
   // Migrate individual override properties → configOverrides
   return migrateOverrideProperties(result)
+}
+
+// pairedArcs ('off'|'up'|'down'|'samplot') conflated render mode with
+// direction. Split into pairedConnections ('off'|'arc'|'samplot') and the
+// orthogonal pairedConnectionsDown boolean.
+function migratePairedConnections(snap: Record<string, unknown>) {
+  const { pairedArcs, ...rest } = snap
+  if (pairedArcs === undefined) {
+    return snap
+  }
+  return {
+    ...rest,
+    pairedConnections:
+      pairedArcs === 'off' || pairedArcs === 'samplot' ? pairedArcs : 'arc',
+    pairedConnectionsDown: pairedArcs === 'down',
+  }
 }
 
 function migrateBooleanPairsToEnum(snap: Record<string, unknown>) {

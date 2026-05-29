@@ -2,15 +2,15 @@ import {
   makeRampFillStyleLut,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DMonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import { Canvas2DGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 
 import { lookupColorRamp, mapHicCount } from './colorRamp.ts'
 
 import type {
-  HicBackend,
   HicRenderState,
+  HicRenderingBackend,
   HicUploadData,
-} from './hicBackendTypes.ts'
+} from './hicRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
@@ -65,8 +65,8 @@ export function drawHicBlocks(
 }
 
 export class Canvas2DHicRenderer
-  extends Canvas2DMonolithicBackend<HicUploadData, HicRenderState>
-  implements HicBackend
+  extends Canvas2DGlobalRenderingBackend<HicUploadData, HicRenderState>
+  implements HicRenderingBackend
 {
   private colorRamp: Uint8Array | null = null
 

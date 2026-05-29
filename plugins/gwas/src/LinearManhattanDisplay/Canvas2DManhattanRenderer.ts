@@ -3,10 +3,10 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
-import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -76,7 +76,7 @@ export function drawManhattanBlocks(
   }
 }
 
-export class Canvas2DManhattanRenderer extends Canvas2DPerRegionBackend<
+export class Canvas2DManhattanRenderer extends Canvas2DPerRegionRenderingBackend<
   ManhattanRpcResult,
   ManhattanRenderState
 > {

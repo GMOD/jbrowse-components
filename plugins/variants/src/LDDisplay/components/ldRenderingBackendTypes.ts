@@ -17,9 +17,9 @@ export interface LDUploadData {
   cellSizes?: Float32Array
 }
 
-import type { MonolithicBackend } from '@jbrowse/core/gpu/monolithicBackend'
+import type { GlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 
-export interface LDBackend extends MonolithicBackend<
+export interface LDRenderingBackend extends GlobalRenderingBackend<
   LDUploadData,
   LDRenderState
 > {

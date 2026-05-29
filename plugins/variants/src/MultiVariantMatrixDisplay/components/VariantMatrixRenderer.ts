@@ -1,4 +1,4 @@
-import { createBackend } from '@jbrowse/core/gpu/createBackend'
+import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
 
 import { Canvas2DVariantMatrixRenderer } from './Canvas2DVariantMatrixRenderer.ts'
 import {
@@ -7,15 +7,15 @@ import {
   VARIANT_MATRIX_UNIFORM_BYTE_SIZE,
 } from './GpuVariantMatrixRenderer.ts'
 
-import type { VariantMatrixBackend } from './variantMatrixBackendTypes.ts'
+import type { VariantMatrixRenderingBackend } from './variantMatrixRenderingBackendTypes.ts'
 
 export type {
   MatrixRenderState,
-  VariantMatrixBackend,
-} from './variantMatrixBackendTypes.ts'
+  VariantMatrixRenderingBackend,
+} from './variantMatrixRenderingBackendTypes.ts'
 
 export function VariantMatrixRenderer(canvas: HTMLCanvasElement) {
-  return createBackend<VariantMatrixBackend>(
+  return createRenderingBackend<VariantMatrixRenderingBackend>(
     canvas,
     VARIANT_MATRIX_PASSES,
     VARIANT_MATRIX_UNIFORM_BYTE_SIZE,

@@ -10,7 +10,7 @@ import type { AnyConfigurationModel } from '../configuration/index.ts'
 
 type DriverClass = BaseRpcDriver
 
-interface BackendConfigurations {
+interface RenderingBackendConfigurations {
   WebWorkerRpcDriver?: Omit<
     ConstructorParameters<typeof WebWorkerRpcDriver>[0],
     'config'
@@ -51,14 +51,14 @@ export default class RpcManager {
 
   pluginManager: PluginManager
   mainConfiguration: AnyConfigurationModel
-  backendConfigurations: BackendConfigurations
+  backendConfigurations: RenderingBackendConfigurations
   driverObjects: Map<string, DriverClass>
   driverFactories: Map<string, RpcDriverFactory>
 
   constructor(
     pluginManager: PluginManager,
     mainConfiguration: AnyConfigurationModel,
-    backendConfigurations: BackendConfigurations,
+    backendConfigurations: RenderingBackendConfigurations,
   ) {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration

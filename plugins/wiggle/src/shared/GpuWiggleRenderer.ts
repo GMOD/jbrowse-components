@@ -1,6 +1,6 @@
 import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { GpuPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
@@ -11,8 +11,8 @@ import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type {
   SourceRenderData,
-  WiggleBackend,
   WiggleGPURenderState,
+  WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'
 
 const PASS_FILL = 'fill'
@@ -37,8 +37,8 @@ export const WIGGLE_PASSES: PassDescriptor[] = [
 ]
 
 export class GpuWiggleRenderer
-  extends GpuPerRegionBackend<SourceRenderData[], WiggleGPURenderState>
-  implements WiggleBackend
+  extends GpuPerRegionRenderingBackend<SourceRenderData[], WiggleGPURenderState>
+  implements WiggleRenderingBackend
 {
   private uniformF32: Float32Array
   private uniformI32: Int32Array

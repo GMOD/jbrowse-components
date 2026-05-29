@@ -4,10 +4,10 @@ import { splitHiLo } from './hiLoUtils.ts'
 import * as dotplotShader from './shaders/dotplot.generated.ts'
 
 import type {
-  DotplotBackend,
   DotplotGeometryData,
   DotplotRenderState,
-} from './dotplotBackendTypes.ts'
+  DotplotRenderingBackend,
+} from './dotplotRenderingBackendTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_LINE = 'line'
@@ -30,7 +30,7 @@ function hiPart(cumBp: number) {
   return Math.floor(cumBp / 4096) * 4096
 }
 
-export class GpuDotplotRenderer implements DotplotBackend {
+export class GpuDotplotRenderer implements DotplotRenderingBackend {
   private hal: GpuHal
   private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)

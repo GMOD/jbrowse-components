@@ -39,10 +39,11 @@ export type LinkedReadsMode = 'off' | 'normal' | 'bezier'
 // coverage band; 'down' opens its own band below coverage.
 export type ArcDirection = 'off' | 'up' | 'down'
 
-// Paired-end arc mode. Adds 'samplot' on top of ArcDirection: samplot
-// always renders pointing-up (over coverage) as flat lines at Y=|tlen|,
-// colored DEL/DUP/INV/BND, and skips concordant FR pairs.
-export type PairedArcsMode = ArcDirection | 'samplot'
+// How paired-end connections are rendered. Orthogonal to direction
+// (pairedConnectionsDown): 'arc' draws regular arcs colored by arcColorByType;
+// 'samplot' draws flat lines at Y=|tlen| colored DEL/DUP/INV/BND, discordant
+// pairs only.
+export type PairedConnectionsMode = 'off' | 'arc' | 'samplot'
 
 export type InsertionType = 'large' | 'long' | 'small'
 

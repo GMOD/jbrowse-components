@@ -1,4 +1,4 @@
-import { createBackend } from '@jbrowse/core/gpu/createBackend'
+import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
 
 import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
 import {
@@ -7,10 +7,10 @@ import {
   GpuDotplotRenderer,
 } from './GpuDotplotRenderer.ts'
 
-import type { DotplotBackend } from './dotplotBackendTypes.ts'
+import type { DotplotRenderingBackend } from './dotplotRenderingBackendTypes.ts'
 
 export function createDotplotRenderer(canvas: HTMLCanvasElement) {
-  return createBackend<DotplotBackend>(
+  return createRenderingBackend<DotplotRenderingBackend>(
     canvas,
     DOTPLOT_PASSES,
     DOTPLOT_UNIFORM_BYTE_SIZE,

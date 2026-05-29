@@ -3,12 +3,12 @@ import {
   writeBpRangeUniforms,
 } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { GpuPerRegionBackend } from '@jbrowse/core/gpu/perRegionBackend'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as shader from './shaders/manhattan.generated.ts'
 
-import type { ManhattanRenderState } from './manhattanBackendTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
@@ -21,7 +21,7 @@ export const MANHATTAN_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
 ]
 
-export class GpuManhattanRenderer extends GpuPerRegionBackend<
+export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
   ManhattanRpcResult,
   ManhattanRenderState
 > {

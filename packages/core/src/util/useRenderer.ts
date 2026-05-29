@@ -32,7 +32,7 @@ interface UseGpuRendererOptions<R> {
  * page navigation fires `pagehide` on every mounted component, which
  * disposes that component's backend. No global tracking needed.
  */
-export function useGpuRenderer<R extends { dispose(): void }>(
+export function useRenderer<R extends { dispose(): void }>(
   factory: (canvas: HTMLCanvasElement) => Promise<R>,
   opts?: UseGpuRendererOptions<R>,
 ) {

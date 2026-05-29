@@ -1,6 +1,6 @@
 import { Canvas2DVariantMatrixRenderer } from './Canvas2DVariantMatrixRenderer.ts'
 
-import type { VariantMatrixUploadData } from './variantMatrixBackendTypes.ts'
+import type { VariantMatrixUploadData } from './variantMatrixRenderingBackendTypes.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 

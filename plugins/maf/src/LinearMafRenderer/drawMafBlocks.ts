@@ -6,7 +6,7 @@ import {
 import { renderBases } from './rendering/bases.ts'
 import { renderInsertions } from './rendering/insertions.ts'
 
-import type { MafGPURenderState, MafRegionData } from './mafBackendTypes.ts'
+import type { MafGPURenderState, MafRegionData } from './mafRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 

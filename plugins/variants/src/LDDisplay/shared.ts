@@ -26,7 +26,7 @@ import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
-import type { LDBackend } from './components/ldBackendTypes.ts'
+import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -385,8 +385,8 @@ export default function sharedModelFactory(
        * the same rpcData object, so a single identity-diffed slot handles
        * both uploads.
        */
-      startBackend(backend: LDBackend) {
-        self.attachBackend<LDBackend>(backend, {
+      startRenderingBackend(backend: LDRenderingBackend) {
+        self.attachRenderingBackend<LDRenderingBackend>(backend, {
           upload: b => {
             const d = self.rpcData
             if (!d) {

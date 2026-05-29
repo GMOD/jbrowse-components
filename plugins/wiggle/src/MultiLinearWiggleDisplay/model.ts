@@ -47,7 +47,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { WiggleBackend } from '@jbrowse/wiggle-core'
+import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 type LGV = LinearGenomeViewModel
 
@@ -254,7 +254,7 @@ export default function stateModelFactory(
           }
         },
 
-        startBackend(backend: WiggleBackend) {
+        startRenderingBackend(backend: WiggleRenderingBackend) {
           installPerRegionLifecycle(
             self,
             self.rpcDataMap,

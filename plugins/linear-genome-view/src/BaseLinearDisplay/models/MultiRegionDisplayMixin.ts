@@ -1,4 +1,4 @@
-import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
+import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import {
   getContainingTrack,
@@ -34,7 +34,7 @@ export type { FetchContext } from './FetchMixin.ts'
  *
  * extends
  * - [RegionTooLargeMixin](../regiontoolargemixin)
- * - [GpuLifecycleMixin](../gpulifecyclemixin)
+ * - [RenderLifecycleMixin](../gpulifecyclemixin)
  * - [FetchMixin](../fetchmixin)
  */
 export default function MultiRegionDisplayMixin() {
@@ -42,7 +42,7 @@ export default function MultiRegionDisplayMixin() {
     .compose(
       'MultiRegionDisplayMixin',
       RegionTooLargeMixin(),
-      GpuLifecycleMixin(),
+      RenderLifecycleMixin(),
       FetchMixin(),
       types.model({}),
     )

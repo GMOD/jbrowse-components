@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-`GpuLifecycleMixin.attachBackend` spawns one `upload` autorun
+`RenderLifecycleMixin.attachRenderingBackend` spawns one `upload` autorun
 that re-fires whenever any observable it reads changes. The natural shape for a
 per-region streamed display (`uploadRegion(idx, data) + pruneRegions(active)`)
 is to iterate the whole `rpcDataMap` inside the upload callback:
@@ -40,7 +40,7 @@ upload: b => {
     if (!perKeyDisposers.has(key)) {
       perKeyDisposers.set(key, autorun(() => {
         const data = rpcDataMap.get(key)        // per-key value atom
-        const bCurrent = self.currentBackend // tracks backend swap
+        const bCurrent = self.currentRenderingBackend // tracks backend swap
         if (data !== undefined && bCurrent !== undefined) {
           bCurrent.uploadRegion(key, encode(data))
           self.renderNow()
@@ -56,7 +56,7 @@ upload: b => {
 changes. `ObservableMap.get(existingKey)` tracks that key's `hasMap_` entry.
 Adding key K wakes the key-manager loop and that single new per-key autorun;
 existing per-key autoruns do **not** re-fire. Net cost: O(1) GPU upload per
-new region, O(N) when `gpuProps()` or `currentBackend` changes.
+new region, O(N) when `gpuProps()` or `currentRenderingBackend` changes.
 
 The `encode` callback runs inside the per-key autorun, so any observable it
 reads (e.g. `self.gpuProps()`) is auto-tracked — color/scale changes correctly
@@ -87,13 +87,13 @@ N is 4–8 in realistic zooms.
 ## Consequences
 
 - Wiggle whole-genome load: 24 uploads instead of 576. Perceptible perf win.
-- Wiggle's `startBackend` body is 4 lines; the autorun bookkeeping
+- Wiggle's `startRenderingBackend` body is 4 lines; the autorun bookkeeping
   lives in the shared helper.
 - `gpuProps` change still re-encodes every loaded region (intentional) — the
   shared encoder dep is read inside each per-key autorun.
 - Context-loss recovery works because per-key autoruns track
-  `currentBackend`; when the slot mixin reassigns it on
-  `attachBackend(newBackend)`, every per-key autorun fires and re-uploads
+  `currentRenderingBackend`; when the slot mixin reassigns it on
+  `attachRenderingBackend(newRenderingBackend)`, every per-key autorun fires and re-uploads
   to the new backend. Closure-capturing the outer `b` would break this.
 - `installPerRegionWiggleLifecycle.test.ts` locks in the upload-count contract
   and the dep-tracking shape (5 tests covering O(N) arrivals, encoder dep
