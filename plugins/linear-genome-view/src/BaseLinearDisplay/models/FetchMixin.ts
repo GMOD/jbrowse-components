@@ -33,33 +33,71 @@ export interface FetchContext {
 //
 // Composed by both per-region (MultiRegionDisplayMixin) and single-data
 // (GlobalDataDisplayMixin) families.
+/**
+ * #stateModel FetchMixin
+ * #category display
+ *
+ * Cancel-safe fetch lifecycle for any display that loads data over RPC. Owns
+ * the entire fetch state machine (stop-token rotation, staleness tracking,
+ * error capture, status reporting); consumers see only `runFetch`,
+ * `cancelFetch`, `isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
+ */
 export default function FetchMixin() {
   return types
     .model('FetchMixin', {})
     .volatile(() => ({
+      /**
+       * #volatile
+       * stop token of the in-flight fetch, or undefined when idle
+       */
       activeStopToken: undefined as StopToken | undefined,
+      /**
+       * #volatile
+       * bumps at every fetch end; autoruns read it to re-evaluate, and it
+       * doubles as the staleness epoch inside runFetch
+       */
       fetchGeneration: 0,
 
+      /**
+       * #volatile
+       * last non-abort fetch error, or undefined
+       */
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
 
+      /**
+       * #volatile
+       * work-in-progress status string
+       */
       statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * true while a fetch is active
+       */
       get isLoading() {
         return self.activeStopToken !== undefined
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setError(error?: unknown) {
         self.error = error
       },
+      /**
+       * #action
+       */
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
-      // Cancel any in-flight fetch and bump fetchGeneration. Always bumps —
-      // callers (clearAllRpcData, invalidateLoadedRegions) rely on the
-      // bump to retrigger fetch autoruns even when no fetch was active.
+      /**
+       * #action
+       * cancel any in-flight fetch and bump fetchGeneration (always bumps, so
+       * callers can retrigger fetch autoruns even when nothing was in flight)
+       */
       cancelFetch() {
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
@@ -68,12 +106,13 @@ export default function FetchMixin() {
         }
         self.fetchGeneration++
       },
-      // Run a cancel-safe fetch. Any in-flight fetch is cancelled first.
-      // The work callback receives a FetchContext with a stopToken to
-      // forward to the RPC and an isStale() check so it can short-circuit
-      // commits when the user has moved on. Errors are caught (abort
-      // exceptions silently, others stored in self.error if not stale).
-      // The finally block clears the stop token and bumps fetchGeneration.
+      /**
+       * #action
+       * Run a cancel-safe fetch (cancels any prior). The work callback gets a
+       * FetchContext with a stopToken to forward to the RPC and an isStale()
+       * check to short-circuit commits once the user has moved on. Abort
+       * errors are swallowed; others are stored in `error` if not stale.
+       */
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)

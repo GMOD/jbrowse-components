@@ -24,9 +24,22 @@ extends
 
 - [BaseViewModel](../baseviewmodel)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseViewModel](../baseviewmodel)
+
+**Properties:** id, displayName, minimized
+
+**Getters:** menuItems
+
+**Actions:** setDisplayName, setWidth, setMinimized
+
 ### LinearComparativeView - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -35,7 +48,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -44,7 +57,7 @@ ISimpleType<"LinearComparativeView">
 type: types.literal('LinearComparativeView')
 ```
 
-#### propertie: trackSelectorType
+#### property: trackSelectorType
 
 ```js
 // type signature
@@ -53,7 +66,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### propertie: showIntraviewLinks
+#### property: showIntraviewLinks
 
 ```js
 // type signature
@@ -62,7 +75,7 @@ true
 showIntraviewLinks: true
 ```
 
-#### propertie: linkViews
+#### property: linkViews
 
 ```js
 // type signature
@@ -71,7 +84,7 @@ false
 linkViews: false
 ```
 
-#### propertie: interactiveOverlay
+#### property: interactiveOverlay
 
 ```js
 // type signature
@@ -80,7 +93,7 @@ false
 interactiveOverlay: false
 ```
 
-#### propertie: scrollZoom
+#### property: scrollZoom
 
 ```js
 // type signature
@@ -89,16 +102,7 @@ false
 scrollZoom: false
 ```
 
-#### propertie: showDynamicControls
-
-```js
-// type signature
-true
-// code
-showDynamicControls: true
-```
-
-#### propertie: levels
+#### property: levels
 
 ```js
 // type signature
@@ -107,13 +111,13 @@ IArrayType<IAnyModelType>
 levels: types.array(LinearSyntenyViewHelper!)
 ```
 
-#### propertie: views
+#### property: views
 
 currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 16 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 17 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -121,7 +125,7 @@ views: types.array(
         )
 ```
 
-#### propertie: viewTrackConfigs
+#### property: viewTrackConfigs
 
 this represents tracks specific to this view specifically used for read vs ref
 dotplots where this track would not really apply elsewhere
@@ -133,6 +137,29 @@ IArrayType<IAnyModelType>
 viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         )
+```
+
+### LinearComparativeView - Volatiles
+
+#### volatile: width
+
+```js
+// type signature
+number | undefined
+// code
+width: undefined as number | undefined
+```
+
+#### volatile: isLoading
+
+Set to true when the view is being initialized from a launch spec to avoid
+showing the import form during loading
+
+```js
+// type signature
+false
+// code
+isLoading: false
 ```
 
 ### LinearComparativeView - Getters
@@ -219,6 +246,18 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 
 ### LinearComparativeView - Actions
 
+#### action: reconcileLevels
+
+Reconcile the levels array to the views array: exactly one synteny level per gap
+between adjacent views (N views -> N-1 levels). Grows or shrinks from the end,
+preserving existing levels and their tracks. The single source of truth for the
+views/levels invariant.
+
+```js
+// type signature
+reconcileLevels: () => void
+```
+
 #### action: setWidth
 
 ```js
@@ -244,7 +283,28 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 16 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ......
+removeView: (view: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }> & ... 19 more ... & IStateTreeNode<...>) => void
+```
+
+#### action: addView
+
+Push a new genome row. The new trailing level starts with no synteny tracks.
+
+```js
+// type signature
+addView: (view: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }>>) => void
+```
+
+#### action: removeLastRow
+
+Drop the bottom genome row and its synteny level. Only terminal removal is
+supported: a level's `level` index addresses views[level]/[level+1], so removing
+a middle row would require reindexing every level below it. Growth and shrinkage
+both happen at the end of the chain.
+
+```js
+// type signature
+removeLastRow: () => void
 ```
 
 #### action: setLinkViews
@@ -261,13 +321,6 @@ setLinkViews: (arg: boolean) => void
 setScrollZoom: (arg: boolean) => void
 ```
 
-#### action: setShowDynamicControls
-
-```js
-// type signature
-setShowDynamicControls: (arg: boolean) => void
-```
-
 #### action: activateTrackSelector
 
 ```js
@@ -279,21 +332,21 @@ activateTrackSelector: (level: number) => Widget
 
 ```js
 // type signature
-toggleTrack: (trackId: string, level?: number) => void
+toggleTrack: (trackId: string, level?: any) => void
 ```
 
 #### action: showTrack
 
 ```js
 // type signature
-showTrack: (trackId: string, level?: number, initialSnapshot?: {}) => void
+showTrack: (trackId: string, level?: any, initialSnapshot?: any) => void
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string, level?: number) => void
+hideTrack: (trackId: string, level?: any) => void
 ```
 
 #### action: squareView
@@ -336,4 +389,20 @@ expandAllViews: () => void
 ```js
 // type signature
 autoScaleLevelHeights: () => void
+```
+
+#### action: appendRow
+
+Append an assembly to the bottom of the stack and optionally show a synteny
+track on the new level connecting it to the previous bottom row. A synteny
+dataset is an edge between two adjacent assemblies, so rows are only ever added
+at the chain's end.
+
+The new row is created with a LinearGenomeView `init` — its own afterAttach
+autorun loads the assembly regions and navigates (whole genome, or `loc` when
+given), so we don't reimplement that imperatively here.
+
+```js
+// type signature
+appendRow: ({ assembly, loc, syntenyTrackId, }: { assembly: string; loc?: string | undefined; syntenyTrackId?: string | undefined; }) => void
 ```

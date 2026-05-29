@@ -1,0 +1,76 @@
+---
+id: globaldatadisplaymixin
+title: GlobalDataDisplayMixin
+---
+
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
+
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalDataDisplayMixin.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/GlobalDataDisplayMixin.md)
+
+## Docs
+
+Mixin for GPU displays that hold a single global (non-regional) dataset — HiC
+contact matrix, LD triangle, variant matrix, etc.
+
+Composes:
+
+- GpuLifecycleMixin (attachBackend, renderNow, …)
+- RegionTooLargeMixin (regionTooLarge, regionCannotBeRendered, …)
+- FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
+  fetchGeneration)
+
+Unlike MultiRegionDisplayMixin, this mixin owns no per-region state and installs
+no autoruns. Fetch triggering is left entirely to the display's own afterAttach
+autorun so each display can express its own trigger conditions (HiC: viewport
+change; LD: viewport + showLDTriangle + etc).
+
+extends
+
+- [RegionTooLargeMixin](../regiontoolargemixin)
+- [GpuLifecycleMixin](../gpulifecyclemixin)
+- [FetchMixin](../fetchmixin)
+
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload
+
+### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
+attachBackend
+
+### Available via [FetchMixin](../fetchmixin)
+
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+
+**Getters:** isLoading
+
+**Actions:** setError, setStatusMessage, cancelFetch, runFetch

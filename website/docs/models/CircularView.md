@@ -24,9 +24,22 @@ extends
 
 - [BaseViewModel](../baseviewmodel)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseViewModel](../baseviewmodel)
+
+**Properties:** id, displayName, minimized
+
+**Getters:** menuItems
+
+**Actions:** setDisplayName, setWidth, setMinimized
+
 ### CircularView - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -35,7 +48,7 @@ ISimpleType<"CircularView">
 type: types.literal('CircularView')
 ```
 
-#### propertie: offsetRadians
+#### property: offsetRadians
 
 similar to offsetPx in linear genome view
 
@@ -46,7 +59,7 @@ number
 offsetRadians: defaultOffsetRadians
 ```
 
-#### propertie: bpPerPx
+#### property: bpPerPx
 
 ```js
 // type signature
@@ -55,7 +68,7 @@ number
 bpPerPx: defaultBpPerPx
 ```
 
-#### propertie: tracks
+#### property: tracks
 
 ```js
 // type signature
@@ -66,7 +79,7 @@ tracks: types.array(
         )
 ```
 
-#### propertie: hideVerticalResizeHandle
+#### property: hideVerticalResizeHandle
 
 ```js
 // type signature
@@ -75,7 +88,7 @@ false
 hideVerticalResizeHandle: false
 ```
 
-#### propertie: hideTrackSelectorButton
+#### property: hideTrackSelectorButton
 
 ```js
 // type signature
@@ -84,7 +97,7 @@ false
 hideTrackSelectorButton: false
 ```
 
-#### propertie: disableImportForm
+#### property: disableImportForm
 
 ```js
 // type signature
@@ -93,7 +106,7 @@ false
 disableImportForm: false
 ```
 
-#### propertie: height
+#### property: height
 
 ```js
 // type signature
@@ -102,7 +115,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 height: types.optional(types.number, defaultHeight)
 ```
 
-#### propertie: minimumRadiusPx
+#### property: minimumRadiusPx
 
 ```js
 // type signature
@@ -111,7 +124,7 @@ number
 minimumRadiusPx: defaultMinimumRadiusPx
 ```
 
-#### propertie: spacingPx
+#### property: spacingPx
 
 ```js
 // type signature
@@ -120,7 +133,7 @@ number
 spacingPx: defaultSpacingPx
 ```
 
-#### propertie: paddingPx
+#### property: paddingPx
 
 ```js
 // type signature
@@ -129,7 +142,7 @@ number
 paddingPx: defaultPaddingPx
 ```
 
-#### propertie: minVisibleWidth
+#### property: minVisibleWidth
 
 ```js
 // type signature
@@ -138,7 +151,7 @@ number
 minVisibleWidth: defaultMinVisibleWidth
 ```
 
-#### propertie: minimumBlockWidth
+#### property: minimumBlockWidth
 
 ```js
 // type signature
@@ -147,7 +160,7 @@ number
 minimumBlockWidth: defaultMinimumBlockWidth
 ```
 
-#### propertie: trackSelectorType
+#### property: trackSelectorType
 
 ```js
 // type signature
@@ -156,7 +169,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### propertie: init
+#### property: init
 
 used for initializing the view from a session snapshot
 
@@ -310,13 +323,6 @@ string
 unknown
 ```
 
-#### getter: loadingMessage
-
-```js
-// type
-'Loading' | undefined
-```
-
 #### getter: hasSomethingToShow
 
 ```js
@@ -384,20 +390,6 @@ fitToWindow: () => void
 ```js
 // type signature
 setHeight: (newHeight: number) => number
-```
-
-#### action: resizeHeight
-
-```js
-// type signature
-resizeHeight: (distance: number) => number
-```
-
-#### action: resizeWidth
-
-```js
-// type signature
-resizeWidth: (distance: number) => number
 ```
 
 #### action: rotateClockwiseButton
@@ -491,14 +483,14 @@ setInit: (init?: CircularViewInit | undefined) => void
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
+showTrack: (trackId: string, initialSnapshot?: any) => void
 ```
 
 #### action: addTrackConf
 
 ```js
 // type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => void
+addTrackConf: (configuration: Record<string, unknown>, initialSnapshot?: any) => void
 ```
 
 #### action: hideTrack
@@ -522,4 +514,18 @@ creates an svg export and save using FileSaver
 ```js
 // type signature
 exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```
+
+#### action: resizeHeight
+
+```js
+// type signature
+resizeHeight: (distance: number) => number
+```
+
+#### action: resizeWidth
+
+```js
+// type signature
+resizeWidth: (distance: number) => number
 ```

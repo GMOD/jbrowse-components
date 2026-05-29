@@ -22,14 +22,14 @@ reference the markdown files in our repo of the checked out git tag
 
 ### AssemblyManager - Properties
 
-#### propertie: assemblies
+#### property: assemblies
 
 this is automatically managed by an autorun which looks in the parent
 session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies
 
 ```js
 // type signature
-IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
@@ -40,7 +40,7 @@ assemblies: types.array(assemblyFactory(conf, pm))
 
 ```js
 // type
-Record<string, { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & IStateTreeNode<...>>
+Record<string, ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<...> | undefined; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 7 more ... & IStateTreeNode<...>>
 ```
 
 #### getter: assemblyNamesList
@@ -57,7 +57,7 @@ session.temporaryAssemblies
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 ### AssemblyManager - Methods
@@ -80,7 +80,7 @@ getDisplayName: (asmName: string) => string
 
 ```js
 // type signature
-get: (asmName: string) => ({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & IStateTreeNode<...>) | undefined
+get: (asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 7 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### method: waitForAssembly
@@ -90,7 +90,7 @@ with regions loaded
 
 ```js
 // type signature
-waitForAssembly: (assemblyName: string) => Promise<({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & IStateTreeNode<...>) | undefined>
+waitForAssembly: (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { ...; } & ... 7 more ... & IStateTreeNode<...>) | undefined>
 ```
 
 #### method: getRefNameMapForAdapter
@@ -124,7 +124,7 @@ directly
 
 ```js
 // type signature
-removeAssembly: (asm: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & IStateTreeNode<...>) => void
+removeAssembly: (asm: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 7 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: addAssembly

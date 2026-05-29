@@ -24,9 +24,22 @@ extends
 
 - [BaseViewModel](../baseviewmodel)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseViewModel](../baseviewmodel)
+
+**Properties:** id, displayName, minimized
+
+**Getters:** menuItems
+
+**Actions:** setDisplayName, setWidth, setMinimized
+
 ### BreakpointSplitView - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -35,7 +48,7 @@ ISimpleType<"BreakpointSplitView">
 type: types.literal('BreakpointSplitView')
 ```
 
-#### propertie: height
+#### property: height
 
 ```js
 // type signature
@@ -44,7 +57,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 height: types.optional(types.number, defaultHeight)
 ```
 
-#### propertie: trackSelectorType
+#### property: trackSelectorType
 
 ```js
 // type signature
@@ -53,7 +66,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### propertie: showIntraviewLinks
+#### property: showIntraviewLinks
 
 ```js
 // type signature
@@ -62,7 +75,7 @@ true
 showIntraviewLinks: true
 ```
 
-#### propertie: linkViews
+#### property: linkViews
 
 ```js
 // type signature
@@ -71,7 +84,7 @@ false
 linkViews: false
 ```
 
-#### propertie: interactiveOverlay
+#### property: interactiveOverlay
 
 ```js
 // type signature
@@ -80,7 +93,7 @@ true
 interactiveOverlay: true
 ```
 
-#### propertie: showHeader
+#### property: showHeader
 
 ```js
 // type signature
@@ -89,11 +102,11 @@ true
 showHeader: true
 ```
 
-#### propertie: views
+#### property: views
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 16 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 17 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -101,7 +114,7 @@ views: types.array(
         )
 ```
 
-#### propertie: init
+#### property: init
 
 used for initializing the view from a session snapshot
 
@@ -110,6 +123,26 @@ used for initializing the view from a session snapshot
 IType<BreakpointSplitViewInit | undefined, BreakpointSplitViewInit | undefined, BreakpointSplitViewInit | undefined>
 // code
 init: types.frozen<BreakpointSplitViewInit | undefined>()
+```
+
+### BreakpointSplitView - Volatiles
+
+#### volatile: width
+
+```js
+// type signature
+number
+// code
+width: 800
+```
+
+#### volatile: matchedTrackFeatures
+
+```js
+// type signature
+Record<string, Feature[][]>
+// code
+matchedTrackFeatures: {} as Record<string, Feature[][]>
 ```
 
 ### BreakpointSplitView - Getters
@@ -139,7 +172,7 @@ boolean
 
 ```js
 // type
-({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; lowerCaseRefNameAliases: RefNameAliases ...
+(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 7 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: matchedTracks
@@ -183,15 +216,6 @@ Get tracks with a given trackId across multiple views
 ```js
 // type signature
 getMatchedTracks: (trackConfigId: string) => any[]
-```
-
-#### method: getTrackFeatures
-
-Get a composite map of featureId-\>feature map for a track across multiple views
-
-```js
-// type signature
-getTrackFeatures: (trackConfigId: string) => Map<string, Feature>
 ```
 
 #### method: getTrackOverlayData
@@ -292,5 +316,5 @@ setInit: (init?: BreakpointSplitViewInit | undefined) => void
 
 ```js
 // type signature
-setViews: (viewInits: { loc?: string | undefined; assembly: string; tracks?: string[] | undefined; }[]) => void
+setViews: (viewInits: BreakpointSplitViewInitView[]) => void
 ```

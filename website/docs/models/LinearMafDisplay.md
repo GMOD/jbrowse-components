@@ -25,7 +25,7 @@ TreeSidebarMixin
 
 ### LinearMafDisplay - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -34,7 +34,7 @@ ISimpleType<"LinearMafDisplay">
 type: types.literal('LinearMafDisplay')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -43,7 +43,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### propertie: rowHeight
+#### property: rowHeight
 
 ```js
 // type signature
@@ -52,7 +52,7 @@ configuration: ConfigurationReference(configSchema)
 rowHeight: DEFAULTS.rowHeight
 ```
 
-#### propertie: rowProportion
+#### property: rowProportion
 
 ```js
 // type signature
@@ -61,7 +61,7 @@ rowHeight: DEFAULTS.rowHeight
 rowProportion: DEFAULTS.rowProportion
 ```
 
-#### propertie: showAllLetters
+#### property: showAllLetters
 
 ```js
 // type signature
@@ -70,7 +70,7 @@ false
 showAllLetters: DEFAULTS.showAllLetters
 ```
 
-#### propertie: mismatchRendering
+#### property: mismatchRendering
 
 ```js
 // type signature
@@ -79,7 +79,7 @@ true
 mismatchRendering: DEFAULTS.mismatchRendering
 ```
 
-#### propertie: showAsUpperCase
+#### property: showAsUpperCase
 
 ```js
 // type signature
@@ -88,7 +88,7 @@ true
 showAsUpperCase: DEFAULTS.showAsUpperCase
 ```
 
-#### propertie: showTree
+#### property: showTree
 
 ```js
 // type signature
@@ -97,7 +97,7 @@ true
 showTree: DEFAULTS.showTree
 ```
 
-#### propertie: showCoverage
+#### property: showCoverage
 
 ```js
 // type signature
@@ -106,13 +106,61 @@ true
 showCoverage: DEFAULTS.showCoverage
 ```
 
-#### propertie: coverageHeight
+#### property: coverageHeight
 
 ```js
 // type signature
 45
 // code
 coverageHeight: DEFAULTS.coverageHeight
+```
+
+### LinearMafDisplay - Volatiles
+
+#### volatile: rpcDataMap
+
+```js
+// type signature
+ObservableMap<number, MafRegionData>
+// code
+rpcDataMap: observable.map<number, MafRegionData>()
+```
+
+#### volatile: prefersOffset
+
+```js
+// type signature
+true
+// code
+prefersOffset: true
+```
+
+#### volatile: sourcesVolatile
+
+Canonical row metadata received from the worker. Reordering / recoloring lives
+in TreeSidebarMixin's `layout`; this volatile holds the unfiltered authoritative
+set so the merged `sources` view can fall back when `layout` is empty.
+
+```js
+// type signature
+MafSource[]
+// code
+sourcesVolatile: [] as MafSource[]
+```
+
+#### volatile: colorPalette
+
+Theme-derived color palette (per-base colors + match/gap/mismatch/
+unknown/insertion). Pushed in from the React component via `setColorPalette`.
+Read by `gpuProps()` and `renderState`, so theme changes trigger a main-thread
+re-encode but never an RPC refetch. Mirrors the `ColorPalette` pattern in
+plugin-alignments.
+
+```js
+// type signature
+MafColorPalette | undefined
+// code
+colorPalette: undefined as MafColorPalette | undefined
 ```
 
 ### LinearMafDisplay - Getters
@@ -333,10 +381,14 @@ setColorPalette: (p: MafColorPalette) => void
 
 #### action: setSamples
 
-Receive worker-authoritative `samples` + serialized Newick tree. Goes through
-TreeSidebarMixin's `setLayoutAndClusterTree` so the mixin's `root` getter
-re-parses on change; `sourcesVolatile` carries the full pre-filter set used as
-the fallback in the merged `sources` view.
+Receive worker-authoritative `samples` + serialized Newick tree. Samples + tree
+are derived from track config, so they're identical on every region fetch — the
+deepEqual guard makes this fire once and skips the redundant frozen-array
+reassignment (plus the downstream `sources`/instance-buffer recompute) on each
+later scroll/zoom, while preserving any in-session row reordering held in
+`layout`. Goes through TreeSidebarMixin's `setLayoutAndClusterTree` so the
+mixin's `root` getter re-parses; `sourcesVolatile` carries the full pre-filter
+set used as the fallback in the merged `sources` view.
 
 ```js
 // type signature

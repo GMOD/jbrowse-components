@@ -29,9 +29,26 @@ the upload autorun (which watches every display's `instanceData` and keys it by
 `displayKey`), and the render autorun. This display only carries per-track state
 and the `renderParams` the view reads out.
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
 ### LinearSyntenyDisplay - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -40,13 +57,37 @@ ISimpleType<"LinearSyntenyDisplay">
 type: types.literal('LinearSyntenyDisplay')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
 ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+### LinearSyntenyDisplay - Volatiles
+
+#### volatile: featureData
+
+```js
+// type signature
+SyntenyFeatureData | undefined
+// code
+featureData: undefined as SyntenyFeatureData | undefined
+```
+
+#### volatile: instanceData
+
+Raw GPU-instance geometry produced by the RPC. The view observes this on every
+display and uploads it to the shared backend keyed by `displayKey`. Clearing it
+(undefined) triggers backend eviction.
+
+```js
+// type signature
+SyntenyGeometry | undefined
+// code
+instanceData: undefined as SyntenyGeometry | undefined
 ```
 
 ### LinearSyntenyDisplay - Getters
@@ -98,7 +139,26 @@ string[]
 number
 ```
 
+#### getter: warnings
+
+Warnings surfaced in the view header. Flags a likely reversed assembly row
+order, detected once at view load (only when the two assemblies have distinct
+chromosome names).
+
+```js
+// type
+{
+  message: string
+  effect: string
+}
+;[]
+```
+
 #### getter: ready
+
+A fetch has completed (data is present, even if it mapped zero features). Not
+`numFeats > 0` — an empty-but-finished fetch is ready, otherwise an empty result
+spins the loading overlay forever.
 
 ```js
 // type
@@ -115,18 +175,18 @@ simultaneously.
 boolean
 ```
 
+#### getter: view
+
+```js
+// type
+ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; } & { ...; }> & ... 17 more ... & IStateTreeNode<...>
+```
+
 #### getter: colorSchemeConfig
 
 ```js
 // type
 { cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; }
-```
-
-#### getter: effectiveAlpha
-
-```js
-// type
-number
 ```
 
 #### getter: colorMapWithAlpha
@@ -177,7 +237,7 @@ round-trip.
 
 ```js
 // type
-{ colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 12 more ...; nonCigarInstanceCount: number; } | undefined
+{ colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 11 more ...; instanceCount: number; } | undefined
 ```
 
 #### getter: renderParams

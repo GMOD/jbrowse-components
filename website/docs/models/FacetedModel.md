@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### FacetedModel - Properties
 
-#### propertie: filterText
+#### property: filterText
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 filterText: types.optional(types.string, '')
 ```
 
-#### propertie: showSparse
+#### property: showSparse
 
 ```js
 // type signature
@@ -42,7 +42,7 @@ showSparse: types.optional(types.boolean, () =>
       )
 ```
 
-#### propertie: showFilters
+#### property: showFilters
 
 ```js
 // type signature
@@ -53,18 +53,7 @@ showFilters: types.optional(types.boolean, () =>
       )
 ```
 
-#### propertie: showOptions
-
-```js
-// type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showOptions: types.optional(types.boolean, () =>
-        localStorageGetBoolean('facet-showTableOptions', false),
-      )
-```
-
-#### propertie: panelWidth
+#### property: panelWidth
 
 ```js
 // type signature
@@ -73,6 +62,53 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 panelWidth: types.optional(types.number, () =>
         localStorageGetNumber('facet-panelWidth', 400),
       )
+```
+
+### FacetedModel - Volatiles
+
+#### volatile: visible
+
+```js
+// type signature
+Record<string, boolean>
+// code
+visible: {} as Record<string, boolean>
+```
+
+#### volatile: useShoppingCart
+
+```js
+// type signature
+false
+// code
+useShoppingCart: false
+```
+
+#### volatile: filters
+
+```js
+// type signature
+ObservableMap<string, string[]>
+// code
+filters: observable.map<string, string[]>()
+```
+
+#### volatile: trackConfigurations
+
+```js
+// type signature
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+// code
+trackConfigurations: [] as AnyConfigurationModel[]
+```
+
+#### volatile: session
+
+```js
+// type signature
+AbstractSessionModel | undefined
+// code
+session: undefined as AbstractSessionModel | undefined
 ```
 
 ### FacetedModel - Getters
@@ -84,7 +120,7 @@ configurations change, not on every filterText keystroke.
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: rows
@@ -93,7 +129,7 @@ Text-filtered rows. Cheap string filtering on already-built allRows.
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: filteredNonMetadataKeys
@@ -128,13 +164,13 @@ string[]
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: initialWidths
 
-Measured pixel widths for every column. Cached by MobX; recomputes only when
-rows or the key set change, not on visibility toggles.
+Measured pixel widths for every column. Measured over allRows so widths stay
+stable and don't recompute on every filterText keystroke.
 
 ```js
 // type
@@ -147,7 +183,7 @@ Record<string, number>
 
 ```js
 // type signature
-setTrackConfigurations: (tracks: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[], session: AbstractSessionModel) => void
+setTrackConfigurations: (tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[], session: AbstractSessionModel) => void
 ```
 
 #### action: setFilter
@@ -183,13 +219,6 @@ setFilterText: (str: string) => void
 ```js
 // type signature
 setShowSparse: (f: boolean) => void
-```
-
-#### action: setShowOptions
-
-```js
-// type signature
-setShowOptions: (f: boolean) => void
 ```
 
 #### action: setShowFilters

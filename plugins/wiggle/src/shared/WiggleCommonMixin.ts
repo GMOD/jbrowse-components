@@ -7,16 +7,30 @@ import { computeAutoscaleDomain, getNiceDomain } from '../util.ts'
 import type { WiggleDataResult } from '../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// Extends WiggleScoreConfigMixin with rpcDataMap, autoscale domain, and cache
-// reset. Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays
-// that own a different rpcDataMap type should compose WiggleScoreConfigMixin
-// directly instead.
+/**
+ * #stateModel WiggleCommonMixin
+ * #category display
+ *
+ * Extends WiggleScoreConfigMixin with rpcDataMap, autoscale domain, and cache
+ * reset. Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays
+ * that own a different rpcDataMap type should compose WiggleScoreConfigMixin
+ * directly instead.
+ *
+ * extends
+ * - [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
+ */
 export function WiggleCommonMixin() {
   return WiggleScoreConfigMixin()
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       rpcDataMap: observable.map<number, WiggleDataResult>(),
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get visibleScoreRange() {
         const view = getContainingView(self) as LinearGenomeViewModel
         if (!view.initialized || self.rpcDataMap.size === 0) {
@@ -51,6 +65,9 @@ export function WiggleCommonMixin() {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get domain() {
         const range = self.visibleScoreRange
         if (!range) {
@@ -64,6 +81,9 @@ export function WiggleCommonMixin() {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
         self.setLoadedBpPerPx(undefined)

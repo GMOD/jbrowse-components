@@ -25,7 +25,7 @@ dotplot use this
 
 ### Base1DView - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -34,7 +34,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: displayedRegions
+#### property: displayedRegions
 
 ```js
 // type signature
@@ -43,7 +43,7 @@ IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
 ```
 
-#### propertie: bpPerPx
+#### property: bpPerPx
 
 ```js
 // type signature
@@ -52,7 +52,7 @@ number
 bpPerPx: 0
 ```
 
-#### propertie: offsetPx
+#### property: offsetPx
 
 ```js
 // type signature
@@ -61,16 +61,7 @@ number
 offsetPx: 0
 ```
 
-#### propertie: interRegionPaddingWidth
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-interRegionPaddingWidth: types.optional(types.number, 0)
-```
-
-#### propertie: minimumBlockWidth
+#### property: minimumBlockWidth
 
 ```js
 // type signature
@@ -218,7 +209,7 @@ zoomIn: () => void
 
 ```js
 // type signature
-zoomTo: (bpPerPx: number, offset?: number) => number
+zoomTo: (bpPerPx: number, offset?: any) => number
 ```
 
 #### action: scrollTo

@@ -22,13 +22,98 @@ reference the markdown files in our repo of the checked out git tag
 
 ### Assembly - Properties
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
 IMaybe<IReferenceType<IAnyType>>
 // code
 configuration: types.safeReference(assemblyConfigType)
+```
+
+### Assembly - Volatiles
+
+#### volatile: error
+
+```js
+// type signature
+unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: loadingP
+
+```js
+// type signature
+Promise<void> | undefined
+// code
+loadingP: undefined as Promise<void> | undefined
+```
+
+#### volatile: volatileRegions
+
+```js
+// type signature
+BasicRegion[] | undefined
+// code
+volatileRegions: undefined as BasicRegion[] | undefined
+```
+
+#### volatile: refNameAliases
+
+```js
+// type signature
+RefNameAliases | undefined
+// code
+refNameAliases: undefined as RefNameAliases | undefined
+```
+
+#### volatile: canonicalToSeqAdapterRefNames
+
+Maps canonical refName -> sequence adapter refName (in FASTA). These may differ
+when refNameAliases with override:true remap names.
+
+```js
+// type signature
+Record<string, string> | undefined
+// code
+canonicalToSeqAdapterRefNames: undefined as
+        | Record<string, string>
+        | undefined
+```
+
+#### volatile: cytobands
+
+```js
+// type signature
+Feature[] | undefined
+// code
+cytobands: undefined as Feature[] | undefined
+```
+
+#### volatile: lowerCaseRefNameAliases
+
+Precomputed in loadPre to avoid expensive synchronous computation when MobX
+triggers the autorun after setLoaded
+
+```js
+// type signature
+RefNameAliases | undefined
+// code
+lowerCaseRefNameAliases: undefined as RefNameAliases | undefined
+```
+
+#### volatile: allRefNamesWithLowerCase
+
+Precomputed in loadPre to avoid expensive synchronous computation when MobX
+triggers the autorun after setLoaded
+
+```js
+// type signature
+Set<string> | undefined
+// code
+allRefNamesWithLowerCase: undefined as Set<string> | undefined
 ```
 
 ### Assembly - Getters
@@ -201,9 +286,13 @@ getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) =>
 
 #### action: setLoaded
 
+Applies all load-time state in a single transaction so dependent autoruns fire
+once, with the precomputed lowercase/name lookups already in place by the time
+refNameAliases becomes observable.
+
 ```js
 // type signature
-setLoaded: ({ regions, refNameAliases, cytobands, }: { regions: Region[]; refNameAliases: RefNameAliases; cytobands: Feature[]; }) => void
+setLoaded: ({ regions, refNameAliases, lowerCaseRefNameAliases, allRefNamesWithLowerCase, canonicalToSeqAdapterRefNames, cytobands, }: { regions: Region[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; allRefNamesWithLowerCase: Set<string>; canonicalToSeqAdapterRefNames: Record<...>; cytobands: Featu...
 ```
 
 #### action: setError
@@ -213,48 +302,6 @@ setLoaded: ({ regions, refNameAliases, cytobands, }: { regions: Region[]; refNam
 setError: (e: unknown) => void
 ```
 
-#### action: setRegions
-
-```js
-// type signature
-setRegions: (regions: Region[]) => void
-```
-
-#### action: setRefNameAliases
-
-```js
-// type signature
-setRefNameAliases: (aliases: RefNameAliases) => void
-```
-
-#### action: setLowerCaseRefNameAliases
-
-```js
-// type signature
-setLowerCaseRefNameAliases: (aliases: RefNameAliases) => void
-```
-
-#### action: setAllRefNamesWithLowerCase
-
-```js
-// type signature
-setAllRefNamesWithLowerCase: (names: Set<string>) => void
-```
-
-#### action: setCytobands
-
-```js
-// type signature
-setCytobands: (cytobands: Feature[]) => void
-```
-
-#### action: setCanonicalToSeqAdapterRefNames
-
-```js
-// type signature
-setCanonicalToSeqAdapterRefNames: (map: Record<string, string>) => void
-```
-
 #### action: setLoadingP
 
 ```js
@@ -262,16 +309,16 @@ setCanonicalToSeqAdapterRefNames: (map: Record<string, string>) => void
 setLoadingP: (p?: Promise<void> | undefined) => void
 ```
 
-#### action: load
-
-```js
-// type signature
-load: () => Promise<void>
-```
-
 #### action: loadPre
 
 ```js
 // type signature
 loadPre: () => Promise<void>
+```
+
+#### action: load
+
+```js
+// type signature
+load: () => Promise<void>
 ```

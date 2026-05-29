@@ -28,6 +28,96 @@ Shared state model for LD displays extends
 - [StaleViewportRescaleMixin](../staleviewportrescalemixin)
 - [ConfigOverrideMixin](../configoverridemixin)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
+### Available via [TrackHeightMixin](../trackheightmixin)
+
+**Properties:** heightPreConfig
+
+**Volatiles:** scrollTop
+
+**Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload
+
+### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
+attachBackend
+
+### Available via [FetchMixin](../fetchmixin)
+
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+
+**Getters:** isLoading
+
+**Actions:** setError, setStatusMessage, cancelFetch, runFetch
+
+### Available via [StaleViewportRescaleMixin](../staleviewportrescalemixin)
+
+**Volatiles:** lastDrawnOffsetPx, lastDrawnBpPerPx
+
+**Actions:** setLastDrawnViewport
+
+### Available via [ConfigOverrideMixin](../configoverridemixin)
+
+**Properties:** configOverrides
+
+**Methods:** getOverride, getConfWithOverride
+
+**Actions:** setOverride, clearOverride
+
+### SharedLDModel - Volatiles
+
+#### volatile: rpcData
+
+```js
+// type signature
+LDDataResult | null
+// code
+rpcData: null as LDDataResult | null
+```
+
+#### volatile: reloadCounter
+
+Bumped by `reload()` to retrigger the fetch autorun.
+
+```js
+// type signature
+number
+// code
+reloadCounter: 0
+```
+
 ### SharedLDModel - Getters
 
 #### getter: prefersOffset
@@ -47,29 +137,6 @@ than computing LD from VCF genotypes
 LDSnp[]
 ```
 
-#### getter: ldCanvasHeight
-
-Effective height for the LD canvas (total height minus line zone) Note:
-Recombination track is overlaid on the line zone, not in a separate zone
-
-```js
-// type
-number
-```
-
-#### getter: renderTransform
-
-Per-frame render state for the GPU backend. Read by the upload/render autorun —
-every change to any tracked observable (view.bpPerPx, view.offsetPx,
-model.fitToHeight, rpcData contents, …) re-fires it. Forward transform { scale,
-viewOffsetX } shared by GPU render, mouse hit-test, and the
-matrix→genomic-position SVG lines. See `computeRenderTransform` for the math.
-
-```js
-// type
-RenderTransform
-```
-
 #### getter: effectiveLineZoneHeight
 
 Pixel height of the SVG zone above the canvas (variant labels + lines, or
@@ -79,6 +146,49 @@ the render transform.
 ```js
 // type
 number
+```
+
+#### getter: ldCanvasHeight
+
+Effective height for the LD canvas (total height minus the zone the
+recombination overlay / variant lines occupy above the matrix).
+
+```js
+// type
+number
+```
+
+#### getter: yScalar
+
+Per-frame yScalar squash factor. When fitToHeight is on, squashes the natural
+(canvasWidth/2) triangle into ldCanvasHeight. Lives on the main thread so resize
+doesn't trigger a worker re-fetch.
+
+```js
+// type
+number
+```
+
+#### getter: renderTransform
+
+Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test,
+and the matrix→genomic-position SVG lines. See `computeRenderTransform` for the
+math.
+
+```js
+// type
+RenderTransform
+```
+
+#### getter: renderState
+
+Per-frame render state for the GPU backend. Read by the upload/render autorun —
+every change to any tracked observable (view.bpPerPx, view.offsetPx,
+model.fitToHeight, rpcData contents, …) re-fires it.
+
+```js
+// type
+{ yScalar: number; canvasWidth: number; canvasHeight: number; signedLD: boolean; viewScale: number; viewOffsetX: number; uniformW: number; } | undefined
 ```
 
 ### SharedLDModel - Methods

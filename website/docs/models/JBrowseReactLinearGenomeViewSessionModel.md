@@ -27,15 +27,14 @@ composed of
 - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
 - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
-- [SnackbarModel](../snackbarmodel)
 
 ### JBrowseReactLinearGenomeViewSessionModel - Properties
 
-#### propertie: view
+#### property: view
 
 ```js
 // type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 16 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 17 more ... & { ...; }, ModelCreationType<...>, { ...; }>
 // code
 view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel
@@ -89,7 +88,7 @@ any
 
 ```js
 // type
-({ id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 16 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ... & ISt...
+(ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }> & ... 19 more ... & IStateTreeNode<...>)[]
 ```
 
 ### JBrowseReactLinearGenomeViewSessionModel - Methods
@@ -110,5 +109,5 @@ renderProps: () => {
 
 ```js
 // type signature
-addView: (typeName: string, initialState?: {}) => { id: string; displayName: string | undefined; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<...>; ... 16 more ...; init: (InitState & IStateTreeNode<...>) | undefined; } & ... 19 more ... & IStateTreeNode<...>
+addView: (typeName: string, initialState?: any) => ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<...>; } & { ...; }> & ... 19 more ... & IStateTreeNode<...>
 ```

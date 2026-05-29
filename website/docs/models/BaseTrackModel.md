@@ -26,7 +26,7 @@ that multiple displayed tracks could use the same configuration.
 
 ### BaseTrackModel - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ ISimpleType<string>
 type: types.literal(trackType)
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(baseTrackConfig)
 ```
 
-#### propertie: minimized
+#### property: minimized
 
 ```js
 // type signature
@@ -62,7 +62,7 @@ false
 minimized: false
 ```
 
-#### propertie: pinned
+#### property: pinned
 
 ```js
 // type signature
@@ -71,7 +71,7 @@ false
 pinned: false
 ```
 
-#### propertie: displays
+#### property: displays
 
 ```js
 // type signature
@@ -183,5 +183,5 @@ setMinimized: (flag: boolean) => void
 
 ```js
 // type signature
-replaceDisplay: (oldDisplayId: string, newDisplayId: string, initialSnapshot?: {}) => void
+replaceDisplay: (oldDisplayId: string, newDisplayId: string, initialSnapshot?: any) => void
 ```

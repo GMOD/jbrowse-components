@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### SessionTracksManagerSessionMixin - Properties
 
-#### propertie: sessionTracks
+#### property: sessionTracks
 
 ```js
 // type signature
@@ -39,7 +39,7 @@ sessionTracks: types.array(
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 ### SessionTracksManagerSessionMixin - Actions
@@ -55,5 +55,5 @@ addTrackConf: (trackConf: AnyConfiguration) => any
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any[] | undefined
+deleteTrackConf: (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any[] | undefined
 ```

@@ -24,9 +24,39 @@ extends
 
 - [LinearComparativeView](../linearcomparativeview)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [LinearComparativeView](../linearcomparativeview)
+
+**Properties:** id, type, trackSelectorType, showIntraviewLinks, linkViews,
+interactiveOverlay, scrollZoom, levels, views, viewTrackConfigs
+
+**Volatiles:** width, isLoading
+
+**Getters:** initialized, refNames, assemblyNames, loadingMessage, showLoading
+
+**Methods:** isViewCompact, headerMenuItems, showMenuItems, menuItems,
+rubberBandMenuItems
+
+**Actions:** reconcileLevels, setWidth, setIsLoading, setViews, removeView,
+addView, removeLastRow, setLinkViews, setScrollZoom, activateTrackSelector,
+toggleTrack, showTrack, hideTrack, squareView, clearView, toggleCompactView,
+compactAllViews, expandAllViews, autoScaleLevelHeights, appendRow
+
+### Available via [BaseViewModel](../baseviewmodel)
+
+**Properties:** id, displayName, minimized
+
+**Getters:** menuItems
+
+**Actions:** setDisplayName, setWidth, setMinimized
+
 ### LinearSyntenyView - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -35,7 +65,7 @@ ISimpleType<"LinearSyntenyView">
 type: types.literal('LinearSyntenyView')
 ```
 
-#### propertie: cigarMode
+#### property: cigarMode
 
 ```js
 // type signature
@@ -47,7 +77,7 @@ cigarMode: types.optional(
         )
 ```
 
-#### propertie: drawCurves
+#### property: drawCurves
 
 ```js
 // type signature
@@ -56,7 +86,7 @@ false
 drawCurves: false
 ```
 
-#### propertie: drawLocationMarkers
+#### property: drawLocationMarkers
 
 ```js
 // type signature
@@ -65,7 +95,7 @@ false
 drawLocationMarkers: false
 ```
 
-#### propertie: overdrawPx
+#### property: overdrawPx
 
 pixels beyond the visible viewport edge that synteny lines are still drawn
 
@@ -76,7 +106,7 @@ number
 overdrawPx: DEFAULT_OVERDRAW_PX
 ```
 
-#### propertie: alpha
+#### property: alpha
 
 ```js
 // type signature
@@ -85,7 +115,11 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 alpha: types.optional(types.number, 0.2)
 ```
 
-#### propertie: minAlignmentLength
+#### property: minAlignmentLength
+
+Hide alignment blocks shorter than this many bp. Enforced per-feature by its own
+span in buildSyntenyGeometry, then culled in the shader (isCulled) and pick
+engine. Cuts whole-genome hairball noise.
 
 ```js
 // type signature
@@ -94,7 +128,23 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 minAlignmentLength: types.optional(types.number, 0)
 ```
 
-#### propertie: colorBy
+#### property: lodMode
+
+Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's
+bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces
+the no-CIGAR tier (T/Q) when present.
+
+```js
+// type signature
+IOptionalIType<ISimpleType<"auto" | "fine" | "coarse">, [undefined]>
+// code
+lodMode: types.optional(
+          types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+          'auto',
+        )
+```
+
+#### property: colorBy
 
 ```js
 // type signature
@@ -103,7 +153,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 colorBy: types.optional(types.string, 'default')
 ```
 
-#### propertie: opacityByIdentity
+#### property: opacityByIdentity
 
 Fade alignment blocks by per-feature identity (lower identity = more
 transparent). Orthogonal to colorBy — surfaces identity-dropoff zones without
@@ -116,7 +166,7 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 opacityByIdentity: types.optional(types.boolean, false)
 ```
 
-#### propertie: init
+#### property: init
 
 used for initializing the view from a session snapshot. tracks is 2D — outer
 index is the level (the gap between views[i] and views[i+1]), so a 3-way view
@@ -140,14 +190,32 @@ IType<LinearSyntenyViewInit | undefined, LinearSyntenyViewInit | undefined, Line
 init: types.frozen<LinearSyntenyViewInit | undefined>()
 ```
 
-### LinearSyntenyView - Getters
+### LinearSyntenyView - Volatiles
 
-#### getter: effectiveAlpha
+#### volatile: importFormSyntenyTrackSelections
 
 ```js
-// type
-number
+// type signature
+IObservableArray<ImportFormSyntenyTrack>
+// code
+importFormSyntenyTrackSelections:
+        observable.array<ImportFormSyntenyTrack>()
 ```
+
+#### volatile: awaitingAutoDiagonalize
+
+True while the init autorun is waiting for the first synteny RPC so it can
+diagonalize. Used to gate the canvas off — otherwise the user watches an
+undiagonalized hairball flash before the reorder kicks in.
+
+```js
+// type signature
+false
+// code
+awaitingAutoDiagonalize: false
+```
+
+### LinearSyntenyView - Getters
 
 #### getter: hasSomethingToShow
 
@@ -170,6 +238,29 @@ boolean
 boolean
 ```
 
+#### getter: hasLodCapableAdapter
+
+True if any track on any level has an adapter that declares the 'lod'
+capability. Used to gate the LOD menu — adapters without tiered storage (e.g.
+PAFAdapter, BlastTabularAdapter) have nothing to switch between.
+
+```js
+// type
+boolean
+```
+
+#### getter: hasCigarData
+
+True if any currently-loaded synteny display has at least one feature with a
+CIGAR. Used to gate CIGAR-related menu items — coarse-tier PIF files and
+CIGAR-less PAFs have nothing to show. Returns true while no data has loaded yet
+so the menu doesn't flicker between renders.
+
+```js
+// type
+boolean
+```
+
 #### getter: showLoading
 
 Whether to show a loading indicator instead of the import form or view
@@ -177,6 +268,16 @@ Whether to show a loading indicator instead of the import form or view
 ```js
 // type
 boolean
+```
+
+#### getter: loadingMessage
+
+Override the base loadingMessage so the spinner has a helpful label during the
+autoDiagonalize wait, instead of just "Loading".
+
+```js
+// type
+;'Loading' | 'Reordering chromosomes…' | undefined
 ```
 
 #### getter: showImportForm
@@ -204,7 +305,7 @@ overwhelming
 
 ```js
 // type signature
-headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
+headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
 ```
 
 #### method: menuItems
@@ -279,6 +380,13 @@ setAlpha: (arg: number) => void
 setMinAlignmentLength: (arg: number) => void
 ```
 
+#### action: setLodMode
+
+```js
+// type signature
+setLodMode: (arg: "auto" | "fine" | "coarse") => void
+```
+
 #### action: setColorBy
 
 ```js
@@ -305,6 +413,13 @@ showAllRegions: () => void
 ```js
 // type signature
 setInit: (init?: LinearSyntenyViewInit | undefined) => void
+```
+
+#### action: setAwaitingAutoDiagonalize
+
+```js
+// type signature
+setAwaitingAutoDiagonalize: (arg: boolean) => void
 ```
 
 #### action: exportSvg

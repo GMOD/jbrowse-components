@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### GridBookmarkWidgetModel - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ISimpleType<"GridBookmarkWidget">
 type: types.literal('GridBookmarkWidget')
 ```
 
-#### propertie: bookmarks
+#### property: bookmarks
 
 removed by postProcessSnapshot, only loaded from localStorage
 
@@ -51,6 +51,37 @@ IOptionalIType<IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISim
 bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
       )
+```
+
+### GridBookmarkWidgetModel - Volatiles
+
+#### volatile: selectedBookmarks
+
+```js
+// type signature
+IExtendedLabeledRegionModel[]
+// code
+selectedBookmarks: [] as IExtendedLabeledRegionModel[]
+```
+
+#### volatile: selectedAssembliesPre
+
+```js
+// type signature
+string[] | undefined
+// code
+selectedAssembliesPre: undefined as string[] | undefined
+```
+
+#### volatile: gridView
+
+which grid tab is visible: bookmarks or highlights
+
+```js
+// type signature
+string
+// code
+gridView: 'bookmarks'
 ```
 
 ### GridBookmarkWidgetModel - Getters
@@ -87,21 +118,46 @@ boolean
 
 ```js
 // type
-({ refName: string; start: number; end: number; reversed: boolean; assemblyName: string; label: string; highlight: string; } & NonEmptyObject & { setRefName(newRefName: string): void; } & { ...; } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }> & { ...; } & { ...; } & IStateTreeNode<...>)[]
 ```
 
-#### getter: sharedBookmarksModel
+#### getter: sharedBookmarksSnapshot
+
+Plain snapshot of selected (or all) bookmarks for the share dialog. Explicit
+field pick strips volatile-only fields (id, correspondingObj).
 
 ```js
 // type
-{ sharedBookmarks: (IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>) | undefined; } & NonEmptyObject &...
+{
+  sharedBookmarks: {
+    refName: string
+    start: number
+    end: number
+    reversed: boolean
+    assemblyName: string
+    label: string
+    highlight: string
+  }
+  ;[]
+}
 ```
 
-#### getter: allBookmarksModel
+#### getter: allBookmarksSnapshot
 
 ```js
 // type
-{ sharedBookmarks: (IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>) | undefined; } & NonEmptyObject &...
+{
+  sharedBookmarks: {
+    refName: string
+    start: number
+    end: number
+    reversed: boolean
+    assemblyName: string
+    label: string
+    highlight: string
+  }
+  ;[]
+}
 ```
 
 #### getter: selectedAssemblies

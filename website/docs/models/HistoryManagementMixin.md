@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### HistoryManagementMixin - Properties
 
-#### propertie: history
+#### property: history
 
 used for undo/redo
 

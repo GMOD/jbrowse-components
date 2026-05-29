@@ -20,6 +20,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### SnackbarModel - Volatiles
+
+#### volatile: snackbarMessages
+
+```js
+// type signature
+IObservableArray<SnackbarMessage>
+// code
+snackbarMessages: observable.array<SnackbarMessage>()
+```
+
 ### SnackbarModel - Getters
 
 #### getter: snackbarMessageSet

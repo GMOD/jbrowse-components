@@ -22,34 +22,34 @@ reference the markdown files in our repo of the checked out git tag
 
 ### JBrowseReactLinearGenomeViewRootModel - Properties
 
-#### propertie: config
+#### property: config
 
 ```js
 // type signature
-IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>> | undefined, ModelSnapshotType<...>, ({} & ... 1 more...
+IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>> | undefined, { ...; }, ModelInstanceType<...> | ... 1...
 // code
 config: createConfigModel(pluginManager, assemblyConfig)
 ```
 
-#### propertie: session
+#### property: session
 
 ```js
 // type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; } & { ...; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, { ...; } & ... 4 more ... & _NotCustomized>
+IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; } & { ...; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, { ...; } & ... 3 more ... & _NotCustomized>
 // code
 session: Session
 ```
 
-#### propertie: assemblyManager
+#### property: assemblyManager
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCus...
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & { ...; }, _NotCus...
 // code
 assemblyManager: types.optional(AssemblyManager, {})
 ```
 
-#### propertie: disableAddTracks
+#### property: disableAddTracks
 
 ```js
 // type signature
@@ -58,7 +58,7 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 disableAddTracks: types.optional(types.boolean, false)
 ```
 
-#### propertie: drawerViewHeight
+#### property: drawerViewHeight
 
 ```js
 // type signature
@@ -67,7 +67,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 drawerViewHeight: types.optional(types.string, '100vh')
 ```
 
-#### propertie: internetAccounts
+#### property: internetAccounts
 
 ```js
 // type signature
@@ -78,13 +78,65 @@ internetAccounts: types.array(
       )
 ```
 
+### JBrowseReactLinearGenomeViewRootModel - Volatiles
+
+#### volatile: error
+
+```js
+// type signature
+unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: rpcManager
+
+```js
+// type signature
+RpcManager
+// code
+rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
+  WebWorkerRpcDriver: {
+    makeWorkerInstance,
+  },
+  MainThreadRpcDriver: {},
+})
+```
+
+#### volatile: textSearchManager
+
+```js
+// type signature
+TextSearchManager
+// code
+textSearchManager: new TextSearchManager(pluginManager)
+```
+
+#### volatile: adminMode
+
+```js
+// type signature
+false
+// code
+adminMode: false
+```
+
+#### volatile: version
+
+```js
+// type signature
+string
+// code
+version
+```
+
 ### JBrowseReactLinearGenomeViewRootModel - Getters
 
 #### getter: jbrowse
 
 ```js
 // type
-{ configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 5 more ...; plugins: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>
+ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>> | undefined, { ...; }, ModelInstanceType<...
 ```
 
 ### JBrowseReactLinearGenomeViewRootModel - Actions

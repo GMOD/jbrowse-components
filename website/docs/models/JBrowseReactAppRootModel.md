@@ -30,6 +30,58 @@ note: many properties of the root model are available through the session, and
 we generally prefer using the session model (via e.g. getSession) over the root
 model (via e.g. getRoot) in plugin code
 
+### JBrowseReactAppRootModel - Volatiles
+
+#### volatile: version
+
+```js
+// type signature
+string
+// code
+version
+```
+
+#### volatile: pluginsUpdated
+
+```js
+// type signature
+false
+// code
+pluginsUpdated: false
+```
+
+#### volatile: rpcManager
+
+```js
+// type signature
+RpcManager
+// code
+rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
+  WebWorkerRpcDriver: {
+    makeWorkerInstance,
+  },
+  MainThreadRpcDriver: {},
+})
+```
+
+#### volatile: textSearchManager
+
+```js
+// type signature
+TextSearchManager
+// code
+textSearchManager: new TextSearchManager(pluginManager)
+```
+
+#### volatile: error
+
+```js
+// type signature
+unknown
+// code
+error: undefined as unknown
+```
+
 ### JBrowseReactAppRootModel - Methods
 
 #### method: menus

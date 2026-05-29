@@ -24,9 +24,22 @@ extends
 
 - [BaseViewModel](../baseviewmodel)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseViewModel](../baseviewmodel)
+
+**Properties:** id, displayName, minimized
+
+**Getters:** menuItems
+
+**Actions:** setDisplayName, setWidth, setMinimized
+
 ### LinearGenomeView - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -35,7 +48,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 this is a string instead of the const literal 'LinearGenomeView' to reduce some
 typescripting strictness, but you should pass the string 'LinearGenomeView' to
@@ -48,7 +61,7 @@ string
 type: types.literal('LinearGenomeView') as unknown as string
 ```
 
-#### propertie: offsetPx
+#### property: offsetPx
 
 corresponds roughly to the horizontal scroll of the LGV
 
@@ -59,7 +72,7 @@ number
 offsetPx: 0
 ```
 
-#### propertie: bpPerPx
+#### property: bpPerPx
 
 corresponds roughly to the zoom level, base-pairs per pixel
 
@@ -70,7 +83,7 @@ number
 bpPerPx: 1
 ```
 
-#### propertie: displayedRegions
+#### property: displayedRegions
 
 currently displayed regions, can be a single chromosome, arbitrary subsections,
 or the entire set of chromosomes in the genome, but it not advised to use the
@@ -83,7 +96,7 @@ IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 displayedRegions: types.optional(types.frozen<Region[]>(), [])
 ```
 
-#### propertie: tracks
+#### property: tracks
 
 array of currently displayed tracks state models instances
 
@@ -96,7 +109,7 @@ tracks: types.array(
         )
 ```
 
-#### propertie: hideHeader
+#### property: hideHeader
 
 ```js
 // type signature
@@ -105,7 +118,7 @@ false
 hideHeader: false
 ```
 
-#### propertie: hideHeaderOverview
+#### property: hideHeaderOverview
 
 ```js
 // type signature
@@ -114,7 +127,7 @@ false
 hideHeaderOverview: false
 ```
 
-#### propertie: hideNoTracksActive
+#### property: hideNoTracksActive
 
 ```js
 // type signature
@@ -123,7 +136,7 @@ false
 hideNoTracksActive: false
 ```
 
-#### propertie: trackSelectorType
+#### property: trackSelectorType
 
 ```js
 // type signature
@@ -135,7 +148,7 @@ trackSelectorType: types.optional(
         )
 ```
 
-#### propertie: showCenterLine
+#### property: showCenterLine
 
 show the "center line"
 
@@ -148,7 +161,7 @@ showCenterLine: types.optional(types.boolean, () =>
         )
 ```
 
-#### propertie: showCytobandsSetting
+#### property: showCytobandsSetting
 
 show the "cytobands" in the overview scale bar
 
@@ -161,7 +174,7 @@ showCytobandsSetting: types.optional(types.boolean, () =>
         )
 ```
 
-#### propertie: trackLabels
+#### property: trackLabels
 
 how to display the track labels, can be "overlapping", "offset", or "hidden", or
 empty string "" (which results in conf being used). see LinearGenomeViewPlugin
@@ -178,7 +191,7 @@ trackLabels: types.optional(
         )
 ```
 
-#### propertie: showGridlines
+#### property: showGridlines
 
 show the "gridlines" in the track area
 
@@ -189,7 +202,7 @@ true
 showGridlines: true
 ```
 
-#### propertie: highlight
+#### property: highlight
 
 highlights on the LGV from the URL parameters
 
@@ -203,7 +216,7 @@ highlight: types.optional(
         )
 ```
 
-#### propertie: highlightsVisible
+#### property: highlightsVisible
 
 controls whether view.highlight entries are rendered
 
@@ -214,7 +227,7 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 highlightsVisible: types.optional(types.boolean, true)
 ```
 
-#### propertie: labelsVisible
+#### property: labelsVisible
 
 controls whether highlight/bookmark chip labels are shown inline
 
@@ -225,7 +238,7 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 labelsVisible: types.optional(types.boolean, true)
 ```
 
-#### propertie: colorByCDS
+#### property: colorByCDS
 
 color by CDS
 
@@ -238,7 +251,7 @@ colorByCDS: types.optional(types.boolean, () =>
         )
 ```
 
-#### propertie: showTrackOutlines
+#### property: showTrackOutlines
 
 show the track outlines
 
@@ -251,7 +264,7 @@ showTrackOutlines: types.optional(types.boolean, () =>
         )
 ```
 
-#### propertie: scrollZoom
+#### property: scrollZoom
 
 enable scroll-to-zoom on WebGL tracks
 
@@ -264,7 +277,7 @@ scrollZoom: types.optional(types.boolean, () =>
         )
 ```
 
-#### propertie: scalebarOnly
+#### property: scalebarOnly
 
 when true, only the header and coordinate scalebar are rendered
 
@@ -275,7 +288,7 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 scalebarOnly: types.optional(types.boolean, false)
 ```
 
-#### propertie: init
+#### property: init
 
 this is a non-serialized property that can be used for loading the linear genome
 view via session snapshots example:
@@ -293,6 +306,136 @@ view via session snapshots example:
 IType<InitState | undefined, InitState | undefined, InitState | undefined>
 // code
 init: types.frozen<InitState | undefined>()
+```
+
+### LinearGenomeView - Volatiles
+
+#### volatile: volatileWidth
+
+```js
+// type signature
+number | undefined
+// code
+volatileWidth: undefined as number | undefined
+```
+
+#### volatile: minimumBlockWidth
+
+```js
+// type signature
+number
+// code
+minimumBlockWidth: 3
+```
+
+#### volatile: draggingTrackId
+
+```js
+// type signature
+string | undefined
+// code
+draggingTrackId: undefined as undefined | string
+```
+
+#### volatile: lastTrackDragY
+
+```js
+// type signature
+number | undefined
+// code
+lastTrackDragY: undefined as undefined | number
+```
+
+#### volatile: volatileError
+
+```js
+// type signature
+unknown
+// code
+volatileError: undefined as unknown
+```
+
+#### volatile: trackRefs
+
+```js
+// type signature
+Record<string, HTMLDivElement>
+// code
+trackRefs: {} as Record<string, HTMLDivElement>
+```
+
+#### volatile: coarseDynamicBlocks
+
+```js
+// type signature
+ContentBlock[]
+// code
+coarseDynamicBlocks: [] as ContentBlock[]
+```
+
+#### volatile: coarseTotalBp
+
+```js
+// type signature
+number
+// code
+coarseTotalBp: 0
+```
+
+#### volatile: coarseBpPerPx
+
+```js
+// type signature
+number
+// code
+coarseBpPerPx: self.bpPerPx
+```
+
+#### volatile: leftOffset
+
+```js
+// type signature
+BpOffset | undefined
+// code
+leftOffset: undefined as undefined | BpOffset
+```
+
+#### volatile: rightOffset
+
+```js
+// type signature
+BpOffset | undefined
+// code
+rightOffset: undefined as undefined | BpOffset
+```
+
+#### volatile: isScalebarRefNameMenuOpen
+
+```js
+// type signature
+false
+// code
+isScalebarRefNameMenuOpen: false
+```
+
+#### volatile: scalebarRefNameClickPending
+
+```js
+// type signature
+false
+// code
+scalebarRefNameClickPending: false
+```
+
+#### volatile: volatileGuides
+
+temporary vertical guides that can be set by displays (e.g., LD display hover)
+
+```js
+// type signature
+VolatileGuide[]
+// code
+volatileGuides: [] as VolatileGuide[]
 ```
 
 ### LinearGenomeView - Getters
@@ -331,13 +474,6 @@ number
 #### getter: trackWidthPx
 
 width minus track outline borders (1px each side when shown)
-
-```js
-// type
-number
-```
-
-#### getter: interRegionPaddingWidth
 
 ```js
 // type
@@ -581,6 +717,25 @@ is calculated manually with this method
 number
 ```
 
+#### getter: overviewLayout
+
+geometry of the overview scalebar — derived from displayedRegions, width, and
+cytobandOffset so it stays cached by MobX
+
+```js
+// type
+ViewLayout
+```
+
+#### getter: overviewScale
+
+bp-per-px scale used by overview tick labels
+
+```js
+// type
+number
+```
+
 #### getter: staticBlocks
 
 static blocks are an important concept jbrowse uses to avoid re-rendering when
@@ -784,26 +939,6 @@ renders with. Returns `undefined` if the track is not present in the view.
 ```js
 // type signature
 getTrackYOffset: (trackId: string) => number | undefined
-```
-
-#### method: getNonElidedRegionCount
-
-Count regions that are large enough to not be elided at a given bpPerPx. A
-region is elided if its width in pixels < minimumBlockWidth.
-
-```js
-// type signature
-getNonElidedRegionCount: (bpPerPx: number) => number
-```
-
-#### method: getInterRegionPaddingPx
-
-Calculate total inter-region padding pixels at a given bpPerPx. Only non-elided
-regions contribute to padding.
-
-```js
-// type signature
-getInterRegionPaddingPx: (bpPerPx: number) => number
 ```
 
 #### method: renderProps
@@ -1079,7 +1214,7 @@ scrollTo: (offsetPx: number) => number
 
 ```js
 // type signature
-zoomTo: (bpPerPx: number, offset?: number) => number
+zoomTo: (bpPerPx: number, offset?: any) => number
 ```
 
 #### action: setOffsets
@@ -1118,7 +1253,7 @@ horizontallyFlip: () => void
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) => any
+showTrack: (trackId: string, initialSnapshot?: any, displayInitialSnapshot?: any) => any
 ```
 
 #### action: hideTrack
@@ -1167,7 +1302,7 @@ moveTrack: (movingId: string, targetId: string) => void
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: setTrackLabels
@@ -1233,6 +1368,17 @@ setDraggingTrackId: (idx?: string | undefined) => void
 setLastTrackDragY: (y: number) => void
 ```
 
+#### action: onTrackDragOver
+
+called while dragging a track over the track at `targetId`; reorders once the
+cursor has moved far enough (see shouldSwapTracks) to avoid jitter when a short
+track is dragged over a tall one
+
+```js
+// type signature
+onTrackDragOver: (targetId: string, currentY: number) => void
+```
+
 #### action: clearView
 
 this "clears the view" and makes the view return to the import form
@@ -1294,16 +1440,6 @@ wait for assemblies to be initialized
 navToLocString: (input: string, optAssemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
 ```
 
-#### action: navToLocation
-
-Similar to `navToLocString`, but accepts a parsed location object instead of a
-locstring. Will try to perform `setDisplayedRegions` if changing regions
-
-```js
-// type signature
-navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
-```
-
 #### action: navToLocations
 
 Similar to `navToLocString`, but accepts a list of parsed location objects
@@ -1341,4 +1477,14 @@ Throws an error if navigation was unsuccessful
 ```js
 // type signature
 navToMultiple: (locations: NavLocation[], grow?: number | undefined) => void
+```
+
+#### action: navToLocation
+
+Similar to `navToLocString`, but accepts a parsed location object instead of a
+locstring. Will try to perform `setDisplayedRegions` if changing regions
+
+```js
+// type signature
+navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
 ```

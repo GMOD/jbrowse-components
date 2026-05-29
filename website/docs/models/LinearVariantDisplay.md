@@ -24,9 +24,111 @@ GPU-accelerated variant display with custom feature widget on click. extends
 
 - [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+
+**Properties:** configuration
+
+**Volatiles:** rpcDataMap, densityStatsPerRegion, featureIdUnderMouse,
+subfeatureIdUnderMouse, mouseoverExtraInformation, contextMenuFeature,
+contextMenuInfo, userFeatureDensityLimit, heightBeforeExpand, incrementalLayout
+
+**Getters:** visibleFeatureDensityPerPx, renderState, DisplayMessageComponent,
+showTooltipsEnabled, showLegend, maxHeight, autoHeight, showLabelsMode,
+showLabels, showDescriptions, showOutline, effectiveShowDescriptions,
+selectedFeatureId, maxFeatureDensity, colorByCDS, sequenceAdapter, regionKeys,
+reversedRegions, featureWidgetType, bytesEstimateTooLarge, densityTooLarge,
+regionTooLarge, regionTooLargeReason, laidOutDataMap, maxY, hasOverflow,
+featureIdIndex, subfeatureIdIndex, hoveredFeature, hoveredSubfeature,
+featureItemMap, flatbushIndexes
+
+**Methods:** rpcProps, getFeatureById, searchFeatureByID, renderSvg,
+showSubmenuMenuItems, contextMenuItems, trackMenuItems
+
+**Actions:** expandToFit, collapseFromExpand, clearHeightBeforeExpand,
+setRpcData, setDensityStats, clearDisplaySpecificData, pruneRpcDataMapToVisible,
+startBackend, setFeatureDensityStatsLimit, setFeatureIdUnderMouse,
+setSubfeatureIdUnderMouse, clearHover, setMouseoverExtraInformation,
+setContextMenuFeature, setContextMenuInfo, selectFeature, clearSelection,
+setShowLabels, setAutoHeight, setShowDescriptions, setShowOutline,
+showContextMenuForFeature, fetchFullFeature, selectFeatureById, isCacheValid,
+getByteEstimateConfig, selectFullFeature, reload, fetchNeeded,
+clearStaleDensityState, afterAttach
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
+### Available via [TrackHeightMixin](../trackheightmixin)
+
+**Properties:** heightPreConfig
+
+**Volatiles:** scrollTop
+
+**Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+
+**Volatiles:** loadedRegions
+
+**Getters:** isReady, renderBlocks
+
+**Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
+invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
+fetchRegions, afterAttach
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload
+
+### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
+attachBackend
+
+### Available via [FetchMixin](../fetchmixin)
+
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+
+**Getters:** isLoading
+
+**Actions:** setError, setStatusMessage, cancelFetch, runFetch
+
+### Available via [ConfigOverrideMixin](../configoverridemixin)
+
+**Properties:** configOverrides
+
+**Methods:** getOverride, getConfWithOverride
+
+**Actions:** setOverride, clearOverride
+
 ### LinearVariantDisplay - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature

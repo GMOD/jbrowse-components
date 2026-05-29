@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### TrackHeightMixin - Properties
 
-#### propertie: heightPreConfig
+#### property: heightPreConfig
 
 ```js
 // type signature
@@ -35,6 +35,17 @@ heightPreConfig: types.maybe(
           n => n >= minDisplayHeight,
         ),
       )
+```
+
+### TrackHeightMixin - Volatiles
+
+#### volatile: scrollTop
+
+```js
+// type signature
+number
+// code
+scrollTop: 0
 ```
 
 ### TrackHeightMixin - Actions

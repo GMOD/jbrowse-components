@@ -60,19 +60,41 @@ export function migrateOldSettingSnapshots(
   }
 }
 
+/**
+ * #stateModel ConfigOverrideMixin
+ * #category display
+ *
+ * Provides a single `configOverrides` map for runtime display config
+ * overrides, replacing per-setting `types.maybe()` properties with one frozen
+ * map. Read a value with `getConfWithOverride` (override wins, else the config
+ * slot's value) or `getOverride` (override only); write with `setOverride`.
+ */
 export default function ConfigOverrideMixin() {
   return types
     .model({
+      /**
+       * #property
+       * runtime overrides keyed by config slot name; serialized only when
+       * non-empty (see postProcessSnapshot)
+       */
       configOverrides: types.optional(
         types.frozen<Record<string, unknown>>(),
         {},
       ),
     })
     .views(self => ({
+      /**
+       * #method
+       * the override value for a key, or undefined if not overridden
+       */
       getOverride<T>(key: string) {
         const val = self.configOverrides[key]
         return val as T | undefined
       },
+      /**
+       * #method
+       * the override value if set, otherwise the resolved config slot value
+       */
       getConfWithOverride<T>(key: string) {
         const val = self.configOverrides[key]
         if (val !== undefined) {
@@ -96,9 +118,15 @@ export default function ConfigOverrideMixin() {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setOverride(key: string, value: unknown) {
         self.configOverrides = { ...self.configOverrides, [key]: value }
       },
+      /**
+       * #action
+       */
       clearOverride(key: string) {
         const { [key]: _, ...rest } = self.configOverrides
         self.configOverrides = rest

@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### SpreadsheetViewSpreadsheet - Properties
 
-#### propertie: rowSet
+#### property: rowSet
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>
 rowSet: types.frozen<RowSet | undefined>()
 ```
 
-#### propertie: columns
+#### property: columns
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ IType<{ name: string; }[], { name: string; }[], { name: string; }[]>
 columns: types.frozen<{ name: string }[]>()
 ```
 
-#### propertie: assemblyName
+#### property: assemblyName
 
 ```js
 // type signature
@@ -49,13 +49,24 @@ IMaybe<ISimpleType<string>>
 assemblyName: types.maybe(types.string)
 ```
 
-#### propertie: visibleColumns
+#### property: visibleColumns
 
 ```js
 // type signature
 IType<Record<string, boolean>, Record<string, boolean>, Record<string, boolean>>
 // code
 visibleColumns: types.frozen<Record<string, boolean>>()
+```
+
+### SpreadsheetViewSpreadsheet - Volatiles
+
+#### volatile: visibleRowFlags
+
+```js
+// type signature
+Record<number, boolean> | undefined
+// code
+visibleRowFlags: undefined as Record<number, boolean> | undefined
 ```
 
 ### SpreadsheetViewSpreadsheet - Getters

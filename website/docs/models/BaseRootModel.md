@@ -24,7 +24,7 @@ factory function for the Base-level root model shared by all products
 
 ### BaseRootModel - Properties
 
-#### propertie: jbrowse
+#### property: jbrowse
 
 `jbrowse` is a mapping of the config.json into the in-memory state tree
 
@@ -35,7 +35,7 @@ IAnyType
 jbrowse: jbrowseModelType
 ```
 
-#### propertie: session
+#### property: session
 
 `session` encompasses the currently active state of the app, including views
 open, tracks open in those views, etc.
@@ -47,7 +47,7 @@ IMaybe<IAnyType>
 session: types.maybe(sessionModelType)
 ```
 
-#### propertie: sessionPath
+#### property: sessionPath
 
 ```js
 // type signature
@@ -56,16 +56,65 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 sessionPath: types.optional(types.string, '')
 ```
 
-#### propertie: assemblyManager
+#### property: assemblyManager
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCus...
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & { ...; }, _NotCus...
 // code
 assemblyManager: types.optional(
         assemblyManagerFactory(assemblyConfigSchema, pluginManager),
         {},
       )
+```
+
+### BaseRootModel - Volatiles
+
+#### volatile: rpcManager
+
+```js
+// type signature
+RpcManager
+// code
+rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
+  MainThreadRpcDriver: {},
+})
+```
+
+#### volatile: adminMode
+
+```js
+// type signature
+false
+// code
+adminMode: false
+```
+
+#### volatile: error
+
+```js
+// type signature
+unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: textSearchManager
+
+```js
+// type signature
+TextSearchManager
+// code
+textSearchManager: new TextSearchManager(pluginManager)
+```
+
+#### volatile: pluginManager
+
+```js
+// type signature
+PluginManager
+// code
+pluginManager
 ```
 
 ### BaseRootModel - Actions

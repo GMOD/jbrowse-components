@@ -25,6 +25,93 @@ extends
 - [BaseDisplay](../basedisplay)
 - [TrackHeightMixin](../trackheightmixin)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
+### Available via [TrackHeightMixin](../trackheightmixin)
+
+**Properties:** heightPreConfig
+
+**Volatiles:** scrollTop
+
+**Actions:** setScrollTop, setHeight, resizeHeight
+
+### MultiSampleVariantBaseModel - Volatiles
+
+#### volatile: showLegend
+
+```js
+// type signature
+true
+// code
+showLegend: true
+```
+
+#### volatile: sourcesLoadingStopToken
+
+```js
+// type signature
+StopToken | undefined
+// code
+sourcesLoadingStopToken: undefined as StopToken | undefined
+```
+
+#### volatile: contextMenuFeature
+
+```js
+// type signature
+Feature | undefined
+// code
+contextMenuFeature: undefined as Feature | undefined
+```
+
+#### volatile: sourcesVolatile
+
+```js
+// type signature
+Source[] | undefined
+// code
+sourcesVolatile: undefined as Source[] | undefined
+```
+
+#### volatile: hoveredGenotype
+
+```js
+// type signature
+(Record<string, unknown> & { genotype: string; name: string; }) | undefined
+// code
+hoveredGenotype: undefined as
+          | (Record<string, unknown> & { genotype: string; name: string })
+          | undefined
+```
+
+#### volatile: cellData
+
+Single source of truth for fetched per-display data. hasPhased, sampleInfo, and
+featuresVolatile are derived from this via getters — fetchNeeded only needs to
+call setCellData(result).
+
+```js
+// type signature
+CellDataResult | undefined
+// code
+cellData: undefined as CellDataResult | undefined
+```
+
 ### MultiSampleVariantBaseModel - Getters
 
 #### getter: featuresVolatile
@@ -69,6 +156,19 @@ Returns the effective minor allele frequency filter, falling back to config
 ```js
 // type
 number
+```
+
+#### getter: filters
+
+The jexl filter expressions (from the Edit filters dialog) as a
+SerializableFilterChain, ready to pass as the RPC `filters` arg.
+MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix} all extend
+RpcMethodTypeWithFiltersAndRenameRegions, which serializes this to string[] and
+rebuilds it in the worker with pluginManager.jexl.
+
+```js
+// type
+SerializableFilterChain | undefined
 ```
 
 #### getter: sources
@@ -183,7 +283,7 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-getPortableSettings: () => { configOverrides: Record<string, unknown> & IStateTreeNode<IOptionalIType<IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>, [undefined]>>; ... 5 more ...; height: number; }
+getPortableSettings: () => { configOverrides: Record<string, unknown> & IStateTreeNode<IOptionalIType<IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>, [undefined]>>; ... 4 more ...; height: number; }
 ```
 
 #### method: legendItems

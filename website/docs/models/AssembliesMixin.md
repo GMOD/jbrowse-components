@@ -25,7 +25,7 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 
 ### AssembliesMixin - Properties
 
-#### propertie: sessionAssemblies
+#### property: sessionAssemblies
 
 ```js
 // type signature
@@ -34,7 +34,7 @@ IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: neve
 sessionAssemblies: types.array(assemblyConfigSchemasType)
 ```
 
-#### propertie: temporaryAssemblies
+#### property: temporaryAssemblies
 
 ```js
 // type signature
@@ -49,7 +49,7 @@ temporaryAssemblies: types.array(assemblyConfigSchemasType)
 
 ```js
 // type signature
-addSessionAssembly: (conf: AnyConfiguration) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<...> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+addSessionAssembly: (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>
 ```
 
 #### action: addAssembly
@@ -79,7 +79,7 @@ used for read vs ref type assemblies.
 
 ```js
 // type signature
-addTemporaryAssembly: (conf: AnyConfiguration) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<...> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+addTemporaryAssembly: (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>
 ```
 
 #### action: removeTemporaryAssembly

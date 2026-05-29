@@ -5,11 +5,12 @@ import slugify from 'slugify'
 import {
   extractWithComment,
   getAllFiles,
+  parseExtends,
   parseTaggedComment,
   removeComments,
 } from './util.ts'
 
-import type { ExtractedNode } from './util.ts'
+import type { ExtendsRef, ExtractedNode } from './util.ts'
 
 interface Member {
   name: string
@@ -25,10 +26,16 @@ interface ModelHeader {
 interface StateModel {
   header?: ModelHeader
   properties: Member[]
+  volatiles: Member[]
   getters: Member[]
   methods: Member[]
   actions: Member[]
   filename: string
+}
+type ModelWithHeader = StateModel & { header: ModelHeader }
+interface Ancestor {
+  ref: ExtendsRef
+  model?: ModelWithHeader
 }
 
 function buildMember(obj: ExtractedNode): Member {
@@ -48,6 +55,7 @@ function generateStateModelDocs(files: string[]) {
     const fn = obj.filename
     byFile[fn] ??= {
       properties: [],
+      volatiles: [],
       getters: [],
       methods: [],
       actions: [],
@@ -64,6 +72,8 @@ function generateStateModelDocs(files: string[]) {
       }
     } else if (obj.type === 'property') {
       file.properties.push(member)
+    } else if (obj.type === 'volatile') {
+      file.volatiles.push(member)
     } else if (obj.type === 'getter') {
       file.getters.push(member)
     } else if (obj.type === 'method') {
@@ -75,20 +85,87 @@ function generateStateModelDocs(files: string[]) {
   return byFile
 }
 
-function renderModel({
-  header,
-  properties,
-  getters,
-  methods,
-  actions,
-  filename,
-}: StateModel): string | undefined {
+// Walk the extends graph transitively, depth-first, deduping by slug and
+// guarding cycles. Returns ancestors in reading order (direct parents first,
+// then their parents). An unresolved slug yields an entry with model undefined.
+function collectAncestors(
+  model: StateModel,
+  bySlug: Map<string, ModelWithHeader>,
+  seen = new Set<string>(),
+): Ancestor[] {
+  const out: Ancestor[] = []
+  for (const ref of parseExtends(model.header?.docs ?? '')) {
+    if (!seen.has(ref.slug)) {
+      seen.add(ref.slug)
+      const parent = bySlug.get(ref.slug)
+      out.push({ ref, model: parent })
+      if (parent) {
+        out.push(...collectAncestors(parent, bySlug, seen))
+      }
+    }
+  }
+  return out
+}
+
+function memberLine(label: string, members: Member[]) {
+  return members.length
+    ? `**${label}:** ${members.map(m => m.name).join(', ')}`
+    : ''
+}
+
+// A compact, single-page overview of every member reachable through
+// composition, grouped by the model that defines it, so a reader does not have
+// to traverse the whole inheritance chain to learn what is available.
+function inheritedSection(ancestors: Ancestor[]) {
+  const blocks = ancestors.flatMap(({ model }) => {
+    const lines = model
+      ? [
+          memberLine('Properties', model.properties),
+          memberLine('Volatiles', model.volatiles),
+          memberLine('Getters', model.getters),
+          memberLine('Methods', model.methods),
+          memberLine('Actions', model.actions),
+        ].filter(Boolean)
+      : []
+    return model && lines.length
+      ? [
+          [
+            `### Available via [${model.header.name}](../${model.header.id})`,
+            ...lines,
+          ].join('\n\n'),
+        ]
+      : []
+  })
+  return blocks.length
+    ? [
+        '## Inherited members',
+        'Available on this model via composition. Follow each link for full signatures and docs.',
+        ...blocks,
+      ].join('\n\n')
+    : ''
+}
+
+function renderModel(
+  {
+    header,
+    properties,
+    volatiles,
+    getters,
+    methods,
+    actions,
+    filename,
+  }: StateModel,
+  ancestors: Ancestor[],
+): string | undefined {
   if (!header) {
     return undefined
   }
   const sections = [
     memberSection(header.name, 'Properties', properties, p =>
       codeBlock('// type signature', p.signature, '// code', p.code),
+    ),
+    memberSection(header.name, 'Volatiles', volatiles, v =>
+      codeBlock('// type signature', v.signature, '// code', v.code),
     ),
     memberSection(header.name, 'Getters', getters, g =>
       codeBlock('// type', g.signature),
@@ -124,9 +201,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-${header.docs}
-
-${sections}
+${[header.docs, inheritedSection(ancestors), sections].filter(Boolean).join('\n\n')}
 `
 }
 
@@ -139,7 +214,7 @@ function memberSection(
   if (!members.length) {
     return ''
   }
-  const kind = label.toLowerCase().replace(/s$/, '')
+  const kind = label.toLowerCase().replace(/ies$/, 'y').replace(/s$/, '')
   const blocks = members.map(m =>
     [`#### ${kind}: ${m.name}`, m.docs, renderBody(m)].join('\n\n'),
   )
@@ -150,13 +225,29 @@ function codeBlock(...lines: string[]) {
   return ['```js', ...lines, '```'].join('\n')
 }
 
+function validateLinks(model: ModelWithHeader, ancestors: Ancestor[]) {
+  for (const { ref, model: parent } of ancestors) {
+    if (!parent) {
+      console.warn(
+        `${model.header.name}: extends link "[${ref.name}](../${ref.slug})" does not resolve to a generated model page`,
+      )
+    }
+  }
+}
+
 export default async function main() {
   const dir = 'website/docs/models'
   fs.mkdirSync(dir, { recursive: true })
   const models = generateStateModelDocs(await getAllFiles())
-  for (const model of Object.values(models)) {
-    const rendered = renderModel(model)
-    if (rendered && model.header) {
+  const withHeader = Object.values(models).filter((m): m is ModelWithHeader =>
+    Boolean(m.header),
+  )
+  const bySlug = new Map(withHeader.map(m => [m.header.id, m] as const))
+  for (const model of withHeader) {
+    const ancestors = collectAncestors(model, bySlug)
+    validateLinks(model, ancestors)
+    const rendered = renderModel(model, ancestors)
+    if (rendered) {
       fs.writeFileSync(`${dir}/${model.header.name}.md`, rendered)
     }
   }

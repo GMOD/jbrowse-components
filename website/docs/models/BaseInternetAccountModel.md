@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BaseInternetAccountModel - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ISimpleType<string>
 type: types.string
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature

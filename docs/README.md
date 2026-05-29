@@ -51,8 +51,25 @@ Then, in statemodels
 #stateModel
 #getter
 #property - model property
+#volatile - volatile (runtime-only) property
 #action
 #method - a view that takes function params or is called as a function
+```
+
+A `#stateModel` JSDoc can declare its composition graph with an `extends` block,
+which the generator parses to (a) render a flattened "Inherited members"
+overview listing every member reachable through composition, grouped by the
+model that defines it, and (b) validate that each link resolves to a generated
+page (unresolved links print a warning at generation time):
+
+```
+/**
+ * #stateModel LinearArcDisplay
+ * #category display
+ *
+ * extends
+ * - [BaseLinearDisplay](../baselineardisplay)
+ */
 ```
 
 and in config models

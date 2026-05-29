@@ -25,7 +25,7 @@ contain multiple views stacked vertically.
 
 ### DockviewLayoutMixin - Properties
 
-#### propertie: dockviewLayout
+#### property: dockviewLayout
 
 Serialized dockview layout state
 
@@ -36,7 +36,7 @@ IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>
 dockviewLayout: types.maybe(types.frozen<SerializedDockview>())
 ```
 
-#### propertie: panelViewAssignments
+#### property: panelViewAssignments
 
 Maps panel IDs to arrays of view IDs (for stacking views within a panel)
 
@@ -50,7 +50,7 @@ panelViewAssignments: types.optional(
       )
 ```
 
-#### propertie: init
+#### property: init
 
 Initial layout configuration from URL params. Processed once then cleared.
 
@@ -61,7 +61,19 @@ IType<DockviewLayoutNode | undefined, DockviewLayoutNode | undefined, DockviewLa
 init: types.frozen<DockviewLayoutNode | undefined>()
 ```
 
-#### propertie: activePanelId
+#### property: pendingMove
+
+A view move queued before workspaces were enabled. Consumed once when the
+dockview container mounts, then cleared.
+
+```js
+// type signature
+IType<PendingMove | undefined, PendingMove | undefined, PendingMove | undefined>
+// code
+pendingMove: types.frozen<PendingMove | undefined>()
+```
+
+#### property: activePanelId
 
 The currently active panel ID in dockview
 
@@ -81,6 +93,16 @@ Get view IDs for a specific panel
 ```js
 // type
 (panelId: string) => never[] | (IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>)
+```
+
+#### getter: getPanelContainingView
+
+Find the panel containing a view, returning the panel ID, that panel's view-ID
+list, and the view's index within it (or undefined if unassigned)
+
+```js
+// type
+(viewId: string) => { panelId: string; viewIds: IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>; idx: number; } | undefined
 ```
 
 ### DockviewLayoutMixin - Actions
@@ -110,6 +132,15 @@ Set the initial layout configuration (from URL params)
 ```js
 // type signature
 setInit: (init: DockviewLayoutNode | undefined) => void
+```
+
+#### action: setPendingMove
+
+Queue a view move to be applied when the dockview container mounts
+
+```js
+// type signature
+setPendingMove: (pendingMove: PendingMove | undefined) => void
 ```
 
 #### action: assignViewToPanel

@@ -24,7 +24,7 @@ extends BaseConnectionModel
 
 ### UCSCTrackHubConnection - Properties
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -33,7 +33,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature

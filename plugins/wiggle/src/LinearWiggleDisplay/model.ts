@@ -44,6 +44,18 @@ type LGV = LinearGenomeViewModel
 const WiggleComponent = lazy(() => import('./components/WiggleComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
+/**
+ * #stateModel LinearWiggleDisplay
+ * #category display
+ *
+ * State model factory for the single-source wiggle display.
+ *
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+ * - [WiggleCommonMixin](../wigglecommonmixin)
+ */
 export default function stateModelFactory(
   _pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
@@ -56,7 +68,13 @@ export default function stateModelFactory(
       MultiRegionDisplayMixin(),
       WiggleCommonMixin(),
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearWiggleDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
       }),
     )
@@ -66,6 +84,9 @@ export default function stateModelFactory(
       makeWigglePreProcessSnapshot(),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       featureUnderMouse: undefined as
         | {
             refName: string
@@ -79,30 +100,45 @@ export default function stateModelFactory(
         | undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get DisplayMessageComponent() {
         return WiggleComponent
       },
 
+      /**
+       * #getter
+       */
       get color() {
         return self.getConfWithOverride<string>('color')
       },
 
+      /**
+       * #getter
+       */
       get isDensityMode() {
         return self.renderingType === 'density'
       },
     }))
     .views(self => ({
-      // Sent to the worker as `bicolorPivot`. When the user picked a custom
-      // color we set the pivot to -Infinity so `score >= pivot` is always
-      // true and every feature lands in the worker's pos arrays — the
-      // display then paints that single bucket with the user's chosen color.
-      // Default (`#f0f`) color keeps the configured pivot for the standard
-      // pos/neg split.
+      /**
+       * #getter
+       * Sent to the worker as `bicolorPivot`. When the user picked a custom
+       * color we set the pivot to -Infinity so `score >= pivot` is always
+       * true and every feature lands in the worker's pos arrays — the
+       * display then paints that single bucket with the user's chosen color.
+       * Default (`#f0f`) color keeps the configured pivot for the standard
+       * pos/neg split.
+       */
       get effectiveBicolorPivot() {
         return isDefaultBicolor(self.color) ? self.bicolorPivot : -Infinity
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get ticks() {
         return computeYTicks({
           height: self.height,
@@ -112,6 +148,9 @@ export default function stateModelFactory(
         })
       },
 
+      /**
+       * #getter
+       */
       get renderState() {
         const view = getContainingView(self) as LGV
         const width = view.trackWidthPx
@@ -130,6 +169,9 @@ export default function stateModelFactory(
         )
       },
 
+      /**
+       * #method
+       */
       rpcProps() {
         return {
           bicolorPivot: self.effectiveBicolorPivot,
@@ -137,13 +179,16 @@ export default function stateModelFactory(
         }
       },
 
-      // single-source gpuProps mapped onto the multi-source build path:
-      // - useBicolor (default color): no source override, multi build emits
-      //   pos+neg arrays with their respective colors
-      // - !useBicolor (custom solid color): worker put all features in pos
-      //   arrays (effectiveBicolorPivot=-Infinity); whiskers and non-density
-      //   modes want the user's solid color, density wants posColor (which
-      //   is the multi build default already, so leave undefined)
+      /**
+       * #method
+       * single-source gpuProps mapped onto the multi-source build path:
+       * - useBicolor (default color): no source override, multi build emits
+       *   pos+neg arrays with their respective colors
+       * - !useBicolor (custom solid color): worker put all features in pos
+       *   arrays (effectiveBicolorPivot=-Infinity); whiskers and non-density
+       *   modes want the user's solid color, density wants posColor (which
+       *   is the multi build default already, so leave undefined)
+       */
       gpuProps() {
         const useBicolor = isDefaultBicolor(self.color)
         const wantsSolidColor =
@@ -165,23 +210,38 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
         self.rpcDataMap.set(displayedRegionIndex, data)
       },
 
+      /**
+       * #action
+       */
       setPosColor(color?: string) {
         self.setOverride('posColor', color)
       },
 
+      /**
+       * #action
+       */
       setNegColor(color?: string) {
         self.setOverride('negColor', color)
       },
 
+      /**
+       * #action
+       */
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
         self.featureUnderMouse = feat
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       async fetchNeeded(
         needed: { region: Region; displayedRegionIndex: number }[],
       ) {
@@ -225,6 +285,9 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       trackMenuItems() {
         return [
           {
@@ -269,10 +332,16 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self as LinearWiggleDisplayModel, opts)
       },
+      /**
+       * #action
+       */
       startBackend(backend: WiggleBackend) {
         installPerRegionLifecycle(
           self,

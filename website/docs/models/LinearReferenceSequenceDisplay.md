@@ -24,7 +24,7 @@ base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
 
 ### LinearReferenceSequenceDisplay - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -33,7 +33,7 @@ ISimpleType<"LinearReferenceSequenceDisplay">
 type: types.literal('LinearReferenceSequenceDisplay')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -42,7 +42,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### propertie: showForward
+#### property: showForward
 
 ```js
 // type signature
@@ -51,7 +51,7 @@ true
 showForward: true
 ```
 
-#### propertie: showReverse
+#### property: showReverse
 
 ```js
 // type signature
@@ -60,7 +60,7 @@ true
 showReverse: true
 ```
 
-#### propertie: showTranslation
+#### property: showTranslation
 
 ```js
 // type signature
@@ -82,6 +82,24 @@ any
 
 true for DNA tracks; reverse-complement and translation rows are gated on this
 since they are biologically meaningful only for DNA.
+
+```js
+// type
+boolean
+```
+
+#### getter: effectiveShowReverse
+
+reverse-complement row is meaningful only for DNA
+
+```js
+// type
+boolean
+```
+
+#### getter: effectiveShowTranslation
+
+translation rows are meaningful only for DNA
 
 ```js
 // type

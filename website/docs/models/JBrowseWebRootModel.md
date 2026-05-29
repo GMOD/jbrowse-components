@@ -33,13 +33,104 @@ model (via e.g. getRoot) in plugin code
 
 ### JBrowseWebRootModel - Properties
 
-#### propertie: configPath
+#### property: configPath
 
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
 // code
 configPath: types.maybe(types.string)
+```
+
+### JBrowseWebRootModel - Volatiles
+
+#### volatile: adminMode
+
+```js
+// type signature
+boolean
+// code
+adminMode
+```
+
+#### volatile: sessionDB
+
+```js
+// type signature
+IDBPDatabase<SessionDB> | undefined
+// code
+sessionDB: undefined as IDBPDatabase<SessionDB> | undefined
+```
+
+#### volatile: version
+
+```js
+// type signature
+string
+// code
+version: `${packageJSON.version} (${process.env.BUILD_GIT_HASH ?? 'dev'})`
+```
+
+#### volatile: pluginsUpdated
+
+```js
+// type signature
+false
+// code
+pluginsUpdated: false
+```
+
+#### volatile: rpcManager
+
+```js
+// type signature
+RpcManager
+// code
+rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
+  WebWorkerRpcDriver: { makeWorkerInstance },
+  MainThreadRpcDriver: {},
+})
+```
+
+#### volatile: savedSessionMetadata
+
+```js
+// type signature
+SessionMetadata[] | undefined
+// code
+savedSessionMetadata: undefined as SessionMetadata[] | undefined
+```
+
+#### volatile: textSearchManager
+
+```js
+// type signature
+TextSearchManager
+// code
+textSearchManager: new TextSearchManager(pluginManager)
+```
+
+#### volatile: error
+
+```js
+// type signature
+unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: reloadPluginManagerCallback
+
+```js
+// type signature
+(_configSnapshot: Record<string, unknown>, _sessionSnapshot: Record<string, unknown>) => void
+// code
+reloadPluginManagerCallback: (
+        _configSnapshot: Record<string, unknown>,
+        _sessionSnapshot: Record<string, unknown>,
+      ) => {
+        console.error('reloadPluginManagerCallback unimplemented')
+      }
 ```
 
 ### JBrowseWebRootModel - Methods

@@ -26,9 +26,63 @@ Hi-C display that renders contact matrix using WebGL extends
 - [TrackHeightMixin](../trackheightmixin)
 - [GlobalDataDisplayMixin](../globaldatadisplaymixin)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
+### Available via [TrackHeightMixin](../trackheightmixin)
+
+**Properties:** heightPreConfig
+
+**Volatiles:** scrollTop
+
+**Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload
+
+### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
+attachBackend
+
+### Available via [FetchMixin](../fetchmixin)
+
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+
+**Getters:** isLoading
+
+**Actions:** setError, setStatusMessage, cancelFetch, runFetch
+
 ### LinearHicDisplay - Properties
 
-#### propertie: resolutionBias
+#### property: resolutionBias
 
 Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure
 auto. `-1` is one step finer than auto, `+1` is one step coarser, etc. Tracking
@@ -43,7 +97,7 @@ number
 resolutionBias: 0
 ```
 
-#### propertie: useColorPercentile
+#### property: useColorPercentile
 
 Color saturation point: false → maxScore/20 (linear) or maxScore (log), matches
 legacy behavior. true → 95th percentile of counts; lower saturation point so
@@ -54,6 +108,46 @@ off-diagonal contacts read more strongly.
 false
 // code
 useColorPercentile: false
+```
+
+### LinearHicDisplay - Volatiles
+
+#### volatile: rpcData
+
+```js
+// type signature
+HicDataResult | null
+// code
+rpcData: null as HicDataResult | null
+```
+
+#### volatile: availableNormalizations
+
+```js
+// type signature
+string[] | undefined
+// code
+availableNormalizations: undefined as string[] | undefined
+```
+
+#### volatile: availableResolutions
+
+```js
+// type signature
+number[] | undefined
+// code
+availableResolutions: undefined as number[] | undefined
+```
+
+#### volatile: reloadCounter
+
+Bumped by `reload()` to retrigger the fetch autorun.
+
+```js
+// type signature
+number
+// code
+reloadCounter: 0
 ```
 
 ### LinearHicDisplay - Getters

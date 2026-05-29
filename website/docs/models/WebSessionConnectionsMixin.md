@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### WebSessionConnectionsMixin - Properties
 
-#### propertie: sessionConnections
+#### property: sessionConnections
 
 ```js
 // type signature
@@ -39,12 +39,12 @@ sessionConnections: types.array(
 
 ```js
 // type signature
-addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>>) => any
 ```
 
 #### action: deleteConnection
 
 ```js
 // type signature
-deleteConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+deleteConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
 ```

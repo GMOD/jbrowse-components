@@ -29,9 +29,34 @@ extends
 - [TrackHeightMixin](../trackheightmixin)
 - [FeatureDensityMixin](../featuredensitymixin)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
+### Available via [TrackHeightMixin](../trackheightmixin)
+
+**Properties:** heightPreConfig
+
+**Volatiles:** scrollTop
+
+**Actions:** setScrollTop, setHeight, resizeHeight
+
 ### LinearPairedArcDisplay - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -40,31 +65,13 @@ ISimpleType<"LinearPairedArcDisplay">
 type: types.literal('LinearPairedArcDisplay')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
 ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### propertie: displayMode
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-displayMode: types.maybe(types.string)
-```
-
-### LinearPairedArcDisplay - Getters
-
-#### getter: displayModeSetting
-
-```js
-// type
-any
 ```
 
 ### LinearPairedArcDisplay - Actions
@@ -88,13 +95,6 @@ setLoading: (flag: boolean) => void
 ```js
 // type signature
 setFeatures: (f: Feature[]) => void
-```
-
-#### action: setDisplayMode
-
-```js
-// type signature
-setDisplayMode: (flag: string) => void
 ```
 
 #### action: renderSvg

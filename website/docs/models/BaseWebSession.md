@@ -31,7 +31,7 @@ used for "web based" products, including jbrowse-web and react-app composed of
 
 ### BaseWebSession - Properties
 
-#### propertie: sessionPlugins
+#### property: sessionPlugins
 
 ```js
 // type signature
@@ -42,13 +42,33 @@ sessionPlugins: types.array(
       )
 ```
 
+### BaseWebSession - Volatiles
+
+#### volatile: sessionThemeName
+
+```js
+// type signature
+string
+// code
+sessionThemeName: localStorageGetItem('themeName') ?? 'default'
+```
+
+#### volatile: pendingFileHandleIds
+
+```js
+// type signature
+string[]
+// code
+pendingFileHandleIds: [] as string[]
+```
+
 ### BaseWebSession - Getters
 
 #### getter: tracks
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: root
@@ -66,7 +86,7 @@ dropdown
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...> & { ...; })[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { ...; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>> & { ...; })[]
 ```
 
 #### getter: connections
@@ -75,7 +95,7 @@ list of config connections and session connections
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>>)[]
 ```
 
 #### getter: assemblyNames
@@ -114,7 +134,7 @@ TextSearchManager
 
 ```js
 // type
-{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>> &...
+ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & { ...; }, _NotCustom...
 ```
 
 #### getter: savedSessionMetadata
@@ -149,7 +169,7 @@ raw track actions (Settings, Copy, Delete) without submenu wrapper
 
 ```js
 // type signature
-getTrackActions: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
+getTrackActions: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, view?: { ...; } | undefined) => Me...
 ```
 
 #### method: getTrackListMenuItems
@@ -158,14 +178,14 @@ flattened menu items for use in hierarchical track selector
 
 ```js
 // type signature
-getTrackListMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
+getTrackListMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, view?: { ...; } | undefined) => Me...
 ```
 
 #### method: getTrackActionMenuItems
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, extraTrackActions?: MenuItem[] | undefined, effectiveConfig?: Record<...> | ...
+getTrackActionMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, extraTrackActions?: MenuItem[] | u...
 ```
 
 #### method: menus
@@ -244,5 +264,5 @@ setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptiona
 
 ```js
 // type signature
-editTrackConfiguration: (configuration: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | { ...; }) => void
+editTrackConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) | { ...; }) => void
 ```

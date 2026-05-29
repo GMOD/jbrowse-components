@@ -24,9 +24,53 @@ extends
 
 - [BaseLinearDisplay](../baselineardisplay)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseLinearDisplay](../baselineardisplay)
+
+**Properties:** blockState, configuration, showLegend, showTooltips
+
+**Volatiles:** featureIdUnderMouse, subfeatureIdUnderMouse, contextMenuFeature
+
+**Getters:** DisplayMessageComponent, blockType, blockDefinitions, renderDelay,
+TooltipComponent, selectedFeatureId, featureWidgetType, showTooltipsEnabled,
+features, featureUnderMouse, layoutFeatures, getFeatureOverlapping,
+getFeatureByID, searchFeatureByID, floatingLabelData
+
+**Methods:** legendItems, svgLegendWidth, getFeatureById, trackMenuItems,
+contextMenuItems, renderingProps, renderProps, renderSvg
+
+**Actions:** addBlock, deleteBlock, selectFeature, navToFeature,
+clearFeatureSelection, setFeatureIdUnderMouse, setSubfeatureIdUnderMouse,
+setContextMenuFeature, setMouseoverExtraInformation, setShowLegend,
+setShowTooltips, reload, selectFeatureById, setContextMenuFeatureById
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
+### Available via [TrackHeightMixin](../trackheightmixin)
+
+**Properties:** heightPreConfig
+
+**Volatiles:** scrollTop
+
+**Actions:** setScrollTop, setHeight, resizeHeight
+
 ### LinearArcDisplay - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -35,7 +79,7 @@ ISimpleType<"LinearArcDisplay">
 type: types.literal('LinearArcDisplay')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -44,7 +88,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### propertie: displayMode
+#### property: displayMode
 
 ```js
 // type signature

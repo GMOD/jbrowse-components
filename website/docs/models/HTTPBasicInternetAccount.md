@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### HTTPBasicInternetAccount - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<"HTTPBasicInternetAccount">
 type: types.literal('HTTPBasicInternetAccount')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature

@@ -30,7 +30,6 @@ composed of
 - AssembliesMixin
 - DesktopSessionTrackMenuMixin
 - DockviewLayoutMixin
-- SnackbarModel
 
 ### JBrowseDesktopSessionModel - Getters
 
@@ -45,7 +44,7 @@ ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; descri
 
 ```js
 // type
-{ jbrowse: any; session: any; sessionPath: string; assemblyManager: { assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & ... 5 more ... & IStateTreeNode<...>; internetAccounts: IMSTAr...
+ModelInstanceTypeProps<{ jbrowse: IAnyType; session: IMaybe<IAnyType>; sessionPath: IOptionalIType<ISimpleType<string>, [undefined]>; assemblyManager: IOptionalIType<...>; } & { ...; } & { ...; } & { ...; } & { ...; }> & ... 13 more ... & IStateTreeNode<...>
 ```
 
 #### getter: assemblyNames
@@ -66,7 +65,7 @@ string
 
 ```js
 // type
-{ undoIdx: number; targetPath: string; } & NonEmptyObject & { history: unknown[]; notTrackingUndo: boolean; } & { readonly canUndo: boolean; readonly canRedo: boolean; } & { stopTrackingUndo(): void; ... 5 more ...; redo(): void; } & IStateTreeNode<...>
+ModelInstanceTypeProps<{ undoIdx: IType<number | undefined, number, number>; targetPath: IType<string | undefined, string, string>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>
 ```
 
 #### getter: menus
@@ -80,7 +79,7 @@ string
 
 ```js
 // type
-{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>> &...
+ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & { ...; }, _NotCustom...
 ```
 
 ### JBrowseDesktopSessionModel - Methods

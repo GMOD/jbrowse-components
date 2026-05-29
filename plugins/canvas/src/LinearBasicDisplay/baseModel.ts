@@ -89,12 +89,23 @@ const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 // raw color so users can still set their own via setOverride('outline', '#...').
 const OUTLINE_DEFAULT_RGBA = 'rgba(0,0,0,0.3)'
 
-// Shared GPU-accelerated feature display base for canvas-rendered tracks.
-// Handles fetching, layout, the "Show labels" / "Show descriptions" UI, and
-// the fetch-invalidation autorun. Subclasses layer schema-specific properties
-// and menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
-// super-extension pattern, and extend rpcProps() via the standard
-// super-capture pattern.
+/**
+ * #stateModel LinearCanvasBaseDisplay
+ * #category display
+ *
+ * Shared GPU-accelerated feature display base for canvas-rendered tracks.
+ * Handles fetching, layout, the "Show labels" / "Show descriptions" UI, and
+ * the fetch-invalidation autorun. Subclasses layer schema-specific properties
+ * and menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
+ * super-extension pattern, and extend rpcProps() via the standard
+ * super-capture pattern.
+ *
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+ * - [ConfigOverrideMixin](../configoverridemixin)
+ */
 export default function baseStateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
@@ -107,6 +118,9 @@ export default function baseStateModelFactory(
         MultiRegionDisplayMixin(),
         ConfigOverrideMixin(),
         types.model({
+          /**
+           * #property
+           */
           configuration: ConfigurationReference(configSchema),
         }),
       )
@@ -117,22 +131,52 @@ export default function baseStateModelFactory(
           migrateBasicSnapshot(snap),
       )
       .volatile(() => ({
+        /**
+         * #volatile
+         */
         rpcDataMap: observable.map<number, LoadedFeatureData>(),
+        /**
+         * #volatile
+         */
         // Per-region density stats (featureCount over genomic span) populated
         // for both successful fetches and worker-side too-large responses.
         // Drives the derived `regionTooLarge` getter so banner state is a
         // pure function of cached data + current bpPerPx (no flicker on
         // small zoom changes).
         densityStatsPerRegion: observable.map<number, RegionDensityStats>(),
+        /**
+         * #volatile
+         */
         featureIdUnderMouse: null as string | null,
+        /**
+         * #volatile
+         */
         subfeatureIdUnderMouse: null as string | null,
+        /**
+         * #volatile
+         */
         mouseoverExtraInformation: undefined as string | undefined,
+        /**
+         * #volatile
+         */
         contextMenuFeature: undefined as Feature | undefined,
+        /**
+         * #volatile
+         */
         contextMenuInfo: undefined as
           | { item: FlatbushItem; displayedRegionIndex: number }
           | undefined,
+        /**
+         * #volatile
+         */
         userFeatureDensityLimit: undefined as number | undefined,
+        /**
+         * #volatile
+         */
         heightBeforeExpand: undefined as number | undefined,
+        /**
+         * #volatile
+         */
         // Per-instance memo backing `laidOutDataMap`. Stateful (holds the
         // previous per-ref-group layout) so unchanged chromosomes keep stable
         // object references — turns whole-genome layout/upload from O(N²) to
@@ -141,6 +185,9 @@ export default function baseStateModelFactory(
         incrementalLayout: createIncrementalLayout(),
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         // Current features-per-pixel across the visible regions, recomputed
         // from cached per-region counts and the LIVE bpPerPx. Unlike a
         // fetch-time snapshot, this tracks zoom immediately, so label
@@ -158,6 +205,9 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get renderState() {
           const view = getView(self)
           return {
@@ -167,30 +217,51 @@ export default function baseStateModelFactory(
           }
         },
 
+        /**
+         * #getter
+         */
         get DisplayMessageComponent() {
           return FeatureComponent
         },
 
+        /**
+         * #getter
+         */
         get showTooltipsEnabled() {
           return false
         },
 
+        /**
+         * #getter
+         */
         get showLegend() {
           return false
         },
 
+        /**
+         * #getter
+         */
         get maxHeight() {
           return self.getConfWithOverride<number>('maxHeight')
         },
 
+        /**
+         * #getter
+         */
         get autoHeight() {
           return self.getConfWithOverride<boolean>('autoHeight')
         },
 
+        /**
+         * #getter
+         */
         get showLabelsMode() {
           return self.getConfWithOverride<ShowLabelsMode>('showLabels')
         },
 
+        /**
+         * #getter
+         */
         // Effective boolean visibility used by layout, hit testing, the DOM
         // overlay, and SVG export. 'auto' switches to false once feature
         // density crosses the readability threshold so layout-reserved label
@@ -210,18 +281,30 @@ export default function baseStateModelFactory(
           )
         },
 
+        /**
+         * #getter
+         */
         get showDescriptions() {
           return self.getConfWithOverride<boolean>('showDescriptions')
         },
 
+        /**
+         * #getter
+         */
         get showOutline() {
           return !!self.getConfWithOverride<string>('outline')
         },
 
+        /**
+         * #getter
+         */
         get effectiveShowDescriptions() {
           return this.showDescriptions && this.showLabels
         },
 
+        /**
+         * #getter
+         */
         get selectedFeatureId() {
           const selection = isAlive(self)
             ? getSession(self).selection
@@ -229,6 +312,9 @@ export default function baseStateModelFactory(
           return isFeature(selection) ? selection.id() : undefined
         },
 
+        /**
+         * #getter
+         */
         get maxFeatureDensity() {
           // Skip density gating when the user has already force-loaded via byte estimate
           if (self.userByteSizeLimit !== undefined) {
@@ -244,11 +330,17 @@ export default function baseStateModelFactory(
           )
         },
 
+        /**
+         * #getter
+         */
         get colorByCDS() {
           const view = getView(self)
           return view.colorByCDS
         },
 
+        /**
+         * #getter
+         */
         get sequenceAdapter() {
           const { assemblyManager } = getSession(self)
           const track = getContainingTrack(self)
@@ -262,6 +354,9 @@ export default function baseStateModelFactory(
             : undefined
         },
 
+        /**
+         * #getter
+         */
         get regionKeys() {
           const map = new Map<number, string>()
           for (const [num, region] of self.loadedRegions) {
@@ -270,6 +365,9 @@ export default function baseStateModelFactory(
           return map
         },
 
+        /**
+         * #getter
+         */
         get reversedRegions() {
           const set = new Set<number>()
           for (const [num, region] of self.loadedRegions) {
@@ -280,6 +378,9 @@ export default function baseStateModelFactory(
           return set
         },
 
+        /**
+         * #getter
+         */
         get featureWidgetType() {
           return {
             type: 'BaseFeatureWidget',
@@ -288,6 +389,9 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #method
+         */
         // User-controlled settings sent to the worker via RPC. Every field
         // read here becomes a cache key: SettingsInvalidate autorun calls
         // rpcProps() and clears data when any field changes. Structural args
@@ -324,6 +428,9 @@ export default function baseStateModelFactory(
       // zoom/pan moves don't flicker the banner. Shadows RegionTooLargeMixin's
       // imperative getter.
       .views(self => ({
+        /**
+         * #getter
+         */
         get bytesEstimateTooLarge() {
           const view = getView(self)
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
@@ -340,6 +447,9 @@ export default function baseStateModelFactory(
           return stats.bytes > limit
         },
 
+        /**
+         * #getter
+         */
         get densityTooLarge() {
           const max = self.maxFeatureDensity
           return max === undefined
@@ -348,10 +458,16 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get regionTooLarge() {
           return self.bytesEstimateTooLarge || self.densityTooLarge
         },
 
+        /**
+         * #getter
+         */
         get regionTooLargeReason() {
           if (self.bytesEstimateTooLarge) {
             const bytes = self.featureDensityStats?.bytes ?? 0
@@ -369,6 +485,9 @@ export default function baseStateModelFactory(
       // input moves. Returns empty when too-large so the GPU upload autorun
       // has nothing to push — banner UI hides the canvas, preventing stale flash.
       .views(self => ({
+        /**
+         * #getter
+         */
         get laidOutDataMap(): Map<number, FeatureDataResult> {
           if (self.regionTooLarge) {
             return new Map()
@@ -387,6 +506,9 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get maxY() {
           let max = 0
           for (const data of self.laidOutDataMap.values()) {
@@ -399,32 +521,53 @@ export default function baseStateModelFactory(
           return max
         },
 
+        /**
+         * #getter
+         */
         get hasOverflow() {
           return this.maxY > self.height
         },
 
+        /**
+         * #getter
+         */
         get featureIdIndex() {
           return indexById(self.laidOutDataMap, d => d.flatbushItems)
         },
 
+        /**
+         * #getter
+         */
         get subfeatureIdIndex() {
           return indexById(self.laidOutDataMap, d => d.subfeatureInfos)
         },
 
+        /**
+         * #getter
+         */
         get hoveredFeature() {
           const id = self.featureIdUnderMouse
           return id ? (this.featureIdIndex.get(id) ?? null) : null
         },
 
+        /**
+         * #getter
+         */
         get hoveredSubfeature() {
           const id = self.subfeatureIdUnderMouse
           return id ? (this.subfeatureIdIndex.get(id) ?? null) : null
         },
 
+        /**
+         * #method
+         */
         getFeatureById(featureId: string) {
           return this.featureIdIndex.get(featureId)
         },
 
+        /**
+         * #method
+         */
         searchFeatureByID(id: string) {
           const item = this.getFeatureById(id)
           if (!item) {
@@ -434,6 +577,9 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         // Per-feature entry across visible regions, indexed by featureId.
         // Drives overlay rendering (hover/selection highlights) — keyed on
         // laidOutDataMap + view.visibleRegions, so it recomputes on layout
@@ -458,6 +604,9 @@ export default function baseStateModelFactory(
           return map
         },
 
+        /**
+         * #getter
+         */
         // Flatbush spatial indexes per region for hit testing. Recomputes when
         // any input observable moves (laid-out data, label visibility, zoom,
         // reversed flag); MobX caches the value so repeated hover events read
@@ -485,17 +634,26 @@ export default function baseStateModelFactory(
           }
           return result
         },
+        /**
+         * #method
+         */
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts)
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         expandToFit() {
           self.heightBeforeExpand = self.height
           self.setHeight(Math.min(self.maxY, self.maxHeight))
         },
 
+        /**
+         * #action
+         */
         collapseFromExpand() {
           if (self.heightBeforeExpand !== undefined) {
             self.setHeight(self.heightBeforeExpand)
@@ -503,10 +661,16 @@ export default function baseStateModelFactory(
           }
         },
 
+        /**
+         * #action
+         */
         clearHeightBeforeExpand() {
           self.heightBeforeExpand = undefined
         },
 
+        /**
+         * #action
+         */
         setRpcData(
           displayedRegionIndex: number,
           data: FeatureDataResult,
@@ -515,6 +679,9 @@ export default function baseStateModelFactory(
           self.rpcDataMap.set(displayedRegionIndex, { ...data, loadedBpPerPx })
         },
 
+        /**
+         * #action
+         */
         setDensityStats(
           displayedRegionIndex: number,
           stats: RegionDensityStats,
@@ -522,6 +689,9 @@ export default function baseStateModelFactory(
           self.densityStatsPerRegion.set(displayedRegionIndex, stats)
         },
 
+        /**
+         * #action
+         */
         clearDisplaySpecificData() {
           // Density stats survive viewport-change clearAllRpcData calls so
           // the derived `regionTooLarge` banner stays stable across small
@@ -532,6 +702,9 @@ export default function baseStateModelFactory(
           self.setScrollTop(0)
         },
 
+        /**
+         * #action
+         */
         pruneRpcDataMapToVisible(visibleDisplayedRegionIndices: Set<number>) {
           for (const key of self.rpcDataMap.keys()) {
             if (!visibleDisplayedRegionIndices.has(key)) {
@@ -552,6 +725,9 @@ export default function baseStateModelFactory(
           }
         },
 
+        /**
+         * #action
+         */
         startBackend(backend: CanvasFeatureBackend) {
           // Upload only regions whose laid-out data reference changed, so a
           // new chromosome streaming in doesn't re-upload the ones already on
@@ -581,6 +757,9 @@ export default function baseStateModelFactory(
           })
         },
 
+        /**
+         * #action
+         */
         setFeatureDensityStatsLimit(stats?: {
           bytes?: number
           fetchSizeLimit?: number
@@ -620,28 +799,46 @@ export default function baseStateModelFactory(
           // imperative flag to clear.
         },
 
+        /**
+         * #action
+         */
         setFeatureIdUnderMouse(featureId: string | null) {
           self.featureIdUnderMouse = featureId
         },
 
+        /**
+         * #action
+         */
         setSubfeatureIdUnderMouse(featureId: string | null) {
           self.subfeatureIdUnderMouse = featureId
         },
 
+        /**
+         * #action
+         */
         clearHover() {
           self.featureIdUnderMouse = null
           self.subfeatureIdUnderMouse = null
           self.mouseoverExtraInformation = undefined
         },
 
+        /**
+         * #action
+         */
         setMouseoverExtraInformation(info: string | undefined) {
           self.mouseoverExtraInformation = info
         },
 
+        /**
+         * #action
+         */
         setContextMenuFeature(feature?: Feature) {
           self.contextMenuFeature = feature
         },
 
+        /**
+         * #action
+         */
         setContextMenuInfo(info?: {
           item: FlatbushItem
           displayedRegionIndex: number
@@ -653,32 +850,53 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         selectFeature(feature: Feature) {
           openFeatureWidget(self, feature.toJSON(), {
             widget: self.featureWidgetType,
           })
         },
 
+        /**
+         * #action
+         */
         clearSelection() {
           getSession(self).clearSelection()
         },
 
+        /**
+         * #action
+         */
         setShowLabels(value: ShowLabelsMode) {
           self.setOverride('showLabels', value)
         },
 
+        /**
+         * #action
+         */
         setAutoHeight(value: boolean) {
           self.setOverride('autoHeight', value)
         },
 
+        /**
+         * #action
+         */
         setShowDescriptions(value: boolean) {
           self.setOverride('showDescriptions', value)
         },
 
+        /**
+         * #action
+         */
         setShowOutline(value: boolean) {
           self.setOverride('outline', value ? OUTLINE_DEFAULT_RGBA : '')
         },
 
+        /**
+         * #action
+         */
         showContextMenuForFeature(
           featureInfo: FlatbushItem,
           displayedRegionIndex: number,
@@ -687,6 +905,9 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         async fetchFullFeature(
           featureId: string,
           displayedRegionIndex: number,
@@ -704,6 +925,9 @@ export default function baseStateModelFactory(
           )
         },
 
+        /**
+         * #action
+         */
         selectFeatureById(
           featureInfo: FlatbushItem,
           subfeatureInfo: SubfeatureInfo | undefined,
@@ -736,6 +960,9 @@ export default function baseStateModelFactory(
           })()
         },
 
+        /**
+         * #action
+         */
         // The only bpPerPx-dependent worker decision is the amino-acid overlay
         // (gated by shouldRenderPeptideBackground). Refetch when crossing that
         // discrete threshold; otherwise the cached data stays valid.
@@ -757,6 +984,9 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         getByteEstimateConfig(): ByteEstimateConfig | null {
           const view = getView(self)
           if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
@@ -771,6 +1001,9 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         selectFullFeature(featureId: string, displayedRegionIndex: number) {
           void (async () => {
             const feature = await self.fetchFullFeature(
@@ -860,6 +1093,9 @@ export default function baseStateModelFactory(
         }
 
         return {
+          /**
+           * #action
+           */
           async reload() {
             const view = getContainingView(self) as LinearGenomeViewModel
             if (!view.initialized) {
@@ -869,6 +1105,9 @@ export default function baseStateModelFactory(
             self.fetchNeeded(view.bufferedVisibleRegions)
           },
 
+          /**
+           * #action
+           */
           fetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
@@ -902,6 +1141,9 @@ export default function baseStateModelFactory(
         }
       })
       .actions(self => ({
+        /**
+         * #action
+         */
         clearStaleDensityState() {
           self.densityStatsPerRegion.clear()
           self.setFeatureDensityStats(undefined)
@@ -910,6 +1152,9 @@ export default function baseStateModelFactory(
       .actions(self => {
         const superAfterAttach = self.afterAttach
         return {
+          /**
+           * #action
+           */
           afterAttach() {
             superAfterAttach()
 
@@ -974,6 +1219,9 @@ export default function baseStateModelFactory(
         }
       })
       .views(self => ({
+        /**
+         * #method
+         */
         // Extension point for subclasses to add checkbox/radio items to the
         // "Show..." submenu without rebuilding trackMenuItems from scratch.
         showSubmenuMenuItems() {
@@ -1022,6 +1270,9 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #method
+         */
         contextMenuItems() {
           const info = self.contextMenuInfo
           if (!info) {
@@ -1082,6 +1333,9 @@ export default function baseStateModelFactory(
           ]
         },
 
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             {

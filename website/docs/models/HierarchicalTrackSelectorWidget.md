@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### HierarchicalTrackSelectorWidget - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ISimpleType<"HierarchicalTrackSelectorWidget">
 type: types.literal('HierarchicalTrackSelectorWidget')
 ```
 
-#### propertie: view
+#### property: view
 
 ```js
 // type signature
@@ -49,6 +49,104 @@ IMaybe<IReferenceType<IAnyType>>
 view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       )
+```
+
+### HierarchicalTrackSelectorWidget - Volatiles
+
+#### volatile: favorites
+
+```js
+// type signature
+string[]
+// code
+favorites: localStorageGetJSON<string[]>(favoritesK(), [])
+```
+
+#### volatile: recentlyUsed
+
+```js
+// type signature
+string[]
+// code
+recentlyUsed: [] as string[]
+```
+
+#### volatile: selection
+
+```js
+// type signature
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+// code
+selection: [] as AnyConfigurationModel[]
+```
+
+#### volatile: sortTrackNames
+
+```js
+// type signature
+MaybeBoolean
+// code
+sortTrackNames: localStorageGetJSON<MaybeBoolean>(
+        sortTrackNamesK,
+        undefined,
+      )
+```
+
+#### volatile: sortCategories
+
+```js
+// type signature
+MaybeBoolean
+// code
+sortCategories: localStorageGetJSON<MaybeBoolean>(
+        sortCategoriesK,
+        undefined,
+      )
+```
+
+#### volatile: collapsed
+
+```js
+// type signature
+ObservableMap<string, boolean>
+// code
+collapsed: observable.map<string, boolean>()
+```
+
+#### volatile: folderCategories
+
+```js
+// type signature
+ObservableSet<string>
+// code
+folderCategories: observable.set<string>()
+```
+
+#### volatile: filterText
+
+```js
+// type signature
+string
+// code
+filterText: ''
+```
+
+#### volatile: recentlyUsedCounter
+
+```js
+// type signature
+number
+// code
+recentlyUsedCounter: 0
+```
+
+#### volatile: favoritesCounter
+
+```js
+// type signature
+number
+// code
+favoritesCounter: 0
 ```
 
 ### HierarchicalTrackSelectorWidget - Getters
@@ -64,7 +162,7 @@ Set<string>
 
 ```js
 // type
-Set<{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+Set<ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>>
 ```
 
 #### getter: favoritesSet
@@ -108,21 +206,21 @@ filter out tracks that don't match the current assembly/display types
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: allTrackConfigurations
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: allTrackConfigurationMap
 
 ```js
 // type
-Map<any, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+Map<any, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>>
 ```
 
 #### getter: favoriteTracks
@@ -131,7 +229,7 @@ filters out tracks that are not in the favorites group
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: recentlyUsedTracks
@@ -140,14 +238,14 @@ filters out tracks that are not in the recently used group
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: allTracks
 
 ```js
 // type
-{ group: any; tracks: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]; noCategories: boolean; }[]
+{ group: any; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>)[]; noCategories: boolean; }[]
 ```
 
 #### getter: hierarchy
@@ -170,7 +268,7 @@ boolean
 
 ```js
 // type signature
-isSelected: (track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
+isSelected: (track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => boolean
 ```
 
 #### method: isFavorite
@@ -214,21 +312,21 @@ setSortCategories: (val: boolean) => void
 
 ```js
 // type signature
-setSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+setSelection: (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => void
 ```
 
 #### action: addToSelection
 
 ```js
 // type signature
-addToSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+addToSelection: (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => void
 ```
 
 #### action: removeFromSelection
 
 ```js
 // type signature
-removeFromSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+removeFromSelection: (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => void
 ```
 
 #### action: clearSelection

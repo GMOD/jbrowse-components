@@ -24,6 +24,7 @@ const TAG_TYPES = [
   'identifier',
   'baseConfiguration',
   'property',
+  'volatile',
   'getter',
   'baseModel',
   'action',
@@ -151,6 +152,35 @@ export function parseTaggedComment(
 
 export function removeComments(string: string) {
   return string.replaceAll(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim()
+}
+
+export interface ExtendsRef {
+  name: string
+  slug: string
+}
+
+// The composition graph is authored inside the #stateModel comment after an
+// `extends` marker, in one of two styles:
+//   extends
+//   - [BaseDisplay](../basedisplay)
+// or inline:
+//   extends [BaseWebSession](../basewebsession)
+// We parse those links back into structured refs so the generator can flatten
+// the inherited API and validate that each link resolves. The extends block is
+// the last thing in the doc body (member sections come from the template), so
+// every relative model link after the marker is an extends ref.
+export function parseExtends(docs: string): ExtendsRef[] {
+  const marker = /^\s*extends\b/m.exec(docs)
+  const refs: ExtendsRef[] = []
+  if (marker) {
+    const body = docs.slice(marker.index + marker[0].length)
+    const re = /\[([^\]]+)\]\(\.\.\/([^)]+)\)/g
+    let match: RegExpExecArray | null
+    while ((match = re.exec(body)) !== null) {
+      refs.push({ name: match[1]!, slug: match[2]! })
+    }
+  }
+  return refs
 }
 
 export async function getAllFiles() {

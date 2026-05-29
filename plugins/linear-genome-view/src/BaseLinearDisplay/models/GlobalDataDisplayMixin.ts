@@ -20,6 +20,14 @@ export type { FetchContext } from './FetchMixin.ts'
  * installs no autoruns. Fetch triggering is left entirely to the display's
  * own afterAttach autorun so each display can express its own trigger
  * conditions (HiC: viewport change; LD: viewport + showLDTriangle + etc).
+ *
+ * #stateModel GlobalDataDisplayMixin
+ * #category display
+ *
+ * extends
+ * - [RegionTooLargeMixin](../regiontoolargemixin)
+ * - [GpuLifecycleMixin](../gpulifecyclemixin)
+ * - [FetchMixin](../fetchmixin)
  */
 export default function GlobalDataDisplayMixin() {
   return types.compose(

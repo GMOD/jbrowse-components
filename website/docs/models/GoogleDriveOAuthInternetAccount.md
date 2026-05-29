@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### GoogleDriveOAuthInternetAccount - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<"GoogleDriveOAuthInternetAccount">
 type: types.literal('GoogleDriveOAuthInternetAccount')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature

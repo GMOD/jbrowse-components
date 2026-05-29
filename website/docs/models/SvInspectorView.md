@@ -29,9 +29,22 @@ extends
 
 - [BaseViewModel](../baseviewmodel)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseViewModel](../baseviewmodel)
+
+**Properties:** id, displayName, minimized
+
+**Getters:** menuItems
+
+**Actions:** setDisplayName, setWidth, setMinimized
+
 ### SvInspectorView - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -40,7 +53,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -49,7 +62,7 @@ ISimpleType<"SvInspectorView">
 type: types.literal('SvInspectorView')
 ```
 
-#### propertie: height
+#### property: height
 
 ```js
 // type signature
@@ -58,7 +71,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 height: types.optional(types.number, defaultHeight)
 ```
 
-#### propertie: onlyDisplayRelevantRegionsInCircularView
+#### property: onlyDisplayRelevantRegionsInCircularView
 
 ```js
 // type signature
@@ -67,7 +80,7 @@ false
 onlyDisplayRelevantRegionsInCircularView: false
 ```
 
-#### propertie: spreadsheetView
+#### property: spreadsheetView
 
 ```js
 // type signature
@@ -81,11 +94,11 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
         )
 ```
 
-#### propertie: circularView
+#### property: circularView
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 7 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; }>, [...]>
 // code
 circularView: types.optional(CircularModel, () =>
           CircularModel.create({
@@ -97,7 +110,7 @@ circularView: types.optional(CircularModel, () =>
         )
 ```
 
-#### propertie: init
+#### property: init
 
 used for initializing the view from a session snapshot
 
@@ -106,6 +119,44 @@ used for initializing the view from a session snapshot
 IType<SvInspectorViewInit | undefined, SvInspectorViewInit | undefined, SvInspectorViewInit | undefined>
 // code
 init: types.frozen<SvInspectorViewInit | undefined>()
+```
+
+### SvInspectorView - Volatiles
+
+#### volatile: width
+
+```js
+// type signature
+number
+// code
+width: 800
+```
+
+#### volatile: SpreadsheetViewReactComponent
+
+```js
+// type signature
+ViewComponentType
+// code
+SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent
+```
+
+#### volatile: CircularViewReactComponent
+
+```js
+// type signature
+ViewComponentType
+// code
+CircularViewReactComponent: CircularViewType.ReactComponent
+```
+
+#### volatile: circularViewOptionsBarHeight
+
+```js
+// type signature
+number
+// code
+circularViewOptionsBarHeight
 ```
 
 ### SvInspectorView - Getters
@@ -142,28 +193,35 @@ SimpleFeatureSerialized[]
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: currentAssembly
 
 ```js
 // type
-({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; lowerCaseRefNameAliases: RefNameAliases ...
+(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 7 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: canonicalFeatureRefNameSet
 
 ```js
 // type
-Set<any>
+Set<string>
+```
+
+#### getter: variantTrackId
+
+```js
+// type
+string
 ```
 
 #### getter: featuresCircularTrackConfiguration
 
 ```js
 // type
-{ type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: (string | undefined)[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }
+{ type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }
 ```
 
 ### SvInspectorView - Methods

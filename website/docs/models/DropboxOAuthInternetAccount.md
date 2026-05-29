@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### DropboxOAuthInternetAccount - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<"DropboxOAuthInternetAccount">
 type: types.literal('DropboxOAuthInternetAccount')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature

@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### SpreadsheetImportWizard - Properties
 
-#### propertie: fileType
+#### property: fileType
 
 ```js
 // type signature
@@ -31,25 +31,7 @@ IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]
 fileType: types.optional(types.enumeration(fileTypes), 'VCF')
 ```
 
-#### propertie: hasColumnNameLine
-
-```js
-// type signature
-true
-// code
-hasColumnNameLine: true
-```
-
-#### propertie: columnNameLineNumber
-
-```js
-// type signature
-number
-// code
-columnNameLineNumber: 1
-```
-
-#### propertie: selectedAssemblyName
+#### property: selectedAssemblyName
 
 ```js
 // type signature
@@ -58,7 +40,7 @@ IMaybe<ISimpleType<string>>
 selectedAssemblyName: types.maybe(types.string)
 ```
 
-#### propertie: cachedFileLocation
+#### property: cachedFileLocation
 
 used specifically for UriLocation's
 
@@ -67,6 +49,35 @@ used specifically for UriLocation's
 IType<FileLocation | undefined, FileLocation | undefined, FileLocation | undefined>
 // code
 cachedFileLocation: types.frozen<FileLocation | undefined>()
+```
+
+### SpreadsheetImportWizard - Volatiles
+
+#### volatile: fileSource
+
+```js
+// type signature
+FileLocation | undefined
+// code
+fileSource: undefined as FileLocation | undefined
+```
+
+#### volatile: error
+
+```js
+// type signature
+unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: loading
+
+```js
+// type signature
+false
+// code
+loading: false
 ```
 
 ### SpreadsheetImportWizard - Getters
@@ -85,27 +96,13 @@ boolean
 string | undefined
 ```
 
-#### getter: requiresUnzip
-
-```js
-// type
-boolean
-```
-
 ### SpreadsheetImportWizard - Methods
-
-#### method: isValidRefName
-
-```js
-// type signature
-isValidRefName: (refName: string, assemblyName?: string | undefined) => boolean
-```
 
 #### method: tracksForAssembly
 
 ```js
 // type signature
-tracksForAssembly: (selectedAssembly: string) => { track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; label: string; type: "VCF" | ... 2 more ... | "STAR-Fusion"; loc: File...
+tracksForAssembly: (selectedAssembly: string) => { track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; label: string; type: "VCF" | ... 2 more ... | "STAR-Fusion"; loc: FileLocation; }[]
 ```
 
 ### SpreadsheetImportWizard - Actions
@@ -122,13 +119,6 @@ setSelectedAssemblyName: (s: string) => void
 ```js
 // type signature
 setFileSource: (newSource: FileLocation | undefined) => void
-```
-
-#### action: setColumnNameLineNumber
-
-```js
-// type signature
-setColumnNameLineNumber: (newnumber: number) => void
 ```
 
 #### action: setFileType

@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### SpreadsheetView - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<"SpreadsheetView">
 type: types.literal('SpreadsheetView')
 ```
 
-#### propertie: offsetPx
+#### property: offsetPx
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ number
 offsetPx: 0
 ```
 
-#### propertie: height
+#### property: height
 
 ```js
 // type signature
@@ -49,7 +49,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 height: types.optional(types.number, defaultHeight)
 ```
 
-#### propertie: hideVerticalResizeHandle
+#### property: hideVerticalResizeHandle
 
 ```js
 // type signature
@@ -58,7 +58,7 @@ false
 hideVerticalResizeHandle: false
 ```
 
-#### propertie: hideFilterControls
+#### property: hideFilterControls
 
 ```js
 // type signature
@@ -67,18 +67,18 @@ false
 hideFilterControls: false
 ```
 
-#### propertie: importWizard
+#### property: importWizard
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>; hasColumnNameLine: IType<boolean | undefined, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... &...
+IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>; selectedAssemblyName: IMaybe<ISimpleType<string>>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 importWizard: types.optional(ImportWizardModel, () =>
             ImportWizardModel.create(),
           )
 ```
 
-#### propertie: spreadsheet
+#### property: spreadsheet
 
 ```js
 // type signature
@@ -87,7 +87,7 @@ IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet
 spreadsheet: types.maybe(Spreadsheet())
 ```
 
-#### propertie: init
+#### property: init
 
 used for initializing the view from a session snapshot
 
@@ -96,6 +96,17 @@ used for initializing the view from a session snapshot
 IType<SpreadsheetViewInit | undefined, SpreadsheetViewInit | undefined, SpreadsheetViewInit | undefined>
 // code
 init: types.frozen<SpreadsheetViewInit | undefined>()
+```
+
+### SpreadsheetView - Volatiles
+
+#### volatile: width
+
+```js
+// type signature
+number
+// code
+width: 400
 ```
 
 ### SpreadsheetView - Getters
@@ -152,7 +163,7 @@ load a new spreadsheet and set our mode to display it
 
 ```js
 // type signature
-displaySpreadsheet: (spreadsheet?: ({ rowSet: (RowSet & IStateTreeNode<IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>>) | undefined; columns: { ...; }[] & IStateTreeNode<...>; assemblyName: string | undefined; visibleColumns: Record<...> & IStateTreeNode<...>; } & ... 6 more ... & IStateTreeNode<...>) | undefined) =>...
+displaySpreadsheet: (spreadsheet?: (ModelInstanceTypeProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IType<...>; }> & ... 5 more ... & IStateTreeNode<...>) | undefined) => void
 ```
 
 #### action: setInit

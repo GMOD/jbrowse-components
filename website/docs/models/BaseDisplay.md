@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BaseDisplay - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ISimpleType<string>
 type: types.string
 ```
 
-#### propertie: rpcDriverName
+#### property: rpcDriverName
 
 ```js
 // type signature
@@ -51,42 +51,11 @@ rpcDriverName: types.maybe(types.string)
 
 ### BaseDisplay - Getters
 
-#### getter: RenderingComponent
-
-```js
-// type
-FC<{ model: { id: string; type: string; rpcDriverName: string | undefined; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string | undefined; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) | undefined; blockState?: Record<...> | undefined; }>
-```
-
-#### getter: DisplayBlurb
-
-```js
-// type
-FC<{ model: { id: string; type: string; rpcDriverName: string | undefined; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string | undefined; } & IStateTreeNode<...>; }> | null
-```
-
-#### getter: adapterConfig
-
-```js
-// type
-any
-```
-
 #### getter: parentTrack
 
 ```js
 // type
 AbstractTrackModel
-```
-
-#### getter: isMinimized
-
-Returns true if the parent track is minimized. Used to skip expensive operations
-like autoruns when track is not visible.
-
-```js
-// type
-boolean
 ```
 
 #### getter: parentDisplay
@@ -97,6 +66,37 @@ Returns the parent display if this display is nested within another display
 ```js
 // type
 { type?: string | undefined; effectiveRpcDriverName?: string | undefined; } | undefined
+```
+
+#### getter: RenderingComponent
+
+```js
+// type
+FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) | undefined; blockState?: Record<...> | undefined; }>
+```
+
+#### getter: DisplayBlurb
+
+```js
+// type
+FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
+```
+
+#### getter: adapterConfig
+
+```js
+// type
+any
+```
+
+#### getter: isMinimized
+
+Returns true if the parent track is minimized. Used to skip expensive operations
+like autoruns when track is not visible.
+
+```js
+// type
+boolean
 ```
 
 #### getter: effectiveRpcDriverName
@@ -165,7 +165,7 @@ callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string | undefined; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string | undefined; } & { ...; } & IStateTreeNode<...>; }
+renderingProps: () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems

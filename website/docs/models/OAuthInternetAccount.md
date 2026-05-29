@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### OAuthInternetAccount - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<"OAuthInternetAccount">
 type: types.literal('OAuthInternetAccount')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -84,6 +84,17 @@ string
 string
 ```
 
+#### getter: state
+
+OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
+
+Can override or extend if dynamic state is needed.
+
+```js
+// type
+string | undefined
+```
+
 #### getter: responseType
 
 ```js
@@ -99,17 +110,6 @@ string
 ```
 
 ### OAuthInternetAccount - Methods
-
-#### method: state
-
-OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
-
-Can override or extend if dynamic state is needed.
-
-```js
-// type signature
-state: () => string | undefined
-```
 
 #### method: retrieveRefreshToken
 
@@ -148,39 +148,15 @@ exchangeAuthorizationForAccessToken: (code: string, redirectUri: string) => Prom
 exchangeRefreshForAccessToken: (refreshToken: string) => Promise<string>
 ```
 
-#### action: addMessageChannel
+#### action: getTokenViaAuthFlow
 
-used to listen to child window for auth code/token
-
-```js
-// type signature
-addMessageChannel: (resolve: (token: string) => void, reject: (error: Error) => void) => void
-```
-
-#### action: deleteMessageChannel
+Opens the provider's auth page and returns a promise for the resulting token.
+For Electron, drives the flow directly via IPC; for web, opens a popup and waits
+for the redirect message.
 
 ```js
 // type signature
-deleteMessageChannel: () => void
-```
-
-#### action: finishOAuthWindow
-
-Returns the token if the event completes the flow, undefined if the event name
-doesn't match. Throws on any OAuth error.
-
-```js
-// type signature
-finishOAuthWindow: (event: MessageEvent<any>) => Promise<string | undefined>
-```
-
-#### action: useEndpointForAuthorization
-
-opens external OAuth flow, popup for web and new browser window for desktop
-
-```js
-// type signature
-useEndpointForAuthorization: (resolve: (token: string) => void) => Promise<void>
+getTokenViaAuthFlow: () => Promise<string>
 ```
 
 #### action: getTokenFromUser

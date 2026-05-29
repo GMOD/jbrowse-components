@@ -27,11 +27,10 @@ composed of
 - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
 - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
 - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
-- [SnackbarModel](../snackbarmodel)
 
 ### JBrowseReactCircularGenomeViewSessionModel - Properties
 
-#### propertie: view
+#### property: view
 
 ```js
 // type signature
@@ -104,7 +103,7 @@ replaces view in this case
 
 ```js
 // type signature
-addView: (typeName: string, initialState?: {}) => any
+addView: (typeName: string, initialState?: any) => any
 ```
 
 #### action: removeView

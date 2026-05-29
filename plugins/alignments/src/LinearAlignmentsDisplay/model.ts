@@ -208,7 +208,15 @@ const COLOR_BY_TO_SCHEME: Record<string, number> = {
 // hit gets index 0, the eleventh wraps to index 0 again.
 
 /**
+ * #stateModel LinearAlignmentsDisplay
+ * #category display
  * State model factory for LinearAlignmentsDisplay
+ *
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+ * - [ConfigOverrideMixin](../configoverridemixin)
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -228,8 +236,17 @@ export default function stateModelFactory(
         // remaining toggles. Each setting also has a refetch/relayout/render
         // blast radius documented there.
         types.model({
+          /**
+           * #property
+           */
           type: types.literal('LinearAlignmentsDisplay'),
+          /**
+           * #property
+           */
           configuration: ConfigurationReference(configSchema),
+          /**
+           * #property
+           */
           linkedReads: types.optional(
             types.enumeration<LinkedReadsMode>('LinkedReadsMode', [
               'off',
@@ -238,21 +255,60 @@ export default function stateModelFactory(
             ]),
             'off',
           ),
+          /**
+           * #property
+           */
           showCoverage: true,
+          /**
+           * #property
+           */
           coverageHeight: 45,
+          /**
+           * #property
+           */
           showMismatches: true,
+          /**
+           * #property
+           */
           showInterbaseIndicators: true,
+          /**
+           * #property
+           */
           showYScalebar: true,
+          /**
+           * #property
+           */
           drawSingletons: true,
+          /**
+           * #property
+           */
           drawProperPairs: true,
+          /**
+           * #property
+           */
           flipStrandLongReadChains: true,
+          /**
+           * #property
+           */
           lineWidthSetting: types.maybe(types.number),
+          /**
+           * #property
+           */
           drawInter: true,
+          /**
+           * #property
+           */
           drawLongRange: true,
+          /**
+           * #property
+           */
           arcColorByType: types.optional(
             arcColorByTypes,
             'insertSizeAndOrientation',
           ),
+          /**
+           * #property
+           */
           pairedArcs: types.optional(
             types.enumeration<PairedArcsMode>('PairedArcsMode', [
               'off',
@@ -262,6 +318,9 @@ export default function stateModelFactory(
             ]),
             'off',
           ),
+          /**
+           * #property
+           */
           sashimiArcs: types.optional(
             types.enumeration<ArcDirection>('SashimiArcsMode', [
               'off',
@@ -270,8 +329,17 @@ export default function stateModelFactory(
             ]),
             'up',
           ),
+          /**
+           * #property
+           */
           sashimiArcsHeight: 40,
+          /**
+           * #property
+           */
           arcsHeight: 40,
+          /**
+           * #property
+           */
           showSoftClipping: false,
         }),
       )
@@ -282,32 +350,86 @@ export default function stateModelFactory(
           migrateAlignmentsSnapshot(snap),
       )
       .volatile(() => ({
+        /**
+         * #volatile
+         */
         featureIdUnderMouse: undefined as undefined | string,
+        /**
+         * #volatile
+         */
         mouseoverExtraInformation: undefined as TooltipPayload | undefined,
+        /**
+         * #volatile
+         */
         contextMenuFeature: undefined as Feature | undefined,
+        /**
+         * #volatile
+         */
         contextMenuCoord: undefined as [number, number] | undefined,
+        /**
+         * #volatile
+         */
         contextMenuCigarHit: undefined as CigarHitResult | undefined,
+        /**
+         * #volatile
+         */
         contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
+        /**
+         * #volatile
+         */
         contextMenuRefName: undefined as string | undefined,
+        /**
+         * #volatile
+         */
         rpcDataMap: observable.map<number, PileupDataResult>(),
+        /**
+         * #volatile
+         */
         currentRangeY: [0, 600] as [number, number],
+        /**
+         * #volatile
+         */
         highlightedChainIds: [] as string[],
+        /**
+         * #volatile
+         */
         selectedChainIds: [] as string[],
 
+        /**
+         * #volatile
+         */
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         colorTagMap: {} as Record<string, string>,
+        /**
+         * #volatile
+         */
         visibleModifications: observable.map<string, ModificationTypeWithColor>(
           {},
         ),
+        /**
+         * #volatile
+         */
         simplexModifications: new Set<string>(),
+        /**
+         * #volatile
+         */
         modificationsReady: false,
+        /**
+         * #volatile
+         */
         overCigarItem: false,
+        /**
+         * #volatile
+         */
         colorPalette: null as ColorPalette | null,
       }))
       // `isChainMode` is its own getter — it's used in many places as a
       // domain concept ("are we drawing the chain layout?") that reads
       // better than the equivalent `linkedReads === 'normal'`.
       .views(self => ({
+        /**
+         * #getter
+         */
         get isChainMode() {
           return self.linkedReads === 'normal'
         },
@@ -318,31 +440,55 @@ export default function stateModelFactory(
       // dialog; *Config strip the sentinels for domain bounds. Kept in its own
       // block so later getters reference them via `self`.
       .views(self => ({
+        /**
+         * #getter
+         */
         get scaleType() {
           return self.getConfWithOverride<string>('scaleType')
         },
+        /**
+         * #getter
+         */
         get autoscaleType() {
           return self.getConfWithOverride<string>('autoscale')
         },
+        /**
+         * #getter
+         */
         get minScore() {
           return self.getConfWithOverride<number>('minScore')
         },
+        /**
+         * #getter
+         */
         get maxScore() {
           return self.getConfWithOverride<number>('maxScore')
         },
+        /**
+         * #getter
+         */
         get minScoreConfig() {
           const v = self.getConfWithOverride<number>('minScore')
           return v !== Number.MIN_VALUE ? v : undefined
         },
+        /**
+         * #getter
+         */
         get maxScoreConfig() {
           const v = self.getConfWithOverride<number>('maxScore')
           return v !== Number.MAX_VALUE ? v : undefined
         },
+        /**
+         * #getter
+         */
         get numStdDev() {
           return self.getConfWithOverride<number>('numStdDev')
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get featureWidgetType() {
           return {
             type: 'AlignmentsFeatureWidget',
@@ -350,6 +496,9 @@ export default function stateModelFactory(
           }
         },
 
+        /**
+         * #getter
+         */
         get selectedFeatureId() {
           const { selection } = getSession(self)
           if (isFeature(selection)) {
@@ -358,38 +507,65 @@ export default function stateModelFactory(
           return undefined
         },
 
+        /**
+         * #getter
+         */
         get DisplayMessageComponent() {
           return AlignmentsComponent
         },
 
+        /**
+         * #getter
+         */
         get TooltipComponent() {
           return AlignmentsTooltip
         },
 
+        /**
+         * #getter
+         */
         get visibleModificationTypes() {
           return [...self.visibleModifications.keys()]
         },
 
+        /**
+         * #getter
+         */
         get colorBy() {
           return self.getConfWithOverride<ColorBy>('colorBy')
         },
 
+        /**
+         * #getter
+         */
         get filterBy() {
           return self.getConfWithOverride<FilterBy>('filterBy')
         },
 
+        /**
+         * #getter
+         */
         get featureHeightSetting() {
           return self.getConfWithOverride<number>('featureHeight')
         },
 
+        /**
+         * #getter
+         */
         get featureSpacing() {
           return self.getConfWithOverride<number>('featureSpacing')
         },
 
+        /**
+         * #getter
+         */
         get maxHeight() {
           return self.getConfWithOverride<number>('maxHeight')
         },
 
+        /**
+         * #getter
+         */
         get chainIdMap() {
           const map = new Map<number, string[]>()
           if (self.linkedReads !== 'off') {
@@ -414,22 +590,37 @@ export default function stateModelFactory(
           return map
         },
 
+        /**
+         * #getter
+         */
         get mismatchAlpha() {
           return !!self.getOverride<boolean>('mismatchAlpha')
         },
 
+        /**
+         * #getter
+         */
         get showLegend() {
           return self.getOverride<boolean>('showLegend')
         },
 
+        /**
+         * #getter
+         */
         get sortedBy() {
           return self.getOverride<SortedBy>('sortedBy')
         },
 
+        /**
+         * #getter
+         */
         get coverageIsLog() {
           return self.scaleType === 'log'
         },
 
+        /**
+         * #getter
+         */
         get coverageStats() {
           if (!self.showCoverage) {
             return undefined
@@ -444,6 +635,9 @@ export default function stateModelFactory(
           )
         },
 
+        /**
+         * #getter
+         */
         get coverageDomain() {
           return this.coverageStats
             ? getNiceDomain({
@@ -458,6 +652,9 @@ export default function stateModelFactory(
             : undefined
         },
 
+        /**
+         * #getter
+         */
         get coverageTicks() {
           return this.coverageDomain
             ? computeCoverageTicks(
@@ -468,6 +665,9 @@ export default function stateModelFactory(
             : undefined
         },
 
+        /**
+         * #getter
+         */
         get legendItems() {
           return getReadDisplayLegendItems(
             this.colorBy,
@@ -476,6 +676,9 @@ export default function stateModelFactory(
           )
         },
 
+        /**
+         * #getter
+         */
         get laidOutPileupMap() {
           if (self.linkedReads !== 'off') {
             return buildLaidOutChainMap(self.rpcDataMap, self.linkedReads)
@@ -487,6 +690,9 @@ export default function stateModelFactory(
           })
         },
 
+        /**
+         * #getter
+         */
         get maxY() {
           let max = 0
           for (const data of this.laidOutPileupMap.values()) {
@@ -503,6 +709,9 @@ export default function stateModelFactory(
         // Arcs/lines are also pre-grouped by refName so the per-region
         // arcsRpcDataMap lookup is O(1) instead of filtering every arc per
         // displayed region.
+        /**
+         * #getter
+         */
         get arcsComputed() {
           if (self.pairedArcs === 'off' || self.rpcDataMap.size === 0) {
             return undefined
@@ -528,6 +737,9 @@ export default function stateModelFactory(
           return { ...groupArcsByRef(arcs, lines), regionInfos }
         },
 
+        /**
+         * #getter
+         */
         get arcsRpcDataMap() {
           const computed = this.arcsComputed
           if (!computed) {
@@ -549,27 +761,45 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get modificationThreshold() {
           return self.colorBy.modifications?.threshold ?? 10
         },
 
+        /**
+         * #getter
+         */
         get colorSchemeIndex() {
           return COLOR_BY_TO_SCHEME[self.colorBy.type] ?? ColorScheme.normal
         },
 
+        /**
+         * #getter
+         */
         get showModifications() {
           const t = self.colorBy.type
           return t === 'modifications' || t === 'methylation'
         },
 
+        /**
+         * #getter
+         */
         get showPerBaseQuality() {
           return self.colorBy.type === 'perBaseQuality'
         },
 
+        /**
+         * #getter
+         */
         get totalPileupHeight() {
           return self.maxY * (self.featureHeightSetting + self.featureSpacing)
         },
 
+        /**
+         * #getter
+         */
         get readIdIndexMap() {
           const map = new Map<
             string,
@@ -587,10 +817,16 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get lineWidth() {
           return self.lineWidthSetting ?? 1
         },
 
+        /**
+         * #method
+         */
         findFeatureInRpcData(featureId: string) {
           const entry = self.readIdIndexMap.get(featureId)
           if (!entry) {
@@ -617,6 +853,7 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         /**
+         * #getter
          * Compatibility getter for BreakpointSplitView overlay which reads
          * display.scrollTop to position SVG curves. The WebGL display manages
          * Y scrolling via currentRangeY[0] rather than the inherited scrollTop.
@@ -625,6 +862,9 @@ export default function stateModelFactory(
           return self.currentRangeY[0]
         },
 
+        /**
+         * #getter
+         */
         get coverageDisplayHeight() {
           return (
             (self.showCoverage ? self.coverageHeight : 0) +
@@ -636,10 +876,16 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get pileupViewportHeight() {
           return Math.max(0, self.height - self.coverageDisplayHeight)
         },
 
+        /**
+         * #getter
+         */
         get scalebarOverlapLeft() {
           const view = getContainingView(self) as {
             trackLabelsSetting?: string
@@ -651,10 +897,16 @@ export default function stateModelFactory(
           return 0
         },
 
+        /**
+         * #getter
+         */
         get showOutlineSetting() {
           return self.getOverride<boolean>('showOutline') ?? self.isChainMode
         },
 
+        /**
+         * #getter
+         */
         get visibleLabels() {
           const view = getContainingView(self) as LGV
           if (!view.initialized) {
@@ -672,6 +924,9 @@ export default function stateModelFactory(
           })
         },
 
+        /**
+         * #method
+         */
         searchFeatureByID(
           featureId: string,
         ): [number, number, number, number] | undefined {
@@ -689,6 +944,9 @@ export default function stateModelFactory(
           return [start, top, end, top + self.featureHeightSetting]
         },
 
+        /**
+         * #method
+         */
         getFeatureInfoById(featureId: string) {
           const hit = self.findFeatureInRpcData(featureId)
           if (!hit) {
@@ -711,6 +969,9 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get scrollableHeight() {
           return Math.max(0, self.totalPileupHeight - self.pileupViewportHeight)
         },
@@ -719,6 +980,9 @@ export default function stateModelFactory(
         // sortTagValues). Wrapping as its own getter means rpcProps only
         // re-notifies when the tag itself changes — not when sort
         // position or sort type flips between non-tag flavors.
+        /**
+         * #getter
+         */
         get sortTag() {
           return self.sortedBy?.type === 'tag' ? self.sortedBy.tag : undefined
         },
@@ -730,6 +994,9 @@ export default function stateModelFactory(
         // NOT here — they are tracked by the arcsRpcDataMap computed
         // getter and do not require a refetch. Non-tag sort changes are
         // handled main-thread by laidOutPileupMap.
+        /**
+         * #method
+         */
         rpcProps() {
           return {
             filterBy: self.filterBy,
@@ -743,6 +1010,9 @@ export default function stateModelFactory(
           }
         },
 
+        /**
+         * #getter
+         */
         get renderState() {
           const view = getContainingView(self) as LGV
           const palette = self.colorPalette
@@ -783,6 +1053,9 @@ export default function stateModelFactory(
         },
 
         // Floored at 1000bp to avoid near-zero division when all pairs are concordant.
+        /**
+         * #getter
+         */
         get arcsYDomainBp() {
           if (self.pairedArcs !== 'samplot') {
             return undefined
@@ -796,6 +1069,9 @@ export default function stateModelFactory(
           return Math.max(1000, maxBp)
         },
 
+        /**
+         * #getter
+         */
         get insertSizeTicks() {
           const domain = this.arcsYDomainBp
           if (domain === undefined) {
@@ -813,6 +1089,9 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get featureUnderMouse() {
           const featId = self.featureIdUnderMouse
           if (!featId) {
@@ -863,8 +1142,14 @@ export default function stateModelFactory(
           }
         }
         return {
+          /**
+           * #action
+           */
           clearMouseoverState,
 
+          /**
+           * #action
+           */
           setError(error?: unknown) {
             superSetError(error)
             if (error) {
@@ -872,6 +1157,9 @@ export default function stateModelFactory(
             }
           },
 
+          /**
+           * #action
+           */
           setRegionTooLarge(val: boolean, reason?: string) {
             superSetRegionTooLarge(val, reason)
             if (val) {
@@ -879,6 +1167,9 @@ export default function stateModelFactory(
             }
           },
 
+          /**
+           * #action
+           */
           setRpcData(
             displayedRegionIndex: number,
             data: PileupDataResult | null,
@@ -893,36 +1184,60 @@ export default function stateModelFactory(
             }
           },
 
+          /**
+           * #action
+           */
           clearDisplaySpecificData() {
             self.rpcDataMap.clear()
             self.currentRangeY = [0, 0]
             self.setRegionTooLarge(false)
           },
 
+          /**
+           * #action
+           */
           setOverCigarItem(flag: boolean) {
             self.overCigarItem = flag
           },
 
+          /**
+           * #action
+           */
           setColorPalette(palette: ColorPalette | null) {
             self.colorPalette = palette
           },
 
+          /**
+           * #action
+           */
           setScrollTop(scrollTop: number) {
             setCurrentRangeY([scrollTop, scrollTop + self.pileupViewportHeight])
           },
 
+          /**
+           * #action
+           */
           setCurrentRangeY,
 
+          /**
+           * #action
+           */
           setHighlightedChainIds(ids: string[]) {
             self.highlightedChainIds = ids
           },
 
+          /**
+           * #action
+           */
           clearHighlights() {
             if (self.highlightedChainIds.length > 0) {
               self.highlightedChainIds = []
             }
           },
 
+          /**
+           * #action
+           */
           clearSelection() {
             const session = getSession(self)
             if (isFeature(session.selection)) {
@@ -933,10 +1248,16 @@ export default function stateModelFactory(
             }
           },
 
+          /**
+           * #action
+           */
           setSelectedChainIds(ids: string[]) {
             self.selectedChainIds = ids
           },
 
+          /**
+           * #action
+           */
           setColorScheme(colorBy: ColorBy) {
             const current = self.getOverride<ColorBy>('colorBy')
             if (colorBy.type !== 'tag' || colorBy.tag !== current?.tag) {
@@ -945,6 +1266,9 @@ export default function stateModelFactory(
             self.setOverride('colorBy', colorBy)
           },
 
+          /**
+           * #action
+           */
           updateColorTagMap(uniqueTag: string[]) {
             const { map, added } = updateColorTagMapPure(
               self.colorTagMap,
@@ -954,18 +1278,30 @@ export default function stateModelFactory(
             return added
           },
 
+          /**
+           * #action
+           */
           setFilterBy(filterBy: FilterBy) {
             self.setOverride('filterBy', filterBy)
           },
 
+          /**
+           * #action
+           */
           setShowOutline(show: boolean | undefined) {
             self.setOverride('showOutline', show)
           },
 
+          /**
+           * #action
+           */
           toggleSoftClipping() {
             self.showSoftClipping = !self.showSoftClipping
           },
 
+          /**
+           * #action
+           */
           toggleMismatchAlpha() {
             self.setOverride(
               'mismatchAlpha',
@@ -973,6 +1309,9 @@ export default function stateModelFactory(
             )
           },
 
+          /**
+           * #action
+           */
           setSortedBy(type: string, tag?: string) {
             const view = getContainingView(self) as LGV
             const { centerLineInfo } = view
@@ -1007,6 +1346,9 @@ export default function stateModelFactory(
             }
           },
 
+          /**
+           * #action
+           */
           setSortedByAtPosition(type: string, pos: number, refName: string) {
             const view = getContainingView(self) as LGV
             const assemblyName = view.assemblyNames[0]
@@ -1025,41 +1367,68 @@ export default function stateModelFactory(
             }
           },
 
+          /**
+           * #action
+           */
           clearSortedBy() {
             self.clearOverride('sortedBy')
           },
 
+          /**
+           * #action
+           */
           setMaxHeight(n?: number) {
             self.setOverride('maxHeight', n)
           },
 
+          /**
+           * #action
+           */
           setScaleType(val: string) {
             self.setOverride('scaleType', val)
           },
 
+          /**
+           * #action
+           */
           setAutoscale(val?: string) {
             self.setOverride('autoscale', val)
           },
 
+          /**
+           * #action
+           */
           setMinScore(val?: number) {
             self.setOverride('minScore', val)
           },
 
+          /**
+           * #action
+           */
           setMaxScore(val?: number) {
             self.setOverride('maxScore', val)
           },
 
+          /**
+           * #action
+           */
           setFeatureHeight(height?: number) {
             self.setOverride('featureHeight', height)
             self.currentRangeY = [0, 0]
           },
 
+          /**
+           * #action
+           */
           setFeatureSpacing(spacing?: number) {
             self.setOverride('featureSpacing', spacing)
             self.currentRangeY = [0, 0]
           },
 
           // duck-typed by LGV/BreakpointSplitView/LinearComparativeView "Compact all tracks"
+          /**
+           * #action
+           */
           setCompactness(level: CompactnessLevel) {
             const { featureHeight, featureSpacing } = COMPACTNESS_PRESETS[level]
             self.setOverride('featureHeight', featureHeight)
@@ -1067,74 +1436,128 @@ export default function stateModelFactory(
             self.currentRangeY = [0, 0]
           },
 
+          /**
+           * #action
+           */
           setSashimiArcs(mode: ArcDirection) {
             self.sashimiArcs = mode
           },
 
+          /**
+           * #action
+           */
           setPairedArcs(mode: PairedArcsMode) {
             self.pairedArcs = mode
           },
 
+          /**
+           * #action
+           */
           setShowCoverage(show: boolean) {
             self.showCoverage = show
           },
 
+          /**
+           * #action
+           */
           setCoverageHeight(height: number) {
             self.coverageHeight = height
           },
 
+          /**
+           * #action
+           */
           setArcsHeight(height: number) {
             self.arcsHeight = height
           },
 
+          /**
+           * #action
+           */
           setSashimiArcsHeight(height: number) {
             self.sashimiArcsHeight = height
           },
 
+          /**
+           * #action
+           */
           setLineWidth(width: number) {
             self.lineWidthSetting = width
           },
 
+          /**
+           * #action
+           */
           setDrawInter(draw: boolean) {
             self.drawInter = draw
           },
 
+          /**
+           * #action
+           */
           setDrawLongRange(draw: boolean) {
             self.drawLongRange = draw
           },
 
+          /**
+           * #action
+           */
           setColorByType(type: ArcColorByType) {
             self.arcColorByType = type
           },
 
+          /**
+           * #action
+           */
           setShowMismatches(show: boolean) {
             self.showMismatches = show
           },
 
+          /**
+           * #action
+           */
           setShowYScalebar(show: boolean) {
             self.showYScalebar = show
           },
 
+          /**
+           * #action
+           */
           setShowLegend(show: boolean | undefined) {
             self.setOverride('showLegend', show)
           },
 
+          /**
+           * #action
+           */
           setDrawSingletons(flag: boolean) {
             self.drawSingletons = flag
           },
 
+          /**
+           * #action
+           */
           setDrawProperPairs(flag: boolean) {
             self.drawProperPairs = flag
           },
 
+          /**
+           * #action
+           */
           setShowInterbaseIndicators(show: boolean) {
             self.showInterbaseIndicators = show
           },
 
+          /**
+           * #action
+           */
           setFlipStrandLongReadChains(flag: boolean) {
             self.flipStrandLongReadChains = flag
           },
 
+          /**
+           * #action
+           */
           setLinkedReads(mode: LinkedReadsMode) {
             const prev = self.linkedReads
             self.linkedReads = mode
@@ -1158,12 +1581,18 @@ export default function stateModelFactory(
             }
           },
 
+          /**
+           * #action
+           */
           updateVisibleModifications(uniqueModifications: string[]) {
             for (const modType of uniqueModifications) {
               addModification(modType)
             }
           },
 
+          /**
+           * #action
+           */
           setSimplexModifications(simplex: string[]) {
             const currentSet = self.simplexModifications
             if (
@@ -1175,18 +1604,30 @@ export default function stateModelFactory(
             self.simplexModifications = new Set(simplex)
           },
 
+          /**
+           * #action
+           */
           setModificationsReady(flag: boolean) {
             self.modificationsReady = flag
           },
 
+          /**
+           * #action
+           */
           setFeatureIdUnderMouse(feature?: string) {
             self.featureIdUnderMouse = feature
           },
 
+          /**
+           * #action
+           */
           setMouseoverExtraInformation(extra?: TooltipPayload) {
             self.mouseoverExtraInformation = extra
           },
 
+          /**
+           * #action
+           */
           setHoverState(state: {
             overCigarItem: boolean
             featureIdUnderMouse: string | undefined
@@ -1197,22 +1638,37 @@ export default function stateModelFactory(
             self.mouseoverExtraInformation = state.mouseoverExtraInformation
           },
 
+          /**
+           * #action
+           */
           setContextMenuFeature(feature?: Feature) {
             self.contextMenuFeature = feature
           },
 
+          /**
+           * #action
+           */
           setContextMenuCoord(coord?: [number, number]) {
             self.contextMenuCoord = coord
           },
 
+          /**
+           * #action
+           */
           setContextMenuCigarHit(hit?: CigarHitResult) {
             self.contextMenuCigarHit = hit
           },
 
+          /**
+           * #action
+           */
           setContextMenuIndicatorHit(hit?: IndicatorHitResult) {
             self.contextMenuIndicatorHit = hit
           },
 
+          /**
+           * #action
+           */
           clearContextMenu() {
             self.contextMenuCoord = undefined
             self.contextMenuFeature = undefined
@@ -1220,10 +1676,16 @@ export default function stateModelFactory(
             self.contextMenuIndicatorHit = undefined
           },
 
+          /**
+           * #action
+           */
           setContextMenuRefName(refName?: string) {
             self.contextMenuRefName = refName
           },
 
+          /**
+           * #action
+           */
           selectFeature(feature: Feature) {
             openFeatureWidget(self, feature.toJSON(), {
               widget: self.featureWidgetType,
@@ -1232,6 +1694,9 @@ export default function stateModelFactory(
         }
       })
       .actions(self => ({
+        /**
+         * #action
+         */
         startBackend(backend: AlignmentsBackend) {
           self.attachBackend<AlignmentsBackend>(backend, {
             upload: b => {
@@ -1267,11 +1732,17 @@ export default function stateModelFactory(
           }
         }
         return {
+          /**
+           * #action
+           */
           async selectFeatureById(featureId: string) {
             await fetchAndDo(featureId, feat => {
               self.selectFeature(feat)
             })
           },
+          /**
+           * #action
+           */
           async setContextMenuFeatureById(featureId: string) {
             await fetchAndDo(featureId, feat => {
               self.setContextMenuFeature(feat)
@@ -1313,6 +1784,9 @@ export default function stateModelFactory(
         }
 
         return {
+          /**
+           * #action
+           */
           getByteEstimateConfig() {
             const view = getContainingView(self) as LGV
             return {
@@ -1324,6 +1798,9 @@ export default function stateModelFactory(
             }
           },
 
+          /**
+           * #action
+           */
           async fetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
@@ -1368,6 +1845,7 @@ export default function stateModelFactory(
       })
       .views(self => ({
         /**
+         * #method
          * Track menu items
          */
         trackMenuItems() {
@@ -1456,6 +1934,9 @@ export default function stateModelFactory(
           return items
         },
 
+        /**
+         * #method
+         */
         contextMenuItems() {
           const feat = self.contextMenuFeature
           const cigarHit = self.contextMenuCigarHit
@@ -1561,6 +2042,9 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearAlignmentsDisplayModel, opts)

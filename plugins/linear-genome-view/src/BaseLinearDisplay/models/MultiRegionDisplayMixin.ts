@@ -23,6 +23,20 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
 
+/**
+ * #stateModel MultiRegionDisplayMixin
+ * #category display
+ *
+ * Per-region fetch lifecycle for LGV-based GPU displays. Installs four autoruns
+ * in `afterAttach` and exposes overridable hooks (`fetchNeeded`, `rpcProps`,
+ * `isCacheValid`, `getByteEstimateConfig`, `clearDisplaySpecificData`) plus the
+ * `fetchRegions` / `loadedRegions` machinery.
+ *
+ * extends
+ * - [RegionTooLargeMixin](../regiontoolargemixin)
+ * - [GpuLifecycleMixin](../gpulifecyclemixin)
+ * - [FetchMixin](../fetchmixin)
+ */
 export default function MultiRegionDisplayMixin() {
   return types
     .compose(
@@ -33,35 +47,59 @@ export default function MultiRegionDisplayMixin() {
       types.model({}),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       * regions whose data has been fetched and committed, keyed by
+       * displayedRegionIndex; populated only after the fetch work callback
+       * returns
+       */
       loadedRegions: observable.map<number, Region>(),
     }))
     .views(self => ({
+      /**
+       * #getter
+       * true once the canvas has painted and no fetch is in flight
+       */
       get isReady() {
         return self.canvasDrawn && !self.isLoading
       },
 
-      // Shared cached view for every LGV-based GPU display. A single
-      // displayedRegion may produce multiple render blocks (shared GPU
-      // buffer, different scissor clips on screen). Plugins that want to
-      // suppress rendering in certain states (e.g. no domain yet) can
-      // override this getter to return [] — the autorun lifecycle will
-      // then issue an empty-blocks render that clears the canvas.
+      /**
+       * #getter
+       * Shared cached view for every LGV-based GPU display. A single
+       * displayedRegion may produce multiple render blocks (shared GPU
+       * buffer, different scissor clips on screen). Plugins that want to
+       * suppress rendering in certain states (e.g. no domain yet) can
+       * override this getter to return [] — the autorun lifecycle will
+       * then issue an empty-blocks render that clears the canvas.
+       */
       get renderBlocks() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return buildRenderBlocks(view.visibleRegions)
       },
     }))
     .actions(self => ({
-      // Action wrapper so callers after async boundaries stay in MST strict mode.
+      /**
+       * #action
+       * Action wrapper so callers after async boundaries stay in MST strict
+       * mode.
+       */
       setLoadedRegion(displayedRegionIndex: number, region: Region) {
         self.loadedRegions.set(displayedRegionIndex, region)
       },
 
-      clearDisplaySpecificData() {
-        // no-op base — subclasses override to clear rpcDataMap etc.
-      },
+      /**
+       * #action
+       * no-op base — subclasses override to clear rpcDataMap etc.
+       */
+      clearDisplaySpecificData() {},
     }))
     .actions(self => ({
+      /**
+       * #action
+       * full reset: cancels fetch, clears error, regionTooLarge,
+       * loadedRegions, display-specific data, and the canvas-drawn flag
+       */
       clearAllRpcData() {
         self.cancelFetch()
         self.setError(undefined)
@@ -71,37 +109,61 @@ export default function MultiRegionDisplayMixin() {
         self.resetCanvasDrawn()
       },
 
-      // Default reload: full reset. Subclasses with extra teardown can
-      // override (and chain to `clearAllRpcData` directly if needed).
+      /**
+       * #action
+       * Default reload: full reset. Subclasses with extra teardown can
+       * override (and chain to `clearAllRpcData` directly if needed).
+       */
       reload() {
         this.clearAllRpcData()
       },
 
+      /**
+       * #action
+       * lighter reset: cancels fetch and clears loadedRegions, leaving error
+       * and regionTooLarge intact
+       */
       invalidateLoadedRegions() {
         self.cancelFetch()
         self.loadedRegions.clear()
       },
     }))
     .actions(_self => ({
-      // Overridable hooks — subclasses override these
+      /**
+       * #action
+       * Overridable hook (no-op base): override to call
+       * `this.fetchRegions(needed, async ctx => { ... })`.
+       */
       fetchNeeded(_needed: { region: Region; displayedRegionIndex: number }[]) {
         // no-op base
       },
 
+      /**
+       * #action
+       * Overridable hook: return `false` to force re-fetch at the current
+       * zoom (wiggle uses this for zoom-level changes).
+       */
       isCacheValid(_displayedRegionIndex: number): boolean {
-        // can be overridden by derived classes
         return true
       },
 
+      /**
+       * #action
+       * Overridable hook: return config to enable byte-estimate gating
+       * before fetch.
+       */
       getByteEstimateConfig(): ByteEstimateConfig | null {
         return null
       },
     }))
     .actions(self => ({
-      // Run a per-region fetch with byte-estimate gating. Marks regions
-      // as loaded only AFTER the work callback has populated display-
-      // specific data (rpcDataMap, cellData, etc) so the GPU upload
-      // autorun sees committed data when it observes loadedRegions.
+      /**
+       * #action
+       * Run a per-region fetch with byte-estimate gating. Marks regions as
+       * loaded only AFTER the work callback has populated display-specific
+       * data (rpcDataMap, cellData, etc) so the GPU upload autorun sees
+       * committed data when it observes loadedRegions.
+       */
       async fetchRegions(
         needed: { region: Region; displayedRegionIndex: number }[],
         work: (ctx: FetchContext) => Promise<void>,
@@ -139,6 +201,11 @@ export default function MultiRegionDisplayMixin() {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * installs the four fetch-lifecycle autoruns (DisplayedRegionsChange,
+       * FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange)
+       */
       afterAttach() {
         // Clear loaded data whenever the displayed-regions list
         // changes. `displayedRegions` is a frozen array on the LGV

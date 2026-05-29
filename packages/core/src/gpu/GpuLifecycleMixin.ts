@@ -39,37 +39,73 @@ export interface BackendCallbacks<B> {
  * indirection, no multi-entry config. `render` returns `true` when the
  * backend actually painted content (flips `canvasDrawn`), `false` to skip
  * this tick (e.g. `renderState` not yet computed or no regions loaded).
+ *
+ * #stateModel GpuLifecycleMixin
+ * #category display
  */
 export function GpuLifecycleMixin() {
   return types
     .model('GpuLifecycle', {})
     .volatile(() => ({
+      /**
+       * #volatile
+       * flips true on first paint; read by test selectors to detect render
+       */
       canvasDrawn: false,
+      /**
+       * #volatile
+       * current backend reference, updated on context-loss recovery
+       */
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       currentBackend: undefined as unknown,
+      /**
+       * #volatile
+       * counter the render autorun observes; bumped to force a re-render
+       */
       renderTick: 0,
+      /**
+       * #volatile
+       * guards attachBackend so the autorun pair spawns once per instance
+       */
       autorunsInstalled: false,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       markCanvasDrawn() {
         if (!self.canvasDrawn) {
           self.canvasDrawn = true
         }
       },
+      /**
+       * #action
+       */
       resetCanvasDrawn() {
         if (self.canvasDrawn) {
           self.canvasDrawn = false
         }
       },
+      /**
+       * #action
+       */
       stopBackend() {
         self.currentBackend = undefined
         self.canvasDrawn = false
       },
+      /**
+       * #action
+       */
       renderNow() {
         self.renderTick += 1
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * attach a GPU/Canvas2D backend and install the upload + render autorun
+       * pair (idempotent — re-calling only swaps the backend)
+       */
       // `cbs` is captured permanently by the autoruns on first call.
       // Re-calling with a new backend (context-loss recovery) updates
       // `currentBackend` only — `cbs` from the first call stay in effect.

@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### InternetAccountsMixin - Properties
 
-#### propertie: internetAccounts
+#### property: internetAccounts
 
 ```js
 // type signature
@@ -39,7 +39,7 @@ internetAccounts: types.array(
 
 ```js
 // type signature
-initializeInternetAccount: (internetAccountConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => any
+initializeInternetAccount: (internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: any) => any
 ```
 
 #### action: createEphemeralInternetAccount

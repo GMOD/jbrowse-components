@@ -34,7 +34,7 @@ model (via e.g. getRoot) in plugin code
 
 ### JBrowseDesktopRootModel - Properties
 
-#### propertie: jobsManager
+#### property: jobsManager
 
 ```js
 // type signature

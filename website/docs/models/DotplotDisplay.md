@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### DotplotDisplay - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<"DotplotDisplay">
 type: types.literal('DotplotDisplay')
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### propertie: colorBy
+#### property: colorBy
 
 color by setting that overrides the config setting
 
@@ -51,7 +51,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 colorBy: types.optional(types.string, 'default')
 ```
 
-#### propertie: alpha
+#### property: alpha
 
 ```js
 // type signature
@@ -60,13 +60,54 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 alpha: types.optional(types.number, 1)
 ```
 
-#### propertie: minAlignmentLength
+#### property: minAlignmentLength
 
 ```js
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 minAlignmentLength: types.optional(types.number, 0)
+```
+
+### DotplotDisplay - Volatiles
+
+#### volatile: rpcData
+
+RPC-computed feature data
+
+```js
+// type signature
+DotplotRpcData | undefined
+// code
+rpcData: undefined as DotplotRpcData | undefined
+```
+
+#### volatile: geometry
+
+GPU-instance geometry produced from featPositions, self- describing via embedded
+bpPerPx. The containing DotplotView aggregates one of these per display and
+uploads them to the shared backend keyed by track index.
+
+```js
+// type signature
+DotplotGeometryData | undefined
+// code
+geometry: undefined as DotplotGeometryData | undefined
+```
+
+### DotplotDisplay - Getters
+
+#### getter: warnings
+
+Per-render fetch warnings, plus the load-time reversed-assembly hint.
+
+```js
+// type
+{
+  message: string
+  effect: string
+}
+;[]
 ```
 
 ### DotplotDisplay - Methods

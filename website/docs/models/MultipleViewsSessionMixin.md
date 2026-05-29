@@ -27,7 +27,7 @@ composed of
 
 ### MultipleViewsSessionMixin - Properties
 
-#### propertie: views
+#### property: views
 
 ```js
 // type signature
@@ -38,7 +38,7 @@ views: types.array(
         )
 ```
 
-#### propertie: stickyViewHeaders
+#### property: stickyViewHeaders
 
 ```js
 // type signature
@@ -49,7 +49,7 @@ stickyViewHeaders: types.optional(types.boolean, () =>
         )
 ```
 
-#### propertie: useWorkspaces
+#### property: useWorkspaces
 
 enables the dockview-based tabbed/tiled workspace layout
 
@@ -96,7 +96,7 @@ moveViewToBottom: (id: string) => void
 
 ```js
 // type signature
-addView: (typeName: string, initialState?: {}) => any
+addView: (typeName: string, initialState?: any) => any
 ```
 
 #### action: removeView

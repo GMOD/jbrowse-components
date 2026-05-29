@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### AddTrackModel - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ ISimpleType<"AddTrackWidget">
 type: types.literal('AddTrackWidget')
 ```
 
-#### propertie: view
+#### property: view
 
 ```js
 // type signature
@@ -154,13 +154,6 @@ string | undefined
 string
 ```
 
-#### getter: getTrackConfig
-
-```js
-// type
-(timestamp: number) => { [x: string]: ...; } | undefined
-```
-
 #### getter: warningMessage
 
 ```js
@@ -168,7 +161,23 @@ string
 "" | "Warning: JBrowse cannot access files using the ftp protocol" | "Warning: one or more of your files do not provide the protocol e.g.\n          https://, please provide an absolute URL unless you are sure a\n          relative URL is intended." | "Warning: You entered a http:// resources but we cannot access HT...
 ```
 
+### AddTrackModel - Methods
+
+#### method: getTrackConfig
+
+```js
+// type signature
+getTrackConfig: (timestamp: number) => { [x: string]: ...; } | undefined
+```
+
 ### AddTrackModel - Actions
+
+#### action: setMixinData
+
+```js
+// type signature
+setMixinData: (arg: Record<string, unknown>) => void
+```
 
 #### action: setAdapterHint
 

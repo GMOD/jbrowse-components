@@ -24,9 +24,22 @@ extends
 
 - [BaseViewModel](../baseviewmodel)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseViewModel](../baseviewmodel)
+
+**Properties:** id, displayName, minimized
+
+**Getters:** menuItems
+
+**Actions:** setDisplayName, setWidth, setMinimized
+
 ### DotplotView - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -35,7 +48,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -44,7 +57,7 @@ ISimpleType<"DotplotView">
 type: types.literal('DotplotView')
 ```
 
-#### propertie: height
+#### property: height
 
 ```js
 // type signature
@@ -53,7 +66,7 @@ number
 height: defaultHeight
 ```
 
-#### propertie: borderSize
+#### property: borderSize
 
 ```js
 // type signature
@@ -62,7 +75,7 @@ number
 borderSize: defaultBorderSize
 ```
 
-#### propertie: tickSize
+#### property: tickSize
 
 ```js
 // type signature
@@ -71,7 +84,7 @@ number
 tickSize: defaultTickSize
 ```
 
-#### propertie: vtextRotation
+#### property: vtextRotation
 
 ```js
 // type signature
@@ -80,7 +93,7 @@ number
 vtextRotation: 0
 ```
 
-#### propertie: htextRotation
+#### property: htextRotation
 
 ```js
 // type signature
@@ -89,7 +102,7 @@ number
 htextRotation: defaultHtextRotation
 ```
 
-#### propertie: fontSize
+#### property: fontSize
 
 ```js
 // type signature
@@ -98,7 +111,7 @@ number
 fontSize: defaultFontSize
 ```
 
-#### propertie: trackSelectorType
+#### property: trackSelectorType
 
 ```js
 // type signature
@@ -107,7 +120,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### propertie: assemblyNames
+#### property: assemblyNames
 
 ```js
 // type signature
@@ -116,7 +129,7 @@ IArrayType<ISimpleType<string>>
 assemblyNames: types.array(types.string)
 ```
 
-#### propertie: drawCigar
+#### property: drawCigar
 
 ```js
 // type signature
@@ -125,7 +138,24 @@ true
 drawCigar: true
 ```
 
-#### propertie: lockAspectRatio
+#### property: lodMode
+
+Level-of-detail tier override for PIF adapters. 'auto' uses the adapter's
+bpPerPx threshold; 'fine'/'coarse' force a tier. Stored view-level so all
+displays render at the same tier and the menu doesn't need to fan out per
+display.
+
+```js
+// type signature
+IOptionalIType<ISimpleType<"auto" | "fine" | "coarse">, [undefined]>
+// code
+lodMode: types.optional(
+            types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+            'auto',
+          )
+```
+
+#### property: lockAspectRatio
 
 When true, hview and vview are kept at the same bpPerPx so the dotplot stays
 square. Wheel zoom already preserves the ratio; box-zoom and other independent
@@ -138,7 +168,7 @@ false
 lockAspectRatio: false
 ```
 
-#### propertie: lineWidth
+#### property: lineWidth
 
 Screen-space line width (CSS pixels) applied to every dotplot display in this
 view. View-level because the GPU pass renders all displays with one uniform.
@@ -150,25 +180,25 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 lineWidth: types.optional(types.number, defaultLineWidth)
 ```
 
-#### propertie: hview
+#### property: hview
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ......
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...
 // code
 hview: types.optional(DotplotHView, {})
 ```
 
-#### propertie: vview
+#### property: vview
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ......
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...
 // code
 vview: types.optional(DotplotVView, {})
 ```
 
-#### propertie: tracks
+#### property: tracks
 
 ```js
 // type signature
@@ -177,7 +207,7 @@ IArrayType<IAnyType>
 tracks: types.array(pm.pluggableMstType('track', 'stateModel'))
 ```
 
-#### propertie: viewTrackConfigs
+#### property: viewTrackConfigs
 
 this represents tracks specific to this view specifically used for read vs ref
 dotplots where this track would not really apply elsewhere
@@ -189,7 +219,7 @@ IArrayType<IAnyModelType>
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 ```
 
-#### propertie: init
+#### property: init
 
 used for initializing the view from a session snapshot
 
@@ -198,6 +228,82 @@ used for initializing the view from a session snapshot
 IType<DotplotViewInit | undefined, DotplotViewInit | undefined, DotplotViewInit | undefined>
 // code
 init: types.frozen<DotplotViewInit | undefined>()
+```
+
+### DotplotView - Volatiles
+
+#### volatile: volatileWidth
+
+```js
+// type signature
+number | undefined
+// code
+volatileWidth: undefined as number | undefined
+```
+
+#### volatile: volatileError
+
+```js
+// type signature
+unknown
+// code
+volatileError: undefined as unknown
+```
+
+#### volatile: cursorMode
+
+these are 'personal preferences', stored in volatile and loaded/written to
+localStorage
+
+```js
+// type signature
+string
+// code
+cursorMode: localStorageGetItem(LS_CURSOR_MODE) === 'move'
+  ? 'move'
+  : 'crosshair'
+```
+
+#### volatile: borderX
+
+```js
+// type signature
+number
+// code
+borderX: 100
+```
+
+#### volatile: borderY
+
+```js
+// type signature
+number
+// code
+borderY: 100
+```
+
+#### volatile: importFormSyntenyTrackSelections
+
+```js
+// type signature
+IObservableArray<ImportFormSyntenyTrack>
+// code
+importFormSyntenyTrackSelections:
+          observable.array<ImportFormSyntenyTrack>()
+```
+
+#### volatile: awaitingAutoDiagonalize
+
+True while the init autorun is waiting for the first dotplot RPC so it can run
+the DiagonalizeDotplot pass. Used to gate showLoading on so the user sees a
+spinner with "Reordering chromosomes…" instead of an undiagonalized plot that
+immediately re-paints.
+
+```js
+// type signature
+false
+// code
+awaitingAutoDiagonalize: false
 ```
 
 ### DotplotView - Getters
@@ -285,7 +391,7 @@ boolean
 
 ```js
 // type
-'Loading' | undefined
+;'Loading' | 'Reordering chromosomes…' | undefined
 ```
 
 #### getter: viewWidth
@@ -306,7 +412,7 @@ number
 
 ```js
 // type
-({ id: string; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>>; bpPerPx: number; offsetPx: number; interRegionPaddingWidth: number; minimumBlockWidth: number; } & ... 11 more ... & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }> & ... 10 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: dotplotDisplays
@@ -315,7 +421,17 @@ DotplotDisplays under each track, indexed to match `tracks`.
 
 ```js
 // type
-({ id: string; type: "DotplotDisplay"; rpcDriverName: string | undefined; configuration: any; colorBy: string; alpha: number; minAlignmentLength: number; } & NonEmptyObject & ... 9 more ... & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; } & { ...; }> & ... 10 more ... & IStateTreeNode<...>)[]
+```
+
+#### getter: hasLodCapableAdapter
+
+True if any track has an adapter that declares the 'lod' capability. Used to
+gate the LOD menu — only PIF supports it.
+
+```js
+// type
+boolean
 ```
 
 #### getter: geometryByTrackIndex
@@ -358,24 +474,10 @@ renderProps: () => any
 
 ```js
 // type signature
-menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => void; icon: (props: SvgIconProps) => Element; })[]
+menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
 ```
 
 ### DotplotView - Actions
-
-#### action: importFormRemoveRow
-
-```js
-// type signature
-importFormRemoveRow: (idx: number) => void
-```
-
-#### action: clearImportFormSyntenyTracks
-
-```js
-// type signature
-clearImportFormSyntenyTracks: () => void
-```
 
 #### action: setImportFormSyntenyTrack
 
@@ -388,7 +490,7 @@ setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
 
 ```js
 // type signature
-setCursorMode: (str: string) => void
+setCursorMode: (mode: CursorMode) => void
 ```
 
 #### action: setDrawCigar
@@ -396,6 +498,13 @@ setCursorMode: (str: string) => void
 ```js
 // type signature
 setDrawCigar: (flag: boolean) => void
+```
+
+#### action: setLodMode
+
+```js
+// type signature
+setLodMode: (value: "auto" | "fine" | "coarse") => void
 ```
 
 #### action: setLockAspectRatio
@@ -474,6 +583,13 @@ setError: (e: unknown) => void
 setInit: (init?: DotplotViewInit | undefined) => void
 ```
 
+#### action: setAwaitingAutoDiagonalize
+
+```js
+// type signature
+setAwaitingAutoDiagonalize: (arg: boolean) => void
+```
+
 #### action: zoomOut
 
 ```js
@@ -499,7 +615,7 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => any
+showTrack: (trackId: string, initialSnapshot?: any) => any
 ```
 
 #### action: hideTrack
@@ -527,7 +643,7 @@ setAssemblyNames: (target: string, query: string) => void
 
 ```js
 // type signature
-setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void
+setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void
 ```
 
 #### action: getCoords

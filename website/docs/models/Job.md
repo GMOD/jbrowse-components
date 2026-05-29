@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### Job - Properties
 
-#### propertie: name
+#### property: name
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<string>
 name: types.string
 ```
 
-#### propertie: statusMessage
+#### property: statusMessage
 
 ```js
 // type signature
@@ -40,13 +40,13 @@ IMaybe<ISimpleType<string>>
 statusMessage: types.maybe(types.string)
 ```
 
-#### propertie: progressPct
+#### property: progressPct
 
 ```js
 // type signature
-ISimpleType<number>
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-progressPct: types.number
+progressPct: types.optional(types.number, 0)
 ```
 
 ### Job - Actions

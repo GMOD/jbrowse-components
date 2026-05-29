@@ -28,7 +28,7 @@ raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
 
 ```js
 // type signature
-getTrackActions: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
+getTrackActions: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, view?: { ...; } | undefined) ...
 ```
 
 #### method: getTrackListMenuItems
@@ -37,12 +37,12 @@ flattened menu items for use in hierarchical track selector
 
 ```js
 // type signature
-getTrackListMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
+getTrackListMenuItems: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, view?: { ...; } | undefined) ...
 ```
 
 #### method: getTrackActionMenuItems
 
 ```js
 // type signature
-getTrackActionMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, extraTrackActions?: MenuItem[] | undefined, effectiveConfig?: Record<.....
+getTrackActionMenuItems: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, extraTrackActions?: MenuItem[...
 ```

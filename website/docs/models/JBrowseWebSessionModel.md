@@ -21,3 +21,24 @@ reference the markdown files in our repo of the checked out git tag
 ## Docs
 
 extends [BaseWebSession](../basewebsession)
+
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseWebSession](../basewebsession)
+
+**Properties:** sessionPlugins
+
+**Volatiles:** sessionThemeName, pendingFileHandleIds
+
+**Getters:** tracks, root, assemblies, connections, assemblyNames, version,
+shareURL, textSearchManager, assemblyManager, savedSessionMetadata, history
+
+**Methods:** renderProps, getTrackActions, getTrackListMenuItems,
+getTrackActionMenuItems, menus
+
+**Actions:** addAssemblyConf, addSessionPlugin, removeSessionPlugin,
+deleteSavedSession, setSavedSessionFavorite, renameCurrentSession,
+activateSession, setDefaultSession, setSession, editTrackConfiguration

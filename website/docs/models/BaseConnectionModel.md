@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BaseConnectionModel - Properties
 
-#### propertie: name
+#### property: name
 
 ```js
 // type signature
@@ -31,7 +31,7 @@ ISimpleType<string>
 name: types.identifier
 ```
 
-#### propertie: tracks
+#### property: tracks
 
 ```js
 // type signature
@@ -40,7 +40,7 @@ IArrayType<IAnyModelType>
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -55,7 +55,7 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-connect: (_arg: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+connect: (_arg: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: addTrackConf
@@ -76,7 +76,7 @@ addTrackConfs: (trackConfs: TrackConf[]) => void
 
 ```js
 // type signature
-setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+setTrackConfs: (trackConfs: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => void
 ```
 
 #### action: clear

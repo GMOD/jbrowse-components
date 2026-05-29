@@ -23,9 +23,14 @@ reference the markdown files in our repo of the checked out git tag
 base session shared by all JBrowse products. Be careful what you include here,
 everything will use it.
 
+composed of
+
+- [SnackbarModel](../snackbarmodel) — so `notify`/`notifyError` are available to
+  every session and the mixins beneath it (e.g. track add/open paths)
+
 ### BaseSessionModel - Properties
 
-#### propertie: id
+#### property: id
 
 ```js
 // type signature
@@ -34,7 +39,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### propertie: name
+#### property: name
 
 ```js
 // type signature
@@ -43,7 +48,7 @@ ISimpleType<string>
 name: types.string
 ```
 
-#### propertie: margin
+#### property: margin
 
 ```js
 // type signature
@@ -52,7 +57,7 @@ number
 margin: 0
 ```
 
-#### propertie: focusedViewId
+#### property: focusedViewId
 
 used to keep track of which view is in focus
 
@@ -61,6 +66,41 @@ used to keep track of which view is in focus
 IMaybe<ISimpleType<string>>
 // code
 focusedViewId: types.maybe(types.string)
+```
+
+### BaseSessionModel - Volatiles
+
+#### volatile: selection
+
+this is the globally "selected" object. can be anything. code that wants to deal
+with this should examine it to see what kind of thing it is.
+
+```js
+// type signature
+unknown
+// code
+selection: undefined as unknown
+```
+
+#### volatile: hovered
+
+this is the globally "hovered" object. can be anything. code that wants to deal
+with this should examine it to see what kind of thing it is.
+
+```js
+// type signature
+unknown
+// code
+hovered: undefined as unknown
+```
+
+#### volatile: queueOfDialogs
+
+```js
+// type signature
+[DialogComponentType, Record<string, unknown>][]
+// code
+queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
 ```
 
 ### BaseSessionModel - Getters
@@ -111,7 +151,7 @@ TextSearchManager
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { ...; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>)[]
 ```
 
 #### getter: DialogComponent

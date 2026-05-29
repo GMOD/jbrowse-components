@@ -24,9 +24,26 @@ extends
 
 - [BaseDisplay](../basedisplay)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
 ### ChordVariantDisplay - Properties
 
-#### propertie: type
+#### property: type
 
 ```js
 // type signature
@@ -35,7 +52,7 @@ ISimpleType<"ChordVariantDisplay">
 type: types.literal('ChordVariantDisplay')
 ```
 
-#### propertie: bezierRadiusRatio
+#### property: bezierRadiusRatio
 
 ```js
 // type signature
@@ -44,13 +61,33 @@ number
 bezierRadiusRatio: 0.1
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
 ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+### ChordVariantDisplay - Volatiles
+
+#### volatile: features
+
+```js
+// type signature
+Feature[] | undefined
+// code
+features: undefined as Feature[] | undefined
+```
+
+#### volatile: refNameMap
+
+```js
+// type signature
+Record<string, string> | undefined
+// code
+refNameMap: undefined as Record<string, string> | undefined
 ```
 
 ### ChordVariantDisplay - Getters
@@ -62,11 +99,11 @@ configuration: ConfigurationReference(configSchema)
 boolean
 ```
 
-#### getter: blockDefinitions
+#### getter: blocksForRefs
 
 ```js
 // type
-Slice[]
+Record<string, Block>
 ```
 
 #### getter: selectedFeatureId
@@ -98,7 +135,7 @@ onChordClick: (feature: Feature) => void
 
 ```js
 // type signature
-setFeatures: (features: Map<string, Feature>) => void
+setFeatures: (features: Feature[] | undefined) => void
 ```
 
 #### action: setRefNameMap

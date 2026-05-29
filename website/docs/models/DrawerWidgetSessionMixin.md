@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ### DrawerWidgetSessionMixin - Properties
 
-#### propertie: drawerPosition
+#### property: drawerPosition
 
 ```js
 // type signature
@@ -30,11 +30,11 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 drawerPosition: types.optional(
         types.string,
-        () => localStorageGetItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') ?? 'right',
       )
 ```
 
-#### propertie: drawerWidth
+#### property: drawerWidth
 
 ```js
 // type signature
@@ -46,7 +46,7 @@ drawerWidth: types.optional(
       )
 ```
 
-#### propertie: widgets
+#### property: widgets
 
 ```js
 // type signature
@@ -55,7 +55,7 @@ IMapType<IAnyType>
 widgets: types.map(widgetStateModelType)
 ```
 
-#### propertie: activeWidgets
+#### property: activeWidgets
 
 ```js
 // type signature
@@ -64,7 +64,7 @@ IMapType<IMaybe<IReferenceType<IAnyType>>>
 activeWidgets: types.map(types.safeReference(widgetStateModelType))
 ```
 
-#### propertie: minimized
+#### property: minimized
 
 ```js
 // type signature
@@ -109,7 +109,7 @@ resizeDrawer: (distance: number) => number
 
 ```js
 // type signature
-addWidget: (typeName: string, id: string, initialState?: {}, conf?: unknown) => any
+addWidget: (typeName: string, id: string, initialState?: any, conf?: unknown) => any
 ```
 
 #### action: showWidget
@@ -154,5 +154,5 @@ task to be configuring it
 
 ```js
 // type signature
-editConfiguration: (configuration: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | { ...; }) => void
+editConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) | { ...; }) => void
 ```

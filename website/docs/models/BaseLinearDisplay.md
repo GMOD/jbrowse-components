@@ -29,9 +29,34 @@ extends
 - [TrackHeightMixin](../trackheightmixin)
 - [FeatureDensityMixin](../featuredensitymixin)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
+### Available via [TrackHeightMixin](../trackheightmixin)
+
+**Properties:** heightPreConfig
+
+**Volatiles:** scrollTop
+
+**Actions:** setScrollTop, setHeight, resizeHeight
+
 ### BaseLinearDisplay - Properties
 
-#### propertie: blockState
+#### property: blockState
 
 updated via autorun
 
@@ -42,7 +67,7 @@ IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Re
 blockState: types.map(BlockState)
 ```
 
-#### propertie: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -51,7 +76,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### propertie: showLegend
+#### property: showLegend
 
 ```js
 // type signature
@@ -60,13 +85,42 @@ IMaybe<ISimpleType<boolean>>
 showLegend: types.maybe(types.boolean)
 ```
 
-#### propertie: showTooltips
+#### property: showTooltips
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
 showTooltips: types.maybe(types.boolean)
+```
+
+### BaseLinearDisplay - Volatiles
+
+#### volatile: featureIdUnderMouse
+
+```js
+// type signature
+string | undefined
+// code
+featureIdUnderMouse: undefined as undefined | string
+```
+
+#### volatile: subfeatureIdUnderMouse
+
+```js
+// type signature
+string | undefined
+// code
+subfeatureIdUnderMouse: undefined as undefined | string
+```
+
+#### volatile: contextMenuFeature
+
+```js
+// type signature
+Feature | undefined
+// code
+contextMenuFeature: undefined as undefined | Feature
 ```
 
 ### BaseLinearDisplay - Getters
@@ -249,7 +303,7 @@ sent to the worker. includes displayModel and callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string | undefined; heightPreConfig: number | undefined; userByteSizeLimit: number | undefined; userBpPerPxLimit: number | undefined; blockState: IMSTMap<...> & IStateTreeNode<...>; configuration: any; showLegend: boolean | undefined; showTooltips: boo...
+renderingProps: () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; } & { ...; } & { ...; } & { ...; } & { ...; }> & ... 26 more ... & IStateTreeNode<...>; onMouseMove(_: unknown, featureId?: string | undefined): ...
 ```
 
 #### method: renderProps
