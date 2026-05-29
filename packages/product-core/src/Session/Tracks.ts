@@ -30,15 +30,6 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       get tracks(): AnyConfigurationModel[] {
         return self.jbrowse.tracks
       },
-
-      /**
-       * #getter
-       * Base assemblies from jbrowse config. Child sessions can override
-       * to include additional assemblies (e.g. sessionAssemblies).
-       */
-      get assemblies(): { sequence: { trackId: string } }[] {
-        return self.jbrowse.assemblies
-      },
     }))
     .views(self => ({
       /**

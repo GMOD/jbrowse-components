@@ -43,9 +43,17 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         }
         break
       }
-      // 'off' | 'up' | 'down' | 'samplot' — paired-end arcs / samplot view
+      // 'off' | 'up' | 'down' | 'samplot' — paired-end connections. Mode and
+      // direction are separate model fields; translate the legacy flag value.
       case 'arcs': {
-        display.setPairedArcs?.(val1)
+        if (val1 === 'samplot') {
+          display.setPairedConnections?.('samplot')
+        } else if (val1 === 'up' || val1 === 'down') {
+          display.setPairedConnections?.('arc')
+          display.setPairedConnectionsDown?.(val1 === 'down')
+        } else {
+          display.setPairedConnections?.('off')
+        }
         break
       }
       // 'off' | 'normal' | 'bezier' — 10x/linked-read chain overlay

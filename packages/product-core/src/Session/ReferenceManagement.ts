@@ -91,7 +91,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
             dereferenced = true
             dereferenceTypeCount[type] ??= 0
             dereferenceTypeCount[type] += 1
-          } catch (err1) {
+          } catch {
             // ignore
           }
 

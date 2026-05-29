@@ -50,7 +50,7 @@ export function createConfigModel(
         return readConfObject(self.assembly, 'name')
       },
       get rpcManager() {
-        return getParent<any>(self).rpcManager
+        return getParent<{ rpcManager: RpcManager }>(self).rpcManager
       },
     }))
 }

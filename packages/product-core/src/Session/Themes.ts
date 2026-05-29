@@ -4,6 +4,8 @@ import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { isBaseSession } from './BaseSession.ts'
+
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -59,7 +61,9 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
           self,
           autorun(
             function themeNameAutorun() {
-              localStorageSetItem('themeName', self.themeName)
+              // persist the raw selection, not the coerced themeName, so a
+              // theme registered later isn't clobbered with 'default'
+              localStorageSetItem('themeName', self.sessionThemeName)
             },
             { name: 'ThemeName' },
           ),
@@ -78,5 +82,5 @@ export type SessionWithThemes = Instance<SessionWithThemesType>
 export function isSessionWithThemes(
   session: IAnyStateTreeNode,
 ): session is SessionWithThemes {
-  return 'theme' in session
+  return isBaseSession(session) && 'theme' in session
 }

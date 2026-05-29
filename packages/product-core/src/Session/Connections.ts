@@ -40,7 +40,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
       ) {
-        const type = configuration.type as string
+        const { type } = configuration
         if (!type) {
           throw new Error('connection configuration has no `type` listed')
         }

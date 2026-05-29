@@ -30,7 +30,7 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     selectedChainIds: [],
     colors: {} as RenderState['colors'],
     linkedReads: 'off',
-    pairedArcs: 'off',
+    pairedConnections: 'off',
     pileupTopOffset: 50,
     ...overrides,
   }
@@ -172,16 +172,16 @@ describe('computeBlockHeights', () => {
     expect(covH).toBe(80)
   })
 
-  it('returns arcsHeight when pairedArcs is on and arcsHeight is set', () => {
+  it('returns arcsHeight when pairedConnections is on and arcsHeight is set', () => {
     const { effectiveArcsHeight } = computeBlockHeights(
-      makeState({ pairedArcs: 'up', arcsHeight: 60 }),
+      makeState({ pairedConnections: 'arc', arcsHeight: 60 }),
     )
     expect(effectiveArcsHeight).toBe(60)
   })
 
-  it('returns 0 for arcs when pairedArcs is on but arcsHeight is 0', () => {
+  it('returns 0 for arcs when pairedConnections is on but arcsHeight is 0', () => {
     const { effectiveArcsHeight } = computeBlockHeights(
-      makeState({ pairedArcs: 'up', arcsHeight: 0 }),
+      makeState({ pairedConnections: 'arc', arcsHeight: 0 }),
     )
     expect(effectiveArcsHeight).toBe(0)
   })

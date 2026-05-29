@@ -63,7 +63,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           const dirPath =
             lastSlash !== -1 ? pathname.slice(0, lastSlash + 1) : '/'
           hostUri = `${urlObj.origin}${dirPath}`
-        } catch (e) {
+        } catch {
           // ignore
         }
         const internetAccountSplit = internetAccountId.split('-')

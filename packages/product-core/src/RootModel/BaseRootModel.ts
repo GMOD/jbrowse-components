@@ -145,7 +145,7 @@ export type BaseRootModelType = ReturnType<typeof BaseRootModelFactory>
 export type BaseRootModel = Instance<BaseRootModelType>
 
 /** Type guard for checking if something is a JB root model */
-export function isRootModel(thing: unknown): thing is BaseRootModelType {
+export function isRootModel(thing: unknown): thing is BaseRootModel {
   return (
     isStateTreeNode(thing) &&
     'session' in thing &&

@@ -92,6 +92,38 @@ const suite: TestSuite = {
       },
     },
     {
+      name: 'samplot down mode (TEMP verify)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: [
+                {
+                  trackId: 'volvox_sv_cram',
+                  displaySnapshot: {
+                    type: 'LinearAlignmentsDisplay',
+                    pairedConnections: 'samplot',
+                    pairedConnectionsDown: true,
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await canvasSnapshot(
+          page,
+          'arcs-samplot-down-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
       name: 'paired-end stranded RNA-seq',
       fn: async page => {
         await navigateWithSessionSpec(page, {

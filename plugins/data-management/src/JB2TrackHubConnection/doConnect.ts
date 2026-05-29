@@ -1,8 +1,8 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { addRelativeUris } from '@jbrowse/product-core'
 
-import { addRelativeUris } from './addRelativeUris.ts'
 import { resolve } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
