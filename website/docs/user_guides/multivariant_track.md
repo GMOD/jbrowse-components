@@ -27,10 +27,9 @@ Each visible variant gets one column and each sample gets one row, regardless of
 how far apart the variants are on the genome. A thin black line connects each
 column to its real genomic position.
 
-This packs sparse small variants into a readable layout. Sparse small variants
-that would be only 1–2px wide at their true positions each get a full readable
-column instead. Patterns like shared haplotypes, runs of homozygosity, and
-population structure become visible at a glance.
+Sparse small variants that would be only 1–2px wide at their true positions each
+get a full readable column instead. Patterns like shared haplotypes, runs of
+homozygosity, and population structure become visible at a glance.
 
 ## Walkthroughs
 

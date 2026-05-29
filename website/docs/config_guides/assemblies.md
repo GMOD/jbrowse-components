@@ -190,10 +190,9 @@ options.
 Meta-information on the assembly can be specified by adding the following
 section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration.
 One option for the contents of this metadata is the FFRGS (Fair Formatted
-Reference Genome Standard) header specification for FASTA files can be found
-[here](https://github.com/FFRGS/FFRGS-Specification), however, just the raw
-plaintext is displayed for this file, so the format is not strict from JBrowse's
-perspective.
+Reference Genome Standard) header specification for FASTA files, found
+[here](https://github.com/FFRGS/FFRGS-Specification). The raw plaintext is
+displayed as-is, so the format is not strict from JBrowse's perspective.
 
 ```json
   "metadataLocation": {

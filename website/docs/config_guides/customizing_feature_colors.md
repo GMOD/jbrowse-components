@@ -9,7 +9,7 @@ express all that logic may be hard. Instead, you can make a small plugin which
 adds a function to the jexl language, and call that function in your jexl
 callback.
 
-For example, create a file named "myplugin.js" (see also Footnote 1)
+For example, create a file named "myplugin.js" (see also the note below)
 
 ```js
 export default class MyPlugin {

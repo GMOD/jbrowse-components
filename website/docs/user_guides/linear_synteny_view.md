@@ -17,7 +17,7 @@ inversion or rearrangement relative to the other genome.
 ### Opening a linear synteny view
 
 1. Launch a new Linear synteny view, then select the two assemblies to compare
-2. Optionally, add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
+2. Optionally, add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors or
    .anchors.simple (MCScan) file
 
 <Figure caption="The shared import form for synteny and dotplot views. You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />

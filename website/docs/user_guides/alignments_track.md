@@ -107,8 +107,9 @@ They can be turned off from the track menu.
 
 The coverage row shows an upside-down histogram of insertions and soft/hard
 clips at each position, with a colored triangle when an event exceeds a
-depth-dependent fraction of the reads at that base (roughly 30% at high
-coverage, rising toward 80% at low coverage).
+depth-dependent fraction of the reads at that base. The threshold scales with
+depth (roughly 30% at high coverage rising toward 80% at low coverage) to
+suppress spurious indicators.
 
 <Figure caption="Indicators above the coverage track: purple = insertion, blue = soft clip, red = hard clip." src="/img/alignment_clipping_indicators.png" />
 
@@ -118,9 +119,6 @@ prominent with long reads, which span larger insertions.
 <Figure caption="Large-insertion indicator from long reads; 'show soft clipping' is also enabled on a short-read track for comparison." src="/img/insertion_indicators.png" />
 
 The indicators and counts can be toggled independently from the track menu.
-
-The threshold scales with depth (roughly 80% at low coverage down to ~30% at
-high coverage) to suppress spurious indicators.
 
 ### Arc display
 
@@ -144,18 +142,18 @@ partners). The track menu has toggles to hide these if they're distracting.
 
 <Figure caption="The arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
 
-### Read cloud display
+### Linked reads display
 
-The read cloud display also connects paired or split reads, but lays them out on
-the Y axis by the **log of the distance between mates**. This makes the distance
-distribution of pairs visible at a glance, and reveals patterns the arc display
-can flatten — for example, insertion pairs (drawn pink) separate clearly from
-background.
+The linked reads display also connects paired or split reads, but lays them out
+on the Y axis by the **log of the distance between mates**. This makes the
+distance distribution of pairs visible at a glance, and reveals patterns the arc
+display can flatten — for example, insertion pairs (drawn pink) separate clearly
+from background.
 
 Like the arc display, dragging the track taller re-packs the features into the
 available height.
 
-<Figure caption="The arc display (top) and read cloud (bottom) on the same synthetic SV dataset. The read cloud surfaces insertion pairs (pink) more clearly than the arc display." src="/img/alignments/read_cloud.png" />
+<Figure caption="The arc display (top) and linked reads display (bottom) on the same synthetic SV dataset. The linked reads display surfaces insertion pairs (pink) more clearly than the arc display." src="/img/alignments/read_cloud.png" />
 
 ### Compact display
 

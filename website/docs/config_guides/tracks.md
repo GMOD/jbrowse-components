@@ -13,12 +13,12 @@ All tracks can contain:
 - `category` - (optional) array of categories to display in a hierarchical track
   selector
 
-Example `config.json` containing a track config for a BigBed file:
-
 File locations in adapter configs use a `{ "uri": "..." }` object. The
 `"locationType": "UriLocation"` field is optional for URI locations and can be
 omitted — it is only needed when the type cannot be inferred (e.g. local file
 paths on desktop).
+
+Example `config.json` containing a track config for a BigBed file:
 
 ```json
 {

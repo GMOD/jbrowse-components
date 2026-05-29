@@ -40,7 +40,7 @@ Short read based:
 - Delly
 - Lumpy
 
-Long read based
+Long read based:
 
 - pbsv
 - Sniffles

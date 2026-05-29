@@ -176,9 +176,11 @@ jbrowse add-track HG008T.hap2.paf -a HG008T.hap2,GRCh38_GIABv3 --out $OUT --load
 
 The `-c` flag asks minimap2 to emit base-level CIGAR strings, which encode the
 position of insertions and deletions in the alignment. The `-x asm5` preset sets
-parameters for same-species assembly-to-assembly alignment. The order of
-assemblies passed to `add-track -a query,ref` must match the order in the
-`minimap2` command — see the
+parameters for same-species assembly-to-assembly alignment. Note that
+`add-track -a` takes the assemblies as `query,target` — the **reverse** of the
+`minimap2` argument order (`minimap2 target query`). Above, minimap2 is given
+`GRCh38_GIABv3.fa HG008T.hap1.fa` (target then query), so the track is loaded
+with `-a HG008T.hap1,GRCh38_GIABv3` (query then target). See the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
 
 ## Walkthroughs

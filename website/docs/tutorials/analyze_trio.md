@@ -1,7 +1,6 @@
 ---
 title: Phased trio analysis
 description: Examine inheritance patterns and variant phasing in a trio dataset
-date: 2025-03-25
 guide_category: Tutorials
 ---
 

@@ -12,7 +12,7 @@ segments; translocations and rearrangements appear as off-diagonal blocks.
 ### Opening a dotplot view
 
 1. Launch a new Dotplot view, then select the two assemblies to compare
-2. Optionally, add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
+2. Optionally, add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors or
    .anchors.simple (MCScan) file
 
 <Figure caption="Adding a new dotplot or synteny view via the menubar." src="/img/dotplot_menu.png" />

@@ -140,8 +140,11 @@ This is generally done with samtools
 
 ```bash
 bgzip file.fa
-samtools faidx file.fa
+samtools faidx file.fa.gz
 ```
+
+Running `samtools faidx` on the bgzipped file produces both the `.fa.gz.fai` and
+`.fa.gz.gzi` indexes that the `BgzipFastaAdapter` needs.
 
 ## Preparing a tabix indexed GFF3 file
 

@@ -43,7 +43,7 @@ Options for autoscale:
 
 #### Score min/max for QuantitativeTrack
 
-These options overrides the autoscale options and provides a minimum or maximum
+These options override the autoscale options and provide a minimum or maximum
 value for the autoscale bar:
 
 - minScore

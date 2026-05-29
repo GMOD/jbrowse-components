@@ -30,10 +30,12 @@ To generate a PAF alignment, install
 [minimap2](https://github.com/lh3/minimap2):
 
 ```bash
-minimap2 -x asm5 reference.fa query.fa > alignment.paf
+minimap2 -cx asm5 reference.fa query.fa > alignment.paf
 ```
 
-The `-x asm5` preset is for whole-genome assembly comparison. You can also use
+The `-x asm5` preset is for whole-genome assembly comparison, and `-c` emits the
+base-level CIGAR that the linear synteny view needs to draw alignments at
+base resolution. You can also use
 [MUMmer](http://mummer.sourceforge.net/) and convert the `.delta` output to PAF
 with `delta2paf` from
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
@@ -126,7 +128,7 @@ genes such as `cheV`, `cfaS`, and `metG` line up across the connecting ribbon.
 | Problem                                          | Possible cause                                  | Solution                                                                            |
 | ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------- |
 | The dotplot or synteny view is blank             | Assemblies or track names don't match           | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands |
-| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Try re-running minimap2 with `-x asm5` for assembly comparison                      |
+| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Try re-running minimap2 with `-cx asm5` for assembly comparison                     |
 | Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`           |
 
 ## Using PIF for large genomes
