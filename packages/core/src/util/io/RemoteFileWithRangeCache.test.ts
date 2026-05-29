@@ -1,6 +1,7 @@
 import fetchMock from 'jest-fetch-mock'
 
 import {
+  MAX_FETCH_CHUNKS,
   RemoteFileWithRangeCache,
   clearCache,
 } from './RemoteFileWithRangeCache.ts'
@@ -58,6 +59,49 @@ async function fetchRange(
     headers: { range: `bytes=${start}-${end}` },
   })
   return new Uint8Array(await res.arrayBuffer())
+}
+
+// Deterministic bytes (position mod 256) generated on the fly, so large
+// "files" can be served without allocating them up front.
+function genSlice(start: number, end: number) {
+  const out = new Uint8Array(end - start + 1)
+  for (let i = 0; i < out.length; i++) {
+    out[i] = (start + i) % 256
+  }
+  return out
+}
+
+// Returns the first index where the result deviates from the deterministic
+// pattern (start+i) mod 256, or -1 if it matches. Avoids allocating a second
+// large array and jest's toEqual serialization, which OOMs on big buffers.
+function firstMismatch(result: Uint8Array, start: number) {
+  for (let i = 0; i < result.length; i++) {
+    if (result[i] !== (start + i) % 256) {
+      return i
+    }
+  }
+  return -1
+}
+
+function createLargeMockFetch(fileSize: number) {
+  const calls: { start: number; end: number }[] = []
+  const mockFetch = async (
+    _url: string | URL | Request,
+    init?: RequestInit,
+  ) => {
+    const range = new Headers(init?.headers).get('range')
+    if (range) {
+      const m = /bytes=(\d+)-(\d+)/.exec(range)
+      if (m) {
+        const start = Number(m[1])
+        const end = Math.min(Number(m[2]), fileSize - 1)
+        calls.push({ start, end })
+        return new Response(genSlice(start, end), { status: 206 })
+      }
+    }
+    return new Response('', { status: 200 })
+  }
+  return { calls, mockFetch }
 }
 
 afterEach(() => {
@@ -367,6 +411,77 @@ describe('RemoteFileWithRangeCache', () => {
     // Both chunks were in one coalesced run — only one HTTP request
     expect(calls).toHaveLength(1)
     expect(calls[0]!.start).toBe(CHUNK)
+  })
+
+  // Regression: a deep-coverage BAM locus makes @gmod/bam request a single
+  // ~100MB byte span. Coalescing it into one HTTP range request makes origins
+  // like Google Cloud Storage reject it (HTTP 500). The run is split into
+  // requests of at most MAX_FETCH_CHUNKS chunks so no single request is huge.
+  test('caps request size: a cold range larger than MAX_FETCH_CHUNKS splits into bounded requests', async () => {
+    const totalChunks = MAX_FETCH_CHUNKS * 2 + 3
+    const fileSize = totalChunks * CHUNK
+    const { calls, mockFetch } = createLargeMockFetch(fileSize)
+    const file = new RemoteFileWithRangeCache('http://example.com/big.bin', {
+      fetch: mockFetch,
+    })
+
+    const res = await file.fetch('http://example.com/big.bin', {
+      headers: { range: `bytes=0-${fileSize - 1}` },
+    })
+    const result = new Uint8Array(await res.arrayBuffer())
+
+    // All bytes returned, reassembled identically
+    expect(result).toHaveLength(fileSize)
+    expect(firstMismatch(result, 0)).toBe(-1)
+
+    // One contiguous run split into ceil(totalChunks / MAX_FETCH_CHUNKS) requests
+    expect(calls).toHaveLength(Math.ceil(totalChunks / MAX_FETCH_CHUNKS))
+
+    // No single request exceeds the cap
+    const maxBytes = MAX_FETCH_CHUNKS * CHUNK
+    for (const c of calls) {
+      expect(c.end - c.start + 1).toBeLessThanOrEqual(maxBytes)
+    }
+
+    // Requests are contiguous and cover the whole range with no gaps/overlap
+    const sorted = [...calls].sort((a, b) => a.start - b.start)
+    expect(sorted[0]!.start).toBe(0)
+    expect(sorted.at(-1)!.end).toBe(fileSize - 1)
+    for (let i = 1; i < sorted.length; i++) {
+      expect(sorted[i]!.start).toBe(sorted[i - 1]!.end + 1)
+    }
+  })
+
+  test('request size cap applies per-run when gaps are already cached', async () => {
+    const totalChunks = MAX_FETCH_CHUNKS + 5
+    const fileSize = totalChunks * CHUNK
+    const { calls, mockFetch } = createLargeMockFetch(fileSize)
+    const file = new RemoteFileWithRangeCache('http://example.com/big.bin', {
+      fetch: mockFetch,
+    })
+
+    // Prime the very first chunk so the remaining cold run starts at chunk 1
+    await file.fetch('http://example.com/big.bin', {
+      headers: { range: `bytes=0-${CHUNK - 1}` },
+    })
+    expect(calls).toHaveLength(1)
+
+    // Request the whole file: chunks 1..totalChunks-1 form one cold run of
+    // (totalChunks - 1) chunks, split into bounded sub-requests
+    const res = await file.fetch('http://example.com/big.bin', {
+      headers: { range: `bytes=0-${fileSize - 1}` },
+    })
+    const result = new Uint8Array(await res.arrayBuffer())
+    expect(result).toHaveLength(fileSize)
+    expect(firstMismatch(result, 0)).toBe(-1)
+
+    const coldRunChunks = totalChunks - 1
+    const newCalls = calls.slice(1)
+    expect(newCalls).toHaveLength(Math.ceil(coldRunChunks / MAX_FETCH_CHUNKS))
+    const maxBytes = MAX_FETCH_CHUNKS * CHUNK
+    for (const c of newCalls) {
+      expect(c.end - c.start + 1).toBeLessThanOrEqual(maxBytes)
+    }
   })
 
   test('different URLs do not share cache', async () => {

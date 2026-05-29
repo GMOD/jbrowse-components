@@ -4,6 +4,14 @@ const MAX_CACHE_ENTRIES = 2000
 const CHUNK_SIZE = 256 * 1024
 const MAX_CONCURRENT = 20
 
+// Cap the size of any single HTTP range request. A contiguous run of uncached
+// chunks would otherwise be coalesced into one request, which can be large
+// enough for an origin to reject (e.g. Google Cloud Storage returns HTTP 500
+// for very large ranges, common over deep-coverage BAM loci). Splitting into
+// bounded requests fetches the same bytes and parallelizes via limitConcurrency.
+// 128 * 256KB = 32MB per request.
+export const MAX_FETCH_CHUNKS = 128
+
 let cache = new Map<string, Uint8Array>()
 let activeCount = 0
 const queue: (() => void)[] = []
@@ -143,17 +151,28 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       }
     }
 
-    // Fetch each contiguous run as a single HTTP range request
+    // Split each contiguous run into sub-requests of at most MAX_FETCH_CHUNKS
+    // chunks so no single HTTP range request grows unbounded (see MAX_FETCH_CHUNKS).
+    // Offsets are relative to startChunk.
+    const fetches: { start: number; end: number }[] = []
+    for (const run of runs) {
+      for (let s = run.start; s <= run.end; s += MAX_FETCH_CHUNKS) {
+        fetches.push({
+          start: s,
+          end: Math.min(s + MAX_FETCH_CHUNKS - 1, run.end),
+        })
+      }
+    }
+
+    // Fetch each bounded sub-request as a single HTTP range request
     await Promise.all(
-      runs.map(run =>
+      fetches.map(req =>
         limitConcurrency(async () => {
-          const runStartChunk = startChunk + run.start
-          const runEndChunk = startChunk + run.end
-          const rangeStart = runStartChunk * CHUNK_SIZE
-          const rangeEnd = (runEndChunk + 1) * CHUNK_SIZE - 1
+          const rangeStart = (startChunk + req.start) * CHUNK_SIZE
+          const rangeEnd = (startChunk + req.end + 1) * CHUNK_SIZE - 1
           const data = await this.fetchRange(url, rangeStart, rangeEnd, signal)
-          for (let i = run.start; i <= run.end; i++) {
-            const offset = (i - run.start) * CHUNK_SIZE
+          for (let i = req.start; i <= req.end; i++) {
+            const offset = (i - req.start) * CHUNK_SIZE
             putCached(
               cacheKey(url, startChunk + i),
               data.subarray(offset, offset + CHUNK_SIZE),
