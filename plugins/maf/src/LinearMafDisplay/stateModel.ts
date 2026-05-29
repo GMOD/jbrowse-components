@@ -22,6 +22,7 @@ import {
   clusterLayout,
 } from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
+import deepEqual from 'fast-deep-equal'
 import { observable } from 'mobx'
 
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
@@ -189,10 +190,14 @@ export default function stateModelFactory(
       /**
        * #action
        * Receive worker-authoritative `samples` + serialized Newick tree.
-       * Goes through TreeSidebarMixin's `setLayoutAndClusterTree` so the
-       * mixin's `root` getter re-parses on change; `sourcesVolatile` carries
-       * the full pre-filter set used as the fallback in the merged `sources`
-       * view.
+       * Samples + tree are derived from track config, so they're identical on
+       * every region fetch — the deepEqual guard makes this fire once and skips
+       * the redundant frozen-array reassignment (plus the downstream
+       * `sources`/instance-buffer recompute) on each later scroll/zoom, while
+       * preserving any in-session row reordering held in `layout`. Goes through
+       * TreeSidebarMixin's `setLayoutAndClusterTree` so the mixin's `root`
+       * getter re-parses; `sourcesVolatile` carries the full pre-filter set used
+       * as the fallback in the merged `sources` view.
        */
       setSamples({
         samples,
@@ -206,8 +211,10 @@ export default function stateModelFactory(
           label: s.label,
           color: s.color,
         }))
-        self.sourcesVolatile = next
-        self.setLayoutAndClusterTree(next, treeNewick)
+        if (!deepEqual(next, self.sourcesVolatile)) {
+          self.sourcesVolatile = next
+          self.setLayoutAndClusterTree(next, treeNewick)
+        }
       },
       /**
        * #action

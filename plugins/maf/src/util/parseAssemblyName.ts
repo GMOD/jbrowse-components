@@ -34,7 +34,9 @@ export function parseAssemblyAndChr(
   }
 
   const secondPart = assemblyAndChr.slice(firstDotIndex + 1, secondDotIndex)
-  const isNumeric = secondPart.length > 0 && !Number.isNaN(+secondPart)
+  // A version segment is a plain run of digits; `/^\d+$/` avoids the unary-`+`
+  // coercion accepting `0x1f`, `1e3`, `Infinity`, or whitespace-padded numbers.
+  const isNumeric = /^\d+$/.test(secondPart)
 
   if (isNumeric) {
     return {

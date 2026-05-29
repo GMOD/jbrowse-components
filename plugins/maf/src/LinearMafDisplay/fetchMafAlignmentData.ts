@@ -10,7 +10,6 @@ import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 interface MafFetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
-  samples: Sample[] | undefined
   fetchRegions: (
     needed: { region: Region; displayedRegionIndex: number }[],
     work: (ctx: FetchContext) => Promise<void>,
@@ -44,7 +43,6 @@ export async function fetchMafAlignmentData(
   const adapterConfig = self.adapterConfig
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
-  const { samples } = self
 
   await self.fetchRegions(needed, async (ctx: FetchContext) => {
     const results = await Promise.all(
@@ -57,7 +55,6 @@ export async function fetchMafAlignmentData(
             adapterConfig,
             region,
             stopToken: ctx.stopToken,
-            samples,
           },
         )
         return { displayedRegionIndex, result }
