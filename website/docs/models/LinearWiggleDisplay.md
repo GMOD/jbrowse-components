@@ -78,12 +78,12 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
-attachBackend
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -304,9 +304,9 @@ fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => Pr
 renderSvg: (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
 ```
 
-#### action: startBackend
+#### action: startRenderingBackend
 
 ```js
 // type signature
-startBackend: (backend: WiggleBackend) => void
+startRenderingBackend: (backend: WiggleRenderingBackend) => void
 ```

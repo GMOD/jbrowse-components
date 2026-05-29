@@ -41,7 +41,7 @@ effectiveBicolorPivot, ticks, renderState
 **Methods:** rpcProps, gpuProps, trackMenuItems
 
 **Actions:** setRpcData, setPosColor, setNegColor, setFeatureUnderMouse,
-fetchNeeded, renderSvg, startBackend
+fetchNeeded, renderSvg, startRenderingBackend
 
 ### Available via [BaseDisplay](../basedisplay)
 
@@ -87,12 +87,12 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
-attachBackend
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 

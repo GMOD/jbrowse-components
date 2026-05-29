@@ -23,7 +23,7 @@ executeRender()  →    rpcDataMap (per region)   →    upload autorun
 ```
 
 The model keeps two autoruns running at all times (owned by
-`GpuLifecycleMixin`):
+`RenderLifecycleMixin`):
 
 - **Upload autorun** — fires when `laidOutDataMap` or the backend changes; calls
   `backend.uploadRegion()` for regions that changed.
@@ -46,13 +46,13 @@ arrows).
 
 ```
 plugins/myplugin/src/LinearMyDisplay/
-├── model.ts                         MST model: startBackend + renderState
+├── model.ts                         MST model: startRenderingBackend + renderState
 ├── components/
-│   ├── MyComponent.tsx              React: useGpuBackend hook + <canvas>
-│   ├── MyRendererFactory.ts         createBackend dispatch function
-│   ├── GpuMyRenderer.ts             extends GpuPerRegionBackend
-│   ├── Canvas2DMyRenderer.ts        extends Canvas2DPerRegionBackend
-│   ├── myBackendTypes.ts            MyUploadData, MyRenderState types
+│   ├── MyComponent.tsx              React: useRenderingBackend hook + <canvas>
+│   ├── MyRendererFactory.ts         createRenderingBackend dispatch function
+│   ├── GpuMyRenderer.ts             extends GpuPerRegionRenderingBackend
+│   ├── Canvas2DMyRenderer.ts        extends Canvas2DPerRegionRenderingBackend
+│   ├── myRenderingBackendTypes.ts            MyUploadData, MyRenderState types
 │   └── shaders/
 │       ├── myUniforms.slang         uniform struct (shared by all passes)
 │       └── my.slang                 vertex + fragment for one pass
@@ -64,7 +64,7 @@ plugins/myplugin/src/LinearMyDisplay/
 ## Step 1: Define data types
 
 ```ts
-// myBackendTypes.ts
+// myRenderingBackendTypes.ts
 
 // What the RPC worker returns per region
 export interface MyUploadData {
@@ -81,7 +81,10 @@ export interface MyRenderState {
   colorBy: string
 }
 
-export type MyBackend = PerRegionBackend<MyUploadData, MyRenderState>
+export type MyRenderingBackend = PerRegionRenderingBackend<
+  MyUploadData,
+  MyRenderState
+>
 ```
 
 ## Step 2: Write the shaders
@@ -119,8 +122,8 @@ float4 fragmentMain(...) -> SV_Target {
 Run `pnpm gen:shaders` after every edit. This emits `my.generated.ts` with:
 
 - `WGSL_SOURCE`, `GLSL_VERTEX`, `GLSL_FRAGMENT`
-- `INSTANCE_STRIDE_BYTES`, field offset constants
-- A typed `writeInstance()` packer function
+- `INSTANCE_STRIDE_BYTES` and `FIELD_OFFSET_F32` for packing instances
+- `UNIFORMS_SIZE_BYTES` and a typed `writeUniforms()` function
 - `GL_ATTRIBUTES` for WebGL2 binding
 
 **Never hand-edit `*.generated.ts`.**
@@ -136,52 +139,71 @@ The `canvas_width` / `canvas_height` uniforms are CSS pixels — do not scale by
 
 ```ts
 // GpuMyRenderer.ts
-import { GpuPerRegionBackend } from '@jbrowse/core/gpu'
-import { slangPass } from '@jbrowse/core/gpu'
-import MY_SHADER from './shaders/my.generated.ts'
-import { UNIFORMS_SIZE_BYTES } from './shaders/myUniforms.generated.ts'
+import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
+import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import * as MY_SHADER from './shaders/my.generated.ts'
 
 import type { GpuHal } from '@jbrowse/core/gpu/hal'
-import type { FeatureRenderBlock } from '@jbrowse/core/gpu'
-import type { MyUploadData, MyRenderState } from './myBackendTypes.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { MyUploadData, MyRenderState } from './myRenderingBackendTypes.ts'
 
-const MY_PASS = slangPass('my', MY_SHADER)
+const MY_PASS = slangPass({ id: 'my', mod: MY_SHADER })
 
-export class GpuMyRenderer extends GpuPerRegionBackend<
+export class GpuMyRenderer extends GpuPerRegionRenderingBackend<
   MyUploadData,
   MyRenderState
 > {
   constructor(hal: GpuHal) {
-    super(hal, UNIFORMS_SIZE_BYTES)
+    // The base class allocates a reusable this.uniformData scratch buffer
+    super(hal, MY_SHADER.UNIFORMS_SIZE_BYTES)
   }
 
   uploadRegion(regionIndex: number, data: MyUploadData) {
     this.hal.deleteRegion(regionIndex)
-    if (data.featureCount === 0) return
-
-    // Pack instances into buffer
-    const buf = new ArrayBuffer(data.featureCount * MY_PASS.instanceStrideBytes)
-    // ... write instances with MY_SHADER.writeInstance(view, offset, { ... })
-    this.hal.uploadBuffer(regionIndex, MY_PASS.id, buf, data.featureCount)
+    if (data.featureCount > 0) {
+      // Pack one instance per feature into an interleaved buffer laid out to
+      // match MY_SHADER.GL_ATTRIBUTES (stride MY_SHADER.INSTANCE_STRIDE_BYTES).
+      const buf = new ArrayBuffer(
+        data.featureCount * MY_SHADER.INSTANCE_STRIDE_BYTES,
+      )
+      // ... write each instance's fields via a DataView using
+      // MY_SHADER.FIELD_OFFSET_F32 as the byte offsets
+      this.hal.uploadBuffer(regionIndex, MY_PASS.id, buf, data.featureCount)
+    }
   }
 
   renderBlocks(
-    blocks: FeatureRenderBlock[],
+    blocks: RenderBlock[],
     regions: ReadonlyMap<number, MyUploadData>,
     state: MyRenderState,
   ) {
-    // Write frame-level uniforms once
-    const uniforms = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-    // ... write bpPerPx, canvasWidth, etc.
-    this.hal.beginFrame(uniforms)
-
+    const dpr = getDpr()
+    this.hal.resize(state.canvasWidth, state.canvasHeight)
+    // beginFrame clears the canvas to transparent (r, g, b, a)
+    this.hal.beginFrame(0, 0, 0, 0)
     for (const block of blocks) {
       const region = regions.get(block.displayedRegionIndex)
-      if (!region) continue
-      this.hal.setScissor(block.offsetPx, 0, block.widthPx, state.canvasHeight)
-      this.hal.drawPass(MY_PASS.id, regionIndex, instanceCount)
+      const clip = region
+        ? clipBlock(block, state.canvasWidth, state.canvasHeight, dpr)
+        : undefined
+      if (clip) {
+        // Write frame-level uniforms into the reused this.uniformData buffer,
+        // then hand them to the HAL right before the draw.
+        MY_SHADER.writeUniforms(this.uniformData, {
+          bpPerPx: clip.bpPerPx,
+          canvasWidth: state.canvasWidth,
+          canvasHeight: state.canvasHeight,
+          // ... remaining uniform fields
+        })
+        this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
+        this.hal.writeUniforms(this.uniformData)
+        this.hal.drawPass(MY_PASS.id, block.displayedRegionIndex)
+      }
     }
     this.hal.clearScissor()
+    this.hal.endFrame()
   }
 }
 ```
@@ -193,71 +215,89 @@ WebGL2 are both unavailable:
 
 ```ts
 // Canvas2DMyRenderer.ts
-import { Canvas2DPerRegionBackend } from '@jbrowse/core/gpu'
+import {
+  clipBlockForCanvas,
+  makeBpMapper,
+  prepareCanvas,
+} from '@jbrowse/core/gpu/canvas2dUtils'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 
-import type { MyUploadData, MyRenderState } from './myBackendTypes.ts'
+import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { MyUploadData, MyRenderState } from './myRenderingBackendTypes.ts'
 
-export class Canvas2DMyRenderer extends Canvas2DPerRegionBackend<
+export class Canvas2DMyRenderer extends Canvas2DPerRegionRenderingBackend<
   MyUploadData,
   MyRenderState
 > {
   renderBlocks(
-    blocks: FeatureRenderBlock[],
+    blocks: RenderBlock[],
     regions: ReadonlyMap<number, MyUploadData>,
     state: MyRenderState,
   ) {
-    const { ctx } = this
+    const { canvas, ctx } = this
+    prepareCanvas(canvas, ctx, state.canvasWidth, state.canvasHeight)
     for (const block of blocks) {
       const data = regions.get(block.displayedRegionIndex)
-      if (!data) continue
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(block.offsetPx, 0, block.widthPx, state.canvasHeight)
-      ctx.clip()
-      // ... draw features
-      ctx.restore()
+      const clip = data
+        ? clipBlockForCanvas(block, state.canvasWidth)
+        : undefined
+      if (clip) {
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(clip.scissorX, 0, clip.scissorW, state.canvasHeight)
+        ctx.clip()
+        // makeBpMapper(block) returns a bp → screen-x function for drawing
+        const toX = makeBpMapper(block)
+        // ... draw features using toX
+        ctx.restore()
+      }
     }
   }
 }
 ```
 
-## Step 5: Backend factory
+## Step 5: RenderingBackend factory
 
 ```ts
 // MyRendererFactory.ts
-import { createBackend } from '@jbrowse/core/gpu'
+import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
 
 import { GpuMyRenderer } from './GpuMyRenderer.ts'
 import { Canvas2DMyRenderer } from './Canvas2DMyRenderer.ts'
 import { UNIFORMS_SIZE_BYTES } from './shaders/myUniforms.generated.ts'
 import { MY_PASSES } from './shaders/index.ts'
 
-import type { MyBackend } from './myBackendTypes.ts'
+import type { MyRenderingBackend } from './myRenderingBackendTypes.ts'
 
-export function MyRendererFactory(canvas: HTMLCanvasElement): MyBackend {
-  return createBackend(
+// createRenderingBackend is async (it awaits GPU device creation), so the factory
+// returns Promise<MyRenderingBackend> — useRenderingBackend awaits it for you.
+export function MyRendererFactory(canvas: HTMLCanvasElement) {
+  return createRenderingBackend<MyRenderingBackend>(
     canvas,
     MY_PASSES,
     UNIFORMS_SIZE_BYTES,
     hal => new GpuMyRenderer(hal),
-    canvas => new Canvas2DMyRenderer(canvas),
+    c => new Canvas2DMyRenderer(c),
   )
 }
 ```
 
 ## Step 6: MST model
 
-Compose `MultiRegionDisplayMixin` (which includes `GpuLifecycleMixin`) and add a
-`startBackend` action:
+Compose `MultiRegionDisplayMixin` (which includes `RenderLifecycleMixin`) and
+add a `startRenderingBackend` action:
 
 ```ts
 // model.ts
 import { MultiRegionDisplayMixin } from '@jbrowse/plugin-linear-genome-view'
 import { getContainingView } from '@jbrowse/core/util'
-import { createRegionUploadSync } from '@jbrowse/core/gpu'
+import { createRegionUploadSync } from '@jbrowse/core/gpu/regionUploadSync'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { MyBackend, MyRenderState } from './components/myBackendTypes.ts'
+import type {
+  MyRenderingBackend,
+  MyRenderState,
+} from './components/myRenderingBackendTypes.ts'
 
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -287,10 +327,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => {
-      const syncRegions = createRegionUploadSync<MyUploadData, MyBackend>()
+      const syncRegions = createRegionUploadSync<
+        MyUploadData,
+        MyRenderingBackend
+      >()
       return {
-        startBackend(backend: MyBackend) {
-          self.attachBackend(backend, {
+        startRenderingBackend(backend: MyRenderingBackend) {
+          self.attachRenderingBackend(backend, {
             upload: b => {
               syncRegions(b, self.laidOutDataMap)
             },
@@ -320,14 +363,14 @@ zoom) here; put those in `renderState` instead. See
 ```tsx
 // components/MyComponent.tsx
 import { observer } from 'mobx-react-lite'
-import { useGpuBackend } from '@jbrowse/core/util'
+import { useRenderingBackend } from '@jbrowse/core/util'
 
 import { MyRendererFactory } from './MyRendererFactory.ts'
 
 import type { LinearMyDisplayModel } from '../model.ts'
 
 const MyComponent = observer(({ model }: { model: LinearMyDisplayModel }) => {
-  const { canvasRef, error } = useGpuBackend(MyRendererFactory, model)
+  const { canvasRef, error } = useRenderingBackend(MyRendererFactory, model)
 
   return (
     <div
@@ -342,8 +385,8 @@ const MyComponent = observer(({ model }: { model: LinearMyDisplayModel }) => {
 export default MyComponent
 ```
 
-`useGpuBackend` creates the HAL, calls `model.startBackend()`, and returns a
-`canvasRef` to attach to the `<canvas>` element.
+`useRenderingBackend` creates the HAL, calls `model.startRenderingBackend()`,
+and returns a `canvasRef` to attach to the `<canvas>` element.
 
 ## Step 8: Register the display
 

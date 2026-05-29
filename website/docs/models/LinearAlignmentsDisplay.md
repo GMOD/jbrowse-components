@@ -78,12 +78,12 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
-attachBackend
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -1299,11 +1299,11 @@ setContextMenuRefName: (refName?: string | undefined) => void
 selectFeature: (feature: Feature) => void
 ```
 
-#### action: startBackend
+#### action: startRenderingBackend
 
 ```js
 // type signature
-startBackend: (backend: AlignmentsBackend) => void
+startRenderingBackend: (backend: AlignmentsRenderingBackend) => void
 ```
 
 #### action: selectFeatureById

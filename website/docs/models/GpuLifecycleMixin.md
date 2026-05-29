@@ -1,6 +1,6 @@
 ---
 id: gpulifecyclemixin
-title: GpuLifecycleMixin
+title: RenderLifecycleMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree
@@ -14,9 +14,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/gpu/GpuLifecycleMixin.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/gpu/RenderLifecycleMixin.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/GpuLifecycleMixin.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/RenderLifecycleMixin.md)
 
 ## Docs
 
@@ -24,18 +24,18 @@ Owns the GPU draw lifecycle for any display that paints to a canvas.
 
 Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
 `GlobalDataDisplayMixin`) and call
-`self.attachBackend(backend, { upload, render })` from their own
-`startBackend(backend)` action. The mixin owns:
+`self.attachRenderingBackend(backend, { upload, render })` from their own
+`startRenderingBackend(backend)` action. The mixin owns:
 
 - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes
   to detect first paint.
-- `currentBackend` — the backend reference, updated on context-loss recovery.
+- `currentRenderingBackend` — the backend reference, updated on context-loss recovery.
   Autoruns read it each tick so they re-fire against the new one without being
   reinstalled.
 - `renderTick` — counter the render autorun observes; bumped by `renderNow()`
   (tab-visibility restore) and after every upload (ensures render re-fires when
   an upload happens but renderState identity stays stable).
-- `autorunsInstalled` — guards `attachBackend` so the autorun pair is spawned
+- `autorunsInstalled` — guards `attachRenderingBackend` so the autorun pair is spawned
   once per model instance, not once per backend assignment.
 
 The `upload` callback runs in one autorun, `render` in another. Inside each,
@@ -44,7 +44,7 @@ multi-entry config. `render` returns `true` when the backend actually painted
 content (flips `canvasDrawn`), `false` to skip this tick (e.g. `renderState` not
 yet computed or no regions loaded).
 
-### GpuLifecycleMixin - Volatiles
+### RenderLifecycleMixin - Volatiles
 
 #### volatile: canvasDrawn
 
@@ -57,7 +57,7 @@ false
 canvasDrawn: false
 ```
 
-#### volatile: currentBackend
+#### volatile: currentRenderingBackend
 
 current backend reference, updated on context-loss recovery
 
@@ -65,7 +65,7 @@ current backend reference, updated on context-loss recovery
 // type signature
 unknown
 // code
-currentBackend: undefined as unknown
+currentRenderingBackend: undefined as unknown
 ```
 
 #### volatile: renderTick
@@ -81,7 +81,7 @@ renderTick: 0
 
 #### volatile: autorunsInstalled
 
-guards attachBackend so the autorun pair spawns once per instance
+guards attachRenderingBackend so the autorun pair spawns once per instance
 
 ```js
 // type signature
@@ -90,7 +90,7 @@ false
 autorunsInstalled: false
 ```
 
-### GpuLifecycleMixin - Actions
+### RenderLifecycleMixin - Actions
 
 #### action: markCanvasDrawn
 
@@ -106,11 +106,11 @@ markCanvasDrawn: () => void
 resetCanvasDrawn: () => void
 ```
 
-#### action: stopBackend
+#### action: stopRenderingBackend
 
 ```js
 // type signature
-stopBackend: () => void
+stopRenderingBackend: () => void
 ```
 
 #### action: renderNow
@@ -120,12 +120,12 @@ stopBackend: () => void
 renderNow: () => void
 ```
 
-#### action: attachBackend
+#### action: attachRenderingBackend
 
 attach a GPU/Canvas2D backend and install the upload + render autorun pair
 (idempotent — re-calling only swaps the backend)
 
 ```js
 // type signature
-attachBackend: <B>(backend: B, cbs: BackendCallbacks<B>) => void
+attachRenderingBackend: <B>(backend: B, cbs: RenderingBackendCallbacks<B>) => void
 ```

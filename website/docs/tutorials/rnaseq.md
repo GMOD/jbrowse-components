@@ -205,7 +205,7 @@ The splice arcs and per-read splicing shown above come for free from the CIGAR
 strings — no extra configuration is needed. For a precomputed coverage signal
 (e.g. a strand-specific BigWig produced by your aligner), load it separately as
 a [quantitative track](/docs/user_guides/quantitative_track). For the full set
-of alignment display options — including the arc display, soft-clipping, and
+of alignment display options — including paired arcs, soft-clipping, and
 coloring — see the [alignments track guide](/docs/user_guides/alignments_track).
 
 ## Conclusion

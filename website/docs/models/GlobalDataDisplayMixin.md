@@ -25,7 +25,7 @@ contact matrix, LD triangle, variant matrix, etc.
 
 Composes:
 
-- GpuLifecycleMixin (attachBackend, renderNow, …)
+- RenderLifecycleMixin (attachRenderingBackend, renderNow, …)
 - RegionTooLargeMixin (regionTooLarge, regionCannotBeRendered, …)
 - FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
   fetchGeneration)
@@ -38,7 +38,7 @@ change; LD: viewport + showLDTriangle + etc).
 extends
 
 - [RegionTooLargeMixin](../regiontoolargemixin)
-- [GpuLifecycleMixin](../gpulifecyclemixin)
+- [RenderLifecycleMixin](../gpulifecyclemixin)
 - [FetchMixin](../fetchmixin)
 
 ## Inherited members
@@ -60,12 +60,12 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
-attachBackend
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 

@@ -77,7 +77,7 @@ updateVisibleModifications, setSimplexModifications, setModificationsReady,
 setFeatureIdUnderMouse, setMouseoverExtraInformation, setHoverState,
 setContextMenuFeature, setContextMenuCoord, setContextMenuCigarHit,
 setContextMenuIndicatorHit, clearContextMenu, setContextMenuRefName,
-selectFeature, startBackend, selectFeatureById, setContextMenuFeatureById,
+selectFeature, startRenderingBackend, selectFeatureById, setContextMenuFeatureById,
 getByteEstimateConfig, fetchNeeded, renderSvg
 
 ### Available via [BaseDisplay](../basedisplay)
@@ -124,12 +124,12 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
-attachBackend
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 

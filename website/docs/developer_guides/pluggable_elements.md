@@ -131,7 +131,7 @@ worker-renderer pattern. See
 Examples of the legacy worker-renderer type:
 
 - `ArcRenderer` (`@jbrowse/plugin-arc`) - draws arcs connecting features, used
-  by the paired/arc displays
+  by the paired arcs mode in the alignments display
 - `StructuralVariantChordRenderer` (`@jbrowse/plugin-circular-view`) - draws
   breakends and structural variants as chords in the circular view
 

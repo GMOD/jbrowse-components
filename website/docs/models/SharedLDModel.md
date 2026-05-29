@@ -67,12 +67,12 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
-attachBackend
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -242,14 +242,14 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 
 ### SharedLDModel - Actions
 
-#### action: startBackend
+#### action: startRenderingBackend
 
 Starts the upload/render autorun. Data + color ramp both derive from the same
 rpcData object, so a single identity-diffed slot handles both uploads.
 
 ```js
 // type signature
-startBackend: (backend: LDBackend) => void
+startRenderingBackend: (backend: LDRenderingBackend) => void
 ```
 
 #### action: performLDFetch

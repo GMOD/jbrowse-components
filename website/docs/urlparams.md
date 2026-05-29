@@ -307,7 +307,7 @@ Each track object supports the following properties:
 - `trackId` (required): The track identifier from config.json
 - `displaySnapshot` (optional): Initial display state. Can include:
   - `type`: Override the display type (e.g., `LinearPileupDisplay`,
-    `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay`)
+    `LinearSNPCoverageDisplay`, `LinearAlignmentsDisplay`)
   - `height`: Display height in pixels
   - `minScore`, `maxScore`: Score range for quantitative tracks
   - Other display-specific settings
@@ -315,43 +315,9 @@ Each track object supports the following properties:
 
 This is useful for:
 
-- Opening a track with a specific display type (e.g., showing a BAM file as arcs
-  instead of pileup)
+- Opening a track with a specific display type
 - Setting initial display height or color scheme
 - Configuring autoscale settings for quantitative tracks
-
-#### Live example: LinearReadCloudDisplay
-
-This example opens the volvox_sv_cram track with LinearReadCloudDisplay instead
-of the default pileup display:
-
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearReadCloudDisplay"}}]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearReadCloudDisplay"}}]}]})
-
-Expanded JSON:
-
-```json
-{
-  "views": [
-    {
-      "assembly": "volvox",
-      "loc": "ctgA:1-10000",
-      "type": "LinearGenomeView",
-      "tracks": [
-        {
-          "trackId": "volvox_sv_cram",
-          "displaySnapshot": {
-            "type": "LinearReadCloudDisplay"
-          }
-        }
-      ]
-    }
-  ]
-}
-```
 
 #### Live example: alignments display settings
 

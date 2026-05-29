@@ -83,12 +83,12 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
-attachBackend
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -551,11 +551,11 @@ clearDisplaySpecificData: () => void
 pruneRpcDataMapToVisible: (visibleDisplayedRegionIndices: Set<number>) => void
 ```
 
-#### action: startBackend
+#### action: startRenderingBackend
 
 ```js
 // type signature
-startBackend: (backend: CanvasFeatureBackend) => void
+startRenderingBackend: (backend: CanvasFeatureRenderingBackend) => void
 ```
 
 #### action: setFeatureDensityStatsLimit

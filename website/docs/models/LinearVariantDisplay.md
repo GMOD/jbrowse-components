@@ -51,7 +51,7 @@ showSubmenuMenuItems, contextMenuItems, trackMenuItems
 
 **Actions:** expandToFit, collapseFromExpand, clearHeightBeforeExpand,
 setRpcData, setDensityStats, clearDisplaySpecificData, pruneRpcDataMapToVisible,
-startBackend, setFeatureDensityStatsLimit, setFeatureIdUnderMouse,
+startRenderingBackend, setFeatureDensityStatsLimit, setFeatureIdUnderMouse,
 setSubfeatureIdUnderMouse, clearHover, setMouseoverExtraInformation,
 setContextMenuFeature, setContextMenuInfo, selectFeature, clearSelection,
 setShowLabels, setAutoHeight, setShowDescriptions, setShowOutline,
@@ -103,12 +103,12 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [GpuLifecycleMixin](../gpulifecyclemixin)
+### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentBackend, renderTick, autorunsInstalled
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopBackend, renderNow,
-attachBackend
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
