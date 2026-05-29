@@ -17,6 +17,9 @@ import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 // scheme. Emitted by the worker once during geometry build; colors are
 // recomputed on the main thread whenever colorBy changes, so a color-scheme
 // toggle never triggers an RPC refetch.
+// SYNC: the shaders only test BASE-vs-CIGAR via `isCigarKind` (kind >= 3) in
+// syntenyTypes.slang. The CIGAR kinds must stay contiguous and above the
+// non-CIGAR kinds, with KIND_CIGAR_MATCH as the boundary.
 export const KIND_BASE = 0
 export const KIND_BASE_HIDDEN = 1
 export const KIND_MARKER = 2

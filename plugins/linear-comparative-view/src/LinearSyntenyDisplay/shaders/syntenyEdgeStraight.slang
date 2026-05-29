@@ -27,7 +27,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // instances — never the per-CIGAR-tile instances (kind >= 3.0), which
   // would otherwise outline every M/I/D/N tile inside the feature.
   bool isClicked = u.clickedFeatureId > 0.0 && abs(inst.featureId - u.clickedFeatureId) < 0.5;
-  if (!isClicked || inst.kind >= 3.0) {
+  if (!isClicked || isCigarKind(inst.kind)) {
     o.position = float4(0.0);
     return o;
   }
@@ -51,29 +51,21 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float edgeX = atBottom ? xBot : xTop;
   float edgeY = u.yTop + (atBottom ? u.height : 0.0);
 
-  // Outward normal to the line (xTop, yTop) → (xBot, yBottom). Edge 0
-  // points to the left of the ribbon, edge 1 to the right; flip if the
-  // top corners are crossed.
+  // Outward normal to the line (xTop, yTop) → (xBot, yBottom).
   float2 tangent = float2(xBot - xTop, u.height);
   float tangentLen = length(tangent);
   float2 normal = tangentLen > 0.001
     ? float2(-tangent.y, tangent.x) / tangentLen
     : float2(0.0, 1.0);
-  float outwardSign = (edgeIdx == 0u ? -1.0 : 1.0) * (c.x1 >= c.x2 ? 1.0 : -1.0);
-  normal *= outwardSign;
+  normal *= edgeOutwardSign(edgeIdx, c);
 
   float2 pos = float2(edgeX, edgeY) + normal * side * STROKE_WIDTH;
   o.dist = side * STROKE_WIDTH;
-  float2 clipSpace = pos / u.resolution * 2.0 - 1.0;
-  o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
+  o.position = screenToClip(pos, u.resolution);
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float d = abs(fragIn.dist);
-  float aa = fwidth(fragIn.dist);
-  float halfW = STROKE_WIDTH * 0.5;
-  float edgeAlpha = 1.0 - smoothstep(halfW - aa * 0.5, halfW + aa, d);
-  return float4(0.0, 0.0, 0.0, edgeAlpha * 0.4);
+  return edgeStrokeColor(fragIn.dist);
 }

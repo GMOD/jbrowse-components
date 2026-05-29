@@ -35,6 +35,18 @@ public struct Instance {
   public float kind              : ATTR13;
 };
 
+// First CIGAR kind. Kinds 0..2 are whole-feature (KIND_BASE/BASE_HIDDEN/MARKER);
+// kinds >= 3 are per-CIGAR tiles (KIND_CIGAR_MATCH/I/D/N/HIDDEN). The shaders
+// only need the BASE-vs-CIGAR split, not the exact kind.
+// SYNC: mirrors KIND_CIGAR_MATCH (=3) in LinearSyntenyRPC/syntenyColors.ts; the
+// whole CIGAR range must stay contiguous and above the non-CIGAR kinds.
+public static const float KIND_CIGAR_MIN = 3.0;
+
+// A CIGAR tile shares slanted edges with sibling tiles of the same feature, so
+// it needs hard-cut perpendicular coverage (no smoothstep) to tile cleanly;
+// whole-feature BASE instances get full silhouette AA.
+public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
+
 // Per-view hp-math origin (`viewBp = offsetPx * bpPerPx`, hi/lo split) +
 // `bpPerPxInv`. The padded-bp encoding of the view origin lets the shader
 // reconstruct LGV-aligned screen positions with just the per-instance `pad`
@@ -86,6 +98,72 @@ public bool isCulled(Corners c, float alignmentLength, Uniforms u) {
       || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff;
 }
 
-// Tessellation count for the curve-mode edge pass. Fill-curve hard-codes 8
-// segments inline.
-public static const uint BEZIER_SEGMENTS = 16u;
+// Ease-in-out ribbon basis (single source of truth). Curve mode traces y(t) =
+// height·yCurve(t) vertically and blends edge X by sBlend(t); the fill-curve
+// fragment inverts yCurve via Newton using yCurveDeriv. Keeping the cubic in
+// one place stops the four call sites (fill evalT, fill Newton, edge
+// hermiteEdges, edge tangent) from drifting out of sync.
+public float sBlend(float t)      { return t * t * (3.0 - 2.0 * t); }
+public float sBlendDeriv(float t) { return 6.0 * t * (1.0 - t); }
+public float yCurve(float t)      { return 1.5 * t * (1.0 - t) + t * t * t; }
+public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
+
+// Screen-space (CSS px, top-left origin) → clip space, with the Y flip every
+// synteny pass needs.
+public float4 screenToClip(float2 screen, float2 resolution) {
+  float2 clip = screen / resolution * 2.0 - 1.0;
+  return float4(clip.x, -clip.y, 0.0, 1.0);
+}
+
+// Analytic coverage for a fill fragment. `localPos.x` is screen X, `localPos.y`
+// is the vertical offset from yTop. `(xL,xR)` are the ribbon edges at this y and
+// `perpFactor` the slope foreshortening. CIGAR tiles (`isCigar > 0.5`) get a
+// hard cut so adjacent tiles meet cleanly under alpha blend; everything else
+// gets smoothstep AA over the perpendicular distance.
+public float fillCoverage(float2 localPos, float xL, float xR,
+                          float perpFactor, float isCigar, float h) {
+  float xC = (xL + xR) * 0.5;
+  float perpDist = (localPos.x - xC) / perpFactor;
+  float halfPerpW = max((xR - xL) / (2.0 * perpFactor), 0.5);
+  float cx;
+  if (isCigar > 0.5) {
+    cx = abs(perpDist) <= halfPerpW ? 1.0 : 0.0;
+  } else {
+    float aaPerp = max(fwidth(perpDist), 1e-4);
+    cx = 1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
+                          halfPerpW + aaPerp * 0.5,
+                          abs(perpDist));
+  }
+  float ay = max(fwidth(localPos.y), 1e-4) * 0.5;
+  float cy = smoothstep(-ay, ay, localPos.y)
+           - smoothstep(h - ay, h + ay, localPos.y);
+  return cx * cy;
+}
+
+// Fill fragment output: feature color with hover darkening + alpha boost,
+// premultiplied by coverage.
+// SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
+// Canvas2DSyntenyRenderer.ts's hover branch.
+public float4 shadeFill(float4 color, float featureId, float coverage, Uniforms u) {
+  float3 rgb = color.rgb;
+  bool isHovered = u.hoveredFeatureId > 0.0
+    && abs(featureId - u.hoveredFeatureId) < 0.5;
+  float baseAlpha = color.a * u.alpha;
+  rgb *= isHovered ? 0.7 : 1.0;
+  float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
+  return float4(rgb, finalAlpha * coverage);
+}
+
+// Outward edge normal sign for the click outline. Edge 0 points left of the
+// ribbon, edge 1 right; flipped when the top corners are crossed.
+public float edgeOutwardSign(uint edgeIdx, Corners c) {
+  return (edgeIdx == 0u ? -1.0 : 1.0) * (c.x1 >= c.x2 ? 1.0 : -1.0);
+}
+
+// Edge-pass fragment output: 1px antialiased black stroke at 0.4 alpha. `dist`
+// is the signed perpendicular distance from the edge centerline in px.
+public float4 edgeStrokeColor(float dist) {
+  float aa = fwidth(dist);
+  float edgeAlpha = 1.0 - smoothstep(0.5 - aa * 0.5, 0.5 + aa, abs(dist));
+  return float4(0.0, 0.0, 0.0, edgeAlpha * 0.4);
+}

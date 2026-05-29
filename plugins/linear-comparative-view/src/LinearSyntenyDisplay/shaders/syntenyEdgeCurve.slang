@@ -1,12 +1,15 @@
 // Linear-synteny edge pass — curved (bezier ribbon) mode. Draws a 1px
 // antialiased outline around the currently-clicked alignment, tessellating
-// each top/bottom edge into BEZIER_SEGMENTS pieces and expanding along the
+// each top/bottom edge into NUM_SEGMENTS pieces and expanding along the
 // edge normal by STROKE_WIDTH/2.
 //! targets: wgsl, glsl
 
 import syntenyTypes;
 
-public static const uint VERTS_PER_INSTANCE = 2u * 16u * 6u;
+// Higher than fill-curve's 8 segments: a thin stroke exposes bezier-vs-chord
+// deviation that the fill pass's perpendicular pad otherwise absorbs.
+public static const uint NUM_SEGMENTS = 16u;
+public static const uint VERTS_PER_INSTANCE = 2u * NUM_SEGMENTS * 6u;
 static const float STROKE_WIDTH = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -18,20 +21,18 @@ struct VsOut {
 
 // Hermite ease-in-out: (edge0, edge1, y) at parameter t along the ribbon.
 float3 hermiteEdges(Corners c, float t) {
-  float s = t * t * (3.0 - 2.0 * t);
+  float s = sBlend(t);
   return float3(
     lerp(c.x1, c.x4, s),
     lerp(c.x2, c.x3, s),
-    u.yTop + u.height * (1.5 * t * (1.0 - t) + t * t * t)
+    u.yTop + u.height * yCurve(t)
   );
 }
 
 // Tangent at t for an edge whose top-to-bottom horizontal delta is `dx`.
-// sPrime scales dx; dy comes from the y-curve derivative.
+// sBlendDeriv scales dx; dy comes from the y-curve derivative.
 float2 edgeTangent(float dx, float t) {
-  float sPrime = 6.0 * t * (1.0 - t);
-  float dy = u.height * 1.5 * (1.0 - 2.0 * t * (1.0 - t));
-  return float2(sPrime * dx, dy);
+  return float2(sBlendDeriv(t) * dx, u.height * yCurveDeriv(t));
 }
 
 [shader("vertex")]
@@ -43,7 +44,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // instances — never the per-CIGAR-tile instances (kind >= 3.0), which
   // would otherwise outline every M/I/D/N tile inside the feature.
   bool isClicked = u.clickedFeatureId > 0.0 && abs(inst.featureId - u.clickedFeatureId) < 0.5;
-  if (!isClicked || inst.kind >= 3.0) {
+  if (!isClicked || isCigarKind(inst.kind)) {
     o.position = float4(0.0);
     return o;
   }
@@ -54,13 +55,13 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     return o;
   }
 
-  uint vertsPerEdge = BEZIER_SEGMENTS * 6u;
+  uint vertsPerEdge = NUM_SEGMENTS * 6u;
   uint edgeIdx = vid / vertsPerEdge;
   uint vidInEdge = vid % vertsPerEdge;
   uint seg = vidInEdge / 6u;
   uint vertInSeg = vidInEdge % 6u;
-  float t0 = float(seg) / float(BEZIER_SEGMENTS);
-  float t1 = float(seg + 1u) / float(BEZIER_SEGMENTS);
+  float t0 = float(seg) / float(NUM_SEGMENTS);
+  float t1 = float(seg + 1u) / float(NUM_SEGMENTS);
 
   float t, side;
   switch (vertInSeg) {
@@ -81,24 +82,18 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 normal;
   if (tangentLen > 0.001) {
     float2 rawNormal = float2(-tangent.y, tangent.x) / tangentLen;
-    float outwardSign = (edgeIdx == 0u ? -1.0 : 1.0) * (c.x1 >= c.x2 ? 1.0 : -1.0);
-    normal = rawNormal * outwardSign;
+    normal = rawNormal * edgeOutwardSign(edgeIdx, c);
   } else {
     normal = float2(0.0, 1.0);
   }
 
   float2 pos = float2(edgeX, e.z) + normal * side * STROKE_WIDTH;
   o.dist = side * STROKE_WIDTH;
-  float2 clipSpace = pos / u.resolution * 2.0 - 1.0;
-  o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
+  o.position = screenToClip(pos, u.resolution);
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float d = abs(fragIn.dist);
-  float aa = fwidth(fragIn.dist);
-  float halfW = STROKE_WIDTH * 0.5;
-  float edgeAlpha = 1.0 - smoothstep(halfW - aa * 0.5, halfW + aa, d);
-  return float4(0.0, 0.0, 0.0, edgeAlpha * 0.4);
+  return edgeStrokeColor(fragIn.dist);
 }

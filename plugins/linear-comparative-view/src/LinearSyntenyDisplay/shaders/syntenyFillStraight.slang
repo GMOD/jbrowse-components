@@ -43,9 +43,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.featureId = inst.featureId;
   o.corners = float4(0.0);
   o.localPos = float2(0.0);
-  // KIND_BASE=0, KIND_BASE_HIDDEN=1, KIND_MARKER=2, KIND_CIGAR_*=3..7. Anything
-  // >= 3 is a CIGAR tile that needs hard-cut perpendicular coverage.
-  o.isCigar = inst.kind >= 3.0 ? 1.0 : 0.0;
+  o.isCigar = isCigarKind(inst.kind) ? 1.0 : 0.0;
 
   Corners c = computeCorners(inst, u);
   if (isCulled(c, inst.alignmentLength, u)) {
@@ -72,17 +70,15 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // rasterizer top-left rule with no smoothstep double-fade bleed.
   float slope = abs((c.x3 + c.x4 - c.x1 - c.x2) * 0.5) / h;
   float perpFactor = sqrt(1.0 + slope * slope);
-  float pad = inst.kind >= 3.0 ? 0.0 : perpFactor * 0.5 + 1.0;
+  bool isCigar = isCigarKind(inst.kind);
+  float pad = isCigar ? 0.0 : perpFactor * 0.5 + 1.0;
 
-  float y = isTop ? -1.0 : h + 1.0;
-  if (inst.kind >= 3.0) { y = isTop ? 0.0 : h; }
+  float y = isCigar ? (isTop ? 0.0 : h) : (isTop ? -1.0 : h + 1.0);
 
   float vx = isRight ? (xR + pad) : (xL - pad);
   o.localPos = float2(vx, y);
 
-  float2 screen = float2(vx, u.yTop + y);
-  float2 clipSpace = screen / u.resolution * 2.0 - 1.0;
-  o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
+  o.position = screenToClip(float2(vx, u.yTop + y), u.resolution);
   return o;
 }
 
@@ -98,7 +94,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float edge1 = lerp(fragIn.corners.y, fragIn.corners.z, t);  // c.x2 → c.x3
   float xL = min(edge0, edge1);
   float xR = max(edge0, edge1);
-  float xC = (xL + xR) * 0.5;
 
   // Centerline slope dx/dy — constant across the instance for straight lines.
   float topMid = (fragIn.corners.x + fragIn.corners.y) * 0.5;
@@ -106,33 +101,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float slope = (botMid - topMid) / h;
   float perpFactor = sqrt(1.0 + slope * slope);
 
-  // SDF-based coverage. For thin features, clamp halfPerpW to 0.5 so the
-  // rendered perpendicular width is at least 1 px. CIGAR tiles use a hard
-  // step (no smoothstep) so adjacent tiles meet cleanly via the top-left
-  // rule with no background bleed at shared seams.
-  float perpDist = (fragIn.localPos.x - xC) / perpFactor;
-  float halfPerpW = max((xR - xL) / (2.0 * perpFactor), 0.5);
-  float cx;
-  if (fragIn.isCigar > 0.5) {
-    cx = abs(perpDist) <= halfPerpW ? 1.0 : 0.0;
-  } else {
-    float aaPerp = max(fwidth(perpDist), 1e-4);
-    cx = 1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
-                          halfPerpW + aaPerp * 0.5,
-                          abs(perpDist));
-  }
-  float ay = max(fwidth(yLocal), 1e-4) * 0.5;
-  float cy = smoothstep(-ay, ay, yLocal)
-           - smoothstep(h - ay, h + ay, yLocal);
-  float coverage = cx * cy;
+  float coverage = fillCoverage(fragIn.localPos, xL, xR, perpFactor,
+                                fragIn.isCigar, h);
   if (coverage <= 0.0) { discard; }
-
-  float3 rgb = fragIn.color.rgb;
-  // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
-  // Canvas2DSyntenyRenderer.ts's hover branch.
-  bool isHovered = u.hoveredFeatureId > 0.0 && abs(fragIn.featureId - u.hoveredFeatureId) < 0.5;
-  float baseAlpha = fragIn.color.a * u.alpha;
-  rgb *= isHovered ? 0.7 : 1.0;
-  float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
-  return float4(rgb, finalAlpha * coverage);
+  return shadeFill(fragIn.color, fragIn.featureId, coverage, u);
 }

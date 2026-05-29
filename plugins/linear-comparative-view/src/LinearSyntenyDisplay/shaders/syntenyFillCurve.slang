@@ -30,7 +30,7 @@ import syntenyTypes;
 // bezier deviation. Doubling to 16 gives diminishing returns; halving to 4
 // makes the bulge term dominate the pad.
 public static const uint NUM_SEGMENTS = 8u;
-public static const uint VERTS_PER_INSTANCE = 8u * 6u;
+public static const uint VERTS_PER_INSTANCE = NUM_SEGMENTS * 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct VsOut {
@@ -50,12 +50,12 @@ struct VsOut {
 // Evaluate the centerline / edges at bezier parameter t. `s` is the cubic
 // smoothstep X-blend; `y` traces the cubic Hermite ease-in-out.
 void evalT(float t, Corners c, out float xL, out float xR, out float y) {
-  float s = t * t * (3.0 - 2.0 * t);
+  float s = sBlend(t);
   float edge0 = lerp(c.x1, c.x4, s);
   float edge1 = lerp(c.x2, c.x3, s);
   xL = min(edge0, edge1);
   xR = max(edge0, edge1);
-  y = u.height * (1.5 * t * (1.0 - t) + t * t * t);
+  y = u.height * yCurve(t);
 }
 
 [shader("vertex")]
@@ -65,7 +65,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.featureId = inst.featureId;
   o.corners = float4(0.0);
   o.localPos = float2(0.0);
-  o.isCigar = inst.kind >= 3.0 ? 1.0 : 0.0;
+  o.isCigar = isCigarKind(inst.kind) ? 1.0 : 0.0;
 
   Corners c = computeCorners(inst, u);
   if (isCulled(c, inst.alignmentLength, u)) {
@@ -105,7 +105,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float maxSlope = abs((c.x3 + c.x4 - c.x1 - c.x2) * 0.5) / h * 2.0;
   float maxPerpFactor = sqrt(1.0 + maxSlope * maxSlope);
   float bulgeX = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2)) * invN * invN * 0.75;
-  float pad = inst.kind >= 3.0
+  float pad = isCigarKind(inst.kind)
     ? bulgeX
     : maxPerpFactor * 0.5 + bulgeX + 1.0;
 
@@ -117,9 +117,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float vx = isRight ? (xR + pad) : (xL - pad);
   o.localPos = float2(vx, y);
 
-  float2 screen = float2(vx, u.yTop + y);
-  float2 clipSpace = screen / u.resolution * 2.0 - 1.0;
-  o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
+  o.position = screenToClip(float2(vx, u.yTop + y), u.resolution);
   return o;
 }
 
@@ -134,48 +132,26 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // converge to sub-pixel accuracy from t₀ = yFrac (f' ≥ 0.375 on [0,1]).
   float t = yFrac;
   for (int i = 0; i < 2; i++) {
-    float ft  = t * (1.5 + t * (t - 1.5)) - yFrac;
-    float fpt = 1.5 + t * (3.0 * t - 3.0);
-    t = t - ft / fpt;
+    t = t - (yCurve(t) - yFrac) / yCurveDeriv(t);
   }
   t = clamp(t, 0.0, 1.0);
-  float s = t * t * (3.0 - 2.0 * t);
+  float s = sBlend(t);
 
   float edge0 = lerp(fragIn.corners.x, fragIn.corners.w, s);
   float edge1 = lerp(fragIn.corners.y, fragIn.corners.z, s);
   float xL = min(edge0, edge1);
   float xR = max(edge0, edge1);
-  float xC = (xL + xR) * 0.5;
 
   // Local centerline slope dx/dy at this t from analytic bezier derivatives.
   float topMid = (fragIn.corners.x + fragIn.corners.y) * 0.5;
   float botMid = (fragIn.corners.z + fragIn.corners.w) * 0.5;
-  float dxdt = (botMid - topMid) * 6.0 * t * (1.0 - t);
-  float dydt = h * (1.5 - 3.0 * t + 3.0 * t * t);
+  float dxdt = (botMid - topMid) * sBlendDeriv(t);
+  float dydt = h * yCurveDeriv(t);
   float slope = dxdt / max(abs(dydt), 1e-4);
   float perpFactor = sqrt(1.0 + slope * slope);
 
-  float perpDist = (fragIn.localPos.x - xC) / perpFactor;
-  float halfPerpW = max((xR - xL) / (2.0 * perpFactor), 0.5);
-  float cx;
-  if (fragIn.isCigar > 0.5) {
-    cx = abs(perpDist) <= halfPerpW ? 1.0 : 0.0;
-  } else {
-    float aaPerp = max(fwidth(perpDist), 1e-4);
-    cx = 1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
-                          halfPerpW + aaPerp * 0.5,
-                          abs(perpDist));
-  }
-  float ay = max(fwidth(yLocal), 1e-4) * 0.5;
-  float cy = smoothstep(-ay, ay, yLocal)
-           - smoothstep(h - ay, h + ay, yLocal);
-  float coverage = cx * cy;
+  float coverage = fillCoverage(fragIn.localPos, xL, xR, perpFactor,
+                                fragIn.isCigar, h);
   if (coverage <= 0.0) { discard; }
-
-  float3 rgb = fragIn.color.rgb;
-  bool isHovered = u.hoveredFeatureId > 0.0 && abs(fragIn.featureId - u.hoveredFeatureId) < 0.5;
-  float baseAlpha = fragIn.color.a * u.alpha;
-  rgb *= isHovered ? 0.7 : 1.0;
-  float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
-  return float4(rgb, finalAlpha * coverage);
+  return shadeFill(fragIn.color, fragIn.featureId, coverage, u);
 }
