@@ -25,7 +25,8 @@
         "tutorials/sv_visualization_cgiab",
         "tutorials/sv_multisamples",
         "tutorials/synteny_visualization",
-        "tutorials/methylation"
+        "tutorials/methylation",
+        "tutorials/rnaseq"
       ]
     },
     {
