@@ -87,7 +87,10 @@ describe('aggregateAminos', () => {
     const g2p = makeForwardG2p(100, 106)
 
     delete g2p[102]
+    const spy = jest.spyOn(console, 'warn').mockImplementation()
     const result = aggregateAminos('MK', g2p, 100, 106, 1)
+    expect(spy).toHaveBeenCalledWith('No g2p mapping for position 102')
+
     // aa0 must end at 102, not 103 — no rect should span the unmapped position
     expect(result[0]).toMatchObject({
       aminoAcid: 'M',
@@ -99,5 +102,6 @@ describe('aggregateAminos', () => {
       startBp: 103,
       endBp: 106,
     })
+    spy.mockRestore()
   })
 })
