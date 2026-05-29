@@ -205,3 +205,37 @@ describe('refName precull via entries.has', () => {
     expect(bpToPxFromIndex(idx, 'chr1', 5000)).toBeUndefined()
   })
 })
+
+// Mirrors the swapped-axis check inside executeDotplotFeaturesAndPositions:
+// a feature skipped by the normal precull counts as a "swapped match" when its
+// ends would resolve with the H/V indexes exchanged.
+describe('swapped-axis detection', () => {
+  const hIdx = buildBpToPxIndex(
+    makeViewSnap([{ refName: 'chrA', start: 0, end: 1000 }]),
+  )
+  const vIdx = buildBpToPxIndex(
+    makeViewSnap([{ refName: 'chrB', start: 0, end: 1000 }]),
+  )
+  function normalMatch(refName: string, mateRefName: string) {
+    return hIdx.entries.has(refName) && vIdx.entries.has(mateRefName)
+  }
+  function swappedMatch(refName: string, mateRefName: string) {
+    return hIdx.entries.has(mateRefName) && vIdx.entries.has(refName)
+  }
+
+  it('reversed assemblies: feature fails normal precull but matches swapped', () => {
+    // refName belongs on the V axis, mate on the H axis — i.e. axes reversed
+    expect(normalMatch('chrB', 'chrA')).toBe(false)
+    expect(swappedMatch('chrB', 'chrA')).toBe(true)
+  })
+
+  it('correctly oriented feature does not count as a swapped match', () => {
+    expect(normalMatch('chrA', 'chrB')).toBe(true)
+    expect(swappedMatch('chrA', 'chrB')).toBe(false)
+  })
+
+  it('refName absent from both axes is neither a normal nor swapped match', () => {
+    expect(normalMatch('chrZ', 'chrA')).toBe(false)
+    expect(swappedMatch('chrZ', 'chrA')).toBe(false)
+  })
+})

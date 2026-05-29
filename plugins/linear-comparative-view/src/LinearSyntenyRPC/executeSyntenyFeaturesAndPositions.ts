@@ -177,6 +177,13 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2RefNames = v2Index.entries
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
+  // Compared at the refName-precull stage (before viewport culling) so the
+  // ratio is independent of zoom: how many features resolve in the configured
+  // row order vs. only with the two rows swapped. A swapped majority means the
+  // assemblies are very likely in the wrong order (detectable only when their
+  // chromosome names are distinct).
+  let normalMatchCount = 0
+  let swappedMatchCount = 0
   for (const f of features) {
     checkStopToken2(stopTokenChecker)
     const refName = f.get('refName')
@@ -190,8 +197,12 @@ export async function executeSyntenyFeaturesAndPositions({
     // displayed regions of one or both views. Skip before any bpToCumBpAndPad
     // arithmetic / object allocation.
     if (!v1RefNames.has(refName) || !v2RefNames.has(mate.refName)) {
+      if (v1RefNames.has(mate.refName) && v2RefNames.has(refName)) {
+        swappedMatchCount++
+      }
       continue
     }
+    normalMatchCount++
 
     const strand = f.get('strand')!
     const start = f.get('start')
@@ -304,6 +315,9 @@ export async function executeSyntenyFeaturesAndPositions({
     mateRefNames,
     mateAssemblyNames,
     hasCigar,
+    totalFeatureCount: features.length,
+    normalMatchCount,
+    swappedMatchCount,
   }
 
   // colorBy lives on the main thread; the worker emits geometry +

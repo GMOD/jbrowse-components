@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 import ColorBySelector from './ColorBySelector.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
+import SyntenyWarnings from './SyntenyWarnings.tsx'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
@@ -191,6 +192,8 @@ const Header = observer(function Header({
           ))}
         </span>
       ) : null}
+
+      <SyntenyWarnings model={model} />
     </FormGroup>
   )
 })

@@ -27,6 +27,7 @@ function makeRpcData(
     parsedCigars: [[]],
     totalFeatureCount: 1,
     skippedFeatureCount: 0,
+    swappedMatchCount: 0,
   }
 }
 

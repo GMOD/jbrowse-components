@@ -74,17 +74,27 @@ export function doAfterAttach(
             return
           }
           self.setRpcData(result)
+          const warnings: { message: string; effect: string }[] = []
           if (result.skippedFeatureCount > 0) {
-            self.setWarnings([
-              {
-                message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features could not be mapped to the configured assemblies`,
-                effect:
-                  'This usually means chromosome names in the file do not match the assembly. Check assembly aliases or that the correct assemblies are selected.',
-              },
-            ])
-          } else {
-            self.setWarnings([])
+            warnings.push({
+              message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features could not be mapped to the configured assemblies`,
+              effect:
+                'This usually means chromosome names in the file do not match the assembly. Check assembly aliases or that the correct assemblies are selected.',
+            })
           }
+          // When most unmapped features would map after swapping the axes, the
+          // X/Y assemblies are very likely reversed (only detectable when their
+          // chromosome names are distinct).
+          const renderedCount =
+            result.totalFeatureCount - result.skippedFeatureCount
+          if (result.swappedMatchCount > renderedCount) {
+            warnings.push({
+              message: `${result.swappedMatchCount} features would map if the X and Y assemblies were swapped`,
+              effect:
+                'The assemblies on the X and Y axes appear to be reversed. Try switching them in the dotplot import form.',
+            })
+          }
+          self.setWarnings(warnings)
         } catch (e) {
           if (
             thisStopToken === currentStopToken &&

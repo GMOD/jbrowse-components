@@ -35,6 +35,10 @@ export interface DotplotFeaturesAndPositionsResult {
   parsedCigars: number[][]
   totalFeatureCount: number
   skippedFeatureCount: number
+  // Number of skipped features whose refNames would have matched if the X/Y
+  // assemblies were swapped — a strong hint the assemblies are reversed when
+  // chromosome names are distinct between the two.
+  swappedMatchCount: number
 }
 
 function makeAssemblyLookup(pluginManager: PluginManager) {
@@ -122,6 +126,7 @@ export async function executeDotplotFeaturesAndPositions({
   }
   const valid: ValidFeature[] = []
   let skippedFeatureCount = 0
+  let swappedMatchCount = 0
   for (const f of features) {
     const mate = f.get('mate') as FeatureMate
     const strand = f.get('strand') ?? 1
@@ -133,6 +138,9 @@ export async function executeDotplotFeaturesAndPositions({
 
     if (!hIndex.entries.has(refName) || !vIndex.entries.has(mateRefName)) {
       skippedFeatureCount++
+      if (hIndex.entries.has(mateRefName) && vIndex.entries.has(refName)) {
+        swappedMatchCount++
+      }
       continue
     }
 
@@ -188,6 +196,7 @@ export async function executeDotplotFeaturesAndPositions({
     parsedCigars: new Array<number[]>(n),
     totalFeatureCount: features.length,
     skippedFeatureCount,
+    swappedMatchCount,
   }
   for (let i = 0; i < n; i++) {
     const v = valid[i]!
