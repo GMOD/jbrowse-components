@@ -47,9 +47,14 @@ const AssemblySelector = observer(function AssemblySelector({
     typeof jest === 'undefined' && Boolean(localStorageKey),
   )
 
-  const selection = assemblyNames.includes(lastSelected || '')
+  // prefer a remembered assembly, else the explicitly selected one, but only
+  // when it's actually a configured assembly (otherwise MUI warns about an
+  // out-of-range select value)
+  const selection = assemblyNames.includes(lastSelected ?? '')
     ? lastSelected
-    : selected
+    : assemblyNames.includes(selected ?? '')
+      ? selected
+      : undefined
 
   useEffect(() => {
     if (selection && selection !== selected) {
@@ -65,7 +70,7 @@ const AssemblySelector = observer(function AssemblySelector({
       label={label}
       variant="outlined"
       helperText={error || helperText}
-      value={selection || ''}
+      value={selection ?? ''}
       fullWidth={fullWidth}
       onChange={event => {
         setLastSelected(event.target.value)

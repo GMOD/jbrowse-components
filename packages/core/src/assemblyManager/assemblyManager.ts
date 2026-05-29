@@ -208,7 +208,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             () => {
               const assemblyConfs = self.assemblyList
               untracked(() => {
-                for (const asm of self.assemblies) {
+                // iterate a copy: removeAssembly splices self.assemblies, which
+                // would skip the next element if iterating the live array
+                for (const asm of [...self.assemblies]) {
                   if (!asm.configuration) {
                     this.removeAssembly(asm)
                   }

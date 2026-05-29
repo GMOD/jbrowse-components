@@ -385,61 +385,37 @@ export default function assemblyFactory(
     .actions(self => ({
       /**
        * #action
+       * Applies all load-time state in a single transaction so dependent
+       * autoruns fire once, with the precomputed lowercase/name lookups already
+       * in place by the time refNameAliases becomes observable.
        */
       setLoaded({
         regions,
         refNameAliases,
+        lowerCaseRefNameAliases,
+        allRefNamesWithLowerCase,
+        canonicalToSeqAdapterRefNames,
         cytobands,
       }: {
         regions: Region[]
         refNameAliases: RefNameAliases
+        lowerCaseRefNameAliases: RefNameAliases
+        allRefNamesWithLowerCase: Set<string>
+        canonicalToSeqAdapterRefNames: Record<string, string>
         cytobands: Feature[]
       }) {
-        this.setRegions(regions)
-        this.setRefNameAliases(refNameAliases)
-        this.setCytobands(cytobands)
+        self.volatileRegions = regions
+        self.refNameAliases = refNameAliases
+        self.lowerCaseRefNameAliases = lowerCaseRefNameAliases
+        self.allRefNamesWithLowerCase = allRefNamesWithLowerCase
+        self.canonicalToSeqAdapterRefNames = canonicalToSeqAdapterRefNames
+        self.cytobands = cytobands
       },
       /**
        * #action
        */
       setError(e: unknown) {
         self.error = e
-      },
-      /**
-       * #action
-       */
-      setRegions(regions: Region[]) {
-        self.volatileRegions = regions
-      },
-      /**
-       * #action
-       */
-      setRefNameAliases(aliases: RefNameAliases) {
-        self.refNameAliases = aliases
-      },
-      /**
-       * #action
-       */
-      setLowerCaseRefNameAliases(aliases: RefNameAliases) {
-        self.lowerCaseRefNameAliases = aliases
-      },
-      /**
-       * #action
-       */
-      setAllRefNamesWithLowerCase(names: Set<string>) {
-        self.allRefNamesWithLowerCase = names
-      },
-      /**
-       * #action
-       */
-      setCytobands(cytobands: Feature[]) {
-        self.cytobands = cytobands
-      },
-      /**
-       * #action
-       */
-      setCanonicalToSeqAdapterRefNames(map: Record<string, string>) {
-        self.canonicalToSeqAdapterRefNames = map
       },
       /**
        * #action
@@ -504,21 +480,23 @@ export default function assemblyFactory(
           lowerCaseAliases[lower] = refNameAliases[key]!
           nameSet.add(lower)
         }
-        this.setCanonicalToSeqAdapterRefNames(canonicalToSeqAdapterRefNames)
-        this.setLowerCaseRefNameAliases(lowerCaseAliases)
-        this.setAllRefNamesWithLowerCase(nameSet)
+
+        const cytobands = await getCytobands({
+          config: cytobandAdapterConf,
+          pluginManager,
+        })
 
         this.setLoaded({
           refNameAliases,
+          lowerCaseRefNameAliases: lowerCaseAliases,
+          allRefNamesWithLowerCase: nameSet,
+          canonicalToSeqAdapterRefNames,
           regions: regions.map(r => ({
             ...r,
             refName: refNameAliases[r.refName] ?? r.refName,
             assemblyName,
           })),
-          cytobands: await getCytobands({
-            config: cytobandAdapterConf,
-            pluginManager,
-          }),
+          cytobands,
         })
       },
     }))
