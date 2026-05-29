@@ -1,9 +1,22 @@
+import type { ReactNode } from 'react'
+
+import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import DotplotGrid from './DotplotGrid.tsx'
 
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'DotplotView-OverlaySVGComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: DotplotViewModel }
+    }
+  }
+}
 
 const MouseInteractionLayer = observer(function MouseInteractionLayer({
   model,
@@ -23,6 +36,12 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
     setMouseCurrClient,
     setCtrlKeyWasUsed,
   } = interaction
+  const { pluginManager } = getEnv(model)
+  const additional = pluginManager.evaluateExtensionPoint(
+    'DotplotView-OverlaySVGComponent',
+    [],
+    { model },
+  )
   return (
     <div
       style={{ cursor: ctrlKeyDown ? 'pointer' : model.cursorMode }}
@@ -50,6 +69,7 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
               height={Math.abs(ydistance)}
             />
           ) : null}
+          {additional}
         </DotplotGrid>
       </svg>
     </div>

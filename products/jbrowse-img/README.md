@@ -150,23 +150,23 @@ Reads & coloring:
 
 Overlays & subtracks:
 
-| Modifier               | Example              | Description                                                      |
-| ---------------------- | -------------------- | ---------------------------------------------------------------- |
+| Modifier               | Example              | Description                                                           |
+| ---------------------- | -------------------- | --------------------------------------------------------------------- |
 | `arcs:mode`            | `arcs:samplot`       | Read-connection arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
-| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                   |
-| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`)               |
-| `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                         |
-| `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track |
+| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                        |
+| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`)                    |
+| `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                              |
+| `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track      |
 
 Layout & sizing:
 
-| Modifier                  | Example                                          | Description                                                                      |
-| ------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
-| `noSpacing:true\|false`   | `noSpacing:true`                                 | Remove gap between reads                                                         |
-| `coverageHeight:N`        | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
-| `readConnectionsHeight:N`            | `readConnectionsHeight:120`                                 | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
-| `readConnectionsLineWidth:N`          | `readConnectionsLineWidth:2`                                 | Stroke width for read-connection arcs/lines in pixels                            |
+| Modifier                     | Example                                          | Description                                                                      |
+| ---------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `featureHeight:preset\|N`    | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
+| `noSpacing:true\|false`      | `noSpacing:true`                                 | Remove gap between reads                                                         |
+| `coverageHeight:N`           | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
+| `readConnectionsHeight:N`    | `readConnectionsHeight:120`                      | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
+| `readConnectionsLineWidth:N` | `readConnectionsLineWidth:2`                     | Stroke width for read-connection arcs/lines in pixels                            |
 
 Available `color:type` values:
 

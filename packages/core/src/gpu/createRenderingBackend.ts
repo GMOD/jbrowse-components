@@ -7,8 +7,12 @@ export async function createRenderingBackend<TRenderingBackend>(
   passes: PassDescriptor[],
   uniformByteSize: number,
   createGpuRenderingBackend: (hal: GpuHal) => TRenderingBackend,
-  createCanvas2DRenderingBackend: (canvas: HTMLCanvasElement) => TRenderingBackend,
+  createCanvas2DRenderingBackend: (
+    canvas: HTMLCanvasElement,
+  ) => TRenderingBackend,
 ): Promise<TRenderingBackend> {
   const hal = await createGpuHal(canvas, passes, uniformByteSize)
-  return hal ? createGpuRenderingBackend(hal) : createCanvas2DRenderingBackend(canvas)
+  return hal
+    ? createGpuRenderingBackend(hal)
+    : createCanvas2DRenderingBackend(canvas)
 }

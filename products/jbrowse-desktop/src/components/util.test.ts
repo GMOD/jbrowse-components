@@ -260,7 +260,10 @@ describe('applyPrimaryFile', () => {
   })
 
   test('does not overwrite a sidecar the user already set', () => {
-    const s = applyPrimaryFile({ ...initialFormState(), faiLocation: fai }, fasta)
+    const s = applyPrimaryFile(
+      { ...initialFormState(), faiLocation: fai },
+      fasta,
+    )
     expect(s.faiLocation).toBe(fai)
   })
 
@@ -362,9 +365,7 @@ describe('classifyAssemblyFiles', () => {
   })
 
   test('sorts an indexed fasta pair', () => {
-    expect(
-      classifyAssemblyFiles([fasta, fai]),
-    ).toMatchObject({
+    expect(classifyAssemblyFiles([fasta, fai])).toMatchObject({
       fastaLocation: fasta,
       faiLocation: fai,
       adapterSelection: 'IndexedFastaAdapter',
@@ -402,7 +403,9 @@ describe('classifyAssemblyFiles', () => {
   })
 
   test('ignores unrecognized files', () => {
-    expect(classifyAssemblyFiles([{ uri: 'x.bam' } as FileLocation])).toEqual({})
+    expect(classifyAssemblyFiles([{ uri: 'x.bam' } as FileLocation])).toEqual(
+      {},
+    )
   })
 })
 
@@ -416,7 +419,11 @@ describe('applyClassifiedFiles', () => {
   })
 
   test('resets fields no longer present in the set (authoritative)', () => {
-    const withBoth = applyClassifiedFiles(initialFormState(), [fasta, fai], false)
+    const withBoth = applyClassifiedFiles(
+      initialFormState(),
+      [fasta, fai],
+      false,
+    )
     const withoutFai = applyClassifiedFiles(withBoth, [fasta], false)
     expect(withoutFai.faiLocation).toEqual(blank)
     expect(withoutFai.fastaLocation).toBe(fasta)
@@ -443,7 +450,9 @@ describe('applyClassifiedFiles', () => {
 describe('urlTextToLocations', () => {
   test('parses non-empty trimmed lines into UriLocations', () => {
     expect(
-      urlTextToLocations('  https://example.com/a.fa \n\nhttps://example.com/a.fa.fai\n'),
+      urlTextToLocations(
+        '  https://example.com/a.fa \n\nhttps://example.com/a.fa.fai\n',
+      ),
     ).toEqual([
       { uri: 'https://example.com/a.fa', locationType: 'UriLocation' },
       { uri: 'https://example.com/a.fa.fai', locationType: 'UriLocation' },

@@ -11,6 +11,7 @@ import {
   localStorageGetItem,
   minmax,
 } from '@jbrowse/core/util'
+import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
 import {
   getParentRenderProps,
   hideTrackGeneric,
@@ -18,19 +19,13 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { autorun, observable, when } from 'mobx'
+import { observable } from 'mobx'
 
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
+import { doAfterAttach } from './afterAttach.ts'
 import {
   getBlockLabelKeysToHide,
   makeTicks,
@@ -48,6 +43,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -188,6 +184,20 @@ export default function stateModelFactory(pm: PluginManager) {
            * used for initializing the view from a session snapshot
            */
           init: types.frozen<DotplotViewInit | undefined>(),
+          /**
+           * #property
+           * translucent highlight bands drawn per-axis: vertical when the
+           * region's assembly matches hview, horizontal when it matches vview
+           */
+          highlight: types.optional(
+            types.array(types.frozen<HighlightType>()),
+            [],
+          ),
+          /**
+           * #property
+           * controls whether view.highlight entries are rendered
+           */
+          highlightsVisible: types.optional(types.boolean, true),
         }),
       )
       .volatile(() => ({
@@ -531,6 +541,30 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
+         */
+        addToHighlights(highlight: HighlightType) {
+          self.highlight.push(highlight)
+        },
+        /**
+         * #action
+         */
+        setHighlight(highlight?: HighlightType[]) {
+          self.highlight = cast(highlight)
+        },
+        /**
+         * #action
+         */
+        removeHighlight(highlight: HighlightType) {
+          self.highlight.remove(highlight)
+        },
+        /**
+         * #action
+         */
+        setHighlightsVisible(arg: boolean) {
+          self.highlightsVisible = arg
+        },
+        /**
+         * #action
          * returns to the import form
          */
         clearView() {
@@ -859,155 +893,7 @@ export default function stateModelFactory(pm: PluginManager) {
           }
         },
         afterAttach() {
-          let initRunning = false
-          addDisposer(
-            self,
-            autorun(
-              async function dotplotInitAutorun() {
-                const { init, volatileWidth } = self
-                if (!volatileWidth || !init || initRunning) {
-                  return
-                }
-                initRunning = true
-
-                try {
-                  // Set assembly names from init
-                  const assemblyNames = init.views.map(v => v.assembly)
-                  self.setAssemblyNames(assemblyNames[0]!, assemblyNames[1]!)
-
-                  // Show tracks; showTrack surfaces its own failures via
-                  // showTrackGeneric's notifyError snackbar
-                  if (init.tracks) {
-                    for (const trackId of init.tracks) {
-                      self.showTrack(trackId)
-                    }
-                  }
-
-                  // colorBy and minAlignmentLength live on each display, not
-                  // the view — apply to every display the showTrack calls just
-                  // created. Untyped because tracks/displays are pluggable.
-                  if (
-                    init.colorBy !== undefined ||
-                    init.minAlignmentLength !== undefined
-                  ) {
-                    for (const track of self.tracks) {
-                      for (const display of track.displays) {
-                        const d = display as {
-                          setColorBy?: (v: string) => void
-                          setMinAlignmentLength?: (v: number) => void
-                        }
-                        if (init.colorBy && d.setColorBy) {
-                          d.setColorBy(init.colorBy)
-                        }
-                        if (
-                          init.minAlignmentLength !== undefined &&
-                          d.setMinAlignmentLength
-                        ) {
-                          d.setMinAlignmentLength(init.minAlignmentLength)
-                        }
-                      }
-                    }
-                  }
-
-                  if (init.autoDiagonalize) {
-                    // Wait for the first DotplotDisplay RPC to populate rpcData
-                    // so we have a meaningful diagonalize result, then call
-                    // the RPC. Race with a 30s ceiling so a stuck display
-                    // can't deadlock startup. The awaitingAutoDiagonalize
-                    // flag flips showLoading on for the duration so the user
-                    // sees a "Reordering chromosomes…" spinner instead of an
-                    // undiagonalized plot that immediately re-paints.
-                    self.setAwaitingAutoDiagonalize(true)
-                    try {
-                      const { runDotplotDiagonalize, dotplotDisplaysReady } =
-                        await import('./util/runDotplotDiagonalize.ts')
-                      const view = self as DotplotViewModel
-                      await Promise.race([
-                        when(() => dotplotDisplaysReady(view)),
-                        new Promise(resolve => {
-                          setTimeout(resolve, 30_000)
-                        }),
-                      ])
-                      if (dotplotDisplaysReady(view) && isAlive(self)) {
-                        await runDotplotDiagonalize(view)
-                      }
-                    } catch (e) {
-                      console.error(e)
-                    } finally {
-                      if (isAlive(self)) {
-                        self.setAwaitingAutoDiagonalize(false)
-                      }
-                    }
-                  }
-
-                  // Clear init state
-                  if (isAlive(self)) {
-                    self.setInit(undefined)
-                  }
-                } finally {
-                  initRunning = false
-                }
-              },
-              { name: 'DotplotInit' },
-            ),
-          )
-          addDisposer(
-            self,
-            autorun(
-              function dotplotLocalStorageAutorun() {
-                if (typeof localStorage !== 'undefined') {
-                  localStorage.setItem(LS_CURSOR_MODE, self.cursorMode)
-                }
-              },
-              { name: 'DotplotLocalStorage' },
-            ),
-          )
-          addDisposer(
-            self,
-            autorun(
-              function dotplotRegionsAutorun() {
-                // assemblyNames.length > 0 both tracks the array (so MobX
-                // re-runs when names change) and guards against vacuous truth
-                // from every() on an empty array after clearView().
-                if (
-                  self.volatileWidth !== undefined &&
-                  self.assemblyNames.length > 0 &&
-                  self.assembliesInitialized
-                ) {
-                  self.initializeDisplayedRegions()
-                }
-              },
-              { delay: 1000, name: 'DotplotRegions' },
-            ),
-          )
-          addDisposer(
-            self,
-            autorun(
-              function dotplotAspectLockAutorun() {
-                if (self.lockAspectRatio) {
-                  self.syncBpPerPx()
-                }
-              },
-              { name: 'DotplotAspectLock' },
-            ),
-          )
-          addDisposer(
-            self,
-            autorun(
-              function dotplotBorderAutorun() {
-                // make sure we have a width on the view before trying to load
-                if (self.volatileWidth === undefined) {
-                  return
-                }
-
-                // Calculate and apply borders
-                const { borderX, borderY } = self.calculateBorders()
-                self.setBorderX(borderX)
-                self.setBorderY(borderY)
-              },
-              { name: 'DotplotBorder' },
-            ),
-          )
+          doAfterAttach(self as DotplotViewModel)
         },
         /**
          * #action
@@ -1036,6 +922,55 @@ export default function stateModelFactory(pm: PluginManager) {
         },
       }))
       .views(self => ({
+        /**
+         * #method
+         * Map a highlight/bookmark region to {left, width} px on the
+         * horizontal axis. left is already screen-offset. Returns undefined
+         * when the region isn't on hview's assembly/displayed regions.
+         */
+        getHHighlightCoords(region: {
+          assemblyName?: string
+          refName: string
+          start: number
+          end: number
+        }) {
+          const { assemblyManager } = getSession(self)
+          const asm = region.assemblyName
+            ? assemblyManager.get(region.assemblyName)
+            : undefined
+          const refName =
+            asm?.getCanonicalRefName(region.refName) ?? region.refName
+          return getLayoutHighlightCoords(self.hview, { ...region, refName })
+        },
+        /**
+         * #method
+         * Map a highlight/bookmark region to {top, height} px on the vertical
+         * axis. The vview lays out bottom-to-top, so the band is y-flipped into
+         * screen space. Returns undefined when the region isn't on vview.
+         */
+        getVHighlightCoords(region: {
+          assemblyName?: string
+          refName: string
+          start: number
+          end: number
+        }) {
+          const { assemblyManager } = getSession(self)
+          const asm = region.assemblyName
+            ? assemblyManager.get(region.assemblyName)
+            : undefined
+          const refName =
+            asm?.getCanonicalRefName(region.refName) ?? region.refName
+          const coords = getLayoutHighlightCoords(self.vview, {
+            ...region,
+            refName,
+          })
+          return coords
+            ? {
+                top: self.viewHeight - (coords.left + coords.width),
+                height: coords.width,
+              }
+            : undefined
+        },
         /**
          * #method
          */
@@ -1145,6 +1080,8 @@ export default function stateModelFactory(pm: PluginManager) {
           lineWidth,
           assemblyNames,
           viewTrackConfigs,
+          highlight,
+          highlightsVisible,
           ...rest
         } = snap
         return {
@@ -1164,6 +1101,8 @@ export default function stateModelFactory(pm: PluginManager) {
           ...(lineWidth !== defaultLineWidth ? { lineWidth } : {}),
           ...(assemblyNames.length ? { assemblyNames } : {}),
           ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
+          ...(highlight.length ? { highlight } : {}),
+          ...(!highlightsVisible ? { highlightsVisible } : {}),
         } as typeof snap
       })
   )

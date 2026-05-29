@@ -35,7 +35,10 @@ const LinearManhattanDisplayComponent = observer(
   }: {
     model: ManhattanDisplayModel
   }) {
-    const { canvasRef, error, retry } = useRenderingBackend(ManhattanRenderer, model)
+    const { canvasRef, error, retry } = useRenderingBackend(
+      ManhattanRenderer,
+      model,
+    )
     const view = getContainingView(model) as LGV
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
     const [contextMenu, setContextMenu] = useState<{

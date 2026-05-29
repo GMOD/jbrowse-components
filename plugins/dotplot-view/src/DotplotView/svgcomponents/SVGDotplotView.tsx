@@ -1,5 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession, renderToStaticMarkup } from '@jbrowse/core/util'
+import { getEnv, getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
@@ -30,6 +30,13 @@ export async function renderToSvg(
   )
   const w = width + shift * 2
 
+  const { pluginManager } = getEnv(model)
+  const additional = pluginManager.evaluateExtensionPoint(
+    'DotplotView-OverlaySVGComponent',
+    [],
+    { model },
+  )
+
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
     <ThemeProvider theme={createJBrowseTheme(theme)}>
@@ -45,6 +52,7 @@ export async function renderToSvg(
           <VerticalAxisRaw model={model} />
           <g transform={`translate(${borderX} 0)`}>
             <DotplotGrid model={model} />
+            {additional}
             <defs>
               <clipPath id="clip-ruler">
                 <rect x={0} y={0} width={viewWidth} height={viewHeight} />

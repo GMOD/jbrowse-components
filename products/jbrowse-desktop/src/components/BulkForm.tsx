@@ -128,7 +128,10 @@ const BulkForm = observer(function BulkForm({
       <Box className={classes.section}>
         <DropArea
           onFiles={files => {
-            const next = [...dropped, ...files.map(file => fileToLocation(file))]
+            const next = [
+              ...dropped,
+              ...files.map(file => fileToLocation(file)),
+            ]
             setDropped(next)
             reclassify(next, urls)
           }}

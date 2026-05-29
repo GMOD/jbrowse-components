@@ -7,18 +7,19 @@ shared clip / canvas / hp-math utilities.
 ## Naming convention
 
 The `Gpu` prefix means **WebGL/WebGPU-specific** — `GpuHal` / `createGpuHal`,
-`gpuDevice`, `webgpuUtils`, and the GPU-side bases `GpuPerRegionRenderingBackend` /
-`GpuGlobalRenderingBackend`. Anything that drives **both** GPU and Canvas2D is
-backend-agnostic and carries a neutral name: `RenderLifecycleMixin`, the
-`PerRegionRenderingBackend` / `GlobalRenderingBackend` interfaces, the `Canvas2D*` bases, and the
+`gpuDevice`, `webgpuUtils`, and the GPU-side bases
+`GpuPerRegionRenderingBackend` / `GpuGlobalRenderingBackend`. Anything that
+drives **both** GPU and Canvas2D is backend-agnostic and carries a neutral name:
+`RenderLifecycleMixin`, the `PerRegionRenderingBackend` /
+`GlobalRenderingBackend` interfaces, the `Canvas2D*` bases, and the
 `useRenderer` / `useRenderingBackend` hooks. Don't reintroduce `Gpu` on an
 agnostic symbol — it reads as "GPU-only" and the same code path also runs the
 Canvas2D fallback. `Global*` mirrors `GlobalDataDisplayMixin` (the
 no-region-partition displays: HiC, LD, variant matrix).
 
-The React hooks that drive the frame lifecycle live in
-`packages/core/src/util/` (`useRenderer`, `useRenderingBackend`,
-`useTabVisibilityRerender`), not in this directory.
+The React hooks that drive the frame lifecycle live in `packages/core/src/util/`
+(`useRenderer`, `useRenderingBackend`, `useTabVisibilityRerender`), not in this
+directory.
 
 **The conceptual reference is `agent-docs/ARCHITECTURE.md` → "GPU Rendering
 Architecture"** (life of a frame, the three upload patterns, hp-math precision,
@@ -36,13 +37,14 @@ this directory_.
 - `hal/createHal.ts` — WebGPU → WebGL2 → null ladder (`?renderer=` pins it).
 - `gpuDevice.ts` — module-level WebGPU `GPUDevice` singleton + device-lost
   recovery.
-- `createRenderingBackend.ts` — `createGpuHal` returns a HAL → GPU backend, else Canvas2D
-  backend.
-- `RenderLifecycleMixin.ts` — the upload + render autorun pair (`attachRenderingBackend`).
+- `createRenderingBackend.ts` — `createGpuHal` returns a HAL → GPU backend, else
+  Canvas2D backend.
+- `RenderLifecycleMixin.ts` — the upload + render autorun pair
+  (`attachRenderingBackend`).
 - `installPerRegionLifecycle.ts` — per-key autoruns for per-region streamed
   displays (O(N), not O(N²)).
-- `perRegionRenderingBackend.ts`, `globalRenderingBackend.ts` — backend base classes (GPU +
-  Canvas2D).
+- `perRegionRenderingBackend.ts`, `globalRenderingBackend.ts` — backend base
+  classes (GPU + Canvas2D).
 - `slangPass.ts` — turns a `.generated.ts` shader module into a
   `PassDescriptor`.
 - `blockClipUtils.ts` — GPU clip math + CPU hp-math split
@@ -74,9 +76,10 @@ this directory_.
   Tests reset via `resetGpuDeviceForTests`.
 - **Don't redefine lifecycle state.** `canvasDrawn`, `currentRenderingBackend`,
   `renderTick`, `autorunsInstalled` and their actions belong to
-  `RenderLifecycleMixin`; plugins compose, never re-declare. `attachRenderingBackend` is
-  idempotent — re-calling only swaps the backend (context-loss recovery), and
-  the upload autorun bumps `renderTick` so render re-fires after every upload.
+  `RenderLifecycleMixin`; plugins compose, never re-declare.
+  `attachRenderingBackend` is idempotent — re-calling only swaps the backend
+  (context-loss recovery), and the upload autorun bumps `renderTick` so render
+  re-fires after every upload.
 - **Renderers stay stateless.** No per-region `Map` on a renderer class —
   delegate buffer lifecycle to `hal.pruneRegions(active)` and read per-region
   data from the model's map passed into `renderBlocks(blocks, regions, state)`.

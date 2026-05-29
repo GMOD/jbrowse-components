@@ -1,7 +1,11 @@
 import type React from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 
-import { clamp, getContainingView, useRenderingBackend } from '@jbrowse/core/util'
+import {
+  clamp,
+  getContainingView,
+  useRenderingBackend,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'

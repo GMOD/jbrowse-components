@@ -14,8 +14,8 @@ export type {
 } from './InternetAccountModel.ts'
 export { BaseInternetAccountConfig } from './baseInternetAccountConfig.ts'
 export {
-  createBaseTrackModel,
   SAVE_TRACK_DATA_LABEL,
+  createBaseTrackModel,
 } from './BaseTrackModel.ts'
 export type { BaseTrackModel, BaseTrackStateModel } from './BaseTrackModel.ts'
 export { createBaseTrackConfig } from './baseTrackConfig.ts'

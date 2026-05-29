@@ -65,7 +65,9 @@ export function linearSyntenyViewHelperModelFactory(
        * backend and render onto one canvas.
        */
       get gpuRenderingBackend(): SyntenyRenderingBackend | undefined {
-        return self.currentRenderingBackend as SyntenyRenderingBackend | undefined
+        return self.currentRenderingBackend as
+          | SyntenyRenderingBackend
+          | undefined
       },
     }))
     .actions(self => ({

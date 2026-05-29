@@ -1949,9 +1949,7 @@ export default function stateModelFactory(
                         type: 'checkbox' as const,
                         checked: self.readConnectionsDown,
                         onClick: () => {
-                          self.setReadConnectionsDown(
-                            !self.readConnectionsDown,
-                          )
+                          self.setReadConnectionsDown(!self.readConnectionsDown)
                         },
                       },
                     ]

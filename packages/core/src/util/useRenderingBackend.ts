@@ -36,7 +36,9 @@ export interface RenderLifecycleModel<RenderingBackendType> {
  * The model argument is duck-typed to the slot mixin's contract — the
  * three actions are all the hook touches.
  */
-export function useRenderingBackend<RenderingBackendType extends { dispose(): void }>(
+export function useRenderingBackend<
+  RenderingBackendType extends { dispose(): void },
+>(
   factory: (canvas: HTMLCanvasElement) => Promise<RenderingBackendType>,
   model: RenderLifecycleModel<RenderingBackendType>,
 ) {

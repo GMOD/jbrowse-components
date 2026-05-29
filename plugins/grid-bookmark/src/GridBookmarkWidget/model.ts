@@ -10,6 +10,7 @@ import { autorun } from 'mobx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
 import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export const DEFAULT_HIGHLIGHT = 'rgba(247, 129, 192, 0.35)'
@@ -52,8 +53,12 @@ function forEachView(
   }
 }
 
-
 export interface IExtendedLGV extends LinearGenomeViewModel {
+  bookmarkHighlightsVisible: boolean
+  setBookmarkHighlightsVisible: (arg: boolean) => void
+}
+
+export interface IExtendedDotplotView extends DotplotViewModel {
   bookmarkHighlightsVisible: boolean
   setBookmarkHighlightsVisible: (arg: boolean) => void
 }

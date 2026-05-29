@@ -128,7 +128,10 @@ export function drawWiggleToCtx<Data>(
 // per-region lifecycle closure (see installPerRegionLifecycle) and is
 // passed to renderBlocks each frame.
 export class Canvas2DWiggleRenderer
-  extends Canvas2DPerRegionRenderingBackend<SourceRenderData[], WiggleGPURenderState>
+  extends Canvas2DPerRegionRenderingBackend<
+    SourceRenderData[],
+    WiggleGPURenderState
+  >
   implements WiggleRenderingBackend
 {
   renderBlocks(

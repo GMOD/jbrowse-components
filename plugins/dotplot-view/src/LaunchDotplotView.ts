@@ -4,8 +4,11 @@ import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 export interface LaunchDotplotViewArgs extends SyntenyViewSharedInit {
   session: AbstractSessionModel
-  views: { assembly: string }[]
+  views: { assembly: string; loc?: string }[]
   tracks?: string[]
+  // loc-strings or URL-encoded HighlightType JSON, forwarded to the view's
+  // declarative init (see DotplotView init autorun)
+  highlight?: string[]
 }
 
 declare module '@jbrowse/core/PluginManager' {
@@ -34,6 +37,7 @@ export default function LaunchDotplotView(pluginManager: PluginManager) {
         ...(rest.minAlignmentLength !== undefined && {
           minAlignmentLength: rest.minAlignmentLength,
         }),
+        ...(rest.highlight !== undefined && { highlight: rest.highlight }),
       },
     })
     return args

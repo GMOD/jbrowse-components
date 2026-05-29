@@ -178,6 +178,22 @@ const hs1Mm39DotplotSpec = encodeURIComponent(
   }),
 )
 
+const volvoxDotplotHighlightSpec = encodeURIComponent(
+  JSON.stringify({
+    views: [
+      {
+        type: 'DotplotView',
+        views: [
+          { assembly: 'volvox', loc: 'ctgA:1-50000' },
+          { assembly: 'volvox', loc: 'ctgA:1-50000' },
+        ],
+        tracks: ['volvox_fake_synteny'],
+        highlight: ['ctgA:5000-15000'],
+      },
+    ],
+  }),
+)
+
 const syntenyConfigs = [
   {
     config: 'test_data/config_synteny_grape_peach.json',
@@ -202,6 +218,10 @@ const syntenyConfigs = [
   {
     href: `?config=test_data/hs1_vs_mm39/config.json&session=spec-${hs1Mm39DotplotSpec}`,
     label: 'hs1 vs mm39 dotplot',
+  },
+  {
+    href: `?config=test_data/volvox/config_main_thread.json&session=spec-${volvoxDotplotHighlightSpec}`,
+    label: 'Volvox dotplot (w/ highlight)',
   },
   {
     config: 'test_data/hg19_vs_hg38/config.json',

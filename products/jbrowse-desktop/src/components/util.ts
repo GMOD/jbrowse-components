@@ -88,15 +88,24 @@ function guessSidecarLocations(
     adapterSelection === 'IndexedFastaAdapter' ||
     adapterSelection === 'BgzipFastaAdapter'
   const wantsGzi = adapterSelection === 'BgzipFastaAdapter'
-  const fai = wantsFai && isBlank(state.faiLocation) ? sidecar(location, '.fai') : undefined
-  const gzi = wantsGzi && isBlank(state.gziLocation) ? sidecar(location, '.gzi') : undefined
+  const fai =
+    wantsFai && isBlank(state.faiLocation)
+      ? sidecar(location, '.fai')
+      : undefined
+  const gzi =
+    wantsGzi && isBlank(state.gziLocation)
+      ? sidecar(location, '.gzi')
+      : undefined
   return {
     ...(fai ? { faiLocation: fai } : {}),
     ...(gzi ? { gziLocation: gzi } : {}),
   }
 }
 
-function sidecar(location: FileLocation, ext: string): FileLocation | undefined {
+function sidecar(
+  location: FileLocation,
+  ext: string,
+): FileLocation | undefined {
   if (isUriLocation(location)) {
     return { ...location, uri: `${location.uri}${ext}` }
   }
@@ -301,7 +310,9 @@ export function applyClassifiedFiles(
     refNameAliasesLocation: classified.refNameAliasesLocation ?? blank,
     cytobandsLocation: classified.cytobandsLocation ?? blank,
     adapterSelection: classified.adapterSelection ?? state.adapterSelection,
-    assemblyName: keepName ? state.assemblyName : (classified.assemblyName ?? ''),
+    assemblyName: keepName
+      ? state.assemblyName
+      : (classified.assemblyName ?? ''),
   }
 }
 

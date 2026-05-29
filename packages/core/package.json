@@ -46,10 +46,10 @@
     "./gpu/blockClipUtils": "./src/gpu/blockClipUtils.ts",
     "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
     "./gpu/createRenderingBackend": "./src/gpu/createRenderingBackend.ts",
+    "./gpu/globalRenderingBackend": "./src/gpu/globalRenderingBackend.ts",
     "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
     "./gpu/installPerRegionLifecycle": "./src/gpu/installPerRegionLifecycle.ts",
-    "./gpu/globalRenderingBackend": "./src/gpu/globalRenderingBackend.ts",
     "./gpu/perRegionRenderingBackend": "./src/gpu/perRegionRenderingBackend.ts",
     "./gpu/regionUploadSync": "./src/gpu/regionUploadSync.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
@@ -147,9 +147,10 @@
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
-    "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts",
+    "./util/useGpuBackend": "./src/util/useGpuBackend.ts",
     "./util/useLatestRef": "./src/util/useLatestRef.ts",
-    "./util/useMeasure": "./src/util/useMeasure.ts"
+    "./util/useMeasure": "./src/util/useMeasure.ts",
+    "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts"
   },
   "files": [
     "esm"
@@ -313,6 +314,10 @@
         "types": "./esm/gpu/createRenderingBackend.d.ts",
         "import": "./esm/gpu/createRenderingBackend.js"
       },
+      "./gpu/globalRenderingBackend": {
+        "types": "./esm/gpu/globalRenderingBackend.d.ts",
+        "import": "./esm/gpu/globalRenderingBackend.js"
+      },
       "./gpu/gpuDevice": {
         "types": "./esm/gpu/gpuDevice.d.ts",
         "import": "./esm/gpu/gpuDevice.js"
@@ -324,10 +329,6 @@
       "./gpu/installPerRegionLifecycle": {
         "types": "./esm/gpu/installPerRegionLifecycle.d.ts",
         "import": "./esm/gpu/installPerRegionLifecycle.js"
-      },
-      "./gpu/globalRenderingBackend": {
-        "types": "./esm/gpu/globalRenderingBackend.d.ts",
-        "import": "./esm/gpu/globalRenderingBackend.js"
       },
       "./gpu/perRegionRenderingBackend": {
         "types": "./esm/gpu/perRegionRenderingBackend.d.ts",
@@ -717,9 +718,9 @@
         "types": "./esm/util/types/mst.d.ts",
         "import": "./esm/util/types/mst.js"
       },
-      "./util/useRenderingBackend": {
-        "types": "./esm/util/useRenderingBackend.d.ts",
-        "import": "./esm/util/useRenderingBackend.js"
+      "./util/useGpuBackend": {
+        "types": "./esm/util/useGpuBackend.d.ts",
+        "import": "./esm/util/useGpuBackend.js"
       },
       "./util/useLatestRef": {
         "types": "./esm/util/useLatestRef.d.ts",
@@ -728,6 +729,10 @@
       "./util/useMeasure": {
         "types": "./esm/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js"
+      },
+      "./util/useRenderingBackend": {
+        "types": "./esm/util/useRenderingBackend.d.ts",
+        "import": "./esm/util/useRenderingBackend.js"
       }
     },
     "typesVersions": {
@@ -810,6 +815,9 @@
         "gpu/createRenderingBackend": [
           "esm/gpu/createRenderingBackend.d.ts"
         ],
+        "gpu/globalRenderingBackend": [
+          "esm/gpu/globalRenderingBackend.d.ts"
+        ],
         "gpu/gpuDevice": [
           "esm/gpu/gpuDevice.d.ts"
         ],
@@ -818,9 +826,6 @@
         ],
         "gpu/installPerRegionLifecycle": [
           "esm/gpu/installPerRegionLifecycle.d.ts"
-        ],
-        "gpu/globalRenderingBackend": [
-          "esm/gpu/globalRenderingBackend.d.ts"
         ],
         "gpu/perRegionRenderingBackend": [
           "esm/gpu/perRegionRenderingBackend.d.ts"
@@ -1113,14 +1118,17 @@
         "util/types/mst": [
           "esm/util/types/mst.d.ts"
         ],
-        "util/useRenderingBackend": [
-          "esm/util/useRenderingBackend.d.ts"
+        "util/useGpuBackend": [
+          "esm/util/useGpuBackend.d.ts"
         ],
         "util/useLatestRef": [
           "esm/util/useLatestRef.d.ts"
         ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"
+        ],
+        "util/useRenderingBackend": [
+          "esm/util/useRenderingBackend.d.ts"
         ]
       }
     }

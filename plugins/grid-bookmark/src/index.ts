@@ -18,6 +18,7 @@ import type {
   ViewType,
 } from '@jbrowse/core/pluggableElementTypes'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type { DotplotViewStateModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default class GridBookmarkPlugin extends Plugin {
@@ -297,6 +298,115 @@ export default class GridBookmarkPlugin extends Plugin {
                   : {}),
                 ...(!highlightsVisible ? { highlightsVisible } : {}),
                 ...(!labelsVisible ? { labelsVisible } : {}),
+              } as typeof snap
+            })
+
+          ;(pluggableElement as ViewType).stateModel = newStateModel
+        }
+        if (pluggableElement.name === 'DotplotView') {
+          const { stateModel } = pluggableElement as ViewType
+          const dotplot = stateModel as DotplotViewStateModel
+          const newStateModel = dotplot
+            .props({
+              /**
+               * #property
+               */
+              bookmarkHighlightsVisible: true,
+            })
+            .actions(self => ({
+              /**
+               * #action
+               */
+              setBookmarkHighlightsVisible(arg: boolean) {
+                self.bookmarkHighlightsVisible = arg
+              },
+              /**
+               * #action
+               */
+              activateBookmarkWidget() {
+                const session = getSession(self)
+                if (isSessionModelWithWidgets(session)) {
+                  let bookmarkWidget = session.widgets.get('GridBookmark')
+                  bookmarkWidget ??= session.addWidget(
+                    'GridBookmarkWidget',
+                    'GridBookmark',
+                  )
+                  session.showWidget(bookmarkWidget)
+                  return session.widgets.get(
+                    'GridBookmark',
+                  ) as GridBookmarkModel
+                }
+                throw new Error('Could not open bookmark widget')
+              },
+            }))
+            .views(self => {
+              const superMenuItems = self.menuItems
+              return {
+                /**
+                 * #method
+                 */
+                menuItems() {
+                  return [
+                    ...superMenuItems(),
+                    {
+                      label: 'Bookmarks/highlights',
+                      icon: BookmarksIcon,
+                      subMenu: [
+                        {
+                          label: 'Open bookmark widget',
+                          icon: BookmarksIcon,
+                          onClick: () => self.activateBookmarkWidget(),
+                        },
+                        {
+                          label: 'Toggle highlights',
+                          icon: HighlightIcon,
+                          type: 'checkbox',
+                          // checked when either kind is visible; toggle flips
+                          // both so users get a single switch for all highlight
+                          // overlays in the view
+                          checked:
+                            self.bookmarkHighlightsVisible ||
+                            self.highlightsVisible,
+                          onClick: () => {
+                            const next = !(
+                              self.bookmarkHighlightsVisible ||
+                              self.highlightsVisible
+                            )
+                            self.setBookmarkHighlightsVisible(next)
+                            self.setHighlightsVisible(next)
+                          },
+                        },
+                      ],
+                    },
+                  ]
+                },
+              }
+            })
+            .actions(self => ({
+              afterAttach() {
+                // ensure the bookmark widget exists so its localStorage-backed
+                // bookmarks can render as highlight overlays
+                const session = getSession(self)
+                if (
+                  isSessionModelWithWidgets(session) &&
+                  !session.widgets.get('GridBookmark')
+                ) {
+                  session.addWidget('GridBookmarkWidget', 'GridBookmark')
+                }
+              },
+            }))
+            .postProcessSnapshot(snap => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              if (!snap) {
+                return snap
+              }
+              const { bookmarkHighlightsVisible, ...rest } =
+                snap as unknown as Record<string, unknown>
+              return {
+                ...rest,
+                ...(bookmarkHighlightsVisible === false
+                  ? { bookmarkHighlightsVisible }
+                  : {}),
               } as typeof snap
             })
 

@@ -20,7 +20,10 @@ function makeRenderingBackend() {
 }
 
 test('first sync uploads every region and prunes to the active set', () => {
-  const sync = createRegionUploadSync<Data, ReturnType<typeof makeRenderingBackend>>()
+  const sync = createRegionUploadSync<
+    Data,
+    ReturnType<typeof makeRenderingBackend>
+  >()
   const b = makeRenderingBackend()
   const a = { v: 1 }
   const c = { v: 2 }
@@ -36,7 +39,10 @@ test('first sync uploads every region and prunes to the active set', () => {
 })
 
 test('unchanged references are not re-uploaded when a new region arrives', () => {
-  const sync = createRegionUploadSync<Data, ReturnType<typeof makeRenderingBackend>>()
+  const sync = createRegionUploadSync<
+    Data,
+    ReturnType<typeof makeRenderingBackend>
+  >()
   const b = makeRenderingBackend()
   const a = { v: 1 }
   sync(b, new Map([[0, a]]))
@@ -58,7 +64,10 @@ test('unchanged references are not re-uploaded when a new region arrives', () =>
 })
 
 test('a changed reference for an existing region re-uploads it', () => {
-  const sync = createRegionUploadSync<Data, ReturnType<typeof makeRenderingBackend>>()
+  const sync = createRegionUploadSync<
+    Data,
+    ReturnType<typeof makeRenderingBackend>
+  >()
   const b = makeRenderingBackend()
   sync(b, new Map([[0, { v: 1 }]]))
   sync(b, new Map([[0, { v: 1 }]])) // same value, new object reference
@@ -66,7 +75,10 @@ test('a changed reference for an existing region re-uploads it', () => {
 })
 
 test('a removed region is pruned and forgotten so a same-reference re-arrival re-uploads', () => {
-  const sync = createRegionUploadSync<Data, ReturnType<typeof makeRenderingBackend>>()
+  const sync = createRegionUploadSync<
+    Data,
+    ReturnType<typeof makeRenderingBackend>
+  >()
   const b = makeRenderingBackend()
   const a = { v: 1 }
   sync(b, new Map([[0, a]]))
@@ -81,7 +93,10 @@ test('a removed region is pruned and forgotten so a same-reference re-arrival re
 })
 
 test('emptying the map then refilling re-uploads everything (regionTooLarge toggle)', () => {
-  const sync = createRegionUploadSync<Data, ReturnType<typeof makeRenderingBackend>>()
+  const sync = createRegionUploadSync<
+    Data,
+    ReturnType<typeof makeRenderingBackend>
+  >()
   const b = makeRenderingBackend()
   const a = { v: 1 }
   const c = { v: 2 }
@@ -98,7 +113,10 @@ test('emptying the map then refilling re-uploads everything (regionTooLarge togg
 })
 
 test('a backend swap re-uploads everything even when references are unchanged', () => {
-  const sync = createRegionUploadSync<Data, ReturnType<typeof makeRenderingBackend>>()
+  const sync = createRegionUploadSync<
+    Data,
+    ReturnType<typeof makeRenderingBackend>
+  >()
   const a = makeRenderingBackend()
   const x = { v: 1 }
   const y = { v: 2 }

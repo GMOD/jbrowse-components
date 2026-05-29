@@ -4,7 +4,10 @@ import configSchema from './configSchema.ts'
 function makeAdapter(f: string) {
   return new PlinkLDAdapter(
     configSchema.create({
-      ldLocation: { localPath: require.resolve(f), locationType: 'LocalPathLocation' },
+      ldLocation: {
+        localPath: require.resolve(f),
+        locationType: 'LocalPathLocation',
+      },
     }),
   )
 }

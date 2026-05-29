@@ -1,3 +1,4 @@
+import { SAVE_TRACK_DATA_LABEL } from '@jbrowse/core/pluggableElementTypes/models'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -8,7 +9,6 @@ import LowPriorityIcon from '@mui/icons-material/LowPriority'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PushPinIcon from '@mui/icons-material/PushPin'
 
-import { SAVE_TRACK_DATA_LABEL } from '@jbrowse/core/pluggableElementTypes/models'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'

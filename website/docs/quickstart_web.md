@@ -177,8 +177,8 @@ for moderately diverged ones. See the
 Other supported synteny formats: `.delta` (MUMmer/NUCmer), `.chain` (UCSC),
 `.anchors` and `.anchors.simple` (MCScan), and `.out` (MashMap). Add them the
 same way — `jbrowse add-track alignment.delta --assemblyNames query,target ...`.
-For large alignments, convert to indexed PIF first with `jbrowse make-pif`
-(see the [synteny tutorial](/docs/tutorials/synteny_visualization)).
+For large alignments, convert to indexed PIF first with `jbrowse make-pif` (see
+the [synteny tutorial](/docs/tutorials/synteny_visualization)).
 
 ## Indexing feature names for searching
 

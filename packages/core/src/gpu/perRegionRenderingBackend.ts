@@ -47,7 +47,12 @@ export abstract class Canvas2DPerRegionRenderingBackend<
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> implements PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData> {
+> implements PerRegionRenderingBackend<
+  UploadData,
+  RenderState,
+  Block,
+  RenderData
+> {
   protected canvas: HTMLCanvasElement
   protected ctx: CanvasRenderingContext2D
 
@@ -83,7 +88,12 @@ export abstract class GpuPerRegionRenderingBackend<
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> implements PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData> {
+> implements PerRegionRenderingBackend<
+  UploadData,
+  RenderState,
+  Block,
+  RenderData
+> {
   protected hal: GpuHal
   protected uniformData: ArrayBuffer
 

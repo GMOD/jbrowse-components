@@ -6,6 +6,7 @@ import DiagonalizeDotplotRpc from './DiagonalizeDotplotRpc.ts'
 import { DotplotGetFeaturesAndPositions } from './DotplotDisplay/DotplotGetFeaturesAndPositions.ts'
 import DotplotDisplayF from './DotplotDisplay/index.ts'
 import DotplotReadVsRefMenuItem from './DotplotReadVsRef/index.ts'
+import installDotplotHighlights from './DotplotView/components/installDotplotHighlights.tsx'
 import DotplotViewF from './DotplotView/index.ts'
 import LaunchDotplotViewF from './LaunchDotplotView.ts'
 
@@ -13,6 +14,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export type { DotplotImportFormSyntenyOption } from './DotplotView/components/ImportForm/TrackSelector.tsx'
+export { default as DotplotHighlightBands } from './DotplotView/components/DotplotHighlightBands.tsx'
+export type {
+  DotplotViewModel,
+  DotplotViewStateModel,
+} from './DotplotView/model.ts'
 
 export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'
@@ -22,6 +28,7 @@ export default class DotplotPlugin extends Plugin {
     DotplotDisplayF(pluginManager)
     LaunchDotplotViewF(pluginManager)
     DotplotReadVsRefMenuItem(pluginManager)
+    installDotplotHighlights(pluginManager)
 
     pluginManager.addRpcMethod(() => new DiagonalizeDotplotRpc(pluginManager))
     pluginManager.addRpcMethod(

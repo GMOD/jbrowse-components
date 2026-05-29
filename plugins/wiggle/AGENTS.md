@@ -16,7 +16,8 @@ The wiggle display has three rendering backends that must stay synchronized:
    (`shaders/wiggle.slang`) is compiled to WGSL and GLSL ES 3.00 by
    `pnpm gen:shaders`; the result lives in `shaders/wiggle.generated.ts`.
 2. **Canvas 2D** fallback (`Canvas2DWiggleRenderer.ts`). Selected by
-   `WiggleRenderer.ts` via `createRenderingBackend` when no GPU context is available.
+   `WiggleRenderer.ts` via `createRenderingBackend` when no GPU context is
+   available.
 
 When changing rendering behavior (colors, whisker contrast, draw order, scale
 logic), apply the same change to the Slang shader and the Canvas 2D fallback,

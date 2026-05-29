@@ -19,8 +19,8 @@ once and have it target all three?
 - `canvasShaders.ts` (~355 lines) — WGSL shader source for WebGPU
 - `CanvasFeatureRenderer.ts` (~103 lines) — Orchestrator, tries WebGPU then
   WebGL2 then Canvas2D
-- All backends implement the `CanvasFeatureRenderingBackend` interface (`uploadRegion`,
-  `renderBlocks`, `pruneStaleRegions`, `dispose`)
+- All backends implement the `CanvasFeatureRenderingBackend` interface
+  (`uploadRegion`, `renderBlocks`, `pruneStaleRegions`, `dispose`)
 
 All backends draw the same 4 primitives: rectangles, lines, chevrons, arrows.
 All use the same high-precision (HP) coordinate splitting technique for
@@ -111,9 +111,9 @@ dimensions, min rect width, etc.). Extract these into a shared file. This:
 - Takes ~30 minutes, zero risk
 - Keeps backends free to optimize independently
 
-The current architecture (`CanvasFeatureRenderingBackend` interface with 3 independent
-implementations) is already the right pattern — it's the strategy pattern that
-PixiJS also uses at its highest level.
+The current architecture (`CanvasFeatureRenderingBackend` interface with 3
+independent implementations) is already the right pattern — it's the strategy
+pattern that PixiJS also uses at its highest level.
 
 ## Key Structural Differences Between RenderingBackends (why unification is hard)
 

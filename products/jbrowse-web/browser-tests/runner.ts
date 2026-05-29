@@ -499,7 +499,10 @@ async function main() {
       }
       console.log(`(backend: ${backend ?? 'default'})`)
 
-      const { passed, failed, failures } = await runWithRenderingBackend(suites, backend)
+      const { passed, failed, failures } = await runWithRenderingBackend(
+        suites,
+        backend,
+      )
       totalPassed += passed
       totalFailed += failed
       for (const f of failures) {
