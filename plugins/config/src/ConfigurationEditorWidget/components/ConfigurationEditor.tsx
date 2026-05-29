@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import {
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
@@ -13,6 +15,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   FormGroup,
+  TextField,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -39,7 +42,47 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     overflowX: 'auto',
   },
+  filter: {
+    margin: theme.spacing(1),
+  },
 }))
+
+// matches a slot or sub-schema against a lowercased filter string, recursing
+// into sub-schemas so a nested slot name keeps its ancestors visible
+function memberMatches(
+  slotName: string,
+  slotSchema: IAnyType,
+  slot: AnyConfigurationModel | AnyConfigurationModel[],
+  query: string,
+): boolean {
+  if (isConfigurationSlotType(slotSchema)) {
+    const { name, description } = slot as unknown as {
+      name?: string
+      description?: string
+    }
+    return (
+      slotName.toLowerCase().includes(query) ||
+      !!name?.toLowerCase().includes(query) ||
+      !!description?.toLowerCase().includes(query)
+    )
+  } else if (isConfigurationSchemaType(slotSchema)) {
+    return (
+      slotName.toLowerCase().includes(query) ||
+      (Array.isArray(slot)
+        ? slot.some(subslot => schemaMatches(subslot, query))
+        : schemaMatches(slot, query))
+    )
+  } else {
+    return false
+  }
+}
+
+function schemaMatches(schema: AnyConfigurationModel, query: string): boolean {
+  const { properties } = getMembers(schema)
+  return Object.entries(properties).some(([slotName, slotSchema]) =>
+    memberMatches(slotName, slotSchema, schema[slotName], query),
+  )
+}
 
 const Member = observer(function Member(props: {
   slotName: string
@@ -47,6 +90,7 @@ const Member = observer(function Member(props: {
   schema: AnyConfigurationModel
   slot?: AnyConfigurationModel | AnyConfigurationModel[]
   path?: string[]
+  filter?: string
 }) {
   const { classes } = useStyles()
   const {
@@ -55,7 +99,13 @@ const Member = observer(function Member(props: {
     schema,
     slot = schema[slotName],
     path = [],
+    filter = '',
   } = props
+  // when the sub-schema's own name matches, drop the filter for its children so
+  // the whole group stays visible; otherwise keep filtering descendants
+  const childFilter = slotName.toLowerCase().includes(filter.toLowerCase())
+    ? ''
+    : filter
   if (isConfigurationSchemaType(slotSchema)) {
     if (slot.length) {
       return slot.map((subslot: AnyConfigurationModel, slotIndex: number) => {
@@ -91,7 +141,11 @@ const Member = observer(function Member(props: {
             />
           ) : null}
           <FormGroup className={classes.noOverflow}>
-            <Schema schema={slot} path={[...path, slotName]} />
+            <Schema
+              schema={slot}
+              path={[...path, slotName]}
+              filter={childFilter}
+            />
           </FormGroup>
         </AccordionDetails>
       </Accordion>
@@ -106,22 +160,32 @@ const Member = observer(function Member(props: {
 const Schema = observer(function Schema({
   schema,
   path = [],
+  filter = '',
 }: {
   schema: AnyConfigurationModel
   path?: string[]
+  filter?: string
 }) {
+  const query = filter.toLowerCase()
   const properties = getMembers(schema).properties
   return (
     <>
-      {Object.entries(properties).map(([slotName, slotSchema]) => (
-        <Member
-          key={slotName}
-          slotName={slotName}
-          slotSchema={slotSchema}
-          path={path}
-          schema={schema}
-        />
-      ))}
+      {Object.entries(properties)
+        .filter(
+          ([slotName, slotSchema]) =>
+            !query ||
+            memberMatches(slotName, slotSchema, schema[slotName], query),
+        )
+        .map(([slotName, slotSchema]) => (
+          <Member
+            key={slotName}
+            slotName={slotName}
+            slotSchema={slotSchema}
+            path={path}
+            schema={schema}
+            filter={filter}
+          />
+        ))}
     </>
   )
 })
@@ -134,6 +198,7 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
   }
 }) {
   const { classes } = useStyles()
+  const [filter, setFilter] = useState('')
   // key forces a re-render, otherwise the same field can end up being used for
   // different tracks since only the backing model changes for example see pr
   // #804
@@ -156,7 +221,17 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
         className={classes.expansionPanelDetails}
         data-testid="configEditor"
       >
-        <Schema schema={target} />
+        <TextField
+          className={classes.filter}
+          label="Filter options"
+          value={filter}
+          onChange={evt => {
+            setFilter(evt.target.value)
+          }}
+          size="small"
+          fullWidth
+        />
+        <Schema schema={target} filter={filter} />
       </AccordionDetails>
     </Accordion>
   )

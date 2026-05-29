@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import ConfigurationEditor from './ConfigurationEditor.tsx'
 
@@ -89,6 +89,41 @@ test('renders all the different types of built-in slots', () => {
     </ThemeProvider>,
   )
   expect(container).toMatchSnapshot()
+})
+
+test('filters slots by name', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    fooColor: {
+      name: 'fooColor',
+      description: 'a color slot',
+      type: 'color',
+      defaultValue: '#396494',
+    },
+    barName: {
+      name: 'barName',
+      description: 'a string slot',
+      type: 'string',
+      defaultValue: 'hello',
+    },
+  })
+
+  const { getByLabelText, queryByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor
+        model={{ target: TestSchema.create(undefined, { pluginManager }) }}
+      />
+    </ThemeProvider>,
+  )
+
+  expect(queryByLabelText('fooColor')).toBeTruthy()
+  expect(queryByLabelText('barName')).toBeTruthy()
+
+  fireEvent.change(getByLabelText('Filter options'), {
+    target: { value: 'color' },
+  })
+
+  expect(queryByLabelText('fooColor')).toBeTruthy()
+  expect(queryByLabelText('barName')).toBeNull()
 })
 
 // Removed: PileupTrack schema test — Alignments plugin no longer registers
