@@ -66,13 +66,16 @@ const TrackContainer = observer(function TrackContainer({
     >
       {/* offset 1px since for left track border */}
       {track.pinned ? <Gridlines model={model} offset={1} /> : null}
-      {model.trackLabelsSetting !== 'hidden' ? (
-        <TrackLabel
-          track={track}
-          className={cx(classes.trackLabel, trackLabelStyle)}
-        />
-      ) : null}
+      {/* TrackLabel is inside the boundary because it reads the track config
+          (getTrackName), which lazily hydrates it — a broken config throws here
+          and would otherwise crash the whole app instead of this one track */}
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
+        {model.trackLabelsSetting !== 'hidden' ? (
+          <TrackLabel
+            track={track}
+            className={cx(classes.trackLabel, trackLabelStyle)}
+          />
+        ) : null}
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       <ResizeHandle

@@ -42,6 +42,27 @@ Hydration happens inside `TrackConfigurationReference.get()` via
   dropped naturally; the next access creates a fresh MST instance.
 - Tracks that are never opened are never hydrated.
 
+### Invalid configs (lazy hydration can throw)
+
+Because hydration is `schemaType.create(frozen)`, a structurally-invalid config
+(e.g. a bad enum value) throws the moment it's first read. That read can happen
+at several points, so each is handled rather than left to crash the app. Two
+strategies, picked by whether refusal is possible:
+
+- **Proactive (refuse + `notifyError`):** the user is opening/adding a track, so
+  it can be rejected before it enters the tree. `showTrackGeneric` (open) eagerly
+  validates before pushing; `SessionTracks.addTrackConf` (add/copy) catches the
+  typed-array push (the frozen `jbrowse.tracks` doesn't validate, but
+  `sessionTracks` does). Both surface a snackbar and add nothing.
+- **Tolerate (keep + show error):** the track is already in a snapshot and can't
+  be refused. `filterSessionInPlace` (session load) skips a property whose read
+  throws instead of crashing; the per-track `ErrorBoundary` renders the failed
+  track as an `ErrorBanner` in its own slot. `isTrackModel` swallows the throw
+  during parent traversal so `getContainingTrack` still works for such a track.
+
+`notifyError` is available to these paths because `SnackbarModel` is composed
+into `BaseSessionModel`.
+
 ### Reference resolution
 
 Track and display state models hold their config via `ConfigurationReference`.

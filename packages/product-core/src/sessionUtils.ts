@@ -58,7 +58,19 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   } else if (isModelType(type)) {
     const { properties } = getPropertyMembers(node)
     for (const [pname, ptype] of Object.entries(properties)) {
-      filterSessionInPlace(node[pname], ptype)
+      let child
+      try {
+        child = node[pname]
+      } catch (e) {
+        // Reading the property threw: e.g. a track's `configuration` reference
+        // resolves to a structurally-invalid config and fails to hydrate.
+        // Skip it rather than crashing session load — the broken track stays in
+        // the session and surfaces as an error in its own track slot (per-track
+        // ErrorBoundary) when rendered.
+        console.error(e)
+        continue
+      }
+      filterSessionInPlace(child, ptype)
     }
   }
 }

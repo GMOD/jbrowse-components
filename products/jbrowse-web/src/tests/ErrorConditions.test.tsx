@@ -3,6 +3,7 @@ import { isSessionWithAddTracks } from '@jbrowse/core/util'
 import { createViewNoWait, doBeforeEach, mockConsole } from './util.tsx'
 import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json' with { type: 'json' }
 import brokenTrackConfig from '../../test_data/volvox/config_broken.json' with { type: 'json' }
+import brokenOpenConfig from '../../test_data/volvox/config_broken_open.json' with { type: 'json' }
 import wrongAssemblyTest from '../../test_data/wrong_assembly.json' with { type: 'json' }
 
 const delay = { timeout: 30000 }
@@ -48,7 +49,10 @@ test('adding an invalid sessionTrack config surfaces a snackbar, not a crash', a
   await mockConsole(async () => {
     // adminMode false routes through the typed sessionTracks array, which
     // validates on push (this is the "Copy and open track" crash path)
-    const { session, findAllByText } = createViewNoWait(brokenTrackConfig, false)
+    const { session, findAllByText } = createViewNoWait(
+      brokenTrackConfig,
+      false,
+    )
     if (!isSessionWithAddTracks(session)) {
       throw new Error('session cannot add tracks')
     }
@@ -75,5 +79,15 @@ test('adding an invalid sessionTrack config surfaces a snackbar, not a crash', a
 
     expect(added).toBeUndefined()
     await findAllByText(/invalid configuration/, {}, delay)
+  })
+}, 30000)
+
+test('a broken track open at session restore shows an error, not a crash', async () => {
+  await mockConsole(async () => {
+    // the track is open at load; its config fails to hydrate when the label
+    // reads it during render. The per-track ErrorBoundary contains the failure
+    // to that track's slot instead of crashing the whole app.
+    const { findAllByText } = createViewNoWait(brokenOpenConfig)
+    await findAllByText(/NOTVALID/, {}, delay)
   })
 }, 30000)

@@ -504,14 +504,16 @@ export function showTrackGeneric(
 
   // Any failure here (unresolved id, unknown type, invalid config, no
   // compatible display) is surfaced as a snackbar instead of an uncaught
-  // throw, so a single broken track never crashes the app. This is the one
-  // choke point every "open a track" path funnels through, so catching here
-  // covers all callers (track selector, session menu, import forms, etc.).
+  // throw. This is the one choke point every "open a track" path funnels
+  // through, so catching here covers all callers (track selector, session
+  // menu, import forms, etc.).
   //
-  // The build must fully succeed *before* the track is pushed: once pushed,
-  // the display's afterAttach autoruns fire synchronously and a config error
-  // would throw inside a MobX reaction, which crashes rather than propagating
-  // back here. That is why the config is eagerly validated below.
+  // The config is eagerly validated (below) *before* the track is pushed, so a
+  // broken track is refused with a clear message up front rather than added and
+  // left to fail later when something reads its config. This mirrors
+  // SessionTracks.addTrackConf, the other proactive "refuse invalid config"
+  // path; tracks that slip in anyway (e.g. via a saved session) are tolerated
+  // and rendered as an error by the per-track ErrorBoundary.
   try {
     const rawConf = inlineConf ?? session.tracksById[trackId]
     if (!rawConf) {
