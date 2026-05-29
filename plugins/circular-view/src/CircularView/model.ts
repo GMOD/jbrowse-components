@@ -192,12 +192,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get pxPerRadian() {
-        return this.radiusPx
-      },
-      /**
-       * #getter
-       */
       get centerXY(): [number, number] {
         const c = this.radiusPx + self.paddingPx
         return [c, c]

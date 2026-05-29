@@ -57,13 +57,13 @@ function calculateStaticSlices(self: {
   elidedRegions: readonly SliceRegion[]
   bpPerRadian: number
   spacingPx: number
-  pxPerRadian: number
+  radiusPx: number
 }) {
   const slices = []
   let currentRadianOffset = 0
-  const { bpPerRadian, spacingPx, pxPerRadian } = self
+  const { bpPerRadian, spacingPx, radiusPx } = self
   for (const region of self.elidedRegions) {
-    const radianWidth = region.widthBp / bpPerRadian + spacingPx / pxPerRadian
+    const radianWidth = region.widthBp / bpPerRadian + spacingPx / radiusPx
     slices.push(new Slice(self, region, currentRadianOffset, radianWidth))
     currentRadianOffset += radianWidth
   }

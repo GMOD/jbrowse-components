@@ -1,7 +1,9 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
+
+import HatchCircle from './HatchCircle.tsx'
 
 const duration = 1.4
 
@@ -28,9 +30,6 @@ const useStyles = makeStyles()(() => ({
 
 const Loading = observer(function Loading({ radius }: { radius: number }) {
   const { classes } = useStyles()
-  const uid = useId()
-  // useId returns ':r0:' format; strip colons for valid SVG/CSS fragment identifiers
-  const patternId = `hatch${uid.replace(/:/g, '')}`
 
   // only show the loading message after 400ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
@@ -44,35 +43,12 @@ const Loading = observer(function Loading({ radius }: { radius: number }) {
   }, [])
 
   return !shown ? null : (
-    <g>
-      <defs>
-        <pattern
-          id={patternId}
-          width="10"
-          height="10"
-          patternTransform="rotate(45 0 0)"
-          patternUnits="userSpaceOnUse"
-        >
-          <line
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="10"
-            style={{ stroke: 'rgba(255,255,255,0.5)', strokeWidth: 10 }}
-          />
-        </pattern>
-      </defs>
-      <circle cx="0" cy="0" r={radius} fill="#f1f1f1" />
-      <circle cx="0" cy="0" r={radius} fill={`url(#${patternId})`} />
-      <text
-        x="0"
-        y="0"
-        transform="rotate(90 0 0)"
-        dominantBaseline="middle"
-        textAnchor="middle"
-      >
-        Loading&hellip;
-      </text>
+    <HatchCircle
+      radius={radius}
+      fill="#f1f1f1"
+      hatchColor="rgba(255,255,255,0.5)"
+      text="Loading…"
+    >
       <circle
         className={classes.path}
         fill="none"
@@ -82,7 +58,7 @@ const Loading = observer(function Loading({ radius }: { radius: number }) {
         cy="0"
         r="60"
       />
-    </g>
+    </HatchCircle>
   )
 })
 

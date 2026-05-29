@@ -133,8 +133,8 @@ export function viewportVisibleSection(
   }
 
   // when the viewport is entirely to the right of the circle center (viewL >= 0),
-  // mirror x through the origin so angles stay in [0, π]; we undo this below
-  // by adding π back to thetaMin/thetaMax after the loop
+  // rotate 180° (negate both x and y) to shift angles away from the 0/2π
+  // wraparound boundary; we undo the shift below by adding π to thetaMin/thetaMax
   const reflect = viewL >= 0 ? -1 : 1
   let rhoMin = Number.POSITIVE_INFINITY
   let rhoMax = Number.NEGATIVE_INFINITY
