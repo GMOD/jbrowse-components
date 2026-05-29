@@ -103,6 +103,38 @@ ConfigurationSchema('MyDisplay', {
 `baseTrackConfig.ts` `preProcessSnapshot` promotes old renderer → display-level
 properties. Old configs work without migration.
 
+**Type-changed slots need converting, not just lifting.** When a slot's type
+changes (e.g. `showLabels` went from `boolean` to a `stringEnum` of
+`auto`/`on`/`off`), `preProcessSnapshot` must convert the old value, otherwise
+the lifted/legacy value fails schema validation. Keep the conversion + the enum
+values + the type in one module so the schema, the model getter, the menu, and
+the snapshot migration can't drift — see
+`plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts` (`SHOW_LABELS_MODES`,
+`ShowLabelsMode`, `legacyShowLabelsToMode`), consumed by `baseConfigSchema.ts`'s
+renderer-lift, `migrateBasicSnapshot.ts`, and `baseModel.ts`.
+
+**Every config schema must be `explicitlyTyped`** (gives it a
+`type: types.optional(types.literal(name), name)` discriminator). The track /
+display / adapter unions (`pluginManager.pluggableConfigSchemaType`) are plain
+`types.union(...)` with no dispatcher, so MST relies on that literal `type` to
+pick the member. Without it — or when a member's value is wrong — a single bad
+field made MST report *every* member's full structure ("No type is applicable
+for the union", dozens of lines).
+
+`@jbrowse/mobx-state-tree@5.10.0` fixes that wall: it scopes the validation
+error to the single member whose literal `type` matches the snapshot. The
+scoping drills through the wrapper layers `ConfigurationSchema()` builds —
+`ConfigurationSchema()` returns `optional(model)` (this fork bakes
+`pre`/`postProcessSnapshot` into the `ModelType` itself, so members are
+`optional(model)`, not `optional(snapshotProcessor(model))`); the unwrapper also
+handles `snapshotProcessor()`/`refinement()`/`late()` for non-config unions.
+
+If you still see the wall, the offending member either isn't `explicitlyTyped`,
+its `type` literal doesn't match the snapshot, or the union mixes in an untagged
+catch-all member (one whose `type` is a plain string rather than a literal) — in
+that case MST can't prove the discriminator match is unique and falls back to
+validating every member.
+
 ## Runtime overrides (`ConfigOverrideMixin`)
 
 `ConfigOverrideMixin` (`plugins/linear-genome-view/src/BaseLinearDisplay/

@@ -7,7 +7,9 @@
     "index": "astro build && pagefind --site dist --output-path public/pagefind",
     "preview": "astro preview",
     "lint-docs": "node --experimental-strip-types scripts/generate-guide-indexes.ts",
-    "lint-docs-check": "node --experimental-strip-types scripts/generate-guide-indexes.ts --check"
+    "lint-docs-check": "node --experimental-strip-types scripts/generate-guide-indexes.ts --check",
+    "generate-screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
+    "review-screenshots": "node --experimental-strip-types scripts/review-screenshots.ts"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.5",

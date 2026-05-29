@@ -175,7 +175,7 @@
     "@gmod/bgzf-filehandle": "^6.0.27",
     "@gmod/http-range-fetcher": "^5.0.7",
     "@jbrowse/jexl": "^3.0.2",
-    "@jbrowse/mobx-state-tree": "^5.9.3",
+    "@jbrowse/mobx-state-tree": "^5.10.0",
     "@jbrowse/quick-lru": "^7.3.5",
     "@leeoniya/ufuzzy": "^1.0.19",
     "@mui/icons-material": "^9.0.1",
