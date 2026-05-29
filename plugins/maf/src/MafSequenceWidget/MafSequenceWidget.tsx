@@ -72,6 +72,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
     true,
   )
   const [rawSequences, setRawSequences] = useState<string[]>([])
+  const [colToGenomePos, setColToGenomePos] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
 
@@ -94,9 +95,10 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
         includeInsertions,
         regions,
       })
-      .then(fastaSequence => {
+      .then(({ rows, colToGenomePos }) => {
         if (active.current) {
-          setRawSequences(fastaSequence)
+          setRawSequences(rows)
+          setColToGenomePos(colToGenomePos)
           setLoading(false)
         }
       })
@@ -262,6 +264,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
             <SequenceDisplay
               model={model}
               sequences={rawSequences}
+              colToGenomePos={colToGenomePos}
               colorBackground={colorBackground}
               showSampleNames={showSampleNames}
             />

@@ -21,7 +21,18 @@ const decoder = new TextDecoder()
  * Hot loop: char-codes + ASCII bit math (`code | 0x20` to compare in
  * lowercase) — same trick the renderers use. Per-row output is a Uint8Array
  * decoded once at the end rather than a string[] joined per cell.
+ *
+ * Also returns `colToGenomePos`: the authoritative display-column → genomic
+ * position mapping (`-1` for inserted columns that have no reference base).
+ * Rows are laid out in reference-coordinate space here, so this is derived
+ * structurally — the consuming widget never has to guess which row is the
+ * reference (it may not even be among `samples`).
  */
+export interface FastaResult {
+  rows: string[]
+  colToGenomePos: number[]
+}
+
 export function processFeaturesToFasta({
   regions,
   showAllLetters,
@@ -34,7 +45,7 @@ export function processFeaturesToFasta({
   showAllLetters?: boolean
   includeInsertions?: boolean
   features: Map<string, Feature>
-}) {
+}): FastaResult {
   const region = regions[0]!
   const sampleToRowMap = new Map(samples.map((s, i) => [s.id, i]))
   const rlen = region.end - region.start
@@ -110,10 +121,13 @@ export function processFeaturesToFasta({
       outputRowsBytes,
       insertionsAtPosition,
       samples.length,
+      region.start,
+      rlen,
     )
   }
 
-  return outputRowsBytes.map(arr => decoder.decode(arr))
+  const colToGenomePos = Array.from({ length: rlen }, (_, i) => region.start + i)
+  return { rows: outputRowsBytes.map(arr => decoder.decode(arr)), colToGenomePos }
 }
 
 /**
@@ -121,12 +135,17 @@ export function processFeaturesToFasta({
  * row gains `maxLen` characters (the sample's own insertion padded with `-`,
  * or all `-` for samples without one). Walks each row once in order rather
  * than repeatedly splicing — splice-in-loop was O(n²) per row.
+ *
+ * Builds `colToGenomePos` once from the same insertion structure: real columns
+ * map to `regionStart + offset`, inserted columns to `-1`.
  */
 function expandWithInsertions(
   outputRowsBytes: Uint8Array[],
   insertionsAtPosition: Map<number, InsertionInfo[]>,
   numSamples: number,
-) {
+  regionStart: number,
+  rlen: number,
+): FastaResult {
   const sortedPositions = [...insertionsAtPosition.keys()].sort((a, b) => a - b)
   const maxLenByPos = new Map<number, number>()
   const insBySampleAndPos: Map<number, string>[] = []
@@ -144,7 +163,22 @@ function expandWithInsertions(
     maxLenByPos.set(pos, maxLen)
   }
 
-  const result: string[] = []
+  const colToGenomePos: number[] = []
+  let lastCol = 0
+  for (const pos of sortedPositions) {
+    for (let j = lastCol; j < pos; j++) {
+      colToGenomePos.push(regionStart + j)
+    }
+    for (let k = 0; k < maxLenByPos.get(pos)!; k++) {
+      colToGenomePos.push(-1)
+    }
+    lastCol = pos
+  }
+  for (let j = lastCol; j < rlen; j++) {
+    colToGenomePos.push(regionStart + j)
+  }
+
+  const rows: string[] = []
   for (let s = 0; s < numSamples; s++) {
     const rowStr = decoder.decode(outputRowsBytes[s])
     const myIns = insBySampleAndPos[s]!
@@ -162,7 +196,7 @@ function expandWithInsertions(
     if (lastI < rowStr.length) {
       out.push(rowStr.slice(lastI))
     }
-    result.push(out.join(''))
+    rows.push(out.join(''))
   }
-  return result
+  return { rows, colToGenomePos }
 }

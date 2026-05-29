@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -6,7 +6,6 @@ import { observer } from 'mobx-react'
 import LabelsCanvas from './LabelsCanvas.tsx'
 import SequenceCanvas from './SequenceCanvas.tsx'
 import SequenceTooltip from './SequenceTooltip.tsx'
-import { buildColToGenomePos, findRefSampleIndex } from './colToGenomePos.ts'
 import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
@@ -55,6 +54,10 @@ const useStyles = makeStyles()(theme => ({
 interface SequenceDisplayProps {
   model: MafSequenceWidgetModel
   sequences: string[]
+  // Display-column → genomic position from the worker; `-1` marks inserted
+  // columns that have no reference base. Authoritative, so the widget never
+  // guesses which row is the reference.
+  colToGenomePos: number[]
   colorBackground: boolean
   showSampleNames: boolean
 }
@@ -62,6 +65,7 @@ interface SequenceDisplayProps {
 const SequenceDisplay = observer(function SequenceDisplay({
   model,
   sequences,
+  colToGenomePos,
   colorBackground,
   showSampleNames,
 }: SequenceDisplayProps) {
@@ -81,20 +85,6 @@ const SequenceDisplay = observer(function SequenceDisplay({
   const seqLength = sequences[0]?.length ?? 0
   const totalSeqWidth = seqLength * CHAR_WIDTH
   const totalHeight = samples ? samples.length * ROW_HEIGHT : 0
-
-  const colToGenomePos = useMemo(() => {
-    if (!regions) {
-      return []
-    }
-    const region = regions[0]
-    if (!region) {
-      return []
-    }
-
-    const refIdx = findRefSampleIndex(samples, region.assemblyName)
-    const refSequence = sequences[refIdx] || ''
-    return buildColToGenomePos(refSequence, region.start)
-  }, [sequences, regions, samples])
 
   useEffect(() => {
     const seqWrapper = seqWrapperRef.current
@@ -163,7 +153,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
       if (col !== undefined) {
         const genomicPos = colToGenomePos[col]
         const region = regions[0]
-        if (genomicPos !== undefined && region) {
+        if (genomicPos !== undefined && genomicPos >= 0 && region) {
           model.setHoverHighlight({
             refName: region.refName,
             start: genomicPos,
@@ -197,8 +187,11 @@ const SequenceDisplay = observer(function SequenceDisplay({
     hoveredRow !== undefined && hoveredCol !== undefined
       ? sequences[hoveredRow]?.[hoveredCol]
       : undefined
-  const genomicPos =
+  const rawPos =
     hoveredCol !== undefined ? colToGenomePos[hoveredCol] : undefined
+  // `-1` sentinel (inserted column with no reference base) → undefined, which
+  // SequenceTooltip renders as "Insertion (not in reference)".
+  const genomicPos = rawPos !== undefined && rawPos >= 0 ? rawPos : undefined
 
   return (
     <div className={classes.container}>

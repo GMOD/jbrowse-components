@@ -4,6 +4,7 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
+import type { FastaResult } from '../util/processFeaturesToFasta.ts'
 import type { Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -14,7 +15,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MafGetSequences: {
       args: MafGetSequencesArgs
-      return: string[]
+      return: FastaResult
     }
   }
 }
@@ -35,7 +36,7 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
   async execute(
     args: MafGetSequencesArgs,
     rpcDriverClassName: string,
-  ): Promise<string[]> {
+  ): Promise<FastaResult> {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

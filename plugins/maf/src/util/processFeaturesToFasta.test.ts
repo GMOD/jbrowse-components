@@ -44,6 +44,9 @@ test('no showAllLetters', () => {
       },
     ],
   })
+  // No insertions: every display column is a reference position, regardless of
+  // which sample is the reference.
+  expect(result.colToGenomePos).toEqual([100, 101, 102, 103, 104])
   expect(result).toMatchSnapshot()
 })
 
@@ -294,8 +297,8 @@ test('includeInsertions=false ignores insertions', () => {
     ],
   })
   // Without insertions, both should be 6 characters (no expansion)
-  expect(result[0]).toHaveLength(6)
-  expect(result[1]).toHaveLength(6)
+  expect(result.rows[0]).toHaveLength(6)
+  expect(result.rows[1]).toHaveLength(6)
   expect(result).toMatchSnapshot()
 })
 
@@ -384,10 +387,10 @@ test('includeInsertions - insertion only in non-visible sample should not add ga
   // Since neither visible sample has an actual insertion (both have only gaps
   // at the insertion position), no insertion columns should be added.
   // The output should be 6 characters (the reference length), not 8.
-  expect(result[0]).toBe('acgtac')
-  expect(result[1]).toBe('acgtac')
-  expect(result[0]).toHaveLength(6)
-  expect(result[1]).toHaveLength(6)
+  expect(result.rows[0]).toBe('acgtac')
+  expect(result.rows[1]).toBe('acgtac')
+  expect(result.rows[0]).toHaveLength(6)
+  expect(result.rows[1]).toHaveLength(6)
 })
 
 test('includeInsertions - mixed visible/non-visible insertions', () => {
@@ -450,8 +453,11 @@ test('includeInsertions - mixed visible/non-visible insertions', () => {
   // (not 3, because assembly3's insertion should be ignored)
   // assembly1: act-gtac -> with insertion expanded: actgtac (7 chars)
   // assembly2: ac--gtac -> with insertion expanded: ac-gtac (7 chars)
-  expect(result[0]).toBe('actgtac')
-  expect(result[1]).toBe('ac-gtac')
-  expect(result[0]).toHaveLength(7)
-  expect(result[1]).toHaveLength(7)
+  expect(result.rows[0]).toBe('actgtac')
+  expect(result.rows[1]).toBe('ac-gtac')
+  expect(result.rows[0]).toHaveLength(7)
+  expect(result.rows[1]).toHaveLength(7)
+  // The inserted column (display col 2, the `t`) has no reference base → -1;
+  // every other column maps to its reference position.
+  expect(result.colToGenomePos).toEqual([100, 101, -1, 102, 103, 104, 105])
 })
