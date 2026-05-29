@@ -963,15 +963,15 @@ importers:
 
   plugins/circular-view:
     dependencies:
-      '@gmod/vcf':
-        specifier: ^7.0.8
-        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.10.2
         version: 5.10.2(mobx@6.15.4)
+      '@jbrowse/sv-core':
+        specifier: workspace:^
+        version: link:../../packages/sv-core
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
@@ -1126,6 +1126,9 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../linear-genome-view
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
@@ -1225,6 +1228,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^5.10.2
         version: 5.10.2(mobx@6.15.4)
+      '@jbrowse/plugin-dotplot-view':
+        specifier: workspace:^
+        version: link:../dotplot-view
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view

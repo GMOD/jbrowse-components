@@ -30,8 +30,8 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/vcf": "^7.0.8",
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/sv-core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.10.2",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",

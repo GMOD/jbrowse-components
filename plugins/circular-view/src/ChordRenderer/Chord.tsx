@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-import { parseBreakend } from '@gmod/vcf'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
+import { parseSvAlt } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import type { Block } from './types.ts'
@@ -21,17 +21,12 @@ function getEndpoint(
   startBlock: Block,
 ) {
   const alt = feature.get('ALT')?.[0]
-  const bnd = alt && parseBreakend(alt)
   const mate = feature.get('mate')
-  if (bnd) {
-    const [chr, pos] = bnd.MatePosition.split(':')
-    return { endBlock: blocksForRefs[chr], endPosition: +pos }
-  } else if (alt === '<TRA>') {
-    const chr2 = feature.get('INFO')?.CHR2?.[0]
-    const end = feature.get('INFO')?.END?.[0]
+  const parsed = parseSvAlt(feature, alt)
+  if (parsed) {
     return {
-      endBlock: blocksForRefs[chr2],
-      endPosition: Number.parseInt(end, 10),
+      endBlock: blocksForRefs[parsed.mateRefName],
+      endPosition: parsed.matePos,
     }
   } else if (mate) {
     return { endBlock: blocksForRefs[mate.refName], endPosition: mate.start }
