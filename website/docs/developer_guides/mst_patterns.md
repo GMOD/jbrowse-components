@@ -1,6 +1,5 @@
 ---
 title: MST patterns
-id: mst_patterns
 description: Common MobX-State-Tree patterns used across JBrowse plugins
 guide_category: Core concepts
 ---

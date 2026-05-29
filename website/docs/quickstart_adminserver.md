@@ -1,5 +1,4 @@
 ---
-id: quickstart_adminserver
 title: Admin server GUI (experimental)
 ---
 

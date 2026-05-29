@@ -1,6 +1,5 @@
 ---
 title: Theming
-id: theming
 description: Customizing JBrowse colors and theme via config
 guide_category: Getting started
 ---

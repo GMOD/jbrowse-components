@@ -1,5 +1,4 @@
 ---
-id: customizing_feature_colors
 title: Customizing feature colors with callbacks and plugins
 description: Per-feature color callbacks using jexl or plugin code
 guide_category: Callbacks and customization

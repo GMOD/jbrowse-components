@@ -1,7 +1,5 @@
 ---
-id: developer_guide
 title: Developer guide
-toplevel: true
 ---
 
 This guide covers how JBrowse 2 code is packaged and structured, and how to
@@ -20,8 +18,8 @@ app, an electron app, a CLI app, etc). `jbrowse-web`, `jbrowse-desktop`, and
 
 A "plugin" is a package of functionality that is designed to "plug in" to a
 product **at runtime** to add functionality. These can be written and published
-by anyone, not just the JBrowse core team. Most products load plugins at
-runtime, though it isn't required.
+by anyone, not just the JBrowse core team. Most products load plugins at runtime, though it
+isn't required.
 
 <Figure src="/img/product_architecture.png" caption="This figure summarizes the general architecture of our state model and React component tree"/>
 
@@ -71,7 +69,7 @@ own via pull request.
 
 ### Core concepts
 
-- [Configuration model basics](/docs/developer_guides/config_model) - Getting started with configuration schemas, slots, and defaults
+- [Configuration model basics](/docs/developer_guides/config_model) - Config slot types, defaults, and how configuration schemas work
 - [Configuration schema](/docs/developer_guides/configuration_schema) - Slot types, inheritance, preProcessSnapshot, and reading config values
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - How BaseLinearDisplay fetches data, the autorun chain, and rpcProps
 - [Extension points](/docs/developer_guides/extension_points) - Callbacks registered by producers and consumed across the app

@@ -1,6 +1,5 @@
 ---
 title: Creating a GPU-accelerated display
-id: creating_gpu_display
 description: Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
 guide_category: Creating pluggable elements
 ---

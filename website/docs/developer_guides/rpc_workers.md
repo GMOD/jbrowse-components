@@ -1,6 +1,5 @@
 ---
 title: RPC and worker system
-id: rpc_workers
 description: How to register and call RPC methods that run in web workers
 guide_category: Core concepts
 ---

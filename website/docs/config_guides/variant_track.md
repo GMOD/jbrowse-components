@@ -1,5 +1,4 @@
 ---
-id: variant_track
 title: Variant track configuration
 description: VCF variant track config and breakpoint split view options
 guide_category: Track types

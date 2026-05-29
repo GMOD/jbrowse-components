@@ -1,5 +1,4 @@
 ---
-id: hic_track
 title: Hi-C track
 description: Contact matrix display
 guide_category: Track types

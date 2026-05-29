@@ -1,7 +1,5 @@
 ---
-id: config_guide
 title: Config guide
-toplevel: true
 ---
 
 This guide covers the structure and usage of the `config.json` file that drives

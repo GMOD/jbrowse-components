@@ -1,6 +1,4 @@
 ---
-id: user_guide
-toplevel: true
 title: User guide
 ---
 
@@ -36,6 +34,7 @@ title: User guide
 
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
 - [DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate methylation from ONT and modkit
+- [RNA-seq analysis](/docs/tutorials/rnaseq) - Understand what RNA-seq looks like in the genome browser, from spliced reads to splice arcs
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) - Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
 - [Synteny visualization and genome alignment](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views

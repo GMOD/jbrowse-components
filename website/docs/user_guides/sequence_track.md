@@ -1,5 +1,4 @@
 ---
-id: sequence_track
 title: Sequence track
 description: Reference sequence display
 guide_category: Track types

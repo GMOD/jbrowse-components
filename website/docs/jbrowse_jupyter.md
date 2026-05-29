@@ -1,5 +1,4 @@
 ---
-id: jbrowse_jupyter
 title: JBrowse Jupyter
 ---
 

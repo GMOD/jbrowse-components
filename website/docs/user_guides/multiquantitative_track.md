@@ -1,5 +1,4 @@
 ---
-id: multiquantitative_track
 title: Multi-quantitative tracks
 description: Multiple signal tracks displayed together
 guide_category: Track types

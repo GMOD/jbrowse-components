@@ -1,5 +1,4 @@
 ---
-id: sv_visualization
 title: Structural variant visualization
 description: Interpreting SV signals across display types
 guide_category: Views

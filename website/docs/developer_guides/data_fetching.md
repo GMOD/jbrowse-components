@@ -1,6 +1,5 @@
 ---
 title: Data fetching pipeline
-id: data_fetching
 description: How BaseLinearDisplay fetches data, the autorun chain, and rpcProps
 guide_category: Core concepts
 ---

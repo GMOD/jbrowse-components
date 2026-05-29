@@ -9,12 +9,9 @@ const docsSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   draft: z.boolean().default(false),
-  // Docusaurus-specific fields, kept for compatibility
-  id: z.string().optional(),
-  slug: z.string().optional(),
   sidebar_label: z.string().optional(),
-  toplevel: z.boolean().optional(),
-  redirect: z.string().optional(),
+  // introduction.md uses `slug: /` so the glob loader keys it at the docs root
+  slug: z.string().optional(),
 })
 
 /**

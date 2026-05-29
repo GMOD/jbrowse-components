@@ -1,5 +1,4 @@
 ---
-id: creating_adapter
 title: Creating custom adapters
 description:
   Read data from custom file formats with feature, regions, or sequence adapters

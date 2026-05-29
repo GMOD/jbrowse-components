@@ -1,5 +1,4 @@
 ---
-id: assemblies
 title: Configuring assemblies
 description:
   Setting up reference genomes with sequence adapters and refname aliases

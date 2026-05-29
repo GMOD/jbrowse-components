@@ -1,5 +1,4 @@
 ---
-id: multiquantitative_track
 title: Multi-quantitative tracks
 description: Multiple BigWig/BedGraph signals combined into one display
 guide_category: Track types

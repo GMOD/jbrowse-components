@@ -1,6 +1,5 @@
 ---
 title: PAG 33 (2026) JBrowse setup and exploration
-id: pag2026_setup_and_exploration
 ---
 
 ## Introduction

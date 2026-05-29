@@ -1,5 +1,4 @@
 ---
-id: sv_visualization_cgiab
 title: Cancer SVs (C-GIAB)
 description:
   Load and inspect structural variants from real cancer sequencing data

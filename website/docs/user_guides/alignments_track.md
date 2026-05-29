@@ -1,5 +1,4 @@
 ---
-id: alignments_track
 title: Alignments track
 description: Learn how to show BAM and CRAM files
 guide_category: Track types

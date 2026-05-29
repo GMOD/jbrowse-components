@@ -1,5 +1,4 @@
 ---
-id: track_selector
 title: Hierarchical track selector
 description: Track grouping and display options for the hierarchical selector
 guide_category: Other features

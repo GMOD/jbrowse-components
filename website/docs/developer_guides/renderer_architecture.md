@@ -1,5 +1,4 @@
 ---
-id: renderer_architecture
 title: Renderer architecture
 description: GPU main-thread rendering and the legacy worker-renderer path
 guide_category: Core concepts

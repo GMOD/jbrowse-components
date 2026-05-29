@@ -1,7 +1,5 @@
 ---
-id: quickstart_desktop
 title: JBrowse desktop quick start
-toplevel: true
 ---
 
 In this guide, we'll get the JBrowse desktop application running on your

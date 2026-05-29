@@ -1,5 +1,4 @@
 ---
-id: config_model
 title: Configuration model basics
 description: Config slot types, defaults, and how configuration schemas work
 guide_category: Core concepts

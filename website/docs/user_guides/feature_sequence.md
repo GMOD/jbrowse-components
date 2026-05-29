@@ -1,5 +1,4 @@
 ---
-id: feature_sequence
 title: Feature sequence panel
 description: Sequence extraction for selected features
 guide_category: Track types

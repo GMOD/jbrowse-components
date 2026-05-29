@@ -1,5 +1,4 @@
 ---
-id: rnaseq
 title: RNA-seq analysis
 description: Understand what RNA-seq looks like in the genome browser, from spliced reads to splice arcs
 guide_category: Tutorials

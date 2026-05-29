@@ -1,5 +1,4 @@
 ---
-id: tracks
 title: Configuring tracks
 description: Configuration options common to all track types
 guide_category: Core configuration

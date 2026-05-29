@@ -1,5 +1,4 @@
 ---
-id: bookmark_widget
 title: Bookmark widget
 description: Saving and sharing genomic locations
 guide_category: Other features

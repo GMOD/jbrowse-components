@@ -1,5 +1,4 @@
 ---
-id: intro
 title: Intro to the config.json format
 description: Overall structure and key fields of the config.json file
 guide_category: Getting started

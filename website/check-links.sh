@@ -38,34 +38,6 @@ fi
 
 echo ""
 
-# Check for filename/ID mismatches (basic check)
-echo "Checking for filename/ID mismatches..."
-MISMATCHES=$(find "$DOCS_DIR" -maxdepth 2 -name "*.md" -type f ! -path "*/node_modules/*" ! -path "*/config/*" ! -path "*/models/*" -exec sh -c '
-  f="$1"
-  filename=$(basename "$f" .md)
-  docid=$(grep "^id:" "$f" 2>/dev/null | head -1 | sed "s/^id: //" | tr -d " ")
-  if [ -n "$docid" ] && [ "$filename" != "$docid" ]; then
-    echo "$f"
-  fi
-' _ {} \; | wc -l)
-
-if [ "$MISMATCHES" -gt 0 ]; then
-  echo "❌ Found $MISMATCHES filename/ID mismatches:"
-  find "$DOCS_DIR" -maxdepth 2 -name "*.md" -type f ! -path "*/node_modules/*" ! -path "*/config/*" ! -path "*/models/*" -exec sh -c '
-    f="$1"
-    filename=$(basename "$f" .md)
-    docid=$(grep "^id:" "$f" 2>/dev/null | head -1 | sed "s/^id: //" | tr -d " ")
-    if [ -n "$docid" ] && [ "$filename" != "$docid" ]; then
-      echo "  - $f: filename=$filename, id=$docid"
-    fi
-  ' _ {} \;
-  ISSUES=$((ISSUES + 1))
-else
-  echo "✓ All filenames match their doc IDs"
-fi
-
-echo ""
-
 if [ "$ISSUES" -gt 0 ]; then
   echo "❌ Found $ISSUES issue(s). Please fix before committing."
   echo ""

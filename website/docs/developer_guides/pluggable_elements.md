@@ -1,5 +1,4 @@
 ---
-id: pluggable_elements
 title: Pluggable elements
 description: Overview of all element types a plugin can register
 guide_category: Getting started

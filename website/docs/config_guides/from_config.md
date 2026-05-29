@@ -1,5 +1,4 @@
 ---
-id: from_config
 title: FromConfig adapters
 description:
   Inline data adapters for embedding small datasets directly in config

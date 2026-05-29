@@ -1,5 +1,4 @@
 ---
-id: multivariant_track
 title: Multi-sample variant displays
 description: Population-level variant views
 guide_category: Track types

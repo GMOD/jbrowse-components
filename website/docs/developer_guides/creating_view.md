@@ -1,5 +1,4 @@
 ---
-id: creating_view
 title: Creating custom view types
 description: Add entirely new view panels such as DotplotView or CircularView
 guide_category: Creating pluggable elements

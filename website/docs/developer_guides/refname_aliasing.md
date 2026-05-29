@@ -1,5 +1,4 @@
 ---
-id: refname_aliasing
 title: RefName aliasing
 description:
   Map between chromosome naming conventions across tracks and assemblies

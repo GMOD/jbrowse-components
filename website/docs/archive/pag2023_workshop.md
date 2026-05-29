@@ -1,5 +1,4 @@
 ---
-id: pag2023_workshop
 title: PAG2023 Workshop
 ---
 

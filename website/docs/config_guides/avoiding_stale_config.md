@@ -1,5 +1,4 @@
 ---
-id: avoiding_stale_config
 title: Avoiding stale config
 description:
   Cache-busting strategies for servers that aggressively cache config.json

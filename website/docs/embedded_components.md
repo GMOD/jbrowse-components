@@ -1,7 +1,5 @@
 ---
-id: embedded_components
 title: Embedded components
-toplevel: true
 ---
 
 JBrowse's embedded components let you add genome browsing to any webpage.

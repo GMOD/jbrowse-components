@@ -1,7 +1,5 @@
 ---
-id: faq
 title: FAQ
-toplevel: true
 ---
 
 ## Developers

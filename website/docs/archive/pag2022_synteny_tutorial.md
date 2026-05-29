@@ -1,5 +1,4 @@
 ---
-id: pag2022_synteny_tutorial
 title: PAG2022 - Synteny visualization using JBrowse Desktop
 ---
 

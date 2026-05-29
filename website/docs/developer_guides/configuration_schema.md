@@ -1,6 +1,5 @@
 ---
 title: Configuration schema
-id: configuration_schema
 description: Slot types, inheritance, preProcessSnapshot, and reading config values
 guide_category: Core concepts
 ---

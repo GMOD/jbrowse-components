@@ -1,5 +1,4 @@
 ---
-id: linear_synteny_view
 title: Linear synteny view
 description: Side-by-side alignment of two genomes
 guide_category: Views

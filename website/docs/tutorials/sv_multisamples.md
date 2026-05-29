@@ -1,5 +1,4 @@
 ---
-id: sv_multisamples
 title: Multi-sample SVs (1000 Genomes)
 description:
   Inspect population-level SVs, explore a family trio, and characterize a large

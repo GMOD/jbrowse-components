@@ -1,7 +1,5 @@
 ---
-id: no_build_plugin
 title: Writing a no-build plugin
-toplevel: true
 description:
   Plugin without a build step, useful for jexl callbacks and simple
   modifications

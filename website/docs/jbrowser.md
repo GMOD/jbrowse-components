@@ -1,6 +1,5 @@
 ---
 title: JBrowseR
-id: jbrowser
 ---
 
 JBrowseR is an R htmlwidget for embedding JBrowse 2 in Shiny apps and R

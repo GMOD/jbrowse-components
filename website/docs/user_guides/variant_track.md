@@ -1,5 +1,4 @@
 ---
-id: variant_track
 title: Variant tracks
 description: VCF variant display
 guide_category: Track types

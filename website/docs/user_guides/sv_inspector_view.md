@@ -1,5 +1,4 @@
 ---
-id: sv_inspector_view
 title: SV inspector view
 description: Structural variant spreadsheet and circular view
 guide_category: Views

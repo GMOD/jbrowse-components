@@ -1,7 +1,5 @@
 ---
-id: quickstart_web
 title: JBrowse web setup using the CLI
-toplevel: true
 ---
 
 ## TLDR

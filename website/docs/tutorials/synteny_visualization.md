@@ -1,5 +1,4 @@
 ---
-id: synteny_visualization
 title: Synteny visualization and genome alignment
 description: Compare genome assemblies using dotplot and linear synteny views
 guide_category: Tutorials

@@ -1,5 +1,4 @@
 ---
-id: dotplot_view
 title: Dotplot view
 description: Whole-genome synteny dotplot
 guide_category: Views

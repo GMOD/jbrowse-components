@@ -1,5 +1,4 @@
 ---
-id: disable_analytics
 title: Disabling analytics
 description: Opt out of usage analytics
 guide_category: Other features

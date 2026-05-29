@@ -1,5 +1,4 @@
 ---
-id: connections
 title: Connections
 description: UCSC track hubs and JBrowse 1 data directories
 guide_category: General usage

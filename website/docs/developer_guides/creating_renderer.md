@@ -1,5 +1,4 @@
 ---
-id: creating_renderer
 title: Creating custom renderers
 description: Write canvas- or SVG-based feature rendering in a web worker
 guide_category: Creating pluggable elements

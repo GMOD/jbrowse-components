@@ -1,5 +1,4 @@
 ---
-id: text_searching
 title: Text searching
 description: Per-track and aggregate full-text search indexes
 guide_category: Other features

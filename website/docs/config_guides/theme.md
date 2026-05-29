@@ -1,5 +1,4 @@
 ---
-id: theme
 title: Coloring/theming
 description: Customizing the application color theme
 guide_category: Other features
@@ -65,11 +64,10 @@ The customized theme screenshot uses the below configuration:
 
 ### Extra themes and dark mode
 
-In v2.4.0 we introduced the ability to add extra themes via the config. In
-jbrowse-web and jbrowse-desktop, these show up in a "Preferences" dialog that
-the user can select from. We also added better support for dark mode themes.
-Adding "mode": "dark" to your theme will use MUI's dark mode
-https://mui.com/material-ui/customization/dark-mode/
+You can add extra themes via the config. In jbrowse-web and jbrowse-desktop,
+these show up in a "Preferences" dialog that the user can select from. Dark mode
+themes are also supported. Adding "mode": "dark" to your theme will use MUI's
+dark mode https://mui.com/material-ui/customization/dark-mode/
 
 Example
 

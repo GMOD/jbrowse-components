@@ -1,5 +1,4 @@
 ---
-id: extension_points
 title: Extension points
 description: Callbacks registered by producers and consumed across the app
 guide_category: Core concepts

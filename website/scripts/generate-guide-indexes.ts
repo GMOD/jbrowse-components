@@ -65,9 +65,6 @@ function checkMissingFrontmatter(
   for (const file of readdirSync(dir).filter(f => f.endsWith('.md'))) {
     const content = readFileSync(join(dir, file), 'utf8')
     const fm = parseFrontmatter(content)
-    if (fm['redirect']) {
-      continue
-    }
     const missing = []
     if (!fm['description']) {
       missing.push('description')
@@ -111,8 +108,6 @@ function buildTocSection(
 function buildUserGuide(): string {
   const lines: string[] = [
     '---',
-    'id: user_guide',
-    'toplevel: true',
     'title: User guide',
     '---',
     '',
@@ -130,14 +125,11 @@ function buildUserGuide(): string {
 function buildConfigGuide(): string {
   const lines: string[] = [
     '---',
-    'id: config_guide',
-    'title: Introduction - Config guide',
-    'toplevel: true',
+    'title: Config guide',
     '---',
     '',
-    'The following guide provides comprehensive information regarding the anatomy and',
-    'usage of the `config.json` file that is critical for running a JBrowse 2',
-    'session.',
+    'This guide covers the structure and usage of the `config.json` file that drives',
+    'a JBrowse 2 session.',
     '',
     ...buildTocSection(
       [
@@ -155,9 +147,7 @@ function buildConfigGuide(): string {
 
 function buildDeveloperGuide(): string {
   const preamble = `---
-id: developer_guide
 title: Developer guide
-toplevel: true
 ---
 
 This guide covers how JBrowse 2 code is packaged and structured, and how to
@@ -176,8 +166,8 @@ app, an electron app, a CLI app, etc). \`jbrowse-web\`, \`jbrowse-desktop\`, and
 
 A "plugin" is a package of functionality that is designed to "plug in" to a
 product **at runtime** to add functionality. These can be written and published
-by anyone, not just the JBrowse core team. Not all of the products use plugins,
-but most of them do.
+by anyone, not just the JBrowse core team. Most products load plugins at runtime, though it
+isn't required.
 
 <Figure src="/img/product_architecture.png" caption="This figure summarizes the general architecture of our state model and React component tree"/>
 
@@ -210,8 +200,7 @@ Working plugin examples:
   libraries. This desktop specific functionality should use the CJS bundle type
   (electron doesn't support ESM yet)
 
-These show how plugins are structured and can serve as templates for your own
-pluggable elements.
+Use these as references when building your own.
 
 The [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) is the
 community plugin registry — browse it to find published plugins or submit your

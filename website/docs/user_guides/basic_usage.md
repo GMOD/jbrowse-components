@@ -1,5 +1,4 @@
 ---
-id: basic_usage
 title: Basic usage
 description: Navigation, searching, opening files, and common UI controls
 guide_category: General usage

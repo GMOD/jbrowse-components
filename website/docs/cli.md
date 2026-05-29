@@ -1,7 +1,5 @@
 ---
 title: Command line tools (JBrowse CLI)
-id: cli
-toplevel: true
 ---
 
 The `@jbrowse/cli` package provides the `jbrowse` command, which can download

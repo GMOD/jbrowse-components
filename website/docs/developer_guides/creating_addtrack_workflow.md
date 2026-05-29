@@ -1,5 +1,4 @@
 ---
-id: creating_addtrack_workflow
 title: Creating custom add-track workflows
 description: Custom UI in the Add track dialog for non-standard track types
 guide_category: Creating pluggable elements

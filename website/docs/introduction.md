@@ -1,8 +1,6 @@
 ---
 slug: /
-id: introduction
 title: Introduction
-toplevel: true
 ---
 
 JBrowse 2 is a pluggable, open-source genome browser. It runs as a web app, a
