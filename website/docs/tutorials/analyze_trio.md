@@ -13,10 +13,8 @@ A **trio** is sequencing data from a mother, father, and child together. A
 This tutorial uses a pre-built phased VCF from the 1000 Genomes Project — the
 Kinh-Vietnamese trio HG02024 (chr1 only):
 
-- VCF:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
-- Index:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi
+- [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
+- [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
 
 Add the VCF to JBrowse via the CLI or the GUI. Once loaded:
 
@@ -56,14 +54,14 @@ like this
 In the above section, we could see matching blocks with our eyes, but can a
 program help?
 
-There are indeed options for this. The program hap-ibd
-(https://github.com/browning-lab/hap-ibd) can find "identical by descent"
-blocks. It is actually capable of finding such blocks in massive
+There are indeed options for this. The program
+[hap-ibd](https://github.com/browning-lab/hap-ibd) can find "identical by
+descent" blocks. It is actually capable of finding such blocks in massive
 population-scale datasets, but we are applying it here to a smaller trio VCF.
 The hap-ibd program takes as input:
 
-- a phased VCF like the trio dataset
-  (https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
+- a phased VCF like the
+  [trio dataset](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
 - a genetic map in PLINK format (the README of hap-ibd provides these for
   GRCh38)
 
@@ -92,13 +90,13 @@ conversion.
 Many people have heard of the term "recombination" or "crossing over" with
 regards to DNA, but what is it?
 
-NHGRI "Crossing over, as related to genetics and genomics, refers to the
-exchange of DNA between paired homologous chromosomes (one from each parent)
-that occurs during the development of egg and sperm cells (meiosis)."
-(https://www.genome.gov/genetics-glossary/Crossing-Over)
+The [NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over)
+defines it as "the exchange of DNA between paired homologous chromosomes (one
+from each parent) that occurs during the development of egg and sperm cells
+(meiosis)."
 
-![](/img/crossing_over.jpg) Figure from
-https://www.genome.gov/genetics-glossary/Crossing-Over
+![](/img/crossing_over.jpg) Figure from the
+[NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over)
 
 But there is a subtle but important point here: Your parents' genomes don't
 recombine during fertilization. Recombination happens during the production of
@@ -135,7 +133,7 @@ genotypes, trio inheritance of SVs, and a large chromosomal inversion — see th
 
 ## Live demo
 
-[Open this session](https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-4gbEzsiqFe&password=Q2O2L)
+[Open this session](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-4gbEzsiqFe&password=Q2O2L)
 to explore the trio dataset described above.
 
 Note: the final visualization with marked-up crossing-over blocks was produced

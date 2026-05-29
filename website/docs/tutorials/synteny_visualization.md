@@ -12,6 +12,12 @@ For general background on synteny views and a worked example with tumor and
 normal genome comparison, see the
 [SV visualization guide](/docs/user_guides/sv_visualization).
 
+You can follow along in a live demo built from three _Helicobacter pylori_
+strains (26695, J99, and CHC155) with all pairwise whole-genome alignments and
+gene annotations preloaded —
+[open the H. pylori synteny demo](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json).
+The two views below open directly into that data.
+
 ## What you need
 
 This tutorial assumes you already have a JBrowse 2 instance running (see the
@@ -77,6 +83,10 @@ From the main JBrowse start screen, click **Dotplot**, select two assemblies
 
 <Figure caption="A dotplot showing whole-genome alignment between two species. Diagonal blocks represent collinear regions; off-diagonal blocks indicate rearrangements." src="/img/sv_synteny/k2.png" />
 
+[Live demo: H. pylori J99 vs 26695 dotplot](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"hpylori_j99"%7D,%7B"assembly":"hpylori_26695"%7D%5D,"tracks":%5B"26695_vs_j99.pif"%5D%7D%5D%7D)
+— the long diagonal is the collinear backbone, and the off-diagonal blocks are
+genuine inversions and translocations between the two strains.
+
 ### Launching a linear synteny view from the dotplot
 
 To inspect a region, click and drag over it in the dotplot, then click **Launch
@@ -106,6 +116,10 @@ tracks (gene annotations, read alignments) via the track selector.
 <Figure caption="The linear synteny view showing two genomes aligned side-by-side. Blue lines connect aligned blocks; opening annotations tracks reveals conserved genes across the alignment." src="/img/sv_synteny/k4.png" />
 
 <Figure caption="Gene annotations overlaid on both sides of a linear synteny view, highlighting syntenic (conserved) genes." src="/img/sv_synteny/k5.png" />
+
+[Live demo: J99 vs 26695 linear synteny](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json&session=spec-%7B"views":%5B%7B"type":"LinearSyntenyView","tracks":%5B"26695_vs_j99.pif"%5D,"views":%5B%7B"loc":"NZ_CP011330.1:1564863-1636528","assembly":"hpylori_j99","tracks":%5B"hpylori_j99.gff"%5D%7D,%7B"loc":"NC_018939.1:367069-439278","assembly":"hpylori_26695","tracks":%5B"hpylori_26695.gff"%5D%7D%5D%7D%5D%7D)
+— this opens a syntenic ~72 kb block with gene tracks on both genomes; conserved
+genes such as `cheV`, `cfaS`, and `metG` line up across the connecting ribbon.
 
 ## Troubleshooting
 

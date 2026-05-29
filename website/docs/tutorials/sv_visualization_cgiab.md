@@ -227,7 +227,7 @@ For small to medium SVs, the linear genome view is usually all you need. Use the
 **search** (magnifying glass) button in the SV inspector to find a specific call
 — for example, `SV_85`, a heterozygous deletion that affects two exons of the
 CUZD1 gene
-([live demo at CUZD1](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr5:97050000-97400000","tracks":["GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf","HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3"]}]})).
+([live demo at CUZD1](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B"views":%5B%7B"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr5:97050000-97400000","tracks":%5B"GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf","HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3"%5D%7D%5D%7D)).
 
 <Figure caption="The SV inspector after searching for SV_85 — clicking the row opens a new linear genome view." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
@@ -247,7 +247,7 @@ Loading raw reads across very large regions is impractical, but whole-genome
 coverage stored as a bigWig is fast at any zoom level. From the linear genome
 view start screen, click **Show all regions in assembly** to open every
 chromosome at once
-([live demo on chr5 with normal coverage and CNV calls](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr5:1-180915260","tracks":["HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all","GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls"]}]})).
+([live demo on chr5 with normal coverage and CNV calls](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B"views":%5B%7B"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr5:1-180915260","tracks":%5B"HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all","GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls"%5D%7D%5D%7D)).
 
 <Figure caption="The linear genome view start screen with the 'Show all regions' button." src="/img/sv_cgiab/cnv_show_all_regions.png" />
 

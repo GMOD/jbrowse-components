@@ -106,3 +106,14 @@ For haplotype-aware analysis, combine both: load a haplotagged BAM (with HP tags
 from WhatsHap or HiPhase), color by modification, and sort by HP tag to see
 per-haplotype methylation patterns. The bedMethyl track provides the aggregate
 signal for quick navigation to regions of interest.
+
+## See also
+
+- [Alignments track](/docs/user_guides/alignments_track) — per-read modification
+  coloring, sorting, and filtering options for BAM/CRAM
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) — display
+  modes for the bedMethyl subtracks (multirow, overlap, shared scales)
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — another
+  long-read (PacBio HiFi) workflow using the same COLO829/HG008-style data
+- [modkit documentation](https://nanoporetech.github.io/modkit/) — generating
+  bedMethyl pileups and phased output
