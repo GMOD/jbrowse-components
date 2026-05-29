@@ -35,6 +35,10 @@ export default function SharedModelF(
          * #property
          */
         windowDelta: types.maybe(types.number),
+        /**
+         * #property
+         */
+        gcMode: types.maybe(types.enumeration('gcMode', ['content', 'skew'])),
       }),
     )
     .actions(self => ({
@@ -49,6 +53,10 @@ export default function SharedModelF(
         self.windowDelta = windowDelta
         self.reload()
       },
+      setGCMode(mode: 'content' | 'skew') {
+        self.gcMode = mode
+        self.reload()
+      },
     }))
     .views(self => ({
       get windowSizeSetting() {
@@ -56,6 +64,9 @@ export default function SharedModelF(
       },
       get windowDeltaSetting() {
         return self.windowDelta ?? getConf(self, 'windowDelta')
+      },
+      get gcModeSetting() {
+        return self.gcMode ?? getConf(self, 'gcMode')
       },
     }))
     .views(self => {
@@ -73,6 +84,16 @@ export default function SharedModelF(
                 ])
               },
             },
+            {
+              label: 'GC skew',
+              type: 'checkbox',
+              checked: self.gcModeSetting === 'skew',
+              onClick: () => {
+                self.setGCMode(
+                  self.gcModeSetting === 'skew' ? 'content' : 'skew',
+                )
+              },
+            },
           ]
         },
         /**
@@ -87,6 +108,7 @@ export default function SharedModelF(
             sequenceAdapter,
             windowSize: self.windowSizeSetting,
             windowDelta: self.windowDeltaSetting,
+            gcMode: self.gcModeSetting,
           }
         },
       }

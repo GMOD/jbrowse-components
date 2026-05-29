@@ -41,11 +41,9 @@ interface SPARQLFeatureData {
   subfeatures?: SPARQLFeatureData[]
   uniqueId: string
 
-  [propName: string]: any
-}
-
-interface SPARQLFeature {
-  data: SPARQLFeatureData
+  // SPARQL queries can return arbitrary extra columns, which are copied onto
+  // the feature and surfaced in feature details
+  [propName: string]: unknown
 }
 
 export default class SPARQLAdapter extends BaseFeatureDataAdapter {
@@ -103,7 +101,10 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken)
   }
 
-  private async querySparql(query: string, _opts?: BaseOptions): Promise<any> {
+  private async querySparql(
+    query: string,
+    _opts?: BaseOptions,
+  ): Promise<SPARQLResponse> {
     let additionalQueryParams = ''
     if (this.additionalQueryParams.length) {
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
@@ -115,7 +116,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
         accept: 'application/json,application/sparql-results+json',
       },
     })
-    return response.json()
+    return response.json() as Promise<SPARQLResponse>
   }
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
@@ -141,93 +142,62 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
         )
       }
     }
-    const seenFeatures: Record<string, SPARQLFeature> = {}
+
+    // Each row encodes a feature plus its sub_/sub_sub_ ancestors. Flatten
+    // every level into a single uniqueId->feature map and record each level's
+    // parent, then attach children to parents in a second pass. Building the
+    // full map first makes attachment independent of row/level ordering.
+    const featuresById = new Map<string, SPARQLFeatureData>()
+    const parentById = new Map<string, string>()
     for (const row of rows) {
-      const rawData: Record<string, string>[] = [{}]
-      for (let field of fields) {
+      const levels: Record<string, string>[] = [{}]
+      for (const field of fields) {
         if (field in row) {
-          const { value } = row[field]!
-          let idx = 0
-          while (field.startsWith('sub_')) {
-            field = field.slice(4)
-            idx += 1
+          let name = field
+          let depth = 0
+          while (name.startsWith('sub_')) {
+            name = name.slice(4)
+            depth += 1
           }
-          while (idx > rawData.length - 1) {
-            rawData.push({})
+          while (depth > levels.length - 1) {
+            levels.push({})
           }
-          rawData[idx]![field] = value
+          levels[depth]![name] = row[field]!.value
         }
       }
 
-      for (const [idx, rd] of rawData.entries()) {
-        const { uniqueId, start, end, strand } = rd
-        if (idx < rawData.length - 1) {
-          rawData[idx + 1]!.parentUniqueId = uniqueId!
-        }
-        seenFeatures[uniqueId!] = {
-          data: {
-            ...rd,
-            uniqueId: uniqueId!,
-            refName,
-            start: Number.parseInt(start!, 10),
-            end: Number.parseInt(end!, 10),
-            strand: Number.parseInt(strand!, 10) || 0,
-          },
+      for (const [depth, level] of levels.entries()) {
+        const { uniqueId, start, end, strand } = level
+        featuresById.set(uniqueId!, {
+          ...level,
+          uniqueId: uniqueId!,
+          refName,
+          start: Number.parseInt(start!, 10),
+          end: Number.parseInt(end!, 10),
+          strand: Number.parseInt(strand!, 10) || 0,
+        })
+        if (depth > 0) {
+          parentById.set(uniqueId!, levels[depth - 1]!.uniqueId!)
         }
       }
     }
 
-    // resolve subfeatures, keeping only top-level features in seenFeatures
-    for (const [uniqueId, f] of Object.entries(seenFeatures)) {
-      const pid = f.data.parentUniqueId
-      f.data.parentUniqueId = undefined
-      if (pid) {
-        const p = seenFeatures[pid]
-        if (p) {
-          p.data.subfeatures ??= []
-          p.data.subfeatures.push({
-            ...f.data,
-            uniqueId,
-          })
-          delete seenFeatures[uniqueId]
-        } else {
-          const subfeatures = Object.values(seenFeatures)
-            .map(sf => sf.data.subfeatures)
-            .filter(sf => !!sf)
-            .flat()
-          let found = false
-          for (const subfeature of subfeatures) {
-            if (subfeature.uniqueId === pid) {
-              subfeature.subfeatures ??= []
-              subfeature.subfeatures.push({
-                ...f.data,
-                uniqueId,
-              })
-              delete seenFeatures[uniqueId]
-              found = true
-              break
-            }
-            if (subfeature.subfeatures) {
-              for (const sf of subfeature.subfeatures) {
-                subfeatures.push(sf)
-              }
-            }
-          }
-          if (!found) {
-            console.error(`Could not find parentID ${pid}`)
-          }
+    const roots: SPARQLFeatureData[] = []
+    for (const [uniqueId, feature] of featuresById) {
+      const pid = parentById.get(uniqueId)
+      const parent = pid ? featuresById.get(pid) : undefined
+      if (parent) {
+        parent.subfeatures ??= []
+        parent.subfeatures.push(feature)
+      } else {
+        if (pid) {
+          console.error(`Could not find parentID ${pid}`)
         }
+        roots.push(feature)
       }
     }
 
-    return Object.keys(seenFeatures).map(
-      seenFeature =>
-        new SimpleFeature({
-          ...seenFeatures[seenFeature]!.data,
-          uniqueId: seenFeature,
-          subfeatures: seenFeatures[seenFeature]!.data.subfeatures,
-        }),
-    )
+    return roots.map(data => new SimpleFeature(data))
   }
 
   public async hasDataForRefName(

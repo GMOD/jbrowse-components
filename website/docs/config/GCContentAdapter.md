@@ -46,3 +46,14 @@ windowDelta: {
         defaultValue: 100,
       }
 ```
+
+#### slot: gcMode
+
+```js
+gcMode: {
+        type: 'stringEnum',
+        model: types.enumeration('gcMode', ['content', 'skew']),
+        defaultValue: 'content',
+        description: 'calculate GC content fraction or GC skew (G-C)/(G+C)',
+      }
+```

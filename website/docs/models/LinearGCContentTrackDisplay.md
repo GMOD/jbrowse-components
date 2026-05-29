@@ -34,7 +34,7 @@ and docs.
 
 ### Available via [SharedGCContentModel](../sharedgccontentmodel)
 
-**Properties:** windowSize, windowDelta
+**Properties:** windowSize, windowDelta, gcMode
 
 **Getters:** adapterConfig
 

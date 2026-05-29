@@ -13,8 +13,6 @@ import type {
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class GCContentAdapter extends BaseFeatureDataAdapter {
-  private gcMode = 'content'
-
   public static capabilities = ['hasLocalStats']
 
   public async configure() {
@@ -38,6 +36,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
     const sequenceAdapter = await this.configure()
     const windowSize = this.getConf('windowSize')
     const windowDelta = this.getConf('windowDelta')
+    const gcMode = this.getConf('gcMode')
     const halfWindowSize = windowSize === 1 ? 1 : Math.ceil(windowSize / 2)
     const isWindowSizeOneBp = windowSize === 1
 
@@ -142,16 +141,11 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
           }
         }
 
-        const pos = qs
         const score =
-          this.gcMode === 'content'
-            ? (ng + nc) / (len || 1)
-            : this.gcMode === 'skew'
-              ? (ng - nc) / (ng + nc || 1)
-              : 0
+          gcMode === 'skew' ? (ng - nc) / (ng + nc || 1) : (ng + nc) / (len || 1)
 
-        starts.push(pos + i)
-        ends.push(pos + i + windowDelta)
+        starts.push(qs + i)
+        ends.push(qs + i + windowDelta)
         scores.push(score)
       }
 

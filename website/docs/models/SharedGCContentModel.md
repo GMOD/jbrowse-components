@@ -145,6 +145,15 @@ IMaybe<ISimpleType<number>>
 windowDelta: types.maybe(types.number)
 ```
 
+#### property: gcMode
+
+```js
+// type signature
+IMaybe<ISimpleType<"content" | "skew">>
+// code
+gcMode: types.maybe(types.enumeration('gcMode', ['content', 'skew']))
+```
+
 ### SharedGCContentModel - Getters
 
 #### getter: adapterConfig
@@ -159,5 +168,6 @@ a GCContentAdapter
   sequenceAdapter: any
   windowSize: any
   windowDelta: any
+  gcMode: any
 }
 ```

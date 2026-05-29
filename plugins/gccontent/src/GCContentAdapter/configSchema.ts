@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -31,6 +32,15 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       windowDelta: {
         type: 'number',
         defaultValue: 100,
+      },
+      /**
+       * #slot
+       */
+      gcMode: {
+        type: 'stringEnum',
+        model: types.enumeration('gcMode', ['content', 'skew']),
+        defaultValue: 'content',
+        description: 'calculate GC content fraction or GC skew (G-C)/(G+C)',
       },
     },
     { explicitlyTyped: true },

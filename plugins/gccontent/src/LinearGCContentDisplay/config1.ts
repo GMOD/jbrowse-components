@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,6 +19,11 @@ export default function LinearGCContentDisplay(pluginManager: PluginManager) {
       windowDelta: {
         type: 'number',
         defaultValue: 100,
+      },
+      gcMode: {
+        type: 'stringEnum',
+        model: types.enumeration('gcMode', ['content', 'skew']),
+        defaultValue: 'content',
       },
     },
     {

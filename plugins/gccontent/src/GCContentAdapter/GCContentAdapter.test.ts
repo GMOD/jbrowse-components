@@ -9,7 +9,7 @@ import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapte
 
 const configSchema = configSchemaF(new PluginManager())
 
-function makeAdapter(sequence: string) {
+function makeAdapter(sequence: string, gcMode = 'content') {
   // Only the two methods used by GCContentAdapter need to exist; cast through
   // unknown so we don't have to stub the rest of BaseSequenceAdapter.
   const sequenceAdapter = {
@@ -23,6 +23,7 @@ function makeAdapter(sequence: string) {
       sequenceAdapter: { type: 'MockSequenceAdapter' },
       windowSize: 10,
       windowDelta: 10,
+      gcMode,
     }),
     async () => ({ dataAdapter: sequenceAdapter, sessionIds: new Set() }),
   )
@@ -69,4 +70,29 @@ test('returns no features when query is past the end of the sequence', async () 
   expect(await getScores(makeAdapter('ACGT'.repeat(10)), 10000, 11000)).toEqual(
     [],
   )
+})
+
+test('skew mode: all-G sequence gives skew +1', async () => {
+  const scores = await getScores(makeAdapter('G'.repeat(200), 'skew'))
+  expect(scores.length).toBeGreaterThan(0)
+  for (const s of scores) {
+    expect(s).toBeCloseTo(1)
+  }
+})
+
+test('skew mode: all-C sequence gives skew -1', async () => {
+  const scores = await getScores(makeAdapter('C'.repeat(200), 'skew'))
+  expect(scores.length).toBeGreaterThan(0)
+  for (const s of scores) {
+    expect(s).toBeCloseTo(-1)
+  }
+})
+
+test('skew mode: balanced GC sequence gives skew 0', async () => {
+  // 'GC' repeated has equal G and C in every window
+  const scores = await getScores(makeAdapter('GC'.repeat(100), 'skew'))
+  expect(scores.length).toBeGreaterThan(0)
+  for (const s of scores) {
+    expect(s).toBeCloseTo(0)
+  }
 })
