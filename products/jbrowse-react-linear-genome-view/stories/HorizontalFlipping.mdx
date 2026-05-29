@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   HorizontallyFlippedViaButton,
   HorizontallyFlippedViaDisplayedRegions,
@@ -20,25 +20,25 @@ within a multi-region view.
 Append `[rev]` to a locstring passed to `navToLocString`. The flip happens as
 part of navigation.
 
-<Story of={HorizontallyFlippedViaLocstring} />
+<Canvas of={HorizontallyFlippedViaLocstring} />
 
 ## Flip via button
 
 Toggle the orientation imperatively — useful for custom toolbar buttons or
 keyboard shortcuts.
 
-<Story of={HorizontallyFlippedViaButton} />
+<Canvas of={HorizontallyFlippedViaButton} />
 
 ## Flip via displayed regions
 
 Set `reversed: true` on a `displayedRegions` entry to flip just that region.
 Other regions in the same view stay in their natural orientation.
 
-<Story of={HorizontallyFlippedViaDisplayedRegions} />
+<Canvas of={HorizontallyFlippedViaDisplayedRegions} />
 
 ## Mixing orientations
 
 Combine forward and reversed regions in a single view — the building block for
 gene-centric layouts (always-5'-to-3') and synteny ribbons.
 
-<Story of={WithMultipleDisplayedRegionsFlipped} />
+<Canvas of={WithMultipleDisplayedRegionsFlipped} />

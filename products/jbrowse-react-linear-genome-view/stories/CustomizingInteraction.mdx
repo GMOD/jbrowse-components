@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   DisableAddTrack,
   WithDisableZoomAndSideScroll,
@@ -28,7 +28,7 @@ const state = createViewState({
 })
 ```
 
-<Story of={DisableAddTrack} />
+<Canvas of={DisableAddTrack} />
 
 ## Disabling zoom and side-scroll
 
@@ -36,7 +36,7 @@ For dashboard or report layouts where the page (not the view) should own scroll
 and zoom, a small plugin can override the view model's `scrollTo` and `zoomTo`
 actions with no-ops:
 
-<Story of={WithDisableZoomAndSideScroll} />
+<Canvas of={WithDisableZoomAndSideScroll} />
 
 ## Composing with parent styles
 
@@ -45,4 +45,4 @@ this rendering path (see [ShadowDOM](?path=/docs/shadowdom-custom-element--docs)
 if you need that), so wrapping the component in a styled container composes
 normally — borders, margins, backgrounds all work:
 
-<Story of={WithOutsideStyling} />
+<Canvas of={WithOutsideStyling} />

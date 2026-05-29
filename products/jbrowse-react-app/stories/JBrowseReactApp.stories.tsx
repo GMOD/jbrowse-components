@@ -18,7 +18,4 @@ export {
 
 export default {
   title: 'Source code for examples',
-  parameters: {
-    layout: 'fullscreen',
-  },
 }

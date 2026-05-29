@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   WithImportConfigJson,
   WithFetchConfigJson,
@@ -22,7 +22,7 @@ If your config is part of your app bundle, use a regular ES import. Bundlers
 handle the JSON natively, and the config ships alongside your JavaScript — no
 runtime fetch.
 
-<Story of={WithImportConfigJson} />
+<Canvas of={WithImportConfigJson} />
 
 ## Runtime fetch
 
@@ -30,7 +30,7 @@ If the config lives on a server (or differs per environment, per user, per
 route), fetch it before constructing `createViewState`. Wrap `viewState` in
 `useState`/`useEffect` so React can render once the fetch resolves.
 
-<Story of={WithFetchConfigJson} />
+<Canvas of={WithFetchConfigJson} />
 
 Use static import for shipped configurations and runtime fetch for configs that
 are loaded on demand or generated server-side.

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import { WithTwoLinearGenomeViews } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Multiple Views" />
@@ -11,7 +11,7 @@ navigation, tracks, or session state. Useful for side-by-side locus comparisons,
 multi-assembly dashboards, or report-style layouts with several small embedded
 views.
 
-<Story of={WithTwoLinearGenomeViews} />
+<Canvas of={WithTwoLinearGenomeViews} />
 
 If you need the two views to track each other (linked panning, shared zoom),
 wire it up yourself via the MobX state tree — wrap your sibling component in

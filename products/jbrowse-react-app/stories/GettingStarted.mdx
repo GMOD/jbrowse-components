@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import { BasicExample, HumanDemo } from './JBrowseReactApp.stories'
 
 <Meta title="Getting Started" />
@@ -28,7 +28,7 @@ easier to integrate. Move to react-app when you need the app-level features.
 
 ## A minimal embed
 
-<Story of={BasicExample} />
+<Canvas of={BasicExample} />
 
 Open and rearrange tracks, switch views, or click the **code** button in the
 bottom right to see the source.
@@ -96,7 +96,7 @@ GRCh38 with NCBI RefSeq genes, repeats, a CRAM exome alignment, 1000 Genomes
 variants, and phyloP conservation. The `defaultSession` opens the alignment and
 conservation tracks in a `LinearGenomeView` at a specific locus:
 
-<Story of={HumanDemo} />
+<Canvas of={HumanDemo} />
 
 ## More
 

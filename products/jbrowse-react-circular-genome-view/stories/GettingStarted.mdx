@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import { Volvox, ShowTrack, Human } from './JBrowseCircularGenomeView.stories'
 
 <Meta title="Getting Started" />
@@ -19,7 +19,7 @@ If you need a linear track-by-track view instead, see
 The component needs an assembly and a list of track configs. Below is the
 bundled volvox test assembly:
 
-<Story of={Volvox} />
+<Canvas of={Volvox} />
 
 You can pan and zoom around the circle and click the **code** button in the
 bottom right to see the source.
@@ -52,14 +52,14 @@ standalone JSON file —
 `createViewState` returns an object with a `showTrack(trackId)` method. Calling
 it after construction is often simpler than crafting a `defaultSession`.
 
-<Story of={ShowTrack} />
+<Canvas of={ShowTrack} />
 
 ## Real human genome example
 
 A complete hg19 example with structural-variant calls from a PacBio VCF, opened
 on first paint:
 
-<Story of={Human} />
+<Canvas of={Human} />
 
 Circular views shine for SV-style data because chromosome-spanning breakends
 become visible chord-style across the circle.

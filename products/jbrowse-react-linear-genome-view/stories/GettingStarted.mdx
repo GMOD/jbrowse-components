@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import { WithInit } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Getting Started" />
@@ -39,7 +39,7 @@ const state = createViewState({
 The story below is exactly this pattern, wired up to GRCh38 with a real RefSeq
 gene track:
 
-<Story of={WithInit} />
+<Canvas of={WithInit} />
 
 `init.loc` accepts any locstring, including space-separated multi-region strings
 (e.g. `'chr1:100-200 chr1:500-600'`). `init.tracks` is a plain list of trackIds

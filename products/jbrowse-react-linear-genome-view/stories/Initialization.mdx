@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   HumanExomeExample,
   UsingLocObject,
@@ -36,7 +36,7 @@ Sibling fields on `defaultSession.view` configure the view itself —
 `showCytobandsSetting`, `showGridlines`, `colorByCDS`, etc. A complete example
 using cytobands, ref-name aliases, and a tabix-indexed RefSeq gene track:
 
-<Story of={WithInit} />
+<Canvas of={WithInit} />
 
 ## Advanced `init` (per-track snapshots, tracklist, nav, highlight)
 
@@ -60,7 +60,7 @@ init: {
 }
 ```
 
-<Story of={WithInitAdvanced} />
+<Canvas of={WithInitAdvanced} />
 
 ### Alignments track example
 
@@ -87,7 +87,7 @@ init: {
 }
 ```
 
-<Story of={WithInitAlignmentsDisplay} />
+<Canvas of={WithInitAlignmentsDisplay} />
 
 ## Top-level `location` (no `defaultSession`)
 
@@ -104,7 +104,7 @@ const state = createViewState({
 })
 ```
 
-<Story of={UsingLocObject} />
+<Canvas of={UsingLocObject} />
 
 ## Opening tracks programmatically with `showTrack`
 
@@ -112,13 +112,13 @@ When tracks need to open in response to runtime conditions (a button click, a
 search hit, a parent component prop) rather than at first mount, prefer the
 imperative `viewState.session.view.showTrack(trackId)` method:
 
-<Story of={WithShowTrack} />
+<Canvas of={WithShowTrack} />
 
 The same method also works for loading heavier tracks on top of an `init`
 session — for example, adding a CRAM exome alignments track on GRCh38 after
 `createViewState` returns:
 
-<Story of={HumanExomeExample} />
+<Canvas of={HumanExomeExample} />
 
 CRAM tracks (and BAM files without MD tags) require a `sequenceAdapter` block on
 the track config so the worker can decode reads against the reference — see the

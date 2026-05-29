@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import { WithWebWorker } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Web Worker RPC" />
@@ -14,7 +14,7 @@ To enable it, import `makeWorkerInstance` and pass it to `createViewState`.
 JBrowse handles the rest — feature parsing, layout, and rendering all run in the
 worker.
 
-<Story of={WithWebWorker} />
+<Canvas of={WithWebWorker} />
 
 A working integration with create-react-app is at
 [jbrowse.org/jb2/docs/embedded_components](https://jbrowse.org/jb2/docs/embedded_components/).

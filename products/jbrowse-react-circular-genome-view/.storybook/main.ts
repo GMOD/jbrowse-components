@@ -1,4 +1,6 @@
-export default {
+import type { StorybookConfig } from '@storybook/react-webpack5'
+
+const config: StorybookConfig = {
   stories: [
     '../stories/**/*.mdx',
     '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
@@ -11,7 +13,7 @@ export default {
   staticDirs: ['../public'],
 
   webpackFinal: async config => {
-    config.module.rules.push({
+    config.module!.rules!.push({
       test: /\.(ts|tsx|js|jsx)$/,
       use: [
         {
@@ -22,7 +24,9 @@ export default {
         },
       ],
     })
-    config.resolve.extensions.push('.ts', '.tsx')
+    config.resolve!.extensions!.push('.ts', '.tsx')
     return config
   },
 }
+
+export default config

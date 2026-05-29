@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   WithObserveVisibleFeatures,
   WithObserveVisibleRegions,
@@ -37,7 +37,7 @@ callbacks) don't need `observer`.
 `view.dynamicBlocks` describes the regions currently scrolled into view, updated
 on every pan and zoom. An observer reading it gets free reactivity:
 
-<Story of={WithObserveVisibleRegions} />
+<Canvas of={WithObserveVisibleRegions} />
 
 ## Visible features
 
@@ -45,7 +45,7 @@ Reading actual feature data requires a round-trip through the RPC manager (the
 same path the renderer uses). The example queries features for the visible
 region inside an effect that reruns when the region changes:
 
-<Story of={WithObserveVisibleFeatures} />
+<Canvas of={WithObserveVisibleFeatures} />
 
 For frequently-changing state, debounce or throttle your queries —
 `dynamicBlocks` updates every animation frame during a drag, and you likely

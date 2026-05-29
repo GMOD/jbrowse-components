@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   WithDarkTheme,
   WithCustomTheme,
@@ -21,11 +21,11 @@ the full set of options.
 
 Overrides the four named colors and the DNA base colors:
 
-<Story of={WithCustomTheme} />
+<Canvas of={WithCustomTheme} />
 
 ## Dark mode
 
 Set `palette.mode: 'dark'` on the theme to render in dark mode. JBrowse has been
 tuned to look reasonable under both light and dark palettes:
 
-<Story of={WithDarkTheme} />
+<Canvas of={WithDarkTheme} />

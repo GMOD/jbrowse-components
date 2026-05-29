@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Internet Accounts" />
@@ -36,7 +36,7 @@ Any track with `internetAccountId: 'manualGoogleEntry'` on its file locations
 will route through this account, which prompts the user for a token and adds an
 `Authorization: Bearer <token>` header to each request.
 
-<Story of={WithInternetAccounts} />
+<Canvas of={WithInternetAccounts} />
 
 ## OAuth and embedded mode
 

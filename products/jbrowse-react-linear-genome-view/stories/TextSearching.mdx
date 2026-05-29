@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   WithAggregateTextSearching,
   WithPerTrackTextSearching,
@@ -24,14 +24,14 @@ There are two flavors:
 Pass `aggregateTextSearchAdapters` to `createViewState`. Most apps need only a
 single entry, but multiple are supported.
 
-<Story of={WithAggregateTextSearching} />
+<Canvas of={WithAggregateTextSearching} />
 
 ## Per-track
 
 Per-track indexes attach to the track config rather than the top-level view
 config:
 
-<Story of={WithPerTrackTextSearching} />
+<Canvas of={WithPerTrackTextSearching} />
 
 ## Building indexes
 

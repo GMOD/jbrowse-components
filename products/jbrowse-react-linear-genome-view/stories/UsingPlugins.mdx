@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   WithInlinePlugins,
   WithExternalPlugin,
@@ -21,7 +21,7 @@ The simplest pattern: define a `Plugin` subclass in your own source and pass it
 directly. The example below registers a plugin that adds a "console.log the
 selected region" action to the rubber-band menu.
 
-<Story of={WithInlinePlugins} />
+<Canvas of={WithInlinePlugins} />
 
 ## Plugins from external URLs
 
@@ -29,7 +29,7 @@ Plugins can also be loaded at runtime from a URL, which is the model JBrowse Web
 uses for community-published plugins. The host app fetches the plugin bundle and
 JBrowse registers it on the fly.
 
-<Story of={WithExternalPlugin} />
+<Canvas of={WithExternalPlugin} />
 
 ## NPM-installed plugins
 

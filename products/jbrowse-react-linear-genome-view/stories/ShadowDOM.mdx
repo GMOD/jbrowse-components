@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import { ShadowDOMOneLinearGenomeView } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="ShadowDOM / Custom Element" />
@@ -14,4 +14,4 @@ below shows it rendered inside a shadow root via React's portal mechanism.
 Styles created inside the shadow root (Material-UI's emotion output) stay scoped
 to the root, and styles outside it cannot leak in.
 
-<Story of={ShadowDOMOneLinearGenomeView} />
+<Canvas of={ShadowDOMOneLinearGenomeView} />

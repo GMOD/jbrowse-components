@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   SyntenyExample,
   WithLaunchLinearGenomeView,
@@ -21,7 +21,7 @@ synteny features (PAF, MUMMER, etc.). The `defaultSession` below creates a
 synteny view between two assemblies on first paint — no menu navigation
 required.
 
-<Story of={SyntenyExample} />
+<Canvas of={SyntenyExample} />
 
 The `init` field on the synteny view is the key part:
 
@@ -47,7 +47,7 @@ a search hit, a backend event), use the `LaunchView-*` extension points instead
 of baking the view into `defaultSession`. The example below boots an empty
 session and then launches a `LinearGenomeView` after mount.
 
-<Story of={WithLaunchLinearGenomeView} />
+<Canvas of={WithLaunchLinearGenomeView} />
 
 This is the same machinery the import wizard uses internally, so anything the
 user can launch from the UI you can launch from code.

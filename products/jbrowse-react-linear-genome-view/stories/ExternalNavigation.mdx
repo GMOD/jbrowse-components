@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
 import {
   ExternalNavigateLocstring,
   ExternalNavigateObject,
@@ -29,7 +29,7 @@ state.session.view
   .catch(e => console.error(e))
 ```
 
-<Story of={ExternalNavigateLocstring} />
+<Canvas of={ExternalNavigateLocstring} />
 
 ## `navToLocations` (object locations)
 
@@ -44,7 +44,7 @@ state.session.view
   .catch(e => console.error(e))
 ```
 
-<Story of={ExternalNavigateObject} />
+<Canvas of={ExternalNavigateObject} />
 
 ## `navTo` vs `navToLocations`
 
