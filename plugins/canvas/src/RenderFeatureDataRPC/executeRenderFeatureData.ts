@@ -47,9 +47,9 @@ export async function executeRenderFeatureData({
   } = args
 
   // Build a full JBrowse theme worker-side from the structurally serializable
-  // ThemeOptions (same pattern as SVG export / ServerSideRendererType). Until
-  // the canvas display wires `theme` into rpcProps, `themeOptions` is undefined
-  // and createJBrowseTheme returns the default theme.
+  // ThemeOptions the display passes via rpcProps (same pattern as SVG export /
+  // ServerSideRendererType). When absent (e.g. a session without theming),
+  // createJBrowseTheme returns the default theme.
   const theme = createJBrowseTheme(themeOptions)
 
   const stopTokenCheck = createStopTokenChecker(stopToken)

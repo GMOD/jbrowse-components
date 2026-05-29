@@ -213,59 +213,72 @@ export function useAminoAcidOverlay(
   const { classes } = useStyles()
   const theme = useTheme()
 
-  if (
-    !viewInitialized ||
-    !width ||
-    !bpPerPx ||
-    !shouldRenderPeptideText(bpPerPx) ||
-    visibleRegions.length === 0
-  ) {
-    return null
-  }
-
-  const elements: React.ReactElement[] = []
-
-  for (const vr of visibleRegions) {
-    const data = laidOutDataMap.get(vr.displayedRegionIndex)
-    if (!data?.aminoAcidOverlay) {
-      continue
+  // Memoized like the sibling overlay hooks: FeatureComponent is an observer
+  // that re-renders on every mousemove (hover state), so without this the
+  // amino-acid <div>s rebuild on each hover event while peptide text shows.
+  return useMemo(() => {
+    if (
+      !viewInitialized ||
+      !width ||
+      !bpPerPx ||
+      !shouldRenderPeptideText(bpPerPx) ||
+      visibleRegions.length === 0
+    ) {
+      return null
     }
 
-    const toScreen = makeBpMapper(vr)
+    const elements: React.ReactElement[] = []
 
-    for (const [i, item] of data.aminoAcidOverlay.entries()) {
-      if (item.endBp < vr.start || item.startBp > vr.end) {
+    for (const vr of visibleRegions) {
+      const data = laidOutDataMap.get(vr.displayedRegionIndex)
+      if (!data?.aminoAcidOverlay) {
         continue
       }
 
-      const pxStart = toScreen(item.startBp)
-      const pxEnd = toScreen(item.endBp)
-      const fontSize = Math.min(item.heightPx, 16)
-      const showIndex = Math.abs(pxEnd - pxStart) >= 20
+      const toScreen = makeBpMapper(vr)
 
-      elements.push(
-        <div
-          key={`${vr.displayedRegionIndex}-${i}`}
-          className={classes.aminoAcid}
-          style={{
-            left: (pxStart + pxEnd) / 2,
-            top: item.topPx,
-            height: item.heightPx,
-            fontSize,
-            lineHeight: `${item.heightPx}px`,
-            color: item.isStopOrNonTriplet
-              ? theme.palette.error.main
-              : theme.palette.text.primary,
-          }}
-        >
-          {item.aminoAcid}
-          {showIndex ? item.proteinIndex + 1 : null}
-        </div>,
-      )
+      for (const [i, item] of data.aminoAcidOverlay.entries()) {
+        if (item.endBp < vr.start || item.startBp > vr.end) {
+          continue
+        }
+
+        const pxStart = toScreen(item.startBp)
+        const pxEnd = toScreen(item.endBp)
+        const fontSize = Math.min(item.heightPx, 16)
+        const showIndex = Math.abs(pxEnd - pxStart) >= 20
+
+        elements.push(
+          <div
+            key={`${vr.displayedRegionIndex}-${i}`}
+            className={classes.aminoAcid}
+            style={{
+              left: (pxStart + pxEnd) / 2,
+              top: item.topPx,
+              height: item.heightPx,
+              fontSize,
+              lineHeight: `${item.heightPx}px`,
+              color: item.isStopOrNonTriplet
+                ? theme.palette.error.main
+                : theme.palette.text.primary,
+            }}
+          >
+            {item.aminoAcid}
+            {showIndex ? item.proteinIndex + 1 : null}
+          </div>,
+        )
+      }
     }
-  }
 
-  return elements.length > 0 ? elements : null
+    return elements.length > 0 ? elements : null
+  }, [
+    laidOutDataMap,
+    visibleRegions,
+    viewInitialized,
+    width,
+    bpPerPx,
+    classes,
+    theme,
+  ])
 }
 
 export function useHighlightOverlays(

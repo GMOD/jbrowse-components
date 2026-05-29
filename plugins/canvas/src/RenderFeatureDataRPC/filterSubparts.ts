@@ -4,21 +4,6 @@ import { isCDS, isUTR } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 
-const subpartsFilterCache = new Map<string, (f: Feature) => boolean>()
-
-function makeSubpartsFilter(subParts: string) {
-  let f = subpartsFilterCache.get(subParts)
-  if (!f) {
-    const lowerRet = new Set(
-      subParts.split(/\s*,\s*/).map(t => t.toLowerCase()),
-    )
-    f = (feature: Feature) =>
-      lowerRet.has(feature.get('type')?.toLowerCase() ?? '')
-    subpartsFilterCache.set(subParts, f)
-  }
-  return f
-}
-
 function utrType(strand: number, isFivePrime: boolean) {
   if (strand > 0) {
     return isFivePrime ? 'five_prime_UTR' : 'three_prime_UTR'
@@ -139,5 +124,10 @@ export function getSubparts(f: Feature, config: DisplayConfig) {
     c = makeUTRs(f, c)
   }
 
-  return c.filter(makeSubpartsFilter(config.subParts))
+  const allowedTypes = new Set(
+    config.subParts.split(/\s*,\s*/).map(t => t.toLowerCase()),
+  )
+  return c.filter(child =>
+    allowedTypes.has(child.get('type')?.toLowerCase() ?? ''),
+  )
 }
