@@ -45,23 +45,23 @@ Hydration happens inside `TrackConfigurationReference.get()` via
 ### Invalid configs (lazy hydration can throw)
 
 Because hydration is `schemaType.create(frozen)`, a structurally-invalid config
-(e.g. a bad enum value) throws the moment it's first read. That read can happen
-at several points, so each is handled rather than left to crash the app. Two
-strategies, picked by whether refusal is possible:
+(e.g. a bad enum value) throws the moment it's first read. The invariant is that
+**`view.tracks` (the open set) only ever holds usable tracks** — so the three
+entry points that could put a broken track there all reject it, and downstream
+code (toggle/hide/find/menus) never has to defend against a config that throws:
 
-- **Proactive (refuse + `notifyError`):** the user is opening/adding a track, so
-  it can be rejected before it enters the tree. `showTrackGeneric` (open) eagerly
-  validates before pushing; `SessionTracks.addTrackConf` (add/copy) catches the
-  typed-array push (the frozen `jbrowse.tracks` doesn't validate, but
-  `sessionTracks` does). Both surface a snackbar and add nothing.
-- **Tolerate (keep + show error):** the track is already in a snapshot and can't
-  be refused. `filterSessionInPlace` (session load) skips a property whose read
-  throws instead of crashing; the per-track `ErrorBoundary` renders the failed
-  track as an `ErrorBanner` in its own slot. `isTrackModel` swallows the throw
-  during parent traversal so `getContainingTrack` still works for such a track.
+- **Open — `showTrackGeneric`:** eagerly validates the config before pushing;
+  invalid → `notifyError` snackbar, nothing added.
+- **Add/copy — `SessionTracks.addTrackConf`:** catches the typed-array push (the
+  frozen `jbrowse.tracks` doesn't validate, but `sessionTracks` does) → snackbar,
+  nothing added.
+- **Session load — `filterSessionInPlace`:** drops any open-track element whose
+  config can't hydrate (alongside dangling refs), so a saved/shared session with
+  a broken open track loads with that track removed instead of crashing.
 
-`notifyError` is available to these paths because `SnackbarModel` is composed
-into `BaseSessionModel`.
+`notifyError` is available to the first two because `SnackbarModel` is composed
+into `BaseSessionModel`. `isTrackModel` still guards its config read defensively,
+but with the invariant above it isn't relied upon to prevent crashes.
 
 ### Reference resolution
 

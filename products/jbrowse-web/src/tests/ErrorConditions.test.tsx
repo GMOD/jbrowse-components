@@ -82,12 +82,15 @@ test('adding an invalid sessionTrack config surfaces a snackbar, not a crash', a
   })
 }, 30000)
 
-test('a broken track open at session restore shows an error, not a crash', async () => {
+test('a broken track open at session restore is dropped, not a crash', async () => {
   await mockConsole(async () => {
-    // the track is open at load; its config fails to hydrate when the label
-    // reads it during render. The per-track ErrorBoundary contains the failure
-    // to that track's slot instead of crashing the whole app.
-    const { findAllByText } = createViewNoWait(brokenOpenConfig)
-    await findAllByText(/NOTVALID/, {}, delay)
+    // The track is open at load but its config can't hydrate. Session load drops
+    // it (keeping the invariant that view.tracks only holds usable tracks)
+    // rather than crashing.
+    const { view } = createViewNoWait(brokenOpenConfig)
+    expect(view.tracks).toHaveLength(0)
+
+    // toggling still works with no broken track lingering in the view
+    expect(() => view.hideTrack('broken_config_demo')).not.toThrow()
   })
 }, 30000)

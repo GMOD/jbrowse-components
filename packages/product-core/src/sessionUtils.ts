@@ -18,10 +18,15 @@ import type {
 type MSTArray = Instance<ReturnType<typeof types.array>>
 type MSTMap = Instance<ReturnType<typeof types.map>>
 
-// Walks an MST node and drops undefined references from arrays/maps. Throws
-// if it encounters an undefined ref in a non-collection model property
-// (those can't be safely removed in place). Used after loading shared
-// sessions where some referenced ids may not exist.
+// Walks an MST node cleaning up a freshly-loaded session in place:
+// - drops dangling references from arrays/maps
+// - drops any array/map element that can't be walked, e.g. an open track whose
+//   `configuration` reference resolves to a structurally-invalid config and
+//   fails to hydrate. Dropping keeps the invariant that the open set only ever
+//   holds usable tracks (matching the open/add paths, which refuse invalid
+//   configs), so downstream code never has to defend against a track whose
+//   config access throws.
+// Used after loading shared sessions where referenced ids may not exist.
 export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (node === undefined) {
@@ -30,48 +35,48 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
   if (isArrayType(type)) {
     const array = node as MSTArray
     const childType = getChildType(node)
-    if (isReferenceType(childType)) {
-      for (let i = 0; i < array.length; ) {
-        if (isValidReference(() => array[i])) {
-          i += 1
-        } else {
-          array.splice(i, 1)
-        }
+    const isRef = isReferenceType(childType)
+    for (let i = 0; i < array.length; ) {
+      if (!walkChildOrDrop(() => array[i], childType, isRef)) {
+        array.splice(i, 1)
+      } else {
+        i += 1
       }
-    }
-    for (const el of array) {
-      filterSessionInPlace(el, childType)
     }
   } else if (isMapType(type)) {
     const map = node as MSTMap
     const childType = getChildType(map)
-    if (isReferenceType(childType)) {
-      for (const key of map.keys()) {
-        if (!isValidReference(() => map.get(key))) {
-          map.delete(key)
-        }
+    const isRef = isReferenceType(childType)
+    for (const key of map.keys()) {
+      if (!walkChildOrDrop(() => map.get(key), childType, isRef)) {
+        map.delete(key)
       }
-    }
-    for (const child of map.values()) {
-      filterSessionInPlace(child, childType)
     }
   } else if (isModelType(type)) {
     const { properties } = getPropertyMembers(node)
     for (const [pname, ptype] of Object.entries(properties)) {
-      let child
-      try {
-        child = node[pname]
-      } catch (e) {
-        // Reading the property threw: e.g. a track's `configuration` reference
-        // resolves to a structurally-invalid config and fails to hydrate.
-        // Skip it rather than crashing session load — the broken track stays in
-        // the session and surfaces as an error in its own track slot (per-track
-        // ErrorBoundary) when rendered.
-        console.error(e)
-        continue
-      }
-      filterSessionInPlace(child, ptype)
+      filterSessionInPlace(node[pname], ptype)
     }
+  }
+}
+
+// Returns false if the collection element should be dropped: a dangling
+// reference, or an element that throws while being walked (unusable). Otherwise
+// recurses into it and returns true.
+function walkChildOrDrop(
+  get: () => IAnyStateTreeNode,
+  childType: IAnyType,
+  isRef: boolean,
+) {
+  if (isRef) {
+    return isValidReference(get)
+  }
+  try {
+    filterSessionInPlace(get(), childType)
+    return true
+  } catch (e) {
+    console.error(e)
+    return false
   }
 }
 

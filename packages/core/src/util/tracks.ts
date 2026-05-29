@@ -510,10 +510,9 @@ export function showTrackGeneric(
   //
   // The config is eagerly validated (below) *before* the track is pushed, so a
   // broken track is refused with a clear message up front rather than added and
-  // left to fail later when something reads its config. This mirrors
-  // SessionTracks.addTrackConf, the other proactive "refuse invalid config"
-  // path; tracks that slip in anyway (e.g. via a saved session) are tolerated
-  // and rendered as an error by the per-track ErrorBoundary.
+  // left to fail later when something reads its config. This keeps the invariant
+  // that the open set only holds usable tracks, alongside the other two entry
+  // points (SessionTracks.addTrackConf and filterSessionInPlace at load).
   try {
     const rawConf = inlineConf ?? session.tracksById[trackId]
     if (!rawConf) {
