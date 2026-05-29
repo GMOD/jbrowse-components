@@ -26,7 +26,7 @@ export function configSchemaFactory() {
       // pairwise r² used when colorBy is 'ld'.
       ldAdapter: {
         type: 'frozen',
-        defaultValue: undefined,
+        defaultValue: null,
         description: 'Adapter config for PLINK .ld pairwise r² data',
       },
     },

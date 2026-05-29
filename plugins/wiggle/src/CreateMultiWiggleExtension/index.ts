@@ -5,19 +5,8 @@ import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui/Menu'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
-
-declare module '@jbrowse/core/PluginManager' {
-  interface ExtensionPointRegistry {
-    'TrackSelector-multiTrackMenuItems': {
-      args: MenuItem[]
-      result: MenuItem[]
-      props: { session: AbstractSessionModel }
-    }
-  }
-}
 
 // lazies
 const ConfirmDialog = lazy(() => import('./ConfirmDialog.tsx'))

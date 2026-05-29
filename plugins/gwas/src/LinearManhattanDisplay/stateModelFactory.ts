@@ -98,7 +98,8 @@ export function stateModelFactory(
         return self.getConfWithOverride<'normal' | 'ld'>('colorBy')
       },
       get ldAdapterConfig(): Record<string, unknown> | undefined {
-        return readConfObject(self.configuration, 'ldAdapter')
+        // unset slot defaults to null; normalize to undefined for "absent"
+        return readConfObject(self.configuration, 'ldAdapter') ?? undefined
       },
       get domain(): [number, number] | undefined {
         let scoreMin = Infinity
@@ -197,6 +198,14 @@ export function stateModelFactory(
         const refName =
           bestIdx === -1 ? undefined : self.regionRefNames.get(bestIdx)
         return refName ? `${refName}:${bestPos + 1}` : undefined
+      },
+      // True when LD coloring is active with data loaded, but no region's LD
+      // data referenced the index SNP — so every point is grey. LD is a
+      // single-region analysis, so "found in no loaded region" means missing.
+      get indexSnpMissing(): boolean {
+        const ldActive = self.colorBy === 'ld' && self.indexSnp !== undefined
+        const loaded = [...self.rpcDataMap.values()]
+        return ldActive && loaded.length > 0 && loaded.every(d => !d.indexFound)
       },
     }))
     .actions(self => ({

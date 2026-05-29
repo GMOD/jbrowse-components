@@ -36,4 +36,7 @@ export interface ManhattanRpcResult {
   // worker, transferred zero-copy, wrapped on demand via Flatbush.from. Empty
   // when numFeatures === 0 (Flatbush rejects zero-item indexes).
   flatbushData: ArrayBuffer | undefined
+  // LD mode only: whether the index SNP appeared in this region's LD data.
+  // Undefined in normal coloring mode.
+  indexFound?: boolean
 }

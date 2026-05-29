@@ -3,18 +3,35 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 // LocusZoom r² color convention: the index SNP is purple, partners are binned
 // by r² to it in 0.2 steps (red high → blue low), and SNPs with no LD data to
 // the index render grey. Hex values match the LocusZoom.js default palette.
-const GREY = cssColorToABGR('#b8b8b8')
-const INDEX = cssColorToABGR('#9632b8')
+//
+// One source of truth for both the GPU/worker color lookup (ABGR) and the
+// on-screen legend (CSS hex + label).
+export interface LdSwatch {
+  label: string
+  color: string
+}
 
-// Lower-bound (≥) thresholds, scanned high→low — the standard LocusZoom legend
-// (0.8–1.0 red, 0.6–0.8 orange, 0.4–0.6 green, 0.2–0.4 light blue, <0.2 blue).
-const BINS: [number, number][] = [
-  [0.8, cssColorToABGR('#d43f3a')], // red
-  [0.6, cssColorToABGR('#eea236')], // orange
-  [0.4, cssColorToABGR('#5cb85c')], // green
-  [0.2, cssColorToABGR('#46b8da')], // light blue
-  [0, cssColorToABGR('#357ebd')], // blue
+// r² bins, high → low. `min` is the inclusive lower bound (scanned high→low).
+const LD_BIN_DEFS: (LdSwatch & { min: number })[] = [
+  { min: 0.8, color: '#d43f3a', label: '0.8 – 1.0' },
+  { min: 0.6, color: '#eea236', label: '0.6 – 0.8' },
+  { min: 0.4, color: '#5cb85c', label: '0.4 – 0.6' },
+  { min: 0.2, color: '#46b8da', label: '0.2 – 0.4' },
+  { min: 0, color: '#357ebd', label: '< 0.2' },
 ]
+
+export const LD_INDEX_SWATCH: LdSwatch = { label: 'Index SNP', color: '#9632b8' }
+export const LD_MISSING_SWATCH: LdSwatch = { label: 'No LD data', color: '#b8b8b8' }
+
+// Legend rows, top → bottom: index, then r² bins high→low, then the no-data grey.
+export const LD_LEGEND: LdSwatch[] = [
+  LD_INDEX_SWATCH,
+  ...LD_BIN_DEFS.map(({ label, color }) => ({ label, color })),
+  LD_MISSING_SWATCH,
+]
+
+const GREY = cssColorToABGR(LD_MISSING_SWATCH.color)
+const BINS = LD_BIN_DEFS.map(b => [b.min, cssColorToABGR(b.color)] as const)
 
 // ABGR uint32 for a point at the given r² to the index SNP. `undefined` r²
 // (SNP absent from the LD data) renders grey.
@@ -30,4 +47,4 @@ export function ldBinColor(r2: number | undefined): number {
   return GREY
 }
 
-export const ldIndexColor = INDEX
+export const ldIndexColor = cssColorToABGR(LD_INDEX_SWATCH.color)

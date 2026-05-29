@@ -17,6 +17,8 @@ import { observer } from 'mobx-react'
 import { ManhattanRenderer } from '../ManhattanRenderer.ts'
 import { findManhattanHit } from '../findManhattanHit.ts'
 import HoverHighlight from './HoverHighlight.tsx'
+import LdColorLegend from './LdColorLegend.tsx'
+import LdIndexWarning from './LdIndexWarning.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
@@ -68,8 +70,9 @@ const LinearManhattanDisplayComponent = observer(
 
     const width = view.trackWidthPx
     const height = model.height
-    const { ticks, featureUnderMouse, displayCrossHatches } = model
+    const { ticks, featureUnderMouse, displayCrossHatches, colorBy } = model
     const scalebarLeft = model.scalebarOverlapLeft
+    const ldMode = colorBy === 'ld' && model.canvasDrawn
 
     if (error) {
       return (
@@ -119,6 +122,10 @@ const LinearManhattanDisplayComponent = observer(
             width={width}
             height={height}
           />
+        ) : null}
+        {ldMode ? <LdColorLegend offsetTop={YSCALEBAR_LABEL_OFFSET} /> : null}
+        {model.indexSnpMissing ? (
+          <LdIndexWarning offsetTop={YSCALEBAR_LABEL_OFFSET} />
         ) : null}
         <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
         <DisplayErrorBar model={model} />

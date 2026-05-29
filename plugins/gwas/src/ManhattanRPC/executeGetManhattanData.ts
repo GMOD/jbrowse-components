@@ -107,6 +107,7 @@ export async function executeGetManhattanData({
   checkStopToken2(stopTokenCheck)
 
   let evalColor: (f: Feature) => number
+  let indexFound: boolean | undefined
   if (colorBy === 'ld' && indexSnp && ldAdapterConfig) {
     const ldAdapter = (
       await getAdapter(pluginManager, sessionId, ldAdapterConfig)
@@ -116,11 +117,13 @@ export async function executeGetManhattanData({
     )
     checkStopToken2(stopTokenCheck)
     evalColor = makeLdColorEvaluator(ld, indexSnp, region.refName)
+    indexFound = ld.indexFound
   } else {
     evalColor = makeColorEvaluator(color, pluginManager.jexl)
   }
 
   const result = buildManhattanResult(features, evalColor)
+  result.indexFound = indexFound
 
   const transferables: Transferable[] = [
     result.positions.buffer,
