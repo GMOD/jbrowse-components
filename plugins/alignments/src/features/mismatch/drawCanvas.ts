@@ -1,3 +1,4 @@
+import { buildBaseColorTupleMap } from './baseColors.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
@@ -11,25 +12,6 @@ import type {
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-// Returns raw RGBColor tuples (not CSS strings) so that drawMismatches can
-// apply per-mismatch alpha via rgba255() without reparsing. See
-// buildBaseColorMap in baseColors.ts for the CSS-string variant used by
-// features that don't need alpha blending.
-function buildMismatchColorTupleMap(
-  state: RenderState,
-): Record<number, [number, number, number]> {
-  const { colors } = state
-  const mutedBase = colors.colorMutedSnpBase
-  return state.showModifications
-    ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
-    : {
-        65: colors.colorBaseA,
-        67: colors.colorBaseC,
-        71: colors.colorBaseG,
-        84: colors.colorBaseT,
-      }
-}
-
 export function drawMismatches(
   ctx: Ctx2D,
   region: MismatchUploadData,
@@ -41,7 +23,7 @@ export function drawMismatches(
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
   const pxPerBp = fullBlockWidth / bpLength
-  const baseColors = buildMismatchColorTupleMap(state)
+  const baseColors = buildBaseColorTupleMap(state)
 
   for (let i = 0; i < region.mismatchPositions.length; i++) {
     const bp = region.mismatchPositions[i]!

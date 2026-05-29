@@ -441,7 +441,7 @@ export class GpuAlignmentsRenderer implements AlignmentsBackend {
     fillFrameUniforms(this.uF32, this.uU32, this.uI32, state, frame)
     writePaletteToUbo(this.uU32, state.colors, state.pairedArcs === 'samplot')
     if (state.showModifications) {
-      // Canvas equivalent: buildBaseColorMap / buildCigarOpDrawColors in
+      // Canvas equivalent: buildBaseColorTupleMap / buildCigarOpDrawColors in
       // features/mismatch/baseColors.ts — keep in sync when changing this.
       const m = state.colors.colorMutedSnpBase
       const grey = normalizedRgbToABGR(m[0], m[1], m[2])

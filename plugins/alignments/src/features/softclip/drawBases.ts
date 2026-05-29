@@ -3,7 +3,7 @@ import {
   bpToScreenX,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
-import { buildBaseColorMap } from '../mismatch/baseColors.ts'
+import { buildBaseColorTupleMap } from '../mismatch/baseColors.ts'
 
 import type {
   DrawBlock,
@@ -25,11 +25,11 @@ export function drawSoftclipBases(
 ) {
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
-  const baseColors = buildBaseColorMap(state)
+  const baseColors = buildBaseColorTupleMap(state)
   // Non-A/C/G/T bases (e.g. N) have no palette entry; render them with the
   // muted SNP color rather than dropping them, matching the GPU shader
   // (mismatch.slang, shared with the softclip-bases overlay) and MAF.
-  const unknownColor = rgb255(state.colors.colorMutedSnpBase)
+  const unknownColor = state.colors.colorMutedSnpBase
 
   for (let i = 0; i < region.softclipBasePositions.length; i++) {
     const bp = region.softclipBasePositions[i]!
@@ -38,7 +38,7 @@ export function drawSoftclipBases(
     const yRow = region.softclipBaseYs[i]!
     const y = pileupRowY(yRow, state)
     const base = region.softclipBaseBases[i]!
-    ctx.fillStyle = baseColors[base] ?? unknownColor
+    ctx.fillStyle = rgb255(baseColors[base] ?? unknownColor)
     ctx.fillRect(x, y, w, fH)
   }
 }

@@ -1,6 +1,7 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { RGBColor } from '../../shaders/colors.ts'
 import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 
 // Canvas-side equivalents of the GPU palette swap in GpuAlignmentsRenderer.writeUniforms.
@@ -8,17 +9,23 @@ import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 // so that modification overlays stand out. Any new canvas feature that renders per-base
 // colors must call one of these builders rather than inlining the palette selection.
 
-// Per-base ASCII-keyed color map for Canvas2D mismatch + softclip-base draws.
-export function buildBaseColorMap(state: RenderState): Record<number, string> {
+// Single source for per-base canvas colors (mismatch + softclip-base draws),
+// keyed by uppercase-ASCII base code. Returns RGBColor tuples so mismatch draws
+// can apply per-mismatch alpha via rgba255(); softclip-base draws wrap in
+// rgb255(). Non-A/C/G/T bases (e.g. N) fall back to colorMutedSnpBase at the
+// call sites.
+export function buildBaseColorTupleMap(
+  state: RenderState,
+): Record<number, RGBColor> {
   const { colors } = state
-  const mutedBase = rgb255(colors.colorMutedSnpBase)
+  const muted = colors.colorMutedSnpBase
   return state.showModifications
-    ? { 65: mutedBase, 67: mutedBase, 71: mutedBase, 84: mutedBase }
+    ? { 65: muted, 67: muted, 71: muted, 84: muted }
     : {
-        65: rgb255(colors.colorBaseA),
-        67: rgb255(colors.colorBaseC),
-        71: rgb255(colors.colorBaseG),
-        84: rgb255(colors.colorBaseT),
+        65: colors.colorBaseA,
+        67: colors.colorBaseC,
+        71: colors.colorBaseG,
+        84: colors.colorBaseT,
       }
 }
 
