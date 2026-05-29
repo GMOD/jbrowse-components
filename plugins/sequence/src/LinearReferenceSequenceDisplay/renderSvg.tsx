@@ -24,9 +24,8 @@ interface SequenceDisplayModel {
   sequenceData: ReadonlyMap<number, SequenceRegionData>
   renderBlocks: RenderBlock[]
   showForward: boolean
-  showReverse: boolean
-  showTranslation: boolean
-  isDna: boolean
+  effectiveShowReverse: boolean
+  effectiveShowTranslation: boolean
   sequenceType: string
   rowHeight: number
   zoomedOut: boolean
@@ -55,8 +54,8 @@ export async function renderSvg(
     drawSequenceBlocks(ctx, sequenceData, model.renderBlocks, {
       bpPerPx: view.bpPerPx,
       showForward: model.showForward,
-      showReverse: model.isDna && model.showReverse,
-      showTranslation: model.isDna && model.showTranslation,
+      showReverse: model.effectiveShowReverse,
+      showTranslation: model.effectiveShowTranslation,
       sequenceType: model.sequenceType,
       rowHeight: model.rowHeight,
       palette,

@@ -41,6 +41,8 @@ export interface LinearReferenceSequenceDisplayModel {
   showReverse: boolean
   showTranslation: boolean
   isDna: boolean
+  effectiveShowReverse: boolean
+  effectiveShowTranslation: boolean
   sequenceType: string
   rowHeight: number
   sequenceHeight: number
@@ -107,6 +109,22 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => ({
       /**
        * #getter
+       * reverse-complement row is meaningful only for DNA
+       */
+      get effectiveShowReverse() {
+        return self.isDna && self.showReverse
+      },
+      /**
+       * #getter
+       * translation rows are meaningful only for DNA
+       */
+      get effectiveShowTranslation() {
+        return self.isDna && self.showTranslation
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * the view is too zoomed out to show individual bases
        */
       get zoomedOut() {
@@ -115,8 +133,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       get numRows() {
         const f = self.showForward ? 1 : 0
-        const r = self.isDna && self.showReverse ? 1 : 0
-        const t = self.isDna && self.showTranslation ? 1 : 0
+        const r = self.effectiveShowReverse ? 1 : 0
+        const t = self.effectiveShowTranslation ? 1 : 0
         return f + r + 3 * t * (f + r)
       },
       get sequenceHeight() {
