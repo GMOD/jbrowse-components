@@ -87,13 +87,6 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
-
-**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
-
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
-attachRenderingBackend
-
 ### Available via [FetchMixin](../fetchmixin)
 
 **Volatiles:** activeStopToken, fetchGeneration, error, statusMessage

@@ -167,6 +167,18 @@ string[]
 { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
+#### getter: facetCategoryCounts
+
+Per-facet category counts for the filter sidebar. Cached by MobX so it
+recomputes only when rows or filters change, not on every render. Active-filter
+facets are counted first against the pre-filter row set so their counts reflect
+drill-down.
+
+```js
+// type
+Map<string, Map<string, number>>
+```
+
 #### getter: initialWidths
 
 Measured pixel widths for every column. Measured over allRows so widths stay

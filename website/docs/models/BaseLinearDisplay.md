@@ -21,7 +21,12 @@ reference the markdown files in our repo of the checked out git tag
 ## Docs
 
 BaseLinearDisplay is used as the basis for many linear genome view tracks. It is
-block based, and can use 'static blocks' or 'dynamic blocks'
+block based, and can use 'static blocks' or 'dynamic blocks'.
+
+This is the base of the **legacy block / server-side-RPC render stack**. The
+newer GPU stack uses a separate base, `LinearCanvasBaseDisplay` (plugins/canvas)
+— `LinearBasicDisplay` extends that, not this. See
+agent-docs/TRACK_DISPLAY_CONCEPTS.md.
 
 extends
 

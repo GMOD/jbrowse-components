@@ -18,12 +18,14 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-`BaseLinearDisplay` is a "base" config that is extended by other configs
-including
+Shared base config for **both** linear display stacks — its slots (`height`,
+`maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
+common to all linear displays. The GPU stack's `LinearCanvasBaseDisplay` config
+extends it, the legacy block `LinearBareDisplay` config extends it, and
+third-party plugins extend it too.
 
-- `LinearBasicDisplay` (used for feature tracks, etc)
-- `LinearBareDisplay` (more stripped down than even the basic display, not
-  commonly used)
+Note: the _state model_ named `BaseLinearDisplay` is narrower than this config —
+it backs only the legacy block stack. See agent-docs/TRACK_DISPLAY_CONCEPTS.md.
 
 ### BaseLinearDisplay - Identifier
 

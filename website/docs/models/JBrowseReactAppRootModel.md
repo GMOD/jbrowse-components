@@ -30,6 +30,32 @@ note: many properties of the root model are available through the session, and
 we generally prefer using the session model (via e.g. getSession) over the root
 model (via e.g. getRoot) in plugin code
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseRootModel](../baserootmodel)
+
+**Properties:** jbrowse, session, sessionPath, assemblyManager
+
+**Volatiles:** rpcManager, adminMode, error, textSearchManager, pluginManager
+
+**Actions:** setError, setSession, setDefaultSession, setSessionPath,
+renameCurrentSession
+
+### Available via [InternetAccountsMixin](../internetaccountsmixin)
+
+**Properties:** internetAccounts
+
+**Actions:** initializeInternetAccount, createEphemeralInternetAccount,
+findAppropriateInternetAccount
+
+### Available via [RootAppMenuMixin](../rootappmenumixin)
+
+**Actions:** setMenus, appendMenu, insertMenu, appendToMenu, insertInMenu,
+appendToSubMenu, insertInSubMenu
+
 ### JBrowseReactAppRootModel - Volatiles
 
 #### volatile: version

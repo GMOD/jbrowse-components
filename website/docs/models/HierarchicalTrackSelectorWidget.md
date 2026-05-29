@@ -371,13 +371,6 @@ setRecentlyUsedCounter: (val: number) => void
 setRecentlyUsed: (str: string[]) => void
 ```
 
-#### action: setFavorites
-
-```js
-// type signature
-setFavorites: (str: string[]) => void
-```
-
 #### action: setFavoritesCounter
 
 ```js

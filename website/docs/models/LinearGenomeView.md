@@ -1025,6 +1025,16 @@ single-assembly views.
 getHighlightCoords: (region: { assemblyName?: string | undefined; refName: string; start: number; end: number; }) => { width: number; left: number; } | undefined
 ```
 
+#### method: getOverviewHighlightCoords
+
+like getHighlightCoords but laid out against the overview scalebar and shifted
+by the cytoband offset
+
+```js
+// type signature
+getOverviewHighlightCoords: (region: { assemblyName?: string | undefined; refName: string; start: number; end: number; }) => { left: number; width: number; } | undefined
+```
+
 #### method: centerAt
 
 scrolls the view to center on the given bp. if that is not in any of the

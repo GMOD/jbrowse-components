@@ -42,3 +42,76 @@ getTrackActionMenuItems, menus
 **Actions:** addAssemblyConf, addSessionPlugin, removeSessionPlugin,
 deleteSavedSession, setSavedSessionFavorite, renameCurrentSession,
 activateSession, setDefaultSession, setSession, editTrackConfiguration
+
+### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+
+**Methods:** getReferring
+
+**Actions:** removeReferring
+
+### Available via [ThemeManagerSessionMixin](../thememanagersessionmixin)
+
+**Getters:** themeName, theme
+
+**Methods:** allThemes
+
+**Actions:** setThemeName
+
+### Available via [MultipleViewsSessionMixin](../multipleviewssessionmixin)
+
+**Properties:** views, stickyViewHeaders, useWorkspaces
+
+**Actions:** moveViewDown, moveViewUp, moveViewToTop, moveViewToBottom, addView,
+removeView, setStickyViewHeaders, setUseWorkspaces
+
+### Available via [BaseSessionModel](../basesessionmodel)
+
+**Properties:** id, name, margin, focusedViewId
+
+**Volatiles:** selection, hovered, queueOfDialogs
+
+**Getters:** root, jbrowse, rpcManager, configuration, adminMode,
+textSearchManager, assemblies, DialogComponent, DialogProps
+
+**Actions:** setSelection, clearSelection, setHovered, setName,
+setFocusedViewId, removeActiveDialog, queueDialog
+
+### Available via [SnackbarModel](../snackbarmodel)
+
+**Volatiles:** snackbarMessages
+
+**Getters:** snackbarMessageSet
+
+**Actions:** notify, notifyError, pushSnackbarMessage, popSnackbarMessage,
+removeSnackbarMessage
+
+### Available via [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+
+**Properties:** drawerPosition, drawerWidth, widgets, activeWidgets, minimized
+
+**Getters:** visibleWidget
+
+**Actions:** setDrawerPosition, updateDrawerWidth, resizeDrawer, addWidget,
+showWidget, hideWidget, minimizeWidgetDrawer, showWidgetDrawer, hideAllWidgets,
+editConfiguration
+
+### Available via [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+
+**Properties:** sessionTracks
+
+**Getters:** tracks
+
+**Actions:** addTrackConf, deleteTrackConf
+
+### Available via [AssembliesMixin](../assembliesmixin)
+
+**Properties:** sessionAssemblies, temporaryAssemblies
+
+**Actions:** addSessionAssembly, addAssembly, removeAssembly,
+removeSessionAssembly, addTemporaryAssembly, removeTemporaryAssembly
+
+### Available via [WebSessionConnectionsMixin](../websessionconnectionsmixin)
+
+**Properties:** sessionConnections
+
+**Actions:** addConnectionConf, deleteConnection

@@ -409,9 +409,59 @@ Expanded example, see that it is a self-self alignment
 }
 ```
 
-Note that this dotplot session spec doesn't have the ability to navigate to
-specific regions on the assembly yet, it just navigates to a whole genome
-overview
+Each entry in the `views` array also accepts an optional `loc` to navigate that
+axis to a specific region (`views[0]` is the horizontal axis, `views[1]` the
+vertical); omit `loc` for a whole-genome overview:
+
+```json
+{
+  "views": [
+    {
+      "type": "DotplotView",
+      "views": [
+        { "assembly": "volvox", "loc": "ctgA:1-50000" },
+        { "assembly": "volvox", "loc": "ctgA:1-50000" }
+      ],
+      "tracks": ["volvox_fake_synteny"]
+    }
+  ]
+}
+```
+
+#### Dotplot highlights
+
+The dotplot view accepts a `highlight` array in the same way the linear genome
+view does (see [&highlight=](#highlight)). Each entry is a loc string (or a
+URL-encoded `HighlightType` JSON object with optional `color`/`label`). A region
+is drawn as a translucent **vertical** band when its assembly matches the
+horizontal axis and as a **horizontal** band when it matches the vertical axis —
+so on a self-vs-self plot it appears on both axes:
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox","loc":"ctgA:1-50000"},{"assembly":"volvox","loc":"ctgA:1-50000"}],"tracks":["volvox_fake_synteny"],"highlight":["ctgA:5000-15000"]}]}
+```
+
+Expanded JSON:
+
+```json
+{
+  "views": [
+    {
+      "type": "DotplotView",
+      "views": [
+        { "assembly": "volvox", "loc": "ctgA:1-50000" },
+        { "assembly": "volvox", "loc": "ctgA:1-50000" }
+      ],
+      "tracks": ["volvox_fake_synteny"],
+      "highlight": ["ctgA:5000-15000"]
+    }
+  ]
+}
+```
+
+As with the linear genome view, include `assemblyName` when the band must be
+tied to a specific axis assembly (e.g. a non-self plot); a bare loc string
+resolves by refName against whichever axis contains it.
 
 ### Spreadsheet view
 

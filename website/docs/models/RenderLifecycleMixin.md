@@ -1,5 +1,5 @@
 ---
-id: gpulifecyclemixin
+id: renderlifecyclemixin
 title: RenderLifecycleMixin
 ---
 
@@ -29,14 +29,14 @@ Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
 
 - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes
   to detect first paint.
-- `currentRenderingBackend` — the backend reference, updated on context-loss recovery.
-  Autoruns read it each tick so they re-fire against the new one without being
-  reinstalled.
+- `currentRenderingBackend` — the backend reference, updated on context-loss
+  recovery. Autoruns read it each tick so they re-fire against the new one
+  without being reinstalled.
 - `renderTick` — counter the render autorun observes; bumped by `renderNow()`
   (tab-visibility restore) and after every upload (ensures render re-fires when
   an upload happens but renderState identity stays stable).
-- `autorunsInstalled` — guards `attachRenderingBackend` so the autorun pair is spawned
-  once per model instance, not once per backend assignment.
+- `autorunsInstalled` — guards `attachRenderingBackend` so the autorun pair is
+  spawned once per model instance, not once per backend assignment.
 
 The `upload` callback runs in one autorun, `render` in another. Inside each,
 every observable read is auto-tracked by MobX — no getter-layer indirection, no
@@ -59,7 +59,11 @@ canvasDrawn: false
 
 #### volatile: currentRenderingBackend
 
-current backend reference, updated on context-loss recovery
+current backend reference, updated on context-loss recovery. Typed `unknown`
+(not generic `B`) on purpose: this mixin is composed by every display via a
+non-generic factory, so the per-display backend type `B` isn't known here — it's
+supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
+autoruns. Don't "fix" the cast.
 
 ```js
 // type signature

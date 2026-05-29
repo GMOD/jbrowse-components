@@ -27,6 +27,68 @@ composed of
 - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
 - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
 - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+- [TrackMenuSessionMixin](../trackmenusessionmixin)
+
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseSessionModel](../basesessionmodel)
+
+**Properties:** id, name, margin, focusedViewId
+
+**Volatiles:** selection, hovered, queueOfDialogs
+
+**Getters:** root, jbrowse, rpcManager, configuration, adminMode,
+textSearchManager, assemblies, DialogComponent, DialogProps
+
+**Actions:** setSelection, clearSelection, setHovered, setName,
+setFocusedViewId, removeActiveDialog, queueDialog
+
+### Available via [SnackbarModel](../snackbarmodel)
+
+**Volatiles:** snackbarMessages
+
+**Getters:** snackbarMessageSet
+
+**Actions:** notify, notifyError, pushSnackbarMessage, popSnackbarMessage,
+removeSnackbarMessage
+
+### Available via [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+
+**Properties:** drawerPosition, drawerWidth, widgets, activeWidgets, minimized
+
+**Getters:** visibleWidget
+
+**Actions:** setDrawerPosition, updateDrawerWidth, resizeDrawer, addWidget,
+showWidget, hideWidget, minimizeWidgetDrawer, showWidgetDrawer, hideAllWidgets,
+editConfiguration
+
+### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+
+**Properties:** connectionInstances
+
+**Getters:** connections
+
+**Actions:** makeConnection, prepareToBreakConnection, breakConnection,
+deleteConnection, addConnectionConf, clearConnections
+
+### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+
+**Getters:** tracks, getTracksById, tracksById
+
+**Actions:** addTrackConf, deleteTrackConf
+
+### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+
+**Methods:** getReferring
+
+**Actions:** removeReferring
+
+### Available via [TrackMenuSessionMixin](../trackmenusessionmixin)
+
+**Methods:** getTrackActionMenuItems
 
 ### JBrowseReactCircularGenomeViewSessionModel - Properties
 

@@ -34,21 +34,6 @@ composed of
 (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
-#### getter: assemblies
-
-Base assemblies from jbrowse config. Child sessions can override to include
-additional assemblies (e.g. sessionAssemblies).
-
-```js
-// type
-{
-  sequence: {
-    trackId: string
-  }
-}
-;[]
-```
-
 #### getter: getTracksById
 
 Map of trackId → config for all tracks, assemblies, and connections. Frozen

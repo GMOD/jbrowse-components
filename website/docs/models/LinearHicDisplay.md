@@ -65,13 +65,6 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
-
-**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
-
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
-attachRenderingBackend
-
 ### Available via [FetchMixin](../fetchmixin)
 
 **Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
@@ -266,8 +259,8 @@ setRpcData: (data: HicDataResult | null) => void
 
 #### action: startRenderingBackend
 
-Called by the React hook (`useRenderingBackend`) when the HAL resolves. Wires the
-backend into the mixin-owned autorun pair via `attachRenderingBackend`.
+Called by the React hook (`useRenderingBackend`) when the HAL resolves. Wires
+the backend into the mixin-owned autorun pair via `attachRenderingBackend`.
 
 ```js
 // type signature

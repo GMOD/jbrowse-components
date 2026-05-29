@@ -78,13 +78,6 @@ featureDensityStats
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
 
-### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
-
-**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
-
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
-attachRenderingBackend
-
 ### Available via [FetchMixin](../fetchmixin)
 
 **Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
@@ -209,15 +202,6 @@ true
 flipStrandLongReadChains: true
 ```
 
-#### property: lineWidthSetting
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-lineWidthSetting: types.maybe(types.number)
-```
-
 #### property: drawInter
 
 ```js
@@ -248,21 +232,34 @@ arcColorByType: types.optional(
           )
 ```
 
-#### property: pairedArcs
+#### property: readConnections
+
+read-connection rendering mode (mate pairs + split reads), orthogonal to
+direction
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<PairedArcsMode>, [undefined]>
+IOptionalIType<ISimpleType<ReadConnectionsMode>, [undefined]>
 // code
-pairedArcs: types.optional(
-            types.enumeration<PairedArcsMode>('PairedArcsMode', [
+readConnections: types.optional(
+            types.enumeration<ReadConnectionsMode>('ReadConnectionsMode', [
               'off',
-              'up',
-              'down',
+              'arc',
               'samplot',
             ]),
             'off',
           )
+```
+
+#### property: readConnectionsDown
+
+draw read connections below the coverage band instead of over it
+
+```js
+// type signature
+false
+// code
+readConnectionsDown: false
 ```
 
 #### property: sashimiArcs
@@ -290,13 +287,13 @@ number
 sashimiArcsHeight: 40
 ```
 
-#### property: arcsHeight
+#### property: readConnectionsHeight
 
 ```js
 // type signature
 number
 // code
-arcsHeight: 40
+readConnectionsHeight: 40
 ```
 
 #### property: showSoftClipping
@@ -729,7 +726,7 @@ number
 Map<string, { displayedRegionIndex: number; idx: number; }>
 ```
 
-#### getter: lineWidth
+#### getter: readConnectionsLineWidth
 
 ```js
 // type
@@ -800,7 +797,7 @@ string | undefined
 
 ```js
 // type
-{ rangeY: [number, number]; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 20 more ...; arcsYDomainBp: number | undefined; } | undefined
+{ rangeY: [number, number]; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 21 more ...; arcsYDomainBp: number | undefined; } | undefined
 ```
 
 #### getter: arcsYDomainBp
@@ -1089,11 +1086,18 @@ setCompactness: (level: "normal" | "compact" | "super-compact") => void
 setSashimiArcs: (mode: ArcDirection) => void
 ```
 
-#### action: setPairedArcs
+#### action: setReadConnections
 
 ```js
 // type signature
-setPairedArcs: (mode: PairedArcsMode) => void
+setReadConnections: (mode: ReadConnectionsMode) => void
+```
+
+#### action: setReadConnectionsDown
+
+```js
+// type signature
+setReadConnectionsDown: (down: boolean) => void
 ```
 
 #### action: setShowCoverage
@@ -1110,11 +1114,11 @@ setShowCoverage: (show: boolean) => void
 setCoverageHeight: (height: number) => void
 ```
 
-#### action: setArcsHeight
+#### action: setReadConnectionsHeight
 
 ```js
 // type signature
-setArcsHeight: (height: number) => void
+setReadConnectionsHeight: (height: number) => void
 ```
 
 #### action: setSashimiArcsHeight
@@ -1124,11 +1128,11 @@ setArcsHeight: (height: number) => void
 setSashimiArcsHeight: (height: number) => void
 ```
 
-#### action: setLineWidth
+#### action: setReadConnectionsLineWidth
 
 ```js
 // type signature
-setLineWidth: (width: number) => void
+setReadConnectionsLineWidth: (width: number) => void
 ```
 
 #### action: setDrawInter

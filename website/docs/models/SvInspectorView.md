@@ -156,7 +156,7 @@ CircularViewReactComponent: CircularViewType.ReactComponent
 // type signature
 number
 // code
-circularViewOptionsBarHeight
+circularViewOptionsBarHeight: 52
 ```
 
 ### SvInspectorView - Getters

@@ -42,6 +42,16 @@ featureSpacing: {
       }
 ```
 
+#### slot: readConnectionsLineWidth
+
+```js
+readConnectionsLineWidth: {
+        type: 'number',
+        defaultValue: 1,
+        description: 'Line width for read-connection arcs/lines in pixels',
+      }
+```
+
 #### slot: maxHeight
 
 ```js

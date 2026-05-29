@@ -18,7 +18,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-synonym for FeatureTrack
+Back-compat synonym for [FeatureTrack](../featuretrack): identical config, kept
+so existing `type: 'BasicTrack'` configs (and third-party plugins that reference
+the name) keep loading. New tracks should use FeatureTrack.
 
 ## Inherited config slots
 

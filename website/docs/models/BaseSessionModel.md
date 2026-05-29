@@ -28,6 +28,20 @@ composed of
 - [SnackbarModel](../snackbarmodel) — so `notify`/`notifyError` are available to
   every session and the mixins beneath it (e.g. track add/open paths)
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [SnackbarModel](../snackbarmodel)
+
+**Volatiles:** snackbarMessages
+
+**Getters:** snackbarMessageSet
+
+**Actions:** notify, notifyError, pushSnackbarMessage, popSnackbarMessage,
+removeSnackbarMessage
+
 ### BaseSessionModel - Properties
 
 #### property: id

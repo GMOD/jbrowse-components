@@ -36,9 +36,9 @@ and docs.
 
 **Properties:** type, configuration, linkedReads, showCoverage, coverageHeight,
 showMismatches, showInterbaseIndicators, showYScalebar, drawSingletons,
-drawProperPairs, flipStrandLongReadChains, lineWidthSetting, drawInter,
-drawLongRange, arcColorByType, pairedArcs, sashimiArcs, sashimiArcsHeight,
-arcsHeight, showSoftClipping
+drawProperPairs, flipStrandLongReadChains, drawInter, drawLongRange,
+arcColorByType, readConnections, readConnectionsDown, sashimiArcs,
+sashimiArcsHeight, readConnectionsHeight, showSoftClipping
 
 **Volatiles:** featureIdUnderMouse, mouseoverExtraInformation,
 contextMenuFeature, contextMenuCoord, contextMenuCigarHit,
@@ -54,9 +54,10 @@ mismatchAlpha, showLegend, sortedBy, coverageIsLog, coverageStats,
 coverageDomain, coverageTicks, legendItems, laidOutPileupMap, maxY,
 arcsComputed, arcsRpcDataMap, modificationThreshold, colorSchemeIndex,
 showModifications, showPerBaseQuality, totalPileupHeight, readIdIndexMap,
-lineWidth, scrollTop, coverageDisplayHeight, pileupViewportHeight,
-scalebarOverlapLeft, showOutlineSetting, visibleLabels, scrollableHeight,
-sortTag, renderState, arcsYDomainBp, insertSizeTicks, featureUnderMouse
+readConnectionsLineWidth, scrollTop, coverageDisplayHeight,
+pileupViewportHeight, scalebarOverlapLeft, showOutlineSetting, visibleLabels,
+scrollableHeight, sortTag, renderState, arcsYDomainBp, insertSizeTicks,
+featureUnderMouse
 
 **Methods:** findFeatureInRpcData, searchFeatureByID, getFeatureInfoById,
 rpcProps, trackMenuItems, contextMenuItems
@@ -68,17 +69,17 @@ setSelectedChainIds, setColorScheme, updateColorTagMap, setFilterBy,
 setShowOutline, toggleSoftClipping, toggleMismatchAlpha, setSortedBy,
 setSortedByAtPosition, clearSortedBy, setMaxHeight, setScaleType, setAutoscale,
 setMinScore, setMaxScore, setFeatureHeight, setFeatureSpacing, setCompactness,
-setSashimiArcs, setPairedArcs, setShowCoverage, setCoverageHeight,
-setArcsHeight, setSashimiArcsHeight, setLineWidth, setDrawInter,
-setDrawLongRange, setColorByType, setShowMismatches, setShowYScalebar,
-setShowLegend, setDrawSingletons, setDrawProperPairs,
-setShowInterbaseIndicators, setFlipStrandLongReadChains, setLinkedReads,
-updateVisibleModifications, setSimplexModifications, setModificationsReady,
-setFeatureIdUnderMouse, setMouseoverExtraInformation, setHoverState,
-setContextMenuFeature, setContextMenuCoord, setContextMenuCigarHit,
-setContextMenuIndicatorHit, clearContextMenu, setContextMenuRefName,
-selectFeature, startRenderingBackend, selectFeatureById, setContextMenuFeatureById,
-getByteEstimateConfig, fetchNeeded, renderSvg
+setSashimiArcs, setReadConnections, setReadConnectionsDown, setShowCoverage,
+setCoverageHeight, setReadConnectionsHeight, setSashimiArcsHeight,
+setReadConnectionsLineWidth, setDrawInter, setDrawLongRange, setColorByType,
+setShowMismatches, setShowYScalebar, setShowLegend, setDrawSingletons,
+setDrawProperPairs, setShowInterbaseIndicators, setFlipStrandLongReadChains,
+setLinkedReads, updateVisibleModifications, setSimplexModifications,
+setModificationsReady, setFeatureIdUnderMouse, setMouseoverExtraInformation,
+setHoverState, setContextMenuFeature, setContextMenuCoord,
+setContextMenuCigarHit, setContextMenuIndicatorHit, clearContextMenu,
+setContextMenuRefName, selectFeature, startRenderingBackend, selectFeatureById,
+setContextMenuFeatureById, getByteEstimateConfig, fetchNeeded, renderSvg
 
 ### Available via [BaseDisplay](../basedisplay)
 
@@ -123,13 +124,6 @@ featureDensityStats
 
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload
-
-### Available via [RenderLifecycleMixin](../gpulifecyclemixin)
-
-**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick, autorunsInstalled
-
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
-attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 

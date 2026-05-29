@@ -230,6 +230,32 @@ IType<DotplotViewInit | undefined, DotplotViewInit | undefined, DotplotViewInit 
 init: types.frozen<DotplotViewInit | undefined>()
 ```
 
+#### property: highlight
+
+translucent highlight bands drawn per-axis: vertical when the region's assembly
+matches hview, horizontal when it matches vview
+
+```js
+// type signature
+IOptionalIType<IArrayType<IType<HighlightType, HighlightType, HighlightType>>, [undefined]>
+// code
+highlight: types.optional(
+            types.array(types.frozen<HighlightType>()),
+            [],
+          )
+```
+
+#### property: highlightsVisible
+
+controls whether view.highlight entries are rendered
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+highlightsVisible: types.optional(types.boolean, true)
+```
+
 ### DotplotView - Volatiles
 
 #### volatile: volatileWidth
@@ -470,6 +496,28 @@ unknown
 renderProps: () => any
 ```
 
+#### method: getHHighlightCoords
+
+Map a highlight/bookmark region to {left, width} px on the horizontal axis. left
+is already screen-offset. Returns undefined when the region isn't on hview's
+assembly/displayed regions.
+
+```js
+// type signature
+getHHighlightCoords: (region: { assemblyName?: string | undefined; refName: string; start: number; end: number; }) => { width: number; left: number; } | undefined
+```
+
+#### method: getVHighlightCoords
+
+Map a highlight/bookmark region to {top, height} px on the vertical axis. The
+vview lays out bottom-to-top, so the band is y-flipped into screen space.
+Returns undefined when the region isn't on vview.
+
+```js
+// type signature
+getVHighlightCoords: (region: { assemblyName?: string | undefined; refName: string; start: number; end: number; }) => { top: number; height: number; } | undefined
+```
+
 #### method: menuItems
 
 ```js
@@ -530,6 +578,34 @@ syncBpPerPx: () => void
 ```js
 // type signature
 setLineWidth: (value: number) => void
+```
+
+#### action: addToHighlights
+
+```js
+// type signature
+addToHighlights: (highlight: HighlightType) => void
+```
+
+#### action: setHighlight
+
+```js
+// type signature
+setHighlight: (highlight?: HighlightType[] | undefined) => void
+```
+
+#### action: removeHighlight
+
+```js
+// type signature
+removeHighlight: (highlight: HighlightType) => void
+```
+
+#### action: setHighlightsVisible
+
+```js
+// type signature
+setHighlightsVisible: (arg: boolean) => void
 ```
 
 #### action: clearView
