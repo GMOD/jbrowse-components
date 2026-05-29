@@ -2,6 +2,7 @@ import 'dockview-react/dist/styles/dockview.css'
 
 export default {
   parameters: {
+    layout: 'fullscreen',
     options: {
       storySort: {
         order: [

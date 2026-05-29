@@ -1,15 +1,3 @@
-export * from './BasicExample.tsx'
-export * from './SyntenyExample.tsx'
-export * from './DotplotExample.tsx'
-export * from './CircularExample.tsx'
-export * from './SpreadsheetExample.tsx'
-export * from './SvInspectorExample.tsx'
-export * from './BreakpointSplitExample.tsx'
-export * from './DarkTheme.tsx'
-export * from './HumanDemo.tsx'
-export * from './WithWebWorker.tsx'
-export * from './WithLaunchLinearGenomeView.tsx'
-export * from './WithImportConfigJson.tsx'
-export * from './WithFetchConfigJson.tsx'
-export * from './AddTracksProgrammatically.tsx'
-export * from './EmbeddedPlugin.tsx'
+// All stories are now defined inline in JBrowseReactApp.stories.tsx.
+// This file is kept for future use.
+export {}
