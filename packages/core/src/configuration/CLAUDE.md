@@ -66,7 +66,7 @@ into `BaseSessionModel`.
 **not** throw. Callers must not wrap `showTrack`/`showTrackGeneric` in a
 try/catch that re-`notifyError`s: that catch is dead (nothing throws) and would
 double-notify. Just call it in a loop and let the choke point report. A
-surrounding try is only legitimate when it guards *other* work (e.g.
+surrounding try is only legitimate when it guards _other_ work (e.g.
 `navToLocString`).
 
 ### Reference resolution

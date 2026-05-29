@@ -34,10 +34,9 @@ minimap2 -cx asm5 reference.fa query.fa > alignment.paf
 ```
 
 The `-x asm5` preset is for whole-genome assembly comparison, and `-c` emits the
-base-level CIGAR that the linear synteny view needs to draw alignments at
-base resolution. You can also use
-[MUMmer](http://mummer.sourceforge.net/) and convert the `.delta` output to PAF
-with `delta2paf` from
+base-level CIGAR that the linear synteny view needs to draw alignments at base
+resolution. You can also use [MUMmer](http://mummer.sourceforge.net/) and
+convert the `.delta` output to PAF with `delta2paf` from
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
 convert UCSC chain files with `chain2paf` from the same toolkit. For small files
 you can load `.delta` or `.chain` directly into JBrowse without converting.

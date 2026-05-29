@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.1",
+    "@jbrowse/mobx-state-tree": "^5.10.2",
     "@mui/material": "^9.0.1",
     "generic-filehandle2": "^2.1.10",
     "mobx": "^6.15.4"

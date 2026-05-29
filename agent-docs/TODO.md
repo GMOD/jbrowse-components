@@ -1,1 +1,5 @@
-- widen storybook area
+- audit docs more
+- regenerate embedded examples
+- check malonge question
+- fix tests
+- remove LinearReadCloudDisplay, LinearReadArcsDisplay from docs...or restore them in reduced form?

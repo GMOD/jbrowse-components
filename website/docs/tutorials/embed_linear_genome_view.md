@@ -9,10 +9,10 @@ app, see the [web quickstart](/docs/quickstart_web) instead.
 
 :::tip Usage examples and API reference
 
-The [LGV Storybook](https://jbrowse.org/storybook/lgv/main/) is the most complete
-source of live, runnable usage examples for this component — props, theming,
-programmatic control, plugins, and more. For an overview of all the embedded
-packages (app, linear, circular) and bundler setups, see the
+The [LGV Storybook](https://jbrowse.org/storybook/lgv/main/) is the most
+complete source of live, runnable usage examples for this component — props,
+theming, programmatic control, plugins, and more. For an overview of all the
+embedded packages (app, linear, circular) and bundler setups, see the
 [Embedded components](/docs/embedded_components) page.
 
 :::
