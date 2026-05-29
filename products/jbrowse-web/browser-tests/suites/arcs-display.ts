@@ -92,7 +92,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'samplot down mode (TEMP verify)',
+      name: 'samplot down mode (paired-end SV, scalebar left)',
       fn: async page => {
         await navigateWithSessionSpec(page, {
           views: [
