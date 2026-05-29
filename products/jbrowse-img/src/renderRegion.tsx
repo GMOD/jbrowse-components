@@ -76,15 +76,15 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         }
         break
       }
-      case 'arcsHeight': {
+      case 'pairedConnectionsHeight': {
         if (val1) {
-          display.setArcsHeight?.(+val1)
+          display.setPairedConnectionsHeight?.(+val1)
         }
         break
       }
-      case 'arcLineWidth': {
+      case 'pairedConnectionsLineWidth': {
         if (val1) {
-          display.setArcLineWidth?.(+val1)
+          display.setPairedConnectionsLineWidth?.(+val1)
         }
         break
       }

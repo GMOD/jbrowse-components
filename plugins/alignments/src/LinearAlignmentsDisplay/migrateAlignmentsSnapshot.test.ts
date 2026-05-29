@@ -34,6 +34,13 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result).not.toHaveProperty('height')
   })
 
+  test('migrates arcsHeight → pairedConnectionsHeight', () => {
+    const snap = { type: 'LinearAlignmentsDisplay', arcsHeight: 60 }
+    const result = migrateAlignmentsSnapshot(snap)
+    expect(result.pairedConnectionsHeight).toBe(60)
+    expect(result).not.toHaveProperty('arcsHeight')
+  })
+
   test('does not overwrite existing heightPreConfig', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
@@ -218,14 +225,14 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result).not.toHaveProperty('trackMaxHeight')
   })
 
-  test('migrates lineWidthSetting → configOverrides.arcLineWidth', () => {
+  test('migrates lineWidthSetting → configOverrides.pairedConnectionsLineWidth', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       lineWidthSetting: 3,
     }
     const result = migrateAlignmentsSnapshot(snap)
     const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.arcLineWidth).toBe(3)
+    expect(overrides.pairedConnectionsLineWidth).toBe(3)
     expect(result).not.toHaveProperty('lineWidthSetting')
   })
 

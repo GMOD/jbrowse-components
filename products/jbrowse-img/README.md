@@ -113,10 +113,10 @@ jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
 ## samplot-style SV view — samplot overlays the coverage band, so use
-## coverageHeight to make the panel tall (NOT arcsHeight, which only sizes
+## coverageHeight to make the panel tall (NOT pairedConnectionsHeight, which only sizes
 ## the regular up/down arcs panel). Samplot disappears if coverage:false.
 jb2export --fasta ref.fa --bam reads.bam arcs:samplot coverageHeight:300 \
-  arcLineWidth:2 height:600 --loc chr1:1-50000
+  pairedConnectionsLineWidth:2 height:600 --loc chr1:1-50000
 
 ## paired-end arcs above reads
 jb2export --fasta ref.fa --bam reads.bam arcs:up --loc chr1:1-10000
@@ -165,8 +165,8 @@ Layout & sizing:
 | `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
 | `noSpacing:true\|false`   | `noSpacing:true`                                 | Remove gap between reads                                                         |
 | `coverageHeight:N`        | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
-| `arcsHeight:N`            | `arcsHeight:120`                                 | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
-| `arcLineWidth:N`          | `arcLineWidth:2`                                 | Stroke width for paired-read arcs in pixels                                      |
+| `pairedConnectionsHeight:N`            | `pairedConnectionsHeight:120`                                 | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
+| `pairedConnectionsLineWidth:N`          | `pairedConnectionsLineWidth:2`                                 | Stroke width for paired-read arcs in pixels                                      |
 
 Available `color:type` values:
 

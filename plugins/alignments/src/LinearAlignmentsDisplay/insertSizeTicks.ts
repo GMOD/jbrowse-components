@@ -22,16 +22,16 @@ function formatBp(v: number) {
 // pairedArcsDown: anchor at top, ticks descend. !pairedArcsDown: anchor at bottom, ticks ascend.
 export function computeInsertSizeTicks({
   arcsYDomainBp,
-  arcsHeight,
+  pairedConnectionsHeight,
   pairedArcsDown,
   arcsTop,
 }: {
   arcsYDomainBp: number
-  arcsHeight: number
+  pairedConnectionsHeight: number
   pairedArcsDown: boolean
   arcsTop: number
 }): YScaleTicks | undefined {
-  const availH = arcsHeight - 2 * YSCALEBAR_LABEL_OFFSET
+  const availH = pairedConnectionsHeight - 2 * YSCALEBAR_LABEL_OFFSET
   if (availH <= 0 || arcsYDomainBp <= 0) {
     return undefined
   }
@@ -39,7 +39,7 @@ export function computeInsertSizeTicks({
   const step = niceStep(arcsYDomainBp)
   const anchor = pairedArcsDown
     ? arcsTop + YSCALEBAR_LABEL_OFFSET
-    : arcsTop + arcsHeight - YSCALEBAR_LABEL_OFFSET
+    : arcsTop + pairedConnectionsHeight - YSCALEBAR_LABEL_OFFSET
 
   const items: YScaleTicks['items'] = []
   for (let v = 0; v <= arcsYDomainBp; v += step) {

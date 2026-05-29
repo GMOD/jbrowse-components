@@ -196,7 +196,7 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.bpHi] = hi
   f[U.bpLo] = lo
   f[U.bpLen] = block.end - block.start
-  f[U.lineWidthPx] = state.arcLineWidth ?? 1
+  f[U.lineWidthPx] = state.pairedConnectionsLineWidth ?? 1
   f[U.pairedArcsDown] = state.pairedConnectionsDown ? 1 : 0
   // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior

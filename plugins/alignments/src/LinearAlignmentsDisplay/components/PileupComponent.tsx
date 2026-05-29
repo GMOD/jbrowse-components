@@ -246,7 +246,7 @@ const PileupInner = observer(function PileupInner({
             className={classes.resizeHandle}
             style={{ top: topOffset - YSCALEBAR_LABEL_OFFSET }}
             onDrag={dy => {
-              model.setArcsHeight(Math.max(20, model.arcsHeight + dy))
+              model.setPairedConnectionsHeight(Math.max(20, model.pairedConnectionsHeight + dy))
               return undefined
             }}
             title="Drag to resize arcs area"

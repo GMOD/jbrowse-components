@@ -47,14 +47,14 @@ export interface RenderState {
   linkedReads: LinkedReadsMode
   flipStrandLongReadChains?: boolean
   reversed?: boolean
-  arcLineWidth?: number
+  pairedConnectionsLineWidth?: number
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
   // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
   arcsYDomainBp?: number
   pairedConnections: PairedConnectionsMode
   pairedConnectionsDown?: boolean
-  arcsHeight?: number
+  pairedConnectionsHeight?: number
   pileupTopOffset: number
   showOutline?: boolean
 }
@@ -88,8 +88,8 @@ export function ensureRegion<T>(
 export function computeBlockHeights(state: RenderState) {
   return {
     effectiveArcsHeight:
-      state.pairedConnections !== 'off' && state.arcsHeight
-        ? state.arcsHeight
+      state.pairedConnections !== 'off' && state.pairedConnectionsHeight
+        ? state.pairedConnectionsHeight
         : 0,
     covH: state.showCoverage ? state.coverageHeight : 0,
   }

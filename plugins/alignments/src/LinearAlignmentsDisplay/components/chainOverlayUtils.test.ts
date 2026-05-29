@@ -172,16 +172,16 @@ describe('computeBlockHeights', () => {
     expect(covH).toBe(80)
   })
 
-  it('returns arcsHeight when pairedConnections is on and arcsHeight is set', () => {
+  it('returns pairedConnectionsHeight when pairedConnections is on and pairedConnectionsHeight is set', () => {
     const { effectiveArcsHeight } = computeBlockHeights(
-      makeState({ pairedConnections: 'arc', arcsHeight: 60 }),
+      makeState({ pairedConnections: 'arc', pairedConnectionsHeight: 60 }),
     )
     expect(effectiveArcsHeight).toBe(60)
   })
 
-  it('returns 0 for arcs when pairedConnections is on but arcsHeight is 0', () => {
+  it('returns 0 for arcs when pairedConnections is on but pairedConnectionsHeight is 0', () => {
     const { effectiveArcsHeight } = computeBlockHeights(
-      makeState({ pairedConnections: 'arc', arcsHeight: 0 }),
+      makeState({ pairedConnections: 'arc', pairedConnectionsHeight: 0 }),
     )
     expect(effectiveArcsHeight).toBe(0)
   })

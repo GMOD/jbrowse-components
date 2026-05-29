@@ -337,7 +337,7 @@ export default function stateModelFactory(
           /**
            * #property
            */
-          arcsHeight: 40,
+          pairedConnectionsHeight: 40,
           /**
            * #property
            */
@@ -821,8 +821,8 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get arcLineWidth() {
-          return self.getConfWithOverride<number>('arcLineWidth')
+        get pairedConnectionsLineWidth() {
+          return self.getConfWithOverride<number>('pairedConnectionsLineWidth')
         },
 
         /**
@@ -870,7 +870,7 @@ export default function stateModelFactory(
           return (
             (self.showCoverage ? self.coverageHeight : 0) +
             (self.pairedConnections !== 'off' && self.pairedConnectionsDown
-              ? self.arcsHeight
+              ? self.pairedConnectionsHeight
               : 0) +
             (self.sashimiArcs === 'down' && self.showCoverage
               ? self.sashimiArcsHeight
@@ -1040,7 +1040,7 @@ export default function stateModelFactory(
             showOutline: self.showOutlineSetting,
             pairedConnections: self.pairedConnections,
             pairedConnectionsDown: self.pairedConnectionsDown,
-            arcsHeight: self.arcsHeight,
+            pairedConnectionsHeight: self.pairedConnectionsHeight,
             pileupTopOffset: self.coverageDisplayHeight,
             canvasWidth: view.width,
             canvasHeight: self.height,
@@ -1051,7 +1051,7 @@ export default function stateModelFactory(
             colors: palette,
             linkedReads: self.linkedReads,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
-            arcLineWidth: self.arcLineWidth,
+            pairedConnectionsLineWidth: self.pairedConnectionsLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
           }
         },
@@ -1083,19 +1083,19 @@ export default function stateModelFactory(
           }
           // arcsYDomainBp is only set in samplot mode, so this runs only then.
           // Up: overlay the coverage band, anchored at its top. Down: open an
-          // arcsHeight band below coverage, anchored below it.
+          // pairedConnectionsHeight band below coverage, anchored below it.
           const covH = self.showCoverage ? self.coverageHeight : 0
           return computeInsertSizeTicks(
             self.pairedConnectionsDown
               ? {
                   arcsYDomainBp: domain,
-                  arcsHeight: self.arcsHeight,
+                  pairedConnectionsHeight: self.pairedConnectionsHeight,
                   pairedArcsDown: true,
                   arcsTop: covH,
                 }
               : {
                   arcsYDomainBp: domain,
-                  arcsHeight: covH,
+                  pairedConnectionsHeight: covH,
                   pairedArcsDown: false,
                   arcsTop: 0,
                 },
@@ -1488,8 +1488,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setArcsHeight(height: number) {
-            self.arcsHeight = height
+          setPairedConnectionsHeight(height: number) {
+            self.pairedConnectionsHeight = height
           },
 
           /**
@@ -1502,8 +1502,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setArcLineWidth(width: number) {
-            self.setOverride('arcLineWidth', width)
+          setPairedConnectionsLineWidth(width: number) {
+            self.setOverride('pairedConnectionsLineWidth', width)
           },
 
           /**

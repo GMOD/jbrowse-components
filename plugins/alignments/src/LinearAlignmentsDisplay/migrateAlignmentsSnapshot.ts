@@ -15,8 +15,9 @@
  *   - pairedArcs enum → pairedConnections mode + pairedConnectionsDown direction
  *   - showSashimiArcs + sashimiArcsDown booleans → sashimiArcs enum
  *   - height → heightPreConfig
+ *   - arcsHeight → pairedConnectionsHeight
  *   - Individual override properties → configOverrides map
- *   - lineWidthSetting → configOverrides.arcLineWidth
+ *   - lineWidthSetting → configOverrides.pairedConnectionsLineWidth
  *   - Strips removed properties: blockState, showTooltips
  */
 export function migrateAlignmentsSnapshot(
@@ -42,6 +43,16 @@ export function migrateAlignmentsSnapshot(
   if (result.height !== undefined && result.heightPreConfig === undefined) {
     const { height, ...rest } = result
     result = { ...rest, heightPreConfig: height }
+  }
+
+  // arcsHeight → pairedConnectionsHeight (the paired-connections band height,
+  // renamed when the band stopped being arc-specific)
+  if (
+    result.arcsHeight !== undefined &&
+    result.pairedConnectionsHeight === undefined
+  ) {
+    const { arcsHeight, ...rest } = result
+    result = { ...rest, pairedConnectionsHeight: arcsHeight }
   }
 
   // Remap old display types to LinearAlignmentsDisplay
@@ -220,7 +231,7 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
     overrides.featureHeight = featureHeight
   }
   if (lineWidthSetting !== undefined) {
-    overrides.arcLineWidth = lineWidthSetting
+    overrides.pairedConnectionsLineWidth = lineWidthSetting
   }
   // featureSpacing override directly maps; legacy noSpacing boolean folds
   // into it (true → 0, false → 2 to preserve the pre-unification render).

@@ -112,7 +112,7 @@ export function drawArcs(
     arcsTop,
     arcsH,
     pairedArcsDown,
-    lineWidth: state.arcLineWidth ?? 1,
+    lineWidth: state.pairedConnectionsLineWidth ?? 1,
     palette: getArcPalette(state.pairedConnections === 'samplot'),
   })
 
