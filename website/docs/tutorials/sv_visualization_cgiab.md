@@ -60,8 +60,14 @@ Install system dependencies and the JBrowse CLI:
 ```bash
 export OUT=/var/www/html/jbrowse2
 sudo apt-get update
-sudo apt-get install nodejs wget apache2 tabix samtools minimap2
+sudo apt-get install wget apache2 tabix samtools minimap2
 sudo service apache2 start
+
+# Debian/Ubuntu's "nodejs" package is often older than the v18 minimum, so
+# install a current Node.js from NodeSource — see
+# https://github.com/nodesource/distributions
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
 # confirm node.js >= v18 is installed
 node --version
@@ -233,8 +239,8 @@ CUZD1 gene
 <Figure caption="The SV inspector after searching for SV_85 — clicking the row opens a new linear genome view." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Opening the gene annotations and the tumor PacBio HiFi reads, switching the
-reads to **compact** mode, and applying **Sort by → Base pair** with the
-deletion centered shows the deletion (View menu → **Show center line** is
+reads to **compact** mode, and applying **Sort by base pair** with the deletion
+centered shows the deletion (enabling the **center line** from the view menu is
 helpful for aligning the breakpoint precisely under the center of the view).
 
 <Figure caption="After opening the gene annotations and tumor PacBio HiFi reads, displaying reads in compact mode, and sorting by base pair with the deletion in the center. The deletion removes two CUZD1 exons and is heterozygous." src="/img/sv_cgiab/deletion_linear_view.png" />
@@ -256,12 +262,12 @@ Open the tumor and normal bigWigs as a multi-bigwig track for direct comparison.
 
 <Figure caption="A multi-bigwig track with tumor and normal coverage across all chromosomes." src="/img/sv_cgiab/cnv_multi_bigwig.png" />
 
-Apply a manual score limit (Track menu → **Score → Set min/max score**) to cap
-the y-axis at, e.g., 300.
+Apply a manual **min/max score** limit from the track menu to cap the y-axis at,
+e.g., 300.
 
 <Figure caption="After applying a manual score limit of 300." src="/img/sv_cgiab/cnv_score_limit.png" />
 
-Switch **Fill mode → No fill** for a clearer line-style trace, zoom into a
+Switch the fill mode to **No fill** for a clearer line-style trace, zoom into a
 region of interest, and open the benchmark CNV BED track to check whether
 coverage changes line up with the called CNVs.
 

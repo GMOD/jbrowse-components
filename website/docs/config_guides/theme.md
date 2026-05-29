@@ -66,7 +66,7 @@ The customized theme screenshot uses the below configuration:
 
 You can add extra themes via the config. In jbrowse-web and jbrowse-desktop,
 these show up in a "Preferences" dialog that the user can select from. Dark mode
-themes are also supported. Adding "mode": "dark" to your theme will use MUI's
+themes are also supported. Adding `"mode": "dark"` to your theme will use MUI's
 dark mode https://mui.com/material-ui/customization/dark-mode/
 
 Example
@@ -141,8 +141,8 @@ most options that you can pass to Material-UI's
 [`createTheme`](https://mui.com/material-ui/customization/theming/#createtheme-options-args-theme)
 should work in the theme configuration.
 
-Some aspects of the theme, like style override, can accept callback functions
-which is not available via the config, but could be added via a plugin. See
+Some aspects of the theme, like style overrides, can accept callback functions
+which are not available via the config, but could be added via a plugin. See
 https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js
 for an example of adding a theme via a plugin. This example also contains
-examples of overriding the 'default' theme from a plugin
+examples of overriding the 'default' theme from a plugin.

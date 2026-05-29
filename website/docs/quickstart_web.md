@@ -74,7 +74,7 @@ are working.
 
 ```bash
 samtools faidx genome.fa
-jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse/
+jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse2/
 ```
 
 This writes an assembly entry to `config.json` and copies `genome.fa` and
@@ -89,10 +89,10 @@ JBrowse 2 also supports bgzip-compressed indexed FASTA and 2bit files.
 
 ```bash
 samtools index file.bam
-jbrowse add-track file.bam --load copy --out /var/www/html/jbrowse
+jbrowse add-track file.bam --load copy --out /var/www/html/jbrowse2
 
 samtools index file.cram
-jbrowse add-track file.cram --load copy --out /var/www/html/jbrowse
+jbrowse add-track file.cram --load copy --out /var/www/html/jbrowse2
 ```
 
 Run `jbrowse add-track --help` for more options.
@@ -106,7 +106,7 @@ VCFs must be bgzip-compressed and tabix-indexed:
 ```bash
 bgzip file.vcf
 tabix file.vcf.gz
-jbrowse add-track file.vcf.gz --load copy --out /var/www/html/jbrowse
+jbrowse add-track file.vcf.gz --load copy --out /var/www/html/jbrowse2
 ```
 
 :::note If tabix reports the VCF is unsorted, sort it first:
@@ -133,7 +133,7 @@ See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`. :::
 No external index needed:
 
 ```bash
-jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse
+jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse2
 ```
 
 ### GFF3
@@ -152,8 +152,8 @@ the result as a synteny track:
 ```bash
 minimap2 -cx asm20 grape.fa peach.fa > peach_vs_grape.paf
 
-jbrowse add-assembly grape.fa --load copy -n grape --out /var/www/html/jbrowse
-jbrowse add-assembly peach.fa --load copy -n peach --out /var/www/html/jbrowse
+jbrowse add-assembly grape.fa --load copy -n grape --out /var/www/html/jbrowse2
+jbrowse add-assembly peach.fa --load copy -n peach --out /var/www/html/jbrowse2
 ```
 
 Note: `--assemblyNames` order is `query,target` — the **reverse** of the
@@ -162,7 +162,7 @@ Note: `--assemblyNames` order is `query,target` — the **reverse** of the
 `--assemblyNames peach,grape`:
 
 ```bash
-jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy --out /var/www/html/jbrowse
+jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy --out /var/www/html/jbrowse2
 ```
 
 To sidestep the ordering question, you can instead set the named `queryAssembly`
@@ -179,7 +179,7 @@ for moderately diverged ones. See the
 Optionally, build a text index so users can search by gene name or feature ID:
 
 ```bash
-jbrowse text-index --out /var/www/html/jbrowse
+jbrowse text-index --out /var/www/html/jbrowse2
 ```
 
 This indexes GFF3Tabix and VCFTabix tracks. Once complete, names can be typed
@@ -199,7 +199,7 @@ directly into the location search box. See the
 **Organize data into subdirectories:**
 
 ```bash
-jbrowse add-track myfile.bam --subDir my_bams --load copy --out /var/www/html/jbrowse
+jbrowse add-track myfile.bam --subDir my_bams --load copy --out /var/www/html/jbrowse2
 ```
 
 **Upgrade JBrowse to the latest release:**

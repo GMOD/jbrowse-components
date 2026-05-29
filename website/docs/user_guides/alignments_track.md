@@ -56,7 +56,7 @@ its reference point.
 
 ### Sorting by base pair
 
-With "Sort by → Base pair" selected in the track menu, the pileup is re-arranged
+With **Sort by base pair** selected in the track menu, the pileup is re-arranged
 so that reads carrying the same base at the center-line position are grouped
 together. Combined with the center line indicator, this lets you quickly see
 haplotype-correlated SNPs.
@@ -120,16 +120,15 @@ prominent with long reads, which span larger insertions.
 
 The indicators and counts can be toggled independently from the track menu.
 
-### Arc display
+### Paired arcs
 
-The arc display draws bezier curves between paired or split reads, surfacing
-long-range connections that are useful for spotting structural variants and
-misassemblies.
+The paired arcs mode draws bezier curves between paired or split reads,
+surfacing long-range connections that are useful for spotting structural
+variants and misassemblies.
 
-Switch to it from the track menu, either as the main display ("Display types")
-or as a replacement for just the lower panel ("Replace lower panel with...").
+Enable paired arcs from the track menu's **Read connections** submenu.
 
-<Figure caption="Switching to the arc display from the track menu, replacing the lower (pileup) panel so arcs are shown alongside coverage." src="/img/alignments/select_arc_display.png" />
+<Figure caption="Enabling paired arcs from the Read connections submenu, showing arcs alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
 
 The arcs automatically re-fit when you resize the track height, so dragging the
 track taller produces a denser display.
@@ -140,20 +139,21 @@ partners). The track menu has toggles to hide these if they're distracting.
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 
-<Figure caption="The arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
+<Figure caption="Paired arcs showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
 
-### Linked reads display
+### Linked reads
 
-The linked reads display also connects paired or split reads, but lays them out
-on the Y axis by the **log of the distance between mates**. This makes the
-distance distribution of pairs visible at a glance, and reveals patterns the arc
-display can flatten — for example, insertion pairs (drawn pink) separate clearly
-from background.
+The linked reads mode also connects paired or split reads, but lays them out on
+the Y axis by the **log of the distance between mates**. This makes the distance
+distribution of pairs visible at a glance, and reveals patterns paired arcs can
+flatten — for example, insertion pairs (drawn pink) separate clearly from
+background.
 
-Like the arc display, dragging the track taller re-packs the features into the
-available height.
+Enable linked reads from the track menu's **Read connections** submenu. Like
+paired arcs, dragging the track taller re-packs the features into the available
+height.
 
-<Figure caption="The arc display (top) and linked reads display (bottom) on the same synthetic SV dataset. The linked reads display surfaces insertion pairs (pink) more clearly than the arc display." src="/img/alignments/read_cloud.png" />
+<Figure caption="Paired arcs (top) and linked reads (bottom) on the same synthetic SV dataset. Linked reads surfaces insertion pairs (pink) more clearly." src="/img/alignments/read_cloud.png" />
 
 ### Compact display
 

@@ -6,10 +6,10 @@ guide_category: Other features
 ---
 
 Some servers strongly cache the "config.json" file. If you want to avoid this,
-you can edit the index.html of JBrowse to include the following
+you can add the following `<script>` to the `<head>` of the index.html of
+JBrowse:
 
-```
-
+```html
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,8 +17,11 @@ you can edit the index.html of JBrowse to include the following
       window.__jbrowseCacheBuster = true
     </script>
     <meta charset="utf-8" />
+    <!-- ...rest of head... -->
+  </head>
+</html>
 ```
 
 This will request the config.json file with a random query string appended to
 force the data to be fetched from the server instead of being loaded from the
-local browser cache
+local browser cache.

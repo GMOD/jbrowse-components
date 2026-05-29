@@ -50,12 +50,12 @@ per-subtrack options like color and grouping, use `subadapters` instead.
 #### The source field
 
 Each subtrack has a `source` identifier used as its label in the UI and carried
-on features as `feature.source`. When using `bigWigs`, `source` is auto-derived
-from the URL filename. When using `subadapters`, set it explicitly. `name` is an
-alias — `source` takes priority if both are set.
+on features as `feature.get('source')`. When using `bigWigs`, `source` is
+auto-derived from the URL filename. When using `subadapters`, set it explicitly.
+`name` is an alias — `source` takes priority if both are set.
 
-Since features carry `feature.source`, you can reference it in jexl color
-callbacks, e.g. `jexl:feature.source=='k1'?'red':'blue'`.
+Since features carry a `source` attribute, you can reference it in jexl color
+callbacks, e.g. `jexl:get(feature,'source')=='k1'?'red':'blue'`.
 
 The `subadapters` slot also supports:
 

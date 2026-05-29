@@ -43,11 +43,10 @@ ensemble SV callset. A track of orange SV bars will appear across the genome.
 ## Browsing SVs with the SV inspector
 
 The SV inspector combines a searchable/filterable table of all calls with a
-whole-genome circular overview. Open it from the menu bar: **Add → SV Inspector
-view**, then provide the VCF from the demo config (the URL is listed in the
-track's About track menu). The circular view renders inter-chromosomal
-translocations as orange chords; the table can be sorted and filtered by any
-column.
+whole-genome circular overview. Open it from the **Add** menu in the menu bar,
+then provide the VCF from the demo config (the URL is listed in the track's
+About track menu). The circular view renders inter-chromosomal translocations as
+orange chords; the table can be sorted and filtered by any column.
 
 <Figure caption="The SV inspector loaded with a large SV callset. The circular plot on the right renders inter-chromosomal events as orange chords connecting the two loci. The table on the left lists every call and can be sorted or filtered by SVTYPE, chromosome, quality, or any INFO field. Clicking a row navigates the linear view to that locus." src="/img/sv_inspector_importform_loaded.png" />
 
@@ -133,9 +132,9 @@ track menu. At the breakpoint you will see:
 - **Soft-clipped reads** at the exact breakpoint edge, where reads cannot align
   through the junction sequence
 
-Switch to the Read arc display from the track menu to see long-range connections
-spanning the inversion. Arcs with LL/RR coloring that span the inverted interval
-confirm the rearrangement.
+Enable paired arcs from the track menu's **Read connections** submenu to see
+long-range connections spanning the inversion. Arcs with LL/RR coloring that
+span the inverted interval confirm the rearrangement.
 
 See the
 [SV visualization guide — Inversion section](/docs/user_guides/sv_visualization#inversion)
@@ -154,15 +153,15 @@ For more on navigating the breakpoint split view, see
 
 ## Summary
 
-| Step                    | Tool                                        | What to look for                                             |
-| ----------------------- | ------------------------------------------- | ------------------------------------------------------------ |
-| Population triage       | SV inspector table + circular view          | SV type counts; inter-chr translocations as chords           |
-| Per-sample genotypes    | Feature details → SAMPLES                   | GT 0/0 / 0/1 / 1/1 across all 2,504 samples                  |
-| Genotype patterns       | Multi-sample display (regular)              | High-frequency vs private calls; row pattern per sample      |
-| Trio inheritance        | Trio BAM tracks + SAMPLES table             | De novo vs inherited; which parent contributed the alt       |
-| Inversion genotyping    | Cluster by genotype                         | Alt-genotype samples grouped into distinct rows              |
-| Inversion read evidence | Pair orientation coloring; Read arc display | LL/RR pairs at breakpoints; long arcs spanning the inversion |
-| Breakpoint detail       | Breakpoint split view                       | Splines + variant call across both junctions                 |
+| Step                    | Tool                                   | What to look for                                             |
+| ----------------------- | -------------------------------------- | ------------------------------------------------------------ |
+| Population triage       | SV inspector table + circular view     | SV type counts; inter-chr translocations as chords           |
+| Per-sample genotypes    | Feature details → SAMPLES              | GT 0/0 / 0/1 / 1/1 across all 2,504 samples                  |
+| Genotype patterns       | Multi-sample display (regular)         | High-frequency vs private calls; row pattern per sample      |
+| Trio inheritance        | Trio BAM tracks + SAMPLES table        | De novo vs inherited; which parent contributed the alt       |
+| Inversion genotyping    | Cluster by genotype                    | Alt-genotype samples grouped into distinct rows              |
+| Inversion read evidence | Pair orientation coloring; Paired arcs | LL/RR pairs at breakpoints; long arcs spanning the inversion |
+| Breakpoint detail       | Breakpoint split view                  | Splines + variant call across both junctions                 |
 
 ## See also
 

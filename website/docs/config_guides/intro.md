@@ -15,8 +15,8 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
     /* list of assembly configurations, e.g. the genomes being viewed */
   ],
   "tracks": [
-    /* array of tracks being loaded, contain reference to which assembl(y/ies)
-    they belong to */
+    /* array of tracks being loaded; each references the assembly or assemblies
+    it belongs to */
   ],
   "aggregateTextSearchAdapters": [
     /* optional array of text search adapters */

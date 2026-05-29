@@ -40,7 +40,7 @@ Create a folder, then an `index.html` inside it with this content:
 ## Start the server
 
 In the folder, run `npx serve`. It prints a local URL (typically
-`http://localhost:5000`). Open it in your browser — you should see "Hello
+`http://localhost:3000`). Open it in your browser — you should see "Hello
 world!".
 
 ## Add JBrowse

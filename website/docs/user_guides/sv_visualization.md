@@ -75,8 +75,9 @@ expected), or light grey (normal). A separate Insert size (gradient) option
 shades reads continuously by the magnitude of the deviation. See the
 color-scheme options for cross-chromosome handling.
 
-**In the read arc and linked reads displays**, set the color scheme from the
-track menu. The Insert size ± 3σ option uses threshold-based coloring:
+**With paired arcs or linked reads enabled** (via Read connections in the track
+menu), set the color scheme from the track menu. The Insert size ± 3σ option
+uses threshold-based coloring:
 
 | Pattern                                    | Color  | Notes                                  |
 | ------------------------------------------ | ------ | -------------------------------------- |
@@ -103,7 +104,7 @@ is a useful companion reference.
   complete drop
 - Paired reads flanking the gap colored **red** (larger insert than expected)
   suggest a deletion spanning the pair
-- In the read arc display, unusually long arcs point to a deletion
+- With paired arcs enabled, unusually long arcs point to a deletion
 
 <Figure caption="A 27 bp heterozygous deletion (orange variant bar labeled '27bp DEL' in the top track) in HG002 ONT reads. The SNP coverage panel above the pileup shows the local depth; the pileup is sorted by HP tag, separating haplotype 1 (pink rows) and haplotype 2 (blue rows). Supporting reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
 
@@ -141,7 +142,7 @@ inversion signature.
 - **RL (teal)** read pairs suggest a tandem duplication: reads appear to point
   away from each other when the duplicated segment is joined back to its origin
 - Elevated coverage over the duplicated region is another supporting signal
-- In the read arc display, arcs pointing backward (upstream) across a junction
+- With paired arcs enabled, arcs pointing backward (upstream) across a junction
   point to a tandem duplication
 
 The inverted duplication figure in the
@@ -151,43 +152,41 @@ signature.
 
 ### Translocation / inter-chromosomal fusion
 
-- In the read arc and linked reads displays, reads with mates on a different
+- With paired arcs or linked reads enabled, reads with mates on a different
   chromosome are colored **purple**; in the pileup they appear **dark grey**
 - A cluster of such reads at a locus marks one end of a translocation; open the
   breakpoint split view from the feature details to see both ends at once
 
 <Figure caption="SKBR3 PacBio translocation in the breakpoint split view. The top panel shows one breakpoint locus (~chr1:229 Mb) and the bottom shows the other (~chr1:137 Mb). Black splines connect supporting reads across the two panels; the green diagonal line with arrowheads is the SV call. The density of splines is proportional to the number of spanning reads." src="/img/skbr3_translocation.png" />
 
-## Read arc display
+## Paired arcs
 
-The read arc display renders bezier curves between the two ends of a paired-end
+The paired arcs mode renders bezier curves between the two ends of a paired-end
 read or split alignment, making long-range connections immediately obvious.
-Switch the lower panel to the read arc display from the track menu (or show arcs
-alongside the coverage and pileup panels).
+Enable paired arcs from the track menu's **Read connections** submenu.
 
-<Figure caption="Three lower-panel options: Pileup display (default), Read arc display, and Linked reads display. The read arc display replaces the pileup with bezier arc curves." src="/img/alignments/select_arc_display.png" />
+<Figure caption="Selecting paired arcs from the Read connections submenu, showing arcs alongside coverage." src="/img/alignments/select_arc_display.png" />
 
 Inter-chromosomal connections appear as vertical lines at the view edge. The
 color scheme in the track menu provides insert size, orientation, or combined
 coloring.
 
-<Figure caption="The read arc display showing a deletion in HG002. Illumina paired-end reads (short arcs, top) and Nanopore ultra-long reads (long sweeping arcs, bottom) both span the same deleted region. The unusually long arcs relative to neighboring read pairs indicate the deletion. Color scheme is set to Insert size ± 3σ: red arcs have inserts larger than expected, confirming the deletion." src="/img/alignments/arc_selector.png" />
+<Figure caption="Paired arcs showing a deletion in HG002. Illumina paired-end reads (short arcs, top) and Nanopore ultra-long reads (long sweeping arcs, bottom) both span the same deleted region. The unusually long arcs relative to neighboring read pairs indicate the deletion. Color scheme is set to Insert size ± 3σ: red arcs have inserts larger than expected, confirming the deletion." src="/img/alignments/arc_selector.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
-— HG002 deletion with Nanopore and Illumina reads in arc display
+— HG002 deletion with Nanopore and Illumina reads in arc mode
 
-## Linked reads display
+## Linked reads
 
-The linked reads display draws paired-end reads and supplementary alignments on
-the same row connected by a line, and stratifies rows by the log-scaled distance
+The linked reads mode draws paired-end reads and supplementary alignments on the
+same row connected by a line, and stratifies rows by the log-scaled distance
 between read ends. This makes it easy to count how many reads span a breakpoint
 and to see their orientation at a glance. Chains with supplementary alignments
 are connected by an orange line.
 
-Switch the lower panel to the linked reads display from the track menu (or keep
-the coverage and pileup panels alongside it).
+Enable linked reads from the track menu's **Read connections** submenu.
 
-<Figure caption="The same dataset shown in two display types simultaneously. Top track: Read arc display — the large red bezier curve spans a long-range connection (~ctgA:5,000–40,000), making the SV immediately visible at this scale. Bottom track: Linked reads display — reads are drawn as horizontal lines stratified by insert size; the red bar at the bottom row indicates an abnormally large insert corresponding to the same event." src="/img/alignments/read_cloud.png" />
+<Figure caption="Two tracks using different modes on the same SV dataset. Top track: paired arcs — the large red bezier curve spans a long-range connection (~ctgA:5,000–40,000), making the SV immediately visible at this scale. Bottom track: linked reads — reads are drawn as horizontal lines stratified by insert size; the red bar at the bottom row indicates an abnormally large insert corresponding to the same event." src="/img/alignments/read_cloud.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR)
 — inversion example in linked reads mode
@@ -320,8 +319,8 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 | Pileup (default)          | Default lower panel             | Base-level detail, individual reads                |
 | Color by pair orientation | Color scheme in track menu      | Abnormal orientation patterns (RL/LL/RR)           |
 | Color by insert size      | Color scheme in track menu      | Insert size anomalies (pileup)                     |
-| Read arc display          | Track menu                      | Overview of long-range connections                 |
-| Linked reads display      | Track menu                      | Counting discordant pairs, orientation per read    |
+| Paired arcs               | Read connections in track menu  | Overview of long-range connections                 |
+| Linked reads              | Read connections in track menu  | Counting discordant pairs, orientation per read    |
 | Linear read vs ref        | Right-click on any read         | Complex alignment of a single long read            |
 | Breakpoint split view     | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
 | Sort/color by HP tag      | Sort/color by tag in track menu | Confirming heterozygous SVs on one haplotype       |
@@ -330,9 +329,9 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 
 ## Limitations
 
-- **Read-level displays require zooming in**: the pileup, arc, and linked reads
-  displays only render when the view is zoomed in enough to load individual
-  reads; very large SVs can't be spanned in a single pileup view
+- **Read-level displays require zooming in**: the pileup, paired arcs, and
+  linked reads modes only render when the view is zoomed in enough to load
+  individual reads; very large SVs can't be spanned in a single pileup view
 - **Paired-end evidence is fragment-size limited**: for insertions larger than
   the sequenced fragment, paired-end evidence disappears; long reads are
   required to fully resolve the inserted sequence

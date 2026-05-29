@@ -326,8 +326,11 @@ Example:
 ```typescript
 pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
   return {
-    ...snap.metadata,
-    extraMetadata: 'extra metadata',
+    ...snap,
+    metadata: {
+      ...snap.metadata,
+      extraMetadata: 'extra metadata',
+    },
   }
 })
 ```

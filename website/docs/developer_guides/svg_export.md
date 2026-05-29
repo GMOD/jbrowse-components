@@ -17,7 +17,7 @@ SVG document via `renderToSvg`.
 The key utility is `paintLayer` from `@jbrowse/core/util/paintLayer`:
 
 ```ts
-import { paintLayer } from '@jbrowse/core/util'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 
 // In your draw callback, ctx is CanvasRenderingContext2D | SvgCanvas.
 // The same paint function handles both on-screen canvas and SVG export.
@@ -43,7 +43,7 @@ preference — always do this for text and labels so they stay crisp.
 import { when } from 'mobx'
 import { getContainingView } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { paintLayer } from '@jbrowse/core/util'
+import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import SvgClipRect from '@jbrowse/core/util/SvgClipRect'
 
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'

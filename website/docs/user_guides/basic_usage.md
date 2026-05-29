@@ -44,8 +44,8 @@ The location search box at the top of the LGV accepts several search formats:
 - Assembly, region, and location, e.g. `{hg19}chr1:1-100`
 - Discontinuous regions (space-delimited, opened side-by-side), e.g.
   `chr1:1..100 chr2:1..100`
-- Any of the above with `\[rev\]` appended to horizontally flip the region, e.g.
-  `chr1:1-100\[rev\]`
+- Any of the above with `[rev]` appended to horizontally flip the region, e.g.
+  `chr1:1-100[rev]`
 - Gene name or feature keyword (if a text index is configured), e.g. `BRCA1`
 
 To enable name searching, you or the instance admin will need to create a text
@@ -72,7 +72,7 @@ that can also be used to access the "Add a track" form.
 
 :::
 
-<Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The orange plus (+) icon button in the bottom right the 'Available Tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
+<Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The circular plus (+) icon button in the bottom right of the 'Available tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
 
 In the "Add a track" form, you can provide a URL or open a file from your local
 machine. Some formats require an index (BAM/CRAM and tabix-indexed files like
@@ -132,7 +132,7 @@ If you are an administrator, you can add tracks with the
 ### Undo and redo
 
 You can undo any action via Tools → Undo/Redo, or with the keyboard shortcuts
-`ctrl+z`/`cmd+z` (undo) and `ctrl+y`/`cmd+shift+z` (redo).
+`ctrl+z`/`cmd+z` (undo) and `ctrl+shift+z`/`ctrl+y`/`cmd+shift+z` (redo).
 
 ### Sharing sessions
 

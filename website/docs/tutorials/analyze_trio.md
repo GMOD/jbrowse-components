@@ -100,7 +100,7 @@ from each parent) that occurs during the development of egg and sperm cells
 But there is a subtle but important point here: Your parents' genomes don't
 recombine during fertilization. Recombination happens during the production of
 their gametes. Therefore, your grandparents' genomes recombine during the
-production your parents sperm/eggs. We will see this visually below
+production of your parents' sperm/eggs. We will see this visually below
 
 ## Visualizing phased blocks and crossing over points in phased VCF files in JBrowse
 

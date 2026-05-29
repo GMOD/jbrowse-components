@@ -89,9 +89,9 @@ detects the `.bedmethyl.gz` extension and selects **BedTabixAdapter** and
 }
 ```
 
-JBrowse reads the `score` column (column 11 in bedMethyl, the methylation
-fraction 0–1) and uses the `name` column (column 4, the modification code such
-as `m` for 5mC or `h` for 5hmC) as the subtrack source label.
+JBrowse reads the `score` column (column 11 in bedMethyl, the percent
+methylation 0–100) and uses the `name` column (column 4, the modification code
+such as `m` for 5mC or `h` for 5hmC) as the subtrack source label.
 
 The COLO829 tumor modkit bedMethyl file is included in the
 [demo config](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)
