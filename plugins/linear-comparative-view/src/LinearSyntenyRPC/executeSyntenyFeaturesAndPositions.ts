@@ -6,11 +6,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import {
-  bpToCumBpAndPad,
-  buildBpRegionIndex,
-  probeAssembliesSwapped,
-} from '@jbrowse/synteny-core'
+import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -282,19 +278,6 @@ export async function executeSyntenyFeaturesAndPositions({
     validCount++
   }
 
-  // Nothing mapped: probe whether the rows were configured in the wrong order.
-  // The adapter filters features by `refName === queryRefName`, so a reversed
-  // setup returns zero features — the only signal left is that the refNames the
-  // adapter reports for the top row actually belong to the bottom assembly.
-  const assembliesSwapped = await probeAssembliesSwapped({
-    rendered: validCount,
-    topAssembly: v1.displayedRegions[0]?.assemblyName,
-    bottomAssembly: v2.displayedRegions[0]?.assemblyName,
-    getReportedRefNames: name => dataAdapter.getRefNames({ assemblyName: name }),
-    xEntries: v1RefNames,
-    yEntries: v2RefNames,
-  })
-
   // cumBp + padPx arrays are intermediate buffers consumed only by
   // buildSyntenyGeometry below. They never leave the worker — the main thread
   // reads bp-space hi/lo pairs out of `instanceData`.
@@ -321,7 +304,6 @@ export async function executeSyntenyFeaturesAndPositions({
     mateRefNames,
     mateAssemblyNames,
     hasCigar,
-    assembliesSwapped,
   }
 
   // colorBy lives on the main thread; the worker emits geometry +

@@ -6,6 +6,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { detectDisplayAssembliesSwapped } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
@@ -122,6 +123,32 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       { name: 'SyntenyFetch', delay: 500 },
     ),
   )
+
+  // One-shot at view load: compare the adapter's reported refNames per row
+  // against each assembly's full refNames to flag a reversed row order. Runs
+  // off the per-render fetch path so it never re-fires (or misfires) on zoom.
+  addDisposer(
+    self,
+    autorun(
+      async function syntenyAssemblySwapCheck() {
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        const level = self.level
+        if (!view.initialized || level + 1 >= view.views.length) {
+          return
+        }
+        const swapped = await detectDisplayAssembliesSwapped(
+          self,
+          view.views[level]!.assemblyNames[0],
+          view.views[level + 1]!.assemblyNames[0],
+        )
+        if (isAlive(self)) {
+          self.setAssembliesSwapped(swapped)
+        }
+      },
+      { name: 'SyntenyAssemblySwapCheck' },
+    ),
+  )
+
   addDisposer(self, () => {
     if (currentStopToken) {
       stopStopToken(currentStopToken)

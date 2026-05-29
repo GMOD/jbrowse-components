@@ -61,7 +61,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            */
           geometry: undefined as DotplotGeometryData | undefined,
           fetchStopToken: undefined as StopToken | undefined,
-          warnings: [] as { message: string; effect: string }[],
+          fetchWarnings: [] as { message: string; effect: string }[],
+          // Set once at view load by a refName-comparison check, independent of
+          // the per-render fetch. See afterAttach.
+          assembliesSwapped: false,
         })),
     )
     .views(self => ({
@@ -70,6 +73,22 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       get isRefetching() {
         return self.fetchStopToken !== undefined && !!self.rpcData
+      },
+      /**
+       * #getter
+       * Per-render fetch warnings, plus the load-time reversed-assembly hint.
+       */
+      get warnings() {
+        return self.assembliesSwapped
+          ? [
+              ...self.fetchWarnings,
+              {
+                message: 'The assemblies appear to be in the wrong order',
+                effect:
+                  'The chromosome names in the file match the opposite axis. Try switching the X and Y assemblies in the dotplot import form.',
+              },
+            ]
+          : self.fetchWarnings
       },
     }))
     .views(self => ({
@@ -96,7 +115,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.fetchStopToken = undefined
       },
       setWarnings(w: { message: string; effect: string }[]) {
-        self.warnings = w
+        self.fetchWarnings = w
+      },
+      setAssembliesSwapped(arg: boolean) {
+        self.assembliesSwapped = arg
       },
       setGeometry(data: DotplotGeometryData | undefined) {
         self.geometry = data

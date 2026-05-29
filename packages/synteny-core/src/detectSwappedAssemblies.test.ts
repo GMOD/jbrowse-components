@@ -1,109 +1,82 @@
-import { probeAssembliesSwapped, refNamesLookSwapped } from './index.ts'
+import { detectAssembliesSwapped } from './index.ts'
 
-describe('refNamesLookSwapped', () => {
-  const xEntries = new Set(['chrA'])
-  const yEntries = new Set(['chrB'])
-
-  it('flags swap when reported X-axis names belong to the Y assembly', () => {
-    expect(refNamesLookSwapped({ reported: ['chrB'], xEntries, yEntries })).toBe(
-      true,
-    )
-  })
-
-  it('does not flag when reported names belong to the X assembly', () => {
-    expect(refNamesLookSwapped({ reported: ['chrA'], xEntries, yEntries })).toBe(
-      false,
-    )
-  })
-
-  it('does not flag names absent from both axes', () => {
-    expect(refNamesLookSwapped({ reported: ['chrZ'], xEntries, yEntries })).toBe(
-      false,
-    )
-  })
-
-  it('uses the majority when names are mixed', () => {
-    expect(
-      refNamesLookSwapped({
-        reported: ['chrB', 'chrB', 'chrA'],
-        xEntries,
-        yEntries,
-      }),
-    ).toBe(true)
-  })
-
-  it('canonicalizes reported names per axis before comparing', () => {
-    // File uses "1"/"2"; assemblies use "chrA"/"chrB"
-    expect(
-      refNamesLookSwapped({
-        reported: ['2'],
-        xEntries,
-        yEntries,
-        canonicalizeX: n => (n === '1' ? 'chrA' : n),
-        canonicalizeY: n => (n === '2' ? 'chrB' : n),
-      }),
-    ).toBe(true)
-  })
-})
-
-describe('probeAssembliesSwapped', () => {
-  const xEntries = new Set(['chrA'])
-  const yEntries = new Set(['chrB'])
+describe('detectAssembliesSwapped', () => {
+  // asmA's real refNames are chrA*, asmB's are chrB*
+  const realRefNames: Record<string, string[]> = {
+    asmA: ['chrA1', 'chrA2'],
+    asmB: ['chrB1', 'chrB2'],
+  }
   const base = {
     topAssembly: 'asmA',
     bottomAssembly: 'asmB',
-    xEntries,
-    yEntries,
+    getAssemblyRefNames: (name: string) => realRefNames[name],
+    getCanonicalRefName: (_name: string, ref: string) => ref,
   }
 
-  it('flags swap when nothing rendered and top names are the bottom assembly', async () => {
+  it('flags swap when the adapter reports the bottom assembly names for the top axis', async () => {
     expect(
-      await probeAssembliesSwapped({
+      await detectAssembliesSwapped({
         ...base,
-        rendered: 0,
-        getReportedRefNames: () => Promise.resolve(['chrB']),
+        getAdapterRefNames: () => Promise.resolve(['chrB1', 'chrB2']),
       }),
     ).toBe(true)
   })
 
-  it('does not probe when something rendered', async () => {
+  it('does not flag a correctly ordered pair', async () => {
     expect(
-      await probeAssembliesSwapped({
+      await detectAssembliesSwapped({
         ...base,
-        rendered: 5,
-        getReportedRefNames: () => Promise.resolve(['chrB']),
+        getAdapterRefNames: () => Promise.resolve(['chrA1', 'chrA2']),
       }),
     ).toBe(false)
   })
 
+  it('uses the majority when reported names are mixed', async () => {
+    expect(
+      await detectAssembliesSwapped({
+        ...base,
+        getAdapterRefNames: () => Promise.resolve(['chrB1', 'chrB2', 'chrA1']),
+      }),
+    ).toBe(true)
+  })
+
+  it('canonicalizes reported names before comparing', async () => {
+    // File uses "1"/"2"; the bottom assembly canonicalizes "2" -> chrB2
+    expect(
+      await detectAssembliesSwapped({
+        ...base,
+        getAdapterRefNames: () => Promise.resolve(['2']),
+        getCanonicalRefName: (name, ref) =>
+          name === 'asmB' && ref === '2' ? 'chrB2' : ref,
+      }),
+    ).toBe(true)
+  })
+
   it('does not flag a single self-comparison assembly', async () => {
     expect(
-      await probeAssembliesSwapped({
+      await detectAssembliesSwapped({
         ...base,
         bottomAssembly: 'asmA',
-        rendered: 0,
-        getReportedRefNames: () => Promise.resolve(['chrB']),
+        getAdapterRefNames: () => Promise.resolve(['chrB1']),
       }),
     ).toBe(false)
   })
 
   it('does not flag a missing assembly name', async () => {
     expect(
-      await probeAssembliesSwapped({
+      await detectAssembliesSwapped({
         ...base,
         topAssembly: undefined,
-        rendered: 0,
-        getReportedRefNames: () => Promise.resolve(['chrB']),
+        getAdapterRefNames: () => Promise.resolve(['chrB1']),
       }),
     ).toBe(false)
   })
 
   it('yields no signal when getRefNames rejects', async () => {
     expect(
-      await probeAssembliesSwapped({
+      await detectAssembliesSwapped({
         ...base,
-        rendered: 0,
-        getReportedRefNames: () => Promise.reject(new Error('not implemented')),
+        getAdapterRefNames: () => Promise.reject(new Error('not implemented')),
       }),
     ).toBe(false)
   })

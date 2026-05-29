@@ -41,10 +41,6 @@ export interface SyntenyFeatureData {
   // string. Used to gate CIGAR-related menu items so they don't appear when
   // the resolved tier (coarse PIF, or a CIGAR-less PAF) has no per-row ops.
   hasCigar: boolean
-  // True when nothing mapped but the adapter's top-row refNames belong to the
-  // bottom assembly — i.e. the rows look reversed. See executeSyntenyFeatures-
-  // AndPositions. Conclusive only when chromosome names are distinct.
-  assembliesSwapped: boolean
 }
 
 export interface FeatPos {
@@ -129,6 +125,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       clickedFeatureIdx: -1,
       contextMenuAnchor: undefined as ClickCoord | undefined,
       statusMessage: undefined as string | undefined,
+      // Set once at view load by a refName-comparison check, independent of the
+      // per-render fetch. See afterAttach.
+      assembliesSwapped: false,
     }))
     .actions(self => ({
       /**
@@ -145,6 +144,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
+      },
+      setAssembliesSwapped(arg: boolean) {
+        self.assembliesSwapped = arg
       },
       setHoveredFeatureIdx(idx: number) {
         self.hoveredFeatureIdx = idx
@@ -209,17 +211,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * Render-time warnings surfaced in the view header. Currently flags a
-       * likely reversed assembly row order: nothing mapped, but the file's
-       * chromosome names match the opposite row (only detectable when the two
-       * assemblies have distinct chromosome names).
+       * Warnings surfaced in the view header. Flags a likely reversed assembly
+       * row order, detected once at view load (only when the two assemblies have
+       * distinct chromosome names).
        */
       get warnings() {
-        return self.featureData?.assembliesSwapped
+        return self.assembliesSwapped
           ? [
               {
                 message:
-                  'No alignments mapped; the assemblies appear to be reversed',
+                  'The assemblies appear to be in the wrong order',
                 effect:
                   'The chromosome names in the file match the opposite row. Try re-opening the synteny import form with the assemblies in the opposite order.',
               },
@@ -228,9 +229,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * A fetch has completed (data is present, even if it mapped zero
+       * features). Not `numFeats > 0` — an empty-but-finished fetch is ready,
+       * otherwise an empty result spins the loading overlay forever.
        */
       get ready() {
-        return this.numFeats > 0
+        return self.featureData !== undefined
       },
       /**
        * #getter

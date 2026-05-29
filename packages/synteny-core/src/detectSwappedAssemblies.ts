@@ -1,3 +1,8 @@
+import { getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 // A keyed lookup of refNames — satisfied by both Set<string> and
 // Map<string, ...> (e.g. BpRegionIndex.entries).
 interface RefNameLookup {
@@ -12,18 +17,18 @@ interface RefNameLookup {
  * two assemblies have distinct chromosome names — overlapping names resolve on
  * their own axis and never tip the count.
  */
-export function refNamesLookSwapped({
+function refNamesLookSwapped({
   reported,
   xEntries,
   yEntries,
-  canonicalizeX = name => name,
-  canonicalizeY = name => name,
+  canonicalizeX,
+  canonicalizeY,
 }: {
   reported: string[]
   xEntries: RefNameLookup
   yEntries: RefNameLookup
-  canonicalizeX?: (name: string) => string
-  canonicalizeY?: (name: string) => string
+  canonicalizeX: (name: string) => string
+  canonicalizeY: (name: string) => string
 }) {
   let ownHits = 0
   let otherHits = 0
@@ -38,42 +43,60 @@ export function refNamesLookSwapped({
 }
 
 /**
- * Render-time guard around {@link refNamesLookSwapped}: only worth probing when
- * nothing rendered and the two axes are distinct named assemblies. Fetches the
- * adapter's reported refNames for the top/X axis and compares them against both
- * axes' displayed refNames.
+ * A one-shot, zoom-independent check (run at view load): compares the refNames
+ * the adapter reports for the top/X axis against each axis assembly's full
+ * refName set. Returns false unless the two axes are distinct named assemblies.
+ * Adapters lacking getRefNames yield no signal rather than erroring.
  */
-export async function probeAssembliesSwapped({
-  rendered,
+export async function detectAssembliesSwapped({
   topAssembly,
   bottomAssembly,
-  getReportedRefNames,
-  xEntries,
-  yEntries,
-  canonicalizeX,
-  canonicalizeY,
+  getAdapterRefNames,
+  getAssemblyRefNames,
+  getCanonicalRefName,
 }: {
-  rendered: number
   topAssembly: string | undefined
   bottomAssembly: string | undefined
-  getReportedRefNames: (assemblyName: string) => Promise<string[]>
-  xEntries: RefNameLookup
-  yEntries: RefNameLookup
-  canonicalizeX?: (name: string) => string
-  canonicalizeY?: (name: string) => string
+  getAdapterRefNames: (assemblyName: string) => Promise<string[]>
+  getAssemblyRefNames: (assemblyName: string) => string[] | undefined
+  getCanonicalRefName: (assemblyName: string, refName: string) => string
 }) {
-  const top = rendered === 0 ? topAssembly : undefined
-  return top !== undefined &&
+  return topAssembly !== undefined &&
     bottomAssembly !== undefined &&
-    top !== bottomAssembly
+    topAssembly !== bottomAssembly
     ? refNamesLookSwapped({
-        // Adapters that don't implement getRefNames just yield no signal here,
-        // rather than turning an empty plot into an error.
-        reported: await getReportedRefNames(top).catch(() => []),
-        xEntries,
-        yEntries,
-        canonicalizeX,
-        canonicalizeY,
+        reported: await getAdapterRefNames(topAssembly).catch(() => []),
+        xEntries: new Set(getAssemblyRefNames(topAssembly)),
+        yEntries: new Set(getAssemblyRefNames(bottomAssembly)),
+        canonicalizeX: name => getCanonicalRefName(topAssembly, name),
+        canonicalizeY: name => getCanonicalRefName(bottomAssembly, name),
       })
     : false
+}
+
+/**
+ * {@link detectAssembliesSwapped} wired to a synteny/dotplot display: pulls the
+ * adapter refNames via the CoreGetRefNames RPC and the assembly refNames from
+ * the session's assemblyManager.
+ */
+export function detectDisplayAssembliesSwapped(
+  self: IAnyStateTreeNode & { adapterConfig: Record<string, unknown> },
+  topAssembly: string | undefined,
+  bottomAssembly: string | undefined,
+) {
+  const { assemblyManager, rpcManager } = getSession(self)
+  const sessionId = getRpcSessionId(self)
+  const { adapterConfig } = self
+  return detectAssembliesSwapped({
+    topAssembly,
+    bottomAssembly,
+    getAdapterRefNames: name =>
+      rpcManager.call(sessionId, 'CoreGetRefNames', {
+        adapterConfig,
+        assemblyName: name,
+      }),
+    getAssemblyRefNames: name => assemblyManager.get(name)?.refNames,
+    getCanonicalRefName: (name, refName) =>
+      assemblyManager.get(name)?.getCanonicalRefName(refName) ?? refName,
+  })
 }

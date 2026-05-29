@@ -6,6 +6,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { detectDisplayAssembliesSwapped } from '@jbrowse/synteny-core'
 import { autorun } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotColors.ts'
@@ -74,25 +75,17 @@ export function doAfterAttach(
             return
           }
           self.setRpcData(result)
-          const warnings: { message: string; effect: string }[] = []
-          if (result.skippedFeatureCount > 0) {
-            warnings.push({
-              message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features could not be mapped to the configured assemblies`,
-              effect:
-                'This usually means chromosome names in the file do not match the assembly. Check assembly aliases or that the correct assemblies are selected.',
-            })
-          }
-          // Nothing rendered and the adapter's X-axis refNames belong to the Y
-          // assembly: the assemblies are reversed (only conclusive when their
-          // chromosome names are distinct).
-          if (result.assembliesSwapped) {
-            warnings.push({
-              message: 'No alignments mapped; the assemblies appear to be reversed',
-              effect:
-                'The chromosome names in the file match the opposite axis. Try switching the X and Y assemblies in the dotplot import form.',
-            })
-          }
-          self.setWarnings(warnings)
+          self.setWarnings(
+            result.skippedFeatureCount > 0
+              ? [
+                  {
+                    message: `${result.skippedFeatureCount} of ${result.totalFeatureCount} features could not be mapped to the configured assemblies`,
+                    effect:
+                      'This usually means chromosome names in the file do not match the assembly. Check assembly aliases or that the correct assemblies are selected.',
+                  },
+                ]
+              : [],
+          )
         } catch (e) {
           if (
             thisStopToken === currentStopToken &&
@@ -133,6 +126,27 @@ export function doAfterAttach(
         )
       },
       { name: 'DotplotGeometryRecompute' },
+    ),
+  )
+
+  // One-shot at view load: compare the adapter's reported refNames per axis
+  // against each assembly's full refNames to flag a reversed X/Y setup. Runs
+  // off the per-render fetch path so it never re-fires (or misfires) on zoom.
+  addDisposer(
+    self,
+    autorun(
+      async function dotplotAssemblySwapCheck() {
+        const view = getContainingView(self) as DotplotViewModel
+        const [hAsm, vAsm] = view.assemblyNames
+        if (!view.initialized) {
+          return
+        }
+        const swapped = await detectDisplayAssembliesSwapped(self, hAsm, vAsm)
+        if (isAlive(self)) {
+          self.setAssembliesSwapped(swapped)
+        }
+      },
+      { name: 'DotplotAssemblySwapCheck' },
     ),
   )
 

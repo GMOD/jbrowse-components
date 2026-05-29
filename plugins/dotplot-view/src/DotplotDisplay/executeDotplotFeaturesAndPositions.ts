@@ -2,11 +2,7 @@ import { parseCigar2 } from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import {
-  bpToCumBpAndPad,
-  buildBpRegionIndex,
-  probeAssembliesSwapped,
-} from '@jbrowse/synteny-core'
+import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -39,10 +35,6 @@ export interface DotplotFeaturesAndPositionsResult {
   parsedCigars: number[][]
   totalFeatureCount: number
   skippedFeatureCount: number
-  // True when nothing rendered but the adapter's refNames for the X axis
-  // actually belong to the Y assembly (and vice versa) — i.e. the assemblies
-  // look reversed. Only conclusive when their chromosome names are distinct.
-  assembliesSwapped: boolean
 }
 
 function makeAssemblyLookup(pluginManager: PluginManager) {
@@ -179,25 +171,6 @@ export async function executeDotplotFeaturesAndPositions({
   }
 
   const n = valid.length
-
-  // Nothing mapped: probe whether the assemblies were configured in the wrong
-  // order. The adapter filters features by `refName === queryRefName`, so a
-  // reversed setup returns zero features (not mis-mapped ones) — the only
-  // signal left is that the refNames the adapter reports for the X axis
-  // actually belong to the Y assembly. getRefNames reuses the parsed file.
-  const hAsm = hViewSnap.displayedRegions[0]?.assemblyName
-  const vAsm = vViewSnap.displayedRegions[0]?.assemblyName
-  const assembliesSwapped = await probeAssembliesSwapped({
-    rendered: n,
-    topAssembly: hAsm,
-    bottomAssembly: vAsm,
-    getReportedRefNames: name => dataAdapter.getRefNames({ assemblyName: name }),
-    xEntries: hIndex.entries,
-    yEntries: vIndex.entries,
-    canonicalizeX: name => getAssembly(hAsm)?.getCanonicalRefName(name) ?? name,
-    canonicalizeY: name => getAssembly(vAsm)?.getCanonicalRefName(name) ?? name,
-  })
-
   const result: DotplotFeaturesAndPositionsResult = {
     p11: new Float64Array(n),
     p12: new Float64Array(n),
@@ -215,7 +188,6 @@ export async function executeDotplotFeaturesAndPositions({
     parsedCigars: new Array<number[]>(n),
     totalFeatureCount: features.length,
     skippedFeatureCount,
-    assembliesSwapped,
   }
   for (let i = 0; i < n; i++) {
     const v = valid[i]!

@@ -28,7 +28,6 @@ function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
     refNames: ['chr1'],
     totalFeatureCount: 1,
     skippedFeatureCount: 0,
-    assembliesSwapped: false,
     ...overrides,
   }
 }
