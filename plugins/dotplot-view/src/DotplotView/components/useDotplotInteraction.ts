@@ -139,9 +139,15 @@ export function useDotplotInteraction(
       vview.scroll(event.clientY - mousecurrClient[1])
     }
   })
-  // Only listen for moves while hovering (crosshair tooltip + wheel-zoom
-  // anchor) or mid-drag (pan/select, which must keep firing even off-element).
-  // Avoids re-rendering the interaction subtree on every window mouse move.
+  // mousecurr is kept fresh ONLY while this listener is attached. We attach it
+  // exactly in the two states where a consumer reads it:
+  //   - hovering (mouseOvered): crosshair tooltip + the drag-select rect
+  //   - mid-drag (hasDrag): pan, which must keep firing even after the pointer
+  //     leaves the view bounds
+  // Outside those states nothing reads mousecurr, so we skip the listener to
+  // avoid re-rendering the interaction subtree on every window mouse move.
+  // (Wheel-zoom does NOT read mousecurr — it anchors on the wheel event itself,
+  // see onWheel above — so it works even before the first post-entry move.)
   useEffect(() => {
     if (!mouseOvered && !hasDrag) {
       return
