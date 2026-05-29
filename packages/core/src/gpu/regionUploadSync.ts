@@ -26,6 +26,9 @@ interface RegionUploadTarget<T> {
  *
  * Hold one instance per backend lifecycle (call from `startRenderingBackend`); the
  * closure keeps the last-uploaded references.
+ *
+ * @see regionUploadSync.test.ts — covers the reference-diff skip, prune, and
+ * backend-swap re-upload paths.
  */
 export function createRegionUploadSync<T, B extends RegionUploadTarget<T>>() {
   const uploaded = new Map<number, T>()

@@ -199,6 +199,11 @@ interface Rect {
   h: number
 }
 
+// Behavioral parity with WebGL2Hal is enforced by tests, not by this file:
+// products/jbrowse-web/browser-tests/compare-backends.ts pixel-diffs webgl vs
+// webgpu vs canvas2d output; glAttributeSync.test.ts checks attribute layout
+// against the shader; shared buffer bookkeeping is covered by
+// hal/regionRegistry.test.ts. Mirror any behavior change in webgl2Hal.ts.
 export class WebGPUHal implements GpuHal {
   private device: GPUDevice
   private canvas: HTMLCanvasElement

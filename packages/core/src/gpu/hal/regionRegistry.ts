@@ -3,7 +3,7 @@
 // supply a leaf-buffer type and its destroy hook. Both HALs used to ship
 // near-identical deleteBuffer/deleteRegion/deleteAll/prune/getOrCreate
 // implementations; centralizing avoids drift when one side's lifecycle is
-// tweaked and the other isn't.
+// tweaked and the other isn't. Contract pinned by regionRegistry.test.ts.
 export class RegionRegistry<Buf> {
   private regions = new Map<number, Map<string, Buf>>()
 

@@ -47,6 +47,9 @@ export type PerRegionRender<B, Encoded> = (
  *
  * `render` owns the per-frame draw call and returns whether anything was
  * actually drawn (gates the `canvasDrawn` flag — see RenderingBackendCallbacks).
+ *
+ * @see installPerRegionLifecycle.test.ts — pins the O(1)-per-new-key /
+ * O(N)-per-setting-change autorun semantics this helper exists for.
  */
 export function installPerRegionLifecycle<
   Data,

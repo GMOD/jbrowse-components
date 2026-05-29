@@ -42,6 +42,7 @@ export interface RenderingBackendCallbacks<B> {
  *
  * #stateModel RenderLifecycleMixin
  * #category display
+ * @see RenderLifecycleMixin.test.ts for the upload/render autorun behavior
  */
 export function RenderLifecycleMixin() {
   return types
@@ -54,7 +55,11 @@ export function RenderLifecycleMixin() {
       canvasDrawn: false,
       /**
        * #volatile
-       * current backend reference, updated on context-loss recovery
+       * current backend reference, updated on context-loss recovery.
+       * Typed `unknown` (not generic `B`) on purpose: this mixin is composed
+       * by every display via a non-generic factory, so the per-display backend
+       * type `B` isn't known here — it's supplied at `attachRenderingBackend<B>`
+       * and narrowed with `as B` inside the autoruns. Don't "fix" the cast.
        */
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       currentRenderingBackend: undefined as unknown,

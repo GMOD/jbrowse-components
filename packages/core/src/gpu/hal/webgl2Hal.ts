@@ -140,6 +140,11 @@ interface RegionPassBuffer {
 let totalCreated = 0
 let totalDisposed = 0
 
+// Behavioral parity with WebGPUHal is enforced by tests, not by this file:
+// products/jbrowse-web/browser-tests/compare-backends.ts pixel-diffs webgl vs
+// webgpu vs canvas2d output; glAttributeSync.test.ts checks attribute layout
+// against the shader; shared buffer bookkeeping is covered by
+// hal/regionRegistry.test.ts. Mirror any behavior change in webgpuHal.ts.
 export class WebGL2Hal implements GpuHal {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
