@@ -101,15 +101,18 @@ export function useDotplotInteraction(
     distanceY.current -= event.deltaY
     if (!scheduled.current) {
       scheduled.current = true
+      // Anchor on the wheel event's own position rather than the tracked
+      // mousecurr, so zoom doesn't depend on a mousemove having landed first.
+      const anchor = offsetCoord([event.clientX, event.clientY], rect)
       window.requestAnimationFrame(() => {
         transaction(() => {
           if (
             Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
-            mousecurr
+            anchor
           ) {
             const val = distanceY.current < 0 ? 1.07 : 0.935
-            hview.zoomTo(hview.bpPerPx * val, mousecurr[0])
-            vview.zoomTo(vview.bpPerPx * val, rect.height - mousecurr[1])
+            hview.zoomTo(hview.bpPerPx * val, anchor[0])
+            vview.zoomTo(vview.bpPerPx * val, rect.height - anchor[1])
           }
         })
         scheduled.current = false
