@@ -20,7 +20,9 @@ export type { Region } from '@jbrowse/core/util'
 /**
  * #stateModel LinearBasicDisplay
  * GPU-accelerated feature display with gene-specific UI on top of the
- * shared canvas base display.
+ * shared canvas base display (`LinearCanvasBaseDisplay`). This is the GPU
+ * stack — despite the name it does NOT extend `BaseLinearDisplay` (the legacy
+ * block stack). See agent-docs/TRACK_DISPLAY_CONCEPTS.md.
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,

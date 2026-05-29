@@ -1,5 +1,30 @@
 # Architecture
 
+## Display stacks
+
+There are two parallel linear-display **state-model** stacks. New feature
+displays should use the GPU stack; the legacy block stack is kept indefinitely.
+
+| Stack | Base state model | Render path | Concrete displays |
+| --- | --- | --- | --- |
+| **GPU canvas** | `LinearCanvasBaseDisplay` (plugins/canvas) | canvas/WebGL, data uploaded to GPU | `LinearBasicDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay`, `LinearManhattanDisplay` |
+| **Legacy block** | `BaseLinearDisplay` (plugins/linear-genome-view) | block-based, server-side RPC render → SVG | `LinearBareDisplay`, `LinearArcDisplay` |
+
+The vagueness comes from three differently-scoped artifacts sharing the
+`BaseLinearDisplay` name:
+
+| Artifact | Kind | Scope |
+| --- | --- | --- |
+| `baseLinearDisplayConfigSchema` | config schema | **shared by both stacks** + third-party plugins |
+| `BaseLinearDisplay` | state model | **legacy block only** (arc + bare) |
+| `BaseLinearDisplayComponent` | React shell | **shared by both stacks** |
+
+So `LinearBasicDisplay` (GPU) does **not** extend the `BaseLinearDisplay` state
+model, even though it uses the shared config schema and React shell.
+`BasicTrack` is a back-compat synonym for `FeatureTrack`. Full rationale,
+constraints, and the (deferred) retirement sketch:
+`agent-docs/TRACK_DISPLAY_CONCEPTS.md`.
+
 ## Coordinate system
 
 JBrowse uses **0-based half-open intervals** `[start, end)` internally for

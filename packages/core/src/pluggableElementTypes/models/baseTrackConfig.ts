@@ -5,7 +5,7 @@ import { ConfigurationSchema } from '../../configuration/index.ts'
 import type PluginManager from '../../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-interface BasicTrack {
+interface TrackConfigSnapshot {
   trackId: string
   name: string
   type: string
@@ -172,7 +172,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         const snap = pluginManager.evaluateExtensionPoint(
           'Core-preProcessTrackConfig',
           structuredClone(s2),
-        ) as BasicTrack
+        ) as TrackConfigSnapshot
         const { displays = [] } = snap
         if (snap.trackId !== 'placeholderId') {
           // Gets the displays on the track snapshot and the possible displays
