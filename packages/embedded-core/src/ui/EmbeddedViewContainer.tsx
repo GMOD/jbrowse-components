@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'
+import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewTitle from './ViewTitle.tsx'
@@ -10,14 +10,6 @@ import ViewTitle from './ViewTitle.tsx'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 const useStyles = makeStyles()(theme => ({
-  // avoid parent styles getting into this div
-  // https://css-tricks.com/almanac/properties/a/all/
-  avoidParentStyle: {
-    all: 'initial',
-    display: 'block',
-    width: '100%',
-    height: '100%',
-  },
   viewContainer: {
     width: '100%',
     overflow: 'hidden',
@@ -52,20 +44,4 @@ const ViewContainer = observer(function ViewContainer({
   )
 })
 
-const ViewContainerWrapper = observer(function ViewContainerWrapper({
-  view,
-  children,
-}: {
-  view: IBaseViewModel
-  children: React.ReactNode
-}) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.avoidParentStyle}>
-      <ScopedCssBaseline>
-        <ViewContainer view={view}>{children}</ViewContainer>
-      </ScopedCssBaseline>
-    </div>
-  )
-})
-export default ViewContainerWrapper
+export default ViewContainer
