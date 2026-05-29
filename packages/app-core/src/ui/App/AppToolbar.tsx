@@ -25,8 +25,19 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.primary.light,
   },
   logo: {
-    width: 150,
-    maxHeight: 48,
+    // stretch to the toolbar height so the logo's height follows the bar
+    // rather than a hardcoded pixel value
+    alignSelf: 'stretch',
+    display: 'flex',
+    alignItems: 'center',
+    // autofit any logo (custom <img> or the default svg): full toolbar height
+    // with auto width preserves aspect ratio, maxWidth caps horizontal room
+    '& img, & svg': {
+      height: '100%',
+      width: 'auto',
+      maxWidth: 150,
+      objectFit: 'contain',
+    },
   },
 }))
 
