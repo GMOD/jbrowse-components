@@ -11,7 +11,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getAllChildren, getAllTrackNodes } from '../../util.ts'
+import { getAllTrackNodes } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeCategoryNode, TreeNode } from '../../types.ts'
@@ -94,13 +94,13 @@ function categoryTrackMenuItems(
     {
       label: 'Add to selection',
       onClick: () => {
-        model.addToSelection(getAllChildren(item))
+        model.addToSelection(getAllTrackNodes(item).map(n => n.conf))
       },
     },
     {
       label: 'Remove from selection',
       onClick: () => {
-        model.removeFromSelection(getAllChildren(item))
+        model.removeFromSelection(getAllTrackNodes(item).map(n => n.conf))
       },
     },
     {

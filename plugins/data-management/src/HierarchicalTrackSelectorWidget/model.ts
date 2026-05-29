@@ -282,12 +282,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFavorites(str: string[]) {
-        self.favorites = str
-      },
-      /**
-       * #action
-       */
       setFavoritesCounter(val: number) {
         self.favoritesCounter = val
       },

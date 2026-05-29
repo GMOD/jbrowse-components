@@ -49,14 +49,14 @@ const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
                 onClick: () => {
                   model.removeFromFavorites(trackId)
                 },
-                icon: StarIcon,
+                icon: FilledStarIcon,
               }
             : {
                 label: 'Add to favorites',
                 onClick: () => {
                   model.addToFavorites(trackId)
                 },
-                icon: FilledStarIcon,
+                icon: StarIcon,
               },
           {
             label: 'Add to selection',
