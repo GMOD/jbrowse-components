@@ -353,13 +353,17 @@ export interface AbstractTrackModel {
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'configuration' in thing &&
+  if (typeof thing !== 'object' || thing === null || !('configuration' in thing)) {
+    return false
+  }
+  try {
     // @ts-expect-error
-    thing.configuration.trackId
-  )
+    return !!thing.configuration.trackId
+  } catch {
+    // configuration.trackId threw (broken config snapshot during lazy resolution);
+    // this node still IS a track model — fall back to structural check.
+    return 'displays' in thing
+  }
 }
 
 export interface AbstractDisplayModel {

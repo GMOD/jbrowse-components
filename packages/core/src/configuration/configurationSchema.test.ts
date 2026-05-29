@@ -345,6 +345,44 @@ describe('configuration schemas', () => {
   })
 })
 
+describe('union error scoping', () => {
+  // ConfigurationSchema with explicitlyTyped:true produces types.optional(model)
+  // members. The MST discriminator must drill through that wrapper so errors are
+  // scoped to the one member whose `type` literal matches, not dumped for all.
+  test('error is scoped to the matching type member, not all union members', () => {
+    if (process.env.NODE_ENV !== 'production') {
+      const AlphaConfig = ConfigurationSchema(
+        'AlphaTestTrack',
+        { count: { type: 'integer', defaultValue: 0 } },
+        { explicitlyTyped: true },
+      )
+      const BetaConfig = ConfigurationSchema(
+        'BetaTestTrack',
+        { label: { type: 'string', defaultValue: '' } },
+        { explicitlyTyped: true },
+      )
+      const Union = types.union(AlphaConfig, BetaConfig)
+
+      let msg = ''
+      try {
+        // 'bad' is not a valid slot-object shape for the count field
+        Union.create(
+          { type: 'AlphaTestTrack', count: 'bad' },
+          { pluginManager },
+        )
+      } catch (e) {
+        msg = String(e)
+      }
+
+      expect(msg).not.toBe('')
+      // Error must be scoped to the AlphaTestTrack member's field
+      expect(msg).toContain('/count')
+      // Pre-fix: BetaTestTrack's field errors would also appear in the dump
+      expect(msg).not.toContain('/label')
+    }
+  })
+})
+
 describe('ConfigurationReference', () => {
   // Minimal session shim. isSessionModel needs `rpcManager` + `configuration`;
   // tracksById is what TrackConfigurationReference reads.

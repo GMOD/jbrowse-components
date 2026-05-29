@@ -522,6 +522,16 @@ export function showTrackGeneric(
     throw new Error(`Unknown track type ${conf.type}`)
   }
 
+  // Eagerly validate the config snapshot so an invalid config throws a clear
+  // error here, before the track is pushed and MobX reactions fire against it.
+  try {
+    trackType.configSchema.create(conf, getEnv(self))
+  } catch (e) {
+    throw new Error(`Track "${trackId}" has an invalid configuration: ${e}`, {
+      cause: e,
+    })
+  }
+
   // Find a compatible display for this view type
   const viewType = pluginManager.getViewType(self.type)!
   const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))

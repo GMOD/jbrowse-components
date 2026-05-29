@@ -2618,6 +2618,26 @@
           }
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "broken_config_demo",
+      "name": "Broken config demo (intentionally bad indexType)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "NOTVALID",
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "plugins": [
