@@ -45,6 +45,40 @@ function stateModelFactory() {
       /**
        * #getter
        */
+      get parentTrack() {
+        if (!hasParent(self)) {
+          console.warn(
+            `[BaseDisplayModel] parentTrack accessed with no parent: alive=${isAlive(self)} type=${self.type}`,
+          )
+        }
+        return getContainingTrack(self)
+      },
+
+      /**
+       * #getter
+       * Returns the parent display if this display is nested within another display
+       * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
+       */
+      get parentDisplay() {
+        if (hasParent(self)) {
+          const parent = getParent<{
+            type?: string
+            effectiveRpcDriverName?: string
+          }>(self)
+          if (
+            typeof parent.type === 'string' &&
+            parent.type.endsWith('Display')
+          ) {
+            return parent
+          }
+        }
+        return undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
       get RenderingComponent(): React.FC<{
         model: typeof self
         onHorizontalScroll?: () => void
@@ -70,19 +104,7 @@ function stateModelFactory() {
        * #getter
        */
       get adapterConfig() {
-        return getConf(this.parentTrack, 'adapter')
-      },
-
-      /**
-       * #getter
-       */
-      get parentTrack() {
-        if (!hasParent(self)) {
-          console.warn(
-            `[BaseDisplayModel] parentTrack accessed with no parent: alive=${isAlive(self)} type=${self.type}`,
-          )
-        }
-        return getContainingTrack(self)
+        return getConf(self.parentTrack, 'adapter')
       },
 
       /**
@@ -91,28 +113,7 @@ function stateModelFactory() {
        * expensive operations like autoruns when track is not visible.
        */
       get isMinimized() {
-        return this.parentTrack.minimized
-      },
-
-      /**
-       * #getter
-       * Returns the parent display if this display is nested within another display
-       * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
-       */
-      get parentDisplay() {
-        if (hasParent(self)) {
-          const parent = getParent<{
-            type?: string
-            effectiveRpcDriverName?: string
-          }>(self)
-          if (
-            typeof parent.type === 'string' &&
-            parent.type.endsWith('Display')
-          ) {
-            return parent
-          }
-        }
-        return undefined
+        return self.parentTrack.minimized
       },
 
       /**
@@ -126,10 +127,10 @@ function stateModelFactory() {
         if (self.rpcDriverName) {
           return self.rpcDriverName
         }
-        if (this.parentDisplay?.effectiveRpcDriverName) {
-          return this.parentDisplay.effectiveRpcDriverName
+        if (self.parentDisplay?.effectiveRpcDriverName) {
+          return self.parentDisplay.effectiveRpcDriverName
         }
-        return getConf(this.parentTrack, 'rpcDriverName')
+        return getConf(self.parentTrack, 'rpcDriverName')
       },
 
       /**
@@ -209,11 +210,6 @@ function stateModelFactory() {
        */
       regionCannotBeRendered(/* region */) {
         return null
-      },
-
-      get effectiveTrackConfig() {
-        const track = getContainingTrack(self)
-        return getEffectiveTrackConfig(track.configuration, self)
       },
     }))
     .actions(self => ({

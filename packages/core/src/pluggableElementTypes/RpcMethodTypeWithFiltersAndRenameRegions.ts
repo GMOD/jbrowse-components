@@ -3,19 +3,25 @@ import { renameRegionsIfNeeded } from '../util/index.ts'
 import SerializableFilterChain from './renderers/util/serializableFilterChain.ts'
 
 import type { StopToken } from '../util/stopToken.ts'
+import type { SerializedFilterChain } from './renderers/util/serializableFilterChain.ts'
 import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 
 export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends RpcMethodType {
   async deserializeArguments<T>(
-    args: T & { filters?: any },
+    // filters is `unknown` rather than SerializedFilterChain: callers' T types
+    // it as the deserialized SerializableFilterChain, so a string[] intersection
+    // would collapse to `never` and reject every call
+    args: T & { filters?: unknown },
     rpcDriverClassName: string,
   ): Promise<T> {
     const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
       ...l,
+      // on the wire filters is the serialized string[] (see serializeArguments),
+      // even though T statically types it as the deserialized chain
       filters: args.filters
         ? new SerializableFilterChain({
-            filters: args.filters,
+            filters: args.filters as SerializedFilterChain,
             jexl: this.pluginManager.jexl,
           })
         : undefined,

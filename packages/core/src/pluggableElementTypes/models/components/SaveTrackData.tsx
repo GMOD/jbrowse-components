@@ -83,7 +83,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const view = getContainingView(model) as unknown as {
-    coarseVisibleLocStrings: string[]
+    coarseVisibleLocStrings: string
     visibleRegions?: Region[]
   }
   const { visibleRegions, coarseVisibleLocStrings: regionStr } = view
