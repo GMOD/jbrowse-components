@@ -1,3 +1,5 @@
+import { isSessionWithAddTracks } from '@jbrowse/core/util'
+
 import { createViewNoWait, doBeforeEach, mockConsole } from './util.tsx'
 import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json' with { type: 'json' }
 import brokenTrackConfig from '../../test_data/volvox/config_broken.json' with { type: 'json' }
@@ -38,6 +40,40 @@ test('invalid track config surfaces as a snackbar, not a crash', async () => {
     expect(track).toBeUndefined()
     expect(view.tracks).toHaveLength(0)
 
+    await findAllByText(/invalid configuration/, {}, delay)
+  })
+}, 30000)
+
+test('adding an invalid sessionTrack config surfaces a snackbar, not a crash', async () => {
+  await mockConsole(async () => {
+    // adminMode false routes through the typed sessionTracks array, which
+    // validates on push (this is the "Copy and open track" crash path)
+    const { session, findAllByText } = createViewNoWait(brokenTrackConfig, false)
+    if (!isSessionWithAddTracks(session)) {
+      throw new Error('session cannot add tracks')
+    }
+    const added = session.addTrackConf({
+      type: 'FeatureTrack',
+      trackId: 'broken_copy-sessionTrack',
+      name: 'Broken copy',
+      assemblyNames: ['volvox'],
+      adapter: {
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: {
+          uri: 'volvox.sort.gff3.gz',
+          locationType: 'UriLocation',
+        },
+        index: {
+          indexType: 'NOTVALID',
+          location: {
+            uri: 'volvox.sort.gff3.gz.tbi',
+            locationType: 'UriLocation',
+          },
+        },
+      },
+    })
+
+    expect(added).toBeUndefined()
     await findAllByText(/invalid configuration/, {}, delay)
   })
 }, 30000)

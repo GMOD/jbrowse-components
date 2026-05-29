@@ -1,6 +1,5 @@
 import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   ConnectionManagementSessionMixin,
@@ -29,7 +28,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * - AssembliesMixin
  * - DesktopSessionTrackMenuMixin
  * - DockviewLayoutMixin
- * - SnackbarModel
  *
  */
 export default function sessionModelFactory({
@@ -52,7 +50,6 @@ export default function sessionModelFactory({
       AssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
       DockviewLayoutMixin(),
-      SnackbarModel(),
     )
     .views(self => ({
       /**

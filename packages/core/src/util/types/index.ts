@@ -188,9 +188,11 @@ export function isSessionModelWithConfigEditing(
 
 /** abstract interface for a session allows adding tracks */
 export interface SessionWithAddTracks extends AbstractSessionModel {
+  // returns the added config, or undefined if it was invalid (surfaced as a
+  // snackbar) — see SessionTracks.addTrackConf
   addTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
-  ): void
+  ): AnyConfigurationModel | undefined
 }
 export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   return (

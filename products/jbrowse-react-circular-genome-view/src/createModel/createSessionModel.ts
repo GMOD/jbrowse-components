@@ -1,5 +1,4 @@
 import { getConf } from '@jbrowse/core/configuration'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
@@ -22,7 +21,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
  * - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
  * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [SnackbarModel](../snackbarmodel)
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
@@ -34,7 +32,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
       TrackMenuSessionMixin(pluginManager),
-      SnackbarModel(),
     )
     .props({
       /**

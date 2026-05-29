@@ -57,8 +57,19 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           if (track) {
             return track
           }
-          const length = self.sessionTracks.push(trackConf)
-          return self.sessionTracks[length - 1]
+          // sessionTracks is a typed MST array (unlike the frozen
+          // jbrowse.tracks), so an invalid config throws on push. Surface it as
+          // a snackbar and skip the add, rather than letting it crash the app.
+          try {
+            const length = self.sessionTracks.push(trackConf)
+            return self.sessionTracks[length - 1]
+          } catch (e) {
+            self.notifyError(
+              `Track "${trackId}" has an invalid configuration: ${e}`,
+              e,
+            )
+            return undefined
+          }
         },
 
         /**

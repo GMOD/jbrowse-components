@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
   restoreFileHandles,
@@ -88,7 +87,6 @@ export function BaseWebSession({
         AssembliesMixin(pluginManager, assemblyConfigSchema),
         WebSessionConnectionsMixin(pluginManager),
         DockviewLayoutMixin(),
-        SnackbarModel(),
       ),
     )
     .props({
@@ -358,8 +356,9 @@ export function BaseWebSession({
             disabled: isRefSeq || !view,
             onClick: () => {
               const snap = makeSnap()
-              self.addTrackConf(snap)
-              view!.showTrack(snap.trackId as string)
+              if (self.addTrackConf(snap)) {
+                view!.showTrack(snap.trackId as string)
+              }
             },
             icon: OpenInNewIcon,
           },

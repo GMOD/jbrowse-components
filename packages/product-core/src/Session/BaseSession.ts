@@ -1,3 +1,4 @@
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
@@ -17,12 +18,16 @@ type DoneCallback = (
  *
  * base session shared by all JBrowse products. Be careful what you include
  * here, everything will use it.
+ *
+ * composed of
+ * - [SnackbarModel](../snackbarmodel) — so `notify`/`notifyError` are available
+ *   to every session and the mixins beneath it (e.g. track add/open paths)
  */
 export function BaseSessionModel<
   ROOT_MODEL_TYPE extends BaseRootModelType,
   JB_CONFIG_SCHEMA extends AnyConfigurationSchemaType,
 >(_pluginManager: PluginManager) {
-  return types
+  const baseModel = types
     .model({
       /**
        * #property
@@ -177,17 +182,18 @@ export function BaseSessionModel<
         self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
       },
     }))
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { margin, ...rest } = snap
-      return {
-        ...rest,
-        ...(margin ? { margin } : {}),
-      } as typeof snap
-    })
+
+  return types.compose(baseModel, SnackbarModel()).postProcessSnapshot(snap => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!snap) {
+      return snap
+    }
+    const { margin, ...rest } = snap
+    return {
+      ...rest,
+      ...(margin ? { margin } : {}),
+    } as typeof snap
+  })
 }
 
 /** Session mixin MST type for the most basic session */
