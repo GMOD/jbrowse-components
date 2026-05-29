@@ -61,8 +61,6 @@ const config: StorybookConfig = {
       extensions: ['.mjs', '.js', '.ts', '.tsx', '.jsx', '.json'],
     }
 
-    config.cache = { type: 'filesystem' }
-
     return config
   },
 }
