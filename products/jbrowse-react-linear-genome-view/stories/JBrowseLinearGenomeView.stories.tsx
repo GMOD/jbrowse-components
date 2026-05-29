@@ -3,12 +3,12 @@ import { createElement, useEffect, useRef, useState } from 'react'
 
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
-import r2wc from '@r2wc/react-to-web-component'
+import Plugin from '@jbrowse/core/Plugin'
 import { getConf } from '@jbrowse/core/configuration'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import Plugin from '@jbrowse/core/Plugin'
 import { types } from '@jbrowse/mobx-state-tree'
+import r2wc from '@r2wc/react-to-web-component'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 import { createPortal } from 'react-dom'
@@ -19,22 +19,26 @@ import {
   loadPlugins,
   useCreateViewState,
 } from '../src/index.ts'
-import { addRelativeUris, getVolvoxConfig, ViewWithErrorHandling } from './examples/util.tsx'
+import {
+  ViewWithErrorHandling,
+  addRelativeUris,
+  getVolvoxConfig,
+} from './examples/util.tsx'
 import nextstrainConfig from '../public/nextstrain_covid.json' with { type: 'json' }
 import makeWorkerInstance from '../src/makeWorkerInstance.ts'
 
 // barrel re-exports for stories not shown in MDX (appear in "Source code for examples" page)
 export { OneLinearGenomeView, UseCreateViewState } from './examples/index.ts'
 
+import type { ViewModel } from '../src/index.ts'
 import type { EmotionCache } from '@emotion/cache'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { ViewModel } from '../src/index.ts'
 
 export default { title: 'Source code for examples' }
 
@@ -524,8 +528,8 @@ export const HorizontallyFlippedViaLocstring = {
     return (
       <div>
         <p>
-          The <code>[rev]</code> suffix in a locstring navigates to that region in
-          the horizontally flipped orientation.
+          The <code>[rev]</code> suffix in a locstring navigates to that region
+          in the horizontally flipped orientation.
         </p>
         <JBrowseLinearGenomeView viewState={state} />
       </div>
@@ -852,7 +856,11 @@ function App() {
 
 export const NextstrainExample = {
   render: () => {
-    const { assembly: nsAssembly, tracks: nsTracks, defaultSession: nsDefaultSession } = nextstrainConfig
+    const {
+      assembly: nsAssembly,
+      tracks: nsTracks,
+      defaultSession: nsDefaultSession,
+    } = nextstrainConfig
     const [state] = useState(() =>
       createViewState({
         assembly: nsAssembly,
@@ -942,15 +950,25 @@ const ShadowComponent = () => {
               primary: { main: '#4400a6' },
             },
             components: {
-              MuiPopover: { defaultProps: { container: () => nodeForPin.current } },
-              MuiPopper: { defaultProps: { container: () => nodeForPin.current } },
+              MuiPopover: {
+                defaultProps: { container: () => nodeForPin.current },
+              },
+              MuiPopper: {
+                defaultProps: { container: () => nodeForPin.current },
+              },
               MuiTooltip: {
                 defaultProps: {
-                  slotProps: { popper: { container: () => nodeForPin.current } },
+                  slotProps: {
+                    popper: { container: () => nodeForPin.current },
+                  },
                 },
               },
-              MuiModal: { defaultProps: { container: () => nodeForPin.current } },
-              MuiMenu: { defaultProps: { container: () => nodeForPin.current } },
+              MuiModal: {
+                defaultProps: { container: () => nodeForPin.current },
+              },
+              MuiMenu: {
+                defaultProps: { container: () => nodeForPin.current },
+              },
             },
           },
         },
@@ -1368,7 +1386,8 @@ class DisableZoomPlugin extends Plugin {
 export const WithDisableZoomAndSideScroll = {
   render: () => {
     const [state] = useState(() => {
-      const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
+      const { assembly: volvoxAssembly, tracks: volvoxTracks } =
+        getVolvoxConfig()
       return createViewState({
         assembly: volvoxAssembly,
         tracks: volvoxTracks,
@@ -1379,8 +1398,8 @@ export const WithDisableZoomAndSideScroll = {
     return (
       <div>
         <JBrowseLinearGenomeView viewState={state} />
-        (Note: This is a basic demo that was added for a user request and may not
-        be a complete solution)
+        (Note: This is a basic demo that was added for a user request and may
+        not be a complete solution)
       </div>
     )
   },
@@ -2291,41 +2310,299 @@ const multiRegionTranscript = {
   start: 113073169,
   end: 113125202,
   subfeatures: [
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113073169, end: 113073645 },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113091317, end: 113091383 },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113092028, end: 113092140 },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113093205, end: 113093280 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113093209, end: 113093280, phase: 0, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113093429, end: 113093564, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113093429, end: 113093564 },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113094338, end: 113094482 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113094338, end: 113094482, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113094611, end: 113094755 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113094611, end: 113094755, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113095873, end: 113096017, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113095873, end: 113096017 },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113096221, end: 113096365 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113096221, end: 113096365, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113098704, end: 113098785 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113098704, end: 113098785, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113100210, end: 113100282 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113100210, end: 113100282, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113100419, end: 113100488 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113100419, end: 113100488, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113107593, end: 113107757 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113107593, end: 113107757, phase: 1, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113110241, end: 113110562 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113110241, end: 113110562, phase: 2, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113112478, end: 113112760, phase: 2, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113112478, end: 113112760 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113114426, end: 113114876, phase: 2, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113114426, end: 113114876 },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113116286, end: 113116436 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113116286, end: 113116436, phase: 2, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113119232, end: 113119523, phase: 2, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113119232, end: 113119523 },
-    { strand: 1, refName: 'chr1', type: 'CDS', start: 113123874, end: 113124101, phase: 2, id: 'CDS5727', name: 'NP_001299615.1' },
-    { strand: 1, refName: 'chr1', type: 'exon', start: 113123874, end: 113125202 },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113073169,
+      end: 113073645,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113091317,
+      end: 113091383,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113092028,
+      end: 113092140,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113093205,
+      end: 113093280,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113093209,
+      end: 113093280,
+      phase: 0,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113093429,
+      end: 113093564,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113093429,
+      end: 113093564,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113094338,
+      end: 113094482,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113094338,
+      end: 113094482,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113094611,
+      end: 113094755,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113094611,
+      end: 113094755,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113095873,
+      end: 113096017,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113095873,
+      end: 113096017,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113096221,
+      end: 113096365,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113096221,
+      end: 113096365,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113098704,
+      end: 113098785,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113098704,
+      end: 113098785,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113100210,
+      end: 113100282,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113100210,
+      end: 113100282,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113100419,
+      end: 113100488,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113100419,
+      end: 113100488,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113107593,
+      end: 113107757,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113107593,
+      end: 113107757,
+      phase: 1,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113110241,
+      end: 113110562,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113110241,
+      end: 113110562,
+      phase: 2,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113112478,
+      end: 113112760,
+      phase: 2,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113112478,
+      end: 113112760,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113114426,
+      end: 113114876,
+      phase: 2,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113114426,
+      end: 113114876,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113116286,
+      end: 113116436,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113116286,
+      end: 113116436,
+      phase: 2,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113119232,
+      end: 113119523,
+      phase: 2,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113119232,
+      end: 113119523,
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'CDS',
+      start: 113123874,
+      end: 113124101,
+      phase: 2,
+      id: 'CDS5727',
+      name: 'NP_001299615.1',
+    },
+    {
+      strand: 1,
+      refName: 'chr1',
+      type: 'exon',
+      start: 113123874,
+      end: 113125202,
+    },
   ],
   id: 'mRNA5901',
   name: 'NM_001312686.1',
@@ -2401,7 +2678,9 @@ const FlipView = observer(function FlipView({ state }: { state: ViewModel }) {
 export const WithMultipleDisplayedRegionsFlipped = {
   render: () => {
     const [state] = useState(() => {
-      const loc = regionsToLocString(getExonRegionsFromFeature(multiRegionTranscript))
+      const loc = regionsToLocString(
+        getExonRegionsFromFeature(multiRegionTranscript),
+      )
       return createViewState({
         assembly: multiRegionAssembly,
         tracks: multiRegionTracks,
@@ -2818,7 +3097,9 @@ export const WithPerTrackTextSearching = {
                 textSearchAdapterId: 'gff3tabix_genes-index',
                 ixFilePath: { uri: 'storybook_data/gff3tabix_genes.ix' },
                 ixxFilePath: { uri: 'storybook_data/gff3tabix_genes.ixx' },
-                metaFilePath: { uri: 'storybook_data/gff3tabix_genes_meta.json' },
+                metaFilePath: {
+                  uri: 'storybook_data/gff3tabix_genes_meta.json',
+                },
                 assemblyNames: ['volvox'],
               },
             },

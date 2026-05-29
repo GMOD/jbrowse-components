@@ -4,9 +4,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import { getEnv } from '@jbrowse/core/util'
 
 import { addRelativeUris } from './examples/util.ts'
-import volvoxConfigJson from '../public/test_data/volvox/config.json' with {
-  type: 'json',
-}
+import volvoxConfigJson from '../public/test_data/volvox/config.json' with { type: 'json' }
 import { JBrowseApp, createViewState } from '../src/index.ts'
 import makeWorkerInstance from '../src/makeWorkerInstance.ts'
 
@@ -387,7 +385,9 @@ export const HumanDemo = () => {
 
 export const WithImportConfigJson = {
   render: () => {
-    const [state] = useState(() => createViewState({ config: volvoxConfigJson }))
+    const [state] = useState(() =>
+      createViewState({ config: volvoxConfigJson }),
+    )
     return <JBrowseApp viewState={state} />
   },
   parameters: {
@@ -445,7 +445,9 @@ export const WithFetchConfigJson = {
         const configPath = 'test_data/volvox/config.json'
         const response = await fetch(configPath)
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status} fetching config ${configPath}`)
+          throw new Error(
+            `HTTP ${response.status} fetching config ${configPath}`,
+          )
         }
         const config = await response.json()
         addRelativeUris(config, new URL(configPath, window.location.href).href)
@@ -731,7 +733,8 @@ export const SyntenyExample = () => {
 
 export const WithLaunchLinearGenomeView = {
   render: () => {
-    const [viewState, setViewState] = useState<ReturnType<typeof createViewState>>()
+    const [viewState, setViewState] =
+      useState<ReturnType<typeof createViewState>>()
     const [error, setError] = useState<unknown>()
 
     useEffect(() => {

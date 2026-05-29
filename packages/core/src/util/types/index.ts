@@ -353,7 +353,11 @@ export interface AbstractTrackModel {
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
-  if (typeof thing !== 'object' || thing === null || !('configuration' in thing)) {
+  if (
+    typeof thing !== 'object' ||
+    thing === null ||
+    !('configuration' in thing)
+  ) {
     return false
   }
   try {

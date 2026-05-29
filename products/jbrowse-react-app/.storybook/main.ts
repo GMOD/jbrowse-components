@@ -33,7 +33,9 @@ const config: StorybookConfig = {
       const r = rule as Record<string, unknown>
       const testStr = r['test']?.toString() ?? ''
       if (!/[tj]sx?/.test(testStr)) return false
-      return JSON.stringify(r['use'] ?? r['loader'] ?? '').includes('babel-loader')
+      return JSON.stringify(r['use'] ?? r['loader'] ?? '').includes(
+        'babel-loader',
+      )
     }
 
     const filteredRules = (config.module!.rules ?? []).flatMap(rule => {

@@ -5,7 +5,7 @@ import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
-import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
+import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { ViewModel } from '../createModel/createModel.ts'
