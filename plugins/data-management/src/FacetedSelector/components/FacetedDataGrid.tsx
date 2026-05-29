@@ -1,59 +1,17 @@
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 
-import { notEmpty } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Checkbox from '@mui/material/Checkbox'
 import { alpha, darken, lighten } from '@mui/material/styles'
-import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { useVirtualRows } from './useVirtualRows.ts'
 import { useSearchHighlight } from '../../shared/useSearchHighlight.ts'
+import { setTracksSelected } from '../facetedSelection.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-function useVirtualRows(
-  parentRef: React.RefObject<HTMLDivElement | null>,
-  count: number,
-  rowHeight: number,
-  overscan = 20,
-) {
-  const [scrollState, setScrollState] = useState({
-    scrollTop: 0,
-    clientHeight: 0,
-  })
-
-  useEffect(() => {
-    const el = parentRef.current
-    if (!el) {
-      return
-    }
-    setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
-    const onScroll = () => {
-      setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      el.removeEventListener('scroll', onScroll)
-    }
-  }, [parentRef])
-
-  const { scrollTop, clientHeight } = scrollState
-  const totalSize = count * rowHeight
-  const startIdx = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan)
-  const endIdx = Math.min(
-    count,
-    Math.ceil((scrollTop + clientHeight) / rowHeight) + overscan,
-  )
-
-  const items = []
-  for (let i = startIdx; i < endIdx; i++) {
-    items.push({ index: i, start: i * rowHeight })
-  }
-
-  return { items, totalSize }
-}
 
 const ROW_HEIGHT = 25
 const HEADER_HEIGHT = 35
@@ -165,6 +123,11 @@ const useStyles = makeStyles()(theme => {
       borderBottom: border,
       padding: 0,
     },
+    emptyCell: {
+      padding: 20,
+      textAlign: 'center',
+      color: theme.palette.text.secondary,
+    },
   }
 })
 
@@ -187,7 +150,6 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   selection: AnyConfigurationModel[]
 }) {
   const { classes } = useStyles()
-  const { view } = model
   const { useShoppingCart, filteredRows, visible, filterText, initialWidths } =
     faceted
 
@@ -230,60 +192,25 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
 
   const handleSelectAll = () => {
     startTransition(() => {
-      if (!useShoppingCart) {
-        transaction(() => {
-          if (allSelected) {
-            for (const row of filteredRows) {
-              if (selectedIds.has(row.id)) {
-                view.hideTrack(row.id)
-              }
-            }
-          } else {
-            for (const row of filteredRows) {
-              if (!selectedIds.has(row.id)) {
-                view.showTrack(row.id)
-                model.addToRecentlyUsed(row.id)
-              }
-            }
-          }
-        })
-      } else {
-        if (allSelected) {
-          const filteredIdSet = new Set(filteredRows.map(r => r.id))
-          model.setSelection(
-            selection.filter(s => !filteredIdSet.has(`${s.trackId}`)),
-          )
-        } else {
-          const currentIds = new Set(selection.map(s => `${s.trackId}`))
-          const toAdd = filteredRows
-            .filter(r => !currentIds.has(r.id))
-            .map(r => model.allTrackConfigurationMap.get(r.id))
-            .filter(notEmpty)
-          model.setSelection([...selection, ...toAdd])
-        }
-      }
+      // allSelected implies every filtered row is selected, so deselect all;
+      // otherwise select the rows that aren't yet selected
+      const ids = allSelected
+        ? filteredRows.map(row => row.id)
+        : filteredRows
+            .filter(row => !selectedIds.has(row.id))
+            .map(row => row.id)
+      setTracksSelected(model, ids, !allSelected, useShoppingCart)
     })
   }
 
   const handleRowToggle = (rowId: string) => {
     startTransition(() => {
-      if (!useShoppingCart) {
-        if (selectedIds.has(rowId)) {
-          view.hideTrack(rowId)
-        } else {
-          view.showTrack(rowId)
-          model.addToRecentlyUsed(rowId)
-        }
-      } else {
-        if (selectedIds.has(rowId)) {
-          model.setSelection(selection.filter(s => `${s.trackId}` !== rowId))
-        } else {
-          const conf = model.allTrackConfigurationMap.get(rowId)
-          if (conf) {
-            model.setSelection([...selection, conf])
-          }
-        }
-      }
+      setTracksSelected(
+        model,
+        [rowId],
+        !selectedIds.has(rowId),
+        useShoppingCart,
+      )
     })
   }
 
@@ -315,11 +242,12 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
                 checked={allSelected}
                 indeterminate={someSelected}
                 onChange={handleSelectAll}
+                slotProps={{ input: { 'aria-label': 'Select all tracks' } }}
                 sx={checkboxSx}
               />
             </th>
             {visibleColumns.map(col => (
-              <th key={col.id} className={classes.headerCell}>
+              <th key={col.id} scope="col" className={classes.headerCell}>
                 {col.header}
                 {col.id !== lastColId ? (
                   <div
@@ -361,6 +289,9 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
                     onChange={() => {
                       handleRowToggle(row.id)
                     }}
+                    slotProps={{
+                      input: { 'aria-label': `Select ${row.name}` },
+                    }}
                     sx={checkboxSx}
                   />
                 </td>
@@ -380,6 +311,16 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
               }}
             >
               <td />
+            </tr>
+          ) : null}
+          {filteredRows.length === 0 ? (
+            <tr>
+              <td
+                colSpan={visibleColumns.length + 2}
+                className={classes.emptyCell}
+              >
+                No tracks match the current search and filters
+              </td>
             </tr>
           ) : null}
         </tbody>

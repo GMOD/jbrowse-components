@@ -1,5 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 // @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { ThemeProvider } from '@mui/material'
@@ -9,6 +10,7 @@ import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
 import { getRowStr } from '../../FacetedSelector/components/util.ts'
 import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
+import { setTracksSelected } from '../../FacetedSelector/facetedSelection.ts'
 import {
   findNonSparseKeys,
   getRootKeys,
@@ -835,15 +837,84 @@ test('faceted model toggle options', () => {
   faceted.setShowFilters(!initialShowFilters)
   expect(faceted.showFilters).toBe(!initialShowFilters)
 
-  // test showOptions toggle
-  const initialShowOptions = faceted.showOptions
-  faceted.setShowOptions(!initialShowOptions)
-  expect(faceted.showOptions).toBe(!initialShowOptions)
-
   // test useShoppingCart toggle
   expect(faceted.useShoppingCart).toBe(false)
   faceted.setUseShoppingCart(true)
   expect(faceted.useShoppingCart).toBe(true)
+})
+
+// the faceted model is created per-dialog and destroyed on close; verify
+// destroy tears it down without cascading into the shared session track configs
+test('faceted model destroy is safe', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
+
+  // exercise the afterAttach autorun so there's a disposer to clean up
+  expect(faceted.fields.length).toBeGreaterThan(0)
+  const sharedConf = model.allTrackConfigurations[0]!
+  expect(isAlive(sharedConf)).toBe(true)
+
+  destroy(faceted)
+
+  expect(isAlive(faceted)).toBe(false)
+  // destroying the faceted model must not destroy the session-owned configs it
+  // merely referenced
+  expect(isAlive(sharedConf)).toBe(true)
+  expect(model.allTrackConfigurations.length).toBeGreaterThan(0)
+})
+
+test('setTracksSelected toggles tracks on the view', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  setTracksSelected(model, ['fooC', 'barC'], true, false)
+  expect([...model.shownTrackIds].toSorted()).toEqual(['barC', 'fooC'])
+
+  setTracksSelected(model, ['fooC'], false, false)
+  expect([...model.shownTrackIds]).toEqual(['barC'])
+})
+
+test('setTracksSelected updates the selection in shopping-cart mode', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  setTracksSelected(model, ['fooC', 'barC'], true, true)
+  expect(model.selection.map(s => `${s.trackId}`).toSorted()).toEqual([
+    'barC',
+    'fooC',
+  ])
+  // re-adding already-selected ids doesn't duplicate
+  setTracksSelected(model, ['fooC'], true, true)
+  expect(model.selection.length).toBe(2)
+
+  setTracksSelected(model, ['fooC'], false, true)
+  expect(model.selection.map(s => `${s.trackId}`)).toEqual(['barC'])
+
+  // view is untouched in shopping-cart mode
+  expect(model.shownTrackIds.size).toBe(0)
 })
 
 test('faceted model panel width', () => {

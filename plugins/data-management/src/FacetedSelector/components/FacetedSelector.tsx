@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -24,41 +26,24 @@ const useStyles = makeStyles()({
   },
 })
 
-export function HighlightText({
-  text,
-  query,
-  className,
-}: {
-  text: string
-  query: string
-  className?: string
-}) {
-  if (!query || !text) {
-    return <SanitizedHTML html={text} className={className} />
-  }
-  const lowerText = text.toLowerCase()
-  const lowerQuery = query.toLowerCase()
-  let highlighted = ''
-  let lastIndex = 0
-  let idx = lowerText.indexOf(lowerQuery, lastIndex)
-  while (idx !== -1) {
-    if (idx > lastIndex) {
-      highlighted += text.slice(lastIndex, idx)
-    }
-    highlighted += `<mark style="background: #FFEB3B">${text.slice(
-      idx,
-      idx + query.length,
-    )}</mark>`
-    lastIndex = idx + query.length
-    idx = lowerText.indexOf(lowerQuery, lastIndex)
-  }
-  if (lastIndex < text.length) {
-    highlighted += text.slice(lastIndex)
-  }
-  return <SanitizedHTML html={highlighted} className={className} />
-}
-
 const frac = 0.75
+
+function useWindowSize() {
+  const [size, setSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
+  useEffect(() => {
+    const onResize = () => {
+      setSize({ width: window.innerWidth, height: window.innerHeight })
+    }
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+    }
+  }, [])
+  return size
+}
 
 const FacetedSelector = observer(function FacetedSelector({
   model,
@@ -68,9 +53,9 @@ const FacetedSelector = observer(function FacetedSelector({
   faceted: FacetedModel
 }) {
   const { classes } = useStyles()
+  const { width: windowWidth, height: windowHeight } = useWindowSize()
   const { selection, shownTrackIds } = model
   const {
-    rows,
     panelWidth,
     showFilters,
     filteredNonMetadataKeys,
@@ -118,14 +103,14 @@ const FacetedSelector = observer(function FacetedSelector({
         style={{
           display: 'flex',
           overflow: 'hidden',
-          height: window.innerHeight * frac,
-          width: window.innerWidth * frac,
+          height: windowHeight * frac,
+          width: windowWidth * frac,
         }}
       >
         <div
           style={{
-            height: window.innerHeight * frac,
-            width: window.innerWidth * frac - (showFilters ? panelWidth : 0),
+            height: windowHeight * frac,
+            width: windowWidth * frac - (showFilters ? panelWidth : 0),
           }}
         >
           <FacetedDataGrid
@@ -145,11 +130,7 @@ const FacetedSelector = observer(function FacetedSelector({
               className={classes.resizeHandle}
             />
             <div style={{ width: panelWidth, overflow: 'auto' }}>
-              <FacetFilters
-                faceted={faceted}
-                rows={rows}
-                fields={columns.map(c => c.id)}
-              />
+              <FacetFilters faceted={faceted} />
             </div>
           </>
         ) : null}

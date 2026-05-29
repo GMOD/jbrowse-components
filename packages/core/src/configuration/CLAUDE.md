@@ -53,15 +53,16 @@ code (toggle/hide/find/menus) never has to defend against a config that throws:
 - **Open — `showTrackGeneric`:** eagerly validates the config before pushing;
   invalid → `notifyError` snackbar, nothing added.
 - **Add/copy — `SessionTracks.addTrackConf`:** catches the typed-array push (the
-  frozen `jbrowse.tracks` doesn't validate, but `sessionTracks` does) → snackbar,
-  nothing added.
+  frozen `jbrowse.tracks` doesn't validate, but `sessionTracks` does) →
+  snackbar, nothing added.
 - **Session load — `filterSessionInPlace`:** drops any open-track element whose
   config can't hydrate (alongside dangling refs), so a saved/shared session with
   a broken open track loads with that track removed instead of crashing.
 
 `notifyError` is available to the first two because `SnackbarModel` is composed
-into `BaseSessionModel`. `isTrackModel` still guards its config read defensively,
-but with the invariant above it isn't relied upon to prevent crashes.
+into `BaseSessionModel`. `isTrackModel` still guards its config read
+defensively, but with the invariant above it isn't relied upon to prevent
+crashes.
 
 ### Reference resolution
 

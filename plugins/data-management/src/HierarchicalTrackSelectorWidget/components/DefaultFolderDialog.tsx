@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { destroy } from '@jbrowse/mobx-state-tree'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -40,6 +41,12 @@ const DefaultFolderDialog = observer(function DefaultFolderDialog({
 }) {
   const [faceted] = useState<FacetedModel>(() =>
     createFacetedModel(model, subtracks),
+  )
+  useEffect(
+    () => () => {
+      destroy(faceted)
+    },
+    [faceted],
   )
 
   return (

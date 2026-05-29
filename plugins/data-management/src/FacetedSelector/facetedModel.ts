@@ -2,6 +2,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   localStorageGetBoolean,
   localStorageGetNumber,
+  localStorageSetBoolean,
+  localStorageSetItem,
   measureGridWidth,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
@@ -39,13 +41,6 @@ export function facetedStateTreeF() {
        */
       showFilters: types.optional(types.boolean, () =>
         localStorageGetBoolean('facet-showFilters', true),
-      ),
-
-      /**
-       * #property
-       */
-      showOptions: types.optional(types.boolean, () =>
-        localStorageGetBoolean('facet-showTableOptions', false),
       ),
 
       /**
@@ -100,6 +95,7 @@ export function facetedStateTreeF() {
        */
       setPanelWidth(width: number) {
         self.panelWidth = width
+        localStorageSetItem('facet-panelWidth', JSON.stringify(width))
         return self.panelWidth
       },
       /**
@@ -119,18 +115,14 @@ export function facetedStateTreeF() {
        */
       setShowSparse(f: boolean) {
         self.showSparse = f
-      },
-      /**
-       * #action
-       */
-      setShowOptions(f: boolean) {
-        self.showOptions = f
+        localStorageSetBoolean('facet-showSparse', f)
       },
       /**
        * #action
        */
       setShowFilters(f: boolean) {
         self.showFilters = f
+        localStorageSetBoolean('facet-showFilters', f)
       },
       /**
        * #action
@@ -250,17 +242,52 @@ export function facetedStateTreeF() {
       },
       /**
        * #getter
-       * Measured pixel widths for every column. Cached by MobX; recomputes
-       * only when rows or the key set change, not on visibility toggles.
+       * Per-facet category counts for the filter sidebar. Cached by MobX so it
+       * recomputes only when rows or filters change, not on every render.
+       * Active-filter facets are counted first against the pre-filter row set
+       * so their counts reflect drill-down.
+       */
+      get facetCategoryCounts() {
+        const facets = this.fields.slice(1)
+        const counts = new Map(
+          facets.map(f => [f, new Map<string, number>()] as const),
+        )
+        const orderedFacets = [
+          ...facets.filter(f => self.filters.get(f)?.length),
+          ...facets.filter(f => !self.filters.get(f)?.length),
+        ]
+        let currentRows = self.rows
+        for (const facet of orderedFacets) {
+          const categoryCountMap = counts.get(facet)!
+          for (const row of currentRows) {
+            const key = getRowStr(facet, row)
+            if (key) {
+              categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
+            }
+          }
+          const filterValues = self.filters.get(facet)
+          if (filterValues?.length) {
+            const filterSet = new Set(filterValues)
+            currentRows = currentRows.filter(row =>
+              filterSet.has(getRowStr(facet, row)),
+            )
+          }
+        }
+        return counts
+      },
+      /**
+       * #getter
+       * Measured pixel widths for every column. Measured over allRows so widths
+       * stay stable and don't recompute on every filterText keystroke.
        */
       get initialWidths(): Record<string, number> {
         return {
-          name: measureNameColumnWidth(self.rows),
+          name: measureNameColumnWidth(self.allRows),
           ...Object.fromEntries(
             this.filteredNonMetadataKeys.map(e => [
               e,
               measureGridWidth(
-                self.rows.map(r => r[e as keyof typeof r] as string),
+                self.allRows.map(r => r[e as keyof typeof r] as string),
                 { maxWidth: 400, stripHTML: true },
               ),
             ]),
@@ -269,7 +296,7 @@ export function facetedStateTreeF() {
             this.filteredMetadataKeys.map(e => [
               `metadata.${e}`,
               measureGridWidth(
-                self.rows.map(r => r.metadata[e]),
+                self.allRows.map(r => r.metadata[e]),
                 { maxWidth: 400, stripHTML: true },
               ),
             ]),
