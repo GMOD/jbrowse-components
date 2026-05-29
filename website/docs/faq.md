@@ -51,6 +51,21 @@ only a genome browser.
 See the [features page](https://jbrowse.org/jb2/features) for an overview of
 features
 
+### How do I convert my JBrowse 1 configuration to JBrowse 2
+
+There is no official migration tool. The config formats differ significantly, so
+you will generally need to set up tracks fresh in JBrowse 2 using the CLI or GUI.
+
+For reference, community scripts like
+[this gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
+can help extract track definitions from a JBrowse 1 config.
+
+JBrowse 2 also has a built-in **JBrowse 1 connection** feature that can connect
+directly to a running JBrowse 1 data directory and read its `trackList.json`,
+letting you browse your existing JBrowse 1 tracks without a full migration. This
+is not recommended for most purposes — it is limited in functionality and is
+mainly useful as a temporary bridge.
+
 ## Setup
 
 ### What web server do I need to run JBrowse 2
