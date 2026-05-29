@@ -71,7 +71,7 @@ const SvInspectorView = observer(function SvInspectorView({
         ) : null}
       </div>
       <ResizeHandle
-        onDrag={model.resizeHeight}
+        onDrag={distance => model.resizeHeight(distance)}
         className={classes.resizeHandleHoriz}
       />
     </div>

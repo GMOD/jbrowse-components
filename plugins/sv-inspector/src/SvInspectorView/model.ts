@@ -38,7 +38,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   const minHeight = 400
   const defaultHeight = 550
   const headerHeight = 52
-  const circularViewOptionsBarHeight = 52
   const borderWidth = 1
   return types
     .compose(
@@ -105,7 +104,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      circularViewOptionsBarHeight,
+      circularViewOptionsBarHeight: 52,
     }))
     .views(self => ({
       /**
@@ -147,21 +146,15 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get featureRefNames() {
-        interface VcfLike {
-          INFO?: { CHR2?: string }
-        }
-        interface MateLike {
-          mate?: { refName?: string }
-        }
         return [
           ...new Set(
-            [
-              ...this.features.map(r => r.refName),
-              ...this.features.map(r => (r as unknown as VcfLike).INFO?.CHR2),
-              ...this.features.map(
-                r => (r as unknown as MateLike).mate?.refName,
-              ),
-            ].filter((f): f is string => !!f),
+            this.features
+              .flatMap(f => [
+                f.refName,
+                (f.INFO as { CHR2?: string } | undefined)?.CHR2,
+                (f.mate as { refName?: string } | undefined)?.refName,
+              ])
+              .filter((f): f is string => !!f),
           ),
         ]
       },
@@ -182,7 +175,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         const asm = this.currentAssembly
         return new Set(
           asm?.initialized
-            ? this.featureRefNames.map(r => asm.getCanonicalRefName(r) || r)
+            ? this.featureRefNames.map(r => asm.getCanonicalRefName2(r))
             : [],
         )
       },
@@ -311,7 +304,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             () => {
               self.spreadsheetView.setHeight(self.height - headerHeight)
               self.circularView.setHeight(
-                self.height - headerHeight - circularViewOptionsBarHeight,
+                self.height - headerHeight - self.circularViewOptionsBarHeight,
               )
             },
             {
