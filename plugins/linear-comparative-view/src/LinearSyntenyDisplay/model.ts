@@ -41,12 +41,10 @@ export interface SyntenyFeatureData {
   // string. Used to gate CIGAR-related menu items so they don't appear when
   // the resolved tier (coarse PIF, or a CIGAR-less PAF) has no per-row ops.
   hasCigar: boolean
-  totalFeatureCount: number
-  // Features (pre-viewport-cull) whose refNames resolve in the configured row
-  // order vs. only with the two rows swapped. See executeSyntenyFeaturesAnd-
-  // Positions; a swapped majority flags a likely reversed assembly order.
-  normalMatchCount: number
-  swappedMatchCount: number
+  // True when nothing mapped but the adapter's top-row refNames belong to the
+  // bottom assembly — i.e. the rows look reversed. See executeSyntenyFeatures-
+  // AndPositions. Conclusive only when chromosome names are distinct.
+  assembliesSwapped: boolean
 }
 
 export interface FeatPos {
@@ -212,18 +210,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        * Render-time warnings surfaced in the view header. Currently flags a
-       * likely reversed assembly row order: when more features resolve with the
-       * two rows swapped than in the configured order (only detectable when the
-       * two assemblies have distinct chromosome names).
+       * likely reversed assembly row order: nothing mapped, but the file's
+       * chromosome names match the opposite row (only detectable when the two
+       * assemblies have distinct chromosome names).
        */
       get warnings() {
-        const d = self.featureData
-        return d && d.swappedMatchCount > d.normalMatchCount
+        return self.featureData?.assembliesSwapped
           ? [
               {
-                message: `${d.swappedMatchCount} of ${d.totalFeatureCount} alignments only map if the assembly rows are swapped`,
+                message:
+                  'No alignments mapped; the assemblies appear to be reversed',
                 effect:
-                  'The assemblies appear to be in the wrong order. Try re-opening the synteny import form with the assemblies in the opposite order.',
+                  'The chromosome names in the file match the opposite row. Try re-opening the synteny import form with the assemblies in the opposite order.',
               },
             ]
           : []

@@ -671,37 +671,3 @@ describe('refName precull via index.entries.has', () => {
     expect(bpToPxFromIndex(v1, 'chr1', 5000)).toBeUndefined()
   })
 })
-
-// Mirrors the normal-vs-swapped count inside executeSyntenyFeaturesAndPositions:
-// a feature dropped by the normal precull contributes to swappedMatchCount when
-// its ends resolve with v1/v2 exchanged. A swapped majority flags a reversed
-// assembly row order.
-describe('swapped row-order detection', () => {
-  const v1 = buildBpToPxIndex(
-    makeViewSnap([{ refName: 'chrA', start: 0, end: 1000 }]),
-  )
-  const v2 = buildBpToPxIndex(
-    makeViewSnap([{ refName: 'chrB', start: 0, end: 1000 }]),
-  )
-  function normalMatch(refName: string, mateRefName: string) {
-    return v1.entries.has(refName) && v2.entries.has(mateRefName)
-  }
-  function swappedMatch(refName: string, mateRefName: string) {
-    return v1.entries.has(mateRefName) && v2.entries.has(refName)
-  }
-
-  it('reversed rows: feature fails normal precull but resolves swapped', () => {
-    expect(normalMatch('chrB', 'chrA')).toBe(false)
-    expect(swappedMatch('chrB', 'chrA')).toBe(true)
-  })
-
-  it('correctly oriented feature is not a swapped match', () => {
-    expect(normalMatch('chrA', 'chrB')).toBe(true)
-    expect(swappedMatch('chrA', 'chrB')).toBe(false)
-  })
-
-  it('refName absent from both rows is neither normal nor swapped', () => {
-    expect(normalMatch('chrZ', 'chrA')).toBe(false)
-    expect(swappedMatch('chrZ', 'chrA')).toBe(false)
-  })
-})

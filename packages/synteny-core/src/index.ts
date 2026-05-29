@@ -1,5 +1,9 @@
 export { bpToCumBpAndPad, buildBpRegionIndex } from './bpRegionIndex.ts'
 export type { BpIndexViewSnap, BpRegionIndex } from './bpRegionIndex.ts'
+export {
+  probeAssembliesSwapped,
+  refNamesLookSwapped,
+} from './detectSwappedAssemblies.ts'
 export { visitCigarRenderedSegments } from './cigarBpVisitor.ts'
 export {
   applyAlpha,

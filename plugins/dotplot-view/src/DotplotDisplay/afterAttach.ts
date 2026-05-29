@@ -82,16 +82,14 @@ export function doAfterAttach(
                 'This usually means chromosome names in the file do not match the assembly. Check assembly aliases or that the correct assemblies are selected.',
             })
           }
-          // When most unmapped features would map after swapping the axes, the
-          // X/Y assemblies are very likely reversed (only detectable when their
+          // Nothing rendered and the adapter's X-axis refNames belong to the Y
+          // assembly: the assemblies are reversed (only conclusive when their
           // chromosome names are distinct).
-          const renderedCount =
-            result.totalFeatureCount - result.skippedFeatureCount
-          if (result.swappedMatchCount > renderedCount) {
+          if (result.assembliesSwapped) {
             warnings.push({
-              message: `${result.swappedMatchCount} features would map if the X and Y assemblies were swapped`,
+              message: 'No alignments mapped; the assemblies appear to be reversed',
               effect:
-                'The assemblies on the X and Y axes appear to be reversed. Try switching them in the dotplot import form.',
+                'The chromosome names in the file match the opposite axis. Try switching the X and Y assemblies in the dotplot import form.',
             })
           }
           self.setWarnings(warnings)

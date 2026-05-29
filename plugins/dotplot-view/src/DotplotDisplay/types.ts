@@ -21,7 +21,7 @@ export interface DotplotRpcData {
   refNames: string[]
   totalFeatureCount: number
   skippedFeatureCount: number
-  swappedMatchCount: number
+  assembliesSwapped: boolean
 }
 
 export interface DotplotRenderModel extends IAnyStateTreeNode {
