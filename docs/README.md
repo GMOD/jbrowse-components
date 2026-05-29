@@ -79,3 +79,13 @@ and in config models
 #baseConfiguration - baseConfiguration
 #slot - a config slot
 ```
+
+The `#baseConfiguration` slot links a config to the one it derives from. The
+generator resolves the base config automatically through the TypeScript checker
+(following the right-hand-side expression and import aliases), so no name needs
+to be written — `createBaseTrackConfig(pluginManager)`,
+`baseLinearDisplayConfigSchema`, an aliased default import, and even
+`pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` (resolved by
+the quoted name) all link. Each config page then renders an "Inherited config
+slots" section reproducing every base slot in full, so the page is
+self-contained; an unresolved base prints a warning at generation time.

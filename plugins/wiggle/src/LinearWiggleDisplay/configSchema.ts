@@ -4,9 +4,17 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { WIGGLE_COLOR_DEFAULT } from '../util.ts'
 
+/**
+ * #config LinearWiggleDisplay
+ * #category display
+ * configuration for the wiggle (quantitative/numeric) display showing XY plot, density, line, or scatter renderings
+ */
 export default ConfigurationSchema(
   'LinearWiggleDisplay',
   {
+    /**
+     * #slot
+     */
     defaultRendering: {
       type: 'stringEnum',
       model: types.enumeration('Rendering type', [
@@ -18,17 +26,26 @@ export default ConfigurationSchema(
       defaultValue: 'xyplot',
       description: 'Default rendering type',
     },
+    /**
+     * #slot
+     */
     height: {
       type: 'number',
       defaultValue: 100,
       description: 'Default height of the track',
     },
+    /**
+     * #slot
+     */
     color: {
       type: 'color',
       defaultValue: WIGGLE_COLOR_DEFAULT,
       description: 'Color for the wiggle bars',
     },
     ...wiggleConfigSchemaFields,
+    /**
+     * #slot
+     */
     summaryScoreMode: {
       type: 'stringEnum',
       model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),

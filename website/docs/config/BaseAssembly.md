@@ -3,8 +3,8 @@ id: baseassembly
 title: BaseAssembly
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -28,7 +28,8 @@ This corresponds to the assemblies section of the config
 
 #### slot: aliases
 
-aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
+aliases are "reference name aliases" e.g. aliases for hg38 might be
+"GRCh38"
 
 ```js
 aliases: {
@@ -37,17 +38,16 @@ aliases: {
         description: 'Other possible names for the assembly',
       }
 ```
-
 #### slot: sequence
 
-sequence refers to a reference sequence track that has an adapter containing,
-importantly, a sequence adapter such as IndexedFastaAdapter
+sequence refers to a reference sequence track that has an adapter
+containing, importantly, a sequence adapter such as
+IndexedFastaAdapter
 
 ```js
 sequence: pluginManager.getTrackType('ReferenceSequenceTrack')!
         .configSchema
 ```
-
 #### slot: refNameColors
 
 ```js
@@ -58,26 +58,23 @@ refNameColors: {
           'Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.',
       }
 ```
-
 #### slot: refNameAliases.adapter
 
-refNameAliases help resolve e.g. chr1 and 1 as the same entity the data for
-refNameAliases are fetched from an adapter, that is commonly a tsv like
-chromAliases.txt from UCSC or similar
+refNameAliases help resolve e.g. chr1 and 1 as the same entity the
+data for refNameAliases are fetched from an adapter, that is
+commonly a tsv like chromAliases.txt from UCSC or similar
 
 ```js
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
-
 #### slot: cytobands.adapter
 
-cytoband data is fetched from an adapter, and can be displayed by a view type as
-ideograms
+cytoband data is fetched from an adapter, and can be displayed by
+a view type as ideograms
 
 ```js
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
-
 #### slot: displayName
 
 ```js

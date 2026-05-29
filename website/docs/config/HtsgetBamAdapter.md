@@ -3,8 +3,8 @@ id: htsgetbamadapter
 title: HtsgetBamAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,8 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam
-library
+Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
 
 ### HtsgetBamAdapter - Slots
 
@@ -32,7 +31,6 @@ htsgetBase: {
       defaultValue: '',
     }
 ```
-
 #### slot: htsgetTrackId
 
 ```js

@@ -20,14 +20,26 @@ interface ConfigHeader {
   name: string
   docs: string
   id: string
+  // "file:pos" identity of the declaration this #config sits on. A deriving
+  // config's `baseConfiguration:` slot resolves (alias-followed) to this same
+  // id, so it's how we link the derivation graph.
+  declId?: string
 }
 interface Config {
   header?: ConfigHeader
   derives?: Item
+  // declId the `baseConfiguration:` expression resolves to (the base config)
+  baseDeclId?: string
+  // config-name fallback for dynamic base references (getDisplayType('Name'))
+  baseConfigName?: string
   identifier?: Item
   preProcess?: Item
   slots: Item[]
   filename: string
+}
+type ConfigWithHeader = Config & { header: ConfigHeader }
+interface BaseRef {
+  config?: ConfigWithHeader
 }
 
 function buildItem(obj: ExtractedNode): Item {
@@ -49,9 +61,12 @@ function generateConfigDocs(files: string[]) {
         name: item.name,
         docs: item.docs,
         id: slugify(item.name, { lower: true }),
+        declId: obj.selfDeclId,
       }
     } else if (obj.type === 'baseConfiguration') {
       file.derives = item
+      file.baseDeclId = obj.baseDeclId
+      file.baseConfigName = obj.baseConfigName
     } else if (obj.type === 'identifier') {
       file.identifier = item
     } else if (obj.type === 'preProcessSnapshot') {
@@ -63,17 +78,75 @@ function generateConfigDocs(files: string[]) {
   return byFile
 }
 
-function renderConfig({
-  header,
-  derives,
-  identifier,
-  preProcess,
-  slots,
-  filename,
-}: Config): string | undefined {
+// Resolve a config's base: by declaration identity first, else by the config
+// name recovered from a dynamic getDisplayType('Name') reference.
+function resolveBase(
+  config: Config,
+  byDeclId: Map<string, ConfigWithHeader>,
+  byName: Map<string, ConfigWithHeader>,
+) {
+  const byId = config.baseDeclId ? byDeclId.get(config.baseDeclId) : undefined
+  return (
+    byId ??
+    (config.baseConfigName ? byName.get(config.baseConfigName) : undefined)
+  )
+}
+
+// Walk the derivation graph transitively, deduping and guarding cycles. Returns
+// bases in reading order (direct base first). A config that derives but whose
+// base didn't resolve to a documented #config yields an entry with config
+// undefined (so callers can warn).
+function collectBaseConfigs(
+  config: Config,
+  byDeclId: Map<string, ConfigWithHeader>,
+  byName: Map<string, ConfigWithHeader>,
+  seen = new Set<string>(),
+): BaseRef[] {
+  const out: BaseRef[] = []
+  if (config.derives) {
+    const base = resolveBase(config, byDeclId, byName)
+    if (!base) {
+      out.push({ config: undefined })
+    } else if (!seen.has(base.header.id)) {
+      seen.add(base.header.id)
+      out.push({ config: base })
+      out.push(...collectBaseConfigs(base, byDeclId, byName, seen))
+    }
+  }
+  return out
+}
+
+// Full slot detail for every inherited config, grouped by the base it comes
+// from, so a config page is self-contained — a reader configuring this track
+// sees every available slot (own + inherited) without chasing links.
+function inheritedSlotsSection(bases: BaseRef[]) {
+  const blocks = bases.flatMap(({ config }) =>
+    config?.slots.length
+      ? [
+          section(
+            `### Inherited from [${config.header.name}](../${config.header.id})`,
+            ...config.slots.map(s => slotBlock(s)),
+          ),
+        ]
+      : [],
+  )
+  return blocks.length
+    ? section(
+        '## Inherited config slots',
+        'Slots available on this config via its base configuration(s), shown in full so this page is self-contained.',
+        ...blocks,
+      )
+    : ''
+}
+
+function renderConfig(
+  { header, derives, identifier, preProcess, slots, filename }: Config,
+  bases: BaseRef[],
+): string | undefined {
   if (!header) {
     return undefined
   }
+  const directBase = bases[0]?.config
   const sections = [
     preProcess &&
       section(
@@ -81,19 +154,19 @@ function renderConfig({
         preProcess.docs,
       ),
     identifier &&
-      section(
-        `### ${header.name} - Identifier`,
-        `#### slot: ${identifier.name}`,
-      ),
+      section(`### ${header.name} - Identifier`, `#### slot: ${identifier.name}`),
     slots.length &&
       section(
         `### ${header.name} - Slots`,
         slots.map(s => slotBlock(s)).join('\n'),
       ),
+    inheritedSlotsSection(bases),
     derives &&
       section(
         `### ${header.name} - Derives from`,
-        derives.docs,
+        directBase
+          ? `- [${directBase.header.name}](../${directBase.header.id})`
+          : derives.docs,
         codeBlock(derives.code),
       ),
   ]
@@ -138,13 +211,35 @@ function section(...parts: (string | false | 0 | undefined)[]) {
   return parts.filter(Boolean).join('\n\n')
 }
 
+function validateBaseConfig(config: ConfigWithHeader, bases: BaseRef[]) {
+  for (const { config: base } of bases) {
+    if (!base) {
+      const codeLine = config.derives?.code.replace(/\s+/g, ' ').trim()
+      console.warn(
+        `${config.header.name}: baseConfiguration "${codeLine}" could not be resolved to a documented #config`,
+      )
+    }
+  }
+}
+
 export default async function main() {
   const dir = 'website/docs/config'
   fs.mkdirSync(dir, { recursive: true })
   const configs = generateConfigDocs(await getAllFiles())
-  for (const cfg of Object.values(configs)) {
-    const rendered = renderConfig(cfg)
-    if (rendered && cfg.header) {
+  const withHeader = Object.values(configs).filter(
+    (c): c is ConfigWithHeader => Boolean(c.header),
+  )
+  const byDeclId = new Map(
+    withHeader
+      .filter(c => c.header.declId)
+      .map(c => [c.header.declId!, c] as const),
+  )
+  const byName = new Map(withHeader.map(c => [c.header.name, c] as const))
+  for (const cfg of withHeader) {
+    const bases = collectBaseConfigs(cfg, byDeclId, byName)
+    validateBaseConfig(cfg, bases)
+    const rendered = renderConfig(cfg, bases)
+    if (rendered) {
       fs.writeFileSync(`${dir}/${cfg.header.name}.md`, rendered)
     }
   }

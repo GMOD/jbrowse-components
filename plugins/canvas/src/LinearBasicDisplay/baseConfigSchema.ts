@@ -8,27 +8,44 @@ import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThreshold
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+/**
+ * #config LinearCanvasBaseDisplay
+ * #category display
+ * base config for canvas-based linear feature displays (pileup-style glyphs)
+ */
 export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearCanvasBaseDisplay',
     {
+      /**
+       * #slot
+       */
       maxHeight: {
         type: 'number',
         defaultValue: 1200,
         description: 'Maximum height of the display in pixels',
       },
+      /**
+       * #slot
+       */
       maxFeatureScreenDensity: {
         type: 'number',
         defaultValue: 1,
         description:
           'Maximum features per pixel before showing region too large message',
       },
+      /**
+       * #slot
+       */
       autoHeight: {
         type: 'boolean',
         defaultValue: false,
         description:
           'Automatically resize the track height to fit all features',
       },
+      /**
+       * #slot
+       */
       showLabels: {
         type: 'stringEnum',
         model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
@@ -36,23 +53,35 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         description:
           'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
       },
+      /**
+       * #slot
+       */
       maxLabelFeatureDensity: {
         type: 'number',
         defaultValue: MAX_LABEL_FEATURE_DENSITY,
         description:
           'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
       },
+      /**
+       * #slot
+       */
       showDescriptions: {
         type: 'boolean',
         defaultValue: true,
         description: 'Show feature descriptions',
       },
+      /**
+       * #slot
+       */
       color1: {
         type: 'color',
         description: 'the main color of each feature',
         defaultValue: 'goldenrod',
         contextVariable: ['feature'],
       },
+      /**
+       * #slot
+       */
       color2: {
         type: 'color',
         description:
@@ -60,23 +89,35 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: THEME_DERIVED_COLOR,
         contextVariable: ['feature'],
       },
+      /**
+       * #slot
+       */
       color3: {
         type: 'color',
         description: 'the tertiary color of each feature, used for UTRs',
         defaultValue: '#357089',
         contextVariable: ['feature'],
       },
+      /**
+       * #slot
+       */
       outline: {
         type: 'color',
         description: 'outline color for features (empty string = no outline)',
         defaultValue: '',
       },
+      /**
+       * #slot
+       */
       featureHeight: {
         type: 'number',
         description: 'height in pixels of the main body of each feature',
         defaultValue: 10,
         contextVariable: ['feature'],
       },
+      /**
+       * #slot
+       */
       displayMode: {
         type: 'stringEnum',
         model: types.enumeration('displayMode', [
@@ -89,6 +130,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         description: 'Alternative display modes',
         defaultValue: 'normal',
       },
+      /**
+       * #slot
+       */
       geneGlyphMode: {
         type: 'stringEnum',
         model: types.enumeration('geneGlyphMode', [
@@ -101,6 +145,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longest" shows only the longest, "longestCoding" shows only the longest coding',
         defaultValue: 'auto',
       },
+      /**
+       * #slot
+       */
       subfeatureLabels: {
         type: 'stringEnum',
         model: types.enumeration('subfeatureLabels', [
@@ -111,30 +158,48 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         description: 'subfeature label display mode',
         defaultValue: 'none',
       },
+      /**
+       * #slot
+       */
       displayDirectionalChevrons: {
         type: 'boolean',
         description:
           'Display directional chevrons on intron lines to indicate strand direction',
         defaultValue: true,
       },
+      /**
+       * #slot
+       */
       transcriptTypes: {
         type: 'stringArray',
         defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
       },
+      /**
+       * #slot
+       */
       containerTypes: {
         type: 'stringArray',
         defaultValue: ['proteoform_orf'],
       },
+      /**
+       * #slot
+       */
       subParts: {
         type: 'string',
         description: 'subparts for a glyph',
         defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
       },
+      /**
+       * #slot
+       */
       impliedUTRs: {
         type: 'boolean',
         description: 'imply UTR from the exon and CDS differences',
         defaultValue: false,
       },
+      /**
+       * #slot
+       */
       labels: ConfigurationSchema('CanvasFeatureLabels', {
         name: {
           type: 'string',
@@ -151,6 +216,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       }),
     },
     {
+      /**
+       * #baseConfiguration
+       */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       // Lift renderer sub-config properties to display level for old configs

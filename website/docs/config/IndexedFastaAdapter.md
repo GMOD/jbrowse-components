@@ -3,8 +3,8 @@ id: indexedfastaadapter
 title: IndexedFastaAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,10 +18,13 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+
+
 ### IndexedFastaAdapter - Pre-processor / simplified config
 
-preprocessor to allow minimal config, assumes yourfile.fa.fai:
 
+
+preprocessor to allow minimal config, assumes yourfile.fa.fai:
 ```json
 {
   "type": "IndexedFastaAdapter",
@@ -39,7 +42,6 @@ fastaLocation: {
       defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
     }
 ```
-
 #### slot: faiLocation
 
 ```js
@@ -48,7 +50,6 @@ faiLocation: {
       defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
     }
 ```
-
 #### slot: metadataLocation
 
 ```js

@@ -14,6 +14,21 @@ export interface ExtractedNode {
   signature: string
   node: string
   filename: string
+  // Stable identity of the declaration this node's symbol resolves to
+  // ("file:pos"). Lets the config generator match a `baseConfiguration` against
+  // the `#config` it derives from by declaration identity rather than textual
+  // name — robust to default-export aliasing (e.g. a const `BaseConnectionConfig`
+  // imported as `baseConnectionConfig`).
+  selfDeclId?: string
+  // For `#baseConfiguration` nodes only: the declId of the base config the
+  // right-hand-side expression references (alias-followed). undefined when the
+  // base can't be resolved statically (e.g. `pluginManager.getDisplayType(...)`).
+  baseDeclId?: string
+  // For `#baseConfiguration` nodes only: a string literal found in the RHS, used
+  // as a name fallback when declId resolution fails — e.g.
+  // `pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` links to
+  // the config named "LinearWiggleDisplay".
+  baseConfigName?: string
 }
 
 const TAG_TYPES = [
@@ -49,13 +64,21 @@ export function extractWithComment(
     const comment = getOwnJSDocText(node)
     const tags = comment ? TAG_TYPES.filter(t => hasTag(comment, t)) : []
     if (tags.length) {
-      const { name, signature } = describeSymbol(checker, node)
+      const { name, signature, declId } = describeSymbol(checker, node)
       const base = {
         name,
         comment,
         signature,
         node: node.getFullText(),
         filename: node.getSourceFile().fileName,
+        selfDeclId: declId,
+        baseDeclId: tags.includes('baseConfiguration')
+          ? resolveBaseConfigDeclId(checker, node)
+          : undefined,
+        baseConfigName:
+          tags.includes('baseConfiguration') && ts.isPropertyAssignment(node)
+            ? findStringLiteral(node.initializer)
+            : undefined,
       }
       for (const type of tags) {
         cb({ type, ...base })
@@ -75,7 +98,61 @@ function describeSymbol(checker: ts.TypeChecker, node: ts.Node) {
       symbol && decl
         ? checker.typeToString(checker.getTypeOfSymbolAtLocation(symbol, decl))
         : '',
+    declId: symbolDeclId(checker, symbol),
   }
+}
+
+// "file:pos" of the declaration a symbol resolves to, following import aliases
+// to the original declaration so two references to the same config (under
+// different local/imported names) produce the same id.
+function symbolDeclId(checker: ts.TypeChecker, symbol: ts.Symbol | undefined) {
+  if (!symbol) {
+    return undefined
+  }
+  let s = symbol
+  while (s.flags & ts.SymbolFlags.Alias) {
+    const aliased = checker.getAliasedSymbol(s)
+    if (aliased === s) {
+      break
+    }
+    s = aliased
+  }
+  const decl = s.declarations?.[0] ?? s.valueDeclaration
+  return decl ? `${decl.getSourceFile().fileName}:${decl.getStart()}` : undefined
+}
+
+// For a `baseConfiguration: <expr>` property, the declId of the base config the
+// expr references. Peels call/non-null wrappers to the head identifier
+// (`createBaseTrackConfig(pm)` -> `createBaseTrackConfig`); returns undefined for
+// non-identifier heads like `pluginManager.getDisplayType(...)`.
+function resolveBaseConfigDeclId(checker: ts.TypeChecker, node: ts.Node) {
+  if (!ts.isPropertyAssignment(node)) {
+    return undefined
+  }
+  let expr: ts.Expression = node.initializer
+  while (ts.isNonNullExpression(expr) || ts.isCallExpression(expr)) {
+    expr = expr.expression
+  }
+  return ts.isIdentifier(expr)
+    ? symbolDeclId(checker, checker.getSymbolAtLocation(expr))
+    : undefined
+}
+
+// First string literal anywhere in an expression (depth-first). Used to recover
+// a config name from a dynamic `getDisplayType('Name')` base reference.
+function findStringLiteral(node: ts.Node): string | undefined {
+  let found: string | undefined
+  const walk = (n: ts.Node) => {
+    if (found === undefined) {
+      if (ts.isStringLiteral(n)) {
+        found = n.text
+      } else {
+        ts.forEachChild(n, walk)
+      }
+    }
+  }
+  walk(node)
+  return found
 }
 
 function hasTag(comment: string, tag: TagType) {

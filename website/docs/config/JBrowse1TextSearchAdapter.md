@@ -3,8 +3,8 @@ id: jbrowse1textsearchadapter
 title: JBrowse1TextSearchAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -35,7 +35,6 @@ namesIndexLocation: {
       description: 'the location of the JBrowse1 names index data directory',
     }
 ```
-
 #### slot: tracks
 
 ```js
@@ -45,7 +44,6 @@ tracks: {
       description: 'List of tracks covered by text search adapter',
     }
 ```
-
 #### slot: assemblyNames
 
 ```js

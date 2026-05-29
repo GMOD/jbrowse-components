@@ -1,6 +1,6 @@
 ---
-id: lgvsyntenydisplay
-title: LGVSyntenyDisplay
+id: linearalignmentsdisplay
+title: LinearAlignmentsDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in
@@ -12,20 +12,15 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/configSchemaF.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LGVSyntenyDisplay.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearAlignmentsDisplay.md)
 
 ## Docs
 
-extends config
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+configuration schema for the LinearAlignmentsDisplay
 
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
-
-### Inherited from [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+### LinearAlignmentsDisplay - Slots
 
 #### slot: featureHeight
 
@@ -36,7 +31,6 @@ featureHeight: {
         description: 'Height of each feature (read) in pixels',
       }
 ```
-
 #### slot: featureSpacing
 
 ```js
@@ -46,7 +40,6 @@ featureSpacing: {
         description: 'Spacing between features in pixels',
       }
 ```
-
 #### slot: maxHeight
 
 ```js
@@ -56,7 +49,6 @@ maxHeight: {
         description: 'Maximum height of the display in pixels',
       }
 ```
-
 #### slot: height
 
 ```js
@@ -65,7 +57,6 @@ height: {
         defaultValue: 250,
       }
 ```
-
 #### slot: colorBy
 
 ```js
@@ -75,7 +66,6 @@ colorBy: {
         description: 'Color scheme for reads',
       }
 ```
-
 #### slot: filterBy
 
 ```js
@@ -88,7 +78,6 @@ filterBy: {
         description: 'Filter settings for reads',
       }
 ```
-
 #### slot: autoscale
 
 ```js
@@ -102,7 +91,6 @@ autoscale: {
         description: 'Coverage autoscale type',
       }
 ```
-
 #### slot: minScore
 
 ```js
@@ -112,7 +100,6 @@ minScore: {
         description: 'Minimum coverage depth bound',
       }
 ```
-
 #### slot: maxScore
 
 ```js
@@ -122,7 +109,6 @@ maxScore: {
         description: 'Maximum coverage depth bound',
       }
 ```
-
 #### slot: scaleType
 
 ```js
@@ -133,7 +119,6 @@ scaleType: {
         description: 'Coverage scale type (linear or log)',
       }
 ```
-
 #### slot: numStdDev
 
 ```js
@@ -143,6 +128,10 @@ numStdDev: {
         description: 'Number of standard deviations for localsd autoscale',
       }
 ```
+
+## Inherited config slots
+
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseLinearDisplay](../baselineardisplay)
 
@@ -203,11 +192,10 @@ jexlFilters: {
     }
 ```
 
-### LGVSyntenyDisplay - Derives from
+### LinearAlignmentsDisplay - Derives from
 
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+- [BaseLinearDisplay](../baselineardisplay)
 
 ```js
-baseConfiguration:
-        linearAlignmentsDisplayConfigSchemaFactory(pluginManager)
+baseConfiguration: baseLinearDisplayConfigSchema
 ```

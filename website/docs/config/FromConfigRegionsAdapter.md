@@ -3,8 +3,8 @@ id: fromconfigregionsadapter
 title: FromConfigRegionsAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -22,6 +22,14 @@ used for specifying refNames+sizes of an assembly
 
 ### FromConfigRegionsAdapter - Slots
 
+#### slot: adapterId
+
+```js
+adapterId: {
+      type: 'string',
+      defaultValue: '',
+    }
+```
 #### slot: features
 
 ```js

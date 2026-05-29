@@ -3,8 +3,8 @@ id: oauthinternetaccount
 title: OAuthInternetAccount
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,6 +18,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+
+
 ### OAuthInternetAccount - Slots
 
 #### slot: tokenType
@@ -29,7 +31,6 @@ tokenType: {
       defaultValue: 'Bearer',
     }
 ```
-
 #### slot: authEndpoint
 
 ```js
@@ -39,7 +40,6 @@ authEndpoint: {
       defaultValue: '',
     }
 ```
-
 #### slot: tokenEndpoint
 
 ```js
@@ -49,7 +49,6 @@ tokenEndpoint: {
       defaultValue: '',
     }
 ```
-
 #### slot: needsPKCE
 
 ```js
@@ -59,7 +58,6 @@ needsPKCE: {
       defaultValue: false,
     }
 ```
-
 #### slot: clientId
 
 ```js
@@ -69,7 +67,6 @@ clientId: {
       defaultValue: '',
     }
 ```
-
 #### slot: scopes
 
 ```js
@@ -79,7 +76,6 @@ scopes: {
       defaultValue: '',
     }
 ```
-
 #### slot: state
 
 ```js
@@ -89,7 +85,6 @@ state: {
       defaultValue: '',
     }
 ```
-
 #### slot: responseType
 
 ```js
@@ -101,7 +96,66 @@ responseType: {
     }
 ```
 
+## Inherited config slots
+
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
+
+### Inherited from [BaseInternetAccount](../baseinternetaccount)
+
+#### slot: name
+
+```js
+name: {
+      description: 'descriptive name of the internet account',
+      type: 'string',
+      defaultValue: '',
+    }
+```
+
+#### slot: description
+
+```js
+description: {
+      description: 'a description of the internet account',
+      type: 'string',
+      defaultValue: '',
+    }
+```
+
+#### slot: authHeader
+
+```js
+authHeader: {
+      description: 'request header for credentials',
+      type: 'string',
+      defaultValue: 'Authorization',
+    }
+```
+
+#### slot: tokenType
+
+```js
+tokenType: {
+      description: 'a custom name for a token to include in the header',
+      type: 'string',
+      defaultValue: '',
+    }
+```
+
+#### slot: domains
+
+```js
+domains: {
+      description:
+        'array of valid domains the url can contain to use this account',
+      type: 'stringArray',
+      defaultValue: [],
+    }
+```
+
 ### OAuthInternetAccount - Derives from
+
+- [BaseInternetAccount](../baseinternetaccount)
 
 ```js
 baseConfiguration: BaseInternetAccountConfig

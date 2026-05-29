@@ -1,6 +1,6 @@
 ---
-id: lineargccontentdisplay
-title: LinearGCContentDisplay
+id: linearwiggledisplay
+title: LinearWiggleDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in
@@ -12,19 +12,15 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/config1.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearGCContentDisplay.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearWiggleDisplay.md)
 
 ## Docs
 
-extends LinearWiggleDisplay
+configuration for the wiggle (quantitative/numeric) display showing XY plot, density, line, or scatter renderings
 
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
-
-### Inherited from [LinearWiggleDisplay](../linearwiggledisplay)
+### LinearWiggleDisplay - Slots
 
 #### slot: defaultRendering
 
@@ -41,7 +37,6 @@ defaultRendering: {
       description: 'Default rendering type',
     }
 ```
-
 #### slot: height
 
 ```js
@@ -51,7 +46,6 @@ height: {
       description: 'Default height of the track',
     }
 ```
-
 #### slot: color
 
 ```js
@@ -61,7 +55,6 @@ color: {
       description: 'Color for the wiggle bars',
     }
 ```
-
 #### slot: summaryScoreMode
 
 ```js
@@ -72,13 +65,4 @@ summaryScoreMode: {
         'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
       defaultValue: 'whiskers',
     }
-```
-
-### LinearGCContentDisplay - Derives from
-
-- [LinearWiggleDisplay](../linearwiggledisplay)
-
-```js
-baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')!
-        .configSchema
 ```

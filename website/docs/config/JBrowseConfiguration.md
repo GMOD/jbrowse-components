@@ -3,8 +3,8 @@ id: jbrowseconfiguration
 title: JBrowseConfiguration
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,8 +18,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-this is the entry under the `configuration` key e.g.
-
+this is the entry under the `configuration` key
+e.g.
 ```json
 {
   assemblies,
@@ -35,7 +35,6 @@ this is the entry under the `configuration` key e.g.
 ```js
 rpc: RpcManager.configSchema
 ```
-
 #### slot: configuration.highResolutionScaling
 
 ```js
@@ -44,7 +43,6 @@ highResolutionScaling: {
       defaultValue: 2,
     }
 ```
-
 #### slot: configuration.disableAnalytics
 
 ```js
@@ -53,7 +51,6 @@ disableAnalytics: {
       defaultValue: false,
     }
 ```
-
 #### slot: configuration.theme
 
 ```js
@@ -62,7 +59,6 @@ theme: {
       defaultValue: {},
     }
 ```
-
 #### slot: configuration.extraThemes
 
 ```js
@@ -71,7 +67,6 @@ extraThemes: {
       defaultValue: {},
     }
 ```
-
 #### slot: configuration.logoPath
 
 ```js

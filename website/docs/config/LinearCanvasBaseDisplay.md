@@ -1,6 +1,6 @@
 ---
-id: linearvariantdisplay
-title: LinearVariantDisplay
+id: linearcanvasbasedisplay
+title: LinearCanvasBaseDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in
@@ -12,20 +12,15 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/configSchema.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearVariantDisplay.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearCanvasBaseDisplay.md)
 
 ## Docs
 
+base config for canvas-based linear feature displays (pileup-style glyphs)
 
-Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
-
-### Inherited from [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+### LinearCanvasBaseDisplay - Slots
 
 #### slot: maxHeight
 
@@ -36,7 +31,6 @@ maxHeight: {
         description: 'Maximum height of the display in pixels',
       }
 ```
-
 #### slot: maxFeatureScreenDensity
 
 ```js
@@ -47,7 +41,6 @@ maxFeatureScreenDensity: {
           'Maximum features per pixel before showing region too large message',
       }
 ```
-
 #### slot: autoHeight
 
 ```js
@@ -58,7 +51,6 @@ autoHeight: {
           'Automatically resize the track height to fit all features',
       }
 ```
-
 #### slot: showLabels
 
 ```js
@@ -70,7 +62,6 @@ showLabels: {
           'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
       }
 ```
-
 #### slot: maxLabelFeatureDensity
 
 ```js
@@ -81,7 +72,6 @@ maxLabelFeatureDensity: {
           'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
       }
 ```
-
 #### slot: showDescriptions
 
 ```js
@@ -91,7 +81,6 @@ showDescriptions: {
         description: 'Show feature descriptions',
       }
 ```
-
 #### slot: color1
 
 ```js
@@ -102,7 +91,6 @@ color1: {
         contextVariable: ['feature'],
       }
 ```
-
 #### slot: color2
 
 ```js
@@ -114,7 +102,6 @@ color2: {
         contextVariable: ['feature'],
       }
 ```
-
 #### slot: color3
 
 ```js
@@ -125,7 +112,6 @@ color3: {
         contextVariable: ['feature'],
       }
 ```
-
 #### slot: outline
 
 ```js
@@ -135,7 +121,6 @@ outline: {
         defaultValue: '',
       }
 ```
-
 #### slot: featureHeight
 
 ```js
@@ -146,7 +131,6 @@ featureHeight: {
         contextVariable: ['feature'],
       }
 ```
-
 #### slot: displayMode
 
 ```js
@@ -163,7 +147,6 @@ displayMode: {
         defaultValue: 'normal',
       }
 ```
-
 #### slot: geneGlyphMode
 
 ```js
@@ -180,7 +163,6 @@ geneGlyphMode: {
         defaultValue: 'auto',
       }
 ```
-
 #### slot: subfeatureLabels
 
 ```js
@@ -195,7 +177,6 @@ subfeatureLabels: {
         defaultValue: 'none',
       }
 ```
-
 #### slot: displayDirectionalChevrons
 
 ```js
@@ -206,7 +187,6 @@ displayDirectionalChevrons: {
         defaultValue: true,
       }
 ```
-
 #### slot: transcriptTypes
 
 ```js
@@ -215,7 +195,6 @@ transcriptTypes: {
         defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
       }
 ```
-
 #### slot: containerTypes
 
 ```js
@@ -224,7 +203,6 @@ containerTypes: {
         defaultValue: ['proteoform_orf'],
       }
 ```
-
 #### slot: subParts
 
 ```js
@@ -234,7 +212,6 @@ subParts: {
         defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
       }
 ```
-
 #### slot: impliedUTRs
 
 ```js
@@ -244,7 +221,6 @@ impliedUTRs: {
         defaultValue: false,
       }
 ```
-
 #### slot: labels
 
 ```js
@@ -263,6 +239,10 @@ labels: ConfigurationSchema('CanvasFeatureLabels', {
         },
       })
 ```
+
+## Inherited config slots
+
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseLinearDisplay](../baselineardisplay)
 
@@ -323,11 +303,10 @@ jexlFilters: {
     }
 ```
 
-### LinearVariantDisplay - Derives from
+### LinearCanvasBaseDisplay - Derives from
 
-- [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+- [BaseLinearDisplay](../baselineardisplay)
 
 ```js
-baseConfiguration:
-        linearCanvasBaseDisplayConfigSchemaFactory(pluginManager)
+baseConfiguration: baseLinearDisplayConfigSchema
 ```

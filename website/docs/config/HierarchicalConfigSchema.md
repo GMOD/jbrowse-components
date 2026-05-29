@@ -3,8 +3,8 @@ id: hierarchicalconfigschema
 title: HierarchicalConfigSchema
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -30,7 +30,6 @@ trackNames: {
         defaultValue: false,
       }
 ```
-
 #### slot: configuration.hierarchical.sort.categories
 
 ```js
@@ -39,7 +38,6 @@ categories: {
         defaultValue: false,
       }
 ```
-
 #### slot: configuration.hierarchical.defaultFolderCategories
 
 ```js
@@ -49,7 +47,6 @@ defaultFolderCategories: {
       defaultValue: [],
     }
 ```
-
 #### slot: configuration.hierarchical.defaultCollapsed.categoryNames
 
 ```js
@@ -58,7 +55,6 @@ categoryNames: {
         defaultValue: [],
       }
 ```
-
 #### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
 
 ```js
@@ -67,7 +63,6 @@ topLevelCategories: {
         defaultValue: false,
       }
 ```
-
 #### slot: configuration.hierarchical.defaultCollapsed.subCategories
 
 ```js
