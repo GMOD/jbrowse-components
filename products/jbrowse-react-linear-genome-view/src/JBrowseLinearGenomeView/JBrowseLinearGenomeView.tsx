@@ -89,7 +89,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                   <ReactComponent model={view} session={session} />
                 </Suspense>
               </EmbeddedViewContainer>
-              {!visibleWidget ? <ModalWidget session={session} /> : null}
+              <ModalWidget session={session} />
             </div>
             {drawerPosition === 'right' && visibleWidget ? (
               <Suspense fallback={null}>

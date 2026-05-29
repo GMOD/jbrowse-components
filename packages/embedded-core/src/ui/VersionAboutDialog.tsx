@@ -27,7 +27,7 @@ export default function AboutDialog({
     >
       <DialogContent className={classes.content}>
         <Typography>
-          JBrowse is a GMOD project © 2019-2021, The Evolutionary Software
+          JBrowse is a GMOD project © 2019-2026, The Evolutionary Software
           Foundation
         </Typography>
         <Typography>

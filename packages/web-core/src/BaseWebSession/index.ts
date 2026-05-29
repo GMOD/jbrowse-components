@@ -75,19 +75,13 @@ export function BaseWebSession({
   const sessionModel = types
     .compose(
       'WebCoreSessionModel',
-      types.compose(
-        'WebCoreSessionModelGroupA',
-        ReferenceManagementSessionMixin(pluginManager),
-        ThemeManagerSessionMixin(pluginManager),
-        MultipleViewsSessionMixin(pluginManager),
-      ),
-      types.compose(
-        'WebCoreSessionModelGroupB',
-        SessionTracksManagerSessionMixin(pluginManager),
-        AssembliesMixin(pluginManager, assemblyConfigSchema),
-        WebSessionConnectionsMixin(pluginManager),
-        DockviewLayoutMixin(),
-      ),
+      ReferenceManagementSessionMixin(pluginManager),
+      ThemeManagerSessionMixin(pluginManager),
+      MultipleViewsSessionMixin(pluginManager),
+      SessionTracksManagerSessionMixin(pluginManager),
+      AssembliesMixin(pluginManager, assemblyConfigSchema),
+      WebSessionConnectionsMixin(pluginManager),
+      DockviewLayoutMixin(),
     )
     .props({
       /**
@@ -473,6 +467,7 @@ export function BaseWebSession({
           })
           .catch((err: unknown) => {
             console.error('Error restoring file handles:', err)
+            self.notifyError(`Error restoring file handles: ${err}`, err)
           })
       },
       restorePendingFileHandles: flow(function* restorePendingFileHandles() {

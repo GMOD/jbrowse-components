@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, useMemo } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
@@ -28,9 +28,8 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
   const { view } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)!
-  const theme = createJBrowseTheme(
-    readConfObject(viewState.config.configuration, 'theme'),
-  )
+  const themeConfig = readConfObject(viewState.config.configuration, 'theme')
+  const theme = useMemo(() => createJBrowseTheme(themeConfig), [themeConfig])
   const { classes } = useStyles()
 
   return (
