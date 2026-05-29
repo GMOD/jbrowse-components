@@ -1,5 +1,5 @@
-import { getDisplayStr } from '../../shared/featureDensityUtils.ts'
 import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
+import { getDisplayStr } from '../../shared/featureDensityUtils.ts'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'

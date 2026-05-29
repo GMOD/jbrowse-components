@@ -3,8 +3,8 @@ id: maftabixadapter
 title: MafTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,8 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-
-
 ### MafTabixAdapter - Slots
 
 #### slot: samples
@@ -31,6 +29,7 @@ samples: {
       defaultValue: [],
     }
 ```
+
 #### slot: bedGzLocation
 
 ```js
@@ -42,6 +41,7 @@ bedGzLocation: {
       },
     }
 ```
+
 #### slot: refAssemblyName
 
 ```js
@@ -50,6 +50,7 @@ refAssemblyName: {
       defaultValue: '',
     }
 ```
+
 #### slot: index.location
 
 ```js
@@ -60,6 +61,7 @@ location: {
         },
       }
 ```
+
 #### slot: index.indexType
 
 ```js
@@ -69,6 +71,7 @@ indexType: {
         defaultValue: 'TBI',
       }
 ```
+
 #### slot: nhLocation
 
 ```js

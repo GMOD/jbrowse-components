@@ -3,8 +3,8 @@ id: trixtextsearchadapter
 title: TrixTextSearchAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,13 +18,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-
-
 ### TrixTextSearchAdapter - Pre-processor / simplified config
 
-
-
 preprocessor to allow minimal config, assumes file.ixx also exists:
+
 ```json
 {
   "type": "TrixTextSearchAdapter",
@@ -51,6 +48,7 @@ ixFilePath: {
       },
     }
 ```
+
 #### slot: ixxFilePath
 
 ```js
@@ -62,6 +60,7 @@ ixxFilePath: {
       },
     }
 ```
+
 #### slot: metaFilePath
 
 ```js
@@ -73,6 +72,7 @@ metaFilePath: {
       },
     }
 ```
+
 #### slot: tracks
 
 ```js
@@ -82,6 +82,7 @@ tracks: {
       description: 'List of tracks covered by text search adapter',
     }
 ```
+
 #### slot: assemblyNames
 
 ```js

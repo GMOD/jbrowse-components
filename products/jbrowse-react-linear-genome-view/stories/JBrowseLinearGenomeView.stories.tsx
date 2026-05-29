@@ -537,8 +537,8 @@ function HorizontallyFlippedViaLocstringRender() {
   return (
     <div>
       <p>
-        The <code>[rev]</code> suffix in a locstring navigates to that region
-        in the horizontally flipped orientation.
+        The <code>[rev]</code> suffix in a locstring navigates to that region in
+        the horizontally flipped orientation.
       </p>
       <JBrowseLinearGenomeView viewState={state} />
     </div>
@@ -1415,8 +1415,7 @@ class DisableZoomPlugin extends Plugin {
 
 function WithDisableZoomAndSideScrollRender() {
   const [state] = useState(() => {
-    const { assembly: volvoxAssembly, tracks: volvoxTracks } =
-      getVolvoxConfig()
+    const { assembly: volvoxAssembly, tracks: volvoxTracks } = getVolvoxConfig()
     return createViewState({
       assembly: volvoxAssembly,
       tracks: volvoxTracks,
@@ -1427,8 +1426,8 @@ function WithDisableZoomAndSideScrollRender() {
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state} />
-      (Note: This is a basic demo that was added for a user request and may
-      not be a complete solution)
+      (Note: This is a basic demo that was added for a user request and may not
+      be a complete solution)
     </div>
   )
 }

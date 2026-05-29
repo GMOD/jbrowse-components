@@ -3,8 +3,8 @@ id: baselineardisplay
 title: BaseLinearDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,8 +18,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+`BaseLinearDisplay` is a "base" config that is extended by other configs
+including
 
-`BaseLinearDisplay` is a "base" config that is extended by other configs including
 - `LinearBasicDisplay` (used for feature tracks, etc)
 - `LinearBareDisplay` (more stripped down than even the basic display, not
   commonly used)
@@ -40,6 +41,7 @@ maxFeatureScreenDensity: {
       defaultValue: 0.3,
     }
 ```
+
 #### slot: fetchSizeLimit
 
 ```js
@@ -50,6 +52,7 @@ fetchSizeLimit: {
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
     }
 ```
+
 #### slot: height
 
 ```js
@@ -59,6 +62,7 @@ height: {
       description: 'default height for the track',
     }
 ```
+
 #### slot: mouseover
 
 ```js
@@ -69,10 +73,11 @@ mouseover: {
       contextVariable: ['feature', 'mouseoverExtraInformation'],
     }
 ```
+
 #### slot: jexlFilters
 
-config jexlFilters are deferred evaluated so they are prepended with
-jexl at runtime rather than being stored with jexl in the config
+config jexlFilters are deferred evaluated so they are prepended with jexl at
+runtime rather than being stored with jexl in the config
 
 ```js
 jexlFilters: {

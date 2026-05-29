@@ -154,7 +154,10 @@ function renderConfig(
         preProcess.docs,
       ),
     identifier &&
-      section(`### ${header.name} - Identifier`, `#### slot: ${identifier.name}`),
+      section(
+        `### ${header.name} - Identifier`,
+        `#### slot: ${identifier.name}`,
+      ),
     slots.length &&
       section(
         `### ${header.name} - Slots`,
@@ -226,8 +229,8 @@ export default async function main() {
   const dir = 'website/docs/config'
   fs.mkdirSync(dir, { recursive: true })
   const configs = generateConfigDocs(await getAllFiles())
-  const withHeader = Object.values(configs).filter(
-    (c): c is ConfigWithHeader => Boolean(c.header),
+  const withHeader = Object.values(configs).filter((c): c is ConfigWithHeader =>
+    Boolean(c.header),
   )
   const byDeclId = new Map(
     withHeader

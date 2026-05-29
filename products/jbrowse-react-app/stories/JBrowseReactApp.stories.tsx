@@ -388,9 +388,7 @@ export const HumanDemo = () => {
 // ---------------------------------------------------------------------------
 
 function WithImportConfigJsonRender() {
-  const [state] = useState(() =>
-    createViewState({ config: volvoxConfigJson }),
-  )
+  const [state] = useState(() => createViewState({ config: volvoxConfigJson }))
   return <JBrowseApp viewState={state} />
 }
 
@@ -450,9 +448,7 @@ function WithFetchConfigJsonRender() {
       const configPath = 'test_data/volvox/config.json'
       const response = await fetch(configPath)
       if (!response.ok) {
-        throw new Error(
-          `HTTP ${response.status} fetching config ${configPath}`,
-        )
+        throw new Error(`HTTP ${response.status} fetching config ${configPath}`)
       }
       const config = await response.json()
       addRelativeUris(config, new URL(configPath, window.location.href).href)

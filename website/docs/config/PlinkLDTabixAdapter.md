@@ -3,8 +3,8 @@ id: plinkldtabixadapter
 title: PlinkLDTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,18 +18,15 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-
 Adapter for reading pre-computed LD data from PLINK --r2 output (tabix-indexed).
 
-The input file should be bgzipped and tabix-indexed:
-  bgzip plink.ld
-  tabix -s1 -b2 -e2 plink.ld.gz
+The input file should be bgzipped and tabix-indexed: bgzip plink.ld tabix -s1
+-b2 -e2 plink.ld.gz
 
-Expected columns: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
-Optional columns: DP (D'), MAF_A, MAF_B
+Expected columns: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2 Optional columns: DP
+(D'), MAF_A, MAF_B
 
 ### PlinkLDTabixAdapter - Pre-processor / simplified config
-
 
 Preprocessor to allow minimal config:
 
@@ -55,6 +52,7 @@ ldLocation: {
       },
     }
 ```
+
 #### slot: index.indexType
 
 ```js
@@ -64,6 +62,7 @@ indexType: {
         defaultValue: 'TBI',
       }
 ```
+
 #### slot: index.location
 
 ```js

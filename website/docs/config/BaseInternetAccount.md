@@ -3,8 +3,8 @@ id: baseinternetaccount
 title: BaseInternetAccount
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -35,6 +35,7 @@ name: {
       defaultValue: '',
     }
 ```
+
 #### slot: description
 
 ```js
@@ -44,6 +45,7 @@ description: {
       defaultValue: '',
     }
 ```
+
 #### slot: authHeader
 
 ```js
@@ -53,6 +55,7 @@ authHeader: {
       defaultValue: 'Authorization',
     }
 ```
+
 #### slot: tokenType
 
 ```js
@@ -62,6 +65,7 @@ tokenType: {
       defaultValue: '',
     }
 ```
+
 #### slot: domains
 
 ```js

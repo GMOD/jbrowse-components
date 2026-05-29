@@ -3,8 +3,8 @@ id: refnamealiasadapter
 title: RefNameAliasAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -23,9 +23,8 @@ refName aliases
 
 ### RefNameAliasAdapter - Pre-processor / simplified config
 
-
-
 preprocessor to allow minimal config:
+
 ```json
 {
   "type": "RefNameAliasAdapter",
@@ -46,10 +45,11 @@ location: {
       },
     }
 ```
+
 #### slot: refNameColumn
 
-by default, the "ref names that match the fasta" are assumed to be in the
-first column (0), change this variable if needed
+by default, the "ref names that match the fasta" are assumed to be in the first
+column (0), change this variable if needed
 
 ```js
 refNameColumn: {
@@ -57,6 +57,7 @@ refNameColumn: {
       defaultValue: 0,
     }
 ```
+
 #### slot: refNameColumnHeaderName
 
 refNameColumnHeaderName

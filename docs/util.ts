@@ -118,7 +118,9 @@ function symbolDeclId(checker: ts.TypeChecker, symbol: ts.Symbol | undefined) {
     s = aliased
   }
   const decl = s.declarations?.[0] ?? s.valueDeclaration
-  return decl ? `${decl.getSourceFile().fileName}:${decl.getStart()}` : undefined
+  return decl
+    ? `${decl.getSourceFile().fileName}:${decl.getStart()}`
+    : undefined
 }
 
 // For a `baseConfiguration: <expr>` property, the declId of the base config the

@@ -3,8 +3,8 @@ id: arcrenderer
 title: ArcRenderer
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,8 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-
-
 ### ArcRenderer - Slots
 
 #### slot: color
@@ -32,6 +30,7 @@ color: {
       contextVariable: ['feature'],
     }
 ```
+
 #### slot: thickness
 
 ```js
@@ -42,6 +41,7 @@ thickness: {
       contextVariable: ['feature'],
     }
 ```
+
 #### slot: label
 
 ```js
@@ -52,6 +52,7 @@ label: {
       contextVariable: ['feature'],
     }
 ```
+
 #### slot: height
 
 ```js
@@ -62,6 +63,7 @@ height: {
       contextVariable: ['feature'],
     }
 ```
+
 #### slot: caption
 
 ```js
@@ -73,6 +75,7 @@ caption: {
       contextVariable: ['feature'],
     }
 ```
+
 #### slot: displayMode
 
 ```js

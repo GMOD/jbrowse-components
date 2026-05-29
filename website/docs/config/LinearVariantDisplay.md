@@ -3,8 +3,8 @@ id: linearvariantdisplay
 title: LinearVariantDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,12 +18,12 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-
 Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained.
 
 ### Inherited from [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 
@@ -249,19 +249,19 @@ impliedUTRs: {
 
 ```js
 labels: ConfigurationSchema('CanvasFeatureLabels', {
-        name: {
-          type: 'string',
-          description: 'the primary name of the feature to show',
-          defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
-          contextVariable: ['feature'],
-        },
-        description: {
-          type: 'string',
-          description: 'the text description to show',
-          defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
-          contextVariable: ['feature'],
-        },
-      })
+  name: {
+    type: 'string',
+    description: 'the primary name of the feature to show',
+    defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
+    contextVariable: ['feature'],
+  },
+  description: {
+    type: 'string',
+    description: 'the text description to show',
+    defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
+    contextVariable: ['feature'],
+  },
+})
 ```
 
 ### Inherited from [BaseLinearDisplay](../baselineardisplay)
@@ -311,8 +311,8 @@ mouseover: {
 
 #### slot: jexlFilters
 
-config jexlFilters are deferred evaluated so they are prepended with
-jexl at runtime rather than being stored with jexl in the config
+config jexlFilters are deferred evaluated so they are prepended with jexl at
+runtime rather than being stored with jexl in the config
 
 ```js
 jexlFilters: {
@@ -328,6 +328,5 @@ jexlFilters: {
 - [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 
 ```js
-baseConfiguration:
-        linearCanvasBaseDisplayConfigSchemaFactory(pluginManager)
+baseConfiguration: linearCanvasBaseDisplayConfigSchemaFactory(pluginManager)
 ```

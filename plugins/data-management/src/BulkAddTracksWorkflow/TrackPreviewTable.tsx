@@ -6,7 +6,7 @@ import { IconButton, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import type { TrackStatus, TrackConfRow } from './buildConfigs.ts'
+import type { TrackConfRow, TrackStatus } from './buildConfigs.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
