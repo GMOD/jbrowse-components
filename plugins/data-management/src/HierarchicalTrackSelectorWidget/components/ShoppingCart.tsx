@@ -9,6 +9,18 @@ import { Badge } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui/Menu'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'TrackSelector-multiTrackMenuItems': {
+      args: MenuItem[]
+      result: MenuItem[]
+      props: { session: AbstractSessionModel }
+    }
+  }
+}
 
 const ShoppingCart = observer(function ShoppingCart({
   model,
