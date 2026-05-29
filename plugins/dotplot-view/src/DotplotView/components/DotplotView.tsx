@@ -4,6 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
+import DisplayStatusOverlays from './DisplayStatusOverlays.tsx'
 import DotplotTooltips from './DotplotTooltips.tsx'
 import Header from './Header.tsx'
 import ImportForm from './ImportForm/index.tsx'
@@ -90,7 +91,6 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
 }) {
   const { classes } = useStyles()
   const interaction = useDotplotInteraction(model)
-  const { viewWidth, viewHeight } = model
   return (
     <div>
       <Header model={model} selection={interaction.selection} />
@@ -113,39 +113,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
           </div>
           <div className={classes.overlay}>
             <DotplotCanvas model={model} />
-            {model.dotplotDisplays.map((display, idx) =>
-              display.error ? (
-                <ErrorBanner key={idx} error={display.error} />
-              ) : display.isLoading ? (
-                <div
-                  key={idx}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: viewWidth,
-                    height: viewHeight,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <LoadingEllipses />
-                </div>
-              ) : display.isRefetching ? (
-                <div
-                  key={idx}
-                  style={{
-                    position: 'absolute',
-                    bottom: 4,
-                    right: 4,
-                    opacity: 0.7,
-                  }}
-                >
-                  <LoadingEllipses />
-                </div>
-              ) : null,
-            )}
+            <DisplayStatusOverlays model={model} />
           </div>
           <SelectionContextMenu model={model} interaction={interaction} />
         </div>
