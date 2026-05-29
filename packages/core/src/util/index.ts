@@ -12,11 +12,12 @@ import { colord } from './colord.ts'
 import { parseLocString } from './locString.ts'
 import { measureText } from './measureText.ts'
 import { checkStopToken } from './stopToken.ts'
+import { storeBlobLocation } from './tracks.ts'
 import { isUriLocation } from './types/index.ts'
 
 import type { ParsedLocString } from './locString.ts'
 import type { StopToken } from './stopToken.ts'
-import type { AssemblyManager, Region } from './types/index.ts'
+import type { AssemblyManager, FileLocation, Region } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -499,6 +500,27 @@ export function stringify(
 export const isElectron = /electron/i.test(
   typeof navigator !== 'undefined' ? navigator.userAgent : '',
 )
+
+/**
+ * Convert a browser File (from a drop zone or file input) into a FileLocation:
+ * a native local path under electron, or an in-memory blob location otherwise.
+ */
+export function fileToLocation(file: File): FileLocation {
+  if (isElectron) {
+    return {
+      // @ts-ignore - electron injects require onto window, needs to be ignore not expect-error for now
+      localPath: window.require('electron').webUtils.getPathForFile(file),
+      locationType: 'LocalPathLocation',
+    }
+  } else {
+    const loc = storeBlobLocation({ blob: file })
+    if ('blobId' in loc) {
+      return loc
+    } else {
+      throw new Error('could not store file as a blob location')
+    }
+  }
+}
 
 export * from './seqUtils.ts'
 

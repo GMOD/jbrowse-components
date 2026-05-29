@@ -6,8 +6,9 @@ import {
   guessTrackType,
 } from '@jbrowse/core/util/tracks'
 
+import { locationId } from './pairLocations.ts'
+
 import type { LocationPair } from './pairLocations.ts'
-import type { FileLocation } from '@jbrowse/core/util/types'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export type TrackStatus = 'ok' | 'unknown' | 'unsupported'
@@ -26,18 +27,6 @@ export interface TrackConfRow {
   adapterType: string
   indexName?: string
   status: TrackStatus
-}
-
-function locationId(loc: FileLocation) {
-  if ('uri' in loc) {
-    return loc.uri
-  } else if ('localPath' in loc) {
-    return loc.localPath
-  } else if ('blobId' in loc) {
-    return loc.blobId
-  } else {
-    return getFileName(loc)
-  }
 }
 
 function statusOf(adapterType: string): TrackStatus {

@@ -1,4 +1,5 @@
 import {
+  applyName,
   buildAdapterPayload,
   canSubmit,
   itemToName,
@@ -101,6 +102,38 @@ describe('buildAdapterPayload', () => {
     const obj = { type: 'BigWigAdapter', source: 'b' }
     expect(buildAdapterPayload(['http://a.bw', obj])).toEqual({
       subadapters: [urlToSubadapter('http://a.bw'), obj],
+    })
+  })
+})
+
+describe('applyName', () => {
+  it('keeps an unchanged URL string bare to preserve the bigWigs form', () => {
+    expect(applyName('http://a.bw', 'http://a.bw')).toBe('http://a.bw')
+  })
+
+  it('promotes a renamed URL string into a BigWigAdapter with the new source', () => {
+    expect(applyName('http://a.bw', 'My sample')).toEqual(
+      urlToSubadapter('http://a.bw', 'My sample'),
+    )
+  })
+
+  it('overrides the source of an object item', () => {
+    expect(applyName({ type: 'BigWigAdapter', source: 'old' }, 'new')).toEqual({
+      type: 'BigWigAdapter',
+      source: 'new',
+    })
+  })
+
+  it('renamed items flow through buildAdapterPayload as subadapters', () => {
+    const items = [
+      applyName('http://a.bw', 'Sample A'),
+      applyName('http://b.bw', 'http://b.bw'),
+    ]
+    expect(buildAdapterPayload(items)).toEqual({
+      subadapters: [
+        urlToSubadapter('http://a.bw', 'Sample A'),
+        urlToSubadapter('http://b.bw'),
+      ],
     })
   })
 })

@@ -2,12 +2,11 @@ import { useState } from 'react'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import {
+  fileToLocation,
   getSession,
-  isElectron,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
-import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Button, Paper, TextField, Typography } from '@mui/material'
@@ -15,6 +14,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import {
+  applyName,
   buildAdapterPayload,
   canSubmit,
   itemToName,
@@ -44,16 +44,6 @@ interface TrackRow {
   item: TrackItem
 }
 
-function makeFileLocation(file: File) {
-  return isElectron
-    ? {
-        // @ts-ignore - electron injects require onto window, needs to be ignore not expect-error for now
-        localPath: window.require('electron').webUtils.getPathForFile(file),
-        locationType: 'LocalPathLocation',
-      }
-    : storeBlobLocation({ blob: file })
-}
-
 function itemToRow(item: TrackItem): TrackRow {
   return { id: crypto.randomUUID(), name: itemToName(item), item }
 }
@@ -78,7 +68,7 @@ function doSubmit({
       assemblyNames: [model.assembly],
       adapter: {
         type: 'MultiWiggleAdapter',
-        ...buildAdapterPayload(tracks.map(t => t.item)),
+        ...buildAdapterPayload(tracks.map(t => applyName(t.item, t.name))),
       },
     })
 
@@ -138,7 +128,7 @@ const MultiWiggleAddTrackWorkflow = observer(
               addTracks(
                 [...(target.files ?? [])].map(file => ({
                   type: 'BigWigAdapter',
-                  bigWigLocation: makeFileLocation(file),
+                  bigWigLocation: fileToLocation(file),
                   source: file.name,
                 })),
               )
@@ -168,6 +158,7 @@ const MultiWiggleAddTrackWorkflow = observer(
                     field: 'name',
                     headerName: 'Name',
                     flex: 1,
+                    editable: true,
                     renderCell: ({ value }) => <SanitizedHTML html={value} />,
                   },
                 ]}
@@ -175,6 +166,18 @@ const MultiWiggleAddTrackWorkflow = observer(
                 columnHeaderHeight={33}
                 hideFooter
                 checkboxSelection
+                disableRowSelectionOnClick
+                processRowUpdate={newRow => {
+                  setTracks(prev =>
+                    prev.map(t =>
+                      t.id === newRow.id ? { ...t, name: newRow.name } : t,
+                    ),
+                  )
+                  return newRow
+                }}
+                onProcessRowUpdateError={e => {
+                  getSession(model).notifyError(`${e}`, e)
+                }}
                 rowSelectionModel={selection}
                 onRowSelectionModelChange={setSelection}
               />

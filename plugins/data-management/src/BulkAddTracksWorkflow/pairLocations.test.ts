@@ -56,3 +56,20 @@ test('matching is case-insensitive', () => {
   const pairs = pairLocations([uri('/x/A.BAM'), uri('/x/A.BAM.BAI')])
   expect(names(pairs)).toEqual([{ file: '/x/A.BAM', index: '/x/A.BAM.BAI' }])
 })
+
+test('collapses a data file repeated under the same location', () => {
+  const pairs = pairLocations([
+    uri('/x/a.bam'),
+    uri('/x/a.bam'),
+    uri('/x/a.bam.bai'),
+  ])
+  expect(names(pairs)).toEqual([{ file: '/x/a.bam', index: '/x/a.bam.bai' }])
+})
+
+test('keeps same-named data files from different directories distinct', () => {
+  const pairs = pairLocations([uri('/x/a.bam'), uri('/y/a.bam')])
+  expect(names(pairs)).toEqual([
+    { file: '/x/a.bam', index: undefined },
+    { file: '/y/a.bam', index: undefined },
+  ])
+})

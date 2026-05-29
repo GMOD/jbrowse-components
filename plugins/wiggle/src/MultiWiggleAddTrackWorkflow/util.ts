@@ -24,11 +24,24 @@ export function itemToName(item: TrackItem) {
   return `${item.source ?? item.name ?? 'unnamed'}`
 }
 
-export function urlToSubadapter(uri: string) {
+export function urlToSubadapter(uri: string, source = uri) {
   return {
     type: 'BigWigAdapter',
     bigWigLocation: { uri, locationType: 'UriLocation' },
-    source: uri,
+    source,
+  }
+}
+
+/**
+ * Pin a (possibly user-edited) display name as the subtrack `source`. A renamed
+ * URL string is promoted to a BigWigAdapter object so the new name survives;
+ * an unchanged URL stays a bare string to preserve the compact `bigWigs` form.
+ */
+export function applyName(item: TrackItem, name: string): TrackItem {
+  if (typeof item === 'string') {
+    return name === item ? item : urlToSubadapter(item, name)
+  } else {
+    return { ...item, source: name }
   }
 }
 

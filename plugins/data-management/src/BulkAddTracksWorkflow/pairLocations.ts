@@ -19,6 +19,18 @@ export interface LocationPair {
   index?: FileLocation
 }
 
+export function locationId(loc: FileLocation) {
+  if ('uri' in loc) {
+    return loc.uri
+  } else if ('localPath' in loc) {
+    return loc.localPath
+  } else if ('blobId' in loc) {
+    return loc.blobId
+  } else {
+    return getFileName(loc)
+  }
+}
+
 function stripLastExt(name: string) {
   const dot = name.lastIndexOf('.')
   return dot === -1 ? name : name.slice(0, dot)
@@ -35,12 +47,19 @@ function indexSuffixOf(name: string) {
  * belongs to data file `D` when `I` is `D` + suffix (e.g. `foo.bam.bai`) or
  * `stripExt(D)` + suffix (e.g. `foo.bai`). Data files with no explicit index
  * are emitted with `index: undefined` so `guessAdapter` can infer it from the
- * URL. Unmatched index files are dropped.
+ * URL. Unmatched index files are dropped. Data files repeated under the same
+ * location (e.g. a URL pasted twice) collapse to a single entry.
  */
 export function pairLocations(locations: FileLocation[]): LocationPair[] {
   const named = locations.map(loc => ({ loc, name: getFileName(loc) }))
   const indexEntries = named.filter(e => indexSuffixOf(e.name) !== undefined)
-  const dataEntries = named.filter(e => indexSuffixOf(e.name) === undefined)
+  const dataEntries = [
+    ...new Map(
+      named
+        .filter(e => indexSuffixOf(e.name) === undefined)
+        .map(e => [locationId(e.loc), e] as const),
+    ).values(),
+  ]
   const usedIndexes = new Set<FileLocation>()
 
   return dataEntries.map(({ loc, name }) => {
