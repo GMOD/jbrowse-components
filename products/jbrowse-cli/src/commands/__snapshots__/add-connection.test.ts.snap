@@ -3,6 +3,9 @@
 exports[`adds JBrowse1 connection from a url 1`] = `
 [
   {
+    "assemblyNames": [
+      "testAssembly",
+    ],
     "connectionId": "JBrowse1Connection-1",
     "dataDirLocation": {
       "locationType": "UriLocation",

@@ -50,6 +50,10 @@ export function isValidJSON(string: string) {
   }
 }
 
+function basenameWithoutFastaExt(p: string) {
+  return path.basename(p).replace(/\.(fa|fasta|fna|mfa)(\.gz)?$/i, '')
+}
+
 export function guessSequenceType(sequence: string) {
   const s = sequence.toLowerCase()
   if (
@@ -124,10 +128,7 @@ export async function getAssembly({
       const faiLoc = faiLocation || `${argsSequence}.fai`
       debug(`FASTA: ${argsSequence}, index: ${faiLoc}`)
       if (!name) {
-        name = path.basename(
-          argsSequence,
-          argsSequence.endsWith('.fasta') ? '.fasta' : '.fa',
-        )
+        name = basenameWithoutFastaExt(argsSequence)
         debug(`Guessing name: ${name}`)
       }
       sequence = {
@@ -152,10 +153,7 @@ export async function getAssembly({
       const gziLoc = gziLocation || `${argsSequence}.gzi`
       debug(`bgzipFASTA: ${argsSequence}, fai: ${faiLoc}, gzi: ${gziLoc}`)
       if (!name) {
-        name = path.basename(
-          argsSequence,
-          argsSequence.endsWith('.fasta.gz') ? '.fasta.gz' : '.fa.gz',
-        )
+        name = basenameWithoutFastaExt(argsSequence)
         debug(`Guessing name: ${name}`)
       }
       sequence = {

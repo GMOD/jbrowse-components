@@ -57,9 +57,9 @@ export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
 }
 
 export async function fetchGithubVersions() {
-  let versions: GithubRelease[] = []
+  const versions: GithubRelease[] = []
   for await (const iter of fetchVersions()) {
-    versions = [...versions, ...iter]
+    versions.push(...iter)
   }
 
   return versions
@@ -69,13 +69,9 @@ export async function getLatest() {
   for await (const versions of fetchVersions()) {
     // if a release was just uploaded, or an erroneous build was made then it
     // might have no build asset
-    const nonprerelease = versions
-      .filter(release => !release.prerelease)
-      .find(release => release.assets?.length)
-
-    const first = nonprerelease
-    if (first?.assets) {
-      const file = first.assets.find(f =>
+    const release = versions.find(r => !r.prerelease && r.assets?.length)
+    if (release?.assets) {
+      const file = release.assets.find(f =>
         f.name.includes('jbrowse-web'),
       )?.browser_download_url
 
@@ -129,6 +125,54 @@ export async function getTag(tag: string) {
 
 export async function getBranch(branch: string) {
   return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
+}
+
+// resolves the JBrowse release download URL from the create/upgrade flags,
+// preferring an explicit --url, then --nightly, --branch, and finally --tag
+// (or the latest release)
+export async function resolveReleaseUrl({
+  url,
+  nightly,
+  branch,
+  tag,
+}: {
+  url?: string
+  nightly?: boolean
+  branch?: string
+  tag?: string
+}) {
+  return (
+    url ||
+    (nightly ? await getBranch('main') : '') ||
+    (branch ? await getBranch(branch) : '') ||
+    (tag ? await getTag(tag) : await getLatest())
+  )
+}
+
+export async function fetchReleaseArchive(
+  locationUrl: string,
+  validateZipContentType: boolean,
+) {
+  console.log(`Fetching ${locationUrl}...`)
+  const response = await fetch(locationUrl)
+  if (!response.ok) {
+    throw new Error(
+      `HTTP ${response.status} fetching ${locationUrl}: ${response.statusText}`,
+    )
+  }
+
+  const type = response.headers.get('content-type')
+  if (
+    validateZipContentType &&
+    type !== 'application/zip' &&
+    type !== 'application/octet-stream'
+  ) {
+    throw new Error(
+      'The URL provided does not seem to be a JBrowse installation URL',
+    )
+  }
+
+  return Buffer.from(await response.arrayBuffer())
 }
 
 function wrapText(text: string, width: number, indent: string) {

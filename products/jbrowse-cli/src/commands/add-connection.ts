@@ -156,7 +156,7 @@ export async function run(args?: string[]) {
     connectionId: id,
     assemblyNames: assemblyNames
       ? assemblyNames.split(',')
-      : type === 'JBrowse1Connection'
+      : configType === 'JBrowse1Connection'
         ? [configContents.assemblies[0]?.name]
         : undefined,
     ...(config ? parseJSON(config) : {}),

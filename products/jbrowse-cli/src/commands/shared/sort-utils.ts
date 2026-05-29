@@ -52,25 +52,42 @@ function getMinimalEnvironment(): NodeJS.ProcessEnv {
   }
 }
 
-function createSortCommandForStdin(sortColumn: number): string {
-  const tmpFile = fileSync({ prefix: 'jbrowse-sort' }).name
-  const sortCmd = `sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n`
-  return `cat > ${tmpFile} && (grep "^#" ${tmpFile}; grep -v "^#" ${tmpFile} | ${sortCmd}) && rm -f ${tmpFile}`
+// The file path is passed to the shell as the positional argument "$1" rather
+// than interpolated into the command string, so a path containing shell
+// metacharacters (`"`, `$(...)`, backticks) cannot break out and execute. Only
+// sortColumn, an integer from the BED/GFF configs, is interpolated.
+function sortPipeline(sortColumn: number): string {
+  return `grep "^#" "$1"; grep -v "^#" "$1" | sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n`
 }
 
-function createSortCommandForFile(file: string, sortColumn: number): string {
-  return `(grep "^#" "${file}"; grep -v "^#" "${file}" | sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n)`
+function createSortCommandForStdin(sortColumn: number): {
+  command: string
+  pathArg: string
+} {
+  const tmpFile = fileSync({ prefix: 'jbrowse-sort' }).name
+  return {
+    command: `cat > "$1" && (${sortPipeline(sortColumn)}) && rm -f "$1"`,
+    pathArg: tmpFile,
+  }
+}
+
+function createSortCommandForFile(
+  file: string,
+  sortColumn: number,
+): { command: string; pathArg: string } {
+  return { command: `(${sortPipeline(sortColumn)})`, pathArg: file }
 }
 
 export function spawnSortProcess(
   file: string | undefined,
   sortColumn: number,
 ): ChildProcess {
-  const command = file
+  const { command, pathArg } = file
     ? createSortCommandForFile(file, sortColumn)
     : createSortCommandForStdin(sortColumn)
 
-  return spawn('sh', ['-c', command], {
+  // 'sh' becomes $0, pathArg becomes $1 inside the command
+  return spawn('sh', ['-c', command, 'sh', pathArg], {
     env: getMinimalEnvironment(),
     stdio: 'inherit',
   })

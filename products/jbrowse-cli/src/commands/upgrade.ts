@@ -4,13 +4,11 @@ import { parseArgs } from 'util'
 
 import decompress from 'decompress'
 
-import fetch from '../cliFetch.ts'
 import {
   fetchGithubVersions,
-  getBranch,
-  getLatest,
-  getTag,
+  fetchReleaseArchive,
   printHelp,
+  resolveReleaseUrl,
 } from '../utils.ts'
 
 const description = 'Upgrades JBrowse 2 to latest version'
@@ -107,30 +105,8 @@ export async function run(args: string[]) {
     )
   }
 
-  const locationUrl =
-    url ||
-    (nightly ? await getBranch('main') : '') ||
-    (branch ? await getBranch(branch) : '') ||
-    (tag ? await getTag(tag) : await getLatest())
-
-  console.log(`Fetching ${locationUrl}...`)
-  const response = await fetch(locationUrl)
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} fetching ${locationUrl}: ${response.statusText}`,
-    )
-  }
-
-  const type = response.headers.get('content-type')
-  if (
-    url &&
-    type !== 'application/zip' &&
-    type !== 'application/octet-stream'
-  ) {
-    throw new Error(
-      'The URL provided does not seem to be a JBrowse installation URL',
-    )
-  }
+  const locationUrl = await resolveReleaseUrl({ url, nightly, branch, tag })
+  const archive = await fetchReleaseArchive(locationUrl, !!url)
 
   if (clean) {
     fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
@@ -141,6 +117,6 @@ export async function run(args: string[]) {
     }
   }
 
-  await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
+  await decompress(archive, argsPath)
   console.log(`Unpacked ${locationUrl} at ${argsPath}`)
 }

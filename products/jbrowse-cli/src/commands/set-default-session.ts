@@ -63,7 +63,12 @@ export async function run(args: string[]) {
     })
     return
   }
-  const { session, currentSession, delete: deleteDefaultSession } = runFlags
+  const {
+    session,
+    name,
+    currentSession,
+    delete: deleteDefaultSession,
+  } = runFlags
   const target = await resolveConfigPath(runFlags.target, runFlags.out)
   const configContents: Config = await readJsonFile(target)
 
@@ -81,7 +86,7 @@ export async function run(args: string[]) {
   } else {
     await writeJsonFile(target, {
       ...configContents,
-      defaultSession: await readDefaultSessionFile(session),
+      defaultSession: { name, ...(await readDefaultSessionFile(session)) },
     })
   }
 }

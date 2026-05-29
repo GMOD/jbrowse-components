@@ -24,7 +24,7 @@ export function parsePort({
   }
 
   const parsedPort = Number.parseInt(portStr, 10)
-  if (!(parsedPort > 0 && parsedPort < 65535)) {
+  if (!(parsedPort > 0 && parsedPort <= 65535)) {
     throw new Error(`${portStr} is not a valid port`)
   }
 
@@ -32,7 +32,7 @@ export function parsePort({
 }
 
 export function generateKey(): string {
-  return crypto.randomBytes(5).toString('hex')
+  return crypto.randomBytes(16).toString('hex')
 }
 
 export async function setupConfigFile({

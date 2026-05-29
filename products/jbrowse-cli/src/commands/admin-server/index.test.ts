@@ -25,7 +25,7 @@ function getPort(output: string) {
 }
 
 function getAdminKey(output: string) {
-  const keyMatch = /Admin key: ([a-zA-Z0-9]{10,12})/.exec(output)
+  const keyMatch = /Admin key: ([a-zA-Z0-9]{10,})/.exec(output)
   const key = keyMatch?.[1]
   if (!key) {
     throw new Error(`Admin key not found in "${output}"`)
@@ -70,7 +70,7 @@ test('uses port 9090 if not specified', async () => {
   await runInTmpDir(async () => {
     const { stdout } = await runCommand(['admin-server'])
     expect(stdout).toMatch(
-      /http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,12}/,
+      /http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,}/,
     )
     await killExpress({ stdout })
   })
