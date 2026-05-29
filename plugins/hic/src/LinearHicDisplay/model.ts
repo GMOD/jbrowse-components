@@ -18,7 +18,7 @@ import {
 import { autorun } from 'mobx'
 
 import { contactLookupKey } from '../regionOffsets.ts'
-import { generateColorRamp } from './components/HicRenderer.ts'
+import { generateColorRamp } from './components/colorRamp.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {

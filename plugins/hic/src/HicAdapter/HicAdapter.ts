@@ -58,10 +58,6 @@ interface HicParser {
   ) => Promise<ContactRecord[]>
   getMetaData: () => Promise<HicMetadata>
   getNormalizationOptions: () => Promise<string[]>
-  hicFile: {
-    init: () => Promise<void>
-    masterIndex: Record<string, { start: number; size: number }>
-  }
 }
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
@@ -88,15 +84,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   public async getHeader(opts?: BaseOptions) {
     const { chromosomes, resolutions, ...rest } = await this.setup(opts)
     const norms = await this.hic.getNormalizationOptions()
-
-    await this.hic.hicFile.init()
-    const { masterIndex } = this.hic.hicFile
-    const hasInterChromosomalData = Object.keys(masterIndex).some(key => {
-      const [idx1, idx2] = key.split('_')
-      return idx1 !== idx2
-    })
-
-    return { ...rest, norms, resolutions, hasInterChromosomalData }
+    return { ...rest, norms, resolutions }
   }
 
   async getRefNames(opts?: BaseOptions) {

@@ -7,8 +7,6 @@ import {
   HIC_UNIFORM_BYTE_SIZE,
 } from './GpuHicRenderer.ts'
 
-export { generateColorRamp } from './colorRamp.ts'
-
 import type { HicRenderingBackend } from './hicRenderingBackendTypes.ts'
 
 export function HicRenderer(canvas: HTMLCanvasElement) {
