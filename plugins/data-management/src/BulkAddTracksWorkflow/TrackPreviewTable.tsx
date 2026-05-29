@@ -46,7 +46,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
   rows: TrackConfRow[]
   customNames: Record<string, string>
   setCustomNames: Dispatch<SetStateAction<Record<string, string>>>
-  setRemoved: Dispatch<SetStateAction<Record<string, boolean>>>
+  setRemoved: Dispatch<SetStateAction<Set<string>>>
 }) {
   const { classes } = useStyles()
   const gridRows: PreviewGridRow[] = rows.map(row => ({
@@ -84,7 +84,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
         <IconButton
           size="small"
           onClick={() => {
-            setRemoved(prev => ({ ...prev, [row.id]: true }))
+            setRemoved(prev => new Set([...prev, row.id]))
           }}
         >
           <CloseIcon fontSize="small" />

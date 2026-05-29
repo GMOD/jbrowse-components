@@ -47,7 +47,8 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const [assemblyOverride, setAssemblyOverride] = useState<string>()
   const assembly = assemblyOverride ?? model.assembly ?? ''
   const [customNames, setCustomNames] = useState<Record<string, string>>({})
-  const [removed, setRemoved] = useState<Record<string, boolean>>({})
+  // Reset removed when inputs change so re-entered URLs reappear.
+  const [removed, setRemoved] = useState(() => new Set<string>())
   const [timestamp] = useState(() => Date.now())
 
   const remoteLocations = useMemo(() => parseUrlList(text), [text])
@@ -65,8 +66,9 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
     [locations, model, assembly, adminMode, timestamp],
   )
 
-  const visibleRows = rows.filter(row => !removed[row.id])
+  const visibleRows = rows.filter(row => !removed.has(row.id))
   const okRows = visibleRows.filter(row => row.status === 'ok')
+  const skippedCount = visibleRows.length - okRows.length
 
   return (
     <Paper className={classes.paper}>
@@ -81,9 +83,15 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
         mode={mode}
         setMode={setMode}
         text={text}
-        setText={setText}
+        setText={t => {
+          setText(t)
+          setRemoved(new Set())
+        }}
         localLocations={localLocations}
-        setLocalLocations={setLocalLocations}
+        setLocalLocations={locs => {
+          setLocalLocations(locs)
+          setRemoved(new Set())
+        }}
       />
 
       {visibleRows.length > 0 ? (
@@ -107,6 +115,11 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
         />
       </div>
 
+      {skippedCount > 0 ? (
+        <Typography variant="body2" color="error">
+          {skippedCount} row(s) with unrecognized types will not be added
+        </Typography>
+      ) : null}
       <Button
         variant="contained"
         color="primary"
