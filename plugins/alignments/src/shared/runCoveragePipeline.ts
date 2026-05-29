@@ -12,7 +12,6 @@ import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
 
-import type { RegionBounds } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -22,6 +21,7 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
+import type { Region } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 /**
@@ -42,7 +42,7 @@ export async function runCoveragePipeline({
   softclips,
   hardclips,
   modifications,
-  bounds,
+  region,
   mismatchArrays,
   interbaseArrays,
   gapArrays,
@@ -59,7 +59,7 @@ export async function runCoveragePipeline({
   softclips: SoftclipData[]
   hardclips: HardclipData[]
   modifications: ModificationEntry[]
-  bounds: RegionBounds
+  region: Region
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
   interbaseArrays: Parameters<typeof computeFrequenciesAndThresholds>[1]
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
@@ -69,7 +69,7 @@ export async function runCoveragePipeline({
   statusCallback: (s: string) => void
   stopTokenCheck: StopTokenChecker
 }) {
-  const { start: regionStart, end: regionEnd } = bounds
+  const { start: regionStart, end: regionEnd } = region
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,

@@ -1,5 +1,5 @@
-import type { RegionBounds } from '../../shared/types.ts'
 import type { FeatureData, GapData } from '../../shared/webglRpcTypes.ts'
+import type { Region } from '@jbrowse/core/util'
 
 // Splits each read into per-exon segments at CIGAR skip (N) gaps.
 // Reads without skips produce one segment. Segment starts are clamped
@@ -11,10 +11,10 @@ import type { FeatureData, GapData } from '../../shared/webglRpcTypes.ts'
 export function buildSegmentArrays(
   features: FeatureData[],
   gaps: GapData[],
-  bounds: RegionBounds,
+  region: Region,
   getReadIndex: (featureId: string) => number,
 ) {
-  const { start: regionStart, end: regionEnd } = bounds
+  const { start: regionStart, end: regionEnd } = region
   const skipsByFeature = new Map<string, GapData[]>()
   for (const g of gaps) {
     if (g.type === 'skip') {

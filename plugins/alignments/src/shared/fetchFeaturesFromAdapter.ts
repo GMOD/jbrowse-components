@@ -65,6 +65,5 @@ export async function fetchFeaturesFromAdapter({
     featuresArray,
     dataAdapter,
     stopTokenCheck,
-    regionStart: Math.floor(region.start),
   }
 }

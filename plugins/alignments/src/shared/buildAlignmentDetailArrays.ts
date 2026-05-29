@@ -8,7 +8,6 @@ import { buildPerBaseQualityArrays } from '../features/perBaseQuality/buildArray
 import { buildSegmentArrays } from '../features/read/buildSegments.ts'
 import { buildSoftclipBaseArrays } from '../features/softclip/buildArrays.ts'
 
-import type { RegionBounds } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -19,6 +18,7 @@ import type {
   SoftclipData,
 } from './webglRpcTypes.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
+import type { Region } from '@jbrowse/core/util'
 
 /**
  * Build the gap / mismatch / interbase / modification / segment /
@@ -40,7 +40,7 @@ export async function buildAlignmentDetailArrays({
   modifications,
   perBaseQualities,
   detectedModifications,
-  bounds,
+  region,
   getReadIndex,
   showSoftClipping = false,
   statusCallback,
@@ -54,12 +54,12 @@ export async function buildAlignmentDetailArrays({
   modifications: ModificationEntry[]
   perBaseQualities: PerBaseQualityEntry[]
   detectedModifications: Set<string>
-  bounds: RegionBounds
+  region: Region
   getReadIndex: (id: string) => number
   showSoftClipping?: boolean
   statusCallback: (s: string) => void
 }) {
-  const { start: regionStart } = bounds
+  const { start: regionStart } = region
   return updateStatus(
     'Building alignment arrays',
     statusCallback,
@@ -91,7 +91,7 @@ export async function buildAlignmentDetailArrays({
         perBaseQualities,
         getReadIndex,
       ),
-      segmentArrays: buildSegmentArrays(features, gaps, bounds, getReadIndex),
+      segmentArrays: buildSegmentArrays(features, gaps, region, getReadIndex),
     }),
   )
 }

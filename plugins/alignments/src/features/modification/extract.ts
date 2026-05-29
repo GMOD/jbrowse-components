@@ -16,9 +16,8 @@ import {
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 
-import type { RegionBounds } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { ParsedModData } from '@jbrowse/modifications-utils'
 
 // Methylated/unmethylated display colors for bisulfite/ONT methylation mode.
@@ -110,11 +109,11 @@ export function extractMethylation(
   featureId: string,
   featureStart: number,
   strand: number,
-  bounds: RegionBounds,
+  region: Region,
   modData: ParsedModData,
   modificationsData: ModificationEntry[],
 ) {
-  const { start: regionStart, end: regionEnd } = bounds
+  const { start: regionStart, end: regionEnd } = region
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
     getMethBins(modData)
 

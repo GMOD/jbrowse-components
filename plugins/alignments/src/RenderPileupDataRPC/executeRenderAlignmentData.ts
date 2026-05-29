@@ -18,7 +18,6 @@ import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 
 import type { PileupDataResult, RenderAlignmentDataArgs } from './types.ts'
-import type { RegionBounds } from '../shared/types.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -132,27 +131,22 @@ export async function executeRenderAlignmentData({
   // Chain mode never expands soft clips or fetches sequence/sort-tag data.
   const effShowSoftClipping = isChain ? false : showSoftClipping
 
-  const { featuresArray, regionStart, stopTokenCheck } =
-    await fetchFeaturesFromAdapter({
-      pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
-      region,
-      filterBy,
-      statusCallback,
-      stopToken,
-    })
-
-  // Integer clamp window every absolute-genomic array filters against. Derived
-  // once here and threaded as one value instead of two loose scalars.
-  const bounds: RegionBounds = { start: regionStart, end: Math.ceil(region.end) }
+  const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+    sequenceAdapter,
+    region,
+    filterBy,
+    statusCallback,
+    stopToken,
+  })
 
   // Chain mode dedupes + filters reads into chains up front; pileup mode
   // fetches the reference sequence when coloring by methylation/modifications.
   let inputFeatures = featuresArray
   let regionSequence: string | undefined
-  let regionSequenceStart = regionStart
+  let regionSequenceStart = region.start
   if (isChain) {
     inputFeatures = filterChainFeatures(
       featuresArray,
@@ -169,7 +163,6 @@ export async function executeRenderAlignmentData({
       sequenceAdapter,
       region,
       featuresArray,
-      bounds,
     })
     regionSequence = result.regionSequence?.toLowerCase()
     regionSequenceStart = result.regionSequenceStart
@@ -200,7 +193,7 @@ export async function executeRenderAlignmentData({
         colorBy,
         colorTagMap,
         showSoftClipping: effShowSoftClipping,
-        bounds,
+        region,
         sortTag: isChain ? undefined : sortTag,
       },
     ),
@@ -213,7 +206,7 @@ export async function executeRenderAlignmentData({
   // emits zero-filled Y arrays.
   const { readArrays, featureIdToIndex } = buildBaseReadArrays(
     features,
-    regionStart,
+    region.start,
   )
   const getReadIndex = (id: string) => {
     const idx = featureIdToIndex.get(id)
@@ -250,7 +243,7 @@ export async function executeRenderAlignmentData({
     modifications,
     perBaseQualities,
     detectedModifications,
-    bounds,
+    region,
     getReadIndex,
     showSoftClipping: effShowSoftClipping,
     statusCallback,
@@ -272,7 +265,7 @@ export async function executeRenderAlignmentData({
     softclips,
     hardclips,
     modifications,
-    bounds,
+    region,
     mismatchArrays,
     interbaseArrays,
     gapArrays,

@@ -41,7 +41,12 @@ function run(opts: {
   extractPerBaseQuality(
     makeFeature(opts),
     'f',
-    { start: opts.regionStart ?? 0, end: opts.regionEnd ?? 1000 },
+    {
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      start: opts.regionStart ?? 0,
+      end: opts.regionEnd ?? 1000,
+    },
     out,
   )
   return out.map(e => [e.position, e.score])
@@ -146,7 +151,12 @@ describe('extractPerBaseQuality', () => {
       id: () => 'f',
       get: () => undefined,
     } as unknown as Feature
-    extractPerBaseQuality(feature, 'f', { start: 0, end: 1000 }, out)
+    extractPerBaseQuality(
+      feature,
+      'f',
+      { refName: 'ctgA', assemblyName: 'volvox', start: 0, end: 1000 },
+      out,
+    )
     expect(out).toEqual([])
   })
 })

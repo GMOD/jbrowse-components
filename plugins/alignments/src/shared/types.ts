@@ -38,15 +38,6 @@ export interface SortedBy {
   tag?: string
 }
 
-// Integer clamp window [start, end) derived from a region's float bounds via
-// floor(region.start) / ceil(region.end). Every worker-side absolute-genomic
-// array filters/clamps against this, so the matched pair travels together
-// rather than as two loose scalars.
-export interface RegionBounds {
-  start: number
-  end: number
-}
-
 export interface ChainStats {
   max: number
   min: number

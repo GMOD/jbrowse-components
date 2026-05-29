@@ -2,7 +2,6 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import type { RegionBounds } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -16,7 +15,6 @@ export async function fetchReferenceSequence({
   sequenceAdapter,
   region,
   featuresArray,
-  bounds,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -29,9 +27,8 @@ export async function fetchReferenceSequence({
     end: number
   }
   featuresArray: Feature[]
-  bounds: RegionBounds
 }) {
-  const { start: regionStart, end: regionEnd } = bounds
+  const { start: regionStart, end: regionEnd } = region
   let seqFetchStart = regionStart
   let seqFetchEnd = regionEnd
   const maxExtension = regionEnd - regionStart
