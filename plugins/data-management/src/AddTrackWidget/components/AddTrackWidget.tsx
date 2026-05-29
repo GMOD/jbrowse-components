@@ -23,7 +23,10 @@ const AddTrackSelector = observer(function AddTrackSelector({
         .pluginManager.getAddTrackWorkflowElements()
         .map(w => [w.name, w.ReactComponent]),
     ),
-  } as Record<string, React.FC<{ model: AddTrackModel }>>
+  } as Record<
+    string,
+    React.FC<{ model: AddTrackModel; switchWorkflow: (name: string) => void }>
+  >
 
   // make sure the selected value is in the list
   const val2 = ComponentMap[val] ? val : 'Default add track workflow'
@@ -47,7 +50,7 @@ const AddTrackSelector = observer(function AddTrackSelector({
       </FormControl>
 
       <Suspense fallback={null}>
-        <Component model={model} />
+        <Component model={model} switchWorkflow={setVal} />
       </Suspense>
     </>
   )

@@ -2,7 +2,15 @@ import { useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
+import {
+  Button,
+  Link,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ConfirmTrack from './ConfirmTrack.tsx'
@@ -48,8 +56,10 @@ const steps = [
 
 const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
   model,
+  switchWorkflow,
 }: {
   model: AddTrackModel
+  switchWorkflow: (name: string) => void
 }) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
@@ -69,6 +79,18 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
 
   return (
     <div className={classes.root}>
+      <Typography variant="body2" color="textSecondary">
+        Have multiple files?{' '}
+        <Link
+          component="button"
+          variant="body2"
+          onClick={() => {
+            switchWorkflow('Add multiple tracks')
+          }}
+        >
+          Add multiple tracks at once
+        </Link>
+      </Typography>
       <Stepper
         className={classes.stepper}
         activeStep={activeStep}

@@ -42,7 +42,10 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const [mode, setMode] = useState<InputMode>('remote')
   const [text, setText] = useState('')
   const [localLocations, setLocalLocations] = useState<FileLocation[]>([])
-  const [assembly, setAssembly] = useState(model.assembly ?? '')
+  // assemblyOverride is set when the user explicitly picks an assembly; otherwise
+  // model.assembly (reactive via observer) tracks the current view's assembly.
+  const [assemblyOverride, setAssemblyOverride] = useState<string>()
+  const assembly = assemblyOverride ?? model.assembly ?? ''
   const [customNames, setCustomNames] = useState<Record<string, string>>({})
   const [removed, setRemoved] = useState<Record<string, boolean>>({})
   const [timestamp] = useState(() => Date.now())
@@ -98,7 +101,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
           helperText="Assembly for all added tracks"
           selected={assembly}
           onChange={arg => {
-            setAssembly(arg)
+            setAssemblyOverride(arg)
           }}
           fullWidth
         />
