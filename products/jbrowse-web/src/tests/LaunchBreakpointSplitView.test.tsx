@@ -16,9 +16,7 @@ const getFile = (url: string) => {
       require.resolve(`../../test_data/hg19_aliases_chr.txt`),
     )
   }
-  return new LocalFile(
-    require.resolve(`../../${cleanUrl.replace(/http:\/\/localhost\//, '')}`),
-  )
+  return new LocalFile(require.resolve(`../../${cleanUrl}`))
 }
 
 const delay = { timeout: 20000 }

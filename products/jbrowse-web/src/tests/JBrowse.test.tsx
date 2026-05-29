@@ -19,10 +19,6 @@ import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
 import { shareSessionToDynamo } from '../sessionSharing.ts'
 
-jest.mock('../sessionSharing.ts', () => ({
-  shareSessionToDynamo: jest.fn(),
-}))
-
 jest.mock('../makeWorkerInstance', () => () => {})
 jest.mock('../sessionSharing.ts', () => ({
   shareSessionToDynamo: jest.fn(),

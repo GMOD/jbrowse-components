@@ -60,7 +60,7 @@ export function setup() {
   expect.extend({ toMatchImageSnapshot })
 }
 
-export function canvasToBuffer(canvas: HTMLCanvasElement) {
+function canvasToBuffer(canvas: HTMLCanvasElement) {
   const { width, height } = canvas
   const src = canvas.getContext('2d')!.getImageData(0, 0, width, height)
   const flat = createCanvas(width, height)
@@ -113,16 +113,6 @@ export async function waitForRenderedCanvas(
   const displays = await findAllByTestId(/^display-.*-done$/, {}, { timeout })
   return findCanvasIn(displays[0]!)
 }
-
-// Convert old block key format {asm}ref:start..end-idx → asm:ref:start0:end:idx
-const convertBlockKey = (str: string) =>
-  str.replace(
-    /\{(\w+)\}(\w+):(\d+)\.\.(\d+)-(\d+)/,
-    (_, asm, ref, s, e, i) => `${asm}:${ref}:${Number(s) - 1}:${e}:${i}`,
-  )
-export const pc = (str: string) =>
-  `prerendered_canvas_${convertBlockKey(str)}_done`
-export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)

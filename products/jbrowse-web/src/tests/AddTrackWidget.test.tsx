@@ -53,8 +53,13 @@ test('adds a PAF via the add track workflow', async () => {
 }, 60000)
 
 test('bug: error message persists after fixing URL', async () => {
-  const { getAllByTestId, findByText, findAllByTestId, queryByText } =
-    await createView()
+  const {
+    getAllByTestId,
+    findByText,
+    findByTestId,
+    findAllByTestId,
+    queryByText,
+  } = await createView()
 
   // Open add track widget
   fireEvent.click(await findByText('File', ...opts))
@@ -86,10 +91,11 @@ test('bug: error message persists after fixing URL', async () => {
   // Click "Next" again
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 
-  // The bug: JBrowse still shows a message about not being able to guess the adapter
-  // even though the URL was fixed. This should NOT happen.
-  const errorMessage = queryByText(
-    /JBrowse was not able to guess the adapter type/,
-  )
-  expect(errorMessage).toBeNull() // This should pass if the bug is fixed
+  // volvox.bam has a guessable adapter, so the form advances to the confirm
+  // step (trackNameInput). The bug was that the "not able to guess" message
+  // lingered from the previous URL; assert it is gone once we've advanced.
+  await findByTestId('trackNameInput', ...opts)
+  expect(
+    queryByText(/JBrowse was not able to guess the adapter type/),
+  ).toBeNull()
 }, 60000)
