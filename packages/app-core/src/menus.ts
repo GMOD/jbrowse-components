@@ -88,10 +88,8 @@ export function insertMenu({
   menuName: string
   position: number
 }) {
-  menus.splice((position < 0 ? menus.length : 0) + position, 0, {
-    label: menuName,
-    menuItems: [],
-  })
+  const insertPosition = position < 0 ? menus.length + position : position
+  menus.splice(insertPosition, 0, { label: menuName, menuItems: [] })
   return menus.length
 }
 /**
@@ -156,25 +154,12 @@ export function insertInMenu({
   return menu.menuItems.length
 }
 /**
- * #action
- * Add a menu item to a sub-menu
- *
- * @param menuPath - Path to the sub-menu to add to, starting with the
- * top-level menu (e.g. `['File', 'Insert']`).
- *
- * @param menuItem - Menu item to append.
- *
- * @returns The new length of the sub-menu
+ * Find-or-create the top-level menu named by `menuPath[0]`, then walk the
+ * remaining path segments (creating empty sub-menus as needed) and return the
+ * deepest sub-menu's item array. Throws if a path segment exists but is not a
+ * sub-menu.
  */
-export function appendToSubMenu({
-  menus,
-  menuPath,
-  menuItem,
-}: {
-  menus: Menu[]
-  menuPath: string[]
-  menuItem: MenuItem
-}) {
+function resolveSubMenuItems(menus: Menu[], menuPath: string[]) {
   let topMenu = menus.find(m => m.label === menuPath[0])
   if (!topMenu) {
     const idx = appendMenu({ menus, menuName: menuPath[0]! })
@@ -194,7 +179,29 @@ export function appendToSubMenu({
     }
     subMenu = sm.subMenu
   }
-  return subMenu.push(menuItem)
+  return subMenu
+}
+/**
+ * #action
+ * Add a menu item to a sub-menu
+ *
+ * @param menuPath - Path to the sub-menu to add to, starting with the
+ * top-level menu (e.g. `['File', 'Insert']`).
+ *
+ * @param menuItem - Menu item to append.
+ *
+ * @returns The new length of the sub-menu
+ */
+export function appendToSubMenu({
+  menus,
+  menuPath,
+  menuItem,
+}: {
+  menus: Menu[]
+  menuPath: string[]
+  menuItem: MenuItem
+}) {
+  return resolveSubMenuItems(menus, menuPath).push(menuItem)
 }
 /**
  * #action
@@ -222,25 +229,7 @@ export function insertInSubMenu({
   menuItem: MenuItem
   position: number
 }) {
-  let topMenu = menus.find(m => m.label === menuPath[0])
-  if (!topMenu) {
-    const idx = appendMenu({ menus, menuName: menuPath[0]! })
-    topMenu = menus[idx - 1]!
-  }
-  let { menuItems: subMenu } = topMenu
-  const pathSoFar = [menuPath[0]]
-  for (const menuName of menuPath.slice(1)) {
-    pathSoFar.push(menuName)
-    let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
-    if (!sm) {
-      const idx = subMenu.push({ label: menuName, subMenu: [] })
-      sm = subMenu[idx - 1]!
-    }
-    if (!('subMenu' in sm)) {
-      throw new Error(`"${menuName}" in path "${pathSoFar}" is not a subMenu`)
-    }
-    subMenu = sm.subMenu
-  }
+  const subMenu = resolveSubMenuItems(menus, menuPath)
   const insertPosition = position < 0 ? subMenu.length + position : position
   subMenu.splice(insertPosition, 0, menuItem)
   return subMenu.length

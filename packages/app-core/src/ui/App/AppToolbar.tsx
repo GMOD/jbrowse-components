@@ -24,6 +24,10 @@ const useStyles = makeStyles()(theme => ({
     borderColor: theme.palette.secondary.main,
     backgroundColor: theme.palette.primary.light,
   },
+  logo: {
+    width: 150,
+    maxHeight: 48,
+  },
 }))
 
 function wrapMenuItems(items: JBMenuItem[], session: AppSession): JBMenuItem[] {
@@ -84,12 +88,7 @@ const AppToolbar = observer(function AppToolbar({
       </Tooltip>
       {HeaderButtons}
       <div className={classes.grow} />
-      <div
-        style={{
-          width: 150,
-          maxHeight: 48,
-        }}
-      >
+      <div className={classes.logo}>
         <AppLogo session={session} />
       </div>
     </Toolbar>
