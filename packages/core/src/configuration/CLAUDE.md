@@ -60,9 +60,7 @@ code (toggle/hide/find/menus) never has to defend against a config that throws:
   a broken open track loads with that track removed instead of crashing.
 
 `notifyError` is available to the first two because `SnackbarModel` is composed
-into `BaseSessionModel`. `isTrackModel` still guards its config read
-defensively, but with the invariant above it isn't relied upon to prevent
-crashes.
+into `BaseSessionModel`.
 
 ### Reference resolution
 
