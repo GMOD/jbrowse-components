@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config MafTabixAdapter
@@ -46,7 +47,8 @@ const configSchema = ConfigurationSchema(
        * #slot index.indexType
        */
       indexType: {
-        type: 'string',
+        model: types.enumeration('IndexType', ['TBI', 'CSI']),
+        type: 'stringEnum',
         defaultValue: 'TBI',
       },
     }),

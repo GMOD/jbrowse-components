@@ -21,13 +21,26 @@ describe('VcfAdapter normalizeSnapshot', () => {
 })
 
 describe('VcfTabixAdapter normalizeSnapshot', () => {
-  test('expands uri shorthand to vcfGzLocation + index', () => {
+  test('expands uri shorthand to vcfGzLocation + tbi index', () => {
     expect(
       normalizeVcfTabixSnapshot({ type: 'VcfTabixAdapter', uri: 'my.vcf.gz' }),
     ).toMatchObject({
       type: 'VcfTabixAdapter',
       vcfGzLocation: { uri: 'my.vcf.gz' },
-      index: { location: { uri: 'my.vcf.gz.tbi' } },
+      index: { indexType: 'TBI', location: { uri: 'my.vcf.gz.tbi' } },
+    })
+  })
+
+  test('expands uri shorthand with csi:true to csi index', () => {
+    expect(
+      normalizeVcfTabixSnapshot({
+        type: 'VcfTabixAdapter',
+        uri: 'my.vcf.gz',
+        csi: true,
+      }),
+    ).toMatchObject({
+      vcfGzLocation: { uri: 'my.vcf.gz' },
+      index: { indexType: 'CSI', location: { uri: 'my.vcf.gz.csi' } },
     })
   })
 
