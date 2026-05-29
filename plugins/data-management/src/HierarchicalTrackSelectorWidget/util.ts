@@ -18,14 +18,16 @@ export function isUnsupported(name = '') {
   return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
 }
 
-export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  const s = new Set(a1)
-  return a2.some(a => s.has(a))
+// true if the two arrays share at least one element (symmetric)
+export function intersects<T>(a: T[] = [], b: T[] = []) {
+  const s = new Set(a)
+  return b.some(x => s.has(x))
 }
 
-export function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  const s1 = new Set(a1)
-  return a2.every(a => s1.has(a))
+// true if `superset` contains every element of `subset`; argument order matters
+export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
+  const s = new Set(superset)
+  return subset.every(x => s.has(x))
 }
 
 // queryLower must be pre-lowercased by caller to avoid redundant per-track work

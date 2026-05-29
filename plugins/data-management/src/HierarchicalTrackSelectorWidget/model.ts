@@ -669,7 +669,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        // this should be the first autorun to properly initialize
+        // Ordering matters: this load autorun must register before the persist
+        // autorun below. Both run once immediately on registration; if persist
+        // ran first it would write the model's empty defaults to localStorage,
+        // clobbering saved settings before this autorun could load them.
         addDisposer(
           self,
           autorun(
@@ -719,7 +722,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             { name: 'TrackSelectorInit' },
           ),
         )
-        // this should be the second autorun
+        // persist autorun: must stay second (see ordering note above)
         addDisposer(
           self,
           autorun(

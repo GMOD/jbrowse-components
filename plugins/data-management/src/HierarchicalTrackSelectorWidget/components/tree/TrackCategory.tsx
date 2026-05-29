@@ -79,6 +79,49 @@ function getAllSubcategories(node: TreeCategoryNode): string[] {
   return categoryIds
 }
 
+// Menu items shared by folder-mode and normal-mode category labels
+function categoryTrackMenuItems(
+  model: HierarchicalTrackSelectorModel,
+  item: TreeCategoryNode,
+) {
+  return [
+    {
+      label: 'Open as faceted selector...',
+      onClick: () => {
+        openFolderDialog(model, item)
+      },
+    },
+    {
+      label: 'Add to selection',
+      onClick: () => {
+        model.addToSelection(getAllChildren(item))
+      },
+    },
+    {
+      label: 'Remove from selection',
+      onClick: () => {
+        model.removeFromSelection(getAllChildren(item))
+      },
+    },
+    {
+      label: 'Show all',
+      onClick: () => {
+        for (const node of getAllTrackNodes(item)) {
+          model.view.showTrack(node.trackId)
+        }
+      },
+    },
+    {
+      label: 'Hide all',
+      onClick: () => {
+        for (const node of getAllTrackNodes(item)) {
+          model.view.hideTrack(node.trackId)
+        }
+      },
+    },
+  ]
+}
+
 function openFolderDialog(
   model: HierarchicalTrackSelectorModel,
   item: TreeCategoryNode,
@@ -119,6 +162,8 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
     <div
       className={classes.folderLabel}
       onClick={() => {
+        // ignore clicks that land while the "..." menu is open, so opening it
+        // doesn't also trigger the row action
         if (!menuOpen) {
           openFolderDialog(model, item)
         }
@@ -135,51 +180,15 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       ) : null}
       <CascadingMenuButton
         className={classes.menuButton}
-        menuItems={() => {
-          const nodes = getAllTrackNodes(item)
-          return [
-            {
-              label: 'Expand to category',
-              onClick: () => {
-                model.toggleFolderCategory(id)
-              },
+        menuItems={() => [
+          {
+            label: 'Expand to category',
+            onClick: () => {
+              model.toggleFolderCategory(id)
             },
-            {
-              label: 'Open as faceted selector...',
-              onClick: () => {
-                openFolderDialog(model, item)
-              },
-            },
-            {
-              label: 'Add to selection',
-              onClick: () => {
-                model.addToSelection(getAllChildren(item))
-              },
-            },
-            {
-              label: 'Remove from selection',
-              onClick: () => {
-                model.removeFromSelection(getAllChildren(item))
-              },
-            },
-            {
-              label: 'Show all',
-              onClick: () => {
-                for (const child of nodes) {
-                  model.view.showTrack(child.trackId)
-                }
-              },
-            },
-            {
-              label: 'Hide all',
-              onClick: () => {
-                for (const child of nodes) {
-                  model.view.hideTrack(child.trackId)
-                }
-              },
-            },
-          ]
-        }}
+          },
+          ...categoryTrackMenuItems(model, item),
+        ]}
         stopPropagation
         setOpen={setMenuOpen}
       >
@@ -205,6 +214,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
     <div
       className={classes.accordionText}
       onClick={() => {
+        // see FolderCategoryLabel: don't collapse/expand while the menu is open
         if (!menuOpen) {
           model.toggleCategory(id)
         }
@@ -224,40 +234,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
                   model.toggleFolderCategory(id)
                 },
               },
-              {
-                label: 'Open as faceted selector...',
-                onClick: () => {
-                  openFolderDialog(model, item)
-                },
-              },
-              {
-                label: 'Add to selection',
-                onClick: () => {
-                  model.addToSelection(getAllChildren(item))
-                },
-              },
-              {
-                label: 'Remove from selection',
-                onClick: () => {
-                  model.removeFromSelection(getAllChildren(item))
-                },
-              },
-              {
-                label: 'Show all',
-                onClick: () => {
-                  for (const child of getAllTrackNodes(item)) {
-                    model.view.showTrack(child.trackId)
-                  }
-                },
-              },
-              {
-                label: 'Hide all',
-                onClick: () => {
-                  for (const child of getAllTrackNodes(item)) {
-                    model.view.hideTrack(child.trackId)
-                  }
-                },
-              },
+              ...categoryTrackMenuItems(model, item),
               ...(hasSubcategories
                 ? [
                     {
@@ -298,11 +275,11 @@ const TrackCategory = observer(function TrackCategory({
   item: TreeCategoryNode
   model: HierarchicalTrackSelectorModel
 }) {
-  const isFolderMode = model.folderCategories.has(item.id)
-  if (isFolderMode) {
-    return <FolderCategoryLabel item={item} model={model} />
-  }
-  return <NormalCategoryLabel item={item} model={model} />
+  return model.folderCategories.has(item.id) ? (
+    <FolderCategoryLabel item={item} model={model} />
+  ) : (
+    <NormalCategoryLabel item={item} model={model} />
+  )
 })
 
 export default TrackCategory

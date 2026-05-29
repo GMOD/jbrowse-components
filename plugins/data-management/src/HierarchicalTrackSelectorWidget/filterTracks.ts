@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession, notEmpty } from '@jbrowse/core/util'
 
-import { hasAllOverlap, hasAnyOverlap } from './util.ts'
+import { containsAll, intersects } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -35,9 +35,11 @@ export function filterTracks(
         ?.map(name => assemblyManager.getCanonicalAssemblyName(name))
         .filter(notEmpty)
       if (viewAssemblyNames.length > 0) {
+        // by default a track shows only if it supports every assembly the view
+        // displays; any-overlap mode relaxes this to sharing any one assembly
         const assemblyMatch = view.trackSelectorAnyOverlap
-          ? hasAnyOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
-          : hasAllOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
+          ? intersects(trackCanonicalAssemblyNames, viewAssemblyNames)
+          : containsAll(trackCanonicalAssemblyNames, viewAssemblyNames)
         if (!assemblyMatch) {
           return false
         }

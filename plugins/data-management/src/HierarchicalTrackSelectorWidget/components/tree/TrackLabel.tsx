@@ -44,7 +44,9 @@ const TrackCheckbox = observer(function TrackCheckbox({
       className={className}
       checked={model.shownTrackIds.has(trackId)}
       onChange={() => {
-        model.view.toggleTrack(trackId)
+        if (model.view.toggleTrack(trackId)) {
+          model.addToRecentlyUsed(trackId)
+        }
       }}
       disabled={disabled}
       slotProps={{

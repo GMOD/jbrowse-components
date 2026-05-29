@@ -47,11 +47,10 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
               />
             </>
           ),
-          checked: view.tracks.some(
-            (f: { configuration: AnyConfigurationModel }) =>
-              f.configuration === t,
-          ),
+          checked: model.shownTrackIds.has(t.trackId),
           onClick: () => {
+            // skip the row toggle while the per-track "..." submenu is open,
+            // otherwise opening/closing it would also flip the track
             if (!open) {
               if (model.view.toggleTrack(t.trackId)) {
                 model.addToRecentlyUsed(t.trackId)
