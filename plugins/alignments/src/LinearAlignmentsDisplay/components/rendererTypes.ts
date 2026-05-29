@@ -1,7 +1,7 @@
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { LinkedReadsMode, PairedConnectionsMode } from '../constants.ts'
+import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
@@ -47,14 +47,14 @@ export interface RenderState {
   linkedReads: LinkedReadsMode
   flipStrandLongReadChains?: boolean
   reversed?: boolean
-  pairedConnectionsLineWidth?: number
+  readConnectionsLineWidth?: number
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
   // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
   arcsYDomainBp?: number
-  pairedConnections: PairedConnectionsMode
-  pairedConnectionsDown?: boolean
-  pairedConnectionsHeight?: number
+  readConnections: ReadConnectionsMode
+  readConnectionsDown?: boolean
+  readConnectionsHeight?: number
   pileupTopOffset: number
   showOutline?: boolean
 }
@@ -88,8 +88,8 @@ export function ensureRegion<T>(
 export function computeBlockHeights(state: RenderState) {
   return {
     effectiveArcsHeight:
-      state.pairedConnections !== 'off' && state.pairedConnectionsHeight
-        ? state.pairedConnectionsHeight
+      state.readConnections !== 'off' && state.readConnectionsHeight
+        ? state.readConnectionsHeight
         : 0,
     covH: state.showCoverage ? state.coverageHeight : 0,
   }

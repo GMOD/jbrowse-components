@@ -127,7 +127,7 @@ export async function renderSvg(
       {model.insertSizeTicks ? (
         // 50 matches the on-screen SVG width for the insert-size scale bar.
         // Down mode puts the TLEN scalebar on the left (matches PileupComponent).
-        model.pairedConnectionsDown ? (
+        model.readConnectionsDown ? (
           <g transform="translate(45)">
             <YScaleBar ticks={model.insertSizeTicks} orientation="left" />
             <TlenAxisLabel

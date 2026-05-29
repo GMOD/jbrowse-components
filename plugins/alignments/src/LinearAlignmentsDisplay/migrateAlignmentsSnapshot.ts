@@ -12,12 +12,12 @@
  *   - showReadCloud → linkedReads enum
  *   - showLinkedReads + showLinkedReadsAsBeziers booleans → linkedReads enum
  *   - showArcs + pairedArcsDown booleans → pairedArcs enum
- *   - pairedArcs enum → pairedConnections mode + pairedConnectionsDown direction
+ *   - pairedArcs enum → readConnections mode + readConnectionsDown direction
  *   - showSashimiArcs + sashimiArcsDown booleans → sashimiArcs enum
  *   - height → heightPreConfig
- *   - arcsHeight → pairedConnectionsHeight
+ *   - arcsHeight → readConnectionsHeight
  *   - Individual override properties → configOverrides map
- *   - lineWidthSetting → configOverrides.pairedConnectionsLineWidth
+ *   - lineWidthSetting → configOverrides.readConnectionsLineWidth
  *   - Strips removed properties: blockState, showTooltips
  */
 export function migrateAlignmentsSnapshot(
@@ -45,14 +45,14 @@ export function migrateAlignmentsSnapshot(
     result = { ...rest, heightPreConfig: height }
   }
 
-  // arcsHeight → pairedConnectionsHeight (the paired-connections band height,
+  // arcsHeight → readConnectionsHeight (the read-connections band height,
   // renamed when the band stopped being arc-specific)
   if (
     result.arcsHeight !== undefined &&
-    result.pairedConnectionsHeight === undefined
+    result.readConnectionsHeight === undefined
   ) {
     const { arcsHeight, ...rest } = result
-    result = { ...rest, pairedConnectionsHeight: arcsHeight }
+    result = { ...rest, readConnectionsHeight: arcsHeight }
   }
 
   // Remap old display types to LinearAlignmentsDisplay
@@ -138,7 +138,7 @@ export function migrateAlignmentsSnapshot(
   result = migrateBooleanPairsToEnum(result)
 
   // arcColorByType: 'samplot' → pairedArcs: 'samplot' (samplot is now a
-  // paired-connections mode rather than a color scheme).
+  // read-connections mode rather than a color scheme).
   if (result.arcColorByType === 'samplot') {
     result = {
       ...result,
@@ -148,25 +148,25 @@ export function migrateAlignmentsSnapshot(
   }
 
   // Split the pairedArcs enum into orthogonal mode + direction fields
-  result = migratePairedConnections(result)
+  result = migrateReadConnections(result)
 
   // Migrate individual override properties → configOverrides
   return migrateOverrideProperties(result)
 }
 
 // pairedArcs ('off'|'up'|'down'|'samplot') conflated render mode with
-// direction. Split into pairedConnections ('off'|'arc'|'samplot') and the
-// orthogonal pairedConnectionsDown boolean.
-function migratePairedConnections(snap: Record<string, unknown>) {
+// direction. Split into readConnections ('off'|'arc'|'samplot') and the
+// orthogonal readConnectionsDown boolean.
+function migrateReadConnections(snap: Record<string, unknown>) {
   const { pairedArcs, ...rest } = snap
   if (pairedArcs === undefined) {
     return snap
   }
   return {
     ...rest,
-    pairedConnections:
+    readConnections:
       pairedArcs === 'off' || pairedArcs === 'samplot' ? pairedArcs : 'arc',
-    pairedConnectionsDown: pairedArcs === 'down',
+    readConnectionsDown: pairedArcs === 'down',
   }
 }
 
@@ -231,7 +231,7 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
     overrides.featureHeight = featureHeight
   }
   if (lineWidthSetting !== undefined) {
-    overrides.pairedConnectionsLineWidth = lineWidthSetting
+    overrides.readConnectionsLineWidth = lineWidthSetting
   }
   // featureSpacing override directly maps; legacy noSpacing boolean folds
   // into it (true → 0, false → 2 to preserve the pre-unification render).

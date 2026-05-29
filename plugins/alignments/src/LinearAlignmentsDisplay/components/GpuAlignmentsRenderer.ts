@@ -196,8 +196,8 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.bpHi] = hi
   f[U.bpLo] = lo
   f[U.bpLen] = block.end - block.start
-  f[U.lineWidthPx] = state.pairedConnectionsLineWidth ?? 1
-  f[U.pairedArcsDown] = state.pairedConnectionsDown ? 1 : 0
+  f[U.lineWidthPx] = state.readConnectionsLineWidth ?? 1
+  f[U.pairedArcsDown] = state.readConnectionsDown ? 1 : 0
   // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior
   // `yBp * pxPerBp` math.
@@ -442,7 +442,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     writePaletteToUbo(
       this.uU32,
       state.colors,
-      state.pairedConnections === 'samplot',
+      state.readConnections === 'samplot',
     )
     if (state.showModifications) {
       // Canvas equivalent: buildBaseColorTupleMap / buildCigarOpDrawColors in
@@ -500,7 +500,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
       this.writeUniforms(state, frame)
 
-      const arcsDown = !!state.pairedConnectionsDown
+      const arcsDown = !!state.readConnectionsDown
       const { effectiveArcsHeight, covH } = computeBlockHeights(state)
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)

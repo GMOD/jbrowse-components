@@ -113,12 +113,12 @@ jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
 ## samplot-style SV view — samplot overlays the coverage band, so use
-## coverageHeight to make the panel tall (NOT pairedConnectionsHeight, which only sizes
+## coverageHeight to make the panel tall (NOT readConnectionsHeight, which only sizes
 ## the regular up/down arcs panel). Samplot disappears if coverage:false.
 jb2export --fasta ref.fa --bam reads.bam arcs:samplot coverageHeight:300 \
-  pairedConnectionsLineWidth:2 height:600 --loc chr1:1-50000
+  readConnectionsLineWidth:2 height:600 --loc chr1:1-50000
 
-## paired-end arcs above reads
+## read-connection arcs above reads
 jb2export --fasta ref.fa --bam reads.bam arcs:up --loc chr1:1-10000
 
 ## 10x linked-read chains (bezier mode)
@@ -152,7 +152,7 @@ Overlays & subtracks:
 
 | Modifier               | Example              | Description                                                      |
 | ---------------------- | -------------------- | ---------------------------------------------------------------- |
-| `arcs:mode`            | `arcs:samplot`       | Paired-end arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
+| `arcs:mode`            | `arcs:samplot`       | Read-connection arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
 | `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                   |
 | `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`)               |
 | `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                         |
@@ -165,8 +165,8 @@ Layout & sizing:
 | `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
 | `noSpacing:true\|false`   | `noSpacing:true`                                 | Remove gap between reads                                                         |
 | `coverageHeight:N`        | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
-| `pairedConnectionsHeight:N`            | `pairedConnectionsHeight:120`                                 | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
-| `pairedConnectionsLineWidth:N`          | `pairedConnectionsLineWidth:2`                                 | Stroke width for paired-read arcs in pixels                                      |
+| `readConnectionsHeight:N`            | `readConnectionsHeight:120`                                 | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
+| `readConnectionsLineWidth:N`          | `readConnectionsLineWidth:2`                                 | Stroke width for read-connection arcs/lines in pixels                            |
 
 Available `color:type` values:
 

@@ -32,10 +32,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      pairedConnectionsLineWidth: {
+      readConnectionsLineWidth: {
         type: 'number',
         defaultValue: 1,
-        description: 'Line width for paired-end connection arcs/lines in pixels',
+        description: 'Line width for read-connection arcs/lines in pixels',
       },
       /**
        * #slot

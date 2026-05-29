@@ -46,7 +46,7 @@ import {
   ARC_DIRECTION_OPTIONS,
   COMPACTNESS_PRESETS,
   LINKED_READS_OPTIONS,
-  PAIRED_CONNECTIONS_OPTIONS,
+  READ_CONNECTIONS_OPTIONS,
   getColorByMenuItem,
   getCoverageMenuItem,
   getFiltersMenuItem,
@@ -63,7 +63,7 @@ import type { ColorPalette } from './components/AlignmentsRenderer.ts'
 import type {
   ArcDirection,
   LinkedReadsMode,
-  PairedConnectionsMode,
+  ReadConnectionsMode,
 } from './constants.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { AlignmentsRenderingBackend } from './components/rendererTypes.ts'
@@ -304,10 +304,11 @@ export default function stateModelFactory(
           ),
           /**
            * #property
-           * paired-end connection rendering mode (orthogonal to direction)
+           * read-connection rendering mode (mate pairs + split reads),
+           * orthogonal to direction
            */
-          pairedConnections: types.optional(
-            types.enumeration<PairedConnectionsMode>('PairedConnectionsMode', [
+          readConnections: types.optional(
+            types.enumeration<ReadConnectionsMode>('ReadConnectionsMode', [
               'off',
               'arc',
               'samplot',
@@ -316,9 +317,9 @@ export default function stateModelFactory(
           ),
           /**
            * #property
-           * draw paired connections below the coverage band instead of over it
+           * draw read connections below the coverage band instead of over it
            */
-          pairedConnectionsDown: false,
+          readConnectionsDown: false,
           /**
            * #property
            */
@@ -337,7 +338,7 @@ export default function stateModelFactory(
           /**
            * #property
            */
-          pairedConnectionsHeight: 40,
+          readConnectionsHeight: 40,
           /**
            * #property
            */
@@ -673,7 +674,7 @@ export default function stateModelFactory(
           return getReadDisplayLegendItems(
             this.colorBy,
             undefined,
-            self.pairedConnections === 'samplot',
+            self.readConnections === 'samplot',
           )
         },
 
@@ -714,7 +715,7 @@ export default function stateModelFactory(
          * #getter
          */
         get arcsComputed() {
-          if (self.pairedConnections === 'off' || self.rpcDataMap.size === 0) {
+          if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
             return undefined
           }
           const regionInfos = [...self.loadedRegions.entries()]
@@ -730,7 +731,7 @@ export default function stateModelFactory(
             regionInfos,
             {
               colorByType: self.arcColorByType,
-              samplot: self.pairedConnections === 'samplot',
+              samplot: self.readConnections === 'samplot',
               drawInter: self.drawInter,
               drawLongRange: self.drawLongRange,
             },
@@ -821,8 +822,8 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get pairedConnectionsLineWidth() {
-          return self.getConfWithOverride<number>('pairedConnectionsLineWidth')
+        get readConnectionsLineWidth() {
+          return self.getConfWithOverride<number>('readConnectionsLineWidth')
         },
 
         /**
@@ -869,8 +870,8 @@ export default function stateModelFactory(
         get coverageDisplayHeight() {
           return (
             (self.showCoverage ? self.coverageHeight : 0) +
-            (self.pairedConnections !== 'off' && self.pairedConnectionsDown
-              ? self.pairedConnectionsHeight
+            (self.readConnections !== 'off' && self.readConnectionsDown
+              ? self.readConnectionsHeight
               : 0) +
             (self.sashimiArcs === 'down' && self.showCoverage
               ? self.sashimiArcsHeight
@@ -1038,9 +1039,9 @@ export default function stateModelFactory(
             showModifications: self.showModifications,
             showPerBaseQuality: self.showPerBaseQuality,
             showOutline: self.showOutlineSetting,
-            pairedConnections: self.pairedConnections,
-            pairedConnectionsDown: self.pairedConnectionsDown,
-            pairedConnectionsHeight: self.pairedConnectionsHeight,
+            readConnections: self.readConnections,
+            readConnectionsDown: self.readConnectionsDown,
+            readConnectionsHeight: self.readConnectionsHeight,
             pileupTopOffset: self.coverageDisplayHeight,
             canvasWidth: view.width,
             canvasHeight: self.height,
@@ -1051,7 +1052,7 @@ export default function stateModelFactory(
             colors: palette,
             linkedReads: self.linkedReads,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
-            pairedConnectionsLineWidth: self.pairedConnectionsLineWidth,
+            readConnectionsLineWidth: self.readConnectionsLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
           }
         },
@@ -1061,7 +1062,7 @@ export default function stateModelFactory(
          * #getter
          */
         get arcsYDomainBp() {
-          if (self.pairedConnections !== 'samplot') {
+          if (self.readConnections !== 'samplot') {
             return undefined
           }
           let maxBp = 0
@@ -1083,19 +1084,19 @@ export default function stateModelFactory(
           }
           // arcsYDomainBp is only set in samplot mode, so this runs only then.
           // Up: overlay the coverage band, anchored at its top. Down: open an
-          // pairedConnectionsHeight band below coverage, anchored below it.
+          // readConnectionsHeight band below coverage, anchored below it.
           const covH = self.showCoverage ? self.coverageHeight : 0
           return computeInsertSizeTicks(
-            self.pairedConnectionsDown
+            self.readConnectionsDown
               ? {
                   arcsYDomainBp: domain,
-                  pairedConnectionsHeight: self.pairedConnectionsHeight,
+                  readConnectionsHeight: self.readConnectionsHeight,
                   pairedArcsDown: true,
                   arcsTop: covH,
                 }
               : {
                   arcsYDomainBp: domain,
-                  pairedConnectionsHeight: covH,
+                  readConnectionsHeight: covH,
                   pairedArcsDown: false,
                   arcsTop: 0,
                 },
@@ -1460,15 +1461,15 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setPairedConnections(mode: PairedConnectionsMode) {
-            self.pairedConnections = mode
+          setReadConnections(mode: ReadConnectionsMode) {
+            self.readConnections = mode
           },
 
           /**
            * #action
            */
-          setPairedConnectionsDown(down: boolean) {
-            self.pairedConnectionsDown = down
+          setReadConnectionsDown(down: boolean) {
+            self.readConnectionsDown = down
           },
 
           /**
@@ -1488,8 +1489,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setPairedConnectionsHeight(height: number) {
-            self.pairedConnectionsHeight = height
+          setReadConnectionsHeight(height: number) {
+            self.readConnectionsHeight = height
           },
 
           /**
@@ -1502,8 +1503,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setPairedConnectionsLineWidth(width: number) {
-            self.setOverride('pairedConnectionsLineWidth', width)
+          setReadConnectionsLineWidth(width: number) {
+            self.setOverride('readConnectionsLineWidth', width)
           },
 
           /**
@@ -1876,7 +1877,7 @@ export default function stateModelFactory(
           //   2. Sort, filter, group — data subsetting + ordering operations
           //   3. Reads         — visual settings for the pileup body
           //   4. Coverage      — visual + scale settings for the coverage band
-          //   5. Read connections — linked-reads / paired arcs / sashimi overlays
+          //   5. Read connections — linked-reads / pair-split arcs / sashimi overlays
           const items: MenuItem[] = [
             getColorByMenuItem(self, {
               showLinkedReads: self.linkedReads !== 'off',
@@ -1909,14 +1910,14 @@ export default function stateModelFactory(
                   },
                 ),
                 radioModeMenuItem(
-                  'Paired connections',
-                  PAIRED_CONNECTIONS_OPTIONS,
-                  self.pairedConnections,
+                  'Pair & split arcs',
+                  READ_CONNECTIONS_OPTIONS,
+                  self.readConnections,
                   v => {
-                    self.setPairedConnections(v)
+                    self.setReadConnections(v)
                   },
                 ),
-                ...(self.pairedConnections !== 'off'
+                ...(self.readConnections !== 'off'
                   ? [
                       {
                         label: 'Show long-range pairs',
@@ -1940,16 +1941,16 @@ export default function stateModelFactory(
                       },
                     ]
                   : []),
-                ...(self.pairedConnections !== 'off'
+                ...(self.readConnections !== 'off'
                   ? [
                       {
                         label: 'Point downward',
                         subLabel: 'draw connections below the coverage band',
                         type: 'checkbox' as const,
-                        checked: self.pairedConnectionsDown,
+                        checked: self.readConnectionsDown,
                         onClick: () => {
-                          self.setPairedConnectionsDown(
-                            !self.pairedConnectionsDown,
+                          self.setReadConnectionsDown(
+                            !self.readConnectionsDown,
                           )
                         },
                       },

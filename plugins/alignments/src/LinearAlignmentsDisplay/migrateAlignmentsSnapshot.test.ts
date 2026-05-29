@@ -34,10 +34,10 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result).not.toHaveProperty('height')
   })
 
-  test('migrates arcsHeight → pairedConnectionsHeight', () => {
+  test('migrates arcsHeight → readConnectionsHeight', () => {
     const snap = { type: 'LinearAlignmentsDisplay', arcsHeight: 60 }
     const result = migrateAlignmentsSnapshot(snap)
-    expect(result.pairedConnectionsHeight).toBe(60)
+    expect(result.readConnectionsHeight).toBe(60)
     expect(result).not.toHaveProperty('arcsHeight')
   })
 
@@ -225,14 +225,14 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result).not.toHaveProperty('trackMaxHeight')
   })
 
-  test('migrates lineWidthSetting → configOverrides.pairedConnectionsLineWidth', () => {
+  test('migrates lineWidthSetting → configOverrides.readConnectionsLineWidth', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       lineWidthSetting: 3,
     }
     const result = migrateAlignmentsSnapshot(snap)
     const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.pairedConnectionsLineWidth).toBe(3)
+    expect(overrides.readConnectionsLineWidth).toBe(3)
     expect(result).not.toHaveProperty('lineWidthSetting')
   })
 
@@ -261,14 +261,14 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(bezier.linkedReads).toBe('bezier')
   })
 
-  test('folds showArcs+pairedArcsDown booleans into pairedConnections', () => {
+  test('folds showArcs+pairedArcsDown booleans into readConnections', () => {
     const off = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       showArcs: false,
       pairedArcsDown: true,
     })
-    expect(off.pairedConnections).toBe('off')
-    expect(off.pairedConnectionsDown).toBe(false)
+    expect(off.readConnections).toBe('off')
+    expect(off.readConnectionsDown).toBe(false)
     expect(off).not.toHaveProperty('showArcs')
     expect(off).not.toHaveProperty('pairedArcsDown')
     expect(off).not.toHaveProperty('pairedArcs')
@@ -278,42 +278,42 @@ describe('migrateAlignmentsSnapshot', () => {
       showArcs: true,
       pairedArcsDown: false,
     })
-    expect(up.pairedConnections).toBe('arc')
-    expect(up.pairedConnectionsDown).toBe(false)
+    expect(up.readConnections).toBe('arc')
+    expect(up.readConnectionsDown).toBe(false)
 
     const down = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       showArcs: true,
       pairedArcsDown: true,
     })
-    expect(down.pairedConnections).toBe('arc')
-    expect(down.pairedConnectionsDown).toBe(true)
+    expect(down.readConnections).toBe('arc')
+    expect(down.readConnectionsDown).toBe(true)
   })
 
-  test('splits pairedArcs enum into pairedConnections + direction', () => {
+  test('splits pairedArcs enum into readConnections + direction', () => {
     const samplot = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       pairedArcs: 'samplot',
     })
-    expect(samplot.pairedConnections).toBe('samplot')
-    expect(samplot.pairedConnectionsDown).toBe(false)
+    expect(samplot.readConnections).toBe('samplot')
+    expect(samplot.readConnectionsDown).toBe(false)
     expect(samplot).not.toHaveProperty('pairedArcs')
 
     const down = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       pairedArcs: 'down',
     })
-    expect(down.pairedConnections).toBe('arc')
-    expect(down.pairedConnectionsDown).toBe(true)
+    expect(down.readConnections).toBe('arc')
+    expect(down.readConnectionsDown).toBe(true)
   })
 
-  test('migrates legacy arcColorByType=samplot to pairedConnections=samplot', () => {
+  test('migrates legacy arcColorByType=samplot to readConnections=samplot', () => {
     const result = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       arcColorByType: 'samplot',
       pairedArcs: 'up',
     })
-    expect(result.pairedConnections).toBe('samplot')
+    expect(result.readConnections).toBe('samplot')
     expect(result.arcColorByType).toBe('insertSizeAndOrientation')
   })
 
@@ -324,8 +324,8 @@ describe('migrateAlignmentsSnapshot', () => {
       pairedArcs: 'down',
     })
     expect(result.arcColorByType).toBe('insertSize')
-    expect(result.pairedConnections).toBe('arc')
-    expect(result.pairedConnectionsDown).toBe(true)
+    expect(result.readConnections).toBe('arc')
+    expect(result.readConnectionsDown).toBe(true)
   })
 
   test('folds showSashimiArcs+sashimiArcsDown booleans into sashimiArcs enum', () => {

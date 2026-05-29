@@ -142,8 +142,8 @@ const PileupInner = observer(function PileupInner({
     height,
     showCoverage,
     coverageHeight,
-    pairedConnections,
-    pairedConnectionsDown,
+    readConnections,
+    readConnectionsDown,
     sashimiArcs,
     isChainMode,
     coverageDisplayHeight: topOffset,
@@ -241,12 +241,12 @@ const PileupInner = observer(function PileupInner({
           />
         ) : null}
 
-        {pairedConnections !== 'off' && pairedConnectionsDown ? (
+        {readConnections !== 'off' && readConnectionsDown ? (
           <ResizeHandle
             className={classes.resizeHandle}
             style={{ top: topOffset - YSCALEBAR_LABEL_OFFSET }}
             onDrag={dy => {
-              model.setPairedConnectionsHeight(Math.max(20, model.pairedConnectionsHeight + dy))
+              model.setReadConnectionsHeight(Math.max(20, model.readConnectionsHeight + dy))
               return undefined
             }}
             title="Drag to resize arcs area"
@@ -372,11 +372,11 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
 }) {
   // insertSizeTicks is only set in samplot mode. Down mode opens its band
   // below coverage, so the TLEN scalebar reads better on the left.
-  const { insertSizeTicks, pairedConnectionsDown } = model
+  const { insertSizeTicks, readConnectionsDown } = model
   if (!insertSizeTicks) {
     return null
   }
-  return pairedConnectionsDown ? (
+  return readConnectionsDown ? (
     <svg
       style={{
         position: 'absolute',

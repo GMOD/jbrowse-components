@@ -112,8 +112,8 @@ export function drawArcs(
     arcsTop,
     arcsH,
     pairedArcsDown,
-    lineWidth: state.pairedConnectionsLineWidth ?? 1,
-    palette: getArcPalette(state.pairedConnections === 'samplot'),
+    lineWidth: state.readConnectionsLineWidth ?? 1,
+    palette: getArcPalette(state.readConnections === 'samplot'),
   })
 
   for (let i = 0; i < region.numArcLines; i++) {

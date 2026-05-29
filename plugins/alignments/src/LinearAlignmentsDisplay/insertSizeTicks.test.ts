@@ -5,7 +5,7 @@ describe('computeInsertSizeTicks', () => {
     expect(
       computeInsertSizeTicks({
         arcsYDomainBp: 100,
-        pairedConnectionsHeight: 0,
+        readConnectionsHeight: 0,
         pairedArcsDown: true,
         arcsTop: 0,
       }),
@@ -14,7 +14,7 @@ describe('computeInsertSizeTicks', () => {
     expect(
       computeInsertSizeTicks({
         arcsYDomainBp: 100,
-        pairedConnectionsHeight: -10,
+        readConnectionsHeight: -10,
         pairedArcsDown: true,
         arcsTop: 0,
       }),
@@ -24,7 +24,7 @@ describe('computeInsertSizeTicks', () => {
   it('returns valid ticks when inputs are valid', () => {
     const result = computeInsertSizeTicks({
       arcsYDomainBp: 500,
-      pairedConnectionsHeight: 40,
+      readConnectionsHeight: 40,
       pairedArcsDown: true,
       arcsTop: 0,
     })
@@ -40,7 +40,7 @@ describe('computeInsertSizeTicks', () => {
   it('generates ticks with finite y coordinates', () => {
     const result = computeInsertSizeTicks({
       arcsYDomainBp: 1000,
-      pairedConnectionsHeight: 50,
+      readConnectionsHeight: 50,
       pairedArcsDown: false,
       arcsTop: 10,
     })

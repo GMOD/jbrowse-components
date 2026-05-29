@@ -47,12 +47,12 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
       // direction are separate model fields; translate the legacy flag value.
       case 'arcs': {
         if (val1 === 'samplot') {
-          display.setPairedConnections?.('samplot')
+          display.setReadConnections?.('samplot')
         } else if (val1 === 'up' || val1 === 'down') {
-          display.setPairedConnections?.('arc')
-          display.setPairedConnectionsDown?.(val1 === 'down')
+          display.setReadConnections?.('arc')
+          display.setReadConnectionsDown?.(val1 === 'down')
         } else {
-          display.setPairedConnections?.('off')
+          display.setReadConnections?.('off')
         }
         break
       }
@@ -76,15 +76,15 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         }
         break
       }
-      case 'pairedConnectionsHeight': {
+      case 'readConnectionsHeight': {
         if (val1) {
-          display.setPairedConnectionsHeight?.(+val1)
+          display.setReadConnectionsHeight?.(+val1)
         }
         break
       }
-      case 'pairedConnectionsLineWidth': {
+      case 'readConnectionsLineWidth': {
         if (val1) {
-          display.setPairedConnectionsLineWidth?.(+val1)
+          display.setReadConnectionsLineWidth?.(+val1)
         }
         break
       }

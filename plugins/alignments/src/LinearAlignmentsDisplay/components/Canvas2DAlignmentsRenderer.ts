@@ -283,7 +283,7 @@ export function drawAlignmentBlocks(
 
   const { effectiveArcsHeight, covH } = computeBlockHeights(state)
   const pileupTop = state.pileupTopOffset
-  const arcsDown = !!state.pairedConnectionsDown
+  const arcsDown = !!state.readConnectionsDown
 
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)

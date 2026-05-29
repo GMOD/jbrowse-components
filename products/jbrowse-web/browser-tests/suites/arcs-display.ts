@@ -105,8 +105,8 @@ const suite: TestSuite = {
                   trackId: 'volvox_sv_cram',
                   displaySnapshot: {
                     type: 'LinearAlignmentsDisplay',
-                    pairedConnections: 'samplot',
-                    pairedConnectionsDown: true,
+                    readConnections: 'samplot',
+                    readConnectionsDown: true,
                   },
                 },
               ],

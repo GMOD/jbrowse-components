@@ -25,7 +25,7 @@ export function computePileupBezierArcsFromModel(
         pileupTopOffset: model.coverageDisplayHeight,
         rangeY,
         viewportH: model.pileupViewportHeight,
-        pairedArcsDown: model.pairedConnectionsDown,
+        pairedArcsDown: model.readConnectionsDown,
       })
     : []
 }
