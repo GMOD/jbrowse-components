@@ -35,11 +35,11 @@ describe('readConfigValue', () => {
   it('resolves nested keys', () => {
     expect(
       readConfigValue(
-        { labels: { nameColor: 'red' } },
-        ['labels', 'nameColor'],
+        { labels: { name: 'myGene' } },
+        ['labels', 'name'],
         anyFeature,
       ),
-    ).toBe('red')
+    ).toBe('myGene')
   })
 })
 

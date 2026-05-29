@@ -176,7 +176,77 @@ describe('findGlyph', () => {
     ).toBe('Segments')
   })
 
-  it('returns Subfeatures for top-level with nested children', () => {
+  // containerTypes explicit override
+  it('containerTypes wins: top-level type in containerTypes → Subfeatures even without container children', () => {
+    const feature = mockFeature({
+      type: 'supercontig',
+      start: 0,
+      end: 1000,
+      subfeatures: [mockFeature({ type: 'exon', start: 100, end: 900 })],
+    })
+    const config = mockDisplayConfig({ containerTypes: ['supercontig'] })
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('Subfeatures')
+  })
+
+  it('containerTypes does not fire for non-top-level features', () => {
+    const parent = mockFeature({ type: 'gene', start: 0, end: 1000 })
+    const feature = mockFeature({
+      type: 'supercontig',
+      start: 0,
+      end: 1000,
+      parentFeature: parent,
+      subfeatures: [mockFeature({ type: 'exon', start: 100, end: 900 })],
+    })
+    const config = mockDisplayConfig({ containerTypes: ['supercontig'] })
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('Segments')
+  })
+
+  // ProcessedTranscript routing
+  it('mRNA with CDS → ProcessedTranscript', () => {
+    const feature = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 1000,
+      subfeatures: [mockFeature({ type: 'CDS', start: 100, end: 900 })],
+    })
+    const config = mockDisplayConfig()
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('ProcessedTranscript')
+  })
+
+  it('routes a transcript with a lowercase cds child to ProcessedTranscript', () => {
+    const feature = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 1000,
+      subfeatures: [mockFeature({ type: 'cds', start: 100, end: 900 })],
+    })
+    const config = mockDisplayConfig()
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('ProcessedTranscript')
+  })
+
+  it('mRNA without CDS (exon-only) → Segments', () => {
+    const feature = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 1000,
+      subfeatures: [mockFeature({ type: 'exon', start: 100, end: 900 })],
+    })
+    const config = mockDisplayConfig()
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('Segments')
+  })
+
+  // hasContainerChildren structural heuristic
+  it('returns Subfeatures for top-level with nested children (gene→mRNA→CDS)', () => {
     const feature = mockFeature({
       type: 'gene',
       start: 0,
@@ -196,17 +266,43 @@ describe('findGlyph', () => {
     ).toBe('Subfeatures')
   })
 
-  it('routes a transcript with a lowercase cds child to ProcessedTranscript', () => {
+  it('non-top-level feature with container children falls through to Segments', () => {
+    const parent = mockFeature({ type: 'gene', start: 0, end: 1000 })
     const feature = mockFeature({
-      type: 'mRNA',
+      type: 'region',
       start: 0,
       end: 1000,
-      subfeatures: [mockFeature({ type: 'cds', start: 100, end: 900 })],
+      parentFeature: parent,
+      subfeatures: [
+        mockFeature({
+          type: 'child',
+          start: 0,
+          end: 500,
+          subfeatures: [mockFeature({ type: 'grandchild', start: 0, end: 100 })],
+        }),
+      ],
     })
     const config = mockDisplayConfig()
     expect(
       findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
-    ).toBe('ProcessedTranscript')
+    ).toBe('Segments')
+  })
+
+  // Segments fallthrough
+  it('top-level with only leaf children → Segments', () => {
+    const feature = mockFeature({
+      type: 'match',
+      start: 0,
+      end: 1000,
+      subfeatures: [
+        mockFeature({ type: 'match_part', start: 100, end: 400 }),
+        mockFeature({ type: 'match_part', start: 600, end: 900 }),
+      ],
+    })
+    const config = mockDisplayConfig()
+    expect(
+      findGlyph(feature, config)({ feature, config, ...layoutArgs }).glyphType,
+    ).toBe('Segments')
   })
 
   it('returns Box for leaf features', () => {

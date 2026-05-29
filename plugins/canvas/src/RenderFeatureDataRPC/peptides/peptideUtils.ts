@@ -3,6 +3,9 @@ import { codonTable, revcom, revlist } from '@jbrowse/core/util'
 import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import { firstValueFrom, toArray } from 'rxjs'
 
+import { hasCDSSubfeature } from '../glyphs/glyphUtils.ts'
+import { isCDS } from '../util.ts'
+
 import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -43,11 +46,6 @@ async function fetchSequence(
   }
 }
 
-function hasCDSSubfeatures(feature: Feature) {
-  const subfeatures = feature.get('subfeatures')
-  return subfeatures?.some((sub: Feature) => sub.get('type') === 'CDS') ?? false
-}
-
 // Uses the same `transcriptTypes` list as the glyph layout (see findGlyph.ts).
 // Threading the config through keeps peptide rendering and glyph layout from
 // drifting — adding a SO term to the config picks it up in both places.
@@ -69,16 +67,16 @@ export function findTranscriptsWithCDS(
       for (const subfeature of subfeatures) {
         if (
           isTranscriptType(subfeature.get('type')) &&
-          hasCDSSubfeatures(subfeature)
+          hasCDSSubfeature(subfeature)
         ) {
           transcripts.push(subfeature)
           hasTranscriptWithCDS = true
         }
       }
-      if (!hasTranscriptWithCDS && hasCDSSubfeatures(feature)) {
+      if (!hasTranscriptWithCDS && hasCDSSubfeature(feature)) {
         transcripts.push(feature)
       }
-    } else if (isTranscriptType(type) && hasCDSSubfeatures(feature)) {
+    } else if (isTranscriptType(type) && hasCDSSubfeature(feature)) {
       transcripts.push(feature)
     }
   }
@@ -91,7 +89,7 @@ function extractCDSRegions(feature: Feature) {
   const featureStart = feature.get('start')
 
   return subfeatures
-    .filter((sub: Feature) => sub.get('type') === 'CDS')
+    .filter((sub: Feature) => isCDS(sub))
     .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
     .map((sub: Feature) => ({
       start: sub.get('start') - featureStart,
