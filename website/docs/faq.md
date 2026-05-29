@@ -46,15 +46,23 @@ JBrowse 2's plugin system supports custom view types (e.g. circular, dotplot)
 alongside the built-in ones, making it a platform for genomic visualization, not
 only a genome browser.
 
+### What is the difference between JBrowse Web and JBrowse Desktop
+
+JBrowse Web is a static web app you deploy to a server; anyone with the URL can
+use it. JBrowse Desktop is an Electron app that runs locally on a user's
+machine, can open local files directly, and does not require a server.
+
 ### What are new features in JBrowse 2
 
-See the [features page](https://jbrowse.org/jb2/features) for an overview of
-features
+See the [features page](https://jbrowse.org/jb2/features) for a full overview.
+Highlights include multi-assembly comparison, synteny/dotplot views, a circular
+genome view, Hi-C display, and an SV inspector.
 
 ### How do I convert my JBrowse 1 configuration to JBrowse 2
 
 There is no official migration tool. The config formats differ significantly, so
-you will generally need to set up tracks fresh in JBrowse 2 using the CLI or GUI.
+you will generally need to set up tracks fresh in JBrowse 2 using the CLI or
+GUI.
 
 For reference, community scripts like
 [this gist](https://gist.github.com/cmdcolin/2ef875fc19c5f164aad41bd330f1bb37)
@@ -121,7 +129,7 @@ To check, open dev tools' Network tab, request the file, and confirm no
 
 Compressing `config.json` with `Content-Encoding: gzip` is fine — that's just a
 text file. The rule only applies to BGZF binary files. See also
-[Can I compress the config.json?](#can-i-compress-the-configjson-its-large-and-users-have-to-download-it).
+[How do I reduce config.json download size?](#how-do-i-reduce-configjson-download-size).
 
 ### How can I setup JBrowse 2 on my web server
 
@@ -149,7 +157,7 @@ available as an npm package.
 
 ### How do I update my instance of jbrowse-web
 
-You can use the command, after installing:
+You can use the command, after installing `@jbrowse/cli`:
 
 ```
 jbrowse upgrade /path/to/your/jbrowse2
@@ -224,14 +232,14 @@ You can create a small plugin that adds a new function to the jexl language.
 See [here](/docs/config_guides/customizing_feature_colors/) for an example of
 making a color callback.
 
-### Adding color callbacks in the GUI
+#### Adding color callbacks in the GUI
 
 To add a color callback in the GUI, open the track's settings and set the color
 callback on the renderer/display. The callback is a
 [Jexl](https://github.com/TomFrost/Jexl) expression, e.g.
 `get(feature,'strand') == -1 ? 'red' : 'blue'`.
 
-### Adding color callbacks via the command line
+#### Adding color callbacks via the command line
 
 The color callback (`color1`) is a display-level setting, so you supply a
 `displays` entry via `--config`. To add one to a track using the CLI, your
@@ -266,27 +274,17 @@ faceted track selector:
 }
 ```
 
-### Can I compress the config.json, it's large and users have to download it?
+### How do I reduce config.json download size?
 
 You can set up your server to serve zipped files. Most cloud-based services,
 like AWS Amplify and AWS CloudFront, already do this automatically. However, for
 Apache and Nginx, you need to configure them manually.
 
-For Nginx, enable gzip compression in your server config. See this gist for
-reasonable defaults:
-https://gist.github.com/sydcanem/3e00c09b3361927b2fd1#file-nginx-gzip-conf
+For Nginx, add to your server block:
 
-```
-server {
-    ...
-    # Enable gzip compression.
-    # Default: off
-    gzip on;
-
-    # make sure to **at least** allow json to be compressed, multiple
-    gzip_types
-      application/json
-}
+```nginx
+gzip on;
+gzip_types application/json text/plain text/html text/css text/javascript application/javascript;
 ```
 
 To enable compression in Apache, you can use the mod_deflate module.
@@ -350,7 +348,8 @@ Key technologies include:
 
 Yes. JBrowse 2 loads ~5MB of JS resources (~2.5MB each for main and worker
 bundles), but gzip reduces the download to ~1.4MB. How to enable it depends on
-your server (Apache, Nginx, AWS CloudFront, S3, etc.).
+your server (Apache, Nginx, AWS CloudFront, S3, etc.). See also
+[How do I reduce config.json download size?](#how-do-i-reduce-configjson-download-size).
 
 ### How does JBrowse know when to display the "Zoom in to see more features" message
 
@@ -428,7 +427,7 @@ Example config for a CRAM file with a small `fetchSizeLimit` configured:
 
 ## Text searching
 
-### Why I am running out of disk space while trix is running
+### Why am I running out of disk space while trix is running
 
 The `jbrowse text-index` program will output data to a TMP directory while
 indexing. If your filesystem has low diskspace for /tmp you can set an
@@ -501,6 +500,21 @@ DynamoDB entry and decodes it using the key embedded in the URL.
 The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 
 ## Troubleshooting
+
+### Where can I get help or report a bug?
+
+Post questions on the
+[GitHub discussions board](https://github.com/GMOD/jbrowse-components/discussions)
+or [contact us](/contact). To report a bug, open an issue on
+[GitHub](https://github.com/GMOD/jbrowse-components/issues).
+
+### Why do I get a CORS error when loading remote files?
+
+The remote server must return `Access-Control-Allow-Origin: *` (or your origin)
+and allow the `Range` header (`Access-Control-Allow-Headers: Range`). JBrowse
+cannot work around CORS restrictions — the fix must be on the data server. For
+local development only, launching Chrome with `--disable-web-security` is a
+temporary workaround.
 
 ### Why does my saved session fail to load?
 
