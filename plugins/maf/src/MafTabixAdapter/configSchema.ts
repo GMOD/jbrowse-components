@@ -65,7 +65,6 @@ const configSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     preProcessSnapshot: snap => {
-      // populate from just snap.uri
       return snap.uri
         ? {
             ...snap,
@@ -82,8 +81,9 @@ const configSchema = ConfigurationSchema(
               baseUri: snap.baseUri,
             },
             index: {
+              indexType: snap.csi ? 'CSI' : 'TBI',
               location: {
-                uri: `${snap.uri}.tbi`,
+                uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
                 baseUri: snap.baseUri,
               },
             },

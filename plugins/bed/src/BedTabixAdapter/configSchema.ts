@@ -7,7 +7,11 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
         ...snap,
         bedGzLocation: { uri: snap.uri, baseUri: snap.baseUri },
         index: {
-          location: { uri: `${snap.uri}.tbi`, baseUri: snap.baseUri },
+          indexType: snap.csi ? 'CSI' : 'TBI',
+          location: {
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
+            baseUri: snap.baseUri,
+          },
         },
       }
     : snap

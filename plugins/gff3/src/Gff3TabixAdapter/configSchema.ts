@@ -16,8 +16,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
           baseUri: snap.baseUri,
         },
         index: {
+          indexType: snap.csi ? 'CSI' : 'TBI',
           location: {
-            uri: `${snap.uri}.tbi`,
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
             baseUri: snap.baseUri,
           },
         },
@@ -79,12 +80,13 @@ const Gff3TabixAdapter = ConfigurationSchema(
      *
      *
      * preprocessor to allow minimal config, assumes tbi index at
-     * yourfile.gff3.gz.tbi:
+     * yourfile.gff3.gz.tbi (or .csi if csi:true):
      *
      * ```json
      * {
      *   "type": "Gff3TabixAdapter",
      *   "uri": "yourfile.gff3.gz",
+     *   "csi": true
      * }
      * ```
      */
