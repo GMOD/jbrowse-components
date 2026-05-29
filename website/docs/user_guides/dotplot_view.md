@@ -21,6 +21,23 @@ segments; translocations and rearrangements appear as off-diagonal blocks.
 
 <Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes. Diagonal streaks are syntenic blocks where the two genomes are collinear. Off-diagonal blocks indicate chromosomal rearrangements; reverse-diagonal segments indicate inversions." src="/img/dotplot.png" />
 
+### Navigation and interaction
+
+**Zooming:** the mouse wheel always zooms both axes simultaneously. Zoom buttons
+in the toolbar work as well.
+
+**Panning and box-selecting:** the toolbar has a mode toggle button (pan icon ↔
+crosshair icon):
+
+- **Move mode** (pan icon): dragging pans the view. Hold `Ctrl`/`Cmd` while
+  dragging to draw a selection box instead.
+- **Crosshair mode** (crosshair icon): dragging draws a selection box to zoom
+  into or open a linear synteny view. Hold `Ctrl`/`Cmd` while dragging to pan
+  instead.
+
+**Aspect ratio lock:** the lock button in the toolbar constrains zooming and
+box-selection to keep both axes at the same scale.
+
 ### Opening a synteny view from a dotplot view
 
 Click and drag to select a region in the dotplot, then choose **Open linear

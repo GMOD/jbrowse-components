@@ -24,6 +24,12 @@ You can also:
 - hold `Shift` and click-and-drag to create a rubberband selection
 - hold `Shift` without dragging to reveal a red vertical guide bar
 
+Keyboard shortcuts (when the view is focused):
+
+- `Ctrl`/`Cmd` + `↑`: zoom in
+- `Ctrl`/`Cmd` + `↓`: zoom out
+- `Ctrl`/`Cmd` + `←` / `→`: pan left/right
+
 #### Re-ordering tracks
 
 Click and drag up or down on the drag handle on the track labels (indicated by

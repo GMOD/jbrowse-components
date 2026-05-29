@@ -174,6 +174,12 @@ divergence). Use `asm5` for closely related assemblies (up to ~5%) or `asm10`
 for moderately diverged ones. See the
 [minimap2 docs](https://github.com/lh3/minimap2) for details.
 
+Other supported synteny formats: `.delta` (MUMmer/NUCmer), `.chain` (UCSC),
+`.anchors` and `.anchors.simple` (MCScan), and `.out` (MashMap). Add them the
+same way — `jbrowse add-track alignment.delta --assemblyNames query,target ...`.
+For large alignments, convert to indexed PIF first with `jbrowse make-pif`
+(see the [synteny tutorial](/docs/tutorials/synteny_visualization)).
+
 ## Indexing feature names for searching
 
 Optionally, build a text index so users can search by gene name or feature ID:

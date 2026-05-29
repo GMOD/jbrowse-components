@@ -88,3 +88,42 @@ against in the `TrackSelector-folderDialog` extension point.
 See the
 [hierarchical config schema docs](https://jbrowse.org/jb2/docs/config/hierarchicalconfigschema/)
 for the full auto-generated reference.
+
+## Faceted track selector
+
+The faceted track selector shows all tracks as a searchable, filterable table.
+Open it by clicking the filter icon in the top right of the "Available tracks"
+widget (or via a folder category's context menu).
+
+Default columns shown for every track:
+
+- **Name**
+- **Category** (from `category` in the track config)
+- **Adapter** (adapter type, e.g. `Gff3TabixAdapter`)
+- **Description**
+
+Columns that are empty for every track are hidden automatically.
+
+### Adding metadata columns
+
+Any `metadata` object in a track config adds extra filterable columns — one per
+top-level key:
+
+```json
+{
+  "trackId": "my_track",
+  "name": "My Track",
+  "metadata": {
+    "origin": "public",
+    "tissue": "liver",
+    "date_added": "2024-02-20"
+  }
+}
+```
+
+With the config above, the faceted selector gains **origin**, **tissue**, and
+**date_added** columns that can be used to filter or sort tracks.
+
+The left-hand filter panel shows checkboxes for each distinct value in a column.
+You can combine filters across multiple columns, and use the search box at the
+top to further narrow results by name, category, or description.
