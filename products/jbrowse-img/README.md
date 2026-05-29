@@ -116,7 +116,7 @@ jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc ch
 ## coverageHeight to make the panel tall (NOT arcsHeight, which only sizes
 ## the regular up/down arcs panel). Samplot disappears if coverage:false.
 jb2export --fasta ref.fa --bam reads.bam arcs:samplot coverageHeight:300 \
-  lineWidth:2 height:600 --loc chr1:1-50000
+  arcLineWidth:2 height:600 --loc chr1:1-50000
 
 ## paired-end arcs above reads
 jb2export --fasta ref.fa --bam reads.bam arcs:up --loc chr1:1-10000
@@ -166,7 +166,7 @@ Layout & sizing:
 | `noSpacing:true\|false`   | `noSpacing:true`                                 | Remove gap between reads                                                         |
 | `coverageHeight:N`        | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
 | `arcsHeight:N`            | `arcsHeight:120`                                 | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
-| `lineWidth:N`             | `lineWidth:2`                                    | Stroke width for arcs and linked-read chains                                     |
+| `arcLineWidth:N`          | `arcLineWidth:2`                                 | Stroke width for paired-read arcs in pixels                                      |
 
 Available `color:type` values:
 

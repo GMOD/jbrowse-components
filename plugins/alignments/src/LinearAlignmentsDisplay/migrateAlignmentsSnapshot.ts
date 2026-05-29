@@ -15,6 +15,7 @@
  *   - showSashimiArcs + sashimiArcsDown booleans → sashimiArcs enum
  *   - height → heightPreConfig
  *   - Individual override properties → configOverrides map
+ *   - lineWidthSetting → configOverrides.arcLineWidth
  *   - Strips removed properties: blockState, showTooltips
  */
 export function migrateAlignmentsSnapshot(
@@ -178,6 +179,7 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
     filterBySetting,
     featureHeight,
     featureSpacing,
+    lineWidthSetting,
     noSpacing,
     showOutline,
     mismatchAlpha,
@@ -196,6 +198,9 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
   }
   if (featureHeight !== undefined) {
     overrides.featureHeight = featureHeight
+  }
+  if (lineWidthSetting !== undefined) {
+    overrides.arcLineWidth = lineWidthSetting
   }
   // featureSpacing override directly maps; legacy noSpacing boolean folds
   // into it (true → 0, false → 2 to preserve the pre-unification render).

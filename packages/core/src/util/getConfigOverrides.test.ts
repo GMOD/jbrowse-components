@@ -37,7 +37,8 @@ function mockTrackConfig(
   }
 }
 
-// Mock display model: getSnapshot returns { configuration: displayId }
+// Mock display model: getSnapshot returns { configuration: displayId } and
+// getOverride reads the runtime override map (matching ConfigOverrideMixin).
 function mockDisplay(
   displayConf: Record<string, unknown>,
   displayId: string,
@@ -46,7 +47,7 @@ function mockDisplay(
   return {
     configuration: displayConf,
     __snapshot: { configuration: displayId },
-    ...overrides,
+    getOverride: (key: string) => overrides[key],
   }
 }
 
@@ -217,6 +218,20 @@ describe('getEffectiveTrackConfig', () => {
     const d = (result.displays as any)[0]
     expect(d.minScore).toBe(5)
     expect(d.maxScore).toBeUndefined()
+  })
+
+  test('display without getOverride emits no overrides (mixin not composed)', () => {
+    const dc = mockDisplayConf({ color: '#f0f' })
+    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
+    const display = {
+      configuration: dc,
+      __snapshot: { configuration: 'd1' },
+    }
+
+    const result = getEffectiveTrackConfig(trackConfig, display)
+    const d = (result.displays as any)[0]
+    expect(d.displayId).toBe('d1')
+    expect(d.color).toBeUndefined()
   })
 
   test('non-matching display gets type but no slot values', () => {

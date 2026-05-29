@@ -290,10 +290,6 @@ export default function stateModelFactory(
           /**
            * #property
            */
-          lineWidthSetting: types.maybe(types.number),
-          /**
-           * #property
-           */
           drawInter: true,
           /**
            * #property
@@ -820,8 +816,8 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get lineWidth() {
-          return self.lineWidthSetting ?? 1
+        get arcLineWidth() {
+          return self.getConfWithOverride<number>('arcLineWidth')
         },
 
         /**
@@ -1047,7 +1043,7 @@ export default function stateModelFactory(
             colors: palette,
             linkedReads: self.linkedReads,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
-            arcLineWidth: self.lineWidth,
+            arcLineWidth: self.arcLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
           }
         },
@@ -1481,8 +1477,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setLineWidth(width: number) {
-            self.lineWidthSetting = width
+          setArcLineWidth(width: number) {
+            self.setOverride('arcLineWidth', width)
           },
 
           /**

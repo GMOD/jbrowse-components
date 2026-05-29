@@ -32,6 +32,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      arcLineWidth: {
+        type: 'number',
+        defaultValue: 1,
+        description: 'Line width for paired-read arcs in pixels',
+      },
+      /**
+       * #slot
+       */
       maxHeight: {
         type: 'number',
         defaultValue: 1200,

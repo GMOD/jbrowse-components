@@ -74,9 +74,9 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         }
         break
       }
-      case 'lineWidth': {
+      case 'arcLineWidth': {
         if (val1) {
-          display.setLineWidth?.(+val1)
+          display.setArcLineWidth?.(+val1)
         }
         break
       }
