@@ -18,30 +18,35 @@ export interface ILiteralType<T> extends ISimpleType<T> {
   value: T
 }
 
+// MST's getSubTypes() returns this sentinel string when a type can't report a
+// single subtype. It isn't exported by name, so we detect it structurally: a
+// real subtype is an IAnyType object, never a string or null.
+function isSubType(t: unknown): t is IAnyType {
+  return typeof t === 'object' && t !== null
+}
+
+// getDefaultInstanceOrSnapshot() is a real public method on the optional type at
+// runtime but isn't declared on the published @jbrowse/mobx-state-tree type
+// interface, so it's reached through a typed accessor. A fork release that
+// surfaces it on the optional type interface will let this drop to a plain call.
+interface DefaultValueReflection {
+  getDefaultInstanceOrSnapshot: () => { type: string }
+}
+
 /**
- * get the inner type of an MST optional, array, or late type object
+ * get the inner type of an MST optional, refinement, array, map, or late type
  */
 export function getSubType(type: IAnyType): IAnyType {
-  let t: IAnyType
-  if (isOptionalType(type)) {
-    // @ts-expect-error
-    t = type._subtype || type.type
-  } else if (isArrayType(type) || isMapType(type)) {
-    // @ts-expect-error
-    t = type._subtype || type._subType || type.subType
-    // @ts-expect-error
-  } else if (typeof type.getSubType === 'function') {
-    // @ts-expect-error
-    return type.getSubType()
-  } else {
-    throw new TypeError('unsupported mst type')
+  // optional/refinement/late report their wrapped type here; union returns an
+  // array (handled by getUnionSubTypes) and array/map return null
+  const sub = type.getSubTypes()
+  if (isSubType(sub)) {
+    return sub
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!t) {
-    throw new Error('failed to get subtype')
+  if (isArrayType(type) || isMapType(type)) {
+    return type.getChildType()
   }
-  return t
+  throw new TypeError('unsupported mst type')
 }
 
 /**
@@ -51,17 +56,8 @@ export function getUnionSubTypes(unionType: IAnyType): IAnyType[] {
   if (!isUnionType(unionType)) {
     throw new TypeError('not an MST union type')
   }
-  const t =
-    // @ts-expect-error
-    unionType._types ||
-    // @ts-expect-error
-    unionType.types ||
-    // @ts-expect-error
-    getSubType(unionType)._types ||
-    // @ts-expect-error
-    getSubType(unionType).types
-  if (!t) {
-    // debugger
+  const t = unionType.getSubTypes()
+  if (!Array.isArray(t)) {
     throw new Error('failed to extract subtypes from mst union')
   }
   return t
@@ -78,14 +74,13 @@ export function getPropertyType(
 }
 
 /**
- * get the base type from inside an MST optional type
+ * get the default value out of an MST optional type
  */
 export function getDefaultValue(type: IAnyType) {
   if (!isOptionalType(type)) {
     throw new TypeError('type must be an optional type')
   }
-  // @ts-expect-error
-  return type._defaultValue || type.defaultValue
+  return (type as unknown as DefaultValueReflection).getDefaultInstanceOrSnapshot()
 }
 
 export type IEnumerationType<T extends string> = ISimpleType<
@@ -105,8 +100,15 @@ export function resolveLateType(maybeLate: IAnyType) {
     !isArrayType(maybeLate) &&
     isLateType(maybeLate)
   ) {
-    // @ts-expect-error
-    return maybeLate.getSubType()
+    // the negated identity guards above narrow `maybeLate` to `never`, so route
+    // it through a function arg (never is assignable to IAnyType) to read the
+    // late type's resolved inner type via getSubTypes()
+    return lateSubType(maybeLate) ?? maybeLate
   }
   return maybeLate
+}
+
+function lateSubType(type: IAnyType) {
+  const sub = type.getSubTypes()
+  return isSubType(sub) ? sub : undefined
 }

@@ -34,7 +34,7 @@
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.0",
+    "@jbrowse/mobx-state-tree": "^5.10.1",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "mobx-react": "^9.2.2"
