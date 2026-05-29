@@ -154,5 +154,5 @@ export default function createModel(
   return { model: rootModel, pluginManager }
 }
 
-export type ViewStateModel = ReturnType<typeof createModel>['model']
+type ViewStateModel = ReturnType<typeof createModel>['model']
 export type ViewModel = Instance<ViewStateModel>

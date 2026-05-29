@@ -239,8 +239,8 @@ export interface ExtendsRef {
 }
 
 // The composition graph is authored inside the #stateModel comment after an
-// `extends` marker, in one of two styles:
-//   extends
+// `extends` or `composed of` marker, in list or inline style:
+//   composed of
 //   - [BaseDisplay](../basedisplay)
 // or inline:
 //   extends [BaseWebSession](../basewebsession)
@@ -249,7 +249,7 @@ export interface ExtendsRef {
 // the last thing in the doc body (member sections come from the template), so
 // every relative model link after the marker is an extends ref.
 export function parseExtends(docs: string): ExtendsRef[] {
-  const marker = /^\s*extends\b/m.exec(docs)
+  const marker = /^\s*(?:extends|composed of)\b/m.exec(docs)
   const refs: ExtendsRef[] = []
   if (marker) {
     const body = docs.slice(marker.index + marker[0].length)

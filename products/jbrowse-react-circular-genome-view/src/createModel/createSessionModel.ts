@@ -21,6 +21,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
  * - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
  * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+ * - [TrackMenuSessionMixin](../trackmenusessionmixin)
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
@@ -112,8 +113,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export type SessionStateModel = ReturnType<typeof sessionModelFactory>
-export type SessionModel = Instance<SessionStateModel>
+type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {

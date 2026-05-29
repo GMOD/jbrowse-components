@@ -153,5 +153,5 @@ export default function createModel(
   }
 }
 
-export type ViewStateModel = ReturnType<typeof createModel>['model']
+type ViewStateModel = ReturnType<typeof createModel>['model']
 export type ViewModel = Instance<ViewStateModel>

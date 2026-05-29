@@ -5,11 +5,6 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-/**
- * #stateModel JBrowseWebSessionModel
- * composed of
- * - [BaseWebSession](../basewebsession)
- */
 export default function sessionModelFactory({
   pluginManager,
   assemblyConfigSchema,

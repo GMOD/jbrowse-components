@@ -22,6 +22,7 @@ import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-v
  * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
  * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
  * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
+ * - [TrackMenuSessionMixin](../trackmenusessionmixin)
  */
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
@@ -117,8 +118,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export type SessionStateModel = ReturnType<typeof sessionModelFactory>
-export type SessionModel = Instance<SessionStateModel>
+type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
