@@ -45,3 +45,40 @@ test('renders with just the required model elements', () => {
   )
   expect(container).toMatchSnapshot()
 })
+
+test('pairs each symbolic ALT with its own SVLEN', () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      widget: {
+        // @ts-expect-error
+        type: 'VariantFeatureWidget',
+      },
+    },
+    { pluginManager },
+  )
+  model.widget.setFeatureData({
+    uniqueId: 'hello',
+    refName: 'ctgA',
+    start: 176,
+    end: 177,
+    REF: 'A',
+    ALT: ['<DEL>', '<DUP>'],
+    INFO: {
+      SVLEN: [-100, 200],
+    },
+  })
+
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <VariantFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect(container.textContent).toContain('<DEL> (100bp)')
+  expect(container.textContent).toContain('<DUP> (200bp)')
+})

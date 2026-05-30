@@ -11,7 +11,7 @@ export default function AltFormatter({
 }: {
   value: string
   refString: string
-  svlen?: number[]
+  svlen?: number
 }) {
   const [show, setShow] = useState(false)
   const alt = useMemo(
@@ -19,8 +19,8 @@ export default function AltFormatter({
     [refString, value],
   )
   const svlenStr =
-    value.startsWith('<') && svlen !== undefined && svlen.length > 0
-      ? ` (${svlen.map(s => getBpDisplayStr(Math.abs(s))).join(', ')})`
+    value.startsWith('<') && svlen !== undefined
+      ? ` (${getBpDisplayStr(Math.abs(svlen))})`
       : ''
   return alt !== value ? (
     <div>

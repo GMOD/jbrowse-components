@@ -126,6 +126,14 @@ export function getMinimalDesc(ref: string, alt: string) {
     : `${ref} -> ${alt}`
 }
 
+export function resolveAllele(allele: string, ref: string, alt: string[]) {
+  return allele === '.'
+    ? '.'
+    : +allele === 0
+      ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
+      : getMinimalDesc(ref, alt[+allele - 1] ?? '')
+}
+
 export function makeSimpleAltString(
   genotype: string,
   ref: string,
@@ -133,12 +141,6 @@ export function makeSimpleAltString(
 ) {
   return genotype
     .split(genotypeDelimRegex)
-    .map(r =>
-      r === '.'
-        ? '.'
-        : r === '0'
-          ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
-          : getMinimalDesc(ref, alt[+r - 1] ?? ''),
-    )
+    .map(r => resolveAllele(r, ref, alt))
     .join(genotype.includes('|') ? '|' : '/')
 }

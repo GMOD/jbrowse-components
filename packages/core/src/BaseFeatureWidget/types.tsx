@@ -10,7 +10,7 @@ export interface Descriptors {
 
 export interface BaseProps extends BaseCardProps {
   feature: SimpleFeatureSerialized
-  formatter?: (val: unknown, key: string) => React.ReactNode
+  formatter?: (val: unknown, key: string, index?: number) => React.ReactNode
   descriptions?: Descriptors
   model?: BaseFeatureWidgetModel
 }

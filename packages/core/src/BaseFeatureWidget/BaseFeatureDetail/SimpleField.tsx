@@ -22,7 +22,7 @@ export default function SimpleField({
   value: unknown
   prefix?: string[]
   width?: number
-  formatter?: (value: unknown, key: string) => React.ReactNode
+  formatter?: (value: unknown, key: string, index?: number) => React.ReactNode
 }) {
   const { classes } = useStyles()
   return value != null ? (

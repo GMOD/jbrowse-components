@@ -119,9 +119,13 @@ const FeatDefined = observer(function FeatDefined({
           ...variantFieldDescriptions,
           ...descriptions,
         }}
-        formatter={(value, key) =>
+        formatter={(value, key, index) =>
           key === 'ALT' ? (
-            <AltFormatter value={`${value}`} refString={REF} svlen={svlen} />
+            <AltFormatter
+              value={`${value}`}
+              refString={REF}
+              svlen={index === undefined ? undefined : svlen?.[index]}
+            />
           ) : (
             <Formatter value={value} />
           )

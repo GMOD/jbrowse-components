@@ -1,36 +1,15 @@
-import { getBpDisplayStr } from '@jbrowse/core/util'
-
-import { getMinimalDesc, makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { makeSimpleAltString, resolveAllele } from '../../VcfFeature/util.ts'
 import { GENOTYPE_SPLITTER } from '../../shared/constants.ts'
 
 import type { Filters, InfoFields, VariantSampleGridRow } from './types.ts'
 
-function gtToAlleleCounts(gt: string) {
-  const alleleCounts: Record<string, number> = {}
-  const alleles = gt.split(GENOTYPE_SPLITTER)
-  for (const allele of alleles) {
-    alleleCounts[allele] = (alleleCounts[allele] ?? 0) + 1
+function countAlleles(gt: string, resolve: (allele: string) => string) {
+  const counts: Record<string, number> = {}
+  for (const allele of gt.split(GENOTYPE_SPLITTER)) {
+    const key = resolve(allele)
+    counts[key] = (counts[key] ?? 0) + 1
   }
-  return Object.entries(alleleCounts)
-    .map(([key, val]) => `${key}:${val}`)
-    .join(';')
-}
-
-function genotypeToAlleleCounts(gt: string, ref: string, alt: string[]) {
-  const alleleCounts: Record<string, number> = {}
-  const alleles = gt.split(GENOTYPE_SPLITTER)
-  for (const allele of alleles) {
-    if (allele === '.') {
-      alleleCounts['.'] = (alleleCounts['.'] ?? 0) + 1
-    } else {
-      const resolved =
-        +allele === 0
-          ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
-          : getMinimalDesc(ref, alt[+allele - 1] || '')
-      alleleCounts[resolved] = (alleleCounts[resolved] ?? 0) + 1
-    }
-  }
-  return Object.entries(alleleCounts)
+  return Object.entries(counts)
     .map(([key, val]) => `${key}:${val}`)
     .join(';')
 }
@@ -60,12 +39,12 @@ export function getSampleGridRows(
         const gtStr = gt ? `${gt}` : undefined
         const displayGT = gtStr
           ? useCounts
-            ? gtToAlleleCounts(gtStr)
+            ? countAlleles(gtStr, allele => allele)
             : gtStr
           : undefined
         const displayGenotype = gtStr
           ? useCounts
-            ? genotypeToAlleleCounts(gtStr, REF, ALT)
+            ? countAlleles(gtStr, allele => resolveAllele(allele, REF, ALT))
             : makeSimpleAltString(gtStr, REF, ALT)
           : undefined
         return {

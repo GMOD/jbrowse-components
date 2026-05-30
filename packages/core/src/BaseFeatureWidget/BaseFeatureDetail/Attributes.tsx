@@ -34,7 +34,7 @@ export default function Attributes(props: {
   }
   omit?: string[]
   omitSingleLevel?: string[]
-  formatter?: (val: unknown, key: string) => React.ReactNode
+  formatter?: (val: unknown, key: string, index?: number) => React.ReactNode
   descriptions?: Descriptors
   prefix?: string[]
   hideUris?: boolean

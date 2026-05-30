@@ -32,7 +32,7 @@ interface PanelDescriptor {
     depth?: number
     omit?: string[]
     descriptions?: Descriptors
-    formatter?: (val: unknown, key: string) => React.ReactNode
+    formatter?: (val: unknown, key: string, index?: number) => React.ReactNode
   }>
 }
 
@@ -42,7 +42,7 @@ export default function FeatureDetails(props: {
   depth?: number
   omit?: string[]
   descriptions?: Descriptors
-  formatter?: (val: unknown, key: string) => React.ReactNode
+  formatter?: (val: unknown, key: string, index?: number) => React.ReactNode
 }) {
   const { omit = [], model, feature, depth = 0 } = props
   const maxDepth: number = model.maxDepth ?? 99999
