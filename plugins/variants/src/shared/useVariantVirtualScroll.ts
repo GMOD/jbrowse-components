@@ -29,18 +29,28 @@ export function useVariantVirtualScroll({
       e.preventDefault()
       const delta = e.deltaY > 0 ? -1 : 1
       const minRowHeight = viewportHeight / nrow
-      const newRowHeight = Math.min(20, Math.max(minRowHeight, rowHeight + delta))
+      const newRowHeight = Math.min(
+        20,
+        Math.max(minRowHeight, rowHeight + delta),
+      )
       const rect = canvas!.getBoundingClientRect()
       const mouseY = e.clientY - rect.top
       const rowUnderMouse = (mouseY + scrollTop) / rowHeight
       const newScrollTop = Math.max(0, rowUnderMouse * newRowHeight - mouseY)
       setRowHeight(newRowHeight)
       setScrollTop(newScrollTop)
-    } else if (!scrollZoom && !e.ctrlKey && !e.metaKey && scrollableHeight > 0) {
+    } else if (
+      !scrollZoom &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      scrollableHeight > 0
+    ) {
       const dy =
-        e.deltaMode === 1 ? e.deltaY * 40
-        : e.deltaMode === 2 ? e.deltaY * viewportHeight
-        : e.deltaY
+        e.deltaMode === 1
+          ? e.deltaY * 40
+          : e.deltaMode === 2
+            ? e.deltaY * viewportHeight
+            : e.deltaY
       const next = Math.max(0, Math.min(scrollableHeight, scrollTop + dy))
       if (next !== scrollTop) {
         e.preventDefault()

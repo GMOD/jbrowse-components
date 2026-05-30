@@ -60,9 +60,11 @@ function normalizePileupDeltaY(
   deltaMode: number,
   viewportHeight: number,
 ) {
-  return deltaMode === 1 ? deltaY * 40
-    : deltaMode === 2 ? deltaY * viewportHeight
-    : deltaY
+  return deltaMode === 1
+    ? deltaY * 40
+    : deltaMode === 2
+      ? deltaY * viewportHeight
+      : deltaY
 }
 
 // The pileup canvas + all its positioned overlays. DisplayChrome owns the GPU
@@ -100,7 +102,11 @@ const PileupBody = observer(function PileupBody({
     if (scrollableHeight <= 0) {
       return
     }
-    const dy = normalizePileupDeltaY(e.deltaY, e.deltaMode, pileupViewportHeight)
+    const dy = normalizePileupDeltaY(
+      e.deltaY,
+      e.deltaMode,
+      pileupViewportHeight,
+    )
     const curScroll = currentRangeY[0]
     const newScroll = clamp(curScroll + dy, 0, scrollableHeight)
     if (newScroll !== curScroll) {

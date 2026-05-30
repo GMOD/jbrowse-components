@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useCallback, useEffect, useEffectEvent, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { transaction } from 'mobx'
@@ -17,7 +17,7 @@ export function useRangeSelect(
   model: LinearComparativeViewModel,
 ) {
   const [startX, setStartX] = useState<number>()
-  const [currentX, setCurrentX] = useState<number>()
+  const [currentX, setCurrentX] = useState(0)
 
   // clientX and clientY used for anchorPosition for menu
   // offsetX used for calculations about width of selection
@@ -28,47 +28,60 @@ export function useRangeSelect(
   const handleClose = useCallback(() => {
     setAnchorPosition(undefined)
     setStartX(undefined)
-    setCurrentX(undefined)
+    setCurrentX(0)
   }, [])
-
-  const globalMouseMove = useEffectEvent((event: MouseEvent) => {
-    if (ref.current) {
-      setCurrentX(getRelativeX(event, ref.current))
-    }
-  })
-
-  const globalMouseUp = useEffectEvent((event: MouseEvent) => {
-    if (startX === undefined || !ref.current) {
-      return
-    }
-    const { clientX, clientY } = event
-    const offsetX = getRelativeX(event, ref.current)
-    if (Math.abs(offsetX - startX) <= 3) {
-      handleClose()
-      return
-    }
-    setAnchorPosition({ offsetX, clientX, clientY })
-    const leftPx = Math.min(startX, offsetX)
-    const rightPx = Math.max(startX, offsetX)
-    transaction(() => {
-      for (const [idx, view] of model.views.entries()) {
-        view.setOffsets(view.pxToBp(leftPx), view.pxToBp(rightPx))
-      }
-    })
-    setGuideX(undefined)
-  })
 
   useEffect(() => {
     if (!mouseDragging) {
       return
     }
+
+    function globalMouseMove(event: MouseEvent) {
+      if (ref.current) {
+        setCurrentX(getRelativeX(event, ref.current))
+      }
+    }
+
+    function globalMouseUp(event: MouseEvent) {
+      if (startX === undefined || !ref.current) {
+        return
+      }
+      const { clientX, clientY } = event
+      const offsetX = getRelativeX(event, ref.current)
+      if (Math.abs(offsetX - startX) <= 3) {
+        handleClose()
+        return
+      }
+      setAnchorPosition({ offsetX, clientX, clientY })
+      const leftPx = Math.min(startX, offsetX)
+      const rightPx = Math.max(startX, offsetX)
+      const offsets = model.views.map(view => ({
+        leftOffset: view.pxToBp(leftPx),
+        rightOffset: view.pxToBp(rightPx),
+      }))
+      transaction(() => {
+        for (const [idx, elt] of offsets.entries()) {
+          model.views[idx]!.setOffsets(elt.leftOffset, elt.rightOffset)
+        }
+      })
+      setGuideX(undefined)
+    }
+
+    function globalKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        handleClose()
+      }
+    }
+
     window.addEventListener('mousemove', globalMouseMove)
     window.addEventListener('mouseup', globalMouseUp)
+    window.addEventListener('keydown', globalKeyDown)
     return () => {
       window.removeEventListener('mousemove', globalMouseMove)
       window.removeEventListener('mouseup', globalMouseUp)
+      window.removeEventListener('keydown', globalKeyDown)
     }
-  }, [mouseDragging])
+  }, [startX, mouseDragging, model, ref, handleClose])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -111,7 +124,7 @@ export function useRangeSelect(
       handleMenuItemClick,
     }
   }
-  const right = anchorPosition ? anchorPosition.offsetX : (currentX ?? 0)
+  const right = anchorPosition?.offsetX ?? currentX
   const left = Math.min(right, startX)
   const width = Math.abs(right - startX)
   const leftBpOffset = model.views.map(view => view.pxToBp(left))
