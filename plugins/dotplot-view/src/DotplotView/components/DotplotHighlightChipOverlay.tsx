@@ -1,5 +1,5 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
 import { Box, Tooltip, useTheme } from '@mui/material'
@@ -65,20 +65,18 @@ const HighlightChip = observer(function HighlightChip({
   )
 })
 
-const DotplotHighlightChipOverlay = observer(function DotplotHighlightChipOverlay({
-  model,
-}: {
-  model: DotplotViewModel
-}) {
-  return model.highlightsVisible
-    ? model.highlight.map((h, i) => (
-        <HighlightChip
-          key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`}
-          model={model}
-          highlight={h}
-        />
-      ))
-    : null
-})
+const DotplotHighlightChipOverlay = observer(
+  function DotplotHighlightChipOverlay({ model }: { model: DotplotViewModel }) {
+    return model.highlightsVisible
+      ? model.highlight.map((h, i) => (
+          <HighlightChip
+            key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`}
+            model={model}
+            highlight={h}
+          />
+        ))
+      : null
+  },
+)
 
 export default DotplotHighlightChipOverlay

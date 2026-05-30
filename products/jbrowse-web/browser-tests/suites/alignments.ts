@@ -90,6 +90,37 @@ const suite: TestSuite = {
       },
     },
     {
+      name: 'volvox long reads with SV (linked reads)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1..50,001',
+              tracks: [
+                {
+                  trackId: 'volvox-long-reads-sv-bam',
+                  displaySnapshot: {
+                    type: 'LinearAlignmentsDisplay',
+                    linkedReads: 'normal',
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'alignments-long-reads-sv-linked-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
       name: 'pileup + coverage track',
       fn: async page => {
         await navigateWithSessionSpec(page, {

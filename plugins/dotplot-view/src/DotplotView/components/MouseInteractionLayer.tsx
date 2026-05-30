@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
 import type { ComponentType, ReactNode } from 'react'
 
-import { getEnv } from '@jbrowse/core/util'
 import { PluggableComponent } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import DotplotGrid from './DotplotGrid.tsx'
@@ -55,7 +55,10 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
   )
   return (
     <div
-      style={{ cursor: ctrlKeyDown ? 'pointer' : model.cursorMode, position: 'relative' }}
+      style={{
+        cursor: ctrlKeyDown ? 'pointer' : model.cursorMode,
+        position: 'relative',
+      }}
       onMouseDown={event => {
         if (event.button === 0) {
           const { clientX, clientY } = event

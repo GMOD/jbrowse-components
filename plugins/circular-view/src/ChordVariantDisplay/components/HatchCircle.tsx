@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 
 import { observer } from 'mobx-react'
 
-
 const HatchCircle = observer(function HatchCircle({
   radius,
   fill,

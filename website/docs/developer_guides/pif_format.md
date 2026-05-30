@@ -114,8 +114,8 @@ the `PairwiseIndexedPAFAdapter`.
 By default `make-pif` also writes a second, no-CIGAR "coarse" tier of the same
 alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom — whole
 genome or whole chromosome — the `PairwiseIndexedPAFAdapter` serves this tier
-automatically (controlled by `coarseBpPerPxThreshold`, default 10000 bp/px),
-so the renderer draws clean ribbons without downloading or parsing megabyte-scale
+automatically (controlled by `coarseBpPerPxThreshold`, default 10000 bp/px), so
+the renderer draws clean ribbons without downloading or parsing megabyte-scale
 CIGAR strings. Zooming in switches back to the fine `t`/`q` tier for per-base
 detail. No configuration is needed; the view's "Level of detail" menu defaults
 to `auto`.

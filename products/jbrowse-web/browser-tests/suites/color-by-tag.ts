@@ -8,7 +8,11 @@ import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
-function alignmentsSpec(loc: string, colorBySetting: Record<string, unknown>) {
+function alignmentsSpec(
+  loc: string,
+  colorBySetting: Record<string, unknown>,
+  trackId = 'volvox_alignments',
+) {
   return {
     views: [
       {
@@ -17,7 +21,7 @@ function alignmentsSpec(loc: string, colorBySetting: Record<string, unknown>) {
         loc,
         tracks: [
           {
-            trackId: 'volvox_alignments',
+            trackId,
             displaySnapshot: { colorBySetting },
           },
         ],
@@ -66,11 +70,14 @@ const suite: TestSuite = {
     {
       name: 'color by insert size and orientation',
       fn: async page => {
+        // volvox_sv has discordant pairs (SVs) that produce non-default colors
         await navigateWithSessionSpec(
           page,
-          alignmentsSpec('ctgA:1000-2000', {
-            type: 'insertSizeAndOrientation',
-          }),
+          alignmentsSpec(
+            'ctgA:2,707..48,600',
+            { type: 'insertSizeAndOrientation' },
+            'volvox_sv',
+          ),
         )
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display-done', 60000)

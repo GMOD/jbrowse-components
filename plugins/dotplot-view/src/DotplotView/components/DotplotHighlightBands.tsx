@@ -16,8 +16,24 @@ const DotplotHighlightBands = observer(function DotplotHighlightBands({
   const v = model.getVHighlightCoords(region)
   return (
     <>
-      {h ? <rect x={h.left} y={0} width={h.width} height={viewHeight} fill={color} /> : null}
-      {v ? <rect x={0} y={v.top} width={viewWidth} height={v.height} fill={color} /> : null}
+      {h ? (
+        <rect
+          x={h.left}
+          y={0}
+          width={h.width}
+          height={viewHeight}
+          fill={color}
+        />
+      ) : null}
+      {v ? (
+        <rect
+          x={0}
+          y={v.top}
+          width={viewWidth}
+          height={v.height}
+          fill={color}
+        />
+      ) : null}
     </>
   )
 })

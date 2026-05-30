@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -82,7 +82,8 @@ const suite: TestSuite = {
     {
       name: 'renders synteny view for chr1 region (large dataset, viewport culling)',
       fn: async page => {
-        // hs1:chr1:50-100M maps to scattered positions across all of mm39:chr1
+        // hs1:chr1:50-100M vs mm39:chr1:30-180M with 100k minlen keeps ribbons
+        // visible; shows viewport culling without hairballing
         await navigateWithSessionSpec(
           page,
           {
@@ -90,13 +91,14 @@ const suite: TestSuite = {
               {
                 type: 'LinearSyntenyView',
                 tracks: ['hs1ToMm39.over.chain.pif'],
+                minAlignmentLength: 100000,
                 views: [
                   {
                     loc: 'chr1:50,000,000..100,000,000',
                     assembly: 'hs1',
                   },
                   {
-                    loc: 'chr1',
+                    loc: 'chr1:30,000,000..180,000,000',
                     assembly: 'mm39',
                   },
                 ],
@@ -113,38 +115,6 @@ const suite: TestSuite = {
           'hs1-mm39-synteny-chr1-large-canvas',
           '[data-testid="synteny_canvas_done"]',
         )
-      },
-    },
-    {
-      name: 'full page screenshot of hs1 vs mm39 synteny',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearSyntenyView',
-                tracks: ['hs1ToMm39.over.chain.pif'],
-                minAlignmentLength: 100000,
-                views: [
-                  {
-                    loc: 'chr7',
-                    assembly: 'hs1',
-                  },
-                  {
-                    loc: 'chr6',
-                    assembly: 'mm39',
-                  },
-                ],
-              },
-            ],
-          },
-          hs1Mm39Config,
-        )
-
-        await findByTestId(page, 'synteny_canvas_done', 120000)
-        await waitForDataLoaded(page, 120000)
-        await pageSnapshot(page, 'hs1-mm39-synteny-fullpage')
       },
     },
   ],

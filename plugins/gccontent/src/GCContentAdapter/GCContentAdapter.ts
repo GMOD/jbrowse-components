@@ -142,7 +142,9 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
         }
 
         const score =
-          gcMode === 'skew' ? (ng - nc) / (ng + nc || 1) : (ng + nc) / (len || 1)
+          gcMode === 'skew'
+            ? (ng - nc) / (ng + nc || 1)
+            : (ng + nc) / (len || 1)
 
         starts.push(qs + i)
         ends.push(qs + i + windowDelta)

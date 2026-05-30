@@ -4,7 +4,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { dualSnapshot } from '../snapshot.ts'
+import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -14,26 +14,52 @@ const suite: TestSuite = {
     {
       name: 'arc track renders',
       fn: async page => {
+        // arc_track uses LinearArcDisplay (SVG renderer) with features at
+        // ctgA:180-290; navigate close enough to see arcs clearly
         await navigateWithSessionSpec(page, {
           views: [
             {
               type: 'LinearGenomeView',
               assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['arc_test'],
+              loc: 'ctgA:150-350',
+              tracks: ['arc_track'],
             },
           ],
         })
 
         await findByText(page, 'ctgA')
         await waitForDataLoaded(page)
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
+        await pageSnapshot(page, 'arcs-arc-test')
+      },
+    },
+    {
+      name: 'read connections arcs (volvox_sv)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:2,707..48,600',
+              tracks: [
+                {
+                  trackId: 'volvox_sv',
+                  displaySnapshot: {
+                    type: 'LinearAlignmentsDisplay',
+                    readConnections: 'arc',
+                  },
+                },
+              ],
+            },
+          ],
         })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
         await dualSnapshot(
           page,
-          'arcs-arc-test-canvas',
-          '[data-testid$="-done"] canvas',
+          'arcs-read-connections-canvas',
+          '[data-testid="pileup-display-done"] canvas',
         )
       },
     },

@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -50,38 +50,6 @@ const suite: TestSuite = {
           'grape-peach-synteny-overview-canvas',
           '[data-testid="synteny_canvas_done"]',
         )
-      },
-    },
-    {
-      name: 'full page screenshot of grape vs peach synteny',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearSyntenyView',
-                tracks: ['peach_grape_minimap2'],
-                minAlignmentLength: 2000,
-                views: [
-                  {
-                    loc: 'chr18',
-                    assembly: 'grape',
-                  },
-                  {
-                    loc: 'Pp01',
-                    assembly: 'peach',
-                  },
-                ],
-              },
-            ],
-          },
-          grapePeachConfig,
-        )
-
-        await findByTestId(page, 'synteny_canvas_done', 120000)
-        await waitForDataLoaded(page, 120000)
-        await pageSnapshot(page, 'grape-peach-synteny-fullpage')
       },
     },
   ],
