@@ -121,8 +121,10 @@ export function getBlobMap() {
   return blobMap
 }
 
-// TODO:IS THIS BAD?
-// used in new contexts like webworkers
+// Populates the blobMap in a fresh JS realm (e.g. a web worker, which starts
+// with an empty module-level blobMap). RPC args are the only channel into the
+// worker, so the main thread ships its full blobMap and the worker replaces its
+// own here before adapters call the synchronous getBlob() during openLocation.
 export function setBlobMap(map: Record<string, File>) {
   blobMap = map
 }
@@ -149,7 +151,7 @@ export function storeBlobLocation(
 
 // In-memory cache of File objects from FileSystemFileHandles
 // This allows openLocation to remain synchronous while FileHandle access is async
-let fileHandleCache: Record<string, File> = {}
+const fileHandleCache: Record<string, File> = {}
 
 export function getFileFromCache(handleId: string) {
   return fileHandleCache[handleId]
@@ -163,19 +165,11 @@ export function clearFileFromCache(handleId: string) {
   delete fileHandleCache[handleId]
 }
 
-export function getFileHandleCache() {
-  return fileHandleCache
-}
-
 export function hasFileHandlesInCache() {
   for (const _ in fileHandleCache) {
     return true
   }
   return false
-}
-
-export function setFileHandleCache(cache: Record<string, File>) {
-  fileHandleCache = cache
 }
 
 // Async function to resolve handle and populate cache
