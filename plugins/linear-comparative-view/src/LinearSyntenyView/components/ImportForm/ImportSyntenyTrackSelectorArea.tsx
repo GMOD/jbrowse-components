@@ -46,7 +46,16 @@ export default function ImportSyntenyTrackSelectorArea({
   selectedRow: number
 }) {
   const { pluginManager } = getEnv(model)
-  const [choice, setChoice] = useState('tracklist')
+  // reflect this row's existing selection (custom/extension uploads can't be
+  // told apart from "none" in the model, so they start on the "none" radio)
+  const [choice, setChoice] = useState<string>(() => {
+    const selection = model.importFormSyntenyTrackSelections[selectedRow]
+    return selection?.type === 'none'
+      ? 'none'
+      : selection?.type === 'userOpened'
+        ? 'custom'
+        : 'tracklist'
+  })
 
   const customOptions = pluginManager.evaluateExtensionPoint(
     'LinearSyntenyView-ImportFormSyntenyOptions',
