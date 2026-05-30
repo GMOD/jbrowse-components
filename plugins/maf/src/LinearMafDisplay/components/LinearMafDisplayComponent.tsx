@@ -1,14 +1,10 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 
-import {
-  getContainingView,
-  getSession,
-  useRenderingBackend,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
-  DisplayRenderErrorOverlay,
+  useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { useTheme } from '@mui/material'
@@ -50,10 +46,12 @@ const LinearMafDisplay = observer(function (props: {
   const theme = useTheme()
   const session = getSession(model)
 
-  const { canvasRef, error, retry } = useRenderingBackend(
-    MafRendererFactory,
-    model,
-  )
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const { width } = view
+  const rendering = useDisplayRendering(MafRendererFactory, model, {
+    width,
+    height,
+  })
 
   // Push theme-derived color palette into the model. Drives `gpuProps()`,
   // so theme changes re-encode on the main thread (no RPC refetch). The
@@ -82,21 +80,11 @@ const LinearMafDisplay = observer(function (props: {
     clearSelectionBox,
   } = useDragSelection(ref)
 
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const { width } = view
-
   const treeShowing = showTree && !!hierarchy
   const sidebarOffset = treeShowing ? treeAreaWidth : 0
 
-  if (error) {
-    return (
-      <DisplayRenderErrorOverlay
-        error={error}
-        onRetry={retry}
-        width={width}
-        height={height}
-      />
-    )
+  if (rendering.kind === 'error') {
+    return rendering.node
   }
 
   return (
@@ -127,7 +115,7 @@ const LinearMafDisplay = observer(function (props: {
         }}
       >
         <canvas
-          ref={canvasRef}
+          ref={rendering.canvasRef}
           style={{
             position: 'absolute',
             top: 0,

@@ -2,11 +2,10 @@ import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { useRenderingBackend } from '@jbrowse/core/util/useRenderingBackend'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
-  DisplayRenderErrorOverlay,
+  useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
@@ -36,11 +35,13 @@ const LinearManhattanDisplayComponent = observer(
   }: {
     model: ManhattanDisplayModel
   }) {
-    const { canvasRef, error, retry } = useRenderingBackend(
-      ManhattanRenderer,
-      model,
-    )
     const view = getContainingView(model) as LGV
+    const width = view.trackWidthPx
+    const height = model.height
+    const rendering = useDisplayRendering(ManhattanRenderer, model, {
+      width,
+      height,
+    })
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
     const [contextMenu, setContextMenu] = useState<{
       coord: [number, number]
@@ -88,21 +89,12 @@ const LinearManhattanDisplayComponent = observer(
       }
     }
 
-    const width = view.trackWidthPx
-    const height = model.height
     const { ticks, featureUnderMouse, displayCrossHatches, colorBy } = model
     const scalebarLeft = model.scalebarOverlapLeft
     const ldMode = colorBy === 'ld' && model.canvasDrawn
 
-    if (error) {
-      return (
-        <DisplayRenderErrorOverlay
-          error={error}
-          onRetry={retry}
-          width={width}
-          height={height}
-        />
-      )
+    if (rendering.kind === 'error') {
+      return rendering.node
     }
 
     return (
@@ -117,7 +109,7 @@ const LinearManhattanDisplayComponent = observer(
         }}
       >
         <canvas
-          ref={canvasRef}
+          ref={rendering.canvasRef}
           style={{
             width,
             height: height - 2 * YSCALEBAR_LABEL_OFFSET,

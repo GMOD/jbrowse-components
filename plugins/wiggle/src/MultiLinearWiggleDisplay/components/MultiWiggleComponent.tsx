@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { getContainingView, useRenderingBackend } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
-  DisplayRenderErrorOverlay,
+  useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
@@ -35,9 +35,13 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   // see startRenderingBackend / stopRenderingBackend / renderNow on
   // the MultiLinearWiggleDisplay model. Sources changes trigger a full
   // re-upload via the lifecycle's `getUploadInvalidationToken`.
-  const { canvasRef, error, retry } = useRenderingBackend(WiggleRenderer, model)
-
   const view = getContainingView(model) as LGV
+  const totalWidth = view.trackWidthPx
+  const height = model.height
+  const rendering = useDisplayRendering(WiggleRenderer, model, {
+    width: totalWidth,
+    height,
+  })
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
@@ -99,19 +103,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     }
   }, [model])
 
-  const totalWidth = view.trackWidthPx
-  const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 
-  if (error) {
-    return (
-      <DisplayRenderErrorOverlay
-        error={error}
-        onRetry={retry}
-        width={totalWidth}
-        height={height}
-      />
-    )
+  if (rendering.kind === 'error') {
+    return rendering.node
   }
 
   const numSources = model.numSources
@@ -138,7 +133,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     >
       <div>
         <canvas
-          ref={canvasRef}
+          ref={rendering.canvasRef}
           style={{
             width: totalWidth,
             height,

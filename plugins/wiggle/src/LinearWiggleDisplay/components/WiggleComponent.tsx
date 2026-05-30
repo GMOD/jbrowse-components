@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { getContainingView, useRenderingBackend } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
-  DisplayRenderErrorOverlay,
+  useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
@@ -35,9 +35,10 @@ const WiggleComponent = observer(function WiggleComponent({
   // see startRenderingBackend / stopRenderingBackend / renderNow on the
   // LinearWiggleDisplay model. This component is just a thin bridge that
   // plugs the canvas and the backend into those model actions.
-  const { canvasRef, error, retry } = useRenderingBackend(WiggleRenderer, model)
-
   const view = getContainingView(model) as LGV
+  const width = view.trackWidthPx
+  const height = model.height
+  const rendering = useDisplayRendering(WiggleRenderer, model, { width, height })
 
   const [offsetMouseCoord, setOffsetMouseCoord] = useState(COORD0)
   const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
@@ -72,19 +73,10 @@ const WiggleComponent = observer(function WiggleComponent({
     model.setFeatureUnderMouse(undefined)
   }, [model])
 
-  const width = view.trackWidthPx
-  const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 
-  if (error) {
-    return (
-      <DisplayRenderErrorOverlay
-        error={error}
-        onRetry={retry}
-        width={width}
-        height={height}
-      />
-    )
+  if (rendering.kind === 'error') {
+    return rendering.node
   }
 
   return (
@@ -96,7 +88,7 @@ const WiggleComponent = observer(function WiggleComponent({
       onMouseLeave={handleMouseLeave}
     >
       <canvas
-        ref={canvasRef}
+        ref={rendering.canvasRef}
         style={{
           width,
           height: height - 2 * YSCALEBAR_LABEL_OFFSET,

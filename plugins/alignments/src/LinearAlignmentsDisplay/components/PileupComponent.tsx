@@ -7,7 +7,6 @@ import { clamp, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   DisplayErrorBar,
-  DisplayRenderErrorOverlay,
   FloatingLegend,
 } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
@@ -84,11 +83,9 @@ const PileupInner = observer(function PileupInner({
   const base = useAlignmentsBase(model)
   const {
     canvas,
-    canvasRef,
+    rendering,
     width,
     contrastMap,
-    gpuError,
-    retry,
     handleMouseDown,
     handleMouseLeave,
     handleContextMenu,
@@ -131,15 +128,8 @@ const PileupInner = observer(function PileupInner({
     }
   }, [canvas, scrollZoom, model])
 
-  if (gpuError) {
-    return (
-      <DisplayRenderErrorOverlay
-        error={gpuError}
-        onRetry={retry}
-        width={width}
-        height={model.height}
-      />
-    )
+  if (rendering.kind === 'error') {
+    return rendering.node
   }
 
   if (!width) {
@@ -211,7 +201,7 @@ const PileupInner = observer(function PileupInner({
       >
         <PileupCanvas
           model={model}
-          canvasRef={canvasRef}
+          canvasRef={rendering.canvasRef}
           width={width}
           height={height}
           handleMouseDown={handleMouseDown}

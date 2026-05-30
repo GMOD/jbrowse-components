@@ -1,11 +1,8 @@
 import type React from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 
-import {
-  clamp,
-  getContainingView,
-  useRenderingBackend,
-} from '@jbrowse/core/util'
+import { clamp, getContainingView } from '@jbrowse/core/util'
+import { useDisplayRendering } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 
 import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
@@ -45,12 +42,13 @@ export interface FeatureHit {
 }
 
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
-  const {
-    canvas,
-    canvasRef,
-    error: gpuError,
-    retry,
-  } = useRenderingBackend(AlignmentsRenderer, model)
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const width = view.initialized ? view.width : undefined
+  const rendering = useDisplayRendering(AlignmentsRenderer, model, {
+    width,
+    height: model.height,
+  })
+  const canvas = rendering.kind === 'ready' ? rendering.canvas : null
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
@@ -63,7 +61,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // Suppresses the trailing click that fires when a pan ends inside the canvas.
   const dragMovedRef = useRef(false)
 
-  const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()
   const colorPalette = useMemo(() => buildColorPaletteFromTheme(theme), [theme])
   const contrastMap = useMemo(() => getContrastBaseMap(theme), [theme])
@@ -77,8 +74,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     showInterbaseIndicators,
     isChainMode,
   } = model
-
-  const width = view.initialized ? view.width : undefined
 
   function runHitTest(canvasX: number, canvasY: number) {
     const resolved = resolveBlockForCanvasX(canvasX)
@@ -320,10 +315,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }, [model, colorPalette])
 
   return {
+    rendering,
     canvas,
-    canvasRef,
-    gpuError,
-    retry,
     width,
     contrastMap,
     handleMouseDown,

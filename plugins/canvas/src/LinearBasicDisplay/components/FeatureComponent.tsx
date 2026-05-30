@@ -1,13 +1,13 @@
 import React, { useCallback, useRef, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
-import { getContainingView, useRenderingBackend } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
-  DisplayRenderErrorOverlay,
+  useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
@@ -213,10 +213,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // base canvas display model. scrollTop lives on the model (via
   // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
   // the model so the autorun picks it up as part of `renderState`.
-  const { canvasRef, error, retry } = useRenderingBackend(
-    CanvasFeatureRenderer,
-    model,
-  )
+  const rendering = useDisplayRendering(CanvasFeatureRenderer, model, {
+    width,
+    height,
+  })
 
   useScrollSync(scrollContainerRef, model, view)
 
@@ -343,15 +343,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     model,
   )
 
-  if (error) {
-    return (
-      <DisplayRenderErrorOverlay
-        error={error}
-        onRetry={retry}
-        width={width}
-        height={height}
-      />
-    )
+  if (rendering.kind === 'error') {
+    return rendering.node
   }
 
   if (model.regionTooLarge) {
@@ -370,7 +363,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           style={{ height: model.hasOverflow ? model.maxY : '100%' }}
         >
           <canvas
-            ref={canvasRef}
+            ref={rendering.canvasRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}

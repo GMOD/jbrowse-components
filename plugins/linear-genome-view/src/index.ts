@@ -96,7 +96,6 @@ export {
   ConfigOverrideMixin,
   DisplayErrorBar,
   DisplayLoadingOverlay,
-  DisplayRenderErrorOverlay,
   FeatureDensityMixin,
   FloatingLegend,
   GlobalDataDisplayMixin,
@@ -113,9 +112,11 @@ export {
   getDisplayStr,
   migrateOldSettingSnapshots,
   onDisplayedRegionsChange,
+  useDisplayRendering,
 } from './BaseLinearDisplay/index.ts'
 export type {
   ByteEstimateConfig,
+  DisplayRendering,
   FetchContext,
   GlobalDataDisplayMixinType,
   MultiRegionDisplayMixinType,
