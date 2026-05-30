@@ -191,7 +191,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
 })
 
 // The per-sample variant canvas + scrollbar + hit-test wiring. DisplayChrome
-// (owned by the outer MultiSampleVariantBaseDisplayComponent) owns the GPU
+// (owned by the outer VariantDisplayComponent) owns the GPU
 // backend and the terminal states, handing the live canvas down here.
 const VariantBody = observer(function VariantBody({
   model,

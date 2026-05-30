@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -22,10 +22,48 @@ import { getMafColorPalette } from '../../LinearMafRenderer/util.ts'
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const LinearMafDisplay = observer(function (props: {
+// Thin outer: owns the DisplayChrome + the drag-selection hook, which needs a
+// ref to the chrome container (so it can't live in the body). The drag object
+// flows to the body as a single prop.
+const LinearMafDisplay = observer(function LinearMafDisplay(props: {
   model: LinearMafDisplayModel
 }) {
   const { model } = props
+  const ref = useRef<HTMLDivElement>(null)
+  const drag = useDragSelection(ref)
+  return (
+    <DisplayChrome
+      model={model}
+      factory={MafRendererFactory}
+      data-testid={`display-${model.configuration.displayId}${model.canvasDrawn ? '-done' : ''}`}
+      ref={ref}
+      style={{ position: 'relative', height: model.height }}
+      onMouseDown={drag.handleMouseDown}
+      onMouseMove={drag.handleMouseMove}
+      onMouseUp={drag.handleMouseUp}
+      onDoubleClick={() => {
+        if (drag.showSelectionBox) {
+          drag.clearSelectionBox()
+        }
+      }}
+      onMouseLeave={drag.handleMouseLeave}
+    >
+      {({ canvasRef }) => (
+        <MafBody model={model} canvasRef={canvasRef} drag={drag} />
+      )}
+    </DisplayChrome>
+  )
+})
+
+const MafBody = observer(function MafBody({
+  model,
+  canvasRef,
+  drag,
+}: {
+  model: LinearMafDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+  drag: ReturnType<typeof useDragSelection>
+}) {
   const {
     height,
     rowsHeight,
@@ -38,10 +76,8 @@ const LinearMafDisplay = observer(function (props: {
     sources,
     samples,
   } = model
-  const ref = useRef<HTMLDivElement>(null)
   const theme = useTheme()
   const session = getSession(model)
-
   const view = getContainingView(model) as LinearGenomeViewModel
   const { width } = view
 
@@ -65,35 +101,13 @@ const LinearMafDisplay = observer(function (props: {
     mouseY,
     contextCoord,
     setContextCoord,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    handleMouseLeave,
-    clearSelectionBox,
-  } = useDragSelection(ref)
+  } = drag
 
   const treeShowing = showTree && !!hierarchy
   const sidebarOffset = treeShowing ? treeAreaWidth : 0
 
   return (
-    <DisplayChrome
-      model={model}
-      factory={MafRendererFactory}
-      data-testid={`display-${model.configuration.displayId}${model.canvasDrawn ? '-done' : ''}`}
-      ref={ref}
-      style={{ position: 'relative', height }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onDoubleClick={() => {
-        if (showSelectionBox) {
-          clearSelectionBox()
-        }
-      }}
-      onMouseLeave={handleMouseLeave}
-    >
-      {({ canvasRef }) => (
-        <>
+    <>
       <MafCoverageCanvas model={model} />
       <MafCoverageYScale model={model} />
       <MafCoverageResizeHandle model={model} />
@@ -191,9 +205,7 @@ const LinearMafDisplay = observer(function (props: {
         contextCoord={contextCoord}
         setContextCoord={setContextCoord}
       />
-        </>
-      )}
-    </DisplayChrome>
+    </>
   )
 })
 

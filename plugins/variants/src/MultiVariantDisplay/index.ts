@@ -1,8 +1,8 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
+import VariantDisplayComponent from './components/VariantDisplayComponent.tsx'
 import configSchemaFactory from './configSchema.ts'
 import modelFactory from './model.ts'
-import MultiSampleVariantBaseDisplayComponent from '../shared/components/MultiSampleVariantBaseDisplayComponent.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,7 +18,7 @@ export default function MultiVariantDisplayF(pluginManager: PluginManager) {
       stateModel: modelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: MultiSampleVariantBaseDisplayComponent,
+      ReactComponent: VariantDisplayComponent,
     })
   })
 }

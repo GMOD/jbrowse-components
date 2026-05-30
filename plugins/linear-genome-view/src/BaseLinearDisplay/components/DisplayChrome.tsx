@@ -33,9 +33,11 @@ interface CanvasHandle {
 // and there's nothing to forget — the only per-display variance left is the
 // body, which is irreducible.
 //
-// The body is a function so callers pass `canvasRef`/`canvas` to wherever the
-// canvas mounts. Return a *named observer component* from it (not inline JSX
-// reading observables) so reactivity scopes to the body, not the chrome.
+// The body is a function so callers mount the canvas wherever it belongs. It
+// returns a named observer component (every display does) so observable reads
+// scope to the body rather than re-rendering the chrome. An outer hook bound to
+// the chrome container (maf's drag-select, alignments' mouse tracking) stays in
+// the caller and threads its state down as a prop.
 function DisplayChromeInner<B extends { dispose(): void }>({
   model,
   factory,

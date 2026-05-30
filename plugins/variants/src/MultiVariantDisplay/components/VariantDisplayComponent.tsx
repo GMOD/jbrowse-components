@@ -7,16 +7,16 @@ import {
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import Crosshair from './MultiSampleVariantCrosshairs.tsx'
-import LegendBar from './MultiSampleVariantLegendBar.tsx'
-import VariantBody from '../../MultiVariantDisplay/components/VariantComponent.tsx'
-import { VariantRenderer } from '../../MultiVariantDisplay/components/VariantRenderer.ts'
-import { useMouseTracking } from '../hooks/useMouseTracking.ts'
+import VariantBody from './VariantComponent.tsx'
+import { VariantRenderer } from './VariantRenderer.ts'
+import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
+import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
+import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
-import type { MultiLinearVariantDisplayModel } from '../../MultiVariantDisplay/model.ts'
+import type { MultiLinearVariantDisplayModel } from '../model.ts'
 
-const MultiSampleVariantBaseDisplayComponent = observer(
-  function MultiSampleVariantBaseDisplayComponent(props: {
+const VariantDisplayComponent = observer(
+  function VariantDisplayComponent(props: {
     model: MultiLinearVariantDisplayModel
   }) {
     const { model } = props
@@ -81,4 +81,4 @@ const MultiSampleVariantBaseDisplayComponent = observer(
   },
 )
 
-export default MultiSampleVariantBaseDisplayComponent
+export default VariantDisplayComponent

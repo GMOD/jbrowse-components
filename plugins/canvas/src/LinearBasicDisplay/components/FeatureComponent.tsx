@@ -163,7 +163,26 @@ const ContextMenu = observer(function ContextMenu({
   )
 })
 
+// Thin outer owns the DisplayChrome; FeatureBody owns the scroll container,
+// hit-testing, overlay hooks, and the canvas itself.
 const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
+  const { classes } = useStyles()
+  return (
+    <DisplayChrome
+      model={model}
+      factory={CanvasFeatureRenderer}
+      className={classes.root}
+      style={{ height: model.height }}
+    >
+      {({ canvasRef }) => <FeatureBody model={model} canvasRef={canvasRef} />}
+    </DisplayChrome>
+  )
+})
+
+const FeatureBody = observer(function FeatureBody({
+  model,
+  canvasRef,
+}: Props & { canvasRef: (node: HTMLCanvasElement | null) => void }) {
   // false positive: omitting <[number,number]> widens to number[] — known tuple issue
   // https://github.com/typescript-eslint/typescript-eslint/issues/9529
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
@@ -335,14 +354,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
 
   return (
-    <DisplayChrome
-      model={model}
-      factory={CanvasFeatureRenderer}
-      className={classes.root}
-      style={{ height }}
-    >
-      {({ canvasRef }) => (
-        <>
+    <>
       <div
         ref={scrollContainerRef}
         className={classes.scrollContainer}
@@ -408,9 +420,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           }}
         />
       ) : null}
-        </>
-      )}
-    </DisplayChrome>
+    </>
   )
 })
 
