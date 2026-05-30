@@ -1,6 +1,7 @@
 import {
   assembleLocString,
   compareLocStrings,
+  mergeIntervals,
   parseLocString,
   stringify,
 } from './index.ts'
@@ -179,5 +180,46 @@ describe('test stringify', () => {
         refName: testStringify.refName,
       }),
     ).toBe('ctgA:0')
+  })
+})
+
+describe('mergeIntervals', () => {
+  test('merges overlapping intervals within the window', () => {
+    expect(
+      mergeIntervals(
+        [
+          { start: 0, end: 10 },
+          { start: 5, end: 20 },
+        ],
+        0,
+      ),
+    ).toEqual([{ start: 0, end: 20 }])
+  })
+
+  test('keeps the wider end when a later interval is contained', () => {
+    expect(
+      mergeIntervals(
+        [
+          { start: 0, end: 100 },
+          { start: 10, end: 20 },
+        ],
+        0,
+      ),
+    ).toEqual([{ start: 0, end: 100 }])
+  })
+
+  test('keeps non-overlapping intervals separate', () => {
+    expect(
+      mergeIntervals(
+        [
+          { start: 0, end: 10 },
+          { start: 100, end: 110 },
+        ],
+        0,
+      ),
+    ).toEqual([
+      { start: 0, end: 10 },
+      { start: 100, end: 110 },
+    ])
   })
 })

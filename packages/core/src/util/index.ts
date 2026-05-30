@@ -835,12 +835,10 @@ export function mergeIntervals<T extends { start: number; end: number }>(
     if (top.end + w < intervals[i]!.start - w) {
       stack.push(intervals[i]!)
     }
-    // otherwise update the end value of the top element
-    // if end of current interval is higher
+    // otherwise extend the top element in place if the current interval ends
+    // later (top is a live reference into the stack)
     else if (top.end < intervals[i]!.end) {
-      top.end = Math.max(top.end, intervals[i]!.end)
-      stack.pop()
-      stack.push(top)
+      top.end = intervals[i]!.end
     }
   }
 
@@ -861,12 +859,8 @@ export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
     memo[x.refName]!.push(x)
   }
 
-  return Object.values(memo).flatMap(group =>
-    mergeIntervals(
-      group.sort((a, b) => a.start - b.start),
-      w,
-    ),
-  )
+  // mergeIntervals sorts internally, so no need to pre-sort each group
+  return Object.values(memo).flatMap(group => mergeIntervals(group, w))
 }
 
 export function stripAlpha(str: string) {
