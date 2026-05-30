@@ -7,10 +7,6 @@ import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 
 export interface WorkerHandle {
-  status?: string
-  error?: unknown
-  on?: (channel: string, callback: (message: unknown) => void) => void
-  off?: (channel: string, callback: (message: unknown) => void) => void
   destroy(): void
   call(
     functionName: string,
@@ -47,9 +43,9 @@ function isStructuredClonePassthrough(thing: object): boolean {
 }
 
 function detectHardwareConcurrency() {
-  const mainThread = typeof window !== 'undefined'
-  const canDetect = mainThread && 'hardwareConcurrency' in window.navigator
-  return mainThread && canDetect ? window.navigator.hardwareConcurrency : 1
+  const canDetect =
+    typeof window !== 'undefined' && 'hardwareConcurrency' in window.navigator
+  return canDetect ? window.navigator.hardwareConcurrency : 1
 }
 class LazyWorker {
   workerP?: Promise<WorkerHandle>
@@ -124,19 +120,6 @@ export default abstract class BaseRpcDriver {
 
   freeSession(sessionId: string) {
     this.workerAssignments.delete(sessionId)
-  }
-
-  async remoteAbort(
-    sessionId: string,
-    functionName: string,
-    stopTokenId: number,
-  ) {
-    const worker = await this.getWorker(sessionId)
-    await worker.call(
-      functionName,
-      { stopTokenId },
-      { rpcDriverClassName: this.name },
-    )
   }
 
   createWorkerPool(): LazyWorker[] {

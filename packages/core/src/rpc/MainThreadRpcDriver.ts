@@ -1,19 +1,7 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 
-import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
+import type { WorkerHandle } from './BaseRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
-
-class DummyHandle {
-  destroy(): void {}
-
-  async call(
-    _functionName: string,
-    _filteredArgs?: Record<string, unknown>,
-    _options = {},
-  ): Promise<unknown> {
-    return undefined
-  }
-}
 
 /**
  * RPC driver that runs RPC functions in-band in the main thread.
@@ -23,11 +11,10 @@ class DummyHandle {
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   name = 'MainThreadRpcDriver'
 
-  makeWorker: () => Promise<DummyHandle>
-
-  constructor(args: RpcDriverConstructorArgs) {
-    super(args)
-    this.makeWorker = async (): Promise<DummyHandle> => new DummyHandle()
+  // call() runs methods in-band and never touches the worker pool, so this is
+  // unreachable; defined only to satisfy the abstract base
+  async makeWorker(): Promise<WorkerHandle> {
+    throw new Error('MainThreadRpcDriver does not use workers')
   }
 
   async call(

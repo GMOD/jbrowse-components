@@ -90,6 +90,8 @@ export default class RpcManager {
       throw new Error(`RPC driver "${backendName}" is missing configuration`)
     }
 
+    // plugin-registered custom drivers have no config entry of their own, so
+    // fall back to the WebWorkerRpcDriver config for them (xref c0de7e44)
     const config =
       this.mainConfiguration.drivers.get(backendName) ??
       this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
