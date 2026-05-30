@@ -46,6 +46,39 @@ const suite: TestSuite = {
       },
     },
     {
+      name: 'GC skew track',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-30000',
+              tracks: [
+                {
+                  trackId: 'volvox_gc',
+                  displaySnapshot: {
+                    type: 'LinearGCContentTrackDisplay',
+                    windowSize: 500,
+                    windowDelta: 500,
+                    gcMode: 'skew',
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'wiggle-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'bigwig-gc-skew-canvas',
+          '[data-testid="wiggle-display-done"] canvas',
+        )
+      },
+    },
+    {
       name: 'MultiBigWig xyplot',
       fn: async page => {
         await navigateWithSessionSpec(page, {

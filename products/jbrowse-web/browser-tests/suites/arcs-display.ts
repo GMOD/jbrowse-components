@@ -101,7 +101,7 @@ const suite: TestSuite = {
                   trackId: 'volvox_sv_cram',
                   displaySnapshot: {
                     type: 'LinearAlignmentsDisplay',
-                    pairedArcs: 'samplot',
+                    readConnections: 'samplot',
                   },
                 },
               ],
@@ -147,6 +147,30 @@ const suite: TestSuite = {
           page,
           'arcs-samplot-down-canvas',
           '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
+      name: 'BEDPE arcs (LinearPairedArcDisplay)',
+      fn: async page => {
+        // volvox_bedpe has arcs from ctgA:2700→34200 and cross-contig A↔B arcs
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: ['volvox_bedpe'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'arc-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'arcs-bedpe-canvas',
+          '[data-testid="arc-display-done"]',
         )
       },
     },
