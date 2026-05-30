@@ -271,10 +271,6 @@ export default function stateModelFactory(
           /**
            * #property
            */
-          showYScalebar: true,
-          /**
-           * #property
-           */
           drawSingletons: true,
           /**
            * #property
@@ -1532,13 +1528,6 @@ export default function stateModelFactory(
            */
           setShowMismatches(show: boolean) {
             self.showMismatches = show
-          },
-
-          /**
-           * #action
-           */
-          setShowYScalebar(show: boolean) {
-            self.showYScalebar = show
           },
 
           /**
