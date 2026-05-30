@@ -40,6 +40,7 @@ export interface LinearBasicDisplayModel {
   laidOutDataMap: Map<number, FeatureDataResult>
   featureItemMap: Map<string, FeatureItemEntry>
   isReady: boolean
+  viewportWithinLoadedData: boolean
   error: unknown
   maxY: number
   hasOverflow: boolean
@@ -434,12 +435,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 const CanvasLoadingOverlay = observer(function CanvasLoadingOverlay({
   model,
 }: {
-  model: Pick<LinearBasicDisplayModel, 'isReady' | 'statusMessage'>
+  model: Pick<LinearBasicDisplayModel, 'isReady' | 'viewportWithinLoadedData' | 'statusMessage'>
 }) {
+  // regionTooLarge/error early-return above this overlay, so no guard needed
+  // here; viewportWithinLoadedData adds the honest "stale during refetch" signal.
   return (
     <LoadingOverlay
       statusMessage={model.statusMessage}
-      isVisible={!model.isReady}
+      isVisible={!model.isReady || !model.viewportWithinLoadedData}
     />
   )
 })

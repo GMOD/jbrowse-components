@@ -18,7 +18,7 @@ function shouldFetchRegion(
   isCacheValid: (displayedRegionIndex: number) => boolean,
 ) {
   const loaded = loadedRegions.get(vr.displayedRegionIndex)
-  // Same predicate the production autorun and `viewportCovered` getter use.
+  // Same predicate the production autorun and `viewportWithinLoadedData` getter use.
   if (
     isBlockCovered(loaded, vr.region) &&
     isCacheValid(vr.displayedRegionIndex)
@@ -384,5 +384,89 @@ describe('fetch autorun region determination', () => {
       // Fetch autorun retries at new zoom level
       expect(shouldClearOnZoom(10, 20, false, new Error('timeout'))).toBe(true)
     })
+  })
+})
+
+// Mirrors the `viewportWithinLoadedData` getter (initialized guard + every
+// visible block covered) using the real isBlockCovered helper. This is the
+// signal that drives the loading overlay during the pre-refetch debounce.
+describe('viewportWithinLoadedData (loading overlay staleness signal)', () => {
+  interface VisibleBlock {
+    refName: string
+    start: number
+    end: number
+    displayedRegionIndex: number
+  }
+
+  function viewportWithinLoadedData(
+    initialized: boolean,
+    visibleRegions: VisibleBlock[],
+    loadedRegions: Map<number, Region>,
+  ) {
+    if (!initialized) {
+      return false
+    }
+    return visibleRegions.every(block =>
+      isBlockCovered(loadedRegions.get(block.displayedRegionIndex), block),
+    )
+  }
+
+  function loadedMap(...entries: [number, number, number][]) {
+    return new Map<number, Region>(
+      entries.map(([idx, start, end]) => [
+        idx,
+        { refName: 'chr1', start, end, assemblyName: 'test' },
+      ]),
+    )
+  }
+
+  function vis(displayedRegionIndex: number, start: number, end: number) {
+    return { refName: 'chr1', start, end, displayedRegionIndex }
+  }
+
+  test('false before the view initializes', () => {
+    expect(viewportWithinLoadedData(false, [vis(0, 0, 100)], loadedMap())).toBe(
+      false,
+    )
+  })
+
+  test('false with no loaded data (initial load shows the overlay)', () => {
+    expect(viewportWithinLoadedData(true, [vis(0, 0, 100)], loadedMap())).toBe(
+      false,
+    )
+  })
+
+  test('true when the viewport sits inside loaded data', () => {
+    expect(
+      viewportWithinLoadedData(true, [vis(0, 1000, 2000)], loadedMap([0, 0, 5000])),
+    ).toBe(true)
+  })
+
+  test('false on zoom-out past the loaded region (stale coverage on screen)', () => {
+    // loaded a narrow region, then zoomed out so the viewport is wider than it
+    expect(
+      viewportWithinLoadedData(true, [vis(0, 0, 10000)], loadedMap([0, 2000, 8000])),
+    ).toBe(false)
+  })
+
+  test('false when any one of several visible regions is uncovered', () => {
+    // region 1 not loaded — the whole display reads as stale
+    expect(
+      viewportWithinLoadedData(
+        true,
+        [vis(0, 0, 4000), vis(1, 0, 4000)],
+        loadedMap([0, 0, 5000]),
+      ),
+    ).toBe(false)
+  })
+
+  test('true only when every visible region is covered', () => {
+    expect(
+      viewportWithinLoadedData(
+        true,
+        [vis(0, 0, 4000), vis(1, 0, 4000)],
+        loadedMap([0, 0, 5000], [1, 0, 5000]),
+      ),
+    ).toBe(true)
   })
 })

@@ -65,7 +65,7 @@ sort/group change.
 | `untracked(() => self.loadedRegions.get(...))`         | perf guard      | prevents autorun re-fire when regions are populated; `fetchGeneration` bump covers it                                                        |
 | `untracked(() => self.regionTooLarge \|\| self.error)` | **correctness** | if either were tracked, setting them would immediately re-fire `ClearBlockingStateOnViewportChange` and wipe them before any viewport change |
 
-### `isBlockCovered` / `viewportCovered`
+### `isBlockCovered` / `viewportWithinLoadedData`
 
 `isBlockCovered(loaded, block)` (exported helper) is the single source of truth
 for "is this visible block already fetched":
@@ -81,15 +81,25 @@ land on non-integer genomic positions. Two consumers:
 
 - `FetchVisibleRegions` autorun — `!isBlockCovered` (plus `!isCacheValid`) is
   the refetch trigger.
-- `viewportCovered` getter — true when **every** visible block is covered. Goes
-  false the instant the viewport extends past loaded data (zoom-out / pan beyond
-  buffer), _before_ the debounced refetch starts. The alignments loading overlay
-  ORs this into its visibility (`!isReady || !viewportCovered`) so the scrim
-  appears while stale coverage (e.g. long-read depth tailing off past the
-  originally fetched region) is still on screen — honestly marking it
-  provisional rather than reporting "ready". `isReady` itself stays
-  `canvasDrawn && !isLoading` (unchanged) because the canvas/wiggle overlays
-  read it without excluding `regionTooLarge`/`error`.
+- `viewportWithinLoadedData` getter — true when **every** visible block is
+  covered. Because `loadedRegions[i]` is the exact region the adapter was queried
+  with, this is _exactly_ the range where fetched data (e.g. pileup coverage) is
+  complete, so it's a precise staleness test, not a heuristic. Goes false the
+  instant the viewport extends past loaded data (zoom-out / pan beyond buffer),
+  _before_ the debounced refetch starts.
+
+All three overlay families OR it into their visibility (`!isReady ||
+!viewportWithinLoadedData`) so the scrim appears while stale data is on screen:
+alignments and the shared `DisplayLoadingOverlay` (wiggle / multi-wiggle /
+manhattan / maf) additionally `&& !regionTooLarge && !error`; canvas needs no
+guard because those states early-return above its overlay. `isReady` stays
+`canvasDrawn && !isLoading` — it's the render-lifecycle axis; coverage staleness
+is ORed in at the call sites rather than folded in, because the autorun must read
+`loadedRegions` untracked while the getter reads it tracked.
+
+Known gap: the check is spatial only, so wiggle-family displays still have a
+brief un-flagged window on _zoom_ (resolution rebinning is an `isCacheValid`
+axis, not a `loadedRegions` bounds axis).
 
 ## Test files
 

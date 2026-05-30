@@ -29,7 +29,7 @@ export type { FetchContext } from './FetchMixin.ts'
  * `Math.floor`/`Math.ceil` handle fractional bpPerPx where block edges fall on
  * non-integer genomic positions. Single source of truth for "is this block
  * already fetched" — shared by the FetchVisibleRegions autorun (deciding what to
- * refetch) and the `viewportCovered` getter (deciding whether the on-screen data
+ * refetch) and the `viewportWithinLoadedData` getter (deciding whether the on-screen data
  * is stale).
  */
 export function isBlockCovered(
@@ -86,14 +86,24 @@ export default function MultiRegionDisplayMixin() {
 
       /**
        * #getter
-       * true when every visible block is spatially covered by loaded data.
-       * Goes false the moment the viewport extends past the loaded region —
-       * notably during the post-zoom/pan debounce window before a refetch
-       * starts, when stale coverage (e.g. long-read depth tailing off beyond the
-       * originally fetched region) is still on screen. Lets the loading overlay
-       * honestly flag that data as provisional rather than reporting "ready".
+       * true when every visible block lies within an already-fetched region.
+       * `loadedRegions[i]` is the exact region the adapter was queried with, so
+       * this is also exactly the range over which fetched-feature data (e.g.
+       * pileup coverage) is complete — `false` means the viewport is showing
+       * data outside the fetched range (the undercounted tail of long-read
+       * coverage past the original region, or the blank zoom-out fringe). Goes
+       * false the instant the viewport extends past loaded data — notably during
+       * the post-zoom/pan debounce before the refetch starts — letting the
+       * loading overlay flag that data as provisional rather than "ready".
+       *
+       * Spatial only: it does not detect resolution staleness (wiggle zoom
+       * rebinning, see `isCacheValid`), so those displays still have a brief
+       * un-flagged debounce window on zoom. It also can't share code with the
+       * `FetchVisibleRegions` autorun's coverage check beyond `isBlockCovered`:
+       * the autorun reads `loadedRegions` untracked (perf), this must read it
+       * tracked so the overlay clears when the fetch commits.
        */
-      get viewportCovered() {
+      get viewportWithinLoadedData() {
         const view = getContainingView(self) as LinearGenomeViewModel
         if (!view.initialized) {
           return false
