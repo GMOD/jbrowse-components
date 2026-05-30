@@ -82,20 +82,21 @@ land on non-integer genomic positions. Two consumers:
 - `FetchVisibleRegions` autorun — `!isBlockCovered` (plus `!isCacheValid`) is
   the refetch trigger.
 - `viewportWithinLoadedData` getter — true when **every** visible block is
-  covered. Because `loadedRegions[i]` is the exact region the adapter was queried
-  with, this is _exactly_ the range where fetched data (e.g. pileup coverage) is
-  complete, so it's a precise staleness test, not a heuristic. Goes false the
-  instant the viewport extends past loaded data (zoom-out / pan beyond buffer),
-  _before_ the debounced refetch starts.
+  covered. Because `loadedRegions[i]` is the exact region the adapter was
+  queried with, this is _exactly_ the range where fetched data (e.g. pileup
+  coverage) is complete, so it's a precise staleness test, not a heuristic. Goes
+  false the instant the viewport extends past loaded data (zoom-out / pan beyond
+  buffer), _before_ the debounced refetch starts.
 
 The `loadingOverlayVisible` getter packages the whole policy in one place:
-`(!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error`. **Every**
-display type's loading overlay is the one shared `DisplayLoadingOverlay`
-component reading this getter — alignments, canvas, wiggle, multi-wiggle,
-manhattan, maf (no per-display overlay wrappers). `isReady` stays
-`canvasDrawn && !isLoading` (the render-lifecycle axis) and `viewportWithinLoadedData`
-stays separate rather than folded into `isReady`, because the autorun reads
-`loadedRegions` untracked while the getter reads it tracked.
+`(!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error`.
+**Every** display type's loading overlay is the one shared
+`DisplayLoadingOverlay` component reading this getter — alignments, canvas,
+wiggle, multi-wiggle, manhattan, maf (no per-display overlay wrappers).
+`isReady` stays `canvasDrawn && !isLoading` (the render-lifecycle axis) and
+`viewportWithinLoadedData` stays separate rather than folded into `isReady`,
+because the autorun reads `loadedRegions` untracked while the getter reads it
+tracked.
 
 Known gap: the check is spatial only, so wiggle-family displays still have a
 brief un-flagged window on _zoom_ (resolution rebinning is an `isCacheValid`

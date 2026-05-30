@@ -75,11 +75,17 @@ function formatGroupDescription(
     const svlenArr = Array.isArray(info?.SVLEN) ? info.SVLEN : undefined
     return alts
       .map((a, i) => {
-        if (a === '<TRA>' && Array.isArray(info?.CHR2) && Array.isArray(info.END)) {
+        if (
+          a === '<TRA>' &&
+          Array.isArray(info?.CHR2) &&
+          Array.isArray(info.END)
+        ) {
           return `<TRA> ${info.CHR2[0]}:${info.END[0]}`
         }
         const svlen = svlenArr?.[i]
-        return svlen !== undefined ? `${a} ${getBpDisplayStr(Math.abs(+svlen))}` : a
+        return svlen !== undefined
+          ? `${a} ${getBpDisplayStr(Math.abs(+svlen))}`
+          : a
       })
       .join(',')
   }

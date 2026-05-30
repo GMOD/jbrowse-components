@@ -177,74 +177,74 @@ const PileupBody = observer(function PileupBody({
       style={{ position: 'relative', width: '100%', height }}
     >
       <PileupCanvas
-          model={model}
-          canvasRef={canvasRef}
-          width={width}
-          height={height}
-          handleMouseDown={handleMouseDown}
-          handleCanvasMouseMove={handleCanvasMouseMove}
-          handleMouseLeave={handleMouseLeave}
-          handleClick={handleClick}
-          handleContextMenu={handleContextMenu}
+        model={model}
+        canvasRef={canvasRef}
+        width={width}
+        height={height}
+        handleMouseDown={handleMouseDown}
+        handleCanvasMouseMove={handleCanvasMouseMove}
+        handleMouseLeave={handleMouseLeave}
+        handleClick={handleClick}
+        handleContextMenu={handleContextMenu}
+      />
+
+      <SashimiArcsOverlay model={model} />
+      <PileupArcsOverlay model={model} />
+
+      <VisibleLabelsHost
+        model={model}
+        width={width}
+        height={height}
+        contrastMap={contrastMap}
+      />
+
+      <CoverageAxisHost model={model} />
+
+      <InsertSizeAxisHost model={model} />
+
+      <LegendHost model={model} />
+
+      {showCoverage ? (
+        <ResizeHandle
+          className={classes.resizeHandle}
+          style={{ top: coverageHeight - YSCALEBAR_LABEL_OFFSET }}
+          onDrag={dy => {
+            model.setCoverageHeight(Math.max(20, model.coverageHeight + dy))
+            return undefined
+          }}
+          title="Drag to resize coverage track"
         />
+      ) : null}
 
-        <SashimiArcsOverlay model={model} />
-        <PileupArcsOverlay model={model} />
-
-        <VisibleLabelsHost
-          model={model}
-          width={width}
-          height={height}
-          contrastMap={contrastMap}
+      {readConnections !== 'off' && readConnectionsDown ? (
+        <ResizeHandle
+          className={classes.resizeHandle}
+          style={{ top: topOffset - YSCALEBAR_LABEL_OFFSET }}
+          onDrag={dy => {
+            model.setReadConnectionsHeight(
+              Math.max(20, model.readConnectionsHeight + dy),
+            )
+            return undefined
+          }}
+          title="Drag to resize arcs area"
         />
+      ) : null}
 
-        <CoverageAxisHost model={model} />
-
-        <InsertSizeAxisHost model={model} />
-
-        <LegendHost model={model} />
-
-        {showCoverage ? (
-          <ResizeHandle
-            className={classes.resizeHandle}
-            style={{ top: coverageHeight - YSCALEBAR_LABEL_OFFSET }}
-            onDrag={dy => {
-              model.setCoverageHeight(Math.max(20, model.coverageHeight + dy))
-              return undefined
-            }}
-            title="Drag to resize coverage track"
-          />
-        ) : null}
-
-        {readConnections !== 'off' && readConnectionsDown ? (
-          <ResizeHandle
-            className={classes.resizeHandle}
-            style={{ top: topOffset - YSCALEBAR_LABEL_OFFSET }}
-            onDrag={dy => {
-              model.setReadConnectionsHeight(
-                Math.max(20, model.readConnectionsHeight + dy),
-              )
-              return undefined
-            }}
-            title="Drag to resize arcs area"
-          />
-        ) : null}
-
-        {sashimiArcs === 'down' && showCoverage ? (
-          <ResizeHandle
-            className={classes.resizeHandle}
-            style={{
-              top: coverageHeight + sashimiArcsHeight - YSCALEBAR_LABEL_OFFSET,
-            }}
-            onDrag={dy => {
-              model.setSashimiArcsHeight(
-                Math.max(20, model.sashimiArcsHeight + dy),
-              )
-              return undefined
-            }}
-            title="Drag to resize sashimi arcs area"
-          />
-        ) : null}
+      {sashimiArcs === 'down' && showCoverage ? (
+        <ResizeHandle
+          className={classes.resizeHandle}
+          style={{
+            top: coverageHeight + sashimiArcsHeight - YSCALEBAR_LABEL_OFFSET,
+          }}
+          onDrag={dy => {
+            model.setSashimiArcsHeight(
+              Math.max(20, model.sashimiArcsHeight + dy),
+            )
+            return undefined
+          }}
+          title="Drag to resize sashimi arcs area"
+        />
+      ) : null}
 
       <PileupScrollbar model={model} topOffset={topOffset} />
     </div>

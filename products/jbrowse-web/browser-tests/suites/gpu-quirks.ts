@@ -67,7 +67,11 @@ const suite: TestSuite = {
       // ~2x while the visible content stays full-coverage.
       name: 'renders correctly at devicePixelRatio=2 (hi-DPI)',
       fn: async page => {
-        await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 1 })
+        await page.setViewport({
+          width: 1280,
+          height: 800,
+          deviceScaleFactor: 1,
+        })
         await loadAlignments(page)
         const dims1 = await page.evaluate((sel: string) => {
           const c = document.querySelector<HTMLCanvasElement>(`${sel} canvas`)
@@ -80,7 +84,11 @@ const suite: TestSuite = {
         }
         assertNonBlank(analyzeCanvasPng(await canvasPng(page)), 'dpr=1 pileup')
 
-        await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 2 })
+        await page.setViewport({
+          width: 1280,
+          height: 800,
+          deviceScaleFactor: 2,
+        })
         await loadAlignments(page)
         const dims2 = await page.evaluate((sel: string) => {
           const c = document.querySelector<HTMLCanvasElement>(`${sel} canvas`)
@@ -165,8 +173,9 @@ const suite: TestSuite = {
             )
             if (glErrors.length > 0) {
               throw new Error(
-                `GL INVALID_OPERATION errors during context-loss recovery (dispose guard missing?):\n` +
-                  glErrors.join('\n'),
+                `GL INVALID_OPERATION errors during context-loss recovery (dispose guard missing?):\n${glErrors.join(
+                  '\n',
+                )}`,
               )
             }
           } else {
@@ -178,7 +187,9 @@ const suite: TestSuite = {
           }
         } else {
           // eslint-disable-next-line no-console
-          console.log(`      [skip] context-loss test is WebGL-only (backend=${backend})`)
+          console.log(
+            `      [skip] context-loss test is WebGL-only (backend=${backend})`,
+          )
         }
       },
     },

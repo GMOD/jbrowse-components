@@ -6,15 +6,11 @@ const track = (trackId: string) =>
   ({ trackId }) as unknown as AnyConfigurationModel
 
 test('keeps a still-valid preference', () => {
-  expect(
-    pickSyntenyTrackId('b', [track('a'), track('b')]),
-  ).toBe('b')
+  expect(pickSyntenyTrackId('b', [track('a'), track('b')])).toBe('b')
 })
 
 test('falls back to the first track for a stale preference', () => {
-  expect(
-    pickSyntenyTrackId('gone', [track('a'), track('b')]),
-  ).toBe('a')
+  expect(pickSyntenyTrackId('gone', [track('a'), track('b')])).toBe('a')
 })
 
 test('falls back to the first track for an empty preference', () => {

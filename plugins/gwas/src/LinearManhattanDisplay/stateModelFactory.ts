@@ -155,14 +155,16 @@ export function stateModelFactory(
           ? buildSignificanceLines({
               thresholds: [
                 {
-                  value:
-                    self.getConfWithOverride<number>('genomeWideSignificance'),
+                  value: self.getConfWithOverride<number>(
+                    'genomeWideSignificance',
+                  ),
                   color: GENOME_WIDE_COLOR,
                   label: 'Genome-wide',
                 },
                 {
-                  value:
-                    self.getConfWithOverride<number>('suggestiveSignificance'),
+                  value: self.getConfWithOverride<number>(
+                    'suggestiveSignificance',
+                  ),
                   color: SUGGESTIVE_COLOR,
                   label: 'Suggestive',
                 },

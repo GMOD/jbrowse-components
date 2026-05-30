@@ -78,8 +78,8 @@ auto-discovers them. Mark a suite/test `requiresRemote` (S3/UCSC data) or
 `requiresAuth` to gate it.
 
 Most tests just open a LinearGenomeView at a location with some tracks and
-snapshot the rendered canvas. Use the `lgvSnapshotTest` factory for that —
-one declaration per test:
+snapshot the rendered canvas. Use the `lgvSnapshotTest` factory for that — one
+declaration per test:
 
 ```typescript
 import { lgvSnapshotTest } from '../suiteHelpers.ts'

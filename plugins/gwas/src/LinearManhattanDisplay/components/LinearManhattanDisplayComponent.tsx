@@ -126,9 +126,7 @@ const ManhattanBody = observer(function ManhattanBody({
   height: number
   clientMouseCoord: [number, number]
   contextMenu?: { coord: [number, number]; hit: ManhattanHit }
-  setContextMenu: (
-    v?: { coord: [number, number]; hit: ManhattanHit },
-  ) => void
+  setContextMenu: (v?: { coord: [number, number]; hit: ManhattanHit }) => void
 }) {
   const {
     ticks,
@@ -143,72 +141,72 @@ const ManhattanBody = observer(function ManhattanBody({
   return (
     <>
       <canvas
-          ref={canvasRef}
-          style={{
-            width,
-            height: height - 2 * YSCALEBAR_LABEL_OFFSET,
-            position: 'absolute',
-            left: 0,
-            top: YSCALEBAR_LABEL_OFFSET,
-          }}
+        ref={canvasRef}
+        style={{
+          width,
+          height: height - 2 * YSCALEBAR_LABEL_OFFSET,
+          position: 'absolute',
+          left: 0,
+          top: YSCALEBAR_LABEL_OFFSET,
+        }}
+      />
+      {ticks ? (
+        <YScaleBarOverlay
+          ticks={ticks}
+          height={height}
+          scalebarLeft={scalebarLeft}
         />
-        {ticks ? (
-          <YScaleBarOverlay
-            ticks={ticks}
-            height={height}
-            scalebarLeft={scalebarLeft}
-          />
-        ) : null}
-        {displayCrossHatches && ticks ? (
-          <CrossHatches ticks={ticks} width={width} height={height} />
-        ) : null}
-        {significanceLines.length > 0 ? (
-          <SignificanceLines
-            lines={significanceLines}
-            width={width}
-            height={height}
-          />
-        ) : null}
-        {featureUnderMouse ? (
-          <HoverHighlight
-            screenX={featureUnderMouse.screenX}
-            screenY={featureUnderMouse.screenY}
-            width={width}
-            height={height}
-          />
-        ) : null}
-        {ldMode ? <LdColorLegend offsetTop={YSCALEBAR_LABEL_OFFSET} /> : null}
-        {model.indexSnpMissing ? (
-          <LdIndexWarning offsetTop={YSCALEBAR_LABEL_OFFSET} />
-        ) : null}
-        <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
-        {contextMenu ? (
-          <Menu
-            open
-            anchorReference="anchorPosition"
-            anchorPosition={{
-              top: contextMenu.coord[1],
-              left: contextMenu.coord[0],
-            }}
-            onMenuItemClick={(_event, callback) => {
-              callback()
-              setContextMenu(undefined)
-            }}
-            onClose={() => {
-              setContextMenu(undefined)
-            }}
-            menuItems={[
-              {
-                label: `Color by LD to ${contextMenu.hit.refName}:${
-                  contextMenu.hit.start + 1
-                }`,
-                onClick: () => {
-                  model.colorByLdToHit(contextMenu.hit)
-                },
+      ) : null}
+      {displayCrossHatches && ticks ? (
+        <CrossHatches ticks={ticks} width={width} height={height} />
+      ) : null}
+      {significanceLines.length > 0 ? (
+        <SignificanceLines
+          lines={significanceLines}
+          width={width}
+          height={height}
+        />
+      ) : null}
+      {featureUnderMouse ? (
+        <HoverHighlight
+          screenX={featureUnderMouse.screenX}
+          screenY={featureUnderMouse.screenY}
+          width={width}
+          height={height}
+        />
+      ) : null}
+      {ldMode ? <LdColorLegend offsetTop={YSCALEBAR_LABEL_OFFSET} /> : null}
+      {model.indexSnpMissing ? (
+        <LdIndexWarning offsetTop={YSCALEBAR_LABEL_OFFSET} />
+      ) : null}
+      <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
+      {contextMenu ? (
+        <Menu
+          open
+          anchorReference="anchorPosition"
+          anchorPosition={{
+            top: contextMenu.coord[1],
+            left: contextMenu.coord[0],
+          }}
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setContextMenu(undefined)
+          }}
+          onClose={() => {
+            setContextMenu(undefined)
+          }}
+          menuItems={[
+            {
+              label: `Color by LD to ${contextMenu.hit.refName}:${
+                contextMenu.hit.start + 1
+              }`,
+              onClick: () => {
+                model.colorByLdToHit(contextMenu.hit)
               },
-            ]}
-          />
-        ) : null}
+            },
+          ]}
+        />
+      ) : null}
     </>
   )
 })

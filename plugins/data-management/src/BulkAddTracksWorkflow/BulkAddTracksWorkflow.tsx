@@ -54,7 +54,13 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   // a separate "removed" overlay.
   const locations = mode === 'remote' ? parseUrlList(text) : localLocations
   const pairs = pairLocations(locations)
-  const rows = buildTrackConfigs({ pairs, model, assembly, adminMode, timestamp })
+  const rows = buildTrackConfigs({
+    pairs,
+    model,
+    assembly,
+    adminMode,
+    timestamp,
+  })
   const okRows = rows.filter(row => row.status === 'ok')
   const skippedCount = rows.length - okRows.length
   const orphanIndexCount =
@@ -116,9 +122,9 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
       {orphanIndexCount > 0 ? (
         <Typography variant="body2" color="textSecondary">
-          {orphanIndexCount} index{' '}
-          {orphanIndexCount === 1 ? 'file' : 'files'} had no matching data file
-          and {orphanIndexCount === 1 ? 'was' : 'were'} ignored
+          {orphanIndexCount} index {orphanIndexCount === 1 ? 'file' : 'files'}{' '}
+          had no matching data file and{' '}
+          {orphanIndexCount === 1 ? 'was' : 'were'} ignored
         </Typography>
       ) : null}
       {warnings.map(warning => (

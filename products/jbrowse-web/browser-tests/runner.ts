@@ -475,7 +475,7 @@ async function main() {
       totalPassed += passed
       totalFailed += failed
       for (const f of failures) {
-        allFailures.push({ backend: backend, ...f })
+        allFailures.push({ backend, ...f })
       }
     }
 

@@ -150,7 +150,10 @@ const LeftPanel = observer(function LeftPanel({
   const session = getSession(model)
   const canLaunch = selectedAssemblyNames
     .slice(0, -1)
-    .every((_, i) => !rowNeedsConfiguration(model, session, selectedAssemblyNames, i))
+    .every(
+      (_, i) =>
+        !rowNeedsConfiguration(model, session, selectedAssemblyNames, i),
+    )
 
   return (
     <>

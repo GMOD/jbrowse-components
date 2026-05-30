@@ -1,4 +1,3 @@
-
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 

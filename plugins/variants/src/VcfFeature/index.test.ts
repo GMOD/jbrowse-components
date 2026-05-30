@@ -1,7 +1,11 @@
 import VcfParser from '@gmod/vcf'
 
 import VcfFeature from './index.ts'
-import { getMinimalDesc, getSOAndDescFromAltDefs, makeSimpleAltString } from './util.ts'
+import {
+  getMinimalDesc,
+  getSOAndDescFromAltDefs,
+  makeSimpleAltString,
+} from './util.ts'
 
 const defaultHeader =
   '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE'
@@ -240,9 +244,13 @@ test('makeSimpleAltString - multi-allelic', () => {
 })
 
 test('makeSimpleAltString - ref shorter than 10 chars shown as bases', () => {
-  expect(makeSimpleAltString('0/1', 'ACGTACGT', ['T'])).toEqual('ref(ACGTACGT)/8bp -> 1bp')
+  expect(makeSimpleAltString('0/1', 'ACGTACGT', ['T'])).toEqual(
+    'ref(ACGTACGT)/8bp -> 1bp',
+  )
 })
 
 test('makeSimpleAltString - ref 10+ chars shown as bp count', () => {
-  expect(makeSimpleAltString('0/0', 'ACGTACGTAC', [])).toEqual('ref(10bp)/ref(10bp)')
+  expect(makeSimpleAltString('0/0', 'ACGTACGTAC', [])).toEqual(
+    'ref(10bp)/ref(10bp)',
+  )
 })

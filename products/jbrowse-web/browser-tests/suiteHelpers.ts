@@ -56,9 +56,15 @@ export function lgvSnapshotTest({
       )
       await page.waitForSelector(canvasSelector, { timeout: 60000 })
       await waitForDataLoaded(page)
-      await dualSnapshot(page, `${snapshot}-canvas`, canvasSelector, threshold, {
-        assertContent,
-      })
+      await dualSnapshot(
+        page,
+        `${snapshot}-canvas`,
+        canvasSelector,
+        threshold,
+        {
+          assertContent,
+        },
+      )
     },
   }
 }

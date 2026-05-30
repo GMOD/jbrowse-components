@@ -53,7 +53,9 @@ export default function ArrayValue({
     ) : (
       <div className={classes.field}>
         <FieldName prefix={prefix} description={description} name={name} />
-        <BasicValue value={formatter ? formatter(value[0], name, 0) : value[0]} />
+        <BasicValue
+          value={formatter ? formatter(value[0], name, 0) : value[0]}
+        />
       </div>
     )
   } else if (value.every(val => isObject(val))) {

@@ -1,4 +1,3 @@
-
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'

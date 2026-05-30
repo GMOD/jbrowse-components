@@ -101,7 +101,11 @@ export function RootAppMenuMixin() {
          * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
          * the second-to-last one.
          */
-        insertInSubMenu(menuPath: string[], menuItem: MenuItem, position: number) {
+        insertInSubMenu(
+          menuPath: string[],
+          menuItem: MenuItem,
+          position: number,
+        ) {
           pushAction({ type: 'insertInSubMenu', menuPath, menuItem, position })
         },
       }

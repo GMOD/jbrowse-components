@@ -438,14 +438,22 @@ describe('viewportWithinLoadedData (loading overlay staleness signal)', () => {
 
   test('true when the viewport sits inside loaded data', () => {
     expect(
-      viewportWithinLoadedData(true, [vis(0, 1000, 2000)], loadedMap([0, 0, 5000])),
+      viewportWithinLoadedData(
+        true,
+        [vis(0, 1000, 2000)],
+        loadedMap([0, 0, 5000]),
+      ),
     ).toBe(true)
   })
 
   test('false on zoom-out past the loaded region (stale coverage on screen)', () => {
     // loaded a narrow region, then zoomed out so the viewport is wider than it
     expect(
-      viewportWithinLoadedData(true, [vis(0, 0, 10000)], loadedMap([0, 2000, 8000])),
+      viewportWithinLoadedData(
+        true,
+        [vis(0, 0, 10000)],
+        loadedMap([0, 2000, 8000]),
+      ),
     ).toBe(false)
   })
 

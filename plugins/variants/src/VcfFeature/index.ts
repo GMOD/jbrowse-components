@@ -25,7 +25,7 @@ function getEnd(variant: Variant) {
   const { POS, REF = '', ALT = [], INFO } = variant
   const start = POS - 1
   const hasSymbolic = ALT.some(a => a.startsWith('<'))
-  const hasTRA = ALT.some(a => a === '<TRA>')
+  const hasTRA = ALT.includes('<TRA>')
   if (hasSymbolic && !hasTRA) {
     if (Array.isArray(INFO.END)) {
       const end = INFO.END[0]

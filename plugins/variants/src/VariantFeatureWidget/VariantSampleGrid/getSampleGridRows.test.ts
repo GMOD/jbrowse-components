@@ -26,6 +26,8 @@ test('useCounts converts GT and genotype to allele dosage', () => {
 })
 
 test('filter applies a case-insensitive regex per column', () => {
-  const { rows } = getSampleGridRows(samples, 'A', ['T'], { sample: 'hg00[12]' })
+  const { rows } = getSampleGridRows(samples, 'A', ['T'], {
+    sample: 'hg00[12]',
+  })
   expect(rows.map(r => r.sample)).toEqual(['HG001', 'HG002'])
 })

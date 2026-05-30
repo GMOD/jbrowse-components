@@ -1,7 +1,10 @@
 import { useRef } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
-import { DisplayChrome, FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import {
+  DisplayChrome,
+  FloatingLegend,
+} from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -54,9 +57,7 @@ const VariantMatrixDisplayComponent = observer(
               model={model}
               crosshairX={inMatrix ? mouseState.x : undefined}
             />
-            <div
-              style={{ position: 'absolute', top: lineZoneHeight, left }}
-            >
+            <div style={{ position: 'absolute', top: lineZoneHeight, left }}>
               <VariantMatrixBody
                 model={model}
                 canvasRef={canvasRef}

@@ -59,11 +59,13 @@ const VariantDisplayComponent = observer(
                 <LegendBar model={model} />
               </g>
             </svg>
-            {showLegend ? (
-              <FloatingLegend items={model.legendItems()} />
-            ) : null}
+            {showLegend ? <FloatingLegend items={model.legendItems()} /> : null}
             <div style={{ position: 'absolute', left: 0 }}>
-              <VariantBody model={model} canvasRef={canvasRef} canvas={canvas} />
+              <VariantBody
+                model={model}
+                canvasRef={canvasRef}
+                canvas={canvas}
+              />
             </div>
             {mouseState ? (
               <Crosshair

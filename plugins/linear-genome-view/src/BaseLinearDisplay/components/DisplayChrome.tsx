@@ -52,7 +52,10 @@ function DisplayChromeInner<B extends { dispose(): void }>({
   factory: (canvas: HTMLCanvasElement) => Promise<B>
   children: (handle: CanvasHandle) => ReactNode
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
-  const { canvas, canvasRef, error, retry } = useRenderingBackend(factory, model)
+  const { canvas, canvasRef, error, retry } = useRenderingBackend(
+    factory,
+    model,
+  )
   if (error) {
     return (
       <DisplayRenderErrorOverlay
