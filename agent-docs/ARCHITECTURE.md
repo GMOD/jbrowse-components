@@ -214,14 +214,18 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
     loadingOverlayVisible: boolean      (!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error
 ```
 
-Every display type uses the one shared `DisplayLoadingOverlay` component, which
-reads `loadingOverlayVisible`. `isReady` covers track-open through the fetch
-cycle (hiding once the first frame paints); `viewportWithinLoadedData` re-shows
-the overlay when the viewport extends past loaded data — e.g. the pre-refetch
-debounce after a zoom-out, where `isReady` is already true but stale data is
-still on screen (kept a separate getter for tracking reasons — see
-BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend` resets `canvasDrawn` so the
-overlay recovers after WebGL context loss.
+Every display renders its canvas through the shared `DisplayChrome`, which owns
+the three terminal states: `renderError` (a ready-built node from
+`useDisplayRendering`, a required prop so the render-error path can't be silently
+dropped), `regionTooLarge`, and the `DisplayErrorBar` + `DisplayLoadingOverlay`
+overlays. It takes plain children, so it's agnostic to how many canvases a
+display draws. `DisplayLoadingOverlay` reads `loadingOverlayVisible`: `isReady`
+covers track-open through the fetch cycle (hiding once the first frame paints);
+`viewportWithinLoadedData` re-shows the overlay when the viewport extends past
+loaded data — e.g. the pre-refetch debounce after a zoom-out, where `isReady` is
+already true but stale data is still on screen (separate getter for tracking
+reasons — see BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend` resets
+`canvasDrawn` so the overlay recovers after WebGL context loss.
 
 All backend-specific plumbing lives in the plugin. All reactivity plumbing
 lives in the mixin.
@@ -960,14 +964,22 @@ key on a tuple of two displayedRegion indices.
     `self.attachRenderingBackend(backend, { upload, render })`.
   - Expose `rpcProps()`; add `gpuProps()` only when main thread encodes GPU
     buffers from settings.
-- **React component** — `observer()`:
+- **React component** — `observer()`. Get `canvasRef` + a pre-built
+  `renderError` from `useDisplayRendering`, and render the canvas through the
+  shared `DisplayChrome` (both from `@jbrowse/plugin-linear-genome-view`).
+  `DisplayChrome` owns the render-error / region-too-large / error-bar / loading
+  overlays, so the component only lays out its own canvas(es):
   ```tsx
-  const { canvasRef, error, retry } = useRenderingBackend(MyRenderer, model)
-  return <>{error && <ErrorBar action={retry} …/>}<canvas ref={canvasRef}/></>
+  const { canvasRef, renderError } = useDisplayRendering(MyRenderer, model, {
+    width,
+    height,
+  })
+  return (
+    <DisplayChrome renderError={renderError} model={model} style={{ width, height }}>
+      <canvas ref={canvasRef} />
+    </DisplayChrome>
+  )
   ```
-  For FetchMixin status, mount `DisplayErrorBar` + `DisplayLoadingOverlay`
-  from `@jbrowse/plugin-linear-genome-view` (generic over any model with
-  `{ error, reload, isReady, statusMessage }`).
 - **Wiggle-style displays** — compose `linearWiggleDisplayModelFactory` from
   `@jbrowse/plugin-wiggle` and implement `WiggleRenderingBackend` (typed from
   `@jbrowse/wiggle-core`). Override `isCacheValid` to `() => true` if the
