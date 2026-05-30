@@ -124,7 +124,13 @@ public float fillCoverage(float2 localPos, float xL, float xR,
                           float perpFactor, float isCigar, float h) {
   float xC = (xL + xR) * 0.5;
   float perpDist = (localPos.x - xC) / perpFactor;
-  float halfPerpW = max((xR - xL) / (2.0 * perpFactor), 0.5);
+  // CIGAR tiles keep a 0.5px half-width floor so adjacent match/indel tiles
+  // stay visible and tile cleanly. Whole-feature (base) ribbons use true
+  // coverage: a sub-pixel alignment fades proportionally instead of snapping
+  // to a solid 1px line, so a whole-genome view of thousands of tiny blocks
+  // reads as density rather than a saturated "hairball".
+  float minHalf = isCigar > 0.5 ? 0.5 : 0.0;
+  float halfPerpW = max((xR - xL) / (2.0 * perpFactor), minHalf);
   float cx;
   if (isCigar > 0.5) {
     cx = abs(perpDist) <= halfPerpW ? 1.0 : 0.0;
