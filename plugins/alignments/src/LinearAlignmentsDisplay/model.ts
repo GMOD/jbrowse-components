@@ -1906,48 +1906,43 @@ export default function stateModelFactory(
                 radioModeMenuItem(
                   'Pair & split arcs',
                   READ_CONNECTIONS_OPTIONS,
-                  self.readConnections,
+                  self.readConnections === 'off'
+                    ? 'off'
+                    : `${self.readConnections}_${
+                        self.readConnectionsDown ? 'down' : 'up'
+                      }`,
                   v => {
-                    self.setReadConnections(v)
+                    if (v === 'off') {
+                      self.setReadConnections('off')
+                    } else {
+                      const [mode, dir] = v.split('_') as [
+                        ReadConnectionsMode,
+                        string,
+                      ]
+                      self.setReadConnections(mode)
+                      self.setReadConnectionsDown(dir === 'down')
+                    }
                   },
                 ),
-                ...(self.readConnections !== 'off'
-                  ? [
-                      {
-                        label: 'Show long-range pairs',
-                        subLabel:
-                          'reads >100 kb apart or with off-screen mates',
-                        type: 'checkbox' as const,
-                        checked: self.drawLongRange,
-                        onClick: () => {
-                          self.setDrawLongRange(!self.drawLongRange)
-                        },
-                      },
-                      {
-                        label: 'Show inter-chromosomal pairs',
-                        subLabel:
-                          'reads whose mate maps to a different chromosome',
-                        type: 'checkbox' as const,
-                        checked: self.drawInter,
-                        onClick: () => {
-                          self.setDrawInter(!self.drawInter)
-                        },
-                      },
-                    ]
-                  : []),
-                ...(self.readConnections !== 'off'
-                  ? [
-                      {
-                        label: 'Point downward',
-                        subLabel: 'draw connections below the coverage band',
-                        type: 'checkbox' as const,
-                        checked: self.readConnectionsDown,
-                        onClick: () => {
-                          self.setReadConnectionsDown(!self.readConnectionsDown)
-                        },
-                      },
-                    ]
-                  : []),
+                {
+                  label: 'Show long-range pairs',
+                  disabled: self.readConnections === 'off',
+                  helpText: 'reads >100 kb apart or with off-screen mates',
+                  type: 'checkbox' as const,
+                  checked: self.drawLongRange,
+                  onClick: () => {
+                    self.setDrawLongRange(!self.drawLongRange)
+                  },
+                },
+                {
+                  label: 'Show inter-chromosomal pairs',
+                  helpText: 'reads whose mate maps to a different chromosome',
+                  type: 'checkbox' as const,
+                  checked: self.drawInter,
+                  onClick: () => {
+                    self.setDrawInter(!self.drawInter)
+                  },
+                },
                 radioModeMenuItem(
                   'Sashimi arcs',
                   ARC_DIRECTION_OPTIONS,

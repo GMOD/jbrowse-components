@@ -198,7 +198,7 @@
     "mobx": "^6.15.4",
     "mobx-react": "^9.2.2",
     "pako-esm2": "^2.0.2",
-    "react-draggable": "^4.5.0",
+    "react-draggable": "^4.6.0",
     "rxjs": "^7.8.2",
     "source-map-js": "^1.2.1",
     "swr": "^2.4.1"

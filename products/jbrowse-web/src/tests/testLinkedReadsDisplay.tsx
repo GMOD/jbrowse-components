@@ -7,8 +7,12 @@ type DisplayMode = 'arc' | 'samplot' | 'cloud' | 'bezier' | 'stack'
 // Menu path from track menu → submenu → final click, per displayMode.
 // 'stack' / 'cloud' default to plain "Linked reads → Normal".
 const MENU_PATHS: Record<DisplayMode, string[]> = {
-  arc: ['Read connections', 'Pair & split arcs', 'Pointing down'],
-  samplot: ['Read connections', 'Pair & split arcs', 'Samplot (discordant only)'],
+  arc: ['Read connections', 'Pair & split arcs', 'Arcs (below coverage)'],
+  samplot: [
+    'Read connections',
+    'Pair & split arcs',
+    'Samplot (overlap coverage)',
+  ],
   bezier: ['Read connections', 'Linked reads', 'Bezier'],
   cloud: ['Read connections', 'Linked reads', 'Normal'],
   stack: ['Read connections', 'Linked reads', 'Normal'],

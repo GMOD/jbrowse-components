@@ -27,7 +27,6 @@ exports[`export session with alignments and gff tracks 1`] = `
             "displays": [
               {
                 "arcColorByType": "insertSizeAndOrientation",
-                "arcsHeight": 40,
                 "configuration": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay",
                 "coverageHeight": 45,
                 "drawInter": true,
@@ -37,7 +36,9 @@ exports[`export session with alignments and gff tracks 1`] = `
                 "flipStrandLongReadChains": true,
                 "id": "test-id-2",
                 "linkedReads": "off",
-                "pairedArcs": "off",
+                "readConnections": "off",
+                "readConnectionsDown": false,
+                "readConnectionsHeight": 40,
                 "sashimiArcs": "up",
                 "sashimiArcsHeight": 40,
                 "showCoverage": true,

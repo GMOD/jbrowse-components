@@ -57,6 +57,7 @@ test('Create a bookmark using the click and drag rubberband', async () => {
 test('Create a bookmark using the hotkey to bookmark the current region', async () => {
   const { session, findByTestId } = await createView()
 
+  // focus the view to allow the hotkey to work (it has a focus guard)
   const user = userEvent.setup()
   await user.click(await findByTestId('tracksContainer', ...opts))
 
@@ -76,6 +77,7 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
 test('Create a bookmark using the menu button to bookmark the current region', async () => {
   const { session, findByTestId, findByText } = await createView()
 
+  // focus the view to allow the hotkey to work (it has a focus guard)
   const user = userEvent.setup()
   await user.click(await findByTestId('tracksContainer', ...opts))
   fireEvent.click(await findByTestId('view_menu_icon'))
@@ -124,6 +126,10 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
     refName: 'ctgA',
     assemblyName: 'volvox',
   })
+
+  // focus the view to allow the hotkey to work (it has a focus guard)
+  const user = userEvent.setup()
+  await user.click(await findByTestId('tracksContainer', ...opts))
 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
