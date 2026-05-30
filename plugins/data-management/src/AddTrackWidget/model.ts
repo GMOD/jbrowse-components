@@ -10,21 +10,14 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 import { reaction } from 'mobx'
 
+import { isBlockedHttpUrl, isFtpUrl, isRelativeUrl } from './urlWarnings.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function getUri(location: FileLocation | undefined) {
   return isUriLocation(location) ? location.uri : undefined
-}
-
-function isRelativeUrl(url = '') {
-  try {
-    new URL(url)
-    return false
-  } catch {
-    return !url.startsWith('/')
-  }
 }
 
 export interface IndexingAttr {
@@ -185,11 +178,8 @@ export default function f(pluginManager: PluginManager) {
        * #getter
        */
       get isFtp() {
-        const trackUri = getUri(self.trackData)
-        const indexUri = getUri(self.indexTrackData)
-        return (
-          indexUri?.startsWith('ftp://') === true ||
-          trackUri?.startsWith('ftp://') === true
+        return [getUri(self.trackData), getUri(self.indexTrackData)].some(
+          isFtpUrl,
         )
       },
 
@@ -217,23 +207,9 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get trackHttp() {
-        return getUri(self.trackData)?.startsWith('http://')
-      },
-      /**
-       * #getter
-       */
-      get indexHttp() {
-        return getUri(self.indexTrackData)?.startsWith('http://')
-      },
-
-      /**
-       * #getter
-       */
       get wrongProtocol() {
-        return (
-          window.location.protocol === 'https:' &&
-          (this.trackHttp || this.indexHttp)
+        return [getUri(self.trackData), getUri(self.indexTrackData)].some(
+          isBlockedHttpUrl,
         )
       },
 

@@ -2,7 +2,14 @@ import {
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
+  isUriLocation,
 } from '@jbrowse/core/util'
+
+import {
+  isBlockedHttpUrl,
+  isFtpUrl,
+  isRelativeUrl,
+} from '../AddTrackWidget/urlWarnings.ts'
 
 import type { TrackConfRow } from './buildConfigs.ts'
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
@@ -20,6 +27,34 @@ export function parseUrlList(text: string): FileLocation[] {
     .map(line => line.trim())
     .filter(Boolean)
     .map(uri => ({ uri, locationType: 'UriLocation' }))
+}
+
+/**
+ * Aggregate the same URL-loadability warnings the single-track workflow shows
+ * (ftp, relative, http-on-https) across a whole batch of pasted locations.
+ */
+export function locationWarnings(locations: FileLocation[]): string[] {
+  const uris = locations.filter(isUriLocation).map(loc => loc.uri)
+  const ftp = uris.filter(isFtpUrl).length
+  const relative = uris.filter(isRelativeUrl).length
+  const http = uris.filter(isBlockedHttpUrl).length
+  const warnings: string[] = []
+  if (ftp > 0) {
+    warnings.push(
+      `${ftp} ${ftp === 1 ? 'URL uses' : 'URLs use'} the ftp protocol, which JBrowse cannot access`,
+    )
+  }
+  if (relative > 0) {
+    warnings.push(
+      `${relative} ${relative === 1 ? 'URL is' : 'URLs are'} relative; provide an absolute URL (e.g. https://) unless a relative URL is intended`,
+    )
+  }
+  if (http > 0) {
+    warnings.push(
+      `${http} http:// ${http === 1 ? 'URL' : 'URLs'} may be blocked because this page is served over https`,
+    )
+  }
+  return warnings
 }
 
 /**

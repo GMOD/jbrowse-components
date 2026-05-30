@@ -10,7 +10,7 @@ import LocationInput from './LocationInput.tsx'
 import TrackPreviewTable from './TrackPreviewTable.tsx'
 import { buildTrackConfigs } from './buildConfigs.ts'
 import { isIndexFile, locationId, pairLocations } from './pairLocations.ts'
-import { parseUrlList, submitBulkTracks } from './util.ts'
+import { locationWarnings, parseUrlList, submitBulkTracks } from './util.ts'
 
 import type { InputMode } from './util.ts'
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
@@ -59,6 +59,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const skippedCount = rows.length - okRows.length
   const orphanIndexCount =
     locations.filter(isIndexFile).length - pairs.filter(p => p.index).length
+  const warnings = locationWarnings(locations)
 
   function removeRow(rowId: string) {
     const pair = pairs.find(p => locationId(p.file) === rowId)
@@ -120,6 +121,11 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
           and {orphanIndexCount === 1 ? 'was' : 'were'} ignored
         </Typography>
       ) : null}
+      {warnings.map(warning => (
+        <Typography key={warning} variant="body2" color="warning">
+          {warning}
+        </Typography>
+      ))}
       {skippedCount > 0 ? (
         <Typography variant="body2" color="error">
           {skippedCount} {skippedCount === 1 ? 'row' : 'rows'} with unrecognized
