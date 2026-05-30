@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { transaction } from 'mobx'
@@ -31,62 +31,44 @@ export function useRangeSelect(
     setCurrentX(undefined)
   }, [])
 
+  const globalMouseMove = useEffectEvent((event: MouseEvent) => {
+    if (ref.current) {
+      setCurrentX(getRelativeX(event, ref.current))
+    }
+  })
+
+  const globalMouseUp = useEffectEvent((event: MouseEvent) => {
+    if (startX === undefined || !ref.current) {
+      return
+    }
+    const { clientX, clientY } = event
+    const offsetX = getRelativeX(event, ref.current)
+    if (Math.abs(offsetX - startX) <= 3) {
+      handleClose()
+      return
+    }
+    setAnchorPosition({ offsetX, clientX, clientY })
+    const leftPx = Math.min(startX, offsetX)
+    const rightPx = Math.max(startX, offsetX)
+    transaction(() => {
+      for (const [idx, view] of model.views.entries()) {
+        view.setOffsets(view.pxToBp(leftPx), view.pxToBp(rightPx))
+      }
+    })
+    setGuideX(undefined)
+  })
+
   useEffect(() => {
-    function computeOffsets(offsetX: number) {
-      if (startX === undefined) {
-        return
-      }
-      const leftPx = Math.min(startX, offsetX)
-      const rightPx = Math.max(startX, offsetX)
-      return model.views.map(view => ({
-        leftOffset: view.pxToBp(leftPx),
-        rightOffset: view.pxToBp(rightPx),
-      }))
+    if (!mouseDragging) {
+      return
     }
-
-    function globalMouseMove(event: MouseEvent) {
-      if (ref.current && mouseDragging) {
-        const relativeX = getRelativeX(event, ref.current)
-        setCurrentX(relativeX)
-      }
+    window.addEventListener('mousemove', globalMouseMove)
+    window.addEventListener('mouseup', globalMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', globalMouseMove)
+      window.removeEventListener('mouseup', globalMouseUp)
     }
-
-    function globalMouseUp(event: MouseEvent) {
-      if (startX !== undefined && ref.current) {
-        const { clientX, clientY } = event
-        const offsetX = getRelativeX(event, ref.current)
-        if (Math.abs(offsetX - startX) <= 3) {
-          handleClose()
-          return
-        }
-        // as stated above, store both clientX/Y and offsetX for different
-        // purposes
-        setAnchorPosition({
-          offsetX,
-          clientX,
-          clientY,
-        })
-        const offsets = computeOffsets(offsetX)
-        if (offsets) {
-          transaction(() => {
-            for (const [idx, elt] of offsets.entries()) {
-              model.views[idx]!.setOffsets(elt.leftOffset, elt.rightOffset)
-            }
-          })
-        }
-        setGuideX(undefined)
-      }
-    }
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove)
-      window.addEventListener('mouseup', globalMouseUp)
-      return () => {
-        window.removeEventListener('mousemove', globalMouseMove)
-        window.removeEventListener('mouseup', globalMouseUp)
-      }
-    }
-    return () => {}
-  }, [startX, mouseDragging, model, ref, handleClose])
+  }, [mouseDragging])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()

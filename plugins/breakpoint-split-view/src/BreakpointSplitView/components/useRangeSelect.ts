@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { transaction } from 'mobx'
@@ -28,38 +28,35 @@ export function useRangeSelect(
     setCurrentX(0)
   }, [])
 
+  const globalMouseMove = useEffectEvent((event: MouseEvent) => {
+    if (ref.current) {
+      setCurrentX(getRelativeX(event, ref.current))
+    }
+  })
+
+  const globalMouseUp = useEffectEvent((event: MouseEvent) => {
+    if (startX === undefined || !ref.current) {
+      return
+    }
+    const offsetX = getRelativeX(event, ref.current)
+    if (Math.abs(offsetX - startX) <= 3) {
+      handleClose()
+      return
+    }
+    setAnchorPosition({ offsetX, clientX: event.clientX, clientY: event.clientY })
+    const leftPx = Math.min(startX, offsetX)
+    const rightPx = Math.max(startX, offsetX)
+    transaction(() => {
+      for (const view of model.views) {
+        view.setOffsets(view.pxToBp(leftPx), view.pxToBp(rightPx))
+      }
+    })
+    setGuideX(undefined)
+  })
+
   useEffect(() => {
     if (!mouseDragging) {
       return
-    }
-    function globalMouseMove(event: MouseEvent) {
-      if (ref.current) {
-        setCurrentX(getRelativeX(event, ref.current))
-      }
-    }
-
-    function globalMouseUp(event: MouseEvent) {
-      if (startX === undefined || !ref.current) {
-        return
-      }
-      const offsetX = getRelativeX(event, ref.current)
-      if (Math.abs(offsetX - startX) <= 3) {
-        handleClose()
-        return
-      }
-      setAnchorPosition({
-        offsetX,
-        clientX: event.clientX,
-        clientY: event.clientY,
-      })
-      const leftPx = Math.min(startX, offsetX)
-      const rightPx = Math.max(startX, offsetX)
-      transaction(() => {
-        for (const view of model.views) {
-          view.setOffsets(view.pxToBp(leftPx), view.pxToBp(rightPx))
-        }
-      })
-      setGuideX(undefined)
     }
     window.addEventListener('mousemove', globalMouseMove)
     window.addEventListener('mouseup', globalMouseUp)
@@ -67,7 +64,7 @@ export function useRangeSelect(
       window.removeEventListener('mousemove', globalMouseMove)
       window.removeEventListener('mouseup', globalMouseUp)
     }
-  }, [startX, mouseDragging, model, ref, handleClose])
+  }, [mouseDragging])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()

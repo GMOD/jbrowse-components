@@ -1,8 +1,7 @@
 import type React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
-import useLatestRef from '@jbrowse/core/util/useLatestRef'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -27,8 +26,6 @@ export function useRangeSelect(
   const [guideX, setGuideX] = useState<number>()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
-  const startXRef = useLatestRef(startX)
-
   const handleClose = useCallback(() => {
     setAnchorPosition(undefined)
     setStartX(undefined)
@@ -36,57 +33,55 @@ export function useRangeSelect(
     setGuideX(undefined)
   }, [])
 
+  const globalMouseMove = useEffectEvent((event: MouseEvent) => {
+    if (ref.current) {
+      setCurrentX(getRelativeX(event, ref.current))
+    }
+  })
+
+  const globalMouseUp = useEffectEvent((event: MouseEvent) => {
+    if (startX === undefined || !ref.current) {
+      return
+    }
+    const { clientX, clientY } = event
+    const offsetX = getRelativeX(event, ref.current)
+    const isClick = Math.abs(offsetX - startX) <= 3
+
+    // If click started on a scalebar refname label, let that component
+    // handle it instead of showing the rubberband menu
+    if (isClick && model.scalebarRefNameClickPending) {
+      setStartX(undefined)
+      setCurrentX(undefined)
+      return
+    }
+
+    if (!isClick && model.scalebarRefNameClickPending) {
+      model.setScalebarRefNameClickPending(false)
+    }
+
+    setAnchorPosition({ offsetX, clientX, clientY, isClick })
+    if (isClick) {
+      setGuideX(offsetX)
+    } else {
+      model.setOffsets(
+        model.pxToBp(Math.min(startX, offsetX)),
+        model.pxToBp(Math.max(startX, offsetX)),
+      )
+      setGuideX(undefined)
+    }
+  })
+
+  const globalKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setStartX(undefined)
+      setCurrentX(undefined)
+    }
+  })
+
   useEffect(() => {
     if (!mouseDragging) {
       return
     }
-
-    function globalMouseMove(event: MouseEvent) {
-      if (ref.current) {
-        setCurrentX(getRelativeX(event, ref.current))
-      }
-    }
-
-    function globalMouseUp(event: MouseEvent) {
-      const sx = startXRef.current
-      if (sx === undefined || !ref.current) {
-        return
-      }
-      const { clientX, clientY } = event
-      const offsetX = getRelativeX(event, ref.current)
-      const isClick = Math.abs(offsetX - sx) <= 3
-
-      // If click started on a scalebar refname label, let that component
-      // handle it instead of showing the rubberband menu
-      if (isClick && model.scalebarRefNameClickPending) {
-        setStartX(undefined)
-        setCurrentX(undefined)
-        return
-      }
-
-      if (!isClick && model.scalebarRefNameClickPending) {
-        model.setScalebarRefNameClickPending(false)
-      }
-
-      setAnchorPosition({ offsetX, clientX, clientY, isClick })
-      if (isClick) {
-        setGuideX(offsetX)
-      } else {
-        model.setOffsets(
-          model.pxToBp(Math.min(sx, offsetX)),
-          model.pxToBp(Math.max(sx, offsetX)),
-        )
-        setGuideX(undefined)
-      }
-    }
-
-    function globalKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setStartX(undefined)
-        setCurrentX(undefined)
-      }
-    }
-
     window.addEventListener('mousemove', globalMouseMove)
     window.addEventListener('mouseup', globalMouseUp)
     window.addEventListener('keydown', globalKeyDown)
@@ -95,7 +90,7 @@ export function useRangeSelect(
       window.removeEventListener('mouseup', globalMouseUp)
       window.removeEventListener('keydown', globalKeyDown)
     }
-  }, [mouseDragging, model, ref, startXRef])
+  }, [mouseDragging])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {

@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import useLatestRef from '@jbrowse/core/util/useLatestRef'
 import { observer } from 'mobx-react'
 
 import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip.tsx'
@@ -43,58 +42,51 @@ const OverviewRubberband = observer(function OverviewRubberband({
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined
 
-  const startXRef = useLatestRef(startX)
-  const currentXRef = useLatestRef(currentX)
+  const globalMouseMove = useEffectEvent((event: MouseEvent) => {
+    if (controlsRef.current) {
+      setCurrentX(getRelativeX(event, controlsRef.current))
+    }
+  })
+
+  const globalMouseUp = useEffectEvent(() => {
+    // click and drag
+    if (startX !== undefined && currentX !== undefined) {
+      if (Math.abs(currentX - startX) > 3) {
+        const left = Math.min(startX, currentX)
+        const right = Math.max(startX, currentX)
+        model.moveTo(
+          pxToBp(overview, left - cytobandOffset),
+          pxToBp(overview, right - cytobandOffset),
+        )
+      }
+    }
+
+    // just a click
+    if (startX !== undefined && currentX === undefined) {
+      const click = pxToBp(overview, startX - cytobandOffset)
+      if (!click.refName) {
+        getSession(model).notify('unknown position clicked')
+        console.error('unknown position clicked', click)
+      } else {
+        model.centerAt(Math.round(click.coord), click.refName, click.index)
+      }
+    }
+    setStartX(undefined)
+    setCurrentX(undefined)
+    setGuideX(undefined)
+  })
+
+  const globalKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setStartX(undefined)
+      setCurrentX(undefined)
+    }
+  })
 
   useEffect(() => {
     if (!mouseDragging) {
       return
     }
-
-    function globalMouseMove(event: MouseEvent) {
-      const ref = controlsRef.current
-      if (ref) {
-        setCurrentX(getRelativeX(event, ref))
-      }
-    }
-
-    function globalMouseUp() {
-      const sx = startXRef.current
-      const cx = currentXRef.current
-      // click and drag
-      if (sx !== undefined && cx !== undefined) {
-        if (Math.abs(cx - sx) > 3) {
-          const left = Math.min(sx, cx)
-          const right = Math.max(sx, cx)
-          model.moveTo(
-            pxToBp(overview, left - cytobandOffset),
-            pxToBp(overview, right - cytobandOffset),
-          )
-        }
-      }
-
-      // just a click
-      if (sx !== undefined && cx === undefined) {
-        const click = pxToBp(overview, sx - cytobandOffset)
-        if (!click.refName) {
-          getSession(model).notify('unknown position clicked')
-          console.error('unknown position clicked', click)
-        } else {
-          model.centerAt(Math.round(click.coord), click.refName, click.index)
-        }
-      }
-      setStartX(undefined)
-      setCurrentX(undefined)
-      setGuideX(undefined)
-    }
-
-    function globalKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setStartX(undefined)
-        setCurrentX(undefined)
-      }
-    }
-
     window.addEventListener('mousemove', globalMouseMove, true)
     window.addEventListener('mouseup', globalMouseUp, true)
     window.addEventListener('keydown', globalKeyDown, true)
@@ -103,7 +95,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
       window.removeEventListener('mouseup', globalMouseUp, true)
       window.removeEventListener('keydown', globalKeyDown, true)
     }
-  }, [mouseDragging, model, overview, cytobandOffset, currentXRef, startXRef])
+  }, [mouseDragging])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
