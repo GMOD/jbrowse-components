@@ -16,6 +16,7 @@ const TooltipComponent = observer(function TooltipComponent({
   clientMouseCoord: [number, number]
 }) {
   const { featureUnderMouse } = model
+  const r2 = featureUnderMouse?.r2
   return featureUnderMouse ? (
     <BaseTooltip
       clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}
@@ -24,6 +25,12 @@ const TooltipComponent = observer(function TooltipComponent({
         {featureUnderMouse.refName}:{toLocale(featureUnderMouse.start + 1)}
         <br />
         score: {featureUnderMouse.score.toPrecision(4)}
+        {r2 !== undefined ? (
+          <>
+            <br />
+            r²: {r2.toPrecision(3)}
+          </>
+        ) : null}
       </div>
     </BaseTooltip>
   ) : null

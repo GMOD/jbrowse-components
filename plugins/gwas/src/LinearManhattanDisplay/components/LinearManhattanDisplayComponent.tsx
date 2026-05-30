@@ -2,10 +2,7 @@ import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import {
-  DisplayChrome,
-  useDisplayRendering,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
   YSCALEBAR_LABEL_OFFSET,
@@ -18,6 +15,7 @@ import { findManhattanHit } from '../findManhattanHit.ts'
 import HoverHighlight from './HoverHighlight.tsx'
 import LdColorLegend from './LdColorLegend.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
+import SignificanceLines from './SignificanceLines.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
@@ -37,11 +35,6 @@ const LinearManhattanDisplayComponent = observer(
     const view = getContainingView(model) as LGV
     const width = view.trackWidthPx
     const height = model.height
-    const { canvasRef, renderError } = useDisplayRendering(
-      ManhattanRenderer,
-      model,
-      { width, height },
-    )
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
     const [contextMenu, setContextMenu] = useState<{
       coord: [number, number]
@@ -89,14 +82,10 @@ const LinearManhattanDisplayComponent = observer(
       }
     }
 
-    const { ticks, featureUnderMouse, displayCrossHatches, colorBy } = model
-    const scalebarLeft = model.scalebarOverlapLeft
-    const ldMode = colorBy === 'ld' && model.canvasDrawn
-
     return (
       <DisplayChrome
-        renderError={renderError}
         model={model}
+        factory={ManhattanRenderer}
         data-testid={model.canvasDrawn ? 'manhattan-gpu-done' : 'manhattan-gpu'}
         style={{ position: 'relative', width, height }}
         onMouseMove={handleMouseMove}
@@ -106,7 +95,54 @@ const LinearManhattanDisplayComponent = observer(
           handleContextMenu(event)
         }}
       >
-        <canvas
+        {({ canvasRef }) => (
+          <ManhattanBody
+            model={model}
+            canvasRef={canvasRef}
+            width={width}
+            height={height}
+            clientMouseCoord={clientMouseCoord}
+            contextMenu={contextMenu}
+            setContextMenu={setContextMenu}
+          />
+        )}
+      </DisplayChrome>
+    )
+  },
+)
+
+const ManhattanBody = observer(function ManhattanBody({
+  model,
+  canvasRef,
+  width,
+  height,
+  clientMouseCoord,
+  contextMenu,
+  setContextMenu,
+}: {
+  model: ManhattanDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+  width: number
+  height: number
+  clientMouseCoord: [number, number]
+  contextMenu?: { coord: [number, number]; hit: ManhattanHit }
+  setContextMenu: (
+    v?: { coord: [number, number]; hit: ManhattanHit },
+  ) => void
+}) {
+  const {
+    ticks,
+    featureUnderMouse,
+    displayCrossHatches,
+    colorBy,
+    significanceLines,
+  } = model
+  const scalebarLeft = model.scalebarOverlapLeft
+  const ldMode = colorBy === 'ld' && model.canvasDrawn
+
+  return (
+    <>
+      <canvas
           ref={canvasRef}
           style={{
             width,
@@ -125,6 +161,13 @@ const LinearManhattanDisplayComponent = observer(
         ) : null}
         {displayCrossHatches && ticks ? (
           <CrossHatches ticks={ticks} width={width} height={height} />
+        ) : null}
+        {significanceLines.length > 0 ? (
+          <SignificanceLines
+            lines={significanceLines}
+            width={width}
+            height={height}
+          />
         ) : null}
         {featureUnderMouse ? (
           <HoverHighlight
@@ -166,9 +209,8 @@ const LinearManhattanDisplayComponent = observer(
             ]}
           />
         ) : null}
-      </DisplayChrome>
-    )
-  },
-)
+    </>
+  )
+})
 
 export default LinearManhattanDisplayComponent

@@ -10,6 +10,9 @@ export interface ManhattanHit {
   start: number
   end: number
   score: number
+  // r² to the index SNP in LD mode (1 for the index, NaN where absent);
+  // undefined in normal coloring mode.
+  r2?: number
   screenX: number
   screenY: number
 }
@@ -72,7 +75,7 @@ export function findManhattanHit(
     const candScoreMax =
       mouseY <= HIT_RADIUS_PX ? Infinity : mouseScore + halfScore
 
-    const { positions, scores } = data
+    const { positions, scores, r2s } = data
     const candidates = flatbush.search(
       candBpMin,
       candScoreMin,
@@ -83,6 +86,10 @@ export function findManhattanHit(
     for (const i of candidates) {
       const pos = positions[i]!
       const score = scores[i]!
+      // NaN r² (SNP absent from LD data) normalizes to undefined here so the
+      // tooltip and feature widget can treat "no r²" uniformly.
+      const raw = r2s?.[i]
+      const r2 = Number.isFinite(raw) ? raw : undefined
       const ptX = bpToScreenPx(
         pos,
         start,
@@ -103,6 +110,7 @@ export function findManhattanHit(
           start: pos,
           end: pos + 1,
           score,
+          r2,
           screenX: ptX,
           screenY: ptY,
         }

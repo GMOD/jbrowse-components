@@ -6,13 +6,14 @@ import {
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
+import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
+
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const TWO_PI = Math.PI * 2
-const POINT_RADIUS_PX = 2
 
 // Pure draw entry point — used both by on-screen streaming render and SVG
 // export. No per-region builder layer (the rpcDataMap entries are already

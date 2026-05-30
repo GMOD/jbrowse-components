@@ -31,12 +31,18 @@ import {
 import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
+import {
+  GENOME_WIDE_COLOR,
+  SUGGESTIVE_COLOR,
+  buildSignificanceLines,
+} from './significanceLines.ts'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
 } from './manhattanRenderingBackendTypes.ts'
+import type { SignificanceLine } from './significanceLines.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -140,6 +146,33 @@ export function stateModelFactory(
           minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
         })
       },
+      // Genome-wide / suggestive cutoff lines, mapped to overlay Y positions
+      // against the current domain. Empty when toggled off or no data loaded.
+      get significanceLines(): SignificanceLine[] {
+        const { domain } = self
+        const show = self.getConfWithOverride<boolean>('showSignificanceLines')
+        return domain && show
+          ? buildSignificanceLines({
+              thresholds: [
+                {
+                  value:
+                    self.getConfWithOverride<number>('genomeWideSignificance'),
+                  color: GENOME_WIDE_COLOR,
+                  label: 'Genome-wide',
+                },
+                {
+                  value:
+                    self.getConfWithOverride<number>('suggestiveSignificance'),
+                  color: SUGGESTIVE_COLOR,
+                  label: 'Suggestive',
+                },
+              ],
+              domain,
+              height: self.height,
+              offset: YSCALEBAR_LABEL_OFFSET,
+            })
+          : []
+      },
       // SettingsInvalidate watches this shape — any change (color, colorBy,
       // index SNP, LD adapter) triggers a refetch, since the worker bakes
       // per-feature color into the result.
@@ -219,6 +252,7 @@ export function stateModelFactory(
           start: hit.start,
           end: hit.end,
           score: hit.score,
+          r2: hit.r2,
         })
       },
       setRpcData(idx: number, data: ManhattanRpcResult) {
@@ -273,6 +307,17 @@ export function stateModelFactory(
             disabled: self.colorBy !== 'ld' || !self.topSnp,
             onClick: () => {
               self.setIndexSnp(self.topSnp)
+            },
+          },
+          {
+            label: 'Show significance lines',
+            type: 'checkbox' as const,
+            checked: self.getConfWithOverride<boolean>('showSignificanceLines'),
+            onClick: () => {
+              self.setOverride(
+                'showSignificanceLines',
+                !self.getConfWithOverride<boolean>('showSignificanceLines'),
+              )
             },
           },
         ]

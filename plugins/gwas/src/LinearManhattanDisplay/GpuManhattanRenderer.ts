@@ -6,6 +6,7 @@ import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
+import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
 import * as shader from './shaders/manhattan.generated.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
@@ -15,7 +16,6 @@ import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
 const PASS = 'point'
 const U = shader.UNIFORM_OFFSET_F32
-const POINT_RADIUS_PX = 2
 
 export const MANHATTAN_PASSES: PassDescriptor[] = [
   slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),

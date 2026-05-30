@@ -32,6 +32,10 @@ export interface ManhattanRpcResult {
   numFeatures: number
   scoreMin: number
   scoreMax: number
+  // LD mode only: per-feature r² to the index SNP (1 for the index itself,
+  // NaN where the SNP has no LD record). Undefined in normal coloring mode,
+  // so the bulk score payload stays compact for whole-genome views.
+  r2s?: Float32Array
   // Flatbush 2D R-tree index over (bp, score) for hit testing — built on the
   // worker, transferred zero-copy, wrapped on demand via Flatbush.from. Empty
   // when numFeatures === 0 (Flatbush rejects zero-item indexes).

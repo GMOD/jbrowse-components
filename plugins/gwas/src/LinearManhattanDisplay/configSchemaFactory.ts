@@ -29,6 +29,25 @@ export function configSchemaFactory() {
         defaultValue: null,
         description: 'Adapter config for PLINK .ld pairwise r² data',
       },
+      // Horizontal reference lines at the conventional GWAS p-value cutoffs,
+      // expressed in the same pre-transformed -log10(p) units as the scores.
+      showSignificanceLines: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Show genome-wide and suggestive significance lines',
+      },
+      // -log10(5e-8) ≈ 7.3, the standard genome-wide significance cutoff.
+      genomeWideSignificance: {
+        type: 'number',
+        defaultValue: 7.30103,
+        description: 'Genome-wide significance threshold, in -log10(p) units',
+      },
+      // -log10(1e-5) = 5, the standard suggestive-significance cutoff.
+      suggestiveSignificance: {
+        type: 'number',
+        defaultValue: 5,
+        description: 'Suggestive significance threshold, in -log10(p) units',
+      },
     },
     {
       baseConfiguration: linearWiggleDisplayConfigSchema,

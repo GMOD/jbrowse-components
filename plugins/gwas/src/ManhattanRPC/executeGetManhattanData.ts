@@ -12,6 +12,7 @@ import { toArray } from 'rxjs/operators'
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
 import { makeLdColorEvaluator } from './makeLdColorEvaluator.ts'
+import { makeLdR2Evaluator } from './makeLdR2Evaluator.ts'
 
 import type { LDRecordSource } from './ldToIndex.ts'
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
@@ -24,11 +25,13 @@ import type { Feature } from '@jbrowse/core/util'
 export function buildManhattanResult(
   features: Feature[],
   evalColor: (f: Feature) => number,
+  evalR2?: (f: Feature) => number,
 ): ManhattanRpcResult {
   const n = features.length
   const positions = new Uint32Array(n)
   const scores = new Float32Array(n)
   const colors = new Uint32Array(n)
+  const r2s = evalR2 ? new Float32Array(n) : undefined
   let scoreMin = Infinity
   let scoreMax = -Infinity
 
@@ -47,6 +50,9 @@ export function buildManhattanResult(
       scoreMax = score
     }
     colors[i] = evalColor(f)
+    if (evalR2 && r2s) {
+      r2s[i] = evalR2(f)
+    }
   }
 
   let flatbushData: ArrayBuffer | undefined
@@ -65,6 +71,7 @@ export function buildManhattanResult(
     positions,
     scores,
     colors,
+    r2s,
     numFeatures: n,
     scoreMin,
     scoreMax,
@@ -107,6 +114,7 @@ export async function executeGetManhattanData({
   checkStopToken2(stopTokenCheck)
 
   let evalColor: (f: Feature) => number
+  let evalR2: ((f: Feature) => number) | undefined
   let indexFound: boolean | undefined
   if (colorBy === 'ld' && indexSnp && ldAdapterConfig) {
     const ldAdapter = (
@@ -117,12 +125,13 @@ export async function executeGetManhattanData({
     )
     checkStopToken2(stopTokenCheck)
     evalColor = makeLdColorEvaluator(ld, indexSnp, region.refName)
+    evalR2 = makeLdR2Evaluator(ld, indexSnp, region.refName)
     indexFound = ld.indexFound
   } else {
     evalColor = makeColorEvaluator(color, pluginManager.jexl)
   }
 
-  const result = buildManhattanResult(features, evalColor)
+  const result = buildManhattanResult(features, evalColor, evalR2)
   result.indexFound = indexFound
 
   const transferables: Transferable[] = [
@@ -130,6 +139,9 @@ export async function executeGetManhattanData({
     result.scores.buffer,
     result.colors.buffer,
   ]
+  if (result.r2s) {
+    transferables.push(result.r2s.buffer)
+  }
   if (result.flatbushData) {
     transferables.push(result.flatbushData)
   }

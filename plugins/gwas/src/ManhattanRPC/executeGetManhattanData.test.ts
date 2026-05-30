@@ -74,3 +74,19 @@ test('per-feature color evaluator decides each instance color', () => {
   )
   expect(Array.from(r.colors)).toEqual([0xff00ff00, 0xff0000ff, 0xff0000ff])
 })
+
+test('no r² array when no evaluator is given (normal coloring)', () => {
+  const r = buildManhattanResult([feature('a', 0, 1)], constColor(0))
+  expect(r.r2s).toBeUndefined()
+})
+
+test('per-feature r² evaluator fills the r² array (LD coloring)', () => {
+  const r = buildManhattanResult(
+    [feature('a', 0, 1), feature('b', 1, 5)],
+    constColor(0),
+    f => (f.get('start') === 0 ? 1 : 0.4),
+  )
+  expect(r.r2s).toHaveLength(2)
+  expect(r.r2s![0]).toBe(1)
+  expect(r.r2s![1]).toBeCloseTo(0.4)
+})

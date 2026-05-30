@@ -4,6 +4,7 @@ import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
 } from '../manhattanRenderingBackendTypes.ts'
+import type { SignificanceLine } from '../significanceLines.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
@@ -19,6 +20,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   regionRefNames: ReadonlyMap<number, string>
   flatbushes: ReadonlyMap<number, Flatbush>
   renderState: ManhattanRenderState | undefined
+  significanceLines: SignificanceLine[]
   featureUnderMouse: ManhattanHit | undefined
   colorBy: 'normal' | 'ld'
   indexSnpMissing: boolean
