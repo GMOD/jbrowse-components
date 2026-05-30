@@ -4,10 +4,7 @@ import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import {
-  DisplayChrome,
-  useDisplayRendering,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
@@ -212,12 +209,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // base canvas display model. scrollTop lives on the model (via
   // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
   // the model so the autorun picks it up as part of `renderState`.
-  const { canvasRef, renderError } = useDisplayRendering(
-    CanvasFeatureRenderer,
-    model,
-    { width, height },
-  )
-
   useScrollSync(scrollContainerRef, model, view)
 
   const hitTestAtEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -345,11 +336,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   return (
     <DisplayChrome
-      renderError={renderError}
       model={model}
+      factory={CanvasFeatureRenderer}
       className={classes.root}
       style={{ height }}
     >
+      {({ canvasRef }) => (
+        <>
       <div
         ref={scrollContainerRef}
         className={classes.scrollContainer}
@@ -415,6 +408,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           }}
         />
       ) : null}
+        </>
+      )}
     </DisplayChrome>
   )
 })

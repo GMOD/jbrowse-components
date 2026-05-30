@@ -2,22 +2,24 @@ import React, { useRef, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { Feature } from '@jbrowse/core/util'
+
 interface BaseHit {
   name: string
   genotype: string
   featureId: string
 }
 
-type Tooltip = Record<string, string>
-interface EnrichedFeature {
-  id(): string
-}
+// Matches the real display model's setHoveredGenotype param — a tooltip record
+// that always carries genotype + name (the rest is display-specific fields).
+type Tooltip = Record<string, unknown> & { genotype: string; name: string }
 
 interface InteractionModel {
   setHoveredGenotype: (g: Tooltip | undefined) => void
-  selectFeature: (f: EnrichedFeature) => void
-  setContextMenuFeature: (f?: EnrichedFeature) => void
-  contextMenuItems: () => { label: string; onClick: () => void }[]
+  selectFeature: (f: Feature) => void
+  setContextMenuFeature: (f?: Feature) => void
+  contextMenuItems: () => MenuItem[]
 }
 
 /**
@@ -36,7 +38,7 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
   model: InteractionModel
   getHit: (rect: DOMRect, clientX: number, clientY: number) => H | undefined
   getTooltip: (hit: H) => Tooltip
-  enrich: (hit: H) => EnrichedFeature | undefined
+  enrich: (hit: H) => Feature | undefined
   onHoverChange?: (hit: H | undefined) => void
 }) {
   const { model, getHit, getTooltip, enrich, onHoverChange } = opts

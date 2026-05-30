@@ -30,13 +30,29 @@ export type { FetchContext } from './FetchMixin.ts'
  * - [FetchMixin](../fetchmixin)
  */
 export default function GlobalDataDisplayMixin() {
-  return types.compose(
-    'GlobalDataDisplayMixin',
-    RegionTooLargeMixin(),
-    RenderLifecycleMixin(),
-    FetchMixin(),
-    types.model({}),
-  )
+  return types
+    .compose(
+      'GlobalDataDisplayMixin',
+      RegionTooLargeMixin(),
+      RenderLifecycleMixin(),
+      FetchMixin(),
+      types.model({}),
+    )
+    .views(self => ({
+      /**
+       * #getter
+       * Shared with MultiRegionDisplayMixin's getter of the same name so
+       * `DisplayLoadingOverlay` reads one signal across all GPU displays. A
+       * global display has no per-region staleness axis (it either has its one
+       * dataset or is fetching it), so this is just "fetch in flight, nothing
+       * terminal up" — matching the legacy CanvasDisplayWrapper, and correctly
+       * staying hidden over a display that's intentionally empty (e.g. LD with
+       * the triangle toggled off, which fetches nothing).
+       */
+      get loadingOverlayVisible() {
+        return self.isLoading && !self.regionTooLarge && !self.error
+      },
+    }))
 }
 
 export type GlobalDataDisplayMixinType = ReturnType<

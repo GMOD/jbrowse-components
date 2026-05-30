@@ -1,57 +1,19 @@
 import { useState } from 'react'
 
-import { ErrorOverlay } from '@jbrowse/core/ui'
-import {
-  getBpDisplayStr,
-  getContainingView,
-  useRenderingBackend,
-} from '@jbrowse/core/util'
+import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
-import {
-  VariantErrorBar,
-  VariantLoadingOverlay,
-} from '../../shared/components/VariantStatusOverlays.tsx'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
-import type {
-  FeatureGenotypeInfo,
-  VariantCellData,
-} from './computeVariantCells.ts'
-import type { VariantRenderingBackend } from './variantRenderingBackendTypes.ts'
-import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
-import type Flatbush from '@jbrowse/core/util/flatbush'
+import type { FeatureGenotypeInfo } from './computeVariantCells.ts'
+import type { MultiLinearVariantDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-interface PerRegionCellData {
-  perRegionCellData: Record<number, VariantCellData>
-}
-
-export interface VariantDisplayModel extends VariantDisplayModelBase {
-  cellData: PerRegionCellData | undefined
-  flatbushIndices: Map<number, Flatbush>
-  canvasDrawn: boolean
-  startRenderingBackend: (backend: VariantRenderingBackend) => void
-  stopRenderingBackend: () => void
-  renderNow: () => void
-  visibleRegions: {
-    refName: string
-    displayedRegionIndex: number
-    start: number
-    end: number
-    reversed?: boolean
-    assemblyName: string
-    screenStartPx: number
-    screenEndPx: number
-  }[]
-}
 
 type LGV = LinearGenomeViewModel
 
@@ -78,13 +40,13 @@ interface VariantHit {
 }
 
 function getFeatureUnderMouse(
-  model: VariantDisplayModel,
+  model: MultiLinearVariantDisplayModel,
   rect: DOMRect,
   eventClientX: number,
   eventClientY: number,
 ): VariantHit | undefined {
   const cellData = model.cellData
-  if (!cellData) {
+  if (cellData?.mode !== 'regular') {
     return undefined
   }
   const mouseX = eventClientX - rect.left
@@ -189,7 +151,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     genomicEnd: number
     displayedRegionIndex: number
   }
-  model: VariantDisplayModel
+  model: MultiLinearVariantDisplayModel
 }) {
   const region = model.visibleRegions.find(
     r => r.displayedRegionIndex === cell.displayedRegionIndex,
@@ -228,20 +190,24 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   )
 })
 
-const VariantComponent = observer(function VariantComponent({
+// The per-sample variant canvas + scrollbar + hit-test wiring. DisplayChrome
+// (owned by the outer MultiSampleVariantBaseDisplayComponent) owns the GPU
+// backend and the terminal states, handing the live canvas down here.
+const VariantBody = observer(function VariantBody({
   model,
+  canvasRef,
+  canvas,
 }: {
-  model: VariantDisplayModel
+  model: MultiLinearVariantDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+  canvas: HTMLCanvasElement | null
 }) {
   const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
   const { classes } = useStyles()
 
-  const { canvas, canvasRef, error, retry } = useRenderingBackend(
-    VariantRenderer,
-    model,
-  )
-
   const view = getContainingView(model) as LGV
+  const width = view.trackWidthPx
+  const height = model.availableHeight
 
   const { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown } =
     useVariantVirtualScroll({
@@ -277,26 +243,8 @@ const VariantComponent = observer(function VariantComponent({
       },
     })
 
-  const width = view.trackWidthPx
-  const height = model.availableHeight
-
-  if (error) {
-    return (
-      <ErrorOverlay
-        error={error}
-        width={width}
-        height={height}
-        onRetry={() => {
-          retry()
-        }}
-      />
-    )
-  }
-
   return (
-    <div style={{ position: 'relative', width, height }}>
-      {/* See VariantMatrixComponent.tsx for why the canvas must stay mounted
-          and use visibility:'hidden' instead of conditional rendering */}
+    <>
       <canvas
         data-testid={
           model.canvasDrawn ? 'variant_canvas_done' : 'variant_canvas'
@@ -308,7 +256,6 @@ const VariantComponent = observer(function VariantComponent({
           position: 'absolute',
           left: 0,
           top: 0,
-          visibility: model.regionTooLarge ? 'hidden' : undefined,
           backgroundColor:
             model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
         }}
@@ -329,12 +276,9 @@ const VariantComponent = observer(function VariantComponent({
           />
         </div>
       ) : null}
-      <VariantErrorBar model={model} />
-      {model.regionTooLarge ? model.regionCannotBeRendered() : null}
-      <VariantLoadingOverlay model={model} />
       {contextMenuNode}
-    </div>
+    </>
   )
 })
 
-export default VariantComponent
+export default VariantBody

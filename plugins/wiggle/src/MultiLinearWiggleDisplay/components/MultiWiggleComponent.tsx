@@ -1,10 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
-import {
-  DisplayChrome,
-  useDisplayRendering,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
@@ -37,10 +34,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const view = getContainingView(model) as LGV
   const totalWidth = view.trackWidthPx
   const height = model.height
-  const { canvasRef, renderError } = useDisplayRendering(WiggleRenderer, model, {
-    width: totalWidth,
-    height,
-  })
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
@@ -102,19 +95,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     }
   }, [model])
 
-  const scalebarLeft = model.scalebarOverlapLeft
-
-  const numSources = model.numSources
-  const rowHeight = model.rowHeight
-
-  const displaySources = model.sources
-  const treeShowing = model.showTree && !!model.hierarchy
-  const labelOffset = treeShowing ? model.treeAreaWidth : 0
-
   return (
     <DisplayChrome
-      renderError={renderError}
       model={model}
+      factory={WiggleRenderer}
       ref={containerRef}
       data-testid={
         model.canvasDrawn ? 'multi-wiggle-display-done' : 'multi-wiggle-display'
@@ -128,6 +112,44 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
     >
+      {({ canvasRef }) => (
+        <MultiWiggleBody
+          model={model}
+          canvasRef={canvasRef}
+          totalWidth={totalWidth}
+          height={height}
+          clientMouseCoord={clientMouseCoord}
+          offsetMouseCoord={offsetMouseCoord}
+        />
+      )}
+    </DisplayChrome>
+  )
+})
+
+const MultiWiggleBody = observer(function MultiWiggleBody({
+  model,
+  canvasRef,
+  totalWidth,
+  height,
+  clientMouseCoord,
+  offsetMouseCoord,
+}: {
+  model: MultiWiggleDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+  totalWidth: number
+  height: number
+  clientMouseCoord: [number, number]
+  offsetMouseCoord: [number, number]
+}) {
+  const scalebarLeft = model.scalebarOverlapLeft
+  const numSources = model.numSources
+  const rowHeight = model.rowHeight
+  const displaySources = model.sources
+  const treeShowing = model.showTree && !!model.hierarchy
+  const labelOffset = treeShowing ? model.treeAreaWidth : 0
+
+  return (
+    <>
       <div>
         <canvas
           ref={canvasRef}
@@ -260,7 +282,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         clientMouseCoord={clientMouseCoord}
         offsetMouseCoord={offsetMouseCoord}
       />
-    </DisplayChrome>
+    </>
   )
 })
 

@@ -1,10 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
-import {
-  DisplayChrome,
-  useDisplayRendering,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
   YSCALEBAR_LABEL_OFFSET,
@@ -37,10 +34,6 @@ const WiggleComponent = observer(function WiggleComponent({
   const view = getContainingView(model) as LGV
   const width = view.trackWidthPx
   const height = model.height
-  const { canvasRef, renderError } = useDisplayRendering(WiggleRenderer, model, {
-    width,
-    height,
-  })
 
   const [offsetMouseCoord, setOffsetMouseCoord] = useState(COORD0)
   const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
@@ -75,62 +68,92 @@ const WiggleComponent = observer(function WiggleComponent({
     model.setFeatureUnderMouse(undefined)
   }, [model])
 
-  const scalebarLeft = model.scalebarOverlapLeft
-
   return (
     <DisplayChrome
-      renderError={renderError}
       model={model}
+      factory={WiggleRenderer}
       ref={containerRef}
       data-testid={model.canvasDrawn ? 'wiggle-display-done' : 'wiggle-display'}
       style={{ position: 'relative', width, height }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
+      {({ canvasRef }) => (
+        <WiggleBody
+          model={model}
+          canvasRef={canvasRef}
+          width={width}
+          height={height}
+          clientMouseCoord={clientMouseCoord}
+          offsetMouseCoord={offsetMouseCoord}
+        />
+      )}
+    </DisplayChrome>
+  )
+})
+
+const WiggleBody = observer(function WiggleBody({
+  model,
+  canvasRef,
+  width,
+  height,
+  clientMouseCoord,
+  offsetMouseCoord,
+}: {
+  model: WiggleDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+  width: number
+  height: number
+  clientMouseCoord: [number, number]
+  offsetMouseCoord: [number, number]
+}) {
+  const scalebarLeft = model.scalebarOverlapLeft
+  return (
+    <>
       <canvas
         ref={canvasRef}
-            style={{
-              width,
-              height: height - 2 * YSCALEBAR_LABEL_OFFSET,
-              position: 'absolute',
-              left: 0,
-              top: YSCALEBAR_LABEL_OFFSET,
-            }}
+        style={{
+          width,
+          height: height - 2 * YSCALEBAR_LABEL_OFFSET,
+          position: 'absolute',
+          left: 0,
+          top: YSCALEBAR_LABEL_OFFSET,
+        }}
+      />
+      {model.isDensityMode && model.domain ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            height: 16,
+            width,
+          }}
+        >
+          <ScoreLegend
+            domain={model.domain}
+            scaleType={model.scaleType}
+            canvasWidth={width}
           />
-          {model.isDensityMode && model.domain ? (
-            <svg
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                pointerEvents: 'none',
-                height: 16,
-                width,
-              }}
-            >
-              <ScoreLegend
-                domain={model.domain}
-                scaleType={model.scaleType}
-                canvasWidth={width}
-              />
-            </svg>
-          ) : model.ticks ? (
-            <YScaleBarOverlay
-              ticks={model.ticks}
-              height={height}
-              scalebarLeft={scalebarLeft}
-            />
-          ) : null}
-          {model.displayCrossHatches && model.ticks ? (
-            <CrossHatches ticks={model.ticks} width={width} height={height} />
-          ) : null}
+        </svg>
+      ) : model.ticks ? (
+        <YScaleBarOverlay
+          ticks={model.ticks}
+          height={height}
+          scalebarLeft={scalebarLeft}
+        />
+      ) : null}
+      {model.displayCrossHatches && model.ticks ? (
+        <CrossHatches ticks={model.ticks} width={width} height={height} />
+      ) : null}
       <WiggleTooltip
         model={model}
         clientMouseCoord={clientMouseCoord}
         offsetMouseCoord={offsetMouseCoord}
         height={height}
       />
-    </DisplayChrome>
+    </>
   )
 })
 

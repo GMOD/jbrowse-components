@@ -2,10 +2,8 @@ import type React from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 
 import { clamp, getContainingView } from '@jbrowse/core/util'
-import { useDisplayRendering } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 
-import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
   CLICK_SUPPRESS_THRESHOLD_PX,
   buildColorPaletteFromTheme,
@@ -41,14 +39,15 @@ export interface FeatureHit {
   index: number
 }
 
-export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
+// Hit-test handlers + theme plumbing for the pileup canvas. The GPU backend
+// lifecycle is owned by DisplayChrome, which hands the live `canvas` down; this
+// hook only needs it to map mouse events to canvas coordinates.
+export function useAlignmentsBase(
+  model: LinearAlignmentsDisplayModel,
+  canvas: HTMLCanvasElement | null,
+) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const width = view.initialized ? view.width : undefined
-  const { canvas, canvasRef, renderError } = useDisplayRendering(
-    AlignmentsRenderer,
-    model,
-    { width, height: model.height },
-  )
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
@@ -315,9 +314,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }, [model, colorPalette])
 
   return {
-    canvas,
-    canvasRef,
-    renderError,
     width,
     contrastMap,
     handleMouseDown,

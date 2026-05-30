@@ -1,12 +1,8 @@
 import { useState } from 'react'
 
-import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import {
-  getContainingView,
-  reducePrecision,
-  useRenderingBackend,
-} from '@jbrowse/core/util'
+import { getContainingView, reducePrecision } from '@jbrowse/core/util'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import HicOverlayPanel from './HicOverlayPanel.tsx'
@@ -76,27 +72,15 @@ function Crosshairs({
 
 const HicCanvas = observer(function HicCanvas({
   model,
+  canvasRef,
 }: {
   model: LinearHicDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPx
   const { height, rpcData, yScalar } = model
   const [hover, setHover] = useState<Hover>()
-  const { canvasRef, error, retry } = useRenderingBackend(HicRenderer, model)
-
-  if (error) {
-    return (
-      <ErrorOverlay
-        error={error}
-        width={width}
-        height={height}
-        onRetry={() => {
-          retry()
-        }}
-      />
-    )
-  }
 
   return (
     <div
@@ -161,9 +145,9 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
   model: LinearHicDisplayModel
 }) {
   return (
-    <CanvasDisplayWrapper model={model}>
-      <HicCanvas model={model} />
-    </CanvasDisplayWrapper>
+    <DisplayChrome model={model} factory={HicRenderer}>
+      {({ canvasRef }) => <HicCanvas model={model} canvasRef={canvasRef} />}
+    </DisplayChrome>
   )
 })
 

@@ -4,8 +4,11 @@ import { getConf } from '@jbrowse/core/configuration'
 import { LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DisplayLoadingOverlay } from '@jbrowse/plugin-linear-genome-view'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
+
+import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
+import PileupBody from './PileupComponent.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -42,64 +45,63 @@ const AlignmentsDisplayComponent = observer(
       )
     }
 
-    const {
-      TooltipComponent,
-      DisplayMessageComponent,
-      height,
-      contextMenuCoord,
-    } = model
+    const { TooltipComponent, height, contextMenuCoord } = model
     const items = contextMenuCoord ? model.contextMenuItems() : []
     return (
-      <div
+      <DisplayChrome
+        model={model}
+        factory={AlignmentsRenderer}
         ref={ref}
         data-testid={`display-${getConf(model, 'displayId')}${model.canvasDrawn ? '-done' : ''}`}
         className={classes.display}
         onMouseMove={event => {
-          if (!ref.current) {
-            return
+          if (ref.current) {
+            const { left, top } = ref.current.getBoundingClientRect()
+            setMouseCoord({
+              offset: [event.clientX - left, event.clientY - top],
+              client: [event.clientX, event.clientY],
+            })
           }
-          const { left, top } = ref.current.getBoundingClientRect()
-          setMouseCoord({
-            offset: [event.clientX - left, event.clientY - top],
-            client: [event.clientX, event.clientY],
-          })
         }}
       >
-        <DisplayMessageComponent model={model} />
-        <DisplayLoadingOverlay model={model} />
-        <Suspense fallback={null}>
-          <TooltipComponent
-            model={model}
-            height={height}
-            offsetMouseCoord={mouseCoord.offset}
-            clientMouseCoord={mouseCoord.client}
-          />
-        </Suspense>
-        {contextMenuCoord && items.length > 0 ? (
-          <Menu
-            open
-            onMenuItemClick={(_, callback) => {
-              callback()
-            }}
-            onClose={() => {
-              model.clearContextMenu()
-            }}
-            slotProps={{
-              transition: {
-                onExit: () => {
+        {({ canvasRef, canvas }) => (
+          <>
+            <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
+            <Suspense fallback={null}>
+              <TooltipComponent
+                model={model}
+                height={height}
+                offsetMouseCoord={mouseCoord.offset}
+                clientMouseCoord={mouseCoord.client}
+              />
+            </Suspense>
+            {contextMenuCoord && items.length > 0 ? (
+              <Menu
+                open
+                onMenuItemClick={(_, callback) => {
+                  callback()
+                }}
+                onClose={() => {
                   model.clearContextMenu()
-                },
-              },
-            }}
-            anchorReference="anchorPosition"
-            anchorPosition={{
-              top: contextMenuCoord[1],
-              left: contextMenuCoord[0],
-            }}
-            menuItems={items}
-          />
-        ) : null}
-      </div>
+                }}
+                slotProps={{
+                  transition: {
+                    onExit: () => {
+                      model.clearContextMenu()
+                    },
+                  },
+                }}
+                anchorReference="anchorPosition"
+                anchorPosition={{
+                  top: contextMenuCoord[1],
+                  left: contextMenuCoord[0],
+                }}
+                menuItems={items}
+              />
+            ) : null}
+          </>
+        )}
+      </DisplayChrome>
     )
   },
 )

@@ -5,10 +5,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  DisplayErrorBar,
-  FloatingLegend,
-} from '@jbrowse/plugin-linear-genome-view'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -57,34 +54,20 @@ const useStyles = makeStyles()({
   },
 })
 
-const PileupComponent = observer(function PileupComponent({
+// The pileup canvas + all its positioned overlays. DisplayChrome owns the GPU
+// backend and the three terminal states (render error, region-too-large, fetch
+// error + loading), so this body renders only the success path — it receives
+// the live `canvas`/`canvasRef` and never has to gate on them.
+const PileupBody = observer(function PileupBody({
   model,
+  canvasRef,
+  canvas,
 }: {
   model: LinearAlignmentsDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+  canvas: HTMLCanvasElement | null
 }) {
-  const { error, regionTooLarge, height } = model
-
-  if (error || regionTooLarge) {
-    return (
-      <div style={{ position: 'relative', width: '100%', height }}>
-        {error ? <DisplayErrorBar model={model} /> : model.regionCannotBeRendered()}
-      </div>
-    )
-  }
-
-  return <PileupInner model={model} />
-})
-
-const PileupInner = observer(function PileupInner({
-  model,
-}: {
-  model: LinearAlignmentsDisplayModel
-}) {
-  const base = useAlignmentsBase(model)
   const {
-    canvas,
-    canvasRef,
-    renderError,
     width,
     contrastMap,
     handleMouseDown,
@@ -92,7 +75,7 @@ const PileupInner = observer(function PileupInner({
     handleContextMenu,
     processMouseMove,
     processClick,
-  } = base
+  } = useAlignmentsBase(model, canvas)
   const { classes } = useStyles()
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
@@ -128,10 +111,6 @@ const PileupInner = observer(function PileupInner({
       canvas.removeEventListener('wheel', handler)
     }
   }, [canvas, scrollZoom, model])
-
-  if (renderError) {
-    return renderError
-  }
 
   if (!width) {
     return null
@@ -193,14 +172,11 @@ const PileupInner = observer(function PileupInner({
   }
 
   return (
-    <div>
-      <div
-        data-testid={
-          model.canvasDrawn ? 'pileup-display-done' : 'pileup-display'
-        }
-        style={{ position: 'relative', width: '100%', height }}
-      >
-        <PileupCanvas
+    <div
+      data-testid={model.canvasDrawn ? 'pileup-display-done' : 'pileup-display'}
+      style={{ position: 'relative', width: '100%', height }}
+    >
+      <PileupCanvas
           model={model}
           canvasRef={canvasRef}
           width={width}
@@ -270,8 +246,7 @@ const PileupInner = observer(function PileupInner({
           />
         ) : null}
 
-        <PileupScrollbar model={model} topOffset={topOffset} />
-      </div>
+      <PileupScrollbar model={model} topOffset={topOffset} />
     </div>
   )
 })
@@ -472,4 +447,4 @@ const PileupScrollbar = observer(function PileupScrollbar({
   )
 })
 
-export default PileupComponent
+export default PileupBody

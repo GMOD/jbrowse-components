@@ -1,10 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import {
-  DisplayChrome,
-  useDisplayRendering,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -47,11 +44,6 @@ const LinearMafDisplay = observer(function (props: {
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const { width } = view
-  const { canvasRef, renderError } = useDisplayRendering(
-    MafRendererFactory,
-    model,
-    { width, height },
-  )
 
   // Push theme-derived color palette into the model. Drives `gpuProps()`,
   // so theme changes re-encode on the main thread (no RPC refetch). The
@@ -85,8 +77,8 @@ const LinearMafDisplay = observer(function (props: {
 
   return (
     <DisplayChrome
-      renderError={renderError}
       model={model}
+      factory={MafRendererFactory}
       data-testid={`display-${model.configuration.displayId}${model.canvasDrawn ? '-done' : ''}`}
       ref={ref}
       style={{ position: 'relative', height }}
@@ -100,6 +92,8 @@ const LinearMafDisplay = observer(function (props: {
       }}
       onMouseLeave={handleMouseLeave}
     >
+      {({ canvasRef }) => (
+        <>
       <MafCoverageCanvas model={model} />
       <MafCoverageYScale model={model} />
       <MafCoverageResizeHandle model={model} />
@@ -197,6 +191,8 @@ const LinearMafDisplay = observer(function (props: {
         contextCoord={contextCoord}
         setContextCoord={setContextCoord}
       />
+        </>
+      )}
     </DisplayChrome>
   )
 })

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { CanvasDisplayWrapper, ErrorOverlay } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, max, useRenderingBackend } from '@jbrowse/core/util'
+import { getContainingView, max } from '@jbrowse/core/util'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
@@ -97,8 +97,10 @@ function RecombinationOverlay({
 
 const LDCanvas = observer(function LDCanvas({
   model,
+  canvasRef,
 }: {
   model: SharedLDModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPxWithoutBorders
@@ -125,8 +127,6 @@ const LDCanvas = observer(function LDCanvas({
     x: number
     y: number
   }>()
-
-  const { canvasRef, error, retry } = useRenderingBackend(LDRenderer, model)
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
@@ -176,19 +176,6 @@ const LDCanvas = observer(function LDCanvas({
   const onMouseLeave = () => {
     setHoveredItem(undefined)
     setMousePosition(undefined)
-  }
-
-  if (error) {
-    return (
-      <ErrorOverlay
-        error={error}
-        width={width}
-        height={containerHeight}
-        onRetry={() => {
-          retry()
-        }}
-      />
-    )
   }
 
   return (
@@ -290,13 +277,15 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
   model: SharedLDModel
 }) {
   return (
-    <CanvasDisplayWrapper model={model}>
-      {model.showLDTriangle ? (
-        <LDCanvas model={model} />
-      ) : (
-        <EmptyState model={model} />
-      )}
-    </CanvasDisplayWrapper>
+    <DisplayChrome model={model} factory={LDRenderer}>
+      {({ canvasRef }) =>
+        model.showLDTriangle ? (
+          <LDCanvas model={model} canvasRef={canvasRef} />
+        ) : (
+          <EmptyState model={model} />
+        )
+      }
+    </DisplayChrome>
   )
 })
 

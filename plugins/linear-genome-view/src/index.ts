@@ -113,7 +113,6 @@ export {
   getDisplayStr,
   migrateOldSettingSnapshots,
   onDisplayedRegionsChange,
-  useDisplayRendering,
 } from './BaseLinearDisplay/index.ts'
 export type {
   ByteEstimateConfig,

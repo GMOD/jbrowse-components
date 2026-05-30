@@ -171,10 +171,6 @@ async function fetchFeatureDetails(
   return new SimpleFeature(feature)
 }
 
-const AlignmentsComponent = lazy(
-  () => import('./components/PileupComponent.tsx'),
-)
-
 const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
 )
@@ -507,13 +503,6 @@ export default function stateModelFactory(
             return selection.id()
           }
           return undefined
-        },
-
-        /**
-         * #getter
-         */
-        get DisplayMessageComponent() {
-          return AlignmentsComponent
         },
 
         /**

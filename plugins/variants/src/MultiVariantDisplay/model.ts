@@ -1,4 +1,3 @@
-import { lazy } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -17,8 +16,6 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-const VariantComponent = lazy(() => import('./components/VariantComponent.tsx'))
-
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
@@ -35,9 +32,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         get visibleRegions() {
           const view = getContainingView(self) as LinearGenomeViewModel
           return view.visibleRegions
-        },
-        get DisplayMessageComponent() {
-          return VariantComponent
         },
         get renderState() {
           const view = getContainingView(self) as LinearGenomeViewModel

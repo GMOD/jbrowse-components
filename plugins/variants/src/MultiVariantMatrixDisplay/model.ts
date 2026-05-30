@@ -1,4 +1,3 @@
-import { lazy } from 'react'
 
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -13,10 +12,6 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-const VariantMatrixComponent = lazy(
-  () => import('./components/VariantMatrixComponent.tsx'),
-)
-
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
@@ -30,9 +25,6 @@ export default function stateModelFactory(
       }),
     )
     .views(self => ({
-      get DisplayMessageComponent() {
-        return VariantMatrixComponent
-      },
       get blockType() {
         return 'dynamicBlocks'
       },
