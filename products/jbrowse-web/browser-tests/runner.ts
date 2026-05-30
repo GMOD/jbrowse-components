@@ -275,9 +275,9 @@ async function setupPage(browser: Browser) {
 
 async function runWithRenderingBackend(
   suites: TestSuite[],
-  backend: RenderingBackend | undefined,
+  backend: RenderingBackend,
 ) {
-  snapshotConfig.backend = backend ?? ''
+  snapshotConfig.backend = backend
 
   // WebGPU requires Firefox Nightly on the real GPU, run headed. Chrome +
   // puppeteer does not render WebGPU canvases (blank canvas / adapter-validation
@@ -433,13 +433,13 @@ async function main() {
     const suites = await discoverSuites()
     console.log(`Found ${suites.length} test suites`)
 
-    let backends: (RenderingBackend | undefined)[]
+    let backends: RenderingBackend[]
     if (backendValue === 'all') {
       backends = skipWebGPU
         ? ['canvas2d', 'webgl']
         : ['canvas2d', 'webgl', 'webgpu']
     } else {
-      backends = [backendValue as RenderingBackend | undefined]
+      backends = [(backendValue ?? 'canvas2d') as RenderingBackend]
     }
 
     let totalPassed = 0
@@ -465,7 +465,7 @@ async function main() {
       if (smoke) {
         console.log('(smoke test: running all suites including remote)')
       }
-      console.log(`(backend: ${backend ?? 'default'})`)
+      console.log(`(backend: ${backend})`)
 
       const { passed, failed, failures } = await runWithRenderingBackend(
         suites,
@@ -474,7 +474,7 @@ async function main() {
       totalPassed += passed
       totalFailed += failed
       for (const f of failures) {
-        allFailures.push({ backend: backend ?? 'default', ...f })
+        allFailures.push({ backend: backend, ...f })
       }
     }
 
