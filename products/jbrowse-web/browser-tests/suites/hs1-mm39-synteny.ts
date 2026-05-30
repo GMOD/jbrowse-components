@@ -14,6 +14,44 @@ const suite: TestSuite = {
   requiresRemote: true,
   tests: [
     {
+      name: 'clean whole-genome ribbon hs1 vs mm39 (500k minlen, diagonalized)',
+      fn: async page => {
+        // Reproduces the look of data/hs1ToMm39/ribbon-500k.png (the offline
+        // reference renderer): 500k minlen drops short-alignment hairball noise,
+        // autoDiagonalize reorders mm39 chroms so syntenic blocks form clean
+        // diagonals, drawCurves + low alpha give legible bezier ribbons colored
+        // per query chromosome. Proves the runtime GPU path matches the
+        // reference offline plot.
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearSyntenyView',
+                tracks: ['hs1ToMm39.over.chain.pif'],
+                minAlignmentLength: 500000,
+                drawCurves: true,
+                autoDiagonalize: true,
+                colorBy: 'query',
+                alpha: 0.4,
+                levelHeights: [350],
+                views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
+              },
+            ],
+          },
+          hs1Mm39Config,
+        )
+
+        await findByTestId(page, 'synteny_canvas_done', 120000)
+        await waitForDataLoaded(page, 120000)
+        await dualSnapshot(
+          page,
+          'hs1-mm39-synteny-clean-ribbon-canvas',
+          '[data-testid="synteny_canvas_done"]',
+        )
+      },
+    },
+    {
       name: 'whole-genome overview hs1 vs mm39 (100k minlen)',
       fn: async page => {
         // whole-genome human vs mouse — omitting loc shows all chromosomes;

@@ -124,12 +124,13 @@ public float fillCoverage(float2 localPos, float xL, float xR,
                           float perpFactor, float isCigar, float h) {
   float xC = (xL + xR) * 0.5;
   float perpDist = (localPos.x - xC) / perpFactor;
-  // CIGAR tiles keep a 0.5px half-width floor so adjacent match/indel tiles
-  // stay visible and tile cleanly. Whole-feature (base) ribbons use true
-  // coverage: a sub-pixel alignment fades proportionally instead of snapping
-  // to a solid 1px line, so a whole-genome view of thousands of tiny blocks
-  // reads as density rather than a saturated "hairball".
-  float minHalf = isCigar > 0.5 ? 0.5 : 0.0;
+  // Both CIGAR tiles and whole-feature (base) ribbons keep a 0.5px half-width
+  // floor (1px minimum visual width). For base ribbons this keeps a sub-pixel
+  // alignment at full centerline brightness at whole-genome zoom instead of the
+  // ~0.5 coverage the bare smoothstep midpoint would give — matching the
+  // canvas2d backend's 1px centerline stroke (Canvas2DSyntenyRenderer.ts) so the
+  // two backends look the same. Wide ribbons (halfWidth > floor) are unaffected.
+  float minHalf = 0.5;
   float halfPerpW = max((xR - xL) / (2.0 * perpFactor), minHalf);
   float cx;
   if (isCigar > 0.5) {

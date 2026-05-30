@@ -68,16 +68,38 @@ function drawInstances(
       fillStyleCache.set(packed, fillStyle)
     }
 
-    // SYNC: matches the fill shaders' fillCoverage. Sub-pixel ribbons are
-    // filled (not snapped to a solid 1px stroke) so they fade proportionally
-    // and a whole-genome view reads as density rather than a hairball.
-    ctx.fillStyle = fillStyle
-    buildFeaturePath(ctx, c, height, drawCurves)
-    ctx.fill()
-    if (isClicked) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.4)'
+    // The fill shaders' fillCoverage gives a sub-pixel base ribbon a ~1px-wide
+    // AA footprint (smoothstep over fwidth floors the band at one pixel), so it
+    // keeps a ~0.5-coverage centerline and stays visible at whole-genome zoom.
+    // A geometric ctx.fill() of a sub-pixel quad instead deposits near-zero ink,
+    // so without this the canvas2d backend renders near-blank where the GPU
+    // shows dense ribbons. When the ribbon is sub-pixel on both ends, stroke its
+    // centerline at 1px to match that floor; otherwise fill the silhouette.
+    const topW = Math.abs(c.sx2 - c.sx1)
+    const botW = Math.abs(c.sx4 - c.sx3)
+    if (Math.max(topW, botW) < 1) {
+      const xt = (c.sx1 + c.sx2) * 0.5
+      const xb = (c.sx3 + c.sx4) * 0.5
+      ctx.strokeStyle = fillStyle
       ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(xt, 0)
+      if (drawCurves) {
+        const halfH = height * 0.5
+        ctx.bezierCurveTo(xt, halfH, xb, halfH, xb, height)
+      } else {
+        ctx.lineTo(xb, height)
+      }
       ctx.stroke()
+    } else {
+      ctx.fillStyle = fillStyle
+      buildFeaturePath(ctx, c, height, drawCurves)
+      ctx.fill()
+      if (isClicked) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)'
+        ctx.lineWidth = 1
+        ctx.stroke()
+      }
     }
   }
 }
