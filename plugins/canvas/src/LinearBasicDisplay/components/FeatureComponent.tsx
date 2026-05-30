@@ -1,9 +1,14 @@
 import React, { useCallback, useRef, useState } from 'react'
 
-import { ErrorOverlay, LoadingOverlay, Menu } from '@jbrowse/core/ui'
+import { Menu } from '@jbrowse/core/ui'
 import { getContainingView, useRenderingBackend } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import {
+  DisplayErrorBar,
+  DisplayLoadingOverlay,
+  DisplayRenderErrorOverlay,
+} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
@@ -39,8 +44,7 @@ export interface LinearBasicDisplayModel {
   height: number
   laidOutDataMap: Map<number, FeatureDataResult>
   featureItemMap: Map<string, FeatureItemEntry>
-  isReady: boolean
-  viewportWithinLoadedData: boolean
+  loadingOverlayVisible: boolean
   error: unknown
   maxY: number
   hasOverflow: boolean
@@ -175,7 +179,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const view = getContainingView(model) as LGV
 
-  const { laidOutDataMap, error: modelError } = model
+  const { laidOutDataMap } = model
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
@@ -209,13 +213,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // base canvas display model. scrollTop lives on the model (via
   // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
   // the model so the autorun picks it up as part of `renderState`.
-  const {
-    canvasRef,
-    error: gpuError,
-    retry,
-  } = useRenderingBackend(CanvasFeatureRenderer, model)
-
-  const error = gpuError || modelError
+  const { canvasRef, error, retry } = useRenderingBackend(
+    CanvasFeatureRenderer,
+    model,
+  )
 
   useScrollSync(scrollContainerRef, model, view)
 
@@ -344,14 +345,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   if (error) {
     return (
-      <ErrorOverlay
+      <DisplayRenderErrorOverlay
         error={error}
-        width={width ?? '100%'}
+        onRetry={retry}
+        width={width}
         height={height}
-        onRetry={() => {
-          retry()
-          model.reload()
-        }}
       />
     )
   }
@@ -412,7 +410,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         />
       ) : null}
 
-      <CanvasLoadingOverlay model={model} />
+      <DisplayErrorBar model={model} />
+      <DisplayLoadingOverlay model={model} />
       <FeatureTooltip
         info={model.mouseoverExtraInformation}
         clientMouseCoord={clientXY}
@@ -429,21 +428,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         />
       ) : null}
     </div>
-  )
-})
-
-const CanvasLoadingOverlay = observer(function CanvasLoadingOverlay({
-  model,
-}: {
-  model: Pick<LinearBasicDisplayModel, 'isReady' | 'viewportWithinLoadedData' | 'statusMessage'>
-}) {
-  // regionTooLarge/error early-return above this overlay, so no guard needed
-  // here; viewportWithinLoadedData adds the honest "stale during refetch" signal.
-  return (
-    <LoadingOverlay
-      statusMessage={model.statusMessage}
-      isVisible={!model.isReady || !model.viewportWithinLoadedData}
-    />
   )
 })
 

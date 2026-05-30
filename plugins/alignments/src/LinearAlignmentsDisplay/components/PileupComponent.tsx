@@ -2,10 +2,14 @@ import { useEffect } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
-import { ErrorBar, ResizeHandle } from '@jbrowse/core/ui'
+import { ResizeHandle } from '@jbrowse/core/ui'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import {
+  DisplayErrorBar,
+  DisplayRenderErrorOverlay,
+  FloatingLegend,
+} from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -64,16 +68,7 @@ const PileupComponent = observer(function PileupComponent({
   if (error || regionTooLarge) {
     return (
       <div style={{ position: 'relative', width: '100%', height }}>
-        {error ? (
-          <ErrorBar
-            error={error}
-            onRetry={() => {
-              model.reload()
-            }}
-          />
-        ) : (
-          model.regionCannotBeRendered()
-        )}
+        {error ? <DisplayErrorBar model={model} /> : model.regionCannotBeRendered()}
       </div>
     )
   }
@@ -92,6 +87,8 @@ const PileupInner = observer(function PileupInner({
     canvasRef,
     width,
     contrastMap,
+    gpuError,
+    retry,
     handleMouseDown,
     handleMouseLeave,
     handleContextMenu,
@@ -133,6 +130,17 @@ const PileupInner = observer(function PileupInner({
       canvas.removeEventListener('wheel', handler)
     }
   }, [canvas, scrollZoom, model])
+
+  if (gpuError) {
+    return (
+      <DisplayRenderErrorOverlay
+        error={gpuError}
+        onRetry={retry}
+        width={width}
+        height={model.height}
+      />
+    )
+  }
 
   if (!width) {
     return null

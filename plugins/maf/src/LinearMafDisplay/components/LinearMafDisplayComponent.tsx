@@ -8,6 +8,7 @@ import {
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
+  DisplayRenderErrorOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { useTheme } from '@mui/material'
@@ -49,7 +50,10 @@ const LinearMafDisplay = observer(function (props: {
   const theme = useTheme()
   const session = getSession(model)
 
-  const { canvasRef } = useRenderingBackend(MafRendererFactory, model)
+  const { canvasRef, error, retry } = useRenderingBackend(
+    MafRendererFactory,
+    model,
+  )
 
   // Push theme-derived color palette into the model. Drives `gpuProps()`,
   // so theme changes re-encode on the main thread (no RPC refetch). The
@@ -83,6 +87,17 @@ const LinearMafDisplay = observer(function (props: {
 
   const treeShowing = showTree && !!hierarchy
   const sidebarOffset = treeShowing ? treeAreaWidth : 0
+
+  if (error) {
+    return (
+      <DisplayRenderErrorOverlay
+        error={error}
+        onRetry={retry}
+        width={width}
+        height={height}
+      />
+    )
+  }
 
   return (
     <div

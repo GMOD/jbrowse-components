@@ -86,34 +86,22 @@ export default function MultiRegionDisplayMixin() {
 
       /**
        * #getter
-       * true when every visible block lies within an already-fetched region.
-       * `loadedRegions[i]` is the exact region the adapter was queried with, so
-       * this is also exactly the range over which fetched-feature data (e.g.
-       * pileup coverage) is complete — `false` means the viewport is showing
-       * data outside the fetched range (the undercounted tail of long-read
-       * coverage past the original region, or the blank zoom-out fringe). Goes
-       * false the instant the viewport extends past loaded data — notably during
-       * the post-zoom/pan debounce before the refetch starts — letting the
-       * loading overlay flag that data as provisional rather than "ready".
-       *
-       * Spatial only: it does not detect resolution staleness (wiggle zoom
-       * rebinning, see `isCacheValid`), so those displays still have a brief
-       * un-flagged debounce window on zoom. It also can't share code with the
-       * `FetchVisibleRegions` autorun's coverage check beyond `isBlockCovered`:
-       * the autorun reads `loadedRegions` untracked (perf), this must read it
-       * tracked so the overlay clears when the fetch commits.
+       * true when every visible block lies within an already-fetched region —
+       * i.e. the viewport shows data we actually loaded, not the stale fringe
+       * left after a zoom-out/pan. Drives the loading overlay through the
+       * pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact
+       * and for the resolution-staleness gap.
        */
       get viewportWithinLoadedData() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized) {
-          return false
-        }
-        return view.visibleRegions.every(block =>
-          isBlockCovered(
-            self.loadedRegions.get(block.displayedRegionIndex),
-            block,
-          ),
-        )
+        return view.initialized
+          ? view.visibleRegions.every(block =>
+              isBlockCovered(
+                self.loadedRegions.get(block.displayedRegionIndex),
+                block,
+              ),
+            )
+          : false
       },
 
       /**
@@ -128,6 +116,22 @@ export default function MultiRegionDisplayMixin() {
       get renderBlocks() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return buildRenderBlocks(view.visibleRegions)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * whether the loading scrim should show: data not ready yet, or stale data
+       * (viewport past loaded) still on screen. Not while regionTooLarge/error —
+       * those render their own UI. The single signal every display's loading
+       * overlay reads.
+       */
+      get loadingOverlayVisible() {
+        return (
+          (!self.isReady || !self.viewportWithinLoadedData) &&
+          !self.regionTooLarge &&
+          !self.error
+        )
       },
     }))
     .actions(self => ({

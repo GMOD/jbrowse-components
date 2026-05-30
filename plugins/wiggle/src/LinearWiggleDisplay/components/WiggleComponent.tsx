@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useRenderingBackend } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
+  DisplayRenderErrorOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
@@ -78,13 +78,11 @@ const WiggleComponent = observer(function WiggleComponent({
 
   if (error) {
     return (
-      <ErrorOverlay
+      <DisplayRenderErrorOverlay
         error={error}
+        onRetry={retry}
         width={width}
         height={height}
-        onRetry={() => {
-          retry()
-        }}
       />
     )
   }

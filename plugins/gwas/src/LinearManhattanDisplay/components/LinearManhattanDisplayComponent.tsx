@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
-import { ErrorOverlay, Menu } from '@jbrowse/core/ui'
+import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { useRenderingBackend } from '@jbrowse/core/util/useRenderingBackend'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
+  DisplayRenderErrorOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
@@ -95,13 +96,11 @@ const LinearManhattanDisplayComponent = observer(
 
     if (error) {
       return (
-        <ErrorOverlay
+        <DisplayRenderErrorOverlay
           error={error}
+          onRetry={retry}
           width={width}
           height={height}
-          onRetry={() => {
-            retry()
-          }}
         />
       )
     }

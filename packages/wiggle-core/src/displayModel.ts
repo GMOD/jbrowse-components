@@ -19,9 +19,7 @@ export interface WiggleGpuDisplayModel<
   height: number
   error: Error | null
   isLoading: boolean
-  isReady: boolean
-  viewportWithinLoadedData: boolean
-  regionTooLarge: boolean
+  loadingOverlayVisible: boolean
   statusMessage?: string
   reload: () => void
   displayCrossHatches: boolean

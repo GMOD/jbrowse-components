@@ -209,14 +209,19 @@ RenderLifecycleMixin
 
 MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
-    isReady: boolean              canvasDrawn && !isLoading — drives loading overlay
+    isReady: boolean              canvasDrawn && !isLoading
+    viewportWithinLoadedData: boolean   every visible block ⊆ a loaded region
+    loadingOverlayVisible: boolean      (!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error
 ```
 
-Loading overlays read `!model.isReady`. This keeps the overlay visible from
-the moment the track opens (before GPU init and the 600ms `FetchVisibleRegions`
-debounce) through the entire fetch cycle, hiding exactly once when the first
-real frame is painted. `stopRenderingBackend` resets `canvasDrawn` so the
-overlay reappears correctly during WebGL context-loss recovery.
+Every display type uses the one shared `DisplayLoadingOverlay` component, which
+reads `loadingOverlayVisible`. `isReady` covers track-open through the fetch
+cycle (hiding once the first frame paints); `viewportWithinLoadedData` re-shows
+the overlay when the viewport extends past loaded data — e.g. the pre-refetch
+debounce after a zoom-out, where `isReady` is already true but stale data is
+still on screen (kept a separate getter for tracking reasons — see
+BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend` resets `canvasDrawn` so the
+overlay recovers after WebGL context loss.
 
 All backend-specific plumbing lives in the plugin. All reactivity plumbing
 lives in the mixin.

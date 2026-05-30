@@ -22,10 +22,9 @@ export {
   Tooltip,
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
-export {
-  DisplayErrorBar,
-  DisplayLoadingOverlay,
-} from './components/DisplayStatusOverlays.tsx'
+export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
+export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
+export { default as DisplayRenderErrorOverlay } from './components/DisplayRenderErrorOverlay.tsx'
 export {
   default as ConfigOverrideMixin,
   migrateOldSettingSnapshots,

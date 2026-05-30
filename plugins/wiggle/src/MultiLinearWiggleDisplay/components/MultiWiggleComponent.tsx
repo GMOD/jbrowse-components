@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { ErrorOverlay } from '@jbrowse/core/ui'
 import { getContainingView, useRenderingBackend } from '@jbrowse/core/util'
 import {
   DisplayErrorBar,
   DisplayLoadingOverlay,
+  DisplayRenderErrorOverlay,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
@@ -105,13 +105,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   if (error) {
     return (
-      <ErrorOverlay
+      <DisplayRenderErrorOverlay
         error={error}
+        onRetry={retry}
         width={totalWidth}
         height={height}
-        onRetry={() => {
-          retry()
-        }}
       />
     )
   }

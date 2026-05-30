@@ -1,12 +1,11 @@
 import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { Menu } from '@jbrowse/core/ui'
+import { LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { DisplayLoadingOverlay } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-
-import LoadingOverlay from './LoadingOverlay.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -67,7 +66,7 @@ const AlignmentsDisplayComponent = observer(
         }}
       >
         <DisplayMessageComponent model={model} />
-        <AlignmentsLoadingOverlay model={model} />
+        <DisplayLoadingOverlay model={model} />
         <Suspense fallback={null}>
           <TooltipComponent
             model={model}
@@ -104,29 +103,5 @@ const AlignmentsDisplayComponent = observer(
     )
   },
 )
-
-const AlignmentsLoadingOverlay = observer(function AlignmentsLoadingOverlay({
-  model,
-}: {
-  model: Pick<
-    LinearAlignmentsDisplayModel,
-    'isReady' | 'viewportWithinLoadedData' | 'statusMessage' | 'regionTooLarge' | 'error'
-  >
-}) {
-  // viewportWithinLoadedData goes false when stale data (e.g. long-read coverage tailing
-  // off past the originally fetched region) is on screen during the pre-refetch
-  // debounce — show the scrim then too, so the overlay never claims provisional
-  // data is final. regionTooLarge/error stay excluded (their own UI shows).
-  return (
-    <LoadingOverlay
-      statusMessage={model.statusMessage ?? 'Loading features'}
-      isVisible={
-        (!model.isReady || !model.viewportWithinLoadedData) &&
-        !model.regionTooLarge &&
-        !model.error
-      }
-    />
-  )
-})
 
 export default AlignmentsDisplayComponent

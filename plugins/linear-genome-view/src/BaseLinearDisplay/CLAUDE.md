@@ -88,13 +88,13 @@ land on non-integer genomic positions. Two consumers:
   instant the viewport extends past loaded data (zoom-out / pan beyond buffer),
   _before_ the debounced refetch starts.
 
-All three overlay families OR it into their visibility (`!isReady ||
-!viewportWithinLoadedData`) so the scrim appears while stale data is on screen:
-alignments and the shared `DisplayLoadingOverlay` (wiggle / multi-wiggle /
-manhattan / maf) additionally `&& !regionTooLarge && !error`; canvas needs no
-guard because those states early-return above its overlay. `isReady` stays
-`canvasDrawn && !isLoading` — it's the render-lifecycle axis; coverage staleness
-is ORed in at the call sites rather than folded in, because the autorun must read
+The `loadingOverlayVisible` getter packages the whole policy in one place:
+`(!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error`. **Every**
+display type's loading overlay is the one shared `DisplayLoadingOverlay`
+component reading this getter — alignments, canvas, wiggle, multi-wiggle,
+manhattan, maf (no per-display overlay wrappers). `isReady` stays
+`canvasDrawn && !isLoading` (the render-lifecycle axis) and `viewportWithinLoadedData`
+stays separate rather than folded into `isReady`, because the autorun reads
 `loadedRegions` untracked while the getter reads it tracked.
 
 Known gap: the check is spatial only, so wiggle-family displays still have a

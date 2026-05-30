@@ -96,6 +96,7 @@ export {
   ConfigOverrideMixin,
   DisplayErrorBar,
   DisplayLoadingOverlay,
+  DisplayRenderErrorOverlay,
   FeatureDensityMixin,
   FloatingLegend,
   GlobalDataDisplayMixin,
