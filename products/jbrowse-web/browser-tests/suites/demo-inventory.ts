@@ -375,6 +375,65 @@ const localDemos: TestSuite = {
       },
     },
     {
+      name: 'COLO829 whole-genome wiggle overview',
+      requiresRemote: true,
+      fn: async page => {
+        // omitting loc triggers showAllRegionsInAssembly — shows all hg19
+        // chromosomes at once with tumor/normal BigWig coverage side by side
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'hg19',
+                tracks: ['colo_tumor', 'colo_normal'],
+              },
+            ],
+          },
+          'test_data/config_demo.json',
+        )
+
+        await findByTestId(page, 'wiggle-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'demo-colo829-wholegenome-wiggle-canvas',
+          '[data-testid="wiggle-display-done"] canvas',
+        )
+      },
+    },
+    {
+      name: 'Nanopore EGFR amplicon alignments',
+      requiresRemote: true,
+      fn: async page => {
+        // 0.1x-downsampled nanopore amplicon reads at the EGFR locus on hg38
+        // (the full-coverage track causes OOM, so we use the downsampled one)
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'hg38',
+                loc: 'chr7:55,000,000-56,000,000',
+                tracks: ['nanopore_targeted_alignments_0.1'],
+              },
+            ],
+          },
+          'test_data/config_demo.json',
+        )
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'demo-nanopore-egfr-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
       name: 'Grape-peach synteny demo screenshot',
       fn: async page => {
         await navigateWithSessionSpec(

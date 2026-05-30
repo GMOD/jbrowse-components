@@ -150,6 +150,163 @@ const suite: TestSuite = {
         )
       },
     },
+    {
+      name: 'inversion pbsim with linked reads and arcs',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: [
+                {
+                  trackId: 'volvox-inv-pbsim',
+                  displaySnapshot: {
+                    linkedReads: 'bezier',
+                    readConnections: 'arc',
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'inversion-pbsim-linked-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
+      name: 'simple inversion BAM with linked reads and arcs',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: [
+                {
+                  trackId: 'volvox-simple-inv.bam',
+                  displaySnapshot: {
+                    linkedReads: 'bezier',
+                    readConnections: 'arc',
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'inversion-simple-bam-linked-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
+      name: 'inversion paired BAM coverage-only',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: [
+                {
+                  trackId: 'volvox-simple-inv-paired.bam',
+                  displaySnapshot: {
+                    height: 45,
+                    showCoverage: true,
+                    coverageHeight: 45,
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'inversion-paired-coverage-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
+      name: 'inversion pbsim coverage-only',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: [
+                {
+                  trackId: 'volvox-inv-pbsim',
+                  displaySnapshot: {
+                    height: 45,
+                    showCoverage: true,
+                    coverageHeight: 45,
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'inversion-pbsim-coverage-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
+    {
+      name: 'simple inversion paired BAM samplot',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-50000',
+              tracks: [
+                {
+                  trackId: 'volvox-simple-inv-paired.bam',
+                  displaySnapshot: {
+                    readConnections: 'samplot',
+                    configOverrides: { colorBy: { type: 'pairOrientation' } },
+                  },
+                },
+              ],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'inversion-paired-samplot-canvas',
+          '[data-testid="pileup-display-done"] canvas',
+        )
+      },
+    },
   ],
 }
 
