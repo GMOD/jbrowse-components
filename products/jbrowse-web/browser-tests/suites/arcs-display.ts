@@ -1,4 +1,5 @@
 import {
+  delay,
   findByTestId,
   findByText,
   navigateWithSessionSpec,
@@ -170,6 +171,69 @@ const suite: TestSuite = {
           'arcs-paired-end-rnaseq-canvas',
           '[data-testid="pileup-display-done"] canvas',
         )
+      },
+    },
+    {
+      name: 'collapse introns view with RNA-seq sashimi arcs (EDEN gene)',
+      fn: async page => {
+        // EDEN gene is at ctgA:1050-9000 with 3 isoforms (CDS blocks at
+        // ~1200, ~3000, ~5000, ~7000). The spliced RNA-seq BAM has reads
+        // covering this region with N-CIGAR operations that produce sashimi
+        // arcs.
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1050-9000',
+              tracks: ['gff3tabix_genes', 'spliced'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display-done', 60000)
+        await waitForDataLoaded(page)
+
+        // Wait for the EDEN gene label overlay to appear — this confirms the
+        // gene annotation canvas has finished drawing
+        const edenLabel = await page.waitForSelector(
+          '[data-testid="feature-name-EDEN"]',
+          { timeout: 30000 },
+        )
+        if (!edenLabel) {
+          throw new Error('EDEN gene label not found')
+        }
+
+        // Right-click the label to trigger the feature context menu
+        await edenLabel.click({ button: 'right' })
+        await delay(500)
+
+        const collapseItem = await findByText(page, /Collapse introns/, 5000)
+        if (!collapseItem) {
+          throw new Error('"Collapse introns" not found in context menu')
+        }
+        await collapseItem.click()
+        await delay(300)
+
+        const submitBtn = await findByText(page, /^Submit$/, 5000)
+        if (!submitBtn) {
+          throw new Error('Submit button not found in collapse introns dialog')
+        }
+        await submitBtn.click()
+
+        // A new LGV is added with displayedRegions set to the EDEN exon
+        // blocks; wait for its pileup canvas to finish drawing
+        await page.waitForFunction(
+          () =>
+            document.querySelectorAll('[data-testid="pileup-display-done"]')
+              .length >= 2,
+          { timeout: 60000 },
+        )
+        await waitForDataLoaded(page)
+
+        // Full-page snapshot shows both views: original + collapsed exon view
+        // with sashimi arcs spanning the compressed intron gaps
+        await pageSnapshot(page, 'arcs-collapse-introns-sashimi')
       },
     },
   ],
