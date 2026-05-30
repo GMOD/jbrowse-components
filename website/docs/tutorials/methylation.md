@@ -113,6 +113,6 @@ signal for quick navigation to regions of interest.
 - [Multi-quantitative track](/docs/user_guides/multiquantitative_track) —
   display modes for the bedMethyl subtracks (multirow, overlap, shared scales)
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — another
-  long-read (PacBio HiFi) workflow using the same COLO829/HG008-style data
+  long-read cancer workflow, using the HG008 PacBio HiFi dataset
 - [modkit documentation](https://nanoporetech.github.io/modkit/) — generating
   bedMethyl pileups and phased output

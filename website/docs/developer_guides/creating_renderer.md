@@ -137,8 +137,10 @@ const model = types
 
 ### Rendering SVG
 
-Our SVG renderer is an example, where it extends the existing built-in renderer
-type with a custom ReactComponent only:
+The pattern below extends a built-in renderer type with a custom ReactComponent
+only. The `SvgFeatureRenderer`/`SVGPlugin` names predate the GPU migration and
+are no longer in the tree — they are kept here only to illustrate the
+`BoxRendererType` + plain-React approach:
 
 ```js
 export default class SVGPlugin extends Plugin {
@@ -204,7 +206,8 @@ receive an array of regions; those handling only one at a time use `regions[0]`.
 
 Usually overriding `getFeatures` in your adapter is enough. If you need tighter
 control over feature fetching, you can override `getFeatures` in the renderer
-itself. The Hi-C renderer does this because it works with contact matrices
+itself. The illustrative `HicRenderer` below (the in-tree Hi-C renderer has
+since moved to the GPU path) does this because it works with contact matrices
 rather than conventional features:
 
 ```js

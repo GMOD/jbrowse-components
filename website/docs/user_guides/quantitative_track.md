@@ -67,7 +67,7 @@ For tumor vs normal comparisons using two BigWig tracks on the same Y-axis, see
 
 Not every dip or spike in a coverage profile is a true copy-number change.
 Coverage is shaped by GC content, mappability, repeats, PCR bias, and (when
-mapping a divergent strain) hyper-divergent regions. For the biological and
-technical reasons coverage is often uneven
+mapping a divergent strain) hyper-divergent regions. For these reasons coverage
+is often uneven even in samples with no true copy-number changes.
 
 :::

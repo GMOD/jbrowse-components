@@ -56,7 +56,7 @@ stop tokens, and byte estimation — your job is to call it with a work callback
 
 ```ts
 import { getRpcSessionId, getSession, isAlive } from '@jbrowse/core/util'
-import { FetchContext } from '@jbrowse/plugin-linear-genome-view'
+import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 // Inside your display's .actions(self => ({ ... }))
 fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {

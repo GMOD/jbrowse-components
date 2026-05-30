@@ -211,7 +211,7 @@ jbrowse add-track myfile.bam --subDir my_bams --load copy --out /var/www/html/jb
 **Upgrade JBrowse to the latest release:**
 
 ```bash
-jbrowse upgrade
+jbrowse upgrade /var/www/html/jbrowse2
 ```
 
 **Upgrade the CLI:**

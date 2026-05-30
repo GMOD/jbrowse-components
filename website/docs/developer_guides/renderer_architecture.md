@@ -16,8 +16,8 @@ rendering. Two paths coexist:
   features, variants. See `plugins/canvas` and `packages/core/src/gpu`.
 - **Worker-renderer (legacy).** A few specialized renderers still run the older
   pattern, where the worker produces the rendered output and transfers it back.
-  These extend `ServerSideRendererType` and are now limited to renderers like
-  `ArcRenderer` and `StructuralVariantChordRenderer`.
+  These are subclasses of `ServerSideRendererType` and are now limited to
+  renderers like `ArcRenderer` and `StructuralVariantChordRenderer`.
 
 ## Worker-renderer class hierarchy
 
@@ -27,7 +27,7 @@ The remaining worker-renderer base classes (in
 ```
 RendererType (base)
 └── ServerSideRendererType (RPC bridge)
-    ├── FeatureRendererType (feature fetching + serialization)
+    ├── FeatureRendererType (feature fetching + serialization)  // e.g. ArcRenderer
     │   ├── CircularChordRendererType   // e.g. StructuralVariantChordRenderer
     │   └── BoxRendererType (layout management)
 ```

@@ -44,7 +44,7 @@ import { when } from 'mobx'
 import { getContainingView } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import SvgClipRect from '@jbrowse/core/util/SvgClipRect'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -111,9 +111,11 @@ the coordinate space differs slightly from on-screen rendering:
 - `view.visibleRegions` — list of displayed regions
 - Y axis runs from 0 (top) to `model.height` (bottom), same as on-screen
 
-Use `view.renderBlocks` (or your own `buildRenderBlocks` call) to get
-`{ startPx, endPx }` offsets per region — these map genomic coordinates into
-pixels in the full export canvas.
+Use `buildRenderBlocks(view.visibleRegions)` (imported from
+`@jbrowse/core/gpu/renderBlock`) to get `{ startPx, endPx }` offsets per region
+— these map genomic coordinates into pixels in the full export canvas. The
+display model also exposes a `renderBlocks` getter via
+`MultiRegionDisplayMixin`.
 
 ## Reusing on-screen drawing code
 

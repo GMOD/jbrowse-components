@@ -84,7 +84,7 @@ async serializeArguments(args: MyRpcArgs, rpcDriverClassName: string) {
 Wrap results with `rpcResult` to transfer `ArrayBuffer`s without copying:
 
 ```ts
-import { rpcResult } from '@jbrowse/core/util/rpc'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 async execute(args: MyRpcArgs, rpcDriverClassName: string) {
   const { sessionId, adapterConfig, region } =
