@@ -257,7 +257,7 @@ const localDemos: TestSuite = {
                 tracks: ['dotplot_track'],
                 views: [
                   { loc: 'NC_001133.9', assembly: 'R64' },
-                  { loc: 'CM026499.1', assembly: 'YJM1447' },
+                  { loc: 'I', assembly: 'YJM1447' },
                 ],
               },
             ],
@@ -270,6 +270,35 @@ const localDemos: TestSuite = {
         await canvasSnapshot(
           page,
           'demo-yeast-synteny-canvas',
+          '[data-testid="synteny_canvas_done"]',
+        )
+      },
+    },
+    {
+      name: 'Yeast whole-genome synteny screenshot',
+      requiresRemote: true,
+      fn: async page => {
+        // whole-genome R64 vs YJM1447 — omitting loc shows all 16 chromosomes
+        // with the near-collinear syntenic ribbons between the two strains
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearSyntenyView',
+                tracks: ['dotplot_track_cigar'],
+                views: [{ assembly: 'R64' }, { assembly: 'YJM1447' }],
+              },
+            ],
+          },
+          'test_data/yeast_synteny/config.json',
+        )
+
+        await findByTestId(page, 'synteny_canvas_done', 120000)
+        await waitForDataLoaded(page, 120000)
+        await canvasSnapshot(
+          page,
+          'demo-yeast-wholegenome-synteny-canvas',
           '[data-testid="synteny_canvas_done"]',
         )
       },

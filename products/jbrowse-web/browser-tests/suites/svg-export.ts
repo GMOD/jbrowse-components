@@ -67,6 +67,9 @@ async function exportSvgAndSave(page: Page, name: string) {
   if (!svg.includes('<svg')) {
     throw new Error('Downloaded file is not valid SVG')
   }
+  if (!fs.existsSync(snapshotDir)) {
+    fs.mkdirSync(snapshotDir, { recursive: true })
+  }
   fs.writeFileSync(path.join(snapshotDir, `${name}.svg`), svg)
   console.log(
     `    SVG saved: ${name}.svg (${(svg.length / 1024).toFixed(1)}KB)`,
@@ -141,7 +144,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'exports SVG with sequence track using monospace font',
+      name: 'exports SVG with sequence track',
       fn: async page => {
         await setupDownloadInterception(page)
         await navigateWithSessionSpec(page, {
@@ -157,11 +160,12 @@ const suite: TestSuite = {
         await waitForLoadingToComplete(page)
         await delay(2000)
 
+        // The sequence layer is canvas-drawn (drawSequence) and routed through
+        // paintLayer, so the default SVG export rasterizes it into an <image>
+        // (the old monospace <text> path no longer exists).
         const svg = await exportSvgAndSave(page, 'svg-export-sequence')
-        if (!svg.includes('font-family="monospace"')) {
-          throw new Error(
-            'Sequence track SVG missing monospace font-family attribute',
-          )
+        if (!svg.includes('<image')) {
+          throw new Error('Sequence track SVG missing rasterized sequence image')
         }
       },
     },
@@ -229,13 +233,15 @@ const suite: TestSuite = {
       name: 'exports SVG with alignments including sashimi arcs',
       fn: async page => {
         await setupDownloadInterception(page)
+        // 'spliced' is the volvox-rnaseq BAM — spliced reads (N CIGAR) are what
+        // produce sashimi arcs; the plain DNA alignment track has none.
         await navigateWithSessionSpec(page, {
           views: [
             {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-10000',
-              tracks: ['volvox_alignments_pileup_coverage'],
+              tracks: ['spliced'],
             },
           ],
         })
@@ -245,6 +251,9 @@ const suite: TestSuite = {
         const svg = await exportSvgAndSave(page, 'svg-export-sashimi-arcs')
         const pathCount = (svg.match(/<path/g) ?? []).length
         console.log(`    ${pathCount} path elements (includes sashimi arcs)`)
+        if (pathCount === 0) {
+          throw new Error('sashimi SVG export has no <path> elements (no arcs)')
+        }
       },
     },
     {
@@ -258,9 +267,13 @@ const suite: TestSuite = {
               {
                 type: 'LinearSyntenyView',
                 tracks: ['subset'],
+                // subset.paf has a single 394bp alignment
+                // (Pp01:28,845,209-28,845,603 <-> chr1:315,959-316,369); zoom
+                // tight around it so the ribbon is visible rather than a
+                // sub-pixel sliver in a 100kb window.
                 views: [
-                  { loc: 'Pp01:28,800,000..28,900,000', assembly: 'peach' },
-                  { loc: 'chr1:300,000..400,000', assembly: 'grape' },
+                  { loc: 'Pp01:28,845,000..28,845,800', assembly: 'peach' },
+                  { loc: 'chr1:315,800..316,500', assembly: 'grape' },
                 ],
               },
             ],

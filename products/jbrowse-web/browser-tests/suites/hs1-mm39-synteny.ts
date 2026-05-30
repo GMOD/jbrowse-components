@@ -14,6 +14,35 @@ const suite: TestSuite = {
   requiresRemote: true,
   tests: [
     {
+      name: 'whole-genome overview hs1 vs mm39 (100k minlen)',
+      fn: async page => {
+        // whole-genome human vs mouse — omitting loc shows all chromosomes;
+        // 100k minlen keeps the syntenic ribbons legible instead of a hairball
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearSyntenyView',
+                tracks: ['hs1ToMm39.over.chain.pif'],
+                minAlignmentLength: 100000,
+                views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
+              },
+            ],
+          },
+          hs1Mm39Config,
+        )
+
+        await findByTestId(page, 'synteny_canvas_done', 120000)
+        await waitForDataLoaded(page, 120000)
+        await canvasSnapshot(
+          page,
+          'hs1-mm39-synteny-wholegenome-canvas',
+          '[data-testid="synteny_canvas_done"]',
+        )
+      },
+    },
+    {
       name: 'renders synteny view for chr7 vs chr6 (indexed PAF, 100k minlen)',
       fn: async page => {
         // full chr7 vs chr6 with 100k minlen shows clear diagonal syntenic bands
