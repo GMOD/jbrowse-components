@@ -41,6 +41,11 @@ function indexSuffixOf(name: string) {
   return INDEX_SUFFIXES.find(suffix => lower.endsWith(suffix))
 }
 
+/** True if the location's filename ends in a recognized index suffix. */
+export function isIndexFile(loc: FileLocation) {
+  return indexSuffixOf(getFileName(loc)) !== undefined
+}
+
 /**
  * Splits a flat list of locations into data files paired with their index
  * sidecars. Mirrors the JBrowse 1 FileDialog pairing rules: an index `I`

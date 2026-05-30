@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 import LocationInput from './LocationInput.tsx'
 import TrackPreviewTable from './TrackPreviewTable.tsx'
 import { buildTrackConfigs } from './buildConfigs.ts'
-import { pairLocations } from './pairLocations.ts'
+import { isIndexFile, locationId, pairLocations } from './pairLocations.ts'
 import { parseUrlList, submitBulkTracks } from './util.ts'
 
 import type { InputMode } from './util.ts'
@@ -47,23 +47,32 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const [assemblyOverride, setAssemblyOverride] = useState<string>()
   const assembly = assemblyOverride ?? model.assembly ?? ''
   const [customNames, setCustomNames] = useState<Record<string, string>>({})
-  // Reset removed when inputs change so re-entered URLs reappear.
-  const [removed, setRemoved] = useState(() => new Set<string>())
   const [timestamp] = useState(() => Date.now())
 
-  const remoteLocations = parseUrlList(text)
-  const locations = mode === 'remote' ? remoteLocations : localLocations
-  const rows = buildTrackConfigs({
-    pairs: pairLocations(locations),
-    model,
-    assembly,
-    adminMode,
-    timestamp,
-  })
+  // The input (textarea lines or dropped files) is the single source of truth;
+  // removing a row deletes its location(s) from that input rather than tracking
+  // a separate "removed" overlay.
+  const locations = mode === 'remote' ? parseUrlList(text) : localLocations
+  const pairs = pairLocations(locations)
+  const rows = buildTrackConfigs({ pairs, model, assembly, adminMode, timestamp })
+  const okRows = rows.filter(row => row.status === 'ok')
+  const skippedCount = rows.length - okRows.length
+  const orphanIndexCount =
+    locations.filter(isIndexFile).length - pairs.filter(p => p.index).length
 
-  const visibleRows = rows.filter(row => !removed.has(row.id))
-  const okRows = visibleRows.filter(row => row.status === 'ok')
-  const skippedCount = visibleRows.length - okRows.length
+  function removeRow(rowId: string) {
+    const pair = pairs.find(p => locationId(p.file) === rowId)
+    const dropped = new Set([rowId])
+    if (pair?.index) {
+      dropped.add(locationId(pair.index))
+    }
+    const remaining = locations.filter(loc => !dropped.has(locationId(loc)))
+    if (mode === 'remote') {
+      setText(remaining.map(locationId).join('\n'))
+    } else {
+      setLocalLocations(remaining)
+    }
+  }
 
   return (
     <Paper className={classes.paper}>
@@ -76,30 +85,12 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
       <LocationInput
         mode={mode}
-        setMode={m => {
-          setMode(m)
-          setRemoved(new Set())
-        }}
+        setMode={setMode}
         text={text}
-        setText={t => {
-          setText(t)
-          setRemoved(new Set())
-        }}
+        setText={setText}
         localLocations={localLocations}
-        setLocalLocations={locs => {
-          setLocalLocations(locs)
-          setRemoved(new Set())
-        }}
+        setLocalLocations={setLocalLocations}
       />
-
-      {visibleRows.length > 0 ? (
-        <TrackPreviewTable
-          rows={visibleRows}
-          customNames={customNames}
-          setCustomNames={setCustomNames}
-          setRemoved={setRemoved}
-        />
-      ) : null}
 
       <div className={classes.section}>
         <AssemblySelector
@@ -113,6 +104,22 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
         />
       </div>
 
+      {rows.length > 0 ? (
+        <TrackPreviewTable
+          rows={rows}
+          customNames={customNames}
+          setCustomNames={setCustomNames}
+          onRemove={removeRow}
+        />
+      ) : null}
+
+      {orphanIndexCount > 0 ? (
+        <Typography variant="body2" color="textSecondary">
+          {orphanIndexCount} index{' '}
+          {orphanIndexCount === 1 ? 'file' : 'files'} had no matching data file
+          and {orphanIndexCount === 1 ? 'was' : 'were'} ignored
+        </Typography>
+      ) : null}
       {skippedCount > 0 ? (
         <Typography variant="body2" color="error">
           {skippedCount} {skippedCount === 1 ? 'row' : 'rows'} with unrecognized

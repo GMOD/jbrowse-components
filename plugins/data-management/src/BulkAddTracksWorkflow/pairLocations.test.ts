@@ -1,4 +1,4 @@
-import { pairLocations } from './pairLocations.ts'
+import { isIndexFile, pairLocations } from './pairLocations.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -66,6 +66,13 @@ test('collapses a data file repeated under the same location', () => {
     uri('/x/a.bam.bai'),
   ])
   expect(names(pairs)).toEqual([{ file: '/x/a.bam', index: '/x/a.bam.bai' }])
+})
+
+test('isIndexFile recognizes index suffixes regardless of case', () => {
+  expect(isIndexFile(uri('/x/a.bam.bai'))).toBe(true)
+  expect(isIndexFile(uri('/x/a.VCF.GZ.TBI'))).toBe(true)
+  expect(isIndexFile(uri('/x/cov.bw'))).toBe(false)
+  expect(isIndexFile(uri('/x/a.bam'))).toBe(false)
 })
 
 test('keeps same-named data files from different directories distinct', () => {

@@ -83,7 +83,8 @@ const DropZone = observer(function DropZone({
             setLocalLocations([])
           }}
         >
-          Clear {localLocations.length} file(s)
+          Clear {localLocations.length}{' '}
+          {localLocations.length === 1 ? 'file' : 'files'}
         </Button>
       ) : null}
     </div>
