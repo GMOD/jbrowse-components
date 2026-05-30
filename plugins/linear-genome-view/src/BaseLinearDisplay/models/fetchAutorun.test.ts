@@ -3,6 +3,8 @@
 // Uses a { region, displayedRegionIndex } wrapper shape for test regions;
 // production visibleRegion blocks are flat ({ refName, start, end, ... }).
 
+import { isBlockCovered } from './MultiRegionDisplayMixin.ts'
+
 import type { Region } from '@jbrowse/core/util'
 
 interface DisplayedRegionWithIndex {
@@ -16,11 +18,11 @@ function shouldFetchRegion(
   isCacheValid: (displayedRegionIndex: number) => boolean,
 ) {
   const loaded = loadedRegions.get(vr.displayedRegionIndex)
-  const boundsValid =
-    loaded?.refName === vr.region.refName &&
-    Math.floor(vr.region.start) >= loaded.start &&
-    Math.ceil(vr.region.end) <= loaded.end
-  if (boundsValid && isCacheValid(vr.displayedRegionIndex)) {
+  // Same predicate the production autorun and `viewportCovered` getter use.
+  if (
+    isBlockCovered(loaded, vr.region) &&
+    isCacheValid(vr.displayedRegionIndex)
+  ) {
     return false
   }
   return true

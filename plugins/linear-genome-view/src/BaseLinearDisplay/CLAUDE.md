@@ -65,7 +65,10 @@ sort/group change.
 | `untracked(() => self.loadedRegions.get(...))`         | perf guard      | prevents autorun re-fire when regions are populated; `fetchGeneration` bump covers it                                                        |
 | `untracked(() => self.regionTooLarge \|\| self.error)` | **correctness** | if either were tracked, setting them would immediately re-fire `ClearBlockingStateOnViewportChange` and wipe them before any viewport change |
 
-### `boundsValid` check
+### `isBlockCovered` / `viewportCovered`
+
+`isBlockCovered(loaded, block)` (exported helper) is the single source of truth
+for "is this visible block already fetched":
 
 ```ts
 loaded?.refName === block.refName &&
@@ -74,7 +77,19 @@ loaded?.refName === block.refName &&
 ```
 
 `Math.floor`/`Math.ceil` handle fractional bpPerPx where visible block edges
-land on non-integer genomic positions.
+land on non-integer genomic positions. Two consumers:
+
+- `FetchVisibleRegions` autorun — `!isBlockCovered` (plus `!isCacheValid`) is
+  the refetch trigger.
+- `viewportCovered` getter — true when **every** visible block is covered. Goes
+  false the instant the viewport extends past loaded data (zoom-out / pan beyond
+  buffer), _before_ the debounced refetch starts. The alignments loading overlay
+  ORs this into its visibility (`!isReady || !viewportCovered`) so the scrim
+  appears while stale coverage (e.g. long-read depth tailing off past the
+  originally fetched region) is still on screen — honestly marking it
+  provisional rather than reporting "ready". `isReady` itself stays
+  `canvasDrawn && !isLoading` (unchanged) because the canvas/wiggle overlays
+  read it without excluding `regionTooLarge`/`error`.
 
 ## Test files
 

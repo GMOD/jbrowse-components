@@ -110,13 +110,21 @@ const AlignmentsLoadingOverlay = observer(function AlignmentsLoadingOverlay({
 }: {
   model: Pick<
     LinearAlignmentsDisplayModel,
-    'isReady' | 'statusMessage' | 'regionTooLarge' | 'error'
+    'isReady' | 'viewportCovered' | 'statusMessage' | 'regionTooLarge' | 'error'
   >
 }) {
+  // viewportCovered goes false when stale data (e.g. long-read coverage tailing
+  // off past the originally fetched region) is on screen during the pre-refetch
+  // debounce — show the scrim then too, so the overlay never claims provisional
+  // data is final. regionTooLarge/error stay excluded (their own UI shows).
   return (
     <LoadingOverlay
       statusMessage={model.statusMessage ?? 'Loading features'}
-      isVisible={!model.isReady && !model.regionTooLarge && !model.error}
+      isVisible={
+        (!model.isReady || !model.viewportCovered) &&
+        !model.regionTooLarge &&
+        !model.error
+      }
     />
   )
 })

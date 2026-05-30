@@ -24,6 +24,26 @@ export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
 
 /**
+ * True when the loaded region fully contains the visible `block`: same refName
+ * and the integer-rounded block bounds lie within the loaded extent.
+ * `Math.floor`/`Math.ceil` handle fractional bpPerPx where block edges fall on
+ * non-integer genomic positions. Single source of truth for "is this block
+ * already fetched" — shared by the FetchVisibleRegions autorun (deciding what to
+ * refetch) and the `viewportCovered` getter (deciding whether the on-screen data
+ * is stale).
+ */
+export function isBlockCovered(
+  loaded: Region | undefined,
+  block: { refName: string; start: number; end: number },
+) {
+  return (
+    loaded?.refName === block.refName &&
+    Math.floor(block.start) >= loaded.start &&
+    Math.ceil(block.end) <= loaded.end
+  )
+}
+
+/**
  * #stateModel MultiRegionDisplayMixin
  * #category display
  *
@@ -62,6 +82,28 @@ export default function MultiRegionDisplayMixin() {
        */
       get isReady() {
         return self.canvasDrawn && !self.isLoading
+      },
+
+      /**
+       * #getter
+       * true when every visible block is spatially covered by loaded data.
+       * Goes false the moment the viewport extends past the loaded region —
+       * notably during the post-zoom/pan debounce window before a refetch
+       * starts, when stale coverage (e.g. long-read depth tailing off beyond the
+       * originally fetched region) is still on screen. Lets the loading overlay
+       * honestly flag that data as provisional rather than reporting "ready".
+       */
+      get viewportCovered() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return false
+        }
+        return view.visibleRegions.every(block =>
+          isBlockCovered(
+            self.loadedRegions.get(block.displayedRegionIndex),
+            block,
+          ),
+        )
       },
 
       /**
@@ -284,13 +326,8 @@ export default function MultiRegionDisplayMixin() {
                 const loaded = untracked(() =>
                   self.loadedRegions.get(block.displayedRegionIndex),
                 )
-                const boundsValid =
-                  loaded?.refName === block.refName &&
-                  Math.floor(block.start) >= loaded.start &&
-                  Math.ceil(block.end) <= loaded.end
-
                 if (
-                  boundsValid &&
+                  isBlockCovered(loaded, block) &&
                   self.isCacheValid(block.displayedRegionIndex)
                 ) {
                   continue
