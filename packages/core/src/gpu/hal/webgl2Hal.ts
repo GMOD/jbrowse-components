@@ -160,6 +160,11 @@ export class WebGL2Hal implements GpuHal {
   // isn't called twice on the same handle.
   private disposed = false
 
+  // Latched on context loss, never cleared. GL objects from before the loss are
+  // invalid even after restore — isContextLost()===false by then, so a live
+  // check alone can't guard dispose().
+  private contextWasLost = false
+
   private contextLostListener: ((e: Event) => void) | null = null
   private contextRestoredListener: (() => void) | null = null
 
@@ -194,6 +199,7 @@ export class WebGL2Hal implements GpuHal {
       console.error(
         `[WebGL2Hal #${this.instanceId}] context LOST (statusMessage="${ev.statusMessage}", live=${totalCreated - totalDisposed})`,
       )
+      this.contextWasLost = true
       e.preventDefault()
     }
     const onContextRestored = () => {
@@ -226,7 +232,9 @@ export class WebGL2Hal implements GpuHal {
     gl.bufferData(gl.UNIFORM_BUFFER, uniformByteSize, gl.DYNAMIC_DRAW)
 
     this.regions = new RegionRegistry<RegionPassBuffer>(buf => {
-      gl.deleteBuffer(buf.vbo)
+      if (!this.contextWasLost && !gl.isContextLost()) {
+        gl.deleteBuffer(buf.vbo)
+      }
     })
 
     this.passes = new Map()
@@ -480,15 +488,17 @@ export class WebGL2Hal implements GpuHal {
     }
 
     this.regions.deleteAll()
-    for (const pass of this.passes.values()) {
-      gl.deleteVertexArray(pass.vao)
-      gl.deleteProgram(pass.program)
-      if (pass.textureState?.texture) {
-        gl.deleteTexture(pass.textureState.texture)
+    if (!this.contextWasLost && !gl.isContextLost()) {
+      for (const pass of this.passes.values()) {
+        gl.deleteVertexArray(pass.vao)
+        gl.deleteProgram(pass.program)
+        if (pass.textureState?.texture) {
+          gl.deleteTexture(pass.textureState.texture)
+        }
       }
+      gl.deleteBuffer(this.ubo)
     }
     this.passes.clear()
-    gl.deleteBuffer(this.ubo)
 
     // Firefox appears to treat WEBGL_lose_context.loseContext() as a
     // driver-wide reset: calling it on one disposed HAL synchronously
