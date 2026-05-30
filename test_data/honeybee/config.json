@@ -2,6 +2,15 @@
   "assemblies": [
     {
       "name": "amel",
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "aliases.txt",
+            "locationType": "UriLocation"
+          }
+        }
+      },
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "amel_seq",
