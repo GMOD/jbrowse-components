@@ -140,7 +140,9 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-50000',
-              tracks: ['volvox_test_vcf'],
+              tracks: [
+                { trackId: 'volvox_test_vcf', displaySnapshot: { type: 'MultiLinearVariantDisplay' } },
+              ],
             },
           ],
         })
