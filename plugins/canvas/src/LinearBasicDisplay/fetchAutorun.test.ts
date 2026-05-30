@@ -905,11 +905,11 @@ describe('derived regionTooLarge', () => {
     })
   })
 
-  // Regression: the banner UI surfaces — regionCannotBeRendered() and
-  // regionCannotBeRenderedText() — must read through the regionTooLarge
+  // Regression: the banner state must read through the derived regionTooLarge
   // getter, not the imperative regionTooLargeState. Reading the volatile
-  // directly returned null/'' even when the canvas-derived banner was
-  // true, so the banner UI and SVG export both silently went missing.
+  // directly returned false/'' even when the canvas-derived banner was true, so
+  // the banner UI (DisplayChrome renders TooLargeMessage off regionTooLarge) and
+  // SVG export (regionCannotBeRenderedText) both silently went missing.
   it('banner UI surfaces reflect derived regionTooLarge', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
@@ -925,7 +925,6 @@ describe('derived regionTooLarge', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    expect(display.regionCannotBeRendered()).not.toBeNull()
     expect(display.regionCannotBeRenderedText()).toBe(
       'Force load to see features',
     )

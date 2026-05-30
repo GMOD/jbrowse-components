@@ -70,13 +70,19 @@ jsdom. A next agent with a browser should confirm:
 
 ## Suggested follow-ups (ranked)
 
-1. **Remove the last view-in-model leak.** `RegionTooLargeMixin.regionCannotBeRendered()`
-   returns JSX from the MST model. DisplayChrome could instead render
-   `<TooLargeMessage model={model} />` itself (the component already takes a
-   plain model: `regionTooLargeReason`, `featureDensityStats`,
-   `setFeatureDensityStatsLimit`, `reload`). Tradeoff: widens `ChromeModel` with
-   those fields but removes a ReactNode-returning getter from every display
-   model. Net cleaner; do it if the contract widening reads OK.
+1. ~~Remove the last view-in-model leak.~~ **DONE.** DisplayChrome renders
+   `<TooLargeMessage model={model} />` itself; `regionCannotBeRendered()` (JSX)
+   was removed from `RegionTooLargeMixin`, and `ChromeModel` widened with
+   `regionTooLargeReason` / `featureDensityStats` / `setFeatureDensityStatsLimit`.
+   The dead `VariantDisplayModelInterface.ts` fell out and was deleted. The
+   pure-GPU displays now fall back to `BaseDisplayModel`'s null
+   `regionCannotBeRendered` (unused — DisplayChrome owns the banner).
+   **Remaining (legacy, intentionally left):** `FeatureDensityMixin` still has
+   its own JSX `regionCannotBeRendered`, used by the server-side **block**
+   render path (`serverSideRenderedBlock.ts` returns it as `cannotBeRenderedReason`,
+   arc's `BaseDisplayComponent` renders it). Ripping that out means restructuring
+   the legacy block-render contract to pass a string + render the message in the
+   block component — a separate non-GPU subsystem, not worth bundling here.
 2. **Nothing forces the testid convention.** Each display hand-writes its
    `data-testid` (`wiggle-display`, `manhattan-gpu`, `pileup-display`,
    `variant-display`, `display-${id}`, `hic_canvas`, `ld_canvas`,

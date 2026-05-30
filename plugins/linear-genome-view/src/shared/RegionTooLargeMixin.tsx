@@ -1,7 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import TooLargeMessage from './TooLargeMessage.tsx'
-
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -60,6 +58,8 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #method
+       * Plaintext reason (for SVG export); the on-screen too-large UI is
+       * rendered by the display chrome via `TooLargeMessage`, not the model.
        */
       regionCannotBeRenderedText(_region?: Region) {
         return self.regionTooLarge ? 'Force load to see features' : ''
@@ -99,18 +99,6 @@ export default function RegionTooLargeMixin() {
        */
       reload() {
         // no-op, overridden by composing display models
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      // Reads through the `regionTooLarge` getter (not `regionTooLargeState`
-      // directly) so subclasses that override the getter with a derived
-      // computation — e.g. canvas's density-based derivation — see the
-      // banner reflect their state.
-      regionCannotBeRendered(_region?: Region) {
-        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))
 }

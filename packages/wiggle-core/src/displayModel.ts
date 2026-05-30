@@ -3,8 +3,8 @@ import { when } from 'mobx'
 import type { WiggleDataResult } from './dataTypes.ts'
 import type { YScaleTicks } from './index.ts'
 import type { WiggleRenderingBackend } from './renderingBackendTypes.ts'
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
-import type { ReactNode } from 'react'
 
 // Intersection contract every wiggle-family GPU display model (wiggle,
 // multi-wiggle, manhattan) exposes to its React component. RenderingBackend-typed for
@@ -24,7 +24,9 @@ export interface WiggleGpuDisplayModel<
   statusMessage?: string
   reload: () => void
   regionTooLarge: boolean
-  regionCannotBeRendered: () => ReactNode
+  regionTooLargeReason: string
+  featureDensityStats?: FeatureDensityStats
+  setFeatureDensityStatsLimit: (s?: FeatureDensityStats) => void
   displayCrossHatches: boolean
   scalebarOverlapLeft: number
 }

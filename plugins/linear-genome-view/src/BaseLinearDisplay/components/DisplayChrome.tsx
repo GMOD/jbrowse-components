@@ -6,7 +6,9 @@ import { observer } from 'mobx-react'
 import DisplayErrorBar from './DisplayErrorBar.tsx'
 import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
+import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 
 interface ChromeModel {
@@ -15,7 +17,9 @@ interface ChromeModel {
   loadingOverlayVisible: boolean
   statusMessage?: string
   regionTooLarge: boolean
-  regionCannotBeRendered: () => ReactNode
+  regionTooLargeReason: string
+  featureDensityStats?: FeatureDensityStats
+  setFeatureDensityStatsLimit: (s?: FeatureDensityStats) => void
   height: number
 }
 
@@ -59,7 +63,7 @@ function DisplayChromeInner<B extends { dispose(): void }>({
     )
   }
   if (model.regionTooLarge) {
-    return model.regionCannotBeRendered()
+    return <TooLargeMessage model={model} />
   }
   return (
     <div {...divProps}>
