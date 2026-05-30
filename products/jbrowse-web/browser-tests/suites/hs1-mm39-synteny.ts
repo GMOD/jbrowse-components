@@ -14,9 +14,9 @@ const suite: TestSuite = {
   requiresRemote: true,
   tests: [
     {
-      name: 'renders synteny view for chr7 region (indexed PAF)',
+      name: 'renders synteny view for chr7 vs chr6 (indexed PAF, 100k minlen)',
       fn: async page => {
-        // hs1:chr7:25-30M synteny features cluster at mm39:chr6:49-56M
+        // full chr7 vs chr6 with 100k minlen shows clear diagonal syntenic bands
         await navigateWithSessionSpec(
           page,
           {
@@ -24,13 +24,14 @@ const suite: TestSuite = {
               {
                 type: 'LinearSyntenyView',
                 tracks: ['hs1ToMm39.over.chain.pif'],
+                minAlignmentLength: 100000,
                 views: [
                   {
-                    loc: 'chr7:25,000,000..30,000,000',
+                    loc: 'chr7',
                     assembly: 'hs1',
                   },
                   {
-                    loc: 'chr6:45,000,000..60,000,000',
+                    loc: 'chr6',
                     assembly: 'mm39',
                   },
                 ],
@@ -95,13 +96,14 @@ const suite: TestSuite = {
               {
                 type: 'LinearSyntenyView',
                 tracks: ['hs1ToMm39.over.chain.pif'],
+                minAlignmentLength: 100000,
                 views: [
                   {
-                    loc: 'chr7:25,000,000..30,000,000',
+                    loc: 'chr7',
                     assembly: 'hs1',
                   },
                   {
-                    loc: 'chr6:45,000,000..60,000,000',
+                    loc: 'chr6',
                     assembly: 'mm39',
                   },
                 ],

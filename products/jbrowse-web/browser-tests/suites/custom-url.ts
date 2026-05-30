@@ -1,5 +1,5 @@
 import { PORT, appendGpuParam, waitForLoadingToComplete } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { pageSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -14,7 +14,7 @@ const suite: TestSuite = {
         )
         await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
         await waitForLoadingToComplete(page)
-        await snapshot(page, 'methylation_snapshot')
+        await pageSnapshot(page, 'methylation_snapshot')
       },
     },
     {
@@ -25,7 +25,7 @@ const suite: TestSuite = {
         )
         await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
         await waitForLoadingToComplete(page)
-        await snapshot(page, 'breakpoint_split_view_snapshot')
+        await pageSnapshot(page, 'breakpoint_split_view_snapshot')
       },
     },
   ],

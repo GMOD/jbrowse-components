@@ -17,3 +17,29 @@ node browser-tests/runner.ts --debug
 
 Real GPU errors (`context LOST`, `GL error`, `UNCAPTURED ERROR`) always show
 regardless of debug mode.
+
+### Waiting on loading / completion signals
+
+`LoadingOverlay` always keeps the literal text `"Loading"` in the DOM (hidden via
+`opacity:0`); only `data-testid="loading-overlay"` is removed when hidden. So a
+`textContent.includes('Loading')` wait is *always* true and burns its full
+timeout — wait on the `loading-overlay` test-id count instead (the snapshot
+helpers and `waitForLoadingToComplete`/`waitForDataLoaded` do this). For canvas
+*paint* completion (not just data-fetch) wait on the per-display `*-done` /
+`*_done` test-id (`canvasDrawn`/`rpcData`), e.g. `synteny_canvas_done`; that's
+what `canvasSnapshot` gates on, and why canvas captures are the most reliable.
+
+### Leaked browser processes
+
+`runner.ts` reaps orphaned test browsers at startup (`killStaleTestBrowsers`).
+SIGKILL/OOM-killed prior runs leave Chrome reparented to init/systemd; these
+accumulate (~300MB–900MB each) until the kernel OOM-kills a live renderer
+mid-run. Puppeteer can't self-clean those — an external reaper is the standard
+remedy:
+
+- https://github.com/puppeteer/puppeteer/issues/1367
+- https://github.com/puppeteer/puppeteer/issues/12854
+
+The reaper only kills chromium-family processes carrying `--enable-automation`
+whose parent is no longer `node` (so concurrent live runs and the user's real
+Chrome are never touched).

@@ -108,56 +108,29 @@ export async function capturePageSnapshot(page: Page, name: string) {
   return compareImages(name, screenshot)
 }
 
-export async function snapshot(page: Page, name: string, threshold = 0.1) {
-  // Wait for any "Loading" text to clear from view containers
-  // before capturing the snapshot to avoid flakiness
+// LoadingOverlay always keeps the literal text "Loading" in the DOM (hidden via
+// opacity:0), so textContent can never distinguish visible from hidden — a
+// textContent.includes('Loading') wait always burns the full timeout. The
+// data-testid="loading-overlay" attribute is only present while visible, so
+// counting those elements is the reliable "still loading" signal. Mirrors
+// waitForLoadingToComplete in helpers.ts (inlined here to avoid a circular
+// import, since helpers.ts imports snapshotConfig from this file).
+async function waitForLoadingOverlayGone(page: Page, timeout: number) {
   try {
     await page.waitForFunction(
-      () => {
-        const containers = document.querySelectorAll(
-          '[data-testid^="view-container-"]',
-        )
-        for (const c of containers) {
-          if (c.textContent.includes('Loading')) {
-            return false
-          }
-        }
-        return true
-      },
-      { timeout: 10000 },
+      () =>
+        document.querySelectorAll('[data-testid="loading-overlay"]').length ===
+        0,
+      { timeout },
     )
   } catch {
-    // proceed with snapshot even if loading text is still present
-  }
-
-  const screenshot = await page.screenshot({ fullPage: true })
-  const result = compareImages(name, screenshot, threshold)
-  if (!result.passed) {
-    throw new Error(result.message)
+    // proceed with snapshot even if still loading after timeout — the image
+    // comparison is the real assertion
   }
 }
 
 export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
-  // Wait for any "Loading" text to clear from view containers
-  // before capturing the full-page snapshot to avoid flakiness
-  try {
-    await page.waitForFunction(
-      () => {
-        const containers = document.querySelectorAll(
-          '[data-testid^="view-container-"]',
-        )
-        for (const c of containers) {
-          if (c.textContent.includes('Loading')) {
-            return false
-          }
-        }
-        return true
-      },
-      { timeout: 30000 },
-    )
-  } catch {
-    // proceed with snapshot even if loading text is still present
-  }
+  await waitForLoadingOverlayGone(page, 30000)
 
   const screenshot = await page.screenshot({ fullPage: true })
   const result = compareImages(name, screenshot, threshold)

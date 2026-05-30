@@ -9,7 +9,7 @@ import {
   waitForLoadingToComplete,
   waitForWorkspacesReady,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { pageSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -68,7 +68,7 @@ const suite: TestSuite = {
         }
 
         await waitForLoadingToComplete(page)
-        await snapshot(page, 'workspaces-add-view', 0.2)
+        await pageSnapshot(page, 'workspaces-add-view', 0.2)
       },
     },
     {
@@ -76,7 +76,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page)
         await setupWorkspacesViaMoveToTab(page)
-        await snapshot(page, 'workspaces-new-tab', 0.2)
+        await pageSnapshot(page, 'workspaces-new-tab', 0.2)
       },
     },
     {
@@ -86,7 +86,7 @@ const suite: TestSuite = {
         await copyView(page)
         await clickViewMenuOption(page, 'Move to split view', 0)
         await waitForWorkspacesReady(page)
-        await snapshot(page, 'workspaces-split-view', 0.2)
+        await pageSnapshot(page, 'workspaces-split-view', 0.2)
       },
     },
     {
@@ -158,7 +158,7 @@ const suite: TestSuite = {
         }
 
         await waitForLoadingToComplete(page)
-        await snapshot(page, 'workspaces-layout-url-param', 0.2)
+        await pageSnapshot(page, 'workspaces-layout-url-param', 0.2)
       },
     },
     {
@@ -207,7 +207,7 @@ const suite: TestSuite = {
         }
 
         await waitForLoadingToComplete(page)
-        await snapshot(page, 'workspaces-layout-custom-sizes', 0.2)
+        await pageSnapshot(page, 'workspaces-layout-custom-sizes', 0.2)
       },
     },
     {

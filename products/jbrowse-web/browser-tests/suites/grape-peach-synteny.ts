@@ -14,8 +14,11 @@ const suite: TestSuite = {
   requiresRemote: true,
   tests: [
     {
-      name: 'renders whole-genome synteny overview (minimap2 PAF)',
+      name: 'renders synteny view for grape chr18 vs peach Pp01 (minimap2 PAF)',
       fn: async page => {
+        // chr18 (grape) vs Pp01 (peach) has strong synteny — a clear diagonal
+        // ribbon at minlen=2k without hairballing. Grape-peach alignments are
+        // generally small (<12kb) so minlen must stay low.
         await navigateWithSessionSpec(
           page,
           {
@@ -23,11 +26,14 @@ const suite: TestSuite = {
               {
                 type: 'LinearSyntenyView',
                 tracks: ['peach_grape_minimap2'],
+                minAlignmentLength: 2000,
                 views: [
                   {
+                    loc: 'chr18',
                     assembly: 'grape',
                   },
                   {
+                    loc: 'Pp01',
                     assembly: 'peach',
                   },
                 ],
@@ -56,11 +62,14 @@ const suite: TestSuite = {
               {
                 type: 'LinearSyntenyView',
                 tracks: ['peach_grape_minimap2'],
+                minAlignmentLength: 2000,
                 views: [
                   {
+                    loc: 'chr18',
                     assembly: 'grape',
                   },
                   {
+                    loc: 'Pp01',
                     assembly: 'peach',
                   },
                 ],

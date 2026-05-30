@@ -189,7 +189,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev xvfb
+          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
@@ -214,38 +214,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      # - name: Install Chrome for Puppeteer
-      #   run: npx puppeteer browsers install chrome
-      # - name: Run browser tests with Puppeteer
-      #   id: browser-tests
-      #   run: node --experimental-strip-types browser-tests/runner.ts
-      #   working-directory: products/jbrowse-web
-      #   continue-on-error: true
-      # - name: Upload snapshot diffs to S3
-      #   if: steps.browser-tests.outcome == 'failure'
-      #   run: |
-      #     SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
-      #     S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
-      #
-      #     if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
-      #       echo "Uploading snapshot diffs to S3..."
-      #       aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
-      #
-      #       echo ""
-      #       echo "============================================"
-      #       echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
-      #       echo "============================================"
-      #       for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
-      #         filename=$(basename "$file")
-      #         echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
-      #       done
-      #       echo "============================================"
-      #     else
-      #       echo "No snapshot diff files found"
-      #     fi
-      # - name: Fail if browser tests failed
-      #   if: steps.browser-tests.outcome == 'failure'
-      #   run: exit 1
 
       - name: Upload packed artifacts for component tests
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -34,6 +34,17 @@ node browser-tests/runner.ts
 node browser-tests/runner.ts --headed
 node browser-tests/runner.ts --headed --slow-mo=100
 node browser-tests/runner.ts --update-snapshots
+
+# Run specific suites (comma-separated or multiple flags; auto-enables remote):
+node browser-tests/runner.ts --filter=grape,hs1
+node browser-tests/runner.ts --filter=grape --filter=hs1
+
+# Filter to a specific test within suites:
+node browser-tests/runner.ts --filter=synteny --test="chr7"
+
+# Include suites that require remote data (S3/UCSC):
+node browser-tests/runner.ts --include-remote
+# (not needed when --filter is given — remote is auto-enabled)
 ```
 
 ## How It Works

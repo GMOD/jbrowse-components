@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
@@ -24,13 +25,23 @@ const slowMo = slowMoArg ? parseInt(slowMoArg.split('=')[1]!, 10) : 0
 const updateSnapshots =
   args.includes('--update-snapshots') || args.includes('-u')
 const runAuthTests = args.includes('--auth')
-const filterArg = args.find(a => a.startsWith('--filter='))
-const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
+// --filter= accepts comma-separated values and/or multiple flags:
+//   --filter=grape,hs1   or   --filter=grape --filter=hs1
+// Matching is case-insensitive substring against suite name.
+const filters = args
+  .filter(a => a.startsWith('--filter='))
+  .flatMap(a => a.split('=')[1]!.toLowerCase().split(','))
+  .filter(Boolean)
+// --test= filters individual test cases within matched suites (substring match).
+const testFilterArg = args.find(a => a.startsWith('--test='))
+const testFilter = testFilterArg ? testFilterArg.split('=')[1]!.toLowerCase() : ''
 // --smoke is the full local smoke test: runs every suite, including the
 // requiresRemote ones (grape/peach + hs1/mm39 synteny).
 // Those tests fetch data straight from S3/UCSC at runtime — so it works on any machine online.
 const smoke = args.includes('--smoke')
-const includeRemote = args.includes('--include-remote') || smoke
+// Auto-enable remote when a filter is specified — you shouldn't need to know
+// about --include-remote when targeting a specific suite by name.
+const includeRemote = args.includes('--include-remote') || smoke || filters.length > 0
 const backendArg = args.find(a => a.startsWith('--backend='))
 const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
 const skipWebGPU = args.includes('--skip-webgpu')
@@ -119,7 +130,10 @@ async function runTests(
     if (suite.requiresRemote && !includeRemote) {
       return false
     }
-    if (filter && !suite.name.toLowerCase().includes(filter)) {
+    if (
+      filters.length > 0 &&
+      !filters.some(f => suite.name.toLowerCase().includes(f))
+    ) {
       return false
     }
     return true
@@ -146,6 +160,9 @@ async function runTests(
       }
       if (test.requiresAuth && !includeAuth) {
         console.log(`    ⚡ ${test.name} (skipped — requires --auth)`)
+        continue
+      }
+      if (testFilter && !test.name.toLowerCase().includes(testFilter)) {
         continue
       }
 
@@ -241,7 +258,10 @@ async function runTestsWithRestart(
     if (suite.requiresRemote && !includeRemote) {
       return false
     }
-    if (filter && !suite.name.toLowerCase().includes(filter)) {
+    if (
+      filters.length > 0 &&
+      !filters.some(f => suite.name.toLowerCase().includes(f))
+    ) {
       return false
     }
     return true
@@ -261,6 +281,9 @@ async function runTestsWithRestart(
       }
       if (test.requiresAuth && !includeAuth) {
         console.log(`    ⚡ ${test.name} (skipped — requires --auth)`)
+        continue
+      }
+      if (testFilter && !test.name.toLowerCase().includes(testFilter)) {
         continue
       }
 
@@ -406,17 +429,19 @@ async function runWithRenderingBackend(
           'gfx.webgpu.ignore-blocklist': true,
         },
         defaultViewport: { width: 1280, height: 800 },
-      })
+      }).then(trackBrowser)
     return runTestsWithRestart(launchFirefox, suites, runAuthTests)
   }
 
   const chromeArgs = chromeArgsForRenderingBackend(backend)
-  const browser = await launch({
-    headless: useHeadless,
-    slowMo,
-    args: chromeArgs,
-    defaultViewport: { width: 1280, height: 800 },
-  })
+  const browser = trackBrowser(
+    await launch({
+      headless: useHeadless,
+      slowMo,
+      args: chromeArgs,
+      defaultViewport: { width: 1280, height: 800 },
+    }),
+  )
 
   const page = await setupPage(browser)
 
@@ -427,7 +452,7 @@ async function runWithRenderingBackend(
       slowMo,
       args: chromeArgs,
       defaultViewport: { width: 1280, height: 800 },
-    })
+    }).then(trackBrowser)
 
   try {
     return await runTests(page, browser, suites, runAuthTests, launchBrowser)
@@ -436,7 +461,87 @@ async function runWithRenderingBackend(
   }
 }
 
+// Browsers this process launched. Tracked so an exit backstop can force-kill
+// any that survive a crash path `finally { browser.close() }` doesn't catch
+// (uncaughtException, process.exit from a nested error). Only ever touches our
+// own browsers — never another agent's run.
+const liveBrowsers = new Set<Browser>()
+function trackBrowser(browser: Browser) {
+  liveBrowsers.add(browser)
+  browser.once('disconnected', () => liveBrowsers.delete(browser))
+  return browser
+}
+process.on('exit', () => {
+  for (const browser of liveBrowsers) {
+    browser.process()?.kill('SIGKILL')
+  }
+})
+
+// Reap puppeteer browsers leaked by *prior* runs that were SIGKILLed or
+// OOM-killed — paths no in-process handler can catch, so they accumulate
+// (~300MB-900MB each) until the kernel OOM-kills a live renderer mid-run.
+// Puppeteer can't fix this itself; an external startup reaper is the standard
+// remedy:
+//   https://github.com/puppeteer/puppeteer/issues/1367
+//   https://github.com/puppeteer/puppeteer/issues/12854
+//
+// A leaked browser carries puppeteer's `--enable-automation` signature (never
+// present on a real Chrome) but its launching `node` is gone, so it's been
+// reparented to init/systemd. A concurrent live run keeps `node` as the parent,
+// so this is safe under the shared multi-agent worktree — we only kill browsers
+// whose runner has died. Killing each main process is enough; its renderer
+// children self-exit when the browser process's IPC pipe closes. Linux-only.
+function killStaleTestBrowsers() {
+  if (process.platform !== 'linux') {
+    return
+  }
+  let psOut: string
+  try {
+    psOut = execSync('ps -eo pid=,ppid=,comm=,args=', {
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
+    })
+  } catch {
+    return // ps unavailable — skip the sweep rather than guess
+  }
+
+  const procs = psOut
+    .split('\n')
+    .map(line => /^(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/.exec(line.trim()))
+    .filter(m => m !== null)
+    .map(m => ({
+      pid: +m[1]!,
+      ppid: +m[2]!,
+      comm: m[3]!,
+      argv: m[4]!.split(/\s+/),
+    }))
+  const commByPid = new Map(procs.map(p => [p.pid, p.comm]))
+
+  // A test browser is a chromium-family process carrying puppeteer's
+  // `--enable-automation` token (the user's own Chrome never has it). It's an
+  // orphan — its launching `node` died — when its parent is no longer `node`.
+  const orphans = procs.filter(
+    p =>
+      /^(chrome|chromium|headless_shell)/.test(p.comm) &&
+      p.argv.includes('--enable-automation') &&
+      commByPid.get(p.ppid) !== 'node',
+  )
+  for (const orphan of orphans) {
+    try {
+      process.kill(orphan.pid, 'SIGKILL')
+    } catch {
+      // already gone between snapshot and kill — fine
+    }
+  }
+  if (orphans.length > 0) {
+    console.log(
+      `Reaped ${orphans.length} orphaned test browser(s) leaked by prior crashed runs`,
+    )
+  }
+}
+
 async function main() {
+  killStaleTestBrowsers()
   if (!fs.existsSync(buildPath)) {
     console.error(
       'Error: Build directory not found. Run `yarn build` in products/jbrowse-web first.',
@@ -491,8 +596,11 @@ async function main() {
       if (runAuthTests) {
         console.log('(including auth tests)')
       }
-      if (filter) {
-        console.log(`(filtering by: ${filter})`)
+      if (filters.length > 0) {
+        console.log(`(filtering by: ${filters.join(', ')})`)
+      }
+      if (testFilter) {
+        console.log(`(test filter: ${testFilter})`)
       }
       if (smoke) {
         console.log('(smoke test: running all suites including remote)')
