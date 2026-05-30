@@ -45,10 +45,27 @@ test('make-pif with --coarse emits T/Q coarse tier with CIGAR stripped', async (
   })
 })
 
-test('make-pif without --coarse omits T/Q coarse tier', async () => {
+test('make-pif emits T/Q coarse tier by default', async () => {
   await runInTmpDir(async () => {
     const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
     await runCommand(['make-pif', simplePaf, '--out', fn])
+    const content = gunzipSync(fs.readFileSync(fn)).toString()
+    const lines = content.split('\n').filter(Boolean)
+    const coarseT = lines.filter(l => l.startsWith('T'))
+    const coarseQ = lines.filter(l => l.startsWith('Q'))
+    expect(coarseT.length).toBeGreaterThan(0)
+    expect(coarseQ.length).toBeGreaterThan(0)
+    for (const l of coarseT) {
+      expect(l).not.toMatch(/cg:Z:/)
+      expect(l).toMatch(/de:f:/)
+    }
+  })
+})
+
+test('make-pif --no-coarse omits T/Q coarse tier', async () => {
+  await runInTmpDir(async () => {
+    const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
+    await runCommand(['make-pif', simplePaf, '--out', fn, '--no-coarse'])
     const content = gunzipSync(fs.readFileSync(fn)).toString()
     const lines = content.split('\n').filter(Boolean)
     expect(lines.some(l => l.startsWith('T'))).toBe(false)

@@ -1,6 +1,7 @@
 import { parseArgs } from 'util'
 
 import {
+  DEFAULT_COARSE_SPLIT_GAP,
   createPIF,
   getOutputFilename,
   spawnSortProcess,
@@ -30,7 +31,12 @@ export async function run(args?: string[]) {
     coarse: {
       type: 'string',
       description:
-        'If set, also emit a no-CIGAR coarse tier (prefix T/Q) of the same alignment rows with CIGAR stripped. The value is the minimum insertion/deletion length (bp) at which a row is split into multiple pieces — 0 emits one coarse row per fine row (strip only, no splitting). Default: coarse tier is not emitted.',
+        'Minimum insertion/deletion length (bp) at which a coarse-tier row is split into multiple pieces so each row stays tight — 0 strips CIGAR with no splitting. Defaults to 10000. The no-CIGAR coarse tier (prefix T/Q) is emitted by default so whole-genome synteny views can auto-switch to it; pass --no-coarse to omit it.',
+    },
+    'no-coarse': {
+      type: 'boolean',
+      description:
+        'Do not emit the coarse no-CIGAR tier; write only the per-row CIGAR fine tier.',
     },
   } as const
   const { values: flags, positionals } = parseArgs({
@@ -61,9 +67,14 @@ export async function run(args?: string[]) {
   validateFileArgument(file, 'make-pif', 'paf')
   validateRequiredCommands(['sh', 'sort', 'grep', 'tabix', 'bgzip'])
 
-  const { out, csi = false, coarse } = flags
+  const { out, csi = false, coarse, 'no-coarse': noCoarse = false } = flags
   const outputFile = getOutputFilename(file, out)
-  const coarseSplitGap = coarse === undefined ? undefined : +coarse
+  let coarseSplitGap: number | undefined
+  if (noCoarse) {
+    coarseSplitGap = undefined
+  } else {
+    coarseSplitGap = coarse === undefined ? DEFAULT_COARSE_SPLIT_GAP : +coarse
+  }
   if (
     coarseSplitGap !== undefined &&
     (!Number.isFinite(coarseSplitGap) || coarseSplitGap < 0)

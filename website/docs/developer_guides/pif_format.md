@@ -109,6 +109,28 @@ jbrowse add-track alignment.pif.gz -a query,reference --out $OUT --load copy
 `jbrowse add-track` detects the `.pif.gz` extension and automatically configures
 the `PairwiseIndexedPAFAdapter`.
 
+### Level-of-detail coarse tier
+
+By default `make-pif` also writes a second, no-CIGAR "coarse" tier of the same
+alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom — whole
+genome or whole chromosome — the `PairwiseIndexedPAFAdapter` serves this tier
+automatically (controlled by `coarseBpPerPxThreshold`, default 10000 bp/px),
+so the renderer draws clean ribbons without downloading or parsing megabyte-scale
+CIGAR strings. Zooming in switches back to the fine `t`/`q` tier for per-base
+detail. No configuration is needed; the view's "Level of detail" menu defaults
+to `auto`.
+
+```bash
+# coarse tier is on by default
+jbrowse make-pif input.paf
+
+# tune the gap (bp) at which a coarse row is split to keep its bbox tight
+jbrowse make-pif input.paf --coarse 50000
+
+# disable the coarse tier (fine t/q tier only)
+jbrowse make-pif input.paf --no-coarse
+```
+
 ### Optional preprocessing with rustybam
 
 For large or messy PAFs (millions of short alignments, soft-clipped overhangs,

@@ -10,6 +10,13 @@ import { splitCigarOnLargeGaps } from './structural-summary.ts'
 
 import type { Writable } from 'stream'
 
+// Default split gap (bp) for the coarse tier. A row is broken into multiple
+// coarse pieces wherever a CIGAR insertion/deletion is at least this long, so
+// each coarse row's bounding box stays tight. 10kb matches the adapter's
+// default coarseBpPerPxThreshold (~1px at the zoom where the coarse tier is
+// served), so smaller gaps that would be sub-pixel there don't fragment rows.
+export const DEFAULT_COARSE_SPLIT_GAP = 10_000
+
 function processLine(
   line: string,
   emitCoarse: boolean,
