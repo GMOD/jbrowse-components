@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react'
-
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getSyntenyTracks } from '@jbrowse/synteny-core'
+import { getSyntenyTracks, pickSyntenyTrackId } from '@jbrowse/synteny-core'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -26,14 +24,9 @@ const ImportSyntenyTrackSelector = observer(
       assembly1,
       assembly2,
     ])
-    const resetTrack = filteredTracks[0]?.trackId ?? ''
-    const [value, setValue] = useState(resetTrack)
-    useEffect(() => {
-      model.setImportFormSyntenyTrack(selectedRow, {
-        type: 'preConfigured',
-        value: resetTrack,
-      })
-    }, [assembly1, assembly2, resetTrack, selectedRow, model])
+    const selection = model.importFormSyntenyTrackSelections[selectedRow]
+    const picked = selection?.type === 'preConfigured' ? selection.value : ''
+    const value = pickSyntenyTrackId(picked, filteredTracks) ?? ''
     return (
       <Paper style={{ padding: 12 }}>
         <Typography>
@@ -45,11 +38,9 @@ const ImportSyntenyTrackSelector = observer(
           <Select
             value={value}
             onChange={event => {
-              const v = event.target.value
-              setValue(v)
               model.setImportFormSyntenyTrack(selectedRow, {
                 type: 'preConfigured',
-                value: v,
+                value: event.target.value,
               })
             }}
           >

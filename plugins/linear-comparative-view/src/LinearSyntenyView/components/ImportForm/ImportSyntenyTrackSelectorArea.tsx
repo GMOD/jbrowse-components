@@ -67,6 +67,11 @@ export default function ImportSyntenyTrackSelectorArea({
             setChoice(val)
             if (val === 'none' || val === 'custom') {
               model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
+            } else if (val === 'tracklist') {
+              model.setImportFormSyntenyTrack(selectedRow, {
+                type: 'preConfigured',
+                value: '',
+              })
             }
           }}
         >

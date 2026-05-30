@@ -1,4 +1,5 @@
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { getSyntenyTracks, pickSyntenyTrackId } from '@jbrowse/synteny-core'
 import { toJS } from 'mobx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
@@ -12,7 +13,6 @@ export async function doSubmit({
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
-  const { importFormSyntenyTrackSelections } = model
 
   model.setViews(
     await Promise.all(
@@ -38,12 +38,25 @@ export async function doSubmit({
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {
-    for (const [idx, f] of toJS(importFormSyntenyTrackSelections).entries()) {
-      if (f.type === 'userOpened' && f.value !== undefined) {
-        session.addTrackConf(f.value)
-        model.toggleTrack(f.value.trackId, idx)
-      } else if (f.type === 'preConfigured') {
-        model.showTrack(f.value, idx)
+    for (let idx = 0; idx < selectedAssemblyNames.length - 1; idx++) {
+      const selection = model.importFormSyntenyTrackSelections[idx]
+      if (selection?.type === 'userOpened' && selection.value !== undefined) {
+        session.addTrackConf(toJS(selection.value))
+        model.toggleTrack(selection.value.trackId, idx)
+      } else if (!selection || selection.type === 'preConfigured') {
+        // tracklist default (undefined or preConfigured): show the picked track
+        // if still valid for this pair, else the first available
+        const picked = selection?.type === 'preConfigured' ? selection.value : ''
+        const trackId = pickSyntenyTrackId(
+          picked,
+          getSyntenyTracks(session.tracks, [
+            selectedAssemblyNames[idx]!,
+            selectedAssemblyNames[idx + 1]!,
+          ]),
+        )
+        if (trackId) {
+          model.showTrack(trackId, idx)
+        }
       }
     }
   }

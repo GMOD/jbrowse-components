@@ -1,4 +1,5 @@
 import { isSessionWithAddTracks } from '@jbrowse/core/util'
+import { pickSyntenyTrackId } from '@jbrowse/synteny-core'
 import { toJS, transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../../model.ts'
@@ -24,7 +25,7 @@ export function resolveImportFormSelection({
   modelSelection: ImportFormSyntenyTrack | undefined
 }): ImportFormSyntenyTrack {
   if (choice === 'tracklist') {
-    const value = preConfiguredTrackId || syntenyTracks[0]?.trackId
+    const value = pickSyntenyTrackId(preConfiguredTrackId, syntenyTracks)
     return value ? { type: 'preConfigured', value } : { type: 'none' }
   } else {
     return toJS(modelSelection) ?? { type: 'none' }

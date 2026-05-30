@@ -19,3 +19,17 @@ export function getSyntenyTracks(
     )
   })
 }
+
+/**
+ * The preferred track id if it is still one of the given synteny tracks,
+ * otherwise the first available. Keeps a stale or empty preference from
+ * resolving to a track that doesn't belong to the pair.
+ */
+export function pickSyntenyTrackId(
+  preferredTrackId: string,
+  syntenyTracks: AnyConfigurationModel[],
+) {
+  return syntenyTracks.some(track => track.trackId === preferredTrackId)
+    ? preferredTrackId
+    : syntenyTracks[0]?.trackId
+}

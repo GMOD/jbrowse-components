@@ -1,12 +1,14 @@
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSyntenyTracks, pickSyntenyTrackId } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   mb: {
@@ -30,15 +32,24 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function rowNeedsConfiguration(model: LinearSyntenyViewModel, idx: number) {
+// A row pair is configured if it has an explicit none/userOpened/specific
+// preConfigured selection. An untouched (tracklist-default) row is fine as long
+// as a synteny track exists for the pair, since doSubmit auto-picks the first.
+function rowNeedsConfiguration(
+  model: LinearSyntenyViewModel,
+  session: AbstractSessionModel,
+  selectedAssemblyNames: string[],
+  idx: number,
+) {
   const selection = model.importFormSyntenyTrackSelections[idx]
-  if (!selection) {
-    return true
-  }
-  if (selection.type === 'preConfigured' && !selection.value) {
-    return true
-  }
-  return false
+  const isExplicit =
+    selection?.type === 'none' || selection?.type === 'userOpened'
+  const picked = selection?.type === 'preConfigured' ? selection.value : ''
+  const tracks = getSyntenyTracks(session.tracks, [
+    selectedAssemblyNames[idx]!,
+    selectedAssemblyNames[idx + 1]!,
+  ])
+  return !isExplicit && !pickSyntenyTrackId(picked, tracks)
 }
 
 const AssemblyRows = observer(function AssemblyRows({
@@ -104,7 +115,7 @@ const AssemblyRows = observer(function AssemblyRows({
             className={cx(
               classes.synbutton,
               idx === selectedRow ? classes.bg : undefined,
-              rowNeedsConfiguration(model, idx)
+              rowNeedsConfiguration(model, session, selectedAssemblyNames, idx)
                 ? classes.synbuttonNeedsConfig
                 : undefined,
             )}
@@ -138,9 +149,10 @@ const LeftPanel = observer(function LeftPanel({
   onLaunch: () => void
 }) {
   const { classes } = useStyles()
+  const session = getSession(model)
   const numRowPairs = selectedAssemblyNames.length - 1
-  const canLaunch = !Array.from({ length: numRowPairs }, (_, i) => i).some(i =>
-    rowNeedsConfiguration(model, i),
+  const canLaunch = !Array.from({ length: numRowPairs }).some((_, i) =>
+    rowNeedsConfiguration(model, session, selectedAssemblyNames, i),
   )
 
   return (

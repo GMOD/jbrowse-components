@@ -31,6 +31,17 @@ describe('resolveImportFormSelection', () => {
     ).toEqual({ type: 'preConfigured', value: 'first' })
   })
 
+  test('tracklist with a stale pick not in the list falls back to first', () => {
+    expect(
+      resolveImportFormSelection({
+        choice: 'tracklist',
+        preConfiguredTrackId: 'no-longer-here',
+        syntenyTracks: [track('first'), track('second')],
+        modelSelection: undefined,
+      }),
+    ).toEqual({ type: 'preConfigured', value: 'first' })
+  })
+
   test('tracklist with no matching tracks is none', () => {
     expect(
       resolveImportFormSelection({
