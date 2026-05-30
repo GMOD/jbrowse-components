@@ -18,10 +18,11 @@ import type { MenuItem as JBMenuItem, MenuItemsGetter } from './MenuTypes.ts'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
 
-// Helper to create a data-testid from a label
-function labelToTestId(label: React.ReactNode) {
+// Build a `cascading-<kind>-<label>` data-testid, or undefined for non-string
+// labels that can't be slugified
+function makeTestId(kind: string, label: React.ReactNode) {
   if (typeof label === 'string') {
-    return label.toLowerCase().replace(/\s+/g, '_')
+    return `cascading-${kind}-${label.toLowerCase().replace(/\s+/g, '_')}`
   }
   return undefined
 }
@@ -50,13 +51,12 @@ function CascadingSubmenu({
   onClose: () => void
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
-  const testId = labelToTestId(title)
 
   return (
     <>
       <MenuItem
         ref={setAnchorEl}
-        data-testid={testId ? `cascading-submenu-${testId}` : undefined}
+        data-testid={makeTestId('submenu', title)}
         onMouseOver={() => {
           onOpen()
         }}
@@ -158,13 +158,10 @@ function CascadingMenuList({
 
         const helpText = item.helpText
         const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
-        const itemTestId = labelToTestId(item.label)
         return (
           <MenuItem
             key={`${item.label}-${idx}`}
-            data-testid={
-              itemTestId ? `cascading-menuitem-${itemTestId}` : undefined
-            }
+            data-testid={makeTestId('menuitem', item.label)}
             disabled={Boolean(item.disabled)}
             onClick={event => {
               if (closeAfterItemClick) {

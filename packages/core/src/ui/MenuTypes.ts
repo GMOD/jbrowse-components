@@ -9,6 +9,13 @@ export interface MenuSubHeader {
   label: string
 }
 
+// onClick receives a context argument (e.g. the session or track-selector
+// model) whose concrete type varies by where the item is registered, while the
+// renderer invokes it with no argument. A single `MenuItem[]` array can hold
+// handlers expecting different context types, so the parameter list stays `any`
+// rather than a generic that callers would have to cast through.
+export type MenuItemClickHandler = (...args: any[]) => void
+
 export interface BaseMenuItem {
   id?: string
   label: React.ReactNode
@@ -21,19 +28,19 @@ export interface BaseMenuItem {
 
 export interface NormalMenuItem extends BaseMenuItem {
   type?: 'normal'
-  onClick: (...args: any[]) => void
+  onClick: MenuItemClickHandler
 }
 
 export interface CheckboxMenuItem extends BaseMenuItem {
   type: 'checkbox'
   checked: boolean
-  onClick: (...args: any[]) => void
+  onClick: MenuItemClickHandler
 }
 
 export interface RadioMenuItem extends BaseMenuItem {
   type: 'radio'
   checked: boolean
-  onClick: (...args: any[]) => void
+  onClick: MenuItemClickHandler
 }
 
 export interface SubMenuItem extends BaseMenuItem {

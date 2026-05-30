@@ -175,7 +175,9 @@ function resolveSubMenuItems(menus: Menu[], menuPath: string[]) {
       sm = subMenu[idx - 1]!
     }
     if (!('subMenu' in sm)) {
-      throw new Error(`"${menuName}" in path "${pathSoFar}" is not a subMenu`)
+      throw new Error(
+        `"${menuName}" in path "${pathSoFar.join(' > ')}" is not a subMenu`,
+      )
     }
     subMenu = sm.subMenu
   }
