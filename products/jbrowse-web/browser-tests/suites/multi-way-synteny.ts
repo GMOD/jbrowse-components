@@ -110,8 +110,8 @@ const suite: TestSuite = {
                 type: 'DotplotView',
                 tracks: ['subset'],
                 views: [
-                  { loc: 'Pp01:28,000,000..29,000,000', assembly: 'peach' },
-                  { loc: 'chr1:200,000..500,000', assembly: 'grape' },
+                  { loc: 'Pp01:26,000,000..31,000,000', assembly: 'peach' },
+                  { loc: 'chr1:1..2,000,000', assembly: 'grape' },
                 ],
               },
             ],

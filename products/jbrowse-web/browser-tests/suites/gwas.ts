@@ -1,38 +1,17 @@
-import {
-  findByTestId,
-  navigateWithSessionSpec,
-  waitForDataLoaded,
-} from '../helpers.ts'
-import { dualSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 
 const suite: TestSuite = {
   name: 'GWAS Tracks',
   tests: [
-    {
+    lgvSnapshotTest({
       name: 'Manhattan plot renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['volvox_gwas'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'manhattan-gpu-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'gwas-manhattan-canvas',
-          '[data-testid="manhattan-gpu-done"] canvas',
-        )
-      },
-    },
+      snapshot: 'gwas-manhattan',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_gwas'],
+      doneTestId: 'manhattan-gpu-done',
+    }),
   ],
 }
 

@@ -2,8 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import pixelmatch from 'pixelmatch'
-import { PNG } from 'pngjs'
+import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
+import { comparePngBuffers } from './pngDiff.ts'
 
 import type { Buffer } from 'node:buffer'
 import type { Page } from 'puppeteer'
@@ -41,17 +41,12 @@ function compareImages(
   }
 
   const expectedBuffer = fs.readFileSync(snapshotPath)
-  const expectedImg = PNG.sync.read(expectedBuffer)
-  // @ts-expect-error Uint8Array works at runtime
-  const actualImg = PNG.sync.read(actualBuffer)
+  const diff = comparePngBuffers(expectedBuffer, actualBuffer)
 
-  if (
-    expectedImg.width !== actualImg.width ||
-    expectedImg.height !== actualImg.height
-  ) {
+  if (!diff.sameSize) {
     // If the existing golden is the default empty canvas size (300x150),
     // auto-update it since it was clearly captured blank
-    if (expectedImg.width === 300 && expectedImg.height === 150) {
+    if (diff.widthA === 300 && diff.heightA === 150) {
       fs.writeFileSync(snapshotPath, actualBuffer)
       return {
         passed: true,
@@ -60,7 +55,7 @@ function compareImages(
     }
     // If the new capture is blank but golden is real, treat as pass
     // since this just means WebGL didn't render this time
-    if (actualImg.width === 300 && actualImg.height === 150) {
+    if (diff.widthB === 300 && diff.heightB === 150) {
       return {
         passed: true,
         message: 'Skipping comparison - blank canvas capture',
@@ -69,37 +64,22 @@ function compareImages(
     fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), actualBuffer)
     return {
       passed: false,
-      message: `Snapshot size differs: expected ${expectedImg.width}x${expectedImg.height}, got ${actualImg.width}x${actualImg.height}`,
+      message: `Snapshot size differs: expected ${diff.widthA}x${diff.heightA}, got ${diff.widthB}x${diff.heightB}`,
     }
   }
 
-  const { width, height } = expectedImg
-  const diffImg = new PNG({ width, height })
-
-  const numDiffPixels = pixelmatch(
-    expectedImg.data,
-    actualImg.data,
-    diffImg.data,
-    width,
-    height,
-    { threshold: 0.1 },
-  )
-
-  const totalPixels = width * height
-  const diffPercent = numDiffPixels / totalPixels
-
-  if (diffPercent <= threshold) {
+  if (diff.diffFraction <= threshold) {
     return { passed: true, message: 'Snapshot matches' }
   }
 
   fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), actualBuffer)
   fs.writeFileSync(
     path.join(snapshotsDir, `${name}.diff-visual.png`),
-    PNG.sync.write(diffImg),
+    diff.diffImage,
   )
   return {
     passed: false,
-    message: `Snapshot differs by ${(diffPercent * 100).toFixed(2)}% (threshold: ${threshold * 100}%)`,
+    message: `Snapshot differs by ${(diff.diffFraction * 100).toFixed(2)}% (threshold: ${threshold * 100}%)`,
   }
 }
 
@@ -145,11 +125,19 @@ export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
 // Extract a canvas element's pixel data as PNG and compare it.
 // More reliable than full-page screenshots since it only captures
 // the rendered canvas content, avoiding UI/loading state variability.
+//
+// `assertContent` (default true) gates every targeted canvas capture on the
+// shader/renderer having actually drawn something before the pixel comparison
+// runs. Without it, the snapshot machinery silently passes blank GPU frames
+// (first-run goldens are auto-created blank, and a later blank capture is
+// treated as a pass), so a shader that compiles but draws nothing would never
+// fail. Pass `false` only for a display that legitimately renders empty.
 export async function canvasSnapshot(
   page: Page,
   name: string,
   selector: string,
   threshold = 0.05,
+  { assertContent = true }: { assertContent?: boolean } = {},
 ) {
   const el = await page.waitForSelector(selector, { timeout: 60000 })
   if (!el) {
@@ -157,6 +145,9 @@ export async function canvasSnapshot(
   }
 
   const screenshot = await el.screenshot({ type: 'png' })
+  if (assertContent) {
+    assertNonBlank(analyzeCanvasPng(screenshot), `${name} (${selector})`)
+  }
   const result = compareImages(name, screenshot, threshold)
   if (!result.passed) {
     throw new Error(result.message)
@@ -175,8 +166,11 @@ export async function dualSnapshot(
   name: string,
   selector: string,
   threshold = 0.05,
+  { assertContent = true }: { assertContent?: boolean } = {},
 ) {
   const base = name.replace(/-canvas$/, '')
-  await canvasSnapshot(page, `targetted_${base}`, selector, threshold)
+  await canvasSnapshot(page, `targetted_${base}`, selector, threshold, {
+    assertContent,
+  })
   await pageSnapshot(page, `fullpage_${base}`)
 }

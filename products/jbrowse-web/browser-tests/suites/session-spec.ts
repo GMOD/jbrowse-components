@@ -1,65 +1,23 @@
-import {
-  findByTestId,
-  findByText,
-  navigateWithSessionSpec,
-  waitForDataLoaded,
-} from '../helpers.ts'
-import { dualSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 
 const suite: TestSuite = {
   name: 'Session Spec URL Parameters',
   tests: [
-    {
+    lgvSnapshotTest({
       name: 'displaySnapshot type opens alignments track',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-10000',
-              tracks: ['volvox_sv_cram'],
-            },
-          ],
-        })
-
-        await findByText(page, 'ctgA')
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'session-spec-display-snapshot-canvas',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'session-spec-display-snapshot',
+      loc: 'ctgA:1-10000',
+      tracks: ['volvox_sv_cram'],
+      doneTestId: 'pileup-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'jexl',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:2,707..8,600',
-              tracks: ['volvox_test_vcf_jexl'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid^="display-"]', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'session-spec-jexl-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
+      snapshot: 'session-spec-jexl',
+      loc: 'ctgA:2,707..8,600',
+      tracks: ['volvox_test_vcf_jexl'],
+    }),
   ],
 }
 

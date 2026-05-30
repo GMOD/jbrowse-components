@@ -47,7 +47,7 @@ function mateOffsetToGenomic(
 
 export function navToSynteny({
   feature,
-  windowSize: ws,
+  windowSize,
   session,
   trackId,
   region,
@@ -93,8 +93,8 @@ export function navToSynteny({
   }
   const m1 = Math.min(rMateStart, rMateEnd)
   const m2 = Math.max(rMateStart, rMateEnd)
-  const l1 = `${featRef}:${Math.max(0, Math.floor(rFeatStart - ws))}-${Math.floor(rFeatEnd + ws)}`
-  const l2 = `${mateRef}:${Math.max(0, Math.floor(m1 - ws))}-${Math.floor(m2 + ws)}${horizontallyFlip ? '[rev]' : ''}`
+  const l1 = `${featRef}:${Math.max(0, Math.floor(rFeatStart - windowSize))}-${Math.floor(rFeatEnd + windowSize)}`
+  const l2 = `${mateRef}:${Math.max(0, Math.floor(m1 - windowSize))}-${Math.floor(m2 + windowSize)}${horizontallyFlip ? '[rev]' : ''}`
   session.addView('LinearSyntenyView', {
     init: {
       views: [

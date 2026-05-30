@@ -73,37 +73,59 @@ changes are made.
 
 ## Adding Tests
 
-Tests are defined in `runner.ts` using test suites:
+Each file in `suites/` exports a `TestSuite` (or an array of them); the runner
+auto-discovers them. Mark a suite/test `requiresRemote` (S3/UCSC data) or
+`requiresAuth` to gate it.
+
+Most tests just open a LinearGenomeView at a location with some tracks and
+snapshot the rendered canvas. Use the `lgvSnapshotTest` factory for that —
+one declaration per test:
 
 ```typescript
-const testSuites: TestSuite[] = [
-  {
-    name: 'My Test Suite',
-    tests: [
-      {
-        name: 'my test name',
-        fn: async page => {
-          await page.goto(`${baseUrl}/?config=test_data/volvox/config.json`)
-          const element = await findByTestId(page, 'my-element')
-          await element.click()
-          await findByText(page, 'Expected text')
-        },
-      },
-    ],
-  },
-]
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
+
+const suite: TestSuite = {
+  name: 'My Tracks',
+  tests: [
+    lgvSnapshotTest({
+      name: 'BED track renders',
+      snapshot: 'my-bed', // -> targetted_my-bed.png + fullpage_my-bed.png
+      loc: 'ctgA:1-50000',
+      tracks: ['bed_genes'],
+      // doneTestId: 'pileup-display-done',  // for alignments/wiggle displays
+    }),
+  ],
+}
 ```
+
+For interaction or non-LGV views, write the `fn` by hand using the helpers
+below. Reserve hand-written tests for what jsdom (the jest unit suite) can't do:
+real GPU/shader output, devicePixelRatio, WebGL context loss, and the web-worker
+RPC boundary — see `suites/gpu-quirks.ts`.
 
 ## Available Helpers
 
-- `findByTestId(page, testId, timeout)` - Find element by `data-testid`
-  attribute
-- `findByText(page, text, timeout)` - Find element containing text (string or
-  RegExp)
-- `delay(ms)` - Wait for specified milliseconds
-- `waitForLoadingToComplete(page, timeout)` - Wait for loading overlays to
-  disappear
-- `capturePageSnapshot(page, name)` - Capture and compare full page screenshot
+`helpers.ts`:
+
+- `navigateWithSessionSpec(page, spec, config?)` / `navigateToApp(page, ...)` -
+  load the app at a session spec / config
+- `findByTestId(page, testId, timeout)` / `findByText(page, text, timeout)`
+- `waitForDataLoaded(page)` / `waitForLoadingToComplete(page)` - wait on the
+  `loading-overlay` test-id (data fetched). For canvas _paint_, wait on the
+  per-display `*-done` test-id (`canvasDrawn`).
+- `assertCanvasHasContent(page, selector, opts?)` - fail if a canvas is blank
+- `delay(ms)`
+
+`snapshot.ts`:
+
+- `dualSnapshot(page, name, selector)` - targeted canvas + full-page snapshot.
+  The targeted capture is gated on the canvas being non-blank (`assertContent`,
+  default on) so a shader that draws nothing fails instead of silently passing.
+- `canvasSnapshot` / `pageSnapshot` - the individual halves
+
+`canvasContent.ts` / `pngDiff.ts` - blank-canvas detection and the shared
+PNG-decode + pixelmatch diff used by snapshots, cross-backend comparison, and
+the worker/main-thread consistency check.
 
 ## Auth Test Servers
 

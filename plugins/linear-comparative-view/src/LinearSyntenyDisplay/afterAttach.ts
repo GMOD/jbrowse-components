@@ -77,6 +77,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
         const thisStopToken = createStopToken()
         currentStopToken = thisStopToken
+        // Clear any prior error as the new fetch begins, so a stale banner
+        // never lingers over freshly-loaded data (mirrors dotplot setLoading).
+        self.setError(undefined)
 
         try {
           const sessionId = getRpcSessionId(self)

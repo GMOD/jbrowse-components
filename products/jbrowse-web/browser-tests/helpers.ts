@@ -1,5 +1,4 @@
-import { PNG } from 'pngjs'
-
+import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
 import { snapshotConfig } from './snapshot.ts'
 
 import type { Browser, ElementHandle, Page } from 'puppeteer'
@@ -183,36 +182,12 @@ export async function assertCanvasHasContent(
     throw new Error(`assertCanvasHasContent: element not found: ${selector}`)
   }
   const buf = await el.screenshot({ type: 'png' })
-  // @ts-expect-error pngjs accepts a Uint8Array at runtime
-  const { data, width, height } = PNG.sync.read(buf)
-  const total = width * height
-  // Histogram of colors quantized to 4 bits/channel so antialiasing noise
-  // isn't counted as a distinct color. The background is the most common
-  // bucket (these displays are mostly empty canvas with sparse features) —
-  // more robust than sampling a corner pixel that may land on real content.
-  const histogram = new Map<number, number>()
-  for (let i = 0; i < data.length; i += 4) {
-    const key =
-      ((data[i]! >> 4) << 8) | ((data[i + 1]! >> 4) << 4) | (data[i + 2]! >> 4)
-    histogram.set(key, (histogram.get(key) ?? 0) + 1)
-  }
-  let bgCount = 0
-  for (const count of histogram.values()) {
-    if (count > bgCount) {
-      bgCount = count
-    }
-  }
-  const distinctColors = histogram.size
-  const nonBgFraction = (total - bgCount) / total
-  if (distinctColors < minDistinctColors || nonBgFraction < minNonBgFraction) {
-    throw new Error(
-      `assertCanvasHasContent: ${selector} looks blank — ` +
-        `${distinctColors} distinct colors (need ${minDistinctColors}), ` +
-        `${(nonBgFraction * 100).toFixed(3)}% non-background pixels ` +
-        `(need ${(minNonBgFraction * 100).toFixed(3)}%)`,
-    )
-  }
-  return { distinctColors, nonBgFraction }
+  const stats = analyzeCanvasPng(buf)
+  assertNonBlank(stats, `assertCanvasHasContent: ${selector}`, {
+    minDistinctColors,
+    minNonBgFraction,
+  })
+  return stats
 }
 
 export async function clearStorageAndNavigate(

@@ -49,3 +49,25 @@ test('a tracklist row with no available tracks resolves to nothing', () => {
 test('an explicit none resolves to nothing', () => {
   expect(resolveRowTrackAction({ type: 'none' }, [track('a')])).toBeUndefined()
 })
+
+test('userOpened with no value resolves to nothing (upload selected but not completed)', () => {
+  // Extension option or custom upload radio clicked but file not yet provided.
+  // The model holds { type: 'userOpened', value: undefined } transiently.
+  // Launching in this state should not open a track.
+  expect(
+    resolveRowTrackAction(
+      { type: 'userOpened', value: undefined } as unknown as ImportFormSyntenyTrack,
+      [track('a')],
+    ),
+  ).toBeUndefined()
+})
+
+test('userOpened with no value ignores available tracks (does not fall through to preConfigured logic)', () => {
+  // Must not fall through to the preConfigured branch and auto-pick a track.
+  expect(
+    resolveRowTrackAction(
+      { type: 'userOpened', value: undefined } as unknown as ImportFormSyntenyTrack,
+      [track('a'), track('b')],
+    ),
+  ).toBeUndefined()
+})

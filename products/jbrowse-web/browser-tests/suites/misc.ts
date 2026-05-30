@@ -1,40 +1,19 @@
-import {
-  PORT,
-  appendGpuParam,
-  findByTestId,
-  navigateWithSessionSpec,
-  waitForDataLoaded,
-} from '../helpers.ts'
+import { PORT, appendGpuParam, waitForDataLoaded } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 
 const suite: TestSuite = {
   name: 'Miscellaneous Tracks',
   tests: [
-    {
+    lgvSnapshotTest({
       name: 'SNP coverage rendering',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:13,010..13,610',
-              tracks: ['volvox_alignments_pileup_coverage'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'misc-snpcoverage-canvas',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
+      snapshot: 'misc-snpcoverage',
+      loc: 'ctgA:13,010..13,610',
+      tracks: ['volvox_alignments_pileup_coverage'],
+      doneTestId: 'pileup-display-done',
+    }),
     {
       name: 'NCBI alias adapter',
       fn: async page => {
@@ -56,31 +35,12 @@ const suite: TestSuite = {
         )
       },
     },
-    {
+    lgvSnapshotTest({
       name: 'GFF3 track rendering',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:907..15,319',
-              tracks: ['gff3tabix_genes'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid^="display-gff3tabix_genes"]', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'misc-gff3-track-canvas',
-          '[data-testid^="display-gff3tabix_genes"] canvas',
-        )
-      },
-    },
+      snapshot: 'misc-gff3-track',
+      loc: 'ctgA:907..15,319',
+      tracks: ['gff3tabix_genes'],
+    }),
   ],
 }
 

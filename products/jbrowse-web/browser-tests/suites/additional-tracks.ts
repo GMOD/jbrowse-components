@@ -1,238 +1,69 @@
-import { navigateWithSessionSpec, waitForDataLoaded } from '../helpers.ts'
-import { dualSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 
 const suite: TestSuite = {
   name: 'Additional Track Types',
   tests: [
-    {
+    lgvSnapshotTest({
       name: 'BED genes track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:907..15319',
-              tracks: ['bed_genes'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-bed-genes-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'additional-bed-genes',
+      loc: 'ctgA:907..15319',
+      tracks: ['bed_genes'],
+    }),
+    lgvSnapshotTest({
       name: 'BigBed genes track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:907..15319',
-              tracks: ['bigbed_genes'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-bigbed-genes-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'additional-bigbed-genes',
+      loc: 'ctgA:907..15319',
+      tracks: ['bigbed_genes'],
+    }),
+    lgvSnapshotTest({
       name: 'density wiggle track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['volvox_microarray_density'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-density-wiggle-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'additional-density-wiggle',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_microarray_density'],
+    }),
+    lgvSnapshotTest({
       name: 'line wiggle track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['volvox_microarray_line'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-line-wiggle-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'additional-line-wiggle',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_microarray_line'],
+    }),
+    lgvSnapshotTest({
       name: 'colored wiggle track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['volvox_microarray_color'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-color-wiggle-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'additional-color-wiggle',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_microarray_color'],
+    }),
+    lgvSnapshotTest({
       name: 'multi-sample VCF variant track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: [
-                { trackId: 'volvox_test_vcf', displaySnapshot: { type: 'MultiLinearVariantDisplay' } },
-              ],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-multisample-vcf-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'additional-multisample-vcf',
+      loc: 'ctgA:1-50000',
+      tracks: [
+        {
+          trackId: 'volvox_test_vcf',
+          displaySnapshot: { type: 'MultiLinearVariantDisplay' },
+        },
+      ],
+    }),
+    lgvSnapshotTest({
       name: 'structural variant VCF track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['volvox_sv_test'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-sv-vcf-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'additional-sv-vcf',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_sv_test'],
+    }),
+    lgvSnapshotTest({
       name: 'fractional positive/negative wiggle track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['wiggle_track_fractional_posneg'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-fractional-posneg-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'additional-fractional-posneg',
+      loc: 'ctgA:1-50000',
+      tracks: ['wiggle_track_fractional_posneg'],
+    }),
+    lgvSnapshotTest({
       name: 'variant effect annotation track renders',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-800',
-              tracks: ['variant_colors'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'additional-variant-colors-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
+      snapshot: 'additional-variant-colors',
+      loc: 'ctgA:1-800',
+      tracks: ['variant_colors'],
+    }),
   ],
 }
 

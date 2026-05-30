@@ -81,6 +81,10 @@ export default function ImportSyntenyTrackSelectorArea({
                 type: 'preConfigured',
                 value: '',
               })
+            } else {
+              // extension option — clear stale selection so the extension
+              // component owns the model from here
+              model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
             }
           }}
         >

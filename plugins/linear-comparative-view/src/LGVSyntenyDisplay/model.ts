@@ -21,6 +21,7 @@ import { findVisibleBlockForFeature } from './components/util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LaunchSyntenyViewDialog = lazy(
@@ -74,10 +75,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         })
       },
       afterCreate() {
-        const alignSelf = self as unknown as {
-          getOverride<T>(key: string): T | undefined
-          setColorScheme(scheme: { type: string }): void
-        }
+        const alignSelf = self as unknown as LinearAlignmentsDisplayModel
         if (!alignSelf.getOverride('colorBy')) {
           alignSelf.setColorScheme({ type: 'strand' })
         }
@@ -120,7 +118,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 label: 'Copy info to clipboard',
                 icon: ContentCopyIcon,
                 onClick: async () => {
-                  const { uniqueId, ...rest } = feature.toJSON()
+                  const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
                   const session = getSession(self)
                   const { default: copy } = await import('copy-to-clipboard')
                   await copy(JSON.stringify(rest, null, 4))

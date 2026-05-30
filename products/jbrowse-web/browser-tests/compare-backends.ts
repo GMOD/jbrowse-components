@@ -3,8 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import pixelmatch from 'pixelmatch'
-import { PNG } from 'pngjs'
+import { comparePngBuffers } from './pngDiff.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const snapshotsDir = path.resolve(__dirname, '__snapshots__')
@@ -55,31 +54,26 @@ function comparePair(
   for (const file of common.sort()) {
     const bufA = fs.readFileSync(path.join(dirA, file))
     const bufB = fs.readFileSync(path.join(dirB, file))
+    const diff = comparePngBuffers(bufA, bufB)
 
-    const imgA = PNG.sync.read(bufA)
-    const imgB = PNG.sync.read(bufB)
-
-    if (imgA.width !== imgB.width || imgA.height !== imgB.height) {
+    if (!diff.sameSize) {
       console.log(
-        `    ⚠  ${file}: size differs (${imgA.width}x${imgA.height} vs ${imgB.width}x${imgB.height})`,
+        `    ⚠  ${file}: size differs (${diff.widthA}x${diff.heightA} vs ${diff.widthB}x${diff.heightB})`,
       )
       different++
       continue
     }
 
-    const { width, height } = imgA
-    const diffImg = new PNG({ width, height })
-    const numDiffPixels = pixelmatch(
-      imgA.data,
-      imgB.data,
-      diffImg.data,
-      width,
-      height,
-      { threshold: 0.1 },
-    )
-
-    const totalPixels = width * height
-    const diffPercent = (numDiffPixels / totalPixels) * 100
+    const diffPercent = diff.diffFraction * 100
+    function writeDiff() {
+      fs.writeFileSync(
+        path.join(
+          diffDir,
+          `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`,
+        ),
+        diff.diffImage,
+      )
+    }
 
     if (diffPercent === 0) {
       console.log(`    ✓  ${file}: identical`)
@@ -87,23 +81,11 @@ function comparePair(
     } else if (diffPercent < 5) {
       console.log(`    ~  ${file}: ${diffPercent.toFixed(2)}% drift`)
       similar++
-      fs.writeFileSync(
-        path.join(
-          diffDir,
-          `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`,
-        ),
-        PNG.sync.write(diffImg),
-      )
+      writeDiff()
     } else {
       console.log(`    ✗  ${file}: ${diffPercent.toFixed(2)}% drift`)
       different++
-      fs.writeFileSync(
-        path.join(
-          diffDir,
-          `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`,
-        ),
-        PNG.sync.write(diffImg),
-      )
+      writeDiff()
     }
   }
 

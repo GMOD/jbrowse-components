@@ -75,9 +75,26 @@ has no GPU, so headed-under-xvfb still lands on swiftshader. Real optimization:
 gate the per-test browser recycle on swiftshader use so local headed runs skip
 it (big speedup); keep it for the CI swiftshader path.
 
-Secondary follow-up: the ~44 DOM-nodes/cycle growth (renderer RSS still
-plateaus, so not the OOM driver) is a small detached-DOM leak — likely MUI
-portal/emotion residue from the open/close cycle. Worth a look but low priority.
+Secondary follow-up: the detached-DOM leak (re-measured 2026-05-30, still
+present). A mount/unmount probe — `view.showTrack`/`hideTrack` a BigWig wiggle
+track 16× in one page, force `gc()` each cycle — shows `page.metrics().Nodes`
+growing a dead-linear **+56 nodes/cycle** (+~6 listeners/cycle; JS heap flat at
+~22 MB). The *live* document is perfectly stable across cycles (1490 elements, 2
+body children, 7 emotion styles, 0 popovers), so this is **retained detached
+DOM, not portal/emotion residue** — the earlier MUI-portal hypothesis was wrong.
+
+CDP `DOM.getDetachedDomNodes` pinpoints it: each leaked subtree is the **entire
+`TrackContainer`** (root `MuiPaper-root` → dragHandle + track-menu →
+`trackRenderingContainer` → `LinearWiggleDisplay` → canvas, 55 nodes), one per
+close. Retaining any single node in that subtree pins the whole tree (parent +
+child pointers), so the GC root is one reference into it — the leaked
+per-cycle listeners and the WebGL canvas (held by the HAL) are the leading
+suspects.
+
+**This does NOT affect test cleanliness** — `runner.ts` recycles the browser
+after every test and the page between suites, so nothing accumulates across the
+suite. It is a *product* memory leak (real users opening/closing many tracks),
+tracked here but out of scope for browser-test stabilization. Low priority.
 
 ## Signal reference (for future waits)
 

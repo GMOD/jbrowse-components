@@ -184,15 +184,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get showLoading() {
         return (
-          self.isLoading ||
           self.awaitingAutoDiagonalize ||
           (!self.initialized && self.hasSomethingToShow)
         )
       },
       /**
        * #getter
-       * Override the base loadingMessage so the spinner has a helpful label
-       * during the autoDiagonalize wait, instead of just "Loading".
+       * Label for the loading spinner: a helpful message during the
+       * autoDiagonalize wait, otherwise just "Loading".
        */
       get loadingMessage() {
         if (self.awaitingAutoDiagonalize) {

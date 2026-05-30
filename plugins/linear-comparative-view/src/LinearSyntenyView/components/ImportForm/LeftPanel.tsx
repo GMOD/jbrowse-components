@@ -1,5 +1,5 @@
 import { AssemblySelector } from '@jbrowse/core/ui'
-import { getSession, notEmpty } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSyntenyTracks, pickSyntenyTrackId } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
@@ -95,9 +95,7 @@ const AssemblyRows = observer(function AssemblyRows({
             onClick={() => {
               model.importFormRemoveRow(idx)
               setSelectedAssemblyNames(
-                selectedAssemblyNames
-                  .map((asm, idx2) => (idx2 === idx ? undefined : asm))
-                  .filter(notEmpty),
+                selectedAssemblyNames.filter((_, idx2) => idx2 !== idx),
               )
               if (selectedRow >= selectedAssemblyNames.length - 2) {
                 setSelectedRow(0)
@@ -150,10 +148,9 @@ const LeftPanel = observer(function LeftPanel({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const numRowPairs = selectedAssemblyNames.length - 1
-  const canLaunch = !Array.from({ length: numRowPairs }).some((_, i) =>
-    rowNeedsConfiguration(model, session, selectedAssemblyNames, i),
-  )
+  const canLaunch = selectedAssemblyNames
+    .slice(0, -1)
+    .every((_, i) => !rowNeedsConfiguration(model, session, selectedAssemblyNames, i))
 
   return (
     <>

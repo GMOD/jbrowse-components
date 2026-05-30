@@ -15,7 +15,7 @@ import { navToSynteny } from './util.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
-  padding: {
+  formControl: {
     margin: 10,
     border: '1px solid #ccc',
   },
@@ -51,7 +51,7 @@ export default function LaunchSyntenyViewDialog({
       <DialogContent>
         {visibleRegion && hasCIGAR ? (
           <FormControlLabel
-            className={classes.padding}
+            className={classes.formControl}
             control={
               <Checkbox
                 checked={useRegionOfInterest}
@@ -65,7 +65,7 @@ export default function LaunchSyntenyViewDialog({
         ) : null}
         {inverted ? (
           <FormControlLabel
-            className={classes.padding}
+            className={classes.formControl}
             control={
               <Checkbox
                 checked={horizontallyFlip}

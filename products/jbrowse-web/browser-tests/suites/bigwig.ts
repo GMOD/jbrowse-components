@@ -1,315 +1,67 @@
-import { PNG } from 'pngjs'
-
-import {
-  delay,
-  findByTestId,
-  navigateWithSessionSpec,
-  waitForDataLoaded,
-} from '../helpers.ts'
-import { dualSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 
+function gcContentTrack(extra: Record<string, unknown>) {
+  return {
+    trackId: 'volvox_gc',
+    displaySnapshot: {
+      type: 'LinearGCContentTrackDisplay',
+      windowSize: 500,
+      windowDelta: 500,
+      ...extra,
+    },
+  }
+}
+
+// All views here are also asserted by the golden snapshot of the same canvas
+// (the content-gate in canvasSnapshot fails a blank/empty render), so the
+// goldens lock in the rendered colors — no bespoke pixel-sniffing needed.
 const suite: TestSuite = {
   name: 'BigWig Tracks',
   tests: [
-    {
+    lgvSnapshotTest({
       name: 'GC content track',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-30000',
-              tracks: [
-                {
-                  trackId: 'volvox_gc',
-                  displaySnapshot: {
-                    type: 'LinearGCContentTrackDisplay',
-                    windowSize: 500,
-                    windowDelta: 500,
-                  },
-                },
-              ],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'bigwig-gc-content-canvas',
-          '[data-testid="wiggle-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'bigwig-gc-content',
+      loc: 'ctgA:1-30000',
+      tracks: [gcContentTrack({})],
+      doneTestId: 'wiggle-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'GC skew track',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-30000',
-              tracks: [
-                {
-                  trackId: 'volvox_gc',
-                  displaySnapshot: {
-                    type: 'LinearGCContentTrackDisplay',
-                    windowSize: 500,
-                    windowDelta: 500,
-                    gcMode: 'skew',
-                  },
-                },
-              ],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'bigwig-gc-skew-canvas',
-          '[data-testid="wiggle-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'bigwig-gc-skew',
+      loc: 'ctgA:1-30000',
+      tracks: [gcContentTrack({ gcMode: 'skew' })],
+      doneTestId: 'wiggle-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'MultiBigWig xyplot',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'multi-wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'bigwig-multibigwig-xyplot-canvas',
-          '[data-testid="multi-wiggle-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'bigwig-multibigwig-xyplot',
+      loc: 'ctgA:1-4000',
+      tracks: ['volvox_microarray_multi'],
+      doneTestId: 'multi-wiggle-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'MultiBigWig multirowxy',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi_multirowxy'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'multi-wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'bigwig-multibigwig-multirowxy-canvas',
-          '[data-testid="multi-wiggle-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'bigwig-multibigwig-multirowxy',
+      loc: 'ctgA:1-4000',
+      tracks: ['volvox_microarray_multi_multirowxy'],
+      doneTestId: 'multi-wiggle-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'MultiBigWig multirowdensity',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi_multirowdensity'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'multi-wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'bigwig-multibigwig-multirowdensity-canvas',
-          '[data-testid="multi-wiggle-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'bigwig-multibigwig-multirowdensity',
+      loc: 'ctgA:1-4000',
+      tracks: ['volvox_microarray_multi_multirowdensity'],
+      doneTestId: 'multi-wiggle-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'MultiBigWig multirowline',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi_multirowline'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'multi-wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'bigwig-multibigwig-multirowline-canvas',
-          '[data-testid="multi-wiggle-display-done"] canvas',
-        )
-      },
-    },
-    {
-      name: 'MultiBigWig multirowxy uses uniform default color',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi_multirowxy'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'multi-wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await delay(500)
-
-        const el = await page.waitForSelector(
-          '[data-testid="multi-wiggle-display-done"] canvas',
-          { timeout: 10000 },
-        )
-        if (!el) {
-          throw new Error('Canvas not found')
-        }
-        const screenshot = await el.screenshot({ type: 'png' })
-        // @ts-expect-error Uint8Array works at runtime
-        const img = PNG.sync.read(screenshot)
-        const { width, height, data } = img
-        const numRows = 3
-        const rowHeight = Math.floor(height / numRows)
-
-        function getDominantColorForRow(row: number) {
-          const centerY = Math.floor(row * rowHeight + rowHeight / 2)
-          let bestR = 0
-          let bestG = 0
-          let bestB = 0
-          let bestSaturation = 0
-
-          for (let dy = -2; dy <= 2; dy++) {
-            const y = centerY + dy
-            if (y < 0 || y >= height) {
-              continue
-            }
-            for (let x = 0; x < width; x++) {
-              const idx = (y * width + x) * 4
-              const r = data[idx]!
-              const g = data[idx + 1]!
-              const b = data[idx + 2]!
-              const a = data[idx + 3]!
-              if (a < 128) {
-                continue
-              }
-              const max = Math.max(r, g, b)
-              const min = Math.min(r, g, b)
-              const sat = max === 0 ? 0 : (max - min) / max
-              if (sat > bestSaturation) {
-                bestSaturation = sat
-                bestR = r
-                bestG = g
-                bestB = b
-              }
-            }
-          }
-          return `${bestR},${bestG},${bestB}`
-        }
-
-        const rowColors = Array.from({ length: numRows }, (_, i) =>
-          getDominantColorForRow(i),
-        )
-        const uniqueColors = new Set(rowColors)
-        if (uniqueColors.size !== 1) {
-          throw new Error(
-            `Expected uniform color across rows but got: ${rowColors.join(' | ')}`,
-          )
-        }
-      },
-    },
-    {
-      name: 'MultiBigWig overlay xyplot uses distinct colors per source',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-4000',
-              tracks: ['volvox_microarray_multi'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'multi-wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await delay(500)
-
-        const el = await page.waitForSelector(
-          '[data-testid="multi-wiggle-display-done"] canvas',
-          { timeout: 10000 },
-        )
-        if (!el) {
-          throw new Error('Canvas not found')
-        }
-        const screenshot = await el.screenshot({ type: 'png' })
-        // @ts-expect-error Uint8Array works at runtime
-        const img = PNG.sync.read(screenshot)
-        const { width, height, data } = img
-
-        const colorCounts = new Map<string, number>()
-        for (let y = 0; y < height; y++) {
-          for (let x = 0; x < width; x++) {
-            const idx = (y * width + x) * 4
-            const r = data[idx]!
-            const g = data[idx + 1]!
-            const b = data[idx + 2]!
-            const a = data[idx + 3]!
-            if (a < 128) {
-              continue
-            }
-            const max = Math.max(r, g, b)
-            const min = Math.min(r, g, b)
-            const sat = max === 0 ? 0 : (max - min) / max
-            if (sat > 0.3) {
-              const key = `${r},${g},${b}`
-              colorCounts.set(key, (colorCounts.get(key) ?? 0) + 1)
-            }
-          }
-        }
-
-        const significantColors = [...colorCounts.entries()]
-          .filter(([, count]) => count > 20)
-          .map(([color]) => color)
-
-        if (significantColors.length < 2) {
-          throw new Error(
-            `Expected multiple distinct colors in overlay mode but found: ${significantColors.join(' | ')}`,
-          )
-        }
-      },
-    },
+      snapshot: 'bigwig-multibigwig-multirowline',
+      loc: 'ctgA:1-4000',
+      tracks: ['volvox_microarray_multi_multirowline'],
+      doneTestId: 'multi-wiggle-display-done',
+    }),
   ],
 }
 

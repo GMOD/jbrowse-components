@@ -11,9 +11,9 @@ import { buildPath, startServer } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
 import { snapshotConfig } from './snapshot.ts'
 
-import type { TestSuite } from './types.ts'
+import type { TestCase, TestSuite } from './types.ts'
 import type { Server } from 'http'
-import type { Browser, Page } from 'puppeteer'
+import type { Browser } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
@@ -102,138 +102,75 @@ async function discoverSuites(): Promise<TestSuite[]> {
   return suites
 }
 
-async function runTests(
-  initialPage: Page,
-  browser: Browser,
-  suites: TestSuite[],
-  includeAuth: boolean,
-  launchBrowser?: () => Promise<Browser>,
-) {
-  let passed = 0
-  let failed = 0
-  const failures: { suite: string; test: string; error: string }[] = []
-  let page = initialPage
-
-  const suitesToRun = suites.filter(suite => {
-    if (suite.requiresAuth && !includeAuth) {
-      return false
-    }
-    if (suite.requiresRemote && !includeRemote) {
-      return false
-    }
-    if (
-      filters.length > 0 &&
-      !filters.some(f => suite.name.toLowerCase().includes(f))
-    ) {
-      return false
-    }
-    return true
-  })
-
-  for (const suite of suitesToRun) {
-    console.log(`\n  ${suite.name}`)
-
-    // Recycle the page between suites to release accumulated GPU/memory
-    // resources and prevent OOM crashes during long test runs
-    try {
-      await page.close()
-      page = await setupPage(browser)
-    } catch (recycleErr) {
-      console.warn(
-        `  [warn] Failed to recycle page before suite "${suite.name}": ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
-      )
-    }
-
-    for (const test of suite.tests) {
-      if (test.requiresRemote && !includeRemote) {
-        console.log(`    ⚡ ${test.name} (skipped — requires --include-remote)`)
-        continue
-      }
-      if (test.requiresAuth && !includeAuth) {
-        console.log(`    ⚡ ${test.name} (skipped — requires --auth)`)
-        continue
-      }
-      if (testFilter && !test.name.toLowerCase().includes(testFilter)) {
-        continue
-      }
-
-      const start = performance.now()
-      testStartTime = start
-      const progress = `[${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}]`
-      process.stdout.write(`    ⏳ ${progress} ${test.name}...`)
-
-      try {
-        await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
-        await page.evaluate(() => {
-          localStorage.clear()
-          sessionStorage.clear()
-        })
-        await page.goto('about:blank')
-        await test.fn(page, browser)
-
-        // GPU backends clean up via the per-component `pagehide` listener in
-        // useRenderer when the next test's page.goto navigates away.
-
-        const duration = performance.now() - start
-        passed++
-
-        if (process.stdout.isTTY) {
-          process.stdout.clearLine(0)
-          process.stdout.cursorTo(0)
-        }
-        console.log(
-          `    ✓ ${progress} ${test.name} (${Math.round(duration)}ms)`,
-        )
-
-        // Recycle browser after every test to prevent resource exhaustion
-        // (swiftshader limitation in headless Chrome accumulates resources across tests)
-        if (launchBrowser) {
-          try {
-            await browser.close()
-            browser = await launchBrowser()
-            page = await setupPage(browser)
-          } catch (recycleErr) {
-            console.warn(
-              `      [browser recycle] Failed to recycle browser: ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
-            )
-          }
-        }
-      } catch (e) {
-        failed++
-        const error = e instanceof Error ? e.message : String(e)
-        failures.push({ suite: suite.name, test: test.name, error })
-
-        if (process.stdout.isTTY) {
-          process.stdout.clearLine(0)
-          process.stdout.cursorTo(0)
-        }
-        console.log(`    ✗ ${progress} FAILED: ${suite.name} > ${test.name}`)
-        console.log(`      Error: ${error}`)
-
-        // Always recycle browser after failed test to ensure clean state for next test
-        if (launchBrowser) {
-          try {
-            await browser.close().catch(() => {})
-            browser = await launchBrowser()
-            page = await setupPage(browser)
-          } catch (recycleErr) {
-            console.error(
-              `      [recovery] Browser recycle failed, cannot recover: ${recycleErr instanceof Error ? recycleErr.message : recycleErr}`,
-            )
-            return { passed, failed, failures }
-          }
-        }
-      }
-    }
-  }
-
-  return { passed, failed, failures }
+// Whether a suite passes the auth/remote/name-filter gates for this run.
+function suiteIncluded(suite: TestSuite, includeAuth: boolean) {
+  const authOk = !suite.requiresAuth || includeAuth
+  const remoteOk = !suite.requiresRemote || includeRemote
+  const filterOk =
+    filters.length === 0 ||
+    filters.some(f => suite.name.toLowerCase().includes(f))
+  return authOk && remoteOk && filterOk
 }
 
-// Firefox leaks WebGPU device resources across navigations, causing
-// cascading timeouts after ~50-60 tests. This variant restarts the
-// browser between suites to prevent resource exhaustion.
-async function runTestsWithRestart(
+// Reason this individual test is skipped (logged), or undefined to run it.
+function testSkipReason(test: TestCase, includeAuth: boolean) {
+  return test.requiresRemote && !includeRemote
+    ? 'requires --include-remote'
+    : test.requiresAuth && !includeAuth
+      ? 'requires --auth'
+      : undefined
+}
+
+function clearProgressLine() {
+  if (process.stdout.isTTY) {
+    process.stdout.clearLine(0)
+    process.stdout.cursorTo(0)
+  }
+}
+
+// Run a single test in its own fresh browser, always closing it afterward.
+// Returns the error message on failure, or undefined on success.
+async function runOneTest(
+  launchBrowser: () => Promise<Browser>,
+  suiteName: string,
+  test: TestCase,
+  progress: string,
+) {
+  const start = performance.now()
+  testStartTime = start
+  process.stdout.write(`    ⏳ ${progress} ${test.name}...`)
+
+  let browser: Browser | undefined
+  let error: string | undefined
+  try {
+    browser = await launchBrowser()
+    const page = await setupPage(browser)
+    await test.fn(page, browser)
+    clearProgressLine()
+    console.log(
+      `    ✓ ${progress} ${test.name} (${Math.round(performance.now() - start)}ms)`,
+    )
+  } catch (e) {
+    error = e instanceof Error ? e.message : String(e)
+    clearProgressLine()
+    console.log(`    ✗ ${progress} FAILED: ${suiteName} > ${test.name}`)
+    console.log(`      Error: ${error}`)
+  } finally {
+    await browser?.close().catch((e: unknown) => {
+      console.warn(
+        `    (browser close error: ${e instanceof Error ? e.message : e})`,
+      )
+    })
+  }
+  return error
+}
+
+// Run all selected suites, launching a fresh browser per test. A clean browser
+// each time is what keeps long runs stable: headless Chrome on swiftshader and
+// Firefox/WebGPU both accumulate per-context GPU/worker memory across tabs that
+// never returns to the OS (see agent-docs/BROWSER_TEST_STABILIZATION.md), and
+// the ~2s relaunch is far cheaper than the 15-30s penalty from that buildup.
+async function runSuites(
   launchBrowser: () => Promise<Browser>,
   suites: TestSuite[],
   includeAuth: boolean,
@@ -241,86 +178,35 @@ async function runTestsWithRestart(
   let passed = 0
   let failed = 0
   const failures: { suite: string; test: string; error: string }[] = []
+  const suitesToRun = suites.filter(s => suiteIncluded(s, includeAuth))
 
-  const suitesToRun = suites.filter(suite => {
-    if (suite.requiresAuth && !includeAuth) {
-      return false
-    }
-    if (suite.requiresRemote && !includeRemote) {
-      return false
-    }
-    if (
-      filters.length > 0 &&
-      !filters.some(f => suite.name.toLowerCase().includes(f))
-    ) {
-      return false
-    }
-    return true
-  })
-
-  // Launch a fresh browser for each test to avoid Firefox's
-  // WebWorker/GPU resource accumulation across tabs. The ~2s browser
-  // launch overhead is far less than the 15-30s penalty from resource
-  // buildup when reusing a single browser with multiple tabs.
   for (const suite of suitesToRun) {
     console.log(`\n  ${suite.name}`)
+    const progress = `[${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}]`
 
     for (const test of suite.tests) {
-      if (test.requiresRemote && !includeRemote) {
-        console.log(`    ⚡ ${test.name} (skipped — requires --include-remote)`)
-        continue
-      }
-      if (test.requiresAuth && !includeAuth) {
-        console.log(`    ⚡ ${test.name} (skipped — requires --auth)`)
-        continue
-      }
-      if (testFilter && !test.name.toLowerCase().includes(testFilter)) {
-        continue
-      }
-
-      const start = performance.now()
-      testStartTime = start
-      const progress = `[${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}]`
-      process.stdout.write(`    ⏳ ${progress} ${test.name}...`)
-
-      let browser: Browser | undefined
-      try {
-        browser = await launchBrowser()
-        const page = await setupPage(browser)
-        await test.fn(page, browser)
-
-        const duration = performance.now() - start
-        passed++
-
-        if (process.stdout.isTTY) {
-          process.stdout.clearLine(0)
-          process.stdout.cursorTo(0)
-        }
-        console.log(
-          `    ✓ ${progress} ${test.name} (${Math.round(duration)}ms)`,
+      const skip = testSkipReason(test, includeAuth)
+      const filteredOut =
+        testFilter && !test.name.toLowerCase().includes(testFilter)
+      if (skip) {
+        console.log(`    ⚡ ${test.name} (skipped — ${skip})`)
+      } else if (!filteredOut) {
+        const error = await runOneTest(
+          launchBrowser,
+          suite.name,
+          test,
+          progress,
         )
-      } catch (e) {
-        failed++
-        const error = e instanceof Error ? e.message : String(e)
-        failures.push({ suite: suite.name, test: test.name, error })
-
-        if (process.stdout.isTTY) {
-          process.stdout.clearLine(0)
-          process.stdout.cursorTo(0)
-        }
-        console.log(`    ✗ ${progress} FAILED: ${suite.name} > ${test.name}`)
-        console.log(`      Error: ${error}`)
-      } finally {
-        if (browser) {
-          await browser.close().catch((e: unknown) => {
-            console.warn(
-              `    (browser close error: ${e instanceof Error ? e.message : e})`,
-            )
-          })
+        if (error === undefined) {
+          passed++
+        } else {
+          failed++
+          failures.push({ suite: suite.name, test: test.name, error })
         }
       }
     }
   }
+
   return { passed, failed, failures }
 }
 
@@ -405,51 +291,34 @@ async function runWithRenderingBackend(
     '/usr/bin/firefox-nightly'
   const useFirefox = backend === 'webgpu'
 
+  const launchBrowser = useFirefox
+    ? () =>
+        launch({
+          browser: 'firefox',
+          executablePath: resolvedFirefoxPath,
+          headless: useHeadless,
+          slowMo,
+          timeout: 60000,
+          extraPrefsFirefox: {
+            'dom.webgpu.enabled': true,
+            'gfx.webrender.all': true,
+            'gfx.webgpu.ignore-blocklist': true,
+          },
+          defaultViewport: { width: 1280, height: 800 },
+        }).then(trackBrowser)
+    : () =>
+        launch({
+          headless: useHeadless,
+          slowMo,
+          args: chromeArgsForRenderingBackend(backend),
+          defaultViewport: { width: 1280, height: 800 },
+        }).then(trackBrowser)
+
   if (useFirefox) {
     console.log(`  Using Firefox Nightly: ${resolvedFirefoxPath}`)
-    const launchFirefox = () =>
-      launch({
-        browser: 'firefox',
-        executablePath: resolvedFirefoxPath,
-        headless: useHeadless,
-        slowMo,
-        timeout: 60000,
-        extraPrefsFirefox: {
-          'dom.webgpu.enabled': true,
-          'gfx.webrender.all': true,
-          'gfx.webgpu.ignore-blocklist': true,
-        },
-        defaultViewport: { width: 1280, height: 800 },
-      }).then(trackBrowser)
-    return runTestsWithRestart(launchFirefox, suites, runAuthTests)
   }
 
-  const chromeArgs = chromeArgsForRenderingBackend(backend)
-  const browser = trackBrowser(
-    await launch({
-      headless: useHeadless,
-      slowMo,
-      args: chromeArgs,
-      defaultViewport: { width: 1280, height: 800 },
-    }),
-  )
-
-  const page = await setupPage(browser)
-
-  // Create a factory function to relaunch the browser for GPU-heavy tests
-  const launchBrowser = () =>
-    launch({
-      headless: useHeadless,
-      slowMo,
-      args: chromeArgs,
-      defaultViewport: { width: 1280, height: 800 },
-    }).then(trackBrowser)
-
-  try {
-    return await runTests(page, browser, suites, runAuthTests, launchBrowser)
-  } finally {
-    await browser.close()
-  }
+  return runSuites(launchBrowser, suites, runAuthTests)
 }
 
 // Browsers this process launched. Tracked so an exit backstop can force-kill

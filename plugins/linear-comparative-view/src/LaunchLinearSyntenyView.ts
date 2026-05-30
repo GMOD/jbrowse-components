@@ -38,18 +38,12 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       init: {
         views,
         tracks: isNestedTracks(tracks) ? tracks : tracks.length ? [tracks] : [],
-        ...(rest.autoDiagonalize !== undefined && {
-          autoDiagonalize: rest.autoDiagonalize,
-        }),
-        ...(rest.colorBy !== undefined && { colorBy: rest.colorBy }),
-        ...(rest.minAlignmentLength !== undefined && {
-          minAlignmentLength: rest.minAlignmentLength,
-        }),
-        ...(rest.levelHeights !== undefined && {
-          levelHeights: rest.levelHeights,
-        }),
-        ...(rest.drawCurves !== undefined && { drawCurves: rest.drawCurves }),
-        ...(rest.alpha !== undefined && { alpha: rest.alpha }),
+        autoDiagonalize: rest.autoDiagonalize,
+        colorBy: rest.colorBy,
+        minAlignmentLength: rest.minAlignmentLength,
+        levelHeights: rest.levelHeights,
+        drawCurves: rest.drawCurves,
+        alpha: rest.alpha,
       },
     })
     return args
