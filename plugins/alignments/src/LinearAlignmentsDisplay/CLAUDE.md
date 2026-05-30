@@ -31,6 +31,13 @@ getter), so sort-_position_ changes re-layout without refetching. Never put a
 fetch-result derivative in `rpcProps()` (infinite loop — see
 `agent-docs/ARCHITECTURE.md`).
 
+`colorTagMap` is the canonical example of why: it is **derived from** worker
+output (`newTagValues`) yet was once also **fed back** to the worker via
+`rpcProps()` to bake per-read colors — a discover→assign→refetch loop. It is now
+a tier-2 setting: the worker reports raw per-read tag values (`readTagValues`)
+and the main thread bakes `readTagColors` in `laidOutPileupMap`
+(`readTagColors.ts`). Keep `colorTagMap` out of `rpcProps()`.
+
 ## Layout architecture
 
 Pileup and chain layout are computed on the **main thread**, not in the RPC

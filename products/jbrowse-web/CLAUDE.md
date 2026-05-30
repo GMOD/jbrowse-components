@@ -15,6 +15,13 @@ Pass `--debug` to see all browser console output:
 node browser-tests/runner.ts --debug
 ```
 
+To run a single suite or test, use `--filter=` (case-insensitive substring
+against suite name) and `--test=` (substring against test name):
+
+```
+node browser-tests/runner.ts --filter="Alignments Color Schemes" --test="color by HP tag" -u
+```
+
 Real GPU errors (`context LOST`, `GL error`, `UNCAPTURED ERROR`) always show
 regardless of debug mode.
 

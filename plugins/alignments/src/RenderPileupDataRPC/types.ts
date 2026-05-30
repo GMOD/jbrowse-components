@@ -28,7 +28,6 @@ export interface RenderAlignmentDataArgs {
     tag?: string
     modifications?: { threshold?: number }
   }
-  colorTagMap?: Record<string, string>
   // Tag name for tag-sort. Only the tag is sent to the worker (not the
   // full SortedBy), so changing sort position within a tag sort doesn't
   // invalidate the fetched data — main-thread layout re-runs instead.
@@ -164,9 +163,16 @@ export interface PileupDataResult {
   // Modification tooltip data - only populated when colorBy is modifications/methylation
   modTooltipData?: Record<number, Record<string, ModTooltipEntry>>
 
-  // Tag color per read, packed ABGR u32 (0 = no tag color). Only populated
-  // when colorBy.type === 'tag'.
+  // Tag color per read, packed ABGR u32 (0 = no tag color). The worker leaves
+  // this empty — it is baked on the main thread (overlayReadTagColors) from
+  // `readTagValues` + `colorTagMap` so colorTagMap never crosses the worker
+  // boundary. Only populated (main-thread) when colorBy.type === 'tag'.
   readTagColors: Uint32Array
+
+  // Raw per-read tag value strings (parallel to readIds), populated by the
+  // worker only in tag color mode. The main thread bakes these into
+  // readTagColors via colorTagMap.
+  readTagValues?: string[]
 
   // Modification data (MM tag) - absolute genomic uint32
   modificationPositions: Uint32Array

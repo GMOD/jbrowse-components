@@ -24,7 +24,7 @@ describe('updateColorTagMap', () => {
     expect(second['HP:0']).toBe(first['HP:0'])
   })
 
-  it('starts empty so first RPC sends an empty map', () => {
+  it('starts empty so no colors are assigned before any tags are seen', () => {
     expect(Object.keys(updateColorTagMap({}, []).map)).toHaveLength(0)
   })
 

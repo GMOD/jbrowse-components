@@ -117,7 +117,6 @@ export async function executeRenderAlignmentData({
     regions,
     filterBy,
     colorBy,
-    colorTagMap,
     sortTag,
     showSoftClipping = false,
     linkedReads = 'off',
@@ -177,7 +176,7 @@ export async function executeRenderAlignmentData({
     hardclips,
     modifications,
     perBaseQualities,
-    tagColors,
+    tagColorValues,
     sortTagValues,
     uniqueTagValues,
     nextRefs,
@@ -191,7 +190,6 @@ export async function executeRenderAlignmentData({
       isChain ? buildChainFeatureData : buildBaseFeatureData,
       {
         colorBy,
-        colorTagMap,
         showSoftClipping: effShowSoftClipping,
         region,
         sortTag: isChain ? undefined : sortTag,
@@ -291,7 +289,10 @@ export async function executeRenderAlignmentData({
     ...modificationArrays,
     ...perBaseQualityArrays,
 
-    readTagColors: tagColors,
+    // Worker leaves readTagColors empty; the main thread bakes it from
+    // readTagValues + colorTagMap (see overlayReadTagColors).
+    readTagColors: new Uint32Array(0),
+    readTagValues: tagColorValues,
 
     ...buildCoverageResultFields(pipeline),
 

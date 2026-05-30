@@ -1,5 +1,5 @@
-import { buildTagColors, extractFeatureTagValue } from './buildTagColors.ts'
 import { extractCigarFeatures } from './extractCigarFeatures.ts'
+import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import {
   extractMethylation,
   extractModifications,
@@ -22,7 +22,6 @@ import type { Feature, Region } from '@jbrowse/core/util'
 
 interface ExtractOpts {
   colorBy: ColorBy | undefined
-  colorTagMap: Record<string, string> | undefined
   showSoftClipping: boolean
   region: Region
   sortTag?: string
@@ -33,7 +32,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   buildFeatureData: (feature: Feature) => T,
   opts: ExtractOpts,
 ) {
-  const { colorBy, colorTagMap, showSoftClipping, region, sortTag } = opts
+  const { colorBy, showSoftClipping, region, sortTag } = opts
   const detectedModifications = new Set<string>()
   const detectedSimplexModifications = new Set<string>()
 
@@ -52,7 +51,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   const nextPositions: number[] = []
   const nextRefs: string[] = []
   const suppAlignments: string[] = []
-  const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
+  const isTagColorMode = colorBy?.type === 'tag' && !!colorBy.tag
   const sortTagValues: string[] | undefined = sortTag ? [] : undefined
 
   for (const feature of featuresArray) {
@@ -117,10 +116,6 @@ export function extractFeatureArrays<T extends FeatureData>(
     }
   }
 
-  const tagColors = isTagColorMode
-    ? buildTagColors(features, tagColorValues, colorBy, colorTagMap)
-    : new Uint32Array(0)
-
   modifications.sort((a, b) => a.modType.localeCompare(b.modType))
 
   const uniqueTagValues = isTagColorMode
@@ -132,7 +127,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     ...cigarOutput,
     modifications,
     perBaseQualities,
-    tagColors,
+    tagColorValues,
     uniqueTagValues,
     sortTagValues,
     nextPositions,

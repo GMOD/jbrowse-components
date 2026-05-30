@@ -34,6 +34,7 @@ import { buildLaidOutChainMap } from './computeChainLayout.ts'
 import { ColorScheme } from './constants.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
+import { overlayReadTagColors } from './readTagColors.ts'
 import { buildLaidOutPileupMap } from '../RenderPileupDataRPC/sortLayout.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
@@ -671,14 +672,17 @@ export default function stateModelFactory(
          * #getter
          */
         get laidOutPileupMap() {
-          if (self.linkedReads !== 'off') {
-            return buildLaidOutChainMap(self.rpcDataMap, self.linkedReads)
-          }
-          return buildLaidOutPileupMap({
-            dataMap: self.rpcDataMap,
-            sortedBy: this.sortedBy,
-            showSoftClipping: self.showSoftClipping,
-          })
+          const laidOut =
+            self.linkedReads !== 'off'
+              ? buildLaidOutChainMap(self.rpcDataMap, self.linkedReads)
+              : buildLaidOutPileupMap({
+                  dataMap: self.rpcDataMap,
+                  sortedBy: this.sortedBy,
+                  showSoftClipping: self.showSoftClipping,
+                })
+          // Tag colors are baked here (not in the worker) so colorTagMap stays
+          // a main-thread tier-2 setting — see readTagColors.ts.
+          return overlayReadTagColors(laidOut, this.colorBy, self.colorTagMap)
         },
 
         /**
@@ -986,7 +990,10 @@ export default function stateModelFactory(
         // Arc-only fields (arcColorByType, drawInter, drawLongRange) are
         // NOT here — they are tracked by the arcsRpcDataMap computed
         // getter and do not require a refetch. Non-tag sort changes are
-        // handled main-thread by laidOutPileupMap.
+        // handled main-thread by laidOutPileupMap, as is tag coloring
+        // (colorTagMap is baked into readTagColors in laidOutPileupMap, so it
+        // is intentionally NOT in rpcProps — putting it here would re-create
+        // the discover→assign→refetch feedback loop).
         /**
          * #method
          */
@@ -994,7 +1001,6 @@ export default function stateModelFactory(
           return {
             filterBy: self.filterBy,
             colorBy: self.colorBy,
-            colorTagMap: self.colorTagMap,
             sortTag: this.sortTag,
             showSoftClipping: self.showSoftClipping,
             drawSingletons: self.drawSingletons,
@@ -1278,8 +1284,12 @@ export default function stateModelFactory(
               self.colorTagMap,
               uniqueTag,
             )
-            self.colorTagMap = map
-            return added
+            // Only assign when a value was actually added: colorTagMap is read
+            // by laidOutPileupMap, so a no-op assignment would needlessly
+            // re-bake readTagColors.
+            if (added) {
+              self.colorTagMap = map
+            }
           },
 
           /**
@@ -1830,25 +1840,20 @@ export default function stateModelFactory(
               }
 
               const newDataMap = new Map<number, PileupDataResult>()
-              let newTagColorsAdded = false
               self.setModificationsReady(true)
               for (const r of results) {
                 if (r.result.newTagValues) {
-                  if (self.updateColorTagMap(r.result.newTagValues)) {
-                    newTagColorsAdded = true
-                  }
+                  self.updateColorTagMap(r.result.newTagValues)
                 }
                 self.setSimplexModifications(r.result.simplexModifications)
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
-              // Two loops are intentional: all updateColorTagMap calls must
-              // complete before any setRpcData fires, so colorTagMap is fully
-              // populated when the first render reads it.
+              // Assigning colorTagMap (above) re-runs laidOutPileupMap, which
+              // bakes readTagColors on the main thread — no refetch needed, so
+              // there is no feedback loop. Order vs setRpcData no longer
+              // matters: the laidOutPileupMap getter recomputes on either.
               for (const [displayedRegionIndex, data] of newDataMap) {
                 self.setRpcData(displayedRegionIndex, data)
-              }
-              if (newTagColorsAdded && self.colorBy.type === 'tag') {
-                self.invalidateLoadedRegions()
               }
             })
           },

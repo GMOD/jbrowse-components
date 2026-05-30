@@ -224,7 +224,8 @@ function isRenderLifecycleNoise(text: string): boolean {
     text.includes('[GPU] WebGPU device creation failed') ||
     text.includes('GroupMarkerNotSet') ||
     text.includes('Automatic fallback to software WebGL') ||
-    text.includes('No available adapters')
+    text.includes('No available adapters') ||
+    text.includes('Failed to create WebGPU Context Provider')
   )
 }
 
