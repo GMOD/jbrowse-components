@@ -101,6 +101,13 @@ export async function waitForDataLoaded(page: Page, timeout = 60000) {
   )
 }
 
+// Firefox BiDi (the webgpu backend) stalls on networkidle0 — analytics requests
+// keep the network busy past the 30s idle wait. 'load' is reliable there. Chrome
+// backends keep networkidle0 (it settles fast and waits out late-loading data).
+function gotoWaitUntil(): 'load' | 'networkidle0' {
+  return snapshotConfig.backend === 'webgpu' ? 'load' : 'networkidle0'
+}
+
 export async function navigateToApp(
   page: Page,
   config = 'test_data/volvox/config.json',
@@ -110,7 +117,7 @@ export async function navigateToApp(
     `http://localhost:${PORT}/?config=${config}&sessionName=${encodeURIComponent(sessionName)}`,
   )
   await page.goto(url, {
-    waitUntil: 'networkidle0',
+    waitUntil: gotoWaitUntil(),
     timeout: 60000,
   })
   await findByText(page, 'ctgA')
@@ -125,7 +132,7 @@ export async function navigateWithSessionSpec(
   const url = appendGpuParam(
     `http://localhost:${PORT}/?config=${config}&session=spec-${specParam}&sessionName=Test%20Session`,
   )
-  await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+  await page.goto(url, { waitUntil: gotoWaitUntil(), timeout: 60000 })
 }
 
 export async function openTrack(page: Page, trackId: string) {

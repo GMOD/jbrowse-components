@@ -4,7 +4,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -30,7 +30,7 @@ const suite: TestSuite = {
         await page.waitForSelector('[data-testid$="-done"] canvas', {
           timeout: 60000,
         })
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'arcs-arc-test-canvas',
           '[data-testid$="-done"] canvas',
@@ -53,7 +53,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'arcs-rnaseq-sashimi-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -84,7 +84,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'arcs-samplot-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -116,7 +116,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'arcs-samplot-down-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -139,7 +139,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'arcs-paired-end-rnaseq-canvas',
           '[data-testid="pileup-display-done"] canvas',

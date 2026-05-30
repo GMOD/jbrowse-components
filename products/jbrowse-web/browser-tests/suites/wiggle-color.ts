@@ -5,7 +5,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -51,7 +51,7 @@ const suite: TestSuite = {
         await submitBtn?.click()
         await delay(1000)
 
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'wiggle-color-after-red',
           '[data-testid="wiggle-display-done"] canvas',

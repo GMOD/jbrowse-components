@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
+import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -45,7 +45,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 120000)
         await waitForDataLoaded(page, 120000)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'grape-peach-synteny-overview-canvas',
           '[data-testid="synteny_canvas_done"]',

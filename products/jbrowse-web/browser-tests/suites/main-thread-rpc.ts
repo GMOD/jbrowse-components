@@ -5,7 +5,7 @@ import {
   openTrack,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -44,7 +44,7 @@ const suite: TestSuite = {
         await openTrack(page, 'volvox_sv')
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'main-thread-rpc-bam-canvas',
           '[data-testid="pileup-display-done"] canvas',

@@ -34,14 +34,17 @@ const filters = args
   .filter(Boolean)
 // --test= filters individual test cases within matched suites (substring match).
 const testFilterArg = args.find(a => a.startsWith('--test='))
-const testFilter = testFilterArg ? testFilterArg.split('=')[1]!.toLowerCase() : ''
+const testFilter = testFilterArg
+  ? testFilterArg.split('=')[1]!.toLowerCase()
+  : ''
 // --smoke is the full local smoke test: runs every suite, including the
 // requiresRemote ones (grape/peach + hs1/mm39 synteny).
 // Those tests fetch data straight from S3/UCSC at runtime — so it works on any machine online.
 const smoke = args.includes('--smoke')
 // Auto-enable remote when a filter is specified — you shouldn't need to know
 // about --include-remote when targeting a specific suite by name.
-const includeRemote = args.includes('--include-remote') || smoke || filters.length > 0
+const includeRemote =
+  args.includes('--include-remote') || smoke || filters.length > 0
 const backendArg = args.find(a => a.startsWith('--backend='))
 const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
 const skipWebGPU = args.includes('--skip-webgpu')
@@ -65,24 +68,12 @@ function chromeArgsForRenderingBackend(backend?: RenderingBackend) {
     '--disable-web-security',
     '--disable-popup-blocking',
   ]
-  if (backend === 'webgl') {
-    chromeArgs.push(
-      '--use-gl=angle',
-      '--use-angle=swiftshader',
-      '--enable-unsafe-swiftshader',
-    )
-  } else if (backend === 'webgpu') {
-    // WebGPU requires Vulkan. Use lavapipe (software Vulkan) via:
-    //   VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
-    // and run under xvfb-run (headless: false + virtual framebuffer):
-    //   xvfb-run --auto-servernum node browser-tests/runner.ts --backend=webgpu
-    chromeArgs.push(
-      '--enable-unsafe-webgpu',
-      '--enable-features=Vulkan,UseSkiaRenderer',
-      '--use-angle=vulkan',
-      '--disable-vulkan-surface',
-    )
-  } else if (backend === 'canvas2d') {
+  // webgl runs on the machine's real GPU (run headed) — no swiftshader, whose
+  // per-context memory growth is why we moved off it (see
+  // agent-docs/BROWSER_TEST_STABILIZATION.md). webgpu does not use Chrome at all
+  // (it requires Firefox Nightly, see runWithRenderingBackend), so neither needs
+  // extra chrome flags.
+  if (backend === 'canvas2d') {
     chromeArgs.push('--disable-gpu')
   }
   return chromeArgs
@@ -402,12 +393,12 @@ async function runWithRenderingBackend(
 ) {
   snapshotConfig.backend = backend ?? ''
 
-  // WebGPU needs a real display (xvfb-run) — force headless: false
-  // Chrome + lavapipe doesn't render WebGPU canvases, so always use Firefox for WebGPU
+  // WebGPU requires Firefox Nightly on the real GPU, run headed. Chrome +
+  // puppeteer does not render WebGPU canvases (blank canvas / adapter-validation
+  // errors), so WebGPU always goes through Firefox Nightly.
   const needsDisplay = backend === 'webgpu'
   const useHeadless = needsDisplay ? false : !headed
 
-  // Always use Firefox for WebGPU — Chrome + lavapipe produces blank canvases
   const resolvedFirefoxPath =
     firefoxPath ??
     process.env.FIREFOX_NIGHTLY_PATH ??

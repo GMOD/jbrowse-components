@@ -12,13 +12,13 @@ import {
   waitForDataLoaded,
   waitForLoadingToComplete,
 } from '../helpers.ts'
+import { snapshotConfig } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const downloadDir = path.resolve(__dirname, '../__downloads__')
-const snapshotDir = path.resolve(__dirname, '../__snapshots__')
 
 async function setupDownloadInterception(page: Page) {
   if (!fs.existsSync(downloadDir)) {
@@ -67,10 +67,13 @@ async function exportSvgAndSave(page: Page, name: string) {
   if (!svg.includes('<svg')) {
     throw new Error('Downloaded file is not valid SVG')
   }
-  if (!fs.existsSync(snapshotDir)) {
-    fs.mkdirSync(snapshotDir, { recursive: true })
+  // Write into the active backend's subfolder (canvas2d/ webgl/ webgpu/), same
+  // as the PNG snapshots — not the bare __snapshots__ root.
+  const dir = snapshotConfig.snapshotsDir
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
   }
-  fs.writeFileSync(path.join(snapshotDir, `${name}.svg`), svg)
+  fs.writeFileSync(path.join(dir, `${name}.svg`), svg)
   console.log(
     `    SVG saved: ${name}.svg (${(svg.length / 1024).toFixed(1)}KB)`,
   )
@@ -165,7 +168,9 @@ const suite: TestSuite = {
         // (the old monospace <text> path no longer exists).
         const svg = await exportSvgAndSave(page, 'svg-export-sequence')
         if (!svg.includes('<image')) {
-          throw new Error('Sequence track SVG missing rasterized sequence image')
+          throw new Error(
+            'Sequence track SVG missing rasterized sequence image',
+          )
         }
       },
     },

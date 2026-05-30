@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -26,7 +26,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'long-reads-bam-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -49,7 +49,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'long-reads-cram-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -72,7 +72,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'inversion-simple-bam-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -95,7 +95,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'inversion-simple-cram-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -120,7 +120,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'inversion-indels-canvas',
           '[data-testid$="-done"] canvas',
@@ -143,7 +143,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'inversion-pbsim-canvas',
           '[data-testid="pileup-display-done"] canvas',

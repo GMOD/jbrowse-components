@@ -130,10 +130,13 @@ async function waitForLoadingOverlayGone(page: Page, timeout: number) {
 }
 
 export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
+  // Every full-page golden is prefixed `fullpage_`; a redundant `-fullpage`
+  // suffix on older names is dropped so callers don't have to be updated.
+  const base = name.replace(/^fullpage_/, '').replace(/-fullpage$/, '')
   await waitForLoadingOverlayGone(page, 30000)
 
   const screenshot = await page.screenshot({ fullPage: true })
-  const result = compareImages(name, screenshot, threshold)
+  const result = compareImages(`fullpage_${base}`, screenshot, threshold)
   if (!result.passed) {
     throw new Error(result.message)
   }
@@ -158,4 +161,22 @@ export async function canvasSnapshot(
   if (!result.passed) {
     throw new Error(result.message)
   }
+}
+
+// Capture BOTH a targeted (canvas-element) and a full-page snapshot for one
+// test. Targeted isolates renderer fidelity (low variance); full-page adds
+// ruler / track-label / layout / multi-track integration coverage. All targeted
+// files are `targetted_<base>`, all full-page files are `fullpage_<base>`, where
+// <base> is `name` with a trailing `-canvas` stripped. The canvas shot runs
+// first, so it gates the full-page capture on paint-complete (canvasSnapshot
+// waits for the `*_done` selector).
+export async function dualSnapshot(
+  page: Page,
+  name: string,
+  selector: string,
+  threshold = 0.05,
+) {
+  const base = name.replace(/-canvas$/, '')
+  await canvasSnapshot(page, `targetted_${base}`, selector, threshold)
+  await pageSnapshot(page, `fullpage_${base}`)
 }

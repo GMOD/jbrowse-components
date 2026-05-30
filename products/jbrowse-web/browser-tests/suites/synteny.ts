@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestCase, TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
@@ -44,7 +44,7 @@ function syntenyTest(
 
       await findByTestId(page, 'synteny_canvas_done', 60000)
       await waitForDataLoaded(page)
-      await canvasSnapshot(
+      await dualSnapshot(
         page,
         `${snapshotName}-canvas`,
         '[data-testid="synteny_canvas_done"]',
@@ -86,7 +86,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'synteny-lgv-paf-canvas',
           '[data-testid$="-done"] canvas',

@@ -6,7 +6,7 @@ import {
   openTrack,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -36,7 +36,7 @@ const suite: TestSuite = {
         await openTrack(page, 'volvox_alignments')
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'alignments-bam-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -59,7 +59,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'alignments-volvox-sv-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -82,7 +82,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'alignments-long-reads-sv-zoomed-out-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -105,7 +105,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'alignments-pileup-coverage-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -181,7 +181,7 @@ const suite: TestSuite = {
         // disables gl.BLEND after indicator draw; pileup renderer must
         // re-enable it so sub-pixel mismatches alpha-blend with reads
         // rather than replacing them with near-transparent pixels
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'alignments-subpixel-mismatch-blend-canvas',
           '[data-testid="pileup-display-done"] canvas',

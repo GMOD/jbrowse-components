@@ -1,5 +1,5 @@
 import { navigateWithSessionSpec, waitForDataLoaded } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -24,7 +24,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-bed-genes-canvas',
           '[data-testid$="-done"] canvas',
@@ -49,7 +49,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-bigbed-genes-canvas',
           '[data-testid$="-done"] canvas',
@@ -74,7 +74,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-density-wiggle-canvas',
           '[data-testid$="-done"] canvas',
@@ -99,7 +99,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-line-wiggle-canvas',
           '[data-testid$="-done"] canvas',
@@ -124,7 +124,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-color-wiggle-canvas',
           '[data-testid$="-done"] canvas',
@@ -149,7 +149,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-multisample-vcf-canvas',
           '[data-testid$="-done"] canvas',
@@ -174,7 +174,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-sv-vcf-canvas',
           '[data-testid$="-done"] canvas',
@@ -199,7 +199,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-fractional-posneg-canvas',
           '[data-testid$="-done"] canvas',
@@ -224,7 +224,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'additional-variant-colors-canvas',
           '[data-testid$="-done"] canvas',

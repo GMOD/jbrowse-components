@@ -4,7 +4,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
+import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -30,7 +30,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'multiway-synteny-3way-canvas',
           '[data-testid="synteny_canvas_done"]',
@@ -92,7 +92,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'multiway-synteny-2way-with-genes-canvas',
           '[data-testid="synteny_canvas_done"]',
@@ -121,7 +121,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'dotplot_webgl_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'multiway-dotplot-grape-peach-zoomed-canvas',
           '[data-testid="dotplot_webgl_canvas_done"]',

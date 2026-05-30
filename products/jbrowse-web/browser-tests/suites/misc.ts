@@ -5,7 +5,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -28,7 +28,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'misc-snpcoverage-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -49,7 +49,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'misc-ncbi-alias-canvas',
           '[data-testid$="-done"] canvas',
@@ -74,7 +74,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'misc-gff3-track-canvas',
           '[data-testid^="display-gff3tabix_genes"] canvas',

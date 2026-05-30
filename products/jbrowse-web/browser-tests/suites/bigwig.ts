@@ -6,7 +6,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -29,7 +29,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'bigwig-gc-content-canvas',
           '[data-testid="wiggle-display-done"] canvas',
@@ -52,7 +52,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'bigwig-multibigwig-xyplot-canvas',
           '[data-testid="multi-wiggle-display-done"] canvas',
@@ -75,7 +75,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'bigwig-multibigwig-multirowxy-canvas',
           '[data-testid="multi-wiggle-display-done"] canvas',
@@ -98,7 +98,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'bigwig-multibigwig-multirowdensity-canvas',
           '[data-testid="multi-wiggle-display-done"] canvas',
@@ -121,7 +121,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'bigwig-multibigwig-multirowline-canvas',
           '[data-testid="multi-wiggle-display-done"] canvas',

@@ -4,7 +4,7 @@ import {
   findByTestId,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
+import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -23,7 +23,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'methylation-pileup-canvas',
           '[data-testid="pileup-display-done"] canvas',
@@ -57,7 +57,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'modifications-pileup-canvas',
           '[data-testid="pileup-display-done"] canvas',

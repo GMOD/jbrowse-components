@@ -1,5 +1,5 @@
 import { PORT, appendGpuParam, waitForDataLoaded } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -23,7 +23,7 @@ const suite: TestSuite = {
           },
         )
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'dotplot-default-canvas',
           '[data-testid="dotplot_webgl_canvas_done"]',

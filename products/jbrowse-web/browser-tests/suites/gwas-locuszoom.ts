@@ -5,7 +5,7 @@ import {
   findByText,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot, capturePageSnapshot } from '../snapshot.ts'
+import { capturePageSnapshot, dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
@@ -46,7 +46,7 @@ const suite: TestSuite = {
       requiresRemote: true,
       fn: async page => {
         await gotoStat4(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'gwas-locuszoom-stat4-canvas',
           '[data-testid="manhattan-gpu-done"] canvas',
@@ -94,7 +94,7 @@ const suite: TestSuite = {
         await delay(1000)
         await findByTestId(page, 'manhattan-gpu-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'gwas-locuszoom-reanchored-canvas',
           '[data-testid="manhattan-gpu-done"] canvas',

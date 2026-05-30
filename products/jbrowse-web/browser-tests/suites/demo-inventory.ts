@@ -7,7 +7,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
+import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
@@ -213,7 +213,7 @@ const localDemos: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'demo-sars-cov2-canvas',
           '[data-testid$="-done"] canvas',
@@ -237,7 +237,7 @@ const localDemos: TestSuite = {
           },
         )
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'demo-dotplot-canvas',
           '[data-testid="dotplot_webgl_canvas_done"]',
@@ -267,7 +267,7 @@ const localDemos: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'demo-yeast-synteny-canvas',
           '[data-testid="synteny_canvas_done"]',
@@ -296,7 +296,7 @@ const localDemos: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 120000)
         await waitForDataLoaded(page, 120000)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'demo-yeast-wholegenome-synteny-canvas',
           '[data-testid="synteny_canvas_done"]',
@@ -338,7 +338,7 @@ const localDemos: TestSuite = {
 
         await findByTestId(page, 'hic_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'demo-hic-canvas',
           '[data-testid="hic_canvas_done"]',
@@ -367,7 +367,7 @@ const localDemos: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'demo-hg19-gene-glyph-canvas',
           '[data-testid$="-done"] canvas',
@@ -399,7 +399,7 @@ const localDemos: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'demo-grape-peach-synteny-canvas',
           '[data-testid="synteny_canvas_done"]',

@@ -1,5 +1,5 @@
 import { navigateWithSessionSpec, waitForDataLoaded } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -24,7 +24,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'variants-assembly-aliases-canvas',
           '[data-testid$="-done"] canvas',

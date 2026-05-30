@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot, pageSnapshot } from '../snapshot.ts'
+import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -35,7 +35,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 120000)
         await waitForDataLoaded(page, 120000)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'hs1-mm39-synteny-wholegenome-canvas',
           '[data-testid="synteny_canvas_done"]',
@@ -72,7 +72,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 120000)
         await waitForDataLoaded(page, 120000)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'hs1-mm39-synteny-chr7-canvas',
           '[data-testid="synteny_canvas_done"]',
@@ -108,7 +108,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'synteny_canvas_done', 120000)
         await waitForDataLoaded(page, 120000)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'hs1-mm39-synteny-chr1-large-canvas',
           '[data-testid="synteny_canvas_done"]',

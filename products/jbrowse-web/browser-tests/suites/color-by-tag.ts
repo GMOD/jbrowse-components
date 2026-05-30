@@ -4,7 +4,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -39,7 +39,7 @@ const suite: TestSuite = {
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'color-by-strand',
           '[data-testid="pileup-display-done"] canvas',
@@ -56,7 +56,7 @@ const suite: TestSuite = {
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'color-by-mapping-quality',
           '[data-testid="pileup-display-done"] canvas',
@@ -75,7 +75,7 @@ const suite: TestSuite = {
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'color-by-insert-size-orientation',
           '[data-testid="pileup-display-done"] canvas',
@@ -92,7 +92,7 @@ const suite: TestSuite = {
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'color-by-tag-hp',
           '[data-testid="pileup-display-done"] canvas',

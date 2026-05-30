@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -30,7 +30,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'hic_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'hic-rendering-canvas',
           '[data-testid="hic_canvas_done"]',

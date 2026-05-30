@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot } from '../snapshot.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -26,7 +26,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'manhattan-gpu-done', 60000)
         await waitForDataLoaded(page)
-        await canvasSnapshot(
+        await dualSnapshot(
           page,
           'gwas-manhattan-canvas',
           '[data-testid="manhattan-gpu-done"] canvas',
