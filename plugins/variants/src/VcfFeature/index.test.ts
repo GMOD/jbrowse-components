@@ -1,7 +1,7 @@
 import VcfParser from '@gmod/vcf'
 
 import VcfFeature from './index.ts'
-import { getSOAndDescFromAltDefs } from './util.ts'
+import { getMinimalDesc, getSOAndDescFromAltDefs, makeSimpleAltString } from './util.ts'
 
 const defaultHeader =
   '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE'
@@ -44,7 +44,7 @@ test('DEL feature with END info field', () => {
 
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(1000)
-  expect(f.get('description')).toEqual('deletion')
+  expect(f.get('description')).toEqual('<DEL>')
 })
 
 test('TRA feature with CHR2 and END info', () => {
@@ -53,7 +53,7 @@ test('TRA feature with CHR2 and END info', () => {
   )
 
   expect(f.get('start')).toEqual(99)
-  expect(f.get('description')).toEqual('translocation chr8:45000')
+  expect(f.get('description')).toEqual('<TRA> chr8:45000')
   expect(f.get('type')).toEqual('translocation')
 })
 
@@ -61,7 +61,7 @@ test('TRA feature without CHR2/END info', () => {
   const f = createFeature('chr1\t100\trs123\tR\t<TRA>\t29\tPASS\tSVTYPE=TRA')
 
   expect(f.get('start')).toEqual(99)
-  expect(f.get('description')).toEqual('translocation')
+  expect(f.get('description')).toEqual('<TRA>')
   expect(f.get('type')).toEqual('translocation')
 })
 
@@ -72,6 +72,15 @@ test('DEL feature with SVLEN when END not available', () => {
 
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(599)
+  expect(f.get('description')).toEqual('<DEL> 500bp')
+})
+
+test('DUP feature with SVLEN shows size', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DUP>\t29\tPASS\tSVLEN=1000;SVTYPE=DUP',
+  )
+
+  expect(f.get('description')).toEqual('<DUP> 1Kbp')
 })
 
 test('INS feature with SVLEN when END not available', () => {
@@ -81,6 +90,7 @@ test('INS feature with SVLEN when END not available', () => {
 
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(100)
+  expect(f.get('description')).toEqual('<INS> 500bp')
 })
 
 test('multiple SVs', () => {
@@ -88,7 +98,7 @@ test('multiple SVs', () => {
     'chr1\t100\trs123\tR\t<INVDUP>,<INV>\t29\tPASS\tEND=1000;SVTYPE=DEL',
   )
 
-  expect(f.get('description')).toEqual('inverted_duplication,inversion')
+  expect(f.get('description')).toEqual('<INVDUP>,<INV>')
 })
 
 test('BND', () => {
@@ -134,7 +144,7 @@ test('mixed symbolic and SNV', () => {
 test('multiple symbolic ALT', () => {
   const f = createFeature('chr1\t100\trs123\tG\t<DEL>,<INS>,<DUP>\t29\tPASS\t.')
 
-  expect(f.get('description')).toEqual('deletion,insertion,duplication')
+  expect(f.get('description')).toEqual('<DEL>,<INS>,<DUP>')
 })
 
 test('multiple insertions of varying lengths', () => {
@@ -195,4 +205,44 @@ test('getSOAndDescFromAltDefs returns correct SO term for symbolic alleles', () 
     'variant',
     '<UNKNOWN:FOO>',
   ])
+})
+
+test('getMinimalDesc - SNV returns just alt', () => {
+  expect(getMinimalDesc('A', 'T')).toEqual('T')
+})
+
+test('getMinimalDesc - short indel shows bases', () => {
+  expect(getMinimalDesc('ACGT', 'A')).toEqual('ACGT -> A')
+})
+
+test('getMinimalDesc - long indel shows bp counts', () => {
+  expect(getMinimalDesc('ACGTACGT', 'A')).toEqual('8bp -> 1bp')
+})
+
+test('getMinimalDesc - symbolic returns alt as-is', () => {
+  expect(getMinimalDesc('A', '<DEL>')).toEqual('<DEL>')
+})
+
+test('makeSimpleAltString - phased heterozygous', () => {
+  expect(makeSimpleAltString('0|1', 'A', ['T'])).toEqual('ref(A)|T')
+})
+
+test('makeSimpleAltString - unphased ref/ref', () => {
+  expect(makeSimpleAltString('0/0', 'A', ['T'])).toEqual('ref(A)/ref(A)')
+})
+
+test('makeSimpleAltString - missing allele', () => {
+  expect(makeSimpleAltString('./1', 'A', ['T'])).toEqual('./T')
+})
+
+test('makeSimpleAltString - multi-allelic', () => {
+  expect(makeSimpleAltString('1/2', 'A', ['T', 'G'])).toEqual('T/G')
+})
+
+test('makeSimpleAltString - ref shorter than 10 chars shown as bases', () => {
+  expect(makeSimpleAltString('0/1', 'ACGTACGT', ['T'])).toEqual('ref(ACGTACGT)/8bp -> 1bp')
+})
+
+test('makeSimpleAltString - ref 10+ chars shown as bp count', () => {
+  expect(makeSimpleAltString('0/0', 'ACGTACGTAC', [])).toEqual('ref(10bp)/ref(10bp)')
 })

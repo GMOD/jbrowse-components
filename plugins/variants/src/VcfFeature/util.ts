@@ -49,26 +49,21 @@ export function getSOTermAndDescription(
 }
 
 function getSOTerm(alt: string, ref: string, parser: VCF): string {
-  // Symbolic alleles
   if (alt.startsWith('<')) {
     return findSOTerm(alt, parser) ?? 'variant'
   }
-
-  // Breakends
-  if (isBreakend(alt) && parseBreakend(alt)) {
+  if (parseBreakend(alt)) {
     return 'breakend'
   }
-
   const lenRef = ref.length
   const lenAlt = alt.length
-
   if (lenRef === 1 && lenAlt === 1) {
     return 'SNV'
-  } else if (lenRef === lenAlt) {
-    return 'substitution'
-  } else {
-    return lenRef < lenAlt ? 'insertion' : 'deletion'
   }
+  if (lenRef === lenAlt) {
+    return 'substitution'
+  }
+  return lenRef < lenAlt ? 'insertion' : 'deletion'
 }
 
 function formatGroupDescription(
@@ -77,24 +72,27 @@ function formatGroupDescription(
   info?: Record<string, unknown>,
 ): string {
   if (alts.every(isSymbolic)) {
-    const descriptions = alts.map(a => {
-      if (a === '<TRA>' && info?.CHR2 && info.END) {
-        const chr2 = Array.isArray(info.CHR2) ? info.CHR2[0] : info.CHR2
-        const end = Array.isArray(info.END) ? info.END[0] : info.END
-        return `translocation ${chr2}:${end}`
-      }
-      return altTypeToSO[a] ?? a
-    })
-    return descriptions.join(',')
+    const svlenArr = Array.isArray(info?.SVLEN) ? info.SVLEN : undefined
+    return alts
+      .map((a, i) => {
+        if (a === '<TRA>' && Array.isArray(info?.CHR2) && Array.isArray(info.END)) {
+          return `<TRA> ${info.CHR2[0]}:${info.END[0]}`
+        }
+        const svlen = svlenArr?.[i]
+        return svlen !== undefined ? `${a} ${getBpDisplayStr(Math.abs(+svlen))}` : a
+      })
+      .join(',')
   }
 
   const lenRef = ref.length
-
-  return `${ref.length > 10 ? getBpDisplayStr(lenRef) : ref} -> ${alts.map(a => (a.length > 10 ? getBpDisplayStr(a.length) : a)).join(',')}`
+  const altStr = alts
+    .map(a => (a.length >= 10 ? getBpDisplayStr(a.length) : a))
+    .join(',')
+  return `${lenRef >= 10 ? getBpDisplayStr(lenRef) : ref} -> ${altStr}`
 }
 
 function findSOTerm(alt: string, parser: VCF): string | undefined {
-  if (altTypeToSO[alt]) {
+  if (alt in altTypeToSO) {
     return altTypeToSO[alt]
   }
   if (parser.getMetadata('ALT', alt)) {
@@ -123,13 +121,8 @@ export function getMinimalDesc(ref: string, alt: string) {
   if (isSymbolic(alt) || (ref.length === 1 && alt.length === 1)) {
     return alt
   }
-
-  const lenRef = ref.length
-  const lenAlt = alt.length
-  const isLong = lenRef > 5 || lenAlt > 5
-
-  return isLong
-    ? `${getBpDisplayStr(lenRef)} -> ${getBpDisplayStr(lenAlt)}`
+  return ref.length > 5 || alt.length > 5
+    ? `${getBpDisplayStr(ref.length)} -> ${getBpDisplayStr(alt.length)}`
     : `${ref} -> ${alt}`
 }
 
@@ -143,9 +136,9 @@ export function makeSimpleAltString(
     .map(r =>
       r === '.'
         ? '.'
-        : +r === 0
+        : r === '0'
           ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
-          : getMinimalDesc(ref, alt[+r - 1] || ''),
+          : getMinimalDesc(ref, alt[+r - 1] ?? ''),
     )
     .join(genotype.includes('|') ? '|' : '/')
 }

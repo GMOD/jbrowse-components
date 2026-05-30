@@ -24,18 +24,9 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
 function getEnd(variant: Variant) {
   const { POS, REF = '', ALT = [], INFO } = variant
   const start = POS - 1
-  let isTRA = false
-  let isSymbolic = false
-  for (const a of ALT) {
-    if (a.startsWith('<')) {
-      isSymbolic = true
-      if (a === '<TRA>') {
-        isTRA = true
-        break
-      }
-    }
-  }
-  if (isSymbolic && !isTRA) {
+  const hasSymbolic = ALT.some(a => a.startsWith('<'))
+  const hasTRA = ALT.some(a => a === '<TRA>')
+  if (hasSymbolic && !hasTRA) {
     if (Array.isArray(INFO.END)) {
       const end = INFO.END[0]
       if (end !== undefined) {
@@ -44,7 +35,7 @@ function getEnd(variant: Variant) {
     }
     if (Array.isArray(INFO.SVLEN)) {
       const lens = INFO.SVLEN.map((len, i) =>
-        ALT[i]?.startsWith('<INS') ? 1 : Math.abs(len === undefined ? 0 : +len),
+        ALT[i]?.startsWith('<INS') ? 1 : Math.abs(+(len ?? 0)),
       )
       return start + max(lens)
     }
