@@ -35,6 +35,7 @@ function CascadingSubmenu({
   onMenuItemClick,
   closeAfterItemClick,
   onCloseRoot,
+  onNavigateBack,
   isOpen,
   onOpen,
   onClose,
@@ -46,6 +47,7 @@ function CascadingSubmenu({
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
   onCloseRoot: () => void
+  onNavigateBack: (() => void) | undefined
   isOpen: boolean
   onOpen: () => void
   onClose: () => void
@@ -66,6 +68,9 @@ function CascadingSubmenu({
         onKeyDown={e => {
           if (e.key === 'ArrowRight') {
             onOpen()
+          } else if (e.key === 'ArrowLeft') {
+            e.stopPropagation()
+            onNavigateBack?.()
           }
         }}
       >
@@ -89,6 +94,10 @@ function CascadingSubmenu({
           onMenuItemClick={onMenuItemClick}
           menuItems={menuItems}
           onCloseRoot={onCloseRoot}
+          onNavigateBack={() => {
+            onClose()
+            anchorEl?.focus()
+          }}
         />
       </HoverMenu>
     </>
@@ -100,11 +109,15 @@ function CascadingMenuList({
   closeAfterItemClick,
   menuItems,
   onCloseRoot,
+  onNavigateBack,
 }: {
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
   onMenuItemClick: (event: unknown, callback: () => void) => void
   onCloseRoot: () => void
+  // close this menu level and refocus its opener (ArrowLeft); undefined at the
+  // root level where there is nothing to go back to
+  onNavigateBack?: () => void
 }) {
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
   const closeSubmenu = () => {
@@ -137,6 +150,7 @@ function CascadingMenuList({
               menuItems={item.subMenu}
               closeAfterItemClick={closeAfterItemClick}
               onCloseRoot={onCloseRoot}
+              onNavigateBack={onNavigateBack}
               isOpen={openSubmenuIdx === idx}
               onOpen={() => {
                 setOpenSubmenuIdx(idx)
@@ -170,6 +184,12 @@ function CascadingMenuList({
               onMenuItemClick(event, item.onClick)
             }}
             onMouseOver={closeSubmenu}
+            onKeyDown={e => {
+              if (e.key === 'ArrowLeft') {
+                e.stopPropagation()
+                onNavigateBack?.()
+              }
+            }}
           >
             {item.icon ? (
               <ListItemIcon>

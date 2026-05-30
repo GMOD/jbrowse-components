@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import CascadingMenuButton from '../CascadingMenuButton.tsx'
@@ -63,6 +63,18 @@ describe('CascadingMenu', () => {
     await user.click(await screen.findByText('Submenu'))
     await user.keyboard('{ArrowRight}')
     expect(await screen.findByText('Sub Item 1')).toBeTruthy()
+  })
+
+  it('should close submenu on ArrowLeft key', async () => {
+    const user = await setup()
+    await user.click(screen.getByTestId('menu-button'))
+    await user.click(await screen.findByText('Submenu'))
+    const subItem = await screen.findByRole('menuitem', { name: 'Sub Item 1' })
+    subItem.focus()
+    await user.keyboard('{ArrowLeft}')
+    await waitFor(() => {
+      expect(screen.queryByText('Sub Item 1')).toBeNull()
+    })
   })
 
   it('should work with function-based menuItems', async () => {
