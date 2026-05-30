@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 
 export function useVariantVirtualScroll({
   canvas,
@@ -24,54 +24,40 @@ export function useVariantVirtualScroll({
   const scrollableHeight = Math.max(0, totalHeight - viewportHeight)
   const hasOverflow = scrollableHeight > 0
 
+  const handleWheel = useEffectEvent((e: WheelEvent) => {
+    if (e.shiftKey) {
+      e.preventDefault()
+      const delta = e.deltaY > 0 ? -1 : 1
+      const minRowHeight = viewportHeight / nrow
+      const newRowHeight = Math.min(20, Math.max(minRowHeight, rowHeight + delta))
+      const rect = canvas!.getBoundingClientRect()
+      const mouseY = e.clientY - rect.top
+      const rowUnderMouse = (mouseY + scrollTop) / rowHeight
+      const newScrollTop = Math.max(0, rowUnderMouse * newRowHeight - mouseY)
+      setRowHeight(newRowHeight)
+      setScrollTop(newScrollTop)
+    } else if (!scrollZoom && !e.ctrlKey && !e.metaKey && scrollableHeight > 0) {
+      const dy =
+        e.deltaMode === 1 ? e.deltaY * 40
+        : e.deltaMode === 2 ? e.deltaY * viewportHeight
+        : e.deltaY
+      const next = Math.max(0, Math.min(scrollableHeight, scrollTop + dy))
+      if (next !== scrollTop) {
+        e.preventDefault()
+        setScrollTop(next)
+      }
+    }
+  })
+
   useEffect(() => {
     if (!canvas) {
       return
     }
-    const handler = (e: WheelEvent) => {
-      if (e.shiftKey) {
-        e.preventDefault()
-        const delta = e.deltaY > 0 ? -1 : 1
-        const minRowHeight = viewportHeight / nrow
-        const newRowHeight = Math.min(
-          20,
-          Math.max(minRowHeight, rowHeight + delta),
-        )
-        const rect = canvas.getBoundingClientRect()
-        const mouseY = e.clientY - rect.top
-        const rowUnderMouse = (mouseY + scrollTop) / rowHeight
-        const newScrollTop = Math.max(0, rowUnderMouse * newRowHeight - mouseY)
-        setRowHeight(newRowHeight)
-        setScrollTop(newScrollTop)
-      } else if (!scrollZoom && scrollableHeight > 0) {
-        let dy = e.deltaY
-        if (e.deltaMode === 1) {
-          dy *= 40
-        } else if (e.deltaMode === 2) {
-          dy *= viewportHeight
-        }
-        const next = Math.max(0, Math.min(scrollableHeight, scrollTop + dy))
-        if (next !== scrollTop) {
-          e.preventDefault()
-          setScrollTop(next)
-        }
-      }
-    }
-    canvas.addEventListener('wheel', handler, { passive: false })
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
-      canvas.removeEventListener('wheel', handler)
+      canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [
-    canvas,
-    scrollTop,
-    scrollableHeight,
-    viewportHeight,
-    scrollZoom,
-    rowHeight,
-    nrow,
-    setScrollTop,
-    setRowHeight,
-  ])
+  }, [canvas])
 
   const thumbHeight = hasOverflow
     ? Math.max(20, (viewportHeight * viewportHeight) / totalHeight)

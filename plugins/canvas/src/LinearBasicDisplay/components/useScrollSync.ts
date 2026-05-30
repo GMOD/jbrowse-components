@@ -59,7 +59,7 @@ export function useScrollSync(
     }
 
     const handleWheel = (e: WheelEvent) => {
-      if (!model.hasOverflow) {
+      if (!model.hasOverflow || e.ctrlKey || e.metaKey) {
         return
       }
       if (e.shiftKey) {

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
@@ -54,6 +54,17 @@ const useStyles = makeStyles()({
   },
 })
 
+// deltaMode 1 = line (~40px), deltaMode 2 = page (full viewport height)
+function normalizePileupDeltaY(
+  deltaY: number,
+  deltaMode: number,
+  viewportHeight: number,
+) {
+  return deltaMode === 1 ? deltaY * 40
+    : deltaMode === 2 ? deltaY * viewportHeight
+    : deltaY
+}
+
 // The pileup canvas + all its positioned overlays. DisplayChrome owns the GPU
 // backend and the three terminal states (render error, region-too-large, fetch
 // error + loading), so this body renders only the success path — it receives
@@ -81,36 +92,32 @@ const PileupBody = observer(function PileupBody({
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
 
+  const handleWheel = useEffectEvent((e: WheelEvent) => {
+    if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
+      return
+    }
+    const { scrollableHeight, pileupViewportHeight, currentRangeY } = model
+    if (scrollableHeight <= 0) {
+      return
+    }
+    const dy = normalizePileupDeltaY(e.deltaY, e.deltaMode, pileupViewportHeight)
+    const curScroll = currentRangeY[0]
+    const newScroll = clamp(curScroll + dy, 0, scrollableHeight)
+    if (newScroll !== curScroll) {
+      e.preventDefault()
+      model.setCurrentRangeY([newScroll, newScroll + pileupViewportHeight])
+    }
+  })
+
   useEffect(() => {
     if (!canvas) {
       return
     }
-    const handler = (e: WheelEvent) => {
-      if (scrollZoom && !e.shiftKey) {
-        return
-      }
-      const { scrollableHeight, pileupViewportHeight, currentRangeY } = model
-      if (scrollableHeight <= 0) {
-        return
-      }
-      let dy = e.deltaY
-      if (e.deltaMode === 1) {
-        dy *= 40
-      } else if (e.deltaMode === 2) {
-        dy *= pileupViewportHeight
-      }
-      const curScroll = currentRangeY[0]
-      const newScroll = clamp(curScroll + dy, 0, scrollableHeight)
-      if (newScroll !== curScroll) {
-        e.preventDefault()
-        model.setCurrentRangeY([newScroll, newScroll + pileupViewportHeight])
-      }
-    }
-    canvas.addEventListener('wheel', handler, { passive: false })
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
-      canvas.removeEventListener('wheel', handler)
+      canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [canvas, scrollZoom, model])
+  }, [canvas])
 
   if (!width) {
     return null

@@ -12,11 +12,9 @@ Now I have the full picture. Key insight from sv-inspector: the circular view's 
 - reversed region testing
 - when doing 'link supp alignments' special coloring for overlap? use alpha?
 - hide sashimi arcs if not relevant?
-- what is show y-axis labels, remove?
 - potentially restore the 'PileupSettings' and 'snpcoverage' settings distinction
 - too complicated or hard to get used to current (??)
 - relegate some advanced settings to an advanced place?
 - make browser slightly less than full page width
-- when doing ctrl+scroll it is vertically scrolling alignments track
 
 
