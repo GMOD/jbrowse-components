@@ -83,7 +83,8 @@ const PileupInner = observer(function PileupInner({
   const base = useAlignmentsBase(model)
   const {
     canvas,
-    rendering,
+    canvasRef,
+    renderError,
     width,
     contrastMap,
     handleMouseDown,
@@ -128,8 +129,8 @@ const PileupInner = observer(function PileupInner({
     }
   }, [canvas, scrollZoom, model])
 
-  if (rendering.kind === 'error') {
-    return rendering.node
+  if (renderError) {
+    return renderError
   }
 
   if (!width) {
@@ -201,7 +202,7 @@ const PileupInner = observer(function PileupInner({
       >
         <PileupCanvas
           model={model}
-          canvasRef={rendering.canvasRef}
+          canvasRef={canvasRef}
           width={width}
           height={height}
           handleMouseDown={handleMouseDown}

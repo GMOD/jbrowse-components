@@ -3,8 +3,7 @@ import { useState } from 'react'
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import {
-  DisplayErrorBar,
-  DisplayLoadingOverlay,
+  DisplayChrome,
   useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -38,10 +37,11 @@ const LinearManhattanDisplayComponent = observer(
     const view = getContainingView(model) as LGV
     const width = view.trackWidthPx
     const height = model.height
-    const rendering = useDisplayRendering(ManhattanRenderer, model, {
-      width,
-      height,
-    })
+    const { canvasRef, renderError } = useDisplayRendering(
+      ManhattanRenderer,
+      model,
+      { width, height },
+    )
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
     const [contextMenu, setContextMenu] = useState<{
       coord: [number, number]
@@ -93,12 +93,10 @@ const LinearManhattanDisplayComponent = observer(
     const scalebarLeft = model.scalebarOverlapLeft
     const ldMode = colorBy === 'ld' && model.canvasDrawn
 
-    if (rendering.kind === 'error') {
-      return rendering.node
-    }
-
     return (
-      <div
+      <DisplayChrome
+        renderError={renderError}
+        model={model}
         data-testid={model.canvasDrawn ? 'manhattan-gpu-done' : 'manhattan-gpu'}
         style={{ position: 'relative', width, height }}
         onMouseMove={handleMouseMove}
@@ -109,7 +107,7 @@ const LinearManhattanDisplayComponent = observer(
         }}
       >
         <canvas
-          ref={rendering.canvasRef}
+          ref={canvasRef}
           style={{
             width,
             height: height - 2 * YSCALEBAR_LABEL_OFFSET,
@@ -141,8 +139,6 @@ const LinearManhattanDisplayComponent = observer(
           <LdIndexWarning offsetTop={YSCALEBAR_LABEL_OFFSET} />
         ) : null}
         <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
-        <DisplayErrorBar model={model} />
-        <DisplayLoadingOverlay model={model} />
         {contextMenu ? (
           <Menu
             open
@@ -170,7 +166,7 @@ const LinearManhattanDisplayComponent = observer(
             ]}
           />
         ) : null}
-      </div>
+      </DisplayChrome>
     )
   },
 )

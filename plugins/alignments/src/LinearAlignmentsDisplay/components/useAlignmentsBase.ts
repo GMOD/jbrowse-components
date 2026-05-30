@@ -44,11 +44,11 @@ export interface FeatureHit {
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const width = view.initialized ? view.width : undefined
-  const rendering = useDisplayRendering(AlignmentsRenderer, model, {
-    width,
-    height: model.height,
-  })
-  const canvas = rendering.kind === 'ready' ? rendering.canvas : null
+  const { canvas, canvasRef, renderError } = useDisplayRendering(
+    AlignmentsRenderer,
+    model,
+    { width, height: model.height },
+  )
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
@@ -315,8 +315,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }, [model, colorPalette])
 
   return {
-    rendering,
     canvas,
+    canvasRef,
+    renderError,
     width,
     contrastMap,
     handleMouseDown,

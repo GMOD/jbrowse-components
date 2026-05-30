@@ -22,12 +22,10 @@ export {
   Tooltip,
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
+export { default as DisplayChrome } from './components/DisplayChrome.tsx'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
 export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
-export {
-  type DisplayRendering,
-  useDisplayRendering,
-} from './components/useDisplayRendering.tsx'
+export { useDisplayRendering } from './components/useDisplayRendering.tsx'
 export {
   default as ConfigOverrideMixin,
   migrateOldSettingSnapshots,

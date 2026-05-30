@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import {
-  DisplayErrorBar,
-  DisplayLoadingOverlay,
+  DisplayChrome,
   useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
@@ -48,10 +47,11 @@ const LinearMafDisplay = observer(function (props: {
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const { width } = view
-  const rendering = useDisplayRendering(MafRendererFactory, model, {
-    width,
-    height,
-  })
+  const { canvasRef, renderError } = useDisplayRendering(
+    MafRendererFactory,
+    model,
+    { width, height },
+  )
 
   // Push theme-derived color palette into the model. Drives `gpuProps()`,
   // so theme changes re-encode on the main thread (no RPC refetch). The
@@ -83,12 +83,10 @@ const LinearMafDisplay = observer(function (props: {
   const treeShowing = showTree && !!hierarchy
   const sidebarOffset = treeShowing ? treeAreaWidth : 0
 
-  if (rendering.kind === 'error') {
-    return rendering.node
-  }
-
   return (
-    <div
+    <DisplayChrome
+      renderError={renderError}
+      model={model}
       data-testid={`display-${model.configuration.displayId}${model.canvasDrawn ? '-done' : ''}`}
       ref={ref}
       style={{ position: 'relative', height }}
@@ -115,7 +113,7 @@ const LinearMafDisplay = observer(function (props: {
         }}
       >
         <canvas
-          ref={rendering.canvasRef}
+          ref={canvasRef}
           style={{
             position: 'absolute',
             top: 0,
@@ -154,8 +152,6 @@ const LinearMafDisplay = observer(function (props: {
         <TreeSidebar model={model} />
       </div>
       <MsaHighlightOverlay model={model} view={view} height={height} />
-      <DisplayErrorBar model={model} />
-      <DisplayLoadingOverlay model={model} />
       {mouseY !== undefined &&
       mouseX !== undefined &&
       mouseX > sidebarOffset &&
@@ -201,7 +197,7 @@ const LinearMafDisplay = observer(function (props: {
         contextCoord={contextCoord}
         setContextCoord={setContextCoord}
       />
-    </div>
+    </DisplayChrome>
   )
 })
 

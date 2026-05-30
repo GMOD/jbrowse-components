@@ -2,8 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import {
-  DisplayErrorBar,
-  DisplayLoadingOverlay,
+  DisplayChrome,
   useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
@@ -38,7 +37,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const view = getContainingView(model) as LGV
   const totalWidth = view.trackWidthPx
   const height = model.height
-  const rendering = useDisplayRendering(WiggleRenderer, model, {
+  const { canvasRef, renderError } = useDisplayRendering(WiggleRenderer, model, {
     width: totalWidth,
     height,
   })
@@ -105,10 +104,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const scalebarLeft = model.scalebarOverlapLeft
 
-  if (rendering.kind === 'error') {
-    return rendering.node
-  }
-
   const numSources = model.numSources
   const rowHeight = model.rowHeight
 
@@ -117,7 +112,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const labelOffset = treeShowing ? model.treeAreaWidth : 0
 
   return (
-    <div
+    <DisplayChrome
+      renderError={renderError}
+      model={model}
       ref={containerRef}
       data-testid={
         model.canvasDrawn ? 'multi-wiggle-display-done' : 'multi-wiggle-display'
@@ -133,7 +130,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     >
       <div>
         <canvas
-          ref={rendering.canvasRef}
+          ref={canvasRef}
           style={{
             width: totalWidth,
             height,
@@ -263,10 +260,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         clientMouseCoord={clientMouseCoord}
         offsetMouseCoord={offsetMouseCoord}
       />
-
-      <DisplayErrorBar model={model} />
-      <DisplayLoadingOverlay model={model} />
-    </div>
+    </DisplayChrome>
   )
 })
 

@@ -1,40 +1,28 @@
-import type { ReactNode } from 'react'
-
 import { useRenderingBackend } from '@jbrowse/core/util'
 
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 
-type Rendered = Omit<ReturnType<typeof useRenderingBackend>, 'error' | 'retry'>
-
-export type DisplayRendering =
-  | { kind: 'error'; node: ReactNode }
-  | ({ kind: 'ready' } & Rendered)
-
-// Gates the canvas behind error handling: `canvasRef`/`canvas` exist only on the
-// 'ready' variant, so a display can't reach its canvas without first handling
-// 'error'. Makes "render the canvas, forget the render error" — the bug that
-// slipped into maf and alignments — a compile error. The 'error' variant carries
-// the ready-built overlay, so every display renders it identically with a single
-// `if (rendering.kind === 'error') return rendering.node`.
+// Wraps useRenderingBackend and pre-builds the render-error overlay. Hand
+// `renderError` to DisplayChrome, which shows it instead of the canvas when the
+// GPU backend failed — so the render-error path can't be silently dropped (the
+// bug that hit maf and alignments) while leaving each display free to lay out
+// however many canvases it wants. `canvas`/`canvasRef` are the backend's;
+// `renderError` is null on success.
 export function useDisplayRendering<B extends { dispose(): void }>(
   factory: (canvas: HTMLCanvasElement) => Promise<B>,
   model: RenderLifecycleModel<B>,
   dims: { width?: number; height: number },
-): DisplayRendering {
+) {
   const { canvas, canvasRef, error, retry } = useRenderingBackend(factory, model)
-  return error
-    ? {
-        kind: 'error',
-        node: (
-          <DisplayRenderErrorOverlay
-            error={error}
-            onRetry={retry}
-            width={dims.width}
-            height={dims.height}
-          />
-        ),
-      }
-    : { kind: 'ready', canvas, canvasRef }
+  const renderError = error ? (
+    <DisplayRenderErrorOverlay
+      error={error}
+      onRetry={retry}
+      width={dims.width}
+      height={dims.height}
+    />
+  ) : null
+  return { canvas, canvasRef, renderError }
 }

@@ -5,8 +5,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  DisplayErrorBar,
-  DisplayLoadingOverlay,
+  DisplayChrome,
   useDisplayRendering,
 } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
@@ -213,10 +212,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // base canvas display model. scrollTop lives on the model (via
   // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
   // the model so the autorun picks it up as part of `renderState`.
-  const rendering = useDisplayRendering(CanvasFeatureRenderer, model, {
-    width,
-    height,
-  })
+  const { canvasRef, renderError } = useDisplayRendering(
+    CanvasFeatureRenderer,
+    model,
+    { width, height },
+  )
 
   useScrollSync(scrollContainerRef, model, view)
 
@@ -343,16 +343,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     model,
   )
 
-  if (rendering.kind === 'error') {
-    return rendering.node
-  }
-
-  if (model.regionTooLarge) {
-    return model.regionCannotBeRendered()
-  }
-
   return (
-    <div className={classes.root} style={{ height }}>
+    <DisplayChrome
+      renderError={renderError}
+      model={model}
+      className={classes.root}
+      style={{ height }}
+    >
       <div
         ref={scrollContainerRef}
         className={classes.scrollContainer}
@@ -363,7 +360,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           style={{ height: model.hasOverflow ? model.maxY : '100%' }}
         >
           <canvas
-            ref={rendering.canvasRef}
+            ref={canvasRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}
@@ -403,8 +400,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         />
       ) : null}
 
-      <DisplayErrorBar model={model} />
-      <DisplayLoadingOverlay model={model} />
       <FeatureTooltip
         info={model.mouseoverExtraInformation}
         clientMouseCoord={clientXY}
@@ -420,7 +415,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           }}
         />
       ) : null}
-    </div>
+    </DisplayChrome>
   )
 })
 

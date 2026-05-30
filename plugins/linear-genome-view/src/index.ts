@@ -94,6 +94,7 @@ export {
   BaseLinearDisplayComponent,
   BlockMsg,
   ConfigOverrideMixin,
+  DisplayChrome,
   DisplayErrorBar,
   DisplayLoadingOverlay,
   FeatureDensityMixin,
@@ -116,7 +117,6 @@ export {
 } from './BaseLinearDisplay/index.ts'
 export type {
   ByteEstimateConfig,
-  DisplayRendering,
   FetchContext,
   GlobalDataDisplayMixinType,
   MultiRegionDisplayMixinType,
