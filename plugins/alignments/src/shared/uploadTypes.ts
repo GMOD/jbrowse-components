@@ -1,6 +1,6 @@
 // Worker → main-thread upload-data shapes, plus the `interbaseRangeEnds`
 // helper that slices the merged interbase array. These are structural
-// subsets of `PileupDataResult` (RenderPileupDataRPC/types.ts); duck-typing
+// subsets of `PileupDataResult` (RenderAlignmentDataRPC/types.ts); duck-typing
 // lets per-feature `buildRegion` / `pack` functions accept any object with
 // the right fields, including the test fixtures and SVG-export shims.
 //

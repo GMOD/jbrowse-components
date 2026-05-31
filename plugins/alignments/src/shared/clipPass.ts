@@ -2,7 +2,7 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import { INTERBASE_HARDCLIP, INTERBASE_SOFTCLIP } from './types.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
-import * as clipShader from '../shaders/slang/clip.generated.ts'
+import * as clipShader from '../LinearAlignmentsDisplay/shaders/slang/clip.generated.ts'
 
 import type {
   CigarCoords,

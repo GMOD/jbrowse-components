@@ -11,7 +11,7 @@ import { hitTestModification } from '../../features/modification/hitTest.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { hitTestClip } from '../../shared/clipPass.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CoverageHitResult } from '../../features/coverage/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'

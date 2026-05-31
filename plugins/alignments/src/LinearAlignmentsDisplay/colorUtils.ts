@@ -3,7 +3,7 @@ import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 import { ColorScheme } from './constants.ts'
 
 import type { LinkedReadsMode } from './constants.ts'
-import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
+import type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
 // Re-exports from core — kept for backwards-compat with call sites.
 export const rgb255 = normalizedRgbToCss

@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as modCoverageShader from '../../shaders/slang/modCoverage.generated.ts'
+import * as modCoverageShader from '../../LinearAlignmentsDisplay/shaders/slang/modCoverage.generated.ts'
 
 export const PASS_MOD_COV = 'modCov'
 

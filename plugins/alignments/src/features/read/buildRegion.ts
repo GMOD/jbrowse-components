@@ -1,6 +1,6 @@
-import { buildReadIdToIndex } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import { buildReadIdToIndex } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // The read trunk owns the per-read fields every CIGAR/coverage/highlight
 // path reads from. Lives at the trunk because chain overlays, hit-tests,

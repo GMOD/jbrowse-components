@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as connectingLineShader from '../../shaders/slang/connectingLine.generated.ts'
+import * as connectingLineShader from '../../LinearAlignmentsDisplay/shaders/slang/connectingLine.generated.ts'
 
 import type { ConnectingLinesUploadData } from './types.ts'
 

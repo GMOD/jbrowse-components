@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as snpCoverageShader from '../../shaders/slang/snpCoverage.generated.ts'
+import * as snpCoverageShader from '../../LinearAlignmentsDisplay/shaders/slang/snpCoverage.generated.ts'
 
 export const PASS_SNP_COV = 'snpCov'
 

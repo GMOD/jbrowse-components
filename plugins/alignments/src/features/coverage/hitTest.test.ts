@@ -1,6 +1,6 @@
 import { hitTestCoverage } from './hitTest.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResult {
   return {

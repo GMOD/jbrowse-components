@@ -4,7 +4,7 @@ import { SubmitDialog } from '@jbrowse/core/ui'
 import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { TAG_REGEX } from '../util.ts'
+import { TAG_REGEX } from '../../shared/util.ts'
 
 interface Tag {
   type: string
@@ -50,7 +50,9 @@ const ColorByTagDialog = observer(function ColorByTagDialog({
         error={tag.length === 2 && !validTag}
         autoComplete="off"
         slotProps={{
-          htmlInput: { maxLength: 2 },
+          htmlInput: {
+            maxLength: 2,
+          },
         }}
       />
     </SubmitDialog>

@@ -3,10 +3,10 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 
-import type { FilterBy } from '../types.ts'
+import type { FilterBy } from '../../shared/types.ts'
 
 const FilterByTagDialog = lazy(
-  () => import('../components/FilterByTagDialog.tsx'),
+  () => import('../dialogs/FilterByTagDialog.tsx'),
 )
 
 interface FiltersModel {
@@ -46,7 +46,6 @@ export function getFiltersMenuItem(
                 model.setDrawProperPairs?.(!model.drawProperPairs)
               },
             },
-            { type: 'divider' as const },
           ]
         : []),
       {

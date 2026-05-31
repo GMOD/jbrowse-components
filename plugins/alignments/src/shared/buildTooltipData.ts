@@ -1,7 +1,7 @@
 import { getModificationName } from './modificationData.ts'
 
 import type { ModificationEntry } from './webglRpcTypes.ts'
-import type { ModTooltipEntry } from '../RenderPileupDataRPC/types'
+import type { ModTooltipEntry } from '../RenderAlignmentDataRPC/types'
 
 export function buildModTooltipData({
   modifications,

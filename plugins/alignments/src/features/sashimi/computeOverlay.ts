@@ -1,6 +1,6 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Single source of truth for sashimi arc geometry, color, and stroke width.
 // Both the on-screen `SashimiArcsOverlay` (which adds hover/click handlers)

@@ -2,13 +2,13 @@ import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowY,
-} from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildBaseColorTupleMap } from '../mismatch/baseColors.ts'
 
 import type {
   DrawBlock,
   RenderState,
-} from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawSoftclipBases(

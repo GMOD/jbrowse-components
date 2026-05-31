@@ -4,9 +4,9 @@ import {
   computeBlockHeights,
   ensureRegion,
   interbaseRangeEnds,
-} from './rendererTypes.ts'
+} from '../renderers/rendererTypes.ts'
 
-import type { RenderState } from './rendererTypes.ts'
+import type { RenderState } from '../renderers/rendererTypes.ts'
 
 function makeState(overrides: Partial<RenderState> = {}): RenderState {
   return {

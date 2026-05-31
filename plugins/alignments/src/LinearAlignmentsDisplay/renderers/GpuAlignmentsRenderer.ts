@@ -3,7 +3,7 @@ import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
-import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
+import { getChainBounds, toClipRect } from '../components/chainOverlayUtils.ts'
 import {
   buildReadIdToIndex,
   computeBlockHeights,
@@ -80,12 +80,12 @@ import {
   arcLineColorPalette,
   getArcPalette,
   linkedReadColorPalette,
-} from '../../shaders/palettes.ts'
-import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
-import * as readShader from '../../shaders/slang/read.generated.ts'
+} from '../shaders/palettes.ts'
+import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
+import * as readShader from '../shaders/slang/read.generated.ts'
 import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
 
-import type { ChainBoundsRegion } from './chainOverlayUtils.ts'
+import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,

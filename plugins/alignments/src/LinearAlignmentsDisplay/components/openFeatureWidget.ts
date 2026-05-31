@@ -4,7 +4,7 @@ import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
 import { getTooltipBin, pct } from './tooltipUtils.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'

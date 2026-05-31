@@ -3,7 +3,7 @@ import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { buildCigarOpDrawColors } from '../mismatch/baseColors.ts'
 
-import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { CoverageRegionFields } from '../coverage/buildRegion.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 

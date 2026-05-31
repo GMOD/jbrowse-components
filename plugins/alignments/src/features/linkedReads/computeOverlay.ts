@@ -1,9 +1,9 @@
 import { iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { linkedReadColorPalette } from '../../shaders/palettes.ts'
+import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 
 import type { ReadEntry } from './compute.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Minimum horizontal bezier handle in screen pixels so the direction is visible
 // even for very tightly-spaced pairs.

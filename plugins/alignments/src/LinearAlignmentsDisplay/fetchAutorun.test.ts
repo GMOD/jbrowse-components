@@ -14,7 +14,7 @@ import { waitFor } from '@testing-library/react'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function makeEmptyPileupData(_regionStart: number): PileupDataResult {

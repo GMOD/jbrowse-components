@@ -4,7 +4,7 @@
 // Lives in `shared/` so feature folders and `shared/clipPass.ts` don't have
 // to import upward into `LinearAlignmentsDisplay/components/`.
 
-import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 
 export type CigarItemType =
   | 'mismatch'

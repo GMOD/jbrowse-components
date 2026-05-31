@@ -1,4 +1,5 @@
-export { getColorByMenuItem } from './colorBy.ts'
+export { getColorByMenuItem, getModificationsMenuItem } from './colorBy.ts'
+export type { ModificationsModel } from './colorBy.ts'
 export { getCoverageMenuItem } from './coverage.ts'
 export {
   COMPACTNESS_PRESETS,

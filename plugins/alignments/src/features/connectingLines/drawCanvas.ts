@@ -1,13 +1,13 @@
 import {
   bpToScreenX,
   pileupRowY,
-} from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
 import type { ConnectingLinesUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
-} from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawConnectingLines(

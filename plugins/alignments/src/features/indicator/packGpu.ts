@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as indicatorShader from '../../shaders/slang/indicator.generated.ts'
+import * as indicatorShader from '../../LinearAlignmentsDisplay/shaders/slang/indicator.generated.ts'
 
 export const PASS_INDICATOR = 'indicator'
 

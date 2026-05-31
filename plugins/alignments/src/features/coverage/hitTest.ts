@@ -1,5 +1,5 @@
 import type { CoverageHitResult } from './types.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Find the first significant position in [binStart, binEnd). "Significant"
 // = at least `threshold` fraction of reads at that position, relative to

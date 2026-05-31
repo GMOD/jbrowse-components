@@ -5,7 +5,7 @@ import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { ALIGNMENTS_FUDGE_FACTOR } from '../../LinearAlignmentsDisplay/constants.ts'
 
 import type { CoverageRegionFields } from './buildRegion.ts'
-import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Draws only the depth-bar layer of the coverage area. Other coverage-area

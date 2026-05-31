@@ -1,10 +1,10 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
-import { cloneWithLayout } from '../RenderPileupDataRPC/sortLayout.ts'
+import { cloneWithLayout } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
 
-import type { PileupDataResult } from '../RenderPileupDataRPC/types'
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 
 function buildChainRowMap(
   chains: {

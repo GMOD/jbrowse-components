@@ -7,7 +7,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
+import { AlignmentsRenderer } from '../renderers/AlignmentsRenderer.ts'
 import PileupBody from './PileupComponent.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'

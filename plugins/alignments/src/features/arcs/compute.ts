@@ -6,7 +6,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 
 // Arc shape enum. Values are shared with arc.slang (which checks them via

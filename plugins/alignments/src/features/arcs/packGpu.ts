@@ -1,7 +1,7 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as arcShader from '../../shaders/slang/arc.generated.ts'
-import * as arcLineShader from '../../shaders/slang/arcLine.generated.ts'
+import * as arcShader from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
+import * as arcLineShader from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.generated.ts'
 
 import type { ArcsUploadData } from './types.ts'
 

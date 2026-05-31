@@ -3,10 +3,10 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 
 const SetFeatureHeightDialog = lazy(
-  () => import('../components/SetFeatureHeightDialog.tsx'),
+  () => import('../dialogs/SetFeatureHeightDialog.tsx'),
 )
 const SetMaxHeightDialog = lazy(
-  () => import('../components/SetMaxHeightDialog.tsx'),
+  () => import('../dialogs/SetMaxHeightDialog.tsx'),
 )
 
 // Single source of truth for the (featureHeight, featureSpacing) pairs that

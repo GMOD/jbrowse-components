@@ -4,7 +4,7 @@ import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { ColorBy } from '../types.ts'
+import type { ColorBy } from '../../shared/types.ts'
 
 const SetModificationThresholdDialog = observer(
   function SetModificationThresholdDialog(props: {

@@ -4,15 +4,15 @@ import {
   type DrawBlock,
   type RenderState,
   bpToScreenX,
-} from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
   ARC_HEIGHT_MARGIN,
   arcLineColorPalette,
   getArcPalette,
-} from '../../shaders/palettes.ts'
+} from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 
 import type { ArcsUploadData } from './types.ts'
-import type { RGBColor } from '../../shaders/colors.ts'
+import type { RGBColor } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface DrawArcsOpts {

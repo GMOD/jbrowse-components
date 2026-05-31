@@ -1,6 +1,6 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
-import { fillColor } from '../shared/color.ts'
+import { fillColor } from '../../shared/color.ts'
 
 import type { RGBColor } from './colors.ts'
 

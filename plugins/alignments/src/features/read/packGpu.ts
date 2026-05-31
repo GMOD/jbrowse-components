@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as readShader from '../../shaders/slang/read.generated.ts'
+import * as readShader from '../../LinearAlignmentsDisplay/shaders/slang/read.generated.ts'
 
 import type { ReadUploadData } from '../../shared/uploadTypes.ts'
 

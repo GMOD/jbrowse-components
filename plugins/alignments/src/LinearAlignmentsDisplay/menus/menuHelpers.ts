@@ -1,7 +1,7 @@
 import type {
   ArcDirection,
   LinkedReadsMode,
-} from '../../LinearAlignmentsDisplay/constants.ts'
+} from '../constants.ts'
 
 // Single home for each mode-enum's user-visible labels, so menu code never
 // has to reverse-engineer a label from the stored value.

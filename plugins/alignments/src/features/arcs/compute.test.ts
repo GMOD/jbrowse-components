@@ -11,7 +11,7 @@ import {
   groupArcsByRef,
 } from './compute.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 function makePileupData(
   overrides: Partial<PileupDataResult> & {

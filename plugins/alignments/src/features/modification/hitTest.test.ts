@@ -3,7 +3,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { hitTestModification } from './hitTest.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 function makeModFlatbush(positions: number[], rows: number[]) {

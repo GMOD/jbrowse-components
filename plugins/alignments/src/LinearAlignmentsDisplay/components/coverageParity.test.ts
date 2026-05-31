@@ -7,18 +7,18 @@ import {
 } from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/core/gpu/hal'
 
-import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
+import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
 import {
   ALIGNMENTS_PASSES,
   GpuAlignmentsRenderer,
-} from './GpuAlignmentsRenderer.ts'
+} from '../renderers/GpuAlignmentsRenderer.ts'
 
 import type {
   CoverageUploadData,
   ReadUploadData,
   RenderState,
-} from './rendererTypes.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+} from '../renderers/rendererTypes.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,

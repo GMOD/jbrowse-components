@@ -1,7 +1,7 @@
 import { SNP_HIT_MAX_BP_PER_PX, performHitTest } from './hitTestPipeline.ts'
 
 import type { HitTestOptions } from './hitTestPipeline.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 function makeRpcData(

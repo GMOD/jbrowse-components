@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as interbaseShader from '../../shaders/slang/interbaseHistogram.generated.ts'
+import * as interbaseShader from '../../LinearAlignmentsDisplay/shaders/slang/interbaseHistogram.generated.ts'
 
 export const PASS_INTERBASE = 'interbase'
 

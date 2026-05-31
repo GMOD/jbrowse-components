@@ -7,7 +7,7 @@ import CramAdapterF from './CramAdapter/index.ts'
 import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
-import PileupDataRPCMethodsF from './RenderPileupDataRPC/index.ts'
+import PileupDataRPCMethodsF from './RenderAlignmentDataRPC/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -39,5 +39,5 @@ export {
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
-} from './shared/menus/index.ts'
+} from './LinearAlignmentsDisplay/menus/index.ts'
 export { CoverageTooltipContents } from './LinearAlignmentsDisplay/components/AlignmentsTooltip.tsx'

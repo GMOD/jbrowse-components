@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as gapShader from '../../shaders/slang/gap.generated.ts'
+import * as gapShader from '../../LinearAlignmentsDisplay/shaders/slang/gap.generated.ts'
 
 import type { GapUploadData } from './types.ts'
 

@@ -2,7 +2,7 @@ import { drawIndicators } from '@jbrowse/alignments-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
-import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawIndicatorCanvas(

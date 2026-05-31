@@ -11,7 +11,7 @@ import {
   getInsertionType,
 } from '../constants.ts'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 export interface VisibleLabel {
   type: 'deletion' | 'insertion' | 'softclip' | 'hardclip' | 'mismatch'

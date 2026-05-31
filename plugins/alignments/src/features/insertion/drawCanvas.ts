@@ -2,12 +2,12 @@ import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowY,
-} from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
 import type {
   DrawBlock,
   RenderState,
-} from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const LONG_INSERTION_MIN_LENGTH = 10

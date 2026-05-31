@@ -21,7 +21,7 @@ import {
 } from './compute.ts'
 
 import type { ReadEntry } from './compute.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Minimal PileupDataResult with only the fields used by these functions.
 function makeData(opts: {

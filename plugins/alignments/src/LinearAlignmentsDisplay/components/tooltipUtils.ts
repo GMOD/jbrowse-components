@@ -1,7 +1,7 @@
 import { countSnpsAtPosition } from '@jbrowse/alignments-core'
 import { toLocale } from '@jbrowse/core/util'
 
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type {
   CigarHitResult,
   SashimiArcHitResult,

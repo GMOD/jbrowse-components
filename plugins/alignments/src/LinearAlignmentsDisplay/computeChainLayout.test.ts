@@ -5,7 +5,7 @@ import {
   readYsFromRowMap,
 } from './computeChainLayout.ts'
 
-import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 
 function makeChainData(opts: {
   regionStart: number

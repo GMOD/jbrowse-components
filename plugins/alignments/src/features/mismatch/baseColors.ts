@@ -1,7 +1,7 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
-import type { RenderState } from '../../LinearAlignmentsDisplay/components/rendererTypes.ts'
-import type { RGBColor } from '../../shaders/colors.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RGBColor } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
 import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 
 // Canvas-side equivalents of the GPU palette swap in GpuAlignmentsRenderer.writeUniforms.

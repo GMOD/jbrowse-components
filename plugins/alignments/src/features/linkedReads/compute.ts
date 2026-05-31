@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/alignments-core'
 
 import type { LinkedReadLinesUploadData } from './types.ts'
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Color type indices for linked-read connecting lines + bezier curves.
 // Shared by main-thread (Canvas2D / SVG) and the GPU palette uniform.

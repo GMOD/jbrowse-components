@@ -1,9 +1,9 @@
-import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
-import type { ColorPalette } from '../../shaders/colors.ts'
+import type { ColorPalette } from '../shaders/colors.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
-export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
+export type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 export type {
   CigarUploadData,

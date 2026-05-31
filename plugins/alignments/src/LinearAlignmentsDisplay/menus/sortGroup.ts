@@ -4,14 +4,14 @@ import { getSession } from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
-import type { SortedBy } from '../types.ts'
+import type { SortedBy } from '../../shared/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SortByTagDialog = lazy(
-  () => import('../../LinearAlignmentsDisplay/components/SortByTagDialog.tsx'),
+  () => import('../dialogs/SortByTagDialog.tsx'),
 )
 const GroupByDialog = lazy(
-  () => import('../../LinearAlignmentsDisplay/components/GroupByDialog.tsx'),
+  () => import('../dialogs/GroupByDialog.tsx'),
 )
 
 interface SortByModel {
@@ -84,7 +84,6 @@ export function getSortByMenuItem(model: SortByModel) {
           ])
         },
       },
-      { type: 'divider' as const },
       {
         label: 'Clear sort',
         disabled: !model.sortedBy,

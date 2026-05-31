@@ -35,7 +35,7 @@ import { ColorScheme } from './constants.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import { overlayReadTagColors } from './readTagColors.ts'
-import { buildLaidOutPileupMap } from '../RenderPileupDataRPC/sortLayout.ts'
+import { buildLaidOutPileupMap } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
   arcsToRegionResult,
@@ -52,27 +52,29 @@ import {
   getCoverageMenuItem,
   getFiltersMenuItem,
   getGroupByMenuItem,
+  getModificationsMenuItem,
   getReadsMenuItem,
   getSortByMenuItem,
   radioModeMenuItem,
-} from '../shared/menus/index.ts'
+  radioModeSubMenu,
+} from './menus/index.ts'
 import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 
-import type { ColorPalette } from './components/AlignmentsRenderer.ts'
+import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type {
   ArcDirection,
   LinkedReadsMode,
   ReadConnectionsMode,
 } from './constants.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
-import type { AlignmentsRenderingBackend } from './components/rendererTypes.ts'
+import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
-import type { PileupDataResult } from '../RenderPileupDataRPC/types'
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 import type { ArcsDataResult } from '../features/arcs/compute.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
-import type { CompactnessLevel } from '../shared/menus/featureSize.ts'
+import type { CompactnessLevel } from './menus/featureSize.ts'
 import type {
   ArcColorByType,
   ColorBy,
@@ -1854,52 +1856,34 @@ export default function stateModelFactory(
          * Track menu items
          */
         trackMenuItems() {
-          // Top-level shape, ordered by user frequency:
-          //   1. Color by      — most-used (rebound on every visit to highlight a
-          //      finding)
-          //   2. Sort, filter, group — data subsetting + ordering operations
-          //   3. Reads         — visual settings for the pileup body
-          //   4. Coverage      — visual + scale settings for the coverage band
-          //   5. Read connections — linked-reads / pair-split arcs / sashimi overlays
-          const items: MenuItem[] = [
+          return [
             getColorByMenuItem(self, {
-              showLinkedReads: self.linkedReads !== 'off',
-              modifications: self,
               includeTagOption: true,
               arcsState: self,
             }),
-            {
-              label: 'Sort, filter, group',
-              icon: SwapVertIcon,
-              type: 'subMenu' as const,
-              subMenu: [
-                getSortByMenuItem(self),
-                getFiltersMenuItem(self, { showPairFilters: self.isChainMode }),
-                getGroupByMenuItem(self),
-              ],
-            },
+            getModificationsMenuItem(self),
+            getSortByMenuItem(self),
+            getFiltersMenuItem(self, { showPairFilters: self.isChainMode }),
+            getGroupByMenuItem(self),
             getReadsMenuItem(self),
             getCoverageMenuItem(self),
+            radioModeMenuItem(
+              'Linked reads',
+              LINKED_READS_OPTIONS,
+              self.linkedReads,
+              v => {
+                self.setLinkedReads(v)
+              },
+            ),
             {
-              label: 'Read connections',
+              label: 'Arcs',
               type: 'subMenu' as const,
               subMenu: [
-                radioModeMenuItem(
-                  'Linked reads',
-                  LINKED_READS_OPTIONS,
-                  self.linkedReads,
-                  v => {
-                    self.setLinkedReads(v)
-                  },
-                ),
-                radioModeMenuItem(
-                  'Pair & split arcs',
+                ...radioModeSubMenu(
                   READ_CONNECTIONS_OPTIONS,
                   self.readConnections === 'off'
                     ? 'off'
-                    : `${self.readConnections}_${
-                        self.readConnectionsDown ? 'down' : 'up'
-                      }`,
+                    : `${self.readConnections}_${self.readConnectionsDown ? 'down' : 'up'}`,
                   v => {
                     if (v === 'off') {
                       self.setReadConnections('off')
@@ -1925,6 +1909,7 @@ export default function stateModelFactory(
                 },
                 {
                   label: 'Show inter-chromosomal pairs',
+                  disabled: self.readConnections === 'off',
                   helpText: 'reads whose mate maps to a different chromosome',
                   type: 'checkbox' as const,
                   checked: self.drawInter,
@@ -1932,19 +1917,17 @@ export default function stateModelFactory(
                     self.setDrawInter(!self.drawInter)
                   },
                 },
-                radioModeMenuItem(
-                  'Sashimi arcs',
-                  ARC_DIRECTION_OPTIONS,
-                  self.sashimiArcs,
-                  v => {
-                    self.setSashimiArcs(v)
-                  },
-                ),
               ],
             },
-          ]
-
-          return items
+            radioModeMenuItem(
+              'Sashimi arcs',
+              ARC_DIRECTION_OPTIONS,
+              self.sashimiArcs,
+              v => {
+                self.setSashimiArcs(v)
+              },
+            ),
+          ] satisfies MenuItem[]
         },
 
         /**

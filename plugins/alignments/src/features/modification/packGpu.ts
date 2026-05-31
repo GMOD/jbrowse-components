@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
-import * as modificationShader from '../../shaders/slang/modification.generated.ts'
+import * as modificationShader from '../../LinearAlignmentsDisplay/shaders/slang/modification.generated.ts'
 
 import type { ModificationUploadData } from './types.ts'
 

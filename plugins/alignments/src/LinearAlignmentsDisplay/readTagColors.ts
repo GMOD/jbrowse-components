@@ -1,6 +1,6 @@
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
-import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy } from '../shared/types.ts'
 
 type ColorRgbTuple = [number, number, number]
