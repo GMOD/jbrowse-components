@@ -10,7 +10,7 @@ export type LgvTrack = string | Record<string, unknown>
 
 export interface LgvSnapshotOpts {
   name: string
-  // base snapshot name; `targetted_`/`fullpage_` prefixes are added by
+  // base snapshot name; `targeted_`/`fullpage_` prefixes are added by
   // dualSnapshot, a trailing `-canvas` is stripped
   snapshot: string
   tracks: LgvTrack[]

@@ -5,11 +5,9 @@ import Palette from '@mui/icons-material/Palette'
 
 import { modificationData } from '../../shared/modificationData.ts'
 
-import type { ColorBy } from '../../shared/types.ts'
+import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
 
-const ColorByTagDialog = lazy(
-  () => import('../dialogs/ColorByTagDialog.tsx'),
-)
+const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
 const SetModificationThresholdDialog = lazy(
   () => import('../dialogs/SetModificationThresholdDialog.tsx'),
 )
@@ -25,11 +23,6 @@ export interface ModificationsModel extends ColorByModel {
   modificationThreshold: number
 }
 
-interface ArcsState {
-  arcColorByType: ArcColorByType
-  setColorByType: (type: ArcColorByType) => void
-}
-
 interface ColorOption {
   label: string
   type: string
@@ -38,7 +31,6 @@ interface ColorOption {
 interface ColorByMenuOptions {
   includeTagOption?: boolean
   colorOptions?: ColorOption[]
-  arcsState?: ArcsState
 }
 
 const basicColorOptions: ColorOption[] = [
@@ -57,22 +49,36 @@ const pairedEndColorOptions: ColorOption[] = [
   { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
 ]
 
-const arcColorOptions: { label: string; type: ArcColorByType }[] = [
-  { label: 'Arc: Insert size and orientation', type: 'insertSizeAndOrientation' },
+export const arcColorOptions: { label: string; type: ArcColorByType }[] = [
+  {
+    label: 'Arc: Insert size and orientation',
+    type: 'insertSizeAndOrientation',
+  },
   { label: 'Arc: Insert size', type: 'insertSize' },
   { label: 'Arc: Orientation', type: 'orientation' },
 ]
 
 function getModificationsSubMenu(model: ModificationsModel) {
-  const { modificationThreshold, modificationsReady, visibleModificationTypes } =
-    model
+  const {
+    modificationThreshold,
+    modificationsReady,
+    visibleModificationTypes,
+  } = model
 
   if (!modificationsReady) {
-    return [{ label: 'Loading modifications...', disabled: true, onClick: () => {} }]
+    return [
+      { label: 'Loading modifications...', disabled: true, onClick: () => {} },
+    ]
   }
 
   if (!visibleModificationTypes.length) {
-    return [{ label: 'No modifications currently visible', disabled: true, onClick: () => {} }]
+    return [
+      {
+        label: 'No modifications currently visible',
+        disabled: true,
+        onClick: () => {},
+      },
+    ]
   }
 
   const modName = (key: string) => modificationData[key]?.name ?? key
@@ -88,7 +94,8 @@ function getModificationsSubMenu(model: ModificationsModel) {
     type: 'radio' as const,
     checked:
       model.colorBy.type === 'modifications' &&
-      model.colorBy.modifications?.isolatedModification === isolatedModification &&
+      model.colorBy.modifications?.isolatedModification ===
+        isolatedModification &&
       !!model.colorBy.modifications?.twoColor === twoColor,
     onClick: () => {
       model.setColorScheme({
@@ -135,10 +142,10 @@ function getModificationsSubMenu(model: ModificationsModel) {
 }
 
 export function getColorByMenuItem(
-  model: ColorByModel,
+  model: ModificationsModel,
   options: ColorByMenuOptions = {},
 ) {
-  const { includeTagOption = false, colorOptions, arcsState } = options
+  const { includeTagOption = false, colorOptions } = options
 
   const colorRadio = ({ label, type }: ColorOption) => ({
     label,
@@ -151,7 +158,10 @@ export function getColorByMenuItem(
 
   const headItems = colorOptions
     ? colorOptions.map(colorRadio)
-    : [...basicColorOptions.map(colorRadio), ...pairedEndColorOptions.map(colorRadio)]
+    : [
+        ...basicColorOptions.map(colorRadio),
+        ...pairedEndColorOptions.map(colorRadio),
+      ]
 
   const tagItem = includeTagOption
     ? [
@@ -169,28 +179,20 @@ export function getColorByMenuItem(
       ]
     : []
 
-  const arcItems = arcsState
-    ? arcColorOptions.map(({ label, type }) => ({
-        label,
-        type: 'radio' as const,
-        checked: arcsState.arcColorByType === type,
-        onClick: () => {
-          arcsState.setColorByType(type)
-        },
-      }))
-    : []
+  const modItem =
+    model.modificationsReady !== undefined
+      ? [
+          {
+            label: 'Modifications...',
+            type: 'subMenu' as const,
+            subMenu: getModificationsSubMenu(model),
+          },
+        ]
+      : []
 
   return {
     label: 'Color by...',
     icon: Palette,
-    subMenu: [...headItems, ...tagItem, ...arcItems],
-  }
-}
-
-export function getModificationsMenuItem(model: ModificationsModel) {
-  return {
-    label: 'Modifications...',
-    type: 'subMenu' as const,
-    subMenu: getModificationsSubMenu(model),
+    subMenu: [...headItems, ...tagItem, ...modItem],
   }
 }

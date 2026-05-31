@@ -157,7 +157,7 @@ export async function canvasSnapshot(
 // Capture BOTH a targeted (canvas-element) and a full-page snapshot for one
 // test. Targeted isolates renderer fidelity (low variance); full-page adds
 // ruler / track-label / layout / multi-track integration coverage. All targeted
-// files are `targetted_<base>`, all full-page files are `fullpage_<base>`, where
+// files are `targeted_<base>`, all full-page files are `fullpage_<base>`, where
 // <base> is `name` with a trailing `-canvas` stripped. The canvas shot runs
 // first, so it gates the full-page capture on paint-complete (canvasSnapshot
 // waits for the `*_done` selector).
@@ -169,7 +169,7 @@ export async function dualSnapshot(
   { assertContent = true }: { assertContent?: boolean } = {},
 ) {
   const base = name.replace(/-canvas$/, '')
-  await canvasSnapshot(page, `targetted_${base}`, selector, threshold, {
+  await canvasSnapshot(page, `targeted_${base}`, selector, threshold, {
     assertContent,
   })
   await pageSnapshot(page, `fullpage_${base}`)

@@ -1,13 +1,6 @@
-import { lazy } from 'react'
-
-import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { COMPACTNESS_PRESETS, getSetMaxHeightMenuItem } from './featureSize.ts'
-
-const SetFeatureHeightDialog = lazy(
-  () => import('../dialogs/SetFeatureHeightDialog.tsx'),
-)
+import { getSetMaxHeightMenuItem } from './featureSize.ts'
 
 interface ReadsModel {
   featureHeightSetting: number
@@ -37,30 +30,10 @@ interface ReadsModel {
 
 export function getReadsMenuItem(model: ReadsModel) {
   return {
-    label: 'Reads',
+    label: 'Show...',
     icon: VisibilityIcon,
     type: 'subMenu' as const,
     subMenu: [
-      ...Object.values(COMPACTNESS_PRESETS).map(preset => ({
-        label: preset.label,
-        type: 'radio' as const,
-        checked:
-          model.featureHeightSetting === preset.featureHeight &&
-          model.featureSpacing === preset.featureSpacing,
-        onClick: () => {
-          model.setFeatureHeight(preset.featureHeight)
-          model.setFeatureSpacing(preset.featureSpacing)
-        },
-      })),
-      {
-        label: 'Custom height...',
-        onClick: () => {
-          getSession(model).queueDialog(handleClose => [
-            SetFeatureHeightDialog,
-            { model, handleClose },
-          ])
-        },
-      },
       {
         label: 'Show mismatches',
         type: 'checkbox' as const,
@@ -86,7 +59,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         },
       },
       {
-        label: 'Fade mismatches by base quality',
+        label: 'Show mismatches faded by base quality',
         type: 'checkbox' as const,
         checked: model.mismatchAlpha,
         onClick: () => {
@@ -102,7 +75,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         },
       },
       {
-        label: 'Color supplementary segments by primary strand',
+        label: 'Show supp. alignments colored by primary strand',
         type: 'checkbox' as const,
         checked: model.flipStrandLongReadChains,
         onClick: () => {

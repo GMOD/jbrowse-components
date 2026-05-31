@@ -1,7 +1,4 @@
-import type {
-  ArcDirection,
-  LinkedReadsMode,
-} from '../constants.ts'
+import type { ArcDirection, LinkedReadsMode } from '../constants.ts'
 
 // Single home for each mode-enum's user-visible labels, so menu code never
 // has to reverse-engineer a label from the stored value.
@@ -18,8 +15,8 @@ export const READ_CONNECTIONS_OPTIONS = [
   { value: 'off', label: 'Off' },
   { value: 'arc_up', label: 'Arcs (overlap coverage)' },
   { value: 'arc_down', label: 'Arcs (below coverage)' },
-  { value: 'samplot_up', label: 'Samplot (overlap coverage)' },
-  { value: 'samplot_down', label: 'Samplot (below coverage)' },
+  { value: 'samplot_up', label: 'Read cloud (overlap coverage)' },
+  { value: 'samplot_down', label: 'Read cloud (below coverage)' },
 ]
 
 export const LINKED_READS_OPTIONS: {

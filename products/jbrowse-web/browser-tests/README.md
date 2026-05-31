@@ -89,7 +89,7 @@ const suite: TestSuite = {
   tests: [
     lgvSnapshotTest({
       name: 'BED track renders',
-      snapshot: 'my-bed', // -> targetted_my-bed.png + fullpage_my-bed.png
+      snapshot: 'my-bed', // -> targeted_my-bed.png + fullpage_my-bed.png
       loc: 'ctgA:1-50000',
       tracks: ['bed_genes'],
       // doneTestId: 'pileup-display-done',  // for alignments/wiggle displays

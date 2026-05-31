@@ -7,12 +7,8 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import type { SortedBy } from '../../shared/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-const SortByTagDialog = lazy(
-  () => import('../dialogs/SortByTagDialog.tsx'),
-)
-const GroupByDialog = lazy(
-  () => import('../dialogs/GroupByDialog.tsx'),
-)
+const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
+const GroupByDialog = lazy(() => import('../dialogs/GroupByDialog.tsx'))
 
 interface SortByModel {
   sortedBy?: SortedBy

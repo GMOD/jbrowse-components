@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react'
 import type React from 'react'
 
-import { toRgb } from '../shaders/colors.ts'
 import { fillColor } from '../../shared/color.ts'
+import { toRgb } from '../shaders/colors.ts'
 
-import type { ColorPalette } from '../shaders/colors.ts'
 import type { CigarCoords } from '../../shared/hitTestTypes.ts'
+import type { ColorPalette } from '../shaders/colors.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
 

@@ -73,7 +73,11 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
               onChange={event => {
                 setFlag(toggleBit(flag, index, event.target.checked))
               }}
-              inputProps={{ id: `flag_${index}` }}
+              slotProps={{
+                input: {
+                  id: `flag_${index}`,
+                },
+              }}
               size="small"
               sx={{ m: 0, p: 0 }}
             />

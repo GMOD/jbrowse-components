@@ -44,10 +44,18 @@ function setup() {
 
 test('bookmark bands render and respect bookmarkHighlightsVisible', () => {
   const model = setup()
-  const { container, rerender } = render(<DotplotHighlight model={model} />)
+  const { container, rerender } = render(
+    <svg>
+      <DotplotHighlight model={model} />
+    </svg>,
+  )
   expect(container.querySelectorAll('rect').length).toBeGreaterThan(0)
 
   model.setBookmarkHighlightsVisible(false)
-  rerender(<DotplotHighlight model={model} />)
+  rerender(
+    <svg>
+      <DotplotHighlight model={model} />
+    </svg>,
+  )
   expect(container.querySelectorAll('rect')).toHaveLength(0)
 })

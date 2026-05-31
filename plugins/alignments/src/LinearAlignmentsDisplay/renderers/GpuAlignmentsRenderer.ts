@@ -3,7 +3,6 @@ import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
-import { getChainBounds, toClipRect } from '../components/chainOverlayUtils.ts'
 import {
   buildReadIdToIndex,
   computeBlockHeights,
@@ -75,6 +74,8 @@ import {
   SOFTCLIP_BASES_PASS,
 } from '../../features/softclip/packBases.ts'
 import { uploadSoftclipBases } from '../../features/softclip/uploadBases.ts'
+import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
+import { getChainBounds, toClipRect } from '../components/chainOverlayUtils.ts'
 import {
   ARC_HEIGHT_MARGIN,
   arcLineColorPalette,
@@ -83,9 +84,7 @@ import {
 } from '../shaders/palettes.ts'
 import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../shaders/slang/read.generated.ts'
-import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
 
-import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
@@ -96,6 +95,7 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
+import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 // Shader strides — every pass shares the same Uniforms struct (see

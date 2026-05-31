@@ -43,38 +43,39 @@ import {
   groupArcsByRef,
 } from '../features/arcs/compute.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
+import { getColorForModification } from '../util.ts'
+import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
+import { openCigarWidget } from './components/openFeatureWidget.ts'
 import {
   ARC_DIRECTION_OPTIONS,
   COMPACTNESS_PRESETS,
   LINKED_READS_OPTIONS,
   READ_CONNECTIONS_OPTIONS,
+  arcColorOptions,
   getColorByMenuItem,
   getCoverageMenuItem,
+  getFeatureHeightMenuItem,
   getFiltersMenuItem,
   getGroupByMenuItem,
-  getModificationsMenuItem,
   getReadsMenuItem,
   getSortByMenuItem,
   radioModeMenuItem,
   radioModeSubMenu,
 } from './menus/index.ts'
-import { getColorForModification } from '../util.ts'
-import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
-import { openCigarWidget } from './components/openFeatureWidget.ts'
 
-import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type {
   ArcDirection,
   LinkedReadsMode,
   ReadConnectionsMode,
 } from './constants.ts'
+import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
-import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
+import type { CompactnessLevel } from './menus/featureSize.ts'
+import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { ArcsDataResult } from '../features/arcs/compute.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
-import type { CompactnessLevel } from './menus/featureSize.ts'
 import type {
   ArcColorByType,
   ColorBy,
@@ -1859,44 +1860,75 @@ export default function stateModelFactory(
           return [
             getColorByMenuItem(self, {
               includeTagOption: true,
-              arcsState: self,
             }),
-            getModificationsMenuItem(self),
             getSortByMenuItem(self),
             getFiltersMenuItem(self, { showPairFilters: self.isChainMode }),
             getGroupByMenuItem(self),
             getReadsMenuItem(self),
+            getFeatureHeightMenuItem(self),
             getCoverageMenuItem(self),
-            radioModeMenuItem(
-              'Linked reads',
-              LINKED_READS_OPTIONS,
-              self.linkedReads,
-              v => {
-                self.setLinkedReads(v)
-              },
-            ),
             {
-              label: 'Arcs',
+              label: 'Read connections',
               type: 'subMenu' as const,
               subMenu: [
-                ...radioModeSubMenu(
-                  READ_CONNECTIONS_OPTIONS,
-                  self.readConnections === 'off'
-                    ? 'off'
-                    : `${self.readConnections}_${self.readConnectionsDown ? 'down' : 'up'}`,
+                radioModeMenuItem(
+                  'Linked reads',
+                  LINKED_READS_OPTIONS,
+                  self.linkedReads,
                   v => {
-                    if (v === 'off') {
-                      self.setReadConnections('off')
-                    } else {
-                      const [mode, dir] = v.split('_') as [
-                        ReadConnectionsMode,
-                        string,
-                      ]
-                      self.setReadConnections(mode)
-                      self.setReadConnectionsDown(dir === 'down')
-                    }
+                    self.setLinkedReads(v)
                   },
                 ),
+                {
+                  label: 'Arcs',
+                  type: 'subMenu' as const,
+                  subMenu: [
+                    ...radioModeSubMenu(
+                      ARC_DIRECTION_OPTIONS,
+                      self.sashimiArcs,
+                      v => {
+                        self.setSashimiArcs(v)
+                      },
+                    ),
+                    {
+                      label: 'Arc color',
+                      type: 'subMenu' as const,
+                      subMenu: arcColorOptions.map(({ label, type }) => ({
+                        label,
+                        type: 'radio' as const,
+                        checked: self.arcColorByType === type,
+                        onClick: () => {
+                          self.setColorByType(type)
+                        },
+                      })),
+                    },
+                  ],
+                },
+                {
+                  label: 'Read cloud',
+                  type: 'subMenu' as const,
+                  subMenu: radioModeSubMenu(
+                    [
+                      { value: 'off', label: 'Off' },
+                      { value: 'samplot_up', label: 'Overlap coverage' },
+                      { value: 'samplot_down', label: 'Below coverage' },
+                    ],
+                    self.readConnections === 'samplot'
+                      ? self.readConnectionsDown
+                        ? 'samplot_down'
+                        : 'samplot_up'
+                      : 'off',
+                    v => {
+                      if (v === 'off') {
+                        self.setReadConnections('off')
+                      } else {
+                        const [mode, dir] = v.split('_') as ['samplot', string]
+                        self.setReadConnections(mode)
+                        self.setReadConnectionsDown(dir === 'down')
+                      }
+                    },
+                  ),
+                },
                 {
                   label: 'Show long-range pairs',
                   disabled: self.readConnections === 'off',
@@ -1919,14 +1951,6 @@ export default function stateModelFactory(
                 },
               ],
             },
-            radioModeMenuItem(
-              'Sashimi arcs',
-              ARC_DIRECTION_OPTIONS,
-              self.sashimiArcs,
-              v => {
-                self.setSashimiArcs(v)
-              },
-            ),
           ] satisfies MenuItem[]
         },
 

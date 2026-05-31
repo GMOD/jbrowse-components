@@ -3,7 +3,6 @@ import {
   prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 
-import { getChainBounds } from '../components/chainOverlayUtils.ts'
 import {
   type AlignmentsRenderingBackend,
   type AlignmentsSources,
@@ -43,6 +42,7 @@ import { drawReads } from '../../features/read/drawCanvas.ts'
 import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
 import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
 import { drawHardclips, drawSoftclips } from '../../shared/drawClipBars.ts'
+import { getChainBounds } from '../components/chainOverlayUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'

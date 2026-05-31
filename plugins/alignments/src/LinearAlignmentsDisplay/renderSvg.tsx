@@ -9,12 +9,12 @@ import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
-import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import TlenAxisLabel from './components/TlenAxisLabel.tsx'
 import { makeBpToScreenX } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { computePileupBezierArcsFromModel } from './components/pileupBezierArcs.ts'
+import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 import { getContrastBaseMap } from '../shared/util.ts'
 

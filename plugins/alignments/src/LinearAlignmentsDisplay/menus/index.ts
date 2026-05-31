@@ -1,4 +1,4 @@
-export { getColorByMenuItem, getModificationsMenuItem } from './colorBy.ts'
+export { arcColorOptions, getColorByMenuItem } from './colorBy.ts'
 export type { ModificationsModel } from './colorBy.ts'
 export { getCoverageMenuItem } from './coverage.ts'
 export {

@@ -5,9 +5,7 @@ import ClearAllIcon from '@mui/icons-material/ClearAll'
 
 import type { FilterBy } from '../../shared/types.ts'
 
-const FilterByTagDialog = lazy(
-  () => import('../dialogs/FilterByTagDialog.tsx'),
-)
+const FilterByTagDialog = lazy(() => import('../dialogs/FilterByTagDialog.tsx'))
 
 interface FiltersModel {
   filterBy: FilterBy
