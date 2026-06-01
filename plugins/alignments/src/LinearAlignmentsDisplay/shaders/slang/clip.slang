@@ -14,9 +14,8 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 struct Instance {
   uint  position  : ATTR0;
   uint  y         : ATTR1;
-  uint  length    : ATTR2;
-  float frequency : ATTR3;
-  uint  kind      : ATTR4;  // 0 = softclip, 1 = hardclip
+  float frequency : ATTR2;
+  uint  kind      : ATTR3;  // 0 = softclip, 1 = hardclip
 };
 
 struct VsOut {

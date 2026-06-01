@@ -36,13 +36,11 @@ export function packClips(data: CigarUploadData): ArrayBuffer {
   const f32 = new Float32Array(buf)
   const pos = data.interbasePositions
   const ys = data.interbaseYs
-  const lens = data.interbaseLengths
   const freq = data.interbaseFrequencies
   for (let i = insEnd; i < hcEnd; i++) {
     const o = (i - insEnd) * s32
     u32[o + F.position] = pos[i]!
     u32[o + F.y] = ys[i]!
-    u32[o + F.length] = lens[i]!
     f32[o + F.frequency] = freq[i]! / 255
     u32[o + F.kind] = i < scEnd ? CLIP_KIND_SOFT : CLIP_KIND_HARD
   }

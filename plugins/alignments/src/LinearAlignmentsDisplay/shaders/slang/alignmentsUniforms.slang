@@ -150,6 +150,15 @@ public float2 pileupY(float row, Uniforms u) {
   return float2(topClip - yTop * px2clip, topClip - yBot * px2clip);
 }
 
+// Screen-pixel Y of a pileup row's vertical center. Algebraically the
+// midpoint of pileupY() — kept as one helper so the linked-read connecting
+// lines and the pileup quads can't drift, and so the rangeY0/scrollTop split
+// lives in exactly one place (writeUniforms uploads them equal).
+public float pileupRowCenterPx(float row, Uniforms u) {
+  float rowH = u.featHeight + u.featSpacing;
+  return u.covOffset + row * rowH + u.featHeight * 0.5 - u.rangeY0;
+}
+
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip
 // 3=hardclip (anything else falls through to hardclip).
 public float3 clipKindColor(float ct, Uniforms u) {

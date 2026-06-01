@@ -44,10 +44,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float y = (v == 0u) ? inst.y1 : inst.y2;
 
   float sx = hpClipX(hpSplitUint(bp), u);
-  float rowH = u.featHeight + u.featSpacing;
-  float rowCenter = u.covOffset + y * rowH + u.featHeight * 0.5 - u.scrollTop;
   float px2clip = 2.0 / u.canvasH;
-  float sy = 1.0 - rowCenter * px2clip;
+  float sy = 1.0 - pileupRowCenterPx(y, u) * px2clip;
 
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
   uint idx = uint(inst.colorType + 0.5);

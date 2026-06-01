@@ -28,9 +28,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
   float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
 
-  float rowH = u.featHeight + u.featSpacing;
-  float rowCenter = u.covOffset + inst.y * rowH + u.featHeight * 0.5 - u.scrollTop;
-  float yTop = floor(rowCenter - 0.5);
+  float yTop = floor(pileupRowCenterPx(inst.y, u) - 0.5);
   float yBot = yTop + 1.0;
   float px2clip = 2.0 / u.canvasH;
   float syTop = 1.0 - yTop * px2clip;

@@ -1,7 +1,7 @@
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import { qualityAbgr } from './colors.ts'
-import * as perBaseQualityShader from '../../LinearAlignmentsDisplay/shaders/slang/perBaseQuality.generated.ts'
+import * as perBaseQualityShader from '../../LinearAlignmentsDisplay/shaders/slang/packedColorQuad.generated.ts'
 
 import type { PerBaseQualityUploadData } from './types.ts'
 
