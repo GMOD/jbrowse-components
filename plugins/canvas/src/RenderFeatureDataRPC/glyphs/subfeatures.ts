@@ -7,10 +7,9 @@ import type { Feature } from '@jbrowse/core/util'
 
 const TRANSCRIPT_PADDING = 2
 
-function filterByGeneGlyphMode(
+function longestCodingTranscript(
   subfeatures: Feature[],
   transcriptTypes: string[],
-  mode: 'longest' | 'longestCoding',
 ): Feature[] {
   if (subfeatures.length <= 1) {
     return subfeatures
@@ -22,11 +21,9 @@ function filterByGeneGlyphMode(
   let candidates =
     transcriptSubfeatures.length > 0 ? transcriptSubfeatures : subfeatures
 
-  if (mode === 'longestCoding') {
-    const codingCandidates = candidates.filter(hasCodingSubfeature)
-    if (codingCandidates.length > 0) {
-      candidates = codingCandidates
-    }
+  const codingCandidates = candidates.filter(hasCodingSubfeature)
+  if (codingCandidates.length > 0) {
+    candidates = codingCandidates
   }
 
   const longest = candidates.reduce((a, b) =>
@@ -42,15 +39,11 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const heightPx = getFeatureHeightPx(config)
 
   let subfeatures = [...(feature.get('subfeatures') ?? [])]
-  if (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') {
-    subfeatures = filterByGeneGlyphMode(
-      subfeatures,
-      transcriptTypes,
-      geneGlyphMode,
-    )
+  if (geneGlyphMode === 'longestCoding') {
+    subfeatures = longestCodingTranscript(subfeatures, transcriptTypes)
   } else {
     // Sort coding transcripts first so they render on top in stacked layout.
-    // Skipped for longest/longestCoding which collapse to a single feature.
+    // Skipped for longestCoding which collapses to a single feature.
     const codingStatus = new Map(
       subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
     )

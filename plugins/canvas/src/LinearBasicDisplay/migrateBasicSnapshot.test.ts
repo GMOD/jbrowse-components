@@ -84,7 +84,7 @@ test('promotes track-prefixed settings into configOverrides', () => {
     trackShowLabels: false,
     trackShowDescriptions: true,
     trackSubfeatureLabels: 'overlay',
-    trackGeneGlyphMode: 'longest',
+    trackGeneGlyphMode: 'longestCoding',
     trackDisplayMode: 'compact',
     trackDisplayDirectionalChevrons: true,
   })
@@ -94,7 +94,7 @@ test('promotes track-prefixed settings into configOverrides', () => {
       showLabels: 'off',
       showDescriptions: true,
       subfeatureLabels: 'overlay',
-      geneGlyphMode: 'longest',
+      geneGlyphMode: 'longestCoding',
       displayMode: 'compact',
       displayDirectionalChevrons: true,
     },

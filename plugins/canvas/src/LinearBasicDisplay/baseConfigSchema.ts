@@ -138,11 +138,10 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         model: types.enumeration('geneGlyphMode', [
           'auto',
           'all',
-          'longest',
           'longestCoding',
         ]),
         description:
-          'Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longest" shows only the longest, "longestCoding" shows only the longest coding',
+          'Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript',
         defaultValue: 'auto',
       },
       /**

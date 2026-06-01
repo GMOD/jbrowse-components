@@ -171,7 +171,6 @@ export default function stateModelFactory(
                 [
                   { value: 'auto', label: 'Auto' },
                   { value: 'all', label: 'All transcripts' },
-                  { value: 'longest', label: 'Longest transcript' },
                   {
                     value: 'longestCoding',
                     label: 'Longest coding transcript',

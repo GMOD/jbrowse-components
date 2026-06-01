@@ -14,7 +14,7 @@ export interface DisplayConfig {
     | 'superCompact'
     | 'reducedRepresentation'
     | 'collapse'
-  geneGlyphMode: 'auto' | 'all' | 'longest' | 'longestCoding'
+  geneGlyphMode: 'auto' | 'all' | 'longestCoding'
   subfeatureLabels: 'none' | 'below' | 'overlay'
   transcriptTypes: string[]
   containerTypes: string[]
