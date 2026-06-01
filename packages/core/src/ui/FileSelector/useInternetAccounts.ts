@@ -20,8 +20,14 @@ export default function useInternetAccounts(rootModel?: AbstractRootModel) {
   const accountMap = Object.fromEntries(
     accounts.map(a => [a.internetAccountId, a]),
   )
+  // recentlyUsed is ordered most-recent-first; accounts absent from it rank
+  // last (indexOf returns -1, which would otherwise sort them ahead of index 0)
+  const rank = (id: string) => {
+    const idx = recentlyUsed.indexOf(id)
+    return idx === -1 ? Number.POSITIVE_INFINITY : idx
+  }
   const sortedIds = [...new Set(accounts.map(s => s.internetAccountId))].sort(
-    (a, b) => recentlyUsed.indexOf(a) - recentlyUsed.indexOf(b),
+    (a, b) => rank(a) - rank(b),
   )
 
   return {

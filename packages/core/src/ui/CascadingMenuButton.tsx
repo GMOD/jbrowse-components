@@ -5,6 +5,7 @@ import { IconButton } from '@mui/material'
 import CascadingMenu from './CascadingMenu.tsx'
 
 import type { MenuItemsGetter } from './CascadingMenu.tsx'
+import type { PopoverOrigin } from '@mui/material'
 
 function CascadingMenuButton({
   children,
@@ -32,14 +33,8 @@ function CascadingMenuButton({
     disabled?: boolean
     children?: React.ReactNode
   }>
-  anchorOrigin?: {
-    vertical: 'top' | 'center' | 'bottom'
-    horizontal: 'left' | 'center' | 'right'
-  }
-  transformOrigin?: {
-    vertical: 'top' | 'center' | 'bottom'
-    horizontal: 'left' | 'center' | 'right'
-  }
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
   marginThreshold?: number | null
   [key: string]: unknown
 }) {

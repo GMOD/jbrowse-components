@@ -79,14 +79,6 @@ export const paletteColors = {
   tableau10,
 }
 
-export {
-  category10,
-  dark2,
-  ggplot2Colors3,
-  ggplot2Colors4,
-  ggplot2Colors5,
-  ggplot2Colors6,
-  set1,
-  set2,
-  tableau10,
-}
+// only category10 and set1 are imported by name; the rest are reached through
+// paletteColors above
+export { category10, set1 }

@@ -31,6 +31,10 @@ const useStyles = makeStyles()({
 
 type PaletteType = keyof typeof paletteColors
 
+function isPaletteType(s: string): s is PaletteType {
+  return Object.hasOwn(paletteColors, s)
+}
+
 export function ColorPopover({
   anchorEl,
   onChange,
@@ -58,7 +62,10 @@ export default function ColorPicker({
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useLocalStorage('colorPickerPalette', 'set1')
-  const presetColors = paletteColors[val as keyof typeof paletteColors]
+  // a stale localStorage value (e.g. a palette since renamed/removed) would
+  // index to undefined and crash the swatch map below
+  const palette = isPaletteType(val) ? val : 'set1'
+  const presetColors = paletteColors[palette]
   const palettes = Object.keys(paletteColors)
   const [text, setText] = useState(color)
   const rgb = colord(color).toRgbString()
@@ -75,10 +82,9 @@ export default function ColorPicker({
       </div>
       <div style={{ width: 200, margin: 5 }}>
         <Select
-          value={val}
+          value={palette}
           onChange={event => {
-            const pal = event.target.value as PaletteType
-            setVal(pal)
+            setVal(event.target.value)
           }}
         >
           {palettes.map(p => (

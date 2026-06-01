@@ -1,4 +1,4 @@
-import { dot1, dot2, dot3 } from './loadingDotKeyframes.ts'
+import LoadingDots from './LoadingDots.tsx'
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()({
@@ -25,23 +25,6 @@ const useStyles = makeStyles()({
     fontSize: '0.8rem',
     fontWeight: 300,
   },
-  dots: {
-    display: 'inline-block',
-    width: '1em',
-    textAlign: 'left',
-    '& span': {
-      visibility: 'hidden',
-      '&:nth-of-type(1)': {
-        animation: `${dot1} 1.2s infinite`,
-      },
-      '&:nth-of-type(2)': {
-        animation: `${dot2} 1.2s infinite`,
-      },
-      '&:nth-of-type(3)': {
-        animation: `${dot3} 1.2s infinite`,
-      },
-    },
-  },
 })
 
 export default function LoadingOverlay({
@@ -60,11 +43,7 @@ export default function LoadingOverlay({
     >
       <span className={classes.text}>
         {statusMessage || 'Loading'}
-        <span className={classes.dots}>
-          <span>.</span>
-          <span>.</span>
-          <span>.</span>
-        </span>
+        <LoadingDots />
       </span>
     </span>
   )

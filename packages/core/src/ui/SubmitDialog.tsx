@@ -3,9 +3,9 @@ import { observer } from 'mobx-react'
 
 import Dialog from './Dialog.tsx'
 
-import type { DialogProps } from '@mui/material'
+import type { Props as DialogComponentProps } from './Dialog.tsx'
 
-interface Props extends DialogProps {
+export interface SubmitDialogProps extends DialogComponentProps {
   onCancel: () => void
   onSubmit: () => void
   cancelText?: string
@@ -13,7 +13,7 @@ interface Props extends DialogProps {
   submitDisabled?: boolean
 }
 
-const SubmitDialog = observer(function SubmitDialog(props: Props) {
+const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
   const {
     onSubmit,
     onCancel,

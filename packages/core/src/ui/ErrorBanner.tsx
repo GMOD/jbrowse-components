@@ -1,16 +1,10 @@
-import { Suspense, lazy, useState } from 'react'
-
 import RefreshIcon from '@mui/icons-material/Refresh'
-import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
 
 import RedErrorMessageBox from './RedErrorMessageBox.tsx'
+import StackTraceButton from './StackTraceButton.tsx'
 import { parseError } from './parseError.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
-
-const ErrorMessageStackTraceDialog = lazy(
-  () => import('./ErrorMessageStackTraceDialog.tsx'),
-)
 
 const useStyles = makeStyles()(theme => ({
   bg: {
@@ -40,21 +34,10 @@ function ErrorButtons({
   onReset?: () => void
 }) {
   const { classes } = useStyles()
-  const [showStack, setShowStack] = useState(false)
+  const hasStack = typeof error === 'object' && error && 'stack' in error
   return (
     <div className={classes.iconFloat}>
-      {typeof error === 'object' && error && 'stack' in error ? (
-        <Tooltip title="Show stack trace">
-          <IconButton
-            onClick={() => {
-              setShowStack(true)
-            }}
-            color="primary"
-          >
-            <ReportIcon />
-          </IconButton>
-        </Tooltip>
-      ) : null}
+      {hasStack ? <StackTraceButton error={error} color="primary" /> : null}
       {onReset ? (
         <Tooltip title="Retry">
           <IconButton
@@ -66,16 +49,6 @@ function ErrorButtons({
             <RefreshIcon />
           </IconButton>
         </Tooltip>
-      ) : null}
-      {showStack ? (
-        <Suspense fallback={null}>
-          <ErrorMessageStackTraceDialog
-            error={error}
-            onClose={() => {
-              setShowStack(false)
-            }}
-          />
-        </Suspense>
       ) : null}
     </div>
   )
@@ -89,13 +62,16 @@ function ErrorBanner({
   onReset?: () => void
 }) {
   const { classes } = useStyles()
-  const str = `${error}`
-  const str2 = str.indexOf('expected an instance of')
-  const str3 = str2 !== -1 ? str.slice(0, str2) : str
-  const { snapshotError, message } = parseError(str)
+  const errorText = `${error}`
+  // the "expected an instance of ..." tail from MST is noise; trim it from the
+  // displayed text (but still parse the full string below for the snapshot dump)
+  const instanceIdx = errorText.indexOf('expected an instance of')
+  const displayText =
+    instanceIdx === -1 ? errorText : errorText.slice(0, instanceIdx)
+  const { snapshotError, message } = parseError(errorText)
   return (
     <RedErrorMessageBox>
-      {str3.slice(0, 10000)}
+      {displayText.slice(0, 10000)}
       <ErrorButtons error={error} onReset={onReset} />
       {message ? <div className={classes.message}>{message}</div> : null}
       {snapshotError ? (

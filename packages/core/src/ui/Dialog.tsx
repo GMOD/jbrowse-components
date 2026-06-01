@@ -1,4 +1,4 @@
-import { isValidElement } from 'react'
+import { isValidElement, useMemo } from 'react'
 
 import CloseIcon from '@mui/icons-material/Close'
 import {
@@ -52,6 +52,22 @@ const Dialog = observer(function Dialog(props: Props) {
   const { titleNode, ...rest } = props
   const { title, header, children, onClose } = rest
   const theme = useTheme()
+  // content-box override xref https://github.com/GMOD/jbrowse-components/pull/3666
+  const dialogTheme = useMemo(
+    () =>
+      createTheme(theme, {
+        components: {
+          MuiInputBase: {
+            styleOverrides: {
+              input: {
+                boxSizing: 'content-box!important' as 'content-box',
+              },
+            },
+          },
+        },
+      }),
+    [theme],
+  )
 
   return (
     <MUIDialog {...rest}>
@@ -76,22 +92,7 @@ const Dialog = observer(function Dialog(props: Props) {
         <Divider />
 
         <ErrorBoundary FallbackComponent={DialogError}>
-          <ThemeProvider
-            theme={createTheme(theme, {
-              components: {
-                MuiInputBase: {
-                  styleOverrides: {
-                    input: {
-                      // xref https://github.com/GMOD/jbrowse-components/pull/3666
-                      boxSizing: 'content-box!important' as 'content-box',
-                    },
-                  },
-                },
-              },
-            })}
-          >
-            {children}
-          </ThemeProvider>
+          <ThemeProvider theme={dialogTheme}>{children}</ThemeProvider>
         </ErrorBoundary>
       </ScopedCssBaseline>
     </MUIDialog>

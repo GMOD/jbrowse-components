@@ -8,8 +8,11 @@ export async function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
   try {
     webgpu = !!(await navigator.gpu.requestAdapter())
   } catch {}
-  const webgl2 = !!document.createElement('canvas').getContext('webgl2')
-  return { webgpu, webgl2 }
+  // probe-only context; release it so feature detection doesn't hold a GPU
+  // context open for the rest of the session
+  const gl = document.createElement('canvas').getContext('webgl2')
+  gl?.getExtension('WEBGL_lose_context')?.loseContext()
+  return { webgpu, webgl2: !!gl }
 }
 
 export function preferredRenderer(c: GraphicsCapabilities) {

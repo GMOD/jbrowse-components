@@ -15,6 +15,7 @@ import HoverMenu from './HoverMenu.tsx'
 import { MenuItemEndDecoration } from './MenuItems.tsx'
 
 import type { MenuItem as JBMenuItem, MenuItemsGetter } from './MenuTypes.ts'
+import type { PopoverOrigin } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
 
@@ -247,14 +248,8 @@ export default function CascadingMenu({
   open: boolean
   onClose: () => void
   anchorEl?: Element | null
-  anchorOrigin?: {
-    vertical: 'top' | 'center' | 'bottom'
-    horizontal: 'left' | 'center' | 'right'
-  }
-  transformOrigin?: {
-    vertical: 'top' | 'center' | 'bottom'
-    horizontal: 'left' | 'center' | 'right'
-  }
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
   anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
   anchorPosition?: { top: number; left: number }
   slotProps?: { transition?: { onExit?: () => void } }
@@ -273,7 +268,7 @@ export default function CascadingMenu({
       anchorReference={anchorReference}
       anchorPosition={anchorPosition}
       slotProps={slotProps}
-      marginThreshold={marginThreshold ?? undefined}
+      marginThreshold={marginThreshold}
       style={style}
     >
       <CascadingMenuList
