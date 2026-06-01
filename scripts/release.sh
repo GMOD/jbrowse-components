@@ -73,9 +73,10 @@ for (const ws of ['packages', 'products', 'plugins']) {
 }
 "
 
-# Generate version.ts for packages that export it
-for pkg in products/jbrowse-cli products/jbrowse-react-app products/jbrowse-react-circular-genome-view products/jbrowse-react-linear-genome-view; do
-  echo "export const version = '$VERSION'" >$pkg/src/version.ts
+# Regenerate version.ts for every package that exports one, so it can never
+# drift from the package.json version bumped above
+for versionfile in $(git ls-files '*/src/version.ts'); do
+  echo "export const version = '$VERSION'" >"$versionfile"
 done
 
 # Commit, tag, push (publishing is handled by GitHub Actions)

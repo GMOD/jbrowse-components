@@ -117,7 +117,6 @@ export function getTrackConfigs(
     })
     .filter(track => {
       if (excludeSet.has(track.trackId)) {
-        // console.log(`Skipping ${track.trackId}: excluded via --exclude-tracks`)
         return false
       }
       if (!supported(track.adapter?.type)) {

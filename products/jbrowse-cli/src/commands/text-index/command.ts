@@ -96,7 +96,7 @@ export async function run(args?: string[]) {
     '$ jbrowse text-index --tracks=track1,track2,track3',
     '',
     '# indexes all tracks except specific trackIds',
-    '$ jbrowse text-index --exclude-tracks=track1,track2,track3',
+    '$ jbrowse text-index --excludeTracks=track1,track2,track3',
     '',
     "# indexes all tracks in a directory's config.json or in a specific config file",
     '$ jbrowse text-index --out /path/to/jb2/',

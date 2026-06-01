@@ -21,7 +21,7 @@ export function validateRequiredCommands(requiredCommands: string[]): void {
 
   if (missingCommands.length > 0) {
     throw new Error(
-      `Unable to run command, requires unix type environment with: ${requiredCommands.join(', ')}`,
+      `Unable to run command, requires a unix type environment with the following available: ${requiredCommands.join(', ')}. Missing: ${missingCommands.join(', ')}`,
     )
   }
 }

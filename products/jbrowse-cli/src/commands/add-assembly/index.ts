@@ -136,7 +136,12 @@ export async function run(args?: string[]) {
     return
   }
 
-  const argsSequence = positionals[0] || ''
+  const argsSequence = positionals[0]
+  if (!argsSequence) {
+    throw new Error(
+      'Missing required argument: sequence\nUsage: jbrowse add-assembly <sequence> [options]',
+    )
+  }
   const output = runFlags.target || runFlags.out || '.'
   const flags = {
     ...runFlags,

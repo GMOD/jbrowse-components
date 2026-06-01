@@ -80,8 +80,10 @@ export async function main(args: string[]) {
       process.exit(1)
     }
 
-    // Pass the remaining arguments to the command
-    const commandArgs = args.slice(1) // Remove the command name from args
+    // Pass everything after the command token to the command. Slicing from the
+    // command's actual position (rather than a hardcoded index 0) keeps this
+    // correct when a global flag precedes the command, e.g. `jbrowse -v create`
+    const commandArgs = args.slice(args.indexOf(commandName) + 1)
     await command(commandArgs)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
