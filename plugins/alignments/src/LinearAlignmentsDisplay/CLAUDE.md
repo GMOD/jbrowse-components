@@ -83,12 +83,13 @@ unified pass — do not reintroduce parallel SVG-only draw functions.
 
 ### Coverage paints before up-mode arcs (z-order must match the GPU)
 
-In `drawAlignmentBlocks` the up-mode (`!arcsDown`) paired-end arcs paint **after**
-coverage so arcs sit in front of the histogram. This mirrors the on-screen
-`GpuAlignmentsRenderer` pass order (coverage passes, then `PASS_ARCS`). The two
-renderers' draw order must stay in sync; swapping them puts arcs behind coverage
-in SVG export only — a path-specific regression that's invisible on screen.
-Down-mode arcs draw in their own band below coverage and are unaffected.
+In `drawAlignmentBlocks` the up-mode (`!arcsDown`) paired-end arcs paint
+**after** coverage so arcs sit in front of the histogram. This mirrors the
+on-screen `GpuAlignmentsRenderer` pass order (coverage passes, then
+`PASS_ARCS`). The two renderers' draw order must stay in sync; swapping them
+puts arcs behind coverage in SVG export only — a path-specific regression that's
+invisible on screen. Down-mode arcs draw in their own band below coverage and
+are unaffected.
 
 ### Two distinct "arc" concepts — keep them apart
 

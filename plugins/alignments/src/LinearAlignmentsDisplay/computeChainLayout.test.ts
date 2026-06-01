@@ -2,6 +2,7 @@ import {
   buildChainConnectingData,
   computeChainLayout,
   computeMultiRegionChainLayout,
+  overlapIntervals,
   readYsFromRowMap,
 } from './computeChainLayout.ts'
 
@@ -139,6 +140,8 @@ function makeChainData(opts: {
     simplexModifications: [],
     connectingLinePositions: new Uint32Array(0),
     connectingLineYs: new Uint16Array(0),
+    overlapPositions: new Uint32Array(0),
+    overlapYs: new Uint16Array(0),
     linkedReadLinePositions: new Uint32Array(0),
     linkedReadLineYs: new Uint16Array(0),
     linkedReadLineColorTypes: new Uint8Array(0),
@@ -480,5 +483,72 @@ describe('buildChainConnectingData', () => {
     const out = buildChainConnectingData(data, readYs)
     expect(out.connectingLinePositions[0]).toBe(900) // absolute minStart
     expect(out.connectingLinePositions[1]).toBe(1200) // absolute maxEnd
+  })
+})
+
+describe('overlapIntervals', () => {
+  test('disjoint spans produce no overlaps', () => {
+    expect(
+      overlapIntervals([
+        { start: 0, end: 100 },
+        { start: 100, end: 200 },
+      ]),
+    ).toEqual([])
+  })
+
+  test('two overlapping spans yield their intersection', () => {
+    expect(
+      overlapIntervals([
+        { start: 0, end: 150 },
+        { start: 100, end: 250 },
+      ]),
+    ).toEqual([{ start: 100, end: 150 }])
+  })
+
+  test('a fully contained span yields its own extent', () => {
+    expect(
+      overlapIntervals([
+        { start: 0, end: 300 },
+        { start: 100, end: 200 },
+      ]),
+    ).toEqual([{ start: 100, end: 200 }])
+  })
+
+  test('input order does not matter', () => {
+    expect(
+      overlapIntervals([
+        { start: 100, end: 250 },
+        { start: 0, end: 150 },
+      ]),
+    ).toEqual([{ start: 100, end: 150 }])
+  })
+
+  test('three mutually overlapping spans emit one interval per later span', () => {
+    expect(
+      overlapIntervals([
+        { start: 0, end: 200 },
+        { start: 100, end: 300 },
+        { start: 150, end: 400 },
+      ]),
+    ).toEqual([
+      { start: 100, end: 200 },
+      { start: 150, end: 300 },
+    ])
+  })
+
+  test('a span overlapping only an earlier longer span clamps to its end', () => {
+    // second span sets runningMaxEnd=500; third starts inside it but ends short
+    expect(
+      overlapIntervals([
+        { start: 0, end: 50 },
+        { start: 100, end: 500 },
+        { start: 200, end: 300 },
+      ]),
+    ).toEqual([{ start: 200, end: 300 }])
+  })
+
+  test('empty and single-span inputs produce no overlaps', () => {
+    expect(overlapIntervals([])).toEqual([])
+    expect(overlapIntervals([{ start: 0, end: 100 }])).toEqual([])
   })
 })

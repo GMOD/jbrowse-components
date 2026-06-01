@@ -62,6 +62,8 @@ import {
   PASS_MOD,
 } from '../../features/modification/packGpu.ts'
 import { uploadModifications } from '../../features/modification/uploadGpu.ts'
+import { OVERLAP_PASS, PASS_OVERLAP } from '../../features/overlap/packGpu.ts'
+import { uploadOverlaps } from '../../features/overlap/uploadGpu.ts'
 import { PASS_READ, READ_PASS } from '../../features/read/packGpu.ts'
 import { uploadReads as uploadReadSegments } from '../../features/read/uploadGpu.ts'
 import {
@@ -264,6 +266,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
   ARC_LINE_PASS,
   CONN_LINE_PASS,
   LINKED_READ_LINE_PASS,
+  OVERLAP_PASS,
   SOFTCLIP_BASES_PASS,
   slangPass({
     id: PASS_FLAT_QUAD,
@@ -366,6 +369,9 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       }
       if (data.numLinkedReadLines > 0) {
         uploadLinkedReadLines(this.hal, idx, data)
+      }
+      if (data.overlapPositions.length > 0) {
+        uploadOverlaps(this.hal, idx, data)
       }
     }
     for (const [idx, data] of sources.arcsRpcDataMap) {
@@ -542,6 +548,9 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         this.hal.drawPass(PASS_LINKED_READ_LINE, block.displayedRegionIndex)
       }
       this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
+      if (state.linkedReads !== 'off') {
+        this.hal.drawPass(PASS_OVERLAP, block.displayedRegionIndex)
+      }
 
       if (state.showMismatches) {
         this.hal.drawPass(PASS_GAP, block.displayedRegionIndex)

@@ -10322,8 +10322,8 @@ packages:
     resolution: {integrity: sha512-8OqlXQ35euK9+e7L68u8UwcODxkHoIkjbGsgXuARKNyQ5G6xt8nw1YPeMbxMLgCPFkToU+UEK5j05t2t8edKpQ==}
     engines: {node: ^16.14.0 || >= 17.3.0}
 
-  tinyexec@1.2.3:
-    resolution: {integrity: sha512-g62dB+w1/OEFnPvmX0yd/HnetYITOL+1nJW7kitOycOeAvmbWC/nu0fwmmQ/kupNojqExzyC/T++pST/jRJ2mQ==}
+  tinyexec@1.2.4:
+    resolution: {integrity: sha512-SHf/r48b7vOrjve9PxJo3MN5v5yuyjHvdUcrQffT3WXMUfnGmHDVbC4k3sHJaJTgZCwpUplIaAo5ANtMyp3YHg==}
     engines: {node: '>=18'}
 
   tinyglobby@0.2.17:
@@ -11042,7 +11042,7 @@ snapshots:
   '@antfu/install-pkg@1.1.0':
     dependencies:
       package-manager-detector: 1.6.0
-      tinyexec: 1.2.3
+      tinyexec: 1.2.4
 
   '@antfu/utils@8.1.1': {}
 
@@ -14749,7 +14749,7 @@ snapshots:
       smol-toml: 1.6.1
       svgo: 4.0.1
       tinyclip: 0.1.13
-      tinyexec: 1.2.3
+      tinyexec: 1.2.4
       tinyglobby: 0.2.17
       ultrahtml: 1.6.0
       unifont: 0.7.4
@@ -20005,7 +20005,7 @@ snapshots:
 
   tinyclip@0.1.13: {}
 
-  tinyexec@1.2.3: {}
+  tinyexec@1.2.4: {}
 
   tinyglobby@0.2.17:
     dependencies:

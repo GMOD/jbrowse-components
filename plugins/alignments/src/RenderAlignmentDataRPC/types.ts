@@ -235,6 +235,14 @@ export interface PileupDataResult {
   connectingLinePositions: Uint32Array // [start, end] absolute genomic uint32 pairs
   connectingLineYs: Uint16Array // row for each line
 
+  // Chain-mode read overlaps: genomic intervals where two reads in the same
+  // chain (and thus the same row) overlap. Drawn as a diagonal hatch overlay so
+  // the overlapped span is visible despite the upper read painting over the
+  // lower one. Absolute genomic uint32 like all worker output; populated by
+  // main-thread layout (overlaps are per-region, so no cross-region pass).
+  overlapPositions: Uint32Array // [start, end] absolute genomic uint32 pairs
+  overlapYs: Uint16Array // shared chain row for each overlap
+
   // Linked-read straight-line connections for `linkedReadBezier` mode. Sibling
   // pass to `connectingLine*` because the bezier overlay's GPU pass differs:
   // per-endpoint Y (mates can sit on different rows when `sortedBy` is in

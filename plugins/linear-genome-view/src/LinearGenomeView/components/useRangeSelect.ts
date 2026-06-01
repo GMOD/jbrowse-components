@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useCallback, useEffect, useEffectEvent, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 
@@ -40,6 +40,12 @@ export function useRangeSelect(
   })
 
   const globalMouseUp = useEffectEvent((event: MouseEvent) => {
+    console.log(
+      '[rubberband] globalMouseUp called, startX=',
+      startX,
+      'ref.current=',
+      !!ref.current,
+    )
     if (startX === undefined || !ref.current) {
       return
     }
@@ -82,15 +88,32 @@ export function useRangeSelect(
     if (!mouseDragging) {
       return
     }
+    console.log('[rubberband] effect: registering listeners, startX=', startX)
     window.addEventListener('mousemove', globalMouseMove)
     window.addEventListener('mouseup', globalMouseUp)
     window.addEventListener('keydown', globalKeyDown)
     return () => {
+      console.log(
+        '[rubberband] effect cleanup: removing listeners, startX=',
+        startX,
+      )
       window.removeEventListener('mousemove', globalMouseMove)
       window.removeEventListener('mouseup', globalMouseUp)
       window.removeEventListener('keydown', globalKeyDown)
     }
   }, [mouseDragging])
+
+  const renderCountRef = useRef(0)
+  renderCountRef.current += 1
+  const renderNum = renderCountRef.current
+  console.log(
+    '[rubberband] render #',
+    renderNum,
+    'startX=',
+    startX,
+    'mouseDragging=',
+    mouseDragging,
+  )
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {

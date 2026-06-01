@@ -106,11 +106,85 @@ export function computeMultiRegionChainLayout(
   return buildChainRowMap(chains)
 }
 
+export interface Span {
+  start: number
+  end: number
+}
+
+// Genomic intervals where spans on one shared row overlap. Sweeps spans in
+// start order tracking the running max end; each span beginning before that end
+// contributes its intersection with the already-covered region. Pure and
+// position-only, so it's unit-testable independent of PileupDataResult.
+export function overlapIntervals(spans: Span[]): Span[] {
+  const sorted = [...spans].sort((a, b) => a.start - b.start)
+  const out: Span[] = []
+  let runningMaxEnd = sorted[0]?.end ?? 0
+  for (let i = 1; i < sorted.length; i++) {
+    const { start, end } = sorted[i]!
+    const overlapEnd = Math.min(end, runningMaxEnd)
+    if (start < overlapEnd) {
+      out.push({ start, end: overlapEnd })
+    }
+    runningMaxEnd = Math.max(runningMaxEnd, end)
+  }
+  return out
+}
+
+// Map of chain index → the read indices belonging to that chain in this region.
+function groupReadsByChain(readChainIndices: Uint32Array) {
+  const byChain = new Map<number, number[]>()
+  for (let i = 0; i < readChainIndices.length; i++) {
+    const c = readChainIndices[i]!
+    const list = byChain.get(c)
+    if (list) {
+      list.push(i)
+    } else {
+      byChain.set(c, [i])
+    }
+  }
+  return byChain
+}
+
+// Reads in a chain all share one row, so reads whose genomic spans overlap paint
+// on top of each other and the overlap is invisible. For each chain, find the
+// intervals where its reads overlap; the diagonal-hatch overlay (GPU + Canvas2D)
+// marks them. Reads are grouped per-region because rendering is per-region; a
+// chain's mates in other regions live in their own PileupDataResult and never
+// visually overlap these.
+function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
+  const { readChainIndices, readPositions } = data
+  if (!readChainIndices) {
+    return {
+      overlapPositions: new Uint32Array(0),
+      overlapYs: new Uint16Array(0),
+    }
+  }
+
+  const positions: number[] = []
+  const ys: number[] = []
+  for (const reads of groupReadsByChain(readChainIndices).values()) {
+    const spans = reads.map(ri => ({
+      start: readPositions[ri * 2]!,
+      end: readPositions[ri * 2 + 1]!,
+    }))
+    const y = readYs[reads[0]!]!
+    for (const { start, end } of overlapIntervals(spans)) {
+      positions.push(start, end)
+      ys.push(y)
+    }
+  }
+
+  return {
+    overlapPositions: Uint32Array.from(positions),
+    overlapYs: Uint16Array.from(ys),
+  }
+}
+
 /**
  * Build chain-specific derived arrays from a read Y layout: connecting
- * lines between mates in each chain plus a Flatbush spatial index for
- * hit testing. Returns empty-arrays/undefined when the input has no
- * chain metadata.
+ * lines between mates in each chain, intra-chain overlap intervals, plus a
+ * Flatbush spatial index for hit testing. Returns empty-arrays/undefined when
+ * the input has no chain metadata.
  */
 export function buildChainConnectingData(
   data: PileupDataResult,
@@ -132,6 +206,8 @@ export function buildChainConnectingData(
     return {
       connectingLinePositions: new Uint32Array(0),
       connectingLineYs: new Uint16Array(0),
+      overlapPositions: new Uint32Array(0),
+      overlapYs: new Uint16Array(0),
       chainFlatbush: undefined as Flatbush | undefined,
     }
   }
@@ -166,6 +242,7 @@ export function buildChainConnectingData(
   return {
     connectingLinePositions,
     connectingLineYs,
+    ...buildChainOverlaps(data, readYs),
     chainFlatbush,
   }
 }

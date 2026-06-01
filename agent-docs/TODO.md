@@ -2,7 +2,6 @@
 - circular view filter sv types/sv-inpector filterings
 - hic testing
 - reversed region testing
-- when doing 'link supp alignments' special coloring for overlap? use alpha?
 - hide sashimi arcs if not relevant?
 - show coverage hides arcs even when 'below'...
 - make samplot mode have better coloring (same as arcs essentially)
@@ -12,7 +11,4 @@
 - fullpage_arcs-collapse-introns-sashimi.png need to scroll down to see the collapsed arcs
 - does yeast demo really need remote
 - no max height react-app
-- further aggressive assessments of displaychrome... what does chrome mean
-- move 'show coverage' to show submenu
-- svg export of alignments changes z-index of arcs vs coverage
-- weird 'separator' line in alignments svg export between coverage and pileup reads
+- rubberbands not working

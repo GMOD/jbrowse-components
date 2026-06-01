@@ -33,6 +33,8 @@ import { emptyLinkedReadLinesUploadData } from '../../features/linkedReads/types
 import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
 import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
+import { drawOverlaps } from '../../features/overlap/drawCanvas.ts'
+import { emptyOverlapsUploadData } from '../../features/overlap/types.ts'
 import { drawPerBaseQuality } from '../../features/perBaseQuality/drawCanvas.ts'
 import {
   buildReadFields,
@@ -52,6 +54,7 @@ import type { GapUploadData } from '../../features/gap/types.ts'
 import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import type { MismatchUploadData } from '../../features/mismatch/types.ts'
 import type { ModificationUploadData } from '../../features/modification/types.ts'
+import type { OverlapsUploadData } from '../../features/overlap/types.ts'
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -66,6 +69,7 @@ export interface Canvas2DRegionData
     LinkedReadLinesUploadData,
     MismatchUploadData,
     ModificationUploadData,
+    OverlapsUploadData,
     PerBaseQualityUploadData {
   // interbase arrays sliced from merged worker buffer
   insertionPositions: Uint32Array
@@ -150,6 +154,7 @@ const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
   ...emptyArcsUploadData(),
   ...emptyConnectingLinesUploadData(),
   ...emptyLinkedReadLinesUploadData(),
+  ...emptyOverlapsUploadData(),
 }
 
 function buildPileupRegion(
@@ -177,6 +182,8 @@ function buildPileupRegion(
     linkedReadLineYs: data.linkedReadLineYs,
     linkedReadLineColorTypes: data.linkedReadLineColorTypes,
     numLinkedReadLines: data.numLinkedReadLines,
+    overlapPositions: data.overlapPositions,
+    overlapYs: data.overlapYs,
     ...(arcs ?? emptyArcsUploadData()),
   }
 }
@@ -350,6 +357,10 @@ export function drawAlignmentBlocks(
     }
 
     drawReads(ctx, region, block, bpLength, fullBlockWidth, state)
+
+    if (state.linkedReads !== 'off') {
+      drawOverlaps(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
 
     if (state.showMismatches) {
       drawGaps(ctx, region, block, bpLength, fullBlockWidth, state)
