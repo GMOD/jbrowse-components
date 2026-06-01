@@ -10,6 +10,7 @@ export class MockHal implements GpuHal {
 
   private buffers = new Map<string, { data: ArrayBufferLike; count: number }>()
   private lastUniforms: ArrayBuffer | null = null
+  private written: Set<string> | undefined
 
   // Parameter kept for parity with WebGL2Hal / WebGPUHal constructors so
   // tests can swap implementations; pass list isn't needed in the mock.
@@ -39,6 +40,7 @@ export class MockHal implements GpuHal {
       ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
       : data.slice(0)
     this.buffers.set(this.bufferKey(regionKey, passId), { data: copy, count })
+    this.written?.add(this.bufferKey(regionKey, passId))
   }
 
   getBufferCount(regionKey: number, passId: string) {
@@ -66,6 +68,24 @@ export class MockHal implements GpuHal {
       const regionKey = Number(key.slice(0, key.indexOf(':')))
       if (!activeSet.has(regionKey)) {
         this.buffers.delete(key)
+      }
+    }
+  }
+
+  beginUpload() {
+    this.record('beginUpload')
+    this.written = new Set()
+  }
+
+  endUpload() {
+    this.record('endUpload')
+    const written = this.written
+    this.written = undefined
+    if (written) {
+      for (const key of this.buffers.keys()) {
+        if (!written.has(key)) {
+          this.buffers.delete(key)
+        }
       }
     }
   }
@@ -143,5 +163,6 @@ export class MockHal implements GpuHal {
     this.calls = []
     this.buffers.clear()
     this.lastUniforms = null
+    this.written = undefined
   }
 }

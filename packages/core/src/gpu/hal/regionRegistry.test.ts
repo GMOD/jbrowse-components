@@ -132,3 +132,57 @@ test('replacing a buffer requires explicit deleteBuffer first (set does not dest
   reg.deleteBuffer(0, 'a')
   expect(destroyed).toEqual([2])
 })
+
+test('endUpload destroys buffers not rewritten during the transaction', () => {
+  const { reg, destroyed } = makeRegistry()
+  reg.set(0, 'reads', makeBuf(1))
+  reg.set(0, 'overlap', makeBuf(2))
+
+  // Next sync: reads re-uploaded, overlap data went empty (not rewritten).
+  reg.beginUpload()
+  reg.set(0, 'reads', makeBuf(3))
+  reg.endUpload()
+
+  expect(destroyed).toEqual([2])
+  expect(reg.get(0, 'reads')?.id).toBe(3)
+  expect(reg.get(0, 'overlap')).toBeUndefined()
+})
+
+test('endUpload removes a region whose every pass went untouched', () => {
+  const { reg, destroyed } = makeRegistry()
+  reg.set(0, 'reads', makeBuf(1))
+  reg.set(1, 'reads', makeBuf(2))
+
+  // Region 1 no longer active this sync.
+  reg.beginUpload()
+  reg.set(0, 'reads', makeBuf(3))
+  reg.endUpload()
+
+  expect(destroyed).toEqual([2])
+  expect(reg.get(1, 'reads')).toBeUndefined()
+})
+
+test('endUpload keeps buffers rewritten in either upload loop', () => {
+  const { reg, destroyed } = makeRegistry()
+  reg.set(0, 'reads', makeBuf(1))
+  reg.set(0, 'arc', makeBuf(2))
+
+  // Mirrors the renderer's two-loop sync: reads in the pileup loop, arc in the
+  // arcs loop, both inside one begin/endUpload window.
+  reg.beginUpload()
+  reg.set(0, 'reads', makeBuf(3))
+  reg.set(0, 'arc', makeBuf(4))
+  reg.endUpload()
+
+  expect(destroyed).toEqual([])
+  expect(reg.get(0, 'reads')?.id).toBe(3)
+  expect(reg.get(0, 'arc')?.id).toBe(4)
+})
+
+test('endUpload without beginUpload is a no-op', () => {
+  const { reg, destroyed } = makeRegistry()
+  reg.set(0, 'reads', makeBuf(1))
+  reg.endUpload()
+  expect(destroyed).toEqual([])
+  expect(reg.get(0, 'reads')?.id).toBe(1)
+})

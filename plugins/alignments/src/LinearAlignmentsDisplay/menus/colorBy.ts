@@ -65,7 +65,7 @@ const pairedEndColorOptions: ColorOption[] = [
   { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
 ]
 
-export const arcColorOptions: { label: string; type: ArcColorByType }[] = [
+const arcColorOptions: { label: string; type: ArcColorByType }[] = [
   { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
   { label: 'Insert size', type: 'insertSize' },
   { label: 'Orientation', type: 'orientation' },

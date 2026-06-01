@@ -149,6 +149,12 @@ const EMPTY_PILEUP_STUBS = {
   linkedReadLineYs: new Uint16Array(),
   linkedReadLineColorTypes: new Uint8Array(),
   numLinkedReadLines: 0,
+  overlapPositions: new Uint32Array(),
+  overlapYs: new Uint16Array(),
+  perBaseQualPositions: new Uint32Array(),
+  perBaseQualYs: new Uint16Array(),
+  perBaseQualScores: new Uint8Array(),
+  perBaseQualReadIndices: new Uint32Array(),
 }
 
 function makeMinimalPileupResult(cov: CoverageUploadData) {
@@ -375,5 +381,49 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
 
     expect(sharedTop).toBeCloseTo(gpuBarTopPx)
     expect(sharedBarH).toBeCloseTo(gpuBarH)
+  })
+})
+
+describe('GPU sync rebuild transaction', () => {
+  it('clears a pass buffer when its data empties between syncs', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const cov = makeCoverageData()
+
+    const withOverlap = {
+      ...makeMinimalPileupResult(cov),
+      overlapPositions: new Uint32Array([REGION_START, REGION_START + 5]),
+      overlapYs: new Uint16Array([0]),
+    } as unknown as PileupDataResult
+
+    gpu.sync({
+      laidOutPileupMap: new Map([[0, withOverlap]]),
+      arcsRpcDataMap: new Map(),
+    })
+    expect(hal.getBufferCount(0, 'overlap')).toBeGreaterThan(0)
+
+    // Same region still active, but the overlap data is gone. The overlap
+    // upload's `if (n > 0)` guard skips it, so only the begin/endUpload sweep
+    // can clear the now-stale buffer.
+    gpu.sync({
+      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+      arcsRpcDataMap: new Map(),
+    })
+    expect(hal.getBufferCount(0, 'overlap')).toBe(0)
+  })
+
+  it('drops every buffer for a region that leaves the active set', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const cov = makeCoverageData()
+
+    gpu.sync({
+      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+      arcsRpcDataMap: new Map(),
+    })
+    expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
+
+    gpu.sync({ laidOutPileupMap: new Map(), arcsRpcDataMap: new Map() })
+    expect(hal.getBufferCount(0, 'coverage')).toBe(0)
   })
 })

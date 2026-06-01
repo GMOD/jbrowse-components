@@ -332,6 +332,14 @@ export class WebGL2Hal implements GpuHal {
     this.regions.prune(active)
   }
 
+  beginUpload() {
+    this.regions.beginUpload()
+  }
+
+  endUpload() {
+    this.regions.endUpload()
+  }
+
   uploadTexture(
     passId: string,
     data: Uint8Array,

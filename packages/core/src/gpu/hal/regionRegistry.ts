@@ -4,8 +4,15 @@
 // near-identical deleteBuffer/deleteRegion/deleteAll/prune/getOrCreate
 // implementations; centralizing avoids drift when one side's lifecycle is
 // tweaked and the other isn't. Contract pinned by regionRegistry.test.ts.
+const passKey = (regionKey: number, passId: string) => `${regionKey}:${passId}`
+
 export class RegionRegistry<Buf> {
   private regions = new Map<number, Map<string, Buf>>()
+
+  // Non-undefined only between beginUpload() and endUpload(). Holds the
+  // `regionKey:passId` of every buffer written during the open transaction so
+  // endUpload() can destroy the ones that weren't.
+  private written: Set<string> | undefined
 
   constructor(private readonly destroy: (buf: Buf) => void) {}
 
@@ -23,6 +30,37 @@ export class RegionRegistry<Buf> {
       this.regions.set(regionKey, region)
     }
     region.set(passId, buf)
+    this.written?.add(passKey(regionKey, passId))
+  }
+
+  // Open a full-rebuild transaction. Every set() until endUpload() records its
+  // (region, pass); endUpload() then destroys every buffer NOT rewritten. This
+  // makes "one sync rebuilds the live buffer set" correct by construction: a
+  // pass the caller stops uploading (its data went empty) is swept, so a buffer
+  // can never outlive the data that produced it — no per-pass `if (n > 0)` skip
+  // can leave a stale buffer on screen. Callers that never call beginUpload()
+  // are unaffected; recording stays off.
+  beginUpload(): void {
+    this.written = new Set()
+  }
+
+  // Close the transaction opened by beginUpload(), destroying every buffer not
+  // written since. No-op (and leaves recording off) if no transaction is open.
+  endUpload(): void {
+    const written = this.written
+    this.written = undefined
+    if (written) {
+      for (const [regionKey, region] of this.regions) {
+        for (const passId of region.keys()) {
+          if (!written.has(passKey(regionKey, passId))) {
+            this.deleteBuffer(regionKey, passId)
+          }
+        }
+        if (region.size === 0) {
+          this.regions.delete(regionKey)
+        }
+      }
+    }
   }
 
   // Destroy and remove one (regionKey, passId) entry. No-op if absent.

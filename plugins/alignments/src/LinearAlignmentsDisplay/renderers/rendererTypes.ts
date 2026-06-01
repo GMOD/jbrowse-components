@@ -46,7 +46,6 @@ export interface RenderState {
   colors: ColorPalette
   linkedReads: LinkedReadsMode
   flipStrandLongReadChains?: boolean
-  reversed?: boolean
   readConnectionsLineWidth?: number
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
   // passes availH/pxPerBp (zoom-proportional); samplot mode passes the

@@ -75,7 +75,7 @@ export interface PileupDataResult {
   readInsertSizes: Float32Array // keep float (can be large/negative)
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
-  readChainHasSupp?: Uint8Array // 1 if chain contains supplementary reads, 0 otherwise
+  readChainHasSupp?: Uint8Array // 0=no supp, 1=supp w/ primary fwd, 2=supp w/ primary rev
   readIds: string[] // feature IDs for hit testing
   readNames: string[] // read names (QNAME) for tooltip display
   readNextRefs?: string[] // mate reference name for inter-chromosomal tooltip
@@ -286,4 +286,26 @@ export interface PileupDataResult {
 
   // Per-read SA tag strings for main-thread arc computation
   readSuppAlignments?: string[]
+}
+
+// The chain-only fields are emitted as a group by `buildChainResultFields`
+// (chain mode) and entirely absent in pileup mode — they always co-vary. A
+// single guard narrows the whole set, so consumers never have to re-assert
+// that the siblings of the field they checked are also present.
+export type ChainPileupData = PileupDataResult &
+  Required<
+    Pick<
+      PileupDataResult,
+      | 'readChainIndices'
+      | 'chainAbsMinStarts'
+      | 'chainAbsMaxEnds'
+      | 'chainDistances'
+      | 'chainNames'
+      | 'chainHasMultiple'
+      | 'chainFirstReadIndices'
+    >
+  >
+
+export function isChainData(data: PileupDataResult): data is ChainPileupData {
+  return data.readChainIndices !== undefined
 }

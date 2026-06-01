@@ -26,14 +26,12 @@ interface ReadsModel {
   setReadConnectionsDown: (down: boolean) => void
   sashimiArcs: ArcDirection
   setSashimiArcs: (mode: ArcDirection) => void
+
+  showCoverage: boolean
+  setShowCoverage: (show: boolean) => void
 }
 
-interface ReadsModelWithCoverage extends ReadsModel {
-  showCoverage?: boolean
-  setShowCoverage?: (show: boolean) => void
-}
-
-export function getReadsMenuItem(model: ReadsModelWithCoverage) {
+export function getReadsMenuItem(model: ReadsModel) {
   return {
     label: 'Show...',
     icon: VisibilityIcon,
@@ -42,9 +40,9 @@ export function getReadsMenuItem(model: ReadsModelWithCoverage) {
       {
         label: 'Show coverage',
         type: 'checkbox' as const,
-        checked: model.showCoverage ?? false,
+        checked: model.showCoverage,
         onClick: () => {
-          model.setShowCoverage?.(!model.showCoverage)
+          model.setShowCoverage(!model.showCoverage)
         },
       },
       {

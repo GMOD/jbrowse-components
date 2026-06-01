@@ -12,7 +12,7 @@ const GroupByDialog = lazy(() => import('../dialogs/GroupByDialog.tsx'))
 
 interface SortByModel {
   sortedBy?: SortedBy
-  setSortedBy: (type: string) => void
+  setSortedBy: (type: string, tag?: string) => void
   clearSortedBy: () => void
 }
 

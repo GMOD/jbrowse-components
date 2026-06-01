@@ -83,5 +83,13 @@ this directory_.
 - **Renderers stay stateless.** No per-region `Map` on a renderer class —
   delegate buffer lifecycle to `hal.pruneRegions(active)` and read per-region
   data from the model's map passed into `renderBlocks(blocks, regions, state)`.
+- **Multi-pass renderers bracket `sync()` with `hal.beginUpload()` /
+  `hal.endUpload()`.** Between them every `uploadBuffer` is recorded; `endUpload`
+  destroys any pass buffer _not_ rewritten — so a pass whose data went empty
+  (and was skipped by an `if (n > 0)` guard) can't leave a stale buffer, with no
+  per-region pre-wipe. This is what makes those guards safe by construction;
+  `GpuAlignmentsRenderer` relies on it. Single-pass renderers (wiggle, hic, maf,
+  variants, manhattan) don't need it — they `deleteRegion` explicitly on the
+  empty case right next to their one upload, which is already unambiguous.
 - **Never hand-edit `*.generated.ts`.** Edit the `.slang` source and run
   `pnpm gen:shaders` (see root `CLAUDE.md` and ADR-005).

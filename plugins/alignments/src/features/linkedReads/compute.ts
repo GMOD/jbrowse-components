@@ -56,7 +56,7 @@ export function isNormalOrientation(
   return hasPaired ? orientNum <= 1 : s1 === -classifierS2
 }
 
-export function pairedColorType(orientNum: number) {
+function pairedColorType(orientNum: number) {
   return orientNum >= LINKED_READ_COLOR_PAIR_LR &&
     orientNum <= LINKED_READ_COLOR_PAIR_LL
     ? orientNum

@@ -2,7 +2,9 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
 import { cloneWithLayout } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
+import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 
@@ -32,16 +34,11 @@ function mergeChains(datasets: PileupDataResult[]) {
     { minStart: number; maxEnd: number; distance: number }
   >()
   for (const data of datasets) {
-    const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } =
-      data
-    if (
-      !chainNames ||
-      !chainAbsMinStarts ||
-      !chainAbsMaxEnds ||
-      !chainDistances
-    ) {
+    if (!isChainData(data)) {
       continue
     }
+    const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } =
+      data
     for (let i = 0; i < chainNames.length; i++) {
       const name = chainNames[i]!
       const minStart = chainAbsMinStarts[i]!
@@ -70,10 +67,10 @@ export function readYsFromRowMap(
   data: PileupDataResult,
   rowMap: Map<string, number>,
 ) {
-  const { readChainIndices, chainNames } = data
   const numReads = data.readIds.length
   const readYs = new Uint16Array(numReads)
-  if (readChainIndices && chainNames) {
+  if (isChainData(data)) {
+    const { readChainIndices, chainNames } = data
     for (let i = 0; i < numReads; i++) {
       readYs[i] = rowMap.get(chainNames[readChainIndices[i]!]!) ?? 0
     }
@@ -152,13 +149,10 @@ function groupReadsByChain(readChainIndices: Uint32Array) {
 // chain's mates in other regions live in their own PileupDataResult and never
 // visually overlap these.
 function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
-  const { readChainIndices, readPositions } = data
-  if (!readChainIndices) {
-    return {
-      overlapPositions: new Uint32Array(0),
-      overlapYs: new Uint16Array(0),
-    }
+  if (!isChainData(data)) {
+    return emptyOverlapsUploadData()
   }
+  const { readChainIndices, readPositions } = data
 
   const positions: number[] = []
   const ys: number[] = []
@@ -190,28 +184,21 @@ export function buildChainConnectingData(
   data: PileupDataResult,
   readYs: Uint16Array,
 ) {
+  if (!isChainData(data)) {
+    return {
+      connectingLinePositions: new Uint32Array(0),
+      connectingLineYs: new Uint16Array(0),
+      ...emptyOverlapsUploadData(),
+      chainFlatbush: undefined as Flatbush | undefined,
+    }
+  }
+
   const {
     chainFirstReadIndices,
     chainHasMultiple,
     chainAbsMinStarts,
     chainAbsMaxEnds,
   } = data
-
-  if (
-    !chainFirstReadIndices ||
-    !chainHasMultiple ||
-    !chainAbsMinStarts ||
-    !chainAbsMaxEnds
-  ) {
-    return {
-      connectingLinePositions: new Uint32Array(0),
-      connectingLineYs: new Uint16Array(0),
-      overlapPositions: new Uint32Array(0),
-      overlapYs: new Uint16Array(0),
-      chainFlatbush: undefined as Flatbush | undefined,
-    }
-  }
-
   const numChains = chainFirstReadIndices.length
 
   let numLines = 0

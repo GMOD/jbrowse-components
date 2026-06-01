@@ -65,6 +65,16 @@ export interface GpuHal {
   // which regions to discard.
   pruneRegions(active: Iterable<number>): void
 
+  // Open/close a full-rebuild transaction. Between beginUpload() and
+  // endUpload(), every uploadBuffer call records its (region, pass); endUpload
+  // destroys every instance buffer NOT rewritten in between. Lets a renderer
+  // re-run all its uploads each sync and trust that a pass whose data went
+  // empty (and was therefore skipped) leaves no stale buffer behind — without
+  // pre-wiping regions. Optional: renderers that don't bracket their sync are
+  // unaffected.
+  beginUpload(): void
+  endUpload(): void
+
   uploadTexture(
     passId: string,
     data: Uint8Array,

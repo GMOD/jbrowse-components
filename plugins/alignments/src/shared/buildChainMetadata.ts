@@ -80,7 +80,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     }
     let distance = maxEnd - minStart
     if (chain.length === 1) {
-      const tlen = Math.abs(chain[0]!.templateLength || 0)
+      const tlen = Math.abs(chain[0]!.templateLength)
       if (tlen > 0) {
         distance = tlen
       }

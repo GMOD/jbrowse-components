@@ -1,4 +1,5 @@
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { INSERTION_SERIF_MIN_PX_PER_BP } from '../../LinearAlignmentsDisplay/constants.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -11,7 +12,6 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const LONG_INSERTION_MIN_LENGTH = 10
-const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
 export function drawInsertions(
   ctx: Ctx2D,

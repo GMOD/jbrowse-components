@@ -64,6 +64,11 @@ import {
 import { uploadModifications } from '../../features/modification/uploadGpu.ts'
 import { OVERLAP_PASS, PASS_OVERLAP } from '../../features/overlap/packGpu.ts'
 import { uploadOverlaps } from '../../features/overlap/uploadGpu.ts'
+import {
+  PASS_PER_BASE_QUAL,
+  PER_BASE_QUALITY_PASS,
+} from '../../features/perBaseQuality/packGpu.ts'
+import { uploadPerBaseQuality } from '../../features/perBaseQuality/uploadGpu.ts'
 import { PASS_READ, READ_PASS } from '../../features/read/packGpu.ts'
 import { uploadReads as uploadReadSegments } from '../../features/read/uploadGpu.ts'
 import {
@@ -257,6 +262,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
   INSERTION_PASS,
   CLIP_PASS,
   MODIFICATION_PASS,
+  PER_BASE_QUALITY_PASS,
   COVERAGE_PASS,
   SNP_COVERAGE_PASS,
   MOD_COVERAGE_PASS,
@@ -340,9 +346,14 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   }
 
   sync(sources: AlignmentsSources) {
-    // `active` must union both maps' keys before pruning: arcs can arrive
-    // for a region whose pileup hasn't loaded yet, and pruning by pileup-only
-    // would deleteRegion the arc data we just uploaded (or are about to).
+    // Bracket every upload in one rebuild transaction: endUpload() destroys any
+    // pass buffer not rewritten below, so a pass whose data went empty (and was
+    // therefore skipped by its `if (n > 0)` guard) can't leave a stale buffer —
+    // no per-region pre-wipe needed, and the guards stay safe by construction.
+    this.hal.beginUpload()
+    // `active` must union both maps' keys before the metadata prune: arcs can
+    // arrive for a region whose pileup hasn't loaded yet, and pruning by
+    // pileup-only would drop the arc region's renderer-side metadata.
     const active: number[] = []
     for (const [idx, data] of sources.laidOutPileupMap) {
       active.push(idx)
@@ -353,6 +364,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       uploadClips(this.hal, idx, data)
       uploadSoftclipBases(this.hal, idx, data)
       uploadModifications(this.hal, idx, data)
+      uploadPerBaseQuality(this.hal, idx, data)
       this.uploadCoverage(idx, data)
       uploadModCoverage(
         this.hal,
@@ -381,10 +393,13 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       ensureRegion(this.regions, idx, emptyRegion)
       uploadArcs(this.hal, idx, data)
     }
+    // Sweeps every HAL buffer not rewritten above — stale passes in active
+    // regions and every pass of regions that dropped out this sync.
+    this.hal.endUpload()
+    // Prune the renderer-side metadata map for regions endUpload just cleared.
     const activeSet = new Set(active)
     for (const idx of this.regions.keys()) {
       if (!activeSet.has(idx)) {
-        this.hal.deleteRegion(idx)
         this.regions.delete(idx)
       }
     }
@@ -565,6 +580,10 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
       if (state.showModifications) {
         this.hal.drawPass(PASS_MOD, block.displayedRegionIndex)
+      }
+
+      if (state.showPerBaseQuality) {
+        this.hal.drawPass(PASS_PER_BASE_QUAL, block.displayedRegionIndex)
       }
 
       this.renderFeatureOverlays(

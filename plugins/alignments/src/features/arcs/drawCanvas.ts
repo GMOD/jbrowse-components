@@ -102,8 +102,10 @@ export function drawArcs(
   pairedArcsDown: boolean,
 ) {
   // Samplot autoscales via state.arcsYDomainBp; arc mode falls back to the
-  // bp-span that fits availH at the current zoom.
-  const availH = arcsH - 2
+  // bp-span that fits availH at the current zoom. availH must match the value
+  // used in drawArcsToCtx (and the GPU's fillArcUniforms) or the fallback
+  // domain scales arcs to a different height than they're plotted into.
+  const availH = arcsH - ARC_HEIGHT_MARGIN
   const pxPerBp = fullBlockWidth / bpLength
   const fallbackDomain = pxPerBp > 0 ? availH / pxPerBp : 1
   drawArcsToCtx(ctx, region, {
