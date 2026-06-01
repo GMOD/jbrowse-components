@@ -231,9 +231,11 @@ export default function ConfigSlot(
         return self.isCallback ? self.expr.eval(args) : self.value
       },
     }))
-    .preProcessSnapshot(val =>
+    .preProcessSnapshot((val: unknown) =>
       // already the full slot shape (e.g. loaded from saved session)
-      typeof val === 'object' && val.name === slotName
+      typeof val === 'object' &&
+      val !== null &&
+      (val as { name?: unknown }).name === slotName
         ? val
         : {
             name: slotName,

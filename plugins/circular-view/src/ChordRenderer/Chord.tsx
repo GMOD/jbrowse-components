@@ -20,8 +20,10 @@ function getEndpoint(
   blocksForRefs: Record<string, Block>,
   startBlock: Block,
 ) {
-  const alt = feature.get('ALT')?.[0]
-  const mate = feature.get('mate')
+  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
+  const mate = feature.get('mate') as
+    | { refName: string; start: number }
+    | undefined
   const parsed = parseSvAlt(feature, alt)
   if (parsed) {
     return {

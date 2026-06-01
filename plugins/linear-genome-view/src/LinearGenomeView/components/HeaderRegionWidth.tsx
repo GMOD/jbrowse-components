@@ -4,12 +4,13 @@ import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   bp: {
     display: 'flex',
     alignItems: 'center',
+    color: theme.palette.text.secondary,
   },
-})
+}))
 
 const HeaderRegionWidth = observer(function HeaderRegionWidth({
   model,
@@ -18,7 +19,7 @@ const HeaderRegionWidth = observer(function HeaderRegionWidth({
 }) {
   const { classes } = useStyles()
   return (
-    <Typography variant="body2" color="text.secondary" className={classes.bp}>
+    <Typography variant="body2" className={classes.bp}>
       {model.effectiveTotalBpDisplayStr}
     </Typography>
   )

@@ -236,7 +236,7 @@ export default function stateModelFactory(
                 }
                 const view = getView(self)
                 const assembly = session.assemblyManager.get(
-                  view.assemblyNames[0]!,
+                  view.assemblyNames[0],
                 )
                 if (assembly) {
                   session.queueDialog(handleClose => [
@@ -255,7 +255,7 @@ export default function stateModelFactory(
       return {
         ...rest,
         ...(showOnlyGenes && { showOnlyGenes }),
-      } as typeof snap
+      }
     })
 }
 

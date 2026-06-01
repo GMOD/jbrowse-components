@@ -38,7 +38,11 @@ export function checkboxItem(
   label: string,
   checked: boolean,
   onToggle: () => void,
-  opts?: { helpText?: string; icon?: CheckboxMenuItem['icon']; disabled?: boolean },
+  opts?: {
+    helpText?: string
+    icon?: CheckboxMenuItem['icon']
+    disabled?: boolean
+  },
 ): CheckboxMenuItem {
   return {
     label,

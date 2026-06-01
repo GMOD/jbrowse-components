@@ -40,7 +40,7 @@ export function makeSummary(feature: Feature, alt?: string) {
     feature.get('id'),
     assembleLocString(k1),
     assembleLocString(k2),
-    feature.get('INFO')?.SVTYPE,
+    (feature.get('INFO') as { SVTYPE?: unknown } | undefined)?.SVTYPE,
     alt,
   ]
     .filter(Boolean)

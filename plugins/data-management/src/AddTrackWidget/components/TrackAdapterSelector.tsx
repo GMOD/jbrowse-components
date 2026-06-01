@@ -39,7 +39,6 @@ const TrackAdapterSelector = observer(function ({
       slotProps={{
         select: {
           SelectDisplayProps: {
-            // @ts-expect-error
             'data-testid': 'adapterTypeSelect',
           },
         },

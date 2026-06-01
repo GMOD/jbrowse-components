@@ -44,7 +44,9 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     mapq: feature.get('score') ?? 255,
     avgBaseQuality,
     // SAM spec: TLEN 0 means insert size is unset (e.g. unpaired reads)
-    insertSize: Math.abs((feature.get('template_length') as number | undefined) ?? 0),
+    insertSize: Math.abs(
+      (feature.get('template_length') as number | undefined) ?? 0,
+    ),
     pairOrientation: pairOrientationToNum(
       feature.get('pair_orientation') as string | undefined,
     ),

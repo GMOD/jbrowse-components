@@ -142,13 +142,13 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     } else if (
       !noRecursiveMerge(prop) &&
       prop in a &&
-      // @ts-expect-error
       typeof b[prop] === 'object' &&
-      // @ts-expect-error
       typeof a[prop] === 'object'
     ) {
-      // @ts-expect-error
-      a[prop] = deepUpdate(a[prop], b[prop])
+      a[prop] = deepUpdate(
+        a[prop] as Record<string, unknown>,
+        b[prop] as Record<string, unknown>,
+      )
     } else if (prop === 'dataRoot') {
       if (
         a[prop] === undefined ||
@@ -156,9 +156,7 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
       ) {
         a[prop] = b[prop]
       }
-      // @ts-expect-error
     } else if (a[prop] === undefined || b[prop] !== undefined) {
-      // @ts-expect-error
       a[prop] = b[prop]
     }
   }
@@ -281,8 +279,7 @@ function fillTemplates<T>(subconfig: T, config: Config): T {
       sub[name] = fillTemplates(sub[name], config)
     }
   } else if (typeof subconfig === 'string') {
-    // @ts-expect-error
-    return fillTemplate(subconfig, config)
+    return fillTemplate(subconfig, config) as T
   }
 
   return subconfig

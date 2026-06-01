@@ -71,8 +71,7 @@ export default class NCListFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
-    // @ts-expect-error
-    const data: SimpleFeatureSerialized = { uniqueId: this.id() }
+    const data: Record<string, unknown> = { uniqueId: this.id() }
 
     for (const tag of this.ncFeature.tags()) {
       const mappedTag = this.jb1TagToJb2Tag(tag)
@@ -86,6 +85,6 @@ export default class NCListFeature implements Feature {
         data[mappedTag] = value
       }
     }
-    return data
+    return data as SimpleFeatureSerialized
   }
 }

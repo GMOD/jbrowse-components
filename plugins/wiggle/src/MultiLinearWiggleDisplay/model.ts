@@ -85,11 +85,7 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .preProcessSnapshot(
-      // @ts-expect-error - MST's preProcessSnapshot typing can't verify the
-      // return type against the model creation type
-      makeWigglePreProcessSnapshot({ multiWiggle: true }),
-    )
+    .preProcessSnapshot(makeWigglePreProcessSnapshot({ multiWiggle: true }))
     .volatile(() => ({
       sourcesVolatile: [] as SourceInfo[],
       featureUnderMouse: undefined as MultiWiggleFeatureUnderMouse | undefined,
@@ -429,7 +425,6 @@ export default function stateModelFactory(
       },
     }))
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
@@ -441,7 +436,7 @@ export default function stateModelFactory(
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),
-      } as typeof snap
+      }
     })
 }
 

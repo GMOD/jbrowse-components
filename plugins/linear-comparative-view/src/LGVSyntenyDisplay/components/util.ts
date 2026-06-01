@@ -60,14 +60,17 @@ export function navToSynteny({
   session: AbstractSessionModel
   region?: SimpleRegion
 }) {
-  const cigar = feature.get('CIGAR')
+  const cigar = feature.get('CIGAR') as string | undefined
   const strand = feature.get('strand')
 
   const featRef = feature.get('refName')
   const featAsm = feature.get('assemblyName')
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
-  const mate = feature.get('mate')
+  const mate = feature.get('mate') as MateAnchor & {
+    assemblyName: string
+    refName: string
+  }
   const mateAsm = mate.assemblyName
   const mateRef = mate.refName
 

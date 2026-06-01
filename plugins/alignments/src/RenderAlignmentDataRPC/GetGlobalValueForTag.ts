@@ -41,7 +41,9 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
         dataAdapter.getFeatures(region, { stopToken }).pipe(toArray()),
       )
       for (const feature of features) {
-        const val = (feature.get('tags') as Record<string, unknown> | undefined)?.[tag]
+        const val = (
+          feature.get('tags') as Record<string, unknown> | undefined
+        )?.[tag]
         if (val !== undefined) {
           tagValues.add(`${val}`)
         }

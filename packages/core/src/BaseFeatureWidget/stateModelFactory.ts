@@ -35,7 +35,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      featureData: types.optional(types.frozen<MaybeSerializedFeat>(), undefined),
+      featureData: types.optional(
+        types.frozen<MaybeSerializedFeat>(),
+        undefined,
+      ),
 
       /**
        * #property
@@ -96,7 +99,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
       error: undefined as unknown,
     }))
 
@@ -186,13 +189,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
-    .preProcessSnapshot(snap => {
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       // old snapshots used `featureData`, new ones use `finalizedFeatureData`;
       // accept both for backwards compat
-      const { featureData, finalizedFeatureData, ...rest } =
-        snap as typeof snap & {
-          finalizedFeatureData?: MaybeSerializedFeat
-        }
+      const { featureData, finalizedFeatureData, ...rest } = (snap ?? {}) as {
+        featureData?: MaybeSerializedFeat
+        finalizedFeatureData?: MaybeSerializedFeat
+      } & Record<string, unknown>
       return {
         unformattedFeatureData: featureData,
         featureData: finalizedFeatureData,

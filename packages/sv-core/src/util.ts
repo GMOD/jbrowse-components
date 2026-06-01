@@ -81,7 +81,12 @@ export function getBreakendCoveringRegions({
       matePos: parsed.matePos - 1, // convert to 0-based
     }
   } else if (feature.get('mate')) {
-    const mate = feature.get('mate') as { strand: number; start: number; end?: number; refName: string }
+    const mate = feature.get('mate') as {
+      strand: number
+      start: number
+      end?: number
+      refName: string
+    }
     const strand = feature.get('strand')!
     const mateStrand = mate.strand
     // Forward strand (1): use end position (right side)

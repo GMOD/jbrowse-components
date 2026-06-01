@@ -294,13 +294,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
       volatileError: undefined as unknown,
       /**
        * #volatile
        */
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       trackRefs: {} as Record<string, HTMLDivElement>,
       /**
        * #volatile
@@ -2053,8 +2052,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         doAfterAttach(self as LinearGenomeViewModel)
       },
     }))
-    .preProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       if (!snap) {
         return snap
       }
@@ -2068,7 +2066,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
@@ -2114,7 +2111,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(scrollZoom ? { scrollZoom } : {}),
         ...(!highlightsVisible ? { highlightsVisible } : {}),
         ...(!labelsVisible ? { labelsVisible } : {}),
-      } as typeof snap
+      }
     })
 }
 

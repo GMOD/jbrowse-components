@@ -65,7 +65,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     nextRefs.push((feature.get('next_ref') as string | undefined) ?? '')
     const tags = feature.get('tags') as Record<string, unknown> | undefined
     suppAlignments.push(
-      ((tags?.['SA'] ?? feature.get('SA')) as string | undefined) ?? '',
+      ((tags?.SA ?? feature.get('SA')) as string | undefined) ?? '',
     )
 
     if (isTagColorMode) {

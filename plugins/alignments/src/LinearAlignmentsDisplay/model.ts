@@ -329,11 +329,8 @@ export default function stateModelFactory(
           showSoftClipping: false,
         }),
       )
-      .preProcessSnapshot(
-        // @ts-expect-error - MST's preProcessSnapshot typing can't verify the
-        // return type against the model creation type
-        (snap: Record<string, unknown> | undefined) =>
-          migrateAlignmentsSnapshot(snap),
+      .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
+        migrateAlignmentsSnapshot(snap),
       )
       .volatile(() => ({
         /**
@@ -384,7 +381,7 @@ export default function stateModelFactory(
         /**
          * #volatile
          */
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+
         colorTagMap: {} as Record<string, string>,
         /**
          * #volatile
@@ -605,7 +602,7 @@ export default function stateModelFactory(
           // the per-bp depth scan doesn't recompute on every animation frame
           // during pan/zoom — same approach as wiggle's visibleScoreRange.
           return computeVisibleCoverageStats(view.coarseDynamicBlocks, b =>
-            self.rpcDataMap.get(b.displayedRegionIndex!),
+            self.rpcDataMap.get(b.displayedRegionIndex),
           )
         },
 

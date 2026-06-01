@@ -33,7 +33,7 @@ async function fetchPrimaryAlignment(
   track: AbstractTrackModel,
   preFeature: Feature,
 ) {
-  if (!(preFeature.get('flags') & FLAG_SUPPLEMENTARY)) {
+  if (!((preFeature.get('flags') as number) & FLAG_SUPPLEMENTARY)) {
     return preFeature
   }
   const SA = (getTag(preFeature, 'SA') as string | undefined) ?? ''
@@ -57,8 +57,8 @@ async function fetchPrimaryAlignment(
   const result = feats.find(
     f =>
       f.get('name') === preFeature.get('name') &&
-      !(f.get('flags') & FLAG_SUPPLEMENTARY) &&
-      !(f.get('flags') & FLAG_SECONDARY),
+      !((f.get('flags') as number) & FLAG_SUPPLEMENTARY) &&
+      !((f.get('flags') as number) & FLAG_SECONDARY),
   )
   if (!result) {
     throw new Error('primary feature not found')
@@ -139,7 +139,7 @@ export default function ReadVsRefDialog({
           </div>
         ) : (
           <div className={classes.root}>
-            {primaryFeature.get('flags') & FLAG_SECONDARY ? (
+            {(primaryFeature.get('flags') as number) & FLAG_SECONDARY ? (
               <Typography style={{ color: 'orange' }}>
                 Note: You selected a secondary alignment (which generally does
                 not have SA tags or SEQ fields) so do a full reconstruction of

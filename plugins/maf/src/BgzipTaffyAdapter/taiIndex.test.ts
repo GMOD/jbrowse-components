@@ -7,13 +7,18 @@ import type { ByteRange } from './types.ts'
 function records(...starts: number[]): ByteRange[] {
   return starts.map((chrStart, i) => ({
     chrStart,
-    virtualOffset: { blockPosition: i, dataPosition: 0 } as ByteRange['virtualOffset'],
+    virtualOffset: {
+      blockPosition: i,
+      dataPosition: 0,
+    } as ByteRange['virtualOffset'],
   }))
 }
 
 describe('parseTaiIndex', () => {
   test('absolute rows: strips assembly prefix, splits virtual offset', () => {
-    const index = parseTaiIndex('hg38.chr1\t0\t65536\nhg38.chr1\t1000\t131072\n')
+    const index = parseTaiIndex(
+      'hg38.chr1\t0\t65536\nhg38.chr1\t1000\t131072\n',
+    )
     expect(Object.keys(index)).toEqual(['chr1'])
     expect(index.chr1).toHaveLength(2)
     expect(index.chr1![0]).toMatchObject({ chrStart: 0 })

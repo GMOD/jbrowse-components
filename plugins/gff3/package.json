@@ -33,8 +33,8 @@
     "@flatten-js/interval-tree": "^2.0.3",
     "@gmod/tabix": "^3.3.8",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.2",
-    "gff-nostream": "^3.0.9",
+    "@jbrowse/mobx-state-tree": "^5.10.3",
+    "gff-nostream": "^3.0.10",
     "mobx": "^6.15.4",
     "rxjs": "^7.8.2"
   },

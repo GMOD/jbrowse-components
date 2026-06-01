@@ -675,18 +675,18 @@ test('model selection methods', () => {
 
   // initially no selection
   expect(model.selection.length).toBe(0)
-  expect(model.isSelected(tracks[0]!)).toBe(false)
+  expect(model.isSelected(tracks[0])).toBe(false)
 
   // setSelection replaces entire selection
   model.setSelection([tracks[0]!])
   expect(model.selection.length).toBe(1)
-  expect(model.isSelected(tracks[0]!)).toBe(true)
+  expect(model.isSelected(tracks[0])).toBe(true)
 
   // addToSelection appends
   model.addToSelection([tracks[1]!])
   expect(model.selection.length).toBe(2)
-  expect(model.isSelected(tracks[0]!)).toBe(true)
-  expect(model.isSelected(tracks[1]!)).toBe(true)
+  expect(model.isSelected(tracks[0])).toBe(true)
+  expect(model.isSelected(tracks[1])).toBe(true)
 
   // addToSelection deduplicates
   model.addToSelection([tracks[0]!])
@@ -695,8 +695,8 @@ test('model selection methods', () => {
   // removeFromSelection removes specific tracks
   model.removeFromSelection([tracks[0]!])
   expect(model.selection.length).toBe(1)
-  expect(model.isSelected(tracks[0]!)).toBe(false)
-  expect(model.isSelected(tracks[1]!)).toBe(true)
+  expect(model.isSelected(tracks[0])).toBe(false)
+  expect(model.isSelected(tracks[1])).toBe(true)
 
   // clearSelection removes all
   model.clearSelection()

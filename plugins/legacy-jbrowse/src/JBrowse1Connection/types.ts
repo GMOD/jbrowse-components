@@ -1,4 +1,5 @@
 export interface ProtoTrack {
+  [key: string]: unknown
   backendVersion?: number
   baseUrl?: string
   category?: string
@@ -78,6 +79,7 @@ export interface Include {
 }
 
 export interface Config {
+  [key: string]: unknown
   baseUrl?: string
   cacheBuster?: boolean
   dataRoot?: string

@@ -13,7 +13,11 @@ const buttonStyle = { marginLeft: 4, padding: 4 }
 // with rows that have one
 export function CascadingMenuHelpIconSpacer() {
   return (
-    <IconButton size="small" disabled style={{ ...buttonStyle, visibility: 'hidden' }}>
+    <IconButton
+      size="small"
+      disabled
+      style={{ ...buttonStyle, visibility: 'hidden' }}
+    >
       <HelpOutlined fontSize="small" />
     </IconButton>
   )

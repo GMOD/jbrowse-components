@@ -29,10 +29,7 @@ import {
   isDefaultBicolor,
 } from '../util.ts'
 
-import type {
-  WiggleDataResult,
-  WiggleFeatureUnderMouse,
-} from '../util.ts'
+import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -85,11 +82,7 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .preProcessSnapshot(
-      // @ts-expect-error - MST's preProcessSnapshot typing can't verify the
-      // return type against the model creation type
-      makeWigglePreProcessSnapshot(),
-    )
+    .preProcessSnapshot(makeWigglePreProcessSnapshot())
     .volatile(() => ({
       /**
        * #volatile

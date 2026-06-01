@@ -124,11 +124,8 @@ export default function baseStateModelFactory(
           configuration: ConfigurationReference(configSchema),
         }),
       )
-      .preProcessSnapshot(
-        // @ts-expect-error - MST's preProcessSnapshot typing can't verify the
-        // return type against the model creation type
-        (snap: Record<string, unknown> | undefined) =>
-          migrateBasicSnapshot(snap),
+      .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
+        migrateBasicSnapshot(snap),
       )
       .volatile(() => ({
         /**

@@ -23,7 +23,7 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
   const alreadyPairedWithSamePosition = new Set<string>()
 
   for (const feature of features.values()) {
-    const flags = feature.get('flags')
+    const flags = feature.get('flags') as number
     const locString = assembleLocStringFast({
       refName: feature.get('refName'),
       start: feature.get('start'),
@@ -36,7 +36,7 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
     const isBadlyPaired =
       !correctlyPaired ||
       getPairedOrientation({
-        pair_orientation: feature.get('pair_orientation'),
+        pair_orientation: feature.get('pair_orientation') as string | undefined,
       }).abnormal
 
     if (
@@ -55,7 +55,10 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
 export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   for (const f of features.values()) {
-    if (!(f.get('flags') & 4) && f.get('tags')?.SA) {
+    if (
+      !((f.get('flags') as number) & 4) &&
+      (f.get('tags') as Record<string, unknown> | undefined)?.SA
+    ) {
       bucket(candidates, f.get('name')!, f)
     }
   }
@@ -64,7 +67,7 @@ export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
 
 export function hasPairedReads(features: Map<string, Feature>) {
   for (const f of features.values()) {
-    if (f.get('flags') & 1) {
+    if ((f.get('flags') as number) & 1) {
       return true
     }
   }
@@ -106,7 +109,7 @@ export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
 export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
   const ret: Feature[][] = []
   for (const f of feats.values()) {
-    if (f.get('ALT')?.[0] === '<TRA>') {
+    if ((f.get('ALT') as string[] | undefined)?.[0] === '<TRA>') {
       ret.push([f])
     }
   }

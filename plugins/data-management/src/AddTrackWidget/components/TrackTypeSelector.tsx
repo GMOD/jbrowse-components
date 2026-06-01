@@ -26,7 +26,6 @@ const TrackTypeSelector = observer(function TrackTypeSelector({
       slotProps={{
         select: {
           SelectDisplayProps: {
-            // @ts-expect-error
             'data-testid': 'trackTypeSelect',
           },
         },

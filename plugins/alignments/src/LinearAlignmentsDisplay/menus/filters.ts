@@ -30,9 +30,13 @@ export function getFiltersMenuItem(
     subMenu: [
       ...(showPairFilters
         ? [
-            checkboxItem('Show singletons', model.drawSingletons ?? false, () => {
-              model.setDrawSingletons?.(!model.drawSingletons)
-            }),
+            checkboxItem(
+              'Show singletons',
+              model.drawSingletons ?? false,
+              () => {
+                model.setDrawSingletons?.(!model.drawSingletons)
+              },
+            ),
             checkboxItem(
               'Show proper pairs',
               model.drawProperPairs ?? false,

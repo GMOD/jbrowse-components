@@ -60,7 +60,11 @@ function createDisplay() {
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
   const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
   const trackConfig = trackConfigSchema.create(
-    { type: 'AlignmentsTrack', trackId: 'test_track', assemblyNames: ['volvox'] },
+    {
+      type: 'AlignmentsTrack',
+      trackId: 'test_track',
+      assemblyNames: ['volvox'],
+    },
     { pluginManager },
   )
 

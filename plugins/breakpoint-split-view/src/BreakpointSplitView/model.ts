@@ -112,7 +112,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       matchedTrackFeatures: {} as Record<string, Feature[][]>,
     }))
     .views(self => ({
@@ -273,7 +272,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     layout,
                     level,
                     clipLengthAtStartOfRead:
-                      feature.get('clipLengthAtStartOfRead') ?? 0,
+                      (feature.get('clipLengthAtStartOfRead') as
+                        | number
+                        | undefined) ?? 0,
                   }
                 }
               }
@@ -293,7 +294,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 layout: makeOffscreenLayout(start, feature.get('end')),
                 level,
                 clipLengthAtStartOfRead:
-                  feature.get('clipLengthAtStartOfRead') ?? 0,
+                  (feature.get('clipLengthAtStartOfRead') as
+                    | number
+                    | undefined) ?? 0,
               }
             })
             .filter(notEmpty),
@@ -631,7 +634,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
@@ -653,7 +655,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(linkViews ? { linkViews } : {}),
         ...(!interactiveOverlay ? { interactiveOverlay } : {}),
         ...(!showHeader ? { showHeader } : {}),
-      } as typeof snap
+      }
     })
 }
 

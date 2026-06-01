@@ -26,5 +26,5 @@ test('can create a simple with subfeatures', () => {
   expect(f.id()).toEqual('test')
   expect(f.get('start')).toEqual(100)
   expect(f.get('end')).toEqual(500)
-  expect(f.get('subfeatures')[0].get('start')).toEqual(100)
+  expect(f.get('subfeatures')![0]!.get('start')).toEqual(100)
 })

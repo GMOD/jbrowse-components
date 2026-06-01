@@ -27,7 +27,13 @@ export default function Translocations(props: OverlayProps) {
         return match.layoutMatches.flatMap(chunk =>
           chunk.flatMap<PathSpec>(
             ({ layout: c1, feature: f1, level: level1 }) => {
-              const mate = readTranslocationMate(f1.get('INFO'))
+              const mate = readTranslocationMate(
+                f1.get('INFO') as {
+                  CHR2?: string[]
+                  END?: number[]
+                  STRANDS?: string[]
+                },
+              )
               if (!mate) {
                 return []
               }

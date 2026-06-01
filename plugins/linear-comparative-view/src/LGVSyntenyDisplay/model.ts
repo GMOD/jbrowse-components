@@ -53,7 +53,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(schema),
       }),
     )
-    .preProcessSnapshot(snap => ({
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => ({
       showCoverage: false,
       ...snap,
     }))

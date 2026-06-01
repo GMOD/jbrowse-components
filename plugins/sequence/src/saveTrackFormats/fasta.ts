@@ -6,7 +6,7 @@ export function stringifyFASTA({ features }: { features: Feature[] }) {
       const refName = feature.get('refName')
       const start = feature.get('start')
       const end = feature.get('end')
-      const seq = feature.get('seq') ?? ''
+      const seq = (feature.get('seq') as string | undefined) ?? ''
       const header = `>${refName}:${start + 1}-${end}`
       const wrappedSeq = seq.match(/.{1,80}/g)?.join('\n') ?? ''
       return `${header}\n${wrappedSeq}`

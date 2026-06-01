@@ -12,7 +12,13 @@ import type { Feature } from '@jbrowse/core/util'
  */
 function configSchemaF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('lgvSyntenyTooltip', (f: Feature) => {
-    const mate = f.get('mate')
+    const mate = f.get('mate') as {
+      name?: string
+      id?: string
+      refName: string
+      start: number
+      end: number
+    }
     const l1name = f.get('name') || f.get('id')
     const l2name = mate?.name || mate?.id
     return [

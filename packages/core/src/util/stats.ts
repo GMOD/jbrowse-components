@@ -125,8 +125,14 @@ export async function scoresToStats(
         const s = f.get('score') ?? 0
         const summary = f.get('summary')
         const { scoreMax, scoreMin } = acc
-        acc.scoreMax = Math.max(scoreMax, summary ? (f.get('maxScore') as number | undefined) ?? s : s)
-        acc.scoreMin = Math.min(scoreMin, summary ? (f.get('minScore') as number | undefined) ?? s : s)
+        acc.scoreMax = Math.max(
+          scoreMax,
+          summary ? ((f.get('maxScore') as number | undefined) ?? s) : s,
+        )
+        acc.scoreMin = Math.min(
+          scoreMin,
+          summary ? ((f.get('minScore') as number | undefined) ?? s) : s,
+        )
         acc.scoreMeanMin = Math.min(acc.scoreMeanMin, s)
         acc.scoreMeanMax = Math.max(acc.scoreMeanMax, s)
         acc.scoreSum += s

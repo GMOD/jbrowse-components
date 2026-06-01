@@ -126,7 +126,13 @@ function computeSampleInfo(
     },
   }))
 
-  return { sampleInfo, hasPhased, hasSecondaryAlt, hasUnphased, simplifiedFeatures }
+  return {
+    sampleInfo,
+    hasPhased,
+    hasSecondaryAlt,
+    hasUnphased,
+    simplifiedFeatures,
+  }
 }
 
 export async function executeVariantCellData({
@@ -244,10 +250,15 @@ export async function executeVariantCellData({
     )
   }
 
-  const { sampleInfo, hasPhased, hasSecondaryAlt, hasUnphased, simplifiedFeatures } =
-    await updateStatus('Computing sample info', statusCallback, () =>
-      computeSampleInfo(mafs, genotypesCache),
-    )
+  const {
+    sampleInfo,
+    hasPhased,
+    hasSecondaryAlt,
+    hasUnphased,
+    simplifiedFeatures,
+  } = await updateStatus('Computing sample info', statusCallback, () =>
+    computeSampleInfo(mafs, genotypesCache),
+  )
 
   // For phased mode: expand sources into per-haplotype rows. The client sends
   // layout-ordered sources without HP to avoid a circular sampleInfo dependency;

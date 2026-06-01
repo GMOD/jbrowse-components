@@ -18,7 +18,7 @@ export default class ArcPlugin extends Plugin {
     pluginManager.jexl.addFunction(
       'logThickness',
       (feature: Feature, attributeName: string) =>
-        Math.log(feature.get(attributeName) + 1),
+        Math.log((feature.get(attributeName) as number) + 1),
     )
     const svTypeColors: [string, string][] = [
       ['<DEL', set1[0]!],

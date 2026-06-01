@@ -119,8 +119,8 @@ export default class BreakpointGetFeatures extends RpcMethodType {
         .pipe(toArray()),
     )
 
-    return features.map(feature => {
-      const cigar = feature.get('CIGAR')
+    return features.map((feature): BreakpointSerializedFeature => {
+      const cigar = feature.get('CIGAR') as string | undefined
       const strand = feature.get('strand')
       return {
         uniqueId: feature.id(),
@@ -128,14 +128,16 @@ export default class BreakpointGetFeatures extends RpcMethodType {
         end: feature.get('end'),
         refName: feature.get('refName'),
         strand,
-        flags: feature.get('flags'),
+        flags: feature.get('flags') as number | undefined,
         name: feature.get('name'),
         id: feature.get('id'),
-        tags: feature.get('tags'),
-        pair_orientation: feature.get('pair_orientation'),
+        tags: feature.get('tags') as
+          | ({ SA?: string } & Record<string, unknown>)
+          | undefined,
+        pair_orientation: feature.get('pair_orientation') as string | undefined,
         type: feature.get('type'),
-        ALT: feature.get('ALT'),
-        INFO: feature.get('INFO'),
+        ALT: feature.get('ALT') as string[] | undefined,
+        INFO: feature.get('INFO') as BreakpointVcfInfo | undefined,
         clipLengthAtStartOfRead:
           cigar && strand !== undefined ? getClip(cigar, strand) : undefined,
       }

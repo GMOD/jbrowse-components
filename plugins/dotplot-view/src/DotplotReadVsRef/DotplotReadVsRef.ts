@@ -22,9 +22,9 @@ interface ReducedFeature {
 export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
   const session = getSession(self)
   try {
-    const cigar = feature.get('CIGAR')
+    const cigar = feature.get('CIGAR') as string
     const clipLengthAtStartOfRead = getClip(cigar, 1)
-    const flags = feature.get('flags')
+    const flags = feature.get('flags') as number
     const strand = feature.get('strand')!
     const readName = feature.get('name')!
     const readAssembly = `${readName}_assembly_${Date.now()}`
@@ -33,7 +33,7 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
     const assemblyNames = [trackAssembly, readAssembly]
     const trackId = `track-${Date.now()}`
     const trackName = `${readName}_vs_${trackAssembly}`
-    const SA = feature.get('tags')?.SA as string
+    const SA = (feature.get('tags') as { SA?: string } | undefined)?.SA!
     const SA2 = featurizeSA(SA, feature.id(), strand, readName, true)
 
     // For supplementary alignments the full read length must come from the

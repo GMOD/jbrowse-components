@@ -178,7 +178,9 @@ export function computeVariantCells({
       // uncommon, so the slower samples path runs only when a feature
       // actually declares PS. Mirrors the matrix display's PS branch so
       // phased coloring is consistent across both displays.
-      const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes('PS')
+      const hasPhaseSet = (
+        feature.get('FORMAT') as string | undefined
+      )?.includes('PS')
       if (hasPhaseSet || !callGt || !sampleIndices) {
         let samp: Record<string, Record<string, string[]>> | undefined
         let stringGenotypes: Record<string, string> | undefined

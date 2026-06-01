@@ -65,7 +65,9 @@ const AlignmentConnections = observer(function AlignmentConnections({
           const orientation = sameRef
             ? hasPaired
               ? getPairedOrientation({
-                  pair_orientation: f1.get('pair_orientation'),
+                  pair_orientation: f1.get('pair_orientation') as
+                    | string
+                    | undefined,
                 })
               : getLongReadOrientation(s1, s2)
             : undefined

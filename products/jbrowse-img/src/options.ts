@@ -10,7 +10,10 @@ export const optionDefs: OptionDef[] = [
   { name: 'assembly', description: 'Path to assembly JSON or name in config' },
   { name: 'config', description: 'Path to JBrowse config.json' },
   { name: 'session', description: 'Path to session JSON' },
-  { name: 'loc', description: 'Location to render (e.g., chr1:1-1000 or "all")' },
+  {
+    name: 'loc',
+    description: 'Location to render (e.g., chr1:1-1000 or "all")',
+  },
   { name: 'out', description: 'Output file path (SVG or PNG)' },
   { name: 'width', description: 'Width of output in pixels', default: 1500 },
   {

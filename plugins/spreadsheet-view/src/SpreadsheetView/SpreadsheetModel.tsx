@@ -173,26 +173,32 @@ export default function stateModelFactory() {
       },
     }))
     .preProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      return snap
+      const s = snap as
+        | ({
+            columns?: { isDerived?: boolean }[]
+            rowSet?: {
+              rows?: {
+                feature?: SimpleFeatureSerialized
+                extendedData?: { vcfFeature?: SimpleFeatureSerialized }
+              }[]
+            }
+          } & Record<string, unknown>)
+        | undefined
+      return s
         ? {
-            ...snap,
-            // @ts-expect-error no longer support derived columns
-            columns: snap.columns.filter(f => !f.isDerived),
-            rowSet: snap.rowSet
+            ...s,
+            columns: s.columns?.filter(f => !f.isDerived),
+            rowSet: s.rowSet
               ? {
-                  ...snap.rowSet,
-                  rows: snap.rowSet.rows.map(r => ({
+                  ...s.rowSet,
+                  rows: s.rowSet.rows?.map(r => ({
                     ...r,
-                    feature:
-                      r.feature ??
-                      // @ts-expect-error
-                      (r.extendedData?.vcfFeature as SimpleFeatureSerialized),
+                    feature: r.feature ?? r.extendedData?.vcfFeature,
                   })),
                 }
               : undefined,
           }
-        : snap
+        : s
     })
 }
 
