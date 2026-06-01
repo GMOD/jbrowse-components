@@ -10,7 +10,9 @@ import {
   MenuItem,
 } from '@mui/material'
 
-import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton.tsx'
+import CascadingMenuHelpIconButton, {
+  CascadingMenuHelpIconSpacer,
+} from './CascadingMenuHelpIconButton.tsx'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemEndDecoration } from './MenuItems.tsx'
 
@@ -216,9 +218,7 @@ function CascadingMenuList({
                 label={item.label}
               />
             ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
-              <div
-                style={{ marginLeft: 4, padding: 4, width: 28, height: 28 }}
-              />
+              <CascadingMenuHelpIconSpacer />
             ) : null}
           </MenuItem>
         )
