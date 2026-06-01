@@ -1,6 +1,7 @@
-import { useEffect, useEffectEvent, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { createScrollLatch, normalizeWheelDeltaY } from '@jbrowse/core/util'
+import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 
 export function useVariantVirtualScroll({
   canvas,
@@ -27,7 +28,7 @@ export function useVariantVirtualScroll({
   const hasOverflow = scrollableHeight > 0
   const latch = useMemo(() => createScrollLatch(), [])
 
-  const handleWheel = useEffectEvent((e: WheelEvent) => {
+  const handleWheel = useEventCallback((e: WheelEvent) => {
     if (e.shiftKey) {
       e.preventDefault()
       const delta = e.deltaY > 0 ? -1 : 1
@@ -64,7 +65,7 @@ export function useVariantVirtualScroll({
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [canvas])
+  }, [canvas, handleWheel])
 
   const thumbHeight = hasOverflow
     ? Math.max(20, (viewportHeight * viewportHeight) / totalHeight)

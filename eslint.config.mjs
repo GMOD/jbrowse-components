@@ -362,4 +362,25 @@ export default defineConfig(
       ],
     },
   },
+  // useEffectEvent returns a stale closure inside mobx-react observer()
+  // components (its useInsertionEffect impl-swap does not run under observer's
+  // reactive render), and nearly every JBrowse component is an observer. Use
+  // useEventCallback instead. See key_pattern_useeffectevent_observer_hazard.
+  {
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              importNames: ['useEffectEvent'],
+              message:
+                'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 )

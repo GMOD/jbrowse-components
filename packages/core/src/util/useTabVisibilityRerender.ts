@@ -1,4 +1,6 @@
-import { useEffect, useEffectEvent } from 'react'
+import { useEffect } from 'react'
+
+import { useEventCallback } from './useEventCallback.ts'
 
 /**
  * Re-renders GPU canvases when the browser tab becomes visible again.
@@ -9,11 +11,11 @@ import { useEffect, useEffectEvent } from 'react'
  * render on `visibilitychange` to restore the content.
  *
  * Pass whatever function your component uses to issue GPU draw calls. It is
- * captured via `useEffectEvent` so it always sees the latest closure values
+ * captured via `useEventCallback` so it always sees the latest closure values
  * without needing to be listed as a dependency.
  */
 export function useTabVisibilityRerender(renderFn: () => void) {
-  const stableRender = useEffectEvent(renderFn)
+  const stableRender = useEventCallback(renderFn)
 
   useEffect(() => {
     let rafId: number | null = null
@@ -36,5 +38,5 @@ export function useTabVisibilityRerender(renderFn: () => void) {
         cancelAnimationFrame(rafId)
       }
     }
-  }, [])
+  }, [stableRender])
 }

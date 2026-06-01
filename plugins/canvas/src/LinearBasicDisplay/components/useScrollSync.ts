@@ -66,7 +66,11 @@ export function useScrollSync(
       }
       if (e.shiftKey) {
         const max = container.scrollHeight - container.clientHeight
-        const dy = normalizeWheelDeltaY(e.deltaY, e.deltaMode, container.clientHeight)
+        const dy = normalizeWheelDeltaY(
+          e.deltaY,
+          e.deltaMode,
+          container.clientHeight,
+        )
         const next = latch.scroll(e, container.scrollTop, dy, max)
         if (next !== null) {
           e.stopPropagation()

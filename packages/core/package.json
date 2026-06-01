@@ -147,8 +147,7 @@
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
-    "./util/useGpuBackend": "./src/util/useGpuBackend.ts",
-    "./util/useLatestRef": "./src/util/useLatestRef.ts",
+    "./util/useEventCallback": "./src/util/useEventCallback.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts"
   },
@@ -718,13 +717,9 @@
         "types": "./esm/util/types/mst.d.ts",
         "import": "./esm/util/types/mst.js"
       },
-      "./util/useGpuBackend": {
-        "types": "./esm/util/useGpuBackend.d.ts",
-        "import": "./esm/util/useGpuBackend.js"
-      },
-      "./util/useLatestRef": {
-        "types": "./esm/util/useLatestRef.d.ts",
-        "import": "./esm/util/useLatestRef.js"
+      "./util/useEventCallback": {
+        "types": "./esm/util/useEventCallback.d.ts",
+        "import": "./esm/util/useEventCallback.js"
       },
       "./util/useMeasure": {
         "types": "./esm/util/useMeasure.d.ts",
@@ -1118,11 +1113,8 @@
         "util/types/mst": [
           "esm/util/types/mst.d.ts"
         ],
-        "util/useGpuBackend": [
-          "esm/util/useGpuBackend.d.ts"
-        ],
-        "util/useLatestRef": [
-          "esm/util/useLatestRef.d.ts"
+        "util/useEventCallback": [
+          "esm/util/useEventCallback.d.ts"
         ],
         "util/useMeasure": [
           "esm/util/useMeasure.d.ts"

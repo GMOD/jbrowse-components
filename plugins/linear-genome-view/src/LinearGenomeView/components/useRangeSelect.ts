@@ -1,5 +1,5 @@
 import type React from 'react'
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 
@@ -33,87 +33,64 @@ export function useRangeSelect(
     setGuideX(undefined)
   }, [])
 
-  const globalMouseMove = useEffectEvent((event: MouseEvent) => {
-    if (ref.current) {
-      setCurrentX(getRelativeX(event, ref.current))
-    }
-  })
-
-  const globalMouseUp = useEffectEvent((event: MouseEvent) => {
-    console.log(
-      '[rubberband] globalMouseUp called, startX=',
-      startX,
-      'ref.current=',
-      !!ref.current,
-    )
-    if (startX === undefined || !ref.current) {
-      return
-    }
-    const { clientX, clientY } = event
-    const offsetX = getRelativeX(event, ref.current)
-    const isClick = Math.abs(offsetX - startX) <= 3
-
-    // If click started on a scalebar refname label, let that component
-    // handle it instead of showing the rubberband menu
-    if (isClick && model.scalebarRefNameClickPending) {
-      setStartX(undefined)
-      setCurrentX(undefined)
-      return
-    }
-
-    if (!isClick && model.scalebarRefNameClickPending) {
-      model.setScalebarRefNameClickPending(false)
-    }
-
-    setAnchorPosition({ offsetX, clientX, clientY, isClick })
-    if (isClick) {
-      setGuideX(offsetX)
-    } else {
-      model.setOffsets(
-        model.pxToBp(Math.min(startX, offsetX)),
-        model.pxToBp(Math.max(startX, offsetX)),
-      )
-      setGuideX(undefined)
-    }
-  })
-
-  const globalKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      setStartX(undefined)
-      setCurrentX(undefined)
-    }
-  })
-
   useEffect(() => {
     if (!mouseDragging) {
       return
     }
-    console.log('[rubberband] effect: registering listeners, startX=', startX)
+    function globalMouseMove(event: MouseEvent) {
+      if (ref.current) {
+        setCurrentX(getRelativeX(event, ref.current))
+      }
+    }
+
+    function globalMouseUp(event: MouseEvent) {
+      if (startX === undefined || !ref.current) {
+        return
+      }
+      const { clientX, clientY } = event
+      const offsetX = getRelativeX(event, ref.current)
+      const isClick = Math.abs(offsetX - startX) <= 3
+
+      // If click started on a scalebar refname label, let that component
+      // handle it instead of showing the rubberband menu
+      if (isClick && model.scalebarRefNameClickPending) {
+        setStartX(undefined)
+        setCurrentX(undefined)
+        return
+      }
+
+      if (!isClick && model.scalebarRefNameClickPending) {
+        model.setScalebarRefNameClickPending(false)
+      }
+
+      setAnchorPosition({ offsetX, clientX, clientY, isClick })
+      if (isClick) {
+        setGuideX(offsetX)
+      } else {
+        model.setOffsets(
+          model.pxToBp(Math.min(startX, offsetX)),
+          model.pxToBp(Math.max(startX, offsetX)),
+        )
+        setGuideX(undefined)
+      }
+    }
+
+    function globalKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setStartX(undefined)
+        setCurrentX(undefined)
+      }
+    }
+
     window.addEventListener('mousemove', globalMouseMove)
     window.addEventListener('mouseup', globalMouseUp)
     window.addEventListener('keydown', globalKeyDown)
     return () => {
-      console.log(
-        '[rubberband] effect cleanup: removing listeners, startX=',
-        startX,
-      )
       window.removeEventListener('mousemove', globalMouseMove)
       window.removeEventListener('mouseup', globalMouseUp)
       window.removeEventListener('keydown', globalKeyDown)
     }
-  }, [mouseDragging])
-
-  const renderCountRef = useRef(0)
-  renderCountRef.current += 1
-  const renderNum = renderCountRef.current
-  console.log(
-    '[rubberband] render #',
-    renderNum,
-    'startX=',
-    startX,
-    'mouseDragging=',
-    mouseDragging,
-  )
+  }, [startX, mouseDragging, model, ref])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {

@@ -86,6 +86,10 @@ const sampleConfigs: {
     label: 'Volvox (genes + multi-wiggle + BAM)',
   },
   {
+    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}}]}]}',
+    label: 'Volvox SV (arc display)',
+  },
+  {
     config: 'test_data/volvox/config_broken.json',
     label: 'Broken track config (toggle track for error snackbar)',
   },

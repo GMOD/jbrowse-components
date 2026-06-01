@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
@@ -10,6 +10,7 @@ import {
   normalizeWheelDeltaY,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
@@ -87,7 +88,7 @@ const PileupBody = observer(function PileupBody({
   const { scrollZoom } = view
   const latch = useMemo(() => createScrollLatch(), [])
 
-  const handleWheel = useEffectEvent((e: WheelEvent) => {
+  const handleWheel = useEventCallback((e: WheelEvent) => {
     if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
       return
     }
@@ -110,7 +111,7 @@ const PileupBody = observer(function PileupBody({
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [canvas])
+  }, [canvas, handleWheel])
 
   if (!width) {
     return null

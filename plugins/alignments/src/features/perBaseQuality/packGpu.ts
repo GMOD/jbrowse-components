@@ -12,7 +12,9 @@ export const PER_BASE_QUALITY_PASS = slangPass({
   mod: perBaseQualityShader,
 })
 
-export function packPerBaseQuality(data: PerBaseQualityUploadData): ArrayBuffer {
+export function packPerBaseQuality(
+  data: PerBaseQualityUploadData,
+): ArrayBuffer {
   const n = data.perBaseQualPositions.length
   const F = perBaseQualityShader.FIELD_OFFSET_F32
   const s32 = perBaseQualityShader.INSTANCE_STRIDE_F32

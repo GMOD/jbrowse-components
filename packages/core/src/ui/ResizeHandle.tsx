@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { cx, makeStyles } from '../util/tss-react/index.ts'
+import { useEventCallback } from '../util/useEventCallback.ts'
 
 const useStyles = makeStyles()(theme => ({
   horizontalHandle: {
@@ -47,7 +48,7 @@ function ResizeHandle({
   const initialPosition = useRef(0)
   const prevPos = useRef(0)
   const { classes } = useStyles()
-  const onDragStable = useEffectEvent(onDrag)
+  const onDragStable = useEventCallback(onDrag)
 
   const getPos = useCallback(
     (event: MouseEvent | React.MouseEvent) =>
@@ -79,7 +80,7 @@ function ResizeHandle({
       window.removeEventListener('mousemove', mouseMove, true)
       window.removeEventListener('mouseup', mouseUp, true)
     }
-  }, [mouseDragging, getPos])
+  }, [mouseDragging, getPos, onDragStable])
 
   const handleMouseDown = useCallback(
     (event: React.MouseEvent) => {

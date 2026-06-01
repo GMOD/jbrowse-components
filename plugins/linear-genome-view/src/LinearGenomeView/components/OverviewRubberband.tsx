@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
@@ -42,60 +42,60 @@ const OverviewRubberband = observer(function OverviewRubberband({
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined
 
-  const globalMouseMove = useEffectEvent((event: MouseEvent) => {
-    if (controlsRef.current) {
-      setCurrentX(getRelativeX(event, controlsRef.current))
-    }
-  })
-
-  const globalMouseUp = useEffectEvent(() => {
-    // click and drag
-    if (startX !== undefined && currentX !== undefined) {
-      if (Math.abs(currentX - startX) > 3) {
-        const left = Math.min(startX, currentX)
-        const right = Math.max(startX, currentX)
-        model.moveTo(
-          pxToBp(overview, left - cytobandOffset),
-          pxToBp(overview, right - cytobandOffset),
-        )
-      }
-    }
-
-    // just a click
-    if (startX !== undefined && currentX === undefined) {
-      const click = pxToBp(overview, startX - cytobandOffset)
-      if (!click.refName) {
-        getSession(model).notify('unknown position clicked')
-        console.error('unknown position clicked', click)
-      } else {
-        model.centerAt(Math.round(click.coord), click.refName, click.index)
-      }
-    }
-    setStartX(undefined)
-    setCurrentX(undefined)
-    setGuideX(undefined)
-  })
-
-  const globalKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      setStartX(undefined)
-      setCurrentX(undefined)
-    }
-  })
-
   useEffect(() => {
     if (!mouseDragging) {
       return
     }
-    window.addEventListener('mousemove', globalMouseMove, true)
-    window.addEventListener('mouseup', globalMouseUp, true)
-    window.addEventListener('keydown', globalKeyDown, true)
-    return () => {
-      window.removeEventListener('mousemove', globalMouseMove, true)
-      window.removeEventListener('mouseup', globalMouseUp, true)
-      window.removeEventListener('keydown', globalKeyDown, true)
+    function globalMouseMove(event: MouseEvent) {
+      if (controlsRef.current) {
+        setCurrentX(getRelativeX(event, controlsRef.current))
+      }
     }
-  }, [mouseDragging])
+
+    function globalMouseUp() {
+      // click and drag
+      if (startX !== undefined && currentX !== undefined) {
+        if (Math.abs(currentX - startX) > 3) {
+          const left = Math.min(startX, currentX)
+          const right = Math.max(startX, currentX)
+          model.moveTo(
+            pxToBp(overview, left - cytobandOffset),
+            pxToBp(overview, right - cytobandOffset),
+          )
+        }
+      }
+
+      // just a click
+      if (startX !== undefined && currentX === undefined) {
+        const click = pxToBp(overview, startX - cytobandOffset)
+        if (!click.refName) {
+          getSession(model).notify('unknown position clicked')
+          console.error('unknown position clicked', click)
+        } else {
+          model.centerAt(Math.round(click.coord), click.refName, click.index)
+        }
+      }
+      setStartX(undefined)
+      setCurrentX(undefined)
+      setGuideX(undefined)
+    }
+
+    function globalKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setStartX(undefined)
+        setCurrentX(undefined)
+      }
+    }
+
+    window.addEventListener('mousemove', globalMouseMove)
+    window.addEventListener('mouseup', globalMouseUp)
+    window.addEventListener('keydown', globalKeyDown)
+    return () => {
+      window.removeEventListener('mousemove', globalMouseMove)
+      window.removeEventListener('mouseup', globalMouseUp)
+      window.removeEventListener('keydown', globalKeyDown)
+    }
+  }, [startX, currentX, mouseDragging, model, overview, cytobandOffset])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()

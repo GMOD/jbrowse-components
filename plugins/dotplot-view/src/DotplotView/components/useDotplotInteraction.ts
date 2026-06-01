@@ -1,5 +1,6 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -95,7 +96,7 @@ export function useDotplotInteraction(
   const distanceX = useRef(0)
   const distanceY = useRef(0)
   const scheduled = useRef(false)
-  const onWheel = useEffectEvent(function onWheel(event: WheelEvent) {
+  const onWheel = useEventCallback(function onWheel(event: WheelEvent) {
     event.preventDefault()
     distanceX.current += event.deltaX
     distanceY.current -= event.deltaY
@@ -129,10 +130,10 @@ export function useDotplotInteraction(
     return () => {
       refEl.removeEventListener('wheel', onWheel)
     }
-  }, [refEl])
+  }, [refEl, onWheel])
 
   // mousemove: pan while dragging without mouseup pinned
-  const onMove = useEffectEvent(function onMove(event: MouseEvent) {
+  const onMove = useEventCallback(function onMove(event: MouseEvent) {
     setMouseCurrClient([event.clientX, event.clientY])
     if (mousecurrClient && mousedownClient && validPan && !mouseupClient) {
       hview.scroll(-event.clientX + mousecurrClient[0])
@@ -152,7 +153,7 @@ export function useDotplotInteraction(
     return () => {
       window.removeEventListener('mousemove', onMove)
     }
-  }, [mouseOvered, hasDrag])
+  }, [mouseOvered, hasDrag, onMove])
 
   // ctrl/meta-key tracking (mode-switch modifier)
   useEffect(() => {
@@ -175,7 +176,7 @@ export function useDotplotInteraction(
   }, [])
 
   // mouseup: commit selection if drag exceeded threshold, else cancel.
-  const onUp = useEffectEvent(function onUp(event: MouseEvent) {
+  const onUp = useEventCallback(function onUp(event: MouseEvent) {
     if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
       setMouseUpClient([event.clientX, event.clientY])
     } else {
@@ -190,7 +191,7 @@ export function useDotplotInteraction(
     return () => {
       window.removeEventListener('mouseup', onUp, true)
     }
-  }, [hasDrag])
+  }, [hasDrag, onUp])
 
   const dragOpen =
     !!mousedown &&
