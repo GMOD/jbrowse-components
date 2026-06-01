@@ -20,18 +20,14 @@ export function parseArgv(rawArgv: string[]) {
 }
 
 export function standardizeArgv(args: Entry[], trackTypes: string[]) {
-  const result = { trackList: [] } as {
-    trackList: Entry[]
-    out?: string
-    pngwidth?: string
-    [key: string]: unknown
-  }
-  for (const arg of args) {
-    if (trackTypes.includes(arg[0])) {
-      result.trackList.push(arg)
+  const trackList: Entry[] = []
+  const rest: Record<string, unknown> = {}
+  for (const [key, vals] of args) {
+    if (trackTypes.includes(key)) {
+      trackList.push([key, vals])
     } else {
-      result[arg[0]] = arg[1][0] ?? true
+      rest[key] = vals[0] ?? true
     }
   }
-  return result
+  return { trackList, ...rest }
 }

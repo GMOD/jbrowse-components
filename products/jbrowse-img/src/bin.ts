@@ -172,10 +172,15 @@ async function main() {
 
   if (!outFile) {
     console.log(result)
-  } else if (outFile.endsWith('.png')) {
-    convert(result, { out: outFile, pngwidth: String(argv.width) })
   } else {
-    fs.writeFileSync(outFile, result)
+    const lower = outFile.toLowerCase()
+    if (lower.endsWith('.png')) {
+      convert(result, { out: outFile, pngwidth: String(argv.width) })
+    } else if (lower.endsWith('.pdf')) {
+      convert(result, { out: outFile }, ['-f', 'pdf'])
+    } else {
+      fs.writeFileSync(outFile, result)
+    }
   }
 }
 

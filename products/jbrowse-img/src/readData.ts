@@ -35,16 +35,23 @@ function read(file: string): unknown {
 }
 
 export function makeLocation(file: string) {
-  return file.startsWith('http') ? { uri: file } : { localPath: file }
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(file)
+    ? { uri: file }
+    : { localPath: file }
 }
 
-function addRelativePaths(config: Record<string, unknown>, configPath: string) {
-  for (const key of Object.keys(config)) {
-    const val = config[key]
-    if (val !== null && typeof val === 'object') {
-      addRelativePaths(val as Record<string, unknown>, configPath)
-    } else if (key === 'localPath') {
-      config.localPath = path.resolve(configPath, val as string)
+// Resolve every `localPath` nested anywhere in `value` relative to `baseDir`,
+// so paths inside a config/assembly/tracks JSON are relative to that file.
+function resolveLocalPaths(value: unknown, baseDir: string) {
+  if (value !== null && typeof value === 'object') {
+    const obj = value as Record<string, unknown>
+    for (const key of Object.keys(obj)) {
+      const val = obj[key]
+      if (key === 'localPath' && typeof val === 'string') {
+        obj.localPath = path.resolve(baseDir, val)
+      } else {
+        resolveLocalPaths(val, baseDir)
+      }
     }
   }
 }
@@ -178,13 +185,23 @@ export function readData({
   tracks,
   trackList = [],
 }: Opts) {
-  const assemblyData =
-    asm && fs.existsSync(asm) ? (read(asm) as Assembly) : undefined
+  let assemblyData: Assembly | undefined
+  if (asm && fs.existsSync(asm)) {
+    assemblyData = read(asm) as Assembly
+    resolveLocalPaths(assemblyData, path.dirname(path.resolve(asm)))
+  }
+
   const rawTracksData = tracks ? read(tracks) : undefined
   if (rawTracksData !== undefined && !Array.isArray(rawTracksData)) {
     throw new Error(`${tracks}: expected a JSON array of tracks`)
   }
   const tracksData = rawTracksData as Track[] | undefined
+  if (tracksData && tracks) {
+    const baseDir = path.dirname(path.resolve(tracks))
+    for (const track of tracksData) {
+      resolveLocalPaths(track, baseDir)
+    }
+  }
   const configData: Partial<Config> & Record<string, unknown> = config
     ? (read(config) as Config)
     : {}
@@ -194,7 +211,7 @@ export function readData({
     : undefined
 
   if (config) {
-    addRelativePaths(configData, path.dirname(path.resolve(config)))
+    resolveLocalPaths(configData, path.dirname(path.resolve(config)))
   }
 
   // the session.json can be a raw session or a json file with a "session"
