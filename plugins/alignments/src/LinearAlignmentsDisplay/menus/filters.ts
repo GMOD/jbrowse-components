@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 
+import { checkboxItem } from './menuHelpers.ts'
+
 import type { FilterBy } from '../../shared/types.ts'
 
 const FilterByTagDialog = lazy(() => import('../dialogs/FilterByTagDialog.tsx'))
@@ -28,22 +30,16 @@ export function getFiltersMenuItem(
     subMenu: [
       ...(showPairFilters
         ? [
-            {
-              label: 'Show singletons',
-              type: 'checkbox' as const,
-              checked: model.drawSingletons ?? false,
-              onClick: () => {
-                model.setDrawSingletons?.(!model.drawSingletons)
-              },
-            },
-            {
-              label: 'Show proper pairs',
-              type: 'checkbox' as const,
-              checked: model.drawProperPairs ?? false,
-              onClick: () => {
+            checkboxItem('Show singletons', model.drawSingletons ?? false, () => {
+              model.setDrawSingletons?.(!model.drawSingletons)
+            }),
+            checkboxItem(
+              'Show proper pairs',
+              model.drawProperPairs ?? false,
+              () => {
                 model.setDrawProperPairs?.(!model.drawProperPairs)
               },
-            },
+            ),
           ]
         : []),
       {

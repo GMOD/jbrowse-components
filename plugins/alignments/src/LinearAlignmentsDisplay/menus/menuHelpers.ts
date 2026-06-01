@@ -1,5 +1,5 @@
 import type { LinkedReadsMode } from '../constants.ts'
-import type { RadioMenuItem } from '@jbrowse/core/ui'
+import type { CheckboxMenuItem, RadioMenuItem } from '@jbrowse/core/ui'
 
 export const LINKED_READS_OPTIONS: {
   value: LinkedReadsMode
@@ -28,6 +28,29 @@ export function radioItems<T extends string>(
       setMode(value)
     },
   }))
+}
+
+// A boolean on/off menu entry. Returns the precise CheckboxMenuItem shape so
+// the type, checked flag, and handler can't be mismatched, and wraps the
+// toggle in a no-arg onClick so the renderer's click argument never leaks into
+// the model setter.
+export function checkboxItem(
+  label: string,
+  checked: boolean,
+  onToggle: () => void,
+  opts?: { helpText?: string; icon?: CheckboxMenuItem['icon']; disabled?: boolean },
+): CheckboxMenuItem {
+  return {
+    label,
+    ...(opts?.helpText ? { helpText: opts.helpText } : {}),
+    ...(opts?.icon ? { icon: opts.icon } : {}),
+    ...(opts?.disabled ? { disabled: opts.disabled } : {}),
+    type: 'checkbox',
+    checked,
+    onClick: () => {
+      onToggle()
+    },
+  }
 }
 
 // Top-level submenu item holding a radio-mode picker, so callers stay

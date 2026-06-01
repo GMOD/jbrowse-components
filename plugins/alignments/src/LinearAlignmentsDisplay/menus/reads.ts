@@ -1,5 +1,6 @@
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { checkboxItem } from './menuHelpers.ts'
 import { getArcDirectionMenuItem } from './readConnections.ts'
 
 import type { ReadConnectionsMode } from '../constants.ts'
@@ -36,62 +37,39 @@ export function getReadsMenuItem(model: ReadsModel) {
     icon: VisibilityIcon,
     type: 'subMenu' as const,
     subMenu: [
-      {
-        label: 'Show coverage',
-        type: 'checkbox' as const,
-        checked: model.showCoverage,
-        onClick: () => {
-          model.setShowCoverage(!model.showCoverage)
-        },
-      },
-      {
-        label: 'Show mismatches',
-        type: 'checkbox' as const,
-        checked: model.showMismatches,
-        onClick: () => {
-          model.setShowMismatches(!model.showMismatches)
-        },
-      },
-      {
-        label: 'Show soft clipping',
-        type: 'checkbox' as const,
-        checked: model.showSoftClipping,
-        onClick: () => {
-          model.toggleSoftClipping()
-        },
-      },
-      {
-        label: 'Show interbase indicators',
-        type: 'checkbox' as const,
-        checked: model.showInterbaseIndicators,
-        onClick: () => {
+      checkboxItem('Show coverage', model.showCoverage, () => {
+        model.setShowCoverage(!model.showCoverage)
+      }),
+      checkboxItem('Show mismatches', model.showMismatches, () => {
+        model.setShowMismatches(!model.showMismatches)
+      }),
+      checkboxItem('Show soft clipping', model.showSoftClipping, () => {
+        model.toggleSoftClipping()
+      }),
+      checkboxItem(
+        'Show interbase indicators',
+        model.showInterbaseIndicators,
+        () => {
           model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
         },
-      },
-      {
-        label: 'Show mismatches faded by base quality',
-        type: 'checkbox' as const,
-        checked: model.mismatchAlpha,
-        onClick: () => {
+      ),
+      checkboxItem(
+        'Show mismatches faded by base quality',
+        model.mismatchAlpha,
+        () => {
           model.toggleMismatchAlpha()
         },
-      },
-      {
-        label: 'Show outlines',
-        type: 'checkbox' as const,
-        checked: model.showOutlineSetting,
-        onClick: () => {
-          model.setShowOutline(!model.showOutlineSetting)
-        },
-      },
-      {
-        label: 'Show supp. alignments colored by primary strand',
-        type: 'checkbox' as const,
-        checked: model.flipStrandLongReadChains,
-        onClick: () => {
+      ),
+      checkboxItem('Show outlines', model.showOutlineSetting, () => {
+        model.setShowOutline(!model.showOutlineSetting)
+      }),
+      checkboxItem(
+        'Show supp. alignments colored by primary strand',
+        model.flipStrandLongReadChains,
+        () => {
           model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
         },
-      },
+      ),
       getArcDirectionMenuItem(model),
     ],
   }

@@ -1,7 +1,12 @@
 import GestureIcon from '@mui/icons-material/Gesture'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import { LINKED_READS_OPTIONS, radioItems, radioModeMenuItem } from './menuHelpers.ts'
+import {
+  LINKED_READS_OPTIONS,
+  checkboxItem,
+  radioItems,
+  radioModeMenuItem,
+} from './menuHelpers.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -31,24 +36,22 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
     model.readConnections === 'off'
       ? []
       : [
-          {
-            label: 'Show long-range pairs',
-            helpText: 'reads >100 kb apart or with off-screen mates',
-            type: 'checkbox' as const,
-            checked: model.drawLongRange,
-            onClick: () => {
+          checkboxItem(
+            'Show long-range pairs',
+            model.drawLongRange,
+            () => {
               model.setDrawLongRange(!model.drawLongRange)
             },
-          },
-          {
-            label: 'Show inter-chromosomal pairs',
-            helpText: 'reads whose mate maps to a different chromosome',
-            type: 'checkbox' as const,
-            checked: model.drawInter,
-            onClick: () => {
+            { helpText: 'reads >100 kb apart or with off-screen mates' },
+          ),
+          checkboxItem(
+            'Show inter-chromosomal pairs',
+            model.drawInter,
+            () => {
               model.setDrawInter(!model.drawInter)
             },
-          },
+            { helpText: 'reads whose mate maps to a different chromosome' },
+          ),
         ]
   return {
     label: 'Read connections',
@@ -82,15 +85,14 @@ interface SashimiArcsModel {
 // and turning it on force-enables coverage — both invariants live in the
 // `toggleSashimiArcs` action.
 export function getSashimiArcsMenuItem(model: SashimiArcsModel) {
-  return {
-    label: 'Sashimi arcs',
-    icon: GestureIcon,
-    type: 'checkbox' as const,
-    checked: model.showSashimiArcs,
-    onClick: () => {
+  return checkboxItem(
+    'Sashimi arcs',
+    model.showSashimiArcs,
+    () => {
       model.toggleSashimiArcs()
     },
-  }
+    { icon: GestureIcon },
+  )
 }
 
 interface ArcDirectionModel {
@@ -105,15 +107,13 @@ interface ArcDirectionModel {
 // than once per feature. `readConnectionsDown` is the one direction field both
 // features read, so this handler just flips it.
 export function getArcDirectionMenuItem(model: ArcDirectionModel) {
-  const anyArcsOn =
-    model.readConnections !== 'off' || model.showSashimiArcs
-  return {
-    label: 'Draw arcs below coverage band',
-    disabled: !anyArcsOn,
-    type: 'checkbox' as const,
-    checked: model.readConnectionsDown,
-    onClick: () => {
+  const anyArcsOn = model.readConnections !== 'off' || model.showSashimiArcs
+  return checkboxItem(
+    'Draw arcs below coverage band',
+    model.readConnectionsDown,
+    () => {
       model.setReadConnectionsDown(!model.readConnectionsDown)
     },
-  }
+    { disabled: !anyArcsOn },
+  )
 }
