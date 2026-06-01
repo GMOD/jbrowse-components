@@ -36,11 +36,11 @@ export function featureData(
   // strip GTF double-quotes from every value, unwrap single-element arrays
   const processedAttrs = Object.fromEntries(
     Object.entries(data.attributes).map(([a, vals]) => {
-        const lower = a.toLowerCase()
-        const key = defaultFields.has(lower) ? `${lower}2` : lower
-        const dequoted = vals.map(v => String(v).replaceAll(/^"|"$/g, ''))
-        return [key, dequoted.length === 1 ? dequoted[0] : dequoted] as const
-      }),
+      const lower = a.toLowerCase()
+      const key = defaultFields.has(lower) ? `${lower}2` : lower
+      const dequoted = vals.map(v => String(v).replaceAll(/^"|"$/g, ''))
+      return [key, dequoted.length === 1 ? dequoted[0] : dequoted] as const
+    }),
   )
 
   const subfeatures = data.child_features?.length
@@ -215,8 +215,9 @@ export function extractType(line: string) {
  * GTF has no spanning gene line, so a gene is synthesized by grouping transcript
  * features that share `aggregateField` (e.g. gene_name) and spanning them. Any
  * explicit `gene` line is dropped, since the parser leaves it childless and the
- * synthesized parent supersedes it. Features without the aggregate field pass
- * through unchanged.
+ * synthesized parent supersedes it; a childless `transcript` line is dropped too
+ * (e.g. AUGUSTUS emits a bare `transcript` line whose 9th column has no parseable
+ * attributes). Features without the aggregate field pass through unchanged.
  */
 export function aggregateGtfFeatures({
   feats,
@@ -234,7 +235,9 @@ export function aggregateGtfFeatures({
   const out: SimpleFeatureSerialized[] = []
   const parentAggregation: Record<string, SimpleFeatureSerialized[]> = {}
   for (const feat of feats) {
-    if (feat.type !== 'gene') {
+    const childlessTranscript =
+      feat.type === 'transcript' && !feat.subfeatures?.length
+    if (feat.type !== 'gene' && !childlessTranscript) {
       const aggr = feat[aggregateField]
       if (typeof aggr === 'string' && aggr.length > 0) {
         ;(parentAggregation[aggr] ??= []).push(feat)

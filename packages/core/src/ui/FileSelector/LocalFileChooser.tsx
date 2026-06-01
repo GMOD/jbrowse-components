@@ -122,7 +122,10 @@ function FilePickerButton({
           const filePath = typeof result === 'string' ? result : undefined
           if (filePath) {
             setLastLocalFileDir(filePath)
-            setLocation({ localPath: filePath, locationType: 'LocalPathLocation' })
+            setLocation({
+              localPath: filePath,
+              locationType: 'LocalPathLocation',
+            })
           }
         }}
       >

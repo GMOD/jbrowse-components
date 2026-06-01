@@ -31,7 +31,9 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }
-        } else if (testAdapter(fileName, /\.gtf$/i, adapterHint, 'GtfAdapter')) {
+        } else if (
+          testAdapter(fileName, /\.gtf$/i, adapterHint, 'GtfAdapter')
+        ) {
           return {
             type: 'GtfAdapter',
             gtfLocation: file,

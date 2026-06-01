@@ -611,15 +611,15 @@ exports[`adds plaintext gtf 1`] = `
     "adapter": {
       "gtfLocation": {
         "locationType": "UriLocation",
-        "uri": "volvox.sorted.gtf",
+        "uri": "gencode_tp53.gtf",
       },
       "type": "GtfAdapter",
     },
     "assemblyNames": [
       "testAssembly",
     ],
-    "name": "volvox.sorted",
-    "trackId": "volvox.sorted",
+    "name": "gencode_tp53",
+    "trackId": "gencode_tp53",
     "type": "FeatureTrack",
   },
 ]

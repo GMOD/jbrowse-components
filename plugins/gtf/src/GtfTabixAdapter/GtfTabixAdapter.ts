@@ -98,9 +98,14 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter {
       const lines: GtfLine[] = []
 
       await updateStatus('Downloading features', opts.statusCallback, () =>
-        gtf.getLines(query.refName, query.start, query.end, (line, _fo, s, e) => {
-          lines.push({ line, start: s, end: e, type: extractType(line) })
-        }),
+        gtf.getLines(
+          query.refName,
+          query.start,
+          query.end,
+          (line, _fo, s, e) => {
+            lines.push({ line, start: s, end: e, type: extractType(line) })
+          },
+        ),
       )
 
       if (allowRedispatch && lines.length) {

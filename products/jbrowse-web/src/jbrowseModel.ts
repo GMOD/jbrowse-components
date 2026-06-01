@@ -33,10 +33,7 @@ export default function JBrowseWeb({
       // strip the synthetic baseUri keys added by addRelativeUris when
       // serializing config back out (e.g. for the admin "Save config" flow)
       postProcessor(snapshot) {
-        return removeAttr(
-          structuredClone(snapshot) as unknown as Record<string, unknown>,
-          'baseUri',
-        )
+        return removeAttr(structuredClone(snapshot), 'baseUri')
       },
     },
   )

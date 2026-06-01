@@ -5,9 +5,9 @@ import { Readable } from 'stream'
 import { fileURLToPath } from 'url'
 import { createGunzip } from 'zlib'
 
+import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 import type { ReadableStream } from 'node:stream/web'
 
-import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 
 export function isURL(fileName: string) {
   try {

@@ -4,31 +4,35 @@ import { toArray } from 'rxjs/operators'
 import GtfAdapter from './GtfAdapter.ts'
 import configSchema from './configSchema.ts'
 
-describe('adapter can fetch features from volvox.sorted.gtf', () => {
-  let adapter: GtfAdapter
-  beforeEach(() => {
-    adapter = new GtfAdapter(
+describe('GtfAdapter on a GENCODE excerpt', () => {
+  it('aggregates a gene from its transcript and exon/CDS lines', async () => {
+    const adapter = new GtfAdapter(
       configSchema.create({
         gtfLocation: {
-          localPath: require.resolve('../test_data/volvox.sorted.gtf'),
+          localPath: require.resolve('../test_data/gencode_tp53.gtf'),
         },
       }),
     )
-  })
-  it('test getfeatures on gtf plain text adapter', async () => {
+    expect(await adapter.hasDataForRefName('chr17')).toBe(true)
     const features = adapter.getFeatures({
-      refName: 'ctgA',
-      start: 0,
-      end: 100000,
-      assemblyName: 'volvox',
+      refName: 'chr17',
+      start: 7571719,
+      end: 7590868,
+      assemblyName: 'hg19',
     })
-    expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
-    expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
     const featuresArray = await firstValueFrom(features.pipe(toArray()))
-    // There are only 4 features in ctgB
-    expect(featuresArray.length).toBe(4)
-    const featuresJsonArray = featuresArray.map(f => f.toJSON())
-    expect(featuresJsonArray).toMatchSnapshot()
+    const gene = featuresArray[0]!.toJSON()
+    expect(gene.type).toBe('gene')
+    expect(gene.name).toBe('TP53')
+    const transcript = gene.subfeatures![0]!
+    expect(transcript.type).toBe('transcript')
+    expect(transcript.subfeatures!.filter(f => f.type === 'CDS')).toHaveLength(
+      5,
+    )
+    expect(transcript.subfeatures!.filter(f => f.type === 'exon')).toHaveLength(
+      5,
+    )
+    expect(featuresArray.map(f => f.toJSON())).toMatchSnapshot()
   })
 })
 

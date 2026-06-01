@@ -2336,29 +2336,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
-        "gtfLocation": {
-          "locationType": "UriLocation",
-          "uri": "volvox.sorted.gtf",
-        },
-        "type": "GtfAdapter",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "category": [
-        "Miscellaneous",
-      ],
-      "name": "GTF - volvox.sorted.gtf",
-      "textSearching": {
-        "indexingAttributes": [
-          "gene_id",
-        ],
-      },
-      "trackId": "gtf_plain_text_test",
-      "type": "FeatureTrack",
-    },
-    {
-      "adapter": {
         "index": {
           "indexType": "TBI",
           "location": {

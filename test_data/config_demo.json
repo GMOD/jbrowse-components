@@ -82,6 +82,82 @@
   "tracks": [
     {
       "type": "FeatureTrack",
+      "trackId": "gtf_demo_gencode_tp53",
+      "name": "GENCODE TP53 (GTF tabix)",
+      "assemblyNames": ["hg19"],
+      "category": ["GTF format demo"],
+      "adapter": {
+        "type": "GtfTabixAdapter",
+        "gtfGzLocation": {
+          "uri": "gtf_demo/gencode_tp53.gtf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "gtf_demo/gencode_tp53.gtf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gtf_demo_stringtie_tp53",
+      "name": "StringTie TP53 (GTF tabix)",
+      "assemblyNames": ["hg19"],
+      "category": ["GTF format demo"],
+      "adapter": {
+        "type": "GtfTabixAdapter",
+        "gtfGzLocation": {
+          "uri": "gtf_demo/stringtie_tp53.gtf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "gtf_demo/stringtie_tp53.gtf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gtf_demo_augustus_tp53",
+      "name": "AUGUSTUS TP53 (GTF tabix)",
+      "assemblyNames": ["hg19"],
+      "category": ["GTF format demo"],
+      "adapter": {
+        "type": "GtfTabixAdapter",
+        "aggregateField": "gene_id",
+        "gtfGzLocation": {
+          "uri": "gtf_demo/augustus_tp53.gtf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "gtf_demo/augustus_tp53.gtf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gtf_demo_ucsc_tp53",
+      "name": "UCSC TP53 (GTF plain)",
+      "assemblyNames": ["hg19"],
+      "category": ["GTF format demo"],
+      "adapter": {
+        "type": "GtfAdapter",
+        "aggregateField": "gene_id",
+        "gtfLocation": {
+          "uri": "gtf_demo/ucsc_tp53.gtf",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
       "name": "NCBI RefSeq w/ subfeature details",
       "formatDetails": {

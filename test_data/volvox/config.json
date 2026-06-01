@@ -1822,23 +1822,6 @@
       }
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "gtf_plain_text_test",
-      "category": ["Miscellaneous"],
-      "name": "GTF - volvox.sorted.gtf",
-      "assemblyNames": ["volvox"],
-      "textSearching": {
-        "indexingAttributes": ["gene_id"]
-      },
-      "adapter": {
-        "type": "GtfAdapter",
-        "gtfLocation": {
-          "uri": "volvox.sorted.gtf",
-          "locationType": "UriLocation"
-        }
-      }
-    },
-    {
       "type": "VariantTrack",
       "trackId": "volvox.inv.vcf",
       "name": "volvox inversions",
