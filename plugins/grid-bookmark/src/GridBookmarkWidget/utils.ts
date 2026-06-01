@@ -34,8 +34,7 @@ export async function navToBookmark(
     if (view?.assemblyNames[0] !== assembly) {
       view = views.find(
         elt =>
-          // @ts-expect-error
-          elt.type === 'LinearGenomeView' && elt.assemblyNames[0] === assembly,
+          elt.type === 'LinearGenomeView' && elt.assemblyNames?.[0] === assembly,
       ) as MaybeLGV
     }
 

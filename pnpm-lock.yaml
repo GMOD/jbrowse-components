@@ -38,6 +38,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^5.10.2
         version: 5.10.2(mobx@6.15.4)
+      '@jbrowse/web':
+        specifier: workspace:^
+        version: link:products/jbrowse-web
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -1102,6 +1105,15 @@ importers:
       '@jbrowse/app-core':
         specifier: workspace:*
         version: link:../../packages/app-core
+      '@jbrowse/plugin-alignments':
+        specifier: workspace:^
+        version: link:../alignments
+      '@jbrowse/plugin-hic':
+        specifier: workspace:^
+        version: link:../hic
+      '@jbrowse/plugin-variants':
+        specifier: workspace:^
+        version: link:../variants
 
   plugins/dotplot-view:
     dependencies:

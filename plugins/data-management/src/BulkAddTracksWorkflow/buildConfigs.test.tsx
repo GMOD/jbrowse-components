@@ -2,9 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { types } from '@jbrowse/mobx-state-tree'
-// @ts-expect-error
 import Alignments from '@jbrowse/plugin-alignments'
-// @ts-expect-error
 import Variants from '@jbrowse/plugin-variants'
 
 import { buildTrackConfigs } from './buildConfigs.ts'

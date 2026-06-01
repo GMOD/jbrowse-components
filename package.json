@@ -45,6 +45,7 @@
     "@emotion/styled": "^11.14.1",
     "@eslint/js": "^10.0.1",
     "@jbrowse/mobx-state-tree": "^5.10.2",
+    "@jbrowse/web": "workspace:^",
     "@mui/material": "^9.0.1",
     "@mui/system": "^9.0.1",
     "@mui/x-data-grid": "^9.3.0",

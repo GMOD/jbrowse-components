@@ -30,8 +30,7 @@ export async function doConnect(self: {
     if (configJson.assemblies) {
       for (const assembly of configJson.assemblies) {
         if (!session.assemblyManager.get(assembly.name)) {
-          // @ts-expect-error
-          session.addSessionAssembly(assembly)
+          session.addSessionAssembly?.(assembly)
         }
       }
     }

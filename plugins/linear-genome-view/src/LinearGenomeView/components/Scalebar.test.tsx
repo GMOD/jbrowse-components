@@ -1,4 +1,3 @@
-// @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { render, waitFor } from '@testing-library/react'
 

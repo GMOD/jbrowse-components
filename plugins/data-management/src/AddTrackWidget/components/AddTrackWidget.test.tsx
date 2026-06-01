@@ -1,4 +1,3 @@
-// @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { fireEvent, render, within } from '@testing-library/react'
 

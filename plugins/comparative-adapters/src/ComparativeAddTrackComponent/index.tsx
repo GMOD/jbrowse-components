@@ -14,9 +14,12 @@ export default function ComparativeAddTrackComponentF(
 ) {
   pluginManager.addToExtensionPoint(
     'Core-addTrackComponent',
-    // @ts-expect-error
-    (comp, { model }: { trackAdapterType: string }) => {
-      return pairwiseTypes.includes(model.trackAdapterType)
+    (
+      comp: unknown,
+      { model }: { model?: { trackAdapterType?: string } },
+    ): unknown => {
+      const t = model?.trackAdapterType
+      return t !== undefined && pairwiseTypes.includes(t)
         ? ComparativeAddTrackComponent
         : comp
     },

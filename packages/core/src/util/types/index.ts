@@ -128,6 +128,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     view?: { showTrack: (id: string) => void },
   ) => MenuItem[]
   addAssembly?: (conf: Record<string, unknown>) => void
+  addSessionAssembly?: (conf: Record<string, unknown>) => void
+  sessionAssemblies?: AnyConfigurationModel[]
   removeAssembly?: (name: string) => void
   textSearchManager?: TextSearchManager
   connections: AnyConfigurationModel[]

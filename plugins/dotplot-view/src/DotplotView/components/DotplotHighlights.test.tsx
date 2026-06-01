@@ -1,5 +1,4 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-// @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'

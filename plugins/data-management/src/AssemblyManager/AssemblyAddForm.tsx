@@ -288,8 +288,7 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
             } else {
               onClose()
 
-              // @ts-expect-error
-              session.addAssembly({
+              session.addAssembly?.({
                 name: assemblyName,
                 displayName: assemblyDisplayName,
                 sequence: {

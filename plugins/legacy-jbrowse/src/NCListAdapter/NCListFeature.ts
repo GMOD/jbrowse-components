@@ -3,9 +3,9 @@ import type {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 
-const jb2ToJb1 = { refName: 'seq_id' }
+const jb2ToJb1: Record<string, string | undefined> = { refName: 'seq_id' }
 
-const jb1ToJb2 = { seq_id: 'refName' }
+const jb1ToJb2: Record<string, string | undefined> = { seq_id: 'refName' }
 
 /**
  * wrapper to adapt nclist features to act like jbrowse 2 features
@@ -26,15 +26,12 @@ export default class NCListFeature implements Feature {
   }
 
   jb2TagToJb1Tag(tag: string): string {
-    // @ts-expect-error
-    const mapped = jb2ToJb1[tag] || tag
-    return mapped.toLowerCase()
+    return (jb2ToJb1[tag] ?? tag).toLowerCase()
   }
 
   jb1TagToJb2Tag(tag: string): string {
     const t = tag.toLowerCase()
-    // @ts-expect-error
-    return jb1ToJb2[t] || t
+    return jb1ToJb2[t] ?? t
   }
 
   get(attrName: string): any {
