@@ -43,13 +43,11 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/react-linear-genome-view2": "workspace:^",
     "@types/jsdom": "^28.0.3",
-    "@types/yargs": "^17.0.35",
     "canvas": "^3.2.3",
     "jsdom": "^29.1.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "tmp": "^0.2.7",
-    "yargs": "^18.0.0"
+    "tmp": "^0.2.7"
   },
   "publishConfig": {
     "access": "public"
