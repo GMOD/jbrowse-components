@@ -49,27 +49,11 @@ float3 arcColorByIndex(uint idx, Uniforms u) {
   return unpackRGBA(colors[min(idx, 7u)]).xyz;
 }
 
-// Gradient fallback for colorType >= NUM_ARC_COLORS: HSL hue sweep from the
-// gradientHue uniform.
-float3 hueGradient(float hueDeg) {
-  float h = hueDeg / 360.0;
-  float c = 0.5;
-  float x = c * (1.0 - abs(h * 6.0 % 2.0 - 1.0));
-  float m = 0.25;
-  float3 hue;
-  if (h < 1.0 / 6.0)      { hue = float3(c, x, 0.0); }
-  else if (h < 2.0 / 6.0) { hue = float3(x, c, 0.0); }
-  else if (h < 3.0 / 6.0) { hue = float3(0.0, c, x); }
-  else if (h < 4.0 / 6.0) { hue = float3(0.0, x, c); }
-  else if (h < 5.0 / 6.0) { hue = float3(x, 0.0, c); }
-  else                    { hue = float3(c, 0.0, x); }
-  return hue + m;
-}
-
 float3 arcColor(float ct, Uniforms u) {
   uint idx = uint(ct + 0.5);
   if (idx < 8u) { return arcColorByIndex(idx, u); }
-  return hueGradient(u.gradientHue);
+  // Gradient fallback for colorType >= NUM_ARC_COLORS.
+  return hueRampHalfSat(u.gradientHue);
 }
 
 struct ArcPoint { float2 pos; float2 tang; };

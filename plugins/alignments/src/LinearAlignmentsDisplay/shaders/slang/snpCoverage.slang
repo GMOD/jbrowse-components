@@ -41,14 +41,12 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  float x1 = hpClipX(hpSplitUint(inst.position), u);
-  float x2 = hpClipX(hpSplitUint(inst.position + 1u), u);
-  float minW = 2.0 / u.canvasW;
-  if (x2 - x1 < minW) {
-    float mid = (x1 + x2) * 0.5;
-    x1 = mid - minW * 0.5;
-    x2 = mid + minW * 0.5;
-  }
+  float2 xx = expandMinWidthX(
+    hpClipX(hpSplitUint(inst.position), u),
+    hpClipX(hpSplitUint(inst.position + 1u), u),
+    u.canvasW);
+  float x1 = xx.x;
+  float x2 = xx.y;
 
   float bottom = covBottom(u);
   float k = normalizeDepth(inst.relDepth, u) * effHeight(u) / u.canvasH * 2.0;

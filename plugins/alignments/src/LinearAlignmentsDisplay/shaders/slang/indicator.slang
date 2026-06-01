@@ -27,13 +27,6 @@ struct VsOut {
   float3 bary     : COLOR1;
 };
 
-float3 indicatorColor(float ct, Uniforms u) {
-  int ci = int(ct);
-  if (ci == 1) { return unpackRGBA(u.colorInsertion).xyz; }
-  if (ci == 2) { return unpackRGBA(u.colorSoftclip).xyz; }
-  return unpackRGBA(u.colorHardclip).xyz;
-}
-
 [shader("vertex")]
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
@@ -49,7 +42,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   else              { sx = cx;            sy = 1.0 - th; o.bary = float3(0.0, 0.0, 1.0); }
 
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
-  o.color = float4(indicatorColor(inst.colorType, u), 1.0);
+  o.color = float4(clipKindColor(inst.colorType, u), 1.0);
   return o;
 }
 

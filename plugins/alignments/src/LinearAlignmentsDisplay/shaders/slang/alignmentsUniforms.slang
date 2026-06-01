@@ -150,6 +150,44 @@ public float2 pileupY(float row, Uniforms u) {
   return float2(topClip - yTop * px2clip, topClip - yBot * px2clip);
 }
 
+// Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip
+// 3=hardclip (anything else falls through to hardclip).
+public float3 clipKindColor(float ct, Uniforms u) {
+  int ci = int(ct);
+  if (ci == 1) { return unpackRGBA(u.colorInsertion).xyz; }
+  if (ci == 2) { return unpackRGBA(u.colorSoftclip).xyz; }
+  return unpackRGBA(u.colorHardclip).xyz;
+}
+
+// Widen a [x1,x2] clip-space span to a minimum of 1 CSS pixel, centered, so
+// sub-pixel-narrow features (1bp rects, coverage bins zoomed out) stay visible.
+public float2 expandMinWidthX(float x1, float x2, float canvasWidth) {
+  float minW = 2.0 / canvasWidth;
+  if (x2 - x1 < minW) {
+    float mid = (x1 + x2) * 0.5;
+    return float2(mid - minW * 0.5, mid + minW * 0.5);
+  }
+  return float2(x1, x2);
+}
+
+// Fixed-saturation HSL hue sweep (chroma 0.5, lightness offset 0.25). Drives
+// MAPQ / base-quality coloring and the arc gradient fallback off a hue in
+// degrees [0,360).
+public float3 hueRampHalfSat(float hueDeg) {
+  float hp = (hueDeg / 360.0) * 6.0;
+  float c = 0.5;
+  float m = 0.25;
+  float x = c * (1.0 - abs(hp % 2.0 - 1.0));
+  float3 hue;
+  if (hp < 1.0)      { hue = float3(c, x, 0.0); }
+  else if (hp < 2.0) { hue = float3(x, c, 0.0); }
+  else if (hp < 3.0) { hue = float3(0.0, c, x); }
+  else if (hp < 4.0) { hue = float3(0.0, x, c); }
+  else if (hp < 5.0) { hue = float3(x, 0.0, c); }
+  else               { hue = float3(c, 0.0, x); }
+  return hue + m;
+}
+
 public float effHeight(Uniforms u) {
   return u.covHeight - 2.0 * u.covYOffset;
 }

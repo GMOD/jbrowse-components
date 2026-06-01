@@ -23,13 +23,6 @@ struct VsOut {
   float4 color    : COLOR0;
 };
 
-float3 interbaseColor(float ct, Uniforms u) {
-  int ci = int(ct);
-  if (ci == 1) { return unpackRGBA(u.colorInsertion).xyz; }
-  if (ci == 2) { return unpackRGBA(u.colorSoftclip).xyz; }
-  return unpackRGBA(u.colorHardclip).xyz;
-}
-
 [shader("vertex")]
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
@@ -47,7 +40,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     flipX(lerp(cx - barW * 0.5, cx + barW * 0.5, local.x), u),
     lerp(sBot, sTop, local.y),
     0.0, 1.0);
-  o.color = float4(interbaseColor(inst.colorType, u), 1.0);
+  o.color = float4(clipKindColor(inst.colorType, u), 1.0);
   return o;
 }
 

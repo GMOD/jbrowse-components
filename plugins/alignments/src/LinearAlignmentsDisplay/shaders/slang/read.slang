@@ -63,22 +63,6 @@ float3 strandColor(int s, Uniforms u) {
   return unpackRGBA(u.colorNostrand).xyz;
 }
 
-float3 mapqColor(uint mapq) {
-  float h = float(mapq) / 360.0;
-  float c = 0.5;
-  float hp = h * 6.0;
-  float x = c * (1.0 - abs(hp % 2.0 - 1.0));
-  float m = 0.25;
-  float3 hue;
-  if (hp < 1.0)      { hue = float3(c, x, 0.0); }
-  else if (hp < 2.0) { hue = float3(x, c, 0.0); }
-  else if (hp < 3.0) { hue = float3(0.0, c, x); }
-  else if (hp < 4.0) { hue = float3(0.0, x, c); }
-  else if (hp < 5.0) { hue = float3(x, 0.0, c); }
-  else               { hue = float3(c, 0.0, x); }
-  return hue + m;
-}
-
 float3 insertSizeColor(float is, Uniforms u) {
   if (is > u.insertUpper) { return unpackRGBA(u.colorLongInsert).xyz; }
   if (is < u.insertLower) { return unpackRGBA(u.colorShortInsert).xyz; }
@@ -152,7 +136,7 @@ float3 getReadColor(Instance inst, Uniforms u) {
 
   if (cs == CS_NORMAL)        { return unpackRGBA(u.colorPairLR).xyz; }
   if (cs == CS_STRAND)        { return strandColor(inst.strand, u); }
-  if (cs == CS_MAPQ)          { return mapqColor(inst.mapq); }
+  if (cs == CS_MAPQ)          { return hueRampHalfSat(float(inst.mapq)); }
   if (cs == CS_INSERT_SIZE)   { return insertSizeColor(inst.insertSize, u); }
   if (cs == CS_FIRST_OF_PAIR) { return firstOfPairColor(inst.flags, inst.strand, u); }
   if (cs == CS_PAIR_ORIENT)   { return pairOrientColor(inst.pairOrient, u); }
@@ -164,7 +148,7 @@ float3 getReadColor(Instance inst, Uniforms u) {
     }
     return unpackRGBA(u.colorPairLR).xyz;
   }
-  if (cs == CS_BASE_QUALITY) { return mapqColor(inst.baseQuality); }
+  if (cs == CS_BASE_QUALITY) { return hueRampHalfSat(float(inst.baseQuality)); }
   if (cs == CS_IS_GRADIENT)  { return insertSizeGradientColor(inst.insertSize, u); }
   return unpackRGBA(u.colorPairLR).xyz;
 }
