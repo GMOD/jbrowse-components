@@ -35,7 +35,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
     <DisplayChrome
       model={model}
       factory={MafRendererFactory}
-      data-testid={`display-${model.configuration.displayId}${model.canvasDrawn ? '-done' : ''}`}
+      testid={`display-${model.configuration.displayId}`}
       ref={ref}
       style={{ position: 'relative', height: model.height }}
       onMouseDown={drag.handleMouseDown}

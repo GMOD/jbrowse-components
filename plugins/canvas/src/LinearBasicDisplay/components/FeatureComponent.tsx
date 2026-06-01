@@ -103,6 +103,7 @@ export interface LinearBasicDisplayModel {
   renderNow: () => void
   renderError: unknown
   setRenderError: (error: unknown) => void
+  canvasDrawn: boolean
 }
 
 export interface Props {

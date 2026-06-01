@@ -31,9 +31,7 @@ const VariantDisplayComponent = observer(
         model={model}
         factory={VariantRenderer}
         ref={ref}
-        data-testid={
-          model.canvasDrawn ? 'variant-display-done' : 'variant-display'
-        }
+        testid="variant-display"
         style={{ position: 'relative' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

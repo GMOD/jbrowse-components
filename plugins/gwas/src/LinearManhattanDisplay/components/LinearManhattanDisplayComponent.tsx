@@ -86,7 +86,7 @@ const LinearManhattanDisplayComponent = observer(
       <DisplayChrome
         model={model}
         factory={ManhattanRenderer}
-        data-testid={model.canvasDrawn ? 'manhattan-gpu-done' : 'manhattan-gpu'}
+        testid="manhattan-gpu"
         style={{ position: 'relative', width, height }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

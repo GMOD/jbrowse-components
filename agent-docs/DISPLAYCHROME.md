@@ -83,12 +83,22 @@ jsdom. A next agent with a browser should confirm:
    arc's `BaseDisplayComponent` renders it). Ripping that out means restructuring
    the legacy block-render contract to pass a string + render the message in the
    block component — a separate non-GPU subsystem, not worth bundling here.
-2. **Nothing forces the testid convention.** Each display hand-writes its
-   `data-testid` (`wiggle-display`, `manhattan-gpu`, `pileup-display`,
-   `variant-display`, `display-${id}`, `hic_canvas`, `ld_canvas`,
-   `variant_canvas`, `variant_matrix_canvas`). They're load-bearing for tests so
-   can't be unified casually — but if you ever do a testid pass, DisplayChrome is
-   the place to generate them.
+2. **Testid `-done` convention — now owned by DisplayChrome (chrome-div half).**
+   DisplayChrome takes a `testid` *base* prop and appends `-done` once
+   `model.canvasDrawn` flips, so the suffix/gating live in one place instead of a
+   hand-written ternary per consumer. The eight chrome-div consumers (wiggle,
+   multi-wiggle, manhattan, maf, alignments-outer, multi-variant, variant-matrix,
+   sequence) now pass only the base; emitted strings are byte-identical to before
+   (so no test churn), and sequence gained the `-done` signal it lacked.
+
+   Deliberately **not** unified (a second, legitimately separate axis): the
+   **canvas-pixel** selectors `hic_canvas_done` / `ld_canvas_done` /
+   `variant_canvas_done` / `variant_matrix_canvas_done` (and standalone
+   `synteny_canvas_done` / `dotplot_webgl_canvas_done`) stay on the inner
+   `<canvas>`, because `expectCanvasMatch(findByTestId(...))` reads that element
+   and the chrome div is not a canvas. Those keep `_done` and (hic/LD) `rpcData`
+   gating. The generic `display-${id}-done` for block-path displays still comes
+   from `BaseLinearDisplay.tsx`, a different wrapper — see ADR-026.
 
 ## Gotchas confirmed during the work
 

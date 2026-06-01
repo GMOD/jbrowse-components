@@ -30,7 +30,7 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
     <DisplayChrome
       model={model}
       factory={SequenceRenderer}
-      data-testid="sequence-display"
+      testid="sequence-display"
       style={{ position: 'relative', width: '100%', height }}
     >
       {({ canvasRef }) =>

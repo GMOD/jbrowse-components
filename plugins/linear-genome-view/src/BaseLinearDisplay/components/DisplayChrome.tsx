@@ -20,6 +20,7 @@ export interface ChromeModel {
   regionTooLarge: boolean
   regionTooLargeReason: string
   height: number
+  canvasDrawn: boolean
 }
 
 interface CanvasHandle {
@@ -44,15 +45,24 @@ interface CanvasHandle {
 // scope to the body rather than re-rendering the chrome. An outer hook bound to
 // the chrome container (maf's drag-select, alignments' mouse tracking) stays in
 // the caller and threads its state down as a prop.
+//
+// `testid` is the *base* first-paint selector; the chrome owns the `-done`
+// convention, appending it once `canvasDrawn` flips, so no consumer hand-writes
+// the ternary and the separator/gating can't drift. Tests wait on
+// `${testid}-done`. (Canvas-pixel selectors like `hic_canvas_done` stay on the
+// inner <canvas> — they target the element `expectCanvasMatch` reads, which the
+// chrome div is not.)
 function DisplayChromeInner<B extends { dispose(): void }>({
   model,
   factory,
   children,
+  testid,
   ...divProps
 }: {
   model: ChromeModel & RenderLifecycleModel<B>
   factory: (canvas: HTMLCanvasElement) => Promise<B>
   children: (handle: CanvasHandle) => ReactNode
+  testid?: string
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
   const { canvas, canvasRef, retry } = useRenderingBackend(factory, model)
   if (model.renderError) {
@@ -68,7 +78,14 @@ function DisplayChromeInner<B extends { dispose(): void }>({
     return <TooLargeMessage model={model} />
   }
   return (
-    <div {...divProps}>
+    <div
+      {...divProps}
+      data-testid={
+        testid === undefined
+          ? undefined
+          : `${testid}${model.canvasDrawn ? '-done' : ''}`
+      }
+    >
       {children({ canvasRef, canvas })}
       <DisplayErrorBar model={model} />
       <DisplayLoadingOverlay model={model} />

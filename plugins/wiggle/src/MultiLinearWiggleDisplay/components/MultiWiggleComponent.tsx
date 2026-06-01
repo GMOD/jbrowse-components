@@ -100,9 +100,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       model={model}
       factory={WiggleRenderer}
       ref={containerRef}
-      data-testid={
-        model.canvasDrawn ? 'multi-wiggle-display-done' : 'multi-wiggle-display'
-      }
+      testid="multi-wiggle-display"
       style={{
         position: 'relative',
         width: totalWidth,
