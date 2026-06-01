@@ -14,7 +14,7 @@ import {
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
-import VirtualOffset from './virtualOffset.ts'
+import { parseTaiIndex, selectIndexEntries } from './taiIndex.ts'
 import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
 import { lazyInit } from '../util/loadSubAdapter.ts'
@@ -28,23 +28,6 @@ import type { Feature, Region } from '@jbrowse/core/util'
 interface SetupData {
   index: IndexData
   runLengthEncodeBases: boolean
-}
-
-/**
- * Binary search to find the index of the first element >= target
- */
-function lowerBound<T>(arr: T[], target: number, getKey: (item: T) => number) {
-  let lo = 0
-  let hi = arr.length
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1
-    if (getKey(arr[mid]!) < target) {
-      lo = mid + 1
-    } else {
-      hi = mid
-    }
-  }
-  return lo
 }
 
 /**
@@ -179,39 +162,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     const text = await openLocation(this.getConf('taiLocation')).readFile(
       'utf8',
     )
-    const lines = text
-      .split('\n')
-      .map(f => f.trim())
-      .filter(line => line !== '')
-    const entries: IndexData = {}
-    let lastChr = ''
-    let lastChrStart = 0
-    let lastRawVirtualOffset = 0
-
-    for (const line of lines) {
-      const [chr, chrStart, virtualOffset] = line.split('\t')
-      const isRelative = chr === '*'
-      const currChr = isRelative ? lastChr : chr!.split('.').at(-1)!
-
-      const absVirtualOffset = isRelative
-        ? lastRawVirtualOffset + +virtualOffset!
-        : +virtualOffset!
-      const absChrStart = isRelative ? lastChrStart + +chrStart! : +chrStart!
-
-      const blockPosition = Math.floor(absVirtualOffset / 65536)
-      const dataPosition = absVirtualOffset % 65536
-      const voff = new VirtualOffset(blockPosition, dataPosition)
-
-      entries[currChr] ??= []
-      entries[currChr].push({
-        chrStart: absChrStart,
-        virtualOffset: voff,
-      })
-      lastChr = currChr
-      lastChrStart = absChrStart
-      lastRawVirtualOffset = absVirtualOffset
-    }
-    return entries
+    return parseTaiIndex(text)
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
@@ -228,11 +179,11 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
           return
         }
 
-        const getKey = (r: (typeof records)[0]) => r.chrStart
-        const startIdx = lowerBound(records, query.start, getKey)
-        const firstEntry = records[Math.max(startIdx - 1, 0)]
-        const endIdx = lowerBound(records, query.end, getKey)
-        const nextEntry = records[endIdx + 1] ?? records.at(-1)
+        const { firstEntry, nextEntry } = selectIndexEntries(
+          records,
+          query.start,
+          query.end,
+        )
 
         if (!firstEntry || !nextEntry) {
           observer.complete()
