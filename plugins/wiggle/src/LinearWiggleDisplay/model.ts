@@ -18,14 +18,21 @@ import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import { rendererMenuItems } from '../shared/rendererMenuItems.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
-import { makeResolutionAndSummarySubMenus } from '../shared/wiggleMenuItems.ts'
+import {
+  makeRenderingTypeSubMenu,
+  makeResolutionAndSummarySubMenus,
+} from '../shared/wiggleMenuItems.ts'
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
+  WIGGLE_RENDERINGS,
   YSCALEBAR_LABEL_OFFSET,
   isDefaultBicolor,
 } from '../util.ts'
 
-import type { WiggleDataResult } from '../util.ts'
+import type {
+  WiggleDataResult,
+  WiggleFeatureUnderMouse,
+} from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -87,17 +94,7 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      featureUnderMouse: undefined as
-        | {
-            refName: string
-            start: number
-            end: number
-            score: number
-            minScore?: number
-            maxScore?: number
-            summary?: boolean
-          }
-        | undefined,
+      featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined,
     }))
     .views(self => ({
       /**
@@ -290,24 +287,7 @@ export default function stateModelFactory(
        */
       trackMenuItems() {
         return [
-          {
-            label: 'Rendering type',
-            subMenu: (
-              [
-                ['xyplot', 'XY plot'],
-                ['density', 'Density'],
-                ['line', 'Line'],
-                ['scatter', 'Scatter'],
-              ] as const
-            ).map(([value, label]) => ({
-              label,
-              type: 'radio' as const,
-              checked: self.renderingType === value,
-              onClick: () => {
-                self.setRenderingType(value)
-              },
-            })),
-          },
+          makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
           // scaleType: true injects the wiggle-only scale-type submenu into the
           // shared Score submenu (manhattan, linear-only, leaves it off);
           // resolution/summary lead the submenu, matching multi-wiggle.

@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
-import { WIGGLE_COLOR_DEFAULT } from '../util.ts'
+import { WIGGLE_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
 
 /**
  * #config LinearWiggleDisplay
@@ -17,12 +17,7 @@ export default ConfigurationSchema(
      */
     defaultRendering: {
       type: 'stringEnum',
-      model: types.enumeration('Rendering type', [
-        'xyplot',
-        'density',
-        'line',
-        'scatter',
-      ]),
+      model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
       defaultValue: 'xyplot',
       description: 'Default rendering type',
     },

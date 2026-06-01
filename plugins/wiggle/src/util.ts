@@ -21,15 +21,31 @@ import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
-export const MULTI_WIGGLE_RENDERING_TYPES = [
-  'multirowxy',
-  'multixyplot',
-  'multirowdensity',
-  'multirowline',
-  'multiline',
-  'multirowscatter',
-  'multiscatter',
+// Single source of truth for rendering types: [value, menu label]. The config
+// enumeration derives its valid values from these, and the track menu derives
+// its radio items — so the two can't drift.
+export const WIGGLE_RENDERINGS = [
+  ['xyplot', 'XY plot'],
+  ['density', 'Density'],
+  ['line', 'Line'],
+  ['scatter', 'Scatter'],
 ] as const
+
+export const MULTI_WIGGLE_RENDERINGS = [
+  ['multirowxy', 'Multi-row XY plot'],
+  ['multirowdensity', 'Multi-row density'],
+  ['multirowline', 'Multi-row line'],
+  ['multirowscatter', 'Multi-row scatter'],
+  ['multixyplot', 'Overlapping XY plot'],
+  ['multiline', 'Overlapping lines'],
+  ['multiscatter', 'Overlapping scatter'],
+] as const
+
+export const WIGGLE_RENDERING_TYPES = WIGGLE_RENDERINGS.map(([value]) => value)
+
+export const MULTI_WIGGLE_RENDERING_TYPES = MULTI_WIGGLE_RENDERINGS.map(
+  ([value]) => value,
+)
 
 // Default color used by wiggle config schema
 export const WIGGLE_COLOR_DEFAULT = '#f0f'
@@ -53,6 +69,30 @@ export interface Source {
 }
 
 export interface EditableSource extends Source, SourceInfo {}
+
+// Feature hovered under the mouse. Single-wiggle uses the base shape; multi
+// adds `source` (which row/source the hit belongs to) and `allSources` (every
+// visible source's score at the cursor, for overlay-mode tooltips).
+export interface WiggleFeatureUnderMouse {
+  refName: string
+  start: number
+  end: number
+  score: number
+  minScore?: number
+  maxScore?: number
+  summary?: boolean
+}
+
+export interface MultiWiggleFeatureUnderMouse extends WiggleFeatureUnderMouse {
+  source: string
+  allSources?: {
+    source: string
+    score: number
+    minScore?: number
+    maxScore?: number
+    summary?: boolean
+  }[]
+}
 
 export function toP(s = 0) {
   return +s.toPrecision(6)

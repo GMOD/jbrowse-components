@@ -1,5 +1,22 @@
 import type { MenuItem } from '@jbrowse/core/ui'
 
+export function makeRenderingTypeSubMenu(
+  self: { renderingType: string; setRenderingType: (t: string) => void },
+  renderings: readonly (readonly [string, string])[],
+): MenuItem {
+  return {
+    label: 'Rendering type',
+    subMenu: renderings.map(([value, label]) => ({
+      label,
+      type: 'radio' as const,
+      checked: self.renderingType === value,
+      onClick: () => {
+        self.setRenderingType(value)
+      },
+    })),
+  }
+}
+
 interface WithResolution {
   hasResolution: boolean
   resolution: number

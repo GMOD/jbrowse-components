@@ -21,6 +21,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import {
   computeYTicks,
+  makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
@@ -36,9 +37,18 @@ import {
   isOverlayMode,
   makeRenderState,
 } from '../shared/wiggleComponentUtils.ts'
-import { makeResolutionAndSummarySubMenus } from '../shared/wiggleMenuItems.ts'
+import {
+  makeRenderingTypeSubMenu,
+  makeResolutionAndSummarySubMenus,
+} from '../shared/wiggleMenuItems.ts'
+import { MULTI_WIGGLE_RENDERINGS } from '../util.ts'
 
-import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
+import type {
+  MultiWiggleFeatureUnderMouse,
+  Source,
+  SourceInfo,
+  WiggleDataResult,
+} from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -82,25 +92,7 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       sourcesVolatile: [] as SourceInfo[],
-      featureUnderMouse: undefined as
-        | {
-            refName: string
-            start: number
-            end: number
-            score: number
-            minScore?: number
-            maxScore?: number
-            source: string
-            summary?: boolean
-            allSources?: {
-              source: string
-              score: number
-              minScore?: number
-              maxScore?: number
-              summary?: boolean
-            }[]
-          }
-        | undefined,
+      featureUnderMouse: undefined as MultiWiggleFeatureUnderMouse | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -120,7 +112,7 @@ export default function stateModelFactory(
       // cluster RPC reads `name` and `buildClusteredLayout` maps order
       // indices into this list.
       get sourcesWithoutLayout(): Source[] {
-        return self.sourcesVolatile.map(s => ({ source: s.name, ...s }))
+        return self.sourcesVolatile.map(s => ({ ...s, source: s.name }))
       },
 
       get editableSources(): Source[] {
@@ -399,27 +391,7 @@ export default function stateModelFactory(
             scaleType: true,
             leadingItems: makeResolutionAndSummarySubMenus(self),
           }),
-          {
-            label: 'Rendering type',
-            subMenu: (
-              [
-                ['multirowxy', 'Multi-row XY plot'],
-                ['multirowdensity', 'Multi-row density'],
-                ['multirowline', 'Multi-row line'],
-                ['multirowscatter', 'Multi-row scatter'],
-                ['multixyplot', 'Overlapping XY plot'],
-                ['multiline', 'Overlapping lines'],
-                ['multiscatter', 'Overlapping scatter'],
-              ] as const
-            ).map(([value, label]) => ({
-              label,
-              type: 'radio' as const,
-              checked: self.renderingType === value,
-              onClick: () => {
-                self.setRenderingType(value)
-              },
-            })),
-          },
+          makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
           {
             label: 'Cluster rows by score',
             onClick: () => {
@@ -446,14 +418,7 @@ export default function stateModelFactory(
               ])
             },
           },
-          {
-            label: 'Draw cross hatches',
-            type: 'checkbox',
-            checked: self.displayCrossHatches,
-            onClick: () => {
-              self.toggleCrossHatches()
-            },
-          },
+          makeCrossHatchItem(self),
         ]
       },
     }))

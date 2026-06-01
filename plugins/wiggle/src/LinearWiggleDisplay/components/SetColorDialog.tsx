@@ -12,12 +12,14 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { isDefaultBicolor } from '../../util.ts'
+
 const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,
 }: {
   model: {
-    color?: string
+    color: string
     posColor?: string
     negColor?: string
     setColor: (arg?: string) => void
@@ -26,7 +28,9 @@ const SetColorDialog = observer(function SetColorDialog({
   }
   handleClose: () => void
 }) {
-  const [posneg, setPosNeg] = useState(false)
+  // Default (#f0f) color means the pos/neg split is active; a custom overall
+  // color means it isn't. Seed the radio from that so reopening reflects state.
+  const [posneg, setPosNeg] = useState(() => isDefaultBicolor(model.color))
 
   return (
     <Dialog open onClose={handleClose} title="Set color">
@@ -57,7 +61,7 @@ const SetColorDialog = observer(function SetColorDialog({
           <>
             <Typography>Positive color</Typography>
             <ColorPicker
-              color={model.posColor || 'black'}
+              color={model.posColor ?? 'black'}
               onChange={event => {
                 model.setPosColor(event)
                 model.setColor(undefined)
@@ -66,7 +70,7 @@ const SetColorDialog = observer(function SetColorDialog({
             <Typography>Negative color</Typography>
 
             <ColorPicker
-              color={model.negColor || 'black'}
+              color={model.negColor ?? 'black'}
               onChange={event => {
                 model.setNegColor(event)
                 model.setColor(undefined)
@@ -77,7 +81,7 @@ const SetColorDialog = observer(function SetColorDialog({
           <>
             <Typography>Overall color</Typography>
             <ColorPicker
-              color={model.color || 'black'}
+              color={model.color}
               onChange={event => {
                 model.setColor(event)
               }}
