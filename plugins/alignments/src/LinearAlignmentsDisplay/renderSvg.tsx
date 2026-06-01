@@ -144,10 +144,10 @@ function renderSashimiArcs(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,
 ): React.ReactNode {
-  if (model.sashimiArcs === 'off' || !model.showCoverage) {
+  if (!model.showSashimiArcs || !model.showCoverage) {
     return null
   }
-  const isDown = model.sashimiArcs === 'down'
+  const isDown = model.readConnectionsDown
   const arcs = computeSashimiArcs({
     rpcDataMap: model.laidOutPileupMap,
     visibleRegions: view.visibleRegions,

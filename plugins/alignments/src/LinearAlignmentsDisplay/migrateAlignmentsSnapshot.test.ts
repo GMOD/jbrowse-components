@@ -166,8 +166,8 @@ describe('migrateAlignmentsSnapshot', () => {
     }
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.type).toBe('LinearAlignmentsDisplay')
-    expect(result.sashimiArcs).toBe('off')
-    expect(result).not.toHaveProperty('showSashimiArcs')
+    expect(result.showSashimiArcs).toBe(false)
+    expect(result).not.toHaveProperty('sashimiArcs')
     expect(result.showInterbaseIndicators).toBe(false)
     expect(result.showCoverage).toBe(true)
     expect(result.coverageHeight).toBe(45)
@@ -328,27 +328,24 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result.readConnectionsDown).toBe(true)
   })
 
-  test('folds showSashimiArcs+sashimiArcsDown booleans into sashimiArcs enum', () => {
+  test('passes showSashimiArcs through and drops per-feature sashimiArcsDown', () => {
+    // showSashimiArcs is already the current field name — it survives.
     const off = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       showSashimiArcs: false,
     })
-    expect(off.sashimiArcs).toBe('off')
-    expect(off).not.toHaveProperty('showSashimiArcs')
+    expect(off.showSashimiArcs).toBe(false)
 
-    const down = migrateAlignmentsSnapshot({
+    // Direction is now the shared readConnectionsDown, so the old per-feature
+    // sashimiArcsDown is discarded.
+    const dropped = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       showSashimiArcs: true,
       sashimiArcsDown: true,
     })
-    expect(down.sashimiArcs).toBe('down')
-
-    // Default when only `sashimiArcsDown` is present: sashimi assumed on
-    const upDefault = migrateAlignmentsSnapshot({
-      type: 'LinearAlignmentsDisplay',
-      sashimiArcsDown: false,
-    })
-    expect(upDefault.sashimiArcs).toBe('up')
+    expect(dropped.showSashimiArcs).toBe(true)
+    expect(dropped).not.toHaveProperty('sashimiArcsDown')
+    expect(dropped).not.toHaveProperty('sashimiArcs')
   })
 
   test('migrates sortedBySetting to configOverrides.sortedBy', () => {

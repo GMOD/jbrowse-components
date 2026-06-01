@@ -13,7 +13,7 @@
  *   - showLinkedReads + showLinkedReadsAsBeziers booleans → linkedReads enum
  *   - showArcs + pairedArcsDown booleans → pairedArcs enum
  *   - pairedArcs enum → readConnections mode + readConnectionsDown direction
- *   - showSashimiArcs + sashimiArcsDown booleans → sashimiArcs enum
+ *   - sashimiArcsDown dropped (direction is the shared readConnectionsDown)
  *   - height → heightPreConfig
  *   - arcsHeight → readConnectionsHeight
  *   - Individual override properties → configOverrides map
@@ -176,8 +176,10 @@ function migrateBooleanPairsToEnum(snap: Record<string, unknown>) {
     showLinkedReadsAsBeziers,
     showArcs,
     pairedArcsDown,
-    showSashimiArcs,
-    sashimiArcsDown,
+    // Direction is now the single shared `readConnectionsDown` band
+    // orientation, so the old per-feature sashimi direction is dropped.
+    // `showSashimiArcs` is already the current field name and flows through.
+    sashimiArcsDown: _sashimiArcsDown,
     ...rest
   } = snap
 
@@ -193,12 +195,6 @@ function migrateBooleanPairsToEnum(snap: Record<string, unknown>) {
 
   if (showArcs !== undefined || pairedArcsDown !== undefined) {
     result.pairedArcs = showArcs ? (pairedArcsDown ? 'down' : 'up') : 'off'
-  }
-
-  if (showSashimiArcs !== undefined || sashimiArcsDown !== undefined) {
-    // Old default was showSashimiArcs=true, sashimiArcsDown=false → 'up'
-    result.sashimiArcs =
-      showSashimiArcs === false ? 'off' : sashimiArcsDown ? 'down' : 'up'
   }
 
   return result

@@ -70,7 +70,7 @@ describe('sashimi arcs menu', () => {
   test('checkbox reflects on/off and delegates to toggleSashimiArcs', () => {
     let toggled = false
     const model = {
-      sashimiArcs: 'off' as 'off' | 'up' | 'down',
+      showSashimiArcs: false,
       toggleSashimiArcs() {
         toggled = true
       },
@@ -90,7 +90,7 @@ describe('shared arc direction toggle', () => {
       setReadConnectionsDown(v: boolean) {
         this.readConnectionsDown = v
       },
-      sashimiArcs: 'up' as 'off' | 'up' | 'down',
+      showSashimiArcs: true,
     }
   }
 
@@ -103,7 +103,7 @@ describe('shared arc direction toggle', () => {
   test('disabled when no arcs are on', () => {
     const model = makeDirectionModel()
     model.readConnections = 'off'
-    model.sashimiArcs = 'off'
+    model.showSashimiArcs = false
     expect(getArcDirectionMenuItem(model).disabled).toBe(true)
   })
 })

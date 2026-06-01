@@ -35,10 +35,6 @@ export const ALIGNMENTS_FUDGE_FACTOR = 0.8
 // bezier curves.
 export type LinkedReadsMode = 'off' | 'normal' | 'bezier'
 
-// Direction of sashimi arc overlays. 'up' bumps into the coverage band;
-// 'down' opens its own band below coverage.
-export type ArcDirection = 'off' | 'up' | 'down'
-
 // How read connections (mate pairs + split/chimeric reads) are rendered.
 // Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs
 // colored by arcColorByType; 'samplot' draws flat lines at Y=|tlen| colored

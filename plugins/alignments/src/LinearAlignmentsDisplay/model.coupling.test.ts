@@ -104,42 +104,33 @@ function createDisplay() {
 describe('alignments display cross-feature coupling', () => {
   // Sashimi only draws over the coverage band, so enabling it must enable
   // coverage or the toggle silently does nothing.
-  test('toggleSashimiArcs turns on coverage and follows direction', () => {
+  test('toggleSashimiArcs turns on coverage and flips visibility', () => {
     const display = createDisplay()
-    display.setSashimiArcs('off')
+    display.setShowSashimiArcs(false)
     display.setShowCoverage(false)
 
     display.toggleSashimiArcs()
-    expect(display.sashimiArcs).toBe('up')
+    expect(display.showSashimiArcs).toBe(true)
     expect(display.showCoverage).toBe(true)
 
     display.toggleSashimiArcs()
-    expect(display.sashimiArcs).toBe('off')
+    expect(display.showSashimiArcs).toBe(false)
   })
 
-  test('toggleSashimiArcs respects readConnectionsDown for direction', () => {
+  // Direction is a single shared field (readConnectionsDown); sashimi stores
+  // no direction of its own, so there is nothing to keep in sync and
+  // setReadConnectionsDown can't disturb sashimi visibility.
+  test('setReadConnectionsDown does not affect sashimi visibility', () => {
     const display = createDisplay()
-    display.setSashimiArcs('off')
-    display.setReadConnectionsDown(true)
-    display.toggleSashimiArcs()
-    expect(display.sashimiArcs).toBe('down')
-  })
-
-  test('setReadConnectionsDown keeps sashimi direction in sync when on', () => {
-    const display = createDisplay()
-    display.setSashimiArcs('up')
+    display.setShowSashimiArcs(true)
 
     display.setReadConnectionsDown(true)
-    expect(display.sashimiArcs).toBe('down')
+    expect(display.showSashimiArcs).toBe(true)
+    expect(display.readConnectionsDown).toBe(true)
 
+    display.setShowSashimiArcs(false)
     display.setReadConnectionsDown(false)
-    expect(display.sashimiArcs).toBe('up')
-  })
-
-  test('setReadConnectionsDown leaves sashimi off when it was off', () => {
-    const display = createDisplay()
-    display.setSashimiArcs('off')
-    display.setReadConnectionsDown(true)
-    expect(display.sashimiArcs).toBe('off')
+    expect(display.showSashimiArcs).toBe(false)
+    expect(display.readConnectionsDown).toBe(false)
   })
 })

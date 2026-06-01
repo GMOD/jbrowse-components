@@ -123,7 +123,7 @@ const PileupBody = observer(function PileupBody({
     coverageHeight,
     readConnections,
     readConnectionsDown,
-    sashimiArcs,
+    showSashimiArcs,
     isChainMode,
     coverageDisplayHeight: topOffset,
     sashimiArcsHeight,
@@ -231,7 +231,7 @@ const PileupBody = observer(function PileupBody({
         />
       ) : null}
 
-      {sashimiArcs === 'down' && showCoverage ? (
+      {showSashimiArcs && readConnectionsDown && showCoverage ? (
         <ResizeHandle
           className={classes.resizeHandle}
           style={{

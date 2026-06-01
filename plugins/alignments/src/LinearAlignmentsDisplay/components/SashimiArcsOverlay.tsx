@@ -20,7 +20,8 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   const [selectedArcKey, setSelectedArcKey] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
   const {
-    sashimiArcs,
+    showSashimiArcs,
+    readConnectionsDown,
     showCoverage,
     coverageHeight,
     sashimiArcsHeight,
@@ -28,11 +29,11 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   } = model
   const { initialized, visibleRegions, width } = view
 
-  if (sashimiArcs === 'off' || !showCoverage || !initialized) {
+  if (!showSashimiArcs || !showCoverage || !initialized) {
     return null
   }
 
-  const isDown = sashimiArcs === 'down'
+  const isDown = readConnectionsDown
   const arcs = computeSashimiArcs({
     rpcDataMap,
     visibleRegions,

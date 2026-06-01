@@ -3,11 +3,7 @@ import PolylineIcon from '@mui/icons-material/Polyline'
 
 import { LINKED_READS_OPTIONS, radioItems, radioModeMenuItem } from './menuHelpers.ts'
 
-import type {
-  ArcDirection,
-  LinkedReadsMode,
-  ReadConnectionsMode,
-} from '../constants.ts'
+import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadConnectionsModel {
@@ -77,7 +73,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
 }
 
 interface SashimiArcsModel {
-  sashimiArcs: ArcDirection
+  showSashimiArcs: boolean
   toggleSashimiArcs: () => void
 }
 
@@ -90,7 +86,7 @@ export function getSashimiArcsMenuItem(model: SashimiArcsModel) {
     label: 'Sashimi arcs',
     icon: GestureIcon,
     type: 'checkbox' as const,
-    checked: model.sashimiArcs !== 'off',
+    checked: model.showSashimiArcs,
     onClick: () => {
       model.toggleSashimiArcs()
     },
@@ -101,16 +97,16 @@ interface ArcDirectionModel {
   readConnections: ReadConnectionsMode
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  sashimiArcs: ArcDirection
+  showSashimiArcs: boolean
 }
 
 // Single below-coverage toggle shared by read-connection arcs/cloud and sashimi
 // arcs — direction is a rare modifier, so it lives once in the Show menu rather
-// than once per feature. `setReadConnectionsDown` keeps sashimi direction in
-// sync, so this handler just flips the canonical flag.
+// than once per feature. `readConnectionsDown` is the one direction field both
+// features read, so this handler just flips it.
 export function getArcDirectionMenuItem(model: ArcDirectionModel) {
   const anyArcsOn =
-    model.readConnections !== 'off' || model.sashimiArcs !== 'off'
+    model.readConnections !== 'off' || model.showSashimiArcs
   return {
     label: 'Draw arcs below coverage band',
     disabled: !anyArcsOn,

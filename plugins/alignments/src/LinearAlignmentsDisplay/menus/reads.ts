@@ -2,7 +2,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { getArcDirectionMenuItem } from './readConnections.ts'
 
-import type { ArcDirection, ReadConnectionsMode } from '../constants.ts'
+import type { ReadConnectionsMode } from '../constants.ts'
 
 interface ReadsModel {
   showMismatches: boolean
@@ -24,7 +24,7 @@ interface ReadsModel {
   readConnections: ReadConnectionsMode
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  sashimiArcs: ArcDirection
+  showSashimiArcs: boolean
 
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
