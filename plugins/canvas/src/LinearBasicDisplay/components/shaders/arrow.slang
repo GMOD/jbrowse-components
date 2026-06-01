@@ -44,8 +44,9 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
   float sx;
   float sy;
   if (vid < 6u) {
-    float localX = (vid == 0u || vid == 2u || vid == 3u) ? 0.0 : 1.0;
-    float localY = (vid == 0u || vid == 1u || vid == 4u) ? 1.0 : -1.0;
+    float2 q = quadLocal(vid);
+    float localX = q.x;
+    float localY = 1.0 - 2.0 * q.y;
     sx = cx + localX * stemLength * 0.5 * dir;
     sy = cy + localY * stemHalf;
   } else {

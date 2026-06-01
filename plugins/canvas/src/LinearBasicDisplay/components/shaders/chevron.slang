@@ -51,8 +51,8 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   int totalChevrons = max(1, int(floor(lineWidthPx / CHEVRON_SPACING_PX)));
   float bpSpacing = lineLengthBp / float(totalChevrons + 1);
 
-  float viewStartFromLine =
-    u.bpRangeX.x + u.bpRangeX.y - float(inst.startEnd.x);
+  float2 splitLine = hpSplitUint(inst.startEnd.x);
+  float viewStartFromLine = hpViewportOffsetBp(splitLine, u.bpRangeX);
   float viewEndFromLine = viewStartFromLine + u.bpRangeX.z;
   float viewportStartBp = min(viewStartFromLine, viewEndFromLine);
   float viewportEndBp   = max(viewStartFromLine, viewEndFromLine);
@@ -67,8 +67,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   }
 
   float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
-  float2 splitStart = hpSplitUint(inst.startEnd.x);
-  float2 splitChevron = float2(splitStart.x, splitStart.y + chevronOffsetBp);
+  float2 splitChevron = float2(splitLine.x, splitLine.y + chevronOffsetBp);
   float cx = hpToClipX(splitChevron, u.bpRangeX, u.zero);
 
   float yPx = floor(inst.y - u.scrollY + 0.5) + 0.5;
