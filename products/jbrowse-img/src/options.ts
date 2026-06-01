@@ -1,79 +1,48 @@
-export type OptionType = 'string' | 'number' | 'boolean'
-
 export interface OptionDef {
   name: string
-  type: OptionType
   description: string
   default?: number | boolean
 }
 
 export const optionDefs: OptionDef[] = [
-  { name: 'fasta', type: 'string', description: 'Path to indexed FASTA file' },
-  {
-    name: 'aliases',
-    type: 'string',
-    description: 'Path to reference name aliases file',
-  },
-  {
-    name: 'assembly',
-    type: 'string',
-    description: 'Path to assembly JSON or name in config',
-  },
-  { name: 'config', type: 'string', description: 'Path to JBrowse config.json' },
-  { name: 'session', type: 'string', description: 'Path to session JSON' },
-  {
-    name: 'loc',
-    type: 'string',
-    description: 'Location to render (e.g., chr1:1-1000 or "all")',
-  },
-  { name: 'out', type: 'string', description: 'Output file path (SVG or PNG)' },
-  {
-    name: 'width',
-    type: 'number',
-    description: 'Width of output in pixels',
-    default: 1500,
-  },
+  { name: 'fasta', description: 'Path to indexed FASTA file' },
+  { name: 'aliases', description: 'Path to reference name aliases file' },
+  { name: 'assembly', description: 'Path to assembly JSON or name in config' },
+  { name: 'config', description: 'Path to JBrowse config.json' },
+  { name: 'session', description: 'Path to session JSON' },
+  { name: 'loc', description: 'Location to render (e.g., chr1:1-1000 or "all")' },
+  { name: 'out', description: 'Output file path (SVG or PNG)' },
+  { name: 'width', description: 'Width of output in pixels', default: 1500 },
   {
     name: 'noRasterize',
-    type: 'boolean',
     description: 'Disable rasterization of pileup/coverage',
     default: false,
   },
   {
     name: 'defaultSession',
-    type: 'boolean',
     description: 'Use default session from config',
     default: false,
   },
   {
     name: 'tracks',
-    type: 'string',
     description: 'Path to JSON file with an array of track configs',
   },
-  {
-    name: 'cytobands',
-    type: 'string',
-    description: 'Path to cytoband file for the assembly',
-  },
+  { name: 'cytobands', description: 'Path to cytoband file for the assembly' },
   {
     name: 'themeName',
-    type: 'string',
     description: 'Theme name for rendering (e.g. default, dark)',
   },
   {
     name: 'showGridlines',
-    type: 'boolean',
     description: 'Show genomic coordinate gridlines in the output',
     default: false,
   },
   {
     name: 'trackLabels',
-    type: 'string',
     description: 'Track label position: offset, overlay, left, or none',
   },
   {
     name: 'refseq',
-    type: 'boolean',
     description: 'Show the reference sequence track',
     default: false,
   },
