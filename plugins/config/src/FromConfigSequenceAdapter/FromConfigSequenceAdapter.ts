@@ -36,8 +36,7 @@ export default class FromConfigSequenceAdapter
           uniqueId: `${feat.id()}:${region.start}-${region.end}`,
           end: region.end,
           start: region.start,
-          seq: feat
-            .get('seq')
+          seq: (feat.get('seq') as string)
             .slice(
               Math.max(region.start - feat.get('start'), 0),
               Math.max(region.end - feat.get('start'), 0),

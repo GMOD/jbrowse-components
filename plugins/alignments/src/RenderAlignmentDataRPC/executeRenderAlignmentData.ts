@@ -40,7 +40,7 @@ function filterChainFeatures(
   }
   if (!drawProperPairs) {
     rawChains = rawChains.filter(
-      c => !c.every((f: Feature) => !!((f.get('flags') ?? 0) & 2)),
+      c => !c.every((f: Feature) => !!(((f.get('flags') as number | undefined) ?? 0) & 2)),
     )
   }
   const keptIds = new Set<string>()

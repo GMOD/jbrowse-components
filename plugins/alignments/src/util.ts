@@ -27,7 +27,7 @@ export async function fetchSequence(
       })
       .pipe(toArray()),
   )
-  return feats[0]?.get('seq')
+  return feats[0]?.get('seq') as string | undefined
 }
 
 export function randomColor(str: string) {

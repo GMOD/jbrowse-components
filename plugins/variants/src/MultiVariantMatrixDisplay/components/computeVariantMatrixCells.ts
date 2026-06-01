@@ -108,7 +108,7 @@ export function computeVariantMatrixCells({
   for (let idx = 0; idx < numFeatures; idx++) {
     const { feature, mostFrequentAlt } = mafs[idx]!
     const featureId = feature.id()
-    const hasPhaseSet = feature.get('FORMAT')?.includes('PS')
+    const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes('PS')
 
     const callGt = getRawCallGenotype(feature)
     if (hasPhaseSet || !callGt || !sampleIndices) {

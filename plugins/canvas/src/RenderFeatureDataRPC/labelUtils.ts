@@ -13,7 +13,10 @@ export function getFeatureName(feature: Feature): string | undefined {
 }
 
 export function getFeatureDescription(feature: Feature): string | undefined {
-  return feature.get('note') ?? feature.get('description')
+  return (
+    (feature.get('note') as string | undefined) ??
+    (feature.get('description') as string | undefined)
+  )
 }
 
 export function applyLabelDimensions(

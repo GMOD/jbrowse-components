@@ -32,7 +32,7 @@ export async function getScoreMatrix({
     dataAdapter.getFeatures(r0, args).pipe(toArray()),
   )
 
-  const groups = groupBy(feats, f => f.get('source'))
+  const groups = groupBy(feats, f => f.get('source')!)
   const rows: Record<string, Float32Array> = {}
 
   // pre-compute values used in inner loop
@@ -47,7 +47,7 @@ export async function getScoreMatrix({
     for (const feat of features) {
       const fstart = feat.get('start')
       const fend = feat.get('end')
-      const score = feat.get('score')
+      const score = feat.get('score') ?? 0
 
       const startX = Math.max(0, ((fstart - r0Start) * invBpPerPx) | 0)
       const endX = Math.min(w, ((fend - r0Start) * invBpPerPx) | 0)

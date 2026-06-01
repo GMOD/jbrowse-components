@@ -81,7 +81,7 @@ export default function JexlF(/* config?: any*/) {
   j.addFunction('trimStart', (s: string) => s.trimStart())
 
   j.addFunction('getTag', (feature: Feature, s: string) => {
-    const tags = feature.get('tags')
+    const tags = feature.get('tags') as Record<string, unknown> | undefined
     return tags ? tags[s] : feature.get(s)
   })
 

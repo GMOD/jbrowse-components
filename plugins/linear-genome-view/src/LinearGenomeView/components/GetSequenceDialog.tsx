@@ -74,7 +74,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
   const sequence = sequenceChunks
     ? formatSeqFasta(
         sequenceChunks.map(chunk => {
-          let chunkSeq = chunk.get('seq')
+          let chunkSeq = chunk.get('seq') as string
           const chunkRefName = chunk.get('refName')
           const chunkStart = chunk.get('start') + 1
           const chunkEnd = chunk.get('end')

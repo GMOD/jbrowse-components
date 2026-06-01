@@ -7,13 +7,14 @@ export interface Feature {
    * 'start' and 'end', but everything else is optional.
    */
   get(name: 'refName'): string
-  get(name: 'name' | 'type'): string | undefined
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
   get(name: 'start' | 'end'): number
   get(name: 'strand'): number | undefined
   get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'score'): number | undefined
   get(name: 'subfeatures'): Feature[] | undefined
 
-  get(name: string): any
+  get(name: string): unknown
   /**
    * Get the unique ID of this feature.
    */
@@ -147,8 +148,15 @@ export default class SimpleFeature implements Feature {
    * Get a piece of data about the feature.  All features must have
    * 'start' and 'end', but everything else is optional.
    */
-
-  public get(name: string): any {
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'strand'): number | undefined
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'score'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
+  get(name: string): unknown
+  public get(name: string): unknown {
     return name === 'subfeatures'
       ? this.subfeatures
       : name === 'parent'
@@ -189,7 +197,7 @@ export default class SimpleFeature implements Feature {
    * Get an array of child features, or undefined if none.
    */
   public children(): Feature[] | undefined {
-    return this.get('subfeatures')
+    return this.subfeatures
   }
 
   public toJSON(): SimpleFeatureSerialized {

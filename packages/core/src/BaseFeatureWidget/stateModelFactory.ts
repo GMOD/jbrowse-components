@@ -35,17 +35,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      featureData: types.frozen<MaybeSerializedFeat>(),
+      featureData: types.optional(types.frozen<MaybeSerializedFeat>(), undefined),
 
       /**
        * #property
        */
-      formattedFields: types.frozen(),
+      formattedFields: types.optional(types.frozen(), undefined),
 
       /**
        * #property
        */
-      unformattedFeatureData: types.frozen<MaybeSerializedFeat>(),
+      unformattedFeatureData: types.optional(
+        types.frozen<MaybeSerializedFeat>(),
+        undefined,
+      ),
 
       /**
        * #property
@@ -84,7 +87,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      descriptions: types.frozen<Record<string, unknown> | undefined>(),
+      descriptions: types.optional(
+        types.frozen<Record<string, unknown> | undefined>(),
+        undefined,
+      ),
     })
     .volatile(() => ({
       /**

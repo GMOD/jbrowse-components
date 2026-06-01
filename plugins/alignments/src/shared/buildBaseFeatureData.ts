@@ -39,13 +39,15 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     name: feature.get('name') ?? '',
     start: feature.get('start'),
     end: feature.get('end'),
-    flags: feature.get('flags') ?? 0,
+    flags: (feature.get('flags') as number | undefined) ?? 0,
     // SAM spec: MAPQ 255 indicates mapping quality is unavailable
     mapq: feature.get('score') ?? 255,
     avgBaseQuality,
     // SAM spec: TLEN 0 means insert size is unset (e.g. unpaired reads)
-    insertSize: Math.abs(feature.get('template_length') ?? 0),
-    pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),
+    insertSize: Math.abs((feature.get('template_length') as number | undefined) ?? 0),
+    pairOrientation: pairOrientationToNum(
+      feature.get('pair_orientation') as string | undefined,
+    ),
     strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
   }
 }

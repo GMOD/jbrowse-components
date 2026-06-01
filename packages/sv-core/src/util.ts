@@ -69,7 +69,7 @@ export function getBreakendCoveringRegions({
 }) {
   const startPos = feature.get('start')
   const refName = feature.get('refName')
-  const alt = feature.get('ALT')?.[0] as string | undefined
+  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
   const f = (ref: string) => assembly.getCanonicalRefName(ref) || ref
 
   const parsed = parseSvAlt(feature, alt)
@@ -81,7 +81,7 @@ export function getBreakendCoveringRegions({
       matePos: parsed.matePos - 1, // convert to 0-based
     }
   } else if (feature.get('mate')) {
-    const mate = feature.get('mate')
+    const mate = feature.get('mate') as { strand: number; start: number; end?: number; refName: string }
     const strand = feature.get('strand')!
     const mateStrand = mate.strand
     // Forward strand (1): use end position (right side)

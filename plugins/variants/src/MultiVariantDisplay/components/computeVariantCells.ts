@@ -65,10 +65,10 @@ function getInsertionRenderEnd(
   for (const a of alt) {
     maxLen = Math.max(maxLen, a.length)
   }
-  const info = feature.get('INFO')
+  const info = feature.get('INFO') as Record<string, unknown[]> | undefined
   if (Array.isArray(info?.SVLEN)) {
-    for (const sv of info.SVLEN) {
-      maxLen = Math.max(maxLen, Math.abs(+sv))
+    for (const sv of info.SVLEN as number[]) {
+      maxLen = Math.max(maxLen, Math.abs(sv))
     }
   }
   return start + maxLen
@@ -178,7 +178,7 @@ export function computeVariantCells({
       // uncommon, so the slower samples path runs only when a feature
       // actually declares PS. Mirrors the matrix display's PS branch so
       // phased coloring is consistent across both displays.
-      const hasPhaseSet = feature.get('FORMAT')?.includes('PS')
+      const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes('PS')
       if (hasPhaseSet || !callGt || !sampleIndices) {
         let samp: Record<string, Record<string, string[]>> | undefined
         let stringGenotypes: Record<string, string> | undefined

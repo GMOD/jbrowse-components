@@ -18,7 +18,6 @@ test('renders with just the required model elements', () => {
   const model = Session.create(
     {
       widget: {
-        // @ts-expect-error
         type: 'VariantFeatureWidget',
       },
     },
@@ -56,7 +55,6 @@ test('pairs each symbolic ALT with its own SVLEN', () => {
   const model = Session.create(
     {
       widget: {
-        // @ts-expect-error
         type: 'VariantFeatureWidget',
       },
     },

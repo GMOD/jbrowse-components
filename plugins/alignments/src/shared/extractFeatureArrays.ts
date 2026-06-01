@@ -61,10 +61,12 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     features.push(buildFeatureData(feature))
 
-    nextPositions.push(feature.get('next_pos') ?? 0)
-    nextRefs.push(feature.get('next_ref') ?? '')
-    const tags = feature.get('tags')
-    suppAlignments.push(tags?.SA ?? feature.get('SA') ?? '')
+    nextPositions.push((feature.get('next_pos') as number | undefined) ?? 0)
+    nextRefs.push((feature.get('next_ref') as string | undefined) ?? '')
+    const tags = feature.get('tags') as Record<string, unknown> | undefined
+    suppAlignments.push(
+      ((tags?.['SA'] ?? feature.get('SA')) as string | undefined) ?? '',
+    )
 
     if (isTagColorMode) {
       tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))

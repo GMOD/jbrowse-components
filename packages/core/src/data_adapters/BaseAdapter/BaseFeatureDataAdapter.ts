@@ -194,7 +194,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     )
     const sources = new Set<string>()
     for (const f of features) {
-      sources.add(f.get('source'))
+      const source = f.get('source')
+      if (source !== undefined) {
+        sources.add(source)
+      }
     }
     return [...sources].map(source => ({
       name: source,
