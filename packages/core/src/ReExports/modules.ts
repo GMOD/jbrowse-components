@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
 
 import * as mst from '@jbrowse/mobx-state-tree'

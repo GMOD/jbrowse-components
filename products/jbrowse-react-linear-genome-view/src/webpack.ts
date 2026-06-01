@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
 
 export { default as JBrowseLinearGenomeView } from './JBrowseLinearGenomeView/index.ts'
