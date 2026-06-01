@@ -196,8 +196,9 @@ export interface SessionWithAddTracks extends AbstractSessionModel {
 }
 export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   return (
-    // @ts-expect-error
-    isSessionModel(t) && 'addTrackConf' in t && !t.disableAddTracks
+    isSessionModel(t) &&
+    'addTrackConf' in t &&
+    !('disableAddTracks' in t && t.disableAddTracks)
   )
 }
 
@@ -359,7 +360,9 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
     typeof thing === 'object' &&
     thing !== null &&
     'configuration' in thing &&
-    // @ts-expect-error
+    typeof thing.configuration === 'object' &&
+    thing.configuration !== null &&
+    'trackId' in thing.configuration &&
     !!thing.configuration.trackId
   )
 }
@@ -372,12 +375,15 @@ export interface AbstractDisplayModel {
   cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
-  if (typeof thing === 'object' && thing !== null && 'configuration' in thing) {
-    // @ts-expect-error
-    const { displayId } = thing.configuration
-    return !!displayId
-  }
-  return false
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'configuration' in thing &&
+    typeof thing.configuration === 'object' &&
+    thing.configuration !== null &&
+    'displayId' in thing.configuration &&
+    !!thing.configuration.displayId
+  )
 }
 
 export interface TrackViewModel extends AbstractViewModel {

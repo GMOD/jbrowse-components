@@ -2,6 +2,17 @@ import { openDB } from 'idb'
 
 import type { DBSchema, IDBPDatabase } from 'idb'
 
+declare global {
+  interface FileSystemFileHandle {
+    queryPermission(options: {
+      mode: 'read' | 'readwrite'
+    }): Promise<PermissionState>
+    requestPermission(options: {
+      mode: 'read' | 'readwrite'
+    }): Promise<PermissionState>
+  }
+}
+
 const DB_NAME = 'jbrowse-file-handles'
 const DB_VERSION = 1
 const STORE_NAME = 'handles'
@@ -67,13 +78,11 @@ export async function verifyPermission(
   requestPermission = false,
 ) {
   const options = { mode: 'read' } as const
-  // @ts-expect-error - File System Access API not fully typed
   const currentPermission = await handle.queryPermission(options)
   if (currentPermission === 'granted') {
     return true
   }
   if (requestPermission) {
-    // @ts-expect-error - File System Access API not fully typed
     const newPermission = await handle.requestPermission(options)
     if (newPermission === 'granted') {
       return true

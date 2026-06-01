@@ -546,7 +546,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   getRectangles(): Map<string, RectTuple> {
     const pitchX = this.pitchX
     const pitchY = this.pitchY
-    // @ts-expect-error
     return new Map(
       [...this.rectangles.entries()].map(([id, rect]) => {
         const { l, r, originalHeight, top, serializableData } = rect
@@ -576,7 +575,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         const y2 = r * pitchX
         // add +/- pitchX to avoid resolution causing errors
         if (x2 >= y1 - pitchX && y2 + pitchX >= x1) {
-          // @ts-expect-error
           regionRectangles[id] = [y1, t, y2, b, rect.serializableData]
         }
       }

@@ -74,10 +74,10 @@ async function loadScript(scriptUrl: string) {
     return promisifiedLoadScript(scriptUrl)
   }
 
-  // @ts-expect-error
-  if (globalThis.importScripts) {
-    // @ts-expect-error
-    await globalThis.importScripts(scriptUrl)
+  if ('importScripts' in globalThis) {
+    ;(
+      globalThis as unknown as { importScripts(url: string): void }
+    ).importScripts(scriptUrl)
     return
   }
   throw new Error(
@@ -142,8 +142,7 @@ function assertHttpProtocol(url: URL) {
 }
 
 function addCacheBuster(url: string) {
-  // @ts-expect-error
-  if (!globalThis.__jbrowseCacheBuster) {
+  if (!('__jbrowseCacheBuster' in globalThis)) {
     return url
   }
   const u = new URL(url)
@@ -211,8 +210,7 @@ export default class PluginLoader {
     const umdName = `JBrowsePlugin${moduleName}`
     await loadScript(addCacheBuster(parsedUrl.href))
 
-    // @ts-expect-error
-    const plugin = globalThis[umdName] as
+    const plugin = (globalThis as Record<string, unknown>)[umdName] as
       | { default: PluginConstructor }
       | undefined
     if (!plugin) {
@@ -251,8 +249,9 @@ export default class PluginLoader {
   }
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope) {
-    // @ts-expect-error
-    target.JBrowseExports = { ...ReExports }
+    ;(target as unknown as Record<string, unknown>).JBrowseExports = {
+      ...ReExports,
+    }
     return this
   }
 

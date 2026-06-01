@@ -1,5 +1,11 @@
 import { Box, Button, FormControl, Typography } from '@mui/material'
 
+declare global {
+  interface Window {
+    showOpenFilePicker(): Promise<FileSystemFileHandle[]>
+  }
+}
+
 import { dirFromPath } from './util.ts'
 import { isFileSystemAccessSupported } from '../../util/fileHandleStore.ts'
 import { isElectron } from '../../util/index.ts'
@@ -78,9 +84,9 @@ function needsReload(location?: FileLocation) {
 }
 
 async function openFileSystemAccessPicker() {
-  // @ts-expect-error
   const [handle] = await window.showOpenFilePicker()
-  return storeFileHandleLocation(handle)
+  // showOpenFilePicker resolves with ≥1 handle on success, throws AbortError on cancel
+  return storeFileHandleLocation(handle!)
 }
 
 function FilePickerButton({

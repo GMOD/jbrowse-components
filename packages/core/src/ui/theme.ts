@@ -341,10 +341,9 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           size: 'small' as const,
         },
         styleOverrides: {
-          secondary: {
-            // @ts-expect-error
-            backgroundColor: theme?.palette?.quaternary?.main,
-          },
+          secondary: ({ theme: t }: { theme: Theme }) => ({
+            backgroundColor: t.palette.quaternary.main,
+          }),
         },
       },
       MuiTable: {
@@ -447,14 +446,12 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
       MuiAccordionSummary: {
         styleOverrides: {
-          root: {
-            // @ts-expect-error
-            backgroundColor: theme?.palette?.tertiary?.main,
-          },
-          content: {
-            // @ts-expect-error
-            color: theme?.palette?.tertiary?.contrastText,
-          },
+          root: ({ theme: t }: { theme: Theme }) => ({
+            backgroundColor: t.palette.tertiary.main,
+          }),
+          content: ({ theme: t }: { theme: Theme }) => ({
+            color: t.palette.tertiary.contrastText,
+          }),
         },
       },
       MuiToggleButtonGroup: {

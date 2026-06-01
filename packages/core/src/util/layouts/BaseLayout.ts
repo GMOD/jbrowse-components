@@ -1,4 +1,4 @@
-export type RectTuple = [number, number, number, number]
+export type RectTuple = [number, number, number, number, unknown?]
 export interface SerializedLayout {
   rectangles: Record<string, RectTuple>
   totalHeight: number
