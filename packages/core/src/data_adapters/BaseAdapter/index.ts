@@ -9,8 +9,12 @@ export { BaseAdapter } from './BaseAdapter.ts'
 export { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 export { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'
 export type { BaseTextSearchAdapter } from './BaseTextSearchAdapter.ts'
-export type { BaseRefNameAliasAdapter } from './BaseRefNameAliasAdapter.ts'
+export type {
+  Alias,
+  BaseRefNameAliasAdapter,
+} from './BaseRefNameAliasAdapter.ts'
 export type { RegionsAdapter } from './RegionsAdapter.ts'
+export type { CytobandAdapter } from './CytobandAdapter.ts'
 
 // see
 // https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
