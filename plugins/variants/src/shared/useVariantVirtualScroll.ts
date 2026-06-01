@@ -1,4 +1,6 @@
-import { useEffect, useEffectEvent } from 'react'
+import { useEffect, useEffectEvent, useMemo } from 'react'
+
+import { createScrollLatch, normalizeWheelDeltaY } from '@jbrowse/core/util'
 
 export function useVariantVirtualScroll({
   canvas,
@@ -23,6 +25,7 @@ export function useVariantVirtualScroll({
 }) {
   const scrollableHeight = Math.max(0, totalHeight - viewportHeight)
   const hasOverflow = scrollableHeight > 0
+  const latch = useMemo(() => createScrollLatch(), [])
 
   const handleWheel = useEffectEvent((e: WheelEvent) => {
     if (e.shiftKey) {
@@ -45,15 +48,9 @@ export function useVariantVirtualScroll({
       !e.metaKey &&
       scrollableHeight > 0
     ) {
-      const dy =
-        e.deltaMode === 1
-          ? e.deltaY * 40
-          : e.deltaMode === 2
-            ? e.deltaY * viewportHeight
-            : e.deltaY
-      const next = Math.max(0, Math.min(scrollableHeight, scrollTop + dy))
-      if (next !== scrollTop) {
-        e.preventDefault()
+      const dy = normalizeWheelDeltaY(e.deltaY, e.deltaMode, viewportHeight)
+      const next = latch.scroll(e, scrollTop, dy, scrollableHeight)
+      if (next !== null) {
         setScrollTop(next)
       }
     }

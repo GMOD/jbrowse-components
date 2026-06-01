@@ -32,6 +32,7 @@ export * from './fetchJson.ts'
 export * from './sessionSharing.ts'
 export * from './coarseStripHTML.ts'
 export * from './measureText.ts'
+export * from './scrollLatch.ts'
 
 export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'

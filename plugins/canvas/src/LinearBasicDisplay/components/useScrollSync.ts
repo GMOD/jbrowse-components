@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { createScrollLatch, normalizeWheelDeltaY } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
 interface ScrollSyncModel {
@@ -58,14 +59,19 @@ export function useScrollSync(
       }
     }
 
+    const latch = createScrollLatch()
     const handleWheel = (e: WheelEvent) => {
       if (!model.hasOverflow || e.ctrlKey || e.metaKey) {
         return
       }
       if (e.shiftKey) {
-        e.preventDefault()
-        e.stopPropagation()
-        container.scrollTop += e.deltaY
+        const max = container.scrollHeight - container.clientHeight
+        const dy = normalizeWheelDeltaY(e.deltaY, e.deltaMode, container.clientHeight)
+        const next = latch.scroll(e, container.scrollTop, dy, max)
+        if (next !== null) {
+          e.stopPropagation()
+          container.scrollTop = next
+        }
       } else if (view.scrollZoom) {
         e.preventDefault()
       }

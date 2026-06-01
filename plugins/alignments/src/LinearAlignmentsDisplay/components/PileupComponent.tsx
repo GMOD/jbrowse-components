@@ -1,9 +1,14 @@
-import { useEffect, useEffectEvent } from 'react'
+import { useEffect, useEffectEvent, useMemo } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { clamp, getContainingView } from '@jbrowse/core/util'
+import {
+  clamp,
+  createScrollLatch,
+  getContainingView,
+  normalizeWheelDeltaY,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
@@ -54,19 +59,6 @@ const useStyles = makeStyles()({
   },
 })
 
-// deltaMode 1 = line (~40px), deltaMode 2 = page (full viewport height)
-function normalizePileupDeltaY(
-  deltaY: number,
-  deltaMode: number,
-  viewportHeight: number,
-) {
-  return deltaMode === 1
-    ? deltaY * 40
-    : deltaMode === 2
-      ? deltaY * viewportHeight
-      : deltaY
-}
-
 // The pileup canvas + all its positioned overlays. DisplayChrome owns the GPU
 // backend and the three terminal states (render error, region-too-large, fetch
 // error + loading), so this body renders only the success path — it receives
@@ -93,6 +85,7 @@ const PileupBody = observer(function PileupBody({
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
+  const latch = useMemo(() => createScrollLatch(), [])
 
   const handleWheel = useEffectEvent((e: WheelEvent) => {
     if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
@@ -102,16 +95,10 @@ const PileupBody = observer(function PileupBody({
     if (scrollableHeight <= 0) {
       return
     }
-    const dy = normalizePileupDeltaY(
-      e.deltaY,
-      e.deltaMode,
-      pileupViewportHeight,
-    )
-    const curScroll = currentRangeY[0]
-    const newScroll = clamp(curScroll + dy, 0, scrollableHeight)
-    if (newScroll !== curScroll) {
-      e.preventDefault()
-      model.setCurrentRangeY([newScroll, newScroll + pileupViewportHeight])
+    const dy = normalizeWheelDeltaY(e.deltaY, e.deltaMode, pileupViewportHeight)
+    const next = latch.scroll(e, currentRangeY[0], dy, scrollableHeight)
+    if (next !== null) {
+      model.setCurrentRangeY([next, next + pileupViewportHeight])
     }
   })
 
