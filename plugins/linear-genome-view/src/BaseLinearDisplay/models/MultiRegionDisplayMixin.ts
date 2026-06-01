@@ -122,15 +122,16 @@ export default function MultiRegionDisplayMixin() {
       /**
        * #getter
        * whether the loading scrim should show: data not ready yet, or stale data
-       * (viewport past loaded) still on screen. Not while regionTooLarge/error —
-       * those render their own UI. The single signal every display's loading
-       * overlay reads.
+       * (viewport past loaded) still on screen. Not while regionTooLarge / fetch
+       * error / renderError — those render their own terminal UI. The single
+       * signal every display's loading overlay reads.
        */
       get loadingOverlayVisible() {
         return (
           (!self.isReady || !self.viewportWithinLoadedData) &&
           !self.regionTooLarge &&
-          !self.error
+          !self.error &&
+          !self.renderError
         )
       },
     }))

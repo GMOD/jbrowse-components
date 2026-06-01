@@ -6,14 +6,13 @@
 - hide sashimi arcs if not relevant?
 - show coverage hides arcs even when 'below'...
 - make samplot mode have better coloring (same as arcs essentially)
-- read arcs on volvox inv not showing
-- depth on volvox inv short reads weird(?)
 - show outlines autohide
-- debounce coverage calculations
 - when vertical scrolling, weird behavior that kind of scrolls the page too fast when you just want to scroll element
-- allow samplot and arcs
-- arcs not drawing?
 - more 'group operations'
 - fullpage_arcs-collapse-introns-sashimi.png need to scroll down to see the collapsed arcs
 - does yeast demo really need remote
 - no max height react-app
+- further aggressive assessments of displaychrome... what does chrome mean
+- move 'show coverage' to show submenu
+- svg export of alignments changes z-index of arcs vs coverage
+- weird 'separator' line in alignments svg export between coverage and pileup reads

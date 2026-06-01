@@ -65,6 +65,7 @@ export interface LinearBasicDisplayModel {
     bytes?: number
     fetchSizeLimit?: number
   }) => void
+  forceLoad: () => void
   reload: () => void
   expandToFit: () => void
   collapseFromExpand: () => void
@@ -100,6 +101,8 @@ export interface LinearBasicDisplayModel {
   startRenderingBackend: (backend: CanvasFeatureRenderingBackend) => void
   stopRenderingBackend: () => void
   renderNow: () => void
+  renderError: unknown
+  setRenderError: (error: unknown) => void
 }
 
 export interface Props {

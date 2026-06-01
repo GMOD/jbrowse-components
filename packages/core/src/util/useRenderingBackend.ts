@@ -21,6 +21,8 @@ export interface RenderLifecycleModel<RenderingBackendType> {
   startRenderingBackend: (backend: RenderingBackendType) => void
   stopRenderingBackend: () => void
   renderNow: () => void
+  renderError: unknown
+  setRenderError: (error: unknown) => void
 }
 
 /**
@@ -54,14 +56,23 @@ export function useRenderingBackend<
           model.stopRenderingBackend()
         }
       },
+      onError: (error: unknown) => {
+        if (nodeAlive(model)) {
+          model.setRenderError(error)
+        }
+      },
     }),
     [model],
   )
-  const { canvas, canvasRef, error, retry } = useRenderer(factory, opts)
+  const { canvas, canvasRef, retry } = useRenderer(factory, opts)
   useTabVisibilityRerender(() => {
     if (nodeAlive(model)) {
       model.renderNow()
     }
   })
-  return { canvas, canvasRef, error, retry }
+  // `error` is sourced from model volatile, not React-local hook state: the
+  // model owns the terminal state, the hook only writes/reads it. Returned for
+  // standalone consumers (dotplot, synteny) that render their own banner;
+  // DisplayChrome reads `model.renderError` directly.
+  return { canvas, canvasRef, error: model.renderError, retry }
 }

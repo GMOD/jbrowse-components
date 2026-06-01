@@ -1,19 +1,12 @@
-export { arcColorOptions, getColorByMenuItem } from './colorBy.ts'
+export { getColorByMenuItem } from './colorBy.ts'
 export type { ModificationsModel } from './colorBy.ts'
 export { getCoverageMenuItem } from './coverage.ts'
-export {
-  COMPACTNESS_PRESETS,
-  getFeatureHeightMenuItem,
-  getSetMaxHeightMenuItem,
-} from './featureSize.ts'
+export { COMPACTNESS_PRESETS, getFeatureHeightMenuItem } from './featureSize.ts'
 export type { CompactnessLevel } from './featureSize.ts'
 export { getFiltersMenuItem } from './filters.ts'
 export {
-  ARC_DIRECTION_OPTIONS,
-  LINKED_READS_OPTIONS,
-  READ_CONNECTIONS_OPTIONS,
-  radioModeMenuItem,
-  radioModeSubMenu,
-} from './menuHelpers.ts'
+  getReadConnectionsMenuItem,
+  getSashimiArcsMenuItem,
+} from './readConnections.ts'
 export { getReadsMenuItem } from './reads.ts'
 export { getGroupByMenuItem, getSortByMenuItem } from './sortGroup.ts'

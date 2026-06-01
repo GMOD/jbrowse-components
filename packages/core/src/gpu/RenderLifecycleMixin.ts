@@ -73,6 +73,17 @@ export function RenderLifecycleMixin() {
        * guards attachRenderingBackend so the autorun pair spawns once per instance
        */
       autorunsInstalled: false,
+      /**
+       * #volatile
+       * the render-backend (GPU/Canvas2D init or context-loss) error, or
+       * undefined. Single source of truth for the render-error terminal state:
+       * `useRenderingBackend` writes it from the canvas-init mechanism so the
+       * model — not React-local hook state — owns every terminal state. Read by
+       * `loadingOverlayVisible` (suppresses the scrim) and by `DisplayChrome`
+       * (shows the retry overlay).
+       */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      renderError: undefined as unknown,
     }))
     .actions(self => ({
       /**
@@ -103,6 +114,18 @@ export function RenderLifecycleMixin() {
        */
       renderNow() {
         self.renderTick += 1
+      },
+      /**
+       * #action
+       * set/clear the render-backend error. Called by `useRenderingBackend`:
+       * with the error when the canvas factory rejects (or context-loss
+       * re-init fails), and with `undefined` on successful (re)init and on
+       * retry.
+       */
+      setRenderError(error: unknown) {
+        if (self.renderError !== error) {
+          self.renderError = error
+        }
       },
     }))
     .actions(self => ({

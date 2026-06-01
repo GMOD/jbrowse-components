@@ -5,9 +5,6 @@ import { getSession } from '@jbrowse/core/util'
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
 )
-const SetMaxHeightDialog = lazy(
-  () => import('../dialogs/SetMaxHeightDialog.tsx'),
-)
 
 // Single source of truth for the (featureHeight, featureSpacing) pairs that
 // the feature-height menu and the LGV/comparative-view setCompactness API
@@ -65,25 +62,5 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         },
       },
     ],
-  }
-}
-
-interface MaxHeightModel {
-  maxHeight?: number
-  setMaxHeight: (arg?: number) => void
-}
-
-export function getSetMaxHeightMenuItem(model: MaxHeightModel) {
-  return {
-    label: 'Set max track height...',
-    onClick: () => {
-      getSession(model).queueDialog(handleClose => [
-        SetMaxHeightDialog,
-        {
-          model,
-          handleClose,
-        },
-      ])
-    },
   }
 }

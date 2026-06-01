@@ -12,7 +12,7 @@ import type { Region } from '@jbrowse/core/util/types'
  * LinearAlignmentsDisplay, LinearWiggleDisplay, LinearBasicDisplay).
  *
  * Owns the state that TooLargeMessage reads: regionTooLarge,
- * regionTooLargeReason, featureDensityStats, setFeatureDensityStatsLimit.
+ * regionTooLargeReason, forceLoad.
  *
  * #stateModel RegionTooLargeMixin
  * #category display
@@ -99,6 +99,19 @@ export default function RegionTooLargeMixin() {
        */
       reload() {
         // no-op, overridden by composing display models
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Raises the byte limit past the current density stats and triggers a
+       * reload. The display chrome calls this via TooLargeMessage's force-load
+       * button; concrete display models override reload() to do the actual
+       * refetch.
+       */
+      forceLoad() {
+        self.setFeatureDensityStatsLimit(self.featureDensityStats)
+        self.reload()
       },
     }))
 }

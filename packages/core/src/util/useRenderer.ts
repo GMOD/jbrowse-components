@@ -5,6 +5,14 @@ import { onDeviceLost } from '../gpu/gpuDevice.ts'
 interface UseGpuRendererOptions<R> {
   onReady?: (renderer: R) => void
   onDispose?: () => void
+  /**
+   * Called with the error when the factory rejects, and with `undefined` on
+   * successful (re)init and on `retry`. The hook holds no error state itself —
+   * the canvas-init failure is an event the caller routes to its own store
+   * (`useRenderingBackend` writes it to model volatile), so terminal-state
+   * ownership stays in one place rather than split across React + model.
+   */
+  onError?: (error: unknown) => void
 }
 
 /**
@@ -37,7 +45,6 @@ export function useRenderer<R extends { dispose(): void }>(
   opts?: UseGpuRendererOptions<R>,
 ) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
-  const [error, setError] = useState<unknown>(null)
   const [ready, setReady] = useState(false)
   const [contextVersion, setContextVersion] = useState(0)
   const rendererRef = useRef<R | null>(null)
@@ -97,11 +104,12 @@ export function useRenderer<R extends { dispose(): void }>(
         backend = r
         rendererRef.current = r
         setReady(true)
+        opts?.onError?.(undefined)
         opts?.onReady?.(r)
       })
       .catch((e: unknown) => {
         if (!cancelled) {
-          setError(e)
+          opts?.onError?.(e)
         }
       })
 
@@ -115,10 +123,10 @@ export function useRenderer<R extends { dispose(): void }>(
   }, [canvas, contextVersion, factory, opts])
 
   function retry() {
-    setError(null)
+    opts?.onError?.(undefined)
     setReady(false)
     setContextVersion(v => v + 1)
   }
 
-  return { canvas, canvasRef, error, ready, rendererRef, retry }
+  return { canvas, canvasRef, ready, rendererRef, retry }
 }

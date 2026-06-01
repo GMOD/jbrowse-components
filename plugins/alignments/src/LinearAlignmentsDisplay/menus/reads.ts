@@ -1,16 +1,10 @@
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { getSetMaxHeightMenuItem } from './featureSize.ts'
+import { getArcDirectionMenuItem } from './readConnections.ts'
+
+import type { ArcDirection, ReadConnectionsMode } from '../constants.ts'
 
 interface ReadsModel {
-  featureHeightSetting: number
-  featureSpacing: number
-  setFeatureHeight: (height?: number) => void
-  setFeatureSpacing: (spacing?: number) => void
-
-  maxHeight?: number
-  setMaxHeight: (arg?: number) => void
-
   showMismatches: boolean
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
@@ -26,6 +20,12 @@ interface ReadsModel {
 
   flipStrandLongReadChains: boolean
   setFlipStrandLongReadChains: (flag: boolean) => void
+
+  readConnections: ReadConnectionsMode
+  readConnectionsDown: boolean
+  setReadConnectionsDown: (down: boolean) => void
+  sashimiArcs: ArcDirection
+  setSashimiArcs: (mode: ArcDirection) => void
 }
 
 export function getReadsMenuItem(model: ReadsModel) {
@@ -82,7 +82,7 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
         },
       },
-      getSetMaxHeightMenuItem(model),
+      getArcDirectionMenuItem(model),
     ],
   }
 }

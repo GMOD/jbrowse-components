@@ -27,6 +27,7 @@ export interface WiggleGpuDisplayModel<
   regionTooLargeReason: string
   featureDensityStats?: FeatureDensityStats
   setFeatureDensityStatsLimit: (s?: FeatureDensityStats) => void
+  forceLoad: () => void
   displayCrossHatches: boolean
   scalebarOverlapLeft: number
 }

@@ -23,6 +23,15 @@ export interface ModificationsModel extends ColorByModel {
   modificationThreshold: number
 }
 
+// The three modification fields always travel together: an alignments display
+// has all of them, a synteny display has none. The predicate lets the menu
+// accept either kind of model without lying about the fields being required.
+function hasModifications(
+  model: ColorByModel & Partial<ModificationsModel>,
+): model is ModificationsModel {
+  return model.modificationsReady !== undefined
+}
+
 interface ColorOption {
   label: string
   type: string
@@ -31,6 +40,13 @@ interface ColorOption {
 interface ColorByMenuOptions {
   includeTagOption?: boolean
   colorOptions?: ColorOption[]
+  // Read-connection arc coloring lives here rather than in the Read connections
+  // menu — it's a rare setting and colors belong together. Passed only when arc
+  // mode is active, so it stays hidden otherwise.
+  arcColor?: {
+    current: ArcColorByType
+    setColor: (type: ArcColorByType) => void
+  }
 }
 
 const basicColorOptions: ColorOption[] = [
@@ -50,12 +66,9 @@ const pairedEndColorOptions: ColorOption[] = [
 ]
 
 export const arcColorOptions: { label: string; type: ArcColorByType }[] = [
-  {
-    label: 'Arc: Insert size and orientation',
-    type: 'insertSizeAndOrientation',
-  },
-  { label: 'Arc: Insert size', type: 'insertSize' },
-  { label: 'Arc: Orientation', type: 'orientation' },
+  { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
+  { label: 'Insert size', type: 'insertSize' },
+  { label: 'Orientation', type: 'orientation' },
 ]
 
 function getModificationsSubMenu(model: ModificationsModel) {
@@ -142,10 +155,10 @@ function getModificationsSubMenu(model: ModificationsModel) {
 }
 
 export function getColorByMenuItem(
-  model: ModificationsModel,
+  model: ColorByModel & Partial<ModificationsModel>,
   options: ColorByMenuOptions = {},
 ) {
-  const { includeTagOption = false, colorOptions } = options
+  const { includeTagOption = false, colorOptions, arcColor } = options
 
   const colorRadio = ({ label, type }: ColorOption) => ({
     label,
@@ -179,20 +192,36 @@ export function getColorByMenuItem(
       ]
     : []
 
-  const modItem =
-    model.modificationsReady !== undefined
-      ? [
-          {
-            label: 'Modifications...',
-            type: 'subMenu' as const,
-            subMenu: getModificationsSubMenu(model),
-          },
-        ]
-      : []
+  const modItem = hasModifications(model)
+    ? [
+        {
+          label: 'Modifications...',
+          type: 'subMenu' as const,
+          subMenu: getModificationsSubMenu(model),
+        },
+      ]
+    : []
+
+  const arcColorItem = arcColor
+    ? [
+        {
+          label: 'Arc color',
+          type: 'subMenu' as const,
+          subMenu: arcColorOptions.map(({ label, type }) => ({
+            label,
+            type: 'radio' as const,
+            checked: arcColor.current === type,
+            onClick: () => {
+              arcColor.setColor(type)
+            },
+          })),
+        },
+      ]
+    : []
 
   return {
     label: 'Color by...',
     icon: Palette,
-    subMenu: [...headItems, ...tagItem, ...modItem],
+    subMenu: [...headItems, ...tagItem, ...modItem, ...arcColorItem],
   }
 }

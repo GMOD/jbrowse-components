@@ -36,11 +36,13 @@ describe('useRenderer', () => {
   test('initializes renderer and sets ready on success', async () => {
     const factory = createMockFactory()
     const canvas = document.createElement('canvas')
+    const onError = jest.fn()
 
-    const { result } = renderHook(() => useRenderer(factory))
+    const opts = { onError }
+
+    const { result } = renderHook(() => useRenderer(factory, opts))
 
     expect(result.current.ready).toBe(false)
-    expect(result.current.error).toBeNull()
 
     act(() => {
       result.current.canvasRef(canvas)
@@ -48,51 +50,61 @@ describe('useRenderer', () => {
     await act(async () => {})
 
     expect(result.current.ready).toBe(true)
-    expect(result.current.error).toBeNull()
+    // clears any stale error on successful init
+    expect(onError).toHaveBeenCalledWith(undefined)
     expect(result.current.rendererRef.current).toBeDefined()
   })
 
-  test('sets error when factory rejects', async () => {
+  test('reports error via onError when factory rejects', async () => {
     const factory = createMockFactory(true)
     const canvas = document.createElement('canvas')
+    const onError = jest.fn()
 
-    const { result } = renderHook(() => useRenderer(factory))
+    const opts = { onError }
+
+    const { result } = renderHook(() => useRenderer(factory, opts))
     act(() => {
       result.current.canvasRef(canvas)
     })
     await act(async () => {})
 
     expect(result.current.ready).toBe(false)
-    expect(result.current.error).toBeInstanceOf(Error)
+    expect(onError).toHaveBeenCalledWith(expect.any(Error))
   })
 
-  test('retry resets error and ready', async () => {
+  test('retry clears error via onError and resets ready', async () => {
     const factory = createMockFactory(true)
     const canvas = document.createElement('canvas')
+    const onError = jest.fn()
 
-    const { result } = renderHook(() => useRenderer(factory))
+    const opts = { onError }
+
+    const { result } = renderHook(() => useRenderer(factory, opts))
     act(() => {
       result.current.canvasRef(canvas)
     })
     await act(async () => {})
-    expect(result.current.error).toBeInstanceOf(Error)
+    expect(onError).toHaveBeenLastCalledWith(expect.any(Error))
 
     act(() => {
       result.current.retry()
     })
 
-    expect(result.current.error).toBeNull()
+    expect(onError).toHaveBeenLastCalledWith(undefined)
     expect(result.current.ready).toBe(false)
   })
 
   test('does nothing when canvas ref is null', async () => {
     const factory = createMockFactory()
+    const onError = jest.fn()
 
-    const { result } = renderHook(() => useRenderer(factory))
+    const opts = { onError }
+
+    const { result } = renderHook(() => useRenderer(factory, opts))
     await act(async () => {})
 
     expect(result.current.ready).toBe(false)
-    expect(result.current.error).toBeNull()
+    expect(onError).not.toHaveBeenCalled()
     expect(result.current.rendererRef.current).toBeNull()
   })
 

@@ -47,20 +47,16 @@ import { getColorForModification } from '../util.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 import {
-  ARC_DIRECTION_OPTIONS,
   COMPACTNESS_PRESETS,
-  LINKED_READS_OPTIONS,
-  READ_CONNECTIONS_OPTIONS,
-  arcColorOptions,
   getColorByMenuItem,
   getCoverageMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
   getGroupByMenuItem,
+  getReadConnectionsMenuItem,
   getReadsMenuItem,
+  getSashimiArcsMenuItem,
   getSortByMenuItem,
-  radioModeMenuItem,
-  radioModeSubMenu,
 } from './menus/index.ts'
 
 import type {
@@ -550,13 +546,6 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get maxHeight() {
-          return self.getConfWithOverride<number>('maxHeight')
-        },
-
-        /**
-         * #getter
-         */
         get chainIdMap() {
           const map = new Map<number, string[]>()
           if (self.linkedReads !== 'off') {
@@ -620,9 +609,11 @@ export default function stateModelFactory(
           if (!view.initialized) {
             return undefined
           }
-          return computeVisibleCoverageStats(
-            view.dynamicBlocks.contentBlocks,
-            b => self.rpcDataMap.get(b.displayedRegionIndex!),
+          // coarseDynamicBlocks (500ms debounced) instead of dynamicBlocks so
+          // the per-bp depth scan doesn't recompute on every animation frame
+          // during pan/zoom — same approach as wiggle's visibleScoreRange.
+          return computeVisibleCoverageStats(view.coarseDynamicBlocks, b =>
+            self.rpcDataMap.get(b.displayedRegionIndex!),
           )
         },
 
@@ -858,6 +849,15 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * True when any loaded region has splice junctions to draw as sashimi
+         * arcs. Drives whether the below-coverage band reserves space.
+         */
+        get hasSashimiArcs() {
+          return [...self.rpcDataMap.values()].some(d => d.sashimiX1.length > 0)
+        },
+
+        /**
+         * #getter
          */
         get coverageDisplayHeight() {
           return (
@@ -865,7 +865,9 @@ export default function stateModelFactory(
             (self.readConnections !== 'off' && self.readConnectionsDown
               ? self.readConnectionsHeight
               : 0) +
-            (self.sashimiArcs === 'down' && self.showCoverage
+            (self.sashimiArcs === 'down' &&
+            self.showCoverage &&
+            this.hasSashimiArcs
               ? self.sashimiArcsHeight
               : 0)
           )
@@ -1390,13 +1392,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setMaxHeight(n?: number) {
-            self.setOverride('maxHeight', n)
-          },
-
-          /**
-           * #action
-           */
           setScaleType(val: string) {
             self.setOverride('scaleType', val)
           },
@@ -1860,6 +1855,15 @@ export default function stateModelFactory(
           return [
             getColorByMenuItem(self, {
               includeTagOption: true,
+              arcColor:
+                self.readConnections === 'arc'
+                  ? {
+                      current: self.arcColorByType,
+                      setColor: (type: ArcColorByType) => {
+                        self.setColorByType(type)
+                      },
+                    }
+                  : undefined,
             }),
             getSortByMenuItem(self),
             getFiltersMenuItem(self, { showPairFilters: self.isChainMode }),
@@ -1867,90 +1871,8 @@ export default function stateModelFactory(
             getReadsMenuItem(self),
             getFeatureHeightMenuItem(self),
             getCoverageMenuItem(self),
-            {
-              label: 'Read connections',
-              type: 'subMenu' as const,
-              subMenu: [
-                radioModeMenuItem(
-                  'Linked reads',
-                  LINKED_READS_OPTIONS,
-                  self.linkedReads,
-                  v => {
-                    self.setLinkedReads(v)
-                  },
-                ),
-                {
-                  label: 'Arcs',
-                  type: 'subMenu' as const,
-                  subMenu: [
-                    ...radioModeSubMenu(
-                      ARC_DIRECTION_OPTIONS,
-                      self.sashimiArcs,
-                      v => {
-                        self.setSashimiArcs(v)
-                      },
-                    ),
-                    {
-                      label: 'Arc color',
-                      type: 'subMenu' as const,
-                      subMenu: arcColorOptions.map(({ label, type }) => ({
-                        label,
-                        type: 'radio' as const,
-                        checked: self.arcColorByType === type,
-                        onClick: () => {
-                          self.setColorByType(type)
-                        },
-                      })),
-                    },
-                  ],
-                },
-                {
-                  label: 'Read cloud',
-                  type: 'subMenu' as const,
-                  subMenu: radioModeSubMenu(
-                    [
-                      { value: 'off', label: 'Off' },
-                      { value: 'samplot_up', label: 'Overlap coverage' },
-                      { value: 'samplot_down', label: 'Below coverage' },
-                    ],
-                    self.readConnections === 'samplot'
-                      ? self.readConnectionsDown
-                        ? 'samplot_down'
-                        : 'samplot_up'
-                      : 'off',
-                    v => {
-                      if (v === 'off') {
-                        self.setReadConnections('off')
-                      } else {
-                        const [mode, dir] = v.split('_') as ['samplot', string]
-                        self.setReadConnections(mode)
-                        self.setReadConnectionsDown(dir === 'down')
-                      }
-                    },
-                  ),
-                },
-                {
-                  label: 'Show long-range pairs',
-                  disabled: self.readConnections === 'off',
-                  helpText: 'reads >100 kb apart or with off-screen mates',
-                  type: 'checkbox' as const,
-                  checked: self.drawLongRange,
-                  onClick: () => {
-                    self.setDrawLongRange(!self.drawLongRange)
-                  },
-                },
-                {
-                  label: 'Show inter-chromosomal pairs',
-                  disabled: self.readConnections === 'off',
-                  helpText: 'reads whose mate maps to a different chromosome',
-                  type: 'checkbox' as const,
-                  checked: self.drawInter,
-                  onClick: () => {
-                    self.setDrawInter(!self.drawInter)
-                  },
-                },
-              ],
-            },
+            getReadConnectionsMenuItem(self),
+            getSashimiArcsMenuItem(self),
           ] satisfies MenuItem[]
         },
 

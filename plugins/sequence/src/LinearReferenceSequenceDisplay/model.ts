@@ -1,4 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   dedupe,
@@ -7,15 +8,20 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { types } from '@jbrowse/mobx-state-tree'
+import { type Instance, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { observable } from 'mobx'
 
+import type { Canvas2DSequenceRenderer } from './components/Canvas2DSequenceRenderer.ts'
+import type {
+  DrawSequenceState,
+  TextColors,
+} from './components/drawSequence.ts'
+import type { ColorPalette } from './components/sequenceGeometry.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Region } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
@@ -30,25 +36,6 @@ export interface SequenceRegionData {
   seq: string
   start: number
   end: number
-}
-
-export interface LinearReferenceSequenceDisplayModel {
-  height: number
-  sequenceData: ReadonlyMap<number, SequenceRegionData>
-  renderBlocks: RenderBlock[]
-  error: unknown
-  showForward: boolean
-  showReverse: boolean
-  showTranslation: boolean
-  isDna: boolean
-  effectiveShowReverse: boolean
-  effectiveShowTranslation: boolean
-  sequenceType: string
-  rowHeight: number
-  sequenceHeight: number
-  showLoading: boolean
-  zoomedOut: boolean
-  clearAllRpcData: () => void
 }
 
 /**
@@ -87,6 +74,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       sequenceData: observable.map<number, SequenceRegionData>(),
+      /**
+       * #volatile
+       * theme-derived colors, pushed from the component (theme lives in
+       * React/MUI). Feeds `renderState`; until set, `renderState` is undefined
+       * and the render autorun skips — same pattern as wiggle/MAF.
+       */
+      colorState: undefined as
+        | { palette: ColorPalette; textColors: TextColors }
+        | undefined,
     }))
     .views(self => ({
       /**
@@ -140,9 +136,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       get sequenceHeight() {
         return this.numRows * 15
       },
-      get showLoading() {
-        return self.sequenceData.size === 0 || self.isLoading
-      },
       /**
        * #getter
        * collapses to 50px when zoomed out (no sequence visible) or before
@@ -163,9 +156,58 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return this.numRows > 0 ? this.height / this.numRows : 0
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * everything the Canvas2D backend needs to paint a frame, or undefined
+       * until the theme-derived colors arrive (render autorun skips on
+       * undefined).
+       */
+      get renderState(): DrawSequenceState | undefined {
+        const { colorState } = self
+        if (!colorState) {
+          return undefined
+        }
+        const view = getContainingView(self) as LGV
+        return {
+          bpPerPx: view.bpPerPx,
+          showForward: self.showForward,
+          showReverse: self.effectiveShowReverse,
+          showTranslation: self.effectiveShowTranslation,
+          sequenceType: self.sequenceType,
+          rowHeight: self.rowHeight,
+          palette: colorState.palette,
+          textColors: colorState.textColors,
+          canvasWidth: view.trackWidthPx,
+          canvasHeight: self.height,
+        }
+      },
+      /**
+       * #getter
+       * Same policy as MultiRegionDisplayMixin plus a zoom gate: when zoomed
+       * past base resolution the body shows a "zoom in" message, so the
+       * loading scrim must stay hidden over it.
+       */
+      get loadingOverlayVisible() {
+        return (
+          !self.zoomedOut &&
+          (!self.isReady || !self.viewportWithinLoadedData) &&
+          !self.regionTooLarge &&
+          !self.error &&
+          !self.renderError
+        )
+      },
+    }))
     .actions(self => ({
       setSequenceRegion(idx: number, data: SequenceRegionData) {
         self.sequenceData.set(idx, data)
+      },
+      /**
+       * #action
+       * push theme-derived colors in from the component
+       */
+      setColorState(palette: ColorPalette, textColors: TextColors) {
+        self.colorState = { palette, textColors }
       },
       clearDisplaySpecificData() {
         self.sequenceData.clear()
@@ -193,6 +235,28 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * Called by `useRenderingBackend` (via DisplayChrome) once the canvas
+       * backend is created. Streams each fetched region into the backend and
+       * draws every frame from `renderState`.
+       */
+      startRenderingBackend(backend: Canvas2DSequenceRenderer) {
+        installPerRegionLifecycle(
+          self,
+          self.sequenceData,
+          backend,
+          data => data,
+          (b, regions) => {
+            const state = self.renderState
+            if (!state || self.zoomedOut) {
+              return false
+            }
+            b.renderBlocks(self.renderBlocks, regions, state)
+            return true
+          },
+        )
+      },
       async fetchNeeded(
         needed: { region: Region; displayedRegionIndex: number }[],
       ) {
@@ -275,3 +339,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       } as typeof snap
     })
 }
+
+export type LinearReferenceSequenceDisplayStateModel = ReturnType<
+  typeof modelFactory
+>
+export type LinearReferenceSequenceDisplayModel =
+  Instance<LinearReferenceSequenceDisplayStateModel>

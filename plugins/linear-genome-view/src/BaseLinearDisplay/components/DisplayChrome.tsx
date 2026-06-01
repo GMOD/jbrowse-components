@@ -8,18 +8,17 @@ import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 
-interface ChromeModel {
+export interface ChromeModel {
   error: unknown
+  renderError: unknown
   reload: () => void
+  forceLoad: () => void
   loadingOverlayVisible: boolean
   statusMessage?: string
   regionTooLarge: boolean
   regionTooLargeReason: string
-  featureDensityStats?: FeatureDensityStats
-  setFeatureDensityStatsLimit: (s?: FeatureDensityStats) => void
   height: number
 }
 
@@ -29,13 +28,16 @@ interface CanvasHandle {
 }
 
 // Single home for every GPU display's render lifecycle AND status chrome.
-// DisplayChrome owns the backend hook (`useRenderingBackend`) and the three
-// terminal states (render error, region-too-large, fetch-error + loading
-// overlays), then hands the canvas down to its body via a render prop. A
-// display can't show a canvas while skipping a terminal state, can't bury the
-// hook somewhere the chrome can't see (the seam alignments drifted through),
-// and there's nothing to forget — the only per-display variance left is the
-// body, which is irreducible.
+// DisplayChrome owns the backend hook (`useRenderingBackend`) and renders the
+// terminal-state UI, but the *states themselves* all live on the model:
+// `renderError` (the hook writes it there), `regionTooLarge`, and the
+// fetch-error + loading scrim (`loadingOverlayVisible`). The model is the
+// single source of truth — `loadingOverlayVisible` accounts for all the others,
+// so the four states are mutually exclusive by construction and the JSX order
+// below is defensive, not load-bearing. A display can't show a canvas while
+// skipping a terminal state, can't bury the hook somewhere the chrome can't see
+// (the seam alignments drifted through), and there's nothing to forget — the
+// only per-display variance left is the body, which is irreducible.
 //
 // The body is a function so callers mount the canvas wherever it belongs. It
 // returns a named observer component (every display does) so observable reads
@@ -52,14 +54,11 @@ function DisplayChromeInner<B extends { dispose(): void }>({
   factory: (canvas: HTMLCanvasElement) => Promise<B>
   children: (handle: CanvasHandle) => ReactNode
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
-  const { canvas, canvasRef, error, retry } = useRenderingBackend(
-    factory,
-    model,
-  )
-  if (error) {
+  const { canvas, canvasRef, retry } = useRenderingBackend(factory, model)
+  if (model.renderError) {
     return (
       <DisplayRenderErrorOverlay
-        error={error}
+        error={model.renderError}
         onRetry={retry}
         height={model.height}
       />

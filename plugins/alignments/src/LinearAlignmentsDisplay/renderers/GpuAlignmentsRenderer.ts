@@ -501,7 +501,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       this.writeUniforms(state, frame)
 
       const arcsDown = !!state.readConnectionsDown
-      const { effectiveArcsHeight, covH } = computeBlockHeights(state)
+      const { effectiveArcsHeight, covH, arcCovH } = computeBlockHeights(state)
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)
 
@@ -519,7 +519,6 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       }
 
       if (effectiveArcsHeight > 0 && !arcsDown && covH > 0) {
-        const arcCovH = covH - state.coverageYOffset
         this.drawArcsPass(
           block,
           region,

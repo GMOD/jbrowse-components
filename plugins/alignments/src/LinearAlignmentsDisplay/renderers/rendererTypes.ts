@@ -86,12 +86,17 @@ export function ensureRegion<T>(
 }
 
 export function computeBlockHeights(state: RenderState) {
+  const covH = state.showCoverage ? state.coverageHeight : 0
   return {
     effectiveArcsHeight:
       state.readConnections !== 'off' && state.readConnectionsHeight
         ? state.readConnectionsHeight
         : 0,
-    covH: state.showCoverage ? state.coverageHeight : 0,
+    covH,
+    // Up-mode arcs share the coverage band: their insert-size-0 anchor must
+    // sit on the coverage baseline (covH - coverageYOffset), not at covH.
+    // Single source of truth so the GPU and Canvas2D/SVG paths can't drift.
+    arcCovH: covH > 0 ? covH - state.coverageYOffset : 0,
   }
 }
 

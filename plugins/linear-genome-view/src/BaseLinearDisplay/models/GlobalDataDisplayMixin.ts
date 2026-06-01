@@ -50,7 +50,12 @@ export default function GlobalDataDisplayMixin() {
        * the triangle toggled off, which fetches nothing).
        */
       get loadingOverlayVisible() {
-        return self.isLoading && !self.regionTooLarge && !self.error
+        return (
+          self.isLoading &&
+          !self.regionTooLarge &&
+          !self.error &&
+          !self.renderError
+        )
       },
     }))
 }

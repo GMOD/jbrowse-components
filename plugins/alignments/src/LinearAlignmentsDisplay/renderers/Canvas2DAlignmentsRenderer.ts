@@ -281,7 +281,7 @@ export function drawAlignmentBlocks(
     return false
   }
 
-  const { effectiveArcsHeight, covH } = computeBlockHeights(state)
+  const { effectiveArcsHeight, covH, arcCovH } = computeBlockHeights(state)
   const pileupTop = state.pileupTopOffset
   const arcsDown = !!state.readConnectionsDown
 
@@ -316,7 +316,7 @@ export function drawAlignmentBlocks(
         fullBlockWidth,
         state,
         0,
-        covH,
+        arcCovH,
         false,
       )
       ctx.restore()
