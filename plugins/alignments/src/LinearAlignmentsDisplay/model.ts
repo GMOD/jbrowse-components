@@ -1036,8 +1036,15 @@ export default function stateModelFactory(
             canvasHeight: self.height,
             highlightedFeatureId: self.featureIdUnderMouse,
             selectedFeatureId: self.selectedFeatureId,
-            highlightedChainIds: self.highlightedChainIds,
-            selectedChainIds: self.selectedChainIds,
+            // Chain highlights are only valid in 'normal' linked-reads mode.
+            // Gating here makes a stale selection unrenderable in off/bezier by
+            // construction — render correctness no longer depends on any
+            // clear-on-transition. The renderers draw on `length > 0` with no
+            // mode check, so this is the one place the invariant must hold.
+            highlightedChainIds:
+              self.linkedReads === 'normal' ? self.highlightedChainIds : [],
+            selectedChainIds:
+              self.linkedReads === 'normal' ? self.selectedChainIds : [],
             colors: palette,
             linkedReads: self.linkedReads,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
@@ -1582,9 +1589,11 @@ export default function stateModelFactory(
           setLinkedReads(mode: LinkedReadsMode) {
             const prev = self.linkedReads
             self.linkedReads = mode
-            // Chain IDs are only meaningful in 'normal' mode (chainIdMap is
-            // unpopulated otherwise). Clear when leaving so neither backend
-            // renders stale chain highlights in bezier/off.
+            // Forget chain hover/selection when leaving 'normal' mode. This is
+            // now a product choice (selection doesn't survive a mode change),
+            // not a render-safety mechanism — `renderState` already gates chain
+            // highlights on linkedReads === 'normal', so stale IDs can't render
+            // regardless.
             if (prev === 'normal' && mode !== 'normal') {
               self.highlightedChainIds = []
               self.selectedChainIds = []
