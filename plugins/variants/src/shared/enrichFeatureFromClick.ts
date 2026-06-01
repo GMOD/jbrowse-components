@@ -1,15 +1,10 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import type { VariantFeatureInfo } from './types.ts'
+
 export function enrichFeatureFromClick(
   baseFeature: { id(): string; toJSON(): Record<string, unknown> },
-  featureInfo:
-    | {
-        ref: string
-        alt: string[]
-        description: string
-        genotypes: Record<string, string>
-      }
-    | undefined,
+  featureInfo: VariantFeatureInfo | undefined,
   clickResult: {
     sampleName: string
     genotype: string

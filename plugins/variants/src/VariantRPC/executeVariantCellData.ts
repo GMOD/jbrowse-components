@@ -29,6 +29,12 @@ export interface SimplifiedVariantFeature {
 interface CellDataBase {
   sampleInfo: Record<string, SampleInfo>
   hasPhased: boolean
+  // Whether any variant site is multiallelic (drives the "Other alt allele"
+  // legend entry) and whether any genotype call is unphased (drives the
+  // "Unphased" legend entry in phased mode). Computed here because the
+  // simplified features sent to the client no longer carry ALT/genotypes.
+  hasSecondaryAlt: boolean
+  hasUnphased: boolean
   simplifiedFeatures: SimplifiedVariantFeature[]
 }
 
@@ -45,8 +51,14 @@ function computeSampleInfo(
 ) {
   const sampleInfo: Record<string, SampleInfo> = {}
   let hasPhased = false
+  let hasSecondaryAlt = false
+  let hasUnphased = false
 
   for (const { feature } of mafs) {
+    const alt = feature.get('ALT') as string[] | undefined
+    if (alt && alt.length > 1) {
+      hasSecondaryAlt = true
+    }
     const callGenotype = feature.get('callGenotype') as Int8Array | undefined
     if (callGenotype) {
       const sampleNames = feature.get('sampleNames') as string[]
@@ -59,6 +71,9 @@ function computeSampleInfo(
           ? Boolean(callGenotypePhased[si])
           : false
         hasPhased ||= isPhased
+        // Multi-allele calls render with a '/' separator when unphased, so a
+        // non-haploid unphased sample is a black "Unphased" cell in phased mode.
+        hasUnphased ||= ploidy > 1 && !isPhased
         const existing = sampleInfo[sampleName]
         if (existing) {
           if (ploidy > existing.maxPloidy) {
@@ -81,6 +96,7 @@ function computeSampleInfo(
         const val = samp[key]!
         const isPhased = val.includes('|')
         hasPhased ||= isPhased
+        hasUnphased ||= val.includes('/')
         let ploidy = 1
         for (const char of val) {
           if (char === '|' || char === '/') {
@@ -110,7 +126,7 @@ function computeSampleInfo(
     },
   }))
 
-  return { sampleInfo, hasPhased, simplifiedFeatures }
+  return { sampleInfo, hasPhased, hasSecondaryAlt, hasUnphased, simplifiedFeatures }
 }
 
 export async function executeVariantCellData({
@@ -228,11 +244,10 @@ export async function executeVariantCellData({
     )
   }
 
-  const { sampleInfo, hasPhased, simplifiedFeatures } = await updateStatus(
-    'Computing sample info',
-    statusCallback,
-    () => computeSampleInfo(mafs, genotypesCache),
-  )
+  const { sampleInfo, hasPhased, hasSecondaryAlt, hasUnphased, simplifiedFeatures } =
+    await updateStatus('Computing sample info', statusCallback, () =>
+      computeSampleInfo(mafs, genotypesCache),
+    )
 
   // For phased mode: expand sources into per-haplotype rows. The client sends
   // layout-ordered sources without HP to avoid a circular sampleInfo dependency;
@@ -292,6 +307,8 @@ export async function executeVariantCellData({
         mode: 'regular' as const,
         sampleInfo,
         hasPhased,
+        hasSecondaryAlt,
+        hasUnphased,
         simplifiedFeatures,
         perRegionCellData,
       },
@@ -315,6 +332,8 @@ export async function executeVariantCellData({
         mode: 'matrix' as const,
         sampleInfo,
         hasPhased,
+        hasSecondaryAlt,
+        hasUnphased,
         simplifiedFeatures,
         ...cellData,
       },

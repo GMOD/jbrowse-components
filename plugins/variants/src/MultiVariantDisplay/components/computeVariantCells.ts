@@ -22,17 +22,10 @@ import {
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
-import type { ProcessedSource } from '../../shared/types.ts'
+import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-export interface FeatureGenotypeInfo {
-  alt: string[]
-  ref: string
-  name: string
-  description: string
-  length: number
-  genotypes: Record<string, string>
-}
+export type FeatureGenotypeInfo = VariantFeatureInfo
 
 export interface VariantCellData {
   // Absolute genomic positions in uint32 (start, renderEnd) interleaved.

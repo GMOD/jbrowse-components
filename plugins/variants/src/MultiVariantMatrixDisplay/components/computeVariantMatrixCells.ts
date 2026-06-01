@@ -14,18 +14,10 @@ import {
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
-import type { ProcessedSource } from '../../shared/types.ts'
+import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-interface FeatureData {
-  alt: string[]
-  ref: string
-  name: string
-  description: string
-  length: number
-  featureId: string
-  genotypes: Record<string, string>
-}
+type FeatureData = VariantFeatureInfo & { featureId: string }
 
 function makeFeatureData(
   feature: Feature,

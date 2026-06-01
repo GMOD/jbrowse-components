@@ -309,6 +309,13 @@ export default function MultiSampleVariantBaseModelF(
          * the most recent cellData payload. Cached by MobX while cellData is
          * unchanged. Named `featuresVolatile` for backwards-compat with
          * consumers that originally read it as a volatile field.
+         *
+         * These carry ONLY positional fields (id/start/end/refName/name) — not
+         * ALT or genotypes. Don't re-derive feature-level facts from them
+         * (`.get('ALT')` etc. returns undefined); summary facts are computed in
+         * the worker and exposed as scalars (hasPhased/hasSecondaryAlt/
+         * hasUnphased), and per-feature genotype info lives in the cell-data
+         * featureGenotypeMap/featureData.
          */
         get featuresVolatile(): Feature[] | undefined {
           return self.cellData?.simplifiedFeatures.map(
@@ -320,6 +327,23 @@ export default function MultiSampleVariantBaseModelF(
          */
         get hasPhased() {
           return self.cellData?.hasPhased ?? false
+        },
+        /**
+         * #getter
+         * Whether any visible site is multiallelic (drives the "Other alt
+         * allele" legend entry). Computed in the worker since the simplified
+         * features sent to the client don't carry ALT.
+         */
+        get hasSecondaryAlt() {
+          return self.cellData?.hasSecondaryAlt ?? false
+        },
+        /**
+         * #getter
+         * Whether any genotype call is unphased (drives the "Unphased" legend
+         * entry in phased mode).
+         */
+        get hasUnphased() {
+          return self.cellData?.hasUnphased ?? false
         },
         /**
          * #getter
@@ -957,61 +981,24 @@ export default function MultiSampleVariantBaseModelF(
          */
         legendItems(): LegendItem[] {
           if (self.renderingMode === 'phased') {
-            let hasSecondaryAlt = false
-            let hasUnphased = false
-            const features = self.featuresVolatile
-            if (features) {
-              for (const feature of features) {
-                const alt = feature.get('ALT') as string[] | undefined
-                if (alt && alt.length > 1) {
-                  hasSecondaryAlt = true
-                }
-                if (!hasUnphased) {
-                  const genotypes = feature.get('genotypes') as
-                    | Record<string, string>
-                    | undefined
-                  if (genotypes) {
-                    for (const key in genotypes) {
-                      if (genotypes[key]?.includes('/')) {
-                        hasUnphased = true
-                        break
-                      }
-                    }
-                  }
-                }
-                if (hasSecondaryAlt && hasUnphased) {
-                  break
-                }
-              }
-            }
             const items: LegendItem[] = [
               { color: REFERENCE_COLOR, label: 'Reference' },
               { color: set1[0], label: 'Alt allele' },
             ]
-            if (hasSecondaryAlt) {
+            if (self.hasSecondaryAlt) {
               items.push({ color: set1[1], label: 'Other alt allele' })
             }
-            if (hasUnphased) {
+            if (self.hasUnphased) {
               items.push({ color: UNPHASED_COLOR, label: 'Unphased' })
             }
             return items
-          }
-          let hasSecondaryAlt = false
-          if (self.featuresVolatile) {
-            for (const f of self.featuresVolatile) {
-              const alt = f.get('ALT') as string[] | undefined
-              if (alt && alt.length > 1) {
-                hasSecondaryAlt = true
-                break
-              }
-            }
           }
           const items: LegendItem[] = [
             { color: REFERENCE_COLOR, label: 'Homozygous reference' },
             { color: getAltColorForDosage(0.5), label: 'Heterozygous alt' },
             { color: getAltColorForDosage(1), label: 'Homozygous alt' },
           ]
-          if (hasSecondaryAlt) {
+          if (self.hasSecondaryAlt) {
             items.push({ color: OTHER_ALT_COLOR, label: 'Other alt allele' })
           }
           items.push({ color: NO_CALL_COLOR, label: 'No call' })
