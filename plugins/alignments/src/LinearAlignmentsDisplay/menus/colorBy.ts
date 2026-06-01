@@ -5,7 +5,11 @@ import Palette from '@mui/icons-material/Palette'
 
 import { modificationData } from '../../shared/modificationData.ts'
 
-import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
+import type {
+  ArcColorByType,
+  ColorBy,
+  ColorSchemeType,
+} from '../../shared/types.ts'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
 const SetModificationThresholdDialog = lazy(
@@ -34,7 +38,7 @@ function hasModifications(
 
 interface ColorOption {
   label: string
-  type: string
+  type: ColorSchemeType
 }
 
 interface ColorByMenuOptions {

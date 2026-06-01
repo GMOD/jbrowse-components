@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import { TAG_REGEX } from '../../shared/util.ts'
 
 interface Tag {
-  type: string
+  type: 'tag'
   tag: string
 }
 

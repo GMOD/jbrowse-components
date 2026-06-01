@@ -7,7 +7,7 @@
  * convention" and "BP precision" for details.
  */
 
-import type { FilterBy } from '../shared/types'
+import type { ColorBy, FilterBy } from '../shared/types'
 import type { Region } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -23,11 +23,7 @@ export interface RenderAlignmentDataArgs {
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   filterBy?: FilterBy
-  colorBy?: {
-    type: string
-    tag?: string
-    modifications?: { threshold?: number }
-  }
+  colorBy?: ColorBy
   // Tag name for tag-sort. Only the tag is sent to the worker (not the
   // full SortedBy), so changing sort position within a tag sort doesn't
   // invalidate the fetched data — main-thread layout re-runs instead.

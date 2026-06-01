@@ -28,12 +28,6 @@ const insertSizeItems: LegendItem[] = [
   { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
 ]
 
-const orientationLegendItems: LegendItem[] = [
-  ...orientationItems,
-  unmappedMateItem,
-  supplementaryItem,
-]
-
 const insertSizeLegendItems: LegendItem[] = [
   { color: fillColor.color_pair_lr, label: 'Normal' },
   ...insertSizeItems,
@@ -84,9 +78,6 @@ export function getReadDisplayLegendItems(
   }
   if (colorType === 'insertSize') {
     return insertSizeLegendItems
-  }
-  if (colorType === 'orientation') {
-    return orientationLegendItems
   }
   if (colorType === 'mappingQuality') {
     return [

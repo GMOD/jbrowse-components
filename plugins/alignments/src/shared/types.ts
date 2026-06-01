@@ -10,14 +10,36 @@ export type ArcColorByType =
   | 'insertSize'
   | 'orientation'
 
+export interface ModificationColorBy {
+  twoColor?: boolean
+  isolatedModification?: string
+  threshold?: number
+}
+
+// Every color-by scheme; mirrors the keys of COLOR_BY_TO_SCHEME in the display
+// model. 'stranded' is a legacy alias for firstOfPairStrand; 'perBaseQuality'
+// renders via the normal shader path. Typing this (vs a bare string) catches
+// scheme-name typos at every construction site.
+export type ColorSchemeType =
+  | 'normal'
+  | 'strand'
+  | 'mappingQuality'
+  | 'insertSize'
+  | 'insertSizeGradient'
+  | 'firstOfPairStrand'
+  | 'stranded'
+  | 'pairOrientation'
+  | 'insertSizeAndOrientation'
+  | 'baseQuality'
+  | 'perBaseQuality'
+  | 'tag'
+  | 'modifications'
+  | 'methylation'
+
 export interface ColorBy {
-  type: string
+  type: ColorSchemeType
   tag?: string
-  modifications?: {
-    twoColor?: boolean
-    isolatedModification?: string
-    threshold?: number
-  }
+  modifications?: ModificationColorBy
 }
 
 export interface FilterBy {
