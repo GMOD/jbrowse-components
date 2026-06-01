@@ -18,9 +18,11 @@ export interface ChainBoundsRegion {
 
 export function getChainBounds(ids: string[], region: ChainBoundsRegion) {
   const { readIdToIndex, readPositions, readYs } = region
-  let minStart = Infinity
-  let maxEnd = -Infinity
-  let y = 0
+  let startBp = Infinity
+  let endBp = -Infinity
+  // All reads in a chain share one row (computeChainLayout), so any read's row
+  // is the chain's row.
+  let yRow = 0
   for (const id of ids) {
     const idx = readIdToIndex.get(id)
     if (idx === undefined) {
@@ -29,17 +31,17 @@ export function getChainBounds(ids: string[], region: ChainBoundsRegion) {
     const s = readPositions[idx * 2]
     const e = readPositions[idx * 2 + 1]
     const row = readYs[idx]
-    if (s !== undefined && s < minStart) {
-      minStart = s
+    if (s !== undefined && s < startBp) {
+      startBp = s
     }
-    if (e !== undefined && e > maxEnd) {
-      maxEnd = e
+    if (e !== undefined && e > endBp) {
+      endBp = e
     }
     if (row !== undefined) {
-      y = row
+      yRow = row
     }
   }
-  return minStart < Infinity ? { minStart, maxEnd, y } : undefined
+  return startBp < Infinity ? { startBp, endBp, yRow } : undefined
 }
 
 export function toClipRect(

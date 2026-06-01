@@ -114,7 +114,7 @@ describe('getChainBounds', () => {
   it('returns bounds for a single read', () => {
     const region = makeRegion(['r1'], [1000], [2000], [3])
     const bounds = getChainBounds(['r1'], region)
-    expect(bounds).toEqual({ minStart: 1000, maxEnd: 2000, y: 3 })
+    expect(bounds).toEqual({ startBp: 1000, endBp: 2000, yRow: 3 })
   })
 
   it('computes union bounds across multiple reads', () => {
@@ -125,15 +125,15 @@ describe('getChainBounds', () => {
       [1, 2, 0],
     )
     const bounds = getChainBounds(['r1', 'r2', 'r3'], region)
-    expect(bounds?.minStart).toBe(200)
-    expect(bounds?.maxEnd).toBe(1500)
+    expect(bounds?.startBp).toBe(200)
+    expect(bounds?.endBp).toBe(1500)
   })
 
   it('ignores ids not present in region', () => {
     const region = makeRegion(['r1', 'r2'], [100, 300], [200, 400], [0, 1])
     const bounds = getChainBounds(['r1', 'missing', 'r2'], region)
-    expect(bounds?.minStart).toBe(100)
-    expect(bounds?.maxEnd).toBe(400)
+    expect(bounds?.startBp).toBe(100)
+    expect(bounds?.endBp).toBe(400)
   })
 })
 

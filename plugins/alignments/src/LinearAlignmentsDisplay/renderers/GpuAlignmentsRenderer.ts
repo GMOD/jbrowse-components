@@ -808,7 +808,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     if (state.highlightedChainIds.length > 0) {
       const bounds = getChainBounds(state.highlightedChainIds, region)
       if (bounds) {
-        const clip = clipFor(bounds.minStart, bounds.maxEnd, bounds.y)
+        const clip = clipFor(bounds.startBp, bounds.endBp, bounds.yRow)
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
       }
     }
@@ -818,7 +818,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       if (bounds) {
         pushSelectionFrame(
           quads,
-          clipFor(bounds.minStart, bounds.maxEnd, bounds.y),
+          clipFor(bounds.startBp, bounds.endBp, bounds.yRow),
         )
       }
     }

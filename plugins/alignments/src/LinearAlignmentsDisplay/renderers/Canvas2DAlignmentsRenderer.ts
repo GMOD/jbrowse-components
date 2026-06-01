@@ -484,17 +484,6 @@ function readBoundsForId(
   }
 }
 
-function chainBoundsFor(
-  region: Canvas2DRegionData,
-  ids: string[],
-): OverlayBounds | undefined {
-  const b = getChainBounds(ids, region)
-  if (!b) {
-    return undefined
-  }
-  return { startBp: b.minStart, endBp: b.maxEnd, yRow: b.y }
-}
-
 function drawHighlightOverlays(
   ctx: Ctx2D,
   region: Canvas2DRegionData,
@@ -522,13 +511,13 @@ function drawChainOverlays(
   state: RenderState,
 ) {
   if (state.highlightedChainIds.length > 0) {
-    const bounds = chainBoundsFor(region, state.highlightedChainIds)
+    const bounds = getChainBounds(state.highlightedChainIds, region)
     if (bounds) {
       paintOverlayBox(ctx, bounds, block, state, 'chainHighlight')
     }
   }
   if (state.selectedChainIds.length > 0) {
-    const bounds = chainBoundsFor(region, state.selectedChainIds)
+    const bounds = getChainBounds(state.selectedChainIds, region)
     if (bounds) {
       paintOverlayBox(ctx, bounds, block, state, 'selection')
     }
