@@ -130,6 +130,10 @@ public float fillCoverage(float2 localPos, float xL, float xR,
   // ~0.5 coverage the bare smoothstep midpoint would give — matching the
   // canvas2d backend's 1px centerline stroke (Canvas2DSyntenyRenderer.ts) so the
   // two backends look the same. Wide ribbons (halfWidth > floor) are unaffected.
+  // NOTE: the floor only keeps a sub-pixel ribbon visible when the vertex pad
+  // gave the rasterizer ≥1px of geometry to fill (BASE ribbons do; CIGAR tiles
+  // use pad=0 to tile cleanly, so a sub-pixel CIGAR tile can still drop out —
+  // an accepted tradeoff, since CIGAR detail only shows when zoomed in).
   float minHalf = 0.5;
   float halfPerpW = max((xR - xL) / (2.0 * perpFactor), minHalf);
   float cx;
@@ -159,12 +163,6 @@ public float4 shadeFill(float4 color, float featureId, float coverage, Uniforms 
   rgb *= isHovered ? 0.7 : 1.0;
   float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
   return float4(rgb, finalAlpha * coverage);
-}
-
-// Outward edge normal sign for the click outline. Edge 0 points left of the
-// ribbon, edge 1 right; flipped when the top corners are crossed.
-public float edgeOutwardSign(uint edgeIdx, Corners c) {
-  return (edgeIdx == 0u ? -1.0 : 1.0) * (c.x1 >= c.x2 ? 1.0 : -1.0);
 }
 
 // Edge-pass fragment output: 1px antialiased black stroke at 0.4 alpha. `dist`

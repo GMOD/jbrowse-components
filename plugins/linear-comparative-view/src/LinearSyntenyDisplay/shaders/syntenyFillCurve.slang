@@ -129,7 +129,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
 
   // Recover bezier parameter t from the fragment's y position. 2 Newton
   // iterations on the strictly-monotonic y(t) = h·(t³ − 1.5t² + 1.5t)
-  // converge to sub-pixel accuracy from t₀ = yFrac (f' ≥ 0.375 on [0,1]).
+  // converge to sub-pixel accuracy from t₀ = yFrac (f' ≥ 0.75 on [0,1]).
   float t = yFrac;
   for (int i = 0; i < 2; i++) {
     t = t - (yCurve(t) - yFrac) / yCurveDeriv(t);
