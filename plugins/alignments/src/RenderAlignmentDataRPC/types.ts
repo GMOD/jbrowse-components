@@ -240,7 +240,7 @@ export interface PileupDataResult {
   // per-endpoint Y (mates can sit on different rows when `sortedBy` is in
   // effect), and a per-line palette index instead of a hard-coded color.
   // Cross-region pairs are excluded — those keep being drawn as SVG straight
-  // paths via PileupArcsOverlay (the GPU pass is one region per buffer).
+  // paths via PileupBezierOverlay (the GPU pass is one region per buffer).
   // Absolute genomic uint32 like all worker output (per ARCHITECTURE.md
   // coordinate convention).
   linkedReadLinePositions: Uint32Array // [bp1, bp2] pairs

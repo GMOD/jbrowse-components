@@ -104,16 +104,6 @@ export async function renderSvg(
         height={displayHeight}
       >
         {pileupNode}
-        {model.showCoverage ? (
-          <line
-            x1={0}
-            y1={model.coverageHeight}
-            x2={totalWidth}
-            y2={model.coverageHeight}
-            stroke={theme.palette.grey[500]}
-            strokeWidth={1}
-          />
-        ) : null}
         {sashimiNode}
         {pileupBezierNode}
       </SvgClipRect>

@@ -303,6 +303,21 @@ export function drawAlignmentBlocks(
     ctx.rect(scissorX, 0, scissorW, canvasHeight)
     ctx.clip()
 
+    // Coverage paints before the up-mode arcs so arcs sit in front of the
+    // histogram, matching the on-screen GPU pass order (GpuAlignmentsRenderer).
+    const domainMax = state.coverageMaxDepth
+    if (state.showCoverage && domainMax) {
+      drawCoverage(
+        ctx,
+        region,
+        block,
+        bpLength,
+        fullBlockWidth,
+        state,
+        domainMax,
+      )
+    }
+
     if (effectiveArcsHeight > 0 && !arcsDown && covH > 0) {
       ctx.save()
       ctx.beginPath()
@@ -320,19 +335,6 @@ export function drawAlignmentBlocks(
         false,
       )
       ctx.restore()
-    }
-
-    const domainMax = state.coverageMaxDepth
-    if (state.showCoverage && domainMax) {
-      drawCoverage(
-        ctx,
-        region,
-        block,
-        bpLength,
-        fullBlockWidth,
-        state,
-        domainMax,
-      )
     }
 
     // Clip pileup area

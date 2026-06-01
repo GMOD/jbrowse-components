@@ -25,7 +25,7 @@ function arcTooltip(
   return parts.length > 0 ? parts.join(' → ') : undefined
 }
 
-const PileupArcsOverlay = observer(function PileupArcsOverlay({
+const PileupBezierOverlay = observer(function PileupBezierOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
@@ -89,4 +89,4 @@ const PileupArcsOverlay = observer(function PileupArcsOverlay({
   )
 })
 
-export default PileupArcsOverlay
+export default PileupBezierOverlay

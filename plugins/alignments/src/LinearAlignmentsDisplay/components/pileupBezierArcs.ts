@@ -6,7 +6,7 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Single source of truth mapping model + view state to bezier-arc geometry, so
-// the on-screen overlay (PileupArcsOverlay) and the SVG export (renderSvg)
+// the on-screen overlay (PileupBezierOverlay) and the SVG export (renderSvg)
 // cannot drift in which fields feed the curves. Only `rangeY` legitimately
 // differs — on-screen scrolls, export shows the full height — so it stays a
 // parameter. Returns [] unless linked-reads bezier mode is active.

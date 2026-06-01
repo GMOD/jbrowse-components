@@ -28,12 +28,25 @@ interface ReadsModel {
   setSashimiArcs: (mode: ArcDirection) => void
 }
 
-export function getReadsMenuItem(model: ReadsModel) {
+interface ReadsModelWithCoverage extends ReadsModel {
+  showCoverage?: boolean
+  setShowCoverage?: (show: boolean) => void
+}
+
+export function getReadsMenuItem(model: ReadsModelWithCoverage) {
   return {
     label: 'Show...',
     icon: VisibilityIcon,
     type: 'subMenu' as const,
     subMenu: [
+      {
+        label: 'Show coverage',
+        type: 'checkbox' as const,
+        checked: model.showCoverage ?? false,
+        onClick: () => {
+          model.setShowCoverage?.(!model.showCoverage)
+        },
+      },
       {
         label: 'Show mismatches',
         type: 'checkbox' as const,

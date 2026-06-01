@@ -19,15 +19,5 @@ export function getCoverageMenuItem(model: CoverageModel) {
       ['local', 'Local'],
       ['localsd', `Local ± ${sigma}σ`],
     ],
-    leadingItems: [
-      {
-        label: 'Show coverage',
-        type: 'checkbox' as const,
-        checked: model.showCoverage,
-        onClick: () => {
-          model.setShowCoverage(!model.showCoverage)
-        },
-      },
-    ],
   })
 }
