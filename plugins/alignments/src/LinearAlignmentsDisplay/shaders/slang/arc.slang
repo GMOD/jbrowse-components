@@ -18,7 +18,12 @@ import colorPack;
 import hpmath;
 
 
-public static const uint ARC_CURVE_SEGMENTS = 64u;
+// 128 segments: the curve is a triangle-strip polyline, and its facet kinks run
+// *along* the stroke where the cross-stroke fwidth AA can't smooth them. Near
+// the apex the facets are near-horizontal, so kinks read as flat spots — the
+// most visible faceting. Higher tessellation is the only lever (uniform t is
+// already equal-arc-length on the semicircle), and arcs are a low-instance pass.
+public static const uint ARC_CURVE_SEGMENTS = 128u;
 public static const uint VERTS_PER_INSTANCE = (ARC_CURVE_SEGMENTS + 1u) * 2u;
 static const float ARC_HEIGHT_MARGIN = 8.0;
 static const float PI = 3.14159265359;

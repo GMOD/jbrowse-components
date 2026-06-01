@@ -203,7 +203,11 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.bpHi] = hi
   f[U.bpLo] = lo
   f[U.bpLen] = block.end - block.start
-  f[U.lineWidthPx] = state.readConnectionsLineWidth ?? 1
+  // A near-horizontal arc thinner than ~1.5 device px has no vertical room to
+  // anti-alias and stairsteps. Floor at 1.5 device px (expressed in CSS px via
+  // /dpr) so the AA always spans >1px. On HiDPI a 1px CSS line is already 2
+  // device px, so the floor is below it and the look is unchanged.
+  f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth ?? 1, 1.5 / dpr)
   f[U.pairedArcsDown] = state.readConnectionsDown ? 1 : 0
   // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior
