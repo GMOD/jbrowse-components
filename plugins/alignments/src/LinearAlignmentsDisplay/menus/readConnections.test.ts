@@ -63,35 +63,22 @@ describe('read connections menu', () => {
   })
 })
 
+// The coupling these used to assert (sashimi force-enables coverage, direction
+// stays in sync) now lives in the model actions — see model.coupling.test.ts.
+// Here we only check that the menu items delegate to the right action.
 describe('sashimi arcs menu', () => {
-  function makeSashimiModel() {
-    return {
+  test('checkbox reflects on/off and delegates to toggleSashimiArcs', () => {
+    let toggled = false
+    const model = {
       sashimiArcs: 'off' as 'off' | 'up' | 'down',
-      setSashimiArcs(mode: 'off' | 'up' | 'down') {
-        this.sashimiArcs = mode
-      },
-      readConnectionsDown: false,
-      showCoverage: false,
-      setShowCoverage(v: boolean) {
-        this.showCoverage = v
+      toggleSashimiArcs() {
+        toggled = true
       },
     }
-  }
-
-  // Sashimi only draws over the coverage band, so enabling it must enable
-  // coverage or the toggle silently does nothing.
-  test('turning on sashimi also turns on coverage', () => {
-    const model = makeSashimiModel()
-    getSashimiArcsMenuItem(model).onClick()
-    expect(model.sashimiArcs).toBe('up')
-    expect(model.showCoverage).toBe(true)
-  })
-
-  test('direction follows the below-coverage flag', () => {
-    const model = makeSashimiModel()
-    model.readConnectionsDown = true
-    getSashimiArcsMenuItem(model).onClick()
-    expect(model.sashimiArcs).toBe('down')
+    const item = getSashimiArcsMenuItem(model)
+    expect(item.checked).toBe(false)
+    item.onClick()
+    expect(toggled).toBe(true)
   })
 })
 
@@ -104,17 +91,13 @@ describe('shared arc direction toggle', () => {
         this.readConnectionsDown = v
       },
       sashimiArcs: 'up' as 'off' | 'up' | 'down',
-      setSashimiArcs(mode: 'off' | 'up' | 'down') {
-        this.sashimiArcs = mode
-      },
     }
   }
 
-  test('flips read connections and keeps sashimi in sync', () => {
+  test('delegates to setReadConnectionsDown with the flipped value', () => {
     const model = makeDirectionModel()
     getArcDirectionMenuItem(model).onClick()
     expect(model.readConnectionsDown).toBe(true)
-    expect(model.sashimiArcs).toBe('down')
   })
 
   test('disabled when no arcs are on', () => {

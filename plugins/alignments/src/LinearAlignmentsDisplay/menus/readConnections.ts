@@ -1,7 +1,7 @@
 import GestureIcon from '@mui/icons-material/Gesture'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import { LINKED_READS_OPTIONS, radioModeMenuItem } from './menuHelpers.ts'
+import { LINKED_READS_OPTIONS, radioItems, radioModeMenuItem } from './menuHelpers.ts'
 
 import type {
   ArcDirection,
@@ -68,14 +68,9 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
         },
       ),
       { type: 'divider' as const },
-      ...MODE_OPTIONS.map(({ value, label }) => ({
-        label,
-        type: 'radio' as const,
-        checked: model.readConnections === value,
-        onClick: () => {
-          model.setReadConnections(value)
-        },
-      })),
+      ...radioItems(MODE_OPTIONS, model.readConnections, mode => {
+        model.setReadConnections(mode)
+      }),
       ...pairFilters,
     ] satisfies MenuItem[],
   }
@@ -83,16 +78,13 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
 
 interface SashimiArcsModel {
   sashimiArcs: ArcDirection
-  setSashimiArcs: (mode: ArcDirection) => void
-  readConnectionsDown: boolean
-  showCoverage: boolean
-  setShowCoverage: (show: boolean) => void
+  toggleSashimiArcs: () => void
 }
 
 // Sashimi (splice-junction) arcs are a distinct feature, so they get a direct
-// top-level on/off toggle. Direction follows the shared below-coverage toggle.
-// Sashimi only renders over the coverage band, so turning it on also turns
-// coverage on — otherwise the toggle would silently do nothing.
+// top-level on/off toggle. Direction follows the shared below-coverage toggle,
+// and turning it on force-enables coverage — both invariants live in the
+// `toggleSashimiArcs` action.
 export function getSashimiArcsMenuItem(model: SashimiArcsModel) {
   return {
     label: 'Sashimi arcs',
@@ -100,13 +92,7 @@ export function getSashimiArcsMenuItem(model: SashimiArcsModel) {
     type: 'checkbox' as const,
     checked: model.sashimiArcs !== 'off',
     onClick: () => {
-      const turningOn = model.sashimiArcs === 'off'
-      model.setSashimiArcs(
-        turningOn ? (model.readConnectionsDown ? 'down' : 'up') : 'off',
-      )
-      if (turningOn && !model.showCoverage) {
-        model.setShowCoverage(true)
-      }
+      model.toggleSashimiArcs()
     },
   }
 }
@@ -116,13 +102,12 @@ interface ArcDirectionModel {
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
   sashimiArcs: ArcDirection
-  setSashimiArcs: (mode: ArcDirection) => void
 }
 
 // Single below-coverage toggle shared by read-connection arcs/cloud and sashimi
 // arcs — direction is a rare modifier, so it lives once in the Show menu rather
-// than once per feature. `readConnectionsDown` is the canonical flag; sashimi
-// direction is kept in sync when it's on.
+// than once per feature. `setReadConnectionsDown` keeps sashimi direction in
+// sync, so this handler just flips the canonical flag.
 export function getArcDirectionMenuItem(model: ArcDirectionModel) {
   const anyArcsOn =
     model.readConnections !== 'off' || model.sashimiArcs !== 'off'
@@ -132,11 +117,7 @@ export function getArcDirectionMenuItem(model: ArcDirectionModel) {
     type: 'checkbox' as const,
     checked: model.readConnectionsDown,
     onClick: () => {
-      const down = !model.readConnectionsDown
-      model.setReadConnectionsDown(down)
-      if (model.sashimiArcs !== 'off') {
-        model.setSashimiArcs(down ? 'down' : 'up')
-      }
+      model.setReadConnectionsDown(!model.readConnectionsDown)
     },
   }
 }

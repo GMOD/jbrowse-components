@@ -25,7 +25,6 @@ interface ReadsModel {
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
   sashimiArcs: ArcDirection
-  setSashimiArcs: (mode: ArcDirection) => void
 
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void

@@ -1449,6 +1449,26 @@ export default function stateModelFactory(
            */
           setSashimiArcs(mode: ArcDirection) {
             self.sashimiArcs = mode
+            // Sashimi only renders over the coverage band, so making it
+            // visible requires coverage. Keep this invariant in the action,
+            // not in the menu handler, so it holds for every caller.
+            if (mode !== 'off') {
+              self.showCoverage = true
+            }
+          },
+
+          /**
+           * #action
+           * Toggle sashimi arcs on/off; direction follows the shared
+           * `readConnectionsDown` flag.
+           */
+          toggleSashimiArcs() {
+            if (self.sashimiArcs === 'off') {
+              self.sashimiArcs = self.readConnectionsDown ? 'down' : 'up'
+              self.showCoverage = true
+            } else {
+              self.sashimiArcs = 'off'
+            }
           },
 
           /**
@@ -1463,6 +1483,12 @@ export default function stateModelFactory(
            */
           setReadConnectionsDown(down: boolean) {
             self.readConnectionsDown = down
+            // Direction is shared between read-connection arcs and sashimi
+            // arcs; readConnectionsDown is canonical, so keep sashimi in sync
+            // here rather than in the menu handler.
+            if (self.sashimiArcs !== 'off') {
+              self.sashimiArcs = down ? 'down' : 'up'
+            }
           },
 
           /**
