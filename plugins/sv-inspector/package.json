@@ -31,14 +31,14 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.8.7",
+    "@jbrowse/mobx-state-tree": "^5.10.2",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-spreadsheet-view": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "mobx": "^6.15.3",
-    "mobx-react": "^9.2.1"
+    "mobx": "^6.15.4",
+    "mobx-react": "^9.2.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
