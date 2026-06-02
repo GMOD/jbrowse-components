@@ -14,6 +14,7 @@ export async function* indexVcf({
   outDir,
   onStart,
   onUpdate,
+  checkAbort,
 }: IndexerOptions) {
   const { trackId } = config
   const stream = await getLocalOrRemoteStream({
@@ -27,6 +28,7 @@ export async function* indexVcf({
   const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
+    checkAbort?.()
     if (line.startsWith('#')) {
       continue
     }

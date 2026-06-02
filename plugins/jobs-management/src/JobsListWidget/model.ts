@@ -122,21 +122,21 @@ export function stateModelFactory(_pluginManager: PluginManager) {
          * #action
          */
         updateJobStatusMessage(jobName: string, message?: string) {
+          // job may be absent if it was cancelled/removed while a status
+          // callback was still in flight, so update only when present
           const job = self.jobs.find(j => j.name === jobName)
-          if (!job) {
-            throw new Error(`No job found with name ${jobName}`)
+          if (job) {
+            job.setStatusMessage(message)
           }
-          job.setStatusMessage(message)
         },
         /**
          * #action
          */
         updateJobProgressPct(jobName: string, pct: number) {
           const job = self.jobs.find(j => j.name === jobName)
-          if (!job) {
-            throw new Error(`No job found with name ${jobName}`)
+          if (job) {
+            job.setProgressPct(pct)
           }
-          job.setProgressPct(pct)
         },
       }
     })

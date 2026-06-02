@@ -64,6 +64,8 @@ export interface IndexerOptions {
   outDir: string
   onStart: (totalBytes: number) => void
   onUpdate: (progressBytes: number) => void
+  // throttled cancellation check; throws to abort the index mid-stream
+  checkAbort?: () => void
 }
 
 export interface Gff3IndexerOptions extends IndexerOptions {

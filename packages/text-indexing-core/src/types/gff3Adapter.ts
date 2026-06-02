@@ -15,6 +15,7 @@ export async function* indexGff3({
   featureTypesToExclude,
   onStart,
   onUpdate,
+  checkAbort,
 }: Gff3IndexerOptions) {
   const { trackId } = config
 
@@ -30,6 +31,7 @@ export async function* indexGff3({
   const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
+    checkAbort?.()
     if (!line.trim()) {
       continue
     } else if (line.startsWith('#')) {

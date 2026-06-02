@@ -14,7 +14,6 @@ import type { AddTrackModel } from '../model.ts'
 interface RootWithJobsManager {
   jobsManager: {
     queueJob: (job: unknown) => void
-    abortJob: () => void
   }
 }
 
@@ -25,23 +24,21 @@ function doTextIndexTrack({
   trackId: string
   model: AddTrackModel
 }) {
-  const { textIndexingConf, trackName, assembly } = model
+  const { textIndexingConf, assembly } = model
   const { jobsManager } = getRoot<RootWithJobsManager>(model)
   const attr = textIndexingConf ?? defaultIndexingConf
-  const indexName = `${trackName}-index`
   jobsManager.queueJob({
     indexingParams: {
       ...attr,
       assemblies: [assembly],
       tracks: [trackId],
       indexType: 'perTrack',
-      name: indexName,
+      name: trackId,
       timestamp: new Date().toISOString(),
     },
-    name: indexName,
-    cancelCallback: () => {
-      jobsManager.abortJob()
-    },
+    // jobs are keyed by name; trackId is unique so two tracks sharing a
+    // display name won't collide
+    name: trackId,
   })
 }
 

@@ -3,7 +3,11 @@ import path from 'path'
 import { Readable } from 'stream'
 
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  checkStopToken,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import {
   adapterLocationKey,
   defaultAttributesToIndex,
@@ -205,6 +209,10 @@ async function* indexFiles({
 }) {
   for (const track of tracks) {
     checkStopToken(stopToken)
+    const checker = createStopTokenChecker(stopToken)
+    const checkAbort = () => {
+      checkStopToken2(checker)
+    }
     const { adapter, textSearching } = track
     const { type } = adapter ?? {}
     const resolvedAttrs = textSearching?.indexingAttributes ?? attributesToIndex
@@ -226,6 +234,7 @@ async function* indexFiles({
         featureTypesToExclude: resolvedExcludes,
         onStart,
         onUpdate,
+        checkAbort,
       })
     } else if (type === 'VcfAdapter' || type === 'VcfTabixAdapter') {
       yield* indexVcf({
@@ -235,6 +244,7 @@ async function* indexFiles({
         outDir,
         onStart,
         onUpdate,
+        checkAbort,
       })
     }
   }
