@@ -17,19 +17,15 @@ function buildOne(opts: {
   botPx: number
   bpPerPx0: number
   bpPerPx1: number
-  padTop?: number
-  padBottom?: number
 }) {
-  const { topPx, botPx, bpPerPx0, bpPerPx1, padTop = 0, padBottom = 0 } = opts
-  const topCumBp = (topPx - padTop) * bpPerPx0
-  const botCumBp = (botPx - padBottom) * bpPerPx1
+  const { topPx, botPx, bpPerPx0, bpPerPx1 } = opts
+  const topCumBp = topPx * bpPerPx0
+  const botCumBp = botPx * bpPerPx1
   return buildSyntenyGeometry({
     p11_cumBp: new Float64Array([topCumBp]),
     p12_cumBp: new Float64Array([topCumBp + 100]),
     p21_cumBp: new Float64Array([botCumBp]),
     p22_cumBp: new Float64Array([botCumBp + 100]),
-    padTop: new Float32Array([padTop]),
-    padBottom: new Float32Array([padBottom]),
     strands: new Int8Array([1]),
     parsedCigars: [[]],
     starts: new Uint32Array([0]),
@@ -77,8 +73,6 @@ test('alignmentLength is each feature own block span, not aggregated', () => {
     p12_cumBp: new Float64Array([100, 15_000]),
     p21_cumBp: new Float64Array([0, 10_000]),
     p22_cumBp: new Float64Array([100, 15_000]),
-    padTop: new Float32Array([0, 0]),
-    padBottom: new Float32Array([0, 0]),
     strands: new Int8Array([1, 1]),
     parsedCigars: [[], []],
     starts: new Uint32Array([0, 10_000]),
@@ -93,20 +87,4 @@ test('alignmentLength is each feature own block span, not aggregated', () => {
     viewWidth: 20_000,
   })
   expect([...g.alignmentLengths]).toEqual([100, 5000])
-})
-
-test('padding survives as a small Float32 separately from the cum-bp', () => {
-  const g = buildOne({
-    topPx: 10_000 + 50, // 50 px of padding accumulated before this region
-    botPx: 8e8 + 200,
-    bpPerPx0: 1,
-    bpPerPx1: 1,
-    padTop: 50,
-    padBottom: 200,
-  })
-  expect(g.padTops[0]).toBe(50)
-  expect(g.padBottoms[0]).toBe(200)
-  // cum-bp is `(px - pad) * bpPerPx` — padding is stripped from the bp value
-  expect(reconstruct(g.bp1Hi[0]!, g.bp1Lo[0]!)).toBe(10_000)
-  expect(reconstruct(g.bp4Hi[0]!, g.bp4Lo[0]!)).toBe(8e8)
 })

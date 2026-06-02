@@ -17,8 +17,6 @@ function allocBuffers(capacity: number): GeometryBuffers {
     y1: new Float64Array(capacity),
     x2: new Float64Array(capacity),
     y2: new Float64Array(capacity),
-    padHs: new Float32Array(capacity),
-    padVs: new Float32Array(capacity),
     colors: new Uint32Array(capacity),
   }
 }
@@ -30,16 +28,12 @@ function writeSegment(
   y1: number,
   x2: number,
   y2: number,
-  padH: number,
-  padV: number,
   color: number,
 ) {
   b.x1[n] = x1
   b.y1[n] = y1
   b.x2[n] = x2
   b.y2[n] = y2
-  b.padHs[n] = padH
-  b.padVs[n] = padV
   b.colors[n] = color
 }
 
@@ -49,8 +43,6 @@ function trimToCount(b: GeometryBuffers, n: number): DotplotGeometryData {
     y1: b.y1.subarray(0, n),
     x2: b.x2.subarray(0, n),
     y2: b.y2.subarray(0, n),
-    padHs: b.padHs.subarray(0, n),
-    padVs: b.padVs.subarray(0, n),
     colors: b.colors.subarray(0, n),
     instanceCount: n,
   }
@@ -69,8 +61,6 @@ export function buildLineSegments(
     p12,
     p21,
     p22,
-    padHs,
-    padVs,
     starts,
     ends,
     strands,
@@ -102,8 +92,6 @@ export function buildLineSegments(
     const x2 = p12[i]!
     const y1 = p21[i]!
     const y2 = p22[i]!
-    const padH = padHs[i]!
-    const padV = padVs[i]!
     const cigar = parsedCigars[i]!
     const featureWidthPx = Math.max(
       Math.abs(x2 - x1) * bpPerPxHInv,
@@ -122,22 +110,12 @@ export function buildLineSegments(
         strand,
         1,
         (_op, seg1Start, seg1End, seg2Start, seg2End) => {
-          writeSegment(
-            buf,
-            n,
-            seg1Start,
-            seg2Start,
-            seg1End,
-            seg2End,
-            padH,
-            padV,
-            color,
-          )
+          writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, color)
           n++
         },
       )
     } else {
-      writeSegment(buf, n, x1, y1, x2, y2, padH, padV, color)
+      writeSegment(buf, n, x1, y1, x2, y2, color)
       n++
     }
   }

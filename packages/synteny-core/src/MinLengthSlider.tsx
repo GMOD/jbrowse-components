@@ -24,9 +24,9 @@ export default function MinLengthSlider({
       onChange={v => {
         setDragValue(v)
       }}
-      onChangeCommitted={() => {
+      onChangeCommitted={v => {
         setDragValue(null)
-        onCommit(Math.round(2 ** (sliderValue / 100)))
+        onCommit(Math.round(2 ** (v / 100)))
       }}
       min={0}
       max={Math.log2(maxBp) * 100}

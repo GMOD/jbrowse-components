@@ -9,8 +9,6 @@ export interface DotplotRpcData {
   p12: Float64Array
   p21: Float64Array
   p22: Float64Array
-  padHs: Float32Array
-  padVs: Float32Array
   strands: Int8Array
   starts: Uint32Array
   ends: Uint32Array

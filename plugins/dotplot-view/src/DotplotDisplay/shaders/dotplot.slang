@@ -26,9 +26,7 @@ struct DotplotInstance {
   float x2Lo : ATTR5;
   float y2Hi : ATTR6;
   float y2Lo : ATTR7;
-  float padH  : ATTR8;
-  float padV  : ATTR9;
-  uint  color : ATTR10;
+  uint  color : ATTR8;
 };
 
 struct Uniforms {
@@ -64,10 +62,10 @@ VsOut vs_main(DotplotInstance inst, uint vid : SV_VertexID) {
   float t = (v == 2u || v == 3u || v == 5u) ? 1.0 : 0.0;
   float side = (v == 1u || v == 4u || v == 5u) ? 1.0 : -1.0;
 
-  float sx1 = hpCornerScreenX(inst.x1Hi, inst.x1Lo, u.viewBpHHi, u.viewBpHLo, u.bpPerPxHInv, inst.padH, u.hpZero);
-  float sy1 = u.resolution.y - hpCornerScreenX(inst.y1Hi, inst.y1Lo, u.viewBpVHi, u.viewBpVLo, u.bpPerPxVInv, inst.padV, u.hpZero);
-  float sx2 = hpCornerScreenX(inst.x2Hi, inst.x2Lo, u.viewBpHHi, u.viewBpHLo, u.bpPerPxHInv, inst.padH, u.hpZero);
-  float sy2 = u.resolution.y - hpCornerScreenX(inst.y2Hi, inst.y2Lo, u.viewBpVHi, u.viewBpVLo, u.bpPerPxVInv, inst.padV, u.hpZero);
+  float sx1 = hpCornerScreenX(inst.x1Hi, inst.x1Lo, u.viewBpHHi, u.viewBpHLo, u.bpPerPxHInv, u.hpZero);
+  float sy1 = u.resolution.y - hpCornerScreenX(inst.y1Hi, inst.y1Lo, u.viewBpVHi, u.viewBpVLo, u.bpPerPxVInv, u.hpZero);
+  float sx2 = hpCornerScreenX(inst.x2Hi, inst.x2Lo, u.viewBpHHi, u.viewBpHLo, u.bpPerPxHInv, u.hpZero);
+  float sy2 = u.resolution.y - hpCornerScreenX(inst.y2Hi, inst.y2Lo, u.viewBpVHi, u.viewBpVLo, u.bpPerPxVInv, u.hpZero);
 
   float dx = sx2 - sx1;
   float dy = sy2 - sy1;

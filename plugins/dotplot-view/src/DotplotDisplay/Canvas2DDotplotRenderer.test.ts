@@ -45,8 +45,6 @@ function makeGeometry(count: number): DotplotGeometryData {
     y1,
     x2,
     y2,
-    padHs: new Float32Array(count),
-    padVs: new Float32Array(count),
     colors: new Uint32Array(count).fill(0xff0000ff),
     instanceCount: count,
   }
@@ -101,8 +99,6 @@ describe('Canvas2DDotplotRenderer', () => {
       y1: new Float64Array([200]),
       x2: new Float64Array([150]),
       y2: new Float64Array([250]),
-      padHs: new Float32Array([0]),
-      padVs: new Float32Array([0]),
       colors: new Uint32Array([0xff0000ff]),
       instanceCount: 1,
     })
@@ -129,8 +125,6 @@ describe('Canvas2DDotplotRenderer', () => {
       y1: new Float64Array([0]),
       x2: new Float64Array([1]),
       y2: new Float64Array([1]),
-      padHs: new Float32Array([0]),
-      padVs: new Float32Array([0]),
       colors: new Uint32Array([0xccbf4080]),
       instanceCount: 1,
     })

@@ -42,14 +42,12 @@ export const defaultCigarColors = {
   '=': '#f00',
 }
 
-// Strand-specific CIGAR operation colors (purple indels instead of blue/green)
+// Strand-specific CIGAR operation colors: same as default but purple indels
+// (N/D) instead of green/blue. Derived so the shared ops can't drift apart.
 export const strandCigarColors = {
-  I: '#ff0',
+  ...defaultCigarColors,
   N: '#a020f0',
   D: '#a020f0',
-  X: 'brown',
-  M: '#f00',
-  '=': '#f00',
 }
 
 export const colorSchemes = {

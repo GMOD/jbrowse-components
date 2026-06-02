@@ -7,16 +7,12 @@ function makeRpcData(
   p12: number,
   p21: number,
   p22: number,
-  padH = 0,
-  padV = 0,
 ): DotplotRpcData {
   return {
     p11: new Float64Array([p11]),
     p12: new Float64Array([p12]),
     p21: new Float64Array([p21]),
     p22: new Float64Array([p22]),
-    padHs: new Float32Array([padH]),
-    padVs: new Float32Array([padV]),
     strands: new Int8Array([1]),
     starts: new Uint32Array([0]),
     ends: new Uint32Array([100]),
@@ -48,15 +44,6 @@ describe('buildLineSegments cumBp precision', () => {
     const segA = buildLineSegments(a, () => 0, false, 0, 1, 1)
     const segB = buildLineSegments(b, () => 0, false, 0, 10, 1)
     expect(segA.y1[0]).toBe(segB.y1[0])
-  })
-
-  test('padding is stored separately from cumBp', () => {
-    const data = makeRpcData(1_000, 1_100, 8e8, 8e8 + 100, 50, 200)
-    const segs = buildLineSegments(data, () => 0, false, 0, 1, 1)
-    expect(segs.padHs[0]).toBe(50)
-    expect(segs.padVs[0]).toBe(200)
-    expect(segs.x1[0]).toBe(1_000)
-    expect(segs.y1[0]).toBe(8e8)
   })
 
   test('minAlignmentLength filters short features', () => {

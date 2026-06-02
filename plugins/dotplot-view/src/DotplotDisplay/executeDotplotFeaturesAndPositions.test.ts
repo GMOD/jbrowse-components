@@ -1,4 +1,4 @@
-import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
+import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import type { BpIndexViewSnap, BpRegionIndex } from '@jbrowse/synteny-core'
 
@@ -24,14 +24,14 @@ function buildBpToPxIndex(self: BpIndexViewSnap) {
 }
 
 function bpToPxFromIndex(idx: BpRegionIndex, refName: string, coord: number) {
-  const r = bpToCumBpAndPad(idx, refName, coord)
-  if (!r) {
+  const cumBp = bpToCumBp(idx, refName, coord)
+  if (cumBp === undefined) {
     return undefined
   }
-  return r.cumBp / idx.bpPerPx + r.padPx
+  return cumBp / idx.bpPerPx
 }
 
-describe('buildBpRegionIndex / bpToCumBpAndPad (via adapter)', () => {
+describe('buildBpRegionIndex / bpToCumBp (via adapter)', () => {
   it('returns correct pixel offset for first region', () => {
     const idx = buildBpToPxIndex(
       makeViewSnap([

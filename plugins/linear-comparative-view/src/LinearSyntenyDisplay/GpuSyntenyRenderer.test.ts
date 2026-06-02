@@ -27,8 +27,6 @@ function makeInstanceData(count = 1): SyntenyInstanceData {
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
     alignmentLengths: new Float32Array(count).fill(10000),
-    padTops: new Float32Array(count).fill(0),
-    padBottoms: new Float32Array(count).fill(0),
     instanceCount: count,
   }
 }

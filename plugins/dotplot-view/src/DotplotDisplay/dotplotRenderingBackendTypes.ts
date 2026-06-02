@@ -6,8 +6,6 @@ export interface DotplotGeometryData {
   y1: Float64Array
   x2: Float64Array
   y2: Float64Array
-  padHs: Float32Array
-  padVs: Float32Array
   colors: Uint32Array
   instanceCount: number
 }

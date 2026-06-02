@@ -16,8 +16,6 @@ function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
     p12: f64,
     p21: f64,
     p22: f64,
-    padHs: new Float32Array(1),
-    padVs: new Float32Array(1),
     strands: new Int8Array([1]),
     starts: new Uint32Array([0]),
     ends: new Uint32Array([100]),

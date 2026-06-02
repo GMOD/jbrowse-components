@@ -1,9 +1,8 @@
 // Shared per-instance layout + uniform block for fill/edge synteny shaders.
 // Each instance is one parallelogram (or one curved ribbon strip): four
-// corner positions in cumulative-bp space (split hi/lo for hp-math precision)
-// plus the inter-region padding pixels accumulated before the corner's
-// region. Corners 1/2 belong to the top view (view 0), corners 3/4 to the
-// bottom view (view 1).
+// corner positions in cumulative-bp space (split hi/lo for hp-math precision).
+// Corners 1/2 belong to the top view (view 0), corners 3/4 to the bottom view
+// (view 1).
 //
 // Curve mode and straight-line mode live in separate shader files
 // (syntenyFill{Curve,Straight}.slang, syntenyEdge{Curve,Straight}.slang) so
@@ -25,14 +24,12 @@ public struct Instance {
   public uint  color             : ATTR8;
   public float featureId         : ATTR9;
   public float alignmentLength   : ATTR10;
-  public float padTop            : ATTR11;
-  public float padBottom         : ATTR12;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyColors.ts).
   // Used by the fill fragment to decide whether perpendicular AA should be
   // smooth (BASE — outer feature silhouette) or hard-cut (CIGAR — tiles a
   // feature, so smoothstep at shared edges with sibling CIGAR instances
   // bleeds background through the seam under standard alpha blend).
-  public float kind              : ATTR13;
+  public float kind              : ATTR11;
 };
 
 // First CIGAR kind. Kinds 0..2 are whole-feature (KIND_BASE/BASE_HIDDEN/MARKER);
@@ -48,11 +45,9 @@ public static const float KIND_CIGAR_MIN = 3.0;
 public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 
 // Per-view hp-math origin (`viewBp = offsetPx * bpPerPx`, hi/lo split) +
-// `bpPerPxInv`. The padded-bp encoding of the view origin lets the shader
-// reconstruct LGV-aligned screen positions with just the per-instance `pad`
-// field — no companion viewPad uniform is needed (math derivation in
-// hpCornerScreenX). `hpZero` is the sentinel passed through to hpmath
-// helpers (always 0 from JS).
+// `bpPerPxInv`. The view origin reconstructs LGV-aligned screen positions
+// directly (math derivation in hpCornerScreenX). `hpZero` is the sentinel
+// passed through to hpmath helpers (always 0 from JS).
 public struct Uniforms {
   public float2 resolution;
   public float  height;
@@ -78,13 +73,13 @@ public struct Corners {
 public Corners computeCorners(Instance inst, Uniforms u) {
   Corners c;
   c.x1 = hpCornerScreenX(inst.bp1Hi, inst.bp1Lo, u.viewBp0Hi, u.viewBp0Lo,
-                         u.bpPerPxInv0, inst.padTop, u.hpZero);
+                         u.bpPerPxInv0, u.hpZero);
   c.x2 = hpCornerScreenX(inst.bp2Hi, inst.bp2Lo, u.viewBp0Hi, u.viewBp0Lo,
-                         u.bpPerPxInv0, inst.padTop, u.hpZero);
+                         u.bpPerPxInv0, u.hpZero);
   c.x3 = hpCornerScreenX(inst.bp3Hi, inst.bp3Lo, u.viewBp1Hi, u.viewBp1Lo,
-                         u.bpPerPxInv1, inst.padBottom, u.hpZero);
+                         u.bpPerPxInv1, u.hpZero);
   c.x4 = hpCornerScreenX(inst.bp4Hi, inst.bp4Lo, u.viewBp1Hi, u.viewBp1Lo,
-                         u.bpPerPxInv1, inst.padBottom, u.hpZero);
+                         u.bpPerPxInv1, u.hpZero);
   return c;
 }
 
@@ -130,10 +125,10 @@ public float fillCoverage(float2 localPos, float xL, float xR,
   // ~0.5 coverage the bare smoothstep midpoint would give — matching the
   // canvas2d backend's 1px centerline stroke (Canvas2DSyntenyRenderer.ts) so the
   // two backends look the same. Wide ribbons (halfWidth > floor) are unaffected.
-  // NOTE: the floor only keeps a sub-pixel ribbon visible when the vertex pad
-  // gave the rasterizer ≥1px of geometry to fill (BASE ribbons do; CIGAR tiles
-  // use pad=0 to tile cleanly, so a sub-pixel CIGAR tile can still drop out —
-  // an accepted tradeoff, since CIGAR detail only shows when zoomed in).
+  // NOTE: the floor only keeps a sub-pixel ribbon visible when the rasterizer
+  // had ≥1px of geometry to fill (whole BASE ribbons do; a sub-pixel CIGAR tile
+  // can still drop out — an accepted tradeoff, since CIGAR detail only shows
+  // when zoomed in).
   float minHalf = 0.5;
   float halfPerpW = max((xR - xL) / (2.0 * perpFactor), minHalf);
   float cx;

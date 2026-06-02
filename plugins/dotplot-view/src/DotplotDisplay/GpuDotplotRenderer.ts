@@ -66,8 +66,6 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
       splitHiLo(f, off + F.y1Hi, off + F.y1Lo, data.y1[i]!)
       splitHiLo(f, off + F.x2Hi, off + F.x2Lo, data.x2[i]!)
       splitHiLo(f, off + F.y2Hi, off + F.y2Lo, data.y2[i]!)
-      f[off + F.padH] = data.padHs[i]!
-      f[off + F.padV] = data.padVs[i]!
       u[off + F.color] = data.colors[i]!
     }
 

@@ -19,10 +19,9 @@ import {
 // without an RPC refetch.
 //
 // Corner positions are stored as cumulative-bp (NOT pixel) hi/lo Float32
-// pairs. Combined with the per-instance pad{Top,Bottom} pixel offsets these
-// reconstruct the screen position via hp-math in the vertex shader, which
-// avoids the Float32 precision blow-up that pixel-space storage suffered when
-// the mate was on a distant chromosome.
+// pairs. These reconstruct the screen position via hp-math in the vertex
+// shader, which avoids the Float32 precision blow-up that pixel-space storage
+// suffered when the mate was on a distant chromosome.
 export interface SyntenyGeometry {
   bp1Hi: Float32Array
   bp1Lo: Float32Array
@@ -40,8 +39,6 @@ export interface SyntenyGeometry {
   kinds: Uint8Array
   instanceFeatureIdx: Uint32Array
   alignmentLengths: Float32Array
-  padTops: Float32Array
-  padBottoms: Float32Array
   instanceCount: number
 }
 
@@ -52,8 +49,6 @@ export function buildSyntenyGeometry({
   p12_cumBp,
   p21_cumBp,
   p22_cumBp,
-  padTop: padTopArr,
-  padBottom: padBottomArr,
   strands,
   parsedCigars,
   starts,
@@ -71,8 +66,6 @@ export function buildSyntenyGeometry({
   p12_cumBp: Float64Array
   p21_cumBp: Float64Array
   p22_cumBp: Float64Array
-  padTop: Float32Array
-  padBottom: Float32Array
   strands: Int8Array
   parsedCigars: ArrayLike<number>[]
   starts: Uint32Array
@@ -142,9 +135,9 @@ export function buildSyntenyGeometry({
   }
 
   // Write cumBp hi/lo Float32 pairs directly at emit time. The shader
-  // reconstructs screen pixel via `(cumBpHi + cumBpLo) / bpPerPx + pad` using
-  // hp-math, so the worker never needs to materialize Float64 padded-pixel
-  // staging arrays — converting and splitting happens inline in `addInstance`.
+  // reconstructs screen pixel via `(cumBpHi + cumBpLo) / bpPerPx` using
+  // hp-math, so the worker never needs to materialize Float64 pixel staging
+  // arrays — converting and splitting happens inline in `addInstance`.
   const bp1HiArr = new Float32Array(capacity)
   const bp1LoArr = new Float32Array(capacity)
   const bp2HiArr = new Float32Array(capacity)
@@ -156,14 +149,10 @@ export function buildSyntenyGeometry({
   const kindsArr = new Uint8Array(capacity)
   const featIdxArr = new Uint32Array(capacity)
   const instanceAlignmentLengths = new Float32Array(capacity)
-  const padTopsArr = new Float32Array(capacity)
-  const padBottomsArr = new Float32Array(capacity)
 
   let idx = 0
 
-  // All four corner values are cumBp (bpBefore + bpOffset, no padding).
-  // padTop / padBottom are the per-feature inter-region CSS pixel gaps,
-  // stored as-is into the instance buffer for the shader.
+  // All four corner values are cumBp (bpBefore + bpOffset).
   function addInstance(
     cumBp1: number,
     cumBp2: number,
@@ -172,8 +161,6 @@ export function buildSyntenyGeometry({
     kind: number,
     featureIdx: number,
     alignmentLength: number,
-    padTop: number,
-    padBottom: number,
   ) {
     writeHiLo(cumBp1, bp1HiArr, bp1LoArr, idx)
     writeHiLo(cumBp2, bp2HiArr, bp2LoArr, idx)
@@ -182,8 +169,6 @@ export function buildSyntenyGeometry({
     kindsArr[idx] = kind
     featIdxArr[idx] = featureIdx
     instanceAlignmentLengths[idx] = alignmentLength
-    padTopsArr[idx] = padTop
-    padBottomsArr[idx] = padBottom
     idx++
   }
 
@@ -195,8 +180,6 @@ export function buildSyntenyGeometry({
     bp2Start: number,
     featureIdx: number,
     alignmentLength: number,
-    padTop: number,
-    padBottom: number,
   ) {
     const width1 = Math.abs(bp1End - bp1Start) * bpPerPxInv0
     const width2 = Math.abs(bp2End - bp2Start) * bpPerPxInv1
@@ -217,8 +200,8 @@ export function buildSyntenyGeometry({
       const markerBp1 = bp1Start + (bp1End - bp1Start) * t
       const markerBp2 = bp2Start + (bp2End - bp2Start) * t
 
-      const screenTopX = markerBp1 * bpPerPxInv0 + padTop - viewOff0
-      const screenBottomX = markerBp2 * bpPerPxInv1 + padBottom - viewOff1
+      const screenTopX = markerBp1 * bpPerPxInv0 - viewOff0
+      const screenBottomX = markerBp2 * bpPerPxInv1 - viewOff1
       if (
         (screenTopX < emitLeft || screenTopX > emitRight) &&
         (screenBottomX < emitLeft || screenBottomX > emitRight)
@@ -234,8 +217,6 @@ export function buildSyntenyGeometry({
         KIND_MARKER,
         featureIdx,
         alignmentLength,
-        padTop,
-        padBottom,
       )
     }
   }
@@ -256,20 +237,9 @@ export function buildSyntenyGeometry({
       willDrawCigar ? KIND_BASE_HIDDEN : KIND_BASE,
       i,
       alignmentLengths[i]!,
-      padTopArr[i]!,
-      padBottomArr[i]!,
     )
     if (!willDrawCigar && drawLocationMarkers) {
-      addLocationMarkers(
-        x11,
-        x12,
-        x22,
-        x21,
-        i,
-        alignmentLengths[i]!,
-        padTopArr[i]!,
-        padBottomArr[i]!,
-      )
+      addLocationMarkers(x11, x12, x22, x21, i, alignmentLengths[i]!)
     }
   }
 
@@ -291,8 +261,6 @@ export function buildSyntenyGeometry({
     const x22 = p22_cumBp[i]!
     const strand = strands[i]!
     const alignmentLength = alignmentLengths[i]!
-    const padTop = padTopArr[i]!
-    const padBottom = padBottomArr[i]!
 
     const k1 = strand === -1 ? x12 : x11
     const k2 = strand === -1 ? x11 : x12
@@ -309,13 +277,13 @@ export function buildSyntenyGeometry({
       rev2,
       (resolvedOp, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
         const topMin =
-          Math.min(segBp1Start, segBp1End) * bpPerPxInv0 + padTop - viewOff0
+          Math.min(segBp1Start, segBp1End) * bpPerPxInv0 - viewOff0
         const topMax =
-          Math.max(segBp1Start, segBp1End) * bpPerPxInv0 + padTop - viewOff0
+          Math.max(segBp1Start, segBp1End) * bpPerPxInv0 - viewOff0
         const botMin =
-          Math.min(segBp2Start, segBp2End) * bpPerPxInv1 + padBottom - viewOff1
+          Math.min(segBp2Start, segBp2End) * bpPerPxInv1 - viewOff1
         const botMax =
-          Math.max(segBp2Start, segBp2End) * bpPerPxInv1 + padBottom - viewOff1
+          Math.max(segBp2Start, segBp2End) * bpPerPxInv1 - viewOff1
         const offScreen =
           (topMax < emitLeft || topMin > emitRight) &&
           (botMax < emitLeft || botMin > emitRight)
@@ -345,8 +313,6 @@ export function buildSyntenyGeometry({
             kind,
             i,
             alignmentLength,
-            padTop,
-            padBottom,
           )
 
           if (drawLocationMarkers && !(drawCIGARMatchesOnly && isIndel)) {
@@ -357,8 +323,6 @@ export function buildSyntenyGeometry({
               segBp2Start,
               i,
               alignmentLength,
-              padTop,
-              padBottom,
             )
           }
         }
@@ -380,8 +344,6 @@ export function buildSyntenyGeometry({
     kinds: kindsArr.subarray(0, instanceCount),
     instanceFeatureIdx: featIdxArr.subarray(0, instanceCount),
     alignmentLengths: instanceAlignmentLengths.subarray(0, instanceCount),
-    padTops: padTopsArr.subarray(0, instanceCount),
-    padBottoms: padBottomsArr.subarray(0, instanceCount),
     instanceCount,
   }
 }

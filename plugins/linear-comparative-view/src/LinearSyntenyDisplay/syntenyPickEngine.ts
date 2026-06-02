@@ -92,8 +92,8 @@ export function computeTransform(
     bpPerPxInv0: 1 / params.bpPerPx0,
     bpPerPxInv1: 1 / params.bpPerPx1,
     // SYNC: matches viewBp{0,1} computation in GpuSyntenyRenderer.writeUniforms
-    // and the Uniforms struct in syntenyTypes.slang. Padded-bp at canvas left:
-    // (cumBp − viewBp)/bpPerPx + pad → screen-X. See ADR-018.
+    // and the Uniforms struct in syntenyTypes.slang. Bp at canvas left:
+    // (cumBp − viewBp)/bpPerPx → screen-X. See ADR-018.
     viewBp0: params.offsetPx0 * params.bpPerPx0,
     viewBp1: params.offsetPx1 * params.bpPerPx1,
   }
@@ -114,17 +114,15 @@ export function projectCorners(
   i: number,
   t: ComputedTransform,
 ): ProjectedCorners {
-  const padTop = data.padTops[i]!
-  const padBottom = data.padBottoms[i]!
   const bp1 = data.bp1Hi[i]! + data.bp1Lo[i]!
   const bp2 = data.bp2Hi[i]! + data.bp2Lo[i]!
   const bp3 = data.bp3Hi[i]! + data.bp3Lo[i]!
   const bp4 = data.bp4Hi[i]! + data.bp4Lo[i]!
   return {
-    sx1: (bp1 - t.viewBp0) * t.bpPerPxInv0 + padTop,
-    sx2: (bp2 - t.viewBp0) * t.bpPerPxInv0 + padTop,
-    sx3: (bp3 - t.viewBp1) * t.bpPerPxInv1 + padBottom,
-    sx4: (bp4 - t.viewBp1) * t.bpPerPxInv1 + padBottom,
+    sx1: (bp1 - t.viewBp0) * t.bpPerPxInv0,
+    sx2: (bp2 - t.viewBp0) * t.bpPerPxInv0,
+    sx3: (bp3 - t.viewBp1) * t.bpPerPxInv1,
+    sx4: (bp4 - t.viewBp1) * t.bpPerPxInv1,
   }
 }
 

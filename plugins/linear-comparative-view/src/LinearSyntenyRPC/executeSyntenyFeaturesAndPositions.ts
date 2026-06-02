@@ -6,7 +6,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
+import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -149,9 +149,6 @@ export async function executeSyntenyFeaturesAndPositions({
   const identitiesArray = new Float32Array(count)
   const mappingQualsArray = new Float32Array(count)
   const meanScoresArray = new Float32Array(count)
-  // padPx (CSS pixels, ≤ a few thousand) — Float32 is more than adequate.
-  const padTopArray = new Float32Array(count)
-  const padBottomArray = new Float32Array(count)
 
   const featureIds: string[] = []
   const names: string[] = []
@@ -187,8 +184,8 @@ export async function executeSyntenyFeaturesAndPositions({
       assemblyName: string
     }
     // Whole-genome PAF at low zoom: most features are on refNames not in the
-    // displayed regions of one or both views. Skip before any bpToCumBpAndPad
-    // arithmetic / object allocation.
+    // displayed regions of one or both views. Skip before any bpToCumBp
+    // arithmetic.
     if (!v1RefNames.has(refName) || !v2RefNames.has(mate.refName)) {
       continue
     }
@@ -199,10 +196,10 @@ export async function executeSyntenyFeaturesAndPositions({
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 
-    const p11 = bpToCumBpAndPad(v1Index, refName, f1s)
-    const p12 = bpToCumBpAndPad(v1Index, refName, f1e)
-    const p21 = bpToCumBpAndPad(v2Index, mate.refName, mate.start)
-    const p22 = bpToCumBpAndPad(v2Index, mate.refName, mate.end)
+    const p11 = bpToCumBp(v1Index, refName, f1s)
+    const p12 = bpToCumBp(v1Index, refName, f1e)
+    const p21 = bpToCumBp(v2Index, mate.refName, mate.start)
+    const p22 = bpToCumBp(v2Index, mate.refName, mate.end)
 
     if (
       p11 === undefined ||
@@ -215,14 +212,10 @@ export async function executeSyntenyFeaturesAndPositions({
 
     // Cull features where BOTH view projections are entirely off-screen.
     // Convert cumBp to screen px for the check.
-    const topMinX =
-      Math.min(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
-    const topMaxX =
-      Math.max(p11.cumBp, p12.cumBp) * bpPerPxInv1 + p11.padPx - v1Offset
-    const botMinX =
-      Math.min(p21.cumBp, p22.cumBp) * bpPerPxInv2 + p21.padPx - v2Offset
-    const botMaxX =
-      Math.max(p21.cumBp, p22.cumBp) * bpPerPxInv2 + p21.padPx - v2Offset
+    const topMinX = Math.min(p11, p12) * bpPerPxInv1 - v1Offset
+    const topMaxX = Math.max(p11, p12) * bpPerPxInv1 - v1Offset
+    const botMinX = Math.min(p21, p22) * bpPerPxInv2 - v2Offset
+    const botMaxX = Math.max(p21, p22) * bpPerPxInv2 - v2Offset
 
     const topOffScreen =
       topMaxX < offScreenLeftBound || topMinX > offScreenRightBound
@@ -233,12 +226,10 @@ export async function executeSyntenyFeaturesAndPositions({
       continue
     }
 
-    p11Array[validCount] = p11.cumBp
-    p12Array[validCount] = p12.cumBp
-    p21Array[validCount] = p21.cumBp
-    p22Array[validCount] = p22.cumBp
-    padTopArray[validCount] = p11.padPx
-    padBottomArray[validCount] = p21.padPx
+    p11Array[validCount] = p11
+    p12Array[validCount] = p12
+    p21Array[validCount] = p21
+    p22Array[validCount] = p22
     strandsArray[validCount] = strand
     startsArray[validCount] = start
     endsArray[validCount] = end
@@ -278,15 +269,13 @@ export async function executeSyntenyFeaturesAndPositions({
     validCount++
   }
 
-  // cumBp + padPx arrays are intermediate buffers consumed only by
-  // buildSyntenyGeometry below. They never leave the worker — the main thread
-  // reads bp-space hi/lo pairs out of `instanceData`.
+  // cumBp arrays are intermediate buffers consumed only by buildSyntenyGeometry
+  // below. They never leave the worker — the main thread reads bp-space hi/lo
+  // pairs out of `instanceData`.
   const p11_cumBp = p11Array.subarray(0, validCount)
   const p12_cumBp = p12Array.subarray(0, validCount)
   const p21_cumBp = p21Array.subarray(0, validCount)
   const p22_cumBp = p22Array.subarray(0, validCount)
-  const padTop = padTopArray.subarray(0, validCount)
-  const padBottom = padBottomArray.subarray(0, validCount)
 
   const featureData = {
     strands: strandsArray.subarray(0, validCount),
@@ -319,8 +308,6 @@ export async function executeSyntenyFeaturesAndPositions({
         p12_cumBp,
         p21_cumBp,
         p22_cumBp,
-        padTop,
-        padBottom,
         strands: featureData.strands,
         parsedCigars,
         starts: featureData.starts,
@@ -356,7 +343,5 @@ export async function executeSyntenyFeaturesAndPositions({
     instanceData.kinds.buffer,
     instanceData.instanceFeatureIdx.buffer,
     instanceData.alignmentLengths.buffer,
-    instanceData.padTops.buffer,
-    instanceData.padBottoms.buffer,
   ] as ArrayBuffer[])
 }

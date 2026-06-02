@@ -2,7 +2,7 @@ import { parseCigar2 } from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
+import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -23,8 +23,6 @@ export interface DotplotFeaturesAndPositionsResult {
   p12: Float64Array
   p21: Float64Array
   p22: Float64Array
-  padHs: Float32Array
-  padVs: Float32Array
   strands: Int8Array
   starts: Uint32Array
   ends: Uint32Array
@@ -96,7 +94,6 @@ export async function executeDotplotFeaturesAndPositions({
 
   const getAssembly = makeAssemblyLookup(pluginManager)
 
-  // SYNC: parallel impl in packages/synteny-core/src/bpRegionIndex.ts
   const hIndex = buildBpRegionIndex(hViewSnap)
   const vIndex = buildBpRegionIndex(vViewSnap)
 
@@ -109,8 +106,6 @@ export async function executeDotplotFeaturesAndPositions({
     p12Cum: number
     p21Cum: number
     p22Cum: number
-    padH: number
-    padV: number
     strand: number
     start: number
     end: number
@@ -143,22 +138,25 @@ export async function executeDotplotFeaturesAndPositions({
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 
-    const p11 = bpToCumBpAndPad(hIndex, refName, f1s)
-    const p12 = bpToCumBpAndPad(hIndex, refName, f1e)
-    const p21 = bpToCumBpAndPad(vIndex, mateRefName, mate.start)
-    const p22 = bpToCumBpAndPad(vIndex, mateRefName, mate.end)
-    if (!p11 || !p12 || !p21 || !p22) {
+    const p11 = bpToCumBp(hIndex, refName, f1s)
+    const p12 = bpToCumBp(hIndex, refName, f1e)
+    const p21 = bpToCumBp(vIndex, mateRefName, mate.start)
+    const p22 = bpToCumBp(vIndex, mateRefName, mate.end)
+    if (
+      p11 === undefined ||
+      p12 === undefined ||
+      p21 === undefined ||
+      p22 === undefined
+    ) {
       skippedFeatureCount++
       continue
     }
 
     valid.push({
-      p11Cum: p11.cumBp,
-      p12Cum: p12.cumBp,
-      p21Cum: p21.cumBp,
-      p22Cum: p22.cumBp,
-      padH: p11.padPx,
-      padV: p21.padPx,
+      p11Cum: p11,
+      p12Cum: p12,
+      p21Cum: p21,
+      p22Cum: p22,
       strand,
       start,
       end,
@@ -176,8 +174,6 @@ export async function executeDotplotFeaturesAndPositions({
     p12: new Float64Array(n),
     p21: new Float64Array(n),
     p22: new Float64Array(n),
-    padHs: new Float32Array(n),
-    padVs: new Float32Array(n),
     strands: new Int8Array(n),
     starts: new Uint32Array(n),
     ends: new Uint32Array(n),
@@ -195,8 +191,6 @@ export async function executeDotplotFeaturesAndPositions({
     result.p12[i] = v.p12Cum
     result.p21[i] = v.p21Cum
     result.p22[i] = v.p22Cum
-    result.padHs[i] = v.padH
-    result.padVs[i] = v.padV
     result.strands[i] = v.strand
     result.starts[i] = v.start
     result.ends[i] = v.end
@@ -212,8 +206,6 @@ export async function executeDotplotFeaturesAndPositions({
     result.p12.buffer,
     result.p21.buffer,
     result.p22.buffer,
-    result.padHs.buffer,
-    result.padVs.buffer,
     result.strands.buffer,
     result.starts.buffer,
     result.ends.buffer,

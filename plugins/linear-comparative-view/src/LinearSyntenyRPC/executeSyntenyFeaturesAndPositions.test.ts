@@ -1,5 +1,5 @@
 import calculateBlocks from '@jbrowse/core/util/calculateStaticBlocks'
-import { bpToCumBpAndPad, buildBpRegionIndex } from '@jbrowse/synteny-core'
+import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import { bpToPx } from './executeSyntenyFeaturesAndPositions.ts'
 
@@ -16,11 +16,11 @@ function bpToPxFromIndex(
   coord: number,
   displayedRegionIndex?: number,
 ) {
-  const r = bpToCumBpAndPad(idx, refName, coord, displayedRegionIndex)
-  if (!r) {
+  const cumBp = bpToCumBp(idx, refName, coord, displayedRegionIndex)
+  if (cumBp === undefined) {
     return undefined
   }
-  return { offsetPx: r.cumBp / idx.bpPerPx + r.padPx, paddingPx: r.padPx }
+  return { offsetPx: cumBp / idx.bpPerPx, paddingPx: 0 }
 }
 
 function makeViewSnap(

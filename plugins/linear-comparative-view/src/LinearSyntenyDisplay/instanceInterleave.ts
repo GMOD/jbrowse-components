@@ -20,8 +20,6 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     kinds,
     instanceFeatureIdx,
     alignmentLengths,
-    padTops,
-    padBottoms,
     instanceCount: n,
   } = data
   const buf = new ArrayBuffer(n * INSTANCE_STRIDE_BYTES)
@@ -41,8 +39,6 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     u32[off + FIELD_OFFSET_F32.color] = colors[i]!
     f[off + FIELD_OFFSET_F32.featureId] = instanceFeatureIdx[i]! + 1
     f[off + FIELD_OFFSET_F32.alignmentLength] = alignmentLengths[i]!
-    f[off + FIELD_OFFSET_F32.padTop] = padTops[i]!
-    f[off + FIELD_OFFSET_F32.padBottom] = padBottoms[i]!
     f[off + FIELD_OFFSET_F32.kind] = kinds[i]!
   }
   return buf

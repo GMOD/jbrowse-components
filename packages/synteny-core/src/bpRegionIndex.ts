@@ -36,14 +36,14 @@ export function buildBpRegionIndex(self: BpIndexViewSnap): BpRegionIndex {
   return { entries, bpPerPx: self.bpPerPx }
 }
 
-// Returns cumBp (bpBefore + bpOffset) and padPx (always 0, kept for
-// compatibility with GPU shader vertex buffer layout).
-export function bpToCumBpAndPad(
+// Cumulative-bp offset (bpBefore + bpOffset) of a coordinate within the region
+// index, or undefined when the refName/coord isn't in the displayed regions.
+export function bpToCumBp(
   idx: BpRegionIndex,
   refName: string,
   coord: number,
   displayedRegionIndex?: number,
-): { cumBp: number; padPx: number } | undefined {
+): number | undefined {
   const list = idx.entries.get(refName)
   if (!list) {
     return undefined
@@ -57,7 +57,7 @@ export function bpToCumBpAndPad(
         displayedRegionIndex === entry.index)
     ) {
       const bpOffset = r.reversed ? r.end - coord : coord - r.start
-      return { cumBp: entry.bpBefore + bpOffset, padPx: 0 }
+      return entry.bpBefore + bpOffset
     }
   }
   return undefined

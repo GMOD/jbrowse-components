@@ -51,18 +51,18 @@ public float yPxToClipY(float yPx, float canvasHeight) {
   return 1.0 - (yPx / canvasHeight) * 2.0;
 }
 
-// (cumBp - viewBp)/bpPerPx + pad == cumBp/bpPerPx + pad - offsetPx (LGV
-// render position). Used by synteny + dotplot. Same hi/lo precision trick
-// as hpToClipX — see comment there.
+// (cumBp - viewBp)/bpPerPx == cumBp/bpPerPx - offsetPx (LGV render position).
+// Used by synteny + dotplot. Same hi/lo precision trick as hpToClipX — see
+// comment there.
 public float hpCornerScreenX(
   float bpHi, float bpLo,
   float originHi, float originLo,
-  float bpPerPxInv, float pad, float hpZero,
+  float bpPerPxInv, float hpZero,
 ) {
   float inf = 1.0 / hpZero;
   float hi = max(bpHi - originHi, -inf);
   float lo = max(bpLo - originLo, -inf);
-  return dot(float2(hi, lo), float2(bpPerPxInv, bpPerPxInv)) + pad;
+  return dot(float2(hi, lo), float2(bpPerPxInv, bpPerPxInv));
 }
 
 // vid%6: 0→(0,0)  1→(1,0)  2→(0,1)  3→(0,1)  4→(1,0)  5→(1,1)
