@@ -86,6 +86,37 @@ async function waitForLoadingComplete(page: Page, timeout = 30000) {
       document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
     { timeout },
   )
+  // The loading-overlay testid can clear while a track is still fetching (the
+  // overlay tracks an earlier phase than e.g. a remote BAM download). Adapters
+  // surface in-progress fetches as "Downloading …" status text; wait for those
+  // to clear so we don't capture a half-loaded track. Best-effort: a slow
+  // remote source may exceed the timeout, in which case the settle below still
+  // applies.
+  await page
+    .waitForFunction(() => !/Downloading/.test(document.body.innerText), {
+      timeout,
+    })
+    .catch(() => {})
+}
+
+// Guard against capturing a view that rendered no content. The ViewContainer
+// always renders its header chrome, so a screenshot with header-but-empty-body
+// (e.g. a render regression) still "succeeds" and slips through review. A
+// healthy view — including an import form — fills its body, so an empty body
+// uniquely signals a broken render.
+async function assertViewsRendered(page: Page, name: string) {
+  const emptyViews = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('[data-testid^="view-container-"]'))
+      .filter(c => {
+        const body = c.lastElementChild
+        return !body || body.childElementCount === 0
+      })
+      .map(c => c.getAttribute('data-testid') ?? '?'),
+  )
+  if (emptyViews.length > 0) {
+    await debugDump(page, name)
+    throw new Error(`view(s) rendered blank: ${emptyViews.join(', ')}`)
+  }
 }
 
 async function runAction(page: Page, action: ScreenshotAction) {
@@ -261,6 +292,8 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
           },
         }
       : {}
+
+  await assertViewsRendered(page, spec.name)
 
   // Flush any pending WebGL frames to the compositor before capturing
   await page.evaluate(

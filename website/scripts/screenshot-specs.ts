@@ -653,6 +653,8 @@ export const specs: ScreenshotSpec[] = [
 
   {
     mode: 'url',
+    // assemblies intentionally not pre-set: supplying them auto-launches the
+    // DotplotView, but this tutorial image is specifically the import form
     name: 'sv_synteny/dotplot_import',
     url: hpyloriUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
     readyText: 'Select assemblies for dotplot view',
