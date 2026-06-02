@@ -6,7 +6,9 @@ export { SvgRowLabels } from './SvgRowLabels.tsx'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 export {
+  applySubtreeFilter,
   buildClusteredLayout,
+  buildTree,
   clusterTree,
   parseClusterTree,
 } from './clusterUtils.ts'

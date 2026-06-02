@@ -68,9 +68,7 @@ export default function SetColorDialog<
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
   const [showBulkEditor, setShowBulkEditor] = useState(false)
-  const [currLayout, setCurrLayout] = useState(() =>
-    structuredClone(getSources()),
-  )
+  const [currLayout, setCurrLayout] = useState(getSources)
   const [showTips, setShowTips] = useLocalStorage(showTipsStorageKey, false)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
 

@@ -1,6 +1,6 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
-import { parseClusterTree } from './clusterUtils.ts'
+import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
 
 import type { HoveredTreeNode } from './types.ts'
 
@@ -20,12 +20,15 @@ export function TreeSidebarMixin<
       mouseoverCanvas: null as HTMLCanvasElement | null,
     }))
     .views(self => ({
+      get parsedTree() {
+        return self.clusterTree ? buildTree(self.clusterTree) : undefined
+      },
+    }))
+    .views(self => ({
       get root() {
-        const { clusterTree } = self
-        if (!clusterTree) {
-          return undefined
-        }
-        return parseClusterTree(clusterTree, self.subtreeFilter)
+        return self.parsedTree
+          ? applySubtreeFilter(self.parsedTree, self.subtreeFilter)
+          : undefined
       },
     }))
     .actions(self => ({

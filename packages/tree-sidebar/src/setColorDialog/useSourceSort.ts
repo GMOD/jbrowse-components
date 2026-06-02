@@ -31,7 +31,7 @@ export function sortRows<S>(
   field: string,
   direction: 'asc' | 'desc',
 ): S[] {
-  return [...rows].sort((a, b) => {
+  return rows.toSorted((a, b) => {
     const aa = getStr((a as Record<string, unknown>)[field])
     const bb = getStr((b as Record<string, unknown>)[field])
     return direction === 'asc' ? aa.localeCompare(bb) : bb.localeCompare(aa)

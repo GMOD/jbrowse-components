@@ -3,7 +3,7 @@ import { randomColor } from '@jbrowse/core/util/color'
 
 export type Colored<T> = T & { color: string }
 
-// Pick a color per row by some metadata attribute. Less-common values get
+// Pick a color per row by some metadata attribute. Most-common values get
 // the first set1 entries (most visually distinct); when set1 runs out (>9
 // distinct values) fall back to a deterministic random color seeded by the
 // value so repeated palette-bys produce stable results.
@@ -30,7 +30,7 @@ export function applyColorPalette<S extends { name: string; color?: string }>(
 
   const colorByValue: Record<string, string> = Object.fromEntries(
     [...counts.entries()]
-      .sort((a, b) => a[1] - b[1])
+      .sort((a, b) => b[1] - a[1])
       .map(([key], idx) => [key, set1[idx] ?? randomColor(key)]),
   )
 

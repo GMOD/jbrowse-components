@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 
 import { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import { Button } from '@mui/material'
@@ -34,34 +34,32 @@ export default function BulkColorControls<
   return (
     <>
       {colorColumns.map(c => (
-        <Button
-          key={`bulk-${c.field}`}
-          disabled={disabled}
-          onClick={event => {
-            setAnchorByField(prev => ({
-              ...prev,
-              [c.field]: event.currentTarget,
-            }))
-          }}
-        >
-          {c.bulkLabel ?? `Change ${c.headerName.toLowerCase()} of selected`}
-        </Button>
-      ))}
-      {colorColumns.map(c => (
-        <ColorPopover
-          key={`popover-${c.field}`}
-          anchorEl={anchorByField[c.field] ?? null}
-          color={widgetColorByField[c.field] ?? 'blue'}
-          onChange={value => {
-            setWidgetColorByField(prev => ({ ...prev, [c.field]: value }))
-            onChange(
-              updateRows(rows, selected, { [c.field]: value } as Partial<S>),
-            )
-          }}
-          onClose={() => {
-            setAnchorByField(prev => ({ ...prev, [c.field]: null }))
-          }}
-        />
+        <Fragment key={c.field}>
+          <Button
+            disabled={disabled}
+            onClick={event => {
+              setAnchorByField(prev => ({
+                ...prev,
+                [c.field]: event.currentTarget,
+              }))
+            }}
+          >
+            {c.bulkLabel ?? `Change ${c.headerName.toLowerCase()} of selected`}
+          </Button>
+          <ColorPopover
+            anchorEl={anchorByField[c.field] ?? null}
+            color={widgetColorByField[c.field] ?? 'blue'}
+            onChange={value => {
+              setWidgetColorByField(prev => ({ ...prev, [c.field]: value }))
+              onChange(
+                updateRows(rows, selected, { [c.field]: value } as Partial<S>),
+              )
+            }}
+            onClose={() => {
+              setAnchorByField(prev => ({ ...prev, [c.field]: null }))
+            }}
+          />
+        </Fragment>
       ))}
     </>
   )

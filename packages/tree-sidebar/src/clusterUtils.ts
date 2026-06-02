@@ -75,8 +75,34 @@ export function clusterTree<T extends ClusterNodeData>(
   return root
 }
 
+// Parse a Newick string and build a hierarchy, without applying a filter.
+// Kept separate from applySubtreeFilter so MST can cache them independently —
+// changing the subtree filter re-runs only the traversal, not the parser.
+export function buildTree(newick: string): HierarchyNode<ClusterNodeData> {
+  const data = parseNewick(newick)
+  const root = hierarchy<ClusterNodeData>(
+    data,
+    d => d.children as ClusterNodeData[] | undefined,
+  )
+  sum(root, d => (d.children ? 0 : 1))
+  return root
+}
+
+// Descend into the deepest subtree whose leaves exactly match the filter.
+// Returns the original root when no filter is given or no match is found.
+export function applySubtreeFilter<T extends ClusterNodeData>(
+  root: HierarchyNode<T>,
+  subtreeFilter: string[] | undefined,
+): HierarchyNode<T> {
+  if (!subtreeFilter?.length) {
+    return root
+  }
+  const filterSet = new Set(subtreeFilter)
+  return findSubtree(root, filterSet) ?? root
+}
+
 export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
-  return clusterTree(parseNewick(newick), subtreeFilter)
+  return applySubtreeFilter(buildTree(newick), subtreeFilter)
 }
 
 export function buildClusteredLayout<S extends { name: string }>(

@@ -22,17 +22,18 @@ function parseRowsByName(val: string) {
     .split('\n')
     .map(f => f.trim())
     .filter(f => !!f)
-  const fields = lines[0]!.split(/[,\t]/gm)
+  const fields = lines[0]!.split(/[,\t]/)
   if (!fields.includes('name')) {
     throw new Error('No "name" column found on line 1')
   }
+  const nameIdx = fields.indexOf('name')
   return Object.fromEntries(
-    lines.slice(1).map(line => {
-      const cols = line.split(/[,\t]/gm)
-      const record = Object.fromEntries(
-        cols.map((col, idx) => [fields[idx], col]),
-      )
-      return [record.name as string, record]
+    lines.slice(1).flatMap(line => {
+      const cols = line.split(/[,\t]/)
+      const name = cols[nameIdx]
+      return name
+        ? [[name, Object.fromEntries(fields.map((f, i) => [f, cols[i] ?? '']))]]
+        : []
     }),
   )
 }

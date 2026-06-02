@@ -10,6 +10,7 @@ export function moveUp<T extends { name: string }>(
   const result = [...arr]
   const idxs = sel
     .map(l => result.findIndex(v => v.name === l))
+    .filter(idx => idx >= 0)
     .sort((a, b) => a - b)
   let lastIdx = 0
   for (const old of idxs) {
@@ -29,6 +30,7 @@ export function moveDown<T extends { name: string }>(
   const result = [...arr]
   const idxs = sel
     .map(l => result.findIndex(v => v.name === l))
+    .filter(idx => idx >= 0)
     .sort((a, b) => b - a)
   let lastIdx = result.length - 1
   for (const old of idxs) {

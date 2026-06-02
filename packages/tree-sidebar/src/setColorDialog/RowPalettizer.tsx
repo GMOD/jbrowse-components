@@ -1,6 +1,7 @@
 import { Button } from '@mui/material'
 
 import { applyColorPalette } from './applyColorPalette.ts'
+import { extraColumns } from '../sourcesGridUtils.ts'
 
 // Reserved fields whose values aren't meaningful as palette keys. Plugins
 // can extend this via the `excludedFields` prop.
@@ -25,29 +26,32 @@ export default function RowPalettizer<
   setCurrLayout: (arg: S[]) => void
   excludedFields?: ReadonlySet<string>
 }) {
-  if (!currLayout.length || !currLayout[0]) {
+  const excluded = new Set([...ALWAYS_EXCLUDED, ...(excludedFields ?? [])])
+  const fields = extraColumns(currLayout, excluded)
+
+  if (!currLayout.length) {
     return null
   }
 
-  const fields = Object.keys(currLayout[0]).filter(
-    f => !ALWAYS_EXCLUDED.has(f) && !excludedFields?.has(f),
-  )
-
   return (
     <div>
-      Create color palette based on...
-      {fields.map(field => (
-        <Button
-          key={field}
-          variant="contained"
-          color="inherit"
-          onClick={() => {
-            setCurrLayout(applyColorPalette(currLayout, field))
-          }}
-        >
-          {field}
-        </Button>
-      ))}
+      {fields.length > 0 ? (
+        <>
+          Create color palette based on...
+          {fields.map(field => (
+            <Button
+              key={field}
+              variant="contained"
+              color="inherit"
+              onClick={() => {
+                setCurrLayout(applyColorPalette(currLayout, field))
+              }}
+            >
+              {field}
+            </Button>
+          ))}
+        </>
+      ) : null}
       <Button
         onClick={() => {
           setCurrLayout(currLayout.map(row => ({ ...row, color: undefined })))
