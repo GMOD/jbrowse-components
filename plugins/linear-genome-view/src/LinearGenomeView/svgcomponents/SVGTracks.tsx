@@ -3,7 +3,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { trackSpacing } from './util.ts'
+import { labelOffset, trackSpacing } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
@@ -37,6 +37,7 @@ export default function SVGTracks({
   trackLabels = 'offset',
   trackLabelOffset = 0,
   leftBuffer = 0,
+  legendWidth = 0,
 }: {
   displayResults: DisplayResult[]
   model: LGV
@@ -45,9 +46,10 @@ export default function SVGTracks({
   trackLabels?: TrackLabelMode
   trackLabelOffset?: number
   leftBuffer?: number
+  legendWidth?: number
 }) {
   const session = getSession(model)
-  const textOffset = trackLabels === 'offset' ? textHeight : 0
+  const textOffset = labelOffset(trackLabels, textHeight)
   const x = Math.max(-model.offsetPx, 0)
   const offsets = getOffsets(displayResults, textOffset)
   return (
@@ -65,7 +67,9 @@ export default function SVGTracks({
                 <rect
                   x={-leftBuffer}
                   y={textOffset}
-                  width={model.width + trackLabelOffset + leftBuffer}
+                  width={
+                    model.width + trackLabelOffset + leftBuffer + legendWidth
+                  }
                   height={display.height}
                 />
               </clipPath>

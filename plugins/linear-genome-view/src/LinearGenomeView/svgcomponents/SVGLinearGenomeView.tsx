@@ -45,16 +45,15 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     t => !t.minimized,
   )
   const shift = 50
-  const c = +showCytobands * cytobandHeight
-  const offset = headerHeight + rulerHeight + c + 10
+  const cytobandOffset = +showCytobands * cytobandHeight
+  const offset = headerHeight + rulerHeight + cytobandOffset + 10
   const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
   const height = tracksHeight + offset + 100
 
   const legendWidth = max(
-    visibleTracks.map(track => {
-      const display = track.displays[0]
-      return display?.svgLegendWidth?.(jbrowseTheme) ?? 0
-    }),
+    visibleTracks.map(
+      track => track.displays[0]!.svgLegendWidth?.(jbrowseTheme) ?? 0,
+    ),
     0,
   )
 
@@ -63,13 +62,14 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout
   // inside their own `renderSvg` implementations.
   const displayResults = await Promise.all(
-    visibleTracks.map(async track => {
-      const display = track.displays[0]
-      return {
-        track,
-        result: await display.renderSvg({ ...opts, theme, legendWidth }),
-      }
-    }),
+    visibleTracks.map(async track => ({
+      track,
+      result: await track.displays[0]!.renderSvg({
+        ...opts,
+        theme,
+        legendWidth,
+      }),
+    })),
   )
   const trackLabelMaxLen =
     max(
@@ -116,6 +116,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 trackLabels={trackLabels}
                 trackLabelOffset={trackLabelOffset}
                 leftBuffer={shift}
+                legendWidth={legendWidth}
               />
             </g>
           </g>
