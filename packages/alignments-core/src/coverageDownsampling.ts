@@ -20,6 +20,20 @@ export function niceStep(maxDepth: number) {
   return niceFrac * pow
 }
 
+// Maps a depth value to its 0..1 height fraction. The branch is chosen once so
+// the returned mapper is total: the log case pre-resolves logMax === 0 (maxDepth
+// of 1) to a constant 0 rather than dividing by zero. Mirrors normalizeDepth's
+// `logMax <= 0` guard in the shaders.
+function makeDepthFraction(maxDepth: number, scaleType: string) {
+  if (scaleType === 'log') {
+    const logMax = Math.log2(Math.max(1, maxDepth))
+    return logMax <= 0
+      ? () => 0
+      : (value: number) => Math.log2(Math.max(1, value)) / logMax
+  }
+  return (value: number) => value / maxDepth
+}
+
 export function computeCoverageTicks(
   maxDepth: number,
   coverageHeight: number,
@@ -33,12 +47,8 @@ export function computeCoverageTicks(
   }
 
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
-  const logMax = Math.log2(Math.max(1, maxDepth))
-  const yOf =
-    scaleType === 'log'
-      ? (value: number) =>
-          yBottom - (Math.log2(Math.max(1, value)) / logMax) * effectiveHeight
-      : (value: number) => yBottom - (value / maxDepth) * effectiveHeight
+  const fractionOf = makeDepthFraction(maxDepth, scaleType)
+  const yOf = (value: number) => yBottom - fractionOf(value) * effectiveHeight
 
   const ticks: YScaleTicks['items'] = []
   if (scaleType === 'log') {
@@ -432,14 +442,16 @@ export function computeSNPCoverage(
       })
       yOffset += height
     }
-    const height = entry.n / totalDepth
-    segments.push({
-      position: entry.position,
-      yOffset,
-      height,
-      colorType: 5,
-      relDepth,
-    })
+    if (entry.n > 0) {
+      const height = entry.n / totalDepth
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height,
+        colorType: 5,
+        relDepth,
+      })
+    }
   }
 
   const filteredSegments = segments.filter(seg => seg.position >= regionStart)

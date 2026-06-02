@@ -39,6 +39,15 @@ describe('computeCoverageTicks', () => {
       expect(tick.y).toBeLessThanOrEqual(result.yBottom)
     }
   })
+
+  test('log scale with maxDepth=1 produces finite tick positions', () => {
+    // logMax is 0 here; the degenerate scale must not yield NaN.
+    const result = computeCoverageTicks(1, 150, 'log')
+    expect(result.items.length).toBeGreaterThan(0)
+    for (const tick of result.items) {
+      expect(Number.isFinite(tick.y)).toBe(true)
+    }
+  })
 })
 
 describe('downsampleMinMax', () => {
