@@ -14,6 +14,17 @@ import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 
+// the root the assemblyManager is parented under (the session/root model),
+// covering only the fields read here
+interface AssemblyManagerParent {
+  rpcManager: RpcManager
+  jbrowse: { assemblies: AnyConfigurationModel[] }
+  session?: {
+    sessionAssemblies?: AnyConfigurationModel[]
+    temporaryAssemblies?: AnyConfigurationModel[]
+  }
+}
+
 export interface AssemblyBaseOpts {
   stopToken?: StopToken
   sessionId: string
@@ -83,7 +94,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
               undefined,
               {
                 assemblyName: asmName,
-                session: getParent<any>(self).session,
+                session: getParent<AssemblyManagerParent>(self).session,
               },
             )
           }
@@ -108,16 +119,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
-        } = getParent<any>(self)
-        return [
-          ...assemblies,
-          ...sessionAssemblies,
-          ...temporaryAssemblies,
-        ] as AnyConfigurationModel[]
+        } = getParent<AssemblyManagerParent>(self)
+        return [...assemblies, ...sessionAssemblies, ...temporaryAssemblies]
       },
 
       get rpcManager(): RpcManager {
-        return getParent<any>(self).rpcManager
+        return getParent<AssemblyManagerParent>(self).rpcManager
       },
     }))
     .views(self => ({

@@ -9,7 +9,6 @@ import { onBecomeObserved } from 'mobx'
 import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
-import { when } from '../util/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -70,6 +69,8 @@ const refNameColors = [
 type RefNameMapAssembly = Pick<
   Assembly,
   | 'name'
+  | 'load'
+  | 'error'
   | 'regions'
   | 'refNameAliases'
   | 'rpcManager'
@@ -86,20 +87,23 @@ async function loadRefNameMap(
   if (!sessionId) {
     throw new Error('sessionId is required for loadRefNameMap')
   }
-  await when(() => !!(assembly.regions && assembly.refNameAliases), {
-    name: 'when assembly ready',
-  })
+  // load() is idempotent and resolves only after regions + refNameAliases are
+  // set (or setError ran), so awaiting it is a direct, promise-based
+  // alternative to a reactive `when` on those volatiles
+  await assembly.load()
+  if (assembly.error) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
+    throw assembly.error
+  }
 
   // pass the assembly's sequence adapter config (as a snapshot, since MST
   // objects can't be assigned elsewhere) so BAM/CRAM adapters can cache it for
-  // later use when fetching features
-  let sequenceAdapter: Record<string, unknown> | undefined
-  try {
-    const adapter = assembly.configuration?.sequence?.adapter
-    sequenceAdapter = adapter ? getSnapshot(adapter) : undefined
-  } catch {
-    // configuration might not be fully loaded yet
-  }
+  // later use when fetching features. configuration is a safeReference, so it's
+  // either a live node (getSnapshot is safe) or undefined (?. handles it)
+  const adapter = assembly.configuration?.sequence?.adapter
+  const sequenceAdapter: Record<string, unknown> | undefined = adapter
+    ? getSnapshot(adapter)
+    : undefined
 
   const refNames = await assembly.rpcManager.call(
     sessionId,
@@ -361,10 +365,17 @@ export default function assemblyFactory(
        */
       async loadPre() {
         const conf = self.configuration
+        if (!conf) {
+          // safeReference resolved to undefined: the underlying config was
+          // removed from the tree (the assemblyManager autorun will prune this
+          // orphaned assembly). Fail with a clear message instead of a deep
+          // "Cannot read 'type' of undefined" from the adapter instantiation.
+          throw new Error('assembly configuration is not available')
+        }
         const assemblyName = self.name
 
         const regions = await getAssemblyRegions({
-          config: conf?.sequence.adapter,
+          config: conf.sequence.adapter,
           pluginManager,
         })
         for (const r of regions) {
@@ -372,13 +383,13 @@ export default function assemblyFactory(
         }
 
         const refNameAliasCollection = await getRefNameAliases({
-          config: conf?.refNameAliases?.adapter,
+          config: conf.refNameAliases?.adapter,
           pluginManager,
         })
         const maps = buildRefNameMaps(regions, refNameAliasCollection)
 
         const cytobands = await getCytobands({
-          config: conf?.cytobands?.adapter,
+          config: conf.cytobands?.adapter,
           pluginManager,
         })
 
@@ -398,32 +409,35 @@ export default function assemblyFactory(
        * #action
        */
       load() {
-        self.loadingP ??= self.loadPre().catch((e: unknown) => {
-          console.error(e)
-          self.setLoadingP(undefined)
-          self.setError(e)
-        })
+        if (!self.loadingP) {
+          // clear any prior failure so a successful retry isn't masked by the
+          // stale error left over from the previous attempt
+          self.setError(undefined)
+          self.loadingP = self.loadPre().catch((e: unknown) => {
+            console.error(e)
+            self.setLoadingP(undefined)
+            self.setError(e)
+          })
+        }
         return self.loadingP
       },
     }))
     .actions(self => ({
       afterAttach() {
-        // lazy load: start fetching the regions/aliases the first time
-        // something observes them reactively (a view rendering this assembly,
-        // an autorun, a `when` predicate). This keeps the getters below pure
-        // while still avoiding fetching assemblies that are never looked at.
-        addDisposer(
-          self,
-          onBecomeObserved(self, 'volatileRegions', () => {
-            void self.load()
-          }),
-        )
-        addDisposer(
-          self,
-          onBecomeObserved(self, 'refNameAliases', () => {
-            void self.load()
-          }),
-        )
+        // lazy load: start fetching the first time something observes the
+        // loaded state reactively (a view rendering this assembly, an autorun,
+        // a `when` predicate), keeping the getters below pure. Both volatiles
+        // are watched because consumers observe them independently (regions vs
+        // refNameAliases/allRefNames); load() is idempotent so the overlapping
+        // triggers collapse to a single fetch.
+        for (const prop of ['volatileRegions', 'refNameAliases'] as const) {
+          addDisposer(
+            self,
+            onBecomeObserved(self, prop, () => {
+              void self.load()
+            }),
+          )
+        }
       },
     }))
     .views(self => ({
@@ -456,7 +470,8 @@ export default function assemblyFactory(
        * #getter
        */
       get rpcManager(): RpcManager {
-        return getParent<any>(self, 2).rpcManager
+        // parent chain: assembly -> assemblies[] -> assemblyManager
+        return getParent<{ rpcManager: RpcManager }>(self, 2).rpcManager
       },
     }))
     .views(self => ({

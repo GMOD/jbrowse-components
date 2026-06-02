@@ -78,6 +78,9 @@ function initialize() {
         return refName
       },
     }))
+    .actions(() => ({
+      async load() {},
+    }))
 
   const AssemblyManager = types
     .model({
@@ -1066,6 +1069,9 @@ test('navToLocString with human assembly', async () => {
       getCanonicalRefName(refName: string) {
         return refName.replace('chr', '')
       },
+    }))
+    .actions(() => ({
+      async load() {},
     }))
   const AssemblyManager = types
     .model({
