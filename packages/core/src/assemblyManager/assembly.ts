@@ -227,51 +227,55 @@ export default function assemblyFactory(
        */
       configuration: types.safeReference(assemblyConfigType),
     })
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
+    .volatile(() => {
+      // typed local so `error` is `unknown` (a type assertion here gets stripped
+      // by no-unnecessary-type-assertion)
+      const error: unknown = undefined
+      return {
+        /**
+         * #volatile
+         */
+        error,
+        /**
+         * #volatile
+         */
+        loadingP: undefined as Promise<void> | undefined,
+        /**
+         * #volatile
+         */
+        volatileRegions: undefined as BasicRegion[] | undefined,
+        /**
+         * #volatile
+         */
+        refNameAliases: undefined as RefNameAliases | undefined,
 
-      error: undefined as unknown,
-      /**
-       * #volatile
-       */
-      loadingP: undefined as Promise<void> | undefined,
-      /**
-       * #volatile
-       */
-      volatileRegions: undefined as BasicRegion[] | undefined,
-      /**
-       * #volatile
-       */
-      refNameAliases: undefined as RefNameAliases | undefined,
+        /**
+         * #volatile
+         * Maps canonical refName -> sequence adapter refName (in FASTA).
+         * These may differ when refNameAliases with override:true remap names.
+         */
+        canonicalToSeqAdapterRefNames: undefined as
+          | Record<string, string>
+          | undefined,
 
-      /**
-       * #volatile
-       * Maps canonical refName -> sequence adapter refName (in FASTA).
-       * These may differ when refNameAliases with override:true remap names.
-       */
-      canonicalToSeqAdapterRefNames: undefined as
-        | Record<string, string>
-        | undefined,
-
-      /**
-       * #volatile
-       */
-      cytobands: undefined as Feature[] | undefined,
-      /**
-       * #volatile
-       * Precomputed in loadPre to avoid expensive synchronous computation
-       * when MobX triggers the autorun after setLoaded
-       */
-      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
-      /**
-       * #volatile
-       * Precomputed in loadPre to avoid expensive synchronous computation
-       * when MobX triggers the autorun after setLoaded
-       */
-      allRefNamesWithLowerCase: undefined as Set<string> | undefined,
-    }))
+        /**
+         * #volatile
+         */
+        cytobands: undefined as Feature[] | undefined,
+        /**
+         * #volatile
+         * Precomputed in loadPre to avoid expensive synchronous computation
+         * when MobX triggers the autorun after setLoaded
+         */
+        lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
+        /**
+         * #volatile
+         * Precomputed in loadPre to avoid expensive synchronous computation
+         * when MobX triggers the autorun after setLoaded
+         */
+        allRefNamesWithLowerCase: undefined as Set<string> | undefined,
+      }
+    })
     .views(self => ({
       /**
        * #method

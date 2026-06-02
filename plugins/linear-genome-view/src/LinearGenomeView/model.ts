@@ -274,67 +274,73 @@ export function stateModelFactory(pluginManager: PluginManager) {
         init: types.frozen<InitState | undefined>(),
       }),
     )
-    .volatile(self => ({
-      /**
-       * #volatile
-       */
-      volatileWidth: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      minimumBlockWidth: 3,
-      /**
-       * #volatile
-       */
-      draggingTrackId: undefined as undefined | string,
-      /**
-       * #volatile
-       */
-      lastTrackDragY: undefined as undefined | number,
-      /**
-       * #volatile
-       */
+    .volatile(self => {
+      // typed locals so `unknown`/`Record` aren't narrowed to `undefined`/`{}`; inline
+      // type assertions here get stripped by no-unnecessary-type-assertion
+      const volatileError: unknown = undefined
+      const trackRefs: Record<string, HTMLDivElement> = {}
+      return {
+        /**
+         * #volatile
+         */
+        volatileWidth: undefined as number | undefined,
+        /**
+         * #volatile
+         */
+        minimumBlockWidth: 3,
+        /**
+         * #volatile
+         */
+        draggingTrackId: undefined as undefined | string,
+        /**
+         * #volatile
+         */
+        lastTrackDragY: undefined as undefined | number,
+        /**
+         * #volatile
+         */
 
-      volatileError: undefined as unknown,
-      /**
-       * #volatile
-       */
+        volatileError,
+        /**
+         * #volatile
+         */
 
-      trackRefs: {} as Record<string, HTMLDivElement>,
-      /**
-       * #volatile
-       */
-      coarseDynamicBlocks: [] as ContentBlock[],
-      /**
-       * #volatile
-       */
-      coarseTotalBp: 0,
-      /**
-       * #volatile
-       */
-      coarseBpPerPx: self.bpPerPx,
-      /**
-       * #volatile
-       */
-      leftOffset: undefined as undefined | BpOffset,
-      /**
-       * #volatile
-       */
-      rightOffset: undefined as undefined | BpOffset,
-      /**
-       * #volatile
-       */
-      isScalebarRefNameMenuOpen: false,
-      /**
-       * #volatile
-       */
-      scalebarRefNameClickPending: false,
-      /**
-       * #volatile
-       * temporary vertical guides that can be set by displays (e.g., LD display hover)
-       */
-      volatileGuides: [] as VolatileGuide[],
-    }))
+        trackRefs,
+        /**
+         * #volatile
+         */
+        coarseDynamicBlocks: [] as ContentBlock[],
+        /**
+         * #volatile
+         */
+        coarseTotalBp: 0,
+        /**
+         * #volatile
+         */
+        coarseBpPerPx: self.bpPerPx,
+        /**
+         * #volatile
+         */
+        leftOffset: undefined as undefined | BpOffset,
+        /**
+         * #volatile
+         */
+        rightOffset: undefined as undefined | BpOffset,
+        /**
+         * #volatile
+         */
+        isScalebarRefNameMenuOpen: false,
+        /**
+         * #volatile
+         */
+        scalebarRefNameClickPending: false,
+        /**
+         * #volatile
+         * temporary vertical guides that can be set by displays (e.g., LD display hover)
+         */
+        volatileGuides: [] as VolatileGuide[],
+      }
+    })
     .views(self => ({
       /**
        * #getter
@@ -2058,9 +2064,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      if (!snap) {
-        return snap
-      }
       const {
         init,
         offsetPx,

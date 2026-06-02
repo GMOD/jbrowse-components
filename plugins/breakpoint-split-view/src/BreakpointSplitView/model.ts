@@ -103,17 +103,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         init: types.frozen<BreakpointSplitViewInit | undefined>(),
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      width: 800,
-      /**
-       * #volatile
-       */
+    .volatile<{ width: number; matchedTrackFeatures: Record<string, Feature[][]> }>(
+      () => ({
+        /**
+         * #volatile
+         */
+        width: 800,
+        /**
+         * #volatile
+         */
 
-      matchedTrackFeatures: {} as Record<string, Feature[][]>,
-    }))
+        matchedTrackFeatures: {},
+      }),
+    )
     .views(self => ({
       /**
        * #getter
@@ -634,9 +636,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      if (!snap) {
-        return snap
-      }
       const {
         init,
         height,

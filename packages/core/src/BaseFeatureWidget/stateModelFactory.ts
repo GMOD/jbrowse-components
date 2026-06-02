@@ -95,12 +95,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         undefined,
       ),
     })
-    .volatile(() => ({
+    .volatile<{ error: unknown }>(() => ({
       /**
        * #volatile
        */
 
-      error: undefined as unknown,
+      error: undefined,
     }))
 
     .actions(self => ({
