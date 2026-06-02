@@ -64,7 +64,8 @@ function serveImage(res: http.ServerResponse, urlPath: string) {
     res.end('not found')
   } else {
     res.writeHead(200, {
-      'Content-Type': contentTypes[path.extname(full)] ?? 'application/octet-stream',
+      'Content-Type':
+        contentTypes[path.extname(full)] ?? 'application/octet-stream',
     })
     fs.createReadStream(full).pipe(res)
   }
@@ -106,22 +107,28 @@ async function handleClearVerdict(
 
 const server = http.createServer((req, res) => {
   const url = req.url ?? '/'
-  if (url === '/' || url === '/index.html') {
-    res.writeHead(200, { 'Content-Type': 'text/html' })
-    res.end(PAGE)
-  } else if (url === '/api/specs') {
-    sendJson(res, 200, buildSpecPayload())
-  } else if (url === '/api/verdict' && req.method === 'POST') {
-    handleVerdict(req, res).catch(err => sendJson(res, 500, { error: `${err}` }))
-  } else if (url === '/api/verdict/clear' && req.method === 'POST') {
-    handleClearVerdict(req, res).catch(err =>
-      sendJson(res, 500, { error: `${err}` }),
-    )
-  } else if (url.startsWith('/img/')) {
-    serveImage(res, url.split('?')[0]!)
-  } else {
-    res.writeHead(404)
-    res.end('not found')
+  try {
+    if (url === '/' || url === '/index.html') {
+      res.writeHead(200, { 'Content-Type': 'text/html' })
+      res.end(PAGE)
+    } else if (url === '/api/specs') {
+      sendJson(res, 200, buildSpecPayload())
+    } else if (url === '/api/verdict' && req.method === 'POST') {
+      handleVerdict(req, res).catch(err =>
+        sendJson(res, 500, { error: `${err}` }),
+      )
+    } else if (url === '/api/verdict/clear' && req.method === 'POST') {
+      handleClearVerdict(req, res).catch(err =>
+        sendJson(res, 500, { error: `${err}` }),
+      )
+    } else if (url.startsWith('/img/')) {
+      serveImage(res, url.split('?')[0]!)
+    } else {
+      res.writeHead(404)
+      res.end('not found')
+    }
+  } catch (err) {
+    sendJson(res, 500, { error: `${err}` })
   }
 })
 

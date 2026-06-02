@@ -81,7 +81,10 @@ export function findUsages(name: string): DocUsage[] {
   const needle = `/img/${name}.png`
   const usages: DocUsage[] = []
   for (const file of markdownFiles) {
-    const text = fs.readFileSync(file, 'utf8')
+    // a doc file can be deleted/regenerated between the startup scan and now
+    // (e.g. autogen rewriting docs/config/*.md); a vanished file is just not a
+    // usage, so skip it rather than crashing the request
+    const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : ''
     if (!text.includes(needle)) {
       continue
     }
