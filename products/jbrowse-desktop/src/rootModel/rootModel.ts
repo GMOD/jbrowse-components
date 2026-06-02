@@ -8,7 +8,7 @@ import {
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -24,8 +24,8 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
+import { autorun } from 'mobx'
 
-import { DesktopSessionManagementMixin, getSaveSession } from './Sessions.ts'
 import packageJSON from '../../package.json' with { type: 'json' }
 import OpenSequenceDialog from '../components/OpenSequenceDialog.tsx'
 import jobsModelFactory from '../indexJobsModel.ts'
@@ -40,14 +40,22 @@ import type {
   SessionWithWidgets,
 } from '@jbrowse/core/util'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
-import type { BaseSession } from '@jbrowse/product-core'
+import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 
 // lazies
 const PreferencesDialog = lazy(
-  () => import('../components/PreferencesDialog.tsx'),
+  () => import('@jbrowse/product-core/src/ui/PreferencesDialog'),
 )
 
 const { ipcRenderer } = window.require('electron')
+
+function getSaveSession(model: BaseRootModel) {
+  const snap = getSnapshot(model.jbrowse)
+  return {
+    ...(snap as Record<string, unknown>),
+    defaultSession: model.session ? getSnapshot(model.session) : {},
+  }
+}
 
 type SessionModelFactory = (args: {
   pluginManager: PluginManager
@@ -60,7 +68,6 @@ type SessionModelFactory = (args: {
  * composed of
  * - [BaseRootModel](../baserootmodel)
  * - [InternetAccountsMixin](../internetaccountsmixin)
- * - [DesktopSessionManagementMixin](../desktopsessionmanagementmixin)
  * - [HistoryManagementMixin](../historymanagementmixin)
  * - [RootAppMenuMixin](../rootappmenumixin)
  *
@@ -92,7 +99,6 @@ export default function rootModelFactory({
         assemblyConfigSchema,
       }),
       InternetAccountsRootModelMixin(pluginManager),
-      DesktopSessionManagementMixin(pluginManager),
       HistoryManagementMixin(),
       RootAppMenuMixin(),
     )
@@ -127,12 +133,41 @@ export default function rootModelFactory({
       /**
        * #action
        */
+      async saveSession(val: unknown) {
+        if (self.sessionPath) {
+          await ipcRenderer.invoke('saveSession', self.sessionPath, val)
+        }
+      },
+      /**
+       * #action
+       */
       async setPluginsUpdated() {
         const root = self as DesktopRootModel
         if (root.session) {
           await root.saveSession(getSaveSession(root))
         }
         await root.openNewSessionCallback(root.sessionPath)
+      },
+    }))
+    .actions(self => ({
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              const root = self as DesktopRootModel
+              if (root.session) {
+                try {
+                  await root.saveSession(getSaveSession(root))
+                } catch (e) {
+                  console.error(e)
+                  root.session.notifyError(`${e}`, e)
+                }
+              }
+            },
+            { delay: 1000 },
+          ),
+        )
       },
     }))
     .views(self => ({

@@ -8,6 +8,10 @@ import {
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
+import {
+  defaultAttributesToIndex,
+  defaultFeatureTypesToExclude,
+} from '@jbrowse/text-indexing'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
@@ -26,7 +30,7 @@ import type {
 
 type SessionBase = BaseSession & SessionWithTracks & SessionWithDrawerWidgets
 
-const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
+const AboutDialog = lazy(() => import('@jbrowse/product-core/src/ui/AboutDialog'))
 
 /**
  * #stateModel DesktopSessionTrackMenuMixin
@@ -98,27 +102,24 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
                   label: base.textSearching ? 'Re-index track' : 'Index track',
                   onClick: () => {
                     const rootModel = getParent<DesktopRootModel>(self)
-                    const { trackId, assemblyNames, textSearching, name } = base
-                    const indexName = `${name}-index`
-                    // TODO: open jobs list widget
+                    const { trackId, assemblyNames, textSearching } = base
                     rootModel.jobsManager.queueJob({
                       indexingParams: {
-                        attributes: textSearching?.indexingAttributes ?? [
-                          'Name',
-                          'ID',
-                        ],
+                        attributes:
+                          textSearching?.indexingAttributes ??
+                          defaultAttributesToIndex,
                         exclude:
-                          textSearching?.indexingFeatureTypesToExclude ?? [
-                            'CDS',
-                            'exon',
-                          ],
+                          textSearching?.indexingFeatureTypesToExclude ??
+                          defaultFeatureTypesToExclude,
                         assemblies: assemblyNames,
                         tracks: [trackId],
                         indexType: 'perTrack',
                         timestamp: new Date().toISOString(),
-                        name: indexName,
+                        name: trackId,
                       },
-                      name: indexName,
+                      // jobs are keyed by name; trackId is unique so two tracks
+                      // sharing a display name won't collide
+                      name: trackId,
                     })
                   },
                   icon: Indexing,
