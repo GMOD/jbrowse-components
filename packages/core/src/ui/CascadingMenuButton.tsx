@@ -18,7 +18,7 @@ function CascadingMenuButton({
   onClick: onClickExtra,
   anchorOrigin,
   transformOrigin,
-  marginThreshold,
+
   ...rest
 }: {
   children?: React.ReactNode
@@ -35,7 +35,6 @@ function CascadingMenuButton({
   }>
   anchorOrigin?: PopoverOrigin
   transformOrigin?: PopoverOrigin
-  marginThreshold?: number | null
   [key: string]: unknown
 }) {
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
@@ -70,12 +69,9 @@ function CascadingMenuButton({
           anchorEl={anchorEl}
           anchorOrigin={anchorOrigin}
           transformOrigin={transformOrigin}
-          marginThreshold={marginThreshold}
           menuItems={menuItems}
           closeAfterItemClick={closeAfterItemClick}
-          onMenuItemClick={(_: unknown, callback: () => void) => {
-            callback()
-          }}
+          onMenuItemClick={callback => callback()}
         />
       ) : null}
     </>

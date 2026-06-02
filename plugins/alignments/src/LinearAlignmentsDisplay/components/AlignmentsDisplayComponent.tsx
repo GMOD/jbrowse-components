@@ -78,7 +78,7 @@ const AlignmentsDisplayComponent = observer(
             {contextMenuCoord && items.length > 0 ? (
               <Menu
                 open
-                onMenuItemClick={(_, callback) => {
+                onMenuItemClick={callback => {
                   callback()
                 }}
                 onClose={() => {

@@ -24,10 +24,9 @@ export type { MenuItemsGetter } from './MenuTypes.ts'
 // Build a `cascading-<kind>-<label>` data-testid, or undefined for non-string
 // labels that can't be slugified
 function makeTestId(kind: string, label: React.ReactNode) {
-  if (typeof label === 'string') {
-    return `cascading-${kind}-${label.toLowerCase().replace(/\s+/g, '_')}`
-  }
-  return undefined
+  return typeof label === 'string'
+    ? `cascading-${kind}-${label.toLowerCase().replace(/\s+/g, '_')}`
+    : undefined
 }
 
 function CascadingSubmenu({
@@ -44,13 +43,13 @@ function CascadingSubmenu({
   onClose,
 }: {
   title: React.ReactNode
-  onMenuItemClick: (event: unknown, callback: () => void) => void
+  onMenuItemClick: (callback: () => void) => void
   Icon: React.ElementType | undefined
   inset: boolean
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
   onCloseRoot: () => void
-  onNavigateBack: (() => void) | undefined
+  onNavigateBack?: () => void
   isOpen: boolean
   onOpen: () => void
   onClose: () => void
@@ -62,12 +61,8 @@ function CascadingSubmenu({
       <MenuItem
         ref={setAnchorEl}
         data-testid={makeTestId('submenu', title)}
-        onMouseOver={() => {
-          onOpen()
-        }}
-        onClick={() => {
-          onOpen()
-        }}
+        onMouseOver={() => onOpen()}
+        onClick={() => onOpen()}
         onKeyDown={e => {
           if (e.key === 'ArrowRight') {
             onOpen()
@@ -116,23 +111,18 @@ function CascadingMenuList({
 }: {
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
-  onMenuItemClick: (event: unknown, callback: () => void) => void
+  onMenuItemClick: (callback: () => void) => void
   onCloseRoot: () => void
   // close this menu level and refocus its opener (ArrowLeft); undefined at the
   // root level where there is nothing to go back to
   onNavigateBack?: () => void
 }) {
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
-  const closeSubmenu = () => {
-    setOpenSubmenuIdx(undefined)
-  }
+  const closeSubmenu = () => setOpenSubmenuIdx(undefined)
 
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
   const hasCheckboxOrRadioWithHelp = menuItems.some(
-    m =>
-      (m.type === 'checkbox' || m.type === 'radio') &&
-      'helpText' in m &&
-      m.helpText,
+    m => (m.type === 'checkbox' || m.type === 'radio') && m.helpText,
   )
 
   const sortedItems = menuItems.toSorted(
@@ -155,10 +145,8 @@ function CascadingMenuList({
               onCloseRoot={onCloseRoot}
               onNavigateBack={onNavigateBack}
               isOpen={openSubmenuIdx === idx}
-              onOpen={() => {
-                setOpenSubmenuIdx(idx)
-              }}
-              onClose={closeSubmenu}
+              onOpen={() => setOpenSubmenuIdx(idx)}
+              onClose={() => closeSubmenu()}
             />
           )
         }
@@ -173,20 +161,19 @@ function CascadingMenuList({
           )
         }
 
-        const helpText = item.helpText
         const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
         return (
           <MenuItem
             key={`${item.label}-${idx}`}
             data-testid={makeTestId('menuitem', item.label)}
-            disabled={Boolean(item.disabled)}
-            onClick={event => {
+            disabled={item.disabled}
+            onClick={() => {
               if (closeAfterItemClick) {
                 onCloseRoot()
               }
-              onMenuItemClick(event, item.onClick)
+              onMenuItemClick(item.onClick)
             }}
-            onMouseOver={closeSubmenu}
+            onMouseOver={() => closeSubmenu()}
             onKeyDown={e => {
               if (e.key === 'ArrowLeft') {
                 e.stopPropagation()
@@ -212,9 +199,9 @@ function CascadingMenuList({
                 disabled={item.disabled}
               />
             ) : null}
-            {helpText ? (
+            {item.helpText ? (
               <CascadingMenuHelpIconButton
-                helpText={helpText}
+                helpText={item.helpText}
                 label={item.label}
               />
             ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
@@ -239,10 +226,9 @@ export default function CascadingMenu({
   anchorReference,
   anchorPosition,
   slotProps,
-  marginThreshold,
   style,
 }: {
-  onMenuItemClick: (event: unknown, callback: () => void) => void
+  onMenuItemClick: (callback: () => void) => void
   closeAfterItemClick?: boolean
   menuItems: MenuItemsGetter
   open: boolean
@@ -253,7 +239,6 @@ export default function CascadingMenu({
   anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
   anchorPosition?: { top: number; left: number }
   slotProps?: { transition?: { onExit?: () => void } }
-  marginThreshold?: number | null
   style?: React.CSSProperties
 }) {
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
@@ -268,7 +253,6 @@ export default function CascadingMenu({
       anchorReference={anchorReference}
       anchorPosition={anchorPosition}
       slotProps={slotProps}
-      marginThreshold={marginThreshold}
       style={style}
     >
       <CascadingMenuList

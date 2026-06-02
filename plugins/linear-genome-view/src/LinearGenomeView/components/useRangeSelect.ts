@@ -122,7 +122,7 @@ export function useRangeSelect(
     }
   }
 
-  function handleMenuItemClick(_: unknown, callback: () => void) {
+  function handleMenuItemClick(callback: () => void) {
     callback()
     handleClose()
   }

@@ -1,4 +1,3 @@
-import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
@@ -20,50 +19,33 @@ const useStyles = makeStyles()({
   },
 })
 
-interface MenuItemEndDecorationSubMenuProps {
-  type: 'subMenu'
-}
-
-interface MenuItemEndDecorationSelectorProps {
+export function MenuItemEndDecoration({
+  type,
+  checked,
+  disabled,
+}: {
   type: 'checkbox' | 'radio'
   checked: boolean
   disabled?: boolean
-}
-
-type MenuItemEndDecorationProps =
-  | MenuItemEndDecorationSubMenuProps
-  | MenuItemEndDecorationSelectorProps
-
-export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
+}) {
   const { classes } = useStyles()
-  const { type } = props
-  let checked: boolean | undefined
-  let disabled: boolean | undefined
-  if ('checked' in props) {
-    ;({ checked, disabled } = props)
-  }
+  const color = disabled && checked ? 'inherit' : undefined
   let icon: React.ReactElement
   switch (type) {
-    case 'subMenu': {
-      icon = <ArrowRightIcon color="action" />
-      break
-    }
     case 'checkbox': {
-      if (checked) {
-        const color = disabled ? 'inherit' : undefined
-        icon = <CheckBoxIcon color={color} />
-      } else {
-        icon = <CheckBoxOutlineBlankIcon color="action" />
-      }
+      icon = checked ? (
+        <CheckBoxIcon color={color} />
+      ) : (
+        <CheckBoxOutlineBlankIcon color="action" />
+      )
       break
     }
     case 'radio': {
-      if (checked) {
-        const color = disabled ? 'inherit' : undefined
-        icon = <RadioButtonCheckedIcon color={color} />
-      } else {
-        icon = <RadioButtonUncheckedIcon color="action" />
-      }
+      icon = checked ? (
+        <RadioButtonCheckedIcon color={color} />
+      ) : (
+        <RadioButtonUncheckedIcon color="action" />
+      )
       break
     }
   }

@@ -1,5 +1,5 @@
 import type React from 'react'
-import { Suspense, useState } from 'react'
+import { useState } from 'react'
 
 import HelpOutlined from '@mui/icons-material/HelpOutlined'
 import { IconButton } from '@mui/material'
@@ -45,16 +45,14 @@ export default function CascadingMenuHelpIconButton({
         <HelpOutlined fontSize="small" />
       </IconButton>
       {helpDialogOpen ? (
-        <Suspense fallback={null}>
-          <CascadingMenuHelpDialog
-            helpText={helpText}
-            label={label}
-            onClose={event => {
-              event.stopPropagation()
-              setHelpDialogOpen(false)
-            }}
-          />{' '}
-        </Suspense>
+        <CascadingMenuHelpDialog
+          helpText={helpText}
+          label={label}
+          onClose={event => {
+            event.stopPropagation()
+            setHelpDialogOpen(false)
+          }}
+        />
       ) : null}
     </>
   )

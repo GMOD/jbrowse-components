@@ -256,7 +256,7 @@ const RefNameMenu = observer(function RefNameMenu({
       anchorEl={menuState.anchorEl}
       open
       onClose={onClose}
-      onMenuItemClick={(_, callback) => {
+      onMenuItemClick={callback => {
         callback()
         onClose()
       }}

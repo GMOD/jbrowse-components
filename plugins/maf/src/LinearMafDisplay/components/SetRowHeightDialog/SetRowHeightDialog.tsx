@@ -14,7 +14,9 @@ const SetRowHeightDialog = observer(function (props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const [rowHeight, setRowHeight] = useState<number | undefined>(model.rowHeight)
+  const [rowHeight, setRowHeight] = useState<number | undefined>(
+    model.rowHeight,
+  )
   const [rowProportion, setRowProportion] = useState<number | undefined>(
     model.rowProportion,
   )

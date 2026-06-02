@@ -94,6 +94,8 @@ export async function bytesForRegions(
   return sum(
     blockResults
       .flat()
-      .map(block => block.maxv.blockPosition + 65535 - block.minv.blockPosition),
+      .map(
+        block => block.maxv.blockPosition + 65535 - block.minv.blockPosition,
+      ),
   )
 }

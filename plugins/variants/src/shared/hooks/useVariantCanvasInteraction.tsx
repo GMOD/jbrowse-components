@@ -96,7 +96,7 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
   const contextMenuNode = contextMenuCoord ? (
     <Menu
       open
-      onMenuItemClick={(_, callback) => {
+      onMenuItemClick={callback => {
         callback()
         setContextMenuCoord(undefined)
       }}

@@ -76,7 +76,7 @@ function createPrompter() {
 }
 
 async function main() {
-  const all = collectScreenshots(specs.map(s => s.name))
+  const all = collectScreenshots(specs)
   const selected = filter
     ? all.filter(s => (exact ? s.name === filter : s.name.includes(filter)))
     : all

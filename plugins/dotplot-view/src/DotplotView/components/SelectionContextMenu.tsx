@@ -30,7 +30,7 @@ export default function SelectionContextMenu({
   return (
     <Menu
       open={Boolean(mouseup)}
-      onMenuItemClick={(_, callback) => {
+      onMenuItemClick={callback => {
         callback()
         close()
       }}

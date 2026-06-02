@@ -151,7 +151,7 @@ const ContextMenu = observer(function ContextMenu({
   return (
     <Menu
       open={items.length > 0}
-      onMenuItemClick={(_, callback) => {
+      onMenuItemClick={callback => {
         callback()
         onClose()
       }}

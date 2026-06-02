@@ -11,9 +11,9 @@ paths:
 - **No per-position/per-iteration allocations.** Don't introduce arrays,
   iterators, or closures inside the bucket/segment loops. The A/C/G/T and
   insertion/softclip/hardclip segment blocks are deliberately **unrolled**
-  rather than written as a `[a,c,g,t].entries()` loop — a literal-array `.entries()`
-  allocates a fresh array + iterator per position. Verbose-but-zero-alloc wins
-  here over DRY.
+  rather than written as a `[a,c,g,t].entries()` loop — a literal-array
+  `.entries()` allocates a fresh array + iterator per position.
+  Verbose-but-zero-alloc wins here over DRY.
 - Pre-size typed arrays and fill by index; prefer `subarray` over `slice` so the
   underlying buffer stays transferable.
 - Pulling a shared helper out of a loop is fine **only** if it adds no

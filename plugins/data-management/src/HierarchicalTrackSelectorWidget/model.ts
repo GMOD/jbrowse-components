@@ -420,7 +420,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      getRefSeqTrackConf(assemblyName: string): AnyConfigurationModel | undefined {
+      getRefSeqTrackConf(
+        assemblyName: string,
+      ): AnyConfigurationModel | undefined {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence

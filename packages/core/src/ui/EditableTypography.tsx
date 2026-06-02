@@ -47,7 +47,7 @@ function EditableTypography(props: Props) {
   const { value, setValue, variant, ref, classes: _classes, ...other } = props
   const [ref2, { width }] = useMeasure()
   const [editedValue, setEditedValue] = useState<string>()
-  const inputRef = useRef<HTMLInputElement | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const { classes } = useStyles(props, { props })
   const theme = useTheme()
@@ -97,7 +97,9 @@ function EditableTypography(props: Props) {
           }
         }}
         onBlur={() => {
-          setValue(editedValue ?? value)
+          if (editedValue !== undefined) {
+            setValue(editedValue)
+          }
           setEditedValue(undefined)
         }}
       />

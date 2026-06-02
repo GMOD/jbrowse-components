@@ -7,6 +7,7 @@ import {
   collectScreenshots,
   imgDir,
   loadReport,
+  readMainPng,
   reportPath,
   saveReport,
   websiteRoot,
@@ -20,7 +21,7 @@ const port = portArg ? parseInt(portArg.split('=')[1]!, 10) : 3335
 
 function buildSpecPayload() {
   const report = loadReport()
-  return collectScreenshots(specs.map(s => s.name)).map(shot => ({
+  return collectScreenshots(specs).map(shot => ({
     ...shot,
     verdict: report[shot.name],
   }))
@@ -62,6 +63,22 @@ function serveImage(res: http.ServerResponse, urlPath: string) {
         contentTypes[path.extname(full)] ?? 'application/octet-stream',
     })
     fs.createReadStream(full).pipe(res)
+  }
+}
+
+// Serve /img-main/<name>.png from origin/main via git show
+function serveMainImage(res: http.ServerResponse, urlPath: string) {
+  const name = decodeURIComponent(urlPath.slice('/img-main/'.length)).replace(
+    /\.png$/,
+    '',
+  )
+  const buf = readMainPng(name)
+  if (!buf) {
+    res.writeHead(404)
+    res.end('not found')
+  } else {
+    res.writeHead(200, { 'Content-Type': 'image/png' })
+    res.end(buf)
   }
 }
 
@@ -115,6 +132,8 @@ const server = http.createServer((req, res) => {
       handleClearVerdict(req, res).catch(err =>
         sendJson(res, 500, { error: `${err}` }),
       )
+    } else if (url.startsWith('/img-main/')) {
+      serveMainImage(res, url.split('?')[0]!)
     } else if (url.startsWith('/img/')) {
       serveImage(res, url.split('?')[0]!)
     } else {
@@ -154,32 +173,41 @@ const PAGE = /* html */ `<!doctype html>
   header h1 { font-size: 16px; margin: 0; }
   header input[type=search] { padding: 6px 10px; width: 220px; border: 1px solid #ccc; border-radius: 6px; }
   header label { font-size: 13px; display: flex; gap: 5px; align-items: center; }
-  .counts { font-size: 13px; color: #555; margin-left: auto; display: flex; gap: 14px; }
-  .counts b { font-weight: 600; }
-  .pill { padding: 1px 8px; border-radius: 999px; font-size: 12px; }
+  .counts { font-size: 13px; color: #555; margin-left: auto; display: flex; gap: 14px; flex-wrap: wrap; }
+  .pill { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
   .pill.good { background: #d6f5dd; color: #14532d; }
   .pill.bad { background: #fbd9d9; color: #7f1d1d; }
   .pill.none { background: #eee; color: #666; }
-  main { padding: 20px; display: flex; flex-direction: column; gap: 18px; max-width: 1100px; margin: 0 auto; }
+  .pill.auto { background: #dbeafe; color: #1e40af; }
+  .pill.curated { background: #fef3c7; color: #92400e; }
+  .pill.manual { background: #f3e8ff; color: #6b21a8; }
+  main { padding: 20px; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; margin: 0 auto; }
   .card {
     background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;
-    display: grid; grid-template-columns: 1fr 1fr;
   }
   .card.good { border-left: 5px solid #22c55e; }
   .card.bad { border-left: 5px solid #ef4444; }
-  .card.hidden { display: none; }
-  .imgwrap { background: #222; display: flex; align-items: center; justify-content: center; min-height: 240px; }
-  .imgwrap img { max-width: 100%; max-height: 460px; display: block; cursor: zoom-in; }
+  .card-images {
+    display: flex; gap: 0;
+  }
+  .imgcol { flex: 1; display: flex; flex-direction: column; }
+  .imglabel {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 4px 10px; background: #f8f8f8; border-bottom: 1px solid #eee; color: #666;
+  }
+  .imgwrap { background: #222; display: flex; align-items: center; justify-content: center; min-height: 180px; flex: 1; }
+  .imgwrap img { max-width: 100%; max-height: 400px; display: block; cursor: zoom-in; }
+  .imgcol + .imgcol { border-left: 2px solid #ddd; }
   .missing { color: #f88; padding: 30px; font-size: 14px; }
-  .meta { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
-  .meta h2 { font-size: 15px; margin: 0; font-family: ui-monospace, monospace; word-break: break-all; }
-  .usages { font-size: 13px; display: flex; flex-direction: column; gap: 10px; }
+  .meta { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #eee; }
+  .meta h2 { font-size: 14px; margin: 0; font-family: ui-monospace, monospace; word-break: break-all; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .usages { font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
   .usage { border-left: 3px solid #cbd5e1; padding-left: 10px; }
   .usage .loc { font-family: ui-monospace, monospace; font-size: 12px; color: #2563eb; }
   .usage .caption { font-style: italic; margin-top: 2px; }
   .usage .context { color: #555; margin-top: 2px; }
   .noref { font-size: 13px; color: #b45309; }
-  .actions { display: flex; gap: 8px; align-items: center; margin-top: auto; flex-wrap: wrap; }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   button { padding: 7px 14px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 14px; }
   button.approve { border-color: #22c55e; color: #14532d; }
   button.approve.active { background: #22c55e; color: #fff; }
@@ -196,7 +224,7 @@ const PAGE = /* html */ `<!doctype html>
   <input id="search" type="search" placeholder="filter by name…" />
   <label><input id="onlyUnreviewed" type="checkbox" /> only unreviewed</label>
   <label><input id="onlyBad" type="checkbox" /> only denied</label>
-  <label><input id="onlyManual" type="checkbox" /> only manual (no generator)</label>
+  <label><input id="onlyNotAuto" type="checkbox" /> only non-autogenerated</label>
   <div class="counts" id="counts"></div>
 </header>
 <main id="main"></main>
@@ -226,17 +254,34 @@ function renderUsages(usages) {
   ).join('') + '</div>'
 }
 
+function statusPill(spec) {
+  if (spec.autogenerated) return '<span class="pill auto">autogenerated</span>'
+  if (spec.hasSpec) return '<span class="pill curated">curated</span>'
+  return '<span class="pill manual">manual</span>'
+}
+
 function card(spec) {
   const v = spec.verdict
   const status = v ? v.status : 'none'
-  const img = spec.exists
+  const currentImg = spec.exists
     ? '<img src="/img/' + spec.name + '.png" onclick="window.open(this.src)" />'
     : '<div class="missing">⚠ image file missing — regenerate it</div>'
+  const mainImg = spec.existsOnMain
+    ? '<img src="/img-main/' + spec.name + '.png" onclick="window.open(this.src)" />'
+    : '<div class="missing" style="color:#aaa">not on origin/main</div>'
   return '<div class="card ' + status + '" data-name="' + esc(spec.name) + '" data-status="' + status + '">' +
-    '<div class="imgwrap">' + img + '</div>' +
+    '<div class="card-images">' +
+      '<div class="imgcol">' +
+        '<div class="imglabel">current branch</div>' +
+        '<div class="imgwrap">' + currentImg + '</div>' +
+      '</div>' +
+      '<div class="imgcol">' +
+        '<div class="imglabel">origin/main</div>' +
+        '<div class="imgwrap">' + mainImg + '</div>' +
+      '</div>' +
+    '</div>' +
     '<div class="meta">' +
-      '<h2>' + esc(spec.name) +
-        (spec.hasSpec ? '' : ' <span class="pill none">manual</span>') + '</h2>' +
+      '<h2>' + esc(spec.name) + ' ' + statusPill(spec) + '</h2>' +
       renderUsages(spec.usages) +
       '<input class="note" placeholder="note (optional)" value="' + esc(v ? v.note : '') + '" />' +
       '<div class="actions">' +
@@ -280,28 +325,32 @@ function render() {
   const q = document.getElementById('search').value.toLowerCase()
   const onlyUnreviewed = document.getElementById('onlyUnreviewed').checked
   const onlyBad = document.getElementById('onlyBad').checked
-  const onlyManual = document.getElementById('onlyManual').checked
+  const onlyNotAuto = document.getElementById('onlyNotAuto').checked
   const good = data.filter(s => s.verdict?.status === 'good').length
   const bad = data.filter(s => s.verdict?.status === 'bad').length
   const none = data.length - good - bad
-  const manual = data.filter(s => !s.hasSpec).length
+  const autoCount = data.filter(s => s.autogenerated).length
+  const curatedCount = data.filter(s => s.hasSpec && !s.autogenerated).length
+  const manualCount = data.filter(s => !s.hasSpec).length
   document.getElementById('counts').innerHTML =
     '<span class="pill good">' + good + ' approved</span>' +
     '<span class="pill bad">' + bad + ' denied</span>' +
     '<span class="pill none">' + none + ' unreviewed</span>' +
-    '<span class="pill none">' + manual + ' manual</span>'
+    '<span class="pill auto">' + autoCount + ' autogenerated</span>' +
+    '<span class="pill curated">' + curatedCount + ' curated</span>' +
+    '<span class="pill manual">' + manualCount + ' manual</span>'
 
   const visible = data.filter(s => {
     if (q && !s.name.toLowerCase().includes(q)) { return false }
     if (onlyUnreviewed && s.verdict) { return false }
     if (onlyBad && s.verdict?.status !== 'bad') { return false }
-    if (onlyManual && s.hasSpec) { return false }
+    if (onlyNotAuto && s.autogenerated) { return false }
     return true
   })
   document.getElementById('main').innerHTML = visible.map(card).join('')
 }
 
-for (const id of ['search', 'onlyUnreviewed', 'onlyBad', 'onlyManual']) {
+for (const id of ['search', 'onlyUnreviewed', 'onlyBad', 'onlyNotAuto']) {
   document.getElementById(id).addEventListener('input', render)
 }
 load()

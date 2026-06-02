@@ -2,7 +2,10 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import BedPlugin from '../index.ts'
 
-import type { AdapterGuesser, TrackTypeGuesser } from '@jbrowse/core/util/tracks'
+import type {
+  AdapterGuesser,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 function setup() {
@@ -46,6 +49,10 @@ test('a plain .tsv is not assumed to be StarFusion', () => {
 
 test('honors an explicit StarFusionAdapter hint regardless of extension', () => {
   const { guessAdapter } = setup()
-  const adapter = guessAdapter(uri('fusions.txt'), undefined, 'StarFusionAdapter')
+  const adapter = guessAdapter(
+    uri('fusions.txt'),
+    undefined,
+    'StarFusionAdapter',
+  )
   expect(adapter?.type).toBe('StarFusionAdapter')
 })

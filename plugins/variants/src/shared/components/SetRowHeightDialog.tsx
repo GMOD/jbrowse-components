@@ -27,7 +27,10 @@ export default function SetRowHeight({
         }
       }}
     >
-      <NumberTextField defaultValue={model.rowHeight} onValueChange={setValue} />
+      <NumberTextField
+        defaultValue={model.rowHeight}
+        onValueChange={setValue}
+      />
     </SubmitDialog>
   )
 }

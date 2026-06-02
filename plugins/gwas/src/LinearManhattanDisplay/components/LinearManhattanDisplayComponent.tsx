@@ -188,7 +188,7 @@ const ManhattanBody = observer(function ManhattanBody({
             top: contextMenu.coord[1],
             left: contextMenu.coord[0],
           }}
-          onMenuItemClick={(_event, callback) => {
+          onMenuItemClick={callback => {
             callback()
             setContextMenu(undefined)
           }}

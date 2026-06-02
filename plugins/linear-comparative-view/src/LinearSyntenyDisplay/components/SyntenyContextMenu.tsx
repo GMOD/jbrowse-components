@@ -18,7 +18,7 @@ export default function SyntenyContextMenu({
   const { clientX, clientY, feature } = anchorEl
   return (
     <Menu
-      onMenuItemClick={(_, callback) => {
+      onMenuItemClick={callback => {
         callback()
         onClose()
       }}

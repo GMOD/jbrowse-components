@@ -276,7 +276,10 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
             return (
               <tr
                 key={row.id}
-                className={cx(classes.bodyRow, isSelected && classes.selectedRow)}
+                className={cx(
+                  classes.bodyRow,
+                  isSelected && classes.selectedRow,
+                )}
               >
                 <td className={classes.checkboxCell}>
                   <Checkbox

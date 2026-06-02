@@ -276,14 +276,10 @@ export function buildSyntenyGeometry({
       rev1,
       rev2,
       (resolvedOp, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
-        const topMin =
-          Math.min(segBp1Start, segBp1End) * bpPerPxInv0 - viewOff0
-        const topMax =
-          Math.max(segBp1Start, segBp1End) * bpPerPxInv0 - viewOff0
-        const botMin =
-          Math.min(segBp2Start, segBp2End) * bpPerPxInv1 - viewOff1
-        const botMax =
-          Math.max(segBp2Start, segBp2End) * bpPerPxInv1 - viewOff1
+        const topMin = Math.min(segBp1Start, segBp1End) * bpPerPxInv0 - viewOff0
+        const topMax = Math.max(segBp1Start, segBp1End) * bpPerPxInv0 - viewOff0
+        const botMin = Math.min(segBp2Start, segBp2End) * bpPerPxInv1 - viewOff1
+        const botMax = Math.max(segBp2Start, segBp2End) * bpPerPxInv1 - viewOff1
         const offScreen =
           (topMax < emitLeft || topMin > emitRight) &&
           (botMax < emitLeft || botMin > emitRight)

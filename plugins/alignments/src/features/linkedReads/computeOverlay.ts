@@ -113,7 +113,10 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
   const readCenterDy = featureHeight / 2
   const paletteLen = linkedReadColorPalette.length
   const readScreenY = (e: ReadEntry) =>
-    e.data.readYs[e.readIdx]! * rowH + pileupTopOffset - scrollTop + readCenterDy
+    e.data.readYs[e.readIdx]! * rowH +
+    pileupTopOffset -
+    scrollTop +
+    readCenterDy
 
   const result: PileupArc[] = []
 

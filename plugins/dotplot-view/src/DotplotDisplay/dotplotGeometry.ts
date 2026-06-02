@@ -56,16 +56,7 @@ export function buildLineSegments(
   bpPerPxH: number,
   bpPerPxV: number,
 ): DotplotGeometryData {
-  const {
-    p11,
-    p12,
-    p21,
-    p22,
-    starts,
-    ends,
-    strands,
-    parsedCigars,
-  } = data
+  const { p11, p12, p21, p22, starts, ends, strands, parsedCigars } = data
   const count = p11.length
   const bpPerPxHInv = 1 / bpPerPxH
   const bpPerPxVInv = 1 / bpPerPxV

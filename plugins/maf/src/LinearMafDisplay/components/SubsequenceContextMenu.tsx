@@ -45,7 +45,7 @@ export default function SubsequenceContextMenu({
   return (
     <Menu
       open={Boolean(contextCoord)}
-      onMenuItemClick={(_, callback) => {
+      onMenuItemClick={callback => {
         callback()
         setContextCoord(undefined)
       }}

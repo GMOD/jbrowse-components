@@ -243,7 +243,6 @@ export function measureGridWidth(
   )
 }
 
-
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
   const result: Record<string, T[]> = {}
   for (const value of array) {

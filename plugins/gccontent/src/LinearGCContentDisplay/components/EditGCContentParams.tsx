@@ -32,7 +32,9 @@ const EditGCContentParamsDialog = observer(function EditGCContentParamsDialog({
       title="Edit GC content params"
       onCancel={handleClose}
       submitDisabled={
-        windowSize === undefined || windowDelta === undefined || stepLargerThanWindow
+        windowSize === undefined ||
+        windowDelta === undefined ||
+        stepLargerThanWindow
       }
       onSubmit={() => {
         if (windowSize !== undefined && windowDelta !== undefined) {
