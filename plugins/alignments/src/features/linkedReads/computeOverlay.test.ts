@@ -39,7 +39,7 @@ const baseOpts = {
   featureHeight: 10,
   featureSpacing: 2,
   pileupTopOffset: 0,
-  rangeY: [0, 0] as [number, number],
+  scrollTop: 0,
   viewportH: 1000,
   pairedArcsDown: false,
 }

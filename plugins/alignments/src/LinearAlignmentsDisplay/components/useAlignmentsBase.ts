@@ -85,7 +85,7 @@ export function useAlignmentsBase(
         topOffset,
         featureHeightSetting,
         featureSpacing,
-        rangeY: model.currentRangeY,
+        scrollTop: model.scrollTop,
         isChainMode,
       }),
     }

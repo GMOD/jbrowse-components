@@ -71,7 +71,7 @@ export interface HitTestOptions {
   topOffset: number
   featureHeightSetting: number
   featureSpacing: number
-  rangeY: [number, number]
+  scrollTop: number
   isChainMode: boolean
 }
 
@@ -113,7 +113,7 @@ export function performHitTest(
     topOffset,
     featureHeightSetting,
     featureSpacing,
-    rangeY,
+    scrollTop,
     isChainMode,
   } = options
 
@@ -162,7 +162,7 @@ export function performHitTest(
       featureHeightSetting,
       featureSpacing,
       topOffset,
-      rangeY,
+      scrollTop,
     )
 
     if (bpPerPx <= SNP_HIT_MAX_BP_PER_PX) {

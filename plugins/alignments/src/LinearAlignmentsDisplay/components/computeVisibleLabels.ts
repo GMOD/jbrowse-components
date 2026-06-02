@@ -41,7 +41,7 @@ interface ComputeVisibleLabelsParams {
   featureSpacing: number
   showMismatches: boolean
   topOffset: number
-  rangeY: [number, number]
+  scrollTop: number
 }
 
 export function computeVisibleLabels(
@@ -55,7 +55,7 @@ export function computeVisibleLabels(
     featureSpacing,
     showMismatches,
     topOffset,
-    rangeY,
+    scrollTop,
   } = params
 
   const labels: VisibleLabel[] = []
@@ -71,7 +71,7 @@ export function computeVisibleLabels(
   const tallEnoughForText = featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
   const canRenderText = pxPerBp >= 6.5 && tallEnoughForText
   const rowYPx = (y: number) =>
-    y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
+    y * rowHeight + featureHeightSetting / 2 - scrollTop + topOffset
   const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= height
   const clipPrefix: Record<number, string | undefined> = {
     [INTERBASE_SOFTCLIP]: 'S',

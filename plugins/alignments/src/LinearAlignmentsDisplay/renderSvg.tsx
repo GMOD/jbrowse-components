@@ -51,19 +51,18 @@ export async function renderSvg(
 
   const totalWidth = view.totalWidthPx
   const displayHeight = model.height
-  const fullRangeY: [number, number] = [0, displayHeight]
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
 
   // SVG export renders the full display from y=0 with no Y scroll. Reuse the
   // model's renderState — only viewport-related fields are overridden.
   const state = {
     ...baseState,
-    rangeY: fullRangeY,
+    scrollTop: 0,
     canvasWidth: totalWidth,
     canvasHeight: displayHeight,
   }
 
-  // Same compute as the on-screen getter; only rangeY differs (SVG export
+  // Same compute as the on-screen getter; only scrollTop differs (SVG export
   // shows the full track height regardless of Y scroll).
   const labels = computeVisibleLabels({
     view,
@@ -73,7 +72,7 @@ export async function renderSvg(
     featureSpacing: model.featureSpacing,
     showMismatches: model.showMismatches,
     topOffset: model.coverageDisplayHeight,
-    rangeY: fullRangeY,
+    scrollTop: 0,
   })
   const contrastMap = getContrastBaseMap(theme)
   const pileupNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
@@ -94,7 +93,7 @@ export async function renderSvg(
   // `computeSashimiArcs` the overlay uses; sorted by score so high-count arcs
   // paint on top, mirroring overlay z-order.
   const sashimiNode = renderSashimiArcs(model, view)
-  const pileupBezierNode = renderPileupBezierArcs(model, view, fullRangeY)
+  const pileupBezierNode = renderPileupBezierArcs(model, view, 0)
 
   return (
     <>
@@ -176,9 +175,9 @@ function renderSashimiArcs(
 function renderPileupBezierArcs(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,
-  rangeY: [number, number],
+  scrollTop: number,
 ): React.ReactNode {
-  const arcs = computePileupBezierArcsFromModel(model, view, rangeY)
+  const arcs = computePileupBezierArcsFromModel(model, view, scrollTop)
   if (!arcs.length) {
     return null
   }

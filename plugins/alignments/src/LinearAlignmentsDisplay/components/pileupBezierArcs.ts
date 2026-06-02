@@ -7,13 +7,13 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Single source of truth mapping model + view state to bezier-arc geometry, so
 // the on-screen overlay (PileupBezierOverlay) and the SVG export (renderSvg)
-// cannot drift in which fields feed the curves. Only `rangeY` legitimately
+// cannot drift in which fields feed the curves. Only `scrollTop` legitimately
 // differs — on-screen scrolls, export shows the full height — so it stays a
 // parameter. Returns [] unless linked-reads bezier mode is active.
 export function computePileupBezierArcsFromModel(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,
-  rangeY: [number, number],
+  scrollTop: number,
 ): PileupArc[] {
   return model.linkedReads === 'bezier'
     ? computePileupBezierArcs({
@@ -23,7 +23,7 @@ export function computePileupBezierArcsFromModel(
         featureHeight: model.featureHeightSetting,
         featureSpacing: model.featureSpacing,
         pileupTopOffset: model.coverageDisplayHeight,
-        rangeY,
+        scrollTop,
         viewportH: model.pileupViewportHeight,
         pairedArcsDown: model.readConnectionsDown,
       })

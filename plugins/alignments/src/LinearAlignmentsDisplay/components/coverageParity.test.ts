@@ -329,7 +329,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       showInterbaseIndicators: false,
       start: REGION_START,
       end: REGION_START + 20,
-      rangeY: [0, 200] as [number, number],
+      scrollTop: 0,
       colorScheme: 0,
       coverageMaxDepth: 50,
     } as unknown as RenderState)

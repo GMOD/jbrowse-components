@@ -92,14 +92,14 @@ const PileupBody = observer(function PileupBody({
     if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
       return
     }
-    const { scrollableHeight, pileupViewportHeight, currentRangeY } = model
+    const { scrollableHeight, pileupViewportHeight, scrollTop } = model
     if (scrollableHeight <= 0) {
       return
     }
     const dy = normalizeWheelDeltaY(e.deltaY, e.deltaMode, pileupViewportHeight)
-    const next = latch.scroll(e, currentRangeY[0], dy, scrollableHeight)
+    const next = latch.scroll(e, scrollTop, dy, scrollableHeight)
     if (next !== null) {
-      model.setCurrentRangeY([next, next + pileupViewportHeight])
+      model.setScrollTop(next)
     }
   })
 
@@ -423,20 +423,20 @@ const PileupScrollbar = observer(function PileupScrollbar({
     trackHeight * (trackHeight / totalPileupHeight),
   )
   const thumbTop =
-    (model.currentRangeY[0] / scrollableHeight) * (trackHeight - thumbHeight)
+    (model.scrollTop / scrollableHeight) * (trackHeight - thumbHeight)
   return (
     <div
       className={classes.scrollbarTrack}
       style={{ top: topOffset, height: trackHeight }}
       onMouseDown={e => {
-        const startScroll = model.currentRangeY[0]
+        const startScroll = model.scrollTop
         const scrollRange = model.scrollableHeight
         const usableTrack = trackHeight - thumbHeight
         startDocumentDrag(e, dragAcRef, (_dx, dy) => {
           const scrollDelta =
             usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
           const next = clamp(startScroll + scrollDelta, 0, scrollRange)
-          model.setCurrentRangeY([next, next + model.pileupViewportHeight])
+          model.setScrollTop(next)
         })
       }}
     >

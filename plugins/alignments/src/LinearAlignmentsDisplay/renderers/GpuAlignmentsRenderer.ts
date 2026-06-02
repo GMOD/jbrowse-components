@@ -136,8 +136,8 @@ function fillFrameUniforms(
   f[U.canvasH] = state.canvasHeight
   // rangeY0 (pileupY) and scrollTop (connecting/linked-read shaders) are
   // the same value held in two slots; unifying needs a shader regen.
-  f[U.rangeY0] = state.rangeY[0]
-  f[U.scrollTop] = state.rangeY[0]
+  f[U.rangeY0] = state.scrollTop
+  f[U.scrollTop] = state.scrollTop
   f[U.covOffset] = state.pileupTopOffset
   f[U.featHeight] = state.featureHeight
   f[U.featSpacing] = state.featureSpacing

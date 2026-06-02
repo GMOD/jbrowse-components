@@ -65,7 +65,7 @@ export function toClipRect(
   const sx2 = reversed ? -rawSx1 : rawSx2
 
   const rowHeight = state.featureHeight + state.featureSpacing
-  const yTopPx = y * rowHeight - state.rangeY[0]
+  const yTopPx = y * rowHeight - state.scrollTop
   const yBotPx = yTopPx + state.featureHeight
   const pileupTop = 1 - (coverageOffset / canvasHeight) * 2
   const pxToClip = 2 / canvasHeight

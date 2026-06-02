@@ -370,8 +370,10 @@ export default function stateModelFactory(
           rpcDataMap: observable.map<number, PileupDataResult>(),
           /**
            * #volatile
+           * pileup vertical scroll offset in px. Also read by the
+           * BreakpointSplitView overlay to position its SVG curves.
            */
-          currentRangeY: [0, 600] as [number, number],
+          scrollTop: 0,
           /**
            * #volatile
            */
@@ -835,16 +837,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Compatibility getter for BreakpointSplitView overlay which reads
-         * display.scrollTop to position SVG curves. The WebGL display manages
-         * Y scrolling via currentRangeY[0] rather than the inherited scrollTop.
-         */
-        get scrollTop() {
-          return self.currentRangeY[0]
-        },
-
-        /**
-         * #getter
          * True when any loaded region has splice junctions to draw as sashimi
          * arcs. Drives whether the below-coverage band reserves space.
          */
@@ -915,7 +907,7 @@ export default function stateModelFactory(
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
             topOffset: self.coverageDisplayHeight,
-            rangeY: self.currentRangeY,
+            scrollTop: self.scrollTop,
           })
         },
 
@@ -1017,7 +1009,7 @@ export default function stateModelFactory(
             return undefined
           }
           return {
-            rangeY: self.currentRangeY,
+            scrollTop: self.scrollTop,
             colorScheme: self.colorSchemeIndex,
             featureHeight: self.featureHeightSetting,
             featureSpacing: self.featureSpacing,
@@ -1132,12 +1124,6 @@ export default function stateModelFactory(
       .actions(self => {
         const superSetError = self.setError
         const superSetRegionTooLarge = self.setRegionTooLarge
-        function setCurrentRangeY(rangeY: [number, number]) {
-          const cur = self.currentRangeY
-          if (cur[0] !== rangeY[0] || cur[1] !== rangeY[1]) {
-            self.currentRangeY = rangeY
-          }
-        }
         function addModification(modType: string) {
           if (!self.visibleModifications.has(modType)) {
             self.visibleModifications.set(modType, {
@@ -1204,7 +1190,7 @@ export default function stateModelFactory(
            */
           clearDisplaySpecificData() {
             self.rpcDataMap.clear()
-            self.currentRangeY = [0, 0]
+            self.scrollTop = 0
             self.setRegionTooLarge(false)
           },
 
@@ -1226,13 +1212,10 @@ export default function stateModelFactory(
            * #action
            */
           setScrollTop(scrollTop: number) {
-            setCurrentRangeY([scrollTop, scrollTop + self.pileupViewportHeight])
+            if (self.scrollTop !== scrollTop) {
+              self.scrollTop = scrollTop
+            }
           },
-
-          /**
-           * #action
-           */
-          setCurrentRangeY,
 
           /**
            * #action
@@ -1426,7 +1409,7 @@ export default function stateModelFactory(
            */
           setFeatureHeight(height?: number) {
             self.setOverride('featureHeight', height)
-            self.currentRangeY = [0, 0]
+            self.scrollTop = 0
           },
 
           /**
@@ -1434,7 +1417,7 @@ export default function stateModelFactory(
            */
           setFeatureSpacing(spacing?: number) {
             self.setOverride('featureSpacing', spacing)
-            self.currentRangeY = [0, 0]
+            self.scrollTop = 0
           },
 
           // duck-typed by LGV/BreakpointSplitView/LinearComparativeView "Compact all tracks"
@@ -1445,7 +1428,7 @@ export default function stateModelFactory(
             const { featureHeight, featureSpacing } = COMPACTNESS_PRESETS[level]
             self.setOverride('featureHeight', featureHeight)
             self.setOverride('featureSpacing', featureSpacing)
-            self.currentRangeY = [0, 0]
+            self.scrollTop = 0
           },
 
           /**

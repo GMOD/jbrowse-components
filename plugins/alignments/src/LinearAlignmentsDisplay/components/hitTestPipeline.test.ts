@@ -57,7 +57,7 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   topOffset: 50,
   featureHeightSetting: 10,
   featureSpacing: 2,
-  rangeY: [0, 1000] as [number, number],
+  scrollTop: 0,
   isChainMode: false,
 }
 

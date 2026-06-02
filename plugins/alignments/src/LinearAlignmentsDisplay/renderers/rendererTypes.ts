@@ -21,7 +21,7 @@ export function buildReadIdToIndex(ids: string[], n: number) {
 }
 
 export interface RenderState {
-  rangeY: [number, number]
+  scrollTop: number
   colorScheme: number
   featureHeight: number
   featureSpacing: number
@@ -106,7 +106,7 @@ export function pileupRowY(yRow: number, state: RenderState) {
   return (
     yRow * (state.featureHeight + state.featureSpacing) +
     state.pileupTopOffset -
-    state.rangeY[0]
+    state.scrollTop
   )
 }
 

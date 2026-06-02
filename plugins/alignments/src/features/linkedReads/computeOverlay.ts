@@ -86,7 +86,7 @@ interface Opts {
   featureHeight: number
   featureSpacing: number
   pileupTopOffset: number
-  rangeY: [number, number]
+  scrollTop: number
   viewportH: number
   pairedArcsDown: boolean
 }
@@ -103,18 +103,17 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     featureHeight,
     featureSpacing,
     pileupTopOffset,
-    rangeY,
+    scrollTop,
     viewportH,
     pairedArcsDown,
   } = opts
 
-  const [rangeY0] = rangeY
   const rowH = featureHeight + featureSpacing
   const peakH = rowH * PEAK_ROW_FACTOR
   const readCenterDy = featureHeight / 2
   const paletteLen = linkedReadColorPalette.length
   const readScreenY = (e: ReadEntry) =>
-    e.data.readYs[e.readIdx]! * rowH + pileupTopOffset - rangeY0 + readCenterDy
+    e.data.readYs[e.readIdx]! * rowH + pileupTopOffset - scrollTop + readCenterDy
 
   const result: PileupArc[] = []
 

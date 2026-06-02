@@ -54,10 +54,10 @@ export function canvasToGenomicCoords(
   featureHeight: number,
   featureSpacing: number,
   topOffset: number,
-  rangeY: [number, number],
+  scrollTop: number,
 ): CigarCoords {
   const rowHeight = featureHeight + featureSpacing
-  const adjustedY = canvasY + rangeY[0] - topOffset
+  const adjustedY = canvasY + scrollTop - topOffset
   const row = Math.floor(adjustedY / rowHeight)
   const yWithinRow = adjustedY - row * rowHeight
   return { bpPerPx, genomicPos, row, adjustedY, yWithinRow }

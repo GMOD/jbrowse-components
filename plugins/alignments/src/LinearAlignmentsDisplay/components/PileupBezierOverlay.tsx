@@ -32,14 +32,14 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
 }) {
   const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { linkedReads, currentRangeY, height } = model
+  const { linkedReads, scrollTop, height } = model
   const { initialized, width } = view
 
   if (linkedReads !== 'bezier' || !initialized) {
     return null
   }
 
-  const arcs = computePileupBezierArcsFromModel(model, view, currentRangeY)
+  const arcs = computePileupBezierArcsFromModel(model, view, scrollTop)
 
   if (!arcs.length) {
     return null

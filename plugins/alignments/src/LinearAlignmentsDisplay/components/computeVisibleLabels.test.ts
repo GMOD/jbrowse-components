@@ -37,7 +37,7 @@ function run(rpcData: PileupDataResult) {
     featureSpacing: 2,
     showMismatches: true,
     topOffset: 0,
-    rangeY: [0, 1000],
+    scrollTop: 0,
   })
 }
 

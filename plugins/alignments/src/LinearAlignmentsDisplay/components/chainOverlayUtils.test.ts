@@ -10,7 +10,7 @@ import type { RenderState } from '../renderers/rendererTypes.ts'
 
 function makeState(overrides: Partial<RenderState> = {}): RenderState {
   return {
-    rangeY: [0, 100],
+    scrollTop: 0,
     colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 2,
