@@ -1400,6 +1400,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let coverageRightPx = 0
       let prevBpPerPx: number | undefined
       let prevWidth: number | undefined
+      let prevMinimumBlockWidth: number | undefined
       let prevDisplayedRegions: typeof self.displayedRegions | undefined
       return {
         /**
@@ -1411,15 +1412,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
-          const { offsetPx, bpPerPx, width, displayedRegions } = self
+          const {
+            offsetPx,
+            bpPerPx,
+            width,
+            minimumBlockWidth,
+            displayedRegions,
+          } = self
 
           // Fast path: if only offsetPx changed and viewport is still within
           // the coverage range of existing blocks, skip the expensive
-          // calculateStaticBlocks call entirely
+          // calculateStaticBlocks call entirely. minimumBlockWidth is read here
+          // (not just in calculateStaticBlocks) so MobX still invalidates this
+          // computed if it changes while the viewport stays within coverage.
           if (
             currentlyCalculatedStaticBlocks !== undefined &&
             bpPerPx === prevBpPerPx &&
             width === prevWidth &&
+            minimumBlockWidth === prevMinimumBlockWidth &&
             displayedRegions === prevDisplayedRegions &&
             offsetPx >= coverageLeftPx &&
             offsetPx + width <= coverageRightPx
@@ -1429,11 +1439,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
           const newBlocks = calculateStaticBlocks(self)
           const newKeys = newBlocks.blocks.map(b => b.key).join(',')
+          // minimumBlockWidth is part of the guard because block keys don't
+          // encode ContentBlock-vs-ElidedBlock, so a region can flip type with
+          // an unchanged key; without this the recompute would be discarded.
           if (
             currentlyCalculatedStaticBlocks === undefined ||
             currentBlockKeys !== newKeys ||
             bpPerPx !== prevBpPerPx ||
-            width !== prevWidth
+            width !== prevWidth ||
+            minimumBlockWidth !== prevMinimumBlockWidth
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
             currentBlockKeys = newKeys
@@ -1452,6 +1466,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
           prevBpPerPx = bpPerPx
           prevWidth = width
+          prevMinimumBlockWidth = minimumBlockWidth
           prevDisplayedRegions = displayedRegions
           return currentlyCalculatedStaticBlocks
         },

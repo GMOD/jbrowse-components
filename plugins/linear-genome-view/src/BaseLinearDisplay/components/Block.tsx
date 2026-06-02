@@ -48,20 +48,9 @@ function ElidedBlock({ width }: { width: number }) {
   return <div className={classes.elidedBlock} style={{ width }} />
 }
 
-function InterRegionPaddingBlock({
-  width,
-  className,
-}: {
-  width: number
-  className?: string
-}) {
-  const { classes, cx } = useStyles()
-  return (
-    <div
-      style={{ width }}
-      className={cx(classes.boundaryPaddingBlock, className)}
-    />
-  )
+function InterRegionPaddingBlock({ width }: { width: number }) {
+  const { classes } = useStyles()
+  return <div style={{ width }} className={classes.boundaryPaddingBlock} />
 }
 
 export { ContentBlock, ElidedBlock, InterRegionPaddingBlock }

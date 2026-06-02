@@ -251,37 +251,6 @@ function stateModelFactory() {
       /**
        * #getter
        */
-      get layoutFeatures() {
-        const featureMaps = []
-        for (const block of self.blockState.values()) {
-          if (block.layout) {
-            featureMaps.push(block.layout.getRectangles())
-          }
-        }
-        return new CompositeMap<string, LayoutRecord>(featureMaps)
-      },
-
-      /**
-       * #getter
-       */
-      getFeatureOverlapping(
-        blockKey: string,
-        x: number,
-        y: number,
-      ): string | undefined {
-        return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
-      },
-
-      /**
-       * #getter
-       */
-      getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
-        return self.blockState.get(blockKey)?.layout?.getByID(id)
-      },
-
-      /**
-       * #getter
-       */
       searchFeatureByID(id: string): LayoutRecord | undefined {
         for (const block of self.blockState.values()) {
           const val = block.layout?.getByID(id)
