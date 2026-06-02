@@ -291,6 +291,13 @@ export class WebGPUHal implements GpuHal {
     if (!device) {
       return null
     }
+    // Compile pipelines BEFORE acquiring the canvas's webgpu context. A canvas's
+    // context type is permanent once acquired, so if shader compilation throws
+    // here the canvas stays pristine and createGpuHal's WebGL2 fallback can
+    // still claim it — otherwise a partial WebGPU init would drop us all the way
+    // to Canvas2D on a WebGL2-capable machine.
+    const layoutState = createLayoutState(device)
+    const pipelines = await compilePipelines(device, descriptors, layoutState)
     const context = canvas.getContext('webgpu')
     if (!context) {
       console.warn(
@@ -303,8 +310,6 @@ export class WebGPUHal implements GpuHal {
       format: navigator.gpu.getPreferredCanvasFormat(),
       alphaMode: 'premultiplied',
     })
-    const layoutState = createLayoutState(device)
-    const pipelines = await compilePipelines(device, descriptors, layoutState)
     return new WebGPUHal(
       device,
       canvas,
