@@ -18,6 +18,15 @@ export interface WorkerHandle {
   ): Promise<unknown>
 }
 
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'Core-extendWorker': {
+      args: WorkerHandle
+      result: WorkerHandle
+    }
+  }
+}
+
 export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
 }
@@ -34,6 +43,10 @@ function isStructuredClonePassthrough(thing: object): boolean {
     thing instanceof File ||
     thing instanceof Blob ||
     thing instanceof ArrayBuffer ||
+    // SharedArrayBuffer is not an ArrayBuffer subclass; without this it
+    // collapses to {} and SAB-based stop tokens silently stop working
+    (typeof SharedArrayBuffer !== 'undefined' &&
+      thing instanceof SharedArrayBuffer) ||
     ArrayBuffer.isView(thing) ||
     thing instanceof Date ||
     thing instanceof Map ||
@@ -170,7 +183,7 @@ export default abstract class BaseRpcDriver {
     const worker = pluginManager.evaluateExtensionPoint(
       'Core-extendWorker',
       unextendedWorker,
-    ) as WorkerHandle
+    )
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs)

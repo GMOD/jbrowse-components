@@ -48,6 +48,16 @@ export interface PreferencesPanelDescriptor {
   Component: React.ComponentType<{ session: PreferencesDialogSession }>
 }
 
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'Core-preferencesDialogPanels': {
+      args: PreferencesPanelDescriptor[]
+      result: PreferencesPanelDescriptor[]
+      props: { session: PreferencesDialogSession }
+    }
+  }
+}
+
 const PreferencesDialog = observer(function PreferencesDialog({
   handleClose,
   session,
@@ -60,9 +70,9 @@ const PreferencesDialog = observer(function PreferencesDialog({
   const { classes } = useStyles()
   const extraPanels = pluginManager.evaluateExtensionPoint(
     'Core-preferencesDialogPanels',
-    [] as PreferencesPanelDescriptor[],
+    [],
     { session },
-  ) as PreferencesPanelDescriptor[]
+  )
   return (
     <Dialog title="Preferences" open onClose={handleClose} maxWidth="xl">
       <DialogContent className={classes.container}>

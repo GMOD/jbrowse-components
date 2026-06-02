@@ -186,7 +186,13 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-adds an extra panel to the "About this track" dialog
+Adds an extra panel to the "About this track" dialog. Return a React component
+that renders its own card chrome (use `BaseCard` for a titled section); it is
+rendered below the built-in Configuration/Metadata cards. The default renders
+nothing.
+
+- `args` - a `ReactComponent`, by default a no-op that renders nothing
+- `props` - the object below, also passed to your component
 
 ```typescript
 interface props {
@@ -195,21 +201,33 @@ interface props {
 }
 ```
 
-Return value: An object with the name of the panel and the React component to
-use for the panel
+Return value: the React component to render. It receives the `props` above.
 
 Example: adds an extra about dialog panel for a particular track ID
 
-```typescript
+```tsx
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+
 pluginManager.addToExtensionPoint(
   'Core-extraAboutPanel',
-  (DefaultAboutExtra, { session, config }) => {
-    return config.trackId === 'volvox_sv_test'
-      ? { name: 'More info', Component: ExtraAboutPanel }
-      : DefaultAboutExtra
+  (DefaultPanel, { config }) => {
+    return config.trackId !== 'volvox_sv_test'
+      ? DefaultPanel
+      : function ExtraAboutPanel({ config }) {
+          return <BaseCard title="More info">{/* your content */}</BaseCard>
+        }
   },
 )
 ```
+
+:::note
+
+This extension point previously returned a `{ name, Component }` descriptor and
+the dialog supplied the titled card. It now returns a bare React component that
+renders its own chrome (matching `Core-replaceAbout` / `Core-replaceWidget`).
+Wrap your content in `BaseCard` to keep the old titled-section look.
+
+:::
 
 ### Core-customizeAbout
 
@@ -302,36 +320,55 @@ timestamp and -sessionTrack added to it).
 
 type: synchronous
 
-- `args` - a `ReactComponent`, the default AboutTrack dialog
-- `props` - an object of the type below
+Adds an extra panel to the feature details widget. Return a React component that
+renders its own card chrome (use `BaseCard` for a titled section); it is
+rendered after the built-in Attributes/Sequence sections. The default renders
+nothing.
+
+- `args` - a `ReactComponent`, by default a no-op that renders nothing
+- `props` - the feature-detail props below, also passed to your component
 
 ```typescript
 interface props {
-  model: BaseFeatureWidget // a widget model, has model.trackId defined if you want to check track
+  model: BaseFeatureWidget // widget model, has model.trackId if you want to check track
   feature: Record<string, unknown> // snapshot of feature object
-  session: AbstractSessionModel
+  // (plus depth/omit/descriptions/formatter used by the details renderer)
 }
 ```
 
 Note: the model has properties `model.trackId`, `model.trackType`, and
 `model.track`, though `model.track` may be undefined if the user closed the
-track, while trackId and trackType will be defined even if user closed the track
+track, while trackId and trackType will be defined even if user closed the
+track. The `session` is no longer passed in `props` — derive it with
+`getSession(model)` if you need it.
 
-Return value: An object with the name of the panel and the React component to
-use for the panel
+Return value: the React component to render. It receives the `props` above.
 
 Example:
 
-```typescript
+```tsx
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+
 pluginManager.addToExtensionPoint(
   'Core-extraFeaturePanel',
-  (DefaultFeatureExtra, { model }) => {
-    return model.trackId === 'volvox_filtered_vcf'
-      ? { name: 'Extra info', Component: ExtraFeaturePanel }
-      : DefaultFeatureExtra
+  (DefaultPanel, { model }) => {
+    return model.trackId !== 'volvox_filtered_vcf'
+      ? DefaultPanel
+      : function ExtraFeaturePanel({ feature }) {
+          return <BaseCard title="Extra info">{/* your content */}</BaseCard>
+        }
   },
 )
 ```
+
+:::note
+
+This extension point previously returned a `{ name, Component }` descriptor and
+the widget supplied the titled card. It now returns a bare React component that
+renders its own chrome (matching `Core-replaceWidget`). Wrap your content in
+`BaseCard` to keep the old titled-section look.
+
+:::
 
 ### Core-preProcessTrackConfig
 

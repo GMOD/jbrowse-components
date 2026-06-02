@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getConf } from '@jbrowse/core/configuration'
+import { PluggableComponent } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -16,9 +17,19 @@ import { generateDisplayableConfig, readConf } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-type AboutPanelComponent = React.ComponentType<{
-  config: AnyConfigurationModel | Record<string, unknown>
-}>
+type AboutConfig = AnyConfigurationModel | Record<string, unknown>
+
+interface AboutPanelProps {
+  session: AbstractSessionModel
+  config: AboutConfig
+}
+
+// default for the Core-extraAboutPanel slot: renders nothing. A plugin
+// replaces this via PluggableComponent and is responsible for its own
+// BaseCard chrome.
+function NoAboutPanel(_props: AboutPanelProps) {
+  return null
+}
 
 const useStyles = makeStyles()({
   content: {
@@ -51,11 +62,6 @@ const AboutDialogContents = observer(function AboutDialogContents({
     pluginManager,
   })
 
-  const ExtraPanel = pluginManager.evaluateExtensionPoint(
-    'Core-extraAboutPanel',
-    null,
-    { session, config },
-  ) as { name: string; Component: AboutPanelComponent } | null
   return (
     <div className={classes.content}>
       <BaseCard title="Configuration">
@@ -77,11 +83,14 @@ const AboutDialogContents = observer(function AboutDialogContents({
           />
         </BaseCard>
       ) : null}
-      {ExtraPanel ? (
-        <BaseCard title={ExtraPanel.name}>
-          <ExtraPanel.Component config={config} />
-        </BaseCard>
-      ) : null}
+      <Suspense fallback={null}>
+        <PluggableComponent
+          pluginManager={pluginManager}
+          name="Core-extraAboutPanel"
+          component={NoAboutPanel}
+          props={{ session, config }}
+        />
+      </Suspense>
       <FileInfoPanel config={config} session={session} />
       {showRefNames ? (
         <RefNameInfoDialog

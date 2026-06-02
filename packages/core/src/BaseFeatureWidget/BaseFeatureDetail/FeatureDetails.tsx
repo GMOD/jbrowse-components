@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+
 import { Divider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -6,8 +8,8 @@ import BaseCard from './BaseCard.tsx'
 import CoreDetails from './CoreDetails.tsx'
 import { generateTitle } from './util.ts'
 import { ErrorBoundary } from '../../ui/ErrorBoundary.tsx'
-import { ErrorBanner } from '../../ui/index.ts'
-import { getEnv, getSession } from '../../util/index.ts'
+import { ErrorBanner, PluggableComponent } from '../../ui/index.ts'
+import { getEnv } from '../../util/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
@@ -34,9 +36,11 @@ interface FeatureDetailsProps {
   formatter?: FeatureFormatter
 }
 
-interface PanelDescriptor {
-  name: string
-  Component: React.ComponentType<FeatureDetailsProps>
+// default for the Core-extraFeaturePanel slot: renders nothing. A plugin
+// replaces this via PluggableComponent and is responsible for its own
+// Divider/BaseCard chrome.
+function NoFeaturePanel(_props: FeatureDetailsProps) {
+  return null
 }
 
 const FeatureDetails = observer(function FeatureDetails(
@@ -46,13 +50,6 @@ const FeatureDetails = observer(function FeatureDetails(
   const maxDepth: number = model.maxDepth ?? 99999
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
   const pm = getEnv(model).pluginManager
-  const session = getSession(model)
-
-  const ExtraPanel = pm.evaluateExtensionPoint('Core-extraFeaturePanel', null, {
-    session,
-    feature,
-    model,
-  }) as PanelDescriptor | undefined
   const m = mate as { start: number; end: number; refName: string } | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
@@ -82,14 +79,14 @@ const FeatureDetails = observer(function FeatureDetails(
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
 
-      {ExtraPanel ? (
-        <>
-          <Divider />
-          <BaseCard title={ExtraPanel.name}>
-            <ExtraPanel.Component {...props} />
-          </BaseCard>
-        </>
-      ) : null}
+      <Suspense fallback={null}>
+        <PluggableComponent
+          pluginManager={pm}
+          name="Core-extraFeaturePanel"
+          component={NoFeaturePanel}
+          props={props}
+        />
+      </Suspense>
 
       {depth < maxDepth && subfeatures?.length ? (
         <BaseCard

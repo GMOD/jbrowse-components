@@ -110,9 +110,15 @@ type ExtensionPointCallback = (
 //   }
 //
 // Untyped extension points still work — they hit the second overload of each
-// method and fall back to the prior loose typing.
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ExtensionPointRegistry {}
+// method and fall back to the prior loose typing. Built-in points defined here
+// in PluginManager are declared inline; points owned by other modules augment
+// this interface via `declare module '@jbrowse/core/PluginManager'`.
+export interface ExtensionPointRegistry {
+  'Core-extendPluggableElement': {
+    args: PluggableElementType
+    result: PluggableElementType
+  }
+}
 
 export type ExtensionPointName = keyof ExtensionPointRegistry
 
@@ -389,10 +395,7 @@ export default class PluginManager {
       } else {
         typeRecord.add(
           newElement.name,
-          this.evaluateExtensionPoint(
-            'Core-extendPluggableElement',
-            newElement,
-          ) as PluggableElementType,
+          this.evaluateExtensionPoint('Core-extendPluggableElement', newElement),
         )
       }
     })
