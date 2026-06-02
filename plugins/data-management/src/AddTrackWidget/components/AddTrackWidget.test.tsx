@@ -134,6 +134,15 @@ test('picking a non-configurable adapter keeps the dropdown (no dead-end)', () =
   expect(getByText(/could not be configured/i)).toBeTruthy()
 })
 
+test('can switch from the default workflow to the bulk workflow via the link', async () => {
+  const { model } = getSession()
+  const { getByText, findByText } = render(<AddTrackWidget model={model} />)
+  // the link uses the shared BULK_WORKFLOW name; a mismatch would silently fall
+  // back to the default workflow instead of opening the bulk one
+  fireEvent.click(getByText('Add multiple tracks at once'))
+  expect(await findByText(/Paste a list of file URLs/)).toBeTruthy()
+})
+
 test('TextIndexingConfig edits existing values and has distinct add buttons', () => {
   const { model } = getSession()
   const { getByDisplayValue, getByTestId } = render(
