@@ -12,20 +12,21 @@ import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 // Single source for per-base canvas colors (mismatch + softclip-base draws),
 // keyed by uppercase-ASCII base code. Returns RGBColor tuples so mismatch draws
 // can apply per-mismatch alpha via rgba255(); softclip-base draws wrap in
-// rgb255(). Non-A/C/G/T bases (e.g. N) fall back to colorMutedSnpBase at the
-// call sites.
+// rgb255(). N (78) has its own color; other non-A/C/G/T/N bytes fall back to
+// colorBaseN at the call sites. Under showModifications every base mutes to grey.
 export function buildBaseColorTupleMap(
   state: RenderState,
 ): Record<number, RGBColor> {
   const { colors } = state
   const muted = colors.colorMutedSnpBase
   return state.showModifications
-    ? { 65: muted, 67: muted, 71: muted, 84: muted }
+    ? { 65: muted, 67: muted, 71: muted, 84: muted, 78: muted }
     : {
         65: colors.colorBaseA,
         67: colors.colorBaseC,
         71: colors.colorBaseG,
         84: colors.colorBaseT,
+        78: colors.colorBaseN,
       }
 }
 
@@ -40,9 +41,7 @@ export function buildCigarOpDrawColors(state: RenderState): CigarOpDrawColors {
     baseC: base ?? rgb255(colors.colorBaseC),
     baseG: base ?? rgb255(colors.colorBaseG),
     baseT: base ?? rgb255(colors.colorBaseT),
-    // N/other bases are already grey, so the showModifications muted swap is a
-    // no-op for them.
-    baseN: rgb255(colors.colorMutedSnpBase),
+    baseN: base ?? rgb255(colors.colorBaseN),
     mismatch: '',
     deletion: rgb255(colors.colorDeletion),
     insertion: '',

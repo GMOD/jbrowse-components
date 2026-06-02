@@ -134,10 +134,9 @@ function fillFrameUniforms(
   f[U.canvasW] = frame.canvasW
   f[U.pxPerBp] = frame.canvasW / (frame.clippedBpEnd - frame.clippedBpStart)
   f[U.canvasH] = state.canvasHeight
-  // rangeY0 (pileupY) and scrollTop (connecting/linked-read shaders) are
-  // the same value held in two slots; unifying needs a shader regen.
+  // The pileup top in scrolled px: pileupY and the connecting/linked-read
+  // shaders all read this as rangeY0 (via pileupRowCenterPx).
   f[U.rangeY0] = state.scrollTop
-  f[U.scrollTop] = state.scrollTop
   f[U.covOffset] = state.pileupTopOffset
   f[U.featHeight] = state.featureHeight
   f[U.featSpacing] = state.featureSpacing
@@ -234,6 +233,7 @@ function writePaletteToUbo(u: Uint32Array, c: ColorPalette, samplot: boolean) {
   u[U.colorBaseC] = pack(c.colorBaseC)
   u[U.colorBaseG] = pack(c.colorBaseG)
   u[U.colorBaseT] = pack(c.colorBaseT)
+  u[U.colorBaseN] = pack(c.colorBaseN)
   u[U.colorInsertion] = pack(c.colorInsertion)
   u[U.colorDeletion] = pack(c.colorDeletion)
   u[U.colorSkip] = pack(c.colorSkip)
@@ -478,6 +478,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       this.uU32[U.colorBaseC] = grey
       this.uU32[U.colorBaseG] = grey
       this.uU32[U.colorBaseT] = grey
+      this.uU32[U.colorBaseN] = grey
     }
     this.hal.writeUniforms(this.uData)
   }

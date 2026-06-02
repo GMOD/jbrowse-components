@@ -31,6 +31,7 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorBaseC: toRgb(palette.bases.C.main),
     colorBaseG: toRgb(palette.bases.G.main),
     colorBaseT: toRgb(palette.bases.T.main),
+    colorBaseN: toRgb(palette.bases.N.main),
     colorInsertion: toRgb(palette.insertion),
     colorDeletion: toRgb(palette.deletion),
     colorSkip: toRgb(palette.skip),

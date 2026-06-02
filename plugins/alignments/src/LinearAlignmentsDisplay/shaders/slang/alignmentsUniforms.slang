@@ -25,8 +25,9 @@ public struct Uniforms {
   // Canvas metadata
   public float canvasW;
   public float canvasH;
+  // Pileup top in scrolled px. Read by pileupY and (via pileupRowCenterPx) by
+  // the connecting/linked-read line shaders.
   public float rangeY0;
-  public float scrollTop;
   public float covOffset;
   public float featHeight;
   public float featSpacing;
@@ -78,6 +79,7 @@ public struct Uniforms {
   public uint colorBaseC;
   public uint colorBaseG;
   public uint colorBaseT;
+  public uint colorBaseN;
   public uint colorInsertion;
   public uint colorDeletion;
   public uint colorSkip;
@@ -152,8 +154,7 @@ public float2 pileupY(float row, Uniforms u) {
 
 // Screen-pixel Y of a pileup row's vertical center. Algebraically the
 // midpoint of pileupY() — kept as one helper so the linked-read connecting
-// lines and the pileup quads can't drift, and so the rangeY0/scrollTop split
-// lives in exactly one place (writeUniforms uploads them equal).
+// lines and the pileup quads can't drift.
 public float pileupRowCenterPx(float row, Uniforms u) {
   float rowH = u.featHeight + u.featSpacing;
   return u.covOffset + row * rowH + u.featHeight * 0.5 - u.rangeY0;

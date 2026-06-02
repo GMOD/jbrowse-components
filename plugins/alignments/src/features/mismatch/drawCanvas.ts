@@ -33,10 +33,9 @@ export function drawMismatches(
     const y = pileupRowY(yRow, state)
     const base = region.mismatchBases[i]!
     const frequency = region.mismatchFrequencies[i]! / 255
-    // Non-A/C/G/T bases (e.g. N) have no palette entry; render them with the
-    // muted SNP color rather than dropping them, matching the GPU shader
-    // (mismatch.slang) and MAF's resolveCellColor (n -> mutedSnpBase).
-    const colorTuple = baseColors[base] ?? state.colors.colorMutedSnpBase
+    // N has a palette entry; any other non-A/C/G/T byte falls back to the N
+    // color, matching the GPU shader (mismatch.slang baseColor catch-all).
+    const colorTuple = baseColors[base] ?? state.colors.colorBaseN
     let alpha = 1
     if (pxPerBp < 1) {
       alpha = pxPerBp + frequency * (1 - pxPerBp)

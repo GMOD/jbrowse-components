@@ -319,6 +319,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         colorBaseC: [0, 0, 1] as [number, number, number],
         colorBaseG: [1, 0.65, 0] as [number, number, number],
         colorBaseT: [1, 0, 0] as [number, number, number],
+        colorBaseN: [0.47, 0.33, 0.28] as [number, number, number],
         colorInsertion: [0.75, 0, 0.75] as [number, number, number],
         colorDeletion: [0, 0, 0] as [number, number, number],
         colorSoftclip: [0, 0.5, 1] as [number, number, number],

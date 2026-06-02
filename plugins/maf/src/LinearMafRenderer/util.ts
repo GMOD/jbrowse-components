@@ -22,7 +22,7 @@ export function getColorBaseMap(theme: Theme) {
     c: bases.C.main,
     g: bases.G.main,
     t: bases.T.main,
-    n: theme.palette.mutedSnpBase,
+    n: bases.N.main,
   }
 }
 

@@ -29,13 +29,14 @@ struct VsOut {
 };
 
 float3 snpColor(float ct, Uniforms u) {
-  int ci = int(ct);
-  if (ci == 1) { return unpackRGBA(u.colorBaseA).xyz; }
-  if (ci == 2) { return unpackRGBA(u.colorBaseC).xyz; }
-  if (ci == 3) { return unpackRGBA(u.colorBaseG).xyz; }
-  if (ci == 4) { return unpackRGBA(u.colorBaseT).xyz; }
-  // 5=N and any other base fall back to the muted grey.
-  return unpackRGBA(u.colorMutedSnpBase).xyz;
+  // 5=N and any other type hit `default` and use the dedicated N color.
+  switch (int(ct)) {
+    case 1:  return unpackRGBA(u.colorBaseA).xyz;
+    case 2:  return unpackRGBA(u.colorBaseC).xyz;
+    case 3:  return unpackRGBA(u.colorBaseG).xyz;
+    case 4:  return unpackRGBA(u.colorBaseT).xyz;
+    default: return unpackRGBA(u.colorBaseN).xyz;
+  }
 }
 
 [shader("vertex")]

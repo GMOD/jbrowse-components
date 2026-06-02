@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material'
-import { blue, green, grey, orange, red } from '@mui/material/colors'
+import { blue, brown, green, grey, orange, red } from '@mui/material/colors'
 import deepmerge from 'deepmerge'
 
 import type {
@@ -47,6 +47,7 @@ declare module '@mui/material/styles' {
       C: PaletteColor
       G: PaletteColor
       T: PaletteColor
+      N: PaletteColor
     }
     frames: Frames
     framesCDS: Frames
@@ -71,6 +72,7 @@ declare module '@mui/material/styles' {
       C?: PaletteColorOptions
       G?: PaletteColorOptions
       T?: PaletteColorOptions
+      N?: PaletteColorOptions
     }
     framesCDS?: Frames
     frames?: Frames
@@ -88,6 +90,10 @@ const bases = {
   C: refTheme.palette.augmentColor({ color: blue }),
   G: refTheme.palette.augmentColor({ color: orange }),
   T: refTheme.palette.augmentColor({ color: red }),
+  // N / ambiguous bases: muted brown — a distinct hue so it never blends into
+  // the grey coverage histogram the way mutedSnpBase (reserved for the
+  // show-modifications muting) does.
+  N: refTheme.palette.augmentColor({ color: brown }),
 }
 const framesCDS: Frames = [
   null,
@@ -564,7 +570,7 @@ function addMissingColors(theme: ThemeOptions = {}) {
         mutedSnpBase: palette?.mutedSnpBase || mutedSnpBase,
         startCodon: palette?.startCodon || startCodon,
         stopCodon: palette?.stopCodon || stopCodon,
-        bases: palette?.bases ?? bases,
+        bases: { ...bases, ...palette?.bases },
         frames: palette?.frames ?? frames,
         framesCDS: palette?.framesCDS ?? framesCDS,
       },

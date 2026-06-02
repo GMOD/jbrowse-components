@@ -16,6 +16,7 @@ export interface ColorPalette {
   colorBaseC: RGBColor
   colorBaseG: RGBColor
   colorBaseT: RGBColor
+  colorBaseN: RGBColor
   colorInsertion: RGBColor
   colorDeletion: RGBColor
   colorSkip: RGBColor

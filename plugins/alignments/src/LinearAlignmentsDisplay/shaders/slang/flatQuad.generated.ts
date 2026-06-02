@@ -22,43 +22,43 @@ export const UNIFORM_OFFSET_F32 = {
   canvasW: 4,
   canvasH: 5,
   rangeY0: 6,
-  scrollTop: 7,
-  covOffset: 8,
-  featHeight: 9,
-  featSpacing: 10,
-  covHeight: 11,
-  covYOffset: 12,
-  depthScale: 13,
-  binSize: 14,
-  interbaseHeight: 15,
-  depthDomainMax: 16,
-  insertUpper: 17,
-  insertLower: 18,
-  blockStartPx: 19,
-  blockWidth: 20,
-  lineWidthPx: 21,
-  gradientHue: 22,
-  pairedArcsDown: 23,
-  arcsYDomainBp: 24,
-  colorScheme: 25,
-  highlightIdx: 26,
-  highlightOnly: 27,
-  chainMode: 28,
-  showStroke: 29,
-  flipStrandLongRead: 30,
-  coverageScaleType: 31,
-  reversed: 32,
-  colorFwd: 33,
-  colorRev: 34,
-  colorNostrand: 35,
-  colorPairLR: 36,
-  colorPairRL: 37,
-  colorPairRR: 38,
-  colorPairLL: 39,
-  colorBaseA: 40,
-  colorBaseC: 41,
-  colorBaseG: 42,
-  colorBaseT: 43,
+  covOffset: 7,
+  featHeight: 8,
+  featSpacing: 9,
+  covHeight: 10,
+  covYOffset: 11,
+  depthScale: 12,
+  binSize: 13,
+  interbaseHeight: 14,
+  depthDomainMax: 15,
+  insertUpper: 16,
+  insertLower: 17,
+  blockStartPx: 18,
+  blockWidth: 19,
+  lineWidthPx: 20,
+  gradientHue: 21,
+  pairedArcsDown: 22,
+  arcsYDomainBp: 23,
+  colorScheme: 24,
+  highlightIdx: 25,
+  highlightOnly: 26,
+  chainMode: 27,
+  showStroke: 28,
+  flipStrandLongRead: 29,
+  coverageScaleType: 30,
+  reversed: 31,
+  colorFwd: 32,
+  colorRev: 33,
+  colorNostrand: 34,
+  colorPairLR: 35,
+  colorPairRL: 36,
+  colorPairRR: 37,
+  colorPairLL: 38,
+  colorBaseA: 39,
+  colorBaseC: 40,
+  colorBaseG: 41,
+  colorBaseT: 42,
+  colorBaseN: 43,
   colorInsertion: 44,
   colorDeletion: 45,
   colorSkip: 46,
@@ -111,7 +111,6 @@ export interface Uniforms {
   canvasW: number
   canvasH: number
   rangeY0: number
-  scrollTop: number
   covOffset: number
   featHeight: number
   featSpacing: number
@@ -148,6 +147,7 @@ export interface Uniforms {
   colorBaseC: number
   colorBaseG: number
   colorBaseT: number
+  colorBaseN: number
   colorInsertion: number
   colorDeletion: number
   colorSkip: number
@@ -193,43 +193,43 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[4] = uniforms.canvasW
   f32[5] = uniforms.canvasH
   f32[6] = uniforms.rangeY0
-  f32[7] = uniforms.scrollTop
-  f32[8] = uniforms.covOffset
-  f32[9] = uniforms.featHeight
-  f32[10] = uniforms.featSpacing
-  f32[11] = uniforms.covHeight
-  f32[12] = uniforms.covYOffset
-  f32[13] = uniforms.depthScale
-  f32[14] = uniforms.binSize
-  f32[15] = uniforms.interbaseHeight
-  f32[16] = uniforms.depthDomainMax
-  f32[17] = uniforms.insertUpper
-  f32[18] = uniforms.insertLower
-  f32[19] = uniforms.blockStartPx
-  f32[20] = uniforms.blockWidth
-  f32[21] = uniforms.lineWidthPx
-  f32[22] = uniforms.gradientHue
-  f32[23] = uniforms.pairedArcsDown
-  f32[24] = uniforms.arcsYDomainBp
-  i32[25] = uniforms.colorScheme
-  i32[26] = uniforms.highlightIdx
-  i32[27] = uniforms.highlightOnly
-  i32[28] = uniforms.chainMode
-  i32[29] = uniforms.showStroke
-  i32[30] = uniforms.flipStrandLongRead
-  i32[31] = uniforms.coverageScaleType
-  f32[32] = uniforms.reversed
-  u32[33] = uniforms.colorFwd
-  u32[34] = uniforms.colorRev
-  u32[35] = uniforms.colorNostrand
-  u32[36] = uniforms.colorPairLR
-  u32[37] = uniforms.colorPairRL
-  u32[38] = uniforms.colorPairRR
-  u32[39] = uniforms.colorPairLL
-  u32[40] = uniforms.colorBaseA
-  u32[41] = uniforms.colorBaseC
-  u32[42] = uniforms.colorBaseG
-  u32[43] = uniforms.colorBaseT
+  f32[7] = uniforms.covOffset
+  f32[8] = uniforms.featHeight
+  f32[9] = uniforms.featSpacing
+  f32[10] = uniforms.covHeight
+  f32[11] = uniforms.covYOffset
+  f32[12] = uniforms.depthScale
+  f32[13] = uniforms.binSize
+  f32[14] = uniforms.interbaseHeight
+  f32[15] = uniforms.depthDomainMax
+  f32[16] = uniforms.insertUpper
+  f32[17] = uniforms.insertLower
+  f32[18] = uniforms.blockStartPx
+  f32[19] = uniforms.blockWidth
+  f32[20] = uniforms.lineWidthPx
+  f32[21] = uniforms.gradientHue
+  f32[22] = uniforms.pairedArcsDown
+  f32[23] = uniforms.arcsYDomainBp
+  i32[24] = uniforms.colorScheme
+  i32[25] = uniforms.highlightIdx
+  i32[26] = uniforms.highlightOnly
+  i32[27] = uniforms.chainMode
+  i32[28] = uniforms.showStroke
+  i32[29] = uniforms.flipStrandLongRead
+  i32[30] = uniforms.coverageScaleType
+  f32[31] = uniforms.reversed
+  u32[32] = uniforms.colorFwd
+  u32[33] = uniforms.colorRev
+  u32[34] = uniforms.colorNostrand
+  u32[35] = uniforms.colorPairLR
+  u32[36] = uniforms.colorPairRL
+  u32[37] = uniforms.colorPairRR
+  u32[38] = uniforms.colorPairLL
+  u32[39] = uniforms.colorBaseA
+  u32[40] = uniforms.colorBaseC
+  u32[41] = uniforms.colorBaseG
+  u32[42] = uniforms.colorBaseT
+  u32[43] = uniforms.colorBaseN
   u32[44] = uniforms.colorInsertion
   u32[45] = uniforms.colorDeletion
   u32[46] = uniforms.colorSkip

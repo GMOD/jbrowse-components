@@ -23,13 +23,17 @@ struct VsOut {
 };
 
 float3 baseColor(uint b, Uniforms u) {
-  if (b == 65u || b == 97u)  { return unpackRGBA(u.colorBaseA).xyz; }
-  if (b == 67u || b == 99u)  { return unpackRGBA(u.colorBaseC).xyz; }
-  if (b == 71u || b == 103u) { return unpackRGBA(u.colorBaseG).xyz; }
-  if (b == 84u || b == 116u) { return unpackRGBA(u.colorBaseT).xyz; }
-  // Non-A/C/G/T bases (e.g. N): themed muted grey, matching the Canvas2D
-  // path (drawMismatches / drawSoftclipBases) and MAF's resolveCellColor.
-  return unpackRGBA(u.colorMutedSnpBase).xyz;
+  // Non-A/C/G/T bases (e.g. N) hit `default` and use the dedicated N color,
+  // matching the Canvas2D path (drawMismatches / drawSoftclipBases) and MAF's
+  // resolveCellColor. During show-modifications, writeUniforms swaps colorBaseN
+  // to grey along with ACGT.
+  switch (b) {
+    case 65u: case 97u:  return unpackRGBA(u.colorBaseA).xyz;
+    case 67u: case 99u:  return unpackRGBA(u.colorBaseC).xyz;
+    case 71u: case 103u: return unpackRGBA(u.colorBaseG).xyz;
+    case 84u: case 116u: return unpackRGBA(u.colorBaseT).xyz;
+    default:             return unpackRGBA(u.colorBaseN).xyz;
+  }
 }
 
 [shader("vertex")]

@@ -9,9 +9,10 @@ const BASE_A_COLOR = '#00bf00'
 const BASE_C_COLOR = '#4747ff'
 const BASE_G_COLOR = '#d5bb04'
 const BASE_T_COLOR = '#f00'
-// N and other non-A/C/G/T bases: muted grey, matching the pileup mismatch
-// shader (mismatch.slang) and the theme's mutedSnpBase ('#888').
-const BASE_N_COLOR = '#888'
+// N and other non-A/C/G/T bases: muted brown, matching the theme's
+// `bases.N` (MUI brown). Distinct from the grey coverage histogram so N
+// segments stay visible. This is the theme-agnostic fallback for worker code.
+const BASE_N_COLOR = '#795548'
 
 export interface CigarOpDrawColors {
   mismatch: string
