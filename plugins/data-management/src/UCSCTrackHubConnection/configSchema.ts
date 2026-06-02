@@ -34,6 +34,19 @@ const UCSCTrackHubConnection = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: baseConnectionConfig,
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, where `uri` points at the hub.txt:
+     *
+     * ```json
+     * {
+     *   "type": "UCSCTrackHubConnection",
+     *   "uri": "http://mysite.com/path/to/hub.txt"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       return snap.uri
         ? {

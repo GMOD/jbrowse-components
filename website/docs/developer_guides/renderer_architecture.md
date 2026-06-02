@@ -1,37 +1,29 @@
 ---
 title: Renderer architecture
-description: GPU main-thread rendering and the legacy worker-renderer path
+description: GPU main-thread rendering of worker-fetched feature data
 guide_category: Core concepts
 ---
 
 ## Overview
 
-JBrowse 2 is transitioning from worker-rendered image tiles to GPU-based
-rendering. Two paths coexist:
+JBrowse 2 renders feature data on the main thread with the GPU. The split is:
 
-- **GPU/main-thread rendering (current direction).** The worker fetches feature
-  data via RPC and returns it as compact typed arrays (absolute genomic uint32
-  coordinates). The main thread then draws with WebGPU, falling back to WebGL,
-  then Canvas2D. This covers the high-volume track types — alignments, wiggle,
-  features, variants. See `plugins/canvas` and `packages/core/src/gpu`.
-- **Worker-renderer (legacy).** A few specialized renderers still run the older
-  pattern, where the worker produces the rendered output and transfers it back.
-  These are subclasses of `ServerSideRendererType` and are now limited to
-  renderers like `ArcRenderer` and `StructuralVariantChordRenderer`.
+- **Worker** — fetches feature data via RPC and returns it as compact typed
+  arrays (absolute genomic uint32 coordinates). No rendering happens in the
+  worker.
+- **Main thread** — draws the returned data with WebGPU, falling back to WebGL2,
+  then Canvas2D. This covers the high-volume track types: alignments, wiggle,
+  features, and variants.
 
-## Worker-renderer class hierarchy
+See `plugins/canvas` and `packages/core/src/gpu` for the implementation, and
+[creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+to build one.
 
-The remaining worker-renderer base classes (in
-`packages/core/src/pluggableElementTypes/renderers`):
+## Specialized renderers
 
-```
-RendererType (base)
-└── ServerSideRendererType (RPC bridge)
-    ├── FeatureRendererType (feature fetching + serialization)  // e.g. ArcRenderer
-    │   ├── CircularChordRendererType   // e.g. StructuralVariantChordRenderer
-    │   └── BoxRendererType (layout management)
-```
-
-For creating a renderer in the legacy worker pattern, see
-[creating renderers](/docs/developer_guides/creating_renderer). For GPU
-rendering, see the source under `plugins/canvas` and `packages/core/src/gpu`.
+A few specialized renderers still draw in the worker and transfer the rendered
+output back — `ArcRenderer` (`@jbrowse/plugin-arc`) and
+`StructuralVariantChordRenderer` (`@jbrowse/plugin-circular-view`). They
+subclass `ServerSideRendererType` in
+`packages/core/src/pluggableElementTypes/renderers`. New track types should use
+the GPU path above rather than this pattern.

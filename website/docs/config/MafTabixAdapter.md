@@ -18,6 +18,18 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### MafTabixAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
+
+```json
+{
+  "type": "MafTabixAdapter",
+  "uri": "yourfile.bed.gz",
+  "samples": ["sample1", "sample2"]
+}
+```
+
 ### MafTabixAdapter - Slots
 
 #### slot: samples

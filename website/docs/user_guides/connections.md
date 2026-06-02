@@ -49,15 +49,10 @@ appear. You can filter by assembly name in the connection form.
 
 ## JBrowse 1 connection URL format
 
-The URL must point to the JBrowse 1 data directory containing `trackList.json`,
-for example:
-
-```
-https://myhost/jbrowse1/data/
-```
-
-You also need to supply the assembly name that this data directory corresponds
-to.
+For the legacy JBrowse 1 connection type, point the URL at the JBrowse 1 data
+directory containing `trackList.json` (e.g. `https://myhost/jbrowse1/data/`) and
+supply the assembly name it corresponds to. See the
+[JBrowse1Connection config docs](/docs/config/jbrowse1connection) for details.
 
 ## Adding a connection via the CLI
 

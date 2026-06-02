@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https:
+      defaultValue: 'https://accounts.google.com/o/oauth2/v2/auth',
     }
 ```
 
@@ -36,7 +36,7 @@ authEndpoint: {
 scopes: {
       description: 'optional scopes for the authorization call',
       type: 'string',
-      defaultValue: 'https:
+      defaultValue: 'https://www.googleapis.com/auth/drive.readonly',
     }
 ```
 

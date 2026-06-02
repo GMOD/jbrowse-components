@@ -35,6 +35,20 @@ const JB2TrackHubConnection = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: baseConnectionConfig,
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, where `uri` points at the jb2
+     * config.json:
+     *
+     * ```json
+     * {
+     *   "type": "JB2TrackHubConnection",
+     *   "uri": "http://mysite.com/path/to/config.json"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       return snap.uri
         ? {

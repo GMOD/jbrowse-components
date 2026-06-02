@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### JB2TrackHubConnection - Pre-processor / simplified config
+
+preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
+
+```json
+{
+  "type": "JB2TrackHubConnection",
+  "uri": "http://mysite.com/path/to/config.json"
+}
+```
+
 ### JB2TrackHubConnection - Slots
 
 #### slot: configJsonLocation
@@ -26,7 +37,7 @@ reference the markdown files in our repo of the checked out git tag
 configJsonLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http:
+        uri: 'http://mysite.com/path/to/config.json',
         locationType: 'UriLocation',
       },
       description:

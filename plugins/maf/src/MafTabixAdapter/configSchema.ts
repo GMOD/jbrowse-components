@@ -66,6 +66,21 @@ const configSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes tbi index at
+     * yourfile.bed.gz.tbi:
+     *
+     * ```json
+     * {
+     *   "type": "MafTabixAdapter",
+     *   "uri": "yourfile.bed.gz",
+     *   "samples": ["sample1", "sample2"]
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       return snap.uri
         ? {

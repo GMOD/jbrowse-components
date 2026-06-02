@@ -64,7 +64,7 @@ own via pull request.
 
 - [Writing a no-build plugin](/docs/developer_guides/no_build_plugin) - Plugin without a build step, useful for jexl callbacks and simple modifications
 - [Pluggable elements](/docs/developer_guides/pluggable_elements) - Overview of all element types a plugin can register
-- [Writing a plugin using jbrowse-plugin-template](/docs/developer_guides/simple_plugin) - Step-by-step plugin setup using the official rollup template
+- [Writing a plugin](/docs/developer_guides/simple_plugin) - Scaffold a plugin from an official template
 - [Theming](/docs/developer_guides/theming) - Customizing JBrowse colors and theme via config
 
 ### Core concepts
@@ -75,7 +75,7 @@ own via pull request.
 - [Extension points](/docs/developer_guides/extension_points) - Callbacks registered by producers and consumed across the app
 - [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports) - What JBrowse provides as shared libraries (re-exports) versus what your plugin bundles itself from npm, and how to import each
 - [MST patterns](/docs/developer_guides/mst_patterns) - Common MobX-State-Tree patterns used across JBrowse plugins
-- [Renderer architecture](/docs/developer_guides/renderer_architecture) - GPU main-thread rendering and the legacy worker-renderer path
+- [Renderer architecture](/docs/developer_guides/renderer_architecture) - GPU main-thread rendering of worker-fetched feature data
 - [RPC and worker system](/docs/developer_guides/rpc_workers) - How to register and call RPC methods that run in web workers
 
 ### Creating pluggable elements
@@ -84,7 +84,6 @@ own via pull request.
 - [Creating custom add-track workflows](/docs/developer_guides/creating_addtrack_workflow) - Custom UI in the Add track dialog for non-standard track types
 - [Creating custom display types](/docs/developer_guides/creating_display) - Control how a track renders in a given view type
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display) - Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
-- [Creating custom renderers](/docs/developer_guides/creating_renderer) - Write canvas- or SVG-based feature rendering in a web worker
 - [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter) - Implement a custom backend for the search box
 - [Creating custom track types](/docs/developer_guides/creating_track) - Define new high-level track concepts backed by display types
 - [Creating custom view types](/docs/developer_guides/creating_view) - Add entirely new view panels such as DotplotView or CircularView

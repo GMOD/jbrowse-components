@@ -122,13 +122,12 @@ which has two display methods
 ### Renderers
 
 A renderer draws features for a display. High-volume track types (alignments,
-wiggle, features, variants) now render on the main thread with GPU/Canvas2D from
-worker-fetched data; a few specialized renderers still use the legacy
-worker-renderer pattern. See
+wiggle, features, variants) render on the main thread with GPU/Canvas2D from
+worker-fetched data — see
 [renderer architecture](/docs/developer_guides/renderer_architecture/) and
-[creating renderers](/docs/developer_guides/creating_renderer/).
+[creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display).
 
-Examples of the legacy worker-renderer type:
+A few specialized renderers still draw in the worker:
 
 - `ArcRenderer` (`@jbrowse/plugin-arc`) - draws arcs connecting features, used
   by the paired arcs mode in the alignments display

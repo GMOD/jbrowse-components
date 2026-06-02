@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+### UCSCTrackHubConnection - Pre-processor / simplified config
+
+preprocessor to allow minimal config, where `uri` points at the hub.txt:
+
+```json
+{
+  "type": "UCSCTrackHubConnection",
+  "uri": "http://mysite.com/path/to/hub.txt"
+}
+```
+
 ### UCSCTrackHubConnection - Slots
 
 #### slot: hubTxtLocation
@@ -26,7 +37,7 @@ reference the markdown files in our repo of the checked out git tag
 hubTxtLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http:
+        uri: 'http://mysite.com/path/to/hub.txt',
         locationType: 'UriLocation',
       },
       description: 'location of the hub file (usually called hub.txt)',

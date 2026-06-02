@@ -26,11 +26,11 @@ reference the markdown files in our repo of the checked out git tag
 dataDirLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http:
+        uri: 'http://mysite.com/jbrowse/data/',
         locationType: 'UriLocation',
       },
       description:
-        'the location of the JBrowse 1 data directory, often something like http:
+        'the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/',
     }
 ```
 

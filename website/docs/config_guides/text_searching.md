@@ -104,26 +104,11 @@ for all options.
 
 ### JBrowse1TextSearchAdapter config
 
-For back-compatibility with a JBrowse1 names index created by
-`generate-names.pl`:
-
-```json
-{
-  "textSearchAdapter": {
-    "type": "JBrowse1TextSearchAdapter",
-    "textSearchAdapterId": "generate-names-index",
-    "namesIndexLocation": {
-      "uri": "/names"
-    }
-  }
-}
-```
-
-- `namesIndexLocation` - the location of the JBrowse1 names index data directory
-
-See the
+A names index created by JBrowse 1's `generate-names.pl` can still be used via
+the `JBrowse1TextSearchAdapter` — point `namesIndexLocation` at the names
+directory. See the
 [JBrowse1TextSearchAdapter config docs](/docs/config/jbrowse1textsearchadapter)
-for all options.
+for the config slots.
 
 ## Troubleshooting
 

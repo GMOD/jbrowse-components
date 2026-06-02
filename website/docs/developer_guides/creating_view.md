@@ -25,9 +25,9 @@ abstraction instead.
 
 ## Minimal walkthrough
 
-The [simple plugin tutorial](/docs/developer_guides/simple_plugin) walks through
-registering a "Hello world" view via `pluginManager.addViewType(...)` — start
-there for a complete scaffold and build setup.
+The [plugin templates](/docs/developer_guides/simple_plugin) give you a complete
+scaffold and build setup to register a view via `pluginManager.addViewType(...)`
+— start there.
 
 A view registration looks roughly like:
 

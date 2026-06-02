@@ -47,5 +47,4 @@ references:
 - `plugins/hic/src/HicTrack` - track with a single dedicated display
 
 See also
-[creating custom display types](/docs/developer_guides/creating_display) and
-[creating custom renderers](/docs/developer_guides/creating_renderer).
+[creating custom display types](/docs/developer_guides/creating_display).

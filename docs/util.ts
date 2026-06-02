@@ -229,8 +229,30 @@ export function parseTaggedComment(
   return { name, docs: docs.join('\n') }
 }
 
+// Strip JSDoc/inline comments from extracted source. Token-aware (via the TS
+// scanner) so `//` inside string literals — e.g. a `http://...` URL in a slot
+// defaultValue or description — is preserved rather than truncated.
 export function removeComments(string: string) {
-  return string.replaceAll(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim()
+  const scanner = ts.createScanner(
+    ts.ScriptTarget.Latest,
+    /* skipTrivia */ false,
+    ts.LanguageVariant.Standard,
+    string,
+  )
+  let out = ''
+  for (
+    let token = scanner.scan();
+    token !== ts.SyntaxKind.EndOfFileToken;
+    token = scanner.scan()
+  ) {
+    const isComment =
+      token === ts.SyntaxKind.SingleLineCommentTrivia ||
+      token === ts.SyntaxKind.MultiLineCommentTrivia
+    if (!isComment) {
+      out += scanner.getTokenText()
+    }
+  }
+  return out.trim()
 }
 
 // Shared markdown builders used by both generators.

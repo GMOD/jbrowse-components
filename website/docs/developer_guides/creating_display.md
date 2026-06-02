@@ -8,7 +8,7 @@ A display type tells JBrowse how to show a given track inside a particular view.
 The same track can have several displays — one for each view it can appear in,
 or several alternative renderings inside the same view. The display owns
 view-specific state, menu items, and overlays; the
-[renderer](/docs/developer_guides/creating_renderer) it invokes does the
+[renderer](/docs/developer_guides/renderer_architecture) it invokes does the
 per-feature drawing.
 
 ## When to add a custom display type
@@ -32,8 +32,8 @@ that split is intended to work.
 
 ## Walkthroughs
 
-- [simple plugin tutorial](/docs/developer_guides/simple_plugin) - full scaffold
-  including a display type
+- [plugin templates](/docs/developer_guides/simple_plugin) - full scaffold and
+  build setup
 - [no-build plugin tutorial](/docs/developer_guides/no_build_plugin) - same idea
   without a bundler
 

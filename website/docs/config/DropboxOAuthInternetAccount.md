@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https:
+      defaultValue: 'https://www.dropbox.com/oauth2/authorize',
     }
 ```
 
@@ -36,7 +36,7 @@ authEndpoint: {
 tokenEndpoint: {
       description: 'the token endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https:
+      defaultValue: 'https://api.dropbox.com/oauth2/token',
     }
 ```
 
