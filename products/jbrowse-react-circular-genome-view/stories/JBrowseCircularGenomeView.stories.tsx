@@ -252,44 +252,40 @@ export const ShowTrack = () => {
   },
 }
 
-const hg19Assembly = {
-  name: 'hg19',
-  aliases: ['GRCh37'],
-  sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'Pd8Wh30ei9R',
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
-    },
-  },
-  refNameAliases: {
-    adapter: {
-      type: 'RefNameAliasAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
-    },
-  },
-}
-
-const hg19Tracks = [
-  {
-    type: 'VariantTrack',
-    trackId: 'pacbio_sv_vcf',
-    name: 'HG002 Pacbio SV (VCF)',
-    assemblyNames: ['hg19'],
-    category: ['GIAB'],
-    adapter: {
-      type: 'VcfTabixAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
-    },
-  },
-]
-
 function HumanRender() {
   const [state] = useState(() =>
     createViewState({
-      assembly: hg19Assembly,
-      tracks: hg19Tracks,
+      assembly: {
+        name: 'hg19',
+        aliases: ['GRCh37'],
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'Pd8Wh30ei9R',
+          adapter: {
+            type: 'BgzipFastaAdapter',
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'RefNameAliasAdapter',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+          },
+        },
+      },
+      tracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'pacbio_sv_vcf',
+          name: 'HG002 Pacbio SV (VCF)',
+          assemblyNames: ['hg19'],
+          category: ['GIAB'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
+          },
+        },
+      ],
       defaultSession: {
         name: 'this session',
         view: {
