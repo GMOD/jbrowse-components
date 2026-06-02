@@ -7,11 +7,17 @@ the source instead.
 
 ## Auto-generated — do not hand-edit
 
-| Path(s)                                                  | Regenerate with                  | Source of truth                                                               |
-| -------------------------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------- |
-| `config/*.md` (config schema API)                        | `pnpm configdocs` (repo root)    | `configSchema` blocks in plugin/package source (`docs/generateConfigDocs.ts`) |
-| `models/*.md` (state model API)                          | `pnpm statedocs` (repo root)     | MST model definitions in source (`docs/generateStateModelDocs.ts`)            |
-| `user_guide.md`, `config_guide.md`, `developer_guide.md` | `pnpm lint-docs` (in `website/`) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter           |
+| Path(s)                                                  | Regenerate with              | Source of truth                                                               |
+| -------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------- |
+| `config/*.md` (config schema API)                        | `pnpm autogen` (repo root)   | `configSchema` blocks in plugin/package source (`docs/generateConfigDocs.ts`) |
+| `models/*.md` (state model API)                          | `pnpm autogen` (repo root)   | MST model definitions in source (`docs/generateStateModelDocs.ts`)            |
+| `api/*.md` (plugin-export API)                           | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`docs/generateApiDocs.ts`)               |
+| `user_guide.md`, `config_guide.md`, `developer_guide.md` | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter           |
+
+- `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
+  `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`
+  alone — `gendocs` skips prettier and leaves ~200 files of formatting churn.
+  Never hand-edit anything in these three directories.
 
 - **Guide indexes** (`user_guide.md` / `config_guide.md` / `developer_guide.md`)
   are built from each guide's `title`, `description`, and `guide_category`
