@@ -5,7 +5,6 @@ import {
   RootAppMenuMixin,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -141,15 +140,6 @@ export default function RootModel({
       /**
        * #volatile
        */
-      textSearchManager: new TextSearchManager(pluginManager),
-      /**
-       * #volatile
-       */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      error: undefined as unknown,
-      /**
-       * #volatile
-       */
       reloadPluginManagerCallback: (
         _configSnapshot: Record<string, unknown>,
         _sessionSnapshot: Record<string, unknown>,
@@ -260,12 +250,6 @@ export default function RootModel({
           await self.sessionDB.delete('sessions', id)
           await self.fetchSessionMetadata()
         }
-      },
-      /**
-       * #action
-       */
-      setError(error?: unknown) {
-        self.error = error
       },
     }))
     .views(self => ({

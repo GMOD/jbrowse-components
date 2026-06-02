@@ -3,7 +3,6 @@ import {
   RootAppMenuMixin,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable } from '@jbrowse/core/ui/Icons'
@@ -101,16 +100,6 @@ export default function RootModel({
           MainThreadRpcDriver: {},
         },
       ),
-      /**
-       * #volatile
-       */
-      textSearchManager: new TextSearchManager(pluginManager),
-      /**
-       * #volatile
-       */
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      error: undefined as unknown,
     }))
     .actions(self => {
       return {
@@ -146,13 +135,6 @@ export default function RootModel({
             ...defaultSession,
             name: `${defaultSession.name} ${new Date().toLocaleString()}`,
           })
-        },
-
-        /**
-         * #action
-         */
-        setError(error?: unknown) {
-          self.error = error
         },
       }
     })
