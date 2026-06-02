@@ -82,12 +82,7 @@ const DiagonalizationProgressDialog = observer(
           </Typography>
           {message ? <Typography>{message}</Typography> : null}
           {error ? <ErrorBanner error={error} /> : null}
-          {isRunning ? (
-            <LinearProgress
-              style={{ marginTop: 16 }}
-              color={error ? 'error' : 'primary'}
-            />
-          ) : null}
+          {isRunning ? <LinearProgress style={{ marginTop: 16 }} /> : null}
         </DialogContent>
         <DialogActions>
           {isRunning ? (

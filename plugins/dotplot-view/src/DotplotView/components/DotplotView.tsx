@@ -37,10 +37,6 @@ const useStyles = makeStyles()(theme => ({
     gridRow: '1/2',
     gridColumn: '2/2',
     zIndex: 100,
-    '& path': {
-      cursor: 'crosshair',
-      fill: 'none',
-    },
   },
   content: {
     position: 'relative',
@@ -76,7 +72,6 @@ const DotplotCanvas = observer(function DotplotCanvas({
         style={{
           width: viewWidth,
           height: viewHeight,
-          imageRendering: 'auto',
         }}
       />
       {gpuError ? <ErrorBanner error={gpuError} /> : null}

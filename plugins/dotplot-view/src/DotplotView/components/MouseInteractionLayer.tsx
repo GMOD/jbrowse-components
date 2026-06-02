@@ -3,12 +3,25 @@ import type { ComponentType, ReactNode } from 'react'
 
 import { PluggableComponent } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import DotplotGrid from './DotplotGrid.tsx'
 
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
+
+const useStyles = makeStyles()(theme => ({
+  grid: {
+    background: theme.palette.divider,
+  },
+  htmlOverlay: {
+    position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none',
+    overflow: 'hidden',
+  },
+}))
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
@@ -47,6 +60,7 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
     setMouseCurrClient,
     setCtrlKeyWasUsed,
   } = interaction
+  const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const svgOverlays = pluginManager.evaluateExtensionPoint(
     'DotplotView-OverlaySVGComponent',
@@ -71,7 +85,7 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
       <svg
         width={model.viewWidth}
         height={model.viewHeight}
-        style={{ background: 'rgba(0,0,0,0.12)' }}
+        className={classes.grid}
       >
         <DotplotGrid model={model}>
           {validSelect && mousedown && mouserect ? (
@@ -86,14 +100,7 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
           {svgOverlays}
         </DotplotGrid>
       </svg>
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          overflow: 'hidden',
-        }}
-      >
+      <div className={classes.htmlOverlay}>
         <Suspense fallback={null}>
           <PluggableComponent
             pluginManager={pluginManager}

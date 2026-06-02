@@ -7,8 +7,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { computeTickPositions } from './util.ts'
-
 import type { PositionedTick } from './util.ts'
 import type { DotplotViewModel } from '../model.ts'
 
@@ -51,11 +49,11 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
+  const { viewWidth, borderX, borderY, hview, htextRotation } = model
   const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.hblockLabelKeysToHide
-  const ticks = computeTickPositions(hview, hticks)
+  const ticks = model.hTickPositions
   const theme = useTheme()
   const fill = getFillProps(theme.palette.text.primary)
   const stroke = getStrokeProps(theme.palette.text.primary)
@@ -143,11 +141,11 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewHeight, borderX, borderY, vview, vtextRotation, vticks } = model
+  const { viewHeight, borderX, borderY, vview, vtextRotation } = model
   const { offsetPx, dynamicBlocks, bpPerPx } = vview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.vblockLabelKeysToHide
-  const ticks = computeTickPositions(vview, vticks)
+  const ticks = model.vTickPositions
   const theme = useTheme()
   const fill = getFillProps(theme.palette.text.primary)
   const stroke = getStrokeProps(theme.palette.text.primary)

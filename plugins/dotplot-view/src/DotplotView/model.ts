@@ -27,6 +27,7 @@ import { observable } from 'mobx'
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import {
+  computeTickPositions,
   getBlockLabelKeysToHide,
   makeTicks,
   pxWidthForBlocks,
@@ -312,6 +313,18 @@ export default function stateModelFactory(pm: PluginManager) {
           return dynamicBlocks.contentBlocks.length > MAX_TICK_BLOCKS
             ? []
             : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+        },
+        /**
+         * #getter
+         */
+        get hTickPositions() {
+          return computeTickPositions(self.hview, this.hticks)
+        },
+        /**
+         * #getter
+         */
+        get vTickPositions() {
+          return computeTickPositions(self.vview, this.vticks)
         },
         /**
          * #getter
