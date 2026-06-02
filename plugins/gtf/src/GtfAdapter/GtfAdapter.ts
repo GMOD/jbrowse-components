@@ -1,6 +1,5 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
-  IntervalTree,
   SimpleFeature,
   doesIntersect2,
   fetchAndMaybeUnzip,
@@ -8,7 +7,10 @@ import {
   min,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
+import {
+  groupLinesByRef,
+  makeFeatureIntervalTreeMap,
+} from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseStringSync } from 'gtf-nostream'
 
@@ -17,7 +19,6 @@ import { featureData } from '../util.ts'
 import type { FeatureLoc } from '../util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { StatusCallback } from '@jbrowse/core/util/parseLineByLine'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
@@ -43,13 +44,7 @@ function getRedispatchBounds(
 }
 
 export default class GtfAdapter extends BaseFeatureDataAdapter {
-  private gtfFeatures?: Promise<{
-    header: string
-    intervalTreeMap: Record<
-      string,
-      (sc?: StatusCallback) => IntervalTree<SimpleFeatureSerialized>
-    >
-  }>
+  private gtfFeatures?: ReturnType<GtfAdapter['loadDataP']>
 
   private async loadDataP(opts?: BaseOptions) {
     const buffer = await fetchAndMaybeUnzip(
@@ -61,38 +56,16 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
       opts?.statusCallback,
     )
 
-    const calculatedIntervalTreeMap: Record<
-      string,
-      IntervalTree<SimpleFeatureSerialized>
-    > = {}
-
-    const intervalTreeMap = Object.fromEntries(
-      Object.entries(linesByRef).map(([refName, refLines]) => {
-        let lines: string[] | null = refLines
-        return [
-          refName,
-          (sc?: StatusCallback) => {
-            if (!calculatedIntervalTreeMap[refName]) {
-              sc?.('Parsing GTF data')
-              const intervalTree = new IntervalTree<SimpleFeatureSerialized>()
-              const parsed = (
-                parseStringSync(lines!.join('\n')) as FeatureLoc[][]
-              )
-                .flat()
-                .map((f, i) => featureData(f, `${this.id}-${refName}-${i}`))
-              lines = null
-              for (const obj of parsed) {
-                intervalTree.insert(
-                  [obj.start as number, obj.end as number],
-                  obj as SimpleFeatureSerialized,
-                )
-              }
-              calculatedIntervalTreeMap[refName] = intervalTree
-            }
-            return calculatedIntervalTreeMap[refName]
-          },
-        ]
-      }),
+    const intervalTreeMap = makeFeatureIntervalTreeMap<SimpleFeatureSerialized>(
+      linesByRef,
+      (lines, refName) =>
+        (parseStringSync(lines.join('\n')) as FeatureLoc[][])
+          .flat()
+          .map(
+            (f, i) =>
+              featureData(f, `${this.id}-${refName}-${i}`) as SimpleFeatureSerialized,
+          ),
+      'Parsing GTF data',
     )
 
     return { header: headerLines.join('\n'), intervalTreeMap }
