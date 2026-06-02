@@ -25,6 +25,7 @@
     "./BaseFeatureWidget/BaseFeatureDetail/Attributes": "./src/BaseFeatureWidget/BaseFeatureDetail/Attributes.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/BaseCard": "./src/BaseFeatureWidget/BaseFeatureDetail/BaseCard.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": "./src/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/Formatter": "./src/BaseFeatureWidget/BaseFeatureDetail/Formatter.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx",
     "./Plugin": "./src/Plugin.ts",
     "./PluginLoader": "./src/PluginLoader.ts",

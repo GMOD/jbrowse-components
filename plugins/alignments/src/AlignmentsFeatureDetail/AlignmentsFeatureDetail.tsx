@@ -1,13 +1,13 @@
 import { lazy } from 'react'
 
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { ActionLink } from '@jbrowse/core/ui'
 import { navToLoc } from '@jbrowse/sv-core'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Flags from './Flags.tsx'
-import Formatter from './Formatter.tsx'
 import { tags } from './tagInfo.ts'
 import { getTag } from './util.ts'
 

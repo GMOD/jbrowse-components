@@ -1,6 +1,11 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  CopyToClipboardButton,
+  Dialog,
+  ErrorBanner,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
 import { complement, reverse, toLocale, useFetch } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -46,7 +51,6 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
 }) {
   const { classes } = useStyles()
   const [rev, setReverse] = useState(false)
-  const [copied, setCopied] = useState(false)
   const [comp, setComplement] = useState(false)
   const { leftOffset, rightOffset } = model
 
@@ -79,7 +83,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           const chunkStart = chunk.get('start') + 1
           const chunkEnd = chunk.get('end')
           const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+          if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
             throw new Error(
               `${loc} returned ${toLocale(chunkSeq.length)} bases, but should have returned ${toLocale(
                 chunkEnd - chunkStart,
@@ -170,21 +174,15 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={async () => {
-            const { default: copy } = await import('copy-to-clipboard')
-            await copy(sequence)
-            setCopied(true)
-            setTimeout(() => {
-              setCopied(false)
-            }, 500)
-          }}
+        <CopyToClipboardButton
+          value={sequence}
+          copiedLabel="Copied"
           disabled={loading || !!error || sequenceTooLarge}
           color="primary"
           startIcon={<ContentCopyIcon />}
         >
-          {copied ? 'Copied' : 'Copy to clipboard'}
-        </Button>
+          Copy to clipboard
+        </CopyToClipboardButton>
         <Button
           onClick={async () => {
             const { saveAs } = await import('@jbrowse/core/util')

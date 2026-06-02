@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  CopyToClipboardButton,
+  ErrorBanner,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
@@ -122,15 +126,12 @@ cat(resultClusters$order,sep='\n')`
                 Download Rscript
               </Button>{' '}
               or{' '}
-              <Button
+              <CopyToClipboardButton
                 variant="contained"
-                onClick={async () => {
-                  const { default: copy } = await import('copy-to-clipboard')
-                  await copy(results || '')
-                }}
+                value={() => results || ''}
               >
                 Copy Rscript to clipboard
-              </Button>{' '}
+              </CopyToClipboardButton>{' '}
               or{' '}
               <Button
                 variant="contained"

@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import CloseIcon from '@mui/icons-material/Close'
 import {
   Button,
@@ -11,6 +9,7 @@ import {
 } from '@mui/material'
 import { SourceMapConsumer } from 'source-map-js'
 
+import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import {
@@ -111,7 +110,6 @@ export default function ErrorMessageStackTraceDialog({
   error: unknown
   extra?: unknown
 }) {
-  const [clicked, setClicked] = useState(false)
   const graphicsCapabilities = useGraphicsCapabilities()
   const errorText = error ? `${error}` : ''
   const stackTrace = stripMessage(getStackTrace(error), errorText)
@@ -183,20 +181,14 @@ export default function ErrorMessageStackTraceDialog({
         )}
       </DialogContent>
       <DialogActions>
-        <Button
+        <CopyToClipboardButton
           variant="contained"
           color="secondary"
-          onClick={async () => {
-            const { default: copy } = await import('copy-to-clipboard')
-            await copy(errorBoxText)
-            setClicked(true)
-            setTimeout(() => {
-              setClicked(false)
-            }, 1000)
-          }}
+          value={errorBoxText}
+          copiedLabel="Copied!"
         >
-          {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}
-        </Button>
+          Copy stack trace to clipboard
+        </CopyToClipboardButton>
         <Button
           variant="contained"
           color="primary"

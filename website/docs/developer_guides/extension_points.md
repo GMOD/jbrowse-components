@@ -215,10 +215,34 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-- `args` - a config snapshot `Record<string, unknown>` for the track, with
-  `formatAbout` already applied to it
+lets you transform the config snapshot shown in the "About this track" dialog,
+after any `formatAbout` config has already been applied
 
-Return value: New config snapshot object
+- `args` - an object of the form `{ config: Record<string, unknown> }`, the track
+  config snapshot with `formatAbout` already merged in
+- `props` - an object of the form below
+
+```typescript
+interface props {
+  session: AbstractSessionModel
+  config: AnyConfigurationModel
+}
+```
+
+Return value: an object of the same `{ config }` shape, with your modifications
+
+Example: add a derived field to a particular track's about dialog
+
+```typescript
+pluginManager.addToExtensionPoint(
+  'Core-customizeAbout',
+  (arg, { config }) => {
+    return config.trackId === 'volvox.inv.vcf'
+      ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
+      : arg
+  },
+)
+```
 
 ### Core-replaceWidget
 

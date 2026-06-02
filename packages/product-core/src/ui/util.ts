@@ -20,13 +20,14 @@ export function removeAttr(obj: Record<string, unknown>, attr: string) {
 export function readConf<T = unknown>(
   config: AnyConfigurationModel | Record<string, unknown>,
   slotPath?: string | string[],
+  args: Record<string, unknown> = {},
 ): T {
   if (isStateTreeNode(config)) {
     if (!slotPath) {
       return getSnapshot(config) as unknown as T
     }
     const path = typeof slotPath === 'string' ? [slotPath] : slotPath
-    return readConfObject(config, path) as T
+    return readConfObject(config, path, args) as T
   }
   if (!slotPath) {
     return config as unknown as T
@@ -37,7 +38,7 @@ export function readConf<T = unknown>(
     result = (result as Record<string, unknown> | undefined)?.[key]
   }
   if (typeof result === 'string' && result.startsWith('jexl:')) {
-    return stringToJexlExpression(result).eval({}) as T
+    return stringToJexlExpression(result).eval(args) as T
   }
   return result as T
 }
@@ -52,7 +53,8 @@ export function generateDisplayableConfig({
   pluginManager: PluginManager
 }) {
   const conf = isStateTreeNode(config) ? readConfObject(config) : config
-  const formatAboutConfig = readConf(config, ['formatAbout', 'config']) ?? {}
+  const formatAboutConfig =
+    readConf(config, ['formatAbout', 'config'], { config: conf }) ?? {}
   const sessionFormatAbout =
     getConf(session, ['formatAbout', 'config'], { config: conf }) ?? {}
   return pluginManager.evaluateExtensionPoint(

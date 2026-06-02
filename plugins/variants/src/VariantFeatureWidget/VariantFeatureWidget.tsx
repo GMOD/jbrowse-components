@@ -3,11 +3,11 @@ import { Suspense, lazy } from 'react'
 import { parseBreakend } from '@gmod/vcf'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AltFormatter from './AltFormatter.tsx'
-import Formatter from './Formatter.tsx'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 

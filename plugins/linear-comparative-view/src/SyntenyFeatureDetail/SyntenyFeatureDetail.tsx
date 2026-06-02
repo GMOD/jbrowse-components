@@ -1,9 +1,9 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Formatter from './Formatter.tsx'
 import LinkToSyntenyView from './LinkToSyntenyView.tsx'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'

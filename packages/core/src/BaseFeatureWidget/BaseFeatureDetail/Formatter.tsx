@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
-// this 'show more...' for long strings
+// a 'show more...' toggle used as a formatter on feature details: long values
+// (e.g. a SEQ/CRAM string, or a long read's worth of data in a single div) can
+// slow down the rest of the app, so they are truncated until expanded
 export default function Formatter({ value }: { value: unknown }) {
   const [show, setShow] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -11,7 +13,7 @@ export default function Formatter({ value }: { value: unknown }) {
         type="button"
         onClick={async () => {
           const { default: copy } = await import('copy-to-clipboard')
-          await copy(display)
+          void copy(display)
           setCopied(true)
           setTimeout(() => {
             setCopied(false)

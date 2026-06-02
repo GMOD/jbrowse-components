@@ -1,10 +1,12 @@
-import { useState } from 'react'
-
-import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  CopyToClipboardButton,
+  Dialog,
+  ErrorBanner,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, DialogContent } from '@mui/material'
-import copy from 'copy-to-clipboard'
+import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { readConf } from './util.ts'
@@ -52,7 +54,6 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  const [copied, setCopied] = useState(false)
   const { rpcManager } = session
   const trackId = readConf<string>(config, 'trackId')
   const assemblyNames = readConf<string[]>(config, 'assemblyNames')
@@ -91,18 +92,12 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
           <LoadingEllipses message="Loading refNames" />
         ) : (
           <>
-            <Button
+            <CopyToClipboardButton
               variant="contained"
-              onClick={async () => {
-                await copy(formatRefNames(refNames, false))
-                setCopied(true)
-                setTimeout(() => {
-                  setCopied(false)
-                }, 1000)
-              }}
+              value={() => formatRefNames(refNames, false)}
             >
-              {copied ? 'Copied to clipboard!' : 'Copy ref names'}
-            </Button>
+              Copy ref names
+            </CopyToClipboardButton>
 
             <pre className={classes.refNames}>
               {formatRefNames(refNames, true)}
