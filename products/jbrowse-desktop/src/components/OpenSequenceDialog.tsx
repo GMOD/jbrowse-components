@@ -25,6 +25,7 @@ import {
 } from './util.ts'
 
 import type { AssemblyConf } from './util.ts'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -83,23 +84,25 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     }
   }
 
-  async function createAssemblyConfig() {
-    const raw = getAdapterConfig(form)
-    let adapter
-    if ('needsIndexing' in raw) {
-      setLoading('Creating .fai file for FASTA')
-      const faiPath = await ipcRenderer.invoke('indexFasta', form.fastaLocation)
-      adapter = {
-        type: 'IndexedFastaAdapter' as const,
-        fastaLocation: raw.fastaLocation,
-        faiLocation: {
-          localPath: faiPath,
-          locationType: 'LocalPathLocation' as const,
-        },
-      }
-    } else {
-      adapter = raw
+  async function indexFasta(fastaLocation: FileLocation) {
+    setLoading('Creating .fai file for FASTA')
+    const faiPath = await ipcRenderer.invoke('indexFasta', fastaLocation)
+    return {
+      type: 'IndexedFastaAdapter' as const,
+      fastaLocation,
+      faiLocation: {
+        localPath: faiPath,
+        locationType: 'LocalPathLocation' as const,
+      },
     }
+  }
+
+  async function createAssemblyConfig() {
+    const result = getAdapterConfig(form)
+    const adapter =
+      result.kind === 'needsFastaIndex'
+        ? await indexFasta(result.fastaLocation)
+        : result.adapter
     return {
       ...getBaseAssemblyConfig(form),
       sequence: {

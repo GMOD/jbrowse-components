@@ -171,8 +171,30 @@ export function getBaseAssemblyConfig(state: FormState) {
   }
 }
 
+export type AssemblyAdapter =
+  | {
+      type: 'IndexedFastaAdapter'
+      fastaLocation: FileLocation
+      faiLocation: FileLocation
+    }
+  | {
+      type: 'BgzipFastaAdapter'
+      fastaLocation: FileLocation
+      faiLocation: FileLocation
+      gziLocation: FileLocation
+    }
+  | {
+      type: 'TwoBitAdapter'
+      twoBitLocation: FileLocation
+      chromSizesLocation: FileLocation
+    }
+
 export type AssemblyConf = ReturnType<typeof getBaseAssemblyConfig> & {
-  sequence: { type: 'ReferenceSequenceTrack'; trackId: string; adapter: object }
+  sequence: {
+    type: 'ReferenceSequenceTrack'
+    trackId: string
+    adapter: AssemblyAdapter
+  }
 }
 
 export function isBlank(location: FileLocation) {
@@ -324,6 +346,14 @@ export function urlTextToLocations(text: string): FileLocation[] {
     .map(uri => ({ uri, locationType: 'UriLocation' as const }))
 }
 
+// Either a ready-to-use sequence adapter, or a signal that the chosen plain
+// FASTA must have a .fai generated before it can become an IndexedFastaAdapter.
+// Kept as a discriminated union rather than a sentinel property so the caller
+// can't accidentally write an un-indexed FASTA into a saved config.
+export type AdapterConfigResult =
+  | { kind: 'ready'; adapter: AssemblyAdapter }
+  | { kind: 'needsFastaIndex'; fastaLocation: FileLocation }
+
 export function getAdapterConfig({
   adapterSelection,
   fastaLocation,
@@ -338,25 +368,20 @@ export function getAdapterConfig({
   gziLocation: FileLocation
   twoBitLocation: FileLocation
   chromSizesLocation: FileLocation
-}) {
+}): AdapterConfigResult {
   if (adapterSelection === 'FastaAdapter') {
     if (isBlank(fastaLocation)) {
       throw new Error('FASTA location is required')
     }
-    return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation,
-      needsIndexing: true,
-    }
+    return { kind: 'needsFastaIndex', fastaLocation }
   }
   if (adapterSelection === 'IndexedFastaAdapter') {
     if (isBlank(fastaLocation) || isBlank(faiLocation)) {
       throw new Error('Both FASTA and FAI locations are required')
     }
     return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation,
-      faiLocation,
+      kind: 'ready',
+      adapter: { type: 'IndexedFastaAdapter', fastaLocation, faiLocation },
     }
   }
   if (adapterSelection === 'BgzipFastaAdapter') {
@@ -368,18 +393,20 @@ export function getAdapterConfig({
       throw new Error('FASTA, FAI, and GZI locations are all required')
     }
     return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation,
-      faiLocation,
-      gziLocation,
+      kind: 'ready',
+      adapter: {
+        type: 'BgzipFastaAdapter',
+        fastaLocation,
+        faiLocation,
+        gziLocation,
+      },
     }
   }
   if (isBlank(twoBitLocation)) {
     throw new Error('2bit location is required')
   }
   return {
-    type: 'TwoBitAdapter',
-    twoBitLocation,
-    chromSizesLocation,
+    kind: 'ready',
+    adapter: { type: 'TwoBitAdapter', twoBitLocation, chromSizesLocation },
   }
 }

@@ -134,16 +134,15 @@ describe('getAdapterConfig', () => {
     ).toThrow('FASTA location is required')
   })
 
-  test('FastaAdapter returns IndexedFastaAdapter config with needsIndexing', () => {
+  test('FastaAdapter signals the FASTA needs indexing', () => {
     const result = getAdapterConfig({
       ...base,
       adapterSelection: 'FastaAdapter',
       fastaLocation: fasta,
     })
-    expect(result).toMatchObject({
-      type: 'IndexedFastaAdapter',
+    expect(result).toEqual({
+      kind: 'needsFastaIndex',
       fastaLocation: fasta,
-      needsIndexing: true,
     })
   })
 
@@ -165,9 +164,12 @@ describe('getAdapterConfig', () => {
       faiLocation: fai,
     })
     expect(result).toMatchObject({
-      type: 'IndexedFastaAdapter',
-      fastaLocation: fasta,
-      faiLocation: fai,
+      kind: 'ready',
+      adapter: {
+        type: 'IndexedFastaAdapter',
+        fastaLocation: fasta,
+        faiLocation: fai,
+      },
     })
   })
 
@@ -191,10 +193,13 @@ describe('getAdapterConfig', () => {
       gziLocation: gzi,
     })
     expect(result).toMatchObject({
-      type: 'BgzipFastaAdapter',
-      fastaLocation: fasta,
-      faiLocation: fai,
-      gziLocation: gzi,
+      kind: 'ready',
+      adapter: {
+        type: 'BgzipFastaAdapter',
+        fastaLocation: fasta,
+        faiLocation: fai,
+        gziLocation: gzi,
+      },
     })
   })
 
@@ -211,8 +216,11 @@ describe('getAdapterConfig', () => {
       twoBitLocation: twobit,
     })
     expect(result).toMatchObject({
-      type: 'TwoBitAdapter',
-      twoBitLocation: twobit,
+      kind: 'ready',
+      adapter: {
+        type: 'TwoBitAdapter',
+        twoBitLocation: twobit,
+      },
     })
   })
 })
