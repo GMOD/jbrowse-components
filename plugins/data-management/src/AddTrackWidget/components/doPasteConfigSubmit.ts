@@ -5,12 +5,9 @@ import {
 } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
-import type { AddTrackModel } from '../model.ts'
+import { parseTrackConfigs } from './parseTrackConfigs.ts'
 
-interface PastedTrackConf {
-  trackId: string
-  assemblyNames?: string[]
-}
+import type { AddTrackModel } from '../model.ts'
 
 export function doPasteConfigSubmit({
   model,
@@ -20,8 +17,7 @@ export function doPasteConfigSubmit({
   jsonText: string
 }) {
   const session = getSession(model)
-  const parsed = JSON.parse(jsonText) as PastedTrackConf | PastedTrackConf[]
-  const confs = Array.isArray(parsed) ? parsed : [parsed]
+  const confs = parseTrackConfigs(jsonText)
 
   if (isSessionWithAddTracks(session) && isSessionModelWithWidgets(session)) {
     const { view } = model
