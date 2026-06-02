@@ -31,11 +31,12 @@ function readSlotValue(slot: ConfigSlot) {
  *
  * Key design decisions:
  * - We read live display config models (trackConfig.displays) rather than
- *   getSnapshot(trackConfig).displays, because MST's postProcessSnapshot
- *   strips display configs to {} when all values are defaults.
- * - displayId is a types.identifier that postProcessSnapshot also strips,
- *   so we recover it from getSnapshot(display).configuration which stores
- *   the reference as a plain string.
+ *   getSnapshot(trackConfig).displays because we need each slot's resolved
+ *   getValue() and the display model's getOverride() to compare overrides
+ *   against config defaults — neither is available from a plain snapshot
+ *   (which stores only raw values, with defaults stripped out).
+ * - displayId is read from the display model's `configuration` reference
+ *   (getSnapshot(display).configuration is the displayId as a plain string).
  * - Matching is by display type string since the live config model accessed
  *   via trackConfig.displays is a different MST proxy than
  *   display.configuration (identity check fails).
