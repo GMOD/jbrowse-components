@@ -128,10 +128,10 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return view.bpPerPx > ZOOMED_OUT_BP_PER_PX
       },
       get numRows() {
-        const f = self.showForward ? 1 : 0
-        const r = self.effectiveShowReverse ? 1 : 0
-        const t = self.effectiveShowTranslation ? 1 : 0
-        return f + r + 3 * t * (f + r)
+        const baseRows =
+          (self.showForward ? 1 : 0) + (self.effectiveShowReverse ? 1 : 0)
+        // each base row gains 3 stacked translation frames when enabled
+        return baseRows * (self.effectiveShowTranslation ? 4 : 1)
       },
       get sequenceHeight() {
         return this.numRows * 15

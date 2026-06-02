@@ -97,8 +97,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
           }
           checkStopToken(stopToken)
           const chunks = await Promise.all(chunkPromises)
-          const len = end - start
-          const seq = chunks.join('').slice(start - s, start - s + len)
+          const seq = chunks.join('').slice(start - s, regionEnd - s)
           if (seq) {
             observer.next(
               new SimpleFeature({
