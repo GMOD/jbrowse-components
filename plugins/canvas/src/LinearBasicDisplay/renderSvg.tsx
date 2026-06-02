@@ -1,4 +1,3 @@
-import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
@@ -7,6 +6,7 @@ import { when } from 'mobx'
 
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
 import { forEachRenderedLabel } from './components/labelPositioning.ts'
+import { forEachRenderedPeptide } from './components/peptidePositioning.ts'
 import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -64,36 +64,16 @@ function renderPeptides(
   data: FeatureDataResult,
   vr: SvgRegionBounds,
 ) {
-  const { aminoAcidOverlay } = data
-  if (!aminoAcidOverlay) {
-    return
-  }
-
-  const toScreen = makeBpMapper(vr)
   ctx.textAlign = 'center'
-  for (const item of aminoAcidOverlay) {
-    if (item.endBp < vr.start || item.startBp > vr.end) {
-      continue
-    }
-
-    const px1 = toScreen(item.startBp)
-    const px2 = toScreen(item.endBp)
-    const centerPx = (px1 + px2) / 2
-    const fontSize = Math.min(item.heightPx, 16)
+  forEachRenderedPeptide(data, vr, (item, { centerPx, fontSize, text }) => {
     const y = item.topPx + item.heightPx / 2 + fontSize / 3
-    const cellWidthPx = Math.abs(px2 - px1)
-    const label =
-      cellWidthPx >= 20
-        ? `${item.aminoAcid}${item.proteinIndex + 1}`
-        : item.aminoAcid
-
     ctx.font = `${fontSize}px monospace`
     ctx.strokeStyle = 'white'
     ctx.lineWidth = 1
-    ctx.strokeText(label, centerPx, y)
+    ctx.strokeText(text, centerPx, y)
     ctx.fillStyle = item.isStopOrNonTriplet ? 'red' : 'black'
-    ctx.fillText(label, centerPx, y)
-  }
+    ctx.fillText(text, centerPx, y)
+  })
   ctx.textAlign = 'start'
 }
 

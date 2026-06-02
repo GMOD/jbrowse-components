@@ -23,7 +23,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
 
 import { calculateSvgLegendWidth } from './calculateSvgLegendWidth.ts'
-import { deduplicateFeatureLabels } from './components/util.ts'
 import FeatureDensityMixin from '../shared/FeatureDensityMixin.tsx'
 import TrackHeightMixin from './models/TrackHeightMixin.tsx'
 import configSchema from './models/configSchema.ts'
@@ -291,25 +290,6 @@ function stateModelFactory() {
           }
         }
         return undefined
-      },
-
-      /**
-       * #getter
-       * Deduplicated floating label data, computed and cached by MobX
-       */
-      get floatingLabelData() {
-        const view = getContainingView(self) as LGV
-        const { assemblyManager } = getSession(self)
-        const assemblyName = view.assemblyNames[0]
-        const assembly = assemblyName
-          ? assemblyManager.get(assemblyName)
-          : undefined
-        return deduplicateFeatureLabels(
-          this.layoutFeatures,
-          view,
-          assembly,
-          view.bpPerPx,
-        )
       },
     }))
 

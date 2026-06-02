@@ -1,27 +1,17 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  ReactRendering,
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
+import { ReactRendering, getContainingView } from '@jbrowse/core/util'
 import { blockToRegion } from '@jbrowse/core/util/blockTypes'
-import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
 import { when } from 'mobx'
 
 import SVGLegend from './SVGLegend.tsx'
-import {
-  collectLayoutsFromRenderings,
-  deduplicateFeatureLabels,
-} from './components/util.ts'
-import { SvgFloatingLabels } from './models/SvgFloatingLabels.tsx'
 import BlockState, {
   renderBlockData,
 } from './models/serverSideRenderedBlock.ts'
 import { getId } from './models/util.ts'
 
 import type { BaseLinearDisplayModel } from './model.ts'
-import type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
+import type { ExportSvgDisplayOptions } from './types.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
 
 export async function renderBaseLinearDisplaySvg(
@@ -36,7 +26,7 @@ export async function renderBaseLinearDisplaySvg(
   const { height, id } = self
   const { overrideHeight } = opts
   const view = getContainingView(self) as LinearGenomeViewModel
-  const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width, bpPerPx } = view
+  const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
 
   if (self.error) {
     return <SVGErrorBox error={self.error} width={width} height={height} />
@@ -105,20 +95,6 @@ export async function renderBaseLinearDisplaySvg(
     }),
   )
 
-  const layoutMaps = collectLayoutsFromRenderings(renderings)
-  const layoutFeatures = new CompositeMap<string, LayoutRecord>(layoutMaps)
-
-  const { assemblyManager } = getSession(self)
-  const assemblyName = view.assemblyNames[0]
-  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
-  const featureLabels = deduplicateFeatureLabels(
-    layoutFeatures,
-    view,
-    assembly,
-    bpPerPx,
-  )
-
-  const labelsClipId = getId(id, 'labels')
   const theme = createJBrowseTheme(opts.theme)
   const legendItems = self.showLegend ? self.legendItems(theme) : []
 
@@ -140,14 +116,6 @@ export async function renderBaseLinearDisplaySvg(
           </g>
         )
       })}
-      {/* Floating labels share one clip across the whole view */}
-      <SvgClipRect id={labelsClipId} width={width} height={blockHeight}>
-        <SvgFloatingLabels
-          featureLabels={featureLabels}
-          offsetPx={viewOffsetPx}
-          viewWidth={width}
-        />
-      </SvgClipRect>
       {legendItems.length > 0 ? (
         <SVGLegend
           items={legendItems}

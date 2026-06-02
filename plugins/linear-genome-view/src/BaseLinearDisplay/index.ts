@@ -9,13 +9,7 @@ export type {
   BaseLinearDisplayStateModel,
   LegendItem,
 } from './model.ts'
-export type {
-  ExportSvgDisplayOptions,
-  FloatingLabelData,
-  LayoutFeatureMetadata,
-  LayoutRecord,
-} from './types.ts'
-export { createSubfeatureLabelMetadata } from './types.ts'
+export type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 
 export {
   BlockMsg,
@@ -52,7 +46,6 @@ export {
   type RenderTransformInputs,
   computeRenderTransform,
 } from './models/renderTransform.ts'
-export type { FeatureLabelData } from './components/util.ts'
 export { drawCanvasImageData } from './util.ts'
 export { getDisplayStr } from '../shared/featureDensityUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'

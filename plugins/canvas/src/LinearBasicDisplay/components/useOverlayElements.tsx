@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
+import { forEachRenderedPeptide } from './peptidePositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -231,42 +232,29 @@ export function useAminoAcidOverlay(
 
     for (const vr of visibleRegions) {
       const data = laidOutDataMap.get(vr.displayedRegionIndex)
-      if (!data?.aminoAcidOverlay) {
+      if (!data) {
         continue
       }
-
-      const toScreen = makeBpMapper(vr)
-
-      for (const [i, item] of data.aminoAcidOverlay.entries()) {
-        if (item.endBp < vr.start || item.startBp > vr.end) {
-          continue
-        }
-
-        const pxStart = toScreen(item.startBp)
-        const pxEnd = toScreen(item.endBp)
-        const fontSize = Math.min(item.heightPx, 16)
-        const showIndex = Math.abs(pxEnd - pxStart) >= 20
-
+      forEachRenderedPeptide(data, vr, (item, cell, i) => {
         elements.push(
           <div
             key={`${vr.displayedRegionIndex}-${i}`}
             className={classes.aminoAcid}
             style={{
-              left: (pxStart + pxEnd) / 2,
+              left: cell.centerPx,
               top: item.topPx,
               height: item.heightPx,
-              fontSize,
+              fontSize: cell.fontSize,
               lineHeight: `${item.heightPx}px`,
               color: item.isStopOrNonTriplet
                 ? theme.palette.error.main
                 : theme.palette.text.primary,
             }}
           >
-            {item.aminoAcid}
-            {showIndex ? item.proteinIndex + 1 : null}
+            {cell.text}
           </div>,
         )
-      }
+      })
     }
 
     return elements.length > 0 ? elements : null

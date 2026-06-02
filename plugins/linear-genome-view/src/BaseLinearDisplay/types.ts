@@ -9,44 +9,7 @@ export interface Layout {
   name: string
 }
 
-export interface FloatingLabelData {
-  text: string
-  relativeY: number
-  color: string
-  textWidth: number
-  isOverlay?: boolean
-  parentFeatureId?: string
-  subfeatureId?: string
-  tooltip?: string
-}
-
-export interface LayoutFeatureMetadata {
-  refName: string
-  floatingLabels?: FloatingLabelData[]
-  totalFeatureHeight?: number
-  featureWidth?: number
-  actualTopPx?: number
-  /** Actual feature start in bp (not layout start which includes padding) */
-  featureStartBp?: number
-  /** Actual feature end in bp (not layout end which includes padding) */
-  featureEndBp?: number
-}
-
-export function createSubfeatureLabelMetadata(args: {
-  refName: string
-  floatingLabels: FloatingLabelData[]
-  totalFeatureHeight: number
-  featureWidth: number
-  actualTopPx: number
-  featureStartBp: number
-  featureEndBp: number
-}): LayoutFeatureMetadata {
-  return { ...args }
-}
-
-export type LayoutRecord =
-  | [number, number, number, number]
-  | [number, number, number, number, LayoutFeatureMetadata]
+export type LayoutRecord = [number, number, number, number]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   overrideHeight?: number
