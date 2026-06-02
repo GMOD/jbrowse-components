@@ -48,5 +48,5 @@ export function sortConfs(
       return a[4].localeCompare(b[4])
     })
   }
-  return keyed.map(a => a[0])
+  return keyed.map(([conf]) => conf)
 }

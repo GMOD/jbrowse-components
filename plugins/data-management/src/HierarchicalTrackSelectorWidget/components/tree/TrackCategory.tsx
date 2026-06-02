@@ -11,7 +11,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getAllTrackNodes } from '../../util.ts'
+import { getAllSubcategories, getAllTrackNodes } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeCategoryNode, TreeNode } from '../../types.ts'
@@ -63,21 +63,6 @@ const useStyles = makeStyles()(theme => ({
     opacity: 0.7,
   },
 }))
-
-function getAllSubcategories(node: TreeCategoryNode): string[] {
-  const categoryIds: string[] = []
-  const stack = [node] as TreeCategoryNode[]
-  while (stack.length > 0) {
-    const curr = stack.pop()!
-    for (const child of curr.children) {
-      if (child.type === 'category') {
-        categoryIds.push(child.id)
-        stack.push(child)
-      }
-    }
-  }
-  return categoryIds
-}
 
 // Menu items shared by folder-mode and normal-mode category labels
 function categoryTrackMenuItems(

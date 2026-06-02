@@ -1,6 +1,5 @@
 import { type RefObject, useEffect, useRef, useState } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -66,7 +65,6 @@ const HierarchicalTree = observer(function HierarchicalTree({
   model: HierarchicalTrackSelectorModel
 }) {
   const { flattenedItems } = model
-  const { drawerPosition } = getSession(model)
   const containerRef = useRef<HTMLDivElement>(null)
   useSearchHighlight(
     containerRef,
@@ -107,10 +105,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
           ) : null
         })}
       </div>
-      <SharedTooltip
-        containerRef={containerRef}
-        placement={drawerPosition === 'left' ? 'right' : 'left'}
-      />
+      <SharedTooltip containerRef={containerRef} model={model} />
     </div>
   )
 })

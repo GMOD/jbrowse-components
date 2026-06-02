@@ -23,12 +23,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
-
-type MaybeBoolean = boolean | undefined
-
-type MaybeCollapsedKeys = [string, boolean][] | undefined
-
 const defaultItemHeight = 22
 const categoryItemHeight = 40
 const overscan = 20
@@ -98,6 +92,44 @@ function localStorageSetJSON(key: string, val: unknown) {
   }
 }
 
+function sortedTreeChildren(
+  items: TreeNode[],
+  folderCategories: { has(key: string): boolean },
+) {
+  const tracks: TreeNode[] = []
+  const folders: TreeNode[] = []
+  const categories: TreeNode[] = []
+  for (const item of items) {
+    if (item.type === 'track') {
+      tracks.push(item)
+    } else if (folderCategories.has(item.id)) {
+      folders.push(item)
+    } else {
+      categories.push(item)
+    }
+  }
+  return [...tracks, ...folders, ...categories]
+}
+
+function flattenTree(
+  items: TreeNode[],
+  folderCategories: { has(key: string): boolean },
+  collapsed: { get(key: string): boolean | undefined },
+  result: TreeNode[] = [],
+) {
+  for (const item of sortedTreeChildren(items, folderCategories)) {
+    result.push(item)
+    if (
+      item.children.length > 0 &&
+      !collapsed.get(item.id) &&
+      !(item.type === 'category' && folderCategories.has(item.id))
+    ) {
+      flattenTree(item.children, folderCategories, collapsed, result)
+    }
+  }
+  return result
+}
+
 /**
  * #stateModel HierarchicalTrackSelectorWidget
  */
@@ -136,14 +168,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      sortTrackNames: localStorageGetJSON<MaybeBoolean>(
+      sortTrackNames: localStorageGetJSON<boolean | undefined>(
         sortTrackNamesK,
         undefined,
       ),
       /**
        * #volatile
        */
-      sortCategories: localStorageGetJSON<MaybeBoolean>(
+      sortCategories: localStorageGetJSON<boolean | undefined>(
         sortCategoriesK,
         undefined,
       ),
@@ -388,7 +420,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      getRefSeqTrackConf(assemblyName: string): MaybeAnyConfigurationModel {
+      getRefSeqTrackConf(assemblyName: string): AnyConfigurationModel | undefined {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
@@ -516,47 +548,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get flattenedItems() {
-        const { folderCategories } = self
-        const sortedChildren = (items: TreeNode[]) => {
-          const tracks: TreeNode[] = []
-          const folders: TreeNode[] = []
-          const categories: TreeNode[] = []
-          for (const item of items) {
-            if (item.type === 'track') {
-              tracks.push(item)
-            } else if (folderCategories.has(item.id)) {
-              folders.push(item)
-            } else {
-              categories.push(item)
-            }
-          }
-          return [...tracks, ...folders, ...categories]
-        }
-        const flatten = (items: TreeNode[], result: TreeNode[] = []) => {
-          for (const item of sortedChildren(items)) {
-            result.push(item)
-            const isFolderCategory =
-              item.type === 'category' && folderCategories.has(item.id)
-            if (
-              item.children.length > 0 &&
-              !self.collapsed.get(item.id) &&
-              !isFolderCategory
-            ) {
-              flatten(item.children, result)
-            }
-          }
-          return result
-        }
-
-        return flatten(self.hierarchy.children)
+        return flattenTree(
+          self.hierarchy.children,
+          self.folderCategories,
+          self.collapsed,
+        )
       },
       get flattenedItemOffsets() {
         const items = this.flattenedItems
         const offsets: number[] = []
         let cumulativeHeight = 0
-        for (let i = 0, l = items.length; i < l; i++) {
+        for (const item of items) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight += getItemHeight(items[i]!, self.folderCategories)
+          cumulativeHeight += getItemHeight(item, self.folderCategories)
         }
         return { cumulativeHeight, offsets }
       },
@@ -643,10 +647,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       collapseTopLevelCategories() {
         for (const trackGroups of self.hierarchy.children) {
-          if (trackGroups.children.length) {
-            for (const path of findTopLevelCategories(trackGroups.children)) {
-              self.setCategoryCollapsed(path, true)
-            }
+          for (const path of findTopLevelCategories(trackGroups.children)) {
+            self.setCategoryCollapsed(path, true)
           }
         }
       },
@@ -676,7 +678,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
               )
               if (view) {
-                const lc = localStorageGetJSON<MaybeCollapsedKeys>(
+                const lc = localStorageGetJSON<[string, boolean][] | undefined>(
                   collapsedK(assemblyNames, view.type),
                   undefined,
                 )

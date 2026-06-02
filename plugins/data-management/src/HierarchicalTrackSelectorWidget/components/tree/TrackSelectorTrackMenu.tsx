@@ -29,7 +29,7 @@ const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const trackId = conf.trackId as string
+  const trackId = conf.trackId
 
   return (
     <CascadingMenuButton
