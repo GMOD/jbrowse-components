@@ -9,6 +9,7 @@ import {
   MIN_HEIGHT_FOR_TEXT,
   computeLabelFontSize,
   getInsertionType,
+  insertionBarWidth,
 } from '../constants.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -18,7 +19,6 @@ export interface VisibleLabel {
   x: number
   y: number
   text: string
-  width: number
   fontSize: number
 }
 
@@ -91,6 +91,12 @@ export function computeVisibleLabels(
     const bpToPx = (bp: number) =>
       (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + blockScreenOffsetPx
 
+    // Screen-x spans of the wide purple boxes the GPU draws for large
+    // insertions (insertion.slang), keyed by integer pileup row. A SNP letter
+    // landing on one reads as a "purple SNP", so — matching hit-testing — the
+    // insertion wins and the mismatch loop drops any letter it shadows.
+    const insertionShadows: { row: number; x0: number; x1: number }[] = []
+
     // Process deletions (gaps)
     const { gapPositions, gapYs, gapLengths, gapTypes } = rpcData
     const numGaps = gapPositions.length / 2
@@ -131,7 +137,6 @@ export function computeVisibleLabels(
           x: (startPx + endPx) / 2,
           y: yPx,
           text: lengthStr,
-          width: widthPx,
           fontSize,
         })
       }
@@ -163,22 +168,28 @@ export function computeVisibleLabels(
 
       if (type === INTERBASE_INSERTION) {
         const insertionType = getInsertionType(length, pxPerBp)
-        if (insertionType === 'large' && tallEnoughForText) {
-          labels.push({
-            type: 'insertion',
-            x: xPx,
-            y: yPx,
-            text: String(length),
-            width: 0,
-            fontSize,
+        if (insertionType === 'large') {
+          const halfW = insertionBarWidth(length, pxPerBp) / 2
+          insertionShadows.push({
+            row: interbaseYs[i]!,
+            x0: xPx - halfW,
+            x1: xPx + halfW,
           })
+          if (tallEnoughForText) {
+            labels.push({
+              type: 'insertion',
+              x: xPx,
+              y: yPx,
+              text: String(length),
+              fontSize,
+            })
+          }
         } else if (insertionType === 'small' && canRenderText) {
           labels.push({
             type: 'insertion',
             x: xPx + 3,
             y: yPx,
             text: `(${length})`,
-            width: 0,
             fontSize,
           })
         }
@@ -190,7 +201,6 @@ export function computeVisibleLabels(
             x: xPx + 3,
             y: yPx,
             text: `(${prefix}${length})`,
-            width: 0,
             fontSize,
           })
         }
@@ -208,22 +218,30 @@ export function computeVisibleLabels(
           continue
         }
 
-        const yPx = rowYPx(mismatchYs[i]!)
+        const row = mismatchYs[i]!
+        const yPx = rowYPx(row)
         if (!rowYInRange(yPx)) {
           continue
         }
 
-        const rawStartPx = bpToPx(pos)
-        const rawEndPx = bpToPx(pos + 1)
-        const startPx = Math.min(rawStartPx, rawEndPx)
-        const endPx = Math.max(rawStartPx, rawEndPx)
+        // Midpoint of the 1bp SNP rect; the average is orientation-independent.
+        const centerPx = (bpToPx(pos) + bpToPx(pos + 1)) / 2
+
+        // Insertion wins: drop the letter when a large insertion box on this
+        // row covers its center, otherwise it sits on purple and looks like a
+        // SNP.
+        const shadowed = insertionShadows.some(
+          s => s.row === row && centerPx >= s.x0 && centerPx <= s.x1,
+        )
+        if (shadowed) {
+          continue
+        }
 
         labels.push({
           type: 'mismatch',
-          x: (startPx + endPx) / 2,
+          x: centerPx,
           y: yPx,
           text: String.fromCharCode(mismatchBases[i]!),
-          width: endPx - startPx,
           fontSize,
         })
       }

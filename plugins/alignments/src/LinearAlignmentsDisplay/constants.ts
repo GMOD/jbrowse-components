@@ -56,8 +56,11 @@ export function getInsertionType(
   return 'small'
 }
 
-// SYNC: mirrors width logic in shaders/cigarShaders.ts INSERTION_VERTEX_SHADER
-// and wgsl/cigarShaders.ts INSERTION_WGSL
+// SYNC: mirrors the rectW logic in
+// LinearAlignmentsDisplay/shaders/slang/insertion.slang (vs_main). The single
+// source of truth for an insertion's box width, shared by the GPU shader (via
+// this mirror), the Canvas2D/SVG renderer, hit-testing, and SNP-letter
+// shadowing. insertionWidth.test.ts pins this against the shader.
 export function insertionBarWidth(len: number, pxPerBp: number) {
   const type = getInsertionType(len, pxPerBp)
   if (type === 'large') {
@@ -66,7 +69,7 @@ export function insertionBarWidth(len: number, pxPerBp: number) {
   if (type === 'long') {
     return Math.min(5, (len * pxPerBp) / 3)
   }
-  return Math.min(pxPerBp, 1)
+  return 1
 }
 
 // Returns the minimum frequency at which a feature (mismatch, insertion, etc.)

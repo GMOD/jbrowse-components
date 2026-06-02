@@ -5,9 +5,9 @@ import {
   textWidthForNumber,
 } from './constants.ts'
 
-// Replicates the shader's rectWidthPx calculation exactly.
-// If the shader logic changes, this must be updated in lockstep,
-// and any mismatch with getInsertionRectWidthPx will fail the test.
+// Replicates insertion.slang's rectW calculation exactly (the small branch is
+// a hard 1.0 there, not min(pxPerBp, 1)). If the shader logic changes, this
+// must be updated in lockstep, and any mismatch with insertionBarWidth fails.
 function shaderRectWidthPx(length: number, pxPerBp: number) {
   const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
   const insertionWidthPx = length * pxPerBp
@@ -20,7 +20,7 @@ function shaderRectWidthPx(length: number, pxPerBp: number) {
   if (isLongInsertion) {
     return Math.min(5, insertionWidthPx / 3)
   }
-  return Math.min(pxPerBp, 1)
+  return 1
 }
 
 const lengths = [1, 5, 9, 10, 15, 50, 100, 500, 10000]
