@@ -231,7 +231,7 @@ function specToFiles(
     case 'bam':
       return { file: location, index: index || `${location}.bai` }
     case 'cram':
-      return { file: location, index: `${location}.crai` }
+      return { file: location, index: index || `${location}.crai` }
     case 'tabix':
       return { file: location, index: index || `${location}.tbi` }
     case 'indexed-fasta':
@@ -277,7 +277,7 @@ function specToAdapter(
       return {
         type: 'CramAdapter',
         cramLocation: makeLocation(location),
-        craiLocation: makeLocation(`${location}.crai`),
+        craiLocation: makeLocation(index || `${location}.crai`),
       }
     case 'tabix':
       return {
@@ -329,6 +329,10 @@ export function makeLocationProtocol(protocol: string) {
   }
 }
 
+function matchFormat(location: string) {
+  return formats.find(({ regex }) => regex.test(location))?.spec
+}
+
 export function guessFileNames({
   location,
   index,
@@ -340,12 +344,8 @@ export function guessFileNames({
   bed1?: string
   bed2?: string
 }) {
-  for (const { regex, spec } of formats) {
-    if (regex.test(location)) {
-      return specToFiles(spec, location, index, bed1, bed2)
-    }
-  }
-  return {}
+  const spec = matchFormat(location)
+  return spec ? specToFiles(spec, location, index, bed1, bed2) : {}
 }
 
 export function guessAdapter({
@@ -364,39 +364,28 @@ export function guessAdapter({
   adapterType?: string
 }): Adapter {
   const makeLocation = makeLocationProtocol(protocol)
+  const spec = matchFormat(location)
 
   if (adapterType) {
     const known = adapterTypeToSpec[adapterType]
     if (known) {
-      return specToAdapter(
-        { ...known, adapterType },
-        location,
-        index,
-        bed1,
-        bed2,
-        makeLocation,
-      )
-    }
-
-    for (const { regex, spec } of formats) {
-      if (regex.test(location)) {
-        return locationKinds.has(spec.kind)
-          ? {
-              ...specToAdapter(spec, location, index, bed1, bed2, makeLocation),
-              type: adapterType,
-            }
-          : { type: adapterType }
+      // explicit --adapterType resolves back to its known file layout
+      return specToAdapter(known, location, index, bed1, bed2, makeLocation)
+    } else if (spec && locationKinds.has(spec.kind)) {
+      // unknown adapter type, but the extension has a fixed location layout we
+      // can reuse, just relabeling the adapter type
+      return {
+        ...specToAdapter(spec, location, index, bed1, bed2, makeLocation),
+        type: adapterType,
       }
+    } else {
+      return { type: adapterType }
     }
-    return { type: adapterType }
+  } else {
+    return spec
+      ? specToAdapter(spec, location, index, bed1, bed2, makeLocation)
+      : { type: 'UNKNOWN' }
   }
-
-  for (const { regex, spec } of formats) {
-    if (regex.test(location)) {
-      return specToAdapter(spec, location, index, bed1, bed2, makeLocation)
-    }
-  }
-  return { type: 'UNKNOWN' }
 }
 
 export const adapterTypesToTrackTypeMap: Record<string, string> = {

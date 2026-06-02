@@ -197,6 +197,34 @@ test('adds bam+bai track with load inPlace', async () => {
   })
 })
 
+test('adds cram track with load inPlace', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
+      'add-track',
+      '/testing/in/place.cram',
+      '--load',
+      'inPlace',
+    ])
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds cram track with indexFile for crai', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
+      'add-track',
+      '/testing/in/place.cram',
+      '--load',
+      'inPlace',
+      '--indexFile',
+      '/something/else/random.crai',
+    ])
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
 test('adds bam track with indexFile for bai', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)

@@ -10,7 +10,7 @@ import {
   resolveTargetPath,
 } from './utils.ts'
 import { debug, printHelp } from '../../utils.ts'
-import { loadFile } from '../add-track-utils/file-operations.ts'
+import { loadFiles } from '../add-track-utils/file-operations.ts'
 import { saveConfigAndReport } from '../shared/config-operations.ts'
 
 export async function run(args?: string[]) {
@@ -164,14 +164,12 @@ export async function run(args?: string[]) {
     runFlags: flags,
   })
 
-  if (flags.load) {
-    const destDir = path.dirname(target)
-    await Promise.all(
-      filesToLoad.map(src =>
-        loadFile({ src, destDir, mode: flags.load!, force: flags.force }),
-      ),
-    )
-  }
+  await loadFiles({
+    files: filesToLoad,
+    destDir: path.dirname(target),
+    mode: flags.load,
+    force: flags.force,
+  })
 
   await saveConfigAndReport({
     config: updatedConfig,

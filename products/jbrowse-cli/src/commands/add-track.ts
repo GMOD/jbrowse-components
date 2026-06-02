@@ -7,7 +7,7 @@ import {
   guessFileNames,
   guessTrackType,
 } from './add-track-utils/adapter-utils.ts'
-import { loadFile } from './add-track-utils/file-operations.ts'
+import { loadFiles } from './add-track-utils/file-operations.ts'
 import {
   addSyntenyAssemblyNames,
   buildTrackConfig,
@@ -179,13 +179,14 @@ export async function run(args?: string[]) {
   const location = track!
 
   const mapLoc = (p: string) => mapLocationForFiles(p, load, subDir)
+  const mapOpt = (p?: string) => (p ? mapLoc(p) : undefined)
 
   let adapter = guessAdapter({
     protocol,
     location: mapLoc(location),
-    index: index ? mapLoc(index) : undefined,
-    bed1: bed1 ? mapLoc(bed1) : undefined,
-    bed2: bed2 ? mapLoc(bed2) : undefined,
+    index: mapOpt(index),
+    bed1: mapOpt(bed1),
+    bed2: mapOpt(bed2),
     adapterType,
   })
 
@@ -225,15 +226,13 @@ export async function run(args?: string[]) {
   })
   const updatedConfig = { ...configContents, tracks }
 
-  if (load) {
-    await Promise.all(
-      Object.values(guessFileNames({ location, index, bed1, bed2 }))
-        .filter((f): f is string => !!f)
-        .map(src =>
-          loadFile({ src, destDir: configDir, mode: load, subDir, force }),
-        ),
-    )
-  }
+  await loadFiles({
+    files: Object.values(guessFileNames({ location, index, bed1, bed2 })),
+    destDir: configDir,
+    mode: load,
+    subDir,
+    force,
+  })
 
   await saveConfigAndReport({
     config: updatedConfig,

@@ -1,4 +1,5 @@
 import { promises as fsPromises } from 'fs'
+import path from 'path'
 
 import parseJSON from 'json-parse-better-errors'
 
@@ -23,8 +24,10 @@ export function debug(message: string) {
 
 export async function resolveConfigPath(target?: string, out?: string) {
   const output = target || out || '.'
-  const stat = await fsPromises.lstat(output)
-  return stat.isDirectory() ? `${output}/config.json` : output
+  // stat (not lstat) so a symlinked install directory resolves to its
+  // config.json rather than being treated as the config file itself
+  const stat = await fsPromises.stat(output)
+  return stat.isDirectory() ? path.join(output, 'config.json') : output
 }
 
 export async function readFile(location: string) {

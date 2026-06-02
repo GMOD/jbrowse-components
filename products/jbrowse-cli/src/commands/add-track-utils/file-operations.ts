@@ -42,3 +42,28 @@ export async function loadFile({
   }
   return undefined
 }
+
+// load a set of source files into the config directory, skipping the operation
+// entirely when no load mode is given (e.g. a URL track). undefined entries
+// (optional index/bed files) are ignored
+export async function loadFiles({
+  files,
+  destDir,
+  mode,
+  subDir,
+  force,
+}: {
+  files: (string | undefined)[]
+  destDir: string
+  mode?: string
+  subDir?: string
+  force?: boolean
+}) {
+  if (mode) {
+    await Promise.all(
+      files
+        .filter((f): f is string => !!f)
+        .map(src => loadFile({ src, destDir, mode, subDir, force })),
+    )
+  }
+}
