@@ -4,6 +4,7 @@ import {
   mergeIntervals,
   parseLocString,
   stringify,
+  toLocale,
 } from './index.ts'
 
 import type { ParsedLocString } from './index.ts'
@@ -221,5 +222,21 @@ describe('mergeIntervals', () => {
       { start: 0, end: 10 },
       { start: 100, end: 110 },
     ])
+  })
+})
+
+describe('toLocale', () => {
+  test('small numbers pass through', () => {
+    expect(toLocale(0)).toBe('0')
+    expect(toLocale(999)).toBe('999')
+  })
+  test('inserts thousands separators', () => {
+    expect(toLocale(1000)).toBe('1,000')
+    expect(toLocale(1234567)).toBe('1,234,567')
+  })
+  test('handles negatives (regression: was skipping separators)', () => {
+    expect(toLocale(-500)).toBe('-500')
+    expect(toLocale(-1000)).toBe('-1,000')
+    expect(toLocale(-1234567)).toBe('-1,234,567')
   })
 })

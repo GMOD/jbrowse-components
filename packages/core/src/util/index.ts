@@ -638,12 +638,13 @@ export function getProgressDisplayStr(current: number, total: number) {
 // Fast number formatter with thousand separators
 // Benchmarked at 5-67x faster than toLocaleString('en-US')
 export function toLocale(n: number) {
-  if (n < 1000) {
+  if (n > -1000 && n < 1000) {
     return String(n)
   }
-  const str = String(n)
+  const neg = n < 0
+  const str = String(neg ? -n : n)
   const len = str.length
-  let result = ''
+  let result = neg ? '-' : ''
   for (let i = 0; i < len; i++) {
     if (i > 0 && (len - i) % 3 === 0) {
       result += ','
