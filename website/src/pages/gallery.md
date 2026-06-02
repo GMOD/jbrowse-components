@@ -100,8 +100,9 @@ insertion on the short reads, while the long reads fully span the insertion
 Screenshot showing a ~500bp insertion from SKBR3 (breast cancer) cell line
 PacBio reads. Users can right-click sequence reads, then click "read vs
 reference" to show complex read alignments in a "synteny style" view (lower
-panel). Users can also interactively get the sequence of read portions with a
-click-and-drag action (lower panel, in blue)
+panel), where the gap in the diagonal alignment blocks marks the inserted
+sequence. Users can also click-and-drag over the lower panel to extract the
+sequence of any read portion
 ([live link](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe))
 
 ---

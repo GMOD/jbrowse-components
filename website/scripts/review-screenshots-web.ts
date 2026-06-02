@@ -4,7 +4,7 @@ import http from 'http'
 import path from 'path'
 
 import {
-  findUsages,
+  collectScreenshots,
   imgDir,
   loadReport,
   reportPath,
@@ -20,16 +20,10 @@ const port = portArg ? parseInt(portArg.split('=')[1]!, 10) : 3335
 
 function buildSpecPayload() {
   const report = loadReport()
-  return specs.map(spec => {
-    const { name } = spec
-    const imgPath = path.join(imgDir, `${name}.png`)
-    return {
-      name,
-      exists: fs.existsSync(imgPath),
-      usages: findUsages(name),
-      verdict: report[name],
-    }
-  })
+  return collectScreenshots(specs.map(s => s.name)).map(shot => ({
+    ...shot,
+    verdict: report[shot.name],
+  }))
 }
 
 function readBody(req: http.IncomingMessage): Promise<string> {
@@ -202,6 +196,7 @@ const PAGE = /* html */ `<!doctype html>
   <input id="search" type="search" placeholder="filter by name…" />
   <label><input id="onlyUnreviewed" type="checkbox" /> only unreviewed</label>
   <label><input id="onlyBad" type="checkbox" /> only denied</label>
+  <label><input id="onlyManual" type="checkbox" /> only manual (no generator)</label>
   <div class="counts" id="counts"></div>
 </header>
 <main id="main"></main>
@@ -240,7 +235,8 @@ function card(spec) {
   return '<div class="card ' + status + '" data-name="' + esc(spec.name) + '" data-status="' + status + '">' +
     '<div class="imgwrap">' + img + '</div>' +
     '<div class="meta">' +
-      '<h2>' + esc(spec.name) + '</h2>' +
+      '<h2>' + esc(spec.name) +
+        (spec.hasSpec ? '' : ' <span class="pill none">manual</span>') + '</h2>' +
       renderUsages(spec.usages) +
       '<input class="note" placeholder="note (optional)" value="' + esc(v ? v.note : '') + '" />' +
       '<div class="actions">' +
@@ -284,24 +280,28 @@ function render() {
   const q = document.getElementById('search').value.toLowerCase()
   const onlyUnreviewed = document.getElementById('onlyUnreviewed').checked
   const onlyBad = document.getElementById('onlyBad').checked
+  const onlyManual = document.getElementById('onlyManual').checked
   const good = data.filter(s => s.verdict?.status === 'good').length
   const bad = data.filter(s => s.verdict?.status === 'bad').length
   const none = data.length - good - bad
+  const manual = data.filter(s => !s.hasSpec).length
   document.getElementById('counts').innerHTML =
     '<span class="pill good">' + good + ' approved</span>' +
     '<span class="pill bad">' + bad + ' denied</span>' +
-    '<span class="pill none">' + none + ' unreviewed</span>'
+    '<span class="pill none">' + none + ' unreviewed</span>' +
+    '<span class="pill none">' + manual + ' manual</span>'
 
   const visible = data.filter(s => {
     if (q && !s.name.toLowerCase().includes(q)) { return false }
     if (onlyUnreviewed && s.verdict) { return false }
     if (onlyBad && s.verdict?.status !== 'bad') { return false }
+    if (onlyManual && s.hasSpec) { return false }
     return true
   })
   document.getElementById('main').innerHTML = visible.map(card).join('')
 }
 
-for (const id of ['search', 'onlyUnreviewed', 'onlyBad']) {
+for (const id of ['search', 'onlyUnreviewed', 'onlyBad', 'onlyManual']) {
   document.getElementById(id).addEventListener('input', render)
 }
 load()

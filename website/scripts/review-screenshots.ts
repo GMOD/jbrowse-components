@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
 import { spawn } from 'child_process'
-import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
 
 import {
-  findUsages,
+  collectScreenshots,
   imgDir,
   loadReport,
   reportPath,
@@ -77,12 +76,13 @@ function createPrompter() {
 }
 
 async function main() {
+  const all = collectScreenshots(specs.map(s => s.name))
   const selected = filter
-    ? specs.filter(s => (exact ? s.name === filter : s.name.includes(filter)))
-    : specs
+    ? all.filter(s => (exact ? s.name === filter : s.name.includes(filter)))
+    : all
 
   if (selected.length === 0) {
-    console.error(`No specs match filter: ${filter}`)
+    console.error(`No screenshots match filter: ${filter}`)
     process.exit(1)
   }
 
@@ -98,15 +98,15 @@ async function main() {
 
   let reviewed = 0
   for (const spec of toReview) {
-    const { name } = spec
+    const { name, usages, hasSpec, exists } = spec
     const imgPath = path.join(imgDir, `${name}.png`)
-    const exists = fs.existsSync(imgPath)
 
     console.log('━'.repeat(72))
-    console.log(`${name}   ${exists ? '' : '  ⚠️ image file missing'}`)
+    console.log(
+      `${name}   ${hasSpec ? '' : '(manual capture, no generator)'}${exists ? '' : '  ⚠️ image file missing'}`,
+    )
     console.log(`  file: ${path.relative(websiteRoot, imgPath)}`)
 
-    const usages = findUsages(name)
     if (usages.length === 0) {
       console.log('  docs: (not referenced in any doc/blog/gallery page)')
     } else {
@@ -167,18 +167,31 @@ async function main() {
 
   rl.close()
 
+  const specNames = new Set(specs.map(s => s.name))
   const bad = Object.values(report).filter(v => v.status === 'bad')
   console.log('━'.repeat(72))
   console.log(
     `Reviewed ${reviewed} this session. Report: ${path.relative(websiteRoot, reportPath)}`,
   )
   if (bad.length > 0) {
-    console.log(`\n${bad.length} marked bad — regenerate with:`)
-    for (const v of bad) {
+    const regen = bad.filter(v => specNames.has(v.name))
+    const manual = bad.filter(v => !specNames.has(v.name))
+    if (regen.length > 0) {
+      console.log(`\n${regen.length} marked bad — regenerate with:`)
+      for (const v of regen) {
+        console.log(
+          `  node --experimental-strip-types scripts/generate-screenshots.ts --filter=${v.name} --exact` +
+            `${v.note ? `   # ${v.note}` : ''}`,
+        )
+      }
+    }
+    if (manual.length > 0) {
       console.log(
-        `  node --experimental-strip-types scripts/generate-screenshots.ts --filter=${v.name} --exact` +
-          `${v.note ? `   # ${v.note}` : ''}`,
+        `\n${manual.length} marked bad with no generator (re-capture by hand):`,
       )
+      for (const v of manual) {
+        console.log(`  ${v.name}${v.note ? `   # ${v.note}` : ''}`)
+      }
     }
   }
 }
