@@ -1,4 +1,5 @@
 import { stripAlpha } from '@jbrowse/core/util'
+import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 import { useTheme } from '@mui/material'
 
 import { makeTicks } from '../util.ts'
@@ -28,17 +29,12 @@ export default function SVGGridlines({
         const { start, end, key, reversed, offsetPx, widthPx } = block
         const offset = offsetPx - viewOffsetPx
         const ticks = makeTicks(start, end, bpPerPx, true, true)
-        const clipId = `gridline-clip-${key}`
         return (
-          <g key={key}>
-            <defs>
-              <clipPath id={clipId}>
-                <rect x={0} y={0} width={widthPx} height={height} />
-              </clipPath>
-            </defs>
-            <g
-              transform={`translate(${offset} 0)`}
-              clipPath={`url(#${clipId})`}
+          <g key={key} transform={`translate(${offset} 0)`}>
+            <SvgClipRect
+              id={`gridline-clip-${key}`}
+              width={widthPx}
+              height={height}
             >
               {ticks.map(tick => {
                 const x =
@@ -57,7 +53,7 @@ export default function SVGGridlines({
                   />
                 )
               })}
-            </g>
+            </SvgClipRect>
           </g>
         )
       })}

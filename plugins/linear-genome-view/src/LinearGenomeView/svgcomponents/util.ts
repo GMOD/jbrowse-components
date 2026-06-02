@@ -11,10 +11,15 @@ interface Track {
 
 export const trackSpacing = 2
 
-// space the label pushes a track down by; only 'offset' mode does. Shared by
-// totalHeight + SVGTracks.getOffsets so the two can't drift.
+// space the label pushes a track down by; only 'offset' mode does
 export function labelOffset(trackLabels: TrackLabelMode, textHeight: number) {
   return trackLabels === 'offset' ? textHeight : 0
+}
+
+// vertical box a single track occupies. Shared by totalHeight (sum) and
+// SVGTracks.getOffsets (prefix-sum) so the two can't drift.
+export function trackBoxHeight(track: Track, textOffset: number) {
+  return track.displays[0]!.height + textOffset + trackSpacing
 }
 
 export function totalHeight(
@@ -22,12 +27,6 @@ export function totalHeight(
   textHeight: number,
   trackLabels: TrackLabelMode,
 ) {
-  return sum(
-    tracks.map(
-      t =>
-        t.displays[0]!.height +
-        labelOffset(trackLabels, textHeight) +
-        trackSpacing,
-    ),
-  )
+  const textOffset = labelOffset(trackLabels, textHeight)
+  return sum(tracks.map(t => trackBoxHeight(t, textOffset)))
 }

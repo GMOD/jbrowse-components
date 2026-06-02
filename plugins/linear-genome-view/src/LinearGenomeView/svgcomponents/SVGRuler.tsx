@@ -1,4 +1,5 @@
 import { getTickDisplayStr, measureText, stripAlpha } from '@jbrowse/core/util'
+import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 import { useTheme } from '@mui/material'
 
 import { makeTicks } from '../util.ts'
@@ -90,31 +91,23 @@ export default function SVGRuler({
       {contentBlocks.map(block => {
         const { start, end, key, reversed, offsetPx, refName, widthPx } = block
         const offset = offsetPx - viewOffsetPx
-        const clipId = `clip-${key}`
         return (
-          <g key={key}>
-            <defs>
-              <clipPath id={clipId}>
-                <rect x={0} y={0} width={widthPx} height={100} />
-              </clipPath>
-            </defs>
-            <g transform={`translate(${offset} 0)`}>
-              <g clipPath={`url(#${clipId})`}>
-                <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
-                  {refName}
-                </text>
-                <g transform="translate(0 20)">
-                  <Ruler
-                    hideText={!renderRuler}
-                    start={start}
-                    end={end}
-                    bpPerPx={bpPerPx}
-                    reversed={reversed}
-                    widthPx={widthPx}
-                  />
-                </g>
+          <g key={key} transform={`translate(${offset} 0)`}>
+            <SvgClipRect id={`clip-${key}`} width={widthPx} height={100}>
+              <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
+                {refName}
+              </text>
+              <g transform="translate(0 20)">
+                <Ruler
+                  hideText={!renderRuler}
+                  start={start}
+                  end={end}
+                  bpPerPx={bpPerPx}
+                  reversed={reversed}
+                  widthPx={widthPx}
+                />
               </g>
-            </g>
+            </SvgClipRect>
           </g>
         )
       })}

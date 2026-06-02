@@ -3,7 +3,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { labelOffset, trackSpacing } from './util.ts'
+import { labelOffset, trackBoxHeight } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
@@ -24,7 +24,7 @@ function getOffsets(displayResults: DisplayResult[], textOffset: number) {
   let total = 0
   for (const { track } of displayResults) {
     offsets.push(total)
-    total += track.displays[0]!.height + textOffset + trackSpacing
+    total += trackBoxHeight(track, textOffset)
   }
   return offsets
 }
