@@ -2352,7 +2352,7 @@ function WithInternetAccountsRender() {
           type: 'BigWigAdapter',
           bigWigLocation: {
             locationType: 'UriLocation',
-            uri: ' https://www.googleapis.com/drive/v3/files/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk?alt=media',
+            uri: 'https://www.googleapis.com/drive/v3/files/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk?alt=media',
             internetAccountId: 'manualGoogleEntry',
           },
         },
@@ -2975,14 +2975,16 @@ const VisibleFeatures = observer(function VisibleFeatures({
                 <th>Feature location</th>
               </tr>
             </thead>
-            {features.map(f => (
-              <tr key={f.id()}>
-                <td>{f.get('name')}</td>
-                <td>
-                  {f.get('refName')}:{f.get('start')}-{f.get('end')}
-                </td>
-              </tr>
-            ))}
+            <tbody>
+              {features.map(f => (
+                <tr key={f.id()}>
+                  <td>{f.get('name')}</td>
+                  <td>
+                    {f.get('refName')}:{f.get('start')}-{f.get('end')}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       )}

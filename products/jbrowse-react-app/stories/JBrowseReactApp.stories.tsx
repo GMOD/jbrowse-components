@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Plugin from '@jbrowse/core/Plugin'
 import { getEnv } from '@jbrowse/core/util'
 
-import { addRelativeUris } from './examples/util.ts'
+import { addRelativeUris } from './util.ts'
 import volvoxConfigJson from '../public/test_data/volvox/config.json' with { type: 'json' }
 import { JBrowseApp, createViewState } from '../src/index.ts'
 import makeWorkerInstance from '../src/makeWorkerInstance.ts'
@@ -402,20 +402,17 @@ export const WithImportConfigJson = {
 import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
 import config from './config.json' with { type: 'json' }
 
-// Resolve relative URIs in the config against a base URL
-function addRelativeUris(config: Record<string, unknown>, baseUri: string) {
+// Resolve relative URIs in the config by tagging each with a baseUri, which
+// JBrowse uses to resolve the relative uri at load time
+function addRelativeUris(config: unknown, baseUri: string) {
   if (typeof config === 'object' && config !== null) {
-    for (const key of Object.keys(config)) {
-      if (key === 'uri') {
-        const val = (config as Record<string, string>)[key]
-        if (val && !val.startsWith('http') && !val.startsWith('/')) {
-          ;(config as Record<string, string>)[key] = new URL(val, baseUri).href
-        }
-      } else {
-        addRelativeUris(
-          (config as Record<string, unknown>)[key] as Record<string, unknown>,
-          baseUri,
-        )
+    const obj = config as Record<string, unknown>
+    for (const key of Object.keys(obj)) {
+      const val = obj[key]
+      if (typeof val === 'object' && val !== null) {
+        addRelativeUris(val, baseUri)
+      } else if (key === 'uri' && !obj.baseUri) {
+        obj.baseUri = baseUri
       }
     }
   }
@@ -470,19 +467,17 @@ import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
 
 type ViewState = ReturnType<typeof createViewState>
 
-function addRelativeUris(config: Record<string, unknown>, baseUri: string) {
+// Resolve relative URIs in the config by tagging each with a baseUri, which
+// JBrowse uses to resolve the relative uri at load time
+function addRelativeUris(config: unknown, baseUri: string) {
   if (typeof config === 'object' && config !== null) {
-    for (const key of Object.keys(config)) {
-      if (key === 'uri') {
-        const val = (config as Record<string, string>)[key]
-        if (val && !val.startsWith('http') && !val.startsWith('/')) {
-          ;(config as Record<string, string>)[key] = new URL(val, baseUri).href
-        }
-      } else {
-        addRelativeUris(
-          (config as Record<string, unknown>)[key] as Record<string, unknown>,
-          baseUri,
-        )
+    const obj = config as Record<string, unknown>
+    for (const key of Object.keys(obj)) {
+      const val = obj[key]
+      if (typeof val === 'object' && val !== null) {
+        addRelativeUris(val, baseUri)
+      } else if (key === 'uri' && !obj.baseUri) {
+        obj.baseUri = baseUri
       }
     }
   }
