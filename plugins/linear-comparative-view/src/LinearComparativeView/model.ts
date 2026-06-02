@@ -75,13 +75,13 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        levels: types.array(LinearSyntenyViewHelper!),
+        levels: types.array(LinearSyntenyViewHelper),
         /**
          * #property
          * currently this is limited to an array of two
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')!
+          pluginManager.getViewType('LinearGenomeView')
             .stateModel as LinearGenomeViewStateModel,
         ),
 

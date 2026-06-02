@@ -38,7 +38,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      view: pluginManager.getViewType('CircularView')!.stateModel,
+      view: pluginManager.getViewType('CircularView').stateModel,
     })
     .views(self => ({
       /**

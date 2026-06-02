@@ -23,7 +23,7 @@ export function filterTracks(
     const viewAssemblyNames = self.assemblyNames
       .map(a => assemblyManager.getCanonicalAssemblyName(a))
       .filter(notEmpty)
-    const { displayTypes } = pluginManager.getViewType(view.type)!
+    const { displayTypes } = pluginManager.getViewType(view.type)
     const viewDisplaysSet = new Set(
       displayTypes.map((d: { name: string }) => d.name),
     )
@@ -47,7 +47,7 @@ export function filterTracks(
       if (viewDisplaysSet.size === 0) {
         return true
       }
-      const trackType = pluginManager.getTrackType(c.type)!
+      const trackType = pluginManager.getTrackType(c.type)
       return trackType.displayTypes.some(d => viewDisplaysSet.has(d.name))
     })
   }

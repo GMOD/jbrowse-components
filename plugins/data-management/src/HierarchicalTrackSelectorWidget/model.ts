@@ -392,7 +392,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
-        const viewType = pluginManager.getViewType(self.view.type)!
+        const viewType = pluginManager.getViewType(self.view.type)
         const viewDisplayNames = new Set(viewType.displayTypes.map(d => d.name))
         const matches = trackConf?.displays.some((display: { type: string }) =>
           viewDisplayNames.has(display.type),

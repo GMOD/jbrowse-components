@@ -180,7 +180,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           // snapshot
           try {
             const configDisplayTypes = new Set(displays.map(d => d.type))
-            for (const d of pluginManager.getTrackType(snap.type)!
+            for (const d of pluginManager.getTrackType(snap.type)
               .displayTypes) {
               if (!configDisplayTypes.has(d.name)) {
                 displays.push({

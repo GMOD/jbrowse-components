@@ -38,7 +38,7 @@ export default class TextSearchManager {
         } else {
           const adapterType = this.pluginManager.getTextSearchAdapterType(
             conf.type,
-          )!
+          )
           const AdapterClass = await adapterType.getAdapterClass()
           const adapterInstance = new AdapterClass(
             conf,

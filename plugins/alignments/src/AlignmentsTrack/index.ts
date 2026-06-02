@@ -33,7 +33,7 @@ export default function register(pm: PluginManager) {
     })
     const linearAlignmentsDisplay = pm.getDisplayType(
       'LinearAlignmentsDisplay',
-    )!
+    )
     // Add LinearAlignmentsDisplay here so that it has priority over the other
     // linear displays (defaults to order the displays are added, but we have
     // to add the Pileup and SNPCoverage displays first).

@@ -39,7 +39,7 @@ const useStyles = makeStyles()(() => ({
 
 function View({ view }: { view: LinearGenomeViewModel }) {
   const { pluginManager } = getEnv(view)
-  const { ReactComponent } = pluginManager.getViewType(view.type)!
+  const { ReactComponent } = pluginManager.getViewType(view.type)
   return <ReactComponent model={view} />
 }
 

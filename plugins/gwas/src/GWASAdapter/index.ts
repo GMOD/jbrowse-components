@@ -5,7 +5,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function GWASAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
-    const res = pluginManager.getAdapterType('BedTabixAdapter')!
+    const res = pluginManager.getAdapterType('BedTabixAdapter')
     // Override `scoreColumn` default from BedTabix's empty-string default so
     // GWAS files load with a sensible score column out of the box — without
     // this, accepting defaults yields NaN scores from the un-named BED-score

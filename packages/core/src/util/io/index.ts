@@ -158,7 +158,7 @@ function getInternetAccount(
     return pluginManager
       .getInternetAccountType(
         location.internetAccountPreAuthorization.internetAccountType,
-      )!
+      )
       .stateModel.create({
         type: location.internetAccountPreAuthorization.internetAccountType,
         configuration:

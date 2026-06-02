@@ -60,7 +60,7 @@ const BreakpointSplitViewLevels = observer(function BreakpointSplitViewLevels({
     <div className={classes.content}>
       <div className={classes.rel}>
         {views.flatMap((view, idx) => {
-          const { ReactComponent } = pluginManager.getViewType(view.type)!
+          const { ReactComponent } = pluginManager.getViewType(view.type)
           const viewComponent = <ReactComponent key={view.id} model={view} />
           return idx === views.length - 1
             ? [viewComponent]

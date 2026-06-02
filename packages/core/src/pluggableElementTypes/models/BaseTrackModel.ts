@@ -36,7 +36,7 @@ interface DisplayConf {
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
-  const viewType = pluginManager.getViewType(view.type)!
+  const viewType = pluginManager.getViewType(view.type)
   const compatTypes = new Set(viewType.displayTypes.map(d => d.name))
   const displays = self.configuration.displays as AnyConfigurationModel[]
   return displays.filter(d => compatTypes.has(d.type))
@@ -271,7 +271,7 @@ export function createBaseTrackModel(
                   label: 'Display types',
                   priority: -1000,
                   subMenu: compatDisp.map(d => {
-                    const displayType = pm.getDisplayType(d.type)!
+                    const displayType = pm.getDisplayType(d.type)
                     return {
                       type: 'radio' as const,
                       label: displayType.displayName,

@@ -44,7 +44,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const { session } = viewState
   const { view } = session
   const { pluginManager } = getEnv(session)
-  const { ReactComponent } = pluginManager.getViewType(view.type)!
+  const { ReactComponent } = pluginManager.getViewType(view.type)
   const themeConfig = readConfObject(viewState.config.configuration, 'theme')
   const theme = useMemo(() => createJBrowseTheme(themeConfig), [themeConfig])
   const { classes } = useStyles()

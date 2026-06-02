@@ -30,7 +30,7 @@ export default function LinearGCContentDisplay(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')!
+      baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')
         .configSchema,
       explicitlyTyped: true,
     },

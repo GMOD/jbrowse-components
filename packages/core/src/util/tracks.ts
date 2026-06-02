@@ -541,7 +541,7 @@ export function showTrackGeneric(
     }
 
     // Find a compatible display for this view type
-    const viewType = pluginManager.getViewType(self.type)!
+    const viewType = pluginManager.getViewType(self.type)
     const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
     const displays = conf.displays ?? []
     const displayConf = displays.find((d: { type: string }) =>

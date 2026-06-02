@@ -28,7 +28,7 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
        * containing, importantly, a sequence adapter such as
        * IndexedFastaAdapter
        */
-      sequence: pluginManager.getTrackType('ReferenceSequenceTrack')!
+      sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
         .configSchema,
 
       /**
