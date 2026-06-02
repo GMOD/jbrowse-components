@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 
 import { destroy } from '@jbrowse/mobx-state-tree'
@@ -196,13 +197,66 @@ function createModel(data: Config) {
 
 type Model = ReturnType<typeof createModel>
 
+// A parsed --spec view object: the same shape as a web session-spec view (see
+// urlparams.md). `type` selects the render mode; the remaining fields ARE the
+// view's `init` snapshot (sub-views + level-indexed tracks for comparative
+// views), so they pass straight to addInitView.
+interface ViewSpec {
+  type: string
+  [key: string]: unknown
+}
+
+// Accepts the documented `{ views: [viewObject] }` wrapper (so JSON copied from
+// a `&session=spec-` URL works) or a bare view object. Reads from a file when
+// `spec` is a path, else parses it as inline JSON.
+function parseSpec(spec: string): ViewSpec {
+  const raw = fs.existsSync(spec) ? fs.readFileSync(spec, 'utf8') : spec
+  const obj = JSON.parse(raw) as Record<string, unknown>
+  const view =
+    typeof obj.type === 'string'
+      ? obj
+      : Array.isArray(obj.views)
+        ? (obj.views[0] as Record<string, unknown> | undefined)
+        : undefined
+  if (!view || typeof view.type !== 'string') {
+    throw new Error(
+      '--spec JSON must be a view object (or a { views: [...] } wrapper) with a "type" field',
+    )
+  }
+  return view as ViewSpec
+}
+
+const specTypeToMode: Record<string, ViewMode> = {
+  LinearSyntenyView: 'synteny',
+  DotplotView: 'dotplot',
+  CircularView: 'circular',
+}
+
+function specMode(spec: ViewSpec): ViewMode {
+  const mode = specTypeToMode[spec.type]
+  if (!mode) {
+    throw new Error(
+      `unsupported view type in --spec: ${spec.type} (supported: ${Object.keys(specTypeToMode).join(', ')})`,
+    )
+  }
+  return mode
+}
+
+// The view-init snapshot a comparative renderer feeds to addInitView: the spec
+// minus its `type` discriminator.
+function initFromSpec({ type, ...init }: ViewSpec) {
+  return init
+}
+
 // Per-mode render context. `width` is resolved once so each renderer doesn't
-// repeat the default.
+// repeat the default. `spec` is the parsed --spec view object when supplied;
+// comparative renderers use it instead of synthesizing a view from flags.
 interface ModeContext {
   model: Model
   data: Config
   opts: Opts
   width: number
+  spec?: ViewSpec
 }
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string>
@@ -337,10 +391,10 @@ const renderDotplot: ModeRenderer = async ctx => {
   const tracks = ctx.data.tracks
     .filter(track => track.type === 'SyntenyTrack')
     .map(track => track.trackId)
-  const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', {
-    views: comparativeViews(ctx).slice(0, 2),
-    tracks,
-  })
+  const init = ctx.spec
+    ? initFromSpec(ctx.spec)
+    : { views: comparativeViews(ctx).slice(0, 2), tracks }
+  const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
   return renderDotplotToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
     themeName: ctx.opts.themeName,
@@ -348,10 +402,13 @@ const renderDotplot: ModeRenderer = async ctx => {
 }
 
 const renderSynteny: ModeRenderer = async ctx => {
+  const init = ctx.spec
+    ? initFromSpec(ctx.spec)
+    : { views: comparativeViews(ctx), tracks: syntenyTrackLevels(ctx.data) }
   const view = await addInitView<LinearSyntenyViewModel>(
     ctx,
     'LinearSyntenyView',
-    { views: comparativeViews(ctx), tracks: syntenyTrackLevels(ctx.data) },
+    init,
   )
   return renderSyntenyToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
@@ -365,10 +422,10 @@ const renderSynteny: ModeRenderer = async ctx => {
 // variants). The view picks each track's chord display automatically.
 const renderCircular: ModeRenderer = async ctx => {
   const trackIds = ctx.data.tracks.map(track => track.trackId)
-  const view = await addInitView<CircularViewModel>(ctx, 'CircularView', {
-    assembly: ctx.data.assembly.name,
-    tracks: trackIds,
-  })
+  const init = ctx.spec
+    ? initFromSpec(ctx.spec)
+    : { assembly: ctx.data.assembly.name, tracks: trackIds }
+  const view = await addInitView<CircularViewModel>(ctx, 'CircularView', init)
   return renderCircularToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
     themeName: ctx.opts.themeName,
@@ -387,12 +444,17 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
 export async function renderRegion(opts: Opts) {
   const data = readData(opts)
   const model = createModel(data)
+  const spec = opts.spec ? parseSpec(opts.spec) : undefined
+  // an explicit subcommand wins; otherwise a --spec selects its mode from the
+  // view type, falling back to the default linear view
+  const mode = opts.mode ?? (spec ? specMode(spec) : 'linear')
   try {
-    return await modeRenderers[opts.mode ?? 'linear']({
+    return await modeRenderers[mode]({
       model,
       data,
       opts,
       width: opts.width ?? 1500,
+      spec,
     })
   } finally {
     destroy(model)

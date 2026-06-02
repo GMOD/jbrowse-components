@@ -32,6 +32,11 @@ export interface Opts {
   aliases2?: string
   assembly2?: string
   loc2?: string
+  // N-way comparative views: a session-spec JSON (inline or path to .json,
+  // the same shape as the web's `&session=spec-`) that supplies the view's
+  // sub-views and level-indexed tracks directly. Assemblies and synteny-track
+  // configs it references by name come from --config. See urlparams.md.
+  spec?: string
 }
 
 function read(file: string): unknown {

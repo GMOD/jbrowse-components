@@ -296,6 +296,43 @@ jb2export synteny \
 Omitting `--loc`/`--loc2` shows the whole assembly on that axis. Run
 `jb2export dotplot --help` for the full list of comparative options.
 
+### Multi-way synteny (three or more assemblies)
+
+The `--fasta2`/`--loc2` shortcut covers the common two-assembly case. To stack
+three or more assemblies (one synteny ribbon per adjacent pair), describe the
+view with a session-spec JSON and pass it with `--spec`, supplying the
+assemblies and comparison tracks via a `--config`. The spec is the same shape
+used by the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a
+browser URL works directly — see
+[URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#linear-synteny-view-multi-way)
+for the full format.
+
+```bash
+jb2export --config jbrowse.json --spec spec.json --out synteny.svg
+```
+
+where `spec.json` is, for example:
+
+```json
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": [["a_vs_b.paf"], ["b_vs_c.paf"]],
+      "views": [
+        { "assembly": "a", "loc": "chr1" },
+        { "assembly": "b", "loc": "chr1" },
+        { "assembly": "c", "loc": "chr1" }
+      ]
+    }
+  ]
+}
+```
+
+`tracks` is one sub-array per level (the gap between adjacent `views`). The
+subcommand is optional here — the render mode is taken from the spec's view
+`type` (`LinearSyntenyView`, `DotplotView`, or `CircularView`).
+
 ### Circular view (chord plot)
 
 The `circular` subcommand renders one assembly's chord tracks — e.g. a VCF of

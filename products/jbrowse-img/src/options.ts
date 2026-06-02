@@ -51,6 +51,11 @@ export const optionDefs: OptionDef[] = [
     description: 'Show the reference sequence track',
     default: false,
   },
+  {
+    name: 'spec',
+    description:
+      'Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config',
+  },
 ]
 
 // Extra options accepted only by the comparative subcommands (dotplot/synteny),
@@ -100,6 +105,10 @@ const comparativeExamples: [string, string][] = [
   [
     'synteny --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --loc chr1 --loc2 chr1 --out out.svg',
     'Linear synteny view of a region in each assembly',
+  ],
+  [
+    'synteny --config jbrowse.json --spec spec.json --out out.svg',
+    'N-way synteny from a config + session-spec JSON (see urlparams.md)',
   ],
 ]
 

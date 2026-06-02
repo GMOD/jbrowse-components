@@ -81,6 +81,7 @@ async function main() {
       aliases2: getString(rest, 'aliases2'),
       assembly2: getString(rest, 'assembly2'),
       loc2: getString(rest, 'loc2'),
+      spec: getString(rest, 'spec'),
       trackList,
     })
 
