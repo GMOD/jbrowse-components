@@ -1,14 +1,8 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { SubmitDialog } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
-import {
-  Alert,
-  Button,
-  DialogActions,
-  DialogContent,
-  Typography,
-} from '@mui/material'
+import { Alert, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { DEFAULT_HIGHLIGHT } from '../../model.ts'
@@ -29,50 +23,34 @@ const EditHighlightColorDialog = observer(function EditHighlightColorDialog({
   )
 
   return (
-    <Dialog open onClose={onClose} title="Highlight bookmarks">
-      <DialogContent>
-        <Typography variant="h6">Bulk highlight selector</Typography>
-        <Alert severity="info">
-          {editNone ? (
-            <span>
-              Use the checkboxes to select individual bookmarks to edit.
-            </span>
-          ) : (
-            'Only selected bookmarks will be edited.'
-          )}
-        </Alert>
-        {!editNone ? (
-          <ColorPicker
-            color={color}
-            onChange={event => {
-              setColor(event)
-            }}
-          />
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            onClose()
+    <SubmitDialog
+      open
+      title="Highlight bookmarks"
+      onCancel={onClose}
+      submitText="Confirm"
+      submitDisabled={editNone}
+      onSubmit={() => {
+        model.updateBulkBookmarkHighlights(color)
+        onClose()
+      }}
+    >
+      <Typography variant="h6">Bulk highlight selector</Typography>
+      <Alert severity="info">
+        {editNone ? (
+          <span>Use the checkboxes to select individual bookmarks to edit.</span>
+        ) : (
+          'Only selected bookmarks will be edited.'
+        )}
+      </Alert>
+      {!editNone ? (
+        <ColorPicker
+          color={color}
+          onChange={event => {
+            setColor(event)
           }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={editNone}
-          onClick={() => {
-            model.updateBulkBookmarkHighlights(color)
-            onClose()
-          }}
-        >
-          Confirm
-        </Button>
-      </DialogActions>
-    </Dialog>
+        />
+      ) : null}
+    </SubmitDialog>
   )
 })
 

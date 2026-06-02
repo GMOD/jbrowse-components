@@ -1,13 +1,7 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { ErrorBanner, NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const EditGCContentParamsDialog = observer(function EditGCContentParamsDialog({
@@ -21,62 +15,53 @@ const EditGCContentParamsDialog = observer(function EditGCContentParamsDialog({
   }
   handleClose: () => void
 }) {
-  const [windowSize, setWindowSize] = useState(`${model.windowSizeSetting}`)
-  const [windowDelta, setWindowDelta] = useState(`${model.windowDeltaSetting}`)
+  const [windowSize, setWindowSize] = useState<number | undefined>(
+    model.windowSizeSetting,
+  )
+  const [windowDelta, setWindowDelta] = useState<number | undefined>(
+    model.windowDeltaSetting,
+  )
+  const stepLargerThanWindow =
+    windowDelta !== undefined &&
+    windowSize !== undefined &&
+    windowDelta > windowSize
 
   return (
-    <Dialog open onClose={handleClose} title="Edit GC content params">
-      <DialogContent>
-        <Typography>
-          GC content is calculated in a particular sliding window of size N, and
-          then the sliding window moves (steps) some number of bases M forward.
-          Note that small step sizes can result in high CPU over large areas,
-          and it is not recommended to make the step size larger than the window
-          size as then the sliding window will miss contents.
-        </Typography>
-        {+windowDelta > +windowSize ? (
-          <ErrorBanner error="It is not recommended to make the step size larger than the window size" />
-        ) : null}
-        <TextField
-          label="Size of sliding window (bp)"
-          value={windowSize}
-          onChange={event => {
-            setWindowSize(event.target.value)
-          }}
-        />
-        <TextField
-          label="Step size of sliding window (bp)"
-          value={windowDelta}
-          onChange={event => {
-            setWindowDelta(event.target.value)
-          }}
-        />
-
-        <DialogActions>
-          <Button
-            variant="contained"
-            onClick={() => {
-              model.setGCContentParams({
-                windowSize: +windowSize,
-                windowDelta: +windowDelta,
-              })
-              handleClose()
-            }}
-          >
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              handleClose()
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
-      </DialogContent>
-    </Dialog>
+    <SubmitDialog
+      open
+      title="Edit GC content params"
+      onCancel={handleClose}
+      submitDisabled={
+        windowSize === undefined || windowDelta === undefined || stepLargerThanWindow
+      }
+      onSubmit={() => {
+        if (windowSize !== undefined && windowDelta !== undefined) {
+          model.setGCContentParams({ windowSize, windowDelta })
+          handleClose()
+        }
+      }}
+    >
+      <Typography>
+        GC content is calculated in a particular sliding window of size N, and
+        then the sliding window moves (steps) some number of bases M forward.
+        Note that small step sizes can result in high CPU over large areas, and
+        it is not recommended to make the step size larger than the window size
+        as then the sliding window will miss contents.
+      </Typography>
+      {stepLargerThanWindow ? (
+        <ErrorBanner error="It is not recommended to make the step size larger than the window size" />
+      ) : null}
+      <NumberTextField
+        defaultValue={model.windowSizeSetting}
+        label="Size of sliding window (bp)"
+        onValueChange={setWindowSize}
+      />
+      <NumberTextField
+        defaultValue={model.windowDeltaSetting}
+        label="Step size of sliding window (bp)"
+        onValueChange={setWindowDelta}
+      />
+    </SubmitDialog>
   )
 })
 

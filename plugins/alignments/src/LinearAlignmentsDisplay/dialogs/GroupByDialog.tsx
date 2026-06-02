@@ -168,6 +168,29 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       }),
   )
 
+  const submitDisabled =
+    !type || loading || (type === 'tag' && (!tagSet || tagSet.length === 0))
+
+  const handleSubmit = () => {
+    const track = getContainingTrack(model)
+    // Track configurations always carry trackId + name (schema
+    // invariant); MST's getSnapshot widens to Record<string, any>.
+    const trackConf = (
+      isStateTreeNode(track.configuration)
+        ? structuredClone(getSnapshot(track.configuration))
+        : track.configuration
+    ) as TrackConf
+    const session = getSession(model) as SessionWithAddTracks
+    const view = getContainingView(model) as LinearGenomeViewModel
+
+    if (type === 'tag' && tagSet) {
+      createTagBasedTracks({ trackConf, tag, tagSet, session, view })
+    } else if (type === 'strand') {
+      createStrandBasedTracks({ trackConf, session, view })
+    }
+    handleClose()
+  }
+
   return (
     <Dialog open onClose={handleClose} title="Group by">
       <DialogContent>
@@ -225,42 +248,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           variant="contained"
           color="primary"
           type="submit"
-          disabled={
-            !type ||
-            loading ||
-            (type === 'tag' && (!tagSet || tagSet.length === 0))
-          }
+          disabled={submitDisabled}
           autoFocus
-          onClick={() => {
-            const track = getContainingTrack(model)
-            // Track configurations always carry trackId + name (schema
-            // invariant); MST's getSnapshot widens to Record<string, any>.
-            const trackConf = (
-              isStateTreeNode(track.configuration)
-                ? structuredClone(getSnapshot(track.configuration))
-                : track.configuration
-            ) as TrackConf
-            const session = getSession(model) as SessionWithAddTracks
-            const view = getContainingView(model) as LinearGenomeViewModel
-
-            if (type === 'tag' && tagSet) {
-              createTagBasedTracks({
-                trackConf,
-                tag,
-                tagSet,
-                session,
-                view,
-              })
-            } else if (type === 'strand') {
-              createStrandBasedTracks({
-                trackConf,
-                session,
-                view,
-              })
-            }
-
-            handleClose()
-          }}
+          onClick={handleSubmit}
         >
           Submit
         </Button>

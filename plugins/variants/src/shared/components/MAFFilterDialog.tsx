@@ -1,13 +1,7 @@
 import { useState } from 'react'
 
-import Dialog from '@jbrowse/core/ui/Dialog'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 
 export default function MAFFilterDialog({
   model,
@@ -20,62 +14,37 @@ export default function MAFFilterDialog({
   handleClose: () => void
 }) {
   const { minorAlleleFrequencyFilter = 0 } = model
-  const [maf, setMaf] = useState(`${minorAlleleFrequencyFilter}`)
-  const [error, setError] = useState<string>()
+  const [maf, setMaf] = useState<number | undefined>(minorAlleleFrequencyFilter)
 
   return (
-    <Dialog
+    <SubmitDialog
       open
-      onClose={handleClose}
       title="Set minor allele frequency (MAF) filter"
+      onCancel={handleClose}
+      submitDisabled={maf === undefined}
+      onSubmit={() => {
+        if (maf !== undefined) {
+          model.setMafFilter(maf)
+          handleClose()
+        }
+      }}
     >
-      <DialogContent style={{ width: 400 }}>
-        <Typography>
-          Filter out variants with minor allele frequency below this threshold.
-          Valid range: 0 to 0.5
-        </Typography>
-        <TextField
-          value={maf}
-          autoFocus
-          fullWidth
-          margin="normal"
-          label="MAF threshold"
-          placeholder="Enter MAF (0-0.5)"
-          error={!!error}
-          helperText={error}
-          onChange={event => {
-            const val = event.target.value
-            setMaf(val)
-            const num = Number.parseFloat(val)
-            if (Number.isNaN(num)) {
-              setError('Please enter a valid number')
-            } else if (num < 0 || num > 0.5) {
-              setError('MAF must be between 0 and 0.5')
-            } else {
-              setError(undefined)
-            }
-          }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            const val = Number.parseFloat(maf)
-            if (!Number.isNaN(val) && val >= 0 && val <= 0.5) {
-              model.setMafFilter(val)
-              handleClose()
-            }
-          }}
-          color="primary"
-          variant="contained"
-          disabled={!!error}
-        >
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <Typography>
+        Filter out variants with minor allele frequency below this threshold.
+        Valid range: 0 to 0.5
+      </Typography>
+      <NumberTextField
+        defaultValue={minorAlleleFrequencyFilter}
+        autoFocus
+        fullWidth
+        margin="normal"
+        label="MAF threshold"
+        placeholder="Enter MAF (0-0.5)"
+        min={0}
+        max={0.5}
+        errorText="MAF must be between 0 and 0.5"
+        onValueChange={setMaf}
+      />
+    </SubmitDialog>
   )
 }

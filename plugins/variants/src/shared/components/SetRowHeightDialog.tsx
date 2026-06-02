@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
+import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 
 export default function SetRowHeight({
   model,
@@ -13,39 +12,22 @@ export default function SetRowHeight({
   }
   handleClose: () => void
 }) {
-  const [value, setValue] = useState(`${model.rowHeight}`)
+  const [value, setValue] = useState<number | undefined>(model.rowHeight)
 
   return (
-    <Dialog open title="Set row height" onClose={handleClose}>
-      <DialogContent>
-        <TextField
-          value={value}
-          onChange={event => {
-            setValue(event.target.value)
-          }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          disabled={Number.isNaN(+value)}
-          variant="contained"
-          onClick={() => {
-            model.setRowHeight(+value)
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <SubmitDialog
+      open
+      title="Set row height"
+      onCancel={handleClose}
+      submitDisabled={value === undefined}
+      onSubmit={() => {
+        if (value !== undefined) {
+          model.setRowHeight(value)
+          handleClose()
+        }
+      }}
+    >
+      <NumberTextField defaultValue={model.rowHeight} onValueChange={setValue} />
+    </SubmitDialog>
   )
 }
