@@ -91,7 +91,7 @@ export function expectCanvasMatch(
   })
 }
 
-export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
+export const hts = (str: string) => `htsTrackLabel-Tracks,${str}`
 
 export function findCanvasIn(container: HTMLElement) {
   const canvas = container.querySelector('canvas')

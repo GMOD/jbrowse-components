@@ -61,7 +61,7 @@ test('cleanup autorun removes adjacent dangling assemblies without skipping', ()
   root.removeAssemblies(['a2', 'a3'])
 
   expect(root.assemblyManager.assemblies.map(a => a.name)).toEqual(['a1', 'a4'])
-  expect(
-    root.assemblyManager.assemblies.every(a => !!a.configuration),
-  ).toBe(true)
+  expect(root.assemblyManager.assemblies.every(a => !!a.configuration)).toBe(
+    true,
+  )
 })

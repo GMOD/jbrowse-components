@@ -88,7 +88,7 @@ export default function ReadVsRefDialog({
   )
   const error = submitError ?? fetchError
 
-  function onSubmit() {
+  async function onSubmit() {
     try {
       if (!primaryFeature) {
         return
@@ -96,7 +96,9 @@ export default function ReadVsRefDialog({
       const session = getSession(track)
       const view = getContainingView(track) as { width: number }
       const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
-      const assembly = session.assemblyManager.get(trackAssembly!)
+      const assembly = await session.assemblyManager.waitForAssembly(
+        trackAssembly!,
+      )
       if (!assembly) {
         throw new Error('assembly not found')
       }
@@ -170,7 +172,7 @@ export default function ReadVsRefDialog({
           variant="contained"
           color="primary"
           onClick={() => {
-            onSubmit()
+            void onSubmit()
           }}
         >
           Submit

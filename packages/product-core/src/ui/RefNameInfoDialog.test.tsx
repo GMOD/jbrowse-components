@@ -6,7 +6,9 @@ import RefNameInfoDialog from './RefNameInfoDialog.tsx'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-interface CallArgs { assemblyName: string }
+interface CallArgs {
+  assemblyName: string
+}
 type Call = (a: unknown, b: unknown, args: CallArgs) => Promise<unknown>
 
 function makeSession(call: Call) {

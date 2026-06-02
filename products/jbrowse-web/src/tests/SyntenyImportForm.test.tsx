@@ -37,16 +37,16 @@ test('three level', async () => {
 }, 40000)
 
 test('open tracklist file', async () => {
-  const { session, findByTestId, findByRole, findAllByTestId, findByText } =
+  const { session, findByTestId, findByRole, findAllByRole, findByText } =
     await createView()
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
   expect(session.views.length).toBe(2)
-  const r = await findAllByTestId('assembly-selector-textfield')
+  const r = await findAllByRole('combobox', { name: 'Assembly' })
   expect(r.length).toBe(2)
 
-  fireEvent.mouseDown(await within(r[1]!).findByText('volvox'))
+  fireEvent.mouseDown(r[1]!)
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(await findByText('Launch'))
 
@@ -54,15 +54,15 @@ test('open tracklist file', async () => {
 }, 40000)
 
 test('open local paf', async () => {
-  const { session, findByTestId, findByRole, findAllByTestId, findByText } =
+  const { session, findByTestId, findByRole, findAllByRole, findByText } =
     await createView()
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
   expect(session.views.length).toBe(2)
 
-  const r = await findAllByTestId('assembly-selector-textfield')
-  fireEvent.mouseDown(await within(r[0]!).findByText('volvox'))
+  const r = await findAllByRole('combobox', { name: 'Assembly' })
+  fireEvent.mouseDown(r[0]!)
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
 
   fireEvent.click(await findByText('New track'))
@@ -79,15 +79,21 @@ test('open local paf', async () => {
 }, 40000)
 
 test('open local pif', async () => {
-  const { session, findByTestId, findByRole, findAllByTestId, findByText } =
-    await createView()
+  const {
+    session,
+    findByTestId,
+    findByRole,
+    findAllByRole,
+    findAllByTestId,
+    findByText,
+  } = await createView()
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
   expect(session.views.length).toBe(2)
 
-  const r = await findAllByTestId('assembly-selector-textfield')
-  fireEvent.mouseDown(await within(r[0]!).findByText('volvox'))
+  const r = await findAllByRole('combobox', { name: 'Assembly' })
+  fireEvent.mouseDown(r[0]!)
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
 
   fireEvent.click(await findByText('New track'))

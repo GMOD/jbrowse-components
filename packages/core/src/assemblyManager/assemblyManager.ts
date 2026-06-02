@@ -145,11 +145,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         if (!assembly) {
           return undefined
         }
+        // load() resolves only after setLoaded (regions + refNameAliases) or
+        // setError has run, so awaiting the promise is enough: no extra
+        // reactive wait needed
         await assembly.load()
-        await when(
-          () =>
-            !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
-        )
         if (assembly.error) {
           // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw assembly.error
@@ -208,12 +207,13 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             () => {
               const assemblyConfs = self.assemblyList
               untracked(() => {
-                // iterate a copy: removeAssembly splices self.assemblies, which
-                // would skip the next element if iterating the live array
-                for (const asm of [...self.assemblies]) {
-                  if (!asm.configuration) {
-                    this.removeAssembly(asm)
-                  }
+                // filter() returns a new plain array, so removing from
+                // self.assemblies in the loop below does not skip elements
+                // (removeAssembly splices the live observable array)
+                for (const asm of self.assemblies.filter(
+                  a => !a.configuration,
+                )) {
+                  this.removeAssembly(asm)
                 }
                 for (const conf of assemblyConfs) {
                   const name = readConfObject(conf, 'name')

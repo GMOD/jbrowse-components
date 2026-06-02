@@ -1,4 +1,10 @@
-import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getParent,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import { onBecomeObserved } from 'mobx'
 
 import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
@@ -215,11 +221,6 @@ export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pluginManager: PluginManager,
 ) {
-  // Assembly loads are never aborted, so a plain promise cache (keyed by
-  // adapter config) is enough to dedupe concurrent calls and memoize results.
-  const adapterLoads = new QuickLRU<string, Promise<RefNameMap>>({
-    maxSize: 1000,
-  })
   return types
     .model({
       /**
@@ -240,6 +241,16 @@ export default function assemblyFactory(
          * #volatile
          */
         loadingP: undefined as Promise<void> | undefined,
+        // per-instance promise cache for refName maps. Kept on the instance,
+        // not the factory closure, because each map resolves an adapter's
+        // contigs against THIS assembly's aliases: a closure cache shared by
+        // all assemblies would return the wrong map when the same adapter
+        // config is queried under two assemblies (e.g. comparative views).
+        // Loads are never aborted, so memoizing the promise (keyed by adapter
+        // config) is enough to dedupe concurrent calls.
+        adapterLoads: new QuickLRU<string, Promise<RefNameMap>>({
+          maxSize: 1000,
+        }),
         /**
          * #volatile
          */
@@ -413,14 +424,31 @@ export default function assemblyFactory(
         return self.loadingP
       },
     }))
+    .actions(self => ({
+      afterAttach() {
+        // lazy load: start fetching the regions/aliases the first time
+        // something observes them reactively (a view rendering this assembly,
+        // an autorun, a `when` predicate). This keeps the getters below pure
+        // while still avoiding fetching assemblies that are never looked at.
+        addDisposer(
+          self,
+          onBecomeObserved(self, 'volatileRegions', () => {
+            void self.load()
+          }),
+        )
+        addDisposer(
+          self,
+          onBecomeObserved(self, 'refNameAliases', () => {
+            void self.load()
+          }),
+        )
+      },
+    }))
     .views(self => ({
       /**
        * #getter
-       * this is a getter with a side effect of loading the data. not the best
-       * practice, but it helps to lazy load the assembly
        */
       get initialized() {
-        void self.load()
         return !!self.refNameAliases
       },
 
@@ -428,7 +456,6 @@ export default function assemblyFactory(
        * #getter
        */
       get regions() {
-        void self.load()
         return self.volatileRegions
       },
 
@@ -535,16 +562,16 @@ export default function assemblyFactory(
           throw new Error('sessionId is required')
         }
         const key = adapterConfigCacheKey(adapterConf)
-        let entry = adapterLoads.get(key)
+        let entry = self.adapterLoads.get(key)
         if (!entry) {
           // evict on failure so a later call can retry
           entry = loadRefNameMap(self, adapterConf, options).catch(
             (e: unknown) => {
-              adapterLoads.delete(key)
+              self.adapterLoads.delete(key)
               throw e
             },
           )
-          adapterLoads.set(key, entry)
+          self.adapterLoads.set(key, entry)
         }
         return entry
       },

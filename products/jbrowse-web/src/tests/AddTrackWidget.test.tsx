@@ -23,6 +23,7 @@ test('adds a PAF via the add track workflow', async () => {
     getAllByTestId,
     findByText,
     findByRole,
+    findAllByRole,
     findAllByTestId,
     view,
   } = await createView()
@@ -35,16 +36,15 @@ test('adds a PAF via the add track workflow', async () => {
     },
   })
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
-  fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
   fireEvent.change(getByTestId('trackNameInput'), {
     target: {
       value: 'volvox_del vs volvox',
     },
   })
-  const selectors = await findAllByTestId('assembly-selector-textfield')
+  const selectors = await findAllByRole('combobox', { name: 'Assembly' })
 
   // change query assembly
-  fireEvent.mouseDown(await within(selectors[0]!).findByText('volvox'))
+  fireEvent.mouseDown(selectors[0]!)
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 

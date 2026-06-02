@@ -20,7 +20,11 @@ export default function FileInfoPanel({
   const { rpcManager } = session
   const trackId = readConf<string>(config, 'trackId')
 
-  const { data: info, error, isLoading } = useFetch(
+  const {
+    data: info,
+    error,
+    isLoading,
+  } = useFetch(
     ['CoreGetInfo', trackId],
     async () =>
       (await rpcManager.call(trackId, 'CoreGetInfo', {

@@ -165,6 +165,10 @@ export async function fetchResults({
     searchScope,
   )
 
+  // ensure aliases are loaded: the getters below are pure, so reading
+  // allRefNames does not itself kick off the lazy load
+  await assembly?.load()
+
   // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so
   // the dropdown shows the name that matches the FASTA / displayed regions
   const q = queryString.toLowerCase()

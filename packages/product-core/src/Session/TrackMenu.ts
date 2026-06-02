@@ -54,7 +54,9 @@ export function copyTrackSnapshot(
 }
 
 interface TrackActionSession<C> {
-  editConfiguration: (config: AnyConfigurationModel | { trackId: string }) => void
+  editConfiguration: (
+    config: AnyConfigurationModel | { trackId: string },
+  ) => void
   addTrackConf: (conf: C) => unknown
   deleteTrackConf: (conf: AnyConfigurationModel) => void
 }

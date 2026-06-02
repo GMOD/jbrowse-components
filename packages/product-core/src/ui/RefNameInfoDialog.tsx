@@ -58,7 +58,11 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   const trackId = readConf<string>(config, 'trackId')
   const assemblyNames = readConf<string[]>(config, 'assemblyNames')
 
-  const { data: refNames, error, isLoading } = useFetch(
+  const {
+    data: refNames,
+    error,
+    isLoading,
+  } = useFetch(
     ['CoreGetRefNames', trackId, JSON.stringify(assemblyNames)],
     () =>
       Promise.all(
