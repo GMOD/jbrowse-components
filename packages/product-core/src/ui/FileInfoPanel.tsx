@@ -20,7 +20,7 @@ export default function FileInfoPanel({
   const { rpcManager } = session
   const trackId = readConf<string>(config, 'trackId')
 
-  const { data: info, error } = useFetch(
+  const { data: info, error, isLoading } = useFetch(
     ['CoreGetInfo', trackId],
     async () =>
       (await rpcManager.call(trackId, 'CoreGetInfo', {
@@ -42,7 +42,7 @@ export default function FileInfoPanel({
     <BaseCard title="File info">
       {error ? (
         <ErrorBanner error={error} />
-      ) : info === undefined ? (
+      ) : isLoading ? (
         <LoadingEllipses message="Loading file data" />
       ) : (
         <Attributes attributes={details} />

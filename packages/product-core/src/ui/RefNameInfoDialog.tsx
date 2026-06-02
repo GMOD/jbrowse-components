@@ -58,7 +58,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   const trackId = readConf<string>(config, 'trackId')
   const assemblyNames = readConf<string[]>(config, 'assemblyNames')
 
-  const { data: refNames, error } = useFetch(
+  const { data: refNames, error, isLoading } = useFetch(
     ['CoreGetRefNames', trackId, JSON.stringify(assemblyNames)],
     () =>
       Promise.all(
@@ -88,7 +88,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
       <DialogContent className={classes.container}>
         {error ? (
           <ErrorBanner error={error} />
-        ) : refNames === undefined ? (
+        ) : isLoading || refNames === undefined ? (
           <LoadingEllipses message="Loading refNames" />
         ) : (
           <>
