@@ -54,7 +54,7 @@ const FacetedHeader = observer(function FacetedHeader({
         onClose={() => {
           setAnchorEl(null)
         }}
-        onMenuItemClick={(_event, callback) => {
+        onMenuItemClick={callback => {
           callback()
         }}
         menuItems={[

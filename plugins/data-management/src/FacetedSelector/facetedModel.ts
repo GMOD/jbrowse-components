@@ -231,6 +231,14 @@ export function facetedStateTreeF() {
       },
       /**
        * #getter
+       * Used to detect when a metadata key collides with a non-metadata column
+       * name (so the header can show "x (from metadata)").
+       */
+      get nonMetadataFieldSet() {
+        return new Set(['name', ...this.filteredNonMetadataKeys])
+      },
+      /**
+       * #getter
        */
       get filteredRows() {
         const arrFilters = [...self.filters.entries()]
@@ -310,8 +318,12 @@ export function facetedStateTreeF() {
           self,
           autorun(
             function facetedVisibleAutorun() {
+              // Preserve user-hidden columns that still exist in the new field
+              // list; only default-show columns that are newly introduced.
               self.setVisible(
-                Object.fromEntries(self.fields.map(c => [c, true])),
+                Object.fromEntries(
+                  self.fields.map(c => [c, self.visible[c] ?? true]),
+                ),
               )
             },
             { name: 'FacetedVisible' },

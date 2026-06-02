@@ -1,6 +1,6 @@
 import { useRef, useState, useTransition } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import Checkbox from '@mui/material/Checkbox'
 import { alpha, darken, lighten } from '@mui/material/styles'
 import { observer } from 'mobx-react'
@@ -276,11 +276,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
             return (
               <tr
                 key={row.id}
-                className={
-                  isSelected
-                    ? `${classes.bodyRow} ${classes.selectedRow}`
-                    : classes.bodyRow
-                }
+                className={cx(classes.bodyRow, isSelected && classes.selectedRow)}
               >
                 <td className={classes.checkboxCell}>
                   <Checkbox

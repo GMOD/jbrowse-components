@@ -31,6 +31,15 @@ export function useVirtualRows(
     }
   }, [parentRef])
 
+  // Reset scroll to top when the row count changes (e.g. filter applied) so
+  // that stale scrollTop can't push startIdx past the new count.
+  useEffect(() => {
+    const el = parentRef.current
+    if (el) {
+      el.scrollTop = 0
+    }
+  }, [count, parentRef])
+
   const { scrollTop, clientHeight } = scrollState
   const totalSize = count * rowHeight
   const startIdx = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan)

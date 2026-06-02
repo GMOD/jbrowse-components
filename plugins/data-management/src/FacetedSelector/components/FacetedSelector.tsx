@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
@@ -24,25 +24,23 @@ const useStyles = makeStyles()({
     marginLeft: 5,
     width: 5,
   },
+  container: {
+    display: 'flex',
+    overflow: 'hidden',
+  },
+  dataPane: {
+    overflow: 'hidden',
+  },
+  filterPane: {
+    overflow: 'auto',
+  },
 })
 
 const frac = 0.75
 
-function useWindowSize() {
-  const [size, setSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  })
-  useEffect(() => {
-    const onResize = () => {
-      setSize({ width: window.innerWidth, height: window.innerHeight })
-    }
-    window.addEventListener('resize', onResize)
-    return () => {
-      window.removeEventListener('resize', onResize)
-    }
-  }, [])
-  return size
+const subscribeToResize = (cb: () => void) => {
+  window.addEventListener('resize', cb)
+  return () => window.removeEventListener('resize', cb)
 }
 
 const FacetedSelector = observer(function FacetedSelector({
@@ -53,16 +51,22 @@ const FacetedSelector = observer(function FacetedSelector({
   faceted: FacetedModel
 }) {
   const { classes } = useStyles()
-  const { width: windowWidth, height: windowHeight } = useWindowSize()
+  const windowWidth = useSyncExternalStore(
+    subscribeToResize,
+    () => window.innerWidth,
+  )
+  const windowHeight = useSyncExternalStore(
+    subscribeToResize,
+    () => window.innerHeight,
+  )
   const { selection, shownTrackIds } = model
   const {
     panelWidth,
     showFilters,
     filteredNonMetadataKeys,
     filteredMetadataKeys,
+    nonMetadataFieldSet,
   } = faceted
-
-  const nonMetadataFieldSet = new Set(['name', ...filteredNonMetadataKeys])
 
   const columns: FacetedColumn[] = [
     {
@@ -96,22 +100,16 @@ const FacetedSelector = observer(function FacetedSelector({
     ),
   ]
 
+  const h = windowHeight * frac
+  const w = windowWidth * frac
+
   return (
     <>
       <FacetedHeader model={model} faceted={faceted} />
-      <div
-        style={{
-          display: 'flex',
-          overflow: 'hidden',
-          height: windowHeight * frac,
-          width: windowWidth * frac,
-        }}
-      >
+      <div className={classes.container} style={{ height: h, width: w }}>
         <div
-          style={{
-            height: windowHeight * frac,
-            width: windowWidth * frac - (showFilters ? panelWidth : 0),
-          }}
+          className={classes.dataPane}
+          style={{ height: h, width: w - (showFilters ? panelWidth : 0) }}
         >
           <FacetedDataGrid
             model={model}
@@ -129,7 +127,7 @@ const FacetedSelector = observer(function FacetedSelector({
               onDrag={dist => faceted.setPanelWidth(panelWidth - dist)}
               className={classes.resizeHandle}
             />
-            <div style={{ width: panelWidth, overflow: 'auto' }}>
+            <div className={classes.filterPane} style={{ width: panelWidth }}>
               <FacetFilters faceted={faceted} />
             </div>
           </>
