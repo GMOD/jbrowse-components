@@ -26,7 +26,7 @@ export type { FetchContext } from './FetchMixin.ts'
  *
  * extends
  * - [RegionTooLargeMixin](../regiontoolargemixin)
- * - [RenderLifecycleMixin](../gpulifecyclemixin)
+ * - [RenderLifecycleMixin](../renderlifecyclemixin)
  * - [FetchMixin](../fetchmixin)
  */
 export default function GlobalDataDisplayMixin() {

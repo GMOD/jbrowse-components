@@ -54,7 +54,7 @@ export function isBlockCovered(
  *
  * extends
  * - [RegionTooLargeMixin](../regiontoolargemixin)
- * - [RenderLifecycleMixin](../gpulifecyclemixin)
+ * - [RenderLifecycleMixin](../renderlifecyclemixin)
  * - [FetchMixin](../fetchmixin)
  */
 export default function MultiRegionDisplayMixin() {
