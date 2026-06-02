@@ -212,7 +212,7 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
     isReady: boolean              canvasDrawn && !isLoading
     viewportWithinLoadedData: boolean   every visible block ⊆ a loaded region
-    loadingOverlayVisible: boolean      (!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error
+    loadingOverlayVisible: boolean      (!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error && !renderError
 ```
 
 Every display renders its canvas through the shared `DisplayChrome`, which calls
