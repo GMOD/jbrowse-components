@@ -1,6 +1,8 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { when } from 'mobx'
 
 import SVChordsReactComponent from '../../ChordRenderer/ReactComponent.tsx'
+import DisplayError from '../components/DisplayError.tsx'
 
 import type { Block } from '../../ChordRenderer/types.ts'
 import type { CircularViewModel } from '../../CircularView/model.ts'
@@ -9,28 +11,30 @@ import type { Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type RenderSvgModel = IAnyStateTreeNode & {
+  ready: boolean
+  error: unknown
   features: Feature[] | undefined
   blocksForRefs: Record<string, Block>
   bezierRadiusRatio: number
-  // MST's index signature hides subfields, so configuration is typed as unknown
-  configuration: unknown
+  configuration: { renderer: AnyConfigurationModel }
   id: string
   selectedFeatureId: string | undefined
   onChordClick: (feature: Feature) => void
 }
 
-export function renderSvg(self: RenderSvgModel) {
+export async function renderSvg(self: RenderSvgModel) {
+  await when(() => self.ready || self.error !== undefined)
   const view = getContainingView(self) as CircularViewModel
   const radius = view.radiusPx
-  return self.features ? (
+  return self.error ? (
+    <DisplayError model={self} radius={radius} />
+  ) : self.features ? (
     <SVChordsReactComponent
       features={self.features}
       blocksForRefs={self.blocksForRefs}
       radius={radius}
       bezierRadius={radius * self.bezierRadiusRatio}
-      config={
-        (self.configuration as { renderer: AnyConfigurationModel }).renderer
-      }
+      config={self.configuration.renderer}
       displayModel={self}
       onChordClick={self.onChordClick}
     />

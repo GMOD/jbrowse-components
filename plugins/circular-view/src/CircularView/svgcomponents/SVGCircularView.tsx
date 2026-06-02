@@ -14,7 +14,7 @@ export async function renderToSvg(
   model: CircularViewModel,
   opts: ExportSvgOptions,
 ) {
-  await when(() => model.initialized, { timeout: 10000 })
+  await when(() => model.initialized)
   const { themeName = 'default', Wrapper = ({ children }) => children } = opts
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
@@ -22,18 +22,10 @@ export async function renderToSvg(
   const { figureSize } = model
   const tracks = [...model.tracks]
   const displayResults = await Promise.all(
-    tracks.flatMap(track => {
-      const display = track.displays[0]
-      if (!display) {
-        return []
-      }
-      return [
-        when(() => display.ready, { timeout: 10000 }).then(async () => ({
-          track,
-          result: await display.renderSvg({ ...opts, theme }),
-        })),
-      ]
-    }),
+    tracks.map(async track => ({
+      track,
+      result: await track.displays[0]!.renderSvg({ ...opts, theme }),
+    })),
   )
 
   const { staticSlices, offsetRadians, centerXY } = model
@@ -46,6 +38,7 @@ export async function renderToSvg(
         <svg
           width={figureSize}
           height={figureSize}
+          viewBox={`0 0 ${figureSize} ${figureSize}`}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
         >
