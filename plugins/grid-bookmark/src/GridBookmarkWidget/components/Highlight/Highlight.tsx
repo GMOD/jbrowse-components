@@ -1,9 +1,7 @@
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { HighlightBand } from '@jbrowse/plugin-linear-genome-view'
+import { HighlightBand, HighlightChip } from '@jbrowse/plugin-linear-genome-view'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
-import { Box, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
@@ -26,10 +24,6 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
         .filter(r => viewAssemblies.has(r.assemblyName))
         .map((r, idx) => {
           const coords = model.getHighlightCoords(r)
-          const bandColor = colord(r.highlight)
-          // match band color but bump alpha to 0.8 so the chip is legible;
-          // if the band is fully transparent, hide the chip color too
-          const chipAlpha = bandColor.alpha() === 0 ? 0 : 0.8
           return coords ? (
             <HighlightBand
               // region fields keep the key stable across pan/zoom (unlike
@@ -40,7 +34,12 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
               coords={coords}
               background={r.highlight}
             >
-              <CascadingMenuButton
+              <HighlightChip
+                icon={BookmarkIcon}
+                color={colord(r.highlight)}
+                label={r.label}
+                labelsVisible={labelsVisible}
+                tooltip={r.label}
                 menuItems={[
                   {
                     label: 'Open bookmark widget',
@@ -61,21 +60,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                     },
                   },
                 ]}
-              >
-                <Tooltip title={r.label} arrow>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <BookmarkIcon
-                      fontSize="small"
-                      sx={{ color: bandColor.alpha(chipAlpha).toRgbString() }}
-                    />
-                    {r.label && labelsVisible ? (
-                      <Typography variant="caption" noWrap>
-                        {r.label}
-                      </Typography>
-                    ) : null}
-                  </Box>
-                </Tooltip>
-              </CascadingMenuButton>
+              />
             </HighlightBand>
           ) : null
         })

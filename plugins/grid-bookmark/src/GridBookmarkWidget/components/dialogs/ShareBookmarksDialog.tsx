@@ -1,5 +1,10 @@
 import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
-import { getSession, isSessionWithShareURL, useFetch } from '@jbrowse/core/util'
+import {
+  getSession,
+  isSessionWithShareURL,
+  shareSessionToDynamo,
+  useFetch,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import {
@@ -14,7 +19,6 @@ import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
-import { shareSessionToDynamo } from '../../sessionSharing.ts'
 
 import type { GridBookmarkModel } from '../../model.ts'
 

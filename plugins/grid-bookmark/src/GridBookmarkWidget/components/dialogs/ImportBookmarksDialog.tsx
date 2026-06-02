@@ -6,7 +6,7 @@ import {
   ErrorBanner,
   FileSelector,
 } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, readSessionFromDynamo } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithShareURL } from '@jbrowse/core/util/types'
@@ -24,7 +24,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { readSessionFromDynamo } from '../../sessionSharing.ts'
 import { fromUrlSafeB64 } from '../../utils.ts'
 
 import type { GridBookmarkModel } from '../../model.ts'

@@ -1,10 +1,10 @@
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
-import { Box, Tooltip, Typography, useTheme } from '@mui/material'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HighlightBand from './HighlightBand.tsx'
+import HighlightChip from './HighlightChip.tsx'
 import { getHighlightColor } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
@@ -22,13 +22,15 @@ const Highlight = observer(function Highlight({
   const theme = useTheme()
   const coords = model.getHighlightCoords(highlight)
   const bandColor = getHighlightColor(highlight, theme)
-  // hide the chip icon color when the band is fully transparent ("label-only"
-  // highlight); otherwise bump the band color to 0.8 alpha so the chip is legible
-  const chipAlpha = bandColor.alpha() === 0 ? 0 : 0.8
 
   return coords ? (
     <HighlightBand coords={coords} background={bandColor.toRgbString()}>
-      <CascadingMenuButton
+      <HighlightChip
+        icon={LinkIcon}
+        color={bandColor}
+        label={highlight.label}
+        labelsVisible={model.labelsVisible}
+        tooltip={highlight.label ?? 'Highlighted region'}
         menuItems={[
           {
             label: 'Dismiss highlight',
@@ -39,21 +41,7 @@ const Highlight = observer(function Highlight({
           },
           ...model.highlightMenuItems(highlight),
         ]}
-      >
-        <Tooltip title={highlight.label ?? 'Highlighted region'} arrow>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <LinkIcon
-              fontSize="small"
-              sx={{ color: bandColor.alpha(chipAlpha).toRgbString() }}
-            />
-            {highlight.label && model.labelsVisible ? (
-              <Typography variant="caption" noWrap>
-                {highlight.label}
-              </Typography>
-            ) : null}
-          </Box>
-        </Tooltip>
-      </CascadingMenuButton>
+      />
     </HighlightBand>
   ) : null
 })

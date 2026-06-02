@@ -122,6 +122,7 @@ export type {
 export {
   AUTO_FORCE_LOAD_BP,
   HighlightBand,
+  HighlightChip,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
   OverviewHighlightBand,

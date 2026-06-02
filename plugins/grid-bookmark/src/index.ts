@@ -1,17 +1,16 @@
 import Plugin from '@jbrowse/core/Plugin'
-import {
-  getSession,
-  isAbstractMenuManager,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { getSession, isAbstractMenuManager } from '@jbrowse/core/util'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
-import HighlightIcon from '@mui/icons-material/Highlight'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
+import {
+  activateBookmarkWidget,
+  ensureBookmarkWidget,
+  toggleHighlightsMenuItem,
+} from './bookmarkViewUtils.ts'
 
-import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   PluggableElementType,
@@ -51,21 +50,7 @@ export default class GridBookmarkPlugin extends Plugin {
                * #action
                */
               activateBookmarkWidget() {
-                const session = getSession(self)
-                if (isSessionModelWithWidgets(session)) {
-                  let bookmarkWidget = session.widgets.get('GridBookmark')
-                  bookmarkWidget ??= session.addWidget(
-                    'GridBookmarkWidget',
-                    'GridBookmark',
-                  )
-
-                  session.showWidget(bookmarkWidget)
-                  return session.widgets.get(
-                    'GridBookmark',
-                  ) as GridBookmarkModel
-                }
-
-                throw new Error('Could not open bookmark widget')
+                return activateBookmarkWidget(self)
               },
             }))
             .actions(self => ({
@@ -130,25 +115,7 @@ export default class GridBookmarkPlugin extends Plugin {
                             self.bookmarkCurrentRegion()
                           },
                         },
-                        {
-                          label: 'Toggle highlights',
-                          icon: HighlightIcon,
-                          type: 'checkbox',
-                          // checked when either kind is visible; toggle flips
-                          // both so users get a single switch for all
-                          // highlight overlays in the view
-                          checked:
-                            self.bookmarkHighlightsVisible ||
-                            self.highlightsVisible,
-                          onClick: () => {
-                            const next = !(
-                              self.bookmarkHighlightsVisible ||
-                              self.highlightsVisible
-                            )
-                            self.setBookmarkHighlightsVisible(next)
-                            self.setHighlightsVisible(next)
-                          },
-                        },
+                        toggleHighlightsMenuItem(self),
                         {
                           label: 'Toggle labels',
                           icon: LabelIcon,
@@ -242,16 +209,7 @@ export default class GridBookmarkPlugin extends Plugin {
                   document.addEventListener('keydown', keydownListener)
                 },
                 afterAttach() {
-                  // ensure the bookmark widget exists so its localStorage-backed
-                  // bookmarks can render as highlight overlays without each
-                  // overlay component having to create it on first render
-                  const session = getSession(self)
-                  if (
-                    isSessionModelWithWidgets(session) &&
-                    !session.widgets.get('GridBookmark')
-                  ) {
-                    session.addWidget('GridBookmarkWidget', 'GridBookmark')
-                  }
+                  ensureBookmarkWidget(self)
                 },
                 beforeDestroy() {
                   document.removeEventListener('keydown', keydownListener)
@@ -324,19 +282,7 @@ export default class GridBookmarkPlugin extends Plugin {
                * #action
                */
               activateBookmarkWidget() {
-                const session = getSession(self)
-                if (isSessionModelWithWidgets(session)) {
-                  let bookmarkWidget = session.widgets.get('GridBookmark')
-                  bookmarkWidget ??= session.addWidget(
-                    'GridBookmarkWidget',
-                    'GridBookmark',
-                  )
-                  session.showWidget(bookmarkWidget)
-                  return session.widgets.get(
-                    'GridBookmark',
-                  ) as GridBookmarkModel
-                }
-                throw new Error('Could not open bookmark widget')
+                return activateBookmarkWidget(self)
               },
             }))
             .views(self => {
@@ -357,25 +303,7 @@ export default class GridBookmarkPlugin extends Plugin {
                           icon: BookmarksIcon,
                           onClick: () => self.activateBookmarkWidget(),
                         },
-                        {
-                          label: 'Toggle highlights',
-                          icon: HighlightIcon,
-                          type: 'checkbox',
-                          // checked when either kind is visible; toggle flips
-                          // both so users get a single switch for all highlight
-                          // overlays in the view
-                          checked:
-                            self.bookmarkHighlightsVisible ||
-                            self.highlightsVisible,
-                          onClick: () => {
-                            const next = !(
-                              self.bookmarkHighlightsVisible ||
-                              self.highlightsVisible
-                            )
-                            self.setBookmarkHighlightsVisible(next)
-                            self.setHighlightsVisible(next)
-                          },
-                        },
+                        toggleHighlightsMenuItem(self),
                       ],
                     },
                   ]
@@ -384,15 +312,7 @@ export default class GridBookmarkPlugin extends Plugin {
             })
             .actions(self => ({
               afterAttach() {
-                // ensure the bookmark widget exists so its localStorage-backed
-                // bookmarks can render as highlight overlays
-                const session = getSession(self)
-                if (
-                  isSessionModelWithWidgets(session) &&
-                  !session.widgets.get('GridBookmark')
-                ) {
-                  session.addWidget('GridBookmarkWidget', 'GridBookmark')
-                }
+                ensureBookmarkWidget(self)
               },
             }))
             .postProcessSnapshot(snap => {

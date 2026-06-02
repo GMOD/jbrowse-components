@@ -44,7 +44,7 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
               )
             }}
           />
-          <Typography>Toggle 'bookmark' icon on LGV tracks</Typography>
+          <Typography>Toggle highlight labels on all open views</Typography>
         </Stack>
       </DialogContent>
       <DialogActions>

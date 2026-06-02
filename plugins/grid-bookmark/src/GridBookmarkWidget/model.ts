@@ -83,6 +83,32 @@ export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
   correspondingObj: ILabeledRegionModel
 }
 
+interface ShareableBookmark {
+  refName: string
+  start: number
+  end: number
+  reversed: boolean
+  assemblyName: string
+  label: string
+  highlight: string
+}
+
+// strips volatile-only fields (id, correspondingObj) down to the plain region
+// fields that the share dialog serializes
+function toSharedBookmarks(list: ShareableBookmark[]) {
+  return list.map(
+    ({ refName, start, end, reversed, assemblyName, label, highlight }) => ({
+      refName,
+      start,
+      end,
+      reversed,
+      assemblyName,
+      label,
+      highlight,
+    }),
+  )
+}
+
 const localStorageKeyF = () =>
   typeof window !== 'undefined'
     ? `bookmarks-${window.location.host}${window.location.pathname}`
@@ -173,56 +199,17 @@ export default function f(_pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * Plain snapshot of selected (or all) bookmarks for the share dialog.
-       * Explicit field pick strips volatile-only fields (id, correspondingObj).
+       * Plain snapshot of the selected bookmarks for the share dialog.
        */
       get sharedBookmarksSnapshot() {
-        return {
-          sharedBookmarks: self.selectedBookmarks.map(
-            ({
-              refName,
-              start,
-              end,
-              reversed,
-              assemblyName,
-              label,
-              highlight,
-            }) => ({
-              refName,
-              start,
-              end,
-              reversed,
-              assemblyName,
-              label,
-              highlight,
-            }),
-          ),
-        }
+        return { sharedBookmarks: toSharedBookmarks(self.selectedBookmarks) }
       },
       /**
        * #getter
        */
       get allBookmarksSnapshot() {
         return {
-          sharedBookmarks: self.bookmarksWithValidAssemblies.map(
-            ({
-              refName,
-              start,
-              end,
-              reversed,
-              assemblyName,
-              label,
-              highlight,
-            }) => ({
-              refName,
-              start,
-              end,
-              reversed,
-              assemblyName,
-              label,
-              highlight,
-            }),
-          ),
+          sharedBookmarks: toSharedBookmarks(self.bookmarksWithValidAssemblies),
         }
       },
     }))
@@ -264,12 +251,6 @@ export default function f(_pluginManager: PluginManager) {
        */
       addBookmark(region: Region) {
         self.bookmarks.push(region)
-      },
-      /**
-       * #action
-       */
-      removeBookmark(index: number) {
-        self.bookmarks.splice(index, 1)
       },
       /**
        * #action
