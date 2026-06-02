@@ -12,5 +12,10 @@
     "moduleResolution": "bundler",
     "types": ["node"]
   },
-  "include": ["generateConfigDocs.ts", "generateStateModelDocs.ts", "util.ts"]
+  "include": [
+    "generate.ts",
+    "generateConfigDocs.ts",
+    "generateStateModelDocs.ts",
+    "util.ts"
+  ]
 }

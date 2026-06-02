@@ -3,10 +3,10 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import {
-  extractWithComment,
-  getAllFiles,
+  codeBlock,
   parseTaggedComment,
   removeComments,
+  section,
 } from './util.ts'
 
 import type { ExtractedNode } from './util.ts'
@@ -25,7 +25,7 @@ interface ConfigHeader {
   // id, so it's how we link the derivation graph.
   declId?: string
 }
-interface Config {
+export interface Config {
   header?: ConfigHeader
   derives?: Item
   // declId the `baseConfiguration:` expression resolves to (the base config)
@@ -47,35 +47,37 @@ function buildItem(obj: ExtractedNode): Item {
   return { name, docs, code: removeComments(obj.node) }
 }
 
-function generateConfigDocs(files: string[]) {
-  const cwd = `${process.cwd()}/`
-  const byFile: Record<string, Config> = {}
-  extractWithComment(files, obj => {
-    const fn = obj.filename
-    byFile[fn] ??= { slots: [], filename: fn.replace(cwd, '') }
-    const file = byFile[fn]
-    const item = buildItem(obj)
+const cwd = `${process.cwd()}/`
 
-    if (obj.type === 'config') {
-      file.header = {
-        name: item.name,
-        docs: item.docs,
-        id: slugify(item.name, { lower: true }),
-        declId: obj.selfDeclId,
-      }
-    } else if (obj.type === 'baseConfiguration') {
-      file.derives = item
-      file.baseDeclId = obj.baseDeclId
-      file.baseConfigName = obj.baseConfigName
-    } else if (obj.type === 'identifier') {
-      file.identifier = item
-    } else if (obj.type === 'preProcessSnapshot') {
-      file.preProcess = item
-    } else if (obj.type === 'slot') {
-      file.slots.push(item)
+// Route one extracted node into its file's config bucket. Called from the shared
+// single-program-load driver in generate.ts.
+export function accumulateConfig(
+  byFile: Record<string, Config>,
+  obj: ExtractedNode,
+) {
+  const fn = obj.filename
+  byFile[fn] ??= { slots: [], filename: fn.replace(cwd, '') }
+  const file = byFile[fn]
+  const item = buildItem(obj)
+
+  if (obj.type === 'config') {
+    file.header = {
+      name: item.name,
+      docs: item.docs,
+      id: slugify(item.name, { lower: true }),
+      declId: obj.selfDeclId,
     }
-  })
-  return byFile
+  } else if (obj.type === 'baseConfiguration') {
+    file.derives = item
+    file.baseDeclId = obj.baseDeclId
+    file.baseConfigName = obj.baseConfigName
+  } else if (obj.type === 'identifier') {
+    file.identifier = item
+  } else if (obj.type === 'preProcessSnapshot') {
+    file.preProcess = item
+  } else if (obj.type === 'slot') {
+    file.slots.push(item)
+  }
 }
 
 // Resolve a config's base: by declaration identity first, else by the config
@@ -140,14 +142,18 @@ function inheritedSlotsSection(bases: BaseRef[]) {
 }
 
 function renderConfig(
-  { header, derives, identifier, preProcess, slots, filename }: Config,
+  {
+    header,
+    derives,
+    identifier,
+    preProcess,
+    slots,
+    filename,
+  }: ConfigWithHeader,
   bases: BaseRef[],
-): string | undefined {
-  if (!header) {
-    return undefined
-  }
+): string {
   const directBase = bases[0]?.config
-  const sections = [
+  const sections = section(
     preProcess &&
       section(
         `### ${header.name} - Pre-processor / simplified config`,
@@ -172,9 +178,7 @@ function renderConfig(
           : derives.docs,
         codeBlock(derives.code),
       ),
-  ]
-    .filter(Boolean)
-    .join('\n\n')
+  )
 
   return `---
 id: ${header.id}
@@ -206,14 +210,6 @@ function slotBlock({ name, docs, code }: Item) {
   return section(`#### slot: ${name}`, docs, codeBlock(code))
 }
 
-function codeBlock(body: string) {
-  return ['```js', body, '```'].join('\n')
-}
-
-function section(...parts: (string | false | 0 | undefined)[]) {
-  return parts.filter(Boolean).join('\n\n')
-}
-
 function validateBaseConfig(config: ConfigWithHeader, bases: BaseRef[]) {
   for (const { config: base } of bases) {
     if (!base) {
@@ -225,11 +221,10 @@ function validateBaseConfig(config: ConfigWithHeader, bases: BaseRef[]) {
   }
 }
 
-export default async function main() {
+export function writeConfigDocs(byFile: Record<string, Config>) {
   const dir = 'website/docs/config'
   fs.mkdirSync(dir, { recursive: true })
-  const configs = generateConfigDocs(await getAllFiles())
-  const withHeader = Object.values(configs).filter((c): c is ConfigWithHeader =>
+  const withHeader = Object.values(byFile).filter((c): c is ConfigWithHeader =>
     Boolean(c.header),
   )
   const byDeclId = new Map(
@@ -241,12 +236,6 @@ export default async function main() {
   for (const cfg of withHeader) {
     const bases = collectBaseConfigs(cfg, byDeclId, byName)
     validateBaseConfig(cfg, bases)
-    const rendered = renderConfig(cfg, bases)
-    if (rendered) {
-      fs.writeFileSync(`${dir}/${cfg.header.name}.md`, rendered)
-    }
+    fs.writeFileSync(`${dir}/${cfg.header.name}.md`, renderConfig(cfg, bases))
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-main()

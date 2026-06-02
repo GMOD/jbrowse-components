@@ -41,7 +41,6 @@ const TAG_TYPES = [
   'property',
   'volatile',
   'getter',
-  'baseModel',
   'action',
   'method',
 ] as const
@@ -231,6 +230,17 @@ export function parseTaggedComment(
 
 export function removeComments(string: string) {
   return string.replaceAll(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim()
+}
+
+// Shared markdown builders used by both generators.
+export function codeBlock(...lines: string[]) {
+  return ['```js', ...lines, '```'].join('\n')
+}
+
+// Join non-empty parts with blank lines between them. Falsy parts (including the
+// `0` from `arr.length && ...`) are dropped, so empty sections vanish cleanly.
+export function section(...parts: (string | false | 0 | undefined)[]) {
+  return parts.filter(Boolean).join('\n\n')
 }
 
 export interface ExtendsRef {

@@ -3,11 +3,11 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import {
-  extractWithComment,
-  getAllFiles,
+  codeBlock,
   parseExtends,
   parseTaggedComment,
   removeComments,
+  section,
 } from './util.ts'
 
 import type { ExtendsRef, ExtractedNode } from './util.ts'
@@ -23,7 +23,7 @@ interface ModelHeader {
   id: string
   docs: string
 }
-interface StateModel {
+export interface StateModel {
   header?: ModelHeader
   properties: Member[]
   volatiles: Member[]
@@ -48,41 +48,43 @@ function buildMember(obj: ExtractedNode): Member {
   }
 }
 
-function generateStateModelDocs(files: string[]) {
-  const cwd = `${process.cwd()}/`
-  const byFile: Record<string, StateModel> = {}
-  extractWithComment(files, obj => {
-    const fn = obj.filename
-    byFile[fn] ??= {
-      properties: [],
-      volatiles: [],
-      getters: [],
-      methods: [],
-      actions: [],
-      filename: fn.replace(cwd, ''),
-    }
-    const file = byFile[fn]
-    const member = buildMember(obj)
+const cwd = `${process.cwd()}/`
 
-    if (obj.type === 'stateModel') {
-      file.header = {
-        name: member.name,
-        docs: member.docs,
-        id: slugify(member.name, { lower: true }),
-      }
-    } else if (obj.type === 'property') {
-      file.properties.push(member)
-    } else if (obj.type === 'volatile') {
-      file.volatiles.push(member)
-    } else if (obj.type === 'getter') {
-      file.getters.push(member)
-    } else if (obj.type === 'method') {
-      file.methods.push(member)
-    } else if (obj.type === 'action') {
-      file.actions.push(member)
+// Route one extracted node into its file's state-model bucket. Called from the
+// shared single-program-load driver in generate.ts.
+export function accumulateModel(
+  byFile: Record<string, StateModel>,
+  obj: ExtractedNode,
+) {
+  const fn = obj.filename
+  byFile[fn] ??= {
+    properties: [],
+    volatiles: [],
+    getters: [],
+    methods: [],
+    actions: [],
+    filename: fn.replace(cwd, ''),
+  }
+  const file = byFile[fn]
+  const member = buildMember(obj)
+
+  if (obj.type === 'stateModel') {
+    file.header = {
+      name: member.name,
+      docs: member.docs,
+      id: slugify(member.name, { lower: true }),
     }
-  })
-  return byFile
+  } else if (obj.type === 'property') {
+    file.properties.push(member)
+  } else if (obj.type === 'volatile') {
+    file.volatiles.push(member)
+  } else if (obj.type === 'getter') {
+    file.getters.push(member)
+  } else if (obj.type === 'method') {
+    file.methods.push(member)
+  } else if (obj.type === 'action') {
+    file.actions.push(member)
+  }
 }
 
 // Walk the extends graph transitively, depth-first, deduping by slug and
@@ -129,19 +131,19 @@ function inheritedSection(ancestors: Ancestor[]) {
       : []
     return model && lines.length
       ? [
-          [
+          section(
             `### Available via [${model.header.name}](../${model.header.id})`,
             ...lines,
-          ].join('\n\n'),
+          ),
         ]
       : []
   })
   return blocks.length
-    ? [
+    ? section(
         '## Inherited members',
         'Available on this model via composition. Follow each link for full signatures and docs.',
         ...blocks,
-      ].join('\n\n')
+      )
     : ''
 }
 
@@ -154,13 +156,10 @@ function renderModel(
     methods,
     actions,
     filename,
-  }: StateModel,
+  }: ModelWithHeader,
   ancestors: Ancestor[],
-): string | undefined {
-  if (!header) {
-    return undefined
-  }
-  const sections = [
+): string {
+  const sections = section(
     memberSection(header.name, 'Properties', properties, p =>
       codeBlock('// type signature', p.signature, '// code', p.code),
     ),
@@ -176,9 +175,7 @@ function renderModel(
     memberSection(header.name, 'Actions', actions, a =>
       codeBlock('// type signature', `${a.name}: ${a.signature}`),
     ),
-  ]
-    .filter(Boolean)
-    .join('\n\n')
+  )
 
   return `---
 id: ${header.id}
@@ -201,7 +198,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-${[header.docs, inheritedSection(ancestors), sections].filter(Boolean).join('\n\n')}
+${section(header.docs, inheritedSection(ancestors), sections)}
 `
 }
 
@@ -211,18 +208,15 @@ function memberSection(
   members: Member[],
   renderBody: (m: Member) => string,
 ) {
-  if (!members.length) {
-    return ''
-  }
   const kind = label.toLowerCase().replace(/ies$/, 'y').replace(/s$/, '')
-  const blocks = members.map(m =>
-    [`#### ${kind}: ${m.name}`, m.docs, renderBody(m)].join('\n\n'),
-  )
-  return [`### ${modelName} - ${label}`, ...blocks].join('\n\n')
-}
-
-function codeBlock(...lines: string[]) {
-  return ['```js', ...lines, '```'].join('\n')
+  return members.length
+    ? section(
+        `### ${modelName} - ${label}`,
+        ...members.map(m =>
+          section(`#### ${kind}: ${m.name}`, m.docs, renderBody(m)),
+        ),
+      )
+    : ''
 }
 
 function validateLinks(model: ModelWithHeader, ancestors: Ancestor[]) {
@@ -235,23 +229,19 @@ function validateLinks(model: ModelWithHeader, ancestors: Ancestor[]) {
   }
 }
 
-export default async function main() {
+export function writeModelDocs(byFile: Record<string, StateModel>) {
   const dir = 'website/docs/models'
   fs.mkdirSync(dir, { recursive: true })
-  const models = generateStateModelDocs(await getAllFiles())
-  const withHeader = Object.values(models).filter((m): m is ModelWithHeader =>
+  const withHeader = Object.values(byFile).filter((m): m is ModelWithHeader =>
     Boolean(m.header),
   )
   const bySlug = new Map(withHeader.map(m => [m.header.id, m] as const))
   for (const model of withHeader) {
     const ancestors = collectAncestors(model, bySlug)
     validateLinks(model, ancestors)
-    const rendered = renderModel(model, ancestors)
-    if (rendered) {
-      fs.writeFileSync(`${dir}/${model.header.name}.md`, rendered)
-    }
+    fs.writeFileSync(
+      `${dir}/${model.header.name}.md`,
+      renderModel(model, ancestors),
+    )
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-main()

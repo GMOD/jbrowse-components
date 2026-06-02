@@ -8,15 +8,15 @@ This folder contains scripts to auto-generate some docs
 In the root dir run
 
 ```
-pnpm statedocs
-pnpm configdocs
+pnpm autogen
 ```
 
-To update statemodels and config individually
+This updates both website/docs/models and website/docs/config (state models and
+config), then runs the formatter. The two generators share a single TypeScript
+program load (the dominant cost — see `generate.ts`), so they always run
+together.
 
-These will update website/docs/models and website/docs/config respectively
-
-You will have to manually do This
+You will have to manually do this
 
 It looks for comments named
 
