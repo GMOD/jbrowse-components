@@ -1,26 +1,20 @@
 import type React from 'react'
-import { useEffect, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
-import useMeasure from '@jbrowse/core/util/useMeasure'
-import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
 import { coarseStripHTML } from './coarseStripHTML.ts'
 import { colord } from './colord.ts'
-import { parseLocString } from './locString.ts'
 import { measureText } from './measureText.ts'
+import { max, toLocale } from './numericUtils.ts'
 import { checkStopToken } from './stopToken.ts'
 import { storeBlobLocation } from './tracks.ts'
 import { isUriLocation } from './types/index.ts'
 
-import type { ParsedLocString } from './locString.ts'
 import type { StopToken } from './stopToken.ts'
-import type { AssemblyManager, FileLocation, Region } from './types/index.ts'
-import type { Region as MUIRegion } from './types/mst.ts'
+import type { FileLocation } from './types/index.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 export * from './types/index.ts'
@@ -33,6 +27,13 @@ export * from './sessionSharing.ts'
 export * from './coarseStripHTML.ts'
 export * from './measureText.ts'
 export * from './scrollLatch.ts'
+export * from './numericUtils.ts'
+export * from './bpUtils.ts'
+export * from './intervals.ts'
+export * from './springAnimate.ts'
+export * from './hooks.ts'
+export * from './localStorage.ts'
+export * from './renameRegions.ts'
 
 export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'
@@ -51,310 +52,6 @@ export {
   objectHash,
 } from './mstUtils.ts'
 
-export function useDebounce<T>(value: T, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-    return () => {
-      clearTimeout(handle)
-    }
-  }, [value, delay])
-
-  return debouncedValue
-}
-
-// used in ViewContainer files to get the width
-export function useWidthSetter(
-  view: { setWidth: (arg: number) => void },
-  padding: string,
-) {
-  const [ref, { width }] = useMeasure()
-  useEffect(() => {
-    let token: ReturnType<typeof requestAnimationFrame>
-    if (width && isAlive(view)) {
-      // sets after a requestAnimationFrame
-      // https://stackoverflow.com/a/58701523/2129219
-      // avoids ResizeObserver loop error being shown during development
-      token = requestAnimationFrame(() => {
-        view.setWidth(width)
-      })
-    }
-
-    return () => {
-      if (token) {
-        cancelAnimationFrame(token)
-      }
-    }
-  }, [padding, view, width])
-  return ref
-}
-
-interface Animation {
-  lastPosition: number
-  lastTime?: number
-  lastVelocity?: number
-}
-
-// based on https://github.com/react-spring/react-spring/blob/cd5548a987383b8023efd620f3726a981f9e18ea/src/animated/FrameLoop.ts
-export function springAnimate(
-  fromValue: number,
-  toValue: number,
-  setValue: (value: number) => void,
-  onFinish = () => {},
-  precision = 0,
-  tension = 400,
-  friction = 20,
-  clamp = true,
-) {
-  const mass = 1
-  if (!precision) {
-    precision = Math.abs(toValue - fromValue) / 1000
-  }
-
-  let animationFrameId: number
-
-  function update(animation: Animation) {
-    const time = performance.now()
-    let position = animation.lastPosition
-    let lastTime = animation.lastTime ?? time
-    let velocity = animation.lastVelocity ?? 0
-    // If we lost a lot of frames just jump to the end.
-    if (time > lastTime + 64) {
-      lastTime = time
-    }
-    // http://gafferongames.com/game-physics/fix-your-timestep/
-    const numSteps = Math.floor(time - lastTime)
-    for (let i = 0; i < numSteps; ++i) {
-      const force = -tension * (position - toValue)
-      const damping = -friction * velocity
-      const acceleration = (force + damping) / mass
-      velocity += (acceleration * 1) / 1000
-      position += (velocity * 1) / 1000
-    }
-    const isVelocity = Math.abs(velocity) <= precision
-    const isDisplacement =
-      tension !== 0 ? Math.abs(toValue - position) <= precision : true
-    const isOvershooting =
-      clamp && tension !== 0
-        ? fromValue < toValue
-          ? position > toValue
-          : position < toValue
-        : false
-    const endOfAnimation = isOvershooting || (isVelocity && isDisplacement)
-    if (endOfAnimation) {
-      setValue(toValue)
-      onFinish()
-    } else {
-      setValue(position)
-      animationFrameId = requestAnimationFrame(() => {
-        update({
-          lastPosition: position,
-          lastTime: time,
-          lastVelocity: velocity,
-        })
-      })
-    }
-  }
-
-  return [
-    () => {
-      update({ lastPosition: fromValue })
-    },
-    () => {
-      cancelAnimationFrame(animationFrameId)
-    },
-  ] as const
-}
-
-/**
- * Assemble a 1-based "locString" from an interbase genomic location
- * @param region - Region
- * @example
- * ```ts
- * assembleLocString({ refName: 'chr1', start: 0, end: 100 })
- * // ↳ 'chr1:1..100'
- * ```
- * @example
- * ```ts
- * assembleLocString({ assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 })
- * // ↳ '{hg19}chr1:1..100'
- * ```
- * @example
- * ```ts
- * assembleLocString({ refName: 'chr1' })
- * // ↳ 'chr1'
- * ```
- * @example
- * ```ts
- * assembleLocString({ refName: 'chr1', start: 0 })
- * // ↳ 'chr1:1..'
- * ```
- * @example
- * ```ts
- * assembleLocString({ refName: 'chr1', end: 100 })
- * // ↳ 'chr1:1..100'
- * ```
- * @example
- * ```ts
- * assembleLocString({ refName: 'chr1', start: 0, end: 1 })
- * // ↳ 'chr1:1'
- * ```
- */
-export function assembleLocString(region: ParsedLocString) {
-  return assembleLocStringFast(region, toLocale)
-}
-
-// same as assembleLocString above, but does not perform toLocaleString which
-// can slow down the speed of block calculations which use assembleLocString
-// for block.key
-export function assembleLocStringFast(
-  region: ParsedLocString,
-  cb = (n: number): string | number => n,
-) {
-  const { assemblyName, refName, start, end, reversed } = region
-  const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
-  let startString: string
-  if (start !== undefined) {
-    startString = `:${cb(start + 1)}`
-  } else if (end !== undefined) {
-    startString = ':1'
-  } else {
-    startString = ''
-  }
-  let endString: string
-  if (end !== undefined) {
-    endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
-  } else {
-    endString = start !== undefined ? '..' : ''
-  }
-  let rev = ''
-  if (reversed) {
-    rev = '[rev]'
-  }
-  return `${assemblyNameString}${refName}${startString}${endString}${rev}`
-}
-export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
-  const assemblyComp =
-    locA.assemblyName || locB.assemblyName
-      ? (locA.assemblyName || '').localeCompare(locB.assemblyName || '')
-      : 0
-  if (assemblyComp) {
-    return assemblyComp
-  }
-
-  const refComp =
-    locA.refName || locB.refName
-      ? (locA.refName || '').localeCompare(locB.refName || '')
-      : 0
-  if (refComp) {
-    return refComp
-  }
-
-  if (locA.start !== undefined && locB.start !== undefined) {
-    const startComp = locA.start - locB.start
-    if (startComp) {
-      return startComp
-    }
-  }
-  if (locA.end !== undefined && locB.end !== undefined) {
-    const endComp = locA.end - locB.end
-    if (endComp) {
-      return endComp
-    }
-  }
-  return 0
-}
-
-export function compareLocStrings(
-  a: string,
-  b: string,
-  isValidRefName: (refName: string, assemblyName?: string) => boolean,
-) {
-  const locA = parseLocString(a, isValidRefName)
-  const locB = parseLocString(b, isValidRefName)
-  return compareLocs(locA, locB)
-}
-
-/**
- * Ensure that a number is at least min and at most max.
- *
- * @param num -
- * @param min -
- * @param  max -
- */
-export function clamp(num: number, min: number, max: number) {
-  if (num < min) {
-    return min
-  }
-  if (num > max) {
-    return max
-  }
-  return num
-}
-
-function roundToNearestPointOne(num: number) {
-  return Math.round(num * 10) / 10
-}
-
-/**
- * @param bp -
- * @param region -
- * @param bpPerPx -
- */
-export function bpToPx(
-  bp: number,
-  {
-    reversed,
-    end = 0,
-    start = 0,
-  }: { start?: number; end?: number; reversed?: boolean },
-  bpPerPx: number,
-) {
-  return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
-}
-
-const oneEightyOverPi = 180 / Math.PI
-export function radToDeg(radians: number) {
-  return (radians * oneEightyOverPi) % 360
-}
-
-/**
- * @returns [x, y]
- */
-export function polarToCartesian(rho: number, theta: number) {
-  return [rho * Math.cos(theta), rho * Math.sin(theta)] as [number, number]
-}
-
-/**
- * @param x - the x
- * @param y - the y
- * @returns [rho, theta]
- */
-export function cartesianToPolar(x: number, y: number) {
-  const rho = Math.sqrt(x * x + y * y)
-  const theta = Math.atan(y / x)
-  return [rho, theta] as [number, number]
-}
-interface MinimalRegion {
-  start: number
-  end: number
-  reversed?: boolean
-}
-
-export function bpSpanPx(
-  leftBp: number,
-  rightBp: number,
-  region: MinimalRegion,
-  bpPerPx: number,
-) {
-  const start = bpToPx(leftBp, region, bpPerPx)
-  const end = bpToPx(rightBp, region, bpPerPx)
-  return region.reversed ? ([end, start] as const) : ([start, end] as const)
-}
-
 // do an array map of an iterable
 export function iterMap<T, U>(
   iter: Iterable<T>,
@@ -368,92 +65,6 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
-}
-
-export function findLast<T>(
-  array: T[],
-  predicate: (value: T, index: number, obj: T[]) => boolean,
-) {
-  let l = array.length
-  while (l--) {
-    if (predicate(array[l]!, l, array)) {
-      return array[l]
-    }
-  }
-  return undefined
-}
-
-// Maps a region's refName to the track adapter's name (via refNameMap), and
-// sets originalRefName to the seq adapter (FASTA) name so that CRAM/BAM
-// adapters can fetch reference sequence correctly.
-export function renameRegionIfNeeded(
-  refNameMap: Record<string, string> | undefined,
-  region: Region | Instance<typeof MUIRegion>,
-  getSeqAdapterRefName?: (refName: string) => string,
-): Region & { originalRefName?: string } {
-  if (isStateTreeNode(region) && !isAlive(region)) {
-    return region
-  }
-  const newRef = refNameMap?.[region.refName]
-  if (newRef) {
-    return {
-      ...(isStateTreeNode(region) ? getSnapshot(region) : region),
-      refName: newRef,
-      originalRefName: getSeqAdapterRefName?.(region.refName) ?? region.refName,
-    }
-  }
-  return region
-}
-
-export async function renameRegionsIfNeeded<
-  ARGTYPE extends {
-    assemblyName?: string
-    regions?: Region[]
-    stopToken?: StopToken
-    adapterConfig: Record<string, unknown>
-    sessionId: string
-    statusCallback?: (arg: string) => void
-  },
->(assemblyManager: AssemblyManager, args: ARGTYPE) {
-  const { regions = [], adapterConfig } = args
-  if (!args.sessionId) {
-    throw new Error('sessionId is required')
-  }
-
-  // capture assembly names before the await, since MST regions may be dead after
-  const assemblyNames = regions.map(r => r.assemblyName)
-  const uniqueAssemblyNames = [...new Set(assemblyNames)]
-  const assemblyData = Object.fromEntries(
-    await Promise.all(
-      uniqueAssemblyNames.map(async name => [
-        name,
-        {
-          refNameMap: await assemblyManager.getRefNameMapForAdapter(
-            adapterConfig,
-            name,
-            args,
-          ),
-          assembly: assemblyManager.get(name),
-        },
-      ]),
-    ),
-  )
-
-  return {
-    ...args,
-    regions: regions.map((region, i) => {
-      const { refNameMap, assembly } = assemblyData[assemblyNames[i]!]
-      return renameRegionIfNeeded(
-        refNameMap,
-        region,
-        assembly ? r => assembly.getSeqAdapterRefName(r) : undefined,
-      )
-    }),
-  }
-}
-
-export function minmax(a: number, b: number) {
-  return [Math.min(a, b), Math.max(a, b)] as const
 }
 
 export function shorten(name: string, max = 70, short = 30) {
@@ -564,38 +175,6 @@ export async function updateStatus2<U>(
   return res
 }
 
-interface VirtualOffset {
-  blockPosition: number
-}
-
-interface Block {
-  minv: VirtualOffset
-  maxv: VirtualOffset
-}
-
-export async function bytesForRegions(
-  regions: Region[],
-  index: {
-    blocksForRange: (
-      ref: string,
-      start: number,
-      end: number,
-    ) => Promise<Block[]>
-  },
-) {
-  const blockResults = await Promise.all(
-    regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
-  )
-
-  return sum(
-    blockResults
-      .flat()
-      .map(
-        block => block.maxv.blockPosition + 65535 - block.minv.blockPosition,
-      ),
-  )
-}
-
 // Supported adapter types by text indexer ensure that this matches the method
 // found in @jbrowse/text-indexing/util
 export function isSupportedIndexingAdapter(type = '') {
@@ -607,55 +186,6 @@ export function isSupportedIndexingAdapter(type = '') {
   ].includes(type)
 }
 
-export function getBpDisplayStr(total: number) {
-  if (Math.floor(total / 1_000_000) > 0) {
-    return `${reducePrecision(total / 1_000_000)}Mbp`
-  } else if (Math.floor(total / 1_000) > 0) {
-    return `${reducePrecision(total / 1_000)}Kbp`
-  } else {
-    return `${Math.floor(total)}bp`
-  }
-}
-
-export function reducePrecision(s: number, n = 3) {
-  return toLocale(Number.parseFloat(s.toPrecision(n)))
-}
-
-export function getProgressDisplayStr(current: number, total: number) {
-  if (Math.floor(total / 1_000_000) > 0) {
-    return `${reducePrecision(current / 1_000_000)}/${reducePrecision(total / 1_000_000)}Mb`
-  } else if (Math.floor(total / 1_000) > 0) {
-    return `${reducePrecision(current / 1_000)}/${reducePrecision(total / 1_000)}Kb`
-  } else {
-    return `${reducePrecision(current)}/${reducePrecision(total)} bytes`
-  }
-}
-
-// Fast number formatter with thousand separators
-// Benchmarked at 5-67x faster than toLocaleString('en-US')
-export function toLocale(n: number) {
-  if (n > -1000 && n < 1000) {
-    return String(n)
-  }
-  const neg = n < 0
-  const str = String(neg ? -n : n)
-  const len = str.length
-  let result = neg ? '-' : ''
-  for (let i = 0; i < len; i++) {
-    if (i > 0 && (len - i) % 3 === 0) {
-      result += ','
-    }
-    result += str[i]
-  }
-  return result
-}
-
-export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
-  return Math.floor(bpPerPx / 1_000) > 0
-    ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
-    : toLocale(Math.floor(totalBp))
-}
-
 export function getLayoutId({
   sessionId,
   trackInstanceId,
@@ -664,41 +194,6 @@ export function getLayoutId({
   trackInstanceId: string
 }) {
   return `${sessionId}-${trackInstanceId}`
-}
-
-// Hook from https://usehooks.com/useLocalStorage/
-export function useLocalStorage<T>(
-  key: string,
-  initialValue: T,
-  enabled = true,
-) {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined' || !enabled) {
-      return initialValue
-    }
-    try {
-      const item = window.localStorage.getItem(key)
-      return item ? JSON.parse(item) : initialValue
-    } catch (error) {
-      console.error(error)
-      return initialValue
-    }
-  })
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore =
-        typeof value === 'function'
-          ? (value as (val: T) => T)(storedValue)
-          : value
-      setStoredValue(valueToStore)
-      if (typeof window !== 'undefined' && enabled) {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore))
-      }
-    } catch (error) {
-      console.error(error)
-    }
-  }
-  return [storedValue, setValue] as const
 }
 
 export function getUriLink(value: { uri: string; baseUri?: string }) {
@@ -748,49 +243,6 @@ export function measureGridWidth(
   )
 }
 
-export function localStorageGetItem(item: string) {
-  return typeof localStorage !== 'undefined'
-    ? localStorage.getItem(item)
-    : undefined
-}
-
-export function localStorageSetItem(str: string, item: string) {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem(str, item)
-  }
-}
-
-// Index iteration so these accept both arrays and typed arrays (e.g.
-// Float32Array) without requiring Iterable.
-/* eslint-disable @typescript-eslint/prefer-for-of */
-export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
-  let max = init
-  for (let i = 0; i < arr.length; i++) {
-    max = Math.max(arr[i]!, max)
-  }
-  return max
-}
-
-export function min(arr: ArrayLike<number>, init = Number.POSITIVE_INFINITY) {
-  let min = init
-  for (let i = 0; i < arr.length; i++) {
-    min = Math.min(arr[i]!, min)
-  }
-  return min
-}
-
-export function sum(arr: ArrayLike<number>) {
-  let sum = 0
-  for (let i = 0; i < arr.length; i++) {
-    sum += arr[i]!
-  }
-  return sum
-}
-/* eslint-enable @typescript-eslint/prefer-for-of */
-
-export function avg(arr: ArrayLike<number>) {
-  return sum(arr) / arr.length
-}
 
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
   const result: Record<string, T[]> = {}
@@ -804,61 +256,6 @@ export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
 
 export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined
-}
-
-export function mergeIntervals<T extends { start: number; end: number }>(
-  intervals: T[],
-  w = 5000,
-) {
-  // test if there are at least 2 intervals
-  if (intervals.length <= 1) {
-    return intervals
-  }
-
-  const stack: T[] = []
-
-  // sort the intervals based on their start values
-  intervals = intervals.sort((a, b) => a.start - b.start)
-
-  // push the 1st interval into the stack
-  stack.push(intervals[0]!)
-
-  // start from the next interval and merge if needed
-  for (let i = 1; i < intervals.length; i++) {
-    // get the top element
-    const top = stack.at(-1)!
-
-    // if the current interval doesn't overlap with the
-    // stack top element, push it to the stack
-    if (top.end + w < intervals[i]!.start - w) {
-      stack.push(intervals[i]!)
-    }
-    // otherwise extend the top element in place if the current interval ends
-    // later (top is a live reference into the stack)
-    else if (top.end < intervals[i]!.end) {
-      top.end = intervals[i]!.end
-    }
-  }
-
-  return stack
-}
-
-export interface BasicFeature {
-  end: number
-  start: number
-  refName: string
-}
-
-// returns new array non-overlapping features
-export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
-  const memo: Record<string, T[]> = {}
-  for (const x of regions) {
-    memo[x.refName] ??= []
-    memo[x.refName]!.push(x)
-  }
-
-  // mergeIntervals sorts internally, so no need to pre-sort each group
-  return Object.values(memo).flatMap(group => mergeIntervals(group, w))
 }
 
 export function stripAlpha(str: string) {
@@ -934,27 +331,6 @@ export function isObject(
   x: unknown,
 ): x is Record<string | symbol | number, unknown> {
   return typeof x === 'object' && x !== null
-}
-
-export function localStorageGetNumber(key: string, defaultVal: number) {
-  return +(localStorageGetItem(key) ?? defaultVal)
-}
-
-export function localStorageGetBoolean(key: string, defaultVal: boolean) {
-  return Boolean(
-    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
-  )
-}
-
-export function featureSpanPx(
-  feature: { get: (key: string) => number },
-  region: MinimalRegion,
-  bpPerPx: number,
-) {
-  return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
-}
-export function localStorageSetBoolean(key: string, value: boolean) {
-  localStorageSetItem(key, JSON.stringify(value))
 }
 
 export function testAdapter(

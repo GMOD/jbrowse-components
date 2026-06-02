@@ -1,3 +1,5 @@
+import { toLocale } from './numericUtils.ts'
+
 export interface ParsedLocString {
   assemblyName?: string
   refName: string
@@ -110,4 +112,114 @@ export function parseLocString(
     parsed.start -= 1
   }
   return parsed
+}
+
+/**
+ * Assemble a 1-based "locString" from an interbase genomic location
+ * @param region - Region
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1', start: 0, end: 100 })
+ * // ↳ 'chr1:1..100'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 })
+ * // ↳ '{hg19}chr1:1..100'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1' })
+ * // ↳ 'chr1'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1', start: 0 })
+ * // ↳ 'chr1:1..'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1', end: 100 })
+ * // ↳ 'chr1:1..100'
+ * ```
+ * @example
+ * ```ts
+ * assembleLocString({ refName: 'chr1', start: 0, end: 1 })
+ * // ↳ 'chr1:1'
+ * ```
+ */
+export function assembleLocString(region: ParsedLocString) {
+  return assembleLocStringFast(region, toLocale)
+}
+
+// same as assembleLocString above, but does not perform toLocaleString which
+// can slow down the speed of block calculations which use assembleLocString
+// for block.key
+export function assembleLocStringFast(
+  region: ParsedLocString,
+  cb = (n: number): string | number => n,
+) {
+  const { assemblyName, refName, start, end, reversed } = region
+  const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
+  let startString: string
+  if (start !== undefined) {
+    startString = `:${cb(start + 1)}`
+  } else if (end !== undefined) {
+    startString = ':1'
+  } else {
+    startString = ''
+  }
+  let endString: string
+  if (end !== undefined) {
+    endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
+  } else {
+    endString = start !== undefined ? '..' : ''
+  }
+  let rev = ''
+  if (reversed) {
+    rev = '[rev]'
+  }
+  return `${assemblyNameString}${refName}${startString}${endString}${rev}`
+}
+
+export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
+  const assemblyComp =
+    locA.assemblyName || locB.assemblyName
+      ? (locA.assemblyName || '').localeCompare(locB.assemblyName || '')
+      : 0
+  if (assemblyComp) {
+    return assemblyComp
+  }
+
+  const refComp =
+    locA.refName || locB.refName
+      ? (locA.refName || '').localeCompare(locB.refName || '')
+      : 0
+  if (refComp) {
+    return refComp
+  }
+
+  if (locA.start !== undefined && locB.start !== undefined) {
+    const startComp = locA.start - locB.start
+    if (startComp) {
+      return startComp
+    }
+  }
+  if (locA.end !== undefined && locB.end !== undefined) {
+    const endComp = locA.end - locB.end
+    if (endComp) {
+      return endComp
+    }
+  }
+  return 0
+}
+
+export function compareLocStrings(
+  a: string,
+  b: string,
+  isValidRefName: (refName: string, assemblyName?: string) => boolean,
+) {
+  const locA = parseLocString(a, isValidRefName)
+  const locB = parseLocString(b, isValidRefName)
+  return compareLocs(locA, locB)
 }

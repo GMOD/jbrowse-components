@@ -7,7 +7,6 @@ import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
-  findLast,
   getBpDisplayStr,
   getSession,
   isSessionModelWithWidgets,
@@ -1839,8 +1838,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const lastRefName =
           lastAssembly?.getCanonicalRefName(lastLocation.refName) ||
           lastLocation.refName
-        const lastRegion = findLast(
-          self.displayedRegions,
+        const lastRegion = self.displayedRegions.findLast(
           r => r.refName === lastRefName,
         )
 

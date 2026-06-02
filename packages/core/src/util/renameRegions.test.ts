@@ -1,4 +1,4 @@
-import { renameRegionIfNeeded, renameRegionsIfNeeded } from './index.ts'
+import { renameRegionIfNeeded, renameRegionsIfNeeded } from './renameRegions.ts'
 
 import type { AssemblyManager, Region } from './types/index.ts'
 
