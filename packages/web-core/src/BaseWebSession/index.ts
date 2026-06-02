@@ -43,7 +43,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
-
 /**
  * #stateModel BaseWebSession
  * used for "web based" products, including jbrowse-web and react-app

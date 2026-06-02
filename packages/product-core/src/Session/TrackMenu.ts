@@ -84,7 +84,11 @@ export function trackActionItems<C extends { trackId: string }>({
       icon: SettingsIcon,
       disabled: !canEdit,
       onClick: () => {
-        session.editConfiguration(config)
+        // guard in addition to `disabled` so a non-session track can never be
+        // edited even if a renderer ignores the disabled flag
+        if (canEdit) {
+          session.editConfiguration(config)
+        }
       },
     },
     {
