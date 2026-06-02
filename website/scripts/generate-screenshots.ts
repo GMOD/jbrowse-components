@@ -122,7 +122,19 @@ async function assertViewsRendered(page: Page, name: string) {
 async function runAction(page: Page, action: ScreenshotAction) {
   if (action.type === 'delay') {
     await delay(action.ms ?? 500)
+  } else if (action.type === 'click' && action.text) {
+    // click an element by its visible text (e.g. an HTML floating feature label
+    // like a variant name) to trigger its handler, e.g. open feature details
+    const el = await page.waitForSelector(`::-p-text(${action.text})`, {
+      visible: true,
+      timeout: 30000,
+    })
+    await el?.click()
   } else if (action.type === 'click' && action.selector) {
+    await page.waitForSelector(action.selector, {
+      visible: true,
+      timeout: 30000,
+    })
     await page.click(action.selector)
   } else if (action.type === 'waitForText' && action.text) {
     await page.waitForSelector(`::-p-text(${action.text})`, {
@@ -137,7 +149,7 @@ async function setLocation(page: Page, loc: string) {
     'input[placeholder="Search for location"]',
     { visible: true, timeout: 15000 },
   )
-  await locBox?.click({ clickCount: 3 })
+  await locBox?.click({ count: 3 })
   await locBox?.type(loc)
   await page.keyboard.press('Enter')
   await delay(300)
@@ -353,7 +365,7 @@ async function main() {
   const executablePath = chromePaths.find(p => fs.existsSync(p))
 
   const launchOptions = {
-    headless: headed ? false : ('new' as const),
+    headless: headed ? false : true,
     executablePath,
     args: [
       '--no-sandbox',
@@ -365,6 +377,7 @@ async function main() {
     // capture hidpi/retina-crisp (2x backing store) at the larger size
     defaultViewport: { width: 1500, height: 800, deviceScaleFactor: 2 },
   }
+  const { width: vpWidth, deviceScaleFactor } = launchOptions.defaultViewport
 
   let passed = 0
   let failed = 0
@@ -383,6 +396,13 @@ async function main() {
       const browser = await launch(launchOptions)
       try {
         const page = await browser.newPage()
+        if (spec.viewportHeight) {
+          await page.setViewport({
+            width: vpWidth,
+            height: spec.viewportHeight,
+            deviceScaleFactor,
+          })
+        }
         page.on('console', msg => {
           const t = msg.type()
           if (

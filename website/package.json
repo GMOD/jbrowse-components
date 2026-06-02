@@ -30,6 +30,7 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
+    "@iconify-json/mdi": "^1.2.3",
     "pagefind": "^1.5.2",
     "prettier-plugin-astro": "^0.14.1",
     "rimraf": "^6.1.3"

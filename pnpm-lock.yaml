@@ -541,8 +541,8 @@ importers:
   packages/sv-core:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.8
-        version: 7.0.8
+        specifier: ^7.0.9
+        version: 7.0.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -823,8 +823,8 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5
       '@gmod/tabix':
-        specifier: ^3.3.8
-        version: 3.3.8
+        specifier: ^3.3.9
+        version: 3.3.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -841,8 +841,8 @@ importers:
   plugins/breakpoint-split-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.8
-        version: 7.0.8
+        specifier: ^7.0.9
+        version: 7.0.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -943,8 +943,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.3.8
-        version: 3.3.8
+        specifier: ^3.3.9
+        version: 3.3.9
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1142,8 +1142,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.3.8
-        version: 3.3.8
+        specifier: ^3.3.9
+        version: 3.3.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1550,8 +1550,8 @@ importers:
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.8
-        version: 7.0.8
+        specifier: ^7.0.9
+        version: 7.0.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1655,11 +1655,11 @@ importers:
         specifier: 3.0.14
         version: 3.0.14
       '@gmod/tabix':
-        specifier: ^3.3.8
-        version: 3.3.8
+        specifier: ^3.3.9
+        version: 3.3.9
       '@gmod/vcf':
-        specifier: ^7.0.8
-        version: 7.0.8
+        specifier: ^7.0.9
+        version: 7.0.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2520,6 +2520,9 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
     devDependencies:
+      '@iconify-json/mdi':
+        specifier: ^1.2.3
+        version: 1.2.3
       pagefind:
         specifier: ^1.5.2
         version: 1.5.2
@@ -3848,8 +3851,8 @@ packages:
   '@gmod/nclist@3.0.10':
     resolution: {integrity: sha512-L2D7a6O9pzzCxPxBh75T3fFRayF3oLqY77UsL9wXMTBHCr7gifeetCcBPoZfxNImWWcB0+U3uAQ8OEAGjTzmaw==}
 
-  '@gmod/tabix@3.3.8':
-    resolution: {integrity: sha512-fyTWQTSS1ZyKeVIPF6pnCqOyrkNTGWgmhH71VGTsq8GDKZs70KxfRtRghu8q/z34nE4DEG2+G/vXn+AJivJVZQ==}
+  '@gmod/tabix@3.3.9':
+    resolution: {integrity: sha512-Ervmy0Nbe3h9UlsPLD3Fw89TAoHD/0xKxrvWv3pVXJCuoqRsVZq3tRl/BCYVJG1ny311UGAxo7K0bAlNeng7Jg==}
 
   '@gmod/trix@3.0.16':
     resolution: {integrity: sha512-KCHswOgkZTjs2JnfX8H5j7NFwwVtEhtpuW/zQBYBX0dK4km5xU500LWGTE69cBs+hWlwg93ThxuQBMBn0NRpog==}
@@ -3860,8 +3863,8 @@ packages:
   '@gmod/ucsc-hub@2.0.9':
     resolution: {integrity: sha512-De/30Zy4vGtEOG9cCO73fqLlTSgIr365k8VeZJqab0zQnK/1lTUyDA3qeit0OpW8x0BthhIAuPgpjOchRnj7dw==}
 
-  '@gmod/vcf@7.0.8':
-    resolution: {integrity: sha512-ELbqMAkoCmBCtGoKyB98IHCtFeCQLWgPevhMfJUlYexA/cfSkHvXn5/7Bt85BBfP2sQIVc+QQ08T5OQ3Fu8pJQ==}
+  '@gmod/vcf@7.0.9':
+    resolution: {integrity: sha512-3QuZSblZ/larjVNOXyoTFV905s0lyZvOs2+7GALsWR6d9Fuj/+KNnrpNFr3LWCShgE+JqwYEUOfbUv0koct5Kw==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -3882,6 +3885,9 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@iconify-json/mdi@1.2.3':
+    resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
 
   '@iconify/tools@4.2.0':
     resolution: {integrity: sha512-WRxPva/ipxYkqZd1+CkEAQmd86dQmrwH0vwK89gmp2Kh2WyyVw57XbPng0NehP3x4V1LzLsXUneP1uMfTMZmUA==}
@@ -12281,7 +12287,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.3.8':
+  '@gmod/tabix@3.3.9':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@gmod/bgzf-filehandle': 6.2.0
@@ -12296,7 +12302,7 @@ snapshots:
 
   '@gmod/ucsc-hub@2.0.9': {}
 
-  '@gmod/vcf@7.0.8': {}
+  '@gmod/vcf@7.0.9': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -12313,6 +12319,10 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@iconify-json/mdi@1.2.3':
+    dependencies:
+      '@iconify/types': 2.0.0
 
   '@iconify/tools@4.2.0':
     dependencies:

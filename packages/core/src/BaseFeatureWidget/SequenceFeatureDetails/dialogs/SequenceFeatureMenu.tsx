@@ -6,8 +6,8 @@ import Settings from '@mui/icons-material/Settings'
 import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
-import { showGenomicCoordsOption } from '../featureTypeUtil.ts'
 import { saveAs } from '../../../util/index.ts'
+import { showGenomicCoordsOption } from '../featureTypeUtil.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
 import type {

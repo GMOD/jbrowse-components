@@ -1,14 +1,14 @@
 import { FormControl, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { featureHasCDS, featureHasExonOrCDS } from '../featureTypeUtil.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
+import { featureHasCDS, featureHasExonOrCDS } from '../featureTypeUtil.ts'
 
+import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
 } from '../model.ts'
-import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 
 const useStyles = makeStyles()({
   formControl: {

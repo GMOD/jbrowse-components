@@ -5,17 +5,18 @@ export interface ScreenshotAction {
   ms?: number
 }
 
-// Set on a spec whose committed PNG is a hand-curated / real-human-data
-// screenshot that the volvox-based spec body cannot reproduce (the spec body is
-// kept only as documentation). The generator skips these so a regen never
-// clobbers the curated image.
-interface CuratedFlag {
+interface CommonSpecFields {
+  // committed PNG is a hand-curated / real-human-data screenshot the spec body
+  // can't reproduce; the generator skips it so a regen never clobbers it
   curated?: boolean
+  // capture-viewport height in CSS px for this spec (default 800); raise it for
+  // tall multi-row pileups so the track isn't clipped by the default viewport
+  viewportHeight?: number
 }
 
 // Mode 1: navigate to app, interact via UI to open tracks.
 // This is the reliable approach — plugins are fully loaded before tracks open.
-interface LGVSpec extends CuratedFlag {
+interface LGVSpec extends CommonSpecFields {
   mode?: 'lgv'
   name: string
   config?: string // defaults to volvox config
@@ -28,7 +29,7 @@ interface LGVSpec extends CuratedFlag {
 
 // Mode 2: navigate directly to a session spec URL.
 // Use for multi-view layouts (dotplot, synteny) where the UI approach is awkward.
-interface SessionUrlSpec extends CuratedFlag {
+interface SessionUrlSpec extends CommonSpecFields {
   mode: 'url'
   name: string
   url: string // full query string starting with '?' or a full URL
@@ -46,7 +47,6 @@ export type ScreenshotSpec = LGVSpec | SessionUrlSpec
 const VOLVOX = 'test_data/volvox/config.json'
 const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const SYNTENY_CONFIG = 'test_data/grape_peach_synteny/config.json'
-const METHYLATION_CONFIG = 'test_data/methylation_test/config.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
 const CGIAB_BASE =
   'https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json'
@@ -68,11 +68,15 @@ function hpyloriUrl(session: object) {
   return `${HPYLORI_BASE}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
 }
 
-const KG_BASE =
-  'https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json'
+// remote 1000-genomes config loaded against the *local* build (a bare ?config=
+// url), so new display settings like configOverrides/readConnections render —
+// jbrowse.org/code/jb2/latest is an older release that ignores them. specLiveUrl
+// still turns this into a jbrowse.org link for readers.
+const KG_CONFIG =
+  'https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json'
 
 function kgUrl(session: object) {
-  return `${KG_BASE}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
+  return `?config=${encodeURIComponent(KG_CONFIG)}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
 }
 
 // Three H. pylori strains stacked top-to-bottom, with a synteny track between
@@ -547,29 +551,71 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 20000,
   },
 
-  // Inverted duplication (CPX/INVdup HGSV_2721). Curated: the committed PNG is a
-  // hand-annotated capture with the feature-details panel open (the caption
-  // refers to it). The live link below opens the same real 1000-genomes data at
-  // the same locus with pair-orientation coloring so readers can explore it and
-  // open the variant details themselves. Autogen from this session produces a
-  // mostly-grey pileup (few discordant pairs flagged at default thresholds at
-  // this region), so it doesn't replace the curated image — revisit if the
-  // orientation signal can be made as vivid as the 2021 capture.
+  // Inverted duplication (CPX/INVdup HGSV_2721) on real 1000-genomes data: the
+  // HG02768 CRAM with linkedReads (mates drawn connected on one row) plus arc
+  // read-connections and pair-orientation coloring makes the overlapping
+  // inversion / tandem-dup pairing pattern visible, alongside the 1KGP ensemble
+  // VCF call.
+  // loc shifted ~600bp right so HGSV_2721 (near right of original range) sits
+  // centered in the panel-narrowed view after the feature sidebar opens.
   {
     mode: 'url',
-    curated: true,
     name: 'inverted_duplication',
     url: kgUrl({
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '1:39,657,584-39,661,200',
+          loc: '1:39,658,200-39,661,800',
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG02768.final',
               displaySnapshot: {
+                linkedReads: 'normal',
+                readConnections: 'arc',
+                readConnectionsDown: true,
+                heightPreConfig: 400,
+                configOverrides: {
+                  colorBy: { type: 'pairOrientation' },
+                  featureHeight: 3,
+                  featureSpacing: 0,
+                },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG02768',
+    readyTimeout: 60000,
+    viewportHeight: 1100,
+    settleMs: 25000,
+    actions: [
+      { type: 'click', selector: '[data-testid="feature-name-HGSV_2721"]' },
+      { type: 'delay', ms: 4000 },
+    ],
+  },
+
+  // Non-compact variant for side-by-side comparison with inverted_duplication.
+  {
+    mode: 'url',
+    name: 'inverted_duplication/normal_height',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:39,658,200-39,661,800',
+          tracks: [
+            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: 'HG02768.final',
+              displaySnapshot: {
+                linkedReads: 'normal',
+                readConnections: 'arc',
+                readConnectionsDown: true,
+                heightPreConfig: 900,
                 configOverrides: { colorBy: { type: 'pairOrientation' } },
               },
             },
@@ -579,7 +625,12 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
+    viewportHeight: 1250,
     settleMs: 25000,
+    actions: [
+      { type: 'click', selector: '[data-testid="feature-name-HGSV_2721"]' },
+      { type: 'delay', ms: 4000 },
+    ],
   },
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
