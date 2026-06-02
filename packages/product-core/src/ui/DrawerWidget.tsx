@@ -63,11 +63,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 function getWidgetType(pluginManager: PluginManager, widgetTypeName: string) {
-  const widgetType = pluginManager.getWidgetType(widgetTypeName)
-  if (!widgetType) {
-    throw new Error(`unknown widget type ${widgetTypeName}`)
-  }
-  return widgetType
+  return pluginManager.getWidgetType(widgetTypeName)
 }
 
 const WidgetHeading = observer(function WidgetHeading({

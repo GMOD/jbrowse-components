@@ -9,9 +9,8 @@ export interface Feature {
   get(name: 'refName'): string
   get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
   get(name: 'start' | 'end'): number
-  get(name: 'strand'): number | undefined
   get(name: 'phase'): 0 | 1 | 2 | undefined
-  get(name: 'score'): number | undefined
+  get(name: 'strand' | 'score'): number | undefined
   get(name: 'subfeatures'): Feature[] | undefined
 
   get(name: string): unknown
@@ -151,9 +150,8 @@ export default class SimpleFeature implements Feature {
   get(name: 'refName'): string
   get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
   get(name: 'start' | 'end'): number
-  get(name: 'strand'): number | undefined
   get(name: 'phase'): 0 | 1 | 2 | undefined
-  get(name: 'score'): number | undefined
+  get(name: 'strand' | 'score'): number | undefined
   get(name: 'subfeatures'): Feature[] | undefined
   get(name: string): unknown
   public get(name: string): unknown {

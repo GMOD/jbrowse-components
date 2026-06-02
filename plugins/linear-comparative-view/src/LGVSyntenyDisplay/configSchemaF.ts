@@ -19,8 +19,9 @@ function configSchemaF(pluginManager: PluginManager) {
       start: number
       end: number
     }
+
     const l1name = f.get('name') || f.get('id')
-    const l2name = mate?.name || mate?.id
+    const l2name = mate.name || mate.id
     return [
       l1name ? `Name1: ${l1name}` : '',
       l2name ? `Name2: ${l2name}` : '',

@@ -218,8 +218,8 @@ type: synchronous
 lets you transform the config snapshot shown in the "About this track" dialog,
 after any `formatAbout` config has already been applied
 
-- `args` - an object of the form `{ config: Record<string, unknown> }`, the track
-  config snapshot with `formatAbout` already merged in
+- `args` - an object of the form `{ config: Record<string, unknown> }`, the
+  track config snapshot with `formatAbout` already merged in
 - `props` - an object of the form below
 
 ```typescript
@@ -234,14 +234,11 @@ Return value: an object of the same `{ config }` shape, with your modifications
 Example: add a derived field to a particular track's about dialog
 
 ```typescript
-pluginManager.addToExtensionPoint(
-  'Core-customizeAbout',
-  (arg, { config }) => {
-    return config.trackId === 'volvox.inv.vcf'
-      ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
-      : arg
-  },
-)
+pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) => {
+  return config.trackId === 'volvox.inv.vcf'
+    ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
+    : arg
+})
 ```
 
 ### Core-replaceWidget

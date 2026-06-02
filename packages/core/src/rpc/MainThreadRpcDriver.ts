@@ -27,17 +27,14 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
       throw new TypeError('sessionId is required')
     }
     const rpcMethod = pm.getRpcMethodType(funcName)
-    if (!rpcMethod) {
-      throw new Error(`unknown RPC method ${funcName}`)
-    }
 
     // Use direct execution if the method supports it (avoids serialization)
     if (rpcMethod.supportsDirectExecution()) {
       return rpcMethod.executeDirect(args)
+    } else {
+      const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
+      const result = await rpcMethod.execute(serializedArgs, this.name)
+      return rpcMethod.deserializeReturn(result, args, this.name)
     }
-
-    const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
-    const result = await rpcMethod.execute(serializedArgs, this.name)
-    return rpcMethod.deserializeReturn(result, args, this.name)
   }
 }

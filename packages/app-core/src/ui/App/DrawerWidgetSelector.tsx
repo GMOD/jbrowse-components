@@ -38,11 +38,7 @@ function WidgetHeading({
   widget: Widget
   pluginManager: PluginManager
 }) {
-  const widgetType = pluginManager.getWidgetType(widget.type)
-  if (!widgetType) {
-    throw new Error(`unknown widget type ${widget.type}`)
-  }
-  const { HeadingComponent, heading } = widgetType
+  const { HeadingComponent, heading } = pluginManager.getWidgetType(widget.type)
   return HeadingComponent ? (
     <HeadingComponent model={widget} />
   ) : (

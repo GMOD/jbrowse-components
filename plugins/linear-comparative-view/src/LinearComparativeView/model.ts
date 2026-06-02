@@ -34,7 +34,7 @@ const ReturnToImportFormDialog = lazy(
 function stateModelFactory(pluginManager: PluginManager) {
   const LinearSyntenyViewHelper = pluginManager.getViewType(
     'LinearSyntenyViewHelper',
-  )?.stateModel
+  ).stateModel
   return types
     .compose(
       'LinearComparativeView',

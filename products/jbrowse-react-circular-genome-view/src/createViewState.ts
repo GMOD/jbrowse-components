@@ -64,12 +64,6 @@ export default function createViewState(opts: ViewStateOptions) {
   }
   const stateTree = model.create(stateSnapshot, { pluginManager })
   for (const account of stateTree.config.internetAccounts) {
-    const internetAccountType = pluginManager.getInternetAccountType(
-      account.type,
-    )
-    if (!internetAccountType) {
-      throw new Error(`unknown internet account type ${account.type}`)
-    }
     stateTree.addInternetAccount({
       type: account.type,
       configuration: account,

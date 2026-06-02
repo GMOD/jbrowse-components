@@ -161,11 +161,7 @@ export function createBaseTrackModel(
         if (!adapterConfig) {
           throw new Error(`no adapter configuration provided for ${self.type}`)
         }
-        const adapterType = pm.getAdapterType(adapterConfig.type)
-        if (!adapterType) {
-          throw new Error(`unknown adapter type ${adapterConfig.type}`)
-        }
-        return adapterType
+        return pm.getAdapterType(adapterConfig.type)
       },
     }))
     .actions(self => ({
@@ -200,10 +196,6 @@ export function createBaseTrackModel(
         }
         const displays = self.configuration.displays as DisplayConf[]
         const displayConf = getDisplayConf(displays, newDisplayId)
-        const displayType = pm.getDisplayType(displayConf.type)
-        if (!displayType) {
-          throw new Error(`unknown display type ${displayConf.type}`)
-        }
         self.displays.splice(idx, 1, {
           ...initialSnapshot,
           type: displayConf.type,

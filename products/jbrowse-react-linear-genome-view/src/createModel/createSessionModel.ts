@@ -102,11 +102,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #action
        */
       addView(typeName: string, initialState = {}) {
-        const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown view type ${typeName}`)
-        }
-
         self.view = cast({
           ...initialState,
           type: typeName,

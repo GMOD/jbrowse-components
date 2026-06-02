@@ -42,9 +42,6 @@ async function getAdapterPre(
     )
   }
   const dataAdapterType = pluginManager.getAdapterType(adapterType)
-  if (!dataAdapterType) {
-    throw new Error(`unknown data adapter type ${adapterType}`)
-  }
 
   // instantiate the data adapter's config schema so it gets its defaults,
   // callbacks, etc

@@ -525,10 +525,6 @@ export function showTrackGeneric(
     ) as typeof rawConf
 
     const trackType = pluginManager.getTrackType(conf.type)
-    if (!trackType) {
-      throw new Error(`Unknown track type ${conf.type}`)
-    }
-
     // Eagerly validate the config snapshot so an invalid config throws a clear
     // error here (synchronously, before the push) rather than inside a later
     // reaction.

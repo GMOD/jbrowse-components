@@ -45,17 +45,13 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
           throw new Error('connection configuration has no `type` listed')
         }
         const name = readConfObject(configuration, 'name')
-        const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) {
-          throw new Error(`unknown connection type ${type}`)
-        }
-        const length = self.connectionInstances.push({
+        self.connectionInstances.push({
           ...initialSnapshot,
           name,
           type,
           configuration,
         })
-        return self.connectionInstances[length - 1]
+        return self.connectionInstances.at(-1)
       },
 
       /**

@@ -18,20 +18,12 @@ const ViewWrapper = observer(function ViewWrapper({
   session: SessionWithFocusedViewAndDrawerWidgets
 }) {
   const { pluginManager } = getEnv(session)
-  const viewType = pluginManager.getViewType(view.type)
-  if (!viewType) {
-    throw new Error(`unknown view type ${view.type}`)
-  }
-  const { ReactComponent } = viewType
-  if (view.minimized) {
-    return null
-  }
-
-  return (
+  const { ReactComponent } = pluginManager.getViewType(view.type)
+  return view.minimized ? (
     <Suspense fallback={<LoadingEllipses variant="h6" />}>
       <ReactComponent model={view} session={session} />
     </Suspense>
-  )
+  ) : null
 })
 
 export default ViewWrapper

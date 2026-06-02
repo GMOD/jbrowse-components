@@ -33,7 +33,7 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
     const assemblyNames = [trackAssembly, readAssembly]
     const trackId = `track-${Date.now()}`
     const trackName = `${readName}_vs_${trackAssembly}`
-    const SA = (feature.get('tags') as { SA?: string } | undefined)?.SA!
+    const SA = (feature.get('tags') as { SA?: string } | undefined)?.SA
     const SA2 = featurizeSA(SA, feature.id(), strand, readName, true)
 
     // For supplementary alignments the full read length must come from the

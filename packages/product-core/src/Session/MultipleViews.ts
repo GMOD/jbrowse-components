@@ -88,11 +88,6 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       addView(typeName: string, initialState = {}) {
-        const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown view type ${typeName}`)
-        }
-
         const length = self.views.push({
           ...initialState,
           type: typeName,

@@ -29,21 +29,12 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         internetAccountConfig: AnyConfigurationModel,
         initialSnapshot = {},
       ) {
-        const internetAccountType = pluginManager.getInternetAccountType(
-          internetAccountConfig.type,
-        )
-        if (!internetAccountType) {
-          throw new Error(
-            `unknown internet account type ${internetAccountConfig.type}`,
-          )
-        }
-
-        const length = self.internetAccounts.push({
+        self.internetAccounts.push({
           ...initialSnapshot,
           type: internetAccountConfig.type,
           configuration: internetAccountConfig,
         })
-        return self.internetAccounts[length - 1]
+        return self.internetAccounts.at(-1)
       },
 
       /**
@@ -74,17 +65,12 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           description: '',
           domains: hostUri ? [hostUri] : [],
         }
-        const type = pluginManager.getInternetAccountType(configuration.type)
-        if (!type) {
-          throw new Error(`unknown internet account type ${configuration.type}`)
-        }
-        const internetAccount = type.stateModel.create({
+        self.internetAccounts.push({
           ...initialSnapshot,
           type: configuration.type,
           configuration,
         })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
+        return self.internetAccounts.at(-1)
       },
     }))
     .actions(self => ({

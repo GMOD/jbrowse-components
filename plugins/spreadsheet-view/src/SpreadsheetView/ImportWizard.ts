@@ -156,8 +156,8 @@ export default function stateModelFactory() {
             if (!fileType) {
               return []
             }
-            const adapterType = pluginManager.getAdapterType(adapterTypeName)
-            const { locationKey, normalizeSnapshot } = adapterType ?? {}
+            const { locationKey, normalizeSnapshot } =
+              pluginManager.getAdapterType(adapterTypeName)
             if (!locationKey) {
               return []
             }
