@@ -25,7 +25,7 @@ export interface DisplayConfig {
   color: string
   connectorColor: string
   utrColor: string
-  outline: string
+  outlineColor: string
   labels: {
     name: string
     description: string

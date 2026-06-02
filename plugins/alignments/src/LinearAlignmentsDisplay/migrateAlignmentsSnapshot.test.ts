@@ -236,6 +236,18 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result).not.toHaveProperty('lineWidthSetting')
   })
 
+  // Released LinearReadArcsDisplay sessions persisted bare `lineWidth` (no
+  // Setting suffix) — it must reach the new readConnectionsLineWidth override.
+  test('migrates released lineWidth → configOverrides.readConnectionsLineWidth', () => {
+    const result = migrateAlignmentsSnapshot({
+      type: 'LinearReadArcsDisplay',
+      lineWidth: 4,
+    })
+    const overrides = result.configOverrides as Record<string, unknown>
+    expect(overrides.readConnectionsLineWidth).toBe(4)
+    expect(result).not.toHaveProperty('lineWidth')
+  })
+
   test('folds showLinkedReads+showLinkedReadsAsBeziers booleans into linkedReads enum', () => {
     const off = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
@@ -363,5 +375,18 @@ describe('migrateAlignmentsSnapshot', () => {
     const overrides = result.configOverrides as Record<string, unknown>
     expect(overrides.sortedBy).toEqual(sorted)
     expect(result).not.toHaveProperty('sortedBySetting')
+  })
+
+  // Released LinearPileupDisplay sessions persisted bare `sortedBy` (no Setting
+  // suffix); it must reach the new sortedBy override so the sort survives.
+  test('migrates released sortedBy (from LinearPileupDisplay) to the override', () => {
+    const sorted = { type: 'Start location' }
+    const result = migrateAlignmentsSnapshot({
+      type: 'LinearPileupDisplay',
+      sortedBy: sorted,
+    })
+    const overrides = result.configOverrides as Record<string, unknown>
+    expect(overrides.sortedBy).toEqual(sorted)
+    expect(result).not.toHaveProperty('sortedBy')
   })
 })

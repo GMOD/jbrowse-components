@@ -2,13 +2,14 @@ import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
 import { legacyShowLabelsToMode } from './showLabelsMode.ts'
 
 // The cryptic color1/color2/color3 slots were renamed to the self-describing
-// color/connectorColor/utrColor. Map the legacy keys onto the new ones; the new
-// name wins if both are present. Used on both the config snapshot and inside an
-// old session's configOverrides map.
+// color/connectorColor/utrColor, and `outline` to `outlineColor` (so every
+// color slot but the primary `color` ends in `Color`). Map the legacy keys onto
+// the new ones; the new name wins if both are present. Used on both the config
+// snapshot and inside an old session's configOverrides map.
 function renameLegacyColorKeys(
   obj: Record<string, unknown>,
 ): Record<string, unknown> {
-  const { color1, color2, color3, ...rest } = obj
+  const { color1, color2, color3, outline, ...rest } = obj
   return {
     ...rest,
     ...(color1 !== undefined && rest.color === undefined
@@ -20,6 +21,9 @@ function renameLegacyColorKeys(
     ...(color3 !== undefined && rest.utrColor === undefined
       ? { utrColor: color3 }
       : undefined),
+    ...(outline !== undefined && rest.outlineColor === undefined
+      ? { outlineColor: outline }
+      : undefined),
   }
 }
 
@@ -27,8 +31,8 @@ function renameLegacyColorKeys(
 // which handles the display *state model* snapshot). Does three things:
 //   - lifts color/label/glyph settings out of the old `renderer` sub-config
 //     that the GPU rewrite removed
-//   - renames the legacy color1/color2/color3 slots to
-//     color/connectorColor/utrColor
+//   - renames the legacy color1/color2/color3/outline slots to
+//     color/connectorColor/utrColor/outlineColor
 //   - normalizes legacy enum values that were renamed (boolean showLabels →
 //     auto/on/off, geneGlyphMode 'longest' → 'longestCoding') so they pass
 //     schema validation on load
@@ -88,6 +92,8 @@ export function migrateBasicSnapshot(
     color3,
     connectorColor,
     utrColor,
+    outline,
+    outlineColor,
     ...rest
   } = snap
 
@@ -95,6 +101,7 @@ export function migrateBasicSnapshot(
   const colorVal = color ?? color1
   const connectorVal = connectorColor ?? color2
   const utrVal = utrColor ?? color3
+  const outlineVal = outlineColor ?? outline
   if (colorVal !== undefined) {
     migrated.color = colorVal
   }
@@ -103,6 +110,9 @@ export function migrateBasicSnapshot(
   }
   if (utrVal !== undefined) {
     migrated.utrColor = utrVal
+  }
+  if (outlineVal !== undefined) {
+    migrated.outlineColor = outlineVal
   }
   if (trackShowLabels !== undefined) {
     migrated.showLabels = legacyShowLabelsToMode(trackShowLabels)

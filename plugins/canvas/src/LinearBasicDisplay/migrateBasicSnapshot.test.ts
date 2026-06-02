@@ -125,19 +125,22 @@ test('routes connectorColor and utrColor into configOverrides', () => {
   })
 })
 
-// Legacy color1/color2/color3 in a state-model snapshot map onto the new names.
-test('maps legacy color1/color2/color3 in a state-model snapshot', () => {
+// Legacy color1/color2/color3/outline in a state-model snapshot map onto the
+// new names.
+test('maps legacy color1/color2/color3/outline in a state-model snapshot', () => {
   expect(
     migrateBasicSnapshot({
       color1: 'green',
       color2: 'gray',
       color3: 'lightblue',
+      outline: 'black',
     }),
   ).toEqual({
     configOverrides: {
       color: 'green',
       connectorColor: 'gray',
       utrColor: 'lightblue',
+      outlineColor: 'black',
     },
   })
 })
@@ -153,10 +156,10 @@ test('the new color name wins over legacy color1', () => {
 test('renames legacy color keys inside existing configOverrides', () => {
   expect(
     migrateBasicSnapshot({
-      configOverrides: { color1: 'red', color3: 'pink' },
+      configOverrides: { color1: 'red', color3: 'pink', outline: 'black' },
     }),
   ).toEqual({
-    configOverrides: { color: 'red', utrColor: 'pink' },
+    configOverrides: { color: 'red', utrColor: 'pink', outlineColor: 'black' },
   })
 })
 
@@ -202,7 +205,7 @@ test('merges migrated entries into existing configOverrides', () => {
     type: 'LinearBasicDisplay',
     configOverrides: {
       autoHeight: true,
-      outline: 'rgba(0,0,0,0.5)',
+      outlineColor: 'rgba(0,0,0,0.5)',
     },
     trackShowLabels: false,
   })
@@ -210,7 +213,7 @@ test('merges migrated entries into existing configOverrides', () => {
     type: 'LinearBasicDisplay',
     configOverrides: {
       autoHeight: true,
-      outline: 'rgba(0,0,0,0.5)',
+      outlineColor: 'rgba(0,0,0,0.5)',
       showLabels: 'off',
     },
   })

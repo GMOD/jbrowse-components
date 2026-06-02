@@ -88,7 +88,7 @@ const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 // rgba string used when outline is toggled on via the menu; schema stores the
-// raw color so users can still set their own via setOverride('outline', '#...').
+// raw color so users can still set their own via setOverride('outlineColor', …).
 const OUTLINE_DEFAULT_RGBA = 'rgba(0,0,0,0.3)'
 
 // Schema defaults for the picker swatch when no override is set. Kept in sync
@@ -296,7 +296,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get showOutline() {
-          return !!self.getConfWithOverride<string>('outline')
+          return !!self.getConfWithOverride<string>('outlineColor')
         },
 
         /**
@@ -913,7 +913,7 @@ export default function baseStateModelFactory(
          * #action
          */
         setShowOutline(value: boolean) {
-          self.setOverride('outline', value ? OUTLINE_DEFAULT_RGBA : '')
+          self.setOverride('outlineColor', value ? OUTLINE_DEFAULT_RGBA : '')
         },
 
         /**

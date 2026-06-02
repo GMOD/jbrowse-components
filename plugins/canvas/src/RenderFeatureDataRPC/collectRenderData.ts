@@ -572,7 +572,9 @@ export function collectRenderData(
     aminoAcidOverlay: [],
   }
 
-  const outlineColor = config.outline ? colorToUint32(config.outline) : 0
+  const outlineColor = config.outlineColor
+    ? colorToUint32(config.outlineColor)
+    : 0
 
   for (const layout of layouts) {
     processFeatureRecord(layout, ctx, collector)

@@ -263,7 +263,7 @@ describe('LinearBasicDisplay configSchema', () => {
   // color/connectorColor/utrColor; old configs using the legacy names still
   // load by mapping onto the new slots.
   describe('legacy color1/color2/color3 names', () => {
-    it('maps color1/color2/color3 onto color/connectorColor/utrColor', () => {
+    it('maps color1/color2/color3/outline onto the new names', () => {
       const config = schema.create(
         {
           displayId: 'test',
@@ -271,12 +271,14 @@ describe('LinearBasicDisplay configSchema', () => {
           color1: 'blue',
           color2: 'gray',
           color3: 'lightblue',
+          outline: 'black',
         },
         { pluginManager: pm },
       )
       expect(readConfObject(config, 'color')).toBe('blue')
       expect(readConfObject(config, 'connectorColor')).toBe('gray')
       expect(readConfObject(config, 'utrColor')).toBe('lightblue')
+      expect(readConfObject(config, 'outlineColor')).toBe('black')
     })
 
     it('maps a legacy jexl color1 expression onto color', () => {

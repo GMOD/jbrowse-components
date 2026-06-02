@@ -17,7 +17,8 @@
  *   - height → heightPreConfig
  *   - arcsHeight → readConnectionsHeight
  *   - Individual override properties → configOverrides map
- *   - lineWidthSetting → configOverrides.readConnectionsLineWidth
+ *   - lineWidth / lineWidthSetting → configOverrides.readConnectionsLineWidth
+ *   - sortedBy / sortedBySetting → configOverrides.sortedBy
  *   - Strips removed properties: blockState, showTooltips
  */
 export function migrateAlignmentsSnapshot(
@@ -206,11 +207,15 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
     filterBySetting,
     featureHeight,
     featureSpacing,
+    // released displays used bare `lineWidth`/`sortedBy`; a later naming added
+    // the `*Setting` suffix. Accept both (suffixed wins) → the new override.
+    lineWidth,
     lineWidthSetting,
     noSpacing,
     showOutline,
     mismatchAlpha,
     showLegend,
+    sortedBy,
     sortedBySetting,
     trackMaxHeight,
     ...rest
@@ -226,8 +231,9 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
   if (featureHeight !== undefined) {
     overrides.featureHeight = featureHeight
   }
-  if (lineWidthSetting !== undefined) {
-    overrides.readConnectionsLineWidth = lineWidthSetting
+  const lineWidthVal = lineWidthSetting ?? lineWidth
+  if (lineWidthVal !== undefined) {
+    overrides.readConnectionsLineWidth = lineWidthVal
   }
   // featureSpacing override directly maps; legacy noSpacing boolean folds
   // into it (true → 0, false → 2 to preserve the pre-unification render).
@@ -246,8 +252,9 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
   if (showLegend !== undefined) {
     overrides.showLegend = showLegend
   }
-  if (sortedBySetting !== undefined) {
-    overrides.sortedBy = sortedBySetting
+  const sortedByVal = sortedBySetting ?? sortedBy
+  if (sortedByVal !== undefined) {
+    overrides.sortedBy = sortedByVal
   }
   if (trackMaxHeight !== undefined) {
     overrides.maxHeight = trackMaxHeight

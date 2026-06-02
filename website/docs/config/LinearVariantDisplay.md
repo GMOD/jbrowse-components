@@ -127,10 +127,10 @@ utrColor: {
       }
 ```
 
-#### slot: outline
+#### slot: outlineColor
 
 ```js
-outline: {
+outlineColor: {
         type: 'color',
         description: 'outline color for features (empty string = no outline)',
         defaultValue: '',

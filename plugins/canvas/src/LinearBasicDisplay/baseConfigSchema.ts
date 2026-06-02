@@ -107,7 +107,8 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      outline: {
+      // Legacy configs used `outline` (auto-migrated to outlineColor).
+      outlineColor: {
         type: 'color',
         description: 'outline color for features (empty string = no outline)',
         defaultValue: '',
