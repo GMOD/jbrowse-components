@@ -296,6 +296,19 @@ jb2export synteny \
 Omitting `--loc`/`--loc2` shows the whole assembly on that axis. Run
 `jb2export dotplot --help` for the full list of comparative options.
 
+### Circular view (chord plot)
+
+The `circular` subcommand renders one assembly's chord tracks — e.g. a VCF of
+structural variants — as a circular ideogram with chords drawn between the two
+breakends of each rearrangement. It is single-assembly and shows the whole
+genome (no `--loc`); each track picks its chord display automatically.
+
+```bash
+jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out circular.svg
+```
+
+Run `jb2export circular --help` for the full list of options.
+
 ### Use with a jbrowse config.json (local files in the config.json)
 
 The jbrowse CLI tool (e.g. npm install -g @jbrowse/cli) refers to "uri" paths by

@@ -13,7 +13,7 @@ import { readData } from './readData.ts'
 import { booleanize } from './util.ts'
 
 import type { Entry } from './parseArgv.ts'
-import type { Config, Opts } from './readData.ts'
+import type { Config, Opts, ViewMode } from './readData.ts'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
@@ -196,10 +196,50 @@ function createModel(data: Config) {
 
 type Model = ReturnType<typeof createModel>
 
-async function renderLinear(model: Model, data: Config, opts: Opts) {
+// Per-mode render context. `width` is resolved once so each renderer doesn't
+// repeat the default.
+interface ModeContext {
+  model: Model
+  data: Config
+  opts: Opts
+  width: number
+}
+
+type ModeRenderer = (ctx: ModeContext) => Promise<string>
+
+// A comparative/circular view sets `initialized` true as soon as it has regions
+// to show, but its frozen `init` snapshot is consumed a moment later by an async
+// autorun (which awaits assemblies, navigates each sub-view, and attaches
+// tracks). The SVG only has content once that autorun has run to completion and
+// cleared `init`.
+function whenViewReady(view: { initialized: boolean; init?: unknown }) {
+  return when(() => view.initialized && !view.init)
+}
+
+interface InitView {
+  setWidth: (n: number) => void
+  initialized: boolean
+  init?: unknown
+}
+
+// Shared lifecycle for the self-initializing views (dotplot/synteny/circular):
+// add the view from its frozen `init` snapshot, size it, then wait for the init
+// autorun to clear `init` before renderToSvg rasterizes via the global node
+// canvas (setupEnv).
+async function addInitView<T extends InitView>(
+  ctx: ModeContext,
+  viewType: string,
+  init: unknown,
+) {
+  const view = ctx.model.session.addView(viewType, { init }) as T
+  view.setWidth(ctx.width)
+  await whenViewReady(view)
+  return view
+}
+
+const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   const {
     loc,
-    width = 1500,
     trackList = [],
     session: sessionParam,
     defaultSession,
@@ -250,90 +290,111 @@ async function renderLinear(model: Model, data: Config, opts: Opts) {
   })
 }
 
-// A comparative view sets `initialized` true as soon as it has regions to
-// show, but its frozen `init` snapshot is consumed a moment later by an async
-// autorun (which awaits both assemblies, navigates each sub-view, and attaches
-// the comparison track). The SVG only has content once that autorun has run to
-// completion and cleared `init`.
-function whenViewReady(view: { initialized: boolean; init?: unknown }) {
-  return when(() => view.initialized && !view.init)
-}
-
-// Dotplot and synteny both compare two assemblies. The views self-initialize
-// from their frozen `init` prop, then renderToSvg rasterizes via the global
-// node canvas (setupEnv). A missing --loc shows that assembly's whole genome.
-async function renderComparative(model: Model, data: Config, opts: Opts) {
-  const { mode, width = 1500, loc, loc2, themeName, trackLabels, showGridlines } =
-    opts
-  const [asm1, asm2] = data.assemblies
-  if (!asm1 || !asm2) {
+// Build a sub-view spec per assembly in [query, target, …] order: the first
+// --fasta/--assembly is the query (top in synteny, x-axis in dotplot).
+// Comparative views render adjacent assembly pairs as stacked levels, so this
+// supports an arbitrary number of assemblies (a-vs-b is the common case). The
+// CLI exposes --loc/--loc2 for the first two; any further assembly shows its
+// whole genome.
+function comparativeViews({ data, opts }: ModeContext) {
+  const { assemblies } = data
+  if (assemblies.length < 2) {
     throw new Error(
-      'comparative mode requires two assemblies (--fasta + --fasta2, or --assembly + --assembly2)',
+      'comparative mode requires at least two assemblies (--fasta + --fasta2, or --assembly + --assembly2)',
     )
   }
+  const locs = [opts.loc, opts.loc2]
+  return assemblies.map((asm, i) =>
+    locs[i] ? { assembly: asm.name, loc: locs[i] } : { assembly: asm.name },
+  )
+}
 
-  const syntenyTrackIds = data.tracks
+// Group synteny track ids by level. Level i sits between assembly i and i+1, so
+// a track is placed at the level whose adjacent assembly pair matches its
+// assemblyNames. Returns one entry per level (assemblies - 1); tracks with no
+// matching pair fall back to level 0.
+function syntenyTrackLevels(data: Config) {
+  const order = data.assemblies.map(asm => asm.name)
+  const levels: string[][] = order.slice(1).map(() => [])
+  for (const track of data.tracks) {
+    if (track.type === 'SyntenyTrack') {
+      const names = track.assemblyNames ?? []
+      const level = order.findIndex(
+        (name, i) =>
+          i < order.length - 1 &&
+          names.includes(name) &&
+          names.includes(order[i + 1]!),
+      )
+      levels[level === -1 ? 0 : level]!.push(track.trackId)
+    }
+  }
+  return levels
+}
+
+const renderDotplot: ModeRenderer = async ctx => {
+  // Dotplot is pairwise (x vs y), so it takes only the first two assemblies even
+  // if a config supplies more. init.tracks is a flat list of comparison ids.
+  const tracks = ctx.data.tracks
     .filter(track => track.type === 'SyntenyTrack')
     .map(track => track.trackId)
-  const views = [
-    loc ? { assembly: asm1.name, loc } : { assembly: asm1.name },
-    loc2 ? { assembly: asm2.name, loc: loc2 } : { assembly: asm2.name },
-  ]
+  const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', {
+    views: comparativeViews(ctx).slice(0, 2),
+    tracks,
+  })
+  return renderDotplotToSvg(view, {
+    rasterizeLayers: !ctx.opts.noRasterize,
+    themeName: ctx.opts.themeName,
+  })
+}
 
-  const { session } = model
-  if (mode === 'dotplot') {
-    const view = session.addView('DotplotView', {
-      init: { views, tracks: syntenyTrackIds },
-    }) as DotplotViewModel
-    view.setWidth(width)
-    await whenViewReady(view)
-    return renderDotplotToSvg(view, {
-      rasterizeLayers: !opts.noRasterize,
-      themeName,
-    })
-  } else {
-    // synteny track ids are per-level: tracks[i] sits between views[i] and
-    // views[i+1], so a single comparison goes in level 0.
-    const view = session.addView('LinearSyntenyView', {
-      init: { views, tracks: syntenyTrackIds.map(id => [id]) },
-    }) as LinearSyntenyViewModel
-    view.setWidth(width)
-    await whenViewReady(view)
-    return renderSyntenyToSvg(view, {
-      rasterizeLayers: !opts.noRasterize,
-      themeName,
-      trackLabels,
-      showGridlines,
-    })
-  }
+const renderSynteny: ModeRenderer = async ctx => {
+  const view = await addInitView<LinearSyntenyViewModel>(
+    ctx,
+    'LinearSyntenyView',
+    { views: comparativeViews(ctx), tracks: syntenyTrackLevels(ctx.data) },
+  )
+  return renderSyntenyToSvg(view, {
+    rasterizeLayers: !ctx.opts.noRasterize,
+    themeName: ctx.opts.themeName,
+    trackLabels: ctx.opts.trackLabels,
+    showGridlines: ctx.opts.showGridlines,
+  })
 }
 
 // Circular renders one assembly's chord tracks (e.g. a VCF of structural
 // variants). The view picks each track's chord display automatically.
-async function renderCircular(model: Model, data: Config, opts: Opts) {
-  const { width = 1500, themeName } = opts
-  const { session } = model
-  const trackIds = data.tracks.map(track => track.trackId)
-  const view = session.addView('CircularView', {
-    init: { assembly: data.assembly.name, tracks: trackIds },
-  }) as CircularViewModel
-  view.setWidth(width)
-  await whenViewReady(view)
-  return renderCircularToSvg(view, {
-    rasterizeLayers: !opts.noRasterize,
-    themeName,
+const renderCircular: ModeRenderer = async ctx => {
+  const trackIds = ctx.data.tracks.map(track => track.trackId)
+  const view = await addInitView<CircularViewModel>(ctx, 'CircularView', {
+    assembly: ctx.data.assembly.name,
+    tracks: trackIds,
   })
+  return renderCircularToSvg(view, {
+    rasterizeLayers: !ctx.opts.noRasterize,
+    themeName: ctx.opts.themeName,
+  })
+}
+
+// Registry of every render mode. The exhaustive Record means adding a ViewMode
+// is a compile error until a renderer is registered here.
+const modeRenderers: Record<ViewMode, ModeRenderer> = {
+  linear: renderLinear,
+  dotplot: renderDotplot,
+  synteny: renderSynteny,
+  circular: renderCircular,
 }
 
 export async function renderRegion(opts: Opts) {
   const data = readData(opts)
   const model = createModel(data)
-  const result =
-    opts.mode === 'dotplot' || opts.mode === 'synteny'
-      ? await renderComparative(model, data, opts)
-      : opts.mode === 'circular'
-        ? await renderCircular(model, data, opts)
-        : await renderLinear(model, data, opts)
-  destroy(model)
-  return result
+  try {
+    return await modeRenderers[opts.mode ?? 'linear']({
+      model,
+      data,
+      opts,
+      width: opts.width ?? 1500,
+    })
+  } finally {
+    destroy(model)
+  }
 }

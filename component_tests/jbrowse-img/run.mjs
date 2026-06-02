@@ -1,5 +1,12 @@
 import { execSync } from 'child_process'
-import { existsSync, mkdtempSync, rmSync, statSync } from 'fs'
+import {
+  copyFileSync,
+  existsSync,
+  mkdtempSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'fs'
 import { tmpdir } from 'os'
 import { join, resolve } from 'path'
 
@@ -57,6 +64,16 @@ function run(cmd) {
     throw new Error(`Command failed: ${cmd}${stderr}`)
   }
 }
+
+// Comparative modes (dotplot/synteny) need two distinctly-named assemblies: the
+// basename of a FASTA becomes the assembly name, so the second is a copy of
+// volvox under a different filename. volvox_fake_synteny.paf is a
+// volvox-vs-volvox PAF that maps ctgA/ctgB onto themselves.
+const cmpDir = mkdtempSync(join(tmpdir(), 'jb2export-cmp-'))
+const fasta2 = join(cmpDir, 'volvox2.fa')
+copyFileSync(fp('volvox.fa'), fasta2)
+copyFileSync(fp('volvox.fa.fai'), `${fasta2}.fai`)
+const paf = fp('volvox_fake_synteny.paf')
 
 // --- CLI tests ---
 
@@ -124,6 +141,74 @@ await test('jb2export can render a larger region', async () => {
     }
   } finally {
     rmSync(tmpDir, { recursive: true })
+  }
+})
+
+// --- CLI view-mode subcommand tests ---
+
+await test('jb2export circular subcommand renders SV chords', async () => {
+  const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
+  try {
+    const outFile = join(tmpDir, 'circular.svg')
+    run(
+      `${jb2exportCmd} circular --fasta data/volvox.fa --vcfgz data/volvox.dup.vcf.gz --out ${outFile}`,
+    )
+    if (!existsSync(outFile)) {
+      throw new Error(`Expected output file at ${outFile}`)
+    }
+    if (statSync(outFile).size < 1000) {
+      throw new Error('Output file seems too small')
+    }
+  } finally {
+    rmSync(tmpDir, { recursive: true })
+  }
+})
+
+await test('jb2export dotplot subcommand renders two assemblies', async () => {
+  const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
+  try {
+    const outFile = join(tmpDir, 'dotplot.svg')
+    run(
+      `${jb2exportCmd} dotplot --fasta data/volvox.fa --fasta2 ${fasta2} --paf ${paf} --out ${outFile}`,
+    )
+    if (!existsSync(outFile)) {
+      throw new Error(`Expected output file at ${outFile}`)
+    }
+    if (statSync(outFile).size < 1000) {
+      throw new Error('Output file seems too small')
+    }
+  } finally {
+    rmSync(tmpDir, { recursive: true })
+  }
+})
+
+await test('jb2export synteny subcommand renders a region pair', async () => {
+  const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
+  try {
+    const outFile = join(tmpDir, 'synteny.svg')
+    run(
+      `${jb2exportCmd} synteny --fasta data/volvox.fa --fasta2 ${fasta2} --paf ${paf} --loc ctgA --loc2 ctgA --out ${outFile}`,
+    )
+    if (!existsSync(outFile)) {
+      throw new Error(`Expected output file at ${outFile}`)
+    }
+    if (statSync(outFile).size < 1000) {
+      throw new Error('Output file seems too small')
+    }
+  } finally {
+    rmSync(tmpDir, { recursive: true })
+  }
+})
+
+await test('jb2export unknown subcommand exits nonzero', async () => {
+  let threw = false
+  try {
+    run(`${jb2exportCmd} bogus --fasta data/volvox.fa`)
+  } catch {
+    threw = true
+  }
+  if (!threw) {
+    throw new Error('Expected unknown subcommand to fail')
   }
 })
 
@@ -206,6 +291,139 @@ await test('renderRegion configtracks with local files', async () => {
     throw new Error('Expected truthy result')
   }
 })
+
+// --- Library API view-mode tests ---
+
+await test('renderRegion circular renders SV chords from a VCF', async () => {
+  const result = await renderRegion({
+    mode: 'circular',
+    fasta: fp('volvox.fa'),
+    trackList: [['vcfgz', [fp('volvox.dup.vcf.gz')]]],
+  })
+  if (!result.includes('<svg')) {
+    throw new Error('Expected SVG output')
+  }
+  // chords + ideogram are drawn as <path>; the SV track adds chords on top of
+  // the 2 ideogram paths.
+  const paths = result.match(/<path/g) ?? []
+  if (paths.length <= 2) {
+    throw new Error(`Expected variant chords, got ${paths.length} paths`)
+  }
+})
+
+await test('renderRegion dotplot renders two assemblies via a PAF', async () => {
+  const result = await renderRegion({
+    mode: 'dotplot',
+    fasta: fp('volvox.fa'),
+    fasta2,
+    trackList: [['paf', [paf]]],
+  })
+  if (!result.includes('<svg')) {
+    throw new Error('Expected SVG output')
+  }
+  if (!result.includes('<image')) {
+    throw new Error('Expected a rasterized dots layer')
+  }
+})
+
+await test('renderRegion synteny renders two assemblies via a PAF', async () => {
+  const result = await renderRegion({
+    mode: 'synteny',
+    fasta: fp('volvox.fa'),
+    fasta2,
+    trackList: [['paf', [paf]]],
+    loc: 'ctgA',
+    loc2: 'ctgA',
+  })
+  if (!result.includes('<svg')) {
+    throw new Error('Expected SVG output')
+  }
+  if (!result.includes('<image')) {
+    throw new Error('Expected a rasterized ribbon layer')
+  }
+})
+
+await test('renderRegion comparative without a second assembly throws', async () => {
+  let message = ''
+  try {
+    await renderRegion({
+      mode: 'dotplot',
+      fasta: fp('volvox.fa'),
+      trackList: [['paf', [paf]]],
+    })
+  } catch (error) {
+    message = error.message
+  }
+  if (!/second assembly/.test(message)) {
+    throw new Error(`Expected a "second assembly" error, got: ${message}`)
+  }
+})
+
+await test('renderRegion synteny stacks three assemblies into two levels', async () => {
+  // Three volvox copies (volvox/volvox2/volvox3) with a PAF between each
+  // adjacent pair. syntenyTrackLevels must place each track at the level of the
+  // assemblies it compares: level 0 = volvox↔volvox2, level 1 = volvox2↔volvox3.
+  const triDir = mkdtempSync(join(tmpdir(), 'jb2export-tri-'))
+  const names = ['volvox', 'volvox2', 'volvox3']
+  const assemblies = names.map(name => {
+    const faPath = join(triDir, `${name}.fa`)
+    copyFileSync(fp('volvox.fa'), faPath)
+    copyFileSync(fp('volvox.fa.fai'), `${faPath}.fai`)
+    return {
+      name,
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: `${name}_refseq`,
+        adapter: {
+          type: 'IndexedFastaAdapter',
+          fastaLocation: { localPath: faPath },
+          faiLocation: { localPath: `${faPath}.fai` },
+        },
+      },
+    }
+  })
+  const syntenyTrack = (id, assemblyNames) => ({
+    type: 'SyntenyTrack',
+    trackId: id,
+    name: id,
+    assemblyNames,
+    adapter: {
+      type: 'PAFAdapter',
+      pafLocation: { localPath: paf },
+      assemblyNames,
+    },
+  })
+  const configPath = join(triDir, 'config.json')
+  writeFileSync(
+    configPath,
+    JSON.stringify({
+      assemblies,
+      tracks: [
+        syntenyTrack('vol_v_vol2', ['volvox', 'volvox2']),
+        syntenyTrack('vol2_v_vol3', ['volvox2', 'volvox3']),
+      ],
+    }),
+  )
+  try {
+    const result = await renderRegion({
+      mode: 'synteny',
+      config: configPath,
+      assembly: 'volvox',
+      loc: 'ctgA',
+      loc2: 'ctgA',
+    })
+    if (!result.includes('<svg')) {
+      throw new Error('Expected SVG output')
+    }
+    if (!result.includes('<image')) {
+      throw new Error('Expected rasterized ribbon layers across levels')
+    }
+  } finally {
+    rmSync(triDir, { recursive: true })
+  }
+})
+
+rmSync(cmpDir, { recursive: true })
 
 console.log(
   `\n${failures === 0 ? 'All tests passed!' : `${failures} test(s) failed`}`,

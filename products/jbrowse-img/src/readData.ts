@@ -4,7 +4,9 @@ import path from 'path'
 import type { Entry } from './parseArgv.ts'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
-export type ViewMode = 'dotplot' | 'synteny' | 'circular'
+// Every render mode jbrowse-img supports. `linear` is the default (no
+// subcommand); the rest map from subcommands (see options.ts).
+export type ViewMode = 'linear' | 'dotplot' | 'synteny' | 'circular'
 
 export interface Opts {
   noRasterize?: boolean
@@ -75,6 +77,9 @@ export interface Assembly {
 export interface Track {
   trackId: string
   displays?: unknown[]
+  // SyntenyTracks carry their compared assemblies in [query, target] order;
+  // used to place the track at the right level in a multi-assembly synteny view.
+  assemblyNames?: string[]
   [key: string]: unknown
 }
 

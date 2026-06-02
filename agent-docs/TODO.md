@@ -18,3 +18,4 @@
 - fix the snap types?
 - or just revert
 - submenu for read connections
+- jbrowse-img: expose CLI multi-level synteny (--fasta3/--loc3 or repeatable); render layer already supports N levels, CLI only has --fasta2/--loc2
