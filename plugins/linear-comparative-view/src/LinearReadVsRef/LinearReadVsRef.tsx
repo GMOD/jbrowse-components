@@ -154,7 +154,7 @@ export default function ReadVsRefDialog({
             </Typography>
 
             <TextField
-              value={windowSize}
+              value={windowSizeText}
               onChange={event => {
                 setWindowSize(event.target.value)
               }}

@@ -42,9 +42,10 @@ const SequencePanel = observer(function SequencePanel({
   sequence,
   model,
   feature,
+  mode,
   ref,
 }: SequencePanelProps) {
-  const { showCoordinates, mode } = model
+  const { showCoordinates } = model
   const Container = showCoordinates ? WordWrap : NoWordWrap
   return (
     <div

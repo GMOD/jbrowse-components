@@ -91,12 +91,11 @@ export function getSequenceData({
   feature: SimpleFeatureSerialized
   sequence?: SeqState | ErrorState
 }) {
-  const children = prepareSubfeatures(feature)
-  const { cds, exons, utr } = processFeatureData(children, feature)
-
   if (!sequence || 'error' in sequence) {
     return undefined
   } else {
+    const children = prepareSubfeatures(feature)
+    const { cds, exons, utr } = processFeatureData(children, feature)
     const {
       sequence: adjustedSequence,
       cds: adjustedCds,

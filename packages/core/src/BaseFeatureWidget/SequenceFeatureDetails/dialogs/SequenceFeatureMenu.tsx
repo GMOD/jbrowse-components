@@ -6,10 +6,11 @@ import Settings from '@mui/icons-material/Settings'
 import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
+import { showGenomicCoordsOption } from '../featureTypeUtil.ts'
 import { saveAs } from '../../../util/index.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
-import type { SequenceFeatureDetailsModel } from '../model.ts'
+import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from '../model.ts'
 
 // lazies
 const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog.tsx'))
@@ -17,15 +18,17 @@ const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog.tsx'))
 interface Props {
   model: SequenceFeatureDetailsModel
   ref: RefObject<HTMLDivElement | null>
+  mode: SequenceDisplayMode
   extraItems?: MenuItem[]
 }
 const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
   model,
   ref,
+  mode,
   extraItems = [],
 }: Props) {
   const [showSettings, setShowSettings] = useState(false)
-  const { showCoordinatesSetting, showGenomicCoordsOption } = model
+  const { showCoordinatesSetting } = model
 
   return (
     <>
@@ -102,7 +105,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
                   model.setShowCoordinates('relative')
                 },
               },
-              ...(showGenomicCoordsOption
+              ...(showGenomicCoordsOption(mode)
                 ? [
                     {
                       label:

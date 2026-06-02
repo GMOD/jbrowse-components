@@ -69,6 +69,8 @@ const BreakpointSplitViewChoiceDialog = observer(
     const isSplitLevel = viewType === 'split'
 
     const handleLaunch = () => {
+      const tracks =
+        copyTracks && view ? (getSnapshot(view.tracks) as Track[]) : []
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         try {
@@ -78,10 +80,7 @@ const BreakpointSplitViewChoiceDialog = observer(
                   ? `${stableViewId}_multilevel`
                   : undefined,
                 session,
-                tracks:
-                  copyTracks && view
-                    ? (getSnapshot(view.tracks) as Track[])
-                    : [],
+                tracks,
                 mirror,
                 feature,
                 assemblyName,
@@ -95,10 +94,7 @@ const BreakpointSplitViewChoiceDialog = observer(
                 stableViewId: stableViewId
                   ? `${stableViewId}_singlelevel`
                   : undefined,
-                tracks:
-                  copyTracks && view
-                    ? (getSnapshot(view.tracks) as Track[])
-                    : undefined,
+                tracks,
                 windowSize: +windowSize || 0,
               }))
         } catch (e) {

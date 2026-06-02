@@ -1,9 +1,11 @@
 import { FormControl, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { featureHasCDS, featureHasExonOrCDS } from '../featureTypeUtil.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 
-import type { SequenceFeatureDetailsModel } from '../model.ts'
+import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from '../model.ts'
+import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 
 const useStyles = makeStyles()({
   formControl: {
@@ -14,11 +16,19 @@ const useStyles = makeStyles()({
 
 const SequenceTypeSelector = observer(function SequenceTypeSelector({
   model,
+  feature,
+  mode,
+  setMode,
 }: {
   model: SequenceFeatureDetailsModel
+  feature: SimpleFeatureSerialized
+  mode: SequenceDisplayMode
+  setMode: (mode: SequenceDisplayMode) => void
 }) {
   const { classes } = useStyles()
-  const { intronBp, upDownBp, mode, hasCDS, hasExonOrCDS } = model
+  const { intronBp, upDownBp } = model
+  const hasCDS = featureHasCDS(feature)
+  const hasExonOrCDS = featureHasExonOrCDS(feature)
 
   return (
     <FormControl className={classes.formControl}>
@@ -26,7 +36,7 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
         size="small"
         value={mode}
         onChange={event => {
-          model.setMode(event.target.value)
+          setMode(event.target.value)
         }}
       >
         {[

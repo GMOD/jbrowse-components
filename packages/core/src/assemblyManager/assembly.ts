@@ -97,7 +97,7 @@ async function loadRefNameMap(
   try {
     const adapter = assembly.configuration?.sequence?.adapter
     sequenceAdapter = adapter ? getSnapshot(adapter) : undefined
-  } catch (e) {
+  } catch {
     // configuration might not be fully loaded yet
   }
 
@@ -124,7 +124,7 @@ async function loadRefNameMap(
     checkRefName(name)
   }
   return Object.fromEntries(
-    refNames.map(name => [assembly.getCanonicalRefName(name), name]),
+    refNames.map(name => [assembly.getCanonicalRefName(name) ?? name, name]),
   )
 }
 
@@ -483,7 +483,8 @@ export default function assemblyFactory(
         }
 
         return (
-          self.refNameAliases[refName] || self.lowerCaseRefNameAliases[refName]
+          self.refNameAliases[refName] ||
+          self.lowerCaseRefNameAliases[refName.toLowerCase()]
         )
       },
       /**

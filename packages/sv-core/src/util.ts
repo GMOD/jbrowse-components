@@ -3,7 +3,7 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 
 import type { Track } from './types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { Feature } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export const SV_SYMBOLIC_ALLELES = [
@@ -114,6 +114,41 @@ export function getBreakendCoveringRegions({
   }
 }
 
+/**
+ * #api
+ * Loads the assembly for a breakend feature and resolves the two regions its
+ * endpoints span. Throws if the assembly, its regions, or either endpoint's
+ * region cannot be found.
+ */
+export async function getBreakendAssemblyRegions({
+  feature,
+  session,
+  assemblyName,
+}: {
+  feature: Feature
+  session: AbstractSessionModel
+  assemblyName: string
+}) {
+  const { assemblyManager } = session
+  const assembly = await assemblyManager.waitForAssembly(assemblyName)
+  if (!assembly) {
+    throw new Error(`assembly ${assemblyName} not found`)
+  }
+  if (!assembly.regions) {
+    throw new Error(`assembly ${assemblyName} regions not loaded`)
+  }
+  const coverage = getBreakendCoveringRegions({ feature, assembly })
+  const { refName, mateRefName } = coverage
+  const region = assembly.regions.find(r => r.refName === refName)
+  const mateRegion = assembly.regions.find(r => r.refName === mateRefName)
+  if (!region || !mateRegion) {
+    throw new Error(
+      `regions ${refName}, ${mateRefName} not found in assembly ${assemblyName}`,
+    )
+  }
+  return { coverage, region, mateRegion }
+}
+
 export function stripIds(arr: Track[]) {
   return arr.map(({ id, displays, ...rest }) => ({
     ...rest,
@@ -183,6 +218,15 @@ export interface ViewWithAssemblyNames {
  */
 export function getAssemblyName(view?: ViewWithAssemblyNames) {
   return view?.assemblyNames[0]
+}
+
+/**
+ * #api
+ * bpPerPx that fits `windowSize` bp on each side of a breakpoint across the
+ * view width. Falls back to a zoomed-in default when no window is requested.
+ */
+export function breakpointBpPerPx(windowSize: number, width: number) {
+  return windowSize > 0 ? (windowSize * 2) / width : 10
 }
 
 /**

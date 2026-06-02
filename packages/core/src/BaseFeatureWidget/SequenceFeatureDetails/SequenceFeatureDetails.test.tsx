@@ -46,10 +46,10 @@ test('test using the sequence feature panel', () => {
   // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-zMPjiv36k0&password=ddxCy
   const feature = DLGAP3
   const model = SequenceFeatureDetailsF().create()
-  model.setMode('protein')
   const { getByTestId } = render(
     <SequencePanel
       model={model}
+      mode="protein"
       sequence={{ seq: dna }}
       feature={feature.subfeatures[0]!}
     />,
@@ -81,10 +81,10 @@ test('test using the sequence feature panel with show coords', () => {
   const model = SequenceFeatureDetailsF().create()
   const feature = DLGAP3
   model.setShowCoordinates('genomic')
-  model.setMode('protein')
   const { getByTestId } = render(
     <SequencePanel
       model={model}
+      mode="protein"
       sequence={{ seq: dna }}
       feature={feature.subfeatures[0]!}
     />,
@@ -108,10 +108,10 @@ test('NCDN collapsed intron', () => {
   // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-zMPjiv36k0&password=ddxCy
   const feature = NCDN
   const model = SequenceFeatureDetailsF().create()
-  model.setMode('gene_collapsed_intron')
   const { getByTestId } = render(
     <SequencePanel
       model={model}
+      mode="gene_collapsed_intron"
       sequence={{ seq: dna }}
       feature={feature.subfeatures[0]!}
     />,
@@ -134,10 +134,10 @@ test('NCDN updownstream', () => {
   // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-zMPjiv36k0&password=ddxCy
   const feature = NCDN
   const model = SequenceFeatureDetailsF().create()
-  model.setMode('gene_updownstream')
   const { getByTestId } = render(
     <SequencePanel
       model={model}
+      mode="gene_updownstream"
       sequence={{ seq, upstream }}
       feature={feature.subfeatures[0]!}
     />,
@@ -150,9 +150,8 @@ test('NCDN updownstream', () => {
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()
-  model.setMode('cdna')
   const { getByTestId } = render(
-    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
+    <SequencePanel model={model} mode="cdna" sequence={{ seq }} feature={f} />,
   )
 
   const element = getByTestId('sequence_panel')
@@ -171,10 +170,9 @@ test('single exon cDNA should not have duplicate sequences', () => {
 test('single exon cDNA display genomic coords', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()
-  model.setMode('gene')
   model.setShowCoordinates('genomic')
   const { getByTestId } = render(
-    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
+    <SequencePanel model={model} mode="gene" sequence={{ seq }} feature={f} />,
   )
 
   const element = getByTestId('sequence_panel')
@@ -184,10 +182,9 @@ test('single exon cDNA display genomic coords', () => {
 test('single exon cDNA display relative coords', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()
-  model.setMode('gene')
   model.setShowCoordinates('relative')
   const { getByTestId } = render(
-    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
+    <SequencePanel model={model} mode="gene" sequence={{ seq }} feature={f} />,
   )
 
   const element = getByTestId('sequence_panel')

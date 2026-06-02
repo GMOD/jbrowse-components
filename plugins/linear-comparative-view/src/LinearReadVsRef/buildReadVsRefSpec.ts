@@ -1,16 +1,7 @@
-import { getTag } from '@jbrowse/alignments-core'
-import {
-  featurizeSA,
-  getClip,
-  getLength,
-  getLengthSansClipping,
-} from '@jbrowse/cigar-utils'
+import { buildReadVsRefFeatures } from '@jbrowse/alignments-core'
 import { gatherOverlaps } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
-
-// SAM flag bit 0x800 (2048) = supplementary alignment
-const FLAG_SUPPLEMENTARY = 2048
 
 export interface ReadVsRefSpec {
   temporaryAssembly: {
@@ -54,25 +45,6 @@ export interface BuildReadVsRefArgs {
   rand: () => number
 }
 
-interface SyntheticFeature {
-  refName: string
-  start: number
-  end: number
-  strand: number
-  CIGAR: string
-  seqLength: number
-  clipLengthAtStartOfRead: number
-  syntenyId: number
-  uniqueId: string
-  mate: {
-    refName: string
-    start: number
-    end: number
-    syntenyId: number
-    uniqueId: string
-  }
-}
-
 // Pure spec builder for the "Linear read vs ref" dialog. All session/MST
 // side-effects (addTemporaryAssembly, addView) are performed by the caller
 // against the returned spec. Inputs are pre-resolved primitives + injected
@@ -89,13 +61,12 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     rand,
   } = args
 
-  const cigar = feature.get('CIGAR') as string
-  const flags = feature.get('flags') as number
-  const origStrand = feature.get('strand')!
-  const SA = (getTag(feature, 'SA') as string | undefined) ?? ''
-  const readName = feature.get('name')!
-  const featSeq = feature.get('seq') as string | undefined
-  const clipLengthAtStartOfRead = getClip(cigar, 1)
+  const {
+    features,
+    totalLength,
+    readName,
+    seq: featSeq,
+  } = buildReadVsRefFeatures(feature)
 
   const stamp = now()
   const readAssembly = `${readName}_assembly_${stamp}`
@@ -103,37 +74,14 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
   const syntenyTrackName = `${readName}_vs_${trackAssembly}`
   const seqTrackId = `${readName}_${stamp}`
 
-  const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
-
-  // Synthetic primary feature (the alignment block on the reference) with a
-  // mate pointing to its position on the synthetic read assembly.
-  const primary = {
-    ...(feature.toJSON() as Record<string, unknown>),
-    clipLengthAtStartOfRead,
-    strand: 1,
-    mate: {
-      refName: readName,
-      start: clipLengthAtStartOfRead,
-      end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
-    },
-  }
-
-  // For supplementary alignments, total read length must come from the
-  // primary's CIGAR (carried in SA[0]) since `cigar` here only covers the
-  // current alignment's slice.
-  const totalLength =
-    flags & FLAG_SUPPLEMENTARY
-      ? getLength(suppAlns[0]!.CIGAR)
-      : getLength(cigar)
-
-  const features = [primary, ...suppAlns] as SyntheticFeature[]
+  // features are already sorted along the read; assign canonical refNames and
+  // pair each alignment with its mate via a shared syntenyId.
   for (const [idx, f] of features.entries()) {
     f.refName = getCanonicalRefName(f.refName) ?? f.refName
     f.syntenyId = idx
     f.mate.syntenyId = idx
     f.mate.uniqueId = `${f.uniqueId}_mate`
   }
-  features.sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
 
   // The synteny adapter feature store carries both sides of each alignment
   // so the read assembly can be drawn against itself in the lower panel.

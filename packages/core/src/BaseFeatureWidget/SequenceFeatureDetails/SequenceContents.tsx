@@ -29,82 +29,33 @@ function RenderedSequenceComponent({
   }
 }) {
   const { seq, upstream, downstream, cds, exons, utr } = sequenceData
+  const withUpDown = mode.includes('updownstream')
 
   switch (mode) {
     case 'genomic':
-      return <GenomicSequence feature={feature} model={model} sequence={seq} />
-
     case 'genomic_sequence_updownstream':
       return (
         <GenomicSequence
           model={model}
           feature={feature}
           sequence={seq}
-          upstream={upstream}
-          downstream={downstream}
+          upstream={withUpDown ? upstream : undefined}
+          downstream={withUpDown ? downstream : undefined}
         />
       )
 
     case 'cds':
       return <CDSSequence model={model} cds={cds} sequence={seq} />
 
-    case 'cdna':
-      return (
-        <CDNASequence
-          model={model}
-          exons={exons}
-          feature={feature}
-          cds={cds}
-          utr={utr}
-          sequence={seq}
-        />
-      )
-
     case 'protein':
       return <ProteinSequence model={model} cds={cds} sequence={seq} />
 
+    // cdna and the gene_* variants all render the spliced transcript; introns
+    // and up/downstream flanks are toggled by the mode name
+    case 'cdna':
     case 'gene':
-      return (
-        <CDNASequence
-          model={model}
-          exons={exons}
-          feature={feature}
-          cds={cds}
-          utr={utr}
-          sequence={seq}
-          includeIntrons
-        />
-      )
-
     case 'gene_collapsed_intron':
-      return (
-        <CDNASequence
-          model={model}
-          exons={exons}
-          feature={feature}
-          cds={cds}
-          sequence={seq}
-          utr={utr}
-          includeIntrons
-          collapseIntron
-        />
-      )
-
     case 'gene_updownstream':
-      return (
-        <CDNASequence
-          model={model}
-          exons={exons}
-          feature={feature}
-          cds={cds}
-          sequence={seq}
-          utr={utr}
-          upstream={upstream}
-          downstream={downstream}
-          includeIntrons
-        />
-      )
-
     case 'gene_updownstream_collapsed_intron':
       return (
         <CDNASequence
@@ -112,12 +63,12 @@ function RenderedSequenceComponent({
           exons={exons}
           feature={feature}
           cds={cds}
-          sequence={seq}
           utr={utr}
-          upstream={upstream}
-          downstream={downstream}
-          includeIntrons
-          collapseIntron
+          sequence={seq}
+          upstream={withUpDown ? upstream : undefined}
+          downstream={withUpDown ? downstream : undefined}
+          includeIntrons={mode.startsWith('gene')}
+          collapseIntron={mode.includes('collapsed_intron')}
         />
       )
 

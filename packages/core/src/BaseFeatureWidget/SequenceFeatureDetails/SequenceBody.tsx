@@ -5,7 +5,7 @@ import { Button, Typography } from '@mui/material'
 import SequencePanel from './SequencePanel.tsx'
 import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
 
-import type { SequenceFeatureDetailsModel } from './model.ts'
+import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { ErrorState, SeqState } from '../util.tsx'
 
@@ -15,6 +15,7 @@ export default function SequenceBody({
   feature,
   seqPanelRef,
   model,
+  mode,
   onForceLoad,
 }: {
   error: unknown
@@ -22,6 +23,7 @@ export default function SequenceBody({
   feature: SimpleFeatureSerialized
   seqPanelRef: RefObject<HTMLDivElement | null>
   model: SequenceFeatureDetailsModel
+  mode: SequenceDisplayMode
   onForceLoad: () => void
 }) {
   return (
@@ -54,6 +56,7 @@ export default function SequenceBody({
           feature={feature}
           sequence={sequence}
           model={model}
+          mode={mode}
         />
       )}
     </div>

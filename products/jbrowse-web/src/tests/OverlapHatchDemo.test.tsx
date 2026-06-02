@@ -58,8 +58,7 @@ async function renderLinkedOverlap(name: string, loc: string, track: string) {
   await user.click(await findByTestId(hts(track), ...opts))
   await user.click(await findByTestId('track_menu_icon', ...opts))
   await user.click(await findByText('Read connections'))
-  await user.click(await findByText('Linked reads'))
-  await user.click(await findByText('Normal'))
+  await user.click(await findByText('Link supplementary alignments'))
 
   // Bump feature height so the diagonal hatch is clearly visible.
   const display = view.tracks[0].displays[0]

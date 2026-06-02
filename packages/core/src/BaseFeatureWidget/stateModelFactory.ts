@@ -177,7 +177,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   }
 
                   self.setFormattedData(feature)
-                  self.sequenceFeatureDetails.setFeature(feature)
                 }
               } catch (e) {
                 console.error(e)

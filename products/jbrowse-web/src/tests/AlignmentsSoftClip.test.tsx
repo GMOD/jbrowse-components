@@ -31,7 +31,7 @@ test('opens the track menu and enables soft clipping', async () => {
   // wait for initial render before toggling soft clipping
   await screen.findByTestId('pileup-display-done', ...opts)
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Reads'))
+  await user.click(await screen.findByText('Show...'))
   await user.click(await screen.findByText('Show soft clipping'))
 
   // wait for data to be re-fetched with soft clipping enabled

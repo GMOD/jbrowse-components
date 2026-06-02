@@ -4,9 +4,9 @@ import { observer } from 'mobx-react'
 
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
+import { getDefaultMode } from './featureTypeUtil.ts'
+import { useSequenceFetch } from './useSequenceFetch.ts'
 import { LoadingEllipses } from '../../ui/index.ts'
-import { getSession } from '../../util/index.ts'
-import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
@@ -26,27 +26,30 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   const { upDownBp } = sequenceFeatureDetails
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
+  // mode is per-panel state, not on the shared model, so each subfeature panel
+  // (e.g. coding vs noncoding transcripts of one gene) picks its own sequence
+  // type
+  const [mode, setMode] = useState(() => getDefaultMode(feature))
   const [openInDialog, setOpenInDialog] = useState(false)
-  const [forceLoad, setForceLoad] = useState(false)
-  const session = getSession(model)
-  const assemblyName = model.view?.assemblyNames?.[0]
-  const { sequence, error } = useFeatureSequence({
-    assemblyName,
-    session,
-    start: feature.start,
-    end: feature.end,
-    refName: feature.refName,
+  const { sequence, error, onForceLoad } = useSequenceFetch({
+    model,
+    feature,
     upDownBp,
-    forceLoad,
   })
 
   return (
     <>
       <div>
-        <SequenceTypeSelector model={sequenceFeatureDetails} />
+        <SequenceTypeSelector
+          model={sequenceFeatureDetails}
+          feature={feature}
+          mode={mode}
+          setMode={setMode}
+        />
         <SequenceFeatureMenu
           ref={seqPanelRef}
           model={sequenceFeatureDetails}
+          mode={mode}
           extraItems={[
             {
               label: 'Open in dialog',
@@ -63,6 +66,8 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
             model={model}
             sequenceFeatureDetails={sequenceFeatureDetails}
             feature={feature}
+            mode={mode}
+            setMode={setMode}
             handleClose={() => {
               setOpenInDialog(false)
             }}
@@ -76,9 +81,8 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
             feature={feature}
             seqPanelRef={seqPanelRef}
             model={sequenceFeatureDetails}
-            onForceLoad={() => {
-              setForceLoad(true)
-            }}
+            mode={mode}
+            onForceLoad={onForceLoad}
           />
         </Suspense>
       )}

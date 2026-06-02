@@ -25,6 +25,12 @@ export {
   visitCsOps,
 } from '@jbrowse/cigar-utils'
 export type { ClipMismatch, Mismatch } from '@jbrowse/cigar-utils'
+export { buildReadVsRefFeatures } from './buildReadVsRefFeatures.ts'
+export type {
+  ReadVsRefFeature,
+  ReadVsRefFeatures,
+  ReadVsRefMate,
+} from './buildReadVsRefFeatures.ts'
 export { getTag } from './getTag.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {

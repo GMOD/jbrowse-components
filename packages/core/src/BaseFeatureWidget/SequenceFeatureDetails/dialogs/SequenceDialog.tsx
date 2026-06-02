@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -7,13 +7,12 @@ import SequenceBody from '../SequenceBody.tsx'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 import { Dialog } from '../../../ui/index.ts'
-import { getSession } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
-import { useFeatureSequence } from '../../../util/useFeatureSequence.ts'
+import { useSequenceFetch } from '../useSequenceFetch.ts'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type { BaseFeatureWidgetModel } from '../../stateModelFactory.ts'
-import type { SequenceFeatureDetailsModel } from '../model.ts'
+import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -26,26 +25,23 @@ const SequenceDialog = observer(function SequenceDialog({
   model,
   sequenceFeatureDetails,
   feature,
+  mode,
+  setMode,
 }: {
   handleClose: () => void
   feature: SimpleFeatureSerialized
   model: BaseFeatureWidgetModel
   sequenceFeatureDetails: SequenceFeatureDetailsModel
+  mode: SequenceDisplayMode
+  setMode: (mode: SequenceDisplayMode) => void
 }) {
   const { upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
-  const [forceLoad, setForceLoad] = useState(false)
-  const session = getSession(model)
-  const assemblyName = model.view?.assemblyNames?.[0]
-  const { sequence, error } = useFeatureSequence({
-    assemblyName,
-    session,
-    start: feature.start,
-    end: feature.end,
-    refName: feature.refName,
+  const { sequence, error, onForceLoad } = useSequenceFetch({
+    model,
+    feature,
     upDownBp,
-    forceLoad,
   })
 
   return (
@@ -59,10 +55,16 @@ const SequenceDialog = observer(function SequenceDialog({
     >
       <DialogContent className={classes.dialogContent}>
         <div>
-          <SequenceTypeSelector model={sequenceFeatureDetails} />
+          <SequenceTypeSelector
+            model={sequenceFeatureDetails}
+            feature={feature}
+            mode={mode}
+            setMode={setMode}
+          />
           <SequenceFeatureMenu
             ref={seqPanelRef}
             model={sequenceFeatureDetails}
+            mode={mode}
           />
         </div>
         <SequenceBody
@@ -71,9 +73,8 @@ const SequenceDialog = observer(function SequenceDialog({
           feature={feature}
           seqPanelRef={seqPanelRef}
           model={sequenceFeatureDetails}
-          onForceLoad={() => {
-            setForceLoad(true)
-          }}
+          mode={mode}
+          onForceLoad={onForceLoad}
         />
       </DialogContent>
 

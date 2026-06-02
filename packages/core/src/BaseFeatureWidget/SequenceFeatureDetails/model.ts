@@ -8,7 +8,6 @@ import {
   localStorageSetItem,
 } from '../../util/index.ts'
 
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function localStorageSetNumber(key: string, value: number) {
@@ -19,9 +18,8 @@ function localStorageSetBoolean(key: string, value: boolean) {
   localStorageSetItem(key, JSON.stringify(value))
 }
 
-type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
-type SequenceDisplayMode =
-  | ''
+export type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
+export type SequenceDisplayMode =
   | 'gene'
   | 'gene_collapsed_intron'
   | 'gene_updownstream'
@@ -59,24 +57,8 @@ export function SequenceFeatureDetailsF() {
        * #volatile
        */
       charactersPerRow: 100,
-      /**
-       * #volatile
-       */
-      feature: undefined as SimpleFeatureSerialized | undefined,
-      /**
-       * #volatile
-       */
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      mode: '' as SequenceDisplayMode,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setFeature(f: SimpleFeatureSerialized) {
-        self.feature = f
-      },
       /**
        * #action
        */
@@ -101,12 +83,6 @@ export function SequenceFeatureDetailsF() {
       setShowCoordinates(f: ShowCoordinatesMode) {
         self.showCoordinatesSetting = f
       },
-      /**
-       * #action
-       */
-      setMode(mode: SequenceDisplayMode) {
-        self.mode = mode
-      },
     }))
     .views(self => ({
       /**
@@ -114,48 +90,6 @@ export function SequenceFeatureDetailsF() {
        */
       get showCoordinates() {
         return self.showCoordinatesSetting !== 'none'
-      },
-      /**
-       * #getter
-       */
-      get showGenomicCoordsOption() {
-        return (
-          self.mode === 'gene' ||
-          self.mode === 'gene_updownstream' ||
-          self.mode === 'genomic' ||
-          self.mode === 'genomic_sequence_updownstream'
-        )
-      },
-      /**
-       * #getter
-       */
-      get hasCDS(): boolean {
-        const featureType = self.feature?.type?.toLowerCase()
-        if (featureType === 'mature_protein_region_of_cds') {
-          return true
-        }
-        return (
-          self.feature?.subfeatures?.some(sub => {
-            const type = sub.type?.toLowerCase()
-            return type === 'cds' || type === 'mature_protein_region_of_cds'
-          }) ?? false
-        )
-      },
-      /**
-       * #getter
-       */
-      get hasExon(): boolean {
-        return (
-          self.feature?.subfeatures?.some(
-            sub => sub.type?.toLowerCase() === 'exon',
-          ) ?? false
-        )
-      },
-      /**
-       * #getter
-       */
-      get hasExonOrCDS(): boolean {
-        return this.hasExon || this.hasCDS
       },
     }))
     .actions(self => ({
@@ -173,17 +107,6 @@ export function SequenceFeatureDetailsF() {
               )
             },
             { name: 'SequenceFeatureLocalStorage' },
-          ),
-        )
-        addDisposer(
-          self,
-          autorun(
-            function sequenceFeatureModeAutorun() {
-              self.setMode(
-                self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
-              )
-            },
-            { name: 'SequenceFeatureMode' },
           ),
         )
       },
