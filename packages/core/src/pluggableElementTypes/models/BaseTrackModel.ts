@@ -127,9 +127,10 @@ export function createBaseTrackModel(
 
       /**
        * #getter
+       * a shown track always has at least one display
        */
       get activeDisplay() {
-        return self.displays[0]
+        return self.displays[0]!
       },
 
       /**
@@ -237,7 +238,7 @@ export function createBaseTrackModel(
         const menuItems = self.displays.flatMap(
           d => d.trackMenuItems() as MenuItem[],
         )
-        const shownId = self.activeDisplay?.configuration.displayId
+        const shownId = self.activeDisplay.configuration.displayId
         const compatDisp = getCompatibleDisplays(self)
 
         return [

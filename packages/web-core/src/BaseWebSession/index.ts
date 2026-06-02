@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
@@ -21,10 +19,11 @@ import {
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
+  trackActionMenuItems,
+  trackListMenuItems,
 } from '@jbrowse/product-core'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
-import InfoIcon from '@mui/icons-material/Info'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
@@ -47,12 +46,19 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
-// lazies
-const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
-
 interface Display {
   displayId: string
+  type: string
 }
+
+// shape of a cloned track config snapshot mutated in getTrackActions' makeSnap;
+// the Record intersection keeps it assignable to addTrackConf's AnyConfiguration
+type TrackCopyBase = {
+  trackId: string
+  name: string
+  category?: unknown
+  displays?: Display[]
+} & Record<string, unknown>
 
 /**
  * #stateModel BaseWebSession
@@ -308,16 +314,10 @@ export function BaseWebSession({
         const isRefSeq = config.type === 'ReferenceSequenceTrack'
         const base = structuredClone(
           isStateTreeNode(config) ? getSnapshot(config) : config,
-        ) as { [key: string]: unknown; displays?: Display[] }
+        ) as TrackCopyBase
         const makeSnap = () => {
           const snap = structuredClone(base)
-          const now = Date.now()
-          snap.trackId += `-${now}`
-          if (snap.displays) {
-            for (const display of snap.displays) {
-              display.displayId += `-${now}`
-            }
-          }
+          snap.trackId += `-${Date.now()}`
           // the -sessionTrack suffix to trackId is used as metadata for
           // the track selector to store the track in a special category,
           // and default category is also cleared
@@ -326,6 +326,13 @@ export function BaseWebSession({
             snap.category = undefined
           }
           snap.name += ' (copy)'
+          // regenerate displayIds to match the final trackId, the same form
+          // baseTrackConfig would auto-inject
+          if (snap.displays) {
+            for (const display of snap.displays) {
+              display.displayId = `${snap.trackId}-${display.type}`
+            }
+          }
           return snap
         }
         return [
@@ -351,7 +358,7 @@ export function BaseWebSession({
             onClick: () => {
               const snap = makeSnap()
               if (self.addTrackConf(snap)) {
-                view!.showTrack(snap.trackId as string)
+                view!.showTrack(snap.trackId)
               }
             },
             icon: OpenInNewIcon,
@@ -376,23 +383,11 @@ export function BaseWebSession({
         config: BaseTrackConfig,
         view?: { showTrack: (id: string) => void },
       ): MenuItem[] {
-        return [
-          {
-            label: 'About track',
-            onClick: () => {
-              self.queueDialog(handleClose => [
-                AboutDialog,
-                {
-                  config,
-                  handleClose,
-                  session: self,
-                },
-              ])
-            },
-            icon: InfoIcon,
-          },
-          ...self.getTrackActions(config, view),
-        ]
+        return trackListMenuItems(
+          self,
+          config,
+          self.getTrackActions(config, view),
+        )
       },
 
       /**
@@ -402,37 +397,16 @@ export function BaseWebSession({
        */
       getTrackActionMenuItems(
         config: BaseTrackConfig,
-        extraTrackActions?: MenuItem[],
-        effectiveConfig?: Record<string, unknown>,
+        extraTrackActions: MenuItem[] | undefined,
+        effectiveConfig: Record<string, unknown>,
         view?: { showTrack: (id: string) => void },
       ): MenuItem[] {
-        return [
-          {
-            label: 'About track',
-            priority: 1002,
-            onClick: () => {
-              self.queueDialog(handleClose => [
-                AboutDialog,
-                {
-                  config: effectiveConfig ?? config,
-                  handleClose,
-                  session: self,
-                },
-              ])
-            },
-            icon: InfoIcon,
-          },
-          {
-            type: 'subMenu' as const,
-            label: 'Track actions',
-            priority: 1001,
-            subMenu: [
-              ...self.getTrackActions(config, view),
-              ...(extraTrackActions ?? []),
-            ],
-          },
-          { type: 'divider' as const },
-        ]
+        return trackActionMenuItems(
+          self,
+          effectiveConfig,
+          self.getTrackActions(config, view),
+          extraTrackActions,
+        )
       },
 
       /**

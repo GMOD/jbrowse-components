@@ -30,7 +30,7 @@ function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
       item => !('label' in item) || item.label !== SAVE_TRACK_DATA_LABEL,
     )
 
-    const effectiveConfig = track.activeDisplay?.effectiveTrackConfig
+    const effectiveConfig = track.activeDisplay.effectiveTrackConfig
 
     const sessionItems =
       session.getTrackActionMenuItems?.(
