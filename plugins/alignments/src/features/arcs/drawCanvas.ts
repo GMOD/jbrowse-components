@@ -7,8 +7,8 @@ import {
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
   ARC_HEIGHT_MARGIN,
+  arcColorPalette,
   arcLineColorPalette,
-  getArcPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 
 import type { ArcsUploadData } from './types.ts'
@@ -115,7 +115,7 @@ export function drawArcs(
     arcsH,
     pairedArcsDown,
     lineWidth: state.readConnectionsLineWidth ?? 1,
-    palette: getArcPalette(state.readConnections === 'samplot'),
+    palette: arcColorPalette,
   })
 
   for (let i = 0; i < region.numArcLines; i++) {

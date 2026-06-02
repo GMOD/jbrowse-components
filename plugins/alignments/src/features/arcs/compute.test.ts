@@ -450,7 +450,7 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines[0]!.colorType).toBe(1)
   })
 
-  test('samplot coloring classifies by pair orientation', () => {
+  test('read cloud colors by orientation like arcs (insertSizeAndOrientation)', () => {
     const mkData = (orient: number) =>
       makePileupData({
         regionStart: 0,
@@ -475,20 +475,47 @@ describe('computeArcsFromPileupData', () => {
     const run = (orient: number) =>
       computeArcsFromPileupData(new Map([[0, mkData(orient)]]), regions, opts)
 
-    // LR/normal → DEL slot 0
-    const del = run(1)
-    expect(del.arcs).toHaveLength(1)
-    expect(del.arcs[0]!.colorType).toBe(0)
+    // LR/normal (no stats) → default arc slot 0
+    const lr = run(1)
+    expect(lr.arcs).toHaveLength(1)
+    expect(lr.arcs[0]!.colorType).toBe(0)
     // Flat shape + Y ≈ |tlen| (samplot applies ±8% jitter)
-    expect(del.arcs[0]!.shapeType).toBe(2)
-    expect(del.arcs[0]!.yBp).toBeGreaterThanOrEqual(460)
-    expect(del.arcs[0]!.yBp).toBeLessThanOrEqual(540)
+    expect(lr.arcs[0]!.shapeType).toBe(2)
+    expect(lr.arcs[0]!.yBp).toBeGreaterThanOrEqual(460)
+    expect(lr.arcs[0]!.yBp).toBeLessThanOrEqual(540)
 
-    // RL/everted → DUP slot 1
-    expect(run(2).arcs[0]!.colorType).toBe(1)
-    // FF/RR same-strand → INV slot 2
-    expect(run(3).arcs[0]!.colorType).toBe(2)
-    expect(run(4).arcs[0]!.colorType).toBe(2)
+    // Aberrant orientations map to the arc palette: RL→6 (teal), RR→5 (navy),
+    // FF→4 (green) — same getOrientationColorIndex as arc mode.
+    expect(run(2).arcs[0]!.colorType).toBe(6)
+    expect(run(3).arcs[0]!.colorType).toBe(5)
+    expect(run(4).arcs[0]!.colorType).toBe(4)
+  })
+
+  test('read cloud colors long inserts red like arcs (slot 1)', () => {
+    const data = makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array([0, 100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([10000]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readA'],
+      readNextRefs: ['chr1'],
+      readNextPositions: new Uint32Array([500]),
+      insertSizeStats: { upper: 500, lower: 100 },
+    })
+    const regions = [
+      { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
+    ]
+    const result = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation' as const,
+      samplot: true,
+      drawInter: false,
+      drawLongRange: true,
+    })
+    // tlen 10000 > upper 500 → long-insert slot 1 (red), not a samplot DUP color
+    expect(result.arcs).toHaveLength(1)
+    expect(result.arcs[0]!.colorType).toBe(1)
   })
 
   test('samplot drops concordant FR pairs within insert-size stats band', () => {
@@ -526,7 +553,7 @@ describe('computeArcsFromPileupData', () => {
     ).toHaveLength(1)
   })
 
-  test('samplot SA-tag arcs: opposite strands → INV, same strand → DEL', () => {
+  test('read cloud SA-tag arcs color by strand like arcs (FR→4, same-strand→0)', () => {
     const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
       makePileupData({
         regionStart: 1000,
@@ -547,16 +574,16 @@ describe('computeArcsFromPileupData', () => {
       drawInter: false,
       drawLongRange: true,
     }
-    // Same strand (+/+) → DEL/normal (not an inversion junction)
+    // Same strand (+/+) → default unpaired orientation slot 0
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '+')]]), regions, opts)
         .arcs[0]!.colorType,
     ).toBe(0)
-    // Opposite strand (+/-) → INV (fwd→rev breakpoint)
+    // Opposite strand (+/-) → unpaired FR slot 4 (fwd→rev breakpoint)
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '-')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(2)
+    ).toBe(4)
   })
 
   test('samplot in-view split read (primary + supplementary entries) is dashed at the gap span', () => {
@@ -595,10 +622,10 @@ describe('computeArcsFromPileupData', () => {
     expect(inv[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
     // Y is the gap-span radius (|3001-1500|/2 ≈ 750), not collapsed to 0
     expect(inv[0]!.yBp).toBeGreaterThan(500)
-    // opposite strands → INV
-    expect(inv[0]!.colorType).toBe(2)
+    // opposite strands → unpaired FR slot 4 (arc coloring)
+    expect(inv[0]!.colorType).toBe(4)
 
-    // same strands → DEL/normal, still dashed split
+    // same strands → default slot 0, still dashed split
     const del = computeArcsFromPileupData(
       new Map([[0, mkInViewSplit(1, 1)]]),
       regions,

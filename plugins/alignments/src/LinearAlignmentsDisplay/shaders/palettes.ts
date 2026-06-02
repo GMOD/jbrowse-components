@@ -24,19 +24,6 @@ export const arcColorPalette: RGBColor[] = [
   rgb(fillColor.color_longread_rev_fwd),
 ]
 
-// Samplot-style palette: indices 0..3 are DEL, DUP, INV, BND; remaining slots
-// reuse insertSize fallbacks so any out-of-range colorType still renders.
-export const samplotArcColorPalette: RGBColor[] = [
-  rgb(fillColor.color_samplot_del),
-  rgb(fillColor.color_samplot_dup),
-  rgb(fillColor.color_samplot_inv),
-  rgb(fillColor.color_samplot_bnd),
-  rgb(fillColor.color_pair_ll),
-  rgb(fillColor.color_pair_rr),
-  rgb(fillColor.color_pair_rl),
-  rgb(fillColor.color_longread_rev_fwd),
-]
-
 export const arcLineColorPalette: RGBColor[] = [
   rgb(fillColor.color_interchrom),
   rgb(fillColor.color_longinsert),
@@ -55,7 +42,3 @@ export const linkedReadColorPalette: RGBColor[] = [
   rgb(fillColor.color_pair_rr), // 6 split inversion (different-strand, matches paired RR)
   rgb(fillColor.color_pair_lr), // 7 fallback
 ]
-
-export function getArcPalette(samplot: boolean): RGBColor[] {
-  return samplot ? samplotArcColorPalette : arcColorPalette
-}

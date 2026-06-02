@@ -52,8 +52,9 @@ interface RegionInfo {
 
 interface ArcSettings {
   colorByType: ArcColorByType
-  // samplot mode: flat lines at Y=|tlen| with DEL/DUP/INV/BND coloring,
-  // and concordant FR pairs filtered out so only discordant pairs remain.
+  // samplot (read cloud) mode: flat lines at Y=|tlen|, concordant FR pairs
+  // filtered out so only discordant pairs remain. Coloring follows colorByType
+  // (same palette as arcs), not a separate DEL/DUP/INV scheme.
   samplot?: boolean
   drawInter: boolean
   drawLongRange: boolean
@@ -94,32 +95,6 @@ function isConcordantFRPair(
   return abs >= stats.lower && abs <= stats.upper
 }
 
-// Samplot palette: 0=DEL/normal (black), 1=DUP (red), 2=INV (blue). Matches
-// samplotArcColorPalette order. Classification follows samplot.py's
-// event_by_strand table: FR→normal/DEL, RF→DUP, FF/RR→INV. Interchrom pairs
-// never reach here — they `continue` at the arc loop's p1Ref !== p2Ref guard.
-function getSamplotColorIndex(
-  pairOrientationNum: number,
-  p1Strand: number,
-  p2Strand: number,
-) {
-  if (pairOrientationNum === 2) {
-    return 1
-  }
-  if (pairOrientationNum === 3 || pairOrientationNum === 4) {
-    return 2
-  }
-  if (pairOrientationNum === 1) {
-    return 0
-  }
-  // Strand-only fallback for split reads / SA-tag arcs (no pair orientation).
-  // Opposite strand (fwd→rev or rev→fwd) = inversion junction; same = DEL.
-  if (p1Strand !== 0 && p2Strand !== 0 && p1Strand !== p2Strand) {
-    return 2
-  }
-  return 0
-}
-
 // Color-slot indices into the arc palette. Kept as named constants so the
 // classifier reads as a story rather than as magic numbers.
 const COLOR_DEFAULT = 0
@@ -139,7 +114,6 @@ function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
 
 function getArcColorType(args: {
   colorByType: ArcColorByType
-  samplot: boolean
   hasPaired: boolean
   longRange: boolean
   drawArcInsteadOfBezier: boolean
@@ -153,7 +127,6 @@ function getArcColorType(args: {
 }) {
   const {
     colorByType,
-    samplot,
     hasPaired,
     longRange,
     drawArcInsteadOfBezier,
@@ -166,12 +139,9 @@ function getArcColorType(args: {
     stats,
   } = args
 
-  // Two overrides apply regardless of scheme:
-  //   samplot uses its own DEL/DUP/INV palette
-  //   long-range arcs (drawn as semicircles) always paint as long-insert
-  if (samplot) {
-    return getSamplotColorIndex(pairOrientationNum ?? 0, p1Strand, p2Strand)
-  }
+  // Long-range arcs (drawn as semicircles) always paint as long-insert.
+  // Read cloud (samplot) shares this classifier so its flat lines color the
+  // same as arcs — red/green/teal/navy by insert size + orientation.
   if (longRange && drawArcInsteadOfBezier) {
     return COLOR_LONG_INSERT
   }
@@ -571,7 +541,6 @@ export function computeArcsFromPileupData(
 
     const colorType = getArcColorType({
       colorByType,
-      samplot,
       hasPaired,
       longRange,
       drawArcInsteadOfBezier,

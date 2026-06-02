@@ -71,7 +71,9 @@ function CascadingMenuButton({
           transformOrigin={transformOrigin}
           menuItems={menuItems}
           closeAfterItemClick={closeAfterItemClick}
-          onMenuItemClick={callback => callback()}
+          onMenuItemClick={callback => {
+            callback()
+          }}
         />
       ) : null}
     </>

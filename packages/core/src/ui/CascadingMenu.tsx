@@ -61,8 +61,12 @@ function CascadingSubmenu({
       <MenuItem
         ref={setAnchorEl}
         data-testid={makeTestId('submenu', title)}
-        onMouseOver={() => onOpen()}
-        onClick={() => onOpen()}
+        onMouseOver={() => {
+          onOpen()
+        }}
+        onClick={() => {
+          onOpen()
+        }}
         onKeyDown={e => {
           if (e.key === 'ArrowRight') {
             onOpen()
@@ -118,7 +122,9 @@ function CascadingMenuList({
   onNavigateBack?: () => void
 }) {
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
-  const closeSubmenu = () => setOpenSubmenuIdx(undefined)
+  const closeSubmenu = () => {
+    setOpenSubmenuIdx(undefined)
+  }
 
   const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
   const hasCheckboxOrRadioWithHelp = menuItems.some(
@@ -145,8 +151,12 @@ function CascadingMenuList({
               onCloseRoot={onCloseRoot}
               onNavigateBack={onNavigateBack}
               isOpen={openSubmenuIdx === idx}
-              onOpen={() => setOpenSubmenuIdx(idx)}
-              onClose={() => closeSubmenu()}
+              onOpen={() => {
+                setOpenSubmenuIdx(idx)
+              }}
+              onClose={() => {
+                closeSubmenu()
+              }}
             />
           )
         }
@@ -173,7 +183,9 @@ function CascadingMenuList({
               }
               onMenuItemClick(item.onClick)
             }}
-            onMouseOver={() => closeSubmenu()}
+            onMouseOver={() => {
+              closeSubmenu()
+            }}
             onKeyDown={e => {
               if (e.key === 'ArrowLeft') {
                 e.stopPropagation()

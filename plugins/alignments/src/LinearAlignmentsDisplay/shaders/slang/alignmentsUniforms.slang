@@ -142,22 +142,23 @@ public float flipX(float x, Uniforms u) {
   return lerp(x, -x, u.reversed);
 }
 
-// Returns (yTopClip, yBotClip) for a pileup row index.
-public float2 pileupY(float row, Uniforms u) {
-  float rowH = u.featHeight + u.featSpacing;
-  float yTop = row * rowH - u.rangeY0;
-  float yBot = yTop + u.featHeight;
-  float px2clip = 2.0 / u.canvasH;
-  float topClip = 1.0 - (u.covOffset / u.canvasH) * 2.0;
-  return float2(topClip - yTop * px2clip, topClip - yBot * px2clip);
+// Screen-pixel Y of a pileup row's top edge. The single source for row
+// placement: pileupY (the quad's clip-space extent) and pileupRowCenterPx (the
+// linked-read connecting lines) both derive from it, so they can't drift.
+public float pileupRowTopPx(float row, Uniforms u) {
+  return u.covOffset + row * (u.featHeight + u.featSpacing) - u.rangeY0;
 }
 
-// Screen-pixel Y of a pileup row's vertical center. Algebraically the
-// midpoint of pileupY() — kept as one helper so the linked-read connecting
-// lines and the pileup quads can't drift.
+// Returns (yTopClip, yBotClip) for a pileup row index.
+public float2 pileupY(float row, Uniforms u) {
+  float yTopPx = pileupRowTopPx(row, u);
+  float px2clip = 2.0 / u.canvasH;
+  return float2(1.0 - yTopPx * px2clip, 1.0 - (yTopPx + u.featHeight) * px2clip);
+}
+
+// Screen-pixel Y of a pileup row's vertical center.
 public float pileupRowCenterPx(float row, Uniforms u) {
-  float rowH = u.featHeight + u.featSpacing;
-  return u.covOffset + row * rowH + u.featHeight * 0.5 - u.rangeY0;
+  return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip

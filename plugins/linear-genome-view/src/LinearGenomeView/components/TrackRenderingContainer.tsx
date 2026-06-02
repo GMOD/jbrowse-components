@@ -64,6 +64,10 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
       className={classes.trackRenderingContainer}
       style={{
         height: minimized ? MINIMIZED_TRACK_HEIGHT : height,
+        // only contain vertical scroll-chaining when scrollZoom captures the
+        // vertical wheel for zooming; otherwise vertical wheel over a track
+        // must still scroll the page normally
+        overscrollBehaviorY: model.scrollZoom ? 'contain' : undefined,
       }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
       data-testid={`trackRenderingContainer-${model.id}-${trackId}`}

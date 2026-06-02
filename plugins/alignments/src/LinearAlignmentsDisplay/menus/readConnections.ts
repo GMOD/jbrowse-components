@@ -5,7 +5,7 @@ import { checkboxItem, radioModeMenuItem } from './menuHelpers.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-const VIEW_AS_PAIRS_OPTIONS: { value: ReadConnectionsMode; label: string }[] = [
+const PAIR_OVERLAY_OPTIONS: { value: ReadConnectionsMode; label: string }[] = [
   { value: 'off', label: 'Off' },
   { value: 'arc', label: 'Arcs' },
   { value: 'samplot', label: 'Read cloud' },
@@ -25,15 +25,15 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
     type: 'subMenu' as const,
     subMenu: [
       checkboxItem(
-        'Link supplementary alignments',
+        'View as pairs / link supplementary alignments',
         model.linkedReads !== 'off',
         () => {
           model.setLinkedReads(model.linkedReads === 'off' ? 'normal' : 'off')
         },
       ),
       radioModeMenuItem(
-        'View as pairs',
-        VIEW_AS_PAIRS_OPTIONS,
+        'Show pair overlay',
+        PAIR_OVERLAY_OPTIONS,
         model.readConnections,
         mode => {
           model.setReadConnections(mode)

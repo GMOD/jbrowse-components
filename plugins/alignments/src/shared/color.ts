@@ -28,9 +28,4 @@ export const fillColor = {
   color_longread_inv: '#3a3a9d',
   // Supplementary/split alignment color (light orange)
   color_supplementary: '#f0b878',
-  // Samplot-style SV palette (FR→DEL-normal, RF→DUP, FF/RR→INV, interchrom→BND)
-  color_samplot_del: 'black',
-  color_samplot_dup: 'red',
-  color_samplot_inv: 'blue',
-  color_samplot_bnd: 'purple',
 }

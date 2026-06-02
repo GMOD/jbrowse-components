@@ -36,9 +36,9 @@ export const ALIGNMENTS_FUDGE_FACTOR = 0.8
 export type LinkedReadsMode = 'off' | 'normal' | 'bezier'
 
 // How read connections (mate pairs + split/chimeric reads) are rendered.
-// Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs
-// colored by arcColorByType; 'samplot' draws flat lines at Y=|tlen| colored
-// DEL/DUP/INV/BND, discordant pairs only.
+// Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs;
+// 'samplot' (read cloud) draws flat lines at Y=|tlen|, discordant pairs only.
+// Both color by arcColorByType (red/green/teal/navy by insert size + orientation).
 export type ReadConnectionsMode = 'off' | 'arc' | 'samplot'
 
 export type InsertionType = 'large' | 'long' | 'small'

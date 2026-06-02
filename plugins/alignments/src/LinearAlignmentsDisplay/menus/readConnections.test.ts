@@ -17,14 +17,16 @@ function makeModel() {
 }
 
 describe('read connections menu', () => {
-  test('"Link supplementary alignments" toggles linkedReads on/off', () => {
+  test('"View as pairs / link supplementary alignments" toggles linkedReads on/off', () => {
     const model = makeModel()
     const linkItem = () => {
       const item = getReadConnectionsMenuItem(model).subMenu.find(
-        i => 'label' in i && i.label === 'Link supplementary alignments',
+        i =>
+          'label' in i &&
+          i.label === 'View as pairs / link supplementary alignments',
       )
       if (!item || !('onClick' in item)) {
-        throw new Error('no Link supplementary alignments item')
+        throw new Error('no link supplementary alignments item')
       }
       return item
     }
@@ -34,28 +36,28 @@ describe('read connections menu', () => {
     expect(model.linkedReads).toBe('off')
   })
 
-  function getViewAsPairsSubMenu(model: ReturnType<typeof makeModel>) {
+  function getPairOverlaySubMenu(model: ReturnType<typeof makeModel>) {
     const item = getReadConnectionsMenuItem(model).subMenu.find(
-      i => 'label' in i && i.label === 'View as pairs',
+      i => 'label' in i && i.label === 'Show pair overlay',
     )
     if (!item || !('subMenu' in item)) {
-      throw new Error('no View as pairs submenu')
+      throw new Error('no Show pair overlay submenu')
     }
     return item.subMenu
   }
 
-  test('"View as pairs" → "Arcs" enables arc mode', () => {
+  test('"Show pair overlay" → "Arcs" enables arc mode', () => {
     const model = makeModel()
-    const arcs = getViewAsPairsSubMenu(model).find(
+    const arcs = getPairOverlaySubMenu(model).find(
       i => 'label' in i && i.label === 'Arcs',
     )
     arcs!.onClick()
     expect(model.readConnections).toBe('arc')
   })
 
-  test('"View as pairs" → "Read cloud" enables samplot mode', () => {
+  test('"Show pair overlay" → "Read cloud" enables samplot mode', () => {
     const model = makeModel()
-    const cloud = getViewAsPairsSubMenu(model).find(
+    const cloud = getPairOverlaySubMenu(model).find(
       i => 'label' in i && i.label === 'Read cloud',
     )
     cloud!.onClick()

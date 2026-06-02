@@ -42,27 +42,15 @@ const insertSizeAndOrientationLegendItems: LegendItem[] = [
   supplementaryItem,
 ]
 
-const samplotLegendItems: LegendItem[] = [
-  { color: fillColor.color_samplot_del, label: 'Deletion / normal (FR)' },
-  { color: fillColor.color_samplot_dup, label: 'Duplication (RF)' },
-  { color: fillColor.color_samplot_inv, label: 'Inversion (FF / RR)' },
-  { color: fillColor.color_interchrom, label: 'Interchromosomal (BND)' },
-]
-
 /**
  * Get legend items for read cloud/arcs display based on colorBy setting.
- * Used by both LinearReadCloudDisplay and LinearReadArcsDisplay. When
- * `samplot` is true the samplot DEL/DUP/INV/BND legend wins over the
- * pileup color scheme — samplot mode dominates the arc band display.
+ * Used by both LinearReadCloudDisplay and LinearReadArcsDisplay. Read cloud
+ * (samplot) and arcs share this legend since both color by the same scheme.
  */
 export function getReadDisplayLegendItems(
   colorBy: ColorBy | undefined,
   visibleModifications?: ReadonlyMap<string, ModificationTypeWithColor>,
-  samplot = false,
 ): LegendItem[] {
-  if (samplot) {
-    return samplotLegendItems
-  }
   const colorType = colorBy?.type
 
   if (colorType === 'modifications' && visibleModifications) {

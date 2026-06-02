@@ -80,10 +80,7 @@ export function clusterTree<T extends ClusterNodeData>(
 // changing the subtree filter re-runs only the traversal, not the parser.
 export function buildTree(newick: string): HierarchyNode<ClusterNodeData> {
   const data = parseNewick(newick)
-  const root = hierarchy<ClusterNodeData>(
-    data,
-    d => d.children as ClusterNodeData[] | undefined,
-  )
+  const root = hierarchy<ClusterNodeData>(data, d => d.children)
   sum(root, d => (d.children ? 0 : 1))
   return root
 }

@@ -649,11 +649,7 @@ export default function stateModelFactory(
          * #getter
          */
         get legendItems() {
-          return getReadDisplayLegendItems(
-            this.colorBy,
-            undefined,
-            self.readConnections === 'samplot',
-          )
+          return getReadDisplayLegendItems(this.colorBy, undefined)
         },
 
         /**

@@ -40,7 +40,9 @@ const frac = 0.75
 
 const subscribeToResize = (cb: () => void) => {
   window.addEventListener('resize', cb)
-  return () => window.removeEventListener('resize', cb)
+  return () => {
+    window.removeEventListener('resize', cb)
+  }
 }
 
 const FacetedSelector = observer(function FacetedSelector({
