@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import type { RefObject } from 'react'
+import type { Ref } from 'react'
 
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
@@ -40,11 +40,11 @@ interface Props {
   setValue: (value: string) => void
   variant: Variant
   classes?: Partial<Record<EditableTypographyClassKey, string>>
-  ref?: RefObject<HTMLDivElement | null>
+  ref?: Ref<HTMLDivElement>
 }
 
 function EditableTypography(props: Props) {
-  const { value, setValue, variant, ref, ...other } = props
+  const { value, setValue, variant, ref, classes: _classes, ...other } = props
   const [ref2, { width }] = useMeasure()
   const [editedValue, setEditedValue] = useState<string>()
   const inputRef = useRef<HTMLInputElement | null>(null)
