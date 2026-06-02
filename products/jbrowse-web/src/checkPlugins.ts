@@ -46,16 +46,6 @@ function isPluginInStore(
   return false
 }
 
-export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
-  if (pluginsToCheck.length === 0) {
-    return true
-  }
-  const storePlugins = await fetchPlugins()
-  return pluginsToCheck.every(
-    p => isTrustedUrl(pluginUrl(p)) || isPluginInStore(p, storePlugins),
-  )
-}
-
 export function checkPluginsAgainstStore(
   pluginsToCheck: PluginDefinition[],
   storePlugins: { plugins: PluginDefinition[] },
@@ -66,4 +56,11 @@ export function checkPluginsAgainstStore(
   return pluginsToCheck.every(
     p => isTrustedUrl(pluginUrl(p)) || isPluginInStore(p, storePlugins),
   )
+}
+
+export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
+  if (pluginsToCheck.length === 0) {
+    return true
+  }
+  return checkPluginsAgainstStore(pluginsToCheck, await fetchPlugins())
 }

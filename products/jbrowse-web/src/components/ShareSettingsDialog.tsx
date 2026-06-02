@@ -13,8 +13,7 @@ import {
 } from '@mui/material'
 
 import InfoDialog from './ShareInfoDialog.tsx'
-
-const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
+import { SHARE_URL_LOCALSTORAGE_KEY } from './buildShareUrl.ts'
 
 export default function SettingsDialog(props: {
   open: boolean

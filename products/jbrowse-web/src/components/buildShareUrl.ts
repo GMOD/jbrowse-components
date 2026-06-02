@@ -1,6 +1,8 @@
 import { shareSessionToDynamo } from '../sessionSharing.ts'
 import { toUrlSafeB64 } from '../util.ts'
 
+export const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
+
 export interface ShareUrlResult {
   url: string
   sessionParam: string

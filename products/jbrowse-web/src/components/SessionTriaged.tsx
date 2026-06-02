@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react'
 
-import ConfigWarningDialog from './ConfigWarningDialog.tsx'
-import SessionWarningDialog from './SessionWarningDialog.tsx'
+import PluginWarningDialog from './PluginWarningDialog.tsx'
 import factoryReset from '../factoryReset.ts'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'
@@ -15,7 +14,8 @@ const SessionTriaged = observer(function SessionTriaged({
   sessionTriaged: SessionTriagedInfo
 }) {
   return sessionTriaged.origin === 'session' ? (
-    <SessionWarningDialog
+    <PluginWarningDialog
+      kind="session"
       onConfirm={async () => {
         await loader.loadDecodedSession(sessionTriaged.snap, true)
         loader.setSessionTriaged(undefined)
@@ -27,7 +27,8 @@ const SessionTriaged = observer(function SessionTriaged({
       reason={sessionTriaged.reason}
     />
   ) : (
-    <ConfigWarningDialog
+    <PluginWarningDialog
+      kind="config"
       onConfirm={async () => {
         await loader.applyTriagedConfig(sessionTriaged.snap)
         loader.setSessionTriaged(undefined)

@@ -377,7 +377,7 @@ const SessionLoader = types
       } else {
         const { config, configUri } = await fetchRemoteConfig(configPath)
         const configPlugins = config.plugins ?? []
-        const isCrossOrigin = configUri.hostname !== window.location.hostname
+        const isCrossOrigin = configUri.origin !== window.location.origin
         if (isCrossOrigin && !(await checkPlugins(configPlugins))) {
           self.setSessionTriaged({
             snap: config,

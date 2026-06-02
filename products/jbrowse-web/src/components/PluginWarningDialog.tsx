@@ -6,22 +6,41 @@ import { Alert, Button, DialogActions, DialogContent } from '@mui/material'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
-export default function ConfigWarningDialog({
+const text = {
+  config: {
+    intro:
+      'This link contains a cross origin config that has the following unknown plugins:',
+    trust: 'Please ensure you trust the source of this link.',
+    details:
+      'Config files can load arbitrary javascript files via plugins. For security purposes, we display this message when a cross-origin config is detected to be loading plugins that are not in our plugin store',
+  },
+  session: {
+    intro:
+      'This link contains a session that has the following unknown plugins:',
+    trust: 'Please ensure you trust the source of this session.',
+    details:
+      'Sessions can load arbitrary javascript files via session plugins. For security purposes, we display this message when sessions contain plugins that are not from our plugin store',
+  },
+}
+
+export default function PluginWarningDialog({
+  kind,
   onConfirm,
   onCancel,
   reason,
 }: {
+  kind: 'config' | 'session'
   onConfirm: () => void
   onCancel: () => void
   reason: PluginDefinition[]
 }) {
   const [show, setShow] = useState(false)
+  const { intro, trust, details } = text[kind]
   return (
-    <Dialog open maxWidth="xl" title="Warning" onClose={onCancel}>
+    <Dialog open maxWidth="xl" title="Warning" onClose={() => { onCancel() }}>
       <DialogContent>
         <Alert severity="warning" style={{ width: 800 }}>
-          This link contains a cross origin config that has the following
-          unknown plugins:
+          {intro}
           <ul>
             {reason.map(r => (
               <li key={pluginUrl(r)}>
@@ -29,24 +48,17 @@ export default function ConfigWarningDialog({
               </li>
             ))}
           </ul>
-          Please ensure you trust the source of this link.{' '}
+          {trust}{' '}
           <Button
             type="button"
             size="small"
             onClick={() => {
-              setShow(!show)
+              setShow(s => !s)
             }}
           >
             {show ? 'Hide details' : 'Why am I seeing this?'}
           </Button>
-          {show ? (
-            <div>
-              Config files can load arbitrary javascript files via plugins. For
-              security purposes, we display this message when a cross-origin
-              config is detected to be loading plugins that are not in our
-              plugin store
-            </div>
-          ) : null}
+          {show ? <div>{details}</div> : null}
         </Alert>
       </DialogContent>
       <DialogActions>

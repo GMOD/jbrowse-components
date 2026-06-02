@@ -16,12 +16,16 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
 }
 
 export function readSessionFromStorage(query: string) {
-  const str = sessionStorage.getItem('current')
-  if (str) {
-    const snap = JSON.parse(str).session ?? {}
-    if (query === snap.id) {
-      return snap as Snap
+  try {
+    const str = sessionStorage.getItem('current')
+    if (str) {
+      const snap = JSON.parse(str).session ?? {}
+      if (query === snap.id) {
+        return snap as Snap
+      }
     }
+  } catch (e) {
+    console.error(e)
   }
   return undefined
 }

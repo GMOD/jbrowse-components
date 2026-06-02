@@ -21,12 +21,14 @@ import {
 import { observer } from 'mobx-react'
 
 import ShareDialogLinkField from './ShareDialogLinkField.tsx'
-import { buildLongShareUrl, buildShortShareUrl } from './buildShareUrl.ts'
+import {
+  SHARE_URL_LOCALSTORAGE_KEY,
+  buildLongShareUrl,
+  buildShortShareUrl,
+} from './buildShareUrl.ts'
 import { setQueryParams } from '../useQueryParam.ts'
 
 const SettingsDialog = lazy(() => import('./ShareSettingsDialog.tsx'))
-
-const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
 
 const ShareDialog = observer(function ShareDialog({
   handleClose,
@@ -38,8 +40,9 @@ const ShareDialog = observer(function ShareDialog({
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
 
   const shareURL = session.shareURL
-  const currentSetting =
-    localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
+  const [currentSetting, setCurrentSetting] = useState(
+    () => localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) ?? 'short',
+  )
   // Capture snapshot once when dialog opens — we don't want to re-upload every
   // time the session mutates while the dialog is open
   const [snap] = useState(() => getSnapshot(session))
@@ -86,7 +89,9 @@ const ShareDialog = observer(function ShareDialog({
               }}
             />
           ) : loading ? (
-            <Typography>Generating short URL...</Typography>
+            <Typography>
+              Generating {currentSetting === 'short' ? 'short' : 'long'} URL...
+            </Typography>
           ) : (
             <ShareDialogLinkField url={url} />
           )}
@@ -112,8 +117,9 @@ const ShareDialog = observer(function ShareDialog({
             disabled={disabled}
             onClick={async () => {
               const { default: copy } = await import('copy-to-clipboard')
-              await copy(url)
-              session.notify('Copied to clipboard', 'success')
+              if (await copy(url)) {
+                session.notify('Copied to clipboard', 'success')
+              }
             }}
           >
             Copy to Clipboard
@@ -129,8 +135,11 @@ const ShareDialog = observer(function ShareDialog({
         <SettingsDialog
           open={settingsDialogOpen}
           currentSetting={currentSetting}
-          onClose={() => {
+          onClose={setting => {
             setSettingsDialogOpen(false)
+            if (setting) {
+              setCurrentSetting(setting)
+            }
           }}
         />
       </Suspense>
