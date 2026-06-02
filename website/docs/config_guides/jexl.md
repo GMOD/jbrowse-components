@@ -185,7 +185,7 @@ use the custom `jexl` function in your config callbacks as follows:
         {
           "type": "LinearBasicDisplay",
           "displayId": "mytrack-LinearBasicDisplay",
-          "color1": "jexl:colorFeature(feature)"
+          "color": "jexl:colorFeature(feature)"
         }
       ]
     }

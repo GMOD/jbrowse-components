@@ -1,7 +1,9 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { liftLegacyRendererConfig } from './migrateTrackConfig.ts'
 import { ConfigurationSchema } from '../../configuration/index.ts'
 
+import type { LegacyDisplaySnapshot } from './migrateTrackConfig.ts'
 import type PluginManager from '../../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -9,12 +11,7 @@ interface TrackConfigSnapshot {
   trackId: string
   name: string
   type: string
-  displays?: {
-    type: string
-    displayId?: string
-    renderer?: { type: string; height?: unknown; [key: string]: unknown }
-    [key: string]: unknown
-  }[]
+  displays?: LegacyDisplaySnapshot[]
 }
 
 /**
@@ -222,34 +219,9 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
               return canonical ? { ...d, type: canonical } : d
             })
             .filter(d => knownDisplayTypes.has(d.type))
-            .map(d => {
-              const { renderer, ...rest } = d
-              if (renderer?.type && knownRendererTypes.has(renderer.type)) {
-                return {
-                  ...d,
-                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
-                }
-              } else if (renderer) {
-                const {
-                  type: _rendererType,
-                  height: rendererHeight,
-                  ...rendererProps
-                } = renderer
-                return {
-                  ...rendererProps,
-                  ...(rendererHeight !== undefined
-                    ? { featureHeight: rendererHeight }
-                    : undefined),
-                  ...rest,
-                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
-                }
-              } else {
-                return {
-                  ...rest,
-                  displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
-                }
-              }
-            }),
+            .map(d =>
+              liftLegacyRendererConfig(d, snap.trackId, knownRendererTypes),
+            ),
         }
       },
       /**

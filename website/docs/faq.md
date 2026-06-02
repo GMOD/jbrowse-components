@@ -211,19 +211,61 @@ You can also use remote URLs:
 
 You can also manually edit your config file or use the GUI.
 
-### How do I customize the color of the features displayed on my track
+### How do I change the color of a track?
 
-We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration
-callbacks, including feature coloration.
+This is one of the most common questions, and there are a few ways depending on
+how much control you want.
 
-An example of a Jexl configuration callback might look like this:
+**In the app (easiest):** open the track menu and choose **Color** to pick a
+color. This works for feature tracks (genes/BED/GFF), wiggle tracks, and
+alignments (which offer color-by schemes). The choice is saved with your
+session.
+
+**In the config:** set `color` on the display. It takes a plain CSS color, and
+it's the same `color` whether the track is a feature track or a wiggle track.
+Note color is a _display-level_ setting, so it goes inside the `displays` array,
+not at the track top level:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "my_genes",
+  "name": "Genes",
+  "assemblyNames": ["hg19"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "genes.gff.gz" },
+  "displays": [
+    {
+      "type": "LinearBasicDisplay",
+      "color": "green"
+    }
+  ]
+}
+```
+
+With the CLI, supply that `displays` entry via `--config`:
+
+```bash
+jbrowse add-track genes.gff.gz --load copy --config '{"displays":[{"type":"LinearBasicDisplay","color":"green"}]}'
+```
+
+**In a URL:** set `color` in a track's `displaySnapshot` in the session spec —
+see [URL parameters](/docs/urlparams/#live-example-feature-track-color).
+
+### How do I color features by an attribute (color callback)?
+
+For per-feature coloring, set `color` to a
+[Jexl](https://github.com/TomFrost/Jexl) expression instead of a plain color.
+For example, color by strand:
 
 ```json
     "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
 ```
 
-See our [configuration callbacks guide](/docs/config_guides/jexl) for more
-information.
+The in-app **Color** menu picks a single solid color; to enter a jexl
+expression, edit the `color` slot in the track's settings (configuration
+editor), or set it in the config/URL as above. See our
+[configuration callbacks guide](/docs/config_guides/jexl) for the full jexl
+reference.
 
 ### My jexl is too complicated, how can I simplify it?
 
@@ -231,27 +273,6 @@ You can create a small plugin that adds a new function to the jexl language.
 
 See [here](/docs/config_guides/customizing_feature_colors/) for an example of
 making a color callback.
-
-#### Adding color callbacks in the GUI
-
-To add a color callback in the GUI, open the track's settings and set the color
-callback on the renderer/display. The callback is a
-[Jexl](https://github.com/TomFrost/Jexl) expression, e.g.
-`get(feature,'strand') == -1 ? 'red' : 'blue'`.
-
-#### Adding color callbacks via the command line
-
-The color callback (`color1`) is a display-level setting, so you supply a
-`displays` entry via `--config`. To add one to a track using the CLI, your
-`add-track` looks something like this:
-
-```bash
-jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"displayId": "somevariants-LinearVariantDisplay", "type": "LinearVariantDisplay", "color1": "jexl:get(feature, '\''strand'\'') == -1 ? '\''red'\'' : '\''blue'\''"}]}'
-```
-
-The `--config` option adds extra configuration — here, a color callback on the
-display. A `.vcf` file uses `LinearVariantDisplay`; a feature track (BED/GFF)
-uses `LinearBasicDisplay`.
 
 ### How do I get (more) categories to filter on in the faceted track selector?
 

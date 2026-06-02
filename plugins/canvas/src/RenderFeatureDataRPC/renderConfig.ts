@@ -1,9 +1,9 @@
 export { readConfigValue } from '@jbrowse/core/configuration'
 
-// Sentinel used as the config default for color2 (stroke) to mean "derive from
-// theme text colour". The runtime check in getStrokeColor compares against this
-// exact string. Using a named constant here makes both sides of the contract
-// explicit.
+// Sentinel used as the config default for connectorColor (stroke) to mean
+// "derive from theme text colour". The runtime check in getStrokeColor compares
+// against this exact string. Using a named constant here makes both sides of
+// the contract explicit.
 export const THEME_DERIVED_COLOR = '#f0f'
 
 export interface DisplayConfig {
@@ -22,9 +22,9 @@ export interface DisplayConfig {
   impliedUTRs: boolean
   displayDirectionalChevrons: boolean
   featureHeight: number
-  color1: string
-  color2: string
-  color3: string
+  color: string
+  connectorColor: string
+  utrColor: string
   outline: string
   labels: {
     name: string

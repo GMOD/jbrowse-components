@@ -13,9 +13,9 @@ export function mockDisplayConfig(
     subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
     impliedUTRs: false,
     displayDirectionalChevrons: true,
-    color1: 'goldenrod',
-    color2: '#f0f',
-    color3: '#357089',
+    color: 'goldenrod',
+    connectorColor: '#f0f',
+    utrColor: '#357089',
     outline: '',
     labels: {
       name: '',

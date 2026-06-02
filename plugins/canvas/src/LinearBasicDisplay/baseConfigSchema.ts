@@ -2,7 +2,9 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
-import { SHOW_LABELS_MODES, legacyShowLabelsToMode } from './showLabelsMode.ts'
+import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
+import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
+import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -73,28 +75,32 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      color1: {
+      // Main feature fill. Legacy configs used `color1` (auto-migrated).
+      color: {
         type: 'color',
-        description: 'the main color of each feature',
+        description:
+          'the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)',
         defaultValue: 'goldenrod',
         contextVariable: ['feature'],
       },
       /**
        * #slot
        */
-      color2: {
+      // Connecting/intron lines between feature segments. Legacy: `color2`.
+      connectorColor: {
         type: 'color',
         description:
-          'the secondary color of each feature, used for connecting lines',
+          'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
         defaultValue: THEME_DERIVED_COLOR,
         contextVariable: ['feature'],
       },
       /**
        * #slot
        */
-      color3: {
+      // Fill color for UTRs on gene/transcript glyphs. Legacy: `color3`.
+      utrColor: {
         type: 'color',
-        description: 'the tertiary color of each feature, used for UTRs',
+        description: 'fill color for UTRs on gene/transcript glyphs',
         defaultValue: '#357089',
         contextVariable: ['feature'],
       },
@@ -135,11 +141,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       geneGlyphMode: {
         type: 'stringEnum',
-        model: types.enumeration('geneGlyphMode', [
-          'auto',
-          'all',
-          'longestCoding',
-        ]),
+        model: types.enumeration('geneGlyphMode', [...GENE_GLYPH_MODES]),
         description:
           'Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript',
         defaultValue: 'auto',
@@ -220,27 +222,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      // Lift renderer sub-config properties to display level for old configs
-      // that used renderer: { type: "SvgFeatureRenderer"|"CanvasFeatureRenderer",
-      // color1: ..., labels: ... }. The renderer concept was removed in the GPU
-      // rewrite; these properties now live directly on the display config.
-      preProcessSnapshot: (snap: Record<string, unknown>) => {
-        const lifted =
-          snap.renderer && typeof snap.renderer === 'object'
-            ? (() => {
-                const { type: _type, ...rendererProps } =
-                  snap.renderer as Record<string, unknown>
-                const { renderer: _renderer, ...rest } = snap
-                return { ...rendererProps, ...rest }
-              })()
-            : snap
-        // showLabels flipped from boolean to enum (auto/on/off). Old configs
-        // (including the boolean lifted off a renderer above) need converting
-        // so they pass schema validation.
-        return typeof lifted.showLabels === 'boolean'
-          ? { ...lifted, showLabels: legacyShowLabelsToMode(lifted.showLabels) }
-          : lifted
-      },
+      // Old-config back-compat (renderer sub-config lift + legacy enum
+      // normalization) lives in migrateBasicSnapshot.ts.
+      preProcessSnapshot: snap => migrateBasicConfigSnapshot(snap),
     },
   )
 }

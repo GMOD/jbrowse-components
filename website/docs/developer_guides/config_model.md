@@ -51,9 +51,9 @@ export default function baseConfigSchemaFactory(pluginManager) {
   return ConfigurationSchema(
     'LinearCanvasBaseDisplay',
     {
-      color1: {
+      color: {
         type: 'color',
-        description: 'the main color of each feature',
+        description: 'the main fill color of each feature',
         defaultValue: 'goldenrod',
         contextVariable: ['feature'],
       },
@@ -152,7 +152,7 @@ callback for color, it might look like this:
     {
       "type": "LinearVariantDisplay",
       "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-      "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+      "color": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
     }
   ]
 }
@@ -168,7 +168,7 @@ call it in the same way in the configuration.
 :::info
 
 Custom jexl functions can be used as default slot values in your pluggable
-elements — any slot with a `contextVariable` (such as the `color1` slot in the
+elements — any slot with a `contextVariable` (such as the `color` slot in the
 [example above](#example-config-with-multiple-slot-types)) can take a jexl
 callback as its default.
 

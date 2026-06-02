@@ -42,7 +42,7 @@ readConnectionsHeight, showSoftClipping
 
 **Volatiles:** featureIdUnderMouse, mouseoverExtraInformation,
 contextMenuFeature, contextMenuCoord, contextMenuCigarHit,
-contextMenuIndicatorHit, contextMenuRefName, rpcDataMap, currentRangeY,
+contextMenuIndicatorHit, contextMenuRefName, rpcDataMap, scrollTop,
 highlightedChainIds, selectedChainIds, colorTagMap, visibleModifications,
 simplexModifications, modificationsReady, overCigarItem, colorPalette
 
@@ -53,26 +53,25 @@ featureHeightSetting, featureSpacing, chainIdMap, mismatchAlpha, showLegend,
 sortedBy, coverageIsLog, coverageStats, coverageDomain, coverageTicks,
 legendItems, laidOutPileupMap, maxY, arcsComputed, arcsRpcDataMap,
 modificationThreshold, colorSchemeIndex, showModifications, showPerBaseQuality,
-totalPileupHeight, readIdIndexMap, readConnectionsLineWidth, scrollTop,
-hasSashimiArcs, coverageDisplayHeight, pileupViewportHeight,
-scalebarOverlapLeft, showOutlineSetting, visibleLabels, scrollableHeight,
-sortTag, renderState, arcsYDomainBp, insertSizeTicks, featureUnderMouse
+totalPileupHeight, readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs,
+coverageDisplayHeight, pileupViewportHeight, scalebarOverlapLeft,
+showOutlineSetting, visibleLabels, scrollableHeight, sortTag, renderState,
+arcsYDomainBp, insertSizeTicks, featureUnderMouse
 
 **Methods:** findFeatureInRpcData, searchFeatureByID, getFeatureInfoById,
 rpcProps, trackMenuItems, contextMenuItems
 
 **Actions:** clearMouseoverState, setError, setRegionTooLarge, setRpcData,
 clearDisplaySpecificData, setOverCigarItem, setColorPalette, setScrollTop,
-setCurrentRangeY, setHighlightedChainIds, clearHighlights, clearSelection,
-setSelectedChainIds, setColorScheme, updateColorTagMap, setFilterBy,
-setShowOutline, toggleSoftClipping, toggleMismatchAlpha, setSortedBy,
-setSortedByAtPosition, clearSortedBy, setScaleType, setAutoscale, setMinScore,
-setMaxScore, setFeatureHeight, setFeatureSpacing, setCompactness,
-setShowSashimiArcs, toggleSashimiArcs, setReadConnections,
-setReadConnectionsDown, setShowCoverage, setCoverageHeight,
-setReadConnectionsHeight, setSashimiArcsHeight, setReadConnectionsLineWidth,
-setDrawInter, setDrawLongRange, setColorByType, setShowMismatches,
-setShowLegend, setDrawSingletons, setDrawProperPairs,
+setHighlightedChainIds, clearHighlights, clearSelection, setSelectedChainIds,
+setColorScheme, updateColorTagMap, setFilterBy, setShowOutline,
+toggleSoftClipping, toggleMismatchAlpha, setSortedBy, setSortedByAtPosition,
+clearSortedBy, setScaleType, setAutoscale, setMinScore, setMaxScore,
+setFeatureHeight, setFeatureSpacing, setCompactness, setShowSashimiArcs,
+toggleSashimiArcs, setReadConnections, setReadConnectionsDown, setShowCoverage,
+setCoverageHeight, setReadConnectionsHeight, setSashimiArcsHeight,
+setReadConnectionsLineWidth, setDrawInter, setDrawLongRange, setColorByType,
+setShowMismatches, setShowLegend, setDrawSingletons, setDrawProperPairs,
 setShowInterbaseIndicators, setFlipStrandLongReadChains, setLinkedReads,
 updateVisibleModifications, setSimplexModifications, setModificationsReady,
 setFeatureIdUnderMouse, setMouseoverExtraInformation, setHoverState,

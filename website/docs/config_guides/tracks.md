@@ -98,7 +98,7 @@ entry targets a specific display type via its `displayId`.
 
 Displays are matched by their `type`. The `displayId` is optional — if you omit
 it, JBrowse fills in the convention `{trackId}-{displayType}`, for example
-`my_bam_track-LinearAlignmentsDisplay`. Settings like `color1`, `height`, and
+`my_bam_track-LinearAlignmentsDisplay`. Settings like `color`, `height`, and
 `labels` go directly on the display entry.
 
 ```json
@@ -116,7 +116,7 @@ it, JBrowse fills in the convention `{trackId}-{displayType}`, for example
       "type": "LinearBasicDisplay",
       "displayId": "repeats_hg19-LinearBasicDisplay",
       "height": 200,
-      "color1": "jexl:get(feature,'strand')==1?'blue':'red'"
+      "color": "jexl:get(feature,'strand')==1?'blue':'red'"
     }
   ]
 }

@@ -388,6 +388,20 @@ boolean
 ;[]
 ```
 
+#### getter: hTickPositions
+
+```js
+// type
+PositionedTick[]
+```
+
+#### getter: vTickPositions
+
+```js
+// type
+PositionedTick[]
+```
+
 #### getter: hasSomethingToShow
 
 ```js

@@ -65,7 +65,7 @@ the [VcfTabixAdapter config docs](/docs/config/vcftabixadapter) for all options.
 
 ## Coloring variants by type
 
-Use a jexl expression on the `color1` renderer slot to color variants by their
+Use a jexl expression on the display's `color` slot to color variants by their
 `SVTYPE` INFO field (or any other VCF field). The expression reads the INFO
 field via `get(feature,'INFO').SVTYPE` and maps it to a color:
 
@@ -83,7 +83,7 @@ field via `get(feature,'INFO').SVTYPE` and maps it to a color:
     {
       "type": "LinearVariantDisplay",
       "displayId": "my_sv_track-LinearVariantDisplay",
-      "color1": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[get(feature,'INFO').SVTYPE[0]] || 'gray'"
+      "color": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[get(feature,'INFO').SVTYPE[0]] || 'gray'"
     }
   ]
 }

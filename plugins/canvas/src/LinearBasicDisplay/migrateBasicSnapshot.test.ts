@@ -101,6 +101,76 @@ test('promotes track-prefixed settings into configOverrides', () => {
   })
 })
 
+// A URL `displaySnapshot` or session can set color on the state model (not the
+// config schema), so color/connectorColor/utrColor route into configOverrides.
+test('routes a state-model color into configOverrides', () => {
+  expect(migrateBasicSnapshot({ color: 'green' })).toEqual({
+    configOverrides: { color: 'green' },
+  })
+})
+
+test('routes connectorColor and utrColor into configOverrides', () => {
+  expect(
+    migrateBasicSnapshot({
+      color: 'green',
+      connectorColor: 'gray',
+      utrColor: 'lightblue',
+    }),
+  ).toEqual({
+    configOverrides: {
+      color: 'green',
+      connectorColor: 'gray',
+      utrColor: 'lightblue',
+    },
+  })
+})
+
+// Legacy color1/color2/color3 in a state-model snapshot map onto the new names.
+test('maps legacy color1/color2/color3 in a state-model snapshot', () => {
+  expect(
+    migrateBasicSnapshot({
+      color1: 'green',
+      color2: 'gray',
+      color3: 'lightblue',
+    }),
+  ).toEqual({
+    configOverrides: {
+      color: 'green',
+      connectorColor: 'gray',
+      utrColor: 'lightblue',
+    },
+  })
+})
+
+test('the new color name wins over legacy color1', () => {
+  expect(migrateBasicSnapshot({ color: 'green', color1: 'red' })).toEqual({
+    configOverrides: { color: 'green' },
+  })
+})
+
+// An old session's configOverrides map may still carry the legacy color keys;
+// rename them in place so reads via getOverride('color') resolve.
+test('renames legacy color keys inside existing configOverrides', () => {
+  expect(
+    migrateBasicSnapshot({
+      configOverrides: { color1: 'red', color3: 'pink' },
+    }),
+  ).toEqual({
+    configOverrides: { color: 'red', utrColor: 'pink' },
+  })
+})
+
+// geneGlyphMode's old 'longest' value was removed; it must become
+// 'longestCoding' or it fails enum validation on load.
+test('migrates legacy trackGeneGlyphMode "longest" to "longestCoding"', () => {
+  const result = migrateBasicSnapshot({
+    trackGeneGlyphMode: 'longest',
+  })
+  expect(result).toEqual({
+    configOverrides: { geneGlyphMode: 'longestCoding' },
+  })
+})
+
 // `false` and `0` are valid override values; the migration must distinguish
 // "explicitly set to falsy" from "absent". Pre-fix risk: a `!val` check would
 // drop these silently.

@@ -372,13 +372,16 @@ ObservableMap<number, PileupDataResult>
 rpcDataMap: observable.map<number, PileupDataResult>()
 ```
 
-#### volatile: currentRangeY
+#### volatile: scrollTop
+
+pileup vertical scroll offset in px. Also read by the BreakpointSplitView
+overlay to position its SVG curves.
 
 ```js
 // type signature
-[number, number]
+number
 // code
-currentRangeY: [0, 600] as [number, number]
+scrollTop: 0
 ```
 
 #### volatile: highlightedChainIds
@@ -714,17 +717,6 @@ Map<string, { displayedRegionIndex: number; idx: number; }>
 number
 ```
 
-#### getter: scrollTop
-
-Compatibility getter for BreakpointSplitView overlay which reads
-display.scrollTop to position SVG curves. The WebGL display manages Y scrolling
-via currentRangeY[0] rather than the inherited scrollTop.
-
-```js
-// type
-number
-```
-
 #### getter: hasSashimiArcs
 
 True when any loaded region has splice junctions to draw as sashimi arcs. Drives
@@ -788,7 +780,7 @@ string | undefined
 
 ```js
 // type
-{ rangeY: [number, number]; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 21 more ...; arcsYDomainBp: number | undefined; } | undefined
+{ scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 21 more ...; arcsYDomainBp: number | undefined; } | undefined
 ```
 
 #### getter: arcsYDomainBp
@@ -922,13 +914,6 @@ setColorPalette: (palette: ColorPalette | null) => void
 ```js
 // type signature
 setScrollTop: (scrollTop: number) => void
-```
-
-#### action: setCurrentRangeY
-
-```js
-// type signature
-setCurrentRangeY: (rangeY: [number, number]) => void
 ```
 
 #### action: setHighlightedChainIds

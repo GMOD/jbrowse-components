@@ -1,4 +1,60 @@
+import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
 import { legacyShowLabelsToMode } from './showLabelsMode.ts'
+
+// The cryptic color1/color2/color3 slots were renamed to the self-describing
+// color/connectorColor/utrColor. Map the legacy keys onto the new ones; the new
+// name wins if both are present. Used on both the config snapshot and inside an
+// old session's configOverrides map.
+function renameLegacyColorKeys(
+  obj: Record<string, unknown>,
+): Record<string, unknown> {
+  const { color1, color2, color3, ...rest } = obj
+  return {
+    ...rest,
+    ...(color1 !== undefined && rest.color === undefined
+      ? { color: color1 }
+      : undefined),
+    ...(color2 !== undefined && rest.connectorColor === undefined
+      ? { connectorColor: color2 }
+      : undefined),
+    ...(color3 !== undefined && rest.utrColor === undefined
+      ? { utrColor: color3 }
+      : undefined),
+  }
+}
+
+// Back-compat for the display *config* snapshot (vs migrateBasicSnapshot below,
+// which handles the display *state model* snapshot). Does three things:
+//   - lifts color/label/glyph settings out of the old `renderer` sub-config
+//     that the GPU rewrite removed
+//   - renames the legacy color1/color2/color3 slots to
+//     color/connectorColor/utrColor
+//   - normalizes legacy enum values that were renamed (boolean showLabels →
+//     auto/on/off, geneGlyphMode 'longest' → 'longestCoding') so they pass
+//     schema validation on load
+export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
+  const liftedRaw =
+    snap.renderer && typeof snap.renderer === 'object'
+      ? (() => {
+          const { type: _type, ...rendererProps } = snap.renderer as Record<
+            string,
+            unknown
+          >
+          const { renderer: _renderer, ...rest } = snap
+          return { ...rendererProps, ...rest }
+        })()
+      : snap
+  const lifted = renameLegacyColorKeys(liftedRaw)
+  return {
+    ...lifted,
+    ...(typeof lifted.showLabels === 'boolean'
+      ? { showLabels: legacyShowLabelsToMode(lifted.showLabels) }
+      : undefined),
+    ...(lifted.geneGlyphMode !== undefined
+      ? { geneGlyphMode: legacyGeneGlyphMode(lifted.geneGlyphMode) }
+      : undefined),
+  }
+}
 
 // Migrate legacy snapshot shapes: strip removed FeatureDensityMixin fields,
 // lift `height` to `heightPreConfig`, and promote the old per-property
@@ -22,10 +78,32 @@ export function migrateBasicSnapshot(
     trackGeneGlyphMode,
     trackDisplayMode,
     trackDisplayDirectionalChevrons,
+    // Color set via a state-model snapshot (e.g. a URL `displaySnapshot` or a
+    // session) lands here, not on the config schema, so route it into the
+    // override map. Accept both the new names and the legacy color1/2/3; new
+    // wins.
+    color,
+    color1,
+    color2,
+    color3,
+    connectorColor,
+    utrColor,
     ...rest
   } = snap
 
   const migrated: Record<string, unknown> = {}
+  const colorVal = color ?? color1
+  const connectorVal = connectorColor ?? color2
+  const utrVal = utrColor ?? color3
+  if (colorVal !== undefined) {
+    migrated.color = colorVal
+  }
+  if (connectorVal !== undefined) {
+    migrated.connectorColor = connectorVal
+  }
+  if (utrVal !== undefined) {
+    migrated.utrColor = utrVal
+  }
   if (trackShowLabels !== undefined) {
     migrated.showLabels = legacyShowLabelsToMode(trackShowLabels)
   }
@@ -36,7 +114,7 @@ export function migrateBasicSnapshot(
     migrated.subfeatureLabels = trackSubfeatureLabels
   }
   if (trackGeneGlyphMode !== undefined) {
-    migrated.geneGlyphMode = trackGeneGlyphMode
+    migrated.geneGlyphMode = legacyGeneGlyphMode(trackGeneGlyphMode)
   }
   if (trackDisplayMode !== undefined) {
     migrated.displayMode = trackDisplayMode
@@ -50,16 +128,19 @@ export function migrateBasicSnapshot(
       ? (rest.configOverrides as Record<string, unknown>)
       : undefined
 
-  // showLabels schema flipped from boolean to enum (auto/on/off). Any
-  // pre-existing override with a boolean value needs converting in place so
-  // it passes schema validation when the snapshot loads.
+  // Normalize an old session's override map in place: rename legacy
+  // color1/2/3 keys, and convert a boolean showLabels (schema flipped from
+  // boolean to the auto/on/off enum) so it passes validation on load.
   const normalizedOverrides = existingOverrides
-    ? typeof existingOverrides.showLabels === 'boolean'
-      ? {
-          ...existingOverrides,
-          showLabels: legacyShowLabelsToMode(existingOverrides.showLabels),
-        }
-      : existingOverrides
+    ? (() => {
+        const renamed = renameLegacyColorKeys(existingOverrides)
+        return typeof renamed.showLabels === 'boolean'
+          ? {
+              ...renamed,
+              showLabels: legacyShowLabelsToMode(renamed.showLabels),
+            }
+          : renamed
+      })()
     : undefined
 
   return {

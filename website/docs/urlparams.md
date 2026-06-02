@@ -309,6 +309,8 @@ Each track object supports the following properties:
   - `type`: Override the display type (e.g., `LinearPileupDisplay`,
     `LinearSNPCoverageDisplay`, `LinearAlignmentsDisplay`)
   - `height`: Display height in pixels
+  - `color`: Feature color for feature/wiggle tracks (a CSS color, or a `jexl:`
+    expression for per-feature coloring)
   - `minScore`, `maxScore`: Score range for quantitative tracks
   - Other display-specific settings
 - `trackSnapshot` (optional): Initial track state such as `pinned: true`
@@ -354,6 +356,44 @@ Expanded JSON:
   ]
 }
 ```
+
+#### Live example: feature track color
+
+Setting a track's color is one of the most common things people want to do. For
+a feature track (genes, BED, GFF), put `color` in the `displaySnapshot` — it
+accepts a plain CSS color, or a `jexl:` expression to color per-feature. This
+opens the genes track colored green:
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"gff3tabix_genes","displaySnapshot":{"color":"green"}}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"gff3tabix_genes","displaySnapshot":{"color":"green"}}]}]})
+
+Expanded JSON:
+
+```json
+{
+  "views": [
+    {
+      "assembly": "volvox",
+      "loc": "ctgA:1-50000",
+      "type": "LinearGenomeView",
+      "tracks": [
+        {
+          "trackId": "gff3tabix_genes",
+          "displaySnapshot": {
+            "color": "green"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+To color by a feature attribute, use a jexl expression, e.g.
+`"color": "jexl:get(feature,'type')=='gene'?'blue':'gray'"`.
 
 ### Circular view
 

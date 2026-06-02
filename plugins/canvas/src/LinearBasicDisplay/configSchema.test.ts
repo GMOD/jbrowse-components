@@ -19,9 +19,9 @@ describe('LinearBasicDisplay configSchema', () => {
       { displayId: 'test', type: 'LinearBasicDisplay' },
       { pluginManager: pm },
     )
-    expect(readConfObject(config, 'color1')).toBe('goldenrod')
-    expect(readConfObject(config, 'color2')).toBe('#f0f')
-    expect(readConfObject(config, 'color3')).toBe('#357089')
+    expect(readConfObject(config, 'color')).toBe('goldenrod')
+    expect(readConfObject(config, 'connectorColor')).toBe('#f0f')
+    expect(readConfObject(config, 'utrColor')).toBe('#357089')
     expect(readConfObject(config, 'featureHeight')).toBe(10)
     expect(readConfObject(config, 'displayMode')).toBe('normal')
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
@@ -37,13 +37,13 @@ describe('LinearBasicDisplay configSchema', () => {
       {
         displayId: 'test',
         type: 'LinearBasicDisplay',
-        color1: 'red',
-        color2: 'blue',
+        color: 'red',
+        connectorColor: 'blue',
       },
       { pluginManager: pm },
     )
-    expect(readConfObject(config, 'color1')).toBe('red')
-    expect(readConfObject(config, 'color2')).toBe('blue')
+    expect(readConfObject(config, 'color')).toBe('red')
+    expect(readConfObject(config, 'connectorColor')).toBe('blue')
   })
 
   it('accepts JEXL color expression', () => {
@@ -51,12 +51,12 @@ describe('LinearBasicDisplay configSchema', () => {
       {
         displayId: 'test',
         type: 'LinearBasicDisplay',
-        color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
+        color: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
       },
       { pluginManager: pm },
     )
     // The raw value is the JEXL string
-    const slot = config.color1
+    const slot = config.color
     expect(slot.isCallback).toBe(true)
   })
 
@@ -65,7 +65,7 @@ describe('LinearBasicDisplay configSchema', () => {
       {
         displayId: 'test',
         type: 'LinearBasicDisplay',
-        color1: 'red',
+        color: 'red',
       },
       { pluginManager: pm },
     )
@@ -74,7 +74,7 @@ describe('LinearBasicDisplay configSchema', () => {
     // Should be a plain object, not an MST node
     expect(typeof snap).toBe('object')
     // Should contain the custom value
-    expect(snap.color1).toBe('red')
+    expect(snap.color).toBe('red')
     // Should have display-level fields
     expect(snap.displayId).toBe('test')
     expect(snap.type).toBe('LinearBasicDisplay')
@@ -93,12 +93,12 @@ describe('LinearBasicDisplay configSchema', () => {
       {
         displayId: 'test',
         type: 'LinearBasicDisplay',
-        color1: jexlExpr,
+        color: jexlExpr,
       },
       { pluginManager: pm },
     )
     const snap = readConfObject(config)
-    expect(snap.color1).toBe(jexlExpr)
+    expect(snap.color).toBe(jexlExpr)
   })
 
   it('snapshot with custom labels preserves them', () => {
@@ -130,17 +130,18 @@ describe('LinearBasicDisplay configSchema', () => {
   it('JEXL callback slot exposes isCallback and raw value', () => {
     const jexlExpr = "jexl:get(feature,'type')=='SNV'?'green':'purple'"
     const config = schema.create(
-      { displayId: 'test', type: 'LinearBasicDisplay', color1: jexlExpr },
+      { displayId: 'test', type: 'LinearBasicDisplay', color: jexlExpr },
       { pluginManager: pm },
     )
-    expect(config.color1.isCallback).toBe(true)
-    expect(String(config.color1.value)).toBe(jexlExpr)
+    expect(config.color.isCallback).toBe(true)
+    expect(String(config.color.value)).toBe(jexlExpr)
   })
 
   // Compat: old configs stored colour/label settings under a renderer
-  // sub-config. The preProcessSnapshot lifts those props to the display level.
+  // sub-config, using the legacy color1 name. The preProcessSnapshot lifts
+  // those props to the display level and renames color1 -> color.
   describe('SvgFeatureRenderer/CanvasFeatureRenderer compat migration', () => {
-    it('lifts color1 from renderer to display level', () => {
+    it('lifts color1 from renderer to display level as color', () => {
       const config = schema.create(
         {
           displayId: 'test',
@@ -149,7 +150,7 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'color1')).toBe('red')
+      expect(readConfObject(config, 'color')).toBe('red')
       // renderer slot was removed — snapshot should not have it
       expect('renderer' in config).toBe(false)
     })
@@ -182,7 +183,7 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'color1')).toBe('blue')
+      expect(readConfObject(config, 'color')).toBe('blue')
     })
 
     it('works with CanvasFeatureRenderer type too', () => {
@@ -194,7 +195,7 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'color1')).toBe('green')
+      expect(readConfObject(config, 'color')).toBe('green')
     })
 
     it('no-op when renderer is absent', () => {
@@ -202,7 +203,7 @@ describe('LinearBasicDisplay configSchema', () => {
         { displayId: 'test', type: 'LinearBasicDisplay', color1: 'purple' },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'color1')).toBe('purple')
+      expect(readConfObject(config, 'color')).toBe('purple')
     })
 
     it('converts boolean showLabels lifted from renderer to enum', () => {
@@ -235,6 +236,70 @@ describe('LinearBasicDisplay configSchema', () => {
         { pluginManager: pm },
       )
       expect(readConfObject(config, 'showLabels')).toBe('on')
+    })
+
+    it('maps legacy geneGlyphMode "longest" lifted from renderer to "longestCoding"', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          renderer: { type: 'CanvasFeatureRenderer', geneGlyphMode: 'longest' },
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'geneGlyphMode')).toBe('longestCoding')
+    })
+
+    it('leaves valid geneGlyphMode untouched', () => {
+      const config = schema.create(
+        { displayId: 'test', type: 'LinearBasicDisplay', geneGlyphMode: 'all' },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'geneGlyphMode')).toBe('all')
+    })
+  })
+
+  // color1/color2/color3 were renamed to the self-describing
+  // color/connectorColor/utrColor; old configs using the legacy names still
+  // load by mapping onto the new slots.
+  describe('legacy color1/color2/color3 names', () => {
+    it('maps color1/color2/color3 onto color/connectorColor/utrColor', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          color1: 'blue',
+          color2: 'gray',
+          color3: 'lightblue',
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'color')).toBe('blue')
+      expect(readConfObject(config, 'connectorColor')).toBe('gray')
+      expect(readConfObject(config, 'utrColor')).toBe('lightblue')
+    })
+
+    it('maps a legacy jexl color1 expression onto color', () => {
+      const expr = "jexl:get(feature,'type')=='gene'?'blue':'gray'"
+      const config = schema.create(
+        { displayId: 'test', type: 'LinearBasicDisplay', color1: expr },
+        { pluginManager: pm },
+      )
+      expect(String(config.color.value)).toBe(expr)
+      expect(config.color.isCallback).toBe(true)
+    })
+
+    it('the new color name wins over a legacy color1', () => {
+      const config = schema.create(
+        {
+          displayId: 'test',
+          type: 'LinearBasicDisplay',
+          color: 'red',
+          color1: 'blue',
+        },
+        { pluginManager: pm },
+      )
+      expect(readConfObject(config, 'color')).toBe('red')
     })
   })
 })

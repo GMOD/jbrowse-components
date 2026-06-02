@@ -41,8 +41,8 @@ export function getBoxColor({
   theme: Theme
 }) {
   let fill = isUTR(feature)
-    ? readConfigValue<string>(config, 'color3', feature)
-    : readConfigValue<string>(config, 'color1', feature)
+    ? readConfigValue<string>(config, 'utrColor', feature)
+    : readConfigValue<string>(config, 'color', feature)
 
   const featureStrand = feature.get('strand')
   const featurePhase = feature.get('phase')
@@ -79,7 +79,7 @@ export function getStrokeColor({
   config: DisplayConfig
   theme: Theme
 }) {
-  const c = readConfigValue<string>(config, 'color2', feature)
+  const c = readConfigValue<string>(config, 'connectorColor', feature)
   return c === THEME_DERIVED_COLOR
     ? stripAlpha(theme.palette.text.secondary)
     : c

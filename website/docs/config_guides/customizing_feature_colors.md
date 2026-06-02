@@ -57,7 +57,7 @@ Put `myplugin.js` in the same folder as your config file and reference it:
         {
           "type": "LinearBasicDisplay",
           "displayId": "mytrack-LinearBasicDisplay",
-          "color1": "jexl:colorFeature(feature)"
+          "color": "jexl:colorFeature(feature)"
         }
       ]
     }

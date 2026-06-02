@@ -13,22 +13,22 @@ const anyFeature = mockFeature()
 
 describe('readConfigValue', () => {
   it('returns value when present', () => {
-    expect(readConfigValue({ color1: 'red' }, 'color1', anyFeature)).toBe('red')
+    expect(readConfigValue({ color: 'red' }, 'color', anyFeature)).toBe('red')
   })
 
   it('returns undefined when key is missing', () => {
-    expect(readConfigValue({}, 'color1', anyFeature)).toBeUndefined()
+    expect(readConfigValue({}, 'color', anyFeature)).toBeUndefined()
   })
 
   it('evaluates JEXL expression per-feature', () => {
     const config = {
-      color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
+      color: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
     }
+    expect(readConfigValue(config, 'color', mockFeature({ type: 'SNV' }))).toBe(
+      'green',
+    )
     expect(
-      readConfigValue(config, 'color1', mockFeature({ type: 'SNV' })),
-    ).toBe('green')
-    expect(
-      readConfigValue(config, 'color1', mockFeature({ type: 'insertion' })),
+      readConfigValue(config, 'color', mockFeature({ type: 'insertion' })),
     ).toBe('purple')
   })
 

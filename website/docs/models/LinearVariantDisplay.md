@@ -39,12 +39,12 @@ contextMenuInfo, userFeatureDensityLimit, heightBeforeExpand, incrementalLayout
 
 **Getters:** visibleFeatureDensityPerPx, renderState, DisplayMessageComponent,
 showTooltipsEnabled, showLegend, maxHeight, autoHeight, showLabelsMode,
-showLabels, showDescriptions, showOutline, effectiveShowDescriptions,
-selectedFeatureId, maxFeatureDensity, colorByCDS, sequenceAdapter, regionKeys,
-reversedRegions, featureWidgetType, bytesEstimateTooLarge, densityTooLarge,
-regionTooLarge, regionTooLargeReason, laidOutDataMap, maxY, hasOverflow,
-featureIdIndex, subfeatureIdIndex, hoveredFeature, hoveredSubfeature,
-featureItemMap, flatbushIndexes
+showLabels, showDescriptions, showOutline, featureColor, utrColor,
+effectiveShowDescriptions, selectedFeatureId, maxFeatureDensity, colorByCDS,
+sequenceAdapter, regionKeys, reversedRegions, featureWidgetType,
+bytesEstimateTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
+laidOutDataMap, maxY, hasOverflow, featureIdIndex, subfeatureIdIndex,
+hoveredFeature, hoveredSubfeature, featureItemMap, flatbushIndexes
 
 **Methods:** rpcProps, getFeatureById, searchFeatureByID, renderSvg,
 showSubmenuMenuItems, contextMenuItems, trackMenuItems
@@ -55,9 +55,9 @@ startRenderingBackend, setFeatureDensityStatsLimit, setFeatureIdUnderMouse,
 setSubfeatureIdUnderMouse, clearHover, setMouseoverExtraInformation,
 setContextMenuFeature, setContextMenuInfo, selectFeature, clearSelection,
 setShowLabels, setAutoHeight, setShowDescriptions, setShowOutline,
-showContextMenuForFeature, fetchFullFeature, selectFeatureById, isCacheValid,
-getByteEstimateConfig, selectFullFeature, reload, fetchNeeded,
-clearStaleDensityState, afterAttach
+setFeatureColor, setUtrColor, showContextMenuForFeature, fetchFullFeature,
+selectFeatureById, isCacheValid, getByteEstimateConfig, selectFullFeature,
+reload, fetchNeeded, clearStaleDensityState, afterAttach
 
 ### Available via [BaseDisplay](../basedisplay)
 

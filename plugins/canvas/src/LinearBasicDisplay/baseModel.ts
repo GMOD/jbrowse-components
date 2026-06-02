@@ -28,6 +28,7 @@ import {
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable } from 'mobx'
 
@@ -84,10 +85,16 @@ export function getView(self: IAnyStateTreeNode): LGV {
 export type { Region } from '@jbrowse/core/util'
 
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 // rgba string used when outline is toggled on via the menu; schema stores the
 // raw color so users can still set their own via setOverride('outline', '#...').
 const OUTLINE_DEFAULT_RGBA = 'rgba(0,0,0,0.3)'
+
+// Schema defaults for the picker swatch when no override is set. Kept in sync
+// with baseConfigSchema.ts color/utrColor defaults.
+const FEATURE_COLOR_DEFAULT = 'goldenrod'
+const UTR_COLOR_DEFAULT = '#357089'
 
 /**
  * #stateModel LinearCanvasBaseDisplay
@@ -290,6 +297,24 @@ export default function baseStateModelFactory(
          */
         get showOutline() {
           return !!self.getConfWithOverride<string>('outline')
+        },
+
+        /**
+         * #getter
+         */
+        // Current solid color for the picker swatch. Reads the runtime override
+        // (not the config slot) so a per-feature jexl color in the config never
+        // evaluates here without a feature; the picker seeds from the schema
+        // default until the user sets a solid override.
+        get featureColor() {
+          return self.getOverride<string>('color') ?? FEATURE_COLOR_DEFAULT
+        },
+
+        /**
+         * #getter
+         */
+        get utrColor() {
+          return self.getOverride<string>('utrColor') ?? UTR_COLOR_DEFAULT
         },
 
         /**
@@ -894,6 +919,31 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        // undefined clears the override (restores the config default, which may
+        // be a per-feature jexl color); a string sets a solid color for all
+        // features. Flows to the worker via rpcProps -> displayConfig.color.
+        setFeatureColor(color?: string) {
+          if (color === undefined) {
+            self.clearOverride('color')
+          } else {
+            self.setOverride('color', color)
+          }
+        },
+
+        /**
+         * #action
+         */
+        setUtrColor(color?: string) {
+          if (color === undefined) {
+            self.clearOverride('utrColor')
+          } else {
+            self.setOverride('utrColor', color)
+          }
+        },
+
+        /**
+         * #action
+         */
         showContextMenuForFeature(
           featureInfo: FlatbushItem,
           displayedRegionIndex: number,
@@ -1339,6 +1389,16 @@ export default function baseStateModelFactory(
               label: 'Show...',
               icon: VisibilityIcon,
               subMenu: self.showSubmenuMenuItems(),
+            },
+            {
+              label: 'Color',
+              icon: PaletteIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetColorDialog,
+                  { model: self, handleClose },
+                ])
+              },
             },
           ]
         },

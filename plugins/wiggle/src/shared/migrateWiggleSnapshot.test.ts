@@ -178,6 +178,36 @@ describe('migrateWiggleSnapshot', () => {
     })
   })
 
+  test('bicolorPivot "numeric" + bicolorPivotValue → numeric bicolorPivot', () => {
+    const result = migrateWiggleSnapshot({
+      bicolorPivot: 'numeric',
+      bicolorPivotValue: 100,
+    })
+    expect(result).toEqual({ configOverrides: { bicolorPivot: 100 } })
+  })
+
+  test('bicolorPivot "mean"/"z_score"/"none" drop to default (no override)', () => {
+    expect(migrateWiggleSnapshot({ bicolorPivot: 'mean' })).toEqual({})
+    expect(migrateWiggleSnapshot({ bicolorPivot: 'z_score' })).toEqual({})
+    expect(migrateWiggleSnapshot({ bicolorPivot: 'none' })).toEqual({})
+  })
+
+  test('numeric bicolorPivot passes through unchanged', () => {
+    const result = migrateWiggleSnapshot({ bicolorPivot: 42 })
+    expect(result).toEqual({ configOverrides: { bicolorPivot: 42 } })
+  })
+
+  test('strips clipColor and bicolorPivotValue', () => {
+    const result = migrateWiggleSnapshot({
+      scale: 'log',
+      clipColor: 'red',
+      bicolorPivotValue: 5,
+    })
+    expect(result).toEqual({ configOverrides: { scaleType: 'log' } })
+    expect(result).not.toHaveProperty('clipColor')
+    expect(result).not.toHaveProperty('bicolorPivotValue')
+  })
+
   test('merges with existing configOverrides', () => {
     const result = migrateWiggleSnapshot({
       configOverrides: { color: 'blue' },

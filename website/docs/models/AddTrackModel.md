@@ -67,6 +67,13 @@ AdapterConfig | undefined
 string
 ```
 
+#### getter: uris
+
+```js
+// type
+(string | undefined)[]
+```
+
 #### getter: isFtp
 
 ```js

@@ -87,35 +87,36 @@ showDescriptions: {
       }
 ```
 
-#### slot: color1
+#### slot: color
 
 ```js
-color1: {
+color: {
         type: 'color',
-        description: 'the main color of each feature',
+        description:
+          'the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)',
         defaultValue: 'goldenrod',
         contextVariable: ['feature'],
       }
 ```
 
-#### slot: color2
+#### slot: connectorColor
 
 ```js
-color2: {
+connectorColor: {
         type: 'color',
         description:
-          'the secondary color of each feature, used for connecting lines',
+          'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
         defaultValue: THEME_DERIVED_COLOR,
         contextVariable: ['feature'],
       }
 ```
 
-#### slot: color3
+#### slot: utrColor
 
 ```js
-color3: {
+utrColor: {
         type: 'color',
-        description: 'the tertiary color of each feature, used for UTRs',
+        description: 'fill color for UTRs on gene/transcript glyphs',
         defaultValue: '#357089',
         contextVariable: ['feature'],
       }
@@ -164,11 +165,7 @@ displayMode: {
 ```js
 geneGlyphMode: {
         type: 'stringEnum',
-        model: types.enumeration('geneGlyphMode', [
-          'auto',
-          'all',
-          'longestCoding',
-        ]),
+        model: types.enumeration('geneGlyphMode', [...GENE_GLYPH_MODES]),
         description:
           'Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript',
         defaultValue: 'auto',

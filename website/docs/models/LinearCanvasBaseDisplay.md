@@ -296,6 +296,20 @@ boolean
 boolean
 ```
 
+#### getter: featureColor
+
+```js
+// type
+string
+```
+
+#### getter: utrColor
+
+```js
+// type
+string
+```
+
 #### getter: effectiveShowDescriptions
 
 ```js
@@ -499,7 +513,7 @@ contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeM
 
 ```js
 // type signature
-trackMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; type?: undefined; checked?: undefined; onClick?: undefined; } | { ...; })[]; }[]
+trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; type?: undefined; checked?: undefined; onClick?: undefined; } | { ...; })[]; onClick?: undefined; } | {...
 ```
 
 ### LinearCanvasBaseDisplay - Actions
@@ -649,6 +663,20 @@ setShowDescriptions: (value: boolean) => void
 ```js
 // type signature
 setShowOutline: (value: boolean) => void
+```
+
+#### action: setFeatureColor
+
+```js
+// type signature
+setFeatureColor: (color?: string | undefined) => void
+```
+
+#### action: setUtrColor
+
+```js
+// type signature
+setUtrColor: (color?: string | undefined) => void
 ```
 
 #### action: showContextMenuForFeature

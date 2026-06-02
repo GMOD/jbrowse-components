@@ -14,6 +14,13 @@
  *   summaryScoreModeSetting, autoscaleSetting, showTreeSetting
  *
  * Gen2 takes precedence over Gen1 when both are present.
+ *
+ * Also handles the old WiggleRenderer `bicolorPivot` (a stringEnum of
+ * numeric/mean/z_score/none paired with a separate numeric `bicolorPivotValue`)
+ * collapsing into the current numeric `bicolorPivot`. Without this an old
+ * `bicolorPivot: 'numeric'` string lands on the new number slot and throws on
+ * hydration. mean/z_score/none have no numeric equivalent and fall back to the
+ * default.
  */
 export function migrateWiggleSnapshot(
   snap: Record<string, unknown>,
@@ -42,10 +49,23 @@ export function migrateWiggleSnapshot(
     summaryScoreModeSetting,
     autoscaleSetting,
     showTreeSetting,
+    bicolorPivot,
+    bicolorPivotValue,
+    // clipColor was a WiggleRenderer slot with no display-config equivalent
+    clipColor: _clipColor,
     ...rest
   } = snap
 
   const cons = constraints as { min?: number; max?: number } | undefined
+
+  // Old renderer: bicolorPivot was an enum; 'numeric' meant "use
+  // bicolorPivotValue". New config: bicolorPivot is itself the numeric pivot.
+  const bicolorPivotNumeric =
+    typeof bicolorPivot === 'number'
+      ? bicolorPivot
+      : bicolorPivot === 'numeric' && typeof bicolorPivotValue === 'number'
+        ? bicolorPivotValue
+        : undefined
   const oldRendering =
     (rendererTypeNameState as string | undefined) ??
     (selectedRendering as string | undefined)
@@ -68,6 +88,7 @@ export function migrateWiggleSnapshot(
     posColor: posColorSetting ?? posColorGen1,
     negColor: negColorSetting ?? negColorGen1,
     showTree: showTreeSetting ?? showSidebar,
+    bicolorPivot: bicolorPivotNumeric,
   }
 
   const overrides: Record<string, unknown> = {}
