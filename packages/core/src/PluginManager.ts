@@ -60,12 +60,13 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 
   get(name: string) {
-    if (!this.has(name)) {
+    const type = this.registeredTypes[name]
+    if (!type) {
       throw new Error(
         `${this.typeName} '${name}' not found, perhaps its plugin is not loaded or its plugin has not added it.`,
       )
     }
-    return this.registeredTypes[name]
+    return type
   }
 
   all() {
@@ -487,9 +488,7 @@ export default class PluginManager {
    *
    * @returns the library's default export
    */
-  jbrequire = (
-    lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },
-  ): any => {
+  jbrequire = (lib: string | AnyFunction | { default: AnyFunction }): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]
 
@@ -502,11 +501,9 @@ export default class PluginManager {
     } else if (typeof lib === 'function') {
       return this.load(lib)
     }
-
-    // @ts-expect-error
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (lib.default) {
       console.warn('initiated jbrequire on a {default:Function}')
-      // @ts-expect-error
       return this.jbrequire(lib.default)
     }
 

@@ -12,7 +12,6 @@ import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
-import { isRetryException } from '@jbrowse/core/util/types'
 import {
   addDisposer,
   getParent,
@@ -235,15 +234,12 @@ const blockState = types
         self.message = undefined
         self.error = error
         clearRenderState()
-        if (isRetryException(error as Error)) {
-          this.reload()
-        }
       },
       /**
        * #action
        */
       reload() {
-        self.stopToken = undefined
+        stopCurrentToken()
         self.isRenderingPending = false
         self.error = undefined
         self.message = undefined

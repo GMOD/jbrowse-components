@@ -8,9 +8,7 @@ import {
   setBlobMap,
 } from '../util/tracks.ts'
 import {
-  RetryError,
   isAppRootModel,
-  isAuthNeededException,
   isFileHandleLocation,
   isUriLocation,
 } from '../util/types/index.ts'
@@ -190,32 +188,11 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     _args: unknown,
     _rpcDriverClassName: string,
   ) {
-    let r: unknown
-    try {
-      r = await serializedReturn
-    } catch (error) {
-      const { rootModel } = this.pluginManager
-      if (isAuthNeededException(error) && rootModel) {
-        const retryAccount =
-          // @ts-expect-error
-          rootModel.createEphemeralInternetAccount(
-            `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
-            {},
-            error.url,
-          )
-        throw new RetryError(
-          'Retrying with created internet account',
-          retryAccount.internetAccountId,
-        )
-      }
-      throw error
-    }
     // Unwrap rpcResult if present (needed for MainThreadRpcDriver where the
     // rpcResult wrapper isn't stripped by the worker message handler)
-    if (isRpcResult(r)) {
-      return r.value
-    }
-    return r
+    return isRpcResult(serializedReturn)
+      ? serializedReturn.value
+      : serializedReturn
   }
 
   private async augmentLocationObjects(

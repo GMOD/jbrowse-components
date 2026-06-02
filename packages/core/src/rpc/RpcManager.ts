@@ -2,6 +2,7 @@ import MainThreadRpcDriver from './MainThreadRpcDriver.ts'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 import { readConfObject } from '../configuration/index.ts'
+import { isAppRootModel, isAuthNeededException } from '../util/types/index.ts'
 
 import type BaseRpcDriver from './BaseRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
@@ -130,21 +131,74 @@ export default class RpcManager {
     }
     const driverForCall = this.getDriverForCall(a, opts)
     try {
-      return (await driverForCall.call(
-        this.pluginManager,
-        sessionId,
-        functionName,
-        a,
-        opts ?? {},
+      return (await this.withAuthRetry(() =>
+        driverForCall.call(
+          this.pluginManager,
+          sessionId,
+          functionName,
+          a,
+          opts ?? {},
+        ),
       )) as M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown
     } finally {
-      // when a session is freed, drop its sticky worker assignment on every
-      // driver so the workerAssignments map doesn't grow unboundedly
       if (functionName === 'CoreFreeResources') {
-        for (const driver of this.driverObjects.values()) {
-          driver.freeSession(sessionId)
-        }
+        this.freeSessionOnAllDrivers(sessionId)
       }
+    }
+  }
+
+  /**
+   * Run an RPC thunk, and if it fails because a location needs auth, set up
+   * credentials for the origin and run it exactly once more. The single retry
+   * is structural — there is no loop — so a persistent auth failure surfaces
+   * the error instead of spinning. The retry re-runs serializeArguments, which
+   * now finds the new account and injects pre-authorization (prompting the
+   * user). If auth can't be set up, the original error is rethrown unchanged.
+   */
+  private async withAuthRetry<T>(run: () => Promise<T>): Promise<T> {
+    try {
+      return await run()
+    } catch (error) {
+      if (isAuthNeededException(error) && this.ensureAuthForOrigin(error.url)) {
+        return run()
+      } else {
+        throw error
+      }
+    }
+  }
+
+  /**
+   * Create an ephemeral HTTP-basic internet account for a location's origin so
+   * a retried RPC call can authenticate. Returns false when the root model
+   * can't hold accounts or no HTTPBasicInternetAccount type is registered
+   * (authentication plugin not loaded), signaling the caller not to retry.
+   */
+  private ensureAuthForOrigin(url: string) {
+    const { rootModel } = this.pluginManager
+    let created = false
+    if (isAppRootModel(rootModel)) {
+      try {
+        rootModel.createEphemeralInternetAccount(
+          `HTTPBasicInternetAccount-${new URL(url).origin}`,
+          {},
+          url,
+        )
+        created = true
+      } catch {
+        // no HTTPBasicInternetAccount type registered; leave created=false so
+        // the caller surfaces the original auth error instead of retrying
+      }
+    }
+    return created
+  }
+
+  /**
+   * Drop a session's sticky worker assignment on every driver so the
+   * workerAssignments map doesn't grow unboundedly as sessions are freed.
+   */
+  private freeSessionOnAllDrivers(sessionId: string) {
+    for (const driver of this.driverObjects.values()) {
+      driver.freeSession(sessionId)
     }
   }
 }

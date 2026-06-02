@@ -417,6 +417,11 @@ export interface AppRootModel extends AbstractRootModel {
   findAppropriateInternetAccount(
     location: UriLocation,
   ): BaseInternetAccountModel | undefined
+  createEphemeralInternetAccount(
+    internetAccountId: string,
+    initialSnapshot: Record<string, unknown>,
+    url: string,
+  ): BaseInternetAccountModel
 }
 
 export function isAppRootModel(thing: unknown): thing is AppRootModel {
@@ -550,16 +555,6 @@ export class AuthNeededError extends Error {
   }
 }
 
-export class RetryError extends Error {
-  internetAccountId: string
-
-  constructor(message: string, internetAccountId: string) {
-    super(message)
-    this.internetAccountId = internetAccountId
-    this.name = 'RetryError'
-  }
-}
-
 export function isAuthNeededException(
   exception: unknown,
 ): exception is AuthNeededError {
@@ -569,15 +564,6 @@ export function isAuthNeededException(
     (exception.name === 'AuthNeededError' ||
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (exception as AuthNeededError).url !== undefined)
-  )
-}
-
-export function isRetryException(exception: Error): boolean {
-  return (
-    // DOMException
-    exception.name === 'RetryError' ||
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    (exception as RetryError).internetAccountId !== undefined
   )
 }
 
