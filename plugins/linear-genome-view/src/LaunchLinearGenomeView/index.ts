@@ -19,27 +19,14 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint('LaunchView-LinearGenomeView', args => {
-    const {
-      session,
-      assembly,
-      loc,
-      tracks = [],
-      tracklist,
-      nav,
-      highlight,
-    } = args
-    if (!assembly) {
+    // args is the InitState plus the target session, so everything except
+    // session forwards verbatim into the view's declarative init
+    const { session, ...init } = args
+    if (!init.assembly) {
       throw new Error('No assembly provided when launching linear genome view')
     }
     session.addView('LinearGenomeView', {
-      init: {
-        assembly,
-        loc,
-        tracks,
-        tracklist,
-        nav,
-        highlight,
-      },
+      init: { ...init, assembly: init.assembly },
     })
     return args
   })

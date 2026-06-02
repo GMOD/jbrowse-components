@@ -276,14 +276,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         scalebarOnly: types.optional(types.boolean, false),
         /**
          * #property
-         * this is a non-serialized property that can be used for loading the
-         * linear genome view via session snapshots
-         * example:
+         * transient declarative launch spec: assembly + optional location,
+         * tracks, and highlights to apply once the view attaches. It is applied
+         * by the afterAttach autorun and then cleared (setInit(undefined)), so a
+         * saved session never retains it. Shared by all three launch surfaces —
+         * URL params, createViewState(), and session/config JSON. example:
          * ```json
          * {
-         *   loc: "chr1:1,000,000-2,000,000"
-         *   assembly: "hg19"
-         *   tracks: ["genes", "variants"]
+         *   "assembly": "hg19",
+         *   "loc": "chr1:1,000,000-2,000,000",
+         *   "tracks": ["genes", "variants"]
          * }
          * ```
          */

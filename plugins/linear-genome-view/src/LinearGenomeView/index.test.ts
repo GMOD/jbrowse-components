@@ -17,6 +17,7 @@ import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay/index.ts'
 
 import type { LinearGenomeViewModel } from './index.ts'
+import type { InitState } from './types.ts'
 
 type LGV = LinearGenomeViewModel
 
@@ -1680,5 +1681,97 @@ describe('onTrackDragOver reorders tracks', () => {
     const { model, a, b, c } = setup()
     model.onTrackDragOver(b, 100)
     expect(model.tracks.map(t => t.id)).toEqual([a, b, c])
+  })
+})
+
+describe('declarative init: highlight, nav, unknown keys', () => {
+  function makeModel(init: InitState) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        init,
+      }),
+    )
+    model.setWidth(800)
+    return model
+  }
+
+  test('init.highlight loc-string is parsed onto the highlight list', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: ['ctgA:100-200'],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    const h = model.highlight[0]!
+    expect(h.refName).toBe('ctgA')
+    expect(h.assemblyName).toBe('volvox')
+    expect(h.start).toBeLessThan(h.end)
+  })
+
+  test('init.highlight JSON form carries color/label and assembly fallback', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: [
+        '{"refName":"ctgA","start":100,"end":200,"color":"#123456","label":"my region"}',
+      ],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    const h = model.highlight[0]!
+    expect(h.start).toBe(100)
+    expect(h.end).toBe(200)
+    expect(h.color).toBe('#123456')
+    expect(h.label).toBe('my region')
+    // assemblyName omitted in the JSON, so it falls back to init.assembly
+    expect(h.assemblyName).toBe('volvox')
+  })
+
+  test('init.highlight JSON form keeps an explicit assemblyName', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: [
+        '{"refName":"ctgA","start":1,"end":2,"assemblyName":"volvox2"}',
+      ],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    expect(model.highlight[0]!.assemblyName).toBe('volvox2')
+  })
+
+  test('init.nav false hides the header', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      nav: false,
+    })
+    await waitFor(() => {
+      expect(model.hideHeader).toBe(true)
+    })
+  })
+
+  test('unknown init key warns instead of silently dropping', async () => {
+    // deliberately typo'd key (tracksList vs tracks) to exercise the diagnostic
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      tracksList: [],
+    } as InitState)
+    await waitFor(() => {
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('tracksList'),
+      )
+    })
+    // init is still consumed/cleared despite the unknown key
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
   })
 })

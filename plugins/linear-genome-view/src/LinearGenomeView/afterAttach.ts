@@ -8,6 +8,8 @@ import { autorun, when } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
 
+// keep in sync with the InitState interface (types.ts) — a missing entry here
+// makes a valid init key warn as "unknown" below
 const knownInitKeys = new Set([
   'loc',
   'assembly',
