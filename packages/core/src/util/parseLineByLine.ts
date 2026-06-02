@@ -1,3 +1,4 @@
+import { IntervalTree } from './IntervalTree.ts'
 import { getProgressDisplayStr } from './index.ts'
 
 export type StatusCallback = (arg: string) => void
@@ -34,6 +35,43 @@ export function groupLinesByRef(
     statusCallback,
   )
   return { headerLines, linesByRef }
+}
+
+/**
+ * Build a `refName -> lazy IntervalTree` map from feature lines grouped by ref
+ * (the output of {@link groupLinesByRef}). Each ref's lines are parsed and
+ * indexed into an interval tree on first access, then the raw lines are
+ * released. Shared scaffolding for the plain-text GFF3 and GTF adapters, which
+ * differ only in how they parse a ref's lines into features.
+ */
+export function makeFeatureIntervalTreeMap<
+  T extends { start: number; end: number },
+>(
+  linesByRef: Record<string, string[]>,
+  parse: (lines: string[], refName: string) => T[],
+  parsingStatusMessage: string,
+) {
+  const cache: Record<string, IntervalTree<T>> = {}
+  return Object.fromEntries(
+    Object.entries(linesByRef).map(([refName, refLines]) => {
+      let lines: string[] | null = refLines
+      return [
+        refName,
+        (statusCallback?: StatusCallback) => {
+          if (!cache[refName]) {
+            statusCallback?.(parsingStatusMessage)
+            const intervalTree = new IntervalTree<T>()
+            for (const feature of parse(lines!, refName)) {
+              intervalTree.insert([feature.start, feature.end], feature)
+            }
+            lines = null
+            cache[refName] = intervalTree
+          }
+          return cache[refName]
+        },
+      ]
+    }),
+  )
 }
 
 /**
