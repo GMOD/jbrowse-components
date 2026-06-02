@@ -11,7 +11,6 @@ import {
   flow,
   getParent,
   getSnapshot,
-  isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
@@ -19,13 +18,11 @@ import {
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
+  copyTrackSnapshot,
+  trackActionItems,
   trackActionMenuItems,
   trackListMenuItems,
 } from '@jbrowse/product-core'
-import DeleteIcon from '@mui/icons-material/Delete'
-import CopyIcon from '@mui/icons-material/FileCopy'
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
@@ -46,19 +43,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
-interface Display {
-  displayId: string
-  type: string
-}
-
-// shape of a cloned track config snapshot mutated in getTrackActions' makeSnap;
-// the Record intersection keeps it assignable to addTrackConf's AnyConfiguration
-type TrackCopyBase = {
-  trackId: string
-  name: string
-  category?: unknown
-  displays?: Display[]
-} & Record<string, unknown>
 
 /**
  * #stateModel BaseWebSession
@@ -310,68 +294,19 @@ export function BaseWebSession({
         config: BaseTrackConfig,
         view?: { showTrack: (id: string) => void },
       ): MenuItem[] {
-        const canEdit = self.canEditTrack(config.trackId)
-        const isRefSeq = config.type === 'ReferenceSequenceTrack'
-        const base = structuredClone(
-          isStateTreeNode(config) ? getSnapshot(config) : config,
-        ) as TrackCopyBase
-        const makeSnap = () => {
-          const snap = structuredClone(base)
-          snap.trackId += `-${Date.now()}`
-          // the -sessionTrack suffix to trackId is used as metadata for
-          // the track selector to store the track in a special category,
-          // and default category is also cleared
-          if (!self.adminMode) {
-            snap.trackId += '-sessionTrack'
-            snap.category = undefined
-          }
-          snap.name += ' (copy)'
-          // regenerate displayIds to match the final trackId, the same form
-          // baseTrackConfig would auto-inject
-          if (snap.displays) {
-            for (const display of snap.displays) {
-              display.displayId = `${snap.trackId}-${display.type}`
-            }
-          }
-          return snap
-        }
-        return [
-          {
-            label: 'Settings',
-            disabled: !canEdit,
-            icon: SettingsIcon,
-            onClick: () => {
-              self.editTrackConfiguration(config)
-            },
-          },
-          {
-            label: 'Copy track',
-            disabled: isRefSeq,
-            onClick: () => {
-              self.addTrackConf(makeSnap())
-            },
-            icon: CopyIcon,
-          },
-          {
-            label: 'Copy and open track',
-            disabled: isRefSeq || !view,
-            onClick: () => {
-              const snap = makeSnap()
-              if (self.addTrackConf(snap)) {
-                view!.showTrack(snap.trackId)
-              }
-            },
-            icon: OpenInNewIcon,
-          },
-          {
-            label: 'Delete track',
-            disabled: !canEdit || isRefSeq,
-            icon: DeleteIcon,
-            onClick: () => {
-              self.deleteTrackConf(config)
-            },
-          },
-        ]
+        return trackActionItems({
+          session: self,
+          config,
+          view,
+          canEdit: self.canEditTrack(config.trackId),
+          // non-admin copies become session tracks (routed to a special
+          // category, so the original category is also cleared)
+          makeCopy: () =>
+            copyTrackSnapshot(config, {
+              sessionTrack: !self.adminMode,
+              clearCategory: !self.adminMode,
+            }),
+        })
       },
     }))
     .views(self => ({

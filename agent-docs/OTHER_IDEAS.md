@@ -183,8 +183,6 @@ deleted). Store in URL hash, clear on first navigation.
 color-by-query-name (hash to color).
 
 
-**Alignments menu reorganization** Collapse rarely-used options (max height,
-toggles) into submenu.
 
 **Breakpoint connectors** Smooth out awkward blue/green curves (currently
 arbitrary Y increase/loop).
@@ -207,10 +205,7 @@ Slang with `//! targets: wgsl`. Not urgent — they work.
 
 
 
-## Backlog / stretch
 
-- SVPlaudit-style game but with JBrowse
-- Static renderings via `jbrowse-img`; command-line tool for batch variant rendering
 
 ## Methylation plotting
 
@@ -283,3 +278,6 @@ disappear.
 
 
 ## sort by modifiactions
+## sort by modifiaction
+
+sophisticated abort system

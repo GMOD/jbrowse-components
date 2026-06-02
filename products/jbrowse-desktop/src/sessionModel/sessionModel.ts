@@ -40,13 +40,11 @@ export default function sessionModelFactory({
   const sessionModel = types
     .compose(
       'JBrowseDesktopSessionModel',
-      types.compose(
-        ReferenceManagementSessionMixin(pluginManager),
-        ConnectionManagementSessionMixin(pluginManager),
-        ThemeManagerSessionMixin(pluginManager),
-        TracksManagerSessionMixin(pluginManager),
-        MultipleViewsSessionMixin(pluginManager),
-      ),
+      ReferenceManagementSessionMixin(pluginManager),
+      ConnectionManagementSessionMixin(pluginManager),
+      ThemeManagerSessionMixin(pluginManager),
+      TracksManagerSessionMixin(pluginManager),
+      MultipleViewsSessionMixin(pluginManager),
       AssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
       DockviewLayoutMixin(),

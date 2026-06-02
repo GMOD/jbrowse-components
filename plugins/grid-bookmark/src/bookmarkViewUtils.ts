@@ -1,7 +1,4 @@
-import {
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import HighlightIcon from '@mui/icons-material/Highlight'
 
 import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'

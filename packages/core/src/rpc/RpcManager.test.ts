@@ -109,9 +109,9 @@ describe('RpcManager auth retry', () => {
       }
       return 'ok'
     }
-    await expect(manager.call('s', 'CoreGetRegions', { adapterConfig: {} })).resolves.toBe(
-      'ok',
-    )
+    await expect(
+      manager.call('s', 'CoreGetRegions', { adapterConfig: {} }),
+    ).resolves.toBe('ok')
     expect(calls).toBe(2)
     expect(accounts).toEqual([
       { internetAccountId: 'HTTPBasicInternetAccount-https://example.com' },
@@ -145,9 +145,9 @@ describe('RpcManager auth retry', () => {
       calls++
       throw new AuthNeededError('needs auth', url)
     }
-    await expect(manager.call('s', 'CoreGetRegions', { adapterConfig: {} })).rejects.toThrow(
-      'needs auth',
-    )
+    await expect(
+      manager.call('s', 'CoreGetRegions', { adapterConfig: {} }),
+    ).rejects.toThrow('needs auth')
     expect(calls).toBe(1)
   })
 })

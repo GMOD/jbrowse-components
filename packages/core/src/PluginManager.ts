@@ -395,7 +395,10 @@ export default class PluginManager {
       } else {
         typeRecord.add(
           newElement.name,
-          this.evaluateExtensionPoint('Core-extendPluggableElement', newElement),
+          this.evaluateExtensionPoint(
+            'Core-extendPluggableElement',
+            newElement,
+          ),
         )
       }
     })

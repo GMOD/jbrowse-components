@@ -1,6 +1,10 @@
 import { Suspense, useState } from 'react'
 
-import { ErrorBanner, LoadingEllipses, PluggableComponent } from '@jbrowse/core/ui'
+import {
+  ErrorBanner,
+  LoadingEllipses,
+  PluggableComponent,
+} from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { getEnv } from '@jbrowse/core/util'

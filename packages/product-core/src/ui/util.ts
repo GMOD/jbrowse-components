@@ -1,4 +1,5 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { isObject } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -53,17 +54,19 @@ export function generateDisplayableConfig({
   pluginManager: PluginManager
 }) {
   const conf = isStateTreeNode(config) ? readConfObject(config) : config
-  const formatAboutConfig =
-    readConf(config, ['formatAbout', 'config'], { config: conf }) ?? {}
-  const sessionFormatAbout =
-    getConf(session, ['formatAbout', 'config'], { config: conf }) ?? {}
+  const formatAboutConfig = readConf(config, ['formatAbout', 'config'], {
+    config: conf,
+  })
+  const sessionFormatAbout = getConf(session, ['formatAbout', 'config'], {
+    config: conf,
+  })
   return pluginManager.evaluateExtensionPoint(
     'Core-customizeAbout',
     {
       config: {
         ...conf,
-        ...(typeof sessionFormatAbout === 'object' ? sessionFormatAbout : {}),
-        ...(typeof formatAboutConfig === 'object' ? formatAboutConfig : {}),
+        ...(isObject(sessionFormatAbout) ? sessionFormatAbout : {}),
+        ...(isObject(formatAboutConfig) ? formatAboutConfig : {}),
       },
     },
     { session, config },

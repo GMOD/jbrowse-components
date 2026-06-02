@@ -1,6 +1,9 @@
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { HighlightBand, HighlightChip } from '@jbrowse/plugin-linear-genome-view'
+import {
+  HighlightBand,
+  HighlightChip,
+} from '@jbrowse/plugin-linear-genome-view'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { observer } from 'mobx-react'
 

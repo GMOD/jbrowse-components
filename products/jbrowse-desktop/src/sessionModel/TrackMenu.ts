@@ -6,15 +6,16 @@ import {
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { trackActionMenuItems, trackListMenuItems } from '@jbrowse/product-core'
+import {
+  copyTrackSnapshot,
+  trackActionItems,
+  trackActionMenuItems,
+  trackListMenuItems,
+} from '@jbrowse/product-core'
 import {
   defaultAttributesToIndex,
   defaultFeatureTypesToExclude,
 } from '@jbrowse/text-indexing'
-import DeleteIcon from '@mui/icons-material/Delete'
-import CopyIcon from '@mui/icons-material/FileCopy'
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import SettingsIcon from '@mui/icons-material/Settings'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -44,59 +45,20 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
         view?: { showTrack: (id: string) => void },
       ): MenuItem[] {
         const session = self as SessionBase
-        const isRefSeq = trackConfig.type === 'ReferenceSequenceTrack'
+        // snapshot kept for the Index action's adapter/textSearching reads
         const base = structuredClone(
           isStateTreeNode(trackConfig) ? getSnapshot(trackConfig) : trackConfig,
         )
-        const makeSnap = () => {
-          const snap = structuredClone(base)
-          snap.trackId += `-${Date.now()}`
-          snap.name += ' (copy)'
-          snap.category = undefined
-          // regenerate displayIds to match the new trackId, the same form
-          // baseTrackConfig would auto-inject
-          if (snap.displays) {
-            for (const d of snap.displays) {
-              d.displayId = `${snap.trackId}-${d.type}`
-            }
-          }
-          return snap
-        }
         return [
-          {
-            label: 'Settings',
-            onClick: () => {
-              session.editConfiguration(trackConfig)
-            },
-            icon: SettingsIcon,
-          },
-          {
-            label: 'Copy track',
-            disabled: isRefSeq,
-            onClick: () => {
-              session.addTrackConf(makeSnap())
-            },
-            icon: CopyIcon,
-          },
-          {
-            label: 'Copy and open track',
-            disabled: isRefSeq || !view,
-            onClick: () => {
-              const snap = makeSnap()
-              if (session.addTrackConf(snap)) {
-                view!.showTrack(snap.trackId)
-              }
-            },
-            icon: OpenInNewIcon,
-          },
-          {
-            label: 'Delete track',
-            disabled: isRefSeq,
-            onClick: () => {
-              session.deleteTrackConf(trackConfig)
-            },
-            icon: DeleteIcon,
-          },
+          ...trackActionItems({
+            session,
+            config: trackConfig,
+            view,
+            // desktop is always admin; copies go to the top level
+            canEdit: true,
+            makeCopy: () =>
+              copyTrackSnapshot(trackConfig, { clearCategory: true }),
+          }),
           ...(isSupportedIndexingAdapter(base.adapter?.type)
             ? [
                 {

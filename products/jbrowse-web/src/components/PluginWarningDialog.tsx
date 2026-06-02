@@ -37,7 +37,14 @@ export default function PluginWarningDialog({
   const [show, setShow] = useState(false)
   const { intro, trust, details } = text[kind]
   return (
-    <Dialog open maxWidth="xl" title="Warning" onClose={() => { onCancel() }}>
+    <Dialog
+      open
+      maxWidth="xl"
+      title="Warning"
+      onClose={() => {
+        onCancel()
+      }}
+    >
       <DialogContent>
         <Alert severity="warning" style={{ width: 800 }}>
           {intro}

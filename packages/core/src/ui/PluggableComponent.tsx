@@ -7,7 +7,9 @@ import type PluginManager from '../PluginManager'
 // observer so that observable reads inside evaluateExtensionPoint callbacks
 // (e.g. model.trackAdapterType) are tracked here — re-evaluates when they
 // change without relying on the parent being an observer
-const PluggableComponent = observer(function PluggableComponent<P extends object>({
+const PluggableComponent = observer(function PluggableComponent<
+  P extends object,
+>({
   pluginManager,
   name,
   component: DefaultComponent,

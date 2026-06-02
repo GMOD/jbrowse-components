@@ -1,7 +1,13 @@
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { FormControl, IconButton, MenuItem, Select, Typography } from '@mui/material'
+import {
+  FormControl,
+  IconButton,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import WidgetHeading from './WidgetHeading.tsx'

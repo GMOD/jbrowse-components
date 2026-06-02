@@ -28,11 +28,13 @@ const useStyles = makeStyles()(theme => ({
 // Separate observer so only this checkbox re-renders when a track is toggled
 const TrackCheckbox = observer(function TrackCheckbox({
   model,
+  id,
   trackId,
   disabled,
   className,
 }: {
   model: HierarchicalTrackSelectorModel
+  id: string
   trackId: string
   disabled: boolean
   className: string
@@ -47,6 +49,11 @@ const TrackCheckbox = observer(function TrackCheckbox({
         }
       }}
       disabled={disabled}
+      slotProps={{
+        input: {
+          'data-testid': `htsTrackEntry-${id}`,
+        },
+      }}
     />
   )
 })
@@ -105,6 +112,7 @@ function TrackLabel({
         control={
           <TrackCheckbox
             model={model}
+            id={id}
             trackId={trackId}
             disabled={isUnsupported(name)}
             className={classes.compactCheckbox}
