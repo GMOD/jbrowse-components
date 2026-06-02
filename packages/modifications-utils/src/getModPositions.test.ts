@@ -10,6 +10,7 @@ test('getModPositions', () => {
     type: 'm',
     base: 'C',
     strand: '+',
+    unknownSkip: false,
     positions: [6, 17, 20, 31, 34],
   })
 })
@@ -25,6 +26,7 @@ test('getModPositions with unknown (?)', () => {
     type: 'm',
     base: 'C',
     strand: '+',
+    unknownSkip: true,
     positions: [6, 17, 20, 31, 34],
   })
 })
@@ -40,6 +42,7 @@ test('getModPositions with uppercase mod code', () => {
     type: 'C',
     base: 'C',
     strand: '+',
+    unknownSkip: true,
     positions: [6, 17, 20, 31, 34],
   })
 })
@@ -67,6 +70,7 @@ test('getModPositions with unknown (.)', () => {
     base: 'C',
     strand: '+',
     type: 'm',
+    unknownSkip: false,
     positions: [6, 17, 20, 31, 34],
   })
 })

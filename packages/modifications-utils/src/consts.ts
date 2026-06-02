@@ -5,9 +5,11 @@
 // 1. Capture strand as group 2: ([-+]) instead of [-+]
 //    - Needed to extract strand info for downstream processing
 // 2. Accept uppercase single letters: ([a-z]+|[A-Z]|[0-9]+) instead of ([a-z]+|[0-9]+)
-//    - Spec only allows lowercase or digits, NOT uppercase letters
-//    - Real-world BAMs contain uppercase codes (e.g., C+A, A+G)
-//    - These appear to be undocumented extensions for ambiguity or variant codes
+//    - The spec PROSE defines uppercase ambiguity codes A/C/G/T/U and N (an
+//      unspecified modification of the respective canonical base), but the
+//      spec's own grammar regex omits them — a known inconsistency in the spec.
+//    - Ambiguity codes are always a single uppercase letter (never multi-char
+//      or mixed with lowercase), hence [A-Z] rather than [A-Z]+.
 // 3. Capture modifier flag as group 4: ([.?]?) instead of non-capturing
 //    - Per spec: '?' = modification status of skipped bases is unknown
 //    - Per spec: '.' or absent = skipped bases should be assumed low probability of modification

@@ -1,5 +1,15 @@
 import { parseModHeader } from './consts.ts'
 
+export interface ModWithPositions {
+  type: string
+  base: string
+  strand: string
+  // true when the MM tag used the '?' flag: the modification status of bases
+  // not listed in the tag is unknown (vs '.'/absent = assumed unmodified).
+  unknownSkip: boolean
+  positions: number[]
+}
+
 const COMPLEMENT_CODE: Record<number, number> = {
   65: 84, // A->T
   84: 65, // T->A
@@ -21,12 +31,7 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
   const seqLength = fseq.length
   const isRev = fstrand === -1
   const mods = mm.split(';')
-  const result: {
-    type: string
-    base: string
-    strand: string
-    positions: number[]
-  }[] = []
+  const result: ModWithPositions[] = []
 
   for (const mod of mods) {
     // Empty string
@@ -36,9 +41,8 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
 
     const split = mod.split(',')
     const basemod = split[0]!
-    const { base, strand, typestr } = parseModHeader(basemod, mod)
-    // Note: mod field ('.' or '?') indicates how skipped bases are interpreted
-    // but for getModPositions we only need base, strand, and typestr
+    const { base, strand, typestr, mod: skipFlag } = parseModHeader(basemod, mod)
+    const unknownSkip = skipFlag === '?'
 
     // Note: Negative strand modifications (e.g., T-a) are now supported
     // They are processed the same way as positive strand modifications
@@ -104,6 +108,7 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
         type,
         base,
         strand,
+        unknownSkip,
         positions: validPositions,
       })
     }

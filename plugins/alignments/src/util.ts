@@ -1,15 +1,11 @@
+
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { modificationData } from './shared/modificationData.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { AugmentedRegion, Feature } from '@jbrowse/core/util'
-
-export function getTagAlt(feature: Feature, tag: string, alt: string) {
-  const tags = feature.get('tags') as Record<string, unknown> | undefined
-  return tags?.[tag] ?? tags?.[alt]
-}
+import type { AugmentedRegion } from '@jbrowse/core/util'
 
 export async function fetchSequence(
   region: AugmentedRegion,
@@ -43,4 +39,5 @@ export function getColorForModification(str: string) {
   return modificationData[str]?.color || randomColor(str)
 }
 
+export { getTagAlt } from '@jbrowse/modifications-utils'
 export { modificationData } from './shared/modificationData.ts'

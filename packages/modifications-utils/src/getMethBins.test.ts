@@ -100,6 +100,23 @@ describe('getMethBins CpG filtering', () => {
     expect(methBins[6]).toBe(1)
   })
 
+  test("'.' skip flag fills uncalled CpGs as unmethylated (prob 0)", () => {
+    // CpGs at index 2 and 6; only index 2 is listed in the MM tag. With the
+    // default '.'/absent flag, the skipped CpG is assumed unmodified.
+    const { methBins, methProbs } = bins('AACGATCGAA', 'C+m,0;', [230])
+    expect(methBins[2]).toBe(1)
+    expect(methBins[6]).toBe(1)
+    expect(methProbs[6]).toBe(0)
+  })
+
+  test("'?' skip flag leaves uncalled CpGs unknown (not filled)", () => {
+    // Same read, but '?' means the status of skipped bases is unknown, so the
+    // uncalled CpG at index 6 must NOT be painted unmethylated.
+    const { methBins } = bins('AACGATCGAA', 'C+m?,0;', [230])
+    expect(methBins[2]).toBe(1)
+    expect(methBins[6]).toBeUndefined()
+  })
+
   test('two CpGs on reverse strand read both stored', () => {
     // seq TTCGATCGTT → revcom AACGATCGAA: CpGs at revcom indices 2 and 6
     // pos values: 10-3=7 and 10-7=3 → ref offsets 3 and 7 via 10M CIGAR

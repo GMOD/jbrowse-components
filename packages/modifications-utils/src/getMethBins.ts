@@ -6,12 +6,11 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-  getNextRefPos,
 } from '@jbrowse/cigar-utils'
 
-import { modProbAt } from './getModProbabilities.ts'
+import { forEachModRefPos } from './forEachModRefPos.ts'
 
-import type { getModPositions } from './getModPositions.ts'
+import type { ModWithPositions } from './getModPositions.ts'
 
 // Check CpG dinucleotide context at a read sequence position.
 // getModPositions stores reverse-strand positions in revcomp space, where
@@ -23,7 +22,7 @@ function isCpGAt(seq: string, pos: number, isReverse: boolean) {
 }
 
 export interface ParsedModData {
-  modifications: ReturnType<typeof getModPositions>
+  modifications: ModWithPositions[]
   probabilities: number[] | undefined
   cigarOps: ArrayLike<number>
   seq: string
@@ -44,34 +43,38 @@ export function getMethBins({
   const hydroxyMethBins: number[] = []
   const methProbs: number[] = []
   const hydroxyMethProbs: number[] = []
-  let probIndex = 0
 
-  for (const { type, positions } of modifications) {
-    if (type !== 'm' && type !== 'h') {
-      probIndex += positions.length
-      continue
-    }
-    getNextRefPos(cigarOps, positions, (ref, idx) => {
-      if (ref < 0 || ref >= flen || !isCpGAt(seq, positions[idx]!, isReverse)) {
-        return
+  forEachModRefPos(
+    modifications,
+    probabilities,
+    cigarOps,
+    isReverse,
+    ({ type, positions }, ref, idx, prob) => {
+      const isMeth = type === 'm' || type === 'h'
+      if (
+        isMeth &&
+        ref >= 0 &&
+        ref < flen &&
+        isCpGAt(seq, positions[idx]!, isReverse)
+      ) {
+        if (type === 'm') {
+          methBins[ref] = 1
+          methProbs[ref] = prob
+        } else {
+          hydroxyMethBins[ref] = 1
+          hydroxyMethProbs[ref] = prob
+        }
       }
-      const prob = modProbAt(
-        probabilities,
-        probIndex,
-        isReverse,
-        idx,
-        positions.length,
-      )
-      if (type === 'm') {
-        methBins[ref] = 1
-        methProbs[ref] = prob
-      } else {
-        hydroxyMethBins[ref] = 1
-        hydroxyMethProbs[ref] = prob
-      }
-    })
-    probIndex += positions.length
-  }
+    },
+  )
+
+  // Per SAMtags, the '?' flag means the modification status of bases not listed
+  // in the MM tag is unknown, so we must NOT assume them unmethylated. Only when
+  // the 5mC call uses '.'/absent (low probability of modification for skipped
+  // bases) do we fill in undetected CpGs as unmethylated below.
+  const fillUnmethylated = !modifications.some(
+    m => m.type === 'm' && m.unknownSkip,
+  )
 
   // Scan the full read sequence for ALL CpG dinucleotides and mark any not
   // already detected from the MM tag as unmethylated (prob=0).
@@ -79,32 +82,34 @@ export function getMethBins({
   // Reverse strand: the CIGAR scan runs in revcomp coordinate space (same
   // space that getModPositions uses), so a CpG in revcomp appears as
   // seq[readPos]='G' preceded by seq[readPos-1]='C' in the stored read.
-  let readPos = 0
-  let refPos = 0
-  for (let i = 0, l = cigarOps.length; i < l; i++) {
-    const packed = cigarOps[i]!
-    const len = packed >> 4
-    const op = packed & 0xf
-    if (op === CIGAR_S || op === CIGAR_I) {
-      readPos += len
-    } else if (op === CIGAR_D || op === CIGAR_N) {
-      refPos += len
-    } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
-      for (let j = 0; j < len; j++) {
-        const rp = readPos + j
-        const rf = refPos + j
-        if (
-          isCpGAt(seq, rp, isReverse) &&
-          rf >= 0 &&
-          rf < flen &&
-          !methBins[rf]
-        ) {
-          methBins[rf] = 1
-          methProbs[rf] = 0
+  if (fillUnmethylated) {
+    let readPos = 0
+    let refPos = 0
+    for (let i = 0, l = cigarOps.length; i < l; i++) {
+      const packed = cigarOps[i]!
+      const len = packed >> 4
+      const op = packed & 0xf
+      if (op === CIGAR_S || op === CIGAR_I) {
+        readPos += len
+      } else if (op === CIGAR_D || op === CIGAR_N) {
+        refPos += len
+      } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
+        for (let j = 0; j < len; j++) {
+          const rp = readPos + j
+          const rf = refPos + j
+          if (
+            isCpGAt(seq, rp, isReverse) &&
+            rf >= 0 &&
+            rf < flen &&
+            !methBins[rf]
+          ) {
+            methBins[rf] = 1
+            methProbs[rf] = 0
+          }
         }
+        readPos += len
+        refPos += len
       }
-      readPos += len
-      refPos += len
     }
   }
 

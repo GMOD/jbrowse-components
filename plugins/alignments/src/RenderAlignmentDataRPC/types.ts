@@ -47,20 +47,6 @@ export interface ModTooltipEntry {
   name: string
 }
 
-// Internal type for modification data during processing
-export interface ModificationEntry {
-  featureId: string
-  position: number
-  base: string
-  modType: string
-  isSimplex: boolean
-  strand: number
-  r: number
-  g: number
-  b: number
-  prob: number
-}
-
 export interface PileupDataResult {
   // Read data - positions are absolute genomic uint32
   readPositions: Uint32Array // [start, end] pairs
