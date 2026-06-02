@@ -40,6 +40,35 @@ export function hasIntrons(transcripts: Feature[]) {
   return merged.length > 1
 }
 
+/**
+ * Build the collapsed-intron regions from exon/CDS intervals. Each interval is
+ * expanded by `padding` on both sides (the visible window around each splice
+ * boundary), then overlapping padded intervals are merged. Merging uses w=0
+ * because the padding is already baked into start/end; an intron is collapsed
+ * whenever its gap exceeds 2*padding.
+ */
+export function buildCollapsedRegions({
+  intervals,
+  padding,
+  refName,
+  assemblyName,
+}: {
+  intervals: { start: number; end: number }[]
+  padding: number
+  refName: string
+  assemblyName: string
+}) {
+  return mergeIntervals(
+    intervals.map(f => ({
+      refName,
+      assemblyName,
+      start: f.start - padding,
+      end: f.end + padding,
+    })),
+    0,
+  )
+}
+
 interface ViewState {
   bpPerPx: number
   offsetPx: number
@@ -78,16 +107,14 @@ export async function collapseIntrons({
   const refName = assembly.getCanonicalRefName2(r0)
   const subs = getExonsAndCDS(transcripts)
   const snapshot = getSnapshot(view)
-  const { id, offsetPx, bpPerPx, ...rest } = snapshot
-  const mergedRegions = mergeIntervals(
-    subs.map(f => ({
-      refName,
-      start: f.get('start') - padding,
-      end: f.get('end') + padding,
-      assemblyName: view.assemblyNames[0],
-    })),
+  const { id, ...rest } = snapshot
+
+  const mergedRegions = buildCollapsedRegions({
+    intervals: subs.map(f => ({ start: f.get('start'), end: f.get('end') })),
     padding,
-  )
+    refName,
+    assemblyName: assembly.name,
+  })
 
   // Compute the correct bpPerPx and offsetPx for the new regions BEFORE creating the view.
   // We do this upfront (instead of calling showAllRegions() after creation) to avoid

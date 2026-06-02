@@ -1,4 +1,5 @@
 import {
+  buildCollapsedRegions,
   calculateInitialViewState,
   featureHasExonsOrCDS,
   getExonsAndCDS,
@@ -82,6 +83,61 @@ describe('CollapseIntrons utilities', () => {
       expect(getTranscripts(feat({ subfeatures: [transcript] }))).toEqual([
         transcript,
       ])
+    })
+  })
+
+  describe('buildCollapsedRegions', () => {
+    const args = { refName: 'chr1', assemblyName: 'hg19' }
+
+    it('pads each exon by the window size', () => {
+      const regions = buildCollapsedRegions({
+        intervals: [{ start: 1000, end: 1100 }],
+        padding: 50,
+        ...args,
+      })
+      expect(regions).toEqual([
+        { refName: 'chr1', assemblyName: 'hg19', start: 950, end: 1150 },
+      ])
+    })
+
+    it('collapses a wide intron into separate regions', () => {
+      // gap = 800, well beyond any padding window -> stays collapsed (2 regions)
+      const regions = buildCollapsedRegions({
+        intervals: [
+          { start: 0, end: 100 },
+          { start: 900, end: 1000 },
+        ],
+        padding: 100,
+        ...args,
+      })
+      expect(regions).toHaveLength(2)
+    })
+
+    it('merges exons whose padded windows overlap (intron < 2*padding)', () => {
+      // gap = 150, 2*padding = 200, so 150 < 200 -> windows overlap, merge
+      const regions = buildCollapsedRegions({
+        intervals: [
+          { start: 0, end: 100 },
+          { start: 250, end: 350 },
+        ],
+        padding: 100,
+        ...args,
+      })
+      expect(regions).toHaveLength(1)
+      expect(regions[0]).toMatchObject({ start: -100, end: 450 })
+    })
+
+    it('keeps introns between 2*padding and 4*padding collapsed (regression: no double-padding)', () => {
+      // gap = 300 sits in the old broken window (>2p, <4p). Must stay 2 regions.
+      const regions = buildCollapsedRegions({
+        intervals: [
+          { start: 0, end: 100 },
+          { start: 400, end: 500 },
+        ],
+        padding: 100,
+        ...args,
+      })
+      expect(regions).toHaveLength(2)
     })
   })
 
