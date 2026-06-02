@@ -70,7 +70,7 @@ test('handles features with different strands correctly', async () => {
 
   const feature = features.find(f => f.get('name') === 'SV2')
   expect(feature?.get('strand')).toBe(1) // +
-  expect(feature?.get('mate').strand).toBe(1) // +
+  expect((feature?.get('mate') as { strand: number }).strand).toBe(1) // +
 })
 
 test('handles different SV types correctly', async () => {

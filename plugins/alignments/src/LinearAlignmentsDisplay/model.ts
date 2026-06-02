@@ -607,7 +607,9 @@ export default function stateModelFactory(
           // the per-bp depth scan doesn't recompute on every animation frame
           // during pan/zoom — same approach as wiggle's visibleScoreRange.
           return computeVisibleCoverageStats(view.coarseDynamicBlocks, b =>
-            self.rpcDataMap.get(b.displayedRegionIndex),
+            b.displayedRegionIndex === undefined
+              ? undefined
+              : self.rpcDataMap.get(b.displayedRegionIndex),
           )
         },
 

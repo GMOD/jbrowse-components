@@ -46,8 +46,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         id: ElementId,
         /**
          * #property
+         * Abstract base: never registered or instantiated standalone, always
+         * composed into a concrete subclass (e.g. LinearSyntenyView) that
+         * overrides `type` with its own literal. Kept as `types.string` rather
+         * than a literal so subclass models stay assignable to this base type.
          */
-        type: types.literal('LinearComparativeView'),
+        type: types.string,
         /**
          * #property
          */

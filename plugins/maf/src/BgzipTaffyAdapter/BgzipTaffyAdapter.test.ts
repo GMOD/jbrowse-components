@@ -717,7 +717,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
     expect(featuresArray.length).toBeGreaterThan(0)
 
     const first = featuresArray[0]!
-    const alignments = first.get('alignments')
+    const alignments = first.get('alignments') as Record<string, unknown>
 
     expect(alignments).toBeDefined()
     expect(typeof alignments).toBe('object')

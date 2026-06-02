@@ -4,6 +4,13 @@ import { toArray } from 'rxjs/operators'
 import Adapter, { pickPifPrefix } from './PairwiseIndexedPAFAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 
+interface Mate {
+  refName: string
+  assemblyName: string
+  start: number
+  end: number
+}
+
 function makeAdapter(
   pifFile: string,
   assemblyNames: string[],
@@ -52,7 +59,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
       expect(feature.get('start')).toBe(0)
       expect(feature.get('end')).toBe(54801)
 
-      const mate = feature.get('mate')
+      const mate = feature.get('mate') as Mate
       expect(mate.refName).toBe('ctgA')
       expect(mate.assemblyName).toBe('volvox')
       expect(mate.start).toBe(0)
@@ -78,7 +85,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
       expect(feature.get('start')).toBe(0)
       expect(feature.get('end')).toBe(50001)
 
-      const mate = feature.get('mate')
+      const mate = feature.get('mate') as Mate
       expect(mate.refName).toBe('ctgA')
       expect(mate.assemblyName).toBe('volvox_ins')
       expect(mate.start).toBe(0)
@@ -113,10 +120,12 @@ describe('PairwiseIndexedPAFAdapter', () => {
       const qFeature = queryFeatures[0]!
       const tFeature = targetFeatures[0]!
 
-      expect(qFeature.get('start')).toBe(tFeature.get('mate').start)
-      expect(qFeature.get('end')).toBe(tFeature.get('mate').end)
-      expect(qFeature.get('mate').start).toBe(tFeature.get('start'))
-      expect(qFeature.get('mate').end).toBe(tFeature.get('end'))
+      const qMate = qFeature.get('mate') as Mate
+      const tMate = tFeature.get('mate') as Mate
+      expect(qFeature.get('start')).toBe(tMate.start)
+      expect(qFeature.get('end')).toBe(tMate.end)
+      expect(qMate.start).toBe(tFeature.get('start'))
+      expect(qMate.end).toBe(tFeature.get('end'))
     })
   })
 
@@ -175,10 +184,11 @@ describe('PairwiseIndexedPAFAdapter', () => {
 
       expect(queryFeatures.length).toBe(1)
       const feature = queryFeatures[0]!
+      const mate = feature.get('mate') as Mate
       expect(feature.get('start')).toBe(0)
       expect(feature.get('end')).toBe(45141)
-      expect(feature.get('mate').start).toBe(0)
-      expect(feature.get('mate').end).toBe(50001)
+      expect(mate.start).toBe(0)
+      expect(mate.end).toBe(50001)
     })
   })
 

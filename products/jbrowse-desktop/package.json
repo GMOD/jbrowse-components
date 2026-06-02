@@ -49,7 +49,7 @@
     "@gmod/faidx": "^2.0.0",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.4",
+    "@jbrowse/mobx-state-tree": "^5.10.5",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",

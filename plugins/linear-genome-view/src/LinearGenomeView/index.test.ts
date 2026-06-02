@@ -1373,7 +1373,6 @@ describe('TrackInit with display configuration', () => {
         assemblyManager: types.optional(AssemblyManager, {
           assemblies: {
             volvox: {
-              // @ts-expect-error
               regions: volvoxDisplayedRegions,
             },
           },

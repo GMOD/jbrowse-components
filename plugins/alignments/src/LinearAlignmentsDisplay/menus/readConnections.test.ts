@@ -19,13 +19,18 @@ function makeModel() {
 describe('read connections menu', () => {
   test('"Link supplementary alignments" toggles linkedReads on/off', () => {
     const model = makeModel()
-    const linkItem = () =>
-      getReadConnectionsMenuItem(model).subMenu.find(
+    const linkItem = () => {
+      const item = getReadConnectionsMenuItem(model).subMenu.find(
         i => 'label' in i && i.label === 'Link supplementary alignments',
       )
-    linkItem()!.onClick()
+      if (!item || !('onClick' in item)) {
+        throw new Error('no Link supplementary alignments item')
+      }
+      return item
+    }
+    linkItem().onClick()
     expect(model.linkedReads).toBe('normal')
-    linkItem()!.onClick()
+    linkItem().onClick()
     expect(model.linkedReads).toBe('off')
   })
 

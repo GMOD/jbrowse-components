@@ -29,13 +29,11 @@ const useStyles = makeStyles()(theme => ({
 const TrackCheckbox = observer(function TrackCheckbox({
   model,
   trackId,
-  id,
   disabled,
   className,
 }: {
   model: HierarchicalTrackSelectorModel
   trackId: string
-  id: string
   disabled: boolean
   className: string
 }) {
@@ -108,7 +106,6 @@ function TrackLabel({
           <TrackCheckbox
             model={model}
             trackId={trackId}
-            id={id}
             disabled={isUnsupported(name)}
             className={classes.compactCheckbox}
           />

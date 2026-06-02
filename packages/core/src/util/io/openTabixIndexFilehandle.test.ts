@@ -1,7 +1,10 @@
 import { openTabixIndexFilehandle } from './index.ts'
 
 describe('openTabixIndexFilehandle', () => {
-  const location = { localPath: '/path/to/file.gz.tbi', locationType: 'LocalPathLocation' }
+  const location = {
+    localPath: '/path/to/file.gz.tbi',
+    locationType: 'LocalPathLocation' as const,
+  }
 
   it('routes CSI to csiFilehandle only', () => {
     const r = openTabixIndexFilehandle(location, 'CSI')

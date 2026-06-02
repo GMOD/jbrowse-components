@@ -235,9 +235,10 @@ export default function stateModelFactory(
                   return
                 }
                 const view = getView(self)
-                const assembly = session.assemblyManager.get(
-                  view.assemblyNames[0],
-                )
+                const assemblyName = view.assemblyNames[0]
+                const assembly = assemblyName
+                  ? session.assemblyManager.get(assemblyName)
+                  : undefined
                 if (assembly) {
                   session.queueDialog(handleClose => [
                     CollapseIntronsDialog,

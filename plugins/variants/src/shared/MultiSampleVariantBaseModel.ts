@@ -201,12 +201,13 @@ export default function MultiSampleVariantBaseModelF(
     types
       .compose(
         // Abstract base shared by both MultiLinearVariantDisplay and
-        // LinearVariantMatrixDisplay. The name + `type` literal below are
-        // borrowed from the matrix subclass for historical reasons; both are
-        // always overridden by the concrete subclass that composes this
-        // (MultiLinearVariantDisplay overrides `type` to its own literal). The
-        // base is never registered or instantiated directly. Don't rename the
-        // subclass `type` literals — they appear in stored session snapshots.
+        // LinearVariantMatrixDisplay. The name below is borrowed from the
+        // matrix subclass for historical reasons. `type` is `types.string`
+        // (not a literal) because the base is never registered or instantiated
+        // directly — the concrete subclass that composes this always overrides
+        // `type` with its own literal, and a plain string keeps those subclass
+        // models assignable to this base type. Don't rename the subclass `type`
+        // literals — they appear in stored session snapshots.
         'LinearVariantMatrixDisplay',
         BaseDisplay,
         TrackHeightMixin(),
@@ -214,7 +215,7 @@ export default function MultiSampleVariantBaseModelF(
         ConfigOverrideMixin(),
         TreeSidebarMixin<Source>(),
         types.model({
-          type: types.literal('LinearVariantMatrixDisplay'),
+          type: types.string,
           configuration: ConfigurationReference(configSchema),
           rowHeightMode: types.optional(types.number, 0),
           jexlFilters: types.maybe(types.array(types.string)),

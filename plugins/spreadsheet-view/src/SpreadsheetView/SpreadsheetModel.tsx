@@ -172,34 +172,36 @@ export default function stateModelFactory() {
         self.visibleColumns = arg
       },
     }))
-    .preProcessSnapshot(snap => {
-      const s = snap as
-        | ({
-            columns?: { isDerived?: boolean }[]
-            rowSet?: {
-              rows?: {
-                feature?: SimpleFeatureSerialized
-                extendedData?: { vcfFeature?: SimpleFeatureSerialized }
-              }[]
+    .preProcessSnapshot(
+      (
+        snap:
+          | ({
+              columns?: { isDerived?: boolean }[]
+              rowSet?: {
+                rows?: {
+                  feature?: SimpleFeatureSerialized
+                  extendedData?: { vcfFeature?: SimpleFeatureSerialized }
+                }[]
+              }
+            } & Record<string, unknown>)
+          | undefined,
+      ) =>
+        snap
+          ? {
+              ...snap,
+              columns: snap.columns?.filter(f => !f.isDerived),
+              rowSet: snap.rowSet
+                ? {
+                    ...snap.rowSet,
+                    rows: snap.rowSet.rows?.map(r => ({
+                      ...r,
+                      feature: r.feature ?? r.extendedData?.vcfFeature,
+                    })),
+                  }
+                : undefined,
             }
-          } & Record<string, unknown>)
-        | undefined
-      return s
-        ? {
-            ...s,
-            columns: s.columns?.filter(f => !f.isDerived),
-            rowSet: s.rowSet
-              ? {
-                  ...s.rowSet,
-                  rows: s.rowSet.rows?.map(r => ({
-                    ...r,
-                    feature: r.feature ?? r.extendedData?.vcfFeature,
-                  })),
-                }
-              : undefined,
-          }
-        : s
-    })
+          : snap,
+    )
 }
 
 export type SpreadsheetStateModel = ReturnType<typeof stateModelFactory>
