@@ -15,7 +15,8 @@ export function featureHasCDS(feature: SimpleFeatureSerialized) {
 
 export function featureHasExon(feature: SimpleFeatureSerialized) {
   return (
-    feature.subfeatures?.some(sub => sub.type?.toLowerCase() === 'exon') ?? false
+    feature.subfeatures?.some(sub => sub.type?.toLowerCase() === 'exon') ??
+    false
   )
 }
 

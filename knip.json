@@ -1,0 +1,31 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "include": ["dependencies", "files"],
+  "ignore": [
+    "**/*.generated.ts",
+    "**/test_data/**",
+    "**/public/**",
+    "**/*umd_plugin.js",
+    "**/__mocks__/**",
+    "**/pagefind/**",
+    "component_tests/**",
+    "embedded_demos/**",
+    "scripts/**",
+    "products/jbrowse-web/browser-tests/**",
+    "products/jbrowse-img/test/**",
+    "products/jbrowse-aws-lambda-functions/**",
+    "**/.storybook/**",
+    "**/*.astro",
+    "packages/core/src/util/color-bits/**",
+    "packages/core/src/util/tss-react/**",
+    "packages/core/src/util/QuickLRU/**"
+  ],
+  "workspaces": {
+    "products/jbrowse-desktop": {
+      "entry": ["electron/electron.ts", "src/**/*.{ts,tsx}!"]
+    },
+    "website": {
+      "entry": ["scripts/*.ts", "docusaurus.config.ts", "sidebars.{js,ts}"]
+    }
+  }
+}

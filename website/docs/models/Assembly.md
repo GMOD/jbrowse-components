@@ -155,9 +155,6 @@ string[]
 
 #### getter: initialized
 
-this is a getter with a side effect of loading the data. not the best practice,
-but it helps to lazy load the assembly
-
 ```js
 // type
 boolean
@@ -257,29 +254,14 @@ getCanonicalRefName2: (refName: string) => string
 isValidRefName: (refName: string) => boolean
 ```
 
-#### method: getAdapterMapEntry
-
-```js
-// type signature
-getAdapterMapEntry: (adapterConf: AdapterConf, options: BaseOptions) => Promise<RefNameMap>
-```
-
 #### method: getRefNameMapForAdapter
 
-get Map of `canonical-name -> adapter-specific-name`
+get Map of `canonical-name -> adapter-specific-name`, memoized per adapter
+config so concurrent callers share one load
 
 ```js
 // type signature
-getRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) => Promise<RefNameAliases>
-```
-
-#### method: getReverseRefNameMapForAdapter
-
-get Map of `adapter-specific-name -> canonical-name`
-
-```js
-// type signature
-getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, opts: BaseOptions) => Promise<RefNameAliases>
+getRefNameMapForAdapter: (adapterConf: AdapterConf, options: BaseOptions) => Promise<RefNameAliases>
 ```
 
 ### Assembly - Actions

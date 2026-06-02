@@ -147,7 +147,10 @@ export async function navToSingleLevelBreak({
     }
   } else {
     // for encompassing view, fit the whole range
-    const l0 = lgv.bpToPx({ coord: Math.max(0, startPos - windowSize), refName })
+    const l0 = lgv.bpToPx({
+      coord: Math.max(0, startPos - windowSize),
+      refName,
+    })
     const r0 = lgv.bpToPx({ coord: endPos + windowSize, refName: mateRefName })
     if (l0 && r0) {
       lgv.moveTo({ ...l0, offset: l0.offsetPx }, { ...r0, offset: r0.offsetPx })

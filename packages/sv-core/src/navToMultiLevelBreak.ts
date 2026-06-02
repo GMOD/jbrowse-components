@@ -28,7 +28,11 @@ export async function navToMultiLevelBreak({
   mirror?: boolean
   tracks?: Track[]
 }) {
-  const { coverage, region: r1, mateRegion: r2 } = await getBreakendAssemblyRegions({
+  const {
+    coverage,
+    region: r1,
+    mateRegion: r2,
+  } = await getBreakendAssemblyRegions({
     feature,
     session,
     assemblyName,

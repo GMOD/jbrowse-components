@@ -10,7 +10,10 @@ import { showGenomicCoordsOption } from '../featureTypeUtil.ts'
 import { saveAs } from '../../../util/index.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
-import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from '../model.ts'
+import type {
+  SequenceDisplayMode,
+  SequenceFeatureDetailsModel,
+} from '../model.ts'
 
 // lazies
 const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog.tsx'))

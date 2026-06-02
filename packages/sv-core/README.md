@@ -8,13 +8,38 @@ JBrowse 2 code shared between sv type code
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### breakpointBpPerPx
+
+bpPerPx that fits `windowSize` bp on each side of a breakpoint across the view
+width. Falls back to a zoomed-in default when no window is requested.
+
+```js
+// type signature
+(windowSize: number, width: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
+### getBreakendAssemblyRegions
+
+Loads the assembly for a breakend feature and resolves the two regions its
+endpoints span. Throws if the assembly, its regions, or either endpoint's region
+cannot be found.
+
+```js
+// type signature
+({ feature, session, assemblyName, }: { feature: Feature; session: AbstractSessionModel; assemblyName: string; }) => Promise<{ coverage: { pos: number; refName: string; mateRefName: string; matePos: number; }; region: BasicRegion; mateRegion: BasicRegion; }>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
 ### getBreakendCoveringRegions
 
 Resolves the two canonical-refName endpoints a breakend/SV feature spans.
 
 ```js
 // type signature
-({ feature, assembly, }: { feature: Feature; assembly: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & ... 13 more ... & IStateTreeNode<...>; }) => { ...; }
+({ feature, assembly, }: { feature: Feature; assembly: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & ... 12 more ... & IStateTreeNode<...>; }) => { ...; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

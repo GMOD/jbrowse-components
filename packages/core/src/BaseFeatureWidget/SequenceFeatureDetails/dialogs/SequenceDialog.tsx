@@ -12,7 +12,10 @@ import { useSequenceFetch } from '../useSequenceFetch.ts'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type { BaseFeatureWidgetModel } from '../../stateModelFactory.ts'
-import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from '../model.ts'
+import type {
+  SequenceDisplayMode,
+  SequenceFeatureDetailsModel,
+} from '../model.ts'
 
 const useStyles = makeStyles()({
   dialogContent: {

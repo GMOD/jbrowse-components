@@ -29,7 +29,7 @@ session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies
 
 ```js
 // type signature
-IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<string, Promise<...>>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 10 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
@@ -40,7 +40,7 @@ assemblies: types.array(assemblyFactory(conf, pm))
 
 ```js
 // type
-Record<string, ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<...> | undefined; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>>
+Record<string, ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<...> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & IStateTreeNode<...>>
 ```
 
 #### getter: assemblyNamesList
@@ -80,7 +80,7 @@ getDisplayName: (asmName: string) => string
 
 ```js
 // type signature
-get: (asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
+get: (asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 7 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### method: waitForAssembly
@@ -90,7 +90,7 @@ with regions loaded
 
 ```js
 // type signature
-waitForAssembly: (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { ...; } & ... 12 more ... & IStateTreeNode<...>) | undefined>
+waitForAssembly: (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { ...; } & ... 11 more ... & IStateTreeNode<...>) | undefined>
 ```
 
 #### method: getRefNameMapForAdapter
@@ -98,13 +98,6 @@ waitForAssembly: (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ con
 ```js
 // type signature
 getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string | undefined, opts: AssemblyBaseOpts) => Promise<RefNameAliases | undefined>
-```
-
-#### method: getReverseRefNameMapForAdapter
-
-```js
-// type signature
-getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string | undefined, opts: AssemblyBaseOpts) => Promise<RefNameAliases | undefined>
 ```
 
 #### method: isValidRefName
@@ -124,7 +117,7 @@ directly
 
 ```js
 // type signature
-removeAssembly: (asm: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) => void
+removeAssembly: (asm: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: addAssembly

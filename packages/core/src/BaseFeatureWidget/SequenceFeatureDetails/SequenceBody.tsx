@@ -5,7 +5,10 @@ import { Button, Typography } from '@mui/material'
 import SequencePanel from './SequencePanel.tsx'
 import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
 
-import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from './model.ts'
+import type {
+  SequenceDisplayMode,
+  SequenceFeatureDetailsModel,
+} from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { ErrorState, SeqState } from '../util.tsx'
 

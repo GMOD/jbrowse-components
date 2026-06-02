@@ -6,8 +6,8 @@ Each story is a `*Render` function (the live render) plus a
 **The `source.code` string must stay self-contained and copy-pasteable** —
 inline the full config (or interpolate the self-contained `VOLVOX_SOURCE_CONFIG`
 string), import only from the published package
-(`@jbrowse/react-linear-genome-view2`), and do not reference internal
-helpers like `getVolvoxConfig`. Users copy this verbatim into their own app.
+(`@jbrowse/react-linear-genome-view2`), and do not reference internal helpers
+like `getVolvoxConfig`. Users copy this verbatim into their own app.
 
 Render functions may use `examples/util.tsx` (`getVolvoxConfig`, etc.) because
 they load the local `test_data/volvox/config.json` with its many specific

@@ -120,7 +120,10 @@ export async function getAssembly({
 
   const { load, faiLocation, gziLocation } = runFlags
   const uri = (p: string) =>
-    ({ uri: mapLocationForFiles(p, load), locationType: 'UriLocation' }) as const
+    ({
+      uri: mapLocationForFiles(p, load),
+      locationType: 'UriLocation',
+    }) as const
 
   let adapter: Sequence['adapter']
   let filesToLoad: string[] = []

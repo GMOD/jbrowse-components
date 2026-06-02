@@ -8,5 +8,5 @@ inline the full config, import only from the published package
 (`@jbrowse/react-circular-genome-view2`), and do not reference shared
 helpers/consts. Users copy this verbatim into their own app.
 
-Render functions here also inline their config (no shared assembly/track
-consts) to match, since the configs are small.
+Render functions here also inline their config (no shared assembly/track consts)
+to match, since the configs are small.
