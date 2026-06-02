@@ -394,9 +394,6 @@ importers:
       '@gmod/bgzf-filehandle':
         specifier: ^6.2.0
         version: 6.2.0
-      '@gmod/http-range-fetcher':
-        specifier: ^5.0.7
-        version: 5.0.7
       '@jbrowse/jexl':
         specifier: ^3.0.2
         version: 3.0.2
@@ -418,9 +415,6 @@ importers:
       '@mui/system':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
-      '@mui/types':
-        specifier: ^9.0.0
-        version: 9.0.0(@types/react@19.2.15)
       '@mui/x-data-grid':
         specifier: ^9.3.0
         version: 9.3.0(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@mui/system@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -448,9 +442,6 @@ importers:
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       generic-filehandle2:
         specifier: ^2.1.10
         version: 2.1.10
@@ -487,9 +478,6 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^5.10.6
-        version: 5.10.6(mobx@6.15.4)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -537,12 +525,6 @@ importers:
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      copy-to-clipboard:
-        specifier: ^4.0.2
-        version: 4.0.2
-      librpc-web-mod:
-        specifier: ^2.1.1
-        version: 2.1.1
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -588,9 +570,6 @@ importers:
 
   packages/synteny-core:
     dependencies:
-      '@jbrowse/alignments-core':
-        specifier: workspace:^
-        version: link:../alignments-core
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../cigar-utils
@@ -677,9 +656,6 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
-      '@mui/icons-material':
-        specifier: ^9.0.1
-        version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -689,9 +665,6 @@ importers:
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
-      mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: '>=19.0.0'
         version: 19.2.6
@@ -749,9 +722,6 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
-      '@jbrowse/plugin-wiggle':
-        specifier: workspace:^
-        version: link:../wiggle
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core
@@ -764,18 +734,9 @@ importers:
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@mui/x-charts-vendor':
-        specifier: ^9.0.0
-        version: 9.0.0
-      canvas2svg:
-        specifier: ^1.0.16
-        version: 1.0.16
       copy-to-clipboard:
         specifier: ^4.0.2
         version: 4.0.2
-      fast-deep-equal:
-        specifier: ^3.1.3
-        version: 3.1.3
       generic-filehandle2:
         specifier: ^2.1.10
         version: 2.1.10
@@ -794,9 +755,6 @@ importers:
 
   plugins/arc:
     dependencies:
-      '@gmod/vcf':
-        specifier: ^7.0.8
-        version: 7.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -827,9 +785,6 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.2.6(react@19.2.6)
-      rxjs:
-        specifier: ^7.8.2
-        version: 7.8.2
     devDependencies:
       '@jbrowse/jexl':
         specifier: ^3.0.2
@@ -861,9 +816,6 @@ importers:
 
   plugins/bed:
     dependencies:
-      '@flatten-js/interval-tree':
-        specifier: ^2.0.3
-        version: 2.0.3
       '@gmod/bbi':
         specifier: ^9.1.0
         version: 9.1.0
@@ -924,9 +876,6 @@ importers:
 
   plugins/canvas:
     dependencies:
-      '@jbrowse/alignments-core':
-        specifier: workspace:^
-        version: link:../../packages/alignments-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1005,9 +954,6 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^5.10.6
         version: 5.10.6(mobx@6.15.4)
-      '@jbrowse/plugin-alignments':
-        specifier: workspace:^
-        version: link:../alignments
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -1123,9 +1069,6 @@ importers:
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
-      '@jbrowse/cigar-utils':
-        specifier: workspace:^
-        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1150,12 +1093,6 @@ importers:
       '@mui/x-data-grid':
         specifier: ^9.3.0
         version: 9.3.0(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@mui/system@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/file-saver-es':
-        specifier: ^2.0.3
-        version: 2.0.3
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -1177,18 +1114,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^5.10.6
         version: 5.10.6(mobx@6.15.4)
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
-      '@jbrowse/plugin-sequence':
-        specifier: workspace:^
-        version: link:../sequence
       '@jbrowse/plugin-wiggle':
         specifier: workspace:^
         version: link:../wiggle
-      '@jbrowse/wiggle-core':
-        specifier: workspace:^
-        version: link:../../packages/wiggle-core
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -1207,9 +1135,6 @@ importers:
 
   plugins/gff3:
     dependencies:
-      '@flatten-js/interval-tree':
-        specifier: ^2.0.3
-        version: 2.0.3
       '@gmod/tabix':
         specifier: ^3.3.8
         version: 3.3.8
@@ -1252,60 +1177,27 @@ importers:
       '@mui/x-data-grid':
         specifier: ^9.3.0
         version: 9.3.0(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@mui/system@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/file-saver-es':
-        specifier: ^2.0.3
-        version: 2.0.3
-      base64-js:
-        specifier: ^1.5.1
-        version: 1.5.1
       copy-to-clipboard:
         specifier: ^4.0.2
         version: 4.0.2
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
       mobx-react:
         specifier: ^9.2.2
         version: 9.2.2(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      pako-esm2:
-        specifier: ^2.0.2
-        version: 2.0.2
       react:
         specifier: '>=19.0.0'
         version: 19.2.6
 
   plugins/gtf:
     dependencies:
-      '@flatten-js/interval-tree':
-        specifier: ^2.0.3
-        version: 2.0.3
-      '@gmod/bgzf-filehandle':
-        specifier: ^6.2.0
-        version: 6.2.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^5.10.6
-        version: 5.10.6(mobx@6.15.4)
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
-      '@mui/material':
-        specifier: ^9.0.1
-        version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       gtf-nostream:
         specifier: ^1.3.4
         version: 1.3.4
-      mobx:
-        specifier: ^6.15.4
-        version: 6.15.4
-      mobx-react:
-        specifier: ^9.2.2
-        version: 9.2.2(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react:
         specifier: '>=19.0.0'
         version: 19.2.6
@@ -1363,9 +1255,6 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
-      '@mui/icons-material':
-        specifier: ^9.0.1
-        version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
       '@mui/x-charts-vendor':
         specifier: ^9.0.0
         version: 9.0.0
@@ -1384,9 +1273,6 @@ importers:
       react:
         specifier: '>=19.0.0'
         version: 19.2.6
-      rxjs:
-        specifier: ^7.8.2
-        version: 7.8.2
 
   plugins/jobs-management:
     dependencies:
@@ -1438,9 +1324,6 @@ importers:
 
   plugins/linear-comparative-view:
     dependencies:
-      '@gmod/hclust':
-        specifier: ^3.0.14
-        version: 3.0.14
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -1456,39 +1339,21 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
-      '@jbrowse/plugin-comparative-adapters':
-        specifier: workspace:^
-        version: link:../comparative-adapters
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
-      '@jbrowse/tree-sidebar':
-        specifier: workspace:^
-        version: link:../../packages/tree-sidebar
-      '@jbrowse/wiggle-core':
-        specifier: workspace:^
-        version: link:../../packages/wiggle-core
       '@mui/icons-material':
         specifier: ^9.0.1
         version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@mui/x-data-grid':
-        specifier: ^9.3.0
-        version: 9.3.0(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@mui/system@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/file-saver-es':
-        specifier: ^2.0.3
-        version: 2.0.3
       copy-to-clipboard:
         specifier: ^4.0.2
         version: 4.0.2
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -1777,9 +1642,6 @@ importers:
 
   plugins/variants:
     dependencies:
-      '@flatten-js/interval-tree':
-        specifier: ^2.0.3
-        version: 2.0.3
       '@gmod/hclust':
         specifier: 3.0.14
         version: 3.0.14
@@ -1801,9 +1663,6 @@ importers:
       '@jbrowse/plugin-canvas':
         specifier: workspace:^
         version: link:../canvas
-      '@jbrowse/plugin-circular-view':
-        specifier: workspace:^
-        version: link:../circular-view
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1822,27 +1681,15 @@ importers:
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@mui/x-charts-vendor':
-        specifier: ^9.0.0
-        version: 9.0.0
       '@mui/x-data-grid':
         specifier: ^9.3.0
         version: 9.3.0(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@mui/system@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/file-saver-es':
-        specifier: ^2.0.3
-        version: 2.0.3
       copy-to-clipboard:
         specifier: ^4.0.2
         version: 4.0.2
-      escape-html:
-        specifier: ^1.0.3
-        version: 1.0.3
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -1888,27 +1735,9 @@ importers:
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@mui/x-charts-vendor':
-        specifier: ^9.0.0
-        version: 9.0.0
       '@mui/x-data-grid':
         specifier: ^9.3.0
         version: 9.3.0(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@mui/system@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/file-saver-es':
-        specifier: ^2.0.3
-        version: 2.0.3
-      colord:
-        specifier: ^2.9.3
-        version: 2.9.3
-      copy-to-clipboard:
-        specifier: ^4.0.2
-        version: 4.0.2
-      fast-deep-equal:
-        specifier: ^3.1.3
-        version: 3.1.3
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
@@ -2119,9 +1948,6 @@ importers:
       sanitize-filename:
         specifier: ^1.6.4
         version: 1.6.4
-      swr:
-        specifier: ^2.4.1
-        version: 2.4.1(react@19.2.6)
     devDependencies:
       '@electron/notarize':
         specifier: ^3.1.1
@@ -2312,30 +2138,18 @@ importers:
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@types/file-saver-es':
-        specifier: ^2.0.3
-        version: 2.0.3
-      base64-js:
-        specifier: ^1.5.1
-        version: 1.5.1
       dockview-core:
         specifier: ^6.6.1
         version: 6.6.1
       dockview-react:
         specifier: ^6.6.1
         version: 6.6.1(react@19.2.6)
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       mobx:
         specifier: ^6.15.4
         version: 6.15.4
       mobx-react:
         specifier: ^9.2.2
         version: 9.2.2(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      pako-esm2:
-        specifier: ^2.0.2
-        version: 2.0.2
       react:
         specifier: '>=18.0.0'
         version: 19.2.6
@@ -2384,9 +2198,6 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
-      '@mui/icons-material':
-        specifier: ^9.0.1
-        version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -2474,9 +2285,6 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
-      '@mui/icons-material':
-        specifier: ^9.0.1
-        version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
       '@mui/material':
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -2489,9 +2297,6 @@ importers:
       react:
         specifier: '>=18.0.0'
         version: 19.2.6
-      rxjs:
-        specifier: ^7.8.2
-        version: 7.8.2
 
   products/jbrowse-web:
     dependencies:
@@ -2618,9 +2423,6 @@ importers:
       '@types/file-saver-es':
         specifier: ^2.0.3
         version: 2.0.3
-      base64-js:
-        specifier: ^1.5.1
-        version: 1.5.1
       body-parser:
         specifier: ^2.2.2
         version: 2.2.2
@@ -2636,9 +2438,6 @@ importers:
       dockview-react:
         specifier: ^6.6.1
         version: 6.6.1(react@19.2.6)
-      file-saver-es:
-        specifier: ^2.0.5
-        version: 2.0.5
       generic-filehandle2:
         specifier: ^2.1.10
         version: 2.1.10
@@ -2651,9 +2450,6 @@ importers:
       mobx-react:
         specifier: ^9.2.2
         version: 9.2.2(mobx@6.15.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      pako-esm2:
-        specifier: ^2.0.2
-        version: 2.0.2
       pixelmatch:
         specifier: ^7.2.0
         version: 7.2.0
@@ -2678,15 +2474,6 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
-      '@iconify-json/mdi':
-        specifier: ^1.2.3
-        version: 1.2.3
-      '@mui/icons-material':
-        specifier: ^9.0.1
-        version: 9.0.1(@mui/material@9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.15)(react@19.2.6)
-      '@mui/material':
-        specifier: ^9.0.1
-        version: 9.0.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react@19.2.6))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       astro:
         specifier: ^6.4.2
         version: 6.4.2(@types/node@25.9.1)(rollup@4.60.4)(terser@5.48.0)
@@ -3997,10 +3784,6 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@flatten-js/interval-tree@2.0.3':
-    resolution: {integrity: sha512-Lv3eaITqU20WD+5W8L7JeJdjDXC9hfTUEzY0cRLx/sXj1+P3XdK6Fig4UdxvsekakTK8XeOwnpAKEpTI728U4g==}
-    engines: {node: '>=16.0.0'}
-
   '@floating-ui/core@1.7.5':
     resolution: {integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==}
 
@@ -4050,9 +3833,6 @@ packages:
   '@gmod/hclust@3.0.14':
     resolution: {integrity: sha512-RED2t41otUeFoBR/hWawpfaZbT16Af/NO8rpXXkXSUaE1NHEzPnXEd8Fhf8caFdWUErKhiyKp0U+SWW0PLQBUA==}
 
-  '@gmod/http-range-fetcher@5.0.7':
-    resolution: {integrity: sha512-WEOm5SnRbdhtB5RDXDW7LSUsam/fJH1hiGsyqjdG1vvkn6Ddv4wcCAY8AP4qqxPZicg1KNz53qhifMMksg6eLQ==}
-
   '@gmod/indexedfasta@5.0.7':
     resolution: {integrity: sha512-E/BtszY8K4xN6s2IEafpfZ1E8pyWsBx4xEmcMr0SKaBLPzh0VGqEKdmZpH+Sq5Kq7vYVuL8UriFhc6xNwLfXcA==}
 
@@ -4093,9 +3873,6 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
-
-  '@iconify-json/mdi@1.2.3':
-    resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
 
   '@iconify/tools@4.2.0':
     resolution: {integrity: sha512-WRxPva/ipxYkqZd1+CkEAQmd86dQmrwH0vwK89gmp2Kh2WyyVw57XbPng0NehP3x4V1LzLsXUneP1uMfTMZmUA==}
@@ -6369,9 +6146,6 @@ packages:
   canvas-sequencer-ts@3.1.3:
     resolution: {integrity: sha512-fwVhT6YRuN/DvziE/2QasFDF8w/qXphuIJgCVeS1YaxJPz/Iam+M8jSgHO+wu/1NNamGUNvtZfr1gca11lnw5Q==}
 
-  canvas2svg@1.0.16:
-    resolution: {integrity: sha512-r3ryHprzDOtAsFuczw+/DKkLR3XexwIlJWnJ+71I9QF7V9scYaV5JZgYDoCUlYtT3ARnOpDcm/hDNZYbWMRHqA==}
-
   canvas@3.2.3:
     resolution: {integrity: sha512-PzE5nJZPz72YUAfo8oTp0u3fqqY7IzlTubneAihqDYAUcBk7ryeCmBbdJBEdaH0bptSOe2VT2Zwcb3UaFyaSWw==}
     engines: {node: ^18.12.0 || >= 20.9.0}
@@ -6508,9 +6282,6 @@ packages:
 
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
-
-  colord@2.9.3:
-    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
 
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
@@ -7469,9 +7240,6 @@ packages:
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
-
-  file-saver-es@2.0.5:
-    resolution: {integrity: sha512-Kg0lt+is9nOyi/VDms9miScNGot25jVFbjFccXuCL/shd2Q+rt70MALxHVkXllsX83JEBLiHQNjDPGd/6FIOoQ==}
 
   file-selector@2.1.2:
     resolution: {integrity: sha512-QgXo+mXTe8ljeqUFaX3QVHc5osSItJ/Km+xpocx0aSqWGMSCf6qYs/VnzZgS864Pjn5iceMRFigeAV7AfTlaig==}
@@ -8544,9 +8312,6 @@ packages:
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
-
-  librpc-web-mod@2.1.1:
-    resolution: {integrity: sha512-ybKVK3wkEGj+wGd7P0A6LVCtge7seeTXPjSxhI3kaOkm5NPb/vFGGNO4Iu1G0ht69cCfVRlNjwvwpwUShi9G3g==}
 
   lie@3.3.0:
     resolution: {integrity: sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==}
@@ -12431,10 +12196,6 @@ snapshots:
 
   '@exodus/bytes@1.15.1': {}
 
-  '@flatten-js/interval-tree@2.0.3':
-    dependencies:
-      tslib: 2.8.1
-
   '@floating-ui/core@1.7.5':
     dependencies:
       '@floating-ui/utils': 0.2.11
@@ -12499,10 +12260,6 @@ snapshots:
 
   '@gmod/hclust@3.0.14': {}
 
-  '@gmod/http-range-fetcher@5.0.7':
-    dependencies:
-      '@jbrowse/quick-lru': 7.3.5
-
   '@gmod/indexedfasta@5.0.7':
     dependencies:
       '@gmod/bgzf-filehandle': 6.2.0
@@ -12547,10 +12304,6 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
-
-  '@iconify-json/mdi@1.2.3':
-    dependencies:
-      '@iconify/types': 2.0.0
 
   '@iconify/tools@4.2.0':
     dependencies:
@@ -15083,8 +14836,6 @@ snapshots:
 
   canvas-sequencer-ts@3.1.3: {}
 
-  canvas2svg@1.0.16: {}
-
   canvas@3.2.3:
     dependencies:
       node-addon-api: 7.1.1
@@ -15228,8 +14979,6 @@ snapshots:
       color-name: 1.1.4
 
   color-name@1.1.4: {}
-
-  colord@2.9.3: {}
 
   colorette@2.0.20: {}
 
@@ -16394,8 +16143,6 @@ snapshots:
   file-entry-cache@8.0.0:
     dependencies:
       flat-cache: 4.0.1
-
-  file-saver-es@2.0.5: {}
 
   file-selector@2.1.2:
     dependencies:
@@ -17766,8 +17513,6 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
-
-  librpc-web-mod@2.1.1: {}
 
   lie@3.3.0:
     dependencies:

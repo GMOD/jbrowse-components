@@ -30,7 +30,6 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/vcf": "^7.0.8",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.10.6",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
@@ -38,8 +37,7 @@
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "mobx": "^6.15.4",
-    "mobx-react": "^9.2.2",
-    "rxjs": "^7.8.2"
+    "mobx-react": "^9.2.2"
   },
   "devDependencies": {
     "@jbrowse/jexl": "^3.0.2"

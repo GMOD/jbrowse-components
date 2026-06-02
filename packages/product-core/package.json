@@ -37,8 +37,6 @@
     "@jbrowse/mobx-state-tree": "^5.10.6",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "copy-to-clipboard": "^4.0.2",
-    "librpc-web-mod": "^2.1.1",
     "mobx": "^6.15.4",
     "mobx-react": "^9.2.2"
   },

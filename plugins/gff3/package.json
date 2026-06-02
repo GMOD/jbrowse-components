@@ -30,7 +30,6 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@flatten-js/interval-tree": "^2.0.3",
     "@gmod/tabix": "^3.3.8",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.10.6",
