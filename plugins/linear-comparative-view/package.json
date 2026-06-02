@@ -37,6 +37,7 @@
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/synteny-core": "workspace:^",
+    "@jbrowse/wiggle-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "copy-to-clipboard": "^4.0.2",

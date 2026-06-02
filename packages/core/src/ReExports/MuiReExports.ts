@@ -1,6 +1,6 @@
-import { lazy } from 'react'
+import { type LazyExoticComponent, lazy } from 'react'
 
-export const Entries = {
+export const Entries: Record<string, LazyExoticComponent<any>> = {
   Accordion: lazy(() => import('@mui/material/Accordion')),
   AccordionActions: lazy(() => import('@mui/material/AccordionActions')),
   AccordionDetails: lazy(() => import('@mui/material/AccordionDetails')),
