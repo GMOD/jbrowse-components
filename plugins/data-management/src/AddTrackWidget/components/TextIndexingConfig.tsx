@@ -68,9 +68,17 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
             <List disablePadding>
               {section.values.map((val, idx) => (
                 /* biome-ignore lint/suspicious/noArrayIndexKey: */
-                <ListItem key={`${val}-${idx}`} disableGutters>
+                <ListItem key={`${section.key}-${idx}`} disableGutters>
                   <TextField
                     value={val}
+                    onChange={event => {
+                      model.setTextIndexingConf({
+                        ...conf,
+                        [section.key]: section.values.map((v, i) =>
+                          i === idx ? event.target.value : v,
+                        ),
+                      })
+                    }}
                     slotProps={{
                       input: {
                         endAdornment: (
@@ -117,7 +125,7 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
                               section.setInputValue('')
                             }}
                             disabled={section.inputValue === ''}
-                            data-testid="stringArrayAdd-Feat"
+                            data-testid={`stringArrayAdd-${section.key}`}
                           >
                             <AddIcon />
                           </IconButton>

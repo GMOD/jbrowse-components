@@ -16,6 +16,7 @@ import { observer } from 'mobx-react'
 import ConfirmTrack from './ConfirmTrack.tsx'
 import TrackSourceSelect from './TrackSourceSelect.tsx'
 import { doSubmit } from './doSubmit.ts'
+import { BULK_WORKFLOW } from '../workflowNames.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -85,7 +86,7 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
           component="button"
           variant="body2"
           onClick={() => {
-            switchWorkflow('Add multiple tracks')
+            switchWorkflow(BULK_WORKFLOW)
           }}
         >
           Add multiple tracks at once

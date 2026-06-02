@@ -466,6 +466,24 @@ test('BAM file with .out in filename should infer BamAdapter not MashMapAdapter'
   expect(widget.trackType).toBe('AlignmentsTrack')
 })
 
+test('adapterHintNotConfigurable distinguishes resolvable hints from dead ones', () => {
+  const session = standardInitializer()
+  const { widget } = session
+  widget.setTrackData({ uri: 'test.txt', locationType: 'UriLocation' })
+
+  // BamAdapter has a guesser branch keyed to the hint, so it resolves even on a
+  // .txt filename
+  widget.setAdapterHint('BamAdapter')
+  expect(widget.trackAdapterType).toBe('BamAdapter')
+  expect(widget.adapterHintNotConfigurable).toBe(false)
+
+  // an adapter with no guesser branch falls through to UNKNOWN; ConfirmTrack
+  // routes this to UnknownAdapterPrompt so the dropdown stays on screen
+  widget.setAdapterHint('NonexistentAdapter')
+  expect(widget.trackAdapterType).toBe('UNKNOWN')
+  expect(widget.adapterHintNotConfigurable).toBe(true)
+})
+
 function makeHg38Session() {
   // Includes Alignments so BAM is guessable; assembly mocks make getTrackConfig non-undefined
   const pluginManager = new PluginManager([

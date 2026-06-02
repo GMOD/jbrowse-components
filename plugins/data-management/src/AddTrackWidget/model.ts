@@ -1,5 +1,6 @@
 import { getSession, isUriLocation } from '@jbrowse/core/util'
 import {
+  UNKNOWN,
   UNSUPPORTED,
   getFileName,
   guessAdapter,
@@ -122,15 +123,7 @@ export default function f(pluginManager: PluginManager) {
        * #action
        */
       clearData() {
-        self.altTrackName = defaultVolatileState.altTrackName
-        self.altTrackType = defaultVolatileState.altTrackType
-        self.altAssemblyName = defaultVolatileState.altAssemblyName
-        self.adapterHint = defaultVolatileState.adapterHint
-        self.indexTrackData = defaultVolatileState.indexTrackData
-        self.trackData = defaultVolatileState.trackData
-        self.textIndexingConf = defaultVolatileState.textIndexingConf
-        self.textIndexTrack = defaultVolatileState.textIndexTrack
-        self.mixinData = {}
+        Object.assign(self, { ...defaultVolatileState, mixinData: {} })
       },
     }))
     .actions(self => ({
@@ -177,10 +170,14 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get uris() {
+        return [getUri(self.trackData), getUri(self.indexTrackData)]
+      },
+      /**
+       * #getter
+       */
       get isFtp() {
-        return [getUri(self.trackData), getUri(self.indexTrackData)].some(
-          isFtpUrl,
-        )
+        return this.uris.some(isFtpUrl)
       },
 
       /**
@@ -208,9 +205,7 @@ export default function f(pluginManager: PluginManager) {
        * #getter
        */
       get wrongProtocol() {
-        return [getUri(self.trackData), getUri(self.indexTrackData)].some(
-          isBlockedHttpUrl,
-        )
+        return this.uris.some(isBlockedHttpUrl)
       },
 
       /**
@@ -266,7 +261,7 @@ export default function f(pluginManager: PluginManager) {
 
         return assemblyInstance &&
           self.trackAdapter &&
-          self.trackAdapter.type !== 'UNKNOWN'
+          self.trackAdapter.type !== UNKNOWN
           ? deepmerge(
               {
                 trackId: [

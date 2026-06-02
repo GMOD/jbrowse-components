@@ -1,4 +1,5 @@
 import { getEnv } from '@jbrowse/core/util'
+import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { ListSubheader, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -16,8 +17,7 @@ const TrackAdapterSelector = observer(function ({
 
   // Show the adapterHint if set (even if config couldn't be built),
   // otherwise show the resolved adapter type (blank for UNKNOWN)
-  const resolvedType =
-    trackAdapter?.type === 'UNKNOWN' ? '' : trackAdapter?.type
+  const resolvedType = trackAdapter?.type === UNKNOWN ? '' : trackAdapter?.type
   const displayValue = adapterHint || resolvedType || ''
 
   return (

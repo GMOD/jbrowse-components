@@ -1,6 +1,7 @@
 import { ExternalLink } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import TrackAdapterSelector from './TrackAdapterSelector.tsx'
 
@@ -11,7 +12,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function UnknownAdapterPrompt({
+const UnknownAdapterPrompt = observer(function UnknownAdapterPrompt({
   model,
 }: {
   model: AddTrackModel
@@ -20,18 +21,30 @@ export default function UnknownAdapterPrompt({
   return (
     <>
       <Typography className={classes.spacing}>
-        JBrowse was not able to guess the adapter type for this data, but it may
-        be in the list below. If not, you can{' '}
-        <ExternalLink href="https://github.com/GMOD/jbrowse-components/releases">
-          check for new releases
-        </ExternalLink>{' '}
-        of JBrowse to see if they support this data type or{' '}
-        <ExternalLink href="https://github.com/GMOD/jbrowse-components/issues/new">
-          file an issue
-        </ExternalLink>{' '}
-        and add a feature request for this data type.
+        {model.adapterHintNotConfigurable ? (
+          <>
+            The selected adapter could not be configured for this file. Pick a
+            different adapter below, or check the file&apos;s extension and
+            format.
+          </>
+        ) : (
+          <>
+            JBrowse was not able to guess the adapter type for this data, but it
+            may be in the list below. If not, you can{' '}
+            <ExternalLink href="https://github.com/GMOD/jbrowse-components/releases">
+              check for new releases
+            </ExternalLink>{' '}
+            of JBrowse to see if they support this data type or{' '}
+            <ExternalLink href="https://github.com/GMOD/jbrowse-components/issues/new">
+              file an issue
+            </ExternalLink>{' '}
+            and add a feature request for this data type.
+          </>
+        )}
       </Typography>
       <TrackAdapterSelector model={model} />
     </>
   )
-}
+})
+
+export default UnknownAdapterPrompt
