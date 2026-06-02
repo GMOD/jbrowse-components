@@ -19,7 +19,10 @@ export function parseArgv(rawArgv: string[]) {
   return map
 }
 
-export function standardizeArgv(args: Entry[], trackTypes: string[]) {
+export function standardizeArgv(
+  args: Entry[],
+  trackTypes: string[],
+): { trackList: Entry[]; [key: string]: unknown } {
   const trackList: Entry[] = []
   const rest: Record<string, unknown> = {}
   for (const [key, vals] of args) {

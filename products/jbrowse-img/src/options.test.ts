@@ -36,7 +36,7 @@ test('validates trackLabels against the allowed modes', () => {
   expect(getTrackLabels(parse('--trackLabels bogus'))).toBeUndefined()
 })
 
-test('knownOptions covers track types plus named options', () => {
+test('knownOptions covers named options including help and version', () => {
   expect(knownOptions.has('fasta')).toBe(true)
   expect(knownOptions.has('help')).toBe(true)
   expect(knownOptions.has('nonsense')).toBe(false)

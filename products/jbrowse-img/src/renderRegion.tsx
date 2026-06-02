@@ -12,9 +12,6 @@ import type { Entry } from './parseArgv.ts'
 import type { Opts } from './readData.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export type { Opts } from './readData.ts'
-export { makeTrackConfig, readData } from './readData.ts'
-
 function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   const [, [track, ...opts]] = trackEntry
   if (!track) {

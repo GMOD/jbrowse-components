@@ -25,13 +25,18 @@ async function main() {
   const args = process.argv.slice(2)
   if (args.includes('--help') || args.includes('-h')) {
     console.log(buildHelp(scriptName, trackTypes))
+  } else if (args.includes('--version') || args.includes('-v')) {
+    const { version } = JSON.parse(
+      fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ) as { version: string }
+    console.log(version)
   } else {
     setupEnv()
 
     const parsed = parseArgv(args)
     const { trackList, ...rest } = standardizeArgv(parsed, trackTypes)
 
-    for (const [key] of parsed) {
+    for (const key of Object.keys(rest)) {
       if (!knownOptions.has(key)) {
         console.warn(`Warning: unknown option "--${key}"`)
       }

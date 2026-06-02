@@ -4,4 +4,4 @@ export { convert } from './util.ts'
 export { parseArgv, standardizeArgv } from './parseArgv.ts'
 export { trackTypes } from './readData.ts'
 
-export type { Opts } from './renderRegion.tsx'
+export type { Opts } from './readData.ts'

@@ -80,7 +80,8 @@ export function getString(rest: Record<string, unknown>, key: string) {
 }
 
 export function getBoolean(rest: Record<string, unknown>, key: string) {
-  return rest[key] === true || rest[key] === 'true'
+  const v = rest[key]
+  return v === true || v === 'true'
 }
 
 export function getNumber(
@@ -120,6 +121,7 @@ export function buildHelp(scriptName: string, trackTypes: string[]) {
     'Options:',
     ...optLines,
     `  --${'help'.padEnd(pad)}  Show help`,
+    `  --${'version'.padEnd(pad)}  Print version`,
     '',
     'Examples:',
     ...exampleLines,
