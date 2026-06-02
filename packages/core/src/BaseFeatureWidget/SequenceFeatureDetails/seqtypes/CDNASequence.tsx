@@ -85,12 +85,9 @@ const CDNASequence = observer(function CDNASequence({
     const chunk = chunks[idx]!
     const intron = sequence.slice(chunk.end, chunks[idx + 1]?.start)
     const s = sequence.slice(chunk.start, chunk.end)
+    // uppercase CDS (and whole-exon chunks when there's no CDS); lowercase UTR
     const { segments, remainder } = splitString({
-      str: hasCds
-        ? chunk.type === 'CDS'
-          ? toUpper(s)
-          : toLower(s)
-        : toUpper(s),
+      str: chunk.type === 'CDS' || !hasCds ? toUpper(s) : toLower(s),
       charactersPerRow,
       currRemainder,
       showCoordinates,
