@@ -16,10 +16,12 @@ export default function RenameSessionDialog({
   onClose: () => void
 }) {
   const [newName, setNewName] = useState(sessionToRename.name)
-  const { error, onSubmit } = useIpcAction(
-    () => ipcRenderer.invoke('renameSession', sessionToRename.path, newName),
-    onClose,
-  )
+  const { error, onSubmit } = useIpcAction(async () => {
+    if (!newName.trim()) {
+      throw new Error('Session name cannot be empty')
+    }
+    await ipcRenderer.invoke('renameSession', sessionToRename.path, newName)
+  }, onClose)
   return (
     <ConfirmDialog
       open

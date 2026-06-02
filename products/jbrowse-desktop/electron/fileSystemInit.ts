@@ -5,7 +5,7 @@ import { getDeletedMarkerPath, getQuickstartPath, stringify } from './paths.ts'
 import type { AppPaths } from './paths.ts'
 
 const ENCODING = 'utf8'
-const LEGACY_QUICKSTARTS = ['hg19', 'hg38', 'mm10']
+export const LEGACY_QUICKSTARTS = ['hg19', 'hg38', 'mm10']
 
 /**
  * Ensures all required directories exist

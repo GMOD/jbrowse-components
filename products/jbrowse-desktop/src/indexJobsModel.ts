@@ -146,9 +146,14 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       setWidgetStatus() {
-        const jobStatusWidget = self.getJobStatusWidget()
-        jobStatusWidget.updateJobStatusMessage(self.jobName, self.statusMessage)
-        jobStatusWidget.updateJobProgressPct(self.jobName, self.progressPct)
+        if (isSessionModelWithWidgets(self.session)) {
+          const jobStatusWidget = self.getJobStatusWidget()
+          jobStatusWidget.updateJobStatusMessage(
+            self.jobName,
+            self.statusMessage,
+          )
+          jobStatusWidget.updateJobProgressPct(self.jobName, self.progressPct)
+        }
       },
 
       /**
@@ -244,7 +249,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 exclude,
                 outLocation,
               })
-              self.session.notify(
+              session.notify(
                 `Successfully indexed track with trackId: ${trackId} `,
                 'success',
               )
@@ -260,7 +265,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 outLocation,
               })
 
-              self.session.notify(
+              session.notify(
                 `Successfully indexed assembly: ${assemblyName} `,
                 'success',
               )
@@ -291,7 +296,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         } catch (e) {
           console.error(e)
 
-          self.session.notifyError(
+          session.notifyError(
             `An error occurred while indexing: ${e}`,
             e,
             undefined,
