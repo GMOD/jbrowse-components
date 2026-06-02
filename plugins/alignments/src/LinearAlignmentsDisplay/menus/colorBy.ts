@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
+import { checkboxItem, radioItems } from './menuHelpers.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 
 import type {
@@ -75,6 +76,8 @@ const arcColorOptions: { label: string; type: ArcColorByType }[] = [
   { label: 'Orientation', type: 'orientation' },
 ]
 
+type ModColorMode = 'byType' | 'twoColor' | 'methylation'
+
 function getModificationsSubMenu(model: ModificationsModel) {
   const {
     modificationThreshold,
@@ -99,53 +102,80 @@ function getModificationsSubMenu(model: ModificationsModel) {
   }
 
   const modName = (key: string) => modificationData[key]?.name ?? key
-  const probSuffix = `(>=${modificationThreshold}% prob)`
-  const twoColorSuffix = '(<50% prob colored blue)'
+  const mods = model.colorBy.modifications
+  const hidden = mods?.hiddenModifications ?? []
+  const twoColor = !!mods?.twoColor
+  const isModType = model.colorBy.type === 'modifications'
+  const isMethType = model.colorBy.type === 'methylation'
+  // undefined when the display is in some non-modification color scheme, so no
+  // mode radio shows as selected until the user enters a modification mode.
+  const mode: ModColorMode | undefined = isMethType
+    ? 'methylation'
+    : isModType
+      ? twoColor
+        ? 'twoColor'
+        : 'byType'
+      : undefined
 
-  const modRadio = (
-    label: string,
-    isolatedModification: string | undefined,
-    twoColor: boolean,
-  ) => ({
-    label,
-    type: 'radio' as const,
-    checked:
-      model.colorBy.type === 'modifications' &&
-      model.colorBy.modifications?.isolatedModification ===
-        isolatedModification &&
-      !!model.colorBy.modifications?.twoColor === twoColor,
-    onClick: () => {
+  // Per-mode setColorScheme that preserves the current threshold and (for the
+  // modification modes) the hidden-type selection.
+  const setMode = (next: ModColorMode) => {
+    if (next === 'methylation') {
+      model.setColorScheme({
+        type: 'methylation',
+        modifications: { threshold: modificationThreshold },
+      })
+    } else {
       model.setColorScheme({
         type: 'modifications',
         modifications: {
-          ...(isolatedModification ? { isolatedModification } : {}),
-          ...(twoColor ? { twoColor: true } : {}),
+          ...(next === 'twoColor' ? { twoColor: true } : {}),
+          ...(hidden.length ? { hiddenModifications: hidden } : {}),
           threshold: modificationThreshold,
         },
       })
-    },
-  })
+    }
+  }
+
+  const toggleType = (key: string) => {
+    const nextHidden = hidden.includes(key)
+      ? hidden.filter(k => k !== key)
+      : [...hidden, key]
+    model.setColorScheme({
+      type: 'modifications',
+      modifications: {
+        ...(twoColor ? { twoColor: true } : {}),
+        ...(nextHidden.length ? { hiddenModifications: nextHidden } : {}),
+        threshold: modificationThreshold,
+      },
+    })
+  }
 
   return [
-    modRadio(`All modifications ${probSuffix}`, undefined, false),
-    ...visibleModificationTypes.map(key =>
-      modRadio(`Show only ${modName(key)} ${probSuffix}`, key, false),
+    ...radioItems<ModColorMode>(
+      [
+        { value: 'byType', label: 'Color by modification type' },
+        { value: 'twoColor', label: 'Two-color (low-confidence blue)' },
+        { value: 'methylation', label: 'Methylation (all CpGs)' },
+      ],
+      mode,
+      setMode,
     ),
-    modRadio(`All modifications ${twoColorSuffix}`, undefined, true),
-    ...visibleModificationTypes.map(key =>
-      modRadio(`Show only ${modName(key)} ${twoColorSuffix}`, key, true),
-    ),
-    {
-      label: 'All read CpGs',
-      type: 'radio' as const,
-      checked: model.colorBy.type === 'methylation',
-      onClick: () => {
-        model.setColorScheme({
-          type: 'methylation',
-          modifications: { threshold: modificationThreshold },
-        })
-      },
-    },
+    // Per-type visibility only applies once coloring by modification type; the
+    // methylation mode renders CpGs rather than individual MM/ML types.
+    ...(isModType
+      ? [
+          {
+            label: 'Show types...',
+            type: 'subMenu' as const,
+            subMenu: visibleModificationTypes.map(key =>
+              checkboxItem(modName(key), !hidden.includes(key), () => {
+                toggleType(key)
+              }),
+            ),
+          },
+        ]
+      : []),
     {
       label: `Adjust threshold (${modificationThreshold}%)`,
       onClick: () => {

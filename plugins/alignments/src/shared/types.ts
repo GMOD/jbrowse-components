@@ -12,7 +12,10 @@ export type ArcColorByType =
 
 export interface ModificationColorBy {
   twoColor?: boolean
-  isolatedModification?: string
+  // modification type codes to hide; absent/empty means show every detected
+  // type. Stored as the hidden set (not the shown set) so types newly
+  // discovered in the data default to visible.
+  hiddenModifications?: string[]
   threshold?: number
 }
 

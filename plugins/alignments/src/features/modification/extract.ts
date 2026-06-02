@@ -73,7 +73,7 @@ export function extractModifications(
     fstrand,
   )
   const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
-  const isolated = colorBy?.modifications?.isolatedModification
+  const hidden = colorBy?.modifications?.hiddenModifications ?? []
   const twoColor = colorBy?.modifications?.twoColor ?? false
   // eslint-disable-next-line unicorn/no-array-for-each
   mods.forEach(({ prob, type, base }, refPos) => {
@@ -84,7 +84,7 @@ export function extractModifications(
     if (isSimplex) {
       detectedSimplexModifications.add(type)
     }
-    const typeVisible = isolated === undefined || type === isolated
+    const typeVisible = !hidden.includes(type)
     if (colorBy?.type === 'modifications' && typeVisible) {
       const modRgb = cssColorToRgb(getColorForModification(type))
       // twoColor renders every call, painting low-confidence ones blue; the

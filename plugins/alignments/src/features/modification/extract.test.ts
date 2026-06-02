@@ -48,10 +48,10 @@ describe('extractModifications', () => {
     expect(out.map(m => m.modType)).toEqual(['m'])
   })
 
-  test('isolatedModification renders only that type but still detects all', () => {
+  test('hiddenModifications hides a type from rendering but still detects all', () => {
     const { out, detected } = run({
       type: 'modifications',
-      modifications: { threshold: 10, isolatedModification: 'm' },
+      modifications: { threshold: 10, hiddenModifications: ['a'] },
     })
     expect(out.map(m => m.modType)).toEqual(['m'])
     // the menu list must still offer the hidden type
