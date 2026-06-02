@@ -16,6 +16,7 @@ import {
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 
+import type { ColorBy } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { ParsedModData } from '@jbrowse/modifications-utils'
@@ -43,7 +44,7 @@ export function extractModifications(
   featureId: string,
   featureStart: number,
   strand: number,
-  colorBy: { type: string; modifications?: { threshold?: number } } | undefined,
+  colorBy: ColorBy | undefined,
   detectedModifications: Set<string>,
   detectedSimplexModifications: Set<string>,
   modificationsData: ModificationEntry[],
@@ -72,27 +73,40 @@ export function extractModifications(
     fstrand,
   )
   const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
+  const isolated = colorBy?.modifications?.isolatedModification
+  const twoColor = colorBy?.modifications?.twoColor ?? false
   // eslint-disable-next-line unicorn/no-array-for-each
   mods.forEach(({ prob, type, base }, refPos) => {
+    // detectedModifications must list every type seen so the menu can offer all
+    // of them — isolation filters what is *rendered*, not what is detected.
     detectedModifications.add(type)
     const isSimplex = simplexSet.has(type)
     if (isSimplex) {
       detectedSimplexModifications.add(type)
     }
-    if (colorBy?.type === 'modifications' && prob >= modThreshold) {
-      const [r, g, b] = cssColorToRgb(getColorForModification(type))
-      modificationsData.push({
-        featureId,
-        position: featureStart + refPos,
-        base,
-        modType: type,
-        isSimplex,
-        strand: strand === -1 ? -1 : 1,
-        r,
-        g,
-        b,
-        prob,
-      })
+    const typeVisible = isolated === undefined || type === isolated
+    if (colorBy?.type === 'modifications' && typeVisible) {
+      const modRgb = cssColorToRgb(getColorForModification(type))
+      // twoColor renders every call, painting low-confidence ones blue; the
+      // default mode hides calls below the probability threshold instead.
+      const shouldPush = twoColor || prob >= modThreshold
+      if (shouldPush) {
+        const { r, g, b, prob: alpha } = twoColor
+          ? methColorAndProb(prob, modRgb, METH_5MC_UNMETHYLATED_RGB)
+          : { r: modRgb[0], g: modRgb[1], b: modRgb[2], prob }
+        modificationsData.push({
+          featureId,
+          position: featureStart + refPos,
+          base,
+          modType: type,
+          isSimplex,
+          strand: strand === -1 ? -1 : 1,
+          r,
+          g,
+          b,
+          prob: alpha,
+        })
+      }
     }
   })
   return {
