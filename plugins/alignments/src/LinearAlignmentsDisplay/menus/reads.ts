@@ -66,7 +66,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         model.setShowOutline(!model.showOutlineSetting)
       }),
       checkboxItem(
-        'Show supp. alignments colored by primary strand',
+        'Color supplementary alignments by primary strand',
         model.flipStrandLongReadChains,
         () => {
           model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
@@ -76,7 +76,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         model.toggleSashimiArcs()
       }),
       checkboxItem(
-        'Bezier curves for linked reads',
+        'Bezier curves',
         model.linkedReads === 'bezier',
         () => {
           model.setLinkedReads(
