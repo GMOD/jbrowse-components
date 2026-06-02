@@ -16,6 +16,7 @@ export const SV_SYMBOLIC_ALLELES = [
 ]
 
 /**
+ * #api
  * Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
  * Returns undefined when no mate coordinate info is found.
  */
@@ -60,6 +61,10 @@ export function parseSvAlt(
   return undefined
 }
 
+/**
+ * #api
+ * Resolves the two canonical-refName endpoints a breakend/SV feature spans.
+ */
 export function getBreakendCoveringRegions({
   feature,
   assembly,
@@ -181,14 +186,9 @@ export function getAssemblyName(view?: ViewWithAssemblyNames) {
 }
 
 /**
- * Splits a region at a breakend position into two overlapping regions.
- *
- * JBrowse uses 0-based, half-open coordinates where `end` is exclusive.
- * To ensure the breakend position is visible in both regions:
- * - Left region: ends at pos + 1 (includes position pos)
- * - Right region: starts at pos (includes position pos)
- *
- * This intentional overlap ensures features at the breakend are displayed.
+ * #api
+ * Splits a region at `pos` into two halves that both include `pos`, so a
+ * breakend there stays visible in each.
  */
 export function splitRegionAtPosition<
   T extends { refName: string; start: number; end: number },

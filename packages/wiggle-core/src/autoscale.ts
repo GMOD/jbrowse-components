@@ -72,10 +72,11 @@ function computeStats(
   return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
 }
 
-// Converts pre-computed score stats into a domain [min, max], applying
-// std-dev expansion for 'localsd'/'globalsd' autoscale types. Use this
-// when you compute stats yourself (e.g. from Float32Array depths in
-// alignments coverage) rather than via computeAutoscaleDomain.
+/**
+ * #api
+ * Converts score stats into a `[min, max]` domain, applying std-dev
+ * expansion for `localsd`/`globalsd` autoscale types.
+ */
 export function domainFromStats(
   stats: ScoreStats,
   autoscaleType: string,
@@ -92,6 +93,11 @@ export function domainFromStats(
   return [stats.scoreMin, stats.scoreMax]
 }
 
+/**
+ * #api
+ * Computes a score domain from feature arrays, scoping to visible or all
+ * entries per the global/local autoscale type.
+ */
 export function computeAutoscaleDomain(
   autoscaleType: string,
   summaryScoreMode: string,

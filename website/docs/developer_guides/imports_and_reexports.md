@@ -18,9 +18,9 @@ build-step and no-build plugins.
 
 ## Why re-exports exist
 
-Some libraries break if two copies are loaded at once. If your plugin bundled its
-own React or MobX, you'd have the host's instance _and_ yours running side by
-side, which causes:
+Some libraries break if two copies are loaded at once. If your plugin bundled
+its own React or MobX, you'd have the host's instance _and_ yours running side
+by side, which causes:
 
 - **React** — "Invalid hook call" errors and broken context; hooks only work
   against the React instance that rendered the tree.
@@ -51,26 +51,26 @@ It changes over time, so treat that file as the source of truth. The categories:
 - **`@jbrowse/core` APIs** — the building blocks for pluggable elements and
   shared helpers:
 
-  | Module                                                   | What it provides                                                                                |
-  | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-  | `@jbrowse/core/Plugin`                                   | The base `Plugin` class your plugin extends                                                      |
-  | `@jbrowse/core/pluggableElementTypes`                    | `ViewType`, `AdapterType`, `DisplayType`, `TrackType`, `WidgetType` — what you register in `install` |
-  | `@jbrowse/core/pluggableElementTypes/models`             | Base MST models for tracks/displays to compose with                                             |
-  | `@jbrowse/core/pluggableElementTypes/renderers/*`        | Renderer base classes (`FeatureRendererType`, `BoxRendererType`, `ServerSideRendererType`, …)    |
-  | `@jbrowse/core/configuration`                            | `ConfigurationSchema`, `ConfigurationReference`, `readConfObject`, `getConf`                     |
-  | `@jbrowse/core/util`                                     | Core helpers — `getSession`, `getContainingView`, `Feature`, region/coordinate utilities        |
-  | `@jbrowse/core/util/types/mst`                           | Reusable MST types like `ElementId`, `Region`                                                    |
-  | `@jbrowse/core/util/color`                               | Color parsing/manipulation helpers                                                               |
-  | `@jbrowse/core/util/layouts`                             | Feature layout (packing) helpers                                                                 |
-  | `@jbrowse/core/util/tracks`                              | Track/adapter config helpers                                                                     |
-  | `@jbrowse/core/util/io`                                  | `openLocation` and file-handle helpers                                                           |
-  | `@jbrowse/core/util/rxjs`                                | RxJS re-exports used by adapter `getFeatures` streams                                            |
-  | `@jbrowse/core/util/Base1DViewModel`                     | The 1D (bp↔px) view model used by linear views                                                   |
-  | `@jbrowse/core/util/mst-reflection`                      | Helpers for inspecting MST types                                                                 |
-  | `@jbrowse/core/ui`                                       | Shared UI components (dialogs, menus, error/loading states)                                      |
-  | `@jbrowse/core/ui/theme`                                 | The JBrowse MUI theme                                                                            |
-  | `@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail`      | `FeatureDetails`, `BaseCard` and other feature-detail building blocks                            |
-  | `@jbrowse/core/data_adapters/BaseAdapter`                | `BaseFeatureDataAdapter` and adapter base classes                                               |
+  | Module                                              | What it provides                                                                                     |
+  | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+  | `@jbrowse/core/Plugin`                              | The base `Plugin` class your plugin extends                                                          |
+  | `@jbrowse/core/pluggableElementTypes`               | `ViewType`, `AdapterType`, `DisplayType`, `TrackType`, `WidgetType` — what you register in `install` |
+  | `@jbrowse/core/pluggableElementTypes/models`        | Base MST models for tracks/displays to compose with                                                  |
+  | `@jbrowse/core/pluggableElementTypes/renderers/*`   | Renderer base classes (`FeatureRendererType`, `BoxRendererType`, `ServerSideRendererType`, …)        |
+  | `@jbrowse/core/configuration`                       | `ConfigurationSchema`, `ConfigurationReference`, `readConfObject`, `getConf`                         |
+  | `@jbrowse/core/util`                                | Core helpers — `getSession`, `getContainingView`, `Feature`, region/coordinate utilities             |
+  | `@jbrowse/core/util/types/mst`                      | Reusable MST types like `ElementId`, `Region`                                                        |
+  | `@jbrowse/core/util/color`                          | Color parsing/manipulation helpers                                                                   |
+  | `@jbrowse/core/util/layouts`                        | Feature layout (packing) helpers                                                                     |
+  | `@jbrowse/core/util/tracks`                         | Track/adapter config helpers                                                                         |
+  | `@jbrowse/core/util/io`                             | `openLocation` and file-handle helpers                                                               |
+  | `@jbrowse/core/util/rxjs`                           | RxJS re-exports used by adapter `getFeatures` streams                                                |
+  | `@jbrowse/core/util/Base1DViewModel`                | The 1D (bp↔px) view model used by linear views                                                       |
+  | `@jbrowse/core/util/mst-reflection`                 | Helpers for inspecting MST types                                                                     |
+  | `@jbrowse/core/ui`                                  | Shared UI components (dialogs, menus, error/loading states)                                          |
+  | `@jbrowse/core/ui/theme`                            | The JBrowse MUI theme                                                                                |
+  | `@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail` | `FeatureDetails`, `BaseCard` and other feature-detail building blocks                                |
+  | `@jbrowse/core/data_adapters/BaseAdapter`           | `BaseFeatureDataAdapter` and adapter base classes                                                    |
 
 ## What is _not_ re-exported
 
@@ -78,6 +78,25 @@ Anything not in that list — `d3`, `lodash-es`, a file-format parser, your own
 helpers, and so on. There's nothing special to do: `import` it normally and your
 bundler includes it in your plugin's output. These don't need to be shared
 because nothing breaks from having more than one copy.
+
+## Standalone helper packages
+
+JBrowse publishes several **framework-free utility packages** to npm. They have
+no React/MobX/`@jbrowse/core` dependency, so they aren't re-exported — you
+`npm install` and `import` them like any other dependency (they get bundled).
+Reach for these instead of re-implementing the parsing/scale math yourself:
+
+| Package                        | What it provides                                         |
+| ------------------------------ | -------------------------------------------------------- |
+| `@jbrowse/cigar-utils`         | CIGAR / MD / mismatch parsers and types                  |
+| `@jbrowse/modifications-utils` | MM/ML base-modification (methylation) tag parsers        |
+| `@jbrowse/wiggle-core`         | Score scale, normalization, and autoscale-domain helpers |
+| `@jbrowse/synteny-core`        | Synteny/dotplot color and coordinate helpers             |
+| `@jbrowse/sv-core`             | VCF breakend / structural-variant parsing helpers        |
+
+The exported functions for each are documented under
+[Exported functions](/docs/api/cigar-utils) in the sidebar, and mirrored into
+each package's README on npm.
 
 ## How to import, by plugin type
 
@@ -107,7 +126,9 @@ externalize anything, so it pulls re-exported modules at runtime with
 `pluginManager.jbrequire`:
 
 ```js
-const { ConfigurationSchema } = pluginManager.jbrequire('@jbrowse/core/configuration')
+const { ConfigurationSchema } = pluginManager.jbrequire(
+  '@jbrowse/core/configuration',
+)
 const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 const React = pluginManager.jbrequire('react')
 ```
@@ -126,11 +147,11 @@ plugin).
 
 ## Quick reference
 
-| You need                                   | Build-step plugin                        | No-build plugin                                |
-| ------------------------------------------ | ---------------------------------------- | ---------------------------------------------- |
-| React, MobX, MST, MUI, tss-react           | `import` normally (template externalizes) | `pluginManager.jbrequire('react')`             |
-| `@jbrowse/core` APIs (in the list above)   | `import` from `@jbrowse/core/...`        | `pluginManager.jbrequire('@jbrowse/core/...')` |
-| Any other npm package                      | `import` normally (gets bundled)         | inline it, or use a build-step plugin          |
+| You need                                 | Build-step plugin                         | No-build plugin                                |
+| ---------------------------------------- | ----------------------------------------- | ---------------------------------------------- |
+| React, MobX, MST, MUI, tss-react         | `import` normally (template externalizes) | `pluginManager.jbrequire('react')`             |
+| `@jbrowse/core` APIs (in the list above) | `import` from `@jbrowse/core/...`         | `pluginManager.jbrequire('@jbrowse/core/...')` |
+| Any other npm package                    | `import` normally (gets bundled)          | inline it, or use a build-step plugin          |
 
 ## A note on `@jbrowse/core` paths not in the list
 

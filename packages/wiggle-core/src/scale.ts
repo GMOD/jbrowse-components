@@ -25,6 +25,10 @@ function createScaleForType(scaleType: string) {
   throw new Error(`undefined scaleType: ${scaleType}`)
 }
 
+/**
+ * #api
+ * Builds a niced d3 scale (linear/log/quantize) from a `ScaleOpts`.
+ */
 export function getScale({
   domain,
   range,
@@ -47,6 +51,10 @@ export function getScale({
   return scale
 }
 
+/**
+ * #api
+ * The axis-origin baseline: `1` for log, `0` otherwise.
+ */
 export function getOrigin(scaleType: string) {
   if (scaleType === 'log') {
     return 1
@@ -54,6 +62,11 @@ export function getOrigin(scaleType: string) {
   return 0
 }
 
+/**
+ * #api
+ * Rounds a domain to "nice" endpoints, clamped to the origin and
+ * overridden by any explicit `bounds`.
+ */
 export function getNiceDomain({
   scaleType,
   domain,

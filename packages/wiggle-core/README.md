@@ -1,0 +1,91 @@
+# @jbrowse/wiggle-core
+
+Shared scale and autoscale utilities for wiggle and coverage displays
+
+<!-- API_DOCS_START -->
+
+## API
+
+Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
+
+### computeAutoscaleDomain
+
+Computes a score domain from feature arrays, scoping to visible or all entries
+per the global/local autoscale type.
+
+```js
+// type signature
+(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], allEntries: { data: FeatureArrays; }[]) => [...] | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
+
+### domainFromStats
+
+Converts score stats into a `[min, max]` domain, applying std-dev expansion for
+`localsd`/`globalsd` autoscale types.
+
+```js
+// type signature
+(stats: ScoreStats, autoscaleType: string, numStdDev: number) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
+
+### getNiceDomain
+
+Rounds a domain to "nice" endpoints, clamped to the origin and overridden by any
+explicit `bounds`.
+
+```js
+// type signature
+({ scaleType, domain, bounds, }: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; }) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
+
+### getOrigin
+
+The axis-origin baseline: `1` for log, `0` otherwise.
+
+```js
+// type signature
+(scaleType: string) => 1 | 0
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
+
+### getScale
+
+Builds a niced d3 scale (linear/log/quantize) from a `ScaleOpts`.
+
+```js
+// type signature
+({ domain, range, scaleType, pivotValue, inverted, }: ScaleOpts) => ScaleLinear<number, number, never> | ScaleQuantize<number, never>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
+
+### makeScoreNormalizer
+
+Returns a loop-hoistable function normalizing a score to [0,1].
+
+```js
+// type signature
+(min: number, max: number, isLog: boolean) => (score: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
+
+### scaleTypeFromString
+
+Maps the `'log'`/`'linear'` string to the numeric `WiggleScaleType`.
+
+```js
+// type signature
+(scaleType: string) => WiggleScaleType
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
+
+<!-- API_DOCS_END -->

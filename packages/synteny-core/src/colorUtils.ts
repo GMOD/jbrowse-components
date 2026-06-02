@@ -5,6 +5,10 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
+/**
+ * #api
+ * Deterministic non-negative 32-bit hash of a string.
+ */
 export function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -15,6 +19,10 @@ export function hashString(str: string) {
   return Math.abs(hash)
 }
 
+/**
+ * #api
+ * Stable category10 color for a query name, via `hashString`.
+ */
 export function getQueryColor(queryName: string) {
   const hash = hashString(queryName)
   return category10[hash % category10.length]!
@@ -70,6 +78,10 @@ export type SyntenyColorBy =
   | 'meanQueryIdentity'
   | 'mappingQuality'
 
+/**
+ * #api
+ * Applies an alpha to a CSS color, returning the original when `a === 1`.
+ */
 export function applyAlpha(color: string, a: number) {
   if (a === 1) {
     return color
