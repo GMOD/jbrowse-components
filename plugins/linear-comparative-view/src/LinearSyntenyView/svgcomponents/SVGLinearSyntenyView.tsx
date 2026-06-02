@@ -47,9 +47,10 @@ export async function renderToSvg(
   const shift = 50
   const offset = rulerHeight
 
-  const heights = views.map(
-    v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
+  const tracksHeights = views.map(v =>
+    totalHeight(v.tracks, textHeight, trackLabels),
   )
+  const heights = tracksHeights.map(h => h + offset)
   const totalHeightSvg = sum(heights) + sum(levels.map(l => l.height)) + 100
 
   const displayResults = await Promise.all(
@@ -60,7 +61,7 @@ export async function renderToSvg(
           data: await Promise.all(
             view.tracks.map(async track => {
               const d = track.displays[0]
-              await when(() => (d.ready !== undefined ? d.ready : true))
+              await when(() => d.ready ?? true)
               return {
                 track,
                 result: await d.renderSvg({ ...opts, theme: themeVar }),
@@ -96,9 +97,6 @@ export async function renderToSvg(
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
   const theme = createJBrowseTheme(themeVar)
-  const tracksHeights = views.map(v =>
-    totalHeight(v.tracks, textHeight, trackLabels),
-  )
   const RenderList = [
     <SVGLinearGenomeView
       rulerHeight={rulerHeight}
@@ -108,7 +106,6 @@ export async function renderToSvg(
       trackLabels={trackLabels}
       displayResults={displayResults[0]!}
       key={views[0]!.id}
-      view={views[0]!}
       fontSize={fontSize}
       showGridlines={showGridlines}
       tracksHeight={tracksHeights[0]!}
@@ -133,7 +130,6 @@ export async function renderToSvg(
         textHeight={textHeight}
         trackLabels={trackLabels}
         displayResults={displayResults[i]!}
-        view={view}
         showGridlines={showGridlines}
         tracksHeight={tracksHeights[i]!}
       />,
@@ -146,7 +142,7 @@ export async function renderToSvg(
     <ThemeProvider theme={theme}>
       <Wrapper>
         <svg
-          width={width}
+          width={w + shift * 2}
           height={totalHeightSvg}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"

@@ -30,7 +30,6 @@ export default function SVGLinearGenomeView({
   fontSize,
   textHeight,
   trackLabels,
-  view,
   displayResults,
   rulerHeight,
   shift,
@@ -41,7 +40,6 @@ export default function SVGLinearGenomeView({
   trackLabels: TrackLabelMode
   trackLabelOffset: number
   fontSize: number
-  view: LinearGenomeViewModel
   displayResults: ViewDisplayResults
   rulerHeight: number
   shift: number
@@ -57,7 +55,7 @@ export default function SVGLinearGenomeView({
           fontSize={fontSize}
           {...getFillProps(theme.palette.text.primary)}
         >
-          {view.assemblyNames.join(', ')}
+          {displayResults.view.assemblyNames.join(', ')}
         </text>
         <SVGRuler model={displayResults.view} fontSize={fontSize} />
       </g>

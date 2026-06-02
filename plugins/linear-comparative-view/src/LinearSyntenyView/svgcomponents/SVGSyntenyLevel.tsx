@@ -4,10 +4,7 @@ import type { ReactNode } from 'react'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
 
 import type { ViewDisplayResults } from './SVGLinearGenomeView.tsx'
-import type {
-  LinearGenomeViewModel,
-  TrackLabelMode,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
 export default function SVGSyntenyLevel({
   clipId,
@@ -22,7 +19,6 @@ export default function SVGSyntenyLevel({
   textHeight,
   trackLabels,
   displayResults,
-  view,
   showGridlines,
   tracksHeight,
 }: {
@@ -38,7 +34,6 @@ export default function SVGSyntenyLevel({
   textHeight: number
   trackLabels: TrackLabelMode
   displayResults: ViewDisplayResults
-  view: LinearGenomeViewModel
   showGridlines: boolean
   tracksHeight: number
 }) {
@@ -65,7 +60,6 @@ export default function SVGSyntenyLevel({
           textHeight={textHeight}
           trackLabels={trackLabels}
           displayResults={displayResults}
-          view={view}
           fontSize={fontSize}
           showGridlines={showGridlines}
           tracksHeight={tracksHeight}

@@ -1,5 +1,10 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
+import {
+  getFillProps,
+  getSession,
+  renderToStaticMarkup,
+  sum,
+} from '@jbrowse/core/util'
 import {
   SVGGridlines,
   SVGRuler,
@@ -37,9 +42,10 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const { width, views } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
-  const heights = views.map(
-    v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
+  const tracksHeights = views.map(v =>
+    totalHeight(v.tracks, textHeight, trackLabels),
   )
+  const heights = tracksHeights.map(h => h + offset)
   const totalHeightSvg = sum(heights) + 100
   const displayResults = await Promise.all(
     views.map(
@@ -69,7 +75,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   )
   const w = width + trackLabelOffset
   const t = createJBrowseTheme(theme)
-  const tracksHeights = heights.map(h => h - offset)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -88,7 +93,11 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
             return (
               <g key={view.id} transform={`translate(${shift} ${yOffset})`}>
                 <g transform={`translate(${trackLabelOffset})`}>
-                  <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
+                  <text
+                    x={0}
+                    fontSize={fontSize}
+                    {...getFillProps(t.palette.text.primary)}
+                  >
                     {view.assemblyNames.join(', ')}
                   </text>
                   <SVGRuler model={view} fontSize={fontSize} />

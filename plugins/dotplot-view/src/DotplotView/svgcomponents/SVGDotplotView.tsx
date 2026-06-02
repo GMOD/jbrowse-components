@@ -24,7 +24,7 @@ export async function renderToSvg(
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
-      await when(() => (display.ready !== undefined ? display.ready : true))
+      await when(() => display.ready ?? true)
       return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )
@@ -42,7 +42,7 @@ export async function renderToSvg(
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
         <svg
-          width={width}
+          width={w}
           height={height}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
