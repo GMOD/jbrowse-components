@@ -212,6 +212,45 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
   const [twoBitLocation, setTwoBitLocation] = useState(blank)
   const [chromSizesLocation, setChromSizesLocation] = useState(blank)
 
+  function onSubmit() {
+    if (!assemblyName.trim()) {
+      session.notify("Can't create an assembly without a name")
+    } else {
+      onClose()
+      session.addAssembly?.({
+        name: assemblyName,
+        displayName: assemblyDisplayName,
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: `${assemblyName}-${performance.now()}`,
+          adapter: {
+            IndexedFastaAdapter: {
+              type: 'IndexedFastaAdapter',
+              fastaLocation,
+              faiLocation,
+            },
+            BgzipFastaAdapter: {
+              type: 'BgzipFastaAdapter',
+              fastaLocation,
+              faiLocation,
+              gziLocation,
+            },
+            UnindexedFastaAdapter: {
+              type: 'UnindexedFastaAdapter',
+              fastaLocation,
+            },
+            TwoBitAdapter: {
+              type: 'TwoBitAdapter',
+              twoBitLocation,
+              chromSizesLocation,
+            },
+          }[adapterSelection],
+        },
+      })
+      session.notify(`Added "${assemblyName}"`, 'success')
+    }
+  }
+
   return (
     <>
       <DialogContent>
@@ -283,45 +322,7 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
           variant="contained"
           color="primary"
           onClick={() => {
-            if (!assemblyName.trim()) {
-              session.notify("Can't create an assembly without a name")
-            } else {
-              onClose()
-
-              session.addAssembly?.({
-                name: assemblyName,
-                displayName: assemblyDisplayName,
-                sequence: {
-                  type: 'ReferenceSequenceTrack',
-                  trackId: `${assemblyName}-${performance.now()}`,
-                  adapter:
-                    adapterSelection === 'IndexedFastaAdapter'
-                      ? {
-                          type: 'IndexedFastaAdapter',
-                          fastaLocation,
-                          faiLocation,
-                        }
-                      : adapterSelection === 'BgzipFastaAdapter'
-                        ? {
-                            type: 'BgzipFastaAdapter',
-                            fastaLocation,
-                            faiLocation,
-                            gziLocation,
-                          }
-                        : adapterSelection === 'UnindexedFastaAdapter'
-                          ? {
-                              type: 'UnindexedFastaAdapter',
-                              fastaLocation,
-                            }
-                          : {
-                              type: 'TwoBitAdapter',
-                              twoBitLocation,
-                              chromSizesLocation,
-                            },
-                },
-              })
-              session.notify(`Added "${assemblyName}"`, 'success')
-            }
+            onSubmit()
           }}
         >
           Submit
