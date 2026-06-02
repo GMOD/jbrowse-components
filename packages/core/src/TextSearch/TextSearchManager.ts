@@ -98,24 +98,18 @@ export default class TextSearchManager {
       )
   }
 
-  async search(
-    args: BaseTextSearchArgs,
-    searchScope: SearchScope,
-    rankFn: (results: BaseResult[]) => BaseResult[],
-  ) {
+  async search(args: BaseTextSearchArgs, searchScope: SearchScope) {
     const adapters = await this.loadTextSearchAdapters(searchScope)
     const results = await Promise.all(adapters.map(a => a.searchIndex(args)))
-    return this.sortResults({ args, results: results.flat(), rankFn })
+    return this.sortResults({ args, results: results.flat() })
   }
 
   sortResults({
     results,
-    rankFn,
     args,
   }: {
     results: BaseResult[]
     args: BaseTextSearchArgs
-    rankFn: (results: BaseResult[]) => BaseResult[]
   }) {
     const uf = new uFuzzy({})
 
@@ -146,6 +140,6 @@ export default class TextSearchManager {
         res.push(results[info.idx[element]!]!)
       }
     }
-    return rankFn(res)
+    return res
   }
 }

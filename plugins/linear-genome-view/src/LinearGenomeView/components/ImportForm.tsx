@@ -41,7 +41,6 @@ const LinearGenomeViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const { assemblyNames, assemblyManager, textSearchManager } = session
-    const { rankSearchResults } = model
     const { initialized, error } = model
     const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
     const [option, setOption] = useState<BaseResult>()
@@ -108,7 +107,6 @@ const LinearGenomeViewImportForm = observer(
                             queryString,
                             assembly,
                             textSearchManager,
-                            rankSearchResults,
                             searchScope,
                           })
                         }

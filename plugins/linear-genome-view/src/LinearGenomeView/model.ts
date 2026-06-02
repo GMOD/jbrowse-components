@@ -728,14 +728,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * #method
-       * does nothing currently
-       */
-      rankSearchResults(results: BaseResult[]) {
-        return results
-      },
-
-      /**
        * #getter
        */
       get trackTypeActions() {

@@ -25,7 +25,7 @@ export function shorten(str: string, term: string, w = 15) {
   if (str.length < 40) {
     return str
   }
-  const tidx = str.toLowerCase().indexOf(term)
+  const tidx = str.toLowerCase().indexOf(term.toLowerCase())
   if (tidx === -1) {
     return `${str.slice(0, 40).trim()}...`
   }
@@ -68,25 +68,27 @@ export default class TrixTextSearchAdapter
 
   /**
    * Returns list of results
-   * @param args - search options/arguments include: search query
-   * limit of results to return, searchType...prefix | full | exact", etc.
+   * @param args - search options/arguments include: search query,
+   * searchType (prefix | full | exact), etc.
    */
   async searchIndex(args: BaseTextSearchArgs) {
     const query = args.queryString.toLowerCase()
-    const strs = query.split(' ')
+    const words = query.split(' ')
     const results = await this.trixJs.search(query)
     const formatted = results
-      // if multi-word search try to filter out relevant items
-      .filter(([, data]) => {
-        const lower = decodeURIComponentNoThrow(data).toLowerCase()
-        return strs.every(r => lower.includes(r))
-      })
-      .map(([term, data]) => {
-        const decoded = (JSON.parse(data.replaceAll('|', ',')) as string[]).map(
+      .map(([term, data]) => ({
+        term,
+        parts: (JSON.parse(data.replaceAll('|', ',')) as string[]).map(
           decodeURIComponentNoThrow,
-        )
-        const [loc, trackId, ...rest] = decoded
-
+        ),
+      }))
+      // multi-word search: keep only entries containing every word
+      .filter(({ parts }) => {
+        const lower = parts.join(' ').toLowerCase()
+        return words.every(w => lower.includes(w))
+      })
+      .map(({ term, parts }) => {
+        const [loc, trackId, ...rest] = parts
         const labelField = rest.find(elt => !!elt) ?? ''
         const termLower = term.toLowerCase()
         const contextIdx = rest.findIndex(f =>
@@ -101,19 +103,17 @@ export default class TrixTextSearchAdapter
             ? label
             : `${label} (${context})`
 
-        return new BaseResult({
-          locString: loc,
-          label,
-          displayString,
-          trackId,
-        })
+        // labelField is the full (un-shortened) name, used for exact matching
+        return {
+          labelField,
+          result: new BaseResult({ locString: loc, label, displayString, trackId }),
+        }
       })
 
-    if (args.searchType === 'exact') {
-      return formatted.filter(
-        r => r.getLabel().toLowerCase() === args.queryString.toLowerCase(),
-      )
-    }
-    return formatted
+    const matches =
+      args.searchType === 'exact'
+        ? formatted.filter(({ labelField }) => labelField.toLowerCase() === query)
+        : formatted
+    return matches.map(({ result }) => result)
   }
 }

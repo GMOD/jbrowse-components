@@ -14,25 +14,34 @@ const INPUT_FONT_SIZE = 14
 // reserve room for the search/help icons and input padding
 const ADORNMENT_RESERVE_PX = 100
 
+// MUI Autocomplete is not virtualized, so a broad query that returns thousands
+// of hits would render thousands of DOM nodes; cap the visible list instead
+const MAX_OPTIONS = 100
+
 interface Option {
   group?: string
   result: BaseResult
 }
 
-function getFiltered(options: Option[], inputValue: string) {
-  const query = inputValue.toLowerCase()
-  const filtered = options.filter(({ result }) =>
-    result.getLabel().toLowerCase().includes(query),
-  )
-  return filtered.length > 100
+function cap(options: Option[]) {
+  return options.length > MAX_OPTIONS
     ? [
-        ...filtered.slice(0, 100),
+        ...options.slice(0, MAX_OPTIONS),
         {
           group: 'limitOption',
           result: new BaseResult({ label: 'keep typing for more results' }),
         },
       ]
-    : filtered
+    : options
+}
+
+function getFiltered(options: Option[], inputValue: string) {
+  const query = inputValue.toLowerCase()
+  return cap(
+    options.filter(({ result }) =>
+      result.getLabel().toLowerCase().includes(query),
+    ),
+  )
 }
 
 function getDeduplicatedResult(results: BaseResult[]): Option[] {
@@ -165,7 +174,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       options={hasSearchResults ? searchOptions : regionOptions}
       getOptionDisabled={option => option.group === 'limitOption'}
       filterOptions={opts =>
-        hasSearchResults ? opts : getFiltered(opts, searchQuery)
+        hasSearchResults ? cap(opts) : getFiltered(opts, searchQuery)
       }
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField

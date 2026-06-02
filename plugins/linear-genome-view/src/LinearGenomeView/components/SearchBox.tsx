@@ -31,7 +31,7 @@ const SearchBox = observer(function SearchBox({
   const theme = useTheme()
   const session = getSession(model)
   const { textSearchManager, assemblyManager } = session
-  const { assemblyNames, rankSearchResults } = model
+  const { assemblyNames } = model
   const assemblyName = assemblyNames[0]!
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
@@ -51,7 +51,6 @@ const SearchBox = observer(function SearchBox({
         fetchResults({
           queryString,
           searchScope,
-          rankSearchResults,
           textSearchManager,
           assembly,
         })

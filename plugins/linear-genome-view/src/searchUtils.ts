@@ -103,23 +103,24 @@ export async function handleSelectedRegion({
   const assembly = assemblyManager.get(assemblyName)
   const allRefs = assembly?.allRefNamesWithLowerCase
 
-  if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
-    await model.navToLocations(
-      parseLocStrings(
-        input,
-        assemblyName,
-        ref => allRefs.has(ref) || allRefs.has(ref.toLowerCase()),
+  // navigate treating input as one or more whitespace-separated locstrings
+  const navToLocstrings = () =>
+    model.navToLocations(
+      parseLocStrings(input, assemblyName, (ref, asm) =>
+        assemblyManager.isValidRefName(ref, asm),
       ),
       assemblyName,
       grow,
     )
+
+  if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
+    await navToLocstrings()
   } else {
     const searchScope = model.searchScope(assemblyName)
     const results = await fetchResults({
       queryString: input,
       searchType: 'exact',
       searchScope,
-      rankSearchResults: model.rankSearchResults,
       textSearchManager,
       assembly,
     })
@@ -133,13 +134,7 @@ export async function handleSelectedRegion({
         assemblyName,
       })
     } else {
-      await model.navToLocations(
-        parseLocStrings(input, assemblyName, (ref, asm) =>
-          assemblyManager.isValidRefName(ref, asm),
-        ),
-        assemblyName,
-        grow,
-      )
+      await navToLocstrings()
     }
   }
 }
@@ -153,13 +148,11 @@ export async function fetchResults({
   queryString,
   searchType,
   searchScope,
-  rankSearchResults,
   textSearchManager,
   assembly,
 }: {
   queryString: string
   searchScope: SearchScope
-  rankSearchResults: (results: BaseResult[]) => BaseResult[]
   searchType?: SearchType
   textSearchManager?: TextSearchManager
   assembly?: Assembly
@@ -170,7 +163,6 @@ export async function fetchResults({
       searchType,
     },
     searchScope,
-    rankSearchResults,
   )
 
   // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so

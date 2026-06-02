@@ -33,8 +33,6 @@ export interface BaseTextSearchArgs {
   queryString: string
   searchType?: SearchType
   stopToken?: StopToken
-  limit?: number
-  pageNumber?: number
 }
 
 export interface FeatureDensityStats {
