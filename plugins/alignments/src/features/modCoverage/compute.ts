@@ -167,7 +167,6 @@ export function computeModificationCoverage(
       const { modifiable, detectable } = calculateModificationCounts({
         base: entry.base,
         isSimplex: entry.isSimplex,
-        refbase,
         baseCounts,
         strandBaseCounts,
       })

@@ -8,13 +8,11 @@ export const complementBase: Record<string, string> = {
 export function calculateModificationCounts({
   base,
   isSimplex,
-  refbase: _refbase,
   baseCounts,
   strandBaseCounts,
 }: {
   base: string
   isSimplex: boolean
-  refbase: string
   baseCounts: Record<string, number>
   strandBaseCounts: Record<string, { fwd: number; rev: number }>
 }) {

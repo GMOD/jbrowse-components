@@ -22,9 +22,7 @@
 //   C+m   → skipped bases = low probability modification (default)
 //   C+m.  → skipped bases = low probability modification (explicit)
 //   C+m?  → skipped bases = unknown modification status
-export const modificationRegex = new RegExp(
-  /([ACGTUN])([-+])([a-z]+|[A-Z]|[0-9]+)([.?]?)/,
-)
+export const modificationRegex = /([ACGTUN])([-+])([a-z]+|[A-Z]|[0-9]+)([.?]?)/
 
 /**
  * #api
@@ -43,6 +41,6 @@ export function parseModHeader(
     base: matches[1]!,
     strand: matches[2]!,
     typestr: matches[3]!,
-    mod: matches[4] || '.',
+    mod: matches[4] !== '' ? matches[4] : '.',
   }
 }

@@ -31,6 +31,14 @@ Keep the main model chain in one file (e.g. `LinearGenomeView/model.ts`). Don't
 split `.views()`/`.actions()` chains across files; small mixins/utilities can be
 extracted.
 
+## Alignment modification parsing (`packages/modifications-utils`, `plugins/alignments`)
+
+This code runs per-read in the RPC worker — with thousands of reads and potentially
+thousands of modifications per read in a typical view. Avoid intermediate array
+allocations in hot paths (no `.filter().map()` chains, no extra copies). The
+pre-allocate-and-fill-backwards pattern in `getModPositions` is intentional to
+avoid an O(n) `reverse()` call.
+
 ## Other notes
 
 - `@jbrowse/mobx-state-tree` is our internal ESM fork of MST; treat it like

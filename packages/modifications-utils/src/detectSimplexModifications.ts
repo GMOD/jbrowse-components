@@ -22,20 +22,17 @@ type ModificationTypeList = readonly ModificationType[]
 export function detectSimplexModifications(
   modifications: ModificationTypeList,
 ): ReadonlySet<string> {
-  const minusStrandMods = new Set<string>()
-  const simplexModifications = new Set<string>()
-
+  const minusTypes = new Set<string>()
   for (const { strand, type } of modifications) {
     if (strand === '-') {
-      minusStrandMods.add(type)
+      minusTypes.add(type)
     }
   }
-
+  const simplex = new Set<string>()
   for (const { strand, type } of modifications) {
-    if (strand === '+' && !minusStrandMods.has(type)) {
-      simplexModifications.add(type)
+    if (strand === '+' && !minusTypes.has(type)) {
+      simplex.add(type)
     }
   }
-
-  return simplexModifications
+  return simplex
 }
