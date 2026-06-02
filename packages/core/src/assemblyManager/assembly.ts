@@ -22,7 +22,6 @@ import type {
 } from '../data_adapters/BaseAdapter/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
-import type { StopToken } from '../util/stopToken.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
@@ -67,7 +66,7 @@ const refNameColors = [
 
 // the subset of the assembly model that loadRefNameMap reads; using a Pick
 // (rather than the full Assembly) lets `self` satisfy it from inside the
-// getAdapterMapEntry view, which doesn't yet see its own sibling methods
+// getRefNameMapForAdapter view, which doesn't yet see its own sibling methods
 type RefNameMapAssembly = Pick<
   Assembly,
   | 'name'
@@ -82,7 +81,7 @@ async function loadRefNameMap(
   assembly: RefNameMapAssembly,
   adapterConfig: unknown,
   options: BaseOptions,
-): Promise<RefNameMap> {
+): Promise<RefNameAliases> {
   const { sessionId } = options
   if (!sessionId) {
     throw new Error('sessionId is required for loadRefNameMap')
@@ -124,19 +123,9 @@ async function loadRefNameMap(
   for (const name of refNames) {
     checkRefName(name)
   }
-  const refNameMap = Object.fromEntries(
+  return Object.fromEntries(
     refNames.map(name => [assembly.getCanonicalRefName(name), name]),
   )
-
-  return {
-    forwardMap: refNameMap,
-    reverseMap: Object.fromEntries(
-      Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
-        adapterName,
-        canonicalName,
-      ]),
-    ),
-  }
 }
 
 // Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
@@ -202,11 +191,6 @@ function buildRefNameMaps(
   }
 }
 
-export interface RefNameMap {
-  forwardMap: RefNameAliases
-  reverseMap: RefNameAliases
-}
-
 export interface BasicRegion {
   start: number
   end: number
@@ -248,7 +232,7 @@ export default function assemblyFactory(
         // config is queried under two assemblies (e.g. comparative views).
         // Loads are never aborted, so memoizing the promise (keyed by adapter
         // config) is enough to dedupe concurrent calls.
-        adapterLoads: new QuickLRU<string, Promise<RefNameMap>>({
+        adapterLoads: new QuickLRU<string, Promise<RefNameAliases>>({
           maxSize: 1000,
         }),
         /**
@@ -331,13 +315,11 @@ export default function assemblyFactory(
       get allAliases() {
         return [self.name, ...self.aliases]
       },
-    }))
-    .views(self => ({
       /**
        * #method
        */
       hasName(name: string) {
-        return self.allAliases.includes(name)
+        return this.allAliases.includes(name)
       },
     }))
     .actions(self => ({
@@ -553,11 +535,13 @@ export default function assemblyFactory(
     .views(self => ({
       /**
        * #method
+       * get Map of `canonical-name -> adapter-specific-name`, memoized per
+       * adapter config so concurrent callers share one load
        */
-      getAdapterMapEntry(
+      getRefNameMapForAdapter(
         adapterConf: AdapterConf,
         options: BaseOptions,
-      ): Promise<RefNameMap> {
+      ): Promise<RefNameAliases> {
         if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
@@ -576,31 +560,6 @@ export default function assemblyFactory(
         return entry
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       * get Map of `canonical-name -> adapter-specific-name`
-       */
-      async getRefNameMapForAdapter(
-        adapterConf: AdapterConf,
-        opts: BaseOptions,
-      ) {
-        const map = await self.getAdapterMapEntry(adapterConf, opts)
-        return map.forwardMap
-      },
-
-      /**
-       * #method
-       * get Map of `adapter-specific-name -> canonical-name`
-       */
-      async getReverseRefNameMapForAdapter(
-        adapterConf: AdapterConf,
-        opts: BaseOptions,
-      ) {
-        const map = await self.getAdapterMapEntry(adapterConf, opts)
-        return map.reverseMap
-      },
-    }))
 }
 
 async function instantiateAdapter(
@@ -616,17 +575,15 @@ async function instantiateAdapter(
 async function getRefNameAliases({
   config,
   pluginManager,
-  stopToken,
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  stopToken?: StopToken
 }) {
   const adapter = (await instantiateAdapter(
     config,
     pluginManager,
   )) as BaseRefNameAliasAdapter
-  return adapter.getRefNameAliases({ stopToken })
+  return adapter.getRefNameAliases({})
 }
 
 async function getCytobands({
@@ -646,17 +603,15 @@ async function getCytobands({
 async function getAssemblyRegions({
   config,
   pluginManager,
-  stopToken,
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  stopToken?: StopToken
 }) {
   const adapter = (await instantiateAdapter(
     config,
     pluginManager,
   )) as RegionsAdapter
-  return adapter.getRegions({ stopToken })
+  return adapter.getRegions({})
 }
 
 export type AssemblyModel = ReturnType<typeof assemblyFactory>

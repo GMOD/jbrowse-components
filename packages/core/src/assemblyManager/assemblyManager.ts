@@ -174,21 +174,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #method
        */
-      async getReverseRefNameMapForAdapter(
-        adapterConf: AdapterConf,
-        assemblyName: string | undefined,
-        opts: AssemblyBaseOpts,
-      ) {
-        if (assemblyName) {
-          const asm = await this.waitForAssembly(assemblyName)
-          return asm?.getReverseRefNameMapForAdapter(adapterConf, opts)
-        }
-        return {}
-      },
-
-      /**
-       * #method
-       */
       isValidRefName(refName: string, assemblyName: string) {
         const assembly = self.get(assemblyName)
         if (assembly) {
