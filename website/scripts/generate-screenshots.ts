@@ -361,7 +361,9 @@ async function main() {
       '--disable-web-security',
       '--enable-unsafe-swiftshader',
     ],
-    defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 2 },
+    // wider viewport for more genomic context; deviceScaleFactor 2 keeps the
+    // capture hidpi/retina-crisp (2x backing store) at the larger size
+    defaultViewport: { width: 1500, height: 800, deviceScaleFactor: 2 },
   }
 
   let passed = 0
