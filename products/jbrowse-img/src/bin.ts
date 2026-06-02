@@ -8,6 +8,7 @@ import {
   renderRegion,
   setupEnv,
   standardizeArgv,
+  syntenyTrackTypes,
   trackTypes,
 } from './index.ts'
 import {
@@ -17,14 +18,27 @@ import {
   getString,
   getTrackLabels,
   knownOptions,
+  subcommands,
 } from './options.ts'
 
 const scriptName = 'jb2export'
 
 async function main() {
-  const args = process.argv.slice(2)
-  if (args.includes('--help') || args.includes('-h')) {
-    console.log(buildHelp(scriptName, trackTypes))
+  const argv = process.argv.slice(2)
+  // A leading positional token (not a --flag) selects a comparative
+  // subcommand, e.g. `jb2export dotplot --fasta a.fa --fasta2 b.fa ...`
+  const first = argv[0]
+  const isSubcommand = first !== undefined && !first.startsWith('-')
+  const mode = isSubcommand ? subcommands[first] : undefined
+  const args = isSubcommand ? argv.slice(1) : argv
+
+  if (isSubcommand && !mode) {
+    console.error(
+      `Unknown subcommand "${first}". Known subcommands: ${Object.keys(subcommands).join(', ')}`,
+    )
+    process.exit(1)
+  } else if (args.includes('--help') || args.includes('-h')) {
+    console.log(buildHelp(scriptName, trackTypes, syntenyTrackTypes, mode))
   } else if (args.includes('--version') || args.includes('-v')) {
     const { version } = JSON.parse(
       fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
@@ -34,7 +48,10 @@ async function main() {
     setupEnv()
 
     const parsed = parseArgv(args)
-    const { trackList, ...rest } = standardizeArgv(parsed, trackTypes)
+    const { trackList, ...rest } = standardizeArgv(parsed, [
+      ...trackTypes,
+      ...syntenyTrackTypes,
+    ])
 
     for (const key of Object.keys(rest)) {
       if (!knownOptions.has(key)) {
@@ -59,6 +76,11 @@ async function main() {
       showGridlines: getBoolean(rest, 'showGridlines'),
       trackLabels: getTrackLabels(rest),
       refseq: getBoolean(rest, 'refseq'),
+      mode,
+      fasta2: getString(rest, 'fasta2'),
+      aliases2: getString(rest, 'aliases2'),
+      assembly2: getString(rest, 'assembly2'),
+      loc2: getString(rest, 'loc2'),
       trackList,
     })
 

@@ -49,7 +49,7 @@ export function makeFeatures(fdata: SimpleFeatureSerialized[]) {
   const features = new Map<string, Feature[]>()
   for (const entry of fdata) {
     const f = new SimpleFeature(entry)
-    const refName = f.get('refName') as string
+    const refName = f.get('refName')
     let bucket = features.get(refName)
     if (!bucket) {
       bucket = []

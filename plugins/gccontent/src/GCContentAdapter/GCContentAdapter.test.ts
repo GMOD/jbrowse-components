@@ -34,7 +34,7 @@ function getScores(adapter: GCContentAdapter, start = 0, end = 100) {
     adapter
       .getFeatures({ refName: 'ctgA', start, end, assemblyName: 'a' })
       .pipe(toArray()),
-  ).then(features => features.map(f => f.get('score') as number))
+  ).then(features => features.map(f => f.get('score')!))
 }
 
 test('getRefNames delegates to the sequence subadapter', async () => {

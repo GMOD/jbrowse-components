@@ -274,6 +274,28 @@ jb2export --loc all \
   --config data/config.json
 ```
 
+### Compare two assemblies (dotplot / synteny)
+
+Two assemblies can be compared with the `dotplot` and `synteny` subcommands. The
+primary assembly is supplied with `--fasta`/`--loc` (as usual) and the second
+with `--fasta2`/`--loc2`. The alignment between them is a comparison track
+(`--paf`, `--delta`, `--chain`, or `--blasttab`); the query side of that file is
+the first assembly and the target side is the second.
+
+```bash
+## whole-genome dotplot
+jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out dotplot.svg
+
+## linear synteny view of a region in each assembly
+jb2export synteny \
+  --fasta a.fa --loc chr1:1-1,000,000 \
+  --fasta2 b.fa --loc2 chr2:1-1,000,000 \
+  --paf a_vs_b.paf --out synteny.svg
+```
+
+Omitting `--loc`/`--loc2` shows the whole assembly on that axis. Run
+`jb2export dotplot --help` for the full list of comparative options.
+
 ### Use with a jbrowse config.json (local files in the config.json)
 
 The jbrowse CLI tool (e.g. npm install -g @jbrowse/cli) refers to "uri" paths by

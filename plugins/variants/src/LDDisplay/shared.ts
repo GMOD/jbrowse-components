@@ -695,7 +695,7 @@ export default function sharedModelFactory(
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self as SharedLDModel)
+            doAfterAttach(self)
           } catch (e) {
             console.error(e)
             getSession(self).notifyError(`${e}`, e)

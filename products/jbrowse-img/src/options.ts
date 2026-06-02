@@ -1,3 +1,5 @@
+import type { ViewMode } from './readData.ts'
+
 export interface OptionDef {
   name: string
   description: string
@@ -51,6 +53,22 @@ export const optionDefs: OptionDef[] = [
   },
 ]
 
+// Extra options accepted only by the comparative subcommands (dotplot/synteny),
+// where the second assembly is rendered against the primary --fasta/--loc.
+const comparativeOptionDefs: OptionDef[] = [
+  { name: 'fasta2', description: 'Second assembly indexed FASTA' },
+  { name: 'aliases2', description: 'Reference name aliases for fasta2' },
+  { name: 'assembly2', description: 'Second assembly name in config' },
+  { name: 'loc2', description: 'Location on the second assembly' },
+]
+
+// Map of subcommand name -> view mode it renders.
+export const subcommands: Record<string, ViewMode> = {
+  dotplot: 'dotplot',
+  synteny: 'synteny',
+  circular: 'circular',
+}
+
 const examples: [string, string][] = [
   [
     '--fasta ref.fa --bam reads.bam --loc chr1:1-10000 --out out.svg',
@@ -71,6 +89,24 @@ const examples: [string, string][] = [
   [
     '--fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg',
     'Render BigWig with cytobands',
+  ],
+]
+
+const comparativeExamples: [string, string][] = [
+  [
+    'dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg',
+    'Whole-genome dotplot of two assemblies via a PAF',
+  ],
+  [
+    'synteny --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --loc chr1 --loc2 chr1 --out out.svg',
+    'Linear synteny view of a region in each assembly',
+  ],
+]
+
+const circularExamples: [string, string][] = [
+  [
+    'circular --fasta ref.fa --vcfgz sv.vcf.gz --out out.svg',
+    'Circular (chord) view of structural variants',
   ],
 ]
 
@@ -102,30 +138,80 @@ export function getTrackLabels(rest: Record<string, unknown>) {
 
 export const knownOptions = new Set([
   ...optionDefs.map(o => o.name),
+  ...comparativeOptionDefs.map(o => o.name),
   'help',
   'version',
 ])
 
-export function buildHelp(scriptName: string, trackTypes: string[]) {
-  const pad = Math.max(...optionDefs.map(o => o.name.length))
-  const optLines = optionDefs.map(o => {
+function formatOpts(defs: OptionDef[], pad: number) {
+  return defs.map(o => {
     const suffix = o.default === undefined ? '' : ` [default: ${o.default}]`
     return `  --${o.name.padEnd(pad)}  ${o.description}${suffix}`
   })
-  const exampleLines = examples.map(
-    ([cmd, desc]) => `  ${scriptName} ${cmd}\n      ${desc}`,
-  )
+}
+
+function formatExamples(scriptName: string, list: [string, string][]) {
+  return list.map(([cmd, desc]) => `  ${scriptName} ${cmd}\n      ${desc}`)
+}
+
+// Help for a subcommand. Dotplot/synteny compare two assemblies (second-assembly
+// options + comparison file types); circular is single-assembly.
+function buildSubcommandHelp(
+  scriptName: string,
+  mode: ViewMode,
+  syntenyTrackTypes: string[],
+) {
+  const comparative = mode === 'dotplot' || mode === 'synteny'
+  const defs = comparative
+    ? [...optionDefs, ...comparativeOptionDefs]
+    : optionDefs
+  const pad = Math.max(...defs.map(o => o.name.length))
   return [
-    `Usage: ${scriptName} [options]`,
+    `Usage: ${scriptName} ${mode} [options]`,
     '',
     'Options:',
-    ...optLines,
+    ...formatOpts(defs, pad),
+    '',
+    'Examples:',
+    ...formatExamples(
+      scriptName,
+      comparative ? comparativeExamples : circularExamples,
+    ),
+    ...(comparative
+      ? [
+          '',
+          `Comparison track options: ${syntenyTrackTypes.map(t => `--${t}`).join(', ')}`,
+        ]
+      : []),
+  ].join('\n')
+}
+
+export function buildHelp(
+  scriptName: string,
+  trackTypes: string[],
+  syntenyTrackTypes: string[],
+  mode?: ViewMode,
+) {
+  if (mode) {
+    return buildSubcommandHelp(scriptName, mode, syntenyTrackTypes)
+  }
+  const pad = Math.max(...optionDefs.map(o => o.name.length))
+  return [
+    `Usage: ${scriptName} [options]`,
+    `       ${scriptName} <${Object.keys(subcommands).join('|')}> [options]`,
+    '',
+    'Options:',
+    ...formatOpts(optionDefs, pad),
     `  --${'help'.padEnd(pad)}  Show help`,
     `  --${'version'.padEnd(pad)}  Print version`,
     '',
     'Examples:',
-    ...exampleLines,
+    ...formatExamples(scriptName, examples),
     '',
     `Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`,
+    '',
+    `Comparative subcommands (run "${scriptName} dotplot --help"): ${Object.keys(
+      subcommands,
+    ).join(', ')}`,
   ].join('\n')
 }

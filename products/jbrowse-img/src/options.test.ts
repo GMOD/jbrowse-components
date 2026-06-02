@@ -7,7 +7,7 @@ import {
   knownOptions,
 } from './options.ts'
 import { parseArgv, standardizeArgv } from './parseArgv.ts'
-import { trackTypes } from './readData.ts'
+import { syntenyTrackTypes, trackTypes } from './readData.ts'
 
 function parse(args: string) {
   const { trackList, ...rest } = standardizeArgv(
@@ -43,8 +43,16 @@ test('knownOptions covers named options including help and version', () => {
 })
 
 test('help text lists options, examples, and track flags', () => {
-  const help = buildHelp('jb2export', trackTypes)
+  const help = buildHelp('jb2export', trackTypes, syntenyTrackTypes)
   expect(help).toContain('--fasta')
   expect(help).toContain('[default: 1500]')
   expect(help).toContain('Track options: --bam')
+  expect(help).toContain('Comparative subcommands')
+})
+
+test('subcommand help lists comparison track options', () => {
+  const help = buildHelp('jb2export', trackTypes, syntenyTrackTypes, 'dotplot')
+  expect(help).toContain('Usage: jb2export dotplot')
+  expect(help).toContain('--fasta2')
+  expect(help).toContain('Comparison track options: --paf')
 })

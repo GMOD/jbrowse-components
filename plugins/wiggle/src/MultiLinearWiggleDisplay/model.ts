@@ -425,9 +425,6 @@ export default function stateModelFactory(
       },
     }))
     .postProcessSnapshot(snap => {
-      if (!snap) {
-        return snap
-      }
       const { layout, clusterTree, treeAreaWidth, subtreeFilter, ...rest } =
         snap
       return {

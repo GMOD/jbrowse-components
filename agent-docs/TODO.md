@@ -11,3 +11,10 @@
 - fullpage_arcs-collapse-introns-sashimi.png need to scroll down to see the collapsed arcs
 - does yeast demo really need remote
 - no max height react-app
+- show sashimi arcs
+- fix types
+- fix tsc
+- fix the undefined in volatile issue upstream in mobx-state-tree?
+- fix the snap types?
+- or just revert
+- submenu for read connections

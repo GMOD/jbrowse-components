@@ -2,8 +2,15 @@ import { TextDecoder, TextEncoder } from 'node:util'
 
 import { Image, createCanvas } from 'canvas'
 import { JSDOM } from 'jsdom'
+import { enableStaticRendering } from 'mobx-react'
 
 export function setupEnv() {
+  // We render to static markup (renderToStaticMarkup), never to a live DOM, so
+  // observer components must not subscribe to observables — otherwise their
+  // reactions linger past the render and fire on destroy(), reading dead MST
+  // nodes. This is the standard mobx SSR switch.
+  enableStaticRendering(true)
+
   // @ts-expect-error
   global.nodeImage = Image
   // @ts-expect-error

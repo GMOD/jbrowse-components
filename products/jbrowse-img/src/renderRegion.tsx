@@ -1,15 +1,22 @@
 import path from 'path'
 
 import { destroy } from '@jbrowse/mobx-state-tree'
-import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
-import { createViewState } from '@jbrowse/react-linear-genome-view2'
+import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
+import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
+import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-comparative-view'
+import { renderToSvg as renderLinearToSvg } from '@jbrowse/plugin-linear-genome-view'
+import { createViewState } from '@jbrowse/react-app2'
 import { createCanvas } from 'canvas'
+import { when } from 'mobx'
 
 import { readData } from './readData.ts'
 import { booleanize } from './util.ts'
 
 import type { Entry } from './parseArgv.ts'
-import type { Opts } from './readData.ts'
+import type { Config, Opts } from './readData.ts'
+import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
+import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
+import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
@@ -173,9 +180,23 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   }
 }
 
-export async function renderRegion(opts: Opts) {
-  const data = readData(opts)
-  const model = createViewState({ ...data })
+// react-app2 hosts every view type and accepts multiple assemblies, where the
+// LGV-only react2 host could not. RPC runs on the main thread (the rpc
+// defaultDriver default), so no worker is needed for headless export.
+function createModel(data: Config) {
+  return createViewState({
+    config: {
+      assemblies: data.assemblies,
+      tracks: data.tracks,
+      defaultSession: data.defaultSession as { name: string } | undefined,
+      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+    },
+  })
+}
+
+type Model = ReturnType<typeof createModel>
+
+async function renderLinear(model: Model, data: Config, opts: Opts) {
   const {
     loc,
     width = 1500,
@@ -189,13 +210,13 @@ export async function renderRegion(opts: Opts) {
   } = opts
 
   const { session } = model
-  const { view } = session
-  const { assemblyManager } = model
+  const view = (session.views[0] ??
+    session.addView('LinearGenomeView', {})) as LinearGenomeViewModel
 
   view.setWidth(width)
 
   if (loc) {
-    const { name } = assemblyManager.assemblies[0]!
+    const { name } = data.assembly
     if (loc === 'all') {
       view.showAllRegionsInAssembly(name)
     } else {
@@ -219,7 +240,7 @@ export async function renderRegion(opts: Opts) {
     applyTrackOpts(track, view)
   }
 
-  const result = await renderToSvg(view, {
+  return renderLinearToSvg(view, {
     rasterizeLayers: !opts.noRasterize,
     createCanvas: (w: number, h: number) =>
       createCanvas(w, h) as unknown as HTMLCanvasElement,
@@ -227,6 +248,92 @@ export async function renderRegion(opts: Opts) {
     showGridlines,
     trackLabels,
   })
+}
+
+// A comparative view sets `initialized` true as soon as it has regions to
+// show, but its frozen `init` snapshot is consumed a moment later by an async
+// autorun (which awaits both assemblies, navigates each sub-view, and attaches
+// the comparison track). The SVG only has content once that autorun has run to
+// completion and cleared `init`.
+function whenViewReady(view: { initialized: boolean; init?: unknown }) {
+  return when(() => view.initialized && !view.init)
+}
+
+// Dotplot and synteny both compare two assemblies. The views self-initialize
+// from their frozen `init` prop, then renderToSvg rasterizes via the global
+// node canvas (setupEnv). A missing --loc shows that assembly's whole genome.
+async function renderComparative(model: Model, data: Config, opts: Opts) {
+  const { mode, width = 1500, loc, loc2, themeName, trackLabels, showGridlines } =
+    opts
+  const [asm1, asm2] = data.assemblies
+  if (!asm1 || !asm2) {
+    throw new Error(
+      'comparative mode requires two assemblies (--fasta + --fasta2, or --assembly + --assembly2)',
+    )
+  }
+
+  const syntenyTrackIds = data.tracks
+    .filter(track => track.type === 'SyntenyTrack')
+    .map(track => track.trackId)
+  const views = [
+    loc ? { assembly: asm1.name, loc } : { assembly: asm1.name },
+    loc2 ? { assembly: asm2.name, loc: loc2 } : { assembly: asm2.name },
+  ]
+
+  const { session } = model
+  if (mode === 'dotplot') {
+    const view = session.addView('DotplotView', {
+      init: { views, tracks: syntenyTrackIds },
+    }) as DotplotViewModel
+    view.setWidth(width)
+    await whenViewReady(view)
+    return renderDotplotToSvg(view, {
+      rasterizeLayers: !opts.noRasterize,
+      themeName,
+    })
+  } else {
+    // synteny track ids are per-level: tracks[i] sits between views[i] and
+    // views[i+1], so a single comparison goes in level 0.
+    const view = session.addView('LinearSyntenyView', {
+      init: { views, tracks: syntenyTrackIds.map(id => [id]) },
+    }) as LinearSyntenyViewModel
+    view.setWidth(width)
+    await whenViewReady(view)
+    return renderSyntenyToSvg(view, {
+      rasterizeLayers: !opts.noRasterize,
+      themeName,
+      trackLabels,
+      showGridlines,
+    })
+  }
+}
+
+// Circular renders one assembly's chord tracks (e.g. a VCF of structural
+// variants). The view picks each track's chord display automatically.
+async function renderCircular(model: Model, data: Config, opts: Opts) {
+  const { width = 1500, themeName } = opts
+  const { session } = model
+  const trackIds = data.tracks.map(track => track.trackId)
+  const view = session.addView('CircularView', {
+    init: { assembly: data.assembly.name, tracks: trackIds },
+  }) as CircularViewModel
+  view.setWidth(width)
+  await whenViewReady(view)
+  return renderCircularToSvg(view, {
+    rasterizeLayers: !opts.noRasterize,
+    themeName,
+  })
+}
+
+export async function renderRegion(opts: Opts) {
+  const data = readData(opts)
+  const model = createModel(data)
+  const result =
+    opts.mode === 'dotplot' || opts.mode === 'synteny'
+      ? await renderComparative(model, data, opts)
+      : opts.mode === 'circular'
+        ? await renderCircular(model, data, opts)
+        : await renderLinear(model, data, opts)
   destroy(model)
   return result
 }

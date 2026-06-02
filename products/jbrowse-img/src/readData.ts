@@ -4,6 +4,8 @@ import path from 'path'
 import type { Entry } from './parseArgv.ts'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
+export type ViewMode = 'dotplot' | 'synteny' | 'circular'
+
 export interface Opts {
   noRasterize?: boolean
   loc?: string
@@ -21,6 +23,13 @@ export interface Opts {
   showGridlines?: boolean
   trackLabels?: TrackLabelMode
   refseq?: boolean
+  // Comparative modes (dotplot/synteny) render two assemblies. The second
+  // assembly and its location are supplied alongside the primary --fasta/--loc.
+  mode?: ViewMode
+  fasta2?: string
+  aliases2?: string
+  assembly2?: string
+  loc2?: string
 }
 
 function read(file: string): unknown {
@@ -154,6 +163,75 @@ function makeAdapter(
   return undefined
 }
 
+// Comparison/synteny adapters: each maps a CLI file type to its adapter type
+// and the fileLocation slot that adapter reads from.
+const syntenyAdapterMap: Record<string, [adapterType: string, locSlot: string]> =
+  {
+    paf: ['PAFAdapter', 'pafLocation'],
+    delta: ['DeltaAdapter', 'deltaLocation'],
+    chain: ['ChainAdapter', 'chainLocation'],
+    blasttab: ['BlastTabularAdapter', 'blastTableLocation'],
+  }
+
+export const syntenyTrackTypes = Object.keys(syntenyAdapterMap)
+
+// assemblyNames order is [query, target], matching the two views in order: the
+// first --fasta/--assembly is the query (top in synteny, x-axis in dotplot),
+// the second is the target.
+function makeSyntenyTrackConfig(
+  type: string,
+  file: string,
+  queryName: string,
+  targetName: string,
+): Track {
+  const [adapterType, locSlot] = syntenyAdapterMap[type]!
+  const assemblyNames = [queryName, targetName]
+  return {
+    type: 'SyntenyTrack',
+    trackId: path.basename(file),
+    name: path.basename(file),
+    assemblyNames,
+    adapter: {
+      type: adapterType,
+      [locSlot]: makeLocation(file),
+      assemblyNames,
+    },
+  }
+}
+
+function makeFastaAssembly(
+  fasta: string,
+  aliases: string | undefined,
+  cytobands: string | undefined,
+  trackId: string,
+): Assembly {
+  const bgzip = fasta.endsWith('gz')
+  const assembly: Assembly = {
+    name: path.basename(fasta),
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId,
+      adapter: {
+        type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
+        fastaLocation: makeLocation(fasta),
+        faiLocation: makeLocation(`${fasta}.fai`),
+        gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
+      },
+    },
+  }
+  if (aliases) {
+    assembly.refNameAliases = {
+      adapter: { type: 'RefNameAliasAdapter', location: makeLocation(aliases) },
+    }
+  }
+  if (cytobands) {
+    assembly.cytobands = {
+      adapter: { type: 'CytobandAdapter', location: makeLocation(cytobands) },
+    }
+  }
+  return assembly
+}
+
 export function makeTrackConfig(
   type: string,
   file: string,
@@ -184,6 +262,9 @@ export function readData({
   defaultSession,
   tracks,
   trackList = [],
+  fasta2,
+  aliases2,
+  assembly2,
 }: Opts) {
   let assemblyData: Assembly | undefined
   if (asm && fs.existsSync(asm)) {
@@ -221,9 +302,9 @@ export function readData({
     sessionData = sessionData.session as Record<string, unknown>
   }
 
-  // only export first view
+  // only export first view (react-app2 sessions hold a `views` array)
   if (sessionData?.views) {
-    sessionData.view = (sessionData.views as Record<string, unknown>[])[0]
+    sessionData.views = [(sessionData.views as Record<string, unknown>[])[0]]
   }
 
   // use assembly from file if a file existed
@@ -242,39 +323,10 @@ export function readData({
       configData.assembly = configData.assemblies[0]!
     }
   }
-  // else load fasta from command line
+  // else load fasta from command line. trackId stays 'refseq' for the primary
+  // assembly (back-compat with the --refseq flag and tests).
   else if (fasta) {
-    const bgzip = fasta.endsWith('gz')
-
-    configData.assembly = {
-      name: path.basename(fasta),
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'refseq',
-        adapter: {
-          type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
-          fastaLocation: makeLocation(fasta),
-          faiLocation: makeLocation(`${fasta}.fai`),
-          gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
-        },
-      },
-    }
-    if (aliases) {
-      configData.assembly.refNameAliases = {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          location: makeLocation(aliases),
-        },
-      }
-    }
-    if (cytobands) {
-      configData.assembly.cytobands = {
-        adapter: {
-          type: 'CytobandAdapter',
-          location: makeLocation(cytobands),
-        },
-      }
-    }
+    configData.assembly = makeFastaAssembly(fasta, aliases, cytobands, 'refseq')
   }
 
   if (!configData.assembly) {
@@ -283,22 +335,65 @@ export function readData({
     )
   }
 
+  // Second assembly for comparative modes (dotplot/synteny). The view init
+  // reads both from configData.assemblies in order [primary, secondary].
+  if (fasta2 || assembly2) {
+    let secondary: Assembly | undefined
+    if (fasta2) {
+      const trackId = `${path.basename(fasta2)}-refseq`
+      secondary = makeFastaAssembly(fasta2, aliases2, undefined, trackId)
+    } else if (assembly2 && configData.assemblies?.length) {
+      secondary = configData.assemblies.find(entry => entry.name === assembly2)
+      if (!secondary) {
+        throw new Error(`assembly2 ${assembly2} not found in config`)
+      }
+    }
+    if (!secondary) {
+      throw new Error(
+        `could not resolve second assembly (--fasta2 ${fasta2 ?? ''} --assembly2 ${assembly2 ?? ''})`,
+      )
+    }
+    configData.assemblies = [configData.assembly, secondary]
+  }
+
   if (tracksData) {
     configData.tracks = tracksData
   } else if (!configData.tracks) {
     configData.tracks = []
   }
 
+  const secondaryAssembly = configData.assemblies?.[1]
   for (const track of trackList) {
     const [type, opts] = track
     const [file, ...rest] = opts
     const index = rest.find(r => r.startsWith('index:'))?.slice('index:'.length)
     if (!file) {
       throw new Error('no file specified')
-    }
-    const trackConfig = makeTrackConfig(type, file, index, configData.assembly)
-    if (trackConfig) {
-      configData.tracks.push(trackConfig)
+    } else if (syntenyTrackTypes.includes(type)) {
+      if (!secondaryAssembly) {
+        throw new Error(
+          `comparison track "${type}" requires a second assembly (--fasta2 or --assembly2)`,
+        )
+      } else {
+        configData.tracks.push(
+          makeSyntenyTrackConfig(
+            type,
+            file,
+            configData.assembly.name,
+            secondaryAssembly.name,
+          ),
+        )
+      }
+    } else {
+      const trackConfig = makeTrackConfig(
+        type,
+        file,
+        index,
+        configData.assembly,
+      )
+      if (trackConfig) {
+        configData.tracks.push(trackConfig)
+      }
     }
   }
 
@@ -311,6 +406,12 @@ export function readData({
   // only allow an external manually specified session
   if (sessionData) {
     configData.defaultSession = sessionData
+  }
+
+  // Normalize to a non-empty assemblies array so downstream code (and the
+  // react-app2 config) never has to special-case the single-assembly path.
+  if (!configData.assemblies?.length) {
+    configData.assemblies = [configData.assembly]
   }
 
   // assembly and tracks are guaranteed set above (throw otherwise)

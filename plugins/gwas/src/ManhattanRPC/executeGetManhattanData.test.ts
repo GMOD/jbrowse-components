@@ -70,7 +70,7 @@ test('emits a deserializable Flatbush index over (bp, score)', () => {
 test('per-feature color evaluator decides each instance color', () => {
   const r = buildManhattanResult(
     [feature('a', 0, 1), feature('b', 1, 5), feature('c', 2, 8)],
-    f => ((f.get('score') as number) > 4 ? 0xff0000ff : 0xff00ff00),
+    f => ((f.get('score')!) > 4 ? 0xff0000ff : 0xff00ff00),
   )
   expect(Array.from(r.colors)).toEqual([0xff00ff00, 0xff0000ff, 0xff0000ff])
 })
