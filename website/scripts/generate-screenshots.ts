@@ -372,6 +372,13 @@ async function main() {
 
   try {
     for (const spec of filteredSpecs) {
+      // Curated specs keep a hand-picked / real-data PNG that the volvox spec
+      // body can't reproduce; skip so a regen never overwrites the committed
+      // image (the spec body stays as documentation).
+      if (spec.curated) {
+        console.log(`  ⊘ ${spec.name} (curated, keeping committed image)`)
+        continue
+      }
       // Fresh browser per spec to avoid service worker caching between navigations
       const browser = await launch(launchOptions)
       try {

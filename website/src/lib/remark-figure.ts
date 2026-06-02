@@ -1,10 +1,21 @@
 import { SKIP, visit } from 'unist-util-visit'
 
+import { screenshotLiveUrls } from '../../scripts/screenshot-specs.ts'
+
 import type { Image, Paragraph, Root } from 'mdast'
 import type { Plugin } from 'unified'
 
 const attrRe = /(\w+)=(?:"([^"]*)"|'([^']*)')/g
 const figureRe = /<Figure\s+([\s\S]*?)\s*\/>/
+
+// map each /img/<name>.png to the live JBrowse instance that produced it, so a
+// screenshot links to a running view the reader can open and explore
+const liveUrlByImg = new Map(
+  Object.entries(screenshotLiveUrls).map(([name, url]) => [
+    `/img/${name}.png`,
+    url,
+  ]),
+)
 
 function parseAttrs(str: string): Record<string, string> {
   const attrs: Record<string, string> = {}
@@ -47,7 +58,17 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       const rawSrc = attrs.src ?? ''
       const src = base && rawSrc.startsWith('/') ? `${base}${rawSrc}` : rawSrc
       const caption = attrs.caption ?? ''
-      node.value = `<figure><img src="${src}" alt="${caption}"/><figcaption>${caption}</figcaption></figure>`
+      // explicit link= wins; otherwise auto-link screenshots that came from a
+      // screenshot-spec session
+      const liveUrl = attrs.link ?? liveUrlByImg.get(rawSrc)
+      const img = `<img src="${src}" alt="${caption}"/>`
+      if (liveUrl) {
+        const a = (inner: string) =>
+          `<a href="${liveUrl}" target="_blank" rel="noopener noreferrer">${inner}</a>`
+        node.value = `<figure>${a(img)}<figcaption>${caption} ${a('Open this view in JBrowse ↗')}</figcaption></figure>`
+      } else {
+        node.value = `<figure>${img}<figcaption>${caption}</figcaption></figure>`
+      }
     })
   }
 }
