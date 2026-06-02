@@ -1,7 +1,7 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { parseNamesFromHeader } from '../util.ts'
@@ -22,12 +22,9 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(bedGraphGzLocation, pm)
-    const isCSI = indexType === 'CSI'
     const bedGraph = new TabixIndexedFile({
-      filehandle,
-      csiFilehandle: isCSI ? openLocation(location, pm) : undefined,
-      tbiFilehandle: !isCSI ? openLocation(location, pm) : undefined,
+      filehandle: openLocation(bedGraphGzLocation, pm),
+      ...openTabixIndexFilehandle(location, indexType, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
     const columnNames = this.getConf('columnNames')

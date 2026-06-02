@@ -2,7 +2,7 @@ import BED from '@gmod/bed'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
   checkStopToken2,
@@ -40,8 +40,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
     this.bed = new TabixIndexedFile({
       filehandle: openLocation(bedGzLoc, pm),
-      csiFilehandle: type === 'CSI' ? openLocation(loc, pm) : undefined,
-      tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
+      ...openTabixIndexFilehandle(loc, type, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
     this.parser = new BED({ autoSql: this.getConf('autoSql') })

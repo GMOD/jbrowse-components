@@ -2,7 +2,7 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import VcfFeature from '../VcfFeature/index.ts'
@@ -25,15 +25,13 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
       const indexLocation = this.getConf('indexLocationMap')[refName] ?? {
         uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}`,
       }
-      const isCSI = indexType === 'CSI'
       const vcf = new TabixIndexedFile({
         filehandle: openLocation(vcfGzLocation, this.pluginManager),
-        csiFilehandle: isCSI
-          ? openLocation(indexLocation, this.pluginManager)
-          : undefined,
-        tbiFilehandle: !isCSI
-          ? openLocation(indexLocation, this.pluginManager)
-          : undefined,
+        ...openTabixIndexFilehandle(
+          indexLocation,
+          indexType,
+          this.pluginManager,
+        ),
         chunkCacheSize: 50 * 2 ** 20,
       })
       this.configuredByRef.set(
@@ -89,14 +87,13 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
   async getSources() {
     const conf = this.getConf('samplesTsvLocation')
     const r = Object.keys(this.getConf('vcfGzLocationMap'))[0]!
+    const { parser } = await this.configure(r)
     if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
-      const { parser } = await this.configure(r)
       return parser.samples.map(name => ({ name }))
     } else {
       const txt = await fetchAndMaybeUnzipText(
         openLocation(conf, this.pluginManager),
       )
-      const { parser } = await this.configure(r)
       return parseSamplesTsv(txt, parser.samples)
     }
   }

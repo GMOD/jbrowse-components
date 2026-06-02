@@ -1,7 +1,7 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { parsePlinkLDHeader, parsePlinkLDLine } from '@jbrowse/ld-core'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -19,16 +19,9 @@ export default class PlinkLDTabixAdapter extends BaseAdapter {
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(ldLocation, this.pluginManager)
-    const isCSI = indexType === 'CSI'
     const ld = new TabixIndexedFile({
-      filehandle,
-      csiFilehandle: isCSI
-        ? openLocation(location, this.pluginManager)
-        : undefined,
-      tbiFilehandle: !isCSI
-        ? openLocation(location, this.pluginManager)
-        : undefined,
+      filehandle: openLocation(ldLocation, this.pluginManager),
+      ...openTabixIndexFilehandle(location, indexType, this.pluginManager),
       chunkCacheSize: 50 * 2 ** 20,
     })
 

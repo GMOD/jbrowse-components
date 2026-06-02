@@ -1,7 +1,7 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -28,14 +28,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       const dontRedispatch = this.getConf('dontRedispatch') as string[]
       const gff = new TabixIndexedFile({
         filehandle: openLocation(gffGzLocation, this.pluginManager),
-        csiFilehandle:
-          indexType === 'CSI'
-            ? openLocation(loc, this.pluginManager)
-            : undefined,
-        tbiFilehandle:
-          indexType !== 'CSI'
-            ? openLocation(loc, this.pluginManager)
-            : undefined,
+        ...openTabixIndexFilehandle(loc, indexType, this.pluginManager),
         chunkCacheSize: 50 * 2 ** 20,
       })
       this.configured = gff
@@ -70,8 +63,12 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      await this.configure(opts)
-      await this.getFeaturesHelper(query, opts, observer, true)
+      try {
+        await this.configure(opts)
+        await this.getFeaturesHelper(query, opts, observer, true)
+      } catch (e) {
+        observer.error(e)
+      }
     }, opts.stopToken)
   }
 
@@ -82,78 +79,74 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean,
     originalQuery = query,
   ) {
-    try {
-      const { gff, dontRedispatchSet } = await this.configureOnce()
-      const lines: LineRecord[] = []
+    const { gff, dontRedispatchSet } = await this.configureOnce()
+    const lines: LineRecord[] = []
 
-      await updateStatus('Downloading features', opts.statusCallback, () =>
-        gff.getLines(
-          query.refName,
-          query.start,
-          query.end,
-          (line, fileOffset, start, end) => {
-            lines.push({
-              line,
-              lineHash: fileOffset,
-              start,
-              end,
-              hasEscapes: line.includes('%'),
-              type: extractType(line),
-            })
-          },
-        ),
-      )
+    await updateStatus('Downloading features', opts.statusCallback, () =>
+      gff.getLines(
+        query.refName,
+        query.start,
+        query.end,
+        (line, fileOffset, start, end) => {
+          lines.push({
+            line,
+            lineHash: fileOffset,
+            start,
+            end,
+            hasEscapes: line.includes('%'),
+            type: extractType(line),
+          })
+        },
+      ),
+    )
 
-      if (allowRedispatch && lines.length) {
-        let minStart = Number.POSITIVE_INFINITY
-        let maxEnd = Number.NEGATIVE_INFINITY
-        for (const rec of lines) {
-          // only expand redispatch range if feature is not a "dontRedispatch"
-          // type skips large regions like chromosome,region
-          if (!dontRedispatchSet.has(rec.type)) {
-            const start = rec.start - 1 // gff is 1-based
-            if (start < minStart) {
-              minStart = start
-            }
-            if (rec.end > maxEnd) {
-              maxEnd = rec.end
-            }
+    if (allowRedispatch && lines.length) {
+      let minStart = Number.POSITIVE_INFINITY
+      let maxEnd = Number.NEGATIVE_INFINITY
+      for (const rec of lines) {
+        // only expand redispatch range if feature is not a "dontRedispatch"
+        // type skips large regions like chromosome,region
+        if (!dontRedispatchSet.has(rec.type)) {
+          const start = rec.start - 1 // gff is 1-based
+          if (start < minStart) {
+            minStart = start
+          }
+          if (rec.end > maxEnd) {
+            maxEnd = rec.end
           }
         }
-        if (maxEnd > query.end || minStart < query.start) {
-          // make a new feature callback to only return top-level features
-          // in the original query range
-          await this.getFeaturesHelper(
-            { ...query, start: minStart, end: maxEnd },
-            opts,
-            observer,
-            false,
-            query,
-          )
-          return
-        }
       }
-
-      for (const feature of parseRecordsJBrowse(lines)) {
-        if (
-          doesIntersect2(
-            feature.start,
-            feature.end,
-            originalQuery.start,
-            originalQuery.end,
-          )
-        ) {
-          observer.next(
-            new SimpleFeature({
-              data: feature,
-              id: `${this.id}-offset-${feature._lineHash}`,
-            }),
-          )
-        }
+      if (maxEnd > query.end || minStart < query.start) {
+        // make a new feature callback to only return top-level features
+        // in the original query range
+        await this.getFeaturesHelper(
+          { ...query, start: minStart, end: maxEnd },
+          opts,
+          observer,
+          false,
+          query,
+        )
+        return
       }
-      observer.complete()
-    } catch (e) {
-      observer.error(e)
     }
+
+    for (const feature of parseRecordsJBrowse(lines)) {
+      if (
+        doesIntersect2(
+          feature.start,
+          feature.end,
+          originalQuery.start,
+          originalQuery.end,
+        )
+      ) {
+        observer.next(
+          new SimpleFeature({
+            data: feature,
+            id: `${this.id}-offset-${feature._lineHash}`,
+          }),
+        )
+      }
+    }
+    observer.complete()
   }
 }

@@ -1,6 +1,10 @@
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import {
+  IntervalTree,
+  fetchAndMaybeUnzip,
+  fetchAndMaybeUnzipText,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -133,13 +137,14 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSources() {
+    const { parser } = await this.setup()
     const conf = this.getConf('samplesTsvLocation')
     if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
-      const { parser } = await this.setup()
       return parser.samples.map(name => ({ name }))
     } else {
-      const txt = await openLocation(conf).readFile('utf8')
-      const { parser } = await this.setup()
+      const txt = await fetchAndMaybeUnzipText(
+        openLocation(conf, this.pluginManager),
+      )
       return parseSamplesTsv(txt, parser.samples)
     }
   }

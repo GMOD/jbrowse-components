@@ -1,7 +1,7 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
@@ -68,8 +68,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
 
     this.pif = new TabixIndexedFile({
       filehandle: openLocation(pifGzLoc, pm),
-      csiFilehandle: type === 'CSI' ? openLocation(loc, pm) : undefined,
-      tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
+      ...openTabixIndexFilehandle(loc, type, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
   }
