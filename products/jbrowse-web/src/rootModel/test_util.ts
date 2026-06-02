@@ -9,7 +9,10 @@ import type { WebSessionModel } from '../sessionModel/index.ts'
 export function createTestSession(args?: {
   adminMode?: boolean
   sessionSnapshot?: Record<string, unknown>
-  jbrowseConfig?: Record<string, unknown>
+  jbrowseConfig?: {
+    configuration?: Record<string, unknown>
+    [key: string]: unknown
+  }
 }): WebSessionModel {
   const {
     sessionSnapshot = {},
@@ -32,7 +35,6 @@ export function createTestSession(args?: {
           rpc: {
             defaultDriver: 'MainThreadRpcDriver',
           },
-          // @ts-expect-error
           ...jbrowseConfig.configuration,
         },
       },

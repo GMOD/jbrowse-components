@@ -33,7 +33,7 @@ import makeWorkerInstance from '../makeWorkerInstance.ts'
 import { setupSessionDB, setupSessionStorageAutosave } from './persistence.ts'
 import { buildSessionListSubmenu } from './sessionMenus.ts'
 
-import type { SessionDB, SessionMetadata } from '../types.ts'
+import type { Session, SessionDB, SessionMetadata } from '../types.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
@@ -337,8 +337,7 @@ export default function RootModel({
                   icon: FileCopyIcon,
                   onClick: () => {
                     if (self.session) {
-                      // @ts-expect-error
-                      const { id, ...rest } = getSnapshot(self.session)
+                      const { id, ...rest } = getSnapshot<Session>(self.session)
                       self.setSession(rest)
                     }
                   },
