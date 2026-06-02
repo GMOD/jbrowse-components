@@ -362,7 +362,7 @@ zoom) here; put those in `renderState` instead. See
 
 ```tsx
 // components/MyComponent.tsx
-import { observer } from 'mobx-react-lite'
+import { observer } from 'mobx-react'
 import { useRenderingBackend } from '@jbrowse/core/util'
 
 import { MyRendererFactory } from './MyRendererFactory.ts'

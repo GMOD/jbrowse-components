@@ -4,6 +4,7 @@ import {
   writeApiDocs,
   writeApiReadmes,
 } from './generateApiDocs.ts'
+import { writeColorDocs } from './generateColorDocs.ts'
 import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 
@@ -28,6 +29,7 @@ async function main() {
   writeModelDocs(models)
   writeApiDocs(api)
   writeApiReadmes(api)
+  writeColorDocs()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

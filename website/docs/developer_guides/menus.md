@@ -98,7 +98,7 @@ class SomePlugin extends Plugin {
     pluginManager.addToExtensionPoint(
       'Core-extendPluggableElement',
       pluggableElement => {
-        if (pluggableElement.name === 'LinearPileupDisplay') {
+        if (pluggableElement.name === 'LinearAlignmentsDisplay') {
           const { stateModel } = pluggableElement
           const newStateModel = stateModel.extend(self => {
             const superContextMenuItems = self.contextMenuItems

@@ -16,7 +16,7 @@ observables in a React component:
 ```tsx
 import { useEffect, useRef } from 'react'
 import { autorun } from 'mobx'
-import { observer } from 'mobx-react-lite'
+import { observer } from 'mobx-react'
 
 const MyCanvas = observer(({ model }: { model: MyDisplayModel }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)

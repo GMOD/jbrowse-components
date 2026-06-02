@@ -110,10 +110,13 @@ const frames: Frames = [
 const stopCodon = '#e22'
 const startCodon = '#3e3'
 const coverage = grey[400]
+/** #color alignments-indicators | Insertion | Reads carry an insertion relative to the reference */
 const insertion = '#800080'
 const deletion = '#808080'
-const hardclip = '#f00'
+/** #color alignments-indicators | Soft clip | Reads are soft-clipped (clipped bases retained in the read) */
 const softclip = '#00f'
+/** #color alignments-indicators | Hard clip | Reads are hard-clipped (clipped bases removed from the read) */
+const hardclip = '#f00'
 const skip = '#009a8a'
 const modificationFwd = '#c8c8c8'
 const modificationRev = '#c8dcc8'

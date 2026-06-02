@@ -33,9 +33,6 @@ Here is a complete config.json file containing only the hg19 assembly:
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
             "locationType": "UriLocation"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       },
       "refNameAliases": {

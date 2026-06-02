@@ -83,14 +83,38 @@ alignments track can color reads by modification. Two modes are available:
 <Figure caption="Screenshot showing the same track in both modifications mode and methylation mode. This is a hypo-methylated CpG island (there are no methylation marks in a CpG island)" src="/img/alignments/modifications2.png" />
 <Figure caption="After the setting has been enabled you can revisit the dialog box to see the current coloring settings." src="/img/alignments/modifications3.png" />
 
+### Color by strand
+
+Reads are tinted by the strand they map to:
+
+<!-- COLOR_TABLE alignments-strand START -->
+
+| Color                                                                                                                                                                       | Name           | Value     | Description                     |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------- | ------------------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#EC8B8B;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#EC8B8B"></span> | Forward strand | `#EC8B8B` | Read maps to the forward strand |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#8F8FD8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#8F8FD8"></span> | Reverse strand | `#8F8FD8` | Read maps to the reverse strand |
+
+<!-- COLOR_TABLE alignments-strand END -->
+
 ### Color by orientation
 
 The pair-orientation color scheme matches IGV's, and surfaces complex structural
 variants. See IGV's
 [paired-end alignments guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/#pair-orientation)
-for a reference of which orientation patterns map to which colors.
+for background. Assuming standard `fr` (Illumina) pairs:
 
-<Figure caption="An inverted duplication, where pair-orientation coloring highlights reads whose mates point in unexpected directions. See the SV visualization guide for the full color-to-orientation table." src="/img/inverted_duplication.png" />
+<!-- COLOR_TABLE alignments-pair-orientation START -->
+
+| Color                                                                                                                                                                           | Name                                       | Value       | Description          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------- | -------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:lightgrey;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="lightgrey"></span> | LR (→ ←, normal proper pair)               | `lightgrey` | Concordant           |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:teal;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="teal"></span>           | RL (← →, mates point away from each other) | `teal`      | Abnormal orientation |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:green;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="green"></span>         | LL (→ →, both mates forward strand)        | `green`     | Abnormal orientation |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3a3a9d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3a3a9d"></span>     | RR (← ←, both mates reverse strand)        | `#3a3a9d`   | Abnormal orientation |
+
+<!-- COLOR_TABLE alignments-pair-orientation END -->
+
+<Figure caption="An inverted duplication, where pair-orientation coloring highlights reads whose mates point in unexpected directions. See the SV visualization guide for an interpreted example." src="/img/inverted_duplication.png" />
 
 ### Sashimi-style arcs
 
@@ -109,7 +133,17 @@ depth-dependent fraction of the reads at that base. The threshold scales with
 depth (roughly 30% at high coverage rising toward 80% at low coverage) to
 suppress spurious indicators.
 
-<Figure caption="Indicators above the coverage track: purple = insertion, blue = soft clip, red = hard clip." src="/img/alignment_clipping_indicators.png" />
+<!-- COLOR_TABLE alignments-indicators START -->
+
+| Color                                                                                                                                                                       | Name      | Value     | Description                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------- | ------------------------------------------------------------ |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#800080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#800080"></span> | Insertion | `#800080` | Reads carry an insertion relative to the reference           |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#00f;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#00f"></span>       | Soft clip | `#00f`    | Reads are soft-clipped (clipped bases retained in the read)  |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f00;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f00"></span>       | Hard clip | `#f00`    | Reads are hard-clipped (clipped bases removed from the read) |
+
+<!-- COLOR_TABLE alignments-indicators END -->
+
+<Figure caption="Indicators above the coverage track, colored as in the table above." src="/img/alignment_clipping_indicators.png" />
 
 Insertions larger than 10bp also get a larger purple rectangle. This is most
 prominent with long reads, which span larger insertions.

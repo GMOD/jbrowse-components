@@ -295,9 +295,9 @@ walkthrough above appears as a distinctive off-diagonal block.
 
 <Figure caption="The resulting dotplot, showing chromosome-scale rearrangements. The chr3–chr13 fusion from the earlier walkthrough is visible as an off-diagonal block." src="/img/sv_cgiab/dotplot_result.png" />
 
-Click and drag over the rearranged region and choose **Launch synteny view** to
-see a base-level alignment of the two genomes; entering `chr3 chr13` in the
-GRCh38 search box focuses the view on just those chromosomes.
+Click and drag over the rearranged region and choose **Open linear synteny
+view** to see a base-level alignment of the two genomes; entering `chr3 chr13`
+in the GRCh38 search box focuses the view on just those chromosomes.
 
 <Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot — base-level alignment makes the breakpoints easy to read." src="/img/sv_cgiab/synteny_view.png" />
 

@@ -130,7 +130,7 @@ worker-fetched data — see
 A few specialized renderers still draw in the worker:
 
 - `ArcRenderer` (`@jbrowse/plugin-arc`) - draws arcs connecting features, used
-  by the paired arcs mode in the alignments display
+  by the arc plugin's `LinearArcDisplay`
 - `StructuralVariantChordRenderer` (`@jbrowse/plugin-circular-view`) - draws
   breakends and structural variants as chords in the circular view
 

@@ -150,11 +150,11 @@ regions fade out.
 
 ## Troubleshooting
 
-| Problem                                          | Possible cause                                  | Solution                                                                            |
-| ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------- |
-| The dotplot or synteny view is blank             | Assemblies or track names don't match           | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands |
-| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Try re-running minimap2 with `-cx asm5` for assembly comparison                     |
-| Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`           |
+| Problem                                          | Possible cause                                  | Solution                                                                                                                |
+| ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| The dotplot or synteny view is blank             | Assemblies or track names don't match           | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands                                     |
+| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Ensure you passed `-c --eqx` and a preset matching your divergence (`asm5` for same-species, `asm20` for cross-species) |
+| Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`                                               |
 
 ## Using PIF for large genomes
 

@@ -12,12 +12,23 @@ the source instead.
 | `config/*.md` (config schema API)                        | `pnpm autogen` (repo root)   | `configSchema` blocks in plugin/package source (`docs/generateConfigDocs.ts`) |
 | `models/*.md` (state model API)                          | `pnpm autogen` (repo root)   | MST model definitions in source (`docs/generateStateModelDocs.ts`)            |
 | `api/*.md` (plugin-export API)                           | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`docs/generateApiDocs.ts`)               |
+| color swatch tables between `<!-- COLOR_TABLE … -->`     | `pnpm autogen` (repo root)   | color constants in `theme.ts` + alignments `color.ts` (`docs/generateColorDocs.ts`) |
 | `user_guide.md`, `config_guide.md`, `developer_guide.md` | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter           |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
   `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`
   alone — `gendocs` skips prettier and leaves ~200 files of formatting churn.
   Never hand-edit anything in these three directories.
+
+- **Color swatch tables**: hand-written guides can embed an auto-generated
+  swatch table by dropping a marker pair
+  (`<!-- COLOR_TABLE alignments-pair-orientation START -->` …`END -->`); the
+  block between them is regenerated on every `pnpm autogen` from colors tagged
+  at their definition site with a JSDoc `#color <group> | <label> |
+  <description>` tag (in `theme.ts` and the alignments `color.ts`), so colors
+  documented in prose never drift from the code. To add a row, tag the color
+  in source; to add a table, drop the marker pair. Don't edit between the
+  markers (`docs/generateColorDocs.ts` does the rendering).
 
 - **Guide indexes** (`user_guide.md` / `config_guide.md` / `developer_guide.md`)
   are built from each guide's `title`, `description`, and `guide_category`

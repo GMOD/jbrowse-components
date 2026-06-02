@@ -112,8 +112,10 @@ The following file formats are supported in core JBrowse 2:
 
 - PAF (e.g. minimap2)
 - .delta (MUMmer)
-- .anchors (MCScan python version)
+- .chain (UCSC chain)
+- .anchors / .anchors.simple (MCScan python version)
 - .out (MashMap)
+- BLAST tabular output
 
 #### Sequence adapters
 

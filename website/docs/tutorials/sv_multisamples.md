@@ -124,7 +124,7 @@ Zoom in to one of the inversion breakpoints (approximately chr19:41,749,000 or
 chr19:41,902,000) and enable pair-orientation coloring on a BAM track from the
 track menu. At the breakpoint you will see:
 
-- **Teal (LL)** pairs — both mates mapping to the forward strand — and **dark
+- **Green (LL)** pairs — both mates mapping to the forward strand — and **dark
   blue (RR)** pairs — both mates mapping to the reverse strand — clustering at
   the junction. These are the hallmark orientation signal of an inversion: reads
   that straddle the breakpoint change from the normal LR orientation to same-

@@ -58,15 +58,11 @@ class MyAdapter extends BaseFeatureDataAdapter {
     //   ...rest: all the renderProps() object from the display type
     // }
   }
-
-  freeResources(region) {
-    // can be empty
-  }
 }
 ```
 
 Implement `getRefNames` (used for refName renaming) and `getFeatures` (returns
-an rxjs observable stream of features); `freeResources` is optional.
+an rxjs observable stream of features).
 
 ### Example feature adapter
 
@@ -117,10 +113,6 @@ class MyAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
     // hardcode if known ahead of time, or fetch from file header
     return ['chr1', 'chr2', 'chr3'] // etc
-  }
-
-  freeResources(region) {
-    // optionally remove cache resources for a region
   }
 }
 ```
@@ -173,7 +165,3 @@ interface Options {
 Returns an rxjs `Observable`. Emit features with
 `observer.next(new SimpleFeature(...))`, signal completion with
 `observer.complete()`, and errors with `observer.error(error)`.
-
-#### freeResources
-
-Rarely used — most adapters use an LRU cache instead. Can be an empty function.

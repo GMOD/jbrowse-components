@@ -46,7 +46,7 @@ requiring any extra steps:
   insertion; blue/red triangles mark clipping; larger purple rectangles appear
   for insertions >10 bp
 
-<Figure caption="Clipping and insertion indicators visible as colored vertical marks above the coverage track. The tall vertical colored lines (blue = left-clip, red = right-clip, purple = insertion) flag positions where many reads carry an SV signal, even without zooming into the pileup." src="/img/alignment_clipping_indicators.png" />
+<Figure caption="Clipping and insertion indicators visible as colored vertical marks above the coverage track. The tall vertical colored lines (blue = soft clip, red = hard clip, purple = insertion) flag positions where many reads carry an SV signal, even without zooming into the pileup." src="/img/alignment_clipping_indicators.png" />
 
 - **Color by pair orientation** — abnormally oriented pairs produce
   characteristic colors described in the table below
@@ -61,16 +61,19 @@ For descriptions of these features in general use, see the
 JBrowse uses the same color scheme as IGV — see the
 [IGV paired-end alignments guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
 for background. Set the color scheme to Pair orientation from the track menu.
-The library type (`fr`, `rf`, or `ff`) can be changed via the Orientation type
-option in the track menu; the default is `fr` (Illumina). SOLiD-style pair
-orientations are not supported. The table below assumes `fr`:
+Orientation coloring assumes standard `fr` (Illumina) read pairs; SOLiD-style
+pair orientations are not supported. The table below assumes `fr`:
 
-| Orientation                                   | Color      | Description          |
-| --------------------------------------------- | ---------- | -------------------- |
-| LR (→ ←, normal proper pair)                  | light grey | concordant           |
-| RL (← →, mates pointing away from each other) | teal       | abnormal orientation |
-| LL (→ →, both mates forward strand)           | green      | abnormal orientation |
-| RR (← ←, both mates reverse strand)           | dark blue  | abnormal orientation |
+<!-- COLOR_TABLE alignments-pair-orientation START -->
+
+| Color                                                                                                                                                                           | Name                                       | Value       | Description          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------- | -------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:lightgrey;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="lightgrey"></span> | LR (→ ←, normal proper pair)               | `lightgrey` | Concordant           |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:teal;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="teal"></span>           | RL (← →, mates point away from each other) | `teal`      | Abnormal orientation |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:green;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="green"></span>         | LL (→ →, both mates forward strand)        | `green`     | Abnormal orientation |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3a3a9d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3a3a9d"></span>     | RR (← ←, both mates reverse strand)        | `#3a3a9d`   | Abnormal orientation |
+
+<!-- COLOR_TABLE alignments-pair-orientation END -->
 
 <Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) with two overlapping orientation signals. Teal reads are RL-oriented (mates pointing away from each other, as if ← →), a signature of tandem duplication. Green LL reads (→→) and dark blue RR reads (←←) point the same direction, a signature of an inversion. The feature details panel on the right confirms the variant is classified as INVdup." src="/img/inverted_duplication.png" />
 
@@ -339,6 +342,5 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 - **Repetitive regions**: SVs in segmental duplications or repeats produce
   noisy, ambiguous signals; soft-clipped reads and orientation anomalies are
   common artefacts in these regions
-- **Short-read orientation coloring** assumes `fr` (Illumina) by default; change
-  the Orientation type from the track menu for `rf` or `ff` libraries.
+- **Short-read orientation coloring** assumes `fr` (Illumina) read pairs;
   SOLiD-style orientations are not supported.

@@ -1,6 +1,6 @@
 ---
 title: Connections
-description: UCSC track hubs and JBrowse 1 data directories
+description: UCSC track hubs, JB2 track hubs, and JBrowse 1 data directories
 guide_category: General usage
 ---
 
@@ -9,11 +9,12 @@ directory. Once opened, JBrowse fetches the hub's track list automatically and
 adds those tracks to the track selector, so you don't have to configure each
 track individually. Closing a connection removes all of its tracks.
 
-JBrowse supports two built-in connection types:
+JBrowse supports three built-in connection types:
 
 - **UCSC Track Hub** — any
   [UCSC Genome Browser track hub](https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html)
   reachable over the network
+- **JB2 Track Hub** — a track hub based on a JBrowse 2 config file
 - **JBrowse 1 data directory** — a legacy JBrowse 1 data directory with a
   `trackList.json`
 

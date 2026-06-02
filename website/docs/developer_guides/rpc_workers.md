@@ -173,11 +173,11 @@ async execute(args, rpcDriverClassName) {
 Add an augmentation to `RpcRegistry` so `rpcManager.call` is fully typed:
 
 ```ts
-// myPlugin/rpcTypes.ts
-import type MyRpcArgs from './MyRpcMethod.ts'
+// myPlugin/MyRpcMethod.ts
+import type { MyRpcArgs, MyReturnType } from './types.ts'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcMethods {
+  interface RpcRegistry {
     MyRpcMethod: {
       args: MyRpcArgs
       return: MyReturnType
