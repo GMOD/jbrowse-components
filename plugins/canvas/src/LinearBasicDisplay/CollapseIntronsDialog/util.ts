@@ -76,7 +76,9 @@ interface ViewState {
 
 /**
  * Calculate the initial view state (zoom and offset) to show all regions
- * centered and filling ~90% of the viewport width.
+ * centered and filling ~90% of the viewport width. The content occupies
+ * `viewWidth * 0.9` px by construction, so centering leaves a fixed 5% margin
+ * on each side regardless of the regions.
  */
 export function calculateInitialViewState(
   regions: { start: number; end: number }[],
@@ -84,8 +86,7 @@ export function calculateInitialViewState(
 ): ViewState {
   const totalBp = regions.reduce((sum, r) => sum + (r.end - r.start), 0)
   const bpPerPx = totalBp / (viewWidth * 0.9)
-  const totalContentPx = totalBp / bpPerPx
-  const offsetPx = Math.round(totalContentPx / 2 - viewWidth / 2)
+  const offsetPx = Math.round(-0.05 * viewWidth)
   return { bpPerPx, offsetPx }
 }
 
