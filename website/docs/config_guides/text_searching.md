@@ -4,8 +4,8 @@ description: Per-track and aggregate full-text search indexes
 guide_category: Other features
 ---
 
-Text searching appears in two forms: "per-track indexes" and "aggregate indexes"
-which search across multiple tracks.
+Text searching comes in two forms: per-track indexes, and aggregate indexes that
+search across multiple tracks.
 
 Aggregate indexes may look like this:
 

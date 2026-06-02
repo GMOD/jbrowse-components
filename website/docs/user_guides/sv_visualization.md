@@ -39,8 +39,6 @@ requiring any extra steps:
   bases soft-clipped; enabling Show soft clipping from the track menu makes
   these bases visible at breakpoint edges
 
-<Figure caption="The Show soft clipping option enables display of soft-clipped bases." src="/img/alignments_soft_clipped_menu.png" />
-
 <Figure caption="Soft-clipped reads at a breakpoint edge (right side, ~position 2,700). The dense cluster of colored nucleotide bases marks where many reads terminate at a common breakpoint; those colored bases are the overhanging sequence that could not be aligned to the reference." src="/img/alignments_soft_clipped.png" />
 
 - **Insertion/clipping indicators** — a purple triangle marks positions where a
@@ -170,15 +168,12 @@ signature.
 
 ## Paired arcs
 
-The paired arcs mode renders bezier curves between the two ends of a paired-end
-read or split alignment, making long-range connections immediately obvious.
-Enable paired arcs from the track menu's **Read connections** submenu.
-
-<Figure caption="Selecting paired arcs from the Read connections submenu, showing arcs alongside coverage." src="/img/alignments/select_arc_display.png" />
-
-Inter-chromosomal connections appear as vertical lines at the view edge. The
-color scheme in the track menu provides insert size, orientation, or combined
-coloring.
+[Paired arcs](/docs/user_guides/alignments_track#paired-arcs) draw bezier curves
+between the ends of paired or split reads. For SVs, unusually long arcs relative
+to their neighbors point to a deletion spanning the pair, and inter-chromosomal
+connections (drawn as vertical lines at the view edge) flag translocations. Set
+the color scheme to insert size, orientation, or combined coloring from the
+track menu.
 
 <Figure caption="Paired arcs showing a deletion in HG002. Illumina paired-end reads (short arcs, top) and Nanopore ultra-long reads (long sweeping arcs, bottom) both span the same deleted region. The unusually long arcs relative to neighboring read pairs indicate the deletion. Color scheme is set to Insert size ± 3σ: red arcs have inserts larger than expected, confirming the deletion." src="/img/alignments/arc_selector.png" />
 
@@ -187,13 +182,10 @@ coloring.
 
 ## Linked reads
 
-The linked reads mode draws paired-end reads and supplementary alignments on the
-same row connected by a line, and stratifies rows by the log-scaled distance
-between read ends. This makes it easy to count how many reads span a breakpoint
-and to see their orientation at a glance. Chains with supplementary alignments
-are connected by an orange line.
-
-Enable linked reads from the track menu's **Read connections** submenu.
+[Linked reads](/docs/user_guides/alignments_track#linked-reads) stratify reads
+by the log-scaled distance between mates, making it easy to count how many reads
+span a breakpoint and read their orientation at a glance. Chains with
+supplementary alignments are connected by an orange line.
 
 <Figure caption="Two tracks using different modes on the same SV dataset. Top track: paired arcs — the large red bezier curve spans a long-range connection (~ctgA:5,000–40,000), making the SV immediately visible at this scale. Bottom track: linked reads — reads are drawn as horizontal lines stratified by insert size; the red bar at the bottom row indicates an abnormally large insert corresponding to the same event." src="/img/alignments/read_cloud.png" />
 

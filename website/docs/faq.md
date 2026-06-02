@@ -84,7 +84,7 @@ the folder to your web server (e.g. `/var/www/html/`) or Amazon S3.
 If you use Django, put jbrowse-web in the static resources folder, but serve
 data files from a separate server (Django's static resources folder won't serve
 them correctly). For some informal troubleshooting notes, see
-https://github.com/cmdcolin/django-jbrowse2-nonworking-example.
+[these notes](https://github.com/cmdcolin/django-jbrowse2-nonworking-example).
 
 Note that the server that you use should support byte-range requests (e.g. the
 [Range HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range))
@@ -439,7 +439,7 @@ alternative temporary directory using the environment variable
 The `jbrowse text-index` command creates text searching indexes using `trix`.
 The trix indexes are based on the format described by UCSC here
 https://genome.ucsc.edu/goldenPath/help/trix.html, but we re-implemented the
-code the create these index formats in the JBrowse CLI so you do not have to
+code to create these index formats in the JBrowse CLI so you do not have to
 install the UCSC tools.
 
 The main idea is that you give trix:

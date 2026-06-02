@@ -22,8 +22,8 @@ External plugins can be added to the config.json file like so:
 ```
 
 Our plugin store lists unpkg URLs for published plugins at
-https://jbrowse.org/jb2/plugin_store/. You can also download plugin files from
-those URLs to your own server.
+[https://jbrowse.org/jb2/plugin_store/](https://jbrowse.org/jb2/plugin_store/).
+You can also download plugin files from those URLs to your own server.
 
 The `url` field shown above is the simplest option and is equivalent to
 `umdUrl`. There are additional fields available for different situations:

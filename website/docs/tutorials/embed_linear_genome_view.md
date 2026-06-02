@@ -1,6 +1,7 @@
 ---
 title: Embedding JBrowse
 description: Embed the linear genome view component in a custom web page
+guide_category: Tutorials
 ---
 
 This tutorial embeds a single JBrowse linear genome view into a web page using a
@@ -55,7 +56,7 @@ Replace `index.html` with the following — a complete working linear genome vie
     <title>JBrowse Linear Genome View</title>
 
     <script
-      src="https://unpkg.com/@jbrowse/react-linear-genome-view2@4.3.0/dist/react-linear-genome-view.umd.production.min.js"
+      src="https://unpkg.com/@jbrowse/react-linear-genome-view2@latest/dist/react-linear-genome-view.umd.production.min.js"
       crossorigin
     ></script>
   </head>
@@ -134,10 +135,10 @@ You can see a couple of notable things in the above script:
 
 - We import the JBrowse script in the `<head>` of the page. This creates a
   global variable `JBrowseReactLinearGenomeView` that we use in our script
-- We point directly at a CDN (the unpkg URL) but you can also download this file
-  for later use. You can also remove the @4.3.0 part of the URL to point to the
-  latest version always, but to avoid any potential breaking changes, pinning
-  the version can help
+- We point directly at a CDN (the unpkg URL) using `@latest`, but you can also
+  download this file for later use. To avoid any potential breaking changes, you
+  can pin a specific version instead (e.g.
+  `@jbrowse/react-linear-genome-view2@4.3.0`)
 - We provide an assembly, the hg38 genome assembly, as a bgzip indexed FASTA
   file
 - We provide a gene track, which is a tabix indexed GFF3 file
@@ -190,7 +191,7 @@ code snippet that includes some more track types, including
 
 - VCF
 - BigWig
-- BigBed,
+- BigBed
 - BAM
 - CRAM
 

@@ -128,7 +128,7 @@ const model = types
         return {
           ...superRenderProps(),
           scaleOpts: {
-            domain: this.domain,
+            domain: self.domain,
             stats: self.stats,
             autoscaleType: getConf(self, 'autoscale'),
             scaleType: getConf(self, 'scaleType'),

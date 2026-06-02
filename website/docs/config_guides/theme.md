@@ -66,8 +66,8 @@ The customized theme screenshot uses the below configuration:
 
 You can add extra themes via the config. In jbrowse-web and jbrowse-desktop,
 these show up in a "Preferences" dialog that the user can select from. Dark mode
-themes are also supported. Adding `"mode": "dark"` to your theme will use MUI's
-dark mode https://mui.com/material-ui/customization/dark-mode/
+themes are also supported. Adding `"mode": "dark"` to your theme will use
+[MUI's dark mode](https://mui.com/material-ui/customization/dark-mode/).
 
 Example
 
@@ -114,7 +114,8 @@ containing your logo on your server, and specify the path in your configuration:
 }
 ```
 
-The dimensions of the logo should be `150x48px`.
+The built-in logo is `150x48px`. A custom logo is shown at its natural size, so
+size your SVG similarly to fit the header.
 
 ### Sizing
 
@@ -143,6 +144,6 @@ should work in the theme configuration.
 
 Some aspects of the theme, like style overrides, can accept callback functions
 which are not available via the config, but could be added via a plugin. See
-https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js
+[this example plugin](https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js)
 for an example of adding a theme via a plugin. This example also contains
 examples of overriding the 'default' theme from a plugin.

@@ -14,10 +14,15 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
-function ReactComponent({ model }: { model: any }) {
+const ReactComponent = observer(function ({
+  model,
+}: {
+  model: { mydata: unknown }
+}) {
   return <div>Message: {`${model.mydata}`}</div>
-}
+})
 
 const configSchema = ConfigurationSchema('MyWidget', {})
 

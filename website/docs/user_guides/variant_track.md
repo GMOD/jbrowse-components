@@ -30,5 +30,5 @@ allele.
 For multi-sample VCFs, the matrix display renders genotypes as a dense heatmap —
 each row a sample, each column a variant — making shared variants, population
 structure, and runs of homozygosity visible at a glance. See
-[Multi-variant tracks](/docs/user_guides/multivariant_track) for the full
-walkthrough of the regular and matrix multi-sample displays.
+[Multi-sample variant displays](/docs/user_guides/multivariant_track) for the
+full walkthrough of the regular and matrix multi-sample displays.

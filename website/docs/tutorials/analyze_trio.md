@@ -38,12 +38,11 @@ requires specialized programs like SHAPEIT.
 
 ## Finding matching haplotypes with "visual phasing"
 
-The term "visual phasing" comes from the genetic genealogy subfield. I am
-borrowing it here, but the idea is simple: you can look at the genotype matrix
-here, and see areas where different rows are matching. You would expect that the
-child would match the mom in some places, and the dad in other places. And
-indeed, each row looks somewhat like a barcode, so you can find matching pieces
-like this
+The term "visual phasing" comes from the genetic genealogy subfield. We borrow
+it here, but the idea is simple: look at the genotype matrix and find areas
+where different rows match. You would expect the child to match the mom in some
+places and the dad in others. Each row looks like a barcode, so you can find
+matching pieces by eye.
 
 <Figure caption="Screenshot showing the phased rendering mode without any added markup. You can look at this figure and see various areas where rows match one another. The first two rows are the two haplotypes of the child, next two rows are the two haplotypes of the mom, and next two rows are the two haplotypes of the father" src="/img/trio-matrix-phased-clean.png"/>
 
@@ -72,16 +71,20 @@ chromosome are matches
 #!/bin/bash
 # hap-ibd .ibd columns are: sample1, hap1, sample2, hap2, chr, start, end
 # we rearrange them into a BED file with columns: chr, start, end, sample1, hap1, sample2, hap2
-# add this config to jbrowse: get(feature,'sample1')+':HP'+get(feature,'hap1')+'     '+get(feature,'sample2')+':HP'+get(feature,'hap2')
 zcat result.ibd.gz | cut -f 5,6,7 > coords.bed
 zcat result.ibd.gz | cut -f 1,2,3,4 > samples.txt
 printf '#chr\tstart\tend\tsample1\thap1\tsample2\thap2\n' > out.bed
 paste coords.bed samples.txt >> out.bed
 ```
 
-After this conversion, we can load this simple BED file into JBrowse via the GUI
-or the CLI. It is probably small enough that it doesn't even need tabix
-conversion.
+After this conversion, we can load this BED file into JBrowse. It is probably
+small enough that it doesn't even need tabix conversion. To label each block
+with the two haplotypes it connects, set the track's feature-label callback to a
+jexl expression like:
+
+```
+jexl:`${get(feature,'sample1')}:HP${get(feature,'hap1')} / ${get(feature,'sample2')}:HP${get(feature,'hap2')}`
+```
 
 ## Background: relationship between phased blocks, and the biology of recombination
 
@@ -105,12 +108,10 @@ production of your parents' sperm/eggs. We will see this visually below
 ## Visualizing phased blocks and crossing over points in phased VCF files in JBrowse
 
 After loading the hap-ibd track, we can see the blocks that hap-ibd calculated.
-We can additionally connect the lines onto the matrix view (which admittedly
-isn't straightforward, we have to follow the lines from the genomic position to
-the matrix position),
-
-We can see this in the trio dataset where the child has a mixture of the dad's
-haplotypes and a mixture of the mom's haplotypes
+We can additionally connect the lines onto the matrix view, though this isn't
+straightforward: you have to follow the lines from the genomic position to the
+matrix position. We can see this in the trio dataset, where the child has a
+mixture of the mom's and dad's haplotypes.
 
 <Figure caption="Screenshot showing the connection between hap-ibd annotations (orange) and the phased VCF matrix view. The colored blocks are marked-up using Google Slides. As a result of this visualization, we can see a crossing-over point that occurred (independently) in both the mom and dad at almost the same position, which form continuous blocks in the child." src="/img/trio-crossing-over.png"/>
 

@@ -27,7 +27,7 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 }
 ```
 
-The most important thing to configure are your assemblies and your tracks.
+The most important things to configure are your assemblies and your tracks.
 
 :::info
 

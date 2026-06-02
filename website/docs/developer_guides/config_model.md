@@ -30,6 +30,8 @@ Here is a mostly comprehensive list of config types:
 - `stringArray` - allows entering a list of strings, becomes a "todolist" style
   editor in the GUI where you can add or delete things
 - `stringArrayMap` - allows entering a list of key-value entries
+- `numberMap` - allows entering a list of key-value entries where values are
+  numbers
 
 Let's examine the `LinearCanvasBaseDisplay` configuration as an example.
 
@@ -41,31 +43,48 @@ several different slot types:
 ```js
 // plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts
 
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
-export default ConfigurationSchema('LinearCanvasBaseDisplay', {
-  color1: {
-    type: 'color',
-    description: 'the main color of each feature',
-    defaultValue: 'goldenrod',
-    contextVariable: ['feature'],
-  },
-  displayMode: {
-    type: 'stringEnum',
-    model: types.enumeration('displayMode', ['normal', 'compact', 'collapse']),
-    description: 'Alternative display modes',
-    defaultValue: 'normal',
-  },
-  featureHeight: {
-    type: 'number',
-    description: 'height in pixels of the main body of each feature',
-    defaultValue: 10,
-  },
-  showDescriptions: {
-    type: 'boolean',
-    description: 'show feature descriptions',
-    defaultValue: true,
-  },
-})
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+
+export default function baseConfigSchemaFactory(pluginManager) {
+  return ConfigurationSchema(
+    'LinearCanvasBaseDisplay',
+    {
+      color1: {
+        type: 'color',
+        description: 'the main color of each feature',
+        defaultValue: 'goldenrod',
+        contextVariable: ['feature'],
+      },
+      displayMode: {
+        type: 'stringEnum',
+        model: types.enumeration('displayMode', [
+          'normal',
+          'compact',
+          'collapse',
+        ]),
+        description: 'Alternative display modes',
+        defaultValue: 'normal',
+      },
+      featureHeight: {
+        type: 'number',
+        description: 'height in pixels of the main body of each feature',
+        defaultValue: 10,
+      },
+      showDescriptions: {
+        type: 'boolean',
+        description: 'show feature descriptions',
+        defaultValue: true,
+      },
+    },
+    {
+      // inherit the base display slots (see configuration_schema.md)
+      baseConfiguration: baseLinearDisplayConfigSchema,
+      explicitlyTyped: true,
+    },
+  )
+}
 ```
 
 ### Accessing config values

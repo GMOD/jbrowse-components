@@ -60,7 +60,7 @@ For enums, use `type: 'stringEnum'` and add a `model` field:
 ```ts
 displayMode: {
   type: 'stringEnum',
-  model: types.enumeration('DisplayMode', ['normal', 'compact', 'collapsed']),
+  model: types.enumeration('DisplayMode', ['normal', 'compact', 'collapse']),
   defaultValue: 'normal',
 },
 ```
@@ -70,13 +70,9 @@ displayMode: {
 Displays inherit base display slots by passing `baseConfiguration`:
 
 ```ts
-import type { LinearGenomeViewPlugin } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 export default function configSchemaF(pluginManager: PluginManager) {
-  const { baseLinearDisplayConfigSchema } = pluginManager.getPlugin(
-    'LinearGenomeViewPlugin',
-  ) as LinearGenomeViewPlugin
-
   return ConfigurationSchema(
     'LinearMyDisplay',
     {

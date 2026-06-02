@@ -753,7 +753,7 @@ The `layout` parameter:
 ### &session=json-
 
 Similar to encoded sessions, but more readable, `&session=json-` type sessions
-let you specify the input a JSON snapshot of a session. This is slightly
+let you specify the input as a JSON snapshot of a session. This is slightly
 different from a session spec, which has extra logic that loads the session.
 JSON sessions are literal session snapshots, like those that might come from the
 "Export session..." process

@@ -34,6 +34,7 @@ title: User guide
 
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
 - [Applying display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
 - [DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate methylation from ONT and modkit
 - [RNA-seq analysis](/docs/tutorials/rnaseq) - Understand what RNA-seq looks like in the genome browser, from spliced reads to splice arcs
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) - Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
