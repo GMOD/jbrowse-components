@@ -278,7 +278,7 @@ sent to the worker. includes displayModel and callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>, _OverrideProps<...>>, { ...; }>> & ... 26 more ... & IStateTreeNode<...>; onMouseMove(...
+renderingProps: () => { displayModel: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>, _OverrideProps<...>>, { ...; }>> & ... 27 more ... & IStateTreeNode<...>; onMouseMove(...
 ```
 
 #### method: renderProps

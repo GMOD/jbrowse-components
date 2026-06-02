@@ -44,7 +44,7 @@ ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; descri
 
 ```js
 // type
-ModelInstanceTypeProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<{ jbrowse: IAnyType; session: IMaybe<IAnyType>; sessionPath: IOptionalIType<ISimpleType<string>, [undefined]>; assemblyManager: IOptionalIType<...>; }, { ...; }>, { ...; }>, { ...; }>, never>, { ...; }>> & ... 13 more ... & IStat...
+ModelInstanceTypeProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<{ jbrowse: IAnyType; session: IMaybe<IAnyType>; sessionPath: IOptionalIType<ISimpleType<string>, [undefined]>; assemblyManager: IOptionalIType<...>; }, { ...; }>, { ...; }>, never>, { ...; }>> & ... 12 more ... & IStateTreeNode<...>
 ```
 
 #### getter: assemblyNames

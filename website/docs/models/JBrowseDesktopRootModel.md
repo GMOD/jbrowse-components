@@ -24,7 +24,6 @@ composed of
 
 - [BaseRootModel](../baserootmodel)
 - [InternetAccountsMixin](../internetaccountsmixin)
-- [DesktopSessionManagementMixin](../desktopsessionmanagementmixin)
 - [HistoryManagementMixin](../historymanagementmixin)
 - [RootAppMenuMixin](../rootappmenumixin)
 
@@ -53,12 +52,6 @@ renameCurrentSession
 **Actions:** initializeInternetAccount, createEphemeralInternetAccount,
 findAppropriateInternetAccount
 
-### Available via [DesktopSessionManagementMixin](../desktopsessionmanagementmixin)
-
-**Properties:** sessionPath
-
-**Actions:** saveSession, activateSession
-
 ### Available via [HistoryManagementMixin](../historymanagementmixin)
 
 **Properties:** history
@@ -74,7 +67,7 @@ appendToSubMenu, insertInSubMenu
 
 ```js
 // type signature
-IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; progressPct: number; jobName: string; jobsQueue: IObservableArray<TextJobsEntry>; finishedJobs: IObservableArray<...>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName: string; stopToken: StopToken | undefined; aborted: boolean; jobsQueue: IObservableArray<TextJobsEntry>; finishedJobs: IObservableArray<...>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 jobsManager: types.optional(JobsManager, {})
 ```
@@ -95,6 +88,13 @@ menus: () => Menu[]
 ```js
 // type signature
 setOpenNewSessionCallback: (cb: (arg: string) => Promise<void>) => void
+```
+
+#### action: saveSession
+
+```js
+// type signature
+saveSession: (val: unknown) => Promise<void>
 ```
 
 #### action: setPluginsUpdated

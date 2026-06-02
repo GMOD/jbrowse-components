@@ -26,5 +26,5 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>, extraTrackActions?: MenuItem[] | undefined, effectiveConfig?: Record<...> | undefined, _view?: { ...; } | undefined) => MenuItem[]
+getTrackActionMenuItems: (_config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>, extraTrackActions: MenuItem[] | undefined, effectiveConfig: Record<...>, _view?: { ...; } | undefined) => MenuItem[]
 ```

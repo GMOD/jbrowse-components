@@ -44,8 +44,7 @@ sequence refers to a reference sequence track that has an adapter containing,
 importantly, a sequence adapter such as IndexedFastaAdapter
 
 ```js
-sequence: pluginManager.getTrackType('ReferenceSequenceTrack')!
-        .configSchema
+sequence: pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
 ```
 
 #### slot: refNameColors

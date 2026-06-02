@@ -75,6 +75,6 @@ summaryScoreMode: {
 - [LinearWiggleDisplay](../linearwiggledisplay)
 
 ```js
-baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')!
-        .configSchema
+baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')
+  .configSchema
 ```

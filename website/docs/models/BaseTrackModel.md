@@ -121,6 +121,8 @@ any
 
 #### getter: activeDisplay
 
+a shown track always has at least one display
+
 ```js
 // type
 any

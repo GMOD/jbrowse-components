@@ -113,7 +113,7 @@ scrollZoom: false
 // type signature
 IArrayType<IAnyModelType>
 // code
-levels: types.array(LinearSyntenyViewHelper!)
+levels: types.array(LinearSyntenyViewHelper)
 ```
 
 #### property: views
@@ -125,7 +125,7 @@ currently this is limited to an array of two
 IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
 // code
 views: types.array(
-          pluginManager.getViewType('LinearGenomeView')!
+          pluginManager.getViewType('LinearGenomeView')
             .stateModel as LinearGenomeViewStateModel,
         )
 ```

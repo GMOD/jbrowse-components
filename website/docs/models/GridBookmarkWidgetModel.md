@@ -123,8 +123,7 @@ boolean
 
 #### getter: sharedBookmarksSnapshot
 
-Plain snapshot of selected (or all) bookmarks for the share dialog. Explicit
-field pick strips volatile-only fields (id, correspondingObj).
+Plain snapshot of the selected bookmarks for the share dialog.
 
 ```js
 // type
@@ -195,13 +194,6 @@ importBookmarks: (regions: Region[]) => void
 ```js
 // type signature
 addBookmark: (region: Region) => void
-```
-
-#### action: removeBookmark
-
-```js
-// type signature
-removeBookmark: (index: number) => void
 ```
 
 #### action: updateBookmarkLabel

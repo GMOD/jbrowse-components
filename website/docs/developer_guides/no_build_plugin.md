@@ -106,7 +106,8 @@ export default class MyPlugin {
 
 Since no-build plugins have no build step, use `jbrequire` to access the shared
 libraries JBrowse re-exports (React, MobX, MST, MUI, and `@jbrowse/core` APIs).
-See [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+See
+[Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
 for the full story on what's available and why, and the
 [canonical list](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts).
 

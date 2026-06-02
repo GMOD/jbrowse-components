@@ -220,7 +220,8 @@ The `observer` wrapper from mobx-react ensures the component re-renders when
 model properties change. `@jbrowse/core` exports reusable components like
 `FeatureDetails` and `BaseCard` — if you find something in the app you'd like to
 reuse, check whether it's exported, and if not
-[make a request](https://github.com/GMOD/jbrowse-components/discussions/new). See
+[make a request](https://github.com/GMOD/jbrowse-components/discussions/new).
+See
 [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
 for what `@jbrowse/core` and the other shared libraries provide, and how imports
 resolve to the host's copy instead of being bundled.
