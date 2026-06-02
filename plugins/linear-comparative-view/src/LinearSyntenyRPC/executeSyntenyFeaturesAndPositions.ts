@@ -36,41 +36,6 @@ export interface SyntenyRpcResult extends SyntenyFeatureData {
   instanceData: SyntenyGeometry
 }
 
-export function bpToPx({
-  self,
-  refName,
-  coord,
-  displayedRegionIndex,
-}: {
-  self: SyntenyViewSnap
-  refName: string
-  coord: number
-  displayedRegionIndex?: number
-}) {
-  let bpSoFar = 0
-  const { bpPerPx, displayedRegions } = self
-
-  let i = 0
-  for (let l = displayedRegions.length; i < l; i++) {
-    const r = displayedRegions[i]!
-    if (
-      refName === r.refName &&
-      coord >= r.start &&
-      coord <= r.end &&
-      (displayedRegionIndex !== undefined ? displayedRegionIndex === i : true)
-    ) {
-      bpSoFar += r.reversed ? r.end - coord : coord - r.start
-      break
-    }
-    bpSoFar += r.end - r.start
-  }
-  const found = displayedRegions[i]
-  if (found) {
-    return { offsetPx: bpSoFar / bpPerPx, paddingPx: 0 }
-  }
-  return undefined
-}
-
 export async function executeSyntenyFeaturesAndPositions({
   pluginManager,
   sessionId,
