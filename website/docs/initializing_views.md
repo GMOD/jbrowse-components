@@ -39,12 +39,12 @@ launch instruction, not persistent state, so a saved session never retains it.
 
 ## Which launch method should I use?
 
-| You are…                                   | Use                                | Reference |
-| ------------------------------------------ | ---------------------------------- | --------- |
-| Linking to JBrowse Web with a location     | **URL query parameters**           | [URL query parameter API](/docs/urlparams) |
-| Embedding a view in your own web page/app  | **`createViewState({ location, … })`** | [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) |
-| Shipping a preset view in a config file    | **`defaultSession`** in config.json | [Default session](/docs/config_guides/default_session) |
-| Programmatically opening a preset session  | **a session spec** (`init` in a view snapshot) | [URL params → session spec](/docs/urlparams) |
+| You are…                                  | Use                                            | Reference                                                     |
+| ----------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------- |
+| Linking to JBrowse Web with a location    | **URL query parameters**                       | [URL query parameter API](/docs/urlparams)                    |
+| Embedding a view in your own web page/app | **`createViewState({ location, … })`**         | [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) |
+| Shipping a preset view in a config file   | **`defaultSession`** in config.json            | [Default session](/docs/config_guides/default_session)        |
+| Programmatically opening a preset session | **a session spec** (`init` in a view snapshot) | [URL params → session spec](/docs/urlparams)                  |
 
 All four resolve to the same `init` fields above and run the same code path, so
 behavior (navigation, track opening, highlighting, the loading spinner) is
@@ -72,8 +72,8 @@ up to the host application.
 ## Embedded components (`createViewState`)
 
 `createViewState` accepts `location` and `highlight` and routes them through
-`init`, so an embedded view shows the loading spinner (not the import form) while
-the assembly loads:
+`init`, so an embedded view shows the loading spinner (not the import form)
+while the assembly loads:
 
 ```js
 const state = createViewState({
@@ -85,8 +85,9 @@ const state = createViewState({
 ```
 
 For full track control at launch, provide a `defaultSession` whose view carries
-an `init` object. See [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view)
-and [Drawer widgets](/docs/developer_guides/drawer_widgets).
+an `init` object. See
+[Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) and
+[Drawer widgets](/docs/developer_guides/drawer_widgets).
 
 ## Config / session files
 
