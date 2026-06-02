@@ -26,7 +26,16 @@ function run(colorBy: ColorBy) {
   const detected = new Set<string>()
   const simplex = new Set<string>()
   const out: ModificationEntry[] = []
-  extractModifications(makeFeature(), 'r1', 100, 1, colorBy, detected, simplex, out)
+  extractModifications(
+    makeFeature(),
+    'r1',
+    100,
+    1,
+    colorBy,
+    detected,
+    simplex,
+    out,
+  )
   return { detected, out }
 }
 

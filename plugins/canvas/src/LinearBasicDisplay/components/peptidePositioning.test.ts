@@ -37,8 +37,11 @@ const FULL_REGION: BpRegionBounds = {
 }
 
 function collect(data: FeatureDataResult, vr: BpRegionBounds) {
-  const out: { item: AminoAcidOverlayItem; cell: PeptideCell; index: number }[] =
-    []
+  const out: {
+    item: AminoAcidOverlayItem
+    cell: PeptideCell
+    index: number
+  }[] = []
   forEachRenderedPeptide(data, vr, (item, cell, index) => {
     out.push({ item, cell, index })
   })
@@ -52,7 +55,9 @@ describe('forEachRenderedPeptide', () => {
 
   test('skips cells whose bp span is outside the region', () => {
     const data = makeData([makeItem({ startBp: 600, endBp: 630 })])
-    expect(collect(data, { ...FULL_REGION, start: 0, end: 500 })).toHaveLength(0)
+    expect(collect(data, { ...FULL_REGION, start: 0, end: 500 })).toHaveLength(
+      0,
+    )
   })
 
   test('centers the cell at the midpoint of its mapped px span', () => {

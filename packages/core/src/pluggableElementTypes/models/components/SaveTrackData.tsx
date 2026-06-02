@@ -20,7 +20,11 @@ import {
 import { observer } from 'mobx-react'
 
 import { fetchTrackData } from './fetchTrackData.ts'
-import { CopyToClipboardButton, Dialog, ErrorBanner } from '../../../ui/index.ts'
+import {
+  CopyToClipboardButton,
+  Dialog,
+  ErrorBanner,
+} from '../../../ui/index.ts'
 import { getContainingView, saveAs, useFetch } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 

@@ -106,13 +106,20 @@ export default class TrixTextSearchAdapter
         // labelField is the full (un-shortened) name, used for exact matching
         return {
           labelField,
-          result: new BaseResult({ locString: loc, label, displayString, trackId }),
+          result: new BaseResult({
+            locString: loc,
+            label,
+            displayString,
+            trackId,
+          }),
         }
       })
 
     const matches =
       args.searchType === 'exact'
-        ? formatted.filter(({ labelField }) => labelField.toLowerCase() === query)
+        ? formatted.filter(
+            ({ labelField }) => labelField.toLowerCase() === query,
+          )
         : formatted
     return matches.map(({ result }) => result)
   }

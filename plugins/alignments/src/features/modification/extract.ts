@@ -91,7 +91,12 @@ export function extractModifications(
       // default mode hides calls below the probability threshold instead.
       const shouldPush = twoColor || prob >= modThreshold
       if (shouldPush) {
-        const { r, g, b, prob: alpha } = twoColor
+        const {
+          r,
+          g,
+          b,
+          prob: alpha,
+        } = twoColor
           ? methColorAndProb(prob, modRgb, METH_5MC_UNMETHYLATED_RGB)
           : { r: modRgb[0], g: modRgb[1], b: modRgb[2], prob }
         modificationsData.push({

@@ -21,5 +21,8 @@ test('circular renders structural variant chords from a VCF', async () => {
   // chords + ideogram are drawn as <path> elements; the SV track adds chords on
   // top of the 2 ideogram paths.
   const paths = svg.match(/<path/g) ?? []
-  assert.ok(paths.length > 2, `expected variant chords, got ${paths.length} paths`)
+  assert.ok(
+    paths.length > 2,
+    `expected variant chords, got ${paths.length} paths`,
+  )
 })

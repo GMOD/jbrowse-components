@@ -36,7 +36,6 @@ const TrackAdapterSelector = observer(function ({
       onChange={event => {
         model.setAdapterHint(event.target.value)
       }}
-
     >
       {Object.entries(
         categorizeAdapters(

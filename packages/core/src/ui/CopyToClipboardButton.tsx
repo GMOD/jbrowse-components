@@ -23,9 +23,12 @@ export default function CopyToClipboardButton({
 } & Omit<ButtonProps, 'value'>) {
   const [copied, setCopied] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
-  useEffect(() => () => {
-    clearTimeout(timer.current)
-  }, [])
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current)
+    },
+    [],
+  )
   return (
     <Button
       {...rest}

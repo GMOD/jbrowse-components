@@ -103,19 +103,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         init: types.frozen<BreakpointSplitViewInit | undefined>(),
       }),
     )
-    .volatile<{ width: number; matchedTrackFeatures: Record<string, Feature[][]> }>(
-      () => ({
-        /**
-         * #volatile
-         */
-        width: 800,
-        /**
-         * #volatile
-         */
+    .volatile<{
+      width: number
+      matchedTrackFeatures: Record<string, Feature[][]>
+    }>(() => ({
+      /**
+       * #volatile
+       */
+      width: 800,
+      /**
+       * #volatile
+       */
 
-        matchedTrackFeatures: {},
-      }),
-    )
+      matchedTrackFeatures: {},
+    }))
     .views(self => ({
       /**
        * #getter

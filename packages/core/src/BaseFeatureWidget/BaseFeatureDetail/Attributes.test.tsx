@@ -37,7 +37,9 @@ describe('Attributes', () => {
 
   test('__jbrowsefmt overrides the raw value for the same key', () => {
     const { getByText, queryByText } = renderWithTheme(
-      <Attributes attributes={{ score: 'raw', __jbrowsefmt: { score: 'fmt' } }} />,
+      <Attributes
+        attributes={{ score: 'raw', __jbrowsefmt: { score: 'fmt' } }}
+      />,
     )
     expect(getByText('fmt')).toBeTruthy()
     expect(queryByText('raw')).toBeNull()

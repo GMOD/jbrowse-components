@@ -170,13 +170,15 @@ function makeAdapter(
 
 // Comparison/synteny adapters: each maps a CLI file type to its adapter type
 // and the fileLocation slot that adapter reads from.
-const syntenyAdapterMap: Record<string, [adapterType: string, locSlot: string]> =
-  {
-    paf: ['PAFAdapter', 'pafLocation'],
-    delta: ['DeltaAdapter', 'deltaLocation'],
-    chain: ['ChainAdapter', 'chainLocation'],
-    blasttab: ['BlastTabularAdapter', 'blastTableLocation'],
-  }
+const syntenyAdapterMap: Record<
+  string,
+  [adapterType: string, locSlot: string]
+> = {
+  paf: ['PAFAdapter', 'pafLocation'],
+  delta: ['DeltaAdapter', 'deltaLocation'],
+  chain: ['ChainAdapter', 'chainLocation'],
+  blasttab: ['BlastTabularAdapter', 'blastTableLocation'],
+}
 
 export const syntenyTrackTypes = Object.keys(syntenyAdapterMap)
 

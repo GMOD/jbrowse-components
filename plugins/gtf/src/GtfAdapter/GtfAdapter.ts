@@ -63,7 +63,10 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
           .flat()
           .map(
             (f, i) =>
-              featureData(f, `${this.id}-${refName}-${i}`) as SimpleFeatureSerialized,
+              featureData(
+                f,
+                `${this.id}-${refName}-${i}`,
+              ) as SimpleFeatureSerialized,
           ),
       'Parsing GTF data',
     )

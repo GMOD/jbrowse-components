@@ -54,7 +54,9 @@ describe('removeAttr', () => {
   })
 
   it('leaves null values intact', () => {
-    expect(removeAttr({ a: null, baseUri: 'x' }, 'baseUri')).toEqual({ a: null })
+    expect(removeAttr({ a: null, baseUri: 'x' }, 'baseUri')).toEqual({
+      a: null,
+    })
   })
 })
 
@@ -69,7 +71,7 @@ describe('readConf', () => {
 
   it('passes context args to a jexl string on a plain object', () => {
     expect(
-      readConf({ foo: "jexl:config.name" }, 'foo', {
+      readConf({ foo: 'jexl:config.name' }, 'foo', {
         config: { name: 'hello' },
       }),
     ).toBe('hello')

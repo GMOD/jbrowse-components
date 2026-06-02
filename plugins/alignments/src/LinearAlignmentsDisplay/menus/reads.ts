@@ -75,15 +75,11 @@ export function getReadsMenuItem(model: ReadsModel) {
       checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
         model.toggleSashimiArcs()
       }),
-      checkboxItem(
-        'Bezier curves',
-        model.linkedReads === 'bezier',
-        () => {
-          model.setLinkedReads(
-            model.linkedReads === 'bezier' ? 'normal' : 'bezier',
-          )
-        },
-      ),
+      checkboxItem('Bezier curves', model.linkedReads === 'bezier', () => {
+        model.setLinkedReads(
+          model.linkedReads === 'bezier' ? 'normal' : 'bezier',
+        )
+      }),
       getArcDirectionMenuItem(model),
       {
         label: 'Advanced',

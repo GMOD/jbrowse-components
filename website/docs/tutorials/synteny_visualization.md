@@ -30,13 +30,16 @@ To generate a PAF alignment, install
 [minimap2](https://github.com/lh3/minimap2):
 
 ```bash
-minimap2 -cx asm5 reference.fa query.fa > alignment.paf
+minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
 ```
 
 The `-x asm5` preset is for whole-genome assembly comparison, and `-c` emits the
 base-level CIGAR that the linear synteny view needs to draw alignments at base
-resolution. You can also use [MUMmer](http://mummer.sourceforge.net/) and
-convert the `.delta` output to PAF with `delta2paf` from
+resolution. The `--eqx` flag makes minimap2 distinguish matches (`=`) from
+mismatches (`X`) in the CIGAR, which lets JBrowse compute per-alignment identity
+and offer the **Color by → Identity** mode described below. You can also use
+[MUMmer](http://mummer.sourceforge.net/) and convert the `.delta` output to PAF
+with `delta2paf` from
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
 convert UCSC chain files with `chain2paf` from the same toolkit. For small files
 you can load `.delta` or `.chain` directly into JBrowse without converting.
@@ -69,10 +72,12 @@ off-diagonal if there are rearrangements).
 
 ### Launching the dotplot
 
-From the main JBrowse start screen, click **Dotplot**, select two assemblies
-(one per axis), and pick the synteny track.
+From the main JBrowse start screen, click **Dotplot view**, select two
+assemblies (one per axis), and pick the synteny track. The query assembly goes
+in the first box and the target in the second — the same query/target order as
+the PAF columns.
 
-<Figure caption="The dotplot import form. Pick two assemblies (X and Y axes) and select a synteny track." src="/img/sv_synteny/k1.png" />
+<Figure caption="The dotplot import form. Select a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 
 ### Reading the dotplot
 
@@ -82,7 +87,7 @@ From the main JBrowse start screen, click **Dotplot**, select two assemblies
 - **Scattered points** represent short local alignments or repetitive regions.
 - **Gaps** suggest missing or misaligned sequence.
 
-<Figure caption="A dotplot showing whole-genome alignment between two species. Diagonal blocks represent collinear regions; off-diagonal blocks indicate rearrangements." src="/img/sv_synteny/k2.png" />
+<Figure caption="A dotplot of the H. pylori J99 (X-axis) vs 26695 (Y-axis) whole-genome alignment. The long diagonal is the collinear backbone; the off-diagonal segments are genuine rearrangements between the two strains." src="/img/sv_synteny/dotplot.png" />
 
 [Live demo: H. pylori J99 vs 26695 dotplot](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"hpylori_j99"%7D,%7B"assembly":"hpylori_26695"%7D%5D,"tracks":%5B"26695_vs_j99.pif"%5D%7D%5D%7D)
 — the long diagonal is the collinear backbone, and the off-diagonal blocks are
@@ -90,37 +95,58 @@ genuine inversions and translocations between the two strains.
 
 ### Launching a linear synteny view from the dotplot
 
-To inspect a region, click and drag over it in the dotplot, then click **Launch
-synteny view**.
-
-<Figure caption="Selecting a region in the dotplot (left) by clicking and dragging, then launching a synteny view (right) shows the base-level alignment of the selected region." src="/img/sv_synteny/k3.png" />
+To inspect a region, click and drag over it in the dotplot, then choose **Open
+linear synteny view** from the context menu. This opens the selected region in a
+new linear synteny view, showing the alignment at base resolution.
 
 ## Linear synteny view
 
-The linear synteny view shows two genomic regions side-by-side with lines
-connecting matching sequence blocks.
+The linear synteny view stacks two or more genomic regions vertically, one above
+another, with ribbons connecting matching sequence blocks between adjacent
+genomes. It is not limited to two genomes — the screenshots below stack all
+three _H. pylori_ strains in a single multi-way view.
 
 ### Launching the linear synteny view
 
 You can launch a linear synteny view in two ways:
 
-1. **From the dotplot** — select a region and click **Launch synteny view** (as
-   shown above).
-2. **From the start screen** — click **Linear synteny view**, then select two
-   assemblies and enter location ranges for each.
+- **From the dotplot** — select a region and choose **Open linear synteny view**
+  (as shown above).
+- **From the start screen** — click **Linear synteny view**, then pick an
+  assembly for each row and the synteny track to display between adjacent rows.
+  Use **Add row** to stack a third (or more) genome for a multi-way comparison.
 
 ### Configuring the linear synteny view
 
 Search for genomic locations in the header bar to navigate, and open additional
-tracks (gene annotations, read alignments) via the track selector.
+tracks (gene annotations, read alignments) on each genome via the track
+selector. Opening a gene annotation track on each genome reveals conserved genes
+lining up across the alignments.
 
-<Figure caption="The linear synteny view showing two genomes aligned side-by-side. Blue lines connect aligned blocks; opening annotations tracks reveals conserved genes across the alignment." src="/img/sv_synteny/k4.png" />
-
-<Figure caption="Gene annotations overlaid on both sides of a linear synteny view, highlighting syntenic (conserved) genes." src="/img/sv_synteny/k5.png" />
+<Figure caption="A linear synteny view stacking three H. pylori strains (26695, CHC155, J99) vertically, with a gene annotation track on each genome. Pink ribbons connect aligned blocks between adjacent genomes, and conserved genes such as fliR, cbf2, efp, and lysS line up across the strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 
 [Live demo: J99 vs 26695 linear synteny](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json&session=spec-%7B"views":%5B%7B"type":"LinearSyntenyView","tracks":%5B"26695_vs_j99.pif"%5D,"views":%5B%7B"loc":"NZ_CP011330.1:1564863-1636528","assembly":"hpylori_j99","tracks":%5B"hpylori_j99.gff"%5D%7D,%7B"loc":"NC_018939.1:367069-439278","assembly":"hpylori_26695","tracks":%5B"hpylori_26695.gff"%5D%7D%5D%7D%5D%7D)
 — this opens a syntenic ~72 kb block with gene tracks on both genomes; conserved
 genes such as `cheV`, `cfaS`, and `metG` line up across the connecting ribbon.
+
+### Coloring alignments
+
+The palette button in the synteny track header sets how the connecting ribbons
+are colored:
+
+- **Default** — colors each ribbon by its CIGAR operations (matches, mismatches,
+  insertions, deletions).
+- **Strand** — forward and inverted alignments get different colors, so a ribbon
+  that twists between the panels stands out as an inversion.
+- **Identity** — colors by per-alignment sequence identity (warmer = higher),
+  highlighting conserved versus divergent blocks. This requires identity
+  information in the file, which the `--eqx` minimap2 flag above provides.
+- **Query** and **Mapping quality** color by query sequence name and by PAF
+  MAPQ, respectively.
+
+The synteny settings also include a **Fade by identity** toggle, which modulates
+ribbon opacity by identity independently of the color mode so low-identity
+regions fade out.
 
 ## Troubleshooting
 

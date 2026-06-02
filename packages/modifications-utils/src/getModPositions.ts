@@ -41,7 +41,12 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
 
     const split = mod.split(',')
     const basemod = split[0]!
-    const { base, strand, typestr, mod: skipFlag } = parseModHeader(basemod, mod)
+    const {
+      base,
+      strand,
+      typestr,
+      mod: skipFlag,
+    } = parseModHeader(basemod, mod)
     const unknownSkip = skipFlag === '?'
 
     // Note: Negative strand modifications (e.g., T-a) are now supported

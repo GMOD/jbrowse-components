@@ -43,6 +43,8 @@ const HIC_CONFIG = 'extra_test_data/hic_integration_test.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
 const CGIAB_BASE =
   'https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json'
+const HPYLORI_BASE =
+  'https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json'
 
 function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
@@ -53,6 +55,41 @@ function cgiabUrl(session?: object) {
     return CGIAB_BASE
   }
   return `${CGIAB_BASE}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
+}
+
+function hpyloriUrl(session: object) {
+  return `${HPYLORI_BASE}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
+}
+
+// Three H. pylori strains stacked top-to-bottom, with a synteny track between
+// each adjacent pair and a gene annotation track on each genome, used by the
+// synteny_visualization.md tutorial.
+function hpyloriSyntenyWithGenes() {
+  return hpyloriUrl({
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        tracks: ['26695_vs_chc155.pif', 'chc155_vs_j99.pif'],
+        views: [
+          {
+            loc: 'NC_018939.1:177696-190329',
+            assembly: 'hpylori_26695',
+            tracks: ['hpylori_26695.gff'],
+          },
+          {
+            loc: 'NZ_AP026446.1:287157-299790',
+            assembly: 'hpylori_chc155',
+            tracks: ['hpylori_chc155.gff'],
+          },
+          {
+            loc: 'NZ_CP011330.1:872350-884982',
+            assembly: 'hpylori_j99',
+            tracks: ['hpylori_j99.gff'],
+          },
+        ],
+      },
+    ],
+  })
 }
 
 export const specs: ScreenshotSpec[] = [
@@ -610,5 +647,40 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr3',
     readyTimeout: 60000,
     settleMs: 15000,
+  },
+
+  // H. pylori synteny tutorial (synteny_visualization.md) — live hpylori demo
+
+  {
+    mode: 'url',
+    name: 'sv_synteny/dotplot_import',
+    url: hpyloriUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
+    readyText: 'Select assemblies for dotplot view',
+    readyTimeout: 60000,
+    settleMs: 3000,
+  },
+
+  {
+    mode: 'url',
+    name: 'sv_synteny/dotplot',
+    url: hpyloriUrl({
+      views: [
+        {
+          type: 'DotplotView',
+          tracks: ['26695_vs_j99.pif'],
+          views: [{ assembly: 'hpylori_j99' }, { assembly: 'hpylori_26695' }],
+        },
+      ],
+    }),
+    settleMs: 18000,
+  },
+
+  {
+    mode: 'url',
+    name: 'sv_synteny/linear_synteny_genes',
+    url: hpyloriSyntenyWithGenes(),
+    readyText: 'NC_018939.1',
+    readyTimeout: 60000,
+    settleMs: 12000,
   },
 ]
