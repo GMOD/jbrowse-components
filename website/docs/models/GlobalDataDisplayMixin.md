@@ -38,7 +38,7 @@ change; LD: viewport + showLDTriangle + etc).
 extends
 
 - [RegionTooLargeMixin](../regiontoolargemixin)
-- [RenderLifecycleMixin](../gpulifecyclemixin)
+- [RenderLifecycleMixin](../renderlifecyclemixin)
 - [FetchMixin](../fetchmixin)
 
 ## Inherited members
@@ -55,10 +55,18 @@ featureDensityStats
 
 **Getters:** regionTooLarge, regionTooLargeReason
 
-**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+**Methods:** regionCannotBeRenderedText
 
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload
+setFeatureDensityStatsLimit, reload, forceLoad
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -67,3 +75,20 @@ setFeatureDensityStatsLimit, reload
 **Getters:** isLoading
 
 **Actions:** setError, setStatusMessage, cancelFetch, runFetch
+
+### GlobalDataDisplayMixin - Getters
+
+#### getter: loadingOverlayVisible
+
+Shared with MultiRegionDisplayMixin's getter of the same name so
+`DisplayLoadingOverlay` reads one signal across all GPU displays. A global
+display has no per-region staleness axis (it either has its one dataset or is
+fetching it), so this is just "fetch in flight, nothing terminal up" — matching
+the legacy CanvasDisplayWrapper, and correctly staying hidden over a display
+that's intentionally empty (e.g. LD with the triangle toggled off, which fetches
+nothing).
+
+```js
+// type
+boolean
+```

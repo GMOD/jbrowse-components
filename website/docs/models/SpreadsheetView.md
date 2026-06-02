@@ -82,7 +82,7 @@ importWizard: types.optional(ImportWizardModel, () =>
 
 ```js
 // type signature
-IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
+IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 spreadsheet: types.maybe(Spreadsheet())
 ```

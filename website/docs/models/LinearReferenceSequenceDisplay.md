@@ -69,6 +69,23 @@ true
 showTranslation: true
 ```
 
+### LinearReferenceSequenceDisplay - Volatiles
+
+#### volatile: colorState
+
+theme-derived colors, pushed from the component (theme lives in React/MUI).
+Feeds `renderState`; until set, `renderState` is undefined and the render
+autorun skips — same pattern as wiggle/MAF.
+
+```js
+// type signature
+{ palette: ColorPalette; textColors: TextColors; } | undefined
+// code
+colorState: undefined as
+        | { palette: ColorPalette; textColors: TextColors }
+        | undefined
+```
+
 ### LinearReferenceSequenceDisplay - Getters
 
 #### getter: sequenceType
@@ -135,6 +152,27 @@ zoom-aware computed height.
 number
 ```
 
+#### getter: renderState
+
+everything the Canvas2D backend needs to paint a frame, or undefined until the
+theme-derived colors arrive (render autorun skips on undefined).
+
+```js
+// type
+DrawSequenceState | undefined
+```
+
+#### getter: loadingOverlayVisible
+
+Same policy as MultiRegionDisplayMixin plus a zoom gate: when zoomed past base
+resolution the body shows a "zoom in" message, so the loading scrim must stay
+hidden over it.
+
+```js
+// type
+boolean
+```
+
 ### LinearReferenceSequenceDisplay - Methods
 
 #### method: trackMenuItems
@@ -145,6 +183,15 @@ trackMenuItems: () => { label: string; type: string; checked: boolean; onClick: 
 ```
 
 ### LinearReferenceSequenceDisplay - Actions
+
+#### action: setColorState
+
+push theme-derived colors in from the component
+
+```js
+// type signature
+setColorState: (palette: ColorPalette, textColors: TextColors) => void
+```
 
 #### action: toggleShowForward
 
@@ -165,4 +212,15 @@ toggleShowReverse: () => void
 ```js
 // type signature
 toggleShowTranslation: () => void
+```
+
+#### action: startRenderingBackend
+
+Called by `useRenderingBackend` (via DisplayChrome) once the canvas backend is
+created. Streams each fetched region into the backend and draws every frame from
+`renderState`.
+
+```js
+// type signature
+startRenderingBackend: (backend: Canvas2DSequenceRenderer) => void
 ```

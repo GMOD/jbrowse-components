@@ -95,25 +95,11 @@ boolean
 boolean
 ```
 
-#### getter: trackHttp
-
-```js
-// type
-boolean | undefined
-```
-
-#### getter: indexHttp
-
-```js
-// type
-boolean | undefined
-```
-
 #### getter: wrongProtocol
 
 ```js
 // type
-boolean | undefined
+boolean
 ```
 
 #### getter: unsupported

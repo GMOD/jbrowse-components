@@ -58,7 +58,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, renderBlocks
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
 invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
@@ -73,10 +74,18 @@ featureDensityStats
 
 **Getters:** regionTooLarge, regionTooLargeReason
 
-**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+**Methods:** regionCannotBeRenderedText
 
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload
+setFeatureDensityStatsLimit, reload, forceLoad
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -142,19 +151,9 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-{ refName: string; start: number; end: number; score: number; minScore?: number | undefined; maxScore?: number | undefined; summary?: boolean | undefined; } | undefined
+WiggleFeatureUnderMouse | undefined
 // code
-featureUnderMouse: undefined as
-        | {
-            refName: string
-            start: number
-            end: number
-            score: number
-            minScore?: number
-            maxScore?: number
-            summary?: boolean
-          }
-        | undefined
+featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
 ```
 
 ### LinearWiggleDisplay - Getters
@@ -250,7 +249,7 @@ gpuProps: () => {
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 ### LinearWiggleDisplay - Actions
@@ -280,7 +279,7 @@ setNegColor: (color?: string | undefined) => void
 
 ```js
 // type signature
-setFeatureUnderMouse: (feat?: { refName: string; start: number; end: number; score: number; minScore?: number | undefined; maxScore?: number | undefined; summary?: boolean | undefined; } | undefined) => void
+setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse | undefined) => void
 ```
 
 #### action: fetchNeeded

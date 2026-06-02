@@ -447,7 +447,7 @@ DotplotDisplays under each track, indexed to match `tracks`.
 
 ```js
 // type
-(ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; } & { ...; }> & ... 10 more ... & IStateTreeNode<...>)[]
+(ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: hasLodCapableAdapter

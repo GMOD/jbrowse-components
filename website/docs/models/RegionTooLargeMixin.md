@@ -28,7 +28,7 @@ like LinearBasicDisplay, LinearArcDisplay) and MultiRegionDisplayMixin
 LinearBasicDisplay).
 
 Owns the state that TooLargeMessage reads: regionTooLarge, regionTooLargeReason,
-featureDensityStats, setFeatureDensityStatsLimit.
+forceLoad.
 
 ### RegionTooLargeMixin - Properties
 
@@ -92,16 +92,12 @@ string
 
 #### method: regionCannotBeRenderedText
 
+Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the
+display chrome via `TooLargeMessage`, not the model.
+
 ```js
 // type signature
 regionCannotBeRenderedText: (_region?: Region | undefined) => "" | "Force load to see features"
-```
-
-#### method: regionCannotBeRendered
-
-```js
-// type signature
-regionCannotBeRendered: (_region?: Region | undefined) => Element | null
 ```
 
 ### RegionTooLargeMixin - Actions
@@ -135,4 +131,15 @@ setFeatureDensityStatsLimit: (stats?: FeatureDensityStats | undefined) => void
 ```js
 // type signature
 reload: () => void
+```
+
+#### action: forceLoad
+
+Raises the byte limit past the current density stats and triggers a reload. The
+display chrome calls this via TooLargeMessage's force-load button; concrete
+display models override reload() to do the actual refetch.
+
+```js
+// type signature
+forceLoad: () => void
 ```

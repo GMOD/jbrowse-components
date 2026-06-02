@@ -179,7 +179,7 @@ boolean
 
 ```js
 // type
-ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; } & { ...; }> & ... 17 more ... & IStateTreeNode<...>
+ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>
 ```
 
 #### getter: colorSchemeConfig

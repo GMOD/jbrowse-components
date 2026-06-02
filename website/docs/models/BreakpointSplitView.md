@@ -106,7 +106,7 @@ showHeader: true
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 17 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
+IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -140,9 +140,11 @@ width: 800
 
 ```js
 // type signature
-Record<string, Feature[][]>
+{
+}
 // code
-matchedTrackFeatures: {} as Record<string, Feature[][]>
+matchedTrackFeatures: {
+}
 ```
 
 ### BreakpointSplitView - Getters
@@ -172,7 +174,7 @@ boolean
 
 ```js
 // type
-(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 7 more ... & IStateTreeNode<...>) | undefined
+(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: matchedTracks

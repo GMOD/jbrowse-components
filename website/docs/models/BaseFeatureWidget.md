@@ -49,27 +49,33 @@ type: types.literal('BaseFeatureWidget')
 
 ```js
 // type signature
-IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>
+IOptionalIType<IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>, [undefined]>
 // code
-featureData: types.frozen<MaybeSerializedFeat>()
+featureData: types.optional(
+        types.frozen<MaybeSerializedFeat>(),
+        undefined,
+      )
 ```
 
 #### property: formattedFields
 
 ```js
 // type signature
-IType<any, any, any>
+IOptionalIType<IType<any, any, any>, [undefined]>
 // code
-formattedFields: types.frozen()
+formattedFields: types.optional(types.frozen(), undefined)
 ```
 
 #### property: unformattedFeatureData
 
 ```js
 // type signature
-IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>
+IOptionalIType<IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>, [undefined]>
 // code
-unformattedFeatureData: types.frozen<MaybeSerializedFeat>()
+unformattedFeatureData: types.optional(
+        types.frozen<MaybeSerializedFeat>(),
+        undefined,
+      )
 ```
 
 #### property: view
@@ -134,9 +140,12 @@ sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 
 ```js
 // type signature
-IType<Record<string, unknown> | undefined, Record<string, unknown> | undefined, Record<string, unknown> | undefined>
+IOptionalIType<IType<Record<string, unknown> | undefined, Record<string, unknown> | undefined, Record<string, unknown> | undefined>, [undefined]>
 // code
-descriptions: types.frozen<Record<string, unknown> | undefined>()
+descriptions: types.optional(
+        types.frozen<Record<string, unknown> | undefined>(),
+        undefined,
+      )
 ```
 
 ### BaseFeatureWidget - Volatiles
@@ -145,9 +154,9 @@ descriptions: types.frozen<Record<string, unknown> | undefined>()
 
 ```js
 // type signature
-unknown
+undefined
 // code
-error: undefined as unknown
+error: undefined
 ```
 
 ### BaseFeatureWidget - Actions

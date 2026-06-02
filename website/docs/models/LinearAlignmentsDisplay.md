@@ -58,7 +58,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, renderBlocks
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
 invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
@@ -73,10 +74,18 @@ featureDensityStats
 
 **Getters:** regionTooLarge, regionTooLargeReason
 
-**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+**Methods:** regionCannotBeRenderedText
 
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload
+setFeatureDensityStatsLimit, reload, forceLoad
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -166,15 +175,6 @@ true
 showInterbaseIndicators: true
 ```
 
-#### property: showYScalebar
-
-```js
-// type signature
-true
-// code
-showYScalebar: true
-```
-
 #### property: drawSingletons
 
 ```js
@@ -262,20 +262,13 @@ false
 readConnectionsDown: false
 ```
 
-#### property: sashimiArcs
+#### property: showSashimiArcs
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<ArcDirection>, [undefined]>
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-sashimiArcs: types.optional(
-            types.enumeration<ArcDirection>('SashimiArcsMode', [
-              'off',
-              'up',
-              'down',
-            ]),
-            'up',
-          )
+showSashimiArcs: types.optional(types.boolean, true)
 ```
 
 #### property: sashimiArcsHeight
@@ -410,9 +403,10 @@ selectedChainIds: [] as string[]
 
 ```js
 // type signature
-Record<string, string>
-// code
-colorTagMap: {} as Record<string, string>
+;(Record < string,
+  string >
+    // code
+    colorTagMap)
 ```
 
 #### volatile: visibleModifications
@@ -421,9 +415,10 @@ colorTagMap: {} as Record<string, string>
 // type signature
 ObservableMap<string, ModificationTypeWithColor>
 // code
-visibleModifications: observable.map<string, ModificationTypeWithColor>(
-          {},
-        )
+visibleModifications: observable.map<
+            string,
+            ModificationTypeWithColor
+          >({})
 ```
 
 #### volatile: simplexModifications
@@ -537,13 +532,6 @@ number
 string | undefined
 ```
 
-#### getter: DisplayMessageComponent
-
-```js
-// type
-LazyExoticComponent<({ model, }: { model: LinearAlignmentsDisplayModel; }) => Element>
-```
-
 #### getter: TooltipComponent
 
 ```js
@@ -580,13 +568,6 @@ number
 ```
 
 #### getter: featureSpacing
-
-```js
-// type
-number
-```
-
-#### getter: maxHeight
 
 ```js
 // type
@@ -744,6 +725,16 @@ via currentRangeY[0] rather than the inherited scrollTop.
 number
 ```
 
+#### getter: hasSashimiArcs
+
+True when any loaded region has splice junctions to draw as sashimi arcs. Drives
+whether the below-coverage band reserves space.
+
+```js
+// type
+boolean
+```
+
 #### getter: coverageDisplayHeight
 
 ```js
@@ -848,7 +839,15 @@ getFeatureInfoById: (featureId: string) => { id: string; name: string; start: nu
 
 ```js
 // type signature
-rpcProps: () => { filterBy: FilterBy; colorBy: ColorBy; colorTagMap: Record<string, string>; sortTag: string | undefined; showSoftClipping: boolean; drawSingletons: boolean; drawProperPairs: boolean; linkedReads: LinkedReadsMode; }
+rpcProps: () => {
+  filterBy: FilterBy
+  colorBy: ColorBy
+  sortTag: string | undefined
+  showSoftClipping: boolean
+  drawSingletons: boolean
+  drawProperPairs: boolean
+  linkedReads: LinkedReadsMode
+}
 ```
 
 #### method: trackMenuItems
@@ -857,7 +856,7 @@ Track menu items
 
 ```js
 // type signature
-trackMenuItems: () => MenuItem[]
+trackMenuItems: () => (MenuItem | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; })[]; } | ... 5 more ... | { ...; })[]
 ```
 
 #### method: contextMenuItems
@@ -971,7 +970,7 @@ setColorScheme: (colorBy: ColorBy) => void
 
 ```js
 // type signature
-updateColorTagMap: (uniqueTag: string[]) => boolean
+updateColorTagMap: (uniqueTag: string[]) => void
 ```
 
 #### action: setFilterBy
@@ -1023,13 +1022,6 @@ setSortedByAtPosition: (type: string, pos: number, refName: string) => void
 clearSortedBy: () => void
 ```
 
-#### action: setMaxHeight
-
-```js
-// type signature
-setMaxHeight: (n?: number | undefined) => void
-```
-
 #### action: setScaleType
 
 ```js
@@ -1079,11 +1071,18 @@ setFeatureSpacing: (spacing?: number | undefined) => void
 setCompactness: (level: "normal" | "compact" | "super-compact") => void
 ```
 
-#### action: setSashimiArcs
+#### action: setShowSashimiArcs
 
 ```js
 // type signature
-setSashimiArcs: (mode: ArcDirection) => void
+setShowSashimiArcs: (show: boolean) => void
+```
+
+#### action: toggleSashimiArcs
+
+```js
+// type signature
+toggleSashimiArcs: () => void
 ```
 
 #### action: setReadConnections
@@ -1161,13 +1160,6 @@ setColorByType: (type: ArcColorByType) => void
 ```js
 // type signature
 setShowMismatches: (show: boolean) => void
-```
-
-#### action: setShowYScalebar
-
-```js
-// type signature
-setShowYScalebar: (show: boolean) => void
 ```
 
 #### action: setShowLegend

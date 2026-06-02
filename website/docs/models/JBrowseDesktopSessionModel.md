@@ -44,7 +44,7 @@ ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; descri
 
 ```js
 // type
-ModelInstanceTypeProps<{ jbrowse: IAnyType; session: IMaybe<IAnyType>; sessionPath: IOptionalIType<ISimpleType<string>, [undefined]>; assemblyManager: IOptionalIType<...>; } & { ...; } & { ...; } & { ...; } & { ...; }> & ... 13 more ... & IStateTreeNode<...>
+ModelInstanceTypeProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<{ jbrowse: IAnyType; session: IMaybe<IAnyType>; sessionPath: IOptionalIType<ISimpleType<string>, [undefined]>; assemblyManager: IOptionalIType<...>; }, { ...; }>, { ...; }>, { ...; }>, never>, { ...; }>> & ... 13 more ... & IStat...
 ```
 
 #### getter: assemblyNames
@@ -79,7 +79,7 @@ ModelInstanceTypeProps<{ undoIdx: IType<number | undefined, number, number>; tar
 
 ```js
 // type
-ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 6 more ... & { ...; }, _NotCustom...
+ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCusto...
 ```
 
 ### JBrowseDesktopSessionModel - Methods

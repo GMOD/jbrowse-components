@@ -28,7 +28,7 @@ Per-region fetch lifecycle for LGV-based GPU displays. Installs four autoruns in
 extends
 
 - [RegionTooLargeMixin](../regiontoolargemixin)
-- [RenderLifecycleMixin](../gpulifecyclemixin)
+- [RenderLifecycleMixin](../renderlifecyclemixin)
 - [FetchMixin](../fetchmixin)
 
 ## Inherited members
@@ -45,10 +45,18 @@ featureDensityStats
 
 **Getters:** regionTooLarge, regionTooLargeReason
 
-**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+**Methods:** regionCannotBeRenderedText
 
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload
+setFeatureDensityStatsLimit, reload, forceLoad
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -83,6 +91,19 @@ true once the canvas has painted and no fetch is in flight
 boolean
 ```
 
+#### getter: viewportWithinLoadedData
+
+true when every visible block lies within an already-fetched region — i.e. the
+viewport shows data we actually loaded, not the stale fringe left after a
+zoom-out/pan. Drives the loading overlay through the pre-refetch debounce.
+Spatial only; see CLAUDE.md for why this is exact and for the
+resolution-staleness gap.
+
+```js
+// type
+boolean
+```
+
 #### getter: renderBlocks
 
 Shared cached view for every LGV-based GPU display. A single displayedRegion may
@@ -94,6 +115,18 @@ then issue an empty-blocks render that clears the canvas.
 ```js
 // type
 RenderBlock[]
+```
+
+#### getter: loadingOverlayVisible
+
+whether the loading scrim should show: data not ready yet, or stale data
+(viewport past loaded) still on screen. Not while regionTooLarge / fetch error /
+renderError — those render their own terminal UI. The single signal every
+display's loading overlay reads.
+
+```js
+// type
+boolean
 ```
 
 ### MultiRegionDisplayMixin - Actions

@@ -219,41 +219,11 @@ CompositeMap<string, Feature>
 Feature | undefined
 ```
 
-#### getter: layoutFeatures
-
-```js
-// type
-CompositeMap<string, LayoutRecord>
-```
-
-#### getter: getFeatureOverlapping
-
-```js
-// type
-(blockKey: string, x: number, y: number) => string | undefined
-```
-
-#### getter: getFeatureByID
-
-```js
-// type
-(blockKey: string, id: string) => LayoutRecord | undefined
-```
-
 #### getter: searchFeatureByID
 
 ```js
 // type
 (id: string) => LayoutRecord | undefined
-```
-
-#### getter: floatingLabelData
-
-Deduplicated floating label data, computed and cached by MobX
-
-```js
-// type
-Map<string, FeatureLabelData>
 ```
 
 ### BaseLinearDisplay - Methods
@@ -308,7 +278,7 @@ sent to the worker. includes displayModel and callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; } & { ...; } & { ...; } & { ...; } & { ...; }> & ... 26 more ... & IStateTreeNode<...>; onMouseMove(_: unknown, featureId?: string | undefined): ...
+renderingProps: () => { displayModel: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>, _OverrideProps<...>>, { ...; }>> & ... 26 more ... & IStateTreeNode<...>; onMouseMove(...
 ```
 
 #### method: renderProps

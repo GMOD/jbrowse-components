@@ -90,24 +90,6 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 })
 ```
 
-#### volatile: textSearchManager
-
-```js
-// type signature
-TextSearchManager
-// code
-textSearchManager: new TextSearchManager(pluginManager)
-```
-
-#### volatile: error
-
-```js
-// type signature
-unknown
-// code
-error: undefined as unknown
-```
-
 ### JBrowseReactAppRootModel - Methods
 
 #### method: menus
@@ -134,11 +116,4 @@ react-app instead timestamps it so multiple "new sessions" don't collide.
 ```js
 // type signature
 setDefaultSession: () => void
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (error?: unknown) => void
 ```

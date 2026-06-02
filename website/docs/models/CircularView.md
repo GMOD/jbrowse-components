@@ -220,13 +220,6 @@ number
 number
 ```
 
-#### getter: pxPerRadian
-
-```js
-// type
-number
-```
-
 #### getter: centerXY
 
 ```js

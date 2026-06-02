@@ -50,11 +50,16 @@ id: ElementId
 
 #### property: type
 
+Abstract base: never registered or instantiated standalone, always composed into
+a concrete subclass (e.g. LinearSyntenyView) that overrides `type` with its own
+literal. Kept as `types.string` rather than a literal so subclass models stay
+assignable to this base type.
+
 ```js
 // type signature
-ISimpleType<"LinearComparativeView">
+ISimpleType<string>
 // code
-type: types.literal('LinearComparativeView')
+type: types.string
 ```
 
 #### property: trackSelectorType
@@ -117,7 +122,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 17 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
+IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -150,18 +155,6 @@ number | undefined
 width: undefined as number | undefined
 ```
 
-#### volatile: isLoading
-
-Set to true when the view is being initialized from a launch spec to avoid
-showing the import form during loading
-
-```js
-// type signature
-false
-// code
-isLoading: false
-```
-
 ### LinearComparativeView - Getters
 
 #### getter: initialized
@@ -183,22 +176,6 @@ boolean
 ```js
 // type
 string[]
-```
-
-#### getter: loadingMessage
-
-```js
-// type
-'Loading' | undefined
-```
-
-#### getter: showLoading
-
-Whether to show a loading indicator instead of the import form or view
-
-```js
-// type
-boolean
 ```
 
 ### LinearComparativeView - Methods
@@ -265,25 +242,18 @@ reconcileLevels: () => void
 setWidth: (newWidth: number) => void
 ```
 
-#### action: setIsLoading
-
-```js
-// type signature
-setIsLoading: (arg: boolean) => void
-```
-
 #### action: setViews
 
 ```js
 // type signature
-setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }>>[]) => void
+setViews: (views: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>>>[]) => void
 ```
 
 #### action: removeView
 
 ```js
 // type signature
-removeView: (view: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }> & ... 19 more ... & IStateTreeNode<...>) => void
+removeView: (view: ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: addView
@@ -292,7 +262,7 @@ Push a new genome row. The new trailing level starts with no synteny tracks.
 
 ```js
 // type signature
-addView: (view: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }>>) => void
+addView: (view: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>>>) => void
 ```
 
 #### action: removeLastRow

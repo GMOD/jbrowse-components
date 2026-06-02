@@ -352,16 +352,17 @@ lastTrackDragY: undefined as undefined | number
 // type signature
 unknown
 // code
-volatileError: undefined as unknown
+volatileError
 ```
 
 #### volatile: trackRefs
 
 ```js
 // type signature
-Record<string, HTMLDivElement>
-// code
-trackRefs: {} as Record<string, HTMLDivElement>
+;(Record < string,
+  HTMLDivElement >
+    // code
+    trackRefs)
 ```
 
 #### volatile: coarseDynamicBlocks
@@ -960,15 +961,6 @@ searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateI
 ```js
 // type signature
 getTrack: (id: string) => any
-```
-
-#### method: rankSearchResults
-
-does nothing currently
-
-```js
-// type signature
-rankSearchResults: (results: BaseResult[]) => BaseResult[]
 ```
 
 #### method: getSelectedRegions

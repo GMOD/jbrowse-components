@@ -35,10 +35,10 @@ and docs.
 ### Available via [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
 **Properties:** type, configuration, linkedReads, showCoverage, coverageHeight,
-showMismatches, showInterbaseIndicators, showYScalebar, drawSingletons,
-drawProperPairs, flipStrandLongReadChains, drawInter, drawLongRange,
-arcColorByType, readConnections, readConnectionsDown, sashimiArcs,
-sashimiArcsHeight, readConnectionsHeight, showSoftClipping
+showMismatches, showInterbaseIndicators, drawSingletons, drawProperPairs,
+flipStrandLongReadChains, drawInter, drawLongRange, arcColorByType,
+readConnections, readConnectionsDown, showSashimiArcs, sashimiArcsHeight,
+readConnectionsHeight, showSoftClipping
 
 **Volatiles:** featureIdUnderMouse, mouseoverExtraInformation,
 contextMenuFeature, contextMenuCoord, contextMenuCigarHit,
@@ -48,16 +48,15 @@ simplexModifications, modificationsReady, overCigarItem, colorPalette
 
 **Getters:** isChainMode, scaleType, autoscaleType, minScore, maxScore,
 minScoreConfig, maxScoreConfig, numStdDev, featureWidgetType, selectedFeatureId,
-DisplayMessageComponent, TooltipComponent, visibleModificationTypes, colorBy,
-filterBy, featureHeightSetting, featureSpacing, maxHeight, chainIdMap,
-mismatchAlpha, showLegend, sortedBy, coverageIsLog, coverageStats,
-coverageDomain, coverageTicks, legendItems, laidOutPileupMap, maxY,
-arcsComputed, arcsRpcDataMap, modificationThreshold, colorSchemeIndex,
-showModifications, showPerBaseQuality, totalPileupHeight, readIdIndexMap,
-readConnectionsLineWidth, scrollTop, coverageDisplayHeight,
-pileupViewportHeight, scalebarOverlapLeft, showOutlineSetting, visibleLabels,
-scrollableHeight, sortTag, renderState, arcsYDomainBp, insertSizeTicks,
-featureUnderMouse
+TooltipComponent, visibleModificationTypes, colorBy, filterBy,
+featureHeightSetting, featureSpacing, chainIdMap, mismatchAlpha, showLegend,
+sortedBy, coverageIsLog, coverageStats, coverageDomain, coverageTicks,
+legendItems, laidOutPileupMap, maxY, arcsComputed, arcsRpcDataMap,
+modificationThreshold, colorSchemeIndex, showModifications, showPerBaseQuality,
+totalPileupHeight, readIdIndexMap, readConnectionsLineWidth, scrollTop,
+hasSashimiArcs, coverageDisplayHeight, pileupViewportHeight,
+scalebarOverlapLeft, showOutlineSetting, visibleLabels, scrollableHeight,
+sortTag, renderState, arcsYDomainBp, insertSizeTicks, featureUnderMouse
 
 **Methods:** findFeatureInRpcData, searchFeatureByID, getFeatureInfoById,
 rpcProps, trackMenuItems, contextMenuItems
@@ -67,18 +66,19 @@ clearDisplaySpecificData, setOverCigarItem, setColorPalette, setScrollTop,
 setCurrentRangeY, setHighlightedChainIds, clearHighlights, clearSelection,
 setSelectedChainIds, setColorScheme, updateColorTagMap, setFilterBy,
 setShowOutline, toggleSoftClipping, toggleMismatchAlpha, setSortedBy,
-setSortedByAtPosition, clearSortedBy, setMaxHeight, setScaleType, setAutoscale,
-setMinScore, setMaxScore, setFeatureHeight, setFeatureSpacing, setCompactness,
-setSashimiArcs, setReadConnections, setReadConnectionsDown, setShowCoverage,
-setCoverageHeight, setReadConnectionsHeight, setSashimiArcsHeight,
-setReadConnectionsLineWidth, setDrawInter, setDrawLongRange, setColorByType,
-setShowMismatches, setShowYScalebar, setShowLegend, setDrawSingletons,
-setDrawProperPairs, setShowInterbaseIndicators, setFlipStrandLongReadChains,
-setLinkedReads, updateVisibleModifications, setSimplexModifications,
-setModificationsReady, setFeatureIdUnderMouse, setMouseoverExtraInformation,
-setHoverState, setContextMenuFeature, setContextMenuCoord,
-setContextMenuCigarHit, setContextMenuIndicatorHit, clearContextMenu,
-setContextMenuRefName, selectFeature, startRenderingBackend, selectFeatureById,
+setSortedByAtPosition, clearSortedBy, setScaleType, setAutoscale, setMinScore,
+setMaxScore, setFeatureHeight, setFeatureSpacing, setCompactness,
+setShowSashimiArcs, toggleSashimiArcs, setReadConnections,
+setReadConnectionsDown, setShowCoverage, setCoverageHeight,
+setReadConnectionsHeight, setSashimiArcsHeight, setReadConnectionsLineWidth,
+setDrawInter, setDrawLongRange, setColorByType, setShowMismatches,
+setShowLegend, setDrawSingletons, setDrawProperPairs,
+setShowInterbaseIndicators, setFlipStrandLongReadChains, setLinkedReads,
+updateVisibleModifications, setSimplexModifications, setModificationsReady,
+setFeatureIdUnderMouse, setMouseoverExtraInformation, setHoverState,
+setContextMenuFeature, setContextMenuCoord, setContextMenuCigarHit,
+setContextMenuIndicatorHit, clearContextMenu, setContextMenuRefName,
+selectFeature, startRenderingBackend, selectFeatureById,
 setContextMenuFeatureById, getByteEstimateConfig, fetchNeeded, renderSvg
 
 ### Available via [BaseDisplay](../basedisplay)
@@ -105,7 +105,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, renderBlocks
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
 invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
@@ -120,10 +121,18 @@ featureDensityStats
 
 **Getters:** regionTooLarge, regionTooLargeReason
 
-**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+**Methods:** regionCannotBeRenderedText
 
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload
+setFeatureDensityStatsLimit, reload, forceLoad
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
@@ -174,7 +183,7 @@ contextMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconType
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; type: "subMenu"; subMenu: ({ label: "Normal" | "Compact" | "Super-compact"; type: "radio"; checked: boolean; onClick: () => void; } | { label: string; onClick: () => void; })[]; } | { ...; } | { ...; })[]
+trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; })[]; } | { ...; } | { ...; })[]
 ```
 
 ### LGVSyntenyDisplay - Actions

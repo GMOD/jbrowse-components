@@ -39,7 +39,7 @@ configuration: types.safeReference(assemblyConfigType)
 // type signature
 unknown
 // code
-error: undefined as unknown
+error
 ```
 
 #### volatile: loadingP
@@ -79,8 +79,8 @@ when refNameAliases with override:true remap names.
 Record<string, string> | undefined
 // code
 canonicalToSeqAdapterRefNames: undefined as
-        | Record<string, string>
-        | undefined
+          | Record<string, string>
+          | undefined
 ```
 
 #### volatile: cytobands
@@ -118,28 +118,11 @@ allRefNamesWithLowerCase: undefined as Set<string> | undefined
 
 ### Assembly - Getters
 
-#### getter: initialized
-
-this is a getter with a side effect of loading the data. not the best practice,
-but it helps to lazy load the assembly
-
-```js
-// type
-boolean
-```
-
 #### getter: name
 
 ```js
 // type
 string
-```
-
-#### getter: regions
-
-```js
-// type
-BasicRegion[] | undefined
 ```
 
 #### getter: aliases
@@ -156,11 +139,35 @@ string[]
 string
 ```
 
+#### getter: refNameColors
+
+```js
+// type
+string[]
+```
+
 #### getter: allAliases
 
 ```js
 // type
 string[]
+```
+
+#### getter: initialized
+
+this is a getter with a side effect of loading the data. not the best practice,
+but it helps to lazy load the assembly
+
+```js
+// type
+boolean
+```
+
+#### getter: regions
+
+```js
+// type
+BasicRegion[] | undefined
 ```
 
 #### getter: allRefNames
@@ -179,13 +186,6 @@ string[] | undefined
 ```js
 // type
 RpcManager
-```
-
-#### getter: refNameColors
-
-```js
-// type
-string[]
 ```
 
 #### getter: refNames
@@ -223,28 +223,11 @@ getSeqAdapterRefName().
 getCanonicalRefName: (refName: string) => string
 ```
 
-#### method: getCanonicalRefName2
-
-Returns canonical refName, falling back to input if not found. See
-getCanonicalRefName() for details.
-
-```js
-// type signature
-getCanonicalRefName2: (refName: string) => string
-```
-
 #### method: getRefNameColor
 
 ```js
 // type signature
 getRefNameColor: (refName: string) => string | undefined
-```
-
-#### method: isValidRefName
-
-```js
-// type signature
-isValidRefName: (refName: string) => boolean
 ```
 
 #### method: getSeqAdapterRefName
@@ -255,6 +238,23 @@ Given a canonical refName, returns the refName used by the sequence adapter
 ```js
 // type signature
 getSeqAdapterRefName: (canonicalRefName: string) => string
+```
+
+#### method: getCanonicalRefName2
+
+Returns canonical refName, falling back to input if not found. See
+getCanonicalRefName() for details.
+
+```js
+// type signature
+getCanonicalRefName2: (refName: string) => string
+```
+
+#### method: isValidRefName
+
+```js
+// type signature
+isValidRefName: (refName: string) => boolean
 ```
 
 #### method: getAdapterMapEntry
@@ -292,7 +292,7 @@ refNameAliases becomes observable.
 
 ```js
 // type signature
-setLoaded: ({ regions, refNameAliases, lowerCaseRefNameAliases, allRefNamesWithLowerCase, canonicalToSeqAdapterRefNames, cytobands, }: { regions: Region[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; allRefNamesWithLowerCase: Set<string>; canonicalToSeqAdapterRefNames: Record<...>; cytobands: Featu...
+setLoaded: ({ regions, refNameAliases, lowerCaseRefNameAliases, allRefNamesWithLowerCase, canonicalToSeqAdapterRefNames, cytobands, }: RefNameMaps & { regions: Region[]; cytobands: Feature[]; }) => void
 ```
 
 #### action: setError

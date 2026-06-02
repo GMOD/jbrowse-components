@@ -131,24 +131,6 @@ SessionMetadata[] | undefined
 savedSessionMetadata: undefined as SessionMetadata[] | undefined
 ```
 
-#### volatile: textSearchManager
-
-```js
-// type signature
-TextSearchManager
-// code
-textSearchManager: new TextSearchManager(pluginManager)
-```
-
-#### volatile: error
-
-```js
-// type signature
-unknown
-// code
-error: undefined as unknown
-```
-
 #### volatile: reloadPluginManagerCallback
 
 ```js
@@ -235,11 +217,4 @@ setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
 ```js
 // type signature
 deleteSavedSession: (id: string) => Promise<void>
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (error?: unknown) => void
 ```

@@ -28,12 +28,7 @@ density, line, or scatter renderings
 ```js
 defaultRendering: {
       type: 'stringEnum',
-      model: types.enumeration('Rendering type', [
-        'xyplot',
-        'density',
-        'line',
-        'scatter',
-      ]),
+      model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
       defaultValue: 'xyplot',
       description: 'Default rendering type',
     }

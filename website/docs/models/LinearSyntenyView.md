@@ -34,17 +34,17 @@ and docs.
 **Properties:** id, type, trackSelectorType, showIntraviewLinks, linkViews,
 interactiveOverlay, scrollZoom, levels, views, viewTrackConfigs
 
-**Volatiles:** width, isLoading
+**Volatiles:** width
 
-**Getters:** initialized, refNames, assemblyNames, loadingMessage, showLoading
+**Getters:** initialized, refNames, assemblyNames
 
 **Methods:** isViewCompact, headerMenuItems, showMenuItems, menuItems,
 rubberBandMenuItems
 
-**Actions:** reconcileLevels, setWidth, setIsLoading, setViews, removeView,
-addView, removeLastRow, setLinkViews, setScrollZoom, activateTrackSelector,
-toggleTrack, showTrack, hideTrack, squareView, clearView, toggleCompactView,
-compactAllViews, expandAllViews, autoScaleLevelHeights, appendRow
+**Actions:** reconcileLevels, setWidth, setViews, removeView, addView,
+removeLastRow, setLinkViews, setScrollZoom, activateTrackSelector, toggleTrack,
+showTrack, hideTrack, squareView, clearView, toggleCompactView, compactAllViews,
+expandAllViews, autoScaleLevelHeights, appendRow
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
@@ -272,8 +272,8 @@ boolean
 
 #### getter: loadingMessage
 
-Override the base loadingMessage so the spinner has a helpful label during the
-autoDiagonalize wait, instead of just "Loading".
+Label for the loading spinner: a helpful message during the autoDiagonalize
+wait, otherwise just "Loading".
 
 ```js
 // type

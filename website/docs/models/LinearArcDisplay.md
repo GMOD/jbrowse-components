@@ -37,8 +37,7 @@ and docs.
 
 **Getters:** DisplayMessageComponent, blockType, blockDefinitions, renderDelay,
 TooltipComponent, selectedFeatureId, featureWidgetType, showTooltipsEnabled,
-features, featureUnderMouse, layoutFeatures, getFeatureOverlapping,
-getFeatureByID, searchFeatureByID, floatingLabelData
+features, featureUnderMouse, searchFeatureByID
 
 **Methods:** legendItems, svgLegendWidth, getFeatureById, trackMenuItems,
 contextMenuItems, renderingProps, renderProps, renderSvg

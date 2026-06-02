@@ -94,6 +94,22 @@ false
 autorunsInstalled: false
 ```
 
+#### volatile: renderError
+
+the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
+Single source of truth for the render-error terminal state:
+`useRenderingBackend` writes it from the canvas-init mechanism so the model —
+not React-local hook state — owns every terminal state. Read by
+`loadingOverlayVisible` (suppresses the scrim) and by `DisplayChrome` (shows the
+retry overlay).
+
+```js
+// type signature
+unknown
+// code
+renderError: undefined as unknown
+```
+
 ### RenderLifecycleMixin - Actions
 
 #### action: markCanvasDrawn
@@ -122,6 +138,17 @@ stopRenderingBackend: () => void
 ```js
 // type signature
 renderNow: () => void
+```
+
+#### action: setRenderError
+
+set/clear the render-backend error. Called by `useRenderingBackend`: with the
+error when the canvas factory rejects (or context-loss re-init fails), and with
+`undefined` on successful (re)init and on retry.
+
+```js
+// type signature
+setRenderError: (error: unknown) => void
 ```
 
 #### action: attachRenderingBackend

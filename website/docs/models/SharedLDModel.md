@@ -53,6 +53,10 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
+### Available via [GlobalDataDisplayMixin](../globaldatadisplaymixin)
+
+**Getters:** loadingOverlayVisible
+
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
 **Properties:** userByteSizeLimit
@@ -62,10 +66,18 @@ featureDensityStats
 
 **Getters:** regionTooLarge, regionTooLargeReason
 
-**Methods:** regionCannotBeRenderedText, regionCannotBeRendered
+**Methods:** regionCannotBeRenderedText
 
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload
+setFeatureDensityStatsLimit, reload, forceLoad
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
