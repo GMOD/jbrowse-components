@@ -1,20 +1,9 @@
 import {
   getArcDirectionMenuItem,
   getReadConnectionsMenuItem,
-  getSashimiArcsMenuItem,
 } from './readConnections.ts'
 
-import type { MenuItem } from '@jbrowse/core/ui'
-
-function clickByLabel(items: MenuItem[], label: string) {
-  const item = items.find(i => 'label' in i && i.label === label)
-  if (!item || !('onClick' in item)) {
-    throw new Error(`no clickable menu item labeled "${label}"`)
-  }
-  item.onClick()
-}
-
-function makeReadConnectionsModel() {
+function makeModel() {
   return {
     linkedReads: 'off' as 'off' | 'normal' | 'bezier',
     setLinkedReads(mode: 'off' | 'normal' | 'bezier') {
@@ -24,61 +13,48 @@ function makeReadConnectionsModel() {
     setReadConnections(mode: 'off' | 'arc' | 'samplot') {
       this.readConnections = mode
     },
-    drawLongRange: true,
-    setDrawLongRange(v: boolean) {
-      this.drawLongRange = v
-    },
-    drawInter: true,
-    setDrawInter(v: boolean) {
-      this.drawInter = v
-    },
   }
 }
 
 describe('read connections menu', () => {
-  // Regression: arc mode was once unreachable from the menu (the picker wrote a
-  // different field), so read-connection arcs never rendered.
-  test('"Arcs" enables arc mode', () => {
-    const model = makeReadConnectionsModel()
-    clickByLabel(getReadConnectionsMenuItem(model).subMenu, 'Arcs')
+  test('"Link supplementary alignments" toggles linkedReads on/off', () => {
+    const model = makeModel()
+    const linkItem = () =>
+      getReadConnectionsMenuItem(model).subMenu.find(
+        i => 'label' in i && i.label === 'Link supplementary alignments',
+      )
+    linkItem()!.onClick()
+    expect(model.linkedReads).toBe('normal')
+    linkItem()!.onClick()
+    expect(model.linkedReads).toBe('off')
+  })
+
+  function getViewAsPairsSubMenu(model: ReturnType<typeof makeModel>) {
+    const item = getReadConnectionsMenuItem(model).subMenu.find(
+      i => 'label' in i && i.label === 'View as pairs',
+    )
+    if (!item || !('subMenu' in item)) {
+      throw new Error('no View as pairs submenu')
+    }
+    return item.subMenu
+  }
+
+  test('"View as pairs" → "Arcs" enables arc mode', () => {
+    const model = makeModel()
+    const arcs = getViewAsPairsSubMenu(model).find(
+      i => 'label' in i && i.label === 'Arcs',
+    )
+    arcs!.onClick()
     expect(model.readConnections).toBe('arc')
   })
 
-  test('"Read cloud" enables samplot mode', () => {
-    const model = makeReadConnectionsModel()
-    clickByLabel(getReadConnectionsMenuItem(model).subMenu, 'Read cloud')
+  test('"View as pairs" → "Read cloud" enables samplot mode', () => {
+    const model = makeModel()
+    const cloud = getViewAsPairsSubMenu(model).find(
+      i => 'label' in i && i.label === 'Read cloud',
+    )
+    cloud!.onClick()
     expect(model.readConnections).toBe('samplot')
-  })
-
-  test('pair filters are hidden until a mode is on', () => {
-    const model = makeReadConnectionsModel()
-    const labels = (m: typeof model) =>
-      getReadConnectionsMenuItem(m)
-        .subMenu.filter(i => 'label' in i)
-        .map(i => ('label' in i ? i.label : undefined))
-
-    expect(labels(model)).not.toContain('Show long-range pairs')
-    model.readConnections = 'arc'
-    expect(labels(model)).toContain('Show long-range pairs')
-  })
-})
-
-// The coupling these used to assert (sashimi force-enables coverage, direction
-// stays in sync) now lives in the model actions — see model.coupling.test.ts.
-// Here we only check that the menu items delegate to the right action.
-describe('sashimi arcs menu', () => {
-  test('checkbox reflects on/off and delegates to toggleSashimiArcs', () => {
-    let toggled = false
-    const model = {
-      showSashimiArcs: false,
-      toggleSashimiArcs() {
-        toggled = true
-      },
-    }
-    const item = getSashimiArcsMenuItem(model)
-    expect(item.checked).toBe(false)
-    item.onClick()
-    expect(toggled).toBe(true)
   })
 })
 

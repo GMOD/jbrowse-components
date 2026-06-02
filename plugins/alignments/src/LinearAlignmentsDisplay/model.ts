@@ -55,7 +55,6 @@ import {
   getGroupByMenuItem,
   getReadConnectionsMenuItem,
   getReadsMenuItem,
-  getSashimiArcsMenuItem,
   getSortByMenuItem,
 } from './menus/index.ts'
 
@@ -332,80 +331,86 @@ export default function stateModelFactory(
       .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
         migrateAlignmentsSnapshot(snap),
       )
-      .volatile(() => ({
-        /**
-         * #volatile
-         */
-        featureIdUnderMouse: undefined as undefined | string,
-        /**
-         * #volatile
-         */
-        mouseoverExtraInformation: undefined as TooltipPayload | undefined,
-        /**
-         * #volatile
-         */
-        contextMenuFeature: undefined as Feature | undefined,
-        /**
-         * #volatile
-         */
-        contextMenuCoord: undefined as [number, number] | undefined,
-        /**
-         * #volatile
-         */
-        contextMenuCigarHit: undefined as CigarHitResult | undefined,
-        /**
-         * #volatile
-         */
-        contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
-        /**
-         * #volatile
-         */
-        contextMenuRefName: undefined as string | undefined,
-        /**
-         * #volatile
-         */
-        rpcDataMap: observable.map<number, PileupDataResult>(),
-        /**
-         * #volatile
-         */
-        currentRangeY: [0, 600] as [number, number],
-        /**
-         * #volatile
-         */
-        highlightedChainIds: [] as string[],
-        /**
-         * #volatile
-         */
-        selectedChainIds: [] as string[],
+      .volatile(() => {
+        // typed local so the empty record isn't inferred as `{}` (a type assertion
+        // here gets stripped by no-unnecessary-type-assertion)
+        const colorTagMap: Record<string, string> = {}
+        return {
+          /**
+           * #volatile
+           */
+          featureIdUnderMouse: undefined as undefined | string,
+          /**
+           * #volatile
+           */
+          mouseoverExtraInformation: undefined as TooltipPayload | undefined,
+          /**
+           * #volatile
+           */
+          contextMenuFeature: undefined as Feature | undefined,
+          /**
+           * #volatile
+           */
+          contextMenuCoord: undefined as [number, number] | undefined,
+          /**
+           * #volatile
+           */
+          contextMenuCigarHit: undefined as CigarHitResult | undefined,
+          /**
+           * #volatile
+           */
+          contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
+          /**
+           * #volatile
+           */
+          contextMenuRefName: undefined as string | undefined,
+          /**
+           * #volatile
+           */
+          rpcDataMap: observable.map<number, PileupDataResult>(),
+          /**
+           * #volatile
+           */
+          currentRangeY: [0, 600] as [number, number],
+          /**
+           * #volatile
+           */
+          highlightedChainIds: [] as string[],
+          /**
+           * #volatile
+           */
+          selectedChainIds: [] as string[],
 
-        /**
-         * #volatile
-         */
+          /**
+           * #volatile
+           */
 
-        colorTagMap: {} as Record<string, string>,
-        /**
-         * #volatile
-         */
-        visibleModifications: observable.map<string, ModificationTypeWithColor>(
-          {},
-        ),
-        /**
-         * #volatile
-         */
-        simplexModifications: new Set<string>(),
-        /**
-         * #volatile
-         */
-        modificationsReady: false,
-        /**
-         * #volatile
-         */
-        overCigarItem: false,
-        /**
-         * #volatile
-         */
-        colorPalette: null as ColorPalette | null,
-      }))
+          colorTagMap,
+          /**
+           * #volatile
+           */
+          visibleModifications: observable.map<
+            string,
+            ModificationTypeWithColor
+          >({}),
+          /**
+           * #volatile
+           */
+          simplexModifications: new Set<string>(),
+          /**
+           * #volatile
+           */
+          modificationsReady: false,
+          /**
+           * #volatile
+           */
+          overCigarItem: false,
+          /**
+           * #volatile
+           */
+          colorPalette: null as ColorPalette | null,
+        }
+      })
       // `isChainMode` is its own getter — it's used in many places as a
       // domain concept ("are we drawing the chain layout?") that reads
       // better than the equivalent `linkedReads === 'normal'`.
@@ -1891,7 +1896,6 @@ export default function stateModelFactory(
             getFeatureHeightMenuItem(self),
             getCoverageMenuItem(self),
             getReadConnectionsMenuItem(self),
-            getSashimiArcsMenuItem(self),
           ] satisfies MenuItem[]
         },
 

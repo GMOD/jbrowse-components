@@ -4,9 +4,6 @@ export { getCoverageMenuItem } from './coverage.ts'
 export { COMPACTNESS_PRESETS, getFeatureHeightMenuItem } from './featureSize.ts'
 export type { CompactnessLevel } from './featureSize.ts'
 export { getFiltersMenuItem } from './filters.ts'
-export {
-  getReadConnectionsMenuItem,
-  getSashimiArcsMenuItem,
-} from './readConnections.ts'
+export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getReadsMenuItem } from './reads.ts'
 export { getGroupByMenuItem, getSortByMenuItem } from './sortGroup.ts'

@@ -3,32 +3,34 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { checkboxItem } from './menuHelpers.ts'
 import { getArcDirectionMenuItem } from './readConnections.ts'
 
-import type { ReadConnectionsMode } from '../constants.ts'
+import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 
 interface ReadsModel {
+  showCoverage: boolean
+  setShowCoverage: (show: boolean) => void
   showMismatches: boolean
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   toggleSoftClipping: () => void
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
-
   mismatchAlpha: boolean
   toggleMismatchAlpha: () => void
-
   showOutlineSetting: boolean
   setShowOutline: (v: boolean | undefined) => void
-
   flipStrandLongReadChains: boolean
   setFlipStrandLongReadChains: (flag: boolean) => void
-
+  showSashimiArcs: boolean
+  toggleSashimiArcs: () => void
+  linkedReads: LinkedReadsMode
+  setLinkedReads: (mode: LinkedReadsMode) => void
   readConnections: ReadConnectionsMode
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  showSashimiArcs: boolean
-
-  showCoverage: boolean
-  setShowCoverage: (show: boolean) => void
+  drawLongRange: boolean
+  setDrawLongRange: (draw: boolean) => void
+  drawInter: boolean
+  setDrawInter: (draw: boolean) => void
 }
 
 export function getReadsMenuItem(model: ReadsModel) {
@@ -70,7 +72,41 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
         },
       ),
+      checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
+        model.toggleSashimiArcs()
+      }),
+      checkboxItem(
+        'Bezier curves for linked reads',
+        model.linkedReads === 'bezier',
+        () => {
+          model.setLinkedReads(
+            model.linkedReads === 'bezier' ? 'normal' : 'bezier',
+          )
+        },
+      ),
       getArcDirectionMenuItem(model),
+      {
+        label: 'Advanced',
+        type: 'subMenu' as const,
+        subMenu: [
+          checkboxItem(
+            'Show long-range pairs',
+            model.drawLongRange,
+            () => {
+              model.setDrawLongRange(!model.drawLongRange)
+            },
+            { helpText: 'reads >100 kb apart or with off-screen mates' },
+          ),
+          checkboxItem(
+            'Show inter-chromosomal pairs',
+            model.drawInter,
+            () => {
+              model.setDrawInter(!model.drawInter)
+            },
+            { helpText: 'reads whose mate maps to a different chromosome' },
+          ),
+        ],
+      },
     ],
   }
 }
