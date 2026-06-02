@@ -39,7 +39,6 @@ const VOLVOX = 'test_data/volvox/config.json'
 const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const SYNTENY_CONFIG = 'test_data/grape_peach_synteny/config.json'
 const METHYLATION_CONFIG = 'test_data/methylation_test/config.json'
-const HIC_CONFIG = 'extra_test_data/hic_integration_test.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
 const CGIAB_BASE =
   'https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json'
@@ -326,18 +325,19 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'hic_track',
-    url: sessionSpec(HIC_CONFIG, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: 'chr1:1-10000000',
-          tracks: ['hic_test'],
+          loc: 'chr8:48,000,000-68,000,000',
+          tracks: ['ncbi_gff_hg19', 'hic'],
         },
       ],
     }),
     readySelector: '[data-testid="hic_canvas_done"]',
-    settleMs: 3000,
+    readyTimeout: 60000,
+    settleMs: 10000,
   },
 
   // methylation coloring using local test data
