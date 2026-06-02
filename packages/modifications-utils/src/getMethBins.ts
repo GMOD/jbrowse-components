@@ -30,6 +30,11 @@ export interface ParsedModData {
   flen: number
 }
 
+/**
+ * #api
+ * Bins per-read base modifications and their probabilities onto reference
+ * positions, returning typed arrays for methylated/unmethylated calls.
+ */
 export function getMethBins({
   modifications,
   probabilities,

@@ -24,7 +24,10 @@ const CIGAR_CODE_TO_INDEX: Record<number, number> = {
   88: 8, // X
 }
 
-// Parses CIGAR string to alternating [length, op, ...] string array
+/**
+ * #api
+ * Parses a CIGAR string to an alternating `[length, op, ...]` string array.
+ */
 export function parseCigar(s = '') {
   let currLen = ''
   const ret: string[] = []
@@ -40,7 +43,11 @@ export function parseCigar(s = '') {
   return ret
 }
 
-// Parses CIGAR string to packed number array where each value is (length << 4) | opIndex
+/**
+ * #api
+ * Parses a CIGAR string to a packed number array where each value is
+ * `(length << 4) | opIndex`.
+ */
 export function parseCigar2(s = '') {
   let currLen = 0
   const ret: number[] = []
@@ -57,9 +64,12 @@ export function parseCigar2(s = '') {
   return ret
 }
 
-// Same encoding as parseCigar2 but writes into a packed Uint32Array — matches
-// the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can use a
-// single typed-array code path. Two-pass: count ops, then alloc and fill.
+/**
+ * #api
+ * Same encoding as `parseCigar2` but writes into a packed `Uint32Array` —
+ * matches the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can
+ * use a single typed-array code path.
+ */
 export function parseCigar2Typed(s = '') {
   let opCount = 0
   for (let i = 0, l = s.length; i < l; i++) {
@@ -83,6 +93,11 @@ export function parseCigar2Typed(s = '') {
   return out
 }
 
+/**
+ * #api
+ * Computes the list of mismatches (SNVs, indels, clips, skips) for a read from
+ * its CIGAR, optional MD tag, sequence, reference, and quality.
+ */
 export function getMismatches(
   cigar?: string,
   md?: string,
@@ -98,6 +113,10 @@ export function getMismatches(
   return mismatches
 }
 
+/**
+ * #api
+ * Length the read spans on the reference (sum of M/=/X/D/N ops).
+ */
 export function getLengthOnRef(cigar: string) {
   const cigarOps = parseCigar2(cigar)
   let lengthOnRef = 0
@@ -110,6 +129,10 @@ export function getLengthOnRef(cigar: string) {
   return lengthOnRef
 }
 
+/**
+ * #api
+ * Length of the read sequence (sum of all ops except D/N).
+ */
 export function getLength(cigar: string) {
   const cigarOps = parseCigar2(cigar)
   let length = 0

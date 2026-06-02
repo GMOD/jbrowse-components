@@ -56,8 +56,10 @@ is processed unless we keep it to one config/statemodel at a time.
 
 Unlike config/statemodel, **many `#api` exports per file** are allowed. Each
 `#api` tag documents one exported function or const. The text after the tag is
-an optional group/page name; with no name the file's directory is used (e.g.
-`packages/core/src/util/index.ts` → `util`). The description on the following
+an optional group/page name; with no name the export's package is used (e.g.
+anything in `packages/cigar-utils` → `cigar-utils`). Pass a name (`#api
+core/util`) to split a large package across finer-grained pages. The description
+on the following
 lines becomes the doc body; the type signature is read from the TypeScript
 checker, so `@param`/`@returns` tags aren't needed. Output goes to
 `website/docs/api/<group>.md`, and the same exports are mirrored into each
@@ -66,7 +68,7 @@ markers (idempotent; hand-written README prose is left untouched).
 
 ```js
 /**
- * #api util
+ * #api
  * Returns the JBrowse session model for any node in the state tree.
  */
 export function getSession(node) { /* ... */ }

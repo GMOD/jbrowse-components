@@ -11,7 +11,12 @@ import {
   CIGAR_X,
 } from './cigarConstants.ts'
 
-// Handles both packed Uint32Array and unpacked number[] formats
+/**
+ * #api
+ * Maps read-sequence positions to reference-sequence positions via the CIGAR,
+ * invoking the callback for each. Handles both packed Uint32Array and unpacked
+ * number[] CIGAR formats.
+ */
 export function getNextRefPos(
   cigarOps: ArrayLike<number>,
   positions: number[],

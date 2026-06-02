@@ -20,14 +20,14 @@ export interface ApiGroup {
 
 const cwd = `${process.cwd()}/`
 
-// `#api` with no explicit group name falls back to the source file's directory,
-// e.g. packages/core/src/util/index.ts -> "util". Files named index.* take the
-// directory; otherwise the file's own basename is used.
+// `#api` with no explicit group name defaults to the package the file lives in,
+// e.g. packages/cigar-utils/src/mismatchParser.ts -> "cigar-utils", so a bare
+// `#api` groups every tagged export in a package onto one page. Pass a name
+// (`#api core/util`) to split a package across finer-grained pages.
 function groupFromFilename(filename: string) {
-  const parts = filename.replace(cwd, '').split('/')
-  const file = parts.at(-1) ?? ''
-  const dir = parts.at(-2) ?? 'api'
-  return file.startsWith('index.') ? dir : file.replace(/\.[tj]sx?$/, '')
+  const relative = filename.replace(cwd, '')
+  const root = packageRoot(relative)
+  return root?.split('/').at(-1) ?? relative.split('/').at(-2) ?? 'api'
 }
 
 function groupId(group: string) {
@@ -116,10 +116,20 @@ function renderReadmeSection(exports: ApiExport[]) {
   )
 }
 
+// A minimal README seeded from package.json for packages that have `#api`
+// exports but no README yet, so the API block has somewhere to live.
+function seedReadme(root: string) {
+  const pkgPath = `${root}/package.json`
+  const { name, description } = JSON.parse(
+    fs.readFileSync(pkgPath, 'utf8'),
+  ) as { name?: string; description?: string }
+  return section(`# ${name ?? root}`, description) + '\n'
+}
+
 // Mirror each package's `#api` exports into its README, between managed markers
-// so regeneration is idempotent and never touches hand-written README prose. If
-// the markers are absent the block is appended once; thereafter it is replaced
-// in place. Packages without a README are skipped with a warning.
+// so regeneration is idempotent and never touches hand-written README prose. The
+// block is appended once (replaced in place thereafter). Packages without a
+// README get a minimal one seeded from package.json so the block has a home.
 export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
   const byPackage: Record<string, ApiExport[]> = {}
   for (const grp of Object.values(byGroup)) {
@@ -132,18 +142,16 @@ export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
   }
   for (const [root, exports] of Object.entries(byPackage)) {
     const readmePath = `${root}/README.md`
-    if (fs.existsSync(readmePath)) {
-      const block = `${README_START}\n\n${renderReadmeSection(exports)}\n\n${README_END}`
-      const existing = fs.readFileSync(readmePath, 'utf8')
-      const re = new RegExp(`${README_START}[\\s\\S]*?${README_END}`)
-      fs.writeFileSync(
-        readmePath,
-        re.test(existing)
-          ? existing.replace(re, block)
-          : `${existing.trimEnd()}\n\n${block}\n`,
-      )
-    } else {
-      console.warn(`no README at ${readmePath}, skipping API injection`)
-    }
+    const existing = fs.existsSync(readmePath)
+      ? fs.readFileSync(readmePath, 'utf8')
+      : seedReadme(root)
+    const block = `${README_START}\n\n${renderReadmeSection(exports)}\n\n${README_END}`
+    const re = new RegExp(`${README_START}[\\s\\S]*?${README_END}`)
+    fs.writeFileSync(
+      readmePath,
+      re.test(existing)
+        ? existing.replace(re, block)
+        : `${existing.trimEnd()}\n\n${block}\n`,
+    )
   }
 }

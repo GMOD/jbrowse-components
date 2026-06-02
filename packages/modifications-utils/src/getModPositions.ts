@@ -19,8 +19,8 @@ const COMPLEMENT_CODE: Record<number, number> = {
 }
 
 /**
+ * #api
  * Parse MM tag to extract modification positions on the read sequence.
- *
  *
  * @param mm - MM tag string (e.g., "C+m,2,2,1;A+a,0,3")
  * @param fseq - Read sequence

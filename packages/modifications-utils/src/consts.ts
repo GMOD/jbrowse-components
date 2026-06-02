@@ -26,6 +26,11 @@ export const modificationRegex = new RegExp(
   /([ACGTUN])([-+])([a-z]+|[A-Z]|[0-9]+)([.?]?)/,
 )
 
+/**
+ * #api
+ * Parses one MM-tag modification header (e.g. `C+m`) into its base, strand,
+ * type string, and modification code.
+ */
 export function parseModHeader(
   basemod: string,
   fullmod: string,
