@@ -36,15 +36,13 @@ function byOrderKey(a: RawEntry, b: RawEntry) {
 export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
 
 function applyFilter(rows: RawEntry[], filterOption: FilterOption): RawEntry[] {
-  if (filterOption === 'refseq') {
-    return rows.filter(r => r.ncbiName.startsWith('GCF_'))
-  } else if (filterOption === 'genbank') {
-    return rows.filter(r => r.ncbiName.startsWith('GCA_'))
-  } else if (filterOption === 'designatedReference') {
-    return rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
-  } else {
-    return rows
-  }
+  return filterOption === 'refseq'
+    ? rows.filter(r => r.ncbiName.startsWith('GCF_'))
+    : filterOption === 'genbank'
+      ? rows.filter(r => r.ncbiName.startsWith('GCA_'))
+      : filterOption === 'designatedReference'
+        ? rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
+        : rows
 }
 
 export function useGenomesData({

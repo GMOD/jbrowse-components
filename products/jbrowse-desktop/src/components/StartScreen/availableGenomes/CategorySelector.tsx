@@ -25,11 +25,7 @@ export default function CategorySelector({
 }: CategorySelectorProps) {
   const { classes } = useStyles()
 
-  if (!categories) {
-    return null
-  }
-
-  return (
+  return categories ? (
     <TextField
       select
       name="typeOption"
@@ -55,5 +51,5 @@ export default function CategorySelector({
         </MenuItem>
       ))}
     </TextField>
-  )
+  ) : null
 }

@@ -4,7 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 
 import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
-import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
+import AvailableGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
 
 import type { AssemblyConf } from '../../util.ts'
 import type { Fav, JBrowseConfig, LaunchCallback } from '../types.ts'
@@ -72,7 +72,7 @@ export default function OpenSequencePanel({
       ) : null}
 
       {showAll ? (
-        <AllGenomesDialog
+        <AvailableGenomesDialog
           favorites={favorites}
           setFavorites={setFavorites}
           launch={launch}

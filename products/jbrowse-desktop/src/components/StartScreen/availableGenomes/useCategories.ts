@@ -1,8 +1,10 @@
-import { fetchJson as fetchjson, useFetch } from '@jbrowse/core/util'
+import { fetchJson, useFetch } from '@jbrowse/core/util'
+
+const CATEGORIES_URL = 'https://jbrowse.org/hubs/categories.json'
 
 export default function useCategories() {
-  const { data, error, isLoading } = useFetch('categories', () =>
-    fetchjson('https://jbrowse.org/hubs/categories.json'),
+  const { data, error, isLoading } = useFetch(CATEGORIES_URL, () =>
+    fetchJson(CATEGORIES_URL),
   )
 
   return {

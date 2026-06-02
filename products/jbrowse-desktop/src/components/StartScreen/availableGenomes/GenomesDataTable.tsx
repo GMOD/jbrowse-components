@@ -143,6 +143,7 @@ export default function GenomesDataTable({
   )
 
   const toggleSort = (colId: string) => {
+    setPageIndex(0)
     if (sorting?.id === colId) {
       if (sorting.desc) {
         setSorting(undefined)
