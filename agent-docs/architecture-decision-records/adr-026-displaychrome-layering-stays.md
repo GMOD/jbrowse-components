@@ -71,6 +71,22 @@ Keep the current layering. Each layer maps to a genuine concern boundary:
   hook-ordering (the drag/mouse hook needs the container ref at the same level as
   `useRenderingBackend`, which lives inside DisplayChrome), not a flaw to design
   away.
+- **Hand `canvasRef` to the body via context (plain children) instead of a
+  render-prop.** Tempting because the render-prop only hands the ref to the
+  *immediate* child, so the two multi-level bodies still drill it a hop or two
+  (alignments: `PileupBody → PileupInner`; canvas: `FeatureBody`). Rejected — a
+  lateral move, not a simplification. The wrapper-owns-the-hook property (the
+  actual anti-scatter invariant) is identical either way; only the handoff
+  differs. Those bodies already thread `model` (and often `canvas`) down the same
+  path, so `canvasRef` rides along at near-zero marginal cost, while context would
+  trade an *explicit* handoff (`({ canvasRef }) =>` shows the source) for an
+  *implicit* "must render inside a DisplayChrome" dependency plus a hidden
+  `useChromeCanvas()` read — against this codebase's explicit-over-indirect grain
+  — and would touch all ten displays on the GPU paint path for the reward of
+  deleting ~three prop hops. (A bare *hook* returning `canvasRef` for the
+  component to wire the states itself is strictly worse still: it reintroduces the
+  call-anywhere / forget-a-terminal-state failure mode the wrapper exists to
+  prevent — the original alignments bug.)
 - **Move the upload/render autoruns out of the model into a component
   `useEffect`+`autorun`.** Thins the model on paper (drops `attachRenderingBackend`,
   `autorunsInstalled`, `renderTick`, `currentRenderingBackend`). Rejected: it
