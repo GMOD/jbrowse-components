@@ -50,7 +50,8 @@ variants) via four autoruns:
 Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`,
 where `fetchRegions` runs an optional pre-flight byte estimate
 (via `getByteEstimateConfig`) before invoking the work callback. Oversize
-regions surface a banner via `regionCannotBeRendered()`. `error`/`regionTooLarge`
+regions surface a banner: `DisplayChrome` renders `TooLargeMessage` from the
+model's `regionTooLargeReason`. `error`/`regionTooLarge`
 reads in `ClearBlockingStateOnViewportChange` are `untracked` for correctness —
 tracking either would let `set...` re-fire the autorun and wipe the flag
 before any viewport change.
@@ -214,12 +215,18 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
     loadingOverlayVisible: boolean      (!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error
 ```
 
-Every display renders its canvas through the shared `DisplayChrome`, which owns
-the three terminal states: `renderError` (a ready-built node from
-`useDisplayRendering`, a required prop so the render-error path can't be silently
-dropped), `regionTooLarge`, and the `DisplayErrorBar` + `DisplayLoadingOverlay`
-overlays. It takes plain children, so it's agnostic to how many canvases a
-display draws. `DisplayLoadingOverlay` reads `loadingOverlayVisible`: `isReady`
+Every display renders its canvas through the shared `DisplayChrome`, which calls
+`useRenderingBackend(factory, model)` internally — the backend hook lives in
+exactly one place, so a display can't bury it where the chrome can't see it. It
+owns every terminal state, reading each off the model: `renderError` (the hook
+writes it to model volatile), `regionTooLarge` (rendered as `TooLargeMessage`),
+and the `DisplayErrorBar` + `DisplayLoadingOverlay` overlays. `loadingOverlayVisible`
+subtracts the other three, so the four states are mutually exclusive by
+construction and the JSX order is defensive, not load-bearing. It takes a
+render-prop child `({ canvasRef, canvas }) => ReactNode`, so it's agnostic to how
+many canvases a display draws and where they mount; pass a `testid` base and the
+chrome appends `-done` once `canvasDrawn` flips.
+`DisplayLoadingOverlay` reads `loadingOverlayVisible`: `isReady`
 covers track-open through the fetch cycle (hiding once the first frame paints);
 `viewportWithinLoadedData` re-shows the overlay when the viewport extends past
 loaded data — e.g. the pre-refetch debounce after a zoom-out, where `isReady` is
@@ -964,19 +971,21 @@ key on a tuple of two displayedRegion indices.
     `self.attachRenderingBackend(backend, { upload, render })`.
   - Expose `rpcProps()`; add `gpuProps()` only when main thread encodes GPU
     buffers from settings.
-- **React component** — `observer()`. Get `canvasRef` + a pre-built
-  `renderError` from `useDisplayRendering`, and render the canvas through the
-  shared `DisplayChrome` (both from `@jbrowse/plugin-linear-genome-view`).
-  `DisplayChrome` owns the render-error / region-too-large / error-bar / loading
-  overlays, so the component only lays out its own canvas(es):
+- **React component** — `observer()`. Render the canvas through the shared
+  `DisplayChrome` (from `@jbrowse/plugin-linear-genome-view`), passing the model
+  and the renderer `factory`. `DisplayChrome` calls `useRenderingBackend`
+  internally and owns the render-error / region-too-large / error-bar / loading
+  overlays (all read off the model), so the component only lays out its own
+  canvas(es) via the render-prop child:
   ```tsx
-  const { canvasRef, renderError } = useDisplayRendering(MyRenderer, model, {
-    width,
-    height,
-  })
   return (
-    <DisplayChrome renderError={renderError} model={model} style={{ width, height }}>
-      <canvas ref={canvasRef} />
+    <DisplayChrome
+      model={model}
+      factory={MyRenderer}
+      testid="my-display"
+      style={{ width, height }}
+    >
+      {({ canvasRef }) => <canvas ref={canvasRef} />}
     </DisplayChrome>
   )
   ```

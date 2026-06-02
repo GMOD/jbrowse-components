@@ -23,7 +23,8 @@ own `__snapshots__/<backend>/` subdir (`snapshotConfig.snapshotsDir`), with
 Historically the GPU backends rendered through **swiftshader** (software WebGL)
 so the goldens were deterministic and CI-portable. But swiftshader's GPU-process
 memory grows ~29 MB per WebGL context and is never returned to the OS (proven in
-`agent-docs/BROWSER_TEST_STABILIZATION.md`), which OOM-killed long runs. On a
+`agent-docs/TEST_INFRASTRUCTURE.md` § "Cross-test memory growth is SwiftShader"),
+which OOM-killed long runs. On a
 real GPU the growth is gone (flat). The team chose to run the browser tests only
 on machines with a real GPU.
 

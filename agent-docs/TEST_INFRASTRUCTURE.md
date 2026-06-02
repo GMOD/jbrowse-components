@@ -1,135 +1,101 @@
-# Browser Test Infrastructure
+# Test Infrastructure
 
-Puppeteer tests in `products/jbrowse-web/browser-tests/`. Tests rendering, data
-loading, interactions, cross-browser compatibility.
+Browser tests (Puppeteer) in `products/jbrowse-web/browser-tests/`; unit tests
+(Jest) co-located as `*.test.ts`.
 
-## Quick Start
+## Browser tests
 
-Build first: `pnpm --filter @jbrowse/web build`
+Build first: `pnpm --filter @jbrowse/web build`.
 
 ```sh
-# Canvas 2D (default)
-node --experimental-strip-types browser-tests/runner.ts
-
-# WebGL
+node --experimental-strip-types browser-tests/runner.ts                 # canvas2d (default)
 node --experimental-strip-types browser-tests/runner.ts --backend=webgl
-
-# Specific suite
 node --experimental-strip-types browser-tests/runner.ts --filter=alignments
-
-# Headed mode (debug)
-node --experimental-strip-types browser-tests/runner.ts --headed
-
-# Update snapshots
+node --experimental-strip-types browser-tests/runner.ts --headed         # debug
 node --experimental-strip-types browser-tests/runner.ts --update-snapshots
 ```
 
-## Test Suites
+~29 suites in `browser-tests/suites/` (alignments, variants, the synteny family,
+dotplot, hic, gwas, methylation-modifications, svg-export, color-by-tag,
+wiggle-color, main-thread-rpc, basic-lgv, …).
 
-21 suites, ~120 cases: alignments, bigwig, variants, synteny, dotplot, HiC,
-canvas2d-fallback, canvas2d-variants, rendering-backends, color-by-tag,
-wiggle-color, workspaces, session-spec, demo-inventory, svg-export,
-authentication, main-thread-rpc, custom-url, redraw, basic-lgv, misc.
+### Golden snapshots
 
-## Golden Snapshots
+Visual regression via pixelmatch (0.1% pixel-diff threshold), stored per backend
+in `browser-tests/__snapshots__/{canvas2d,webgl,webgpu}/`. Cross-backend compare
+(`compare-backends.ts`): identical / `<5%` similar / `≥5%` different. Intentional
+change → `--update-snapshots`.
 
-Visual regression via pixelmatch (threshold 0.1% pixel diff).  
-Stored in `browser-tests/__snapshots__/{canvas2d,webgl,webgpu}/`.  
-Cross-backend tool: identical / <5% diff (similar) / ≥5% diff (different).
+### WebGL / WebGPU
 
-## WebGL
+- **WebGL** — fully supported (Chrome headless / Firefox), CI default.
+- **WebGPU local** (Firefox real GPU): `--backend=webgpu --firefox --headed`;
+  set `FIREFOX_NIGHTLY_PATH` or `--firefox=/path/to/binary`.
+- **WebGPU CI** (Linux + lavapipe): install `mesa-vulkan-drivers`, run under
+  `xvfb-run` with `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
+  --backend=webgpu`. Chrome flags already set in `runner.ts`.
+- **macOS** — real GPU, ~10× cost.
 
-Fully supported (Chrome headless / Firefox). Default for CI.
+## Unit tests
 
-## WebGPU
+Jest, co-located (`*.test.ts`), run with `pnpm test-ci`. Node-based and fast —
+use for logic, config, RPC, and buffer packing; use browser tests for rendering
+and UI.
 
-**Local** (Firefox real GPU, no Vulkan setup):
+## Wait signals
 
-```sh
-node --experimental-strip-types browser-tests/runner.ts --backend=webgpu --firefox --headed
-```
+Two completion signals. **Do not** wait on `LoadingOverlay` text — it keeps the
+literal `"Loading"` in the DOM at `opacity:0`, so a `textContent` check is always
+true (this silently burned full snapshot timeouts).
 
-Set `FIREFOX_NIGHTLY_PATH` or `--firefox=/path/to/binary`.
+- `data-testid="loading-overlay"` **absent** → data finished **fetching**
+  (generic; used by `waitForLoadingToComplete` / `waitForDataLoaded` and the
+  snapshot waits).
+- `*-done` / `*_done` testid → canvas finished **painting**
+  (`canvasDrawn` / `rpcData`). Per-display and inconsistently named:
+  `wiggle-display-done`, `display-${displayId}-done` (alignments/maf),
+  `hic_canvas_done`, `ld_canvas_done`, `synteny_canvas_done`. `canvasSnapshot`
+  takes the exact selector — canvas captures are the most reliable.
 
-**CI** (Linux + lavapipe):
+## Troubleshooting
 
-```yaml
-- run: sudo apt-get install -y mesa-vulkan-drivers
-- run: |
-    xvfb-run --auto-servernum \
-      VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json \
-      node --experimental-strip-types browser-tests/runner.ts --backend=webgpu
-```
+- **Stale build / `ChunkLoadError: Loading chunk N failed`** — rebuild:
+  `rm -rf build && pnpm --filter @jbrowse/web build`.
+- **Startup crash / `ERR_INSUFFICIENT_RESOURCES` / "HistoryService::Init() failed"**
+  — corrupted Puppeteer cache: `rm -rf /tmp/puppeteer_* /tmp/org.chromium.*`.
+- **"libpxbackend-1.0.so not found"** — system snap Chrome is broken; use
+  Puppeteer's cached binary (`~/.cache/puppeteer/`).
+- **Port 3333 in use (`EADDRINUSE`) / stray processes** —
+  `fuser -k 3333/tcp && pkill -9 chrome firefox`. `runner.ts` also reaps stale
+  automation browsers at startup (`killStaleTestBrowsers`, Linux-only) and
+  force-kills its own launched browsers on exit.
+- **Console errors** — runner forwards `[alignments]` / `[webgl-wiggle]` logs;
+  add patterns in `runner.ts`.
 
-Chrome flags in `runner.ts` already set.
+### Cross-test memory growth is SwiftShader, not a JBrowse leak
 
-**macOS**: Real GPU, ~10× cost.
+(Measured 2026-05-29.) JBrowse disposes GL contexts 1:1 (`useRenderer` unmount +
+`pagehide`; `webgl2Hal.dispose()` frees every GL object) and the main JS heap
+stays flat. The unbounded `~29 MB/cycle` is Chrome's **GPU-process RSS under
+SwiftShader**, which never returns per-context memory to the OS — unfixable from
+JS. Headless always falls back to SwiftShader (even with `--ignore-gpu-blocklist`);
+only headed-on-a-real-GPU avoids it, so it is **not** a CI fix. Mitigation:
+`runner.ts` recycles the browser per test (see
+`adr-024-per-backend-snapshots-real-gpu.md`). Repro: enable `?webgl2-debug=1`
+(or `window.DEBUG.webgl2=true`) telemetry and watch `--type=gpu-process` RSS via
+`ps -o rss=,args=`.
 
-## Debugging
+A separate, lower-severity **product** leak (not a test-cleanliness problem,
+since the browser recycles per test): closing a track retains its entire
+detached `TrackContainer` subtree (~55 nodes, ~6 listeners/cycle), GC-rooted via
+a leaked listener or the HAL-held canvas.
 
-**Visual mismatches**
+## Open follow-ups
 
-- Intentional change? → `--update-snapshots`
-- Variance? → Check pixel threshold in `compare-backends.ts`
-- Environment issue? → Run suite in isolation, check `[alignments]` /
-  `[webgl-wiggle]` logs
-
-**Timeout/hang**
-
-- Slow? → Increase timeout in runner config
-- Fetch stuck? → Check network in headed mode
-- WebGPU fail? → Missing Vulkan/GPU
-
-**Console errors**  
-Runner forwards `[alignments]`, `[webgl-wiggle]` logs. Add patterns in
-`runner.ts` for additional debugging.
-
-**ChunkLoadError: Loading chunk X failed**
-
-Usually indicates:
-- Stale build (run `pnpm --filter @jbrowse/web build` before tests)
-- Corrupted /tmp (clean with `rm -rf /tmp/puppeteer_* /tmp/org.chromium.*`)
-- Missing webpack chunks in build output
-
-**Environment Setup Issues**
-
-If tests crash immediately on page navigation:
-1. Check system Chrome isn't snap (broken libraries) → use Puppeteer's cached binary
-2. Clean `/tmp/puppeteer_*` directories (old test artifacts corrupt Chrome sessions)
-3. Rebuild fresh: `rm -rf build && pnpm build`
-4. Kill stray processes: `fuser -k 3333/tcp && pkill -9 chrome firefox`
-
-## Browser Test Environment (Troubleshooting)
-
-### Startup Crashes / ERR_INSUFFICIENT_RESOURCES
-
-**Common causes:**
-
-1. **Corrupted Puppeteer cache** → crashes with "HistoryService::Init() failed"
-   - Fix: `rm -rf /tmp/puppeteer_* /tmp/org.chromium.*`
-
-2. **System Chrome (snap) broken** → "libpxbackend-1.0.so not found"
-   - Fix: Use Puppeteer's cached binary (it auto-downloads to `~/.cache/puppeteer/`)
-   - Verify: Puppeteer should use its own Chrome unless explicitly configured
-
-3. **Stale build with missing chunks** → ChunkLoadError: chunk 2568
-   - Fix: Full rebuild: `rm -rf build && pnpm --filter @jbrowse/web build`
-   - Then: `pnpm test:browser`
-
-4. **Port 3333 in use** → EADDRINUSE
-   - Fix: `fuser -k 3333/tcp` or find/kill process using netstat
-
-### Resource Exhaustion
-
-Tests fail with ERR_INSUFFICIENT_RESOURCES after 3-4 tests:
-- Likely GPU/WebGL context accumulation despite event listener cleanup
-- WebGL2Hal already removes event listeners on dispose (commit be09a5bc87)
-- Monitor with: Chrome DevTools Protocol or process monitoring
-- May need additional resource cleanup in test runner between suites
-
-## Unit Tests
-
-157 Jest tests (15 suites), co-located (`*.test.ts`). Run with `pnpm test-ci`.  
-Fast, Node-based. Use for logic, config, RPC, buffer packing.  
-Browser tests for rendering and UI.
-
+- **Paint-complete gate for `pageSnapshot`.** It waits on `loading-overlay`
+  (data fetched) but not `*_done` (pixels painted) — a residual software-WebGL
+  flake source. Optionally let callers pass a `*_done` selector.
+- **Profile the ~32s full-page synteny capture.** `fullPage` screenshots may
+  force a resize + re-composite of every SwiftShader canvas; canvas-only captures
+  of the same view are fast. Confirm with split timings; prefer element/canvas
+  captures for multi-canvas views.

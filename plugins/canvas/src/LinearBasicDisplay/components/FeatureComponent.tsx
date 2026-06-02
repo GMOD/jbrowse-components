@@ -57,7 +57,6 @@ export interface LinearBasicDisplayModel {
   effectiveShowDescriptions: boolean
   regionTooLarge: boolean
   regionTooLargeReason: string
-  regionCannotBeRendered: () => React.ReactNode
   featureDensityStats?: { bytes?: number }
   statusMessage: string | undefined
   setScrollTop: (n: number) => void
