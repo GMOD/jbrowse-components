@@ -154,12 +154,24 @@ function listDocs(dir: string): string[] {
   })
 }
 
-export function writeColorDocs() {
+// Collapse the whitespace prettier adds when it pads markdown table columns, so
+// the freshness check compares the table's *content* and not its formatting
+// (the committed tables are prettier-padded; the generator emits them compact).
+// Regions outside the markers are byte-identical between current and
+// regenerated, so normalizing them is a no-op for the comparison.
+function normalize(s: string) {
+  return s.replaceAll(/[ \t]+/g, ' ').replaceAll(/-+/g, '-')
+}
+
+// In `check` mode, report which docs have a stale table instead of rewriting —
+// used by CI to fail when a color changed but the docs were not regenerated.
+export function writeColorDocs({ check = false } = {}) {
   const groups: Record<string, Row[]> = {}
   for (const file of COLOR_SOURCES) {
     collectColors(file, groups)
   }
   const markerRe = /<!-- COLOR_TABLE (\S+) START -->/g
+  const stale: string[] = []
   for (const file of listDocs('website/docs')) {
     const original = fs.readFileSync(file, 'utf8')
     let updated = original
@@ -174,8 +186,27 @@ export function writeColorDocs() {
       const re = new RegExp(`${start(group)}[\\s\\S]*?${end(group)}`)
       updated = updated.replace(re, block)
     }
-    if (updated !== original) {
+    if (check) {
+      if (normalize(updated) !== normalize(original)) {
+        stale.push(file)
+      }
+    } else if (updated !== original) {
       fs.writeFileSync(file, updated)
     }
   }
+  return stale
+}
+
+// Run as a script: `node docs/generateColorDocs.ts [--check]`. The guard keeps
+// this inert when the module is imported by generate.ts (argv[1] is generate.ts
+// there), so the tables aren't generated twice in one `pnpm gendocs`.
+if (process.argv[1]?.endsWith('generateColorDocs.ts')) {
+  const stale = writeColorDocs({ check: process.argv.includes('--check') })
+  if (stale.length) {
+    console.error(
+      `Color tables are out of date — run \`pnpm autogen\`:\n${stale.map(f => `  ${f}`).join('\n')}`,
+    )
+    process.exit(1)
+  }
+  console.log('Color tables are up to date')
 }
