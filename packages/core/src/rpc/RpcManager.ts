@@ -168,28 +168,34 @@ export default class RpcManager {
   }
 
   /**
-   * Create an ephemeral HTTP-basic internet account for a location's origin so
-   * a retried RPC call can authenticate. Returns false when the root model
-   * can't hold accounts or no HTTPBasicInternetAccount type is registered
+   * Ensure an ephemeral HTTP-basic internet account exists for a location's
+   * origin so a retried RPC call can authenticate. The account id is derived
+   * from the origin and reused if already present: when a track first loads,
+   * many block RPC calls fail auth near-simultaneously, and a single shared
+   * account collapses them into one credential prompt (BaseInternetAccountModel
+   * memoizes the token via a per-account promise). Returns false when the root
+   * model can't hold accounts or no HTTPBasicInternetAccount type is registered
    * (authentication plugin not loaded), signaling the caller not to retry.
    */
   private ensureAuthForOrigin(url: string) {
     const { rootModel } = this.pluginManager
-    let created = false
+    let ready = false
     if (isAppRootModel(rootModel)) {
       try {
-        rootModel.createEphemeralInternetAccount(
-          `HTTPBasicInternetAccount-${new URL(url).origin}`,
-          {},
-          url,
+        const internetAccountId = `HTTPBasicInternetAccount-${new URL(url).origin}`
+        const existing = rootModel.internetAccounts.find(
+          account => account.internetAccountId === internetAccountId,
         )
-        created = true
+        if (!existing) {
+          rootModel.createEphemeralInternetAccount(internetAccountId, {}, url)
+        }
+        ready = true
       } catch {
-        // no HTTPBasicInternetAccount type registered; leave created=false so
-        // the caller surfaces the original auth error instead of retrying
+        // no HTTPBasicInternetAccount type registered; leave ready=false so the
+        // caller surfaces the original auth error instead of retrying
       }
     }
-    return created
+    return ready
   }
 
   /**
