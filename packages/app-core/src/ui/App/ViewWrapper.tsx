@@ -19,11 +19,11 @@ const ViewWrapper = observer(function ViewWrapper({
 }) {
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)
-  return view.minimized ? (
+  return view.minimized ? null : (
     <Suspense fallback={<LoadingEllipses variant="h6" />}>
       <ReactComponent model={view} session={session} />
     </Suspense>
-  ) : null
+  )
 })
 
 export default ViewWrapper
