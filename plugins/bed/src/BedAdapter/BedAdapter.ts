@@ -6,8 +6,8 @@ import {
   fetchAndMaybeUnzip,
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { intervalTreeFeatures } from '../adapterUtil.ts'
 import { bucketBedLines, featureData, parseNamesFromHeader } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -116,13 +116,8 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
-      const { start, end, refName } = query
-      const intervalTree = await this.loadFeatureIntervalTree(refName)
-      for (const f of intervalTree?.search([start, end]) ?? []) {
-        observer.next(f)
-      }
-      observer.complete()
-    }, opts.stopToken)
+    return intervalTreeFeatures(query, opts, refName =>
+      this.loadFeatureIntervalTree(refName),
+    )
   }
 }

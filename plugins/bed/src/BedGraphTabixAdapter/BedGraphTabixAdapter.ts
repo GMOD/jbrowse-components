@@ -1,9 +1,9 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { makeBedGraphFeature } from '../bedGraphUtil.ts'
 import { parseNamesFromHeader } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -88,22 +88,17 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
             }
 
             for (let j = 0; j < rest.length; j++) {
-              const uniqueId = `${this.id}-${fileOffset}-${j}`
-              const score = +rest[j]!
-              const source = names[j] || `col${j}`
-              if (!Number.isNaN(score)) {
-                observer.next(
-                  new SimpleFeature({
-                    id: uniqueId,
-                    data: {
-                      refName,
-                      start,
-                      end,
-                      score,
-                      source,
-                    },
-                  }),
-                )
+              const feat = makeBedGraphFeature({
+                uniqueId: `${this.id}-${fileOffset}-${j}`,
+                refName,
+                start,
+                end,
+                names,
+                j,
+                value: rest[j]!,
+              })
+              if (feat) {
+                observer.next(feat)
               }
             }
           },

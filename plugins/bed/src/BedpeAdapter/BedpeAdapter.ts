@@ -1,14 +1,17 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import {
+  buildPairedIntervalTree,
+  intervalTreeFeatures,
+} from '../adapterUtil.ts'
 import { parseNamesFromHeader } from '../util.ts'
 import { featureData } from './util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, IntervalTree, Region } from '@jbrowse/core/util'
 
 export default class BedpeAdapter extends BaseFeatureDataAdapter {
   protected bedpeFeatures?: Promise<{
@@ -88,18 +91,13 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   private async loadFeatureTreeP(refName: string) {
     const { feats1, feats2 } = await this.loadData()
     const names = await this.getNames()
-    const intervalTree = new IntervalTree<Feature>()
-
-    for (const [i, f] of (feats1[refName] ?? []).entries()) {
-      const obj = featureData(f, `${this.id}-${refName}-${i}-r1`, false, names)
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
-    }
-    for (const [i, f] of (feats2[refName] ?? []).entries()) {
-      const obj = featureData(f, `${this.id}-${refName}-${i}-r2`, true, names)
-      intervalTree.insert([obj.get('start'), obj.get('end')], obj)
-    }
-
-    return intervalTree
+    return buildPairedIntervalTree(
+      feats1,
+      feats2,
+      refName,
+      this.id,
+      (line, uniqueId, flip) => featureData(line, uniqueId, flip, names),
+    )
   }
 
   private async loadFeatureTree(refName: string) {
@@ -113,13 +111,8 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
-      const { start, end, refName } = query
-      const intervalTree = await this.loadFeatureTree(refName)
-      for (const f of intervalTree?.search([start, end]) ?? []) {
-        observer.next(f)
-      }
-      observer.complete()
-    }, opts.stopToken)
+    return intervalTreeFeatures(query, opts, refName =>
+      this.loadFeatureTree(refName),
+    )
   }
 }

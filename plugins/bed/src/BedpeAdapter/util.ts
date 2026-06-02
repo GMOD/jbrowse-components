@@ -14,9 +14,9 @@ export function featureData(
   const ref1 = l[flip ? 3 : 0]!
   const start1 = +l[flip ? 4 : 1]!
   const end1 = +l[flip ? 5 : 2]!
-  const ref2 = l[!flip ? 3 : 0]!
-  const start2 = +l[!flip ? 4 : 1]!
-  const end2 = +l[!flip ? 5 : 2]!
+  const ref2 = l[flip ? 0 : 3]!
+  const start2 = +l[flip ? 1 : 4]!
+  const end2 = +l[flip ? 2 : 5]!
   const name = l[6]!
   const score = l[7] ? +l[7] : undefined
   const strand1 = parseStrand(l[8])
