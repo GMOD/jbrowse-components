@@ -15,6 +15,15 @@ function makeMenus(): Menu[] {
   return []
 }
 
+// the helpers under test only ever build array-form menus, so narrow for the
+// assertions that index into the items
+function itemsOf(menu: Menu): MenuItem[] {
+  if (typeof menu.menuItems === 'function') {
+    throw new Error('expected an array-form menu')
+  }
+  return menu.menuItems
+}
+
 describe('appendMenu', () => {
   it('adds a top-level menu', () => {
     const menus = makeMenus()
@@ -67,7 +76,7 @@ describe('appendToMenu', () => {
       menuItem: { label: 'Open' } as unknown as MenuItem,
     })
     expect(menus[0]!.menuItems).toHaveLength(1)
-    expect(menus[0]!.menuItems[0]).toMatchObject({ label: 'Open' })
+    expect(itemsOf(menus[0]!)[0]).toMatchObject({ label: 'Open' })
   })
 
   it('creates the menu if it does not exist', () => {
@@ -79,7 +88,7 @@ describe('appendToMenu', () => {
     })
     expect(menus).toHaveLength(1)
     expect(menus[0]!.label).toBe('File')
-    expect(menus[0]!.menuItems[0]).toMatchObject({ label: 'Open' })
+    expect(itemsOf(menus[0]!)[0]).toMatchObject({ label: 'Open' })
   })
 
   it('appends multiple items in order', () => {
@@ -95,7 +104,7 @@ describe('appendToMenu', () => {
       menuName: 'File',
       menuItem: { label: 'Save' } as unknown as MenuItem,
     })
-    const labels = menus[0]!.menuItems.map(i => ('label' in i ? i.label : ''))
+    const labels = itemsOf(menus[0]!).map(i => ('label' in i ? i.label : ''))
     expect(labels).toEqual(['Open', 'Save'])
   })
 })
@@ -120,7 +129,7 @@ describe('insertInMenu', () => {
       menuItem: { label: 'Save' } as unknown as MenuItem,
       position: 1,
     })
-    const labels = menus[0]!.menuItems.map(i => ('label' in i ? i.label : ''))
+    const labels = itemsOf(menus[0]!).map(i => ('label' in i ? i.label : ''))
     expect(labels).toEqual(['Open', 'Save', 'Close'])
   })
 
@@ -143,7 +152,7 @@ describe('insertInMenu', () => {
       menuItem: { label: 'Save' } as unknown as MenuItem,
       position: -1,
     })
-    const labels = menus[0]!.menuItems.map(i => ('label' in i ? i.label : ''))
+    const labels = itemsOf(menus[0]!).map(i => ('label' in i ? i.label : ''))
     expect(labels).toEqual(['Open', 'Save', 'Close'])
   })
 })
@@ -158,7 +167,7 @@ describe('appendToSubMenu', () => {
       menuItem: { label: 'From URL' } as unknown as MenuItem,
     })
     const fileMenu = menus[0]!
-    const importEntry = fileMenu.menuItems.find(
+    const importEntry = itemsOf(fileMenu).find(
       i => 'label' in i && i.label === 'Import',
     )
     expect(importEntry).toBeDefined()
@@ -213,7 +222,7 @@ describe('insertInSubMenu', () => {
       menuItem: { label: 'From URL' } as unknown as MenuItem,
       position: 1,
     })
-    const importEntry = menus[0]!.menuItems.find(
+    const importEntry = itemsOf(menus[0]!).find(
       i => 'label' in i && i.label === 'Import',
     )
     expect('subMenu' in importEntry!).toBe(true)
@@ -259,7 +268,7 @@ describe('processMutableMenuActions', () => {
         menuItem: { label: 'Open' } as unknown as MenuItem,
       },
     ])
-    expect(result[0]!.menuItems[0]).toMatchObject({ label: 'Open' })
+    expect(itemsOf(result[0]!)[0]).toMatchObject({ label: 'Open' })
   })
 
   it('processes insertInMenu action', () => {
@@ -280,7 +289,7 @@ describe('processMutableMenuActions', () => {
         position: 1,
       },
     ])
-    const labels = result[0]!.menuItems.map(i => ('label' in i ? i.label : ''))
+    const labels = itemsOf(result[0]!).map(i => ('label' in i ? i.label : ''))
     expect(labels).toEqual(['Open', 'Save', 'Close'])
   })
 
@@ -296,7 +305,7 @@ describe('processMutableMenuActions', () => {
       },
     ])
     expect(result.map(m => m.label)).toEqual(['File', 'Edit'])
-    expect(result[0]!.menuItems[0]).toMatchObject({ label: 'Open' })
+    expect(itemsOf(result[0]!)[0]).toMatchObject({ label: 'Open' })
   })
 
   it('setMenus replaces previous state mid-sequence', () => {

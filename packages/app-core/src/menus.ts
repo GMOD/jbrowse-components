@@ -47,7 +47,20 @@ export type MenuAction =
 
 export interface Menu {
   label: string
-  menuItems: MenuItem[]
+  // array form, or a thunk for menus whose items are computed fresh each time
+  // they open (e.g. a "recent sessions" list)
+  menuItems: MenuItem[] | (() => MenuItem[])
+}
+
+// the mutable menu helpers below can only operate on array-form menus; a
+// thunk-form menu computes its items dynamically and has nothing to splice into
+function staticItems(menu: Menu) {
+  if (typeof menu.menuItems === 'function') {
+    throw new Error(
+      `cannot add items to the "${menu.label}" menu because its items are generated dynamically`,
+    )
+  }
+  return menu.menuItems
 }
 
 /**
@@ -116,7 +129,7 @@ export function appendToMenu({
     menus.push({ label: menuName, menuItems: [menuItem] })
     return 1
   }
-  return menu.menuItems.push(menuItem)
+  return staticItems(menu).push(menuItem)
 }
 /**
  * #action
@@ -148,10 +161,10 @@ export function insertInMenu({
     menus.push({ label: menuName, menuItems: [menuItem] })
     return 1
   }
-  const insertPosition =
-    position < 0 ? menu.menuItems.length + position : position
-  menu.menuItems.splice(insertPosition, 0, menuItem)
-  return menu.menuItems.length
+  const items = staticItems(menu)
+  const insertPosition = position < 0 ? items.length + position : position
+  items.splice(insertPosition, 0, menuItem)
+  return items.length
 }
 /**
  * Find-or-create the top-level menu named by `menuPath[0]`, then walk the
@@ -165,7 +178,7 @@ function resolveSubMenuItems(menus: Menu[], menuPath: string[]) {
     const idx = appendMenu({ menus, menuName: menuPath[0]! })
     topMenu = menus[idx - 1]!
   }
-  let { menuItems: subMenu } = topMenu
+  let subMenu = staticItems(topMenu)
   const pathSoFar = [menuPath[0]]
   for (const menuName of menuPath.slice(1)) {
     pathSoFar.push(menuName)

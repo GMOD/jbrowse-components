@@ -35,7 +35,6 @@ import makeWorkerInstance from '../makeWorkerInstance.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AbstractSessionModel,
   SessionWithWidgets,
@@ -49,11 +48,6 @@ const PreferencesDialog = lazy(
 )
 
 const { ipcRenderer } = window.require('electron')
-
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
-}
 
 type SessionModelFactory = (args: {
   pluginManager: PluginManager
@@ -354,7 +348,7 @@ export default function rootModelFactory({
                 },
               ],
             },
-          ] as Menu[],
+          ],
           self.mutableMenuActions,
         )
       },

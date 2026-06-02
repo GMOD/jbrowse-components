@@ -28,28 +28,26 @@ export async function setupSessionDB(self: WebRootModel) {
               // careful not to access self.savedSessionMetadata in here, or
               // else it can create an infinite loop
               const s = self.session
-              if (self.sessionDB) {
-                await sessionDB.put('sessions', getSnapshot(s), s.id)
-                if (!isAlive(self)) {
-                  return
-                }
-                const ret = await self.sessionDB.get('metadata', s.id)
-                if (!isAlive(self)) {
-                  return
-                }
-                await sessionDB.put(
-                  'metadata',
-                  {
-                    ...ret,
-                    favorite: ret?.favorite ?? false,
-                    name: s.name,
-                    id: s.id,
-                    createdAt: ret?.createdAt ?? new Date(),
-                    configPath: self.configPath ?? '',
-                  },
-                  s.id,
-                )
+              await sessionDB.put('sessions', getSnapshot(s), s.id)
+              if (!isAlive(self)) {
+                return
               }
+              const ret = await sessionDB.get('metadata', s.id)
+              if (!isAlive(self)) {
+                return
+              }
+              await sessionDB.put(
+                'metadata',
+                {
+                  ...ret,
+                  favorite: ret?.favorite ?? false,
+                  name: s.name,
+                  id: s.id,
+                  createdAt: ret?.createdAt ?? new Date(),
+                  configPath: self.configPath ?? '',
+                },
+                s.id,
+              )
               if (!isAlive(self)) {
                 return
               }

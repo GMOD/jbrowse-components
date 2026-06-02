@@ -262,7 +262,7 @@ export default function RootModel({
           'preConfiguredSessions',
         )
 
-        const ret = [
+        const ret: Menu[] = [
           {
             label: 'File',
             menuItems: () => {
@@ -529,7 +529,7 @@ export default function RootModel({
               },
             ],
           },
-        ] as Menu[]
+        ]
 
         return processMutableMenuActions(ret, self.mutableMenuActions)
       },
