@@ -22,7 +22,7 @@ a JBrowse 2 session.
 - [Multi-quantitative tracks](/docs/config_guides/multiquantitative_track) - Multiple BigWig/BedGraph signals combined into one display
 - [Quantitative tracks](/docs/config_guides/quantitative_track) - BigWig/BedGraph signal track config and display options
 - [Synteny track config](/docs/config_guides/synteny_track) - Synteny track config for dotplot and linear synteny views
-- [Variant track configuration](/docs/config_guides/variant_track) - VCF variant track config and breakpoint split view options
+- [Variant track configuration](/docs/config_guides/variant_track) - VCF variant track config, SVTYPE coloring, and multi-sample displays
 
 ## Callbacks and customization
 

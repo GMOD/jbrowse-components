@@ -5,8 +5,8 @@ guide_category: Core concepts
 ---
 
 JBrowse uses `@jbrowse/mobx-state-tree`, an internal ESM fork of
-[MobX-State-Tree](https://mobx-state-tree.js.org/). The API is identical to
-upstream MST.
+[MobX-State-Tree](https://mobx-state-tree.js.org/). The public API closely
+matches upstream MST, so the upstream documentation applies.
 
 ## autorun inside useEffect
 

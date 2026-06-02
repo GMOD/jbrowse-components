@@ -554,7 +554,7 @@ Launches a spreadsheet view.
 interface args {
   session: AbstractSessionModel // the session model
   assembly: string // assembly name
-  uri: string // uri for file to load into the SV inspector
+  uri: string // uri for file to load into the spreadsheet view
   fileType?: string // type of file referred to by the uri ("VCF"|"CSV"|"BEDPE",etc) if uri extension does not properly hint at the file type
 }
 ```

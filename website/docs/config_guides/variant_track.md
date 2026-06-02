@@ -1,6 +1,7 @@
 ---
 title: Variant track configuration
-description: VCF variant track config and breakpoint split view options
+description:
+  VCF variant track config, SVTYPE coloring, and multi-sample displays
 guide_category: Track types
 ---
 

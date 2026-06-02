@@ -21,6 +21,26 @@ reference the markdown files in our repo of the checked out git tag
 configuration for the wiggle (quantitative/numeric) display showing XY plot,
 density, line, or scatter renderings
 
+These are display-level slots: set them inside a track's `displays` array to
+change its defaults (setting them at the track top level has no effect).
+
+```json
+{
+  "type": "QuantitativeTrack",
+  "trackId": "my_wiggle_track",
+  "name": "My Wiggle Track",
+  "assemblyNames": ["hg19"],
+  "adapter": { "type": "BigWigAdapter", "uri": "http://yourhost/file.bw" },
+  "displays": [
+    {
+      "type": "LinearWiggleDisplay",
+      "scaleType": "log",
+      "autoscale": "global"
+    }
+  ]
+}
+```
+
 ### LinearWiggleDisplay - Slots
 
 #### slot: defaultRendering

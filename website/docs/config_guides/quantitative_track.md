@@ -24,66 +24,39 @@ Example QuantitativeTrack config:
 }
 ```
 
-#### General QuantitativeTrack options
+#### Display options
 
-- `scaleType` - options: linear, log, to display the coverage data. Default:
-  linear
-- `autoscale` - options: local, global, localsd, globalsd. Default: local
-- `adapter` - an adapter that returns numeric score data, e.g.
-  feature.get('score')
-
-#### Autoscale options for QuantitativeTrack
-
-Options for autoscale:
-
-- `local` - min/max values of what is visible on the screen (default)
-- `global` - min/max values in the entire dataset
-- `localsd` - mean value +/- N stddevs of what is visible on screen
-- `globalsd` - mean value +/- N stddevs of everything in the dataset
-
-#### Score min/max for QuantitativeTrack
-
-These options override the autoscale options and provide a minimum or maximum
-value for the autoscale bar:
-
-- minScore
-- maxScore
-
-#### QuantitativeTrack drawing options
-
-- `defaultRendering` - options: xyplot, density, line, scatter. Default: xyplot
-- `summaryScoreMode` - options: max, min, avg, whiskers. Default: whiskers
-
-#### QuantitativeTrack color options
-
-- `color` - color or color callback for drawing the values. Overrides
-  posColor/negColor. Default: `#f0f` (magenta)
-- `bicolorPivot` - score at which the color switches from posColor to negColor.
-  Default: 0
-- `posColor` - color to draw "positive" values (above the pivot). Default:
-  `#0068d1` (blue)
-- `negColor` - color to draw "negative" values (below the pivot). Default:
-  `#f0636b` (red)
-
-#### BigWigAdapter options
-
-- `bigWigLocation` - a 'file location' for the bigwig
-
-Example BigWig adapter config:
+Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
+`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are slots on the
+`LinearWiggleDisplay`, not on the track. Setting them at the track top level has
+no effect — nest them in a `displays` entry to change the defaults:
 
 ```json
 {
-  "type": "BigWigAdapter",
-  "bigWigLocation": {
-    "uri": "http://yourhost/file.bw",
-    "locationType": "UriLocation"
-  }
+  "type": "QuantitativeTrack",
+  "trackId": "my_wiggle_track",
+  "name": "My Wiggle Track",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "http://yourhost/file.bw"
+  },
+  "displays": [
+    {
+      "type": "LinearWiggleDisplay",
+      "scaleType": "log"
+    }
+  ]
 }
 ```
 
-A reduced form is also accepted (see the
-[BigWigAdapter config docs](/docs/config/bigwigadapter) for all options):
+See the [LinearWiggleDisplay config docs](/docs/config/linearwiggledisplay) for
+the full list of display slots and their defaults.
 
-```json
-{ "type": "BigWigAdapter", "uri": "http://yourhost/file.bw" }
-```
+#### Adapters
+
+BigWig (`BigWigAdapter`) and bedGraph (`BedGraphTabixAdapter`, for a
+bgzip+tabix-indexed file) are both supported. The example above uses the reduced
+`uri` form; see the [BigWigAdapter](/docs/config/bigwigadapter) and
+[BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter) config docs for all
+options.

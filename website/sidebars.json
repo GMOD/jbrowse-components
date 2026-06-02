@@ -26,7 +26,8 @@
         "tutorials/sv_multisamples",
         "tutorials/synteny_visualization",
         "tutorials/methylation",
-        "tutorials/rnaseq"
+        "tutorials/rnaseq",
+        "tutorials/display_settings"
       ]
     },
     {

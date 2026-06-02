@@ -36,6 +36,11 @@ A renderer is a class that implements a `render` function. It returns a React
 component (the "rendering") along with any image data.
 
 ```js
+import {
+  createCanvas,
+  createImageBitmap,
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
+
 class MyRenderer extends ServerSideRendererType {
   async render(props) {
     const { width, height, regions, features } = props

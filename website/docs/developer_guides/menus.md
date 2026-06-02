@@ -161,7 +161,7 @@ Types of `MenuItem`s:
 | icon     | An icon for the menu item. Must be compatible with [MUI Icons](https://mui.com/material-ui/material-ui-icons/). Not applicable to 'divider' or 'subHeader', optional for all others.                     |
 | disabled | Whether or not the menu item is disabled (meaning grayed out and not clickable). Not applicable to 'divider' or 'subHeader', optional for all others.                                                    |
 | checked  | Whether or not the checkbox or radio button are selected. Only applicable to 'radio' and 'checkbox'                                                                                                      |
-| onClick  | Callback of action to perform on click. Function signature is `(session) => undefined`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                    |
+| onClick  | Callback of action to perform on click. Function signature is `(session) => void`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                         |
 | subMenu  | An array of menu items. Applicable only to 'subMenu'.                                                                                                                                                    |
 
 Here is an example array of MenuItems and the resulting menu:

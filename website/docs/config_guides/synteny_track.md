@@ -76,11 +76,12 @@ for more CLI options.
 ## Adapter reference
 
 All adapters accept `assemblyNames` as a two-element array `["query", "target"]`
-(query first), or equivalently the `queryAssembly` and `targetAssembly` fields
-separately. Query first is the reverse of the order minimap2/nucmer take their
-inputs (`target query`), so double-check it. All file locations accept
-gzip-compressed input and are read into memory in full (none of these formats
-are indexed).
+(query first). The alignment-file adapters (`PAFAdapter`, `DeltaAdapter`,
+`ChainAdapter`) also accept the `queryAssembly` and `targetAssembly` fields
+separately; the MCScan adapters take only `assemblyNames`. Query first is the
+reverse of the order minimap2/nucmer take their inputs (`target query`), so
+double-check it. All file locations accept gzip-compressed input and are read
+into memory in full (none of these formats are indexed).
 
 ### PAFAdapter
 

@@ -97,3 +97,34 @@ the [CramAdapter config docs](/docs/config/cramadapter) for all options.
 ```json
 { "type": "CramAdapter", "uri": "http://yourhost/file.cram" }
 ```
+
+#### Display options
+
+Display settings — `colorBy`, `height`, `featureHeight`, `filterBy`, and the
+coverage `autoscale`/`minScore`/`maxScore` — are slots on the
+`LinearAlignmentsDisplay`, not on the track. Reads are grey by default
+(`colorBy` is `{ "type": "normal" }`). To change a default, nest a display entry
+in the track's `displays` array:
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "my_alignments_track",
+  "name": "My Alignments",
+  "assemblyNames": ["hg19"],
+  "adapter": { "type": "BamAdapter", "uri": "http://yourhost/file.bam" },
+  "displays": [
+    {
+      "type": "LinearAlignmentsDisplay",
+      "colorBy": { "type": "pairOrientation" },
+      "height": 250
+    }
+  ]
+}
+```
+
+See the
+[LinearAlignmentsDisplay config docs](/docs/config/linearalignmentsdisplay) for
+the full list of slots. To open a track in a particular state from a link or
+embedded view instead of changing the default, see
+[applying display settings](/docs/tutorials/display_settings).

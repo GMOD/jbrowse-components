@@ -81,8 +81,8 @@ orientations are not supported. The table below assumes `fr`:
 **In the pileup**, set the color scheme to Insert size from the track menu.
 Reads are colored red (insert larger than expected), pink (smaller than
 expected), or light grey (normal). A separate Insert size (gradient) option
-shades reads continuously by the magnitude of the deviation. See the
-color-scheme options for cross-chromosome handling.
+shades reads continuously by the magnitude of the deviation. Reads with a mate
+on a different chromosome are handled separately (see the table below).
 
 **With paired arcs or linked reads enabled** (via Read connections in the track
 menu), set the color scheme from the track menu. The Insert size ± 3σ option
@@ -333,8 +333,8 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 | Linear read vs ref        | Right-click on any read         | Complex alignment of a single long read            |
 | Breakpoint split view     | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
 | Sort/color by HP tag      | Sort/color by tag in track menu | Confirming heterozygous SVs on one haplotype       |
-| Dotplot view              | Launch from start screen        | Chromosome-scale rearrangements (de novo assembly) |
-| Linear synteny view       | Launch from dotplot selection   | Base-level alignment between two genomes           |
+| Dotplot view              | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |
+| Linear synteny view       | Add menu or dotplot selection   | Base-level alignment between two genomes           |
 
 ## Limitations
 

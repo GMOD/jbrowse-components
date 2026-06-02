@@ -141,7 +141,7 @@ jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse2
 ```bash
 jbrowse sort-gff yourfile.gff | bgzip > yourfile.sorted.gff.gz
 tabix yourfile.sorted.gff.gz
-jbrowse add-track yourfile.sorted.gff.gz --load copy
+jbrowse add-track yourfile.sorted.gff.gz --load copy --out /var/www/html/jbrowse2
 ```
 
 ### Synteny (PAF)
@@ -188,8 +188,8 @@ Optionally, build a text index so users can search by gene name or feature ID:
 jbrowse text-index --out /var/www/html/jbrowse2
 ```
 
-This indexes GFF3Tabix and VCFTabix tracks. Once complete, names can be typed
-directly into the location search box. See the
+This indexes GFF3 and VCF tracks (tabix-indexed or plain). Once complete, names
+can be typed directly into the location search box. See the
 [text-index docs](/docs/cli#jbrowse-text-index) and
 [FAQ](/docs/faq#text-searching) for more.
 

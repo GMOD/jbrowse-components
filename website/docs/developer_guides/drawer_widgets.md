@@ -1,36 +1,23 @@
 ---
-title: Drawer Widgets in Embedded Components
-description: Extensible system for launching sidebar or popup widgets
+title: Drawer widgets in embedded components
+description: Launching sidebar or popup widgets in the embedded LGV
 guide_category: Creating pluggable elements
 ---
 
 ## Overview
 
-Drawer widgets provide a flexible UI pattern for displaying supplementary panels
-in the embedded `@jbrowse/react-linear-genome-view2` component. Instead of modal
-dialogs, widgets can be displayed as resizable side panels (drawers) that
-integrate seamlessly with the genome view.
+In the embedded `@jbrowse/react-linear-genome-view2` component, widgets can be
+shown as resizable side panels (drawers) instead of modal dialogs. A drawer is a
+persistent panel suited to layouts with room for one alongside the genome view.
 
-This feature is particularly useful for deployments with sufficient screen real
-estate where a persistent side panel improves the user experience compared to
-modal dialogs.
+Drawers can be resized by dragging the edge, placed on the left or right,
+minimized while keeping widget state, and switched between when several widgets
+are open.
 
-## Feature Capabilities
+## Showing the track selector
 
-Drawer widgets support:
-
-- **Resizable panels** — drag the edge to adjust width
-- **Flexible positioning** — switch between left and right side placement
-- **Minimizable state** — hide the drawer while maintaining widget state
-- **Widget switching** — navigate between multiple open widgets
-- **Clean integration** — drawers respect responsive layout constraints
-
-## Using Drawer Widgets
-
-### Automatic Track Selector
-
-The most common use case is showing a hierarchical track selector panel. Use the
-`init` field with `tracklist: true`:
+The most common use is a hierarchical track selector panel. Set
+`tracklist: true` in the view's `init`:
 
 ```javascript
 import {
@@ -48,8 +35,8 @@ const state = createViewState({
       id: 'linearGenomeView',
       type: 'LinearGenomeView',
       init: {
-        assembly: 'hg38', // Required: assembly name
-        tracklist: true, // Shows track selector in drawer
+        assembly: 'hg38', // required: assembly name
+        tracklist: true, // shows track selector in drawer
       },
     },
   },
@@ -60,12 +47,10 @@ export default function App() {
 }
 ```
 
-### Programmatic Widget Management
-
-For more advanced scenarios, you can manage widgets programmatically:
+## Managing widgets programmatically
 
 ```javascript
-// Open a widget in the drawer
+// open a widget in the drawer
 const editor = state.session.addWidget(
   'ConfigurationEditorWidget',
   'configEditor',
@@ -73,109 +58,68 @@ const editor = state.session.addWidget(
 )
 state.session.showWidget(editor)
 
-// Switch drawer position
+// switch drawer position
 state.session.setDrawerPosition('left')
 
-// Minimize/show drawer
+// minimize/show drawer
 state.session.minimizeWidgetDrawer()
 state.session.showWidgetDrawer()
 
-// Close a widget
+// close a widget
 state.session.hideWidget(editor)
 ```
 
-## Configuration Options
+## Init state options
 
-### Init State
-
-The `init` field accepts the following options:
+The `init` field accepts:
 
 ```typescript
 interface InitState {
-  assembly: string // Required: assembly name
-  tracklist?: boolean // Show hierarchical track selector (default: false)
-  loc?: string // Initial location (e.g., 'chr1:1000..2000')
-  tracks?: TrackInit[] // Tracks to display
-  nav?: boolean // Show navigation header (default: true)
-  highlight?: string[] // Genomic regions to highlight
+  assembly: string // required: assembly name
+  tracklist?: boolean // show hierarchical track selector (default: false)
+  loc?: string // initial location (e.g., 'chr1:1000..2000')
+  tracks?: TrackInit[] // tracks to display
+  nav?: boolean // show navigation header (default: true)
+  highlight?: string[] // genomic regions to highlight
 }
 ```
 
-### Drawer Positioning
+## Drawer position and width
 
-Control drawer appearance through session actions:
+Control the drawer through session actions:
 
 ```javascript
-// Drawer width (CSS pixels, default: 384, clamped to a min/max)
+// drawer width (CSS pixels, default: 384, clamped to a min/max)
 state.session.updateDrawerWidth(500)
 
-// Drawer position (default: 'right')
+// drawer position (default: 'right')
 state.session.setDrawerPosition('left') // or 'right'
 
-// Drawer visibility
+// drawer visibility
 state.session.showWidgetDrawer()
 state.session.minimizeWidgetDrawer()
 ```
 
-## Session Storage
+`drawerPosition` is persisted to localStorage and restored on the next page
+load. Width is clamped so the drawer cannot take the entire viewport (minimum
+drawer width 128px, minimum main view width 150px).
 
-The drawer position is automatically persisted to localStorage and restored on
-the next page load:
-
-```javascript
-state.session.drawerPosition // Persisted across reloads
-```
-
-## Responsive Behavior
-
-Drawers adjust to available container width:
-
-- Minimum drawer width: 128px
-- Minimum main view width: 150px
-- Width constraints prevent drawers from taking the entire viewport
-
-## Keyboard Controls
-
-Users can interact with drawer widgets using:
-
-- **Menu button (⋮)** — switch drawer position
-- **Minimize button (−)** — hide drawer
-- **Close button (✕)** — close widget
-- **Widget selector dropdown** — navigate between open widgets
-
-## Example: Custom Widget Integration
-
-To display a custom widget in the drawer:
+## Showing a custom widget
 
 ```javascript
-// Assuming you've registered a custom widget type
+// assuming you've registered a custom widget type
 const myWidget = state.session.addWidget('MyCustomWidget', 'myWidgetId', {
   /* initial state */
 })
 
-// Make it visible in the drawer
 state.session.showWidget(myWidget)
-
-// User can now interact with it in the drawer panel
 ```
 
-## Browser Compatibility
+Widgets are lazily loaded via React Suspense, so a custom widget's code is only
+fetched when it first opens.
 
-Drawer widgets work in all modern browsers supporting:
+## Storybook example
 
-- CSS Grid layout
-- CSS custom properties (variables)
-- localStorage API
-
-## Performance Considerations
-
-- **Lazy loading** — widgets are lazily loaded via React Suspense
-- **Resize debouncing** — resize operations are efficiently throttled
-- **Observable state** — drawer state changes trigger efficient re-renders
-
-## Storybook Example
-
-View the `WithDrawerWidget` example in the JBrowse Storybook to see drawer
-widgets in action:
+See the `WithDrawerWidget` example in the JBrowse Storybook:
 
 https://jbrowse.org/storybook/lgv/main/?path=/story/source-code-for-examples--with-drawer-widget

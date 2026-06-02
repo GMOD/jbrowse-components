@@ -88,7 +88,7 @@ own via pull request.
 - [Creating custom track types](/docs/developer_guides/creating_track) - Define new high-level track concepts backed by display types
 - [Creating custom view types](/docs/developer_guides/creating_view) - Add entirely new view panels such as DotplotView or CircularView
 - [Creating custom widgets](/docs/developer_guides/creating_widget) - Add new drawer/panel UI components
-- [Drawer Widgets in Embedded Components](/docs/developer_guides/drawer_widgets) - Extensible system for launching sidebar or popup widgets
+- [Drawer widgets in embedded components](/docs/developer_guides/drawer_widgets) - Launching sidebar or popup widgets in the embedded LGV
 - [Creating custom top-level menu items](/docs/developer_guides/menus) - Add items to the top-level application menu bar
 - [Adding SVG export to a display](/docs/developer_guides/svg_export) - How to implement renderSvg on a custom display type
 

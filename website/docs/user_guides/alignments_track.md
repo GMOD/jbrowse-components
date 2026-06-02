@@ -39,9 +39,9 @@ clusters of soft-clipped bases often mark a breakpoint.
 ### Sort by options
 
 The pileup can be re-ordered so that reads crossing **the center line** of the
-view are grouped by a specific attribute — base pair, read strand, mapping
-quality, or BAM tag. Reads are grouped by their value at the view's center line.
-Showing the center line (next section) makes the sort reference point visible.
+view are grouped by their value at that position for a specific attribute — base
+pair, read strand, mapping quality, or BAM tag. Showing the center line (next
+section) makes the sort reference point visible.
 
 ### Showing the center line
 

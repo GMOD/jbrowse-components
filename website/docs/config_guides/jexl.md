@@ -27,6 +27,8 @@ jexl: get(feature, 'refName') // chromosome or reference sequence name
 jexl: get(feature, 'CIGAR') // BAM or CRAM feature CIGAR string
 jexl: get(feature, 'seq') // BAM or CRAM feature sequence
 jexl: get(feature, 'type') // feature type e.g. mRNA or gene
+jexl: parent(feature) // parent feature, e.g. the gene of an mRNA (undefined if none)
+jexl: id(feature) // the feature's unique id
 ```
 
 **Feature operations - getTag**
@@ -59,6 +61,10 @@ jexl: trimEnd('  kitty ') // kitty, ending whitespace trimmed
 jexl: toUpperCase('kitty') // KITTY
 jexl: toLowerCase('KITTY') // kitty
 jexl: split('KITTY KITTY', ' ') // ['KITTY', 'KITTY']
+jexl: join('-', 'a', 'b', '', 'c') // a-b-c, joins truthy args with the separator
+jexl: includes('kittycat', 'cat') // true
+jexl: repeat('ab', 3) // ababab
+jexl: jsonParse('{"a":1}') // parses a JSON string
 ```
 
 **Math functions**
@@ -80,13 +86,30 @@ jexl: parseFloat('2.054')
 
 ```js
 jexl: log(feature) // console.logs output and returns value
-jexl: cast({ mRNA: 'green', pseudogene: 'purple' })[get(feature, 'type')] // returns either green or purple depending on feature type
+jexl: cast({ mRNA: 'green', pseudogene: 'purple' })[get(feature, 'type')] // looks the feature type up in the map; cast() makes the object literal indexable in jexl. Types not in the map return undefined
 ```
 
 **Binary operators**
 
 ```js
 jexl: get(feature, 'flags') & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
+```
+
+**Template strings**
+
+Our jexl fork supports JavaScript-style template literals with backticks and
+`${...}` interpolation, which is often clearer than string concatenation. This
+is handy for building colors — for example, an HSL color derived from a feature
+value:
+
+```json
+"color": "jexl:`hsl(${get(feature,'start')/100000},50%,50%)`"
+```
+
+The equivalent with concatenation:
+
+```json
+"color": "jexl:'hsl('+get(feature,'start')/100000+',50%,50%)'"
 ```
 
 ### Making sophisticated color callbacks
