@@ -1,4 +1,5 @@
 import { Divider, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import Attributes from './Attributes.tsx'
 import BaseCard from './BaseCard.tsx'
@@ -10,7 +11,7 @@ import { getEnv, getSession } from '../../util/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { Descriptors } from '../types.tsx'
+import type { Descriptors, FeatureFormatter } from '../types.tsx'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // coreDetails are omitted in some circumstances
@@ -24,26 +25,23 @@ const coreDetails = [
   'type',
 ]
 
-interface PanelDescriptor {
-  name: string
-  Component: React.ComponentType<{
-    model: IAnyStateTreeNode
-    feature: SimpleFeatureSerialized
-    depth?: number
-    omit?: string[]
-    descriptions?: Descriptors
-    formatter?: (val: unknown, key: string, index?: number) => React.ReactNode
-  }>
-}
-
-export default function FeatureDetails(props: {
+interface FeatureDetailsProps {
   model: IAnyStateTreeNode
   feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
   descriptions?: Descriptors
-  formatter?: (val: unknown, key: string, index?: number) => React.ReactNode
-}) {
+  formatter?: FeatureFormatter
+}
+
+interface PanelDescriptor {
+  name: string
+  Component: React.ComponentType<FeatureDetailsProps>
+}
+
+const FeatureDetails = observer(function FeatureDetails(
+  props: FeatureDetailsProps,
+) {
   const { omit = [], model, feature, depth = 0 } = props
   const maxDepth: number = model.maxDepth ?? 99999
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
@@ -113,4 +111,6 @@ export default function FeatureDetails(props: {
       ) : null}
     </BaseCard>
   )
-}
+})
+
+export default FeatureDetails

@@ -2,6 +2,8 @@ import BasicValue from './BasicValue.tsx'
 import FieldName from './FieldName.tsx'
 import { makeStyles } from '../../util/tss-react/index.ts'
 
+import type { FeatureFormatter } from '../types.tsx'
+
 const useStyles = makeStyles()({
   field: {
     display: 'flex',
@@ -22,7 +24,7 @@ export default function SimpleField({
   value: unknown
   prefix?: string[]
   width?: number
-  formatter?: (value: unknown, key: string, index?: number) => React.ReactNode
+  formatter?: FeatureFormatter
 }) {
   const { classes } = useStyles()
   return value != null ? (

@@ -23,11 +23,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface Entry {
-  id: string
-  [key: string]: string
-}
-
 export default function DataGridDetails({
   value,
   prefix,
@@ -40,32 +35,20 @@ export default function DataGridDetails({
   const { classes } = useStyles()
   const [checked, setChecked] = useState(false)
 
-  // avoids key 'id' from being used in row data
-  const rows = value.map((val, k) => {
-    const { id, ...rest } = val
-    return {
-      id: String(k), // used by material UI
-      identifier: id, // renamed from id to identifier
-      ...rest,
-    } as Entry
-  })
+  // DataGrid needs a unique row id; rather than commandeering any 'id' field
+  // the feature itself carries, tag each row with the array index and point
+  // getRowId at it, leaving the feature's own keys (including 'id') untouched
+  const rows = value.map((val, k) => ({ ...val, __dataGridRowId: k }))
 
-  const unionKeys = new Set<string>()
+  const colNames = new Set<string>()
   for (const val of value) {
     for (const k of Object.keys(val)) {
-      unionKeys.add(k)
+      colNames.add(k)
     }
   }
-  // avoids key 'id' from being used in column names, and tries
-  // to make it at the start of the colNames array
-  let colNames: string[]
-  if (unionKeys.has('id')) {
-    unionKeys.delete('id')
-    colNames = ['identifier', ...unionKeys]
-  } else {
-    colNames = [...unionKeys]
-  }
-  const widths = colNames.map(e => measureGridWidth(rows.map(r => r[e])))
+  const widths = [...colNames].map(col =>
+    measureGridWidth(value.map(r => r[col])),
+  )
   return (
     <div className={classes.margin}>
       <FieldName prefix={prefix} name={name} />
@@ -84,14 +67,15 @@ export default function DataGridDetails({
         <DataGrid
           disableRowSelectionOnClick
           rows={rows}
+          getRowId={row => row.__dataGridRowId}
           rowHeight={20}
           columnHeaderHeight={35}
           hideFooter={rows.length < 25}
           showToolbar={checked}
-          columns={colNames.map(
-            (val, index) =>
+          columns={[...colNames].map(
+            (field, index) =>
               ({
-                field: val,
+                field,
                 width: widths[index],
                 renderCell: ({ value }) => (
                   <div className={classes.cell}>

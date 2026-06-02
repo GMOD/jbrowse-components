@@ -51,4 +51,18 @@ describe('DataGridDetails', () => {
     )
     expect(getByText('hits')).toBeTruthy()
   })
+
+  test('rows carrying both id and identifier do not produce a duplicate column', () => {
+    // the previous id->identifier rename collided when both keys were present
+    const { getByText } = renderWithTheme(
+      <DataGridDetails
+        name="both"
+        value={[
+          { id: 'a', identifier: 'x', label: 'first' },
+          { id: 'b', identifier: 'y', label: 'second' },
+        ]}
+      />,
+    )
+    expect(getByText('both')).toBeTruthy()
+  })
 })

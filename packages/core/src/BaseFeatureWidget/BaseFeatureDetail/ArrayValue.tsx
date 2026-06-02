@@ -6,6 +6,8 @@ import FieldName from './FieldName.tsx'
 import { isObject } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 
+import type { FeatureFormatter } from '../types.tsx'
+
 const MAX_ARRAY_LENGTH = 100
 
 const useStyles = makeStyles()(theme => ({
@@ -34,7 +36,7 @@ export default function ArrayValue({
   description?: React.ReactNode
   name: string
   value: unknown[]
-  formatter?: (value: unknown, key: string, index?: number) => React.ReactNode
+  formatter?: FeatureFormatter
   prefix?: string[]
 }) {
   const { classes } = useStyles()
