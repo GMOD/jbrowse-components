@@ -66,7 +66,6 @@ const AssemblySelector = observer(function AssemblySelector({
   return (
     <TextField
       select
-      data-testid="assembly-selector-textfield"
       label={label}
       variant="outlined"
       helperText={error || helperText}

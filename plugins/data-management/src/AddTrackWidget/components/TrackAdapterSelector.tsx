@@ -36,13 +36,7 @@ const TrackAdapterSelector = observer(function ({
       onChange={event => {
         model.setAdapterHint(event.target.value)
       }}
-      slotProps={{
-        select: {
-          SelectDisplayProps: {
-            'data-testid': 'adapterTypeSelect',
-          },
-        },
-      }}
+
     >
       {Object.entries(
         categorizeAdapters(

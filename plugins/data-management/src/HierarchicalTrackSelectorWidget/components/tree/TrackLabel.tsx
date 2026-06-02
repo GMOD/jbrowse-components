@@ -49,11 +49,6 @@ const TrackCheckbox = observer(function TrackCheckbox({
         }
       }}
       disabled={disabled}
-      slotProps={{
-        input: {
-          'data-testid': `htsTrackEntry-${id}`,
-        },
-      }}
     />
   )
 })

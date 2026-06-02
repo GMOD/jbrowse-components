@@ -93,9 +93,8 @@ function getSession() {
 
 test('adds a track', async () => {
   const { session, model } = getSession()
-  const { getByTestId, getAllByTestId, findByText, findByRole } = render(
-    <AddTrackWidget model={model} />,
-  )
+  const { getByTestId, getByRole, getAllByTestId, findByText, findByRole } =
+    render(<AddTrackWidget model={model} />)
   expect(session.sessionTracks.length).toBe(1)
   fireEvent.change(getAllByTestId('urlInput')[0]!, {
     target: {
@@ -103,7 +102,7 @@ test('adds a track', async () => {
     },
   })
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
-  fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
+  fireEvent.mouseDown(getByRole('combobox', { name: 'Adapter type' }))
   const bamAdapter = await findByText('BAM adapter')
   fireEvent.click(bamAdapter)
   fireEvent.change(getByTestId('trackNameInput'), {
@@ -111,11 +110,9 @@ test('adds a track', async () => {
       value: 'Test track name',
     },
   })
-  fireEvent.mouseDown(getByTestId('trackTypeSelect'))
+  fireEvent.mouseDown(getByRole('combobox', { name: 'Track type' }))
   fireEvent.click(await findByText('Feature track'))
-  fireEvent.mouseDown(
-    within(getByTestId('assembly-selector-textfield')).getByText('volMyt1'),
-  )
+  fireEvent.mouseDown(getByRole('combobox', { name: 'Assembly' }))
   fireEvent.click(within(await findByRole('listbox')).getByText('volMyt1'))
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
   expect(session.sessionTracks.length).toBe(2)
