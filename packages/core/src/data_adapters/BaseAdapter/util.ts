@@ -13,10 +13,6 @@ export type AnyDataAdapter =
   | RegionsAdapter
   | BaseSequenceAdapter
 
-export function isSequenceAdapter(t: AnyDataAdapter): t is BaseSequenceAdapter {
-  return 'getRegions' in t && 'getFeatures' in t
-}
-
 export function isRegionsAdapter(t: AnyDataAdapter): t is RegionsAdapter {
   return 'getRegions' in t
 }

@@ -479,9 +479,10 @@ export class WebGPUHal implements GpuHal {
       if (this.uniformSlot >= MAX_UNIFORM_SLOTS) {
         console.error(
           `[WebGPUHal] uniform ring buffer exhausted at ${MAX_UNIFORM_SLOTS} ` +
-            `writeUniforms calls in one frame — subsequent draws will use ` +
-            `stale uniform data. This indicates a renderer doing far more ` +
-            `per-frame uniform writes than expected; investigate the call ` +
+            `writeUniforms calls in one frame — this write is dropped, so the ` +
+            `paired draw renders with the previous batch's uniforms (wrong ` +
+            `data, not last-frame-stale). This indicates a renderer doing far ` +
+            `more per-frame uniform writes than expected; investigate the call ` +
             `site before raising the cap (and consider switching to a ` +
             `dynamic-growth ring buffer).`,
         )

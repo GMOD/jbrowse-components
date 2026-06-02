@@ -317,12 +317,8 @@ export function bpToPx(
 }
 
 const oneEightyOverPi = 180 / Math.PI
-const piOverOneEighty = Math.PI / 180
 export function radToDeg(radians: number) {
   return (radians * oneEightyOverPi) % 360
-}
-export function degToRad(degrees: number) {
-  return (degrees * piOverOneEighty) % (2 * Math.PI)
 }
 
 /**
