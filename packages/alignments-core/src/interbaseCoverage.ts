@@ -18,6 +18,30 @@ export interface ClipEntry {
 const MINIMUM_INDICATOR_READ_DEPTH = 8
 const INDICATOR_THRESHOLD = 0.3
 
+interface InterbaseBucket {
+  position: number
+  insertion: number
+  softclip: number
+  hardclip: number
+}
+
+type InterbaseField = 'insertion' | 'softclip' | 'hardclip'
+
+function bumpInterbase(
+  map: Map<number, InterbaseBucket>,
+  entries: { position: number }[],
+  field: InterbaseField,
+) {
+  for (const { position } of entries) {
+    let bucket = map.get(position)
+    if (!bucket) {
+      bucket = { position, insertion: 0, softclip: 0, hardclip: 0 }
+      map.set(position, bucket)
+    }
+    bucket[field]++
+  }
+}
+
 export function computeInterbaseCoverage(
   insertions: InsertionEntry[],
   softclips: ClipEntry[],
@@ -30,35 +54,10 @@ export function computeInterbaseCoverage(
     maxDepth,
     startPos: coverageStartPos,
   } = coverage
-  const interbaseByPosition = new Map<
-    number,
-    { position: number; insertion: number; softclip: number; hardclip: number }
-  >()
-
-  for (const ins of insertions) {
-    let entry = interbaseByPosition.get(ins.position)
-    if (!entry) {
-      entry = { position: ins.position, insertion: 0, softclip: 0, hardclip: 0 }
-      interbaseByPosition.set(ins.position, entry)
-    }
-    entry.insertion++
-  }
-  for (const sc of softclips) {
-    let entry = interbaseByPosition.get(sc.position)
-    if (!entry) {
-      entry = { position: sc.position, insertion: 0, softclip: 0, hardclip: 0 }
-      interbaseByPosition.set(sc.position, entry)
-    }
-    entry.softclip++
-  }
-  for (const hc of hardclips) {
-    let entry = interbaseByPosition.get(hc.position)
-    if (!entry) {
-      entry = { position: hc.position, insertion: 0, softclip: 0, hardclip: 0 }
-      interbaseByPosition.set(hc.position, entry)
-    }
-    entry.hardclip++
-  }
+  const interbaseByPosition = new Map<number, InterbaseBucket>()
+  bumpInterbase(interbaseByPosition, insertions, 'insertion')
+  bumpInterbase(interbaseByPosition, softclips, 'softclip')
+  bumpInterbase(interbaseByPosition, hardclips, 'hardclip')
 
   if (interbaseByPosition.size === 0) {
     return {
@@ -86,30 +85,35 @@ export function computeInterbaseCoverage(
 
   for (const entry of interbaseByPosition.values()) {
     const total = entry.insertion + entry.softclip + entry.hardclip
+    // colorType 1=insertion 2=softclip 3=hardclip, stacked by accumulating
+    // yOffset. Unrolled to avoid a per-position array allocation.
     let yOffset = 0
     if (entry.insertion > 0) {
+      const height = entry.insertion / scale
       segments.push({
         position: entry.position,
         yOffset,
-        height: entry.insertion / scale,
+        height,
         colorType: 1,
       })
-      yOffset += entry.insertion / scale
+      yOffset += height
     }
     if (entry.softclip > 0) {
+      const height = entry.softclip / scale
       segments.push({
         position: entry.position,
         yOffset,
-        height: entry.softclip / scale,
+        height,
         colorType: 2,
       })
-      yOffset += entry.softclip / scale
+      yOffset += height
     }
     if (entry.hardclip > 0) {
+      const height = entry.hardclip / scale
       segments.push({
         position: entry.position,
         yOffset,
-        height: entry.hardclip / scale,
+        height,
         colorType: 3,
       })
     }

@@ -40,6 +40,9 @@ export function buildCigarOpDrawColors(state: RenderState): CigarOpDrawColors {
     baseC: base ?? rgb255(colors.colorBaseC),
     baseG: base ?? rgb255(colors.colorBaseG),
     baseT: base ?? rgb255(colors.colorBaseT),
+    // N/other bases are already grey, so the showModifications muted swap is a
+    // no-op for them.
+    baseN: rgb255(colors.colorMutedSnpBase),
     mismatch: '',
     deletion: rgb255(colors.colorDeletion),
     insertion: '',

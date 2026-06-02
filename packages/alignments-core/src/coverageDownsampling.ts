@@ -1,6 +1,5 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
-import type { IndelEntry } from './labelConstants.ts'
 import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
 export function niceStep(maxDepth: number) {
@@ -70,47 +69,6 @@ export interface CoverageRegion {
   coverageStartPos: number
 }
 
-export function computeVisibleMaxDepth<
-  B extends { start: number; end: number },
->(
-  visibleBlocks: B[],
-  getCoverageForBlock: (block: B) => CoverageRegion | undefined,
-) {
-  let maxDepth = 0
-  for (const block of visibleBlocks) {
-    const cov = getCoverageForBlock(block)
-    if (!cov) {
-      continue
-    }
-    const startBin = Math.max(0, Math.floor(block.start - cov.coverageStartPos))
-    const endBin = Math.min(
-      cov.coverageDepths.length,
-      Math.ceil(block.end - cov.coverageStartPos),
-    )
-    for (let i = startBin; i < endBin; i++) {
-      const d = cov.coverageDepths[i]!
-      if (d > maxDepth) {
-        maxDepth = d
-      }
-    }
-  }
-  return maxDepth
-}
-
-export function getGlobalMaxCoverageDepth<K, D>(
-  dataMap: ReadonlyMap<K, D>,
-  getMaxDepth: (data: D) => number,
-) {
-  let max = 0
-  for (const data of dataMap.values()) {
-    const d = getMaxDepth(data)
-    if (d > max) {
-      max = d
-    }
-  }
-  return max
-}
-
 export function computeVisibleCoverageStats<
   B extends { start: number; end: number },
 >(
@@ -133,41 +91,6 @@ export function computeVisibleCoverageStats<
       Math.ceil(block.end - cov.coverageStartPos),
     )
     for (let i = startBin; i < endBin; i++) {
-      const d = cov.coverageDepths[i]!
-      if (d < min) {
-        min = d
-      }
-      if (d > max) {
-        max = d
-      }
-      sum += d
-      sumSq += d * d
-      count++
-    }
-  }
-  if (count === 0 || !Number.isFinite(max)) {
-    return undefined
-  }
-  const mean = sum / count
-  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
-  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
-}
-
-export function computeGlobalCoverageStats<K, D>(
-  dataMap: ReadonlyMap<K, D>,
-  getCoverage: (data: D) => CoverageRegion | undefined,
-): ScoreStats | undefined {
-  let min = Infinity
-  let max = -Infinity
-  let sum = 0
-  let sumSq = 0
-  let count = 0
-  for (const data of dataMap.values()) {
-    const cov = getCoverage(data)
-    if (!cov) {
-      continue
-    }
-    for (let i = 0, l = cov.coverageDepths.length; i < l; i++) {
       const d = cov.coverageDepths[i]!
       if (d < min) {
         min = d
@@ -383,8 +306,9 @@ export interface SNPCoverageResult {
 
 /**
  * Compute SNP coverage segments for rendering colored bars in coverage area.
- * Groups mismatches by position, counts A/C/G/T per position, and creates
- * stacked segments expressed as fractions of THIS position's coverage bar.
+ * Groups mismatches by position, counts A/C/G/T (and N/other as one grey
+ * bucket) per position, and creates stacked segments expressed as fractions of
+ * THIS position's coverage bar. colorType: 1=A 2=C 3=G 4=T 5=N.
  */
 export function computeSNPCoverage(
   mismatches: MismatchEntry[],
@@ -409,22 +333,31 @@ export function computeSNPCoverage(
 
   const snpByPosition = new Map<
     number,
-    { position: number; a: number; c: number; g: number; t: number }
+    { position: number; a: number; c: number; g: number; t: number; n: number }
   >()
   for (const mm of mismatches) {
     let entry = snpByPosition.get(mm.position)
     if (!entry) {
-      entry = { position: mm.position, a: 0, c: 0, g: 0, t: 0 }
+      entry = { position: mm.position, a: 0, c: 0, g: 0, t: 0, n: 0 }
       snpByPosition.set(mm.position, entry)
     }
-    if (mm.base === 65) {
-      entry.a++
-    } else if (mm.base === 67) {
-      entry.c++
-    } else if (mm.base === 71) {
-      entry.g++
-    } else if (mm.base === 84) {
-      entry.t++
+    // N and other non-A/C/G/T bases (IUPAC ambiguity codes) all accumulate into
+    // entry.n, drawn as one grey segment (colorType 5) on the coverage bar.
+    switch (mm.base) {
+      case 65:
+        entry.a++
+        break
+      case 67:
+        entry.c++
+        break
+      case 71:
+        entry.g++
+        break
+      case 84:
+        entry.t++
+        break
+      default:
+        entry.n++
     }
   }
 
@@ -437,7 +370,7 @@ export function computeSNPCoverage(
   }[] = []
 
   for (const entry of snpByPosition.values()) {
-    const total = entry.a + entry.c + entry.g + entry.t
+    const total = entry.a + entry.c + entry.g + entry.t + entry.n
     if (total === 0) {
       continue
     }
@@ -452,50 +385,61 @@ export function computeSNPCoverage(
       continue
     }
     const relDepth = totalDepth / maxDepth
+    // colorType 1=A 2=C 3=G 4=T, stacked bottom-to-top by accumulating yOffset.
+    // Unrolled (not a [a,c,g,t] loop) to avoid a per-position array allocation.
     let yOffset = 0
     if (entry.a > 0) {
-      const h = entry.a / totalDepth
+      const height = entry.a / totalDepth
       segments.push({
         position: entry.position,
         yOffset,
-        height: h,
+        height,
         colorType: 1,
         relDepth,
       })
-      yOffset += h
+      yOffset += height
     }
     if (entry.c > 0) {
-      const h = entry.c / totalDepth
+      const height = entry.c / totalDepth
       segments.push({
         position: entry.position,
         yOffset,
-        height: h,
+        height,
         colorType: 2,
         relDepth,
       })
-      yOffset += h
+      yOffset += height
     }
     if (entry.g > 0) {
-      const h = entry.g / totalDepth
+      const height = entry.g / totalDepth
       segments.push({
         position: entry.position,
         yOffset,
-        height: h,
+        height,
         colorType: 3,
         relDepth,
       })
-      yOffset += h
+      yOffset += height
     }
     if (entry.t > 0) {
-      const h = entry.t / totalDepth
+      const height = entry.t / totalDepth
       segments.push({
         position: entry.position,
         yOffset,
-        height: h,
+        height,
         colorType: 4,
         relDepth,
       })
+      yOffset += height
     }
+    const height = entry.n / totalDepth
+    segments.push({
+      position: entry.position,
+      yOffset,
+      height,
+      colorType: 5,
+      relDepth,
+    })
   }
 
   const filteredSegments = segments.filter(seg => seg.position >= regionStart)
@@ -521,59 +465,6 @@ export function computeSNPCoverage(
     relDepths,
     count: filteredSegments.length,
   }
-}
-
-export interface InsertionIndicatorResult {
-  positions: Uint32Array
-  count: number
-}
-
-/**
- * Compute insertion indicator positions from CS tag indel events.
- * Only insertions produce indicators — deletions already show as reduced
- * depth in the coverage area. Creates an indicator when the insertion count
- * at a position exceeds `threshold` fraction of the local coverage depth.
- */
-export function computeInsertionIndicators(
-  indels: IndelEntry[],
-  coverageDepths: Float32Array,
-  coverageStartPos: number,
-  threshold = 0.15,
-): InsertionIndicatorResult {
-  if (indels.length === 0) {
-    return { positions: new Uint32Array(0), count: 0 }
-  }
-
-  const insertionCountByPos = new Map<number, number>()
-  for (const indel of indels) {
-    if (indel.type === 1) {
-      insertionCountByPos.set(
-        indel.position,
-        (insertionCountByPos.get(indel.position) ?? 0) + 1,
-      )
-    }
-  }
-
-  const resultPositions: number[] = []
-  for (const [pos, count] of insertionCountByPos) {
-    const depthIdx = pos - coverageStartPos
-    const localDepth =
-      depthIdx >= 0 && depthIdx < coverageDepths.length
-        ? coverageDepths[depthIdx]!
-        : 0
-    if (localDepth >= 1 && count / localDepth >= threshold) {
-      resultPositions.push(pos)
-    }
-  }
-
-  resultPositions.sort((a, b) => a - b)
-
-  const positions = new Uint32Array(resultPositions.length)
-  for (let i = 0; i < resultPositions.length; i++) {
-    positions[i] = resultPositions[i]!
-  }
-
-  return { positions, count: resultPositions.length }
 }
 
 export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'

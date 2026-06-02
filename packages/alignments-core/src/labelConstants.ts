@@ -9,6 +9,9 @@ const BASE_A_COLOR = '#00bf00'
 const BASE_C_COLOR = '#4747ff'
 const BASE_G_COLOR = '#d5bb04'
 const BASE_T_COLOR = '#f00'
+// N and other non-A/C/G/T bases: muted grey, matching the pileup mismatch
+// shader (mismatch.slang) and the theme's mutedSnpBase ('#888').
+const BASE_N_COLOR = '#888'
 
 export interface CigarOpDrawColors {
   mismatch: string
@@ -18,6 +21,7 @@ export interface CigarOpDrawColors {
   baseC: string
   baseG: string
   baseT: string
+  baseN: string
 }
 
 export const DEFAULT_CIGAR_OP_DRAW_COLORS: CigarOpDrawColors = {
@@ -28,6 +32,7 @@ export const DEFAULT_CIGAR_OP_DRAW_COLORS: CigarOpDrawColors = {
   baseC: BASE_C_COLOR,
   baseG: BASE_G_COLOR,
   baseT: BASE_T_COLOR,
+  baseN: BASE_N_COLOR,
 }
 
 export function computeLabelFontSize(h: number) {

@@ -18,23 +18,23 @@ export interface CoverageGap {
   featureStrand: number
 }
 
-function getFeatureExtent(
-  features: { start: number; end: number }[],
+// Coverage always starts at regionStart: a read starting left of the region
+// still contributes to the first bins via the sweep line, so no leftward
+// extension is needed. We only extend the right edge so reads overhanging
+// regionEnd keep their depth (up to one region-width past the edge).
+function getFeatureEnd(
+  features: { end: number }[],
   regionStart: number,
   regionEnd: number,
 ) {
   const maxExtension = regionEnd - regionStart
-  let actualStart = regionStart
   let actualEnd = regionEnd
   for (const f of features) {
-    if (f.start < actualStart && f.start >= regionStart - maxExtension) {
-      actualStart = f.start
-    }
     if (f.end > actualEnd && f.end <= regionEnd + maxExtension) {
       actualEnd = f.end
     }
   }
-  return { actualStart, actualEnd }
+  return actualEnd
 }
 
 export function computeCoverage(
@@ -55,9 +55,8 @@ export function computeCoverage(
     }
   }
 
-  const extent = getFeatureExtent(features, regionStart, regionEnd)
-  const actualStart = Math.max(extent.actualStart, regionStart)
-  const actualEnd = extent.actualEnd
+  const actualStart = regionStart
+  const actualEnd = getFeatureEnd(features, regionStart, regionEnd)
   const startPos = actualStart
   const numBins = actualEnd - actualStart
   const binSize = 1

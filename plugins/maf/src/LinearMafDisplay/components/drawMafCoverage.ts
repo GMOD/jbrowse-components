@@ -47,6 +47,7 @@ export function drawMafCoverage(
     baseC: theme.palette.bases.C.main,
     baseG: theme.palette.bases.G.main,
     baseT: theme.palette.bases.T.main,
+    baseN: theme.palette.mutedSnpBase,
   }
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)

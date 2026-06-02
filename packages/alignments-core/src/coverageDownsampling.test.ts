@@ -1,7 +1,6 @@
 import {
   buildCoverageTooltipBin,
   computeCoverageTicks,
-  computeVisibleMaxDepth,
   countSnpsAtPosition,
   downsampleMinMax,
 } from './coverageDownsampling.ts'
@@ -117,52 +116,6 @@ describe('downsampleMinMax', () => {
     const result = downsampleMinMax(depths, 1000, 100, 10)
     expect(result.positions[0]).toBe(1000)
     expect(result.positions[1]).toBe(1001)
-  })
-})
-
-describe('computeVisibleMaxDepth', () => {
-  function region(coverageDepths: Float32Array, coverageStartPos: number) {
-    return { coverageDepths, coverageStartPos }
-  }
-
-  test('returns 0 for empty blocks', () => {
-    expect(computeVisibleMaxDepth([], () => undefined)).toBe(0)
-  })
-
-  test('returns 0 when no data matches blocks', () => {
-    const blocks = [{ start: 100, end: 200, key: 'block1' }]
-    expect(computeVisibleMaxDepth(blocks, () => undefined)).toBe(0)
-  })
-
-  test('finds max depth in visible range', () => {
-    const data = region(new Float32Array([5, 10, 20, 8, 3]), 100)
-    const dataMap = new Map([['region1', data]])
-    const blocks = [{ start: 100, end: 105, key: 'region1' }]
-    expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(20)
-  })
-
-  test('only scans bins within visible block range', () => {
-    const data = region(new Float32Array([100, 5, 3, 2, 1]), 0)
-    const dataMap = new Map([['region1', data]])
-    const blocks = [{ start: 2, end: 5, key: 'region1' }]
-    expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(3)
-  })
-
-  test('handles coverageStartPos correctly', () => {
-    const data = region(new Float32Array([10, 20, 30]), 1050)
-    const dataMap = new Map([['region1', data]])
-    const blocks = [{ start: 1050, end: 1053, key: 'region1' }]
-    expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(30)
-  })
-
-  test('skips blocks with no matching data', () => {
-    const data = region(new Float32Array([5, 10]), 0)
-    const dataMap = new Map([['region1', data]])
-    const blocks = [
-      { start: 0, end: 2, key: 'region1' },
-      { start: 100, end: 200, key: 'region2' },
-    ]
-    expect(computeVisibleMaxDepth(blocks, b => dataMap.get(b.key))).toBe(10)
   })
 })
 

@@ -44,6 +44,7 @@ describe('snpColorForType', () => {
     baseC: 'blue',
     baseG: 'green',
     baseT: 'yellow',
+    baseN: 'grey',
     mismatch: 'gray',
     deletion: 'black',
     insertion: 'purple',
@@ -53,11 +54,12 @@ describe('snpColorForType', () => {
     expect(snpColorForType(1, colors)).toBe('red')
     expect(snpColorForType(2, colors)).toBe('blue')
     expect(snpColorForType(3, colors)).toBe('green')
+    expect(snpColorForType(4, colors)).toBe('yellow')
   })
 
-  it('defaults to baseT for unknown types', () => {
-    expect(snpColorForType(4, colors)).toBe('yellow')
-    expect(snpColorForType(0, colors)).toBe('yellow')
+  it('returns baseN (grey) for N and unknown types', () => {
+    expect(snpColorForType(5, colors)).toBe('grey')
+    expect(snpColorForType(0, colors)).toBe('grey')
   })
 })
 
@@ -129,6 +131,7 @@ describe('drawSnpSegments', () => {
     baseC: 'blue',
     baseG: 'green',
     baseT: 'yellow',
+    baseN: 'grey',
     mismatch: '',
     deletion: '',
     insertion: '',

@@ -41,15 +41,21 @@ export function coverageLayout(coverageHeight: number) {
   return { effectiveH, bottom }
 }
 
+// colorType: 1=A 2=C 3=G 4=T 5=N. N and any unknown type fall back to the muted
+// grey. Mirrors snpColor() in snpCoverage.slang so Canvas2D and GPU match.
 export function snpColorForType(colorType: number, colors: CigarOpDrawColors) {
-  if (colorType === 1) {
-    return colors.baseA
-  } else if (colorType === 2) {
-    return colors.baseC
-  } else if (colorType === 3) {
-    return colors.baseG
+  switch (colorType) {
+    case 1:
+      return colors.baseA
+    case 2:
+      return colors.baseC
+    case 3:
+      return colors.baseG
+    case 4:
+      return colors.baseT
+    default:
+      return colors.baseN
   }
-  return colors.baseT
 }
 
 // Canvas2D coverage buffer defers normalization to draw time to support log

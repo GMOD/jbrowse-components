@@ -1,5 +1,5 @@
-// SNP coverage pass: segments stacked on the coverage bars showing A/C/G/T
-// fraction per bin. colorType encodes 1=A 2=C 3=G 4=T.
+// SNP coverage pass: segments stacked on the coverage bars showing A/C/G/T/N
+// fraction per bin. colorType encodes 1=A 2=C 3=G 4=T 5=N.
 //! targets: wgsl, glsl
 //! layout-out: packages/alignments-core/src/snpCoverageLayout.generated.ts
 
@@ -33,7 +33,9 @@ float3 snpColor(float ct, Uniforms u) {
   if (ci == 1) { return unpackRGBA(u.colorBaseA).xyz; }
   if (ci == 2) { return unpackRGBA(u.colorBaseC).xyz; }
   if (ci == 3) { return unpackRGBA(u.colorBaseG).xyz; }
-  return unpackRGBA(u.colorBaseT).xyz;
+  if (ci == 4) { return unpackRGBA(u.colorBaseT).xyz; }
+  // 5=N and any other base fall back to the muted grey.
+  return unpackRGBA(u.colorMutedSnpBase).xyz;
 }
 
 [shader("vertex")]
