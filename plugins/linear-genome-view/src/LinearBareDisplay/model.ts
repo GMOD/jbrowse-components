@@ -1,5 +1,4 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay/index.ts'
@@ -38,8 +37,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get rendererConfig() {
-        const configBlob = getConf(self, ['renderer']) || {}
-        return configBlob
+        return getConf(self, ['renderer'])
       },
       /**
        * #getter
@@ -57,7 +55,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            ...getParentRenderProps(self),
             config: self.rendererConfig,
           }
         },

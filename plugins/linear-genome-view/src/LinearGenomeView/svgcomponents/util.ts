@@ -11,6 +11,12 @@ interface Track {
 
 export const trackSpacing = 2
 
+// space the label pushes a track down by; only 'offset' mode does. Shared by
+// totalHeight + SVGTracks.getOffsets so the two can't drift.
+export function labelOffset(trackLabels: TrackLabelMode, textHeight: number) {
+  return trackLabels === 'offset' ? textHeight : 0
+}
+
 export function totalHeight(
   tracks: Track[],
   textHeight: number,
@@ -20,7 +26,7 @@ export function totalHeight(
     tracks.map(
       t =>
         t.displays[0]!.height +
-        (['none', 'left'].includes(trackLabels) ? 0 : textHeight) +
+        labelOffset(trackLabels, textHeight) +
         trackSpacing,
     ),
   )

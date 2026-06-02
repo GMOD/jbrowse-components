@@ -80,7 +80,7 @@ import type { ParsedLocString } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SearchResultsDialog = lazy(
@@ -93,6 +93,22 @@ const SearchResultsDialog = lazy(
  */
 function getCenteredOffsetPx(contentPx: number, viewportPx: number) {
   return Math.round(contentPx / 2 - viewportPx / 2)
+}
+
+/**
+ * Resolve a region's refName to the assembly's canonical name, falling back to
+ * the raw refName when the assemblyName is missing or unknown (so highlights
+ * authored without an assembly still render in single-assembly views).
+ */
+function resolveCanonicalRefName(
+  self: IAnyStateTreeNode,
+  region: { assemblyName?: string; refName: string },
+) {
+  const { assemblyManager } = getSession(self)
+  const asm = region.assemblyName
+    ? assemblyManager.get(region.assemblyName)
+    : undefined
+  return asm?.getCanonicalRefName(region.refName) ?? region.refName
 }
 
 /**
@@ -571,7 +587,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get trackHeights() {
         return sum(
-          self.tracks.map(t => (t.minimized ? 0 : t.displays[0].height)),
+          self.tracks.map(t =>
+            t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height,
+          ),
         )
       },
 
@@ -1842,19 +1860,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let lastStart = lastLocation.start ?? lastRegion.start
         let lastEnd = lastLocation.end ?? lastRegion.end
 
-        // Apply grow factor to add padding around the region
+        // pad each region's sub-interval within its own bounds (same as one
+        // expand when first and last are the same region)
         if (grow) {
-          const expanded = expandRegion(
+          const first = expandRegion(
             firstStart,
-            lastEnd,
+            firstEnd,
             grow,
             firstRegion.start,
+            firstRegion.end,
+          )
+          const last = expandRegion(
+            lastStart,
+            lastEnd,
+            grow,
+            lastRegion.start,
             lastRegion.end,
           )
-          firstStart = expanded.start
-          firstEnd = expanded.end
-          lastStart = expanded.start
-          lastEnd = expanded.end
+          firstStart = first.start
+          firstEnd = first.end
+          lastStart = last.start
+          lastEnd = last.end
         }
 
         // Find region indices that contain our locations
@@ -1965,12 +1991,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         start: number
         end: number
       }) {
-        const { assemblyManager } = getSession(self)
-        const asm = region.assemblyName
-          ? assemblyManager.get(region.assemblyName)
-          : undefined
-        const refName =
-          asm?.getCanonicalRefName(region.refName) ?? region.refName
+        const refName = resolveCanonicalRefName(self, region)
         return getLayoutHighlightCoords(self, { ...region, refName })
       },
 
@@ -1985,12 +2006,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         start: number
         end: number
       }) {
-        const { assemblyManager } = getSession(self)
-        const asm = region.assemblyName
-          ? assemblyManager.get(region.assemblyName)
-          : undefined
-        const refName =
-          asm?.getCanonicalRefName(region.refName) ?? region.refName
+        const refName = resolveCanonicalRefName(self, region)
         const coords = getLayoutHighlightCoords(self.overviewLayout, {
           ...region,
           refName,

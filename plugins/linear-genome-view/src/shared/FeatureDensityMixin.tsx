@@ -82,6 +82,20 @@ export default function FeatureDensityMixin<
         )
       },
     }))
+    .views(self => ({
+      get bytesTooLarge() {
+        return self.currentBytesRequested > self.maxAllowableBytes
+      },
+
+      // a force-load sets userBpPerPxLimit, switching density gating from the
+      // automatic screen-density check to a "this zoom or finer is allowed"
+      get densityTooLarge() {
+        const view = getContainingView(self) as LGV
+        return self.userBpPerPxLimit
+          ? view.bpPerPx > self.userBpPerPxLimit
+          : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         addDisposer(
@@ -97,16 +111,15 @@ export default function FeatureDensityMixin<
         self.currStatsBpPerPx = n
       },
 
-      // Override RegionTooLargeMixin's setFeatureDensityStatsLimit to also
-      // handle bpPerPx-based limits for density-based "too large" detection
+      // regionTooLarge is bytesTooLarge || densityTooLarge, so force-load must
+      // relax both: always set userBpPerPxLimit, and raise the byte limit with
+      // headroom when bytes are present (else clear it so it can't re-gate)
       setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
         const view = getContainingView(self) as LGV
-        if (stats?.bytes) {
-          self.userByteSizeLimit = stats.bytes
-        } else {
-          self.userBpPerPxLimit = view.bpPerPx
-        }
-        self.setRegionTooLarge(false)
+        self.userByteSizeLimit = stats?.bytes
+          ? Math.ceil(stats.bytes * 1.5)
+          : undefined
+        self.userBpPerPxLimit = view.bpPerPx
       },
 
       getFeatureDensityStats() {
@@ -131,30 +144,17 @@ export default function FeatureDensityMixin<
       },
     }))
     .views(self => ({
-      // Override RegionTooLargeMixin's imperative regionTooLarge with a
-      // reactive computation from density stats
+      // reactive replacement for RegionTooLargeMixin's imperative version
       get regionTooLarge() {
         const view = getContainingView(self) as LGV
-        if (
-          !self.featureDensityStatsReady ||
-          view.visibleBp < AUTO_FORCE_LOAD_BP
-        ) {
-          return false
-        }
-        return (
-          self.currentBytesRequested > self.maxAllowableBytes ||
-          (self.userBpPerPxLimit
-            ? view.bpPerPx > self.userBpPerPxLimit
-            : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
-        )
+        const gatesActive =
+          self.featureDensityStatsReady && view.visibleBp >= AUTO_FORCE_LOAD_BP
+        return gatesActive && (self.bytesTooLarge || self.densityTooLarge)
       },
 
       get regionTooLargeReason() {
-        const req = self.currentBytesRequested
-        const max = self.maxAllowableBytes
-
-        return req && req > max
-          ? `Requested too much data (${getDisplayStr(req)})`
+        return self.bytesTooLarge
+          ? `Requested too much data (${getDisplayStr(self.currentBytesRequested)})`
           : ''
       },
     }))
@@ -163,9 +163,8 @@ export default function FeatureDensityMixin<
         return self.featureDensityStatsReady && !self.regionTooLarge
       },
 
-      regionCannotBeRenderedText(_region: Region) {
-        return self.regionTooLarge ? 'Force load to see features' : ''
-      },
+      // regionCannotBeRenderedText is inherited from RegionTooLargeMixin; it
+      // reads the overridden self.regionTooLarge so no redefinition is needed
 
       regionCannotBeRendered(_region: Region) {
         return self.regionTooLarge ? <TooLargeMessage model={self} /> : null

@@ -15,13 +15,14 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { navToOption } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
-export default function SearchResultsTable({
+const SearchResultsTable = observer(function SearchResultsTable({
   searchResults,
   assemblyName: optAssemblyName,
   model,
@@ -145,4 +146,6 @@ export default function SearchResultsTable({
       </Table>
     </TableContainer>
   )
-}
+})
+
+export default SearchResultsTable

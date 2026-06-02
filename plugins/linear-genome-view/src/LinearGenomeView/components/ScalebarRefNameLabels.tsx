@@ -216,7 +216,7 @@ function buildActionItems(
   ]
 }
 
-function RefNameMenu({
+const RefNameMenu = observer(function RefNameMenu({
   model,
   menuState,
   onClose,
@@ -278,6 +278,6 @@ function RefNameMenu({
       ]}
     />
   )
-}
+})
 
 export default ScalebarRefNameLabels

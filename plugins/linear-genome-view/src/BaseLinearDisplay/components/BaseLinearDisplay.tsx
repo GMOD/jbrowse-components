@@ -100,7 +100,6 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
             offsetMouseCoord={offsetMouseCoord}
             clientMouseCoord={clientMouseCoord}
             clientRect={clientRect}
-            mouseCoord={offsetMouseCoord}
           />
         </Suspense>
       ) : null}

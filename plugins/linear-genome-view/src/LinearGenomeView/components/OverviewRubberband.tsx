@@ -52,27 +52,26 @@ const OverviewRubberband = observer(function OverviewRubberband({
       }
     }
 
-    function globalMouseUp() {
-      // click and drag
-      if (startX !== undefined && currentX !== undefined) {
-        if (Math.abs(currentX - startX) > 3) {
-          const left = Math.min(startX, currentX)
-          const right = Math.max(startX, currentX)
+    function globalMouseUp(event: MouseEvent) {
+      // read the up position from the event so currentX state doesn't need to
+      // be a dep (which would re-subscribe these listeners every mousemove)
+      if (startX !== undefined && controlsRef.current) {
+        const offsetX = getRelativeX(event, controlsRef.current)
+        if (Math.abs(offsetX - startX) > 3) {
+          const left = Math.min(startX, offsetX)
+          const right = Math.max(startX, offsetX)
           model.moveTo(
             pxToBp(overview, left - cytobandOffset),
             pxToBp(overview, right - cytobandOffset),
           )
-        }
-      }
-
-      // just a click
-      if (startX !== undefined && currentX === undefined) {
-        const click = pxToBp(overview, startX - cytobandOffset)
-        if (!click.refName) {
-          getSession(model).notify('unknown position clicked')
-          console.error('unknown position clicked', click)
         } else {
-          model.centerAt(Math.round(click.coord), click.refName, click.index)
+          const click = pxToBp(overview, startX - cytobandOffset)
+          if (click.refName) {
+            model.centerAt(Math.round(click.coord), click.refName, click.index)
+          } else {
+            getSession(model).notify('unknown position clicked')
+            console.error('unknown position clicked', click)
+          }
         }
       }
       setStartX(undefined)
@@ -95,7 +94,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
       window.removeEventListener('mouseup', globalMouseUp)
       window.removeEventListener('keydown', globalKeyDown)
     }
-  }, [startX, currentX, mouseDragging, model, overview, cytobandOffset])
+  }, [startX, mouseDragging, model, overview, cytobandOffset])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
