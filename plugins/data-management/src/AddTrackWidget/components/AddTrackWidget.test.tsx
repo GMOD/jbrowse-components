@@ -1,5 +1,5 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
-import { fireEvent, render, within } from '@testing-library/react'
+import { fireEvent, render, waitFor, within } from '@testing-library/react'
 
 import AddTrackWidget from './AddTrackWidget.tsx'
 import ConfirmTrack from './ConfirmTrack.tsx'
@@ -141,6 +141,22 @@ test('can switch from the default workflow to the bulk workflow via the link', a
   // back to the default workflow instead of opening the bulk one
   fireEvent.click(getByText('Add multiple tracks at once'))
   expect(await findByText(/Paste a list of file URLs/)).toBeTruthy()
+})
+
+test('synteny add-track component seeds query/target assemblies into the config', async () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'test.paf', locationType: 'UriLocation' })
+  render(<ConfirmTrack model={model} />)
+
+  // ComparativeAddTrackComponent is lazy; it seeds mixinData on mount so the
+  // synteny adapter gets assemblies even without touching the pickers
+  await waitFor(() => {
+    expect(model.mixinData.adapter).toBeDefined()
+  })
+  expect(model.getTrackConfig(Date.now())?.adapter).toMatchObject({
+    queryAssembly: 'volMyt1',
+    targetAssembly: 'volMyt1',
+  })
 })
 
 test('TextIndexingConfig edits existing values and has distinct add buttons', () => {

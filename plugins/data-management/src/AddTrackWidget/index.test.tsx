@@ -514,7 +514,7 @@ function makeHg38Session() {
   )
 }
 
-test('getTrackConfig includes default assembly names when mixinData is empty', () => {
+test('getTrackConfig does not add assembly-pair fields for non-synteny adapters', () => {
   const { widget } = makeHg38Session()
   widget.setTrackData({
     uri: 'https://example.com/test.bam',
@@ -522,13 +522,11 @@ test('getTrackConfig includes default assembly names when mixinData is empty', (
   })
 
   const config = widget.getTrackConfig(Date.now())
-  expect(config?.adapter).toMatchObject({
-    queryAssembly: 'hg38',
-    targetAssembly: 'hg38',
-  })
+  expect(config?.adapter).not.toHaveProperty('queryAssembly')
+  expect(config?.adapter).not.toHaveProperty('targetAssembly')
 })
 
-test('getTrackConfig lets mixinData override default assembly names', () => {
+test('getTrackConfig includes assembly-pair fields supplied via mixinData', () => {
   const { widget } = makeHg38Session()
   widget.setTrackData({
     uri: 'https://example.com/test.bam',

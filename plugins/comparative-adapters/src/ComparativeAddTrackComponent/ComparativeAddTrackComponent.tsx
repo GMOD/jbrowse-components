@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -14,6 +14,22 @@ const ComparativeAddTrackComponent = observer(
     const defaultAsm = session.assemblies[0]?.name ?? ''
     const [queryAssembly, setQueryAssembly] = useState(defaultAsm)
     const [targetAssembly, setTargetAssembly] = useState(defaultAsm)
+
+    // Seed the adapter's query/target assemblies while this picker is shown
+    // (covering the untouched-defaults case), and clear them on unmount so a
+    // subsequently chosen non-synteny adapter isn't left with stale assembly
+    // fields. These used to be injected for every track in getTrackConfig.
+    useEffect(() => {
+      model.setMixinData({ adapter: { queryAssembly, targetAssembly } })
+      return () => {
+        try {
+          model.setMixinData({})
+        } catch {
+          // widget may already be detached during teardown (submit); ignore
+        }
+      }
+    }, [model, queryAssembly, targetAssembly])
+
     return (
       <>
         <AssemblySelector
@@ -23,9 +39,6 @@ const ComparativeAddTrackComponent = observer(
           selected={queryAssembly}
           onChange={asm => {
             setQueryAssembly(asm)
-            model.setMixinData({
-              adapter: { queryAssembly: asm, targetAssembly },
-            })
           }}
           fullWidth
         />
@@ -36,9 +49,6 @@ const ComparativeAddTrackComponent = observer(
           selected={targetAssembly}
           onChange={asm => {
             setTargetAssembly(asm)
-            model.setMixinData({
-              adapter: { queryAssembly, targetAssembly: asm },
-            })
           }}
           fullWidth
         />

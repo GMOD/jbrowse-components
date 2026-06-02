@@ -257,7 +257,6 @@ export default function f(pluginManager: PluginManager) {
       getTrackConfig(timestamp: number) {
         const session = getSession(self)
         const assemblyInstance = session.assemblyManager.get(self.assembly)
-        const defaultAsm = session.assemblies[0]?.name ?? ''
 
         return assemblyInstance &&
           self.trackAdapter &&
@@ -271,15 +270,11 @@ export default function f(pluginManager: PluginManager) {
                 type: self.trackType,
                 name: self.trackName,
                 assemblyNames: [self.assembly],
-                // Spread default assembly names so comparative-adapter mixin
-                // components don't need to initialize mixinData on mount.
-                // mixinData.adapter overrides these if the user changed them.
-                adapter: {
-                  queryAssembly: defaultAsm,
-                  targetAssembly: defaultAsm,
-                  ...self.trackAdapter,
-                },
+                adapter: { ...self.trackAdapter },
               },
+              // Synteny add-track components seed mixinData.adapter with the
+              // query/target assemblies; non-synteny tracks leave it empty so
+              // their adapter config isn't polluted with assembly-pair fields.
               self.mixinData,
             )
           : undefined
