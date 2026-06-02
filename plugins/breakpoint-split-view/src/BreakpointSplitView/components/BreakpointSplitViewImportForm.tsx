@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 
 import ImportFormRow from './ImportFormRow.tsx'
 import SharedTrackSelector from './SharedTrackSelector.tsx'
-import { rowsToViewInits, swap } from './importFormUtils.ts'
+import { getSharedTracks, rowsToViewInits, swap } from './importFormUtils.ts'
 
 import type { ImportFormRowData } from './importFormUtils.ts'
 import type { BreakpointViewModel } from '../model.ts'
@@ -52,6 +52,18 @@ const BreakpointSplitViewImportForm = observer(
     const [error, setError] = useState<unknown>()
     const canLaunch = rows.every(r => r.assembly)
 
+    // A track is only launchable if it covers every selected assembly, so
+    // clamp the selection to the currently shared tracks: editing a row's
+    // assembly can invalidate a previously-picked track, and we must neither
+    // display nor launch a stale trackId.
+    const sharedTracks = getSharedTracks(
+      session.tracks,
+      rows.map(r => r.assembly),
+    )
+    const validTrackId = sharedTracks.some(t => t.trackId === trackId)
+      ? trackId
+      : ''
+
     function patchRow(idx: number, patch: Partial<ImportFormRowData>) {
       setRows(rows.map((r, i) => (i === idx ? { ...r, ...patch } : r)))
     }
@@ -73,7 +85,6 @@ const BreakpointSplitViewImportForm = observer(
               session={session}
               onAssemblyChange={val => {
                 patchRow(idx, { assembly: val })
-                setTrackId('')
               }}
               onLocChange={val => {
                 patchRow(idx, { loc: val })
@@ -90,9 +101,9 @@ const BreakpointSplitViewImportForm = observer(
 
         <div className={classes.section}>
           <SharedTrackSelector
-            model={model}
-            assemblies={rows.map(r => r.assembly)}
-            value={trackId}
+            session={session}
+            tracks={sharedTracks}
+            value={validTrackId}
             onChange={val => {
               setTrackId(val)
             }}
@@ -117,7 +128,7 @@ const BreakpointSplitViewImportForm = observer(
             onClick={() => {
               try {
                 setError(undefined)
-                model.setViews(rowsToViewInits(rows, trackId))
+                model.setViews(rowsToViewInits(rows, validTrackId))
               } catch (e) {
                 console.error(e)
                 setError(e)

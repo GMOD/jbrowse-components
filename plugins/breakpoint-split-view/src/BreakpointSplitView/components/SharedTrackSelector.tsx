@@ -1,26 +1,21 @@
-import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getSharedTracks } from './importFormUtils.ts'
-
-import type { BreakpointViewModel } from '../model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const SharedTrackSelector = observer(function SharedTrackSelector({
-  model,
-  assemblies,
+  session,
+  tracks,
   value,
   onChange,
 }: {
-  model: BreakpointViewModel
-  assemblies: string[]
+  session: AbstractSessionModel
+  tracks: AnyConfigurationModel[]
   value: string
   onChange: (trackId: string) => void
 }) {
-  const session = getSession(model)
-  const sharedTracks = getSharedTracks(session.tracks, assemblies)
-
   return (
     <TextField
       select
@@ -32,7 +27,7 @@ const SharedTrackSelector = observer(function SharedTrackSelector({
       style={{ minWidth: 300 }}
     >
       <MenuItem value="">(none)</MenuItem>
-      {sharedTracks.map(track => (
+      {tracks.map(track => (
         <MenuItem key={track.trackId} value={track.trackId}>
           {getTrackName(track, session)}
         </MenuItem>
