@@ -92,7 +92,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
 
   const lgvRegions = gatherOverlaps(
     features.map(f => ({
-      ...f,
+      refName: f.refName,
       start: Math.max(0, f.start - windowSize),
       end: f.end + windowSize,
       assemblyName: trackAssembly,

@@ -1,8 +1,12 @@
 import { useState } from 'react'
 
-import { getTag } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SUPPLEMENTARY,
+  getTag,
+} from '@jbrowse/alignments-core'
 import { getConf } from '@jbrowse/core/configuration'
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, NumberTextField } from '@jbrowse/core/ui'
 import { getContainingView, getSession, useFetch } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -11,7 +15,6 @@ import {
   CircularProgress,
   DialogActions,
   DialogContent,
-  TextField,
   Typography,
 } from '@mui/material'
 
@@ -25,15 +28,11 @@ const useStyles = makeStyles()({
   },
 })
 
-// SAM flag bits used to filter alignment categories
-const FLAG_SECONDARY = 256
-const FLAG_SUPPLEMENTARY = 2048
-
 async function fetchPrimaryAlignment(
   track: AbstractTrackModel,
   preFeature: Feature,
 ) {
-  if (!((preFeature.get('flags') as number) & FLAG_SUPPLEMENTARY)) {
+  if (!((preFeature.get('flags') as number) & SAM_FLAG_SUPPLEMENTARY)) {
     return preFeature
   }
   const SA = (getTag(preFeature, 'SA') as string | undefined) ?? ''
@@ -57,8 +56,8 @@ async function fetchPrimaryAlignment(
   const result = feats.find(
     f =>
       f.get('name') === preFeature.get('name') &&
-      !((f.get('flags') as number) & FLAG_SUPPLEMENTARY) &&
-      !((f.get('flags') as number) & FLAG_SECONDARY),
+      !((f.get('flags') as number) & SAM_FLAG_SUPPLEMENTARY) &&
+      !((f.get('flags') as number) & SAM_FLAG_SECONDARY),
   )
   if (!result) {
     throw new Error('primary feature not found')
@@ -77,10 +76,8 @@ export default function ReadVsRefDialog({
 }) {
   const { classes } = useStyles()
 
-  // window size stored as string because it backs a TextField; parsed on submit
-  const [windowSizeText, setWindowSize] = useState('0')
+  const [windowSize, setWindowSize] = useState<number | undefined>(0)
   const [submitError, setSubmitError] = useState<unknown>()
-  const windowSize = +windowSizeText
 
   const { data: primaryFeature, error: fetchError } = useFetch(
     ['primaryAlignment', preFeature.id()],
@@ -90,7 +87,7 @@ export default function ReadVsRefDialog({
 
   async function onSubmit() {
     try {
-      if (!primaryFeature) {
+      if (!primaryFeature || windowSize === undefined) {
         return
       }
       const session = getSession(track)
@@ -141,7 +138,7 @@ export default function ReadVsRefDialog({
           </div>
         ) : (
           <div className={classes.root}>
-            {(primaryFeature.get('flags') as number) & FLAG_SECONDARY ? (
+            {(primaryFeature.get('flags') as number) & SAM_FLAG_SECONDARY ? (
               <Typography style={{ color: 'orange' }}>
                 Note: You selected a secondary alignment (which generally does
                 not have SA tags or SEQ fields) so do a full reconstruction of
@@ -153,12 +150,12 @@ export default function ReadVsRefDialog({
               Using a larger value can allow you to see more genomic context.
             </Typography>
 
-            <TextField
-              value={windowSizeText}
-              onChange={event => {
-                setWindowSize(event.target.value)
-              }}
+            <NumberTextField
+              defaultValue={0}
+              min={0}
+              onValueChange={setWindowSize}
               label="Set window size"
+              errorText="Must be a non-negative number"
             />
           </div>
         )}
@@ -168,7 +165,7 @@ export default function ReadVsRefDialog({
           Cancel
         </Button>
         <Button
-          disabled={!primaryFeature}
+          disabled={!primaryFeature || windowSize === undefined}
           variant="contained"
           color="primary"
           onClick={() => {

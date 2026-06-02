@@ -8,13 +8,41 @@ import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
   const session = getSession(self)
   try {
-    const { features, totalLength, readName } = buildReadVsRefFeatures(feature)
+    const { features, totalLength, readName, seq } =
+      buildReadVsRefFeatures(feature)
     const { parentTrack } = self
     const [trackAssembly] = getConf(parentTrack, 'assemblyNames') as string[]
-    const readAssembly = `${readName}_assembly_${Date.now()}`
+    const stamp = Date.now()
+    const readAssembly = `${readName}_assembly_${stamp}`
     const assemblyNames = [trackAssembly!, readAssembly]
-    const trackId = `track-${Date.now()}`
+    const trackId = `track-${stamp}`
     const trackName = `${readName}_vs_${trackAssembly}`
+
+    // The synthetic read assembly must be registered for the DotplotView to
+    // initialize (assembliesInitialized gates on every assemblyName resolving);
+    // it is torn down by DotplotView.beforeDestroy via removeTemporaryAssembly.
+    session.addTemporaryAssembly?.({
+      name: readAssembly,
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        name: 'Read sequence',
+        trackId: `${readName}_${stamp}`,
+        assemblyNames: [readAssembly],
+        adapter: {
+          type: 'FromConfigSequenceAdapter',
+          noAssemblyManager: true,
+          features: [
+            {
+              start: 0,
+              end: totalLength,
+              seq: seq ?? '',
+              refName: readName,
+              uniqueId: `${readName}_${stamp}`,
+            },
+          ],
+        },
+      },
+    })
 
     session.addView('DotplotView', {
       type: 'DotplotView',

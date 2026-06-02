@@ -61,4 +61,11 @@ test('launch read vs ref dotplot', async () => {
     expect(session.views.length).toBe(2)
     expect(session.views[1]!.type).toBe('DotplotView')
   }, delay)
+
+  // the synthetic read assembly must be registered for the view to leave the
+  // loading state; without addTemporaryAssembly it stays initialized=false
+  const dotplotView = session.views[1] as unknown as { initialized: boolean }
+  await waitFor(() => {
+    expect(dotplotView.initialized).toBe(true)
+  }, delay)
 }, 40000)
