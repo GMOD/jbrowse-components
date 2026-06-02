@@ -49,11 +49,32 @@ test('skips reference-insertion columns and never increments refPos for them', (
   expect(r.mismatches).toEqual([])
 })
 
-test('case-insensitive base comparison; N never counts as a mismatch', () => {
+test('case-insensitive base comparison: matching bases emit no mismatch', () => {
   const blocks: MafBlock[] = [
-    block(0, 'aCgT', [row(0, 'ACGT'), row(1, 'NCNT'), row(2, 'ACNN')]),
+    block(0, 'aCgT', [row(0, 'ACGT'), row(1, 'acgt')]),
   ]
   const r = computeMafCoverage(blocks, 0, 4)
+  expect(r.mismatches).toEqual([])
+})
+
+test('sample N is a mismatch (base 78) against a known reference', () => {
+  const blocks: MafBlock[] = [
+    block(0, 'ACGT', [row(0, 'ACGT'), row(1, 'NCNT'), row(2, 'ACNN')]),
+  ]
+  const r = computeMafCoverage(blocks, 0, 4)
+  // row1: N at pos 0 and 2; row2: N at pos 2 and 3. All vs known ref bases.
+  expect(r.mismatches).toContainEqual({ position: 0, base: 78, strand: 1 })
+  expect(r.mismatches).toContainEqual({ position: 2, base: 78, strand: 1 })
+  expect(r.mismatches).toContainEqual({ position: 3, base: 78, strand: 1 })
+  expect(r.mismatches).toHaveLength(4)
+})
+
+test('reference N column emits no mismatch even when samples differ', () => {
+  const blocks: MafBlock[] = [
+    block(0, 'NCGT', [row(0, 'ACGT'), row(1, 'GCGT')]),
+  ]
+  const r = computeMafCoverage(blocks, 0, 4)
+  // pos 0 ref is N: A and G samples there are unclassifiable, not mismatches.
   expect(r.mismatches).toEqual([])
 })
 

@@ -18,8 +18,10 @@ export interface MafCoverageResult {
  * have a non-gap base, and records mismatches between sample bases and the
  * reference. Reference-relative insertion columns (ref char `-`) are skipped
  * — they don't consume a ref position so they can't appear in the per-ref-bp
- * depth array. Bases are normalized to uppercase ASCII for comparison; `N`
- * on either side never counts as a mismatch.
+ * depth array. Bases are normalized to uppercase ASCII for comparison. A
+ * sample `N` (frequent in MAF) is a real mismatch against a known ref and is
+ * recorded so it renders as a grey segment; columns where the *reference* is
+ * `N` are unclassifiable and emit no mismatch.
  */
 export function computeMafCoverage(
   blocks: MafBlock[],
@@ -69,11 +71,10 @@ export function computeMafCoverage(
             if (sampleByte !== DASH && sampleByte !== SPACE) {
               depths[depthIdx]! += 1
               const sampleUpper = sampleByte & ~LOWER_BIT
-              if (
-                sampleUpper !== refUpper &&
-                sampleUpper !== N_UPPER &&
-                refUpper !== N_UPPER
-              ) {
+              // A known ref base + any differing sample base (incl. N and IUPAC
+              // codes, which render grey downstream) is a mismatch. An N ref is
+              // unclassifiable, so nothing is recorded against it.
+              if (refUpper !== N_UPPER && sampleUpper !== refUpper) {
                 mismatches.push({
                   position: refPos,
                   base: sampleUpper,
