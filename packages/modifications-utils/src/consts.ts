@@ -41,6 +41,6 @@ export function parseModHeader(
     base: matches[1]!,
     strand: matches[2]!,
     typestr: matches[3]!,
-    mod: matches[4] !== '' ? matches[4] : '.',
+    mod: matches[4]! !== '' ? matches[4]! : '.',
   }
 }

@@ -36,7 +36,7 @@ export function useVirtualRows(
   useEffect(() => {
     const el = parentRef.current
     if (el) {
-      el.scrollTop = 0
+      el.scrollTo(0, 0)
     }
   }, [count, parentRef])
 

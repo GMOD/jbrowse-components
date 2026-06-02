@@ -54,6 +54,7 @@ const DraggableDialog = observer(function DraggableDialog(
         window.removeEventListener('mouseup', up)
       }
     }
+    return undefined
   }, [dragging])
 
   return (
