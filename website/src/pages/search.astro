@@ -88,7 +88,11 @@ const q = Astro.url.searchParams.get('q') ?? ''
     ) {
       return 'developer'
     }
-    if (slug.startsWith('config/') || slug.startsWith('models/')) {
+    if (
+      slug.startsWith('config/') ||
+      slug.startsWith('models/') ||
+      slug.startsWith('api/')
+    ) {
       return 'autogen'
     }
     return 'other'

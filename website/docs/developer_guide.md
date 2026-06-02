@@ -73,6 +73,7 @@ own via pull request.
 - [Configuration schema](/docs/developer_guides/configuration_schema) - Slot types, inheritance, preProcessSnapshot, and reading config values
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - How BaseLinearDisplay fetches data, the autorun chain, and rpcProps
 - [Extension points](/docs/developer_guides/extension_points) - Callbacks registered by producers and consumed across the app
+- [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports) - What JBrowse provides as shared libraries (re-exports) versus what your plugin bundles itself from npm, and how to import each
 - [MST patterns](/docs/developer_guides/mst_patterns) - Common MobX-State-Tree patterns used across JBrowse plugins
 - [Renderer architecture](/docs/developer_guides/renderer_architecture) - GPU main-thread rendering and the legacy worker-renderer path
 - [RPC and worker system](/docs/developer_guides/rpc_workers) - How to register and call RPC methods that run in web workers

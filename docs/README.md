@@ -11,10 +11,10 @@ In the root dir run
 pnpm autogen
 ```
 
-This updates both website/docs/models and website/docs/config (state models and
-config), then runs the formatter. The two generators share a single TypeScript
-program load (the dominant cost — see `generate.ts`), so they always run
-together.
+This updates website/docs/models, website/docs/config, and website/docs/api
+(state models, config, and exported functions), then runs the formatter. The
+generators share a single TypeScript program load (the dominant cost — see
+`generate.ts`), so they always run together.
 
 You will have to manually do this
 
@@ -34,6 +34,15 @@ and
  */
 ```
 
+and
+
+```js
+/**
+ * #api groupName
+ * description of the function...
+ */
+```
+
 The comment can sit directly above a `const`, `function`, or `export default`
 declaration. The extractor reads JSDoc that's attached to the declaration via
 TypeScript's parser, so make sure there is no blank line between the JSDoc and
@@ -44,6 +53,24 @@ Only one config/statemodel per file can be used currently
 It uses the typescript compiler which spiders over many files when processing a
 single file, and it is otherwise hard to keep track of which config/statemodel
 is processed unless we keep it to one config/statemodel at a time.
+
+Unlike config/statemodel, **many `#api` exports per file** are allowed. Each
+`#api` tag documents one exported function or const. The text after the tag is
+an optional group/page name; with no name the file's directory is used (e.g.
+`packages/core/src/util/index.ts` → `util`). The description on the following
+lines becomes the doc body; the type signature is read from the TypeScript
+checker, so `@param`/`@returns` tags aren't needed. Output goes to
+`website/docs/api/<group>.md`, and the same exports are mirrored into each
+package's `README.md` between `<!-- API_DOCS_START -->` / `<!-- API_DOCS_END -->`
+markers (idempotent; hand-written README prose is left untouched).
+
+```js
+/**
+ * #api util
+ * Returns the JBrowse session model for any node in the state tree.
+ */
+export function getSession(node) { /* ... */ }
+```
 
 Then, in statemodels
 

@@ -34,6 +34,7 @@ export interface ExtractedNode {
 const TAG_TYPES = [
   'stateModel',
   'config',
+  'api',
   'slot',
   'preProcessSnapshot',
   'identifier',

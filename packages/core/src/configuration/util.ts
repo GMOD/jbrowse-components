@@ -43,8 +43,10 @@ function isConfigSlot(slot: unknown): slot is ConfigSlot {
 }
 
 /**
- * given a configuration model (an instance of a ConfigurationSchema),
- * read the configuration variable at the given path
+ * #api core/configuration
+ * Given a configuration model (an instance of a ConfigurationSchema), read the
+ * configuration value at the given path. Use this when you hold the
+ * configuration model directly, e.g. an entry from `session.tracks`.
  *
  * @param model - instance of ConfigurationSchema
  * @param slotPaths - array of paths to read
@@ -139,7 +141,10 @@ export function getConfSnapshot(confObject: AnyConfigurationModel) {
 }
 
 /**
- * helper method for readConfObject, reads the config from a mst model
+ * #api core/configuration
+ * Reads a configuration value from a state model that has a `.configuration`
+ * member (a track or display state model). For a raw configuration model, use
+ * `readConfObject` instead.
  *
  * @param model - object containing a 'configuration' member
  * @param slotPaths - array of paths to read

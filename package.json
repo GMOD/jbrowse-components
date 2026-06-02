@@ -18,7 +18,7 @@
     "test-ci": "NODE_OPTIONS='--max-old-space-size=7000' jest --ci",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
-    "gendocs": "rm -rf website/docs/config website/docs/models && node docs/generate.ts",
+    "gendocs": "rm -rf website/docs/config website/docs/models website/docs/api && node docs/generate.ts",
     "autogen": "pnpm gendocs && pnpm format",
     "gen:shaders": "node --experimental-strip-types scripts/build-shaders.ts",
     "lint-docs": "node --experimental-strip-types website/scripts/generate-guide-indexes.ts",

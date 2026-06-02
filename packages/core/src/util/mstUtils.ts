@@ -86,6 +86,11 @@ function cachedParent<T extends IAnyStateTreeNode>(
   }
 }
 
+/**
+ * #api core/util
+ * Returns the JBrowse session model for any node in the state tree. Throws if
+ * the node has no session ancestor.
+ */
 export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
   return cachedParent(
     sessionCache,
@@ -95,6 +100,11 @@ export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
   )
 }
 
+/**
+ * #api core/util
+ * Returns the view model that contains the given node. Throws if the node has no
+ * containing view.
+ */
 export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
   return cachedParent(
     containingViewCache,
@@ -104,6 +114,11 @@ export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
   )
 }
 
+/**
+ * #api core/util
+ * Returns the track model that contains the given node. Throws if the node has
+ * no containing track.
+ */
 export function getContainingTrack(
   node: IAnyStateTreeNode,
 ): AbstractTrackModel {
@@ -115,6 +130,11 @@ export function getContainingTrack(
   )
 }
 
+/**
+ * #api core/util
+ * Returns the display model that contains the given node. Throws if the node has
+ * no containing display.
+ */
 export function getContainingDisplay(
   node: IAnyStateTreeNode,
 ): AbstractDisplayModel {
@@ -126,6 +146,10 @@ export function getContainingDisplay(
   )
 }
 
+/**
+ * #api core/util
+ * Returns the MST environment for a node, which carries the `pluginManager`.
+ */
 export function getEnv(obj: IAnyStateTreeNode) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)
 }
