@@ -7,7 +7,6 @@ import {
 } from '@jbrowse/core/ui/theme'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 import {
-  detectSimplexModifications,
   getMethBins,
   getModPositions,
   getModProbabilities,
@@ -19,7 +18,10 @@ import { getColorForModification, getTagAlt } from '../../util.ts'
 import type { ColorBy } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { ParsedModData } from '@jbrowse/modifications-utils'
+import type {
+  ModificationType,
+  ParsedModData,
+} from '@jbrowse/modifications-utils'
 
 // Methylated/unmethylated display colors for bisulfite/ONT methylation mode.
 // Differ from the modification-mode colors in shared/modificationData.ts —
@@ -46,7 +48,7 @@ export function extractModifications(
   strand: number,
   colorBy: ColorBy | undefined,
   detectedModifications: Set<string>,
-  detectedSimplexModifications: Set<string>,
+  seenModTypes: Map<string, ModificationType>,
   modificationsData: ModificationEntry[],
 ): ParsedModData | undefined {
   const mmTag = getTagAlt(feature, 'MM', 'Mm') as string | undefined
@@ -65,7 +67,16 @@ export function extractModifications(
   const fstrand = strand as -1 | 0 | 1
   const modifications = getModPositions(mmTag, seq, fstrand)
   const probabilities = getModProbabilities(feature)
-  const simplexSet = detectSimplexModifications(modifications)
+
+  // Collect (strand, type) pairs; the caller resolves simplex globally once all
+  // reads are parsed (see detectSimplexModifications).
+  for (const { strand: modStrand, type, base: modBase } of modifications) {
+    const key = modStrand + type
+    if (!seenModTypes.has(key)) {
+      seenModTypes.set(key, { type, base: modBase, strand: modStrand })
+    }
+  }
+
   const mods = getMaxProbModAtEachPosition(
     modifications,
     probabilities,
@@ -80,10 +91,6 @@ export function extractModifications(
     // detectedModifications must list every type seen so the menu can offer all
     // of them — isolation filters what is *rendered*, not what is detected.
     detectedModifications.add(type)
-    const isSimplex = simplexSet.has(type)
-    if (isSimplex) {
-      detectedSimplexModifications.add(type)
-    }
     const typeVisible = !hidden.includes(type)
     if (colorBy?.type === 'modifications' && typeVisible) {
       const modRgb = cssColorToRgb(getColorForModification(type))
@@ -104,7 +111,6 @@ export function extractModifications(
           position: featureStart + refPos,
           base,
           modType: type,
-          isSimplex,
           strand: strand === -1 ? -1 : 1,
           r,
           g,
@@ -151,7 +157,6 @@ export function extractMethylation(
         position: genomicPos,
         base: 'C',
         modType: 'm',
-        isSimplex: true,
         strand: methStrand,
         ...methColorAndProb(
           methProbs[i] ?? 0,
@@ -166,7 +171,6 @@ export function extractMethylation(
         position: genomicPos,
         base: 'C',
         modType: 'h',
-        isSimplex: true,
         strand: methStrand,
         ...methColorAndProb(
           hydroxyMethProbs[i] ?? 0,

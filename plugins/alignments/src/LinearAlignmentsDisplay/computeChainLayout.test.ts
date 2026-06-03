@@ -137,7 +137,6 @@ function makeChainData(opts: {
     numSoftclips: 0,
     numHardclips: 0,
     detectedModifications: [],
-    simplexModifications: [],
     connectingLinePositions: new Uint32Array(0),
     connectingLineYs: new Uint16Array(0),
     overlapPositions: new Uint32Array(0),

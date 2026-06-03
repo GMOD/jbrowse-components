@@ -407,10 +407,6 @@ export default function stateModelFactory(
           /**
            * #volatile
            */
-          simplexModifications: new Set<string>(),
-          /**
-           * #volatile
-           */
           modificationsReady: false,
           /**
            * #volatile
@@ -1660,20 +1656,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setSimplexModifications(simplex: string[]) {
-            const currentSet = self.simplexModifications
-            if (
-              simplex.length === currentSet.size &&
-              simplex.every(s => currentSet.has(s))
-            ) {
-              return
-            }
-            self.simplexModifications = new Set(simplex)
-          },
-
-          /**
-           * #action
-           */
           setModificationsReady(flag: boolean) {
             self.modificationsReady = flag
           },
@@ -1891,7 +1873,6 @@ export default function stateModelFactory(
                 if (r.result.newTagValues) {
                   self.updateColorTagMap(r.result.newTagValues)
                 }
-                self.setSimplexModifications(r.result.simplexModifications)
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
               // Assigning colorTagMap (above) re-runs laidOutPileupMap, which
@@ -2026,8 +2007,8 @@ export default function stateModelFactory(
                   const session = getSession(self)
                   try {
                     const { uniqueId, ...rest } = feat.toJSON()
-                    const { default: copy } = await import('copy-to-clipboard')
-                    await copy(JSON.stringify(rest, null, 4))
+                    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+                    copy(JSON.stringify(rest, null, 4))
                     session.notify('Copied to clipboard', 'success')
                   } catch (e) {
                     console.error(e)

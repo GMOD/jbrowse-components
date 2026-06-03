@@ -19,7 +19,7 @@ interface ModificationColorEntry {
   probabilityTotal: number
   probabilityCount: number
   base: string
-  isSimplex: boolean
+  modType: string
 }
 
 export function computeModificationCoverage(
@@ -35,6 +35,7 @@ export function computeModificationCoverage(
   },
   regionSequence: string | undefined,
   regionSequenceStart: number,
+  simplexModifications: ReadonlySet<string>,
 ) {
   const {
     depths,
@@ -95,7 +96,7 @@ export function computeModificationCoverage(
         probabilityTotal: 0,
         probabilityCount: 0,
         base: mod.base,
-        isSimplex: mod.isSimplex,
+        modType: mod.modType,
       }
       colorMap.set(key, entry)
     }
@@ -166,7 +167,7 @@ export function computeModificationCoverage(
     for (const entry of colorMap.values()) {
       const { modifiable, detectable } = calculateModificationCounts({
         base: entry.base,
-        isSimplex: entry.isSimplex,
+        isSimplex: simplexModifications.has(entry.modType),
         baseCounts,
         strandBaseCounts,
       })

@@ -60,7 +60,6 @@ export interface ModificationEntry {
   position: number // absolute genomic position
   base: string // canonical base (e.g., 'C' for 5mC)
   modType: string // modification type code (e.g., 'm', 'h')
-  isSimplex: boolean
   strand: number // -1=reverse, 1=forward
   r: number
   g: number

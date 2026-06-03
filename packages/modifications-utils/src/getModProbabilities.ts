@@ -4,19 +4,23 @@ import type { Feature } from '@jbrowse/core/util'
 
 /**
  * #api
- * Returns the probability value from the flat probabilities array at the
- * correct offset for a given modification position, handling the reverse-strand
- * index reversal that getModPositions applies (positions stored in descending
- * order for reverse-strand reads).
+ * Returns the probability value from the flat ML array for a modification's
+ * position. `idx` is the position's index within the mod's stored `positions`
+ * array; we recover its MM-tag order (reverse-strand reads store positions in
+ * descending order) and step into ML by `probStart + mmOrder * probStride`.
+ * `probStride` is >1 for combined codes (e.g. 'C+mh'), where ML values are
+ * interleaved per position.
  */
 export function modProbAt(
   probabilities: number[] | undefined,
-  probIndex: number,
+  probStart: number,
+  probStride: number,
   isReverse: boolean,
   idx: number,
   posLen: number,
 ) {
-  return probabilities?.[probIndex + (isReverse ? posLen - 1 - idx : idx)] ?? 0
+  const mmOrder = isReverse ? posLen - 1 - idx : idx
+  return probabilities?.[probStart + mmOrder * probStride] ?? 0
 }
 
 /**
@@ -30,10 +34,8 @@ export function getModProbabilities(feature: Feature) {
   // midpoint (N + 0.5) / 256.
   const ml = getTagAlt(feature, 'ML', 'Ml') as number[] | string | undefined
   if (ml !== undefined) {
-    if (typeof ml === 'string') {
-      return ml.split(',').map(v => (+v + 0.5) / 256)
-    }
-    return ml.map(v => (v + 0.5) / 256)
+    const values = typeof ml === 'string' ? ml.split(',') : ml
+    return values.map(v => (+v + 0.5) / 256)
   }
   return undefined
 }

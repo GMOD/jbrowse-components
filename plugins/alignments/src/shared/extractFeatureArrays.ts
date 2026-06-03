@@ -1,3 +1,5 @@
+import { detectSimplexModifications } from '@jbrowse/modifications-utils'
+
 import { extractCigarFeatures } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import {
@@ -19,6 +21,7 @@ import type {
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { Mismatch } from '@jbrowse/alignments-core'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { ModificationType } from '@jbrowse/modifications-utils'
 
 interface ExtractOpts {
   colorBy: ColorBy | undefined
@@ -34,7 +37,8 @@ export function extractFeatureArrays<T extends FeatureData>(
 ) {
   const { colorBy, showSoftClipping, region, sortTag } = opts
   const detectedModifications = new Set<string>()
-  const detectedSimplexModifications = new Set<string>()
+  // Unique (strand, type) pairs across all reads → global simplex resolution.
+  const seenModTypes = new Map<string, ModificationType>()
 
   const features: T[] = []
   const cigarOutput = {
@@ -98,7 +102,7 @@ export function extractFeatureArrays<T extends FeatureData>(
       strand,
       colorBy,
       detectedModifications,
-      detectedSimplexModifications,
+      seenModTypes,
       modifications,
     )
 
@@ -119,6 +123,12 @@ export function extractFeatureArrays<T extends FeatureData>(
   }
 
   modifications.sort((a, b) => a.modType.localeCompare(b.modType))
+
+  // Resolve simplex globally now that every read is parsed (one answer per type,
+  // not a per-read guess). See detectSimplexModifications.
+  const detectedSimplexModifications = detectSimplexModifications([
+    ...seenModTypes.values(),
+  ])
 
   const uniqueTagValues = isTagColorMode
     ? [...new Set(tagColorValues)].filter(v => v !== '')

@@ -42,6 +42,7 @@ export async function runCoveragePipeline({
   softclips,
   hardclips,
   modifications,
+  simplexModifications,
   region,
   mismatchArrays,
   interbaseArrays,
@@ -59,6 +60,7 @@ export async function runCoveragePipeline({
   softclips: SoftclipData[]
   hardclips: HardclipData[]
   modifications: ModificationEntry[]
+  simplexModifications: ReadonlySet<string>
   region: Region
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
   interbaseArrays: Parameters<typeof computeFrequenciesAndThresholds>[1]
@@ -106,6 +108,7 @@ export async function runCoveragePipeline({
           coverage,
           regionSequence,
           regionSequenceStart ?? regionStart,
+          simplexModifications,
         )
       : undefined
 

@@ -73,13 +73,15 @@ export function getMethBins({
     },
   )
 
-  // Per SAMtags, the '?' flag means the modification status of bases not listed
-  // in the MM tag is unknown, so we must NOT assume them unmethylated. Only when
-  // the 5mC call uses '.'/absent (low probability of modification for skipped
-  // bases) do we fill in undetected CpGs as unmethylated below.
-  const fillUnmethylated = !modifications.some(
-    m => m.type === 'm' && m.unknownSkip,
-  )
+  // Only fill undetected CpGs as unmethylated when the read actually carries a
+  // 5mC ('m') call. A read with only e.g. 6mA modifications never assayed
+  // methylation, so inventing unmethylated CpGs for it would be wrong.
+  // Additionally, per SAMtags the '?' flag means the status of bases not listed
+  // in the MM tag is unknown, so we must NOT assume them unmethylated; only the
+  // '.'/absent flag (low probability for skipped bases) lets us fill them in.
+  const hasMeth = modifications.some(m => m.type === 'm')
+  const fillUnmethylated =
+    hasMeth && !modifications.some(m => m.type === 'm' && m.unknownSkip)
 
   // Scan the full read sequence for ALL CpG dinucleotides and mark any not
   // already detected from the MM tag as unmethylated (prob=0).

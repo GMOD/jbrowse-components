@@ -141,7 +141,6 @@ function makePileupData(opts: {
     numSoftclips: 0,
     numHardclips: 0,
     detectedModifications: [],
-    simplexModifications: [],
     maxY: 0,
     sortTagValues,
     connectingLinePositions: new Uint32Array(0),

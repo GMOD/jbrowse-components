@@ -268,6 +268,7 @@ export async function executeRenderAlignmentData({
     softclips,
     hardclips,
     modifications,
+    simplexModifications: detectedSimplexModifications,
     region,
     mismatchArrays,
     interbaseArrays,
@@ -302,7 +303,6 @@ export async function executeRenderAlignmentData({
     maxY: 0,
 
     detectedModifications: Array.from(detectedModifications),
-    simplexModifications: Array.from(detectedSimplexModifications),
 
     newTagValues: uniqueTagValues,
     readNextPositions: new Uint32Array(nextPositions),

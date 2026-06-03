@@ -1,11 +1,13 @@
 import { unmethylated5mC } from '@jbrowse/core/ui/theme'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
+import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { extractModifications } from './extract.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
+import type { ModificationType } from '@jbrowse/modifications-utils'
 
 // Forward read with one high-confidence 5mC (read pos 0) and one
 // low-confidence 6mA (read pos 2). ML 230 -> ~0.90, ML 50 -> ~0.20.
@@ -24,7 +26,7 @@ function makeFeature() {
 
 function run(colorBy: ColorBy) {
   const detected = new Set<string>()
-  const simplex = new Set<string>()
+  const seenModTypes = new Map<string, ModificationType>()
   const out: ModificationEntry[] = []
   extractModifications(
     makeFeature(),
@@ -33,10 +35,10 @@ function run(colorBy: ColorBy) {
     1,
     colorBy,
     detected,
-    simplex,
+    seenModTypes,
     out,
   )
-  return { detected, out }
+  return { detected, seenModTypes, out }
 }
 
 describe('extractModifications', () => {
@@ -65,6 +67,18 @@ describe('extractModifications', () => {
     expect(out.map(m => m.modType)).toEqual(['m'])
     // the menu list must still offer the hidden type
     expect([...detected].sort()).toEqual(['a', 'm'])
+  })
+
+  test('seenModTypes collects strand/type pairs for global simplex resolution', () => {
+    // The read carries C+m and A+a, both on '+' with no '-' partner, so both
+    // resolve to simplex once detectSimplexModifications runs over the pairs.
+    const { seenModTypes } = run({
+      type: 'modifications',
+      modifications: { threshold: 10 },
+    })
+    expect([...seenModTypes.keys()].sort()).toEqual(['+a', '+m'])
+    const simplex = detectSimplexModifications([...seenModTypes.values()])
+    expect([...simplex].sort()).toEqual(['a', 'm'])
   })
 
   test('twoColor renders every call, painting low-confidence ones blue', () => {

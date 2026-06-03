@@ -5,9 +5,9 @@ import { modProbAt } from './getModProbabilities.ts'
 import type { ModWithPositions } from './getModPositions.ts'
 
 // Walk every modification's read-sequence positions, mapping each to its
-// reference position via the CIGAR and recovering its ML/MP probability. Owns
-// the running probIndex into the flat probabilities array so callers don't have
-// to track the per-modification offset themselves (an easy source of bugs).
+// reference position via the CIGAR and recovering its ML probability. The
+// ML-array offset (probStart/probStride) is precomputed per modification by
+// getModPositions, so this no longer tracks a running index by hand.
 export function forEachModRefPos(
   modifications: readonly ModWithPositions[],
   probabilities: number[] | undefined,
@@ -15,19 +15,18 @@ export function forEachModRefPos(
   isReverse: boolean,
   cb: (mod: ModWithPositions, ref: number, idx: number, prob: number) => void,
 ) {
-  let probIndex = 0
   for (const mod of modifications) {
-    const { positions } = mod
+    const { positions, probStart, probStride } = mod
     getNextRefPos(cigarOps, positions, (ref, idx) => {
       const prob = modProbAt(
         probabilities,
-        probIndex,
+        probStart,
+        probStride,
         isReverse,
         idx,
         positions.length,
       )
       cb(mod, ref, idx, prob)
     })
-    probIndex += positions.length
   }
 }

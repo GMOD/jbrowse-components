@@ -8,6 +8,13 @@ export interface ModWithPositions {
   // not listed in the tag is unknown (vs '.'/absent = assumed unmodified).
   unknownSkip: boolean
   positions: number[]
+  // Index into the flat ML probabilities array for this type's first
+  // MM-order position, and the stride to the next one. For a combined code
+  // like 'C+mh' the ML values are interleaved per position (m,h,m,h,...), so
+  // 'm' has probStart 0 / probStride 2 and 'h' has probStart 1 / probStride 2.
+  // Single-type codes are contiguous: probStride 1.
+  probStart: number
+  probStride: number
 }
 
 const COMPLEMENT_CODE: Record<number, number> = {
@@ -32,6 +39,9 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
   const isRev = fstrand === -1
   const mods = mm.split(';')
   const result: ModWithPositions[] = []
+  // Running offset into the flat ML probabilities array. Each group consumes
+  // (numPositions * numTypes) values, interleaved per position.
+  let mlBase = 0
 
   for (const mod of mods) {
     if (mod === '') {
@@ -50,9 +60,10 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
     // typestr can be multi-char lowercase e.g. 'mh' (5mC + 5hmC at same positions)
     // or a ChEBI code e.g. '16061'. Non-lowercase or single-char = one type.
     const isSingleType = typestr.charCodeAt(0) < 97 || typestr.length === 1
+    const nTypes = isSingleType ? 1 : typestr.length
 
     // this logic based on parse_mm.pl from hts-specs
-    const processType = (type: string) => {
+    const processType = (type: string, groupIndex: number) => {
       const splitLength = split.length
       let currPos = 0
 
@@ -94,17 +105,20 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
         strand,
         unknownSkip,
         positions,
+        probStart: mlBase + groupIndex,
+        probStride: nTypes,
       })
     }
 
     if (isSingleType) {
-      processType(typestr)
+      processType(typestr, 0)
     } else {
       // Multi-char lowercase: each character is a separate type
       for (let j = 0, len = typestr.length; j < len; j++) {
-        processType(typestr[j]!)
+        processType(typestr[j]!, j)
       }
     }
+    mlBase += (split.length - 1) * nTypes
   }
 
   return result

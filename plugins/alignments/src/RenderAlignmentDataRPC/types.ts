@@ -198,9 +198,6 @@ export interface PileupDataResult {
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]
 
-  // Simplex modification types detected in this region (detected during feature processing)
-  simplexModifications: string[]
-
   // Chain layout metadata — returned by RPC, consumed by main-thread layout.
   // Layout (Y positions) is computed on the main thread so that chains spanning
   // multiple displayedRegions can be assigned consistent rows across all regions.

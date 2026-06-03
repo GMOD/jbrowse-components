@@ -86,11 +86,32 @@ describe('getMethBins CpG filtering', () => {
     expect(hydroxyMethBins[2]).toBe(1)
   })
 
+  test('combined code C+mh keeps m and h probabilities un-scrambled', () => {
+    // CpGs at read index 2 and 6. For a combined 'C+mh' code the ML array is
+    // interleaved per position: [m@2, h@2, m@6, h@6].
+    const { methProbs, hydroxyMethProbs } = bins(
+      'AACGATCGAA',
+      'C+mh,0,0;',
+      [250, 10, 20, 240],
+    )
+    expect(methProbs[2]).toBeCloseTo(250 / 255, 5)
+    expect(methProbs[6]).toBeCloseTo(20 / 255, 5)
+    expect(hydroxyMethProbs[2]).toBeCloseTo(10 / 255, 5)
+    expect(hydroxyMethProbs[6]).toBeCloseTo(240 / 255, 5)
+  })
+
   test('non-CpG modification types are ignored', () => {
     // 6mA modification (type 'a') should not populate methBins
     const { methBins, hydroxyMethBins } = bins('AAAGAA', 'A+a,0;', [200])
     expect(Object.keys(methBins).length).toBe(0)
     expect(Object.keys(hydroxyMethBins).length).toBe(0)
+  })
+
+  test('read with CpGs but no 5mC call does not invent unmethylated CpGs', () => {
+    // 6mA-only read that happens to contain a CpG at index 2 must not be
+    // painted as having an unmethylated cytosine — methylation was never called.
+    const { methBins } = bins('AACGAA', 'A+a,0;', [200])
+    expect(Object.keys(methBins).length).toBe(0)
   })
 
   test('two CpGs on same forward strand read both stored', () => {
