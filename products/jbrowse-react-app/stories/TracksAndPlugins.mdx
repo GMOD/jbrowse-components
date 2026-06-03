@@ -17,7 +17,9 @@ load plugins that add new track types, adapters, renderers, or menu items.
 Call `addTrackConf` and `showTrack` from an event handler — not during render.
 The slots available on a track config come from its
 [config docs](https://jbrowse.org/jb2/docs/config/) (e.g.
-[FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack/)):
+[FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack/)), and each
+`adapter` type has its own page too (e.g.
+[Gff3TabixAdapter](https://jbrowse.org/jb2/docs/config/gff3tabixadapter/)):
 
 ```js
 state.jbrowse.addTrackConf({

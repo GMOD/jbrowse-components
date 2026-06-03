@@ -46,3 +46,10 @@ The example below logs the most recent patches — pan, zoom, or toggle a track 
 see them stream in:
 
 <Canvas of={WithOnChange} />
+
+The patch `path` strings mirror the session state tree. The
+[BaseSessionModel](https://jbrowse.org/jb2/docs/models/basesessionmodel/) and
+per-view model docs (e.g.
+[LinearGenomeView](https://jbrowse.org/jb2/docs/models/lineargenomeview/)) show
+which properties live where, so you can tell which patches matter for your use
+case.
