@@ -42,6 +42,21 @@ export function collectLeafNames(node: NewickNode, acc: string[] = []) {
 }
 
 /**
+ * Merge a parsed Newick tree with per-sample config overrides. Leaf order
+ * drives row order; `configSamples` supplies label/color for matching ids.
+ * Leaves with no override get `{ id, label: id }`.
+ */
+export function resolveSamplesFromTree(
+  treeNewick: string,
+  configSamples: Sample[],
+): Sample[] {
+  const overrides = new Map(configSamples.map(s => [s.id, s]))
+  return collectLeafNames(parseNewick(treeNewick)).map(
+    id => overrides.get(id) ?? { id, label: id },
+  )
+}
+
+/**
  * Resolve a track's sample set + guide tree. The sample set fixes which
  * genomes get a row, the row order, and how source tokens are split (via
  * `matchSampleId`). Resolution:
@@ -69,16 +84,9 @@ export async function getSamplesFromConfig(getConf: (key: string) => unknown) {
       )
 
   const configSamples = normalizeSamples(getConf('samples') as SampleConfig)
-
-  let samples: Sample[]
-  if (treeNewick) {
-    const overrides = new Map(configSamples.map(s => [s.id, s]))
-    samples = collectLeafNames(parseNewick(treeNewick)).map(
-      id => overrides.get(id) ?? { id, label: id },
-    )
-  } else {
-    samples = configSamples
-  }
+  const samples = treeNewick
+    ? resolveSamplesFromTree(treeNewick, configSamples)
+    : configSamples
 
   return { samples, treeNewick }
 }
