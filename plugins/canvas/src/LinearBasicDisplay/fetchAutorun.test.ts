@@ -17,6 +17,7 @@ import stateModelFactory from './model.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/model'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/model'
 
 function makeEmptyFeatureData(): FeatureDataResult {
   return {

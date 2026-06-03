@@ -11,4 +11,4 @@
 - fullpage_arcs-collapse-introns-sashimi.png need to scroll down to see the collapsed arcs
 - does yeast demo really need remote
 - no max height react-app
-- long descriptions collide
+- avoid importing from src dir, should be lint rule
