@@ -78,8 +78,6 @@ export function forEachRenderedLabel(
       continue
     }
     // Lazy: only build the bp→px mapper once we know we'll emit something.
-    // Skips the closure allocation entirely when 'auto' density hides labels
-    // and the feature has no subfeature label (the common dense case).
     toScreen ??= makeBpMapper(vr)
     const px1 = toScreen(labelData.minX)
     const px2 = toScreen(labelData.maxX)

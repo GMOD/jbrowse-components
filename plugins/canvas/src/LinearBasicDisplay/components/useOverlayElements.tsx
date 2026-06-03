@@ -87,7 +87,6 @@ export function useFloatingLabels(
   // them to re-trigger would couple correctness to transitive recomputation
   // of laidOutDataMap (which happens to depend on the same flags). Mirrors
   // the destructure-before-useMemo pattern in useHighlightOverlays below.
-  // `showLabels` already encodes the 'auto' density gate (see baseModel).
   const { showLabels, effectiveShowDescriptions, selectFeatureById } = model
   // Pre-build the four (clickable × isOverlay) className combinations once
   // per style/cx identity; per-label rendering then just picks the right

@@ -1054,11 +1054,6 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
   })
 })
 
-// 'auto' label visibility must be a pure function of cached per-region counts ×
-// the current bpPerPx (same derivation as the regionTooLarge banner). The old
-// imperative scalar was only recomputed on refetch, so zooming into a sparse
-// region without triggering a new fetch left labels hidden from the prior
-// zoomed-out density.
 // Zoom, then settle the debounced coarseBpPerPx the density/collapse gates read
 // (production updates it via a 500ms autorun; here we sync it deterministically
 // rather than pumping fake timers, which also requires view.initialized).
@@ -1066,56 +1061,6 @@ function zoomAndSettle(view: LinearGenomeViewModel, bpPerPx: number) {
   view.zoomTo(bpPerPx)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
 }
-
-describe('showLabels auto density gate', () => {
-  function setup() {
-    const env = createTestEnvironment()
-    const { display, view } = env.createDisplay()
-    // Never-resolving RPC: a fetch may be scheduled by the autorun but its
-    // applyFetchResults never runs, so the manually-seeded density stats are
-    // the only ones in play — isolating the derived getter from refetch.
-    env.mockRpcCall.mockReturnValue(new Promise(() => {}))
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
-    ])
-    return { display, view, mockRpcCall: env.mockRpcCall }
-  }
-
-  // 500 features across 50kb → 0.01 features/bp, so screenDensity = 0.01 ×
-  // bpPerPx and the 0.2 label threshold trips above bpPerPx ≈ 20.
-  it('reacts to zoom from cached stats without a refetch', () => {
-    const { display, view } = setup()
-    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-
-    // zoomTo(62.5) → bpPerPx > 20 → density > 0.2 → labels hidden
-    zoomAndSettle(view, 62.5)
-    expect(view.bpPerPx).toBeGreaterThan(20)
-    expect(display.showLabels).toBe(false)
-
-    // zoomTo(10) → bpPerPx ≈ 10 → density ≈ 0.1 < 0.2 → labels shown, derived
-    // purely from the unchanged cached count × the new bpPerPx.
-    zoomAndSettle(view, 10)
-    expect(view.bpPerPx).toBeLessThan(20)
-    expect(display.showLabels).toBe(true)
-    expect(display.densityStatsPerRegion.get(0)?.featureCount).toBe(500)
-  })
-
-  it('mode "on" shows labels even above the density threshold', () => {
-    const { display, view } = setup()
-    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    display.setShowLabels('on')
-    zoomAndSettle(view, 62.5)
-    expect(display.showLabels).toBe(true)
-  })
-
-  it('mode "off" hides labels even at low density', () => {
-    const { display, view } = setup()
-    display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })
-    display.setShowLabels('off')
-    zoomAndSettle(view, 20)
-    expect(display.showLabels).toBe(false)
-  })
-})
 
 // 'auto' geneGlyphMode collapses genes to their longest coding transcript once
 // zoomed out past 100 bp/px; below that every transcript stacks. The 200kb

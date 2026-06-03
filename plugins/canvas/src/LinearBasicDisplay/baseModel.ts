@@ -36,7 +36,6 @@ import {
   fetchCanvasFeatureDetails,
   findSubfeatureById,
   indexById,
-  radioSubMenu,
   screenDensity,
 } from './baseModelHelpers.ts'
 import {
@@ -268,23 +267,8 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Effective boolean visibility used by layout, hit testing, the DOM
-        // overlay, and SVG export. 'auto' switches to false once feature
-        // density crosses the readability threshold so layout-reserved label
-        // space, the rendered DOM elements, and the hit-test geometry all
-        // agree — otherwise rows reserve label height that never gets used.
         get showLabels() {
-          const mode = this.showLabelsMode
-          if (mode === 'off') {
-            return false
-          }
-          if (mode === 'on') {
-            return true
-          }
-          return (
-            self.visibleFeatureDensityPerPx <=
-            self.getConfWithOverride<number>('maxLabelFeatureDensity')
-          )
+          return this.showLabelsMode === 'on'
         },
 
         /**
@@ -1275,18 +1259,14 @@ export default function baseStateModelFactory(
         // "Show..." submenu without rebuilding trackMenuItems from scratch.
         showSubmenuMenuItems() {
           return [
-            radioSubMenu(
-              'Show labels',
-              self.showLabelsMode,
-              [
-                { value: 'auto', label: 'Auto (hide when dense)' },
-                { value: 'on', label: 'Always on' },
-                { value: 'off', label: 'Always off' },
-              ],
-              mode => {
-                self.setShowLabels(mode)
+            {
+              label: 'Show labels',
+              type: 'checkbox' as const,
+              checked: self.showLabels,
+              onClick: () => {
+                self.setShowLabels(self.showLabels ? 'off' : 'on')
               },
-            ),
+            },
             {
               label: 'Show descriptions',
               type: 'checkbox' as const,

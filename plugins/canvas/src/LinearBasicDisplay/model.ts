@@ -154,6 +154,16 @@ export default function stateModelFactory(
           return [
             ...superShowSubmenuMenuItems(),
             {
+              label: 'Show subfeature labels',
+              type: 'checkbox' as const,
+              checked: self.subfeatureLabels !== 'none',
+              onClick: () => {
+                self.setSubfeatureLabels(
+                  self.subfeatureLabels === 'none' ? 'overlay' : 'none',
+                )
+              },
+            },
+            {
               label: 'Show only genes',
               type: 'checkbox' as const,
               checked: self.showOnlyGenes,
@@ -177,18 +187,6 @@ export default function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            radioSubMenu(
-              'Subfeature labels',
-              self.subfeatureLabels,
-              [
-                { value: 'none', label: 'None' },
-                { value: 'overlay', label: 'Overlay' },
-                { value: 'below', label: 'Below' },
-              ],
-              value => {
-                self.setSubfeatureLabels(value)
-              },
-            ),
             radioSubMenu(
               'Gene glyph',
               self.geneGlyphMode,

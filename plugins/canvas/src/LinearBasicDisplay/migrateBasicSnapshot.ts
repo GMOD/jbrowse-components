@@ -34,7 +34,7 @@ function renameLegacyColorKeys(
 //   - renames the legacy color1/color2/color3/outline slots to
 //     color/connectorColor/utrColor/outlineColor
 //   - normalizes legacy enum values that were renamed (boolean showLabels →
-//     auto/on/off, geneGlyphMode 'longest' → 'longestCoding') so they pass
+//     on/off, geneGlyphMode 'longest' → 'longestCoding') so they pass
 //     schema validation on load
 export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   const liftedRaw =

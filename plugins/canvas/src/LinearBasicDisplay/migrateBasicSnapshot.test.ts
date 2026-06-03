@@ -33,17 +33,12 @@ test('strips removed FeatureDensityMixin fields', () => {
 // TrackHeightMixin (see TrackHeightMixin.test.ts); migrateBasicSnapshot leaves
 // height untouched.
 
-// Legacy trackShowLabels: true used to mean "always show labels". The enum
-// has no equivalent — 'on' would be the literal translation, but defaulting
-// users to 'auto' preserves the visible-at-sparse-zooms behavior they had
-// while gaining the density-based hide at zoom-out. This test pins that
-// intent in case someone "fixes" the mapping to 'on'.
-test('migrates legacy trackShowLabels=true to "auto"', () => {
+test('migrates legacy trackShowLabels=true to "on"', () => {
   const result = migrateBasicSnapshot({
     trackShowLabels: true,
   })
   expect(result).toEqual({
-    configOverrides: { showLabels: 'auto' },
+    configOverrides: { showLabels: 'on' },
   })
 })
 
@@ -237,7 +232,7 @@ test('normalizes boolean showLabels in existing configOverrides to enum', () => 
       configOverrides: { showLabels: true, autoHeight: true },
     }),
   ).toEqual({
-    configOverrides: { showLabels: 'auto', autoHeight: true },
+    configOverrides: { showLabels: 'on', autoHeight: true },
   })
   expect(
     migrateBasicSnapshot({
