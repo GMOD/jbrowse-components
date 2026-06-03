@@ -19,7 +19,10 @@ const filterArg = cliArgs.find(a => a.startsWith('--filter='))
 const filter = filterArg?.split('=')[1]
 const exact = cliArgs.includes('--exact')
 const portArg = cliArgs.find(a => a.startsWith('--port='))
-const externalPort = portArg ? parseInt(portArg.split('=')[1]!, 10) : undefined
+const externalPortVal = portArg ? Number(portArg.split('=')[1]) : Number.NaN
+const externalPort = Number.isFinite(externalPortVal)
+  ? externalPortVal
+  : undefined
 const DEFAULT_PORT = 3334
 
 const repoRoot = path.resolve(__dirname, '..', '..')
@@ -365,7 +368,7 @@ async function main() {
   const executablePath = chromePaths.find(p => fs.existsSync(p))
 
   const launchOptions = {
-    headless: headed ? false : true,
+    headless: !headed,
     executablePath,
     args: [
       '--no-sandbox',

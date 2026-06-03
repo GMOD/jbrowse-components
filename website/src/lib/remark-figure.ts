@@ -61,7 +61,8 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       // explicit link= wins; otherwise auto-link screenshots that came from a
       // screenshot-spec session
       const liveUrl = attrs.link ?? liveUrlByImg.get(rawSrc)
-      const img = `<img src="${src}" alt="${caption}"/>`
+      const altText = caption.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      const img = `<img src="${src}" alt="${altText}"/>`
       if (liveUrl) {
         const a = (inner: string) =>
           `<a href="${liveUrl}" target="_blank" rel="noopener noreferrer">${inner}</a>`

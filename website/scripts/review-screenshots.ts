@@ -133,9 +133,17 @@ async function main() {
       openImage(imgPath)
     }
 
-    const answer = (await rl.ask('  good? [y]es / [n]o / [s]kip / [q]uit: '))
-      .trim()
-      .toLowerCase()
+    let answer = ''
+    let valid = false
+    while (!valid) {
+      answer = (await rl.ask('  good? [y]es / [n]o / [s]kip / [q]uit: '))
+        .trim()
+        .toLowerCase()
+      valid = ['y', 'n', 's', 'q', ''].includes(answer)
+      if (!valid) {
+        console.log(`  unrecognized input "${answer}" — answer y / n / s / q`)
+      }
+    }
 
     if (answer === 'q') {
       break
@@ -167,15 +175,17 @@ async function main() {
 
   rl.close()
 
-  const specNames = new Set(specs.map(s => s.name))
+  // curated specs are pinned to a hand-captured PNG; the generator skips them,
+  // so a bad curated shot must be re-captured by hand, not "regenerated"
+  const autogenNames = new Set(specs.filter(s => !s.curated).map(s => s.name))
   const bad = Object.values(report).filter(v => v.status === 'bad')
   console.log('━'.repeat(72))
   console.log(
     `Reviewed ${reviewed} this session. Report: ${path.relative(websiteRoot, reportPath)}`,
   )
   if (bad.length > 0) {
-    const regen = bad.filter(v => specNames.has(v.name))
-    const manual = bad.filter(v => !specNames.has(v.name))
+    const regen = bad.filter(v => autogenNames.has(v.name))
+    const manual = bad.filter(v => !autogenNames.has(v.name))
     if (regen.length > 0) {
       console.log(`\n${regen.length} marked bad — regenerate with:`)
       for (const v of regen) {

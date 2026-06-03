@@ -17,7 +17,8 @@ import type { Verdict } from './screenshot-review-lib.ts'
 
 const cliArgs = process.argv.slice(2)
 const portArg = cliArgs.find(a => a.startsWith('--port='))
-const port = portArg ? parseInt(portArg.split('=')[1]!, 10) : 3335
+const portVal = portArg ? Number(portArg.split('=')[1]) : Number.NaN
+const port = Number.isFinite(portVal) ? portVal : 3335
 
 function buildSpecPayload() {
   const report = loadReport()
@@ -54,7 +55,7 @@ const contentTypes: Record<string, string> = {
 function serveImage(res: http.ServerResponse, urlPath: string) {
   const rel = decodeURIComponent(urlPath.slice('/img/'.length))
   const full = path.resolve(imgDir, rel)
-  if (!full.startsWith(imgDir) || !fs.existsSync(full)) {
+  if (!full.startsWith(imgDir + path.sep) || !fs.existsSync(full)) {
     res.writeHead(404)
     res.end('not found')
   } else {
@@ -82,38 +83,70 @@ function serveMainImage(res: http.ServerResponse, urlPath: string) {
   }
 }
 
+// Validate untrusted request bodies rather than blindly casting; a malformed
+// POST otherwise writes a garbage verdict into the report.
+function parseVerdictBody(
+  raw: string,
+): { name: string; status: 'good' | 'bad'; note: string } | undefined {
+  const body: unknown = JSON.parse(raw)
+  if (
+    typeof body === 'object' &&
+    body !== null &&
+    'name' in body &&
+    typeof body.name === 'string' &&
+    body.name !== '' &&
+    'status' in body &&
+    (body.status === 'good' || body.status === 'bad')
+  ) {
+    const note =
+      'note' in body && typeof body.note === 'string' ? body.note : ''
+    return { name: body.name, status: body.status, note }
+  }
+  return undefined
+}
+
+function parseNameBody(raw: string): string | undefined {
+  const body: unknown = JSON.parse(raw)
+  return typeof body === 'object' &&
+    body !== null &&
+    'name' in body &&
+    typeof body.name === 'string' &&
+    body.name !== ''
+    ? body.name
+    : undefined
+}
+
 async function handleVerdict(
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ) {
-  const body = JSON.parse(await readBody(req)) as {
-    name: string
-    status: 'good' | 'bad'
-    note?: string
+  const parsed = parseVerdictBody(await readBody(req))
+  if (parsed) {
+    const report = loadReport()
+    const verdict: Verdict = { ...parsed, reviewedAt: new Date().toISOString() }
+    report[parsed.name] = verdict
+    saveReport(report)
+    sendJson(res, 200, verdict)
+  } else {
+    sendJson(res, 400, { error: 'invalid verdict body' })
   }
-  const report = loadReport()
-  const verdict: Verdict = {
-    name: body.name,
-    status: body.status,
-    note: body.note ?? '',
-    reviewedAt: new Date().toISOString(),
-  }
-  report[body.name] = verdict
-  saveReport(report)
-  sendJson(res, 200, verdict)
 }
 
 async function handleClearVerdict(
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ) {
-  const body = JSON.parse(await readBody(req)) as { name: string }
-  const report = loadReport()
-  if (report[body.name]) {
-    delete report[body.name]
-    saveReport(report)
+  const name = parseNameBody(await readBody(req))
+  if (name) {
+    const report = loadReport()
+    if (report[name]) {
+      delete report[name]
+      saveReport(report)
+    }
+    sendJson(res, 200, { name, cleared: true })
+  } else {
+    sendJson(res, 400, { error: 'invalid body' })
   }
-  sendJson(res, 200, { name: body.name, cleared: true })
 }
 
 const server = http.createServer((req, res) => {
@@ -306,7 +339,9 @@ async function setVerdict(btn, status) {
     body: JSON.stringify({ name, status, note }),
   })
   const spec = data.find(s => s.name === name)
-  spec.verdict = { name, status, note, reviewedAt: new Date().toISOString() }
+  if (spec) {
+    spec.verdict = { name, status, note, reviewedAt: new Date().toISOString() }
+  }
   render()
 }
 
@@ -317,7 +352,10 @@ async function clearVerdict(btn) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name }),
   })
-  data.find(s => s.name === name).verdict = undefined
+  const spec = data.find(s => s.name === name)
+  if (spec) {
+    spec.verdict = undefined
+  }
   render()
 }
 

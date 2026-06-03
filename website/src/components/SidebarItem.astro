@@ -1,5 +1,6 @@
 ---
 import type { SidebarEntry } from '../lib/docs-sidebar'
+import { containsSlug } from '../lib/docs-sidebar'
 import SidebarItem from './SidebarItem.astro'
 
 interface Props {
@@ -22,7 +23,7 @@ const { item, currentSlug } = Astro.props
     </li>
   ) : (
     <li>
-      <details>
+      <details open={containsSlug(item, currentSlug)}>
         <summary>{item.label}</summary>
         <ul>
           {item.items.map(child => (
