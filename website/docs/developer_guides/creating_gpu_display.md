@@ -5,10 +5,14 @@ description:
 guide_category: Creating pluggable elements
 ---
 
-:::note This guide covers the GPU rendering path introduced in the WebGL/WebGPU
+:::note
+
+This guide covers the GPU rendering path introduced in the WebGL/WebGPU
 migration. If you only need Canvas2D rendering, the standard `createDisplay`
-path is simpler. Use this guide when you need hardware- accelerated rendering
-for large or dense datasets. :::
+path is simpler. Use this guide when you need hardware-accelerated rendering
+for large or dense datasets.
+
+:::
 
 ## Architecture overview
 

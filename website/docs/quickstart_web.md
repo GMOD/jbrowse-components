@@ -79,7 +79,10 @@ jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse2/
 
 This writes an assembly entry to `config.json` and copies `genome.fa` and
 `genome.fa.fai` into the output directory. Use `--load symlink` to symlink
-instead of copying.
+instead of copying. If you're running commands from inside the `jbrowse2/`
+directory, omit `--out` (it defaults to `.`).
+
+Use `--name` to set a human-readable assembly name (defaults to the filename).
 
 JBrowse 2 also supports bgzip-compressed indexed FASTA and 2bit files.
 
@@ -88,16 +91,14 @@ JBrowse 2 also supports bgzip-compressed indexed FASTA and 2bit files.
 ### BAM / CRAM
 
 ```bash
-samtools index file.bam
+samtools index file.bam   # or file.cram
 jbrowse add-track file.bam --load copy --out /var/www/html/jbrowse2
-
-samtools index file.cram
-jbrowse add-track file.cram --load copy --out /var/www/html/jbrowse2
 ```
 
 Run `jbrowse add-track --help` for more options.
 
 <Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>
+
 
 ### VCF
 
@@ -124,7 +125,9 @@ bcftools view file.vcf --output-type z > file.vcf.gz
 bcftools index --tbi file.vcf.gz
 ```
 
-See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`. :::
+See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`.
+
+:::
 
 <Figure caption="JBrowse 2 linear genome view with variant track" src="/img/volvox_variants.png"/>
 
@@ -198,7 +201,8 @@ can be typed directly into the location search box. See the
 - [User guide](/docs/user_guide) — track types, views, and UI features
 - [Config guide](/docs/config_guide) — advanced track and assembly configuration
 - [CLI reference](/docs/cli) — full reference for all CLI commands
-- [FAQ](/docs/faq) — common questions including text searching and CORS
+- [FAQ](/docs/faq) — common questions including text searching
+- [CORS errors](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files) — if tracks fail to load from remote URLs
 
 ## Tips
 
