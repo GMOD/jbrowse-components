@@ -123,19 +123,22 @@ function emitCodonRects(
   rects: RectData[],
   overlayItems: AminoAcidOverlayItem[],
 ) {
-  const parsedBase = parseCssColor(baseColor)
-  const baseHex = formatHEX(parsedBase)
-  const color1 = colorToUint32(lighten(baseHex, 0.2))
-  const color2 = colorToUint32(darken(baseHex, 0.1))
-  const lightText = getLuminance(parsedBase) < 0.5
+  const baseHex = formatHEX(parseCssColor(baseColor))
+  const hex1 = lighten(baseHex, 0.2)
+  const hex2 = darken(baseHex, 0.1)
+  const color1 = colorToUint32(hex1)
+  const color2 = colorToUint32(hex2)
+  const lightText1 = getLuminance(parseCssColor(hex1)) < 0.5
+  const lightText2 = getLuminance(parseCssColor(hex2)) < 0.5
 
   for (const [i, aa] of aminoAcids.entries()) {
+    const odd = i % 2 === 1
     rects.push({
       start: aa.startBp,
       end: aa.endBp,
       y,
       height,
-      color: i % 2 === 1 ? color2 : color1,
+      color: odd ? color2 : color1,
       flatbushIdx,
     })
     overlayItems.push({
@@ -147,7 +150,7 @@ function emitCodonRects(
       heightPx: height,
       isStopOrNonTriplet: aa.isStopOrNonTriplet,
       flatbushIdx,
-      lightText,
+      lightText: odd ? lightText2 : lightText1,
     })
   }
 }
