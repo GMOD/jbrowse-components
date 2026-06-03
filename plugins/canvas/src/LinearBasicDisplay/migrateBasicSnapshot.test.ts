@@ -29,40 +29,9 @@ test('strips removed FeatureDensityMixin fields', () => {
   expect(result).toEqual({ type: 'LinearBasicDisplay' })
 })
 
-test('lifts height to heightOverride', () => {
-  const result = migrateBasicSnapshot({
-    type: 'LinearBasicDisplay',
-    height: 150,
-  })
-  expect(result).toEqual({
-    type: 'LinearBasicDisplay',
-    heightOverride: 150,
-  })
-})
-
-// Regression: a partially-migrated session may already have heightOverride
-// (newer field) AND height (legacy artifact). The new value must win, otherwise
-// re-saving a session would overwrite the user's chosen height with whatever
-// the old snapshot had.
-test('does not overwrite existing heightOverride', () => {
-  const result = migrateBasicSnapshot({
-    type: 'LinearBasicDisplay',
-    height: 150,
-    heightOverride: 200,
-  })
-  expect(result).toEqual({
-    type: 'LinearBasicDisplay',
-    heightOverride: 200,
-  })
-})
-
-test('does not add heightOverride when neither field is present', () => {
-  const result = migrateBasicSnapshot({
-    type: 'LinearBasicDisplay',
-  })
-  expect(result).toEqual({ type: 'LinearBasicDisplay' })
-  expect(result).not.toHaveProperty('heightOverride')
-})
+// height/heightPreConfig → heightOverride is migrated centrally by
+// TrackHeightMixin (see TrackHeightMixin.test.ts); migrateBasicSnapshot leaves
+// height untouched.
 
 // Legacy trackShowLabels: true used to mean "always show labels". The enum
 // has no equivalent — 'on' would be the literal translation, but defaulting
@@ -280,7 +249,9 @@ test('normalizes boolean showLabels in existing configOverrides to enum', () => 
 })
 
 // Composite: a realistic legacy snapshot exercising all branches at once.
-test('full legacy snapshot: strips, lifts, and merges', () => {
+// `height` passes through untouched (TrackHeightMixin migrates it to
+// `heightOverride`); this function strips and merges the rest.
+test('full legacy snapshot: strips and merges', () => {
   const result = migrateBasicSnapshot({
     type: 'LinearBasicDisplay',
     configuration: 'gene_track',
@@ -299,7 +270,7 @@ test('full legacy snapshot: strips, lifts, and merges', () => {
   expect(result).toEqual({
     type: 'LinearBasicDisplay',
     configuration: 'gene_track',
-    heightOverride: 180,
+    height: 180,
     configOverrides: {
       autoHeight: true,
       showLabels: 'off',
@@ -318,7 +289,6 @@ test('stripped keys never appear in the result', () => {
     showTooltips: true,
     userBpPerPxLimit: 1,
     userByteSizeLimit: 1,
-    height: 100,
     trackShowLabels: true,
   })
   expect(result).not.toHaveProperty('blockState')
@@ -326,6 +296,5 @@ test('stripped keys never appear in the result', () => {
   expect(result).not.toHaveProperty('showTooltips')
   expect(result).not.toHaveProperty('userBpPerPxLimit')
   expect(result).not.toHaveProperty('userByteSizeLimit')
-  expect(result).not.toHaveProperty('height')
   expect(result).not.toHaveProperty('trackShowLabels')
 })

@@ -1,4 +1,7 @@
-import { migrateLegacyArcRendererConfig } from './migrate.ts'
+import {
+  migrateArcSnapshot,
+  migrateLegacyArcRendererConfig,
+} from './migrate.ts'
 
 test('passes through a config that has no renderer', () => {
   const snap = {
@@ -72,4 +75,39 @@ test('drops unknown renderer keys but keeps other top-level keys', () => {
     height: 200,
     color: 'blue',
   })
+})
+
+// migrateArcSnapshot: state-model back-compat for the displayMode →
+// displayModeOverride field rename
+
+test('migrateArcSnapshot: renames legacy displayMode to displayModeOverride', () => {
+  expect(
+    migrateArcSnapshot({
+      type: 'LinearArcDisplay',
+      displayMode: 'semicircles',
+    }),
+  ).toEqual({ type: 'LinearArcDisplay', displayModeOverride: 'semicircles' })
+})
+
+test('migrateArcSnapshot: leaves an existing displayModeOverride untouched', () => {
+  const snap = { type: 'LinearArcDisplay', displayModeOverride: 'arcs' }
+  expect(migrateArcSnapshot(snap)).toEqual(snap)
+})
+
+test('migrateArcSnapshot: does not overwrite displayModeOverride with a stale displayMode', () => {
+  const snap = {
+    type: 'LinearArcDisplay',
+    displayMode: 'arcs',
+    displayModeOverride: 'semicircles',
+  }
+  expect(migrateArcSnapshot(snap)).toEqual(snap)
+})
+
+test('migrateArcSnapshot: passes through a snapshot with neither field', () => {
+  const snap = { type: 'LinearArcDisplay' }
+  expect(migrateArcSnapshot(snap)).toEqual(snap)
+})
+
+test('migrateArcSnapshot: handles undefined', () => {
+  expect(migrateArcSnapshot(undefined)).toBeUndefined()
 })

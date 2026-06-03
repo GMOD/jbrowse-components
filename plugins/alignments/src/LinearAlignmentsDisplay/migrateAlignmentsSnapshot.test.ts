@@ -27,29 +27,15 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result.showCoverage).toBe(true)
   })
 
-  test('migrates height → heightOverride', () => {
-    const snap = { type: 'LinearAlignmentsDisplay', height: 400 }
-    const result = migrateAlignmentsSnapshot(snap)
-    expect(result.heightOverride).toBe(400)
-    expect(result).not.toHaveProperty('height')
-  })
+  // height/heightPreConfig → heightOverride is migrated centrally by
+  // TrackHeightMixin (see TrackHeightMixin.test.ts); this function leaves
+  // height untouched.
 
   test('migrates arcsHeight → readConnectionsHeight', () => {
     const snap = { type: 'LinearAlignmentsDisplay', arcsHeight: 60 }
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.readConnectionsHeight).toBe(60)
     expect(result).not.toHaveProperty('arcsHeight')
-  })
-
-  test('does not overwrite existing heightOverride', () => {
-    const snap = {
-      type: 'LinearAlignmentsDisplay',
-      height: 400,
-      heightOverride: 300,
-    }
-    const result = migrateAlignmentsSnapshot(snap)
-    expect(result.heightOverride).toBe(300)
-    expect(result.height).toBe(400)
   })
 
   test('remaps LinearPileupDisplay → LinearAlignmentsDisplay', () => {
@@ -192,7 +178,8 @@ describe('migrateAlignmentsSnapshot', () => {
     }
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.type).toBe('LinearAlignmentsDisplay')
-    expect(result.heightOverride).toBe(300)
+    // height passes through untouched (TrackHeightMixin migrates it)
+    expect(result.height).toBe(300)
     expect(result.linkedReads).toBe('normal')
     expect(result).not.toHaveProperty('showLinkedReads')
     const overrides = result.configOverrides as Record<string, unknown>
@@ -200,7 +187,6 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(overrides.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
     expect(result).not.toHaveProperty('blockState')
     expect(result).not.toHaveProperty('showTooltips')
-    expect(result).not.toHaveProperty('height')
     expect(result).not.toHaveProperty('renderingMode')
   })
 

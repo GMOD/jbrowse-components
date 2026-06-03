@@ -31,6 +31,15 @@ Keep the main model chain in one file (e.g. `LinearGenomeView/model.ts`). Don't
 split `.views()`/`.actions()` chains across files; small mixins/utilities can be
 extracted.
 
+### Override-field naming
+
+For a setting whose stored value overrides a config-slot default, name the
+stored field `<name>Override` and let the **getter** keep the bare `<name>`
+(which always returns a resolved value, never `undefined`). Never put the suffix
+on the getter (no `<name>Setting` getters) and never invent opaque field names
+(no `heightPreConfig`). Settings that live in the shared `configOverrides` map
+follow the same getter rule via `getConfWithOverride('<name>')`.
+
 ## Alignment modification parsing (`packages/modifications-utils`, `plugins/alignments`)
 
 This code runs per-read in the RPC worker — with thousands of reads and

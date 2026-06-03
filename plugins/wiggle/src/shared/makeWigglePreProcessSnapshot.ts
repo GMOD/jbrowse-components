@@ -5,14 +5,9 @@ export function makeWigglePreProcessSnapshot(opts?: { multiWiggle?: boolean }) {
     if (!snap) {
       return snap
     }
+    // height/heightPreConfig → heightOverride is handled centrally by
+    // TrackHeightMixin's migration, so it passes through untouched here.
     const { blockState, showLegend, showTooltips, ...withoutLegacy } = snap
-    if (
-      withoutLegacy.height !== undefined &&
-      withoutLegacy.heightOverride === undefined
-    ) {
-      const { height, ...rest } = withoutLegacy
-      return migrateWiggleSnapshot({ ...rest, heightOverride: height }, opts)
-    }
     return migrateWiggleSnapshot(withoutLegacy, opts)
   }
 }

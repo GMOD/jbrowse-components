@@ -242,15 +242,9 @@ export default function MultiSampleVariantBaseModelF(
           lengthCutoffFilter,
           ...cleaned
         } = snap
-        let next = cleaned
-
-        // Rewrite "height" from older snapshots to "heightOverride"
-        if (next.height !== undefined && next.heightOverride === undefined) {
-          const { height, ...rest } = next
-          next = { ...rest, heightOverride: height }
-        }
-
-        return migrateOldSettingSnapshots(next)
+        // height/heightPreConfig → heightOverride is handled centrally by
+        // TrackHeightMixin's migration, so it passes through untouched here.
+        return migrateOldSettingSnapshots(cleaned)
       })
       .volatile(() => ({
         /**
