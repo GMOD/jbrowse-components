@@ -138,7 +138,6 @@ export interface AminoAcidOverlayItem {
   heightPx: number
   isStopOrNonTriplet: boolean
   flatbushIdx: number
-  lightText: boolean
 }
 
 interface HitItemBase {

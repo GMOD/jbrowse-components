@@ -68,14 +68,10 @@ function renderPeptides(
   forEachRenderedPeptide(data, vr, (item, { centerPx, fontSize, text }) => {
     const y = item.topPx + item.heightPx / 2 + fontSize / 3
     ctx.font = `${fontSize}px monospace`
-    ctx.strokeStyle = item.lightText ? 'rgba(0,0,0,0.6)' : 'white'
+    ctx.strokeStyle = 'white'
     ctx.lineWidth = 1
     ctx.strokeText(text, centerPx, y)
-    ctx.fillStyle = item.isStopOrNonTriplet
-      ? 'red'
-      : item.lightText
-        ? 'white'
-        : 'black'
+    ctx.fillStyle = item.isStopOrNonTriplet ? 'red' : 'black'
     ctx.fillText(text, centerPx, y)
   })
   ctx.textAlign = 'start'

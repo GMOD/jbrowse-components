@@ -1,10 +1,9 @@
 import {
   cssColorToABGR as colorToUint32,
   formatHEX,
-  getLuminance,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
-import { darken, lighten } from '@mui/material'
+import { lighten } from '@mui/material'
 import { genomeToTranscriptSeqMapping } from 'g2p_mapper'
 
 import {
@@ -124,21 +123,16 @@ function emitCodonRects(
   overlayItems: AminoAcidOverlayItem[],
 ) {
   const baseHex = formatHEX(parseCssColor(baseColor))
-  const hex1 = lighten(baseHex, 0.2)
-  const hex2 = darken(baseHex, 0.1)
-  const color1 = colorToUint32(hex1)
-  const color2 = colorToUint32(hex2)
-  const lightText1 = getLuminance(parseCssColor(hex1)) < 0.5
-  const lightText2 = getLuminance(parseCssColor(hex2)) < 0.5
+  const color1 = colorToUint32(lighten(baseHex, 0.5))
+  const color2 = colorToUint32(lighten(baseHex, 0.35))
 
   for (const [i, aa] of aminoAcids.entries()) {
-    const odd = i % 2 === 1
     rects.push({
       start: aa.startBp,
       end: aa.endBp,
       y,
       height,
-      color: odd ? color2 : color1,
+      color: i % 2 === 1 ? color2 : color1,
       flatbushIdx,
     })
     overlayItems.push({
@@ -150,7 +144,6 @@ function emitCodonRects(
       heightPx: height,
       isStopOrNonTriplet: aa.isStopOrNonTriplet,
       flatbushIdx,
-      lightText: odd ? lightText2 : lightText1,
     })
   }
 }
