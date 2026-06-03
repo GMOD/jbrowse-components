@@ -193,6 +193,7 @@ const COLOR_BY_TO_SCHEME: Record<string, number> = {
   insertSizeAndOrientation: ColorScheme.insertSizeAndOrientation,
   modifications: ColorScheme.modifications,
   methylation: ColorScheme.modifications,
+  bisulfite: ColorScheme.modifications,
   tag: ColorScheme.tag,
   baseQuality: ColorScheme.baseQuality,
   perBaseQuality: ColorScheme.normal,
@@ -778,7 +779,9 @@ export default function stateModelFactory(
          */
         get showModifications() {
           const t = self.colorBy.type
-          return t === 'modifications' || t === 'methylation'
+          return (
+            t === 'modifications' || t === 'methylation' || t === 'bisulfite'
+          )
         },
 
         /**

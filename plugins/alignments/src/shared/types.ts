@@ -43,6 +43,7 @@ export type ColorSchemeType =
   | 'tag'
   | 'modifications'
   | 'methylation'
+  | 'bisulfite'
 
 export interface ColorBy {
   type: ColorSchemeType

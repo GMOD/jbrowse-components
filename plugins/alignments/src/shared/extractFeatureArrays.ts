@@ -3,6 +3,7 @@ import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 import { extractCigarFeatures } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import {
+  extractBisulfite,
   extractMethylation,
   extractModifications,
 } from '../features/modification/extract.ts'
@@ -28,6 +29,9 @@ interface ExtractOpts {
   showSoftClipping: boolean
   region: Region
   sortTag?: string
+  // reference for the bisulfite color mode (read-vs-reference C->T comparison)
+  regionSequence?: string
+  regionSequenceStart?: number
 }
 
 export function extractFeatureArrays<T extends FeatureData>(
@@ -36,6 +40,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   opts: ExtractOpts,
 ) {
   const { colorBy, showSoftClipping, region, sortTag } = opts
+  const { regionSequence, regionSequenceStart } = opts
   const detectedModifications = new Set<string>()
   // Unique (strand, type) pairs across all reads → global simplex resolution.
   const seenModTypes = new Map<string, ModificationType>()
@@ -115,6 +120,20 @@ export function extractFeatureArrays<T extends FeatureData>(
         modData,
         modifications,
         colorBy.modifications?.cytosineContext ?? 'CG',
+      )
+    }
+
+    if (colorBy?.type === 'bisulfite' && regionSequence !== undefined) {
+      extractBisulfite(
+        feature,
+        featureId,
+        featureStart,
+        strand,
+        region,
+        regionSequence,
+        regionSequenceStart ?? region.start,
+        colorBy.modifications?.cytosineContext ?? 'CG',
+        modifications,
       )
     }
 

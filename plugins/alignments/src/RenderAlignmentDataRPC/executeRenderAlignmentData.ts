@@ -156,7 +156,9 @@ export async function executeRenderAlignmentData({
       drawProperPairs,
     )
   } else if (
-    (colorBy?.type === 'methylation' || colorBy?.type === 'modifications') &&
+    (colorBy?.type === 'methylation' ||
+      colorBy?.type === 'modifications' ||
+      colorBy?.type === 'bisulfite') &&
     sequenceAdapter
   ) {
     const result = await fetchReferenceSequence({
@@ -196,6 +198,8 @@ export async function executeRenderAlignmentData({
         showSoftClipping: effShowSoftClipping,
         region,
         sortTag: isChain ? undefined : sortTag,
+        regionSequence,
+        regionSequenceStart,
       },
     ),
   )
@@ -258,7 +262,9 @@ export async function executeRenderAlignmentData({
   // coverage; chain omits both so runCoveragePipeline skips mod-coverage.
   const trackStrands =
     !isChain &&
-    (colorBy?.type === 'modifications' || colorBy?.type === 'methylation')
+    (colorBy?.type === 'modifications' ||
+      colorBy?.type === 'methylation' ||
+      colorBy?.type === 'bisulfite')
 
   const pipeline = await runCoveragePipeline({
     features,

@@ -1,4 +1,13 @@
-import { parseCigar2 } from '@jbrowse/cigar-utils'
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_S,
+  CIGAR_X,
+  parseCigar2,
+} from '@jbrowse/cigar-utils'
 import {
   methylated5hmC,
   methylated5mC,
@@ -10,6 +19,7 @@ import {
   getMethBins,
   getModPositions,
   getModProbabilities,
+  matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
 
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
@@ -180,6 +190,93 @@ export function extractMethylation(
           METH_5HMC_UNMETHYLATED_RGB,
         ),
       })
+    }
+  }
+}
+
+// Bisulfite/EM-seq has no MM/ML tags: methylation is read from C->T conversion
+// against the reference. Unmethylated C is converted (read T); methylated C is
+// protected (read C). Produces the same methylated/unmethylated marks as the
+// modBAM methylation path so all downstream rendering is shared.
+export function extractBisulfite(
+  feature: Feature,
+  featureId: string,
+  featureStart: number,
+  strand: number,
+  region: Region,
+  regionSequence: string,
+  regionSequenceStart: number,
+  context: CytosineContext,
+  modificationsData: ModificationEntry[],
+) {
+  const cigarString = feature.get('CIGAR') as string | undefined
+  const seq = feature.get('seq') as string | undefined
+  if (!cigarString || !seq) {
+    return
+  }
+  const cigarOps = parseCigar2(cigarString)
+  const flags = (feature.get('flags') as number | undefined) ?? 0
+  const isReverse = strand === -1
+  const isSecondOfPair = (flags & 128) !== 0
+
+  // Bisulfite converts only the read's own template strand. That strand is
+  // reverse XOR second-of-pair (IGV's rule). On it we read genomic C as read
+  // C=methylated / T=unmethylated; otherwise genomic G as read G / A. The
+  // reference (regionSequence) is lowercased; read bases are uppercased.
+  const flip = isReverse !== isSecondOfPair
+  const wantRef = flip ? 'g' : 'c'
+  const methRead = flip ? 'G' : 'C'
+  const unmethRead = flip ? 'A' : 'T'
+  const methStrand = isReverse ? -1 : 1
+  const refLen = regionSequence.length
+  const { start: regionStart, end: regionEnd } = region
+
+  let readPos = 0
+  let refPos = 0
+  for (let i = 0, l = cigarOps.length; i < l; i++) {
+    const packed = cigarOps[i]!
+    const len = packed >> 4
+    const op = packed & 0xf
+    if (op === CIGAR_S || op === CIGAR_I) {
+      readPos += len
+    } else if (op === CIGAR_D || op === CIGAR_N) {
+      refPos += len
+    } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
+      for (let j = 0; j < len; j++) {
+        const genomicPos = featureStart + refPos + j
+        const ri = genomicPos - regionSequenceStart
+        if (
+          ri >= 0 &&
+          ri < refLen &&
+          regionSequence[ri] === wantRef &&
+          genomicPos >= regionStart &&
+          genomicPos < regionEnd &&
+          matchesCytosineContext(regionSequence, ri, flip, context)
+        ) {
+          const readBase = seq[readPos + j]?.toUpperCase()
+          const methylated = readBase === methRead
+          if (methylated || readBase === unmethRead) {
+            const { r, g, b, prob } = methColorAndProb(
+              methylated ? 1 : 0,
+              METH_5MC_METHYLATED_RGB,
+              METH_5MC_UNMETHYLATED_RGB,
+            )
+            modificationsData.push({
+              featureId,
+              position: genomicPos,
+              base: 'C',
+              modType: 'm',
+              strand: methStrand,
+              r,
+              g,
+              b,
+              prob,
+            })
+          }
+        }
+      }
+      readPos += len
+      refPos += len
     }
   }
 }
