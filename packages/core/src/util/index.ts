@@ -1,5 +1,6 @@
 import type React from 'react'
 
+export { unzip } from '@gmod/bgzf-filehandle'
 import { unzip } from '@gmod/bgzf-filehandle'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'

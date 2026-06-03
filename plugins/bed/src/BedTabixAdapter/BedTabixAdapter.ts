@@ -1,7 +1,7 @@
 import BED from '@gmod/bed'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
+import { SimpleFeature, unzip, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
@@ -21,6 +21,8 @@ import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: BED
 
+  private readonly bedGzLoc: FileLocation
+
   protected bed: TabixIndexedFile
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -33,13 +35,13 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const bedGzLoc = this.getConf('bedGzLocation') as FileLocation
+    this.bedGzLoc = this.getConf('bedGzLocation') as FileLocation
     const type = this.getConf(['index', 'indexType'])
     const loc = this.getConf(['index', 'location'])
     const pm = this.pluginManager
 
     this.bed = new TabixIndexedFile({
-      filehandle: openLocation(bedGzLoc, pm),
+      filehandle: openLocation(this.bedGzLoc, pm),
       ...openTabixIndexFilehandle(loc, type, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
@@ -74,7 +76,27 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     if (columnNames.length) {
       return columnNames
     }
-    return parseNamesFromHeader(await this.getHeader())
+    return (
+      parseNamesFromHeader(await this.getHeader()) ??
+      (await this.parseSkipLineHeader())
+    )
+  }
+
+  // When a tabix file uses skipLines (not #-comment) for its header,
+  // getHeader() returns empty. Read the raw first bgzf block to recover names.
+  private async parseSkipLineHeader(): Promise<string[] | undefined> {
+    const { skipLines } = await this.configure()
+    if (!skipLines) {
+      return undefined
+    }
+    const buf = await openLocation(
+      this.bedGzLoc,
+      this.pluginManager,
+    ).read(65536, 0)
+    const text = new TextDecoder().decode(await unzip(buf))
+    const lines = text.split(/\n|\r\n|\r/).filter(Boolean)
+    const defline = lines[skipLines - 1]
+    return defline?.includes('\t') ? defline.split('\t').map(f => f.trim()) : undefined
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
