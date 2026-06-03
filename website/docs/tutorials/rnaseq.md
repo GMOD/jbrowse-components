@@ -119,25 +119,11 @@ middle is the part that is skipped.
 
 ## How scientists use RNA-seq
 
-RNA-seq is an extremely useful and detailed biological measurement, providing
-both a quantitative measure of gene expression and a qualitative measure of gene
-structure.
-
-In eukaryotes, genes often have complex structures. Prokaryotes do not really
-have introns, but eukaryotes do, which leads to an immense amount of complexity
-in the way DNA is transcribed. There are roughly 20,000 protein-coding genes in
-the human genome (the exact count depends on how you count), but each gene can
-be **alternatively spliced** — different introns are spliced out, leading to
-different combinations of exons in the final product. Each gene can therefore
-encode a complex set of different RNA molecules that go on to become proteins.
-
-Because RNA-seq is a fairly direct observation of that activity, it is very
-valuable. However, RNA-seq costs money, and cells transcribe things differently
-under different conditions, so any given RNA-seq measurement reflects
-transcriptional activity under one specific biological condition. Scientists
-often perform several RNA-seq experiments to understand a system — for example,
-RNA-seq under drought and healthy conditions in a plant to determine which genes
-are activated during drought.
+Each of the ~20,000 human protein-coding genes can be **alternatively spliced**,
+producing different proteins from different exon combinations. Because
+transcription varies by cell type and condition, scientists typically run
+RNA-seq across multiple conditions — for example, drought vs. healthy in a
+plant — to identify which genes are activated.
 
 ## Short reads and long reads
 
@@ -207,15 +193,3 @@ strings — no extra configuration is needed. For a precomputed coverage signal
 a [quantitative track](/docs/user_guides/quantitative_track). For the full set
 of alignment display options — including paired arcs, soft-clipping, and
 coloring — see the [alignments track guide](/docs/user_guides/alignments_track).
-
-## Conclusion
-
-Sequencing is a technology that has scaled almost faster than we can write
-algorithms to deal with it. There are petabytes of data on the NCBI SRA, and a
-new RNA-seq experiment can cost just a few hundred dollars, so any scientific
-question that can be interrogated with sequencing data eventually will be.
-
-All of this data is quite low-level, but layers of analysis tools crunch it down
-into something meaningful. It is still valuable to have a handle on the basic
-concepts, and visually seeing the reads in the genome browser is a great way to
-build that intuition.

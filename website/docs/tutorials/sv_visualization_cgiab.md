@@ -43,12 +43,12 @@ You will need:
   finished site)
 - The following command-line tools, with versions tested at the time of writing
   in parentheses:
-  - [JBrowse CLI](/docs/cli) (`@jbrowse/cli` v3.6.5)
-  - [Node.js](https://nodejs.org/) (v24.1.0)
-  - [tabix](http://www.htslib.org/doc/tabix.html) (v1.21)
-  - [samtools](http://www.htslib.org/) (v1.21)
+  - [JBrowse CLI](/docs/cli) (`@jbrowse/cli` v3.6.5 or later)
+  - [Node.js](https://nodejs.org/) (v24.1.0 or later)
+  - [tabix](http://www.htslib.org/doc/tabix.html) (v1.21 or later)
+  - [samtools](http://www.htslib.org/) (v1.21 or later)
   - [minimap2](https://github.com/lh3/minimap2)
-  - [megadepth](https://github.com/ChristopherWilks/megadepth) (v1.2.0)
+  - [megadepth](https://github.com/ChristopherWilks/megadepth) (v1.2.0 or later)
 
 A script with all of the data-preparation commands below is available as a
 [gist](https://gist.github.com/cmdcolin/4f2ccf037b4c3315d6eb36b0a4ec123d).
