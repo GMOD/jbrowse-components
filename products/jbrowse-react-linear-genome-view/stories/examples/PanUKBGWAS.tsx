@@ -5,18 +5,67 @@ import GWASPlugin from '@jbrowse/plugin-gwas'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 const PHENOTYPES = [
-  { id: 'continuous-50-both_sexes-irnt', label: 'Standing height' },
-  { id: 'continuous-21001-both_sexes-irnt', label: 'Body mass index' },
-  { id: 'continuous-4079-both_sexes-irnt', label: 'Diastolic blood pressure' },
-  { id: 'biomarkers-30690-both_sexes-irnt', label: 'Cholesterol' },
-  { id: 'biomarkers-30760-both_sexes-irnt', label: 'HDL cholesterol' },
-  { id: 'biomarkers-30780-both_sexes-irnt', label: 'LDL direct' },
-  { id: 'biomarkers-30740-both_sexes-irnt', label: 'Glucose' },
-  { id: 'biomarkers-30750-both_sexes-irnt', label: 'Glycated haemoglobin (HbA1c)' },
-  { id: 'icd10-E11-both_sexes', label: 'Type 2 diabetes' },
-  { id: 'icd10-I25-both_sexes', label: 'Chronic ischaemic heart disease' },
-  { id: 'icd10-I21-both_sexes', label: 'Acute myocardial infarction' },
-  { id: 'icd10-J45-both_sexes', label: 'Asthma' },
+  // defaultLoc = lead locus (hg38) to zoom to on load
+  {
+    id: 'continuous-50-both_sexes-irnt',
+    label: 'Standing height',
+    defaultLoc: 'chr12:64,000,000..67,000,000', // HMGA2
+  },
+  {
+    id: 'continuous-21001-both_sexes-irnt',
+    label: 'Body mass index',
+    defaultLoc: 'chr16:53,000,000..55,000,000', // FTO
+  },
+  {
+    id: 'continuous-4079-both_sexes-irnt',
+    label: 'Diastolic blood pressure',
+    defaultLoc: 'chr4:81,000,000..82,500,000', // FGF5
+  },
+  {
+    id: 'biomarkers-30690-both_sexes-irnt',
+    label: 'Cholesterol',
+    defaultLoc: 'chr1:54,500,000..56,000,000', // PCSK9
+  },
+  {
+    id: 'biomarkers-30760-both_sexes-irnt',
+    label: 'HDL cholesterol',
+    defaultLoc: 'chr16:56,500,000..57,500,000', // CETP
+  },
+  {
+    id: 'biomarkers-30780-both_sexes-irnt',
+    label: 'LDL direct',
+    defaultLoc: 'chr19:11,000,000..11,500,000', // LDLR
+  },
+  {
+    id: 'biomarkers-30740-both_sexes-irnt',
+    label: 'Glucose',
+    defaultLoc: 'chr7:44,000,000..44,500,000', // GCK
+  },
+  {
+    id: 'biomarkers-30750-both_sexes-irnt',
+    label: 'Glycated haemoglobin (HbA1c)',
+    defaultLoc: 'chr11:5,000,000..5,500,000', // HBB
+  },
+  {
+    id: 'icd10-E11-both_sexes',
+    label: 'Type 2 diabetes',
+    defaultLoc: 'chr10:112,500,000..113,500,000', // TCF7L2
+  },
+  {
+    id: 'icd10-I25-both_sexes',
+    label: 'Chronic ischaemic heart disease',
+    defaultLoc: 'chr9:21,500,000..22,500,000', // 9p21
+  },
+  {
+    id: 'icd10-I21-both_sexes',
+    label: 'Acute myocardial infarction',
+    defaultLoc: 'chr6:160,000,000..161,000,000', // LPA
+  },
+  {
+    id: 'icd10-J45-both_sexes',
+    label: 'Asthma',
+    defaultLoc: 'chr17:37,500,000..38,500,000', // ORMDL3/GSDMB
+  },
 ]
 
 const POPULATIONS = [
@@ -80,6 +129,9 @@ function GenomeView({
   phenotypeId: string
   scoreColumn: string
 }) {
+  const loc =
+    PHENOTYPES.find(p => p.id === phenotypeId)?.defaultLoc ??
+    'chr1:1..248956422'
   const [state] = useState(() =>
     createViewState({
       assembly,
@@ -89,11 +141,7 @@ function GenomeView({
         name: 'Pan-UKB GWAS',
         view: {
           type: 'LinearGenomeView',
-          init: {
-            assembly: 'hg38',
-            loc: 'chr1:1..248956422',
-            tracks: ['panukb_gwas'],
-          },
+          init: { assembly: 'hg38', loc, tracks: ['panukb_gwas'] },
         },
       },
     }),
