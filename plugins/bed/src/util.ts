@@ -211,6 +211,7 @@ export function featureData({
       ? Number(scoreRaw)
       : undefined
 
+
   const repeat = parseRepeatMaskerDescription(rest.description)
   if (repeat) {
     const {

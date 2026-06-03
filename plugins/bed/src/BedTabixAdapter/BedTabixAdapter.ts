@@ -89,14 +89,16 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     if (!skipLines) {
       return undefined
     }
-    const buf = await openLocation(
-      this.bedGzLoc,
-      this.pluginManager,
-    ).read(65536, 0)
+    const buf = await openLocation(this.bedGzLoc, this.pluginManager).read(
+      65536,
+      0,
+    )
     const text = new TextDecoder().decode(await unzip(buf))
     const lines = text.split(/\n|\r\n|\r/).filter(Boolean)
     const defline = lines[skipLines - 1]
-    return defline?.includes('\t') ? defline.split('\t').map(f => f.trim()) : undefined
+    return defline?.includes('\t')
+      ? defline.split('\t').map(f => f.trim())
+      : undefined
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
@@ -123,7 +125,9 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
                   splitLine,
                   refName: splitLine[colRef]!,
                   start: +splitLine[colStart]! - (oneBased ? 1 : 0),
-                  end: +splitLine[colEnd]! + (colStart === colEnd && !oneBased ? 1 : 0),
+                  end:
+                    +splitLine[colEnd]! +
+                    (colStart === colEnd && !oneBased ? 1 : 0),
                   scoreColumn,
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,

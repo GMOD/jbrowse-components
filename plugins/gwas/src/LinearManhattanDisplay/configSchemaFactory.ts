@@ -33,7 +33,7 @@ export function configSchemaFactory() {
       // expressed in the same pre-transformed -log10(p) units as the scores.
       showSignificanceLines: {
         type: 'boolean',
-        defaultValue: true,
+        defaultValue: false,
         description: 'Show genome-wide and suggestive significance lines',
       },
       // -log10(5e-8) ≈ 7.3, the standard genome-wide significance cutoff.
