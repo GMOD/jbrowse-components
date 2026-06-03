@@ -68,4 +68,5 @@ export interface InitState {
   tracklist?: boolean
   nav?: boolean
   highlight?: string[]
+  showCenterLine?: boolean
 }

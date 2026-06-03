@@ -45,6 +45,22 @@ interface SessionUrlSpec extends CommonSpecFields {
 export type ScreenshotSpec = LGVSpec | SessionUrlSpec
 
 const VOLVOX = 'test_data/volvox/config.json'
+// volvox_sv_cram's adapter, reused to build the two strand-split session tracks
+// that the group-by spec renders. Session tracks don't inherit the config's
+// baseUri, so an absolute url is used (the same volvox test data jbrowse.org
+// hosts) — works in both the local generator and the live-link instance.
+const VOLVOX_SV_CRAM = 'https://jbrowse.org/code/jb2/latest/test_data/volvox'
+const VOLVOX_SV_CRAM_ADAPTER = {
+  type: 'CramAdapter',
+  cramLocation: {
+    uri: `${VOLVOX_SV_CRAM}/volvox-sv.cram`,
+    locationType: 'UriLocation',
+  },
+  craiLocation: {
+    uri: `${VOLVOX_SV_CRAM}/volvox-sv.cram.crai`,
+    locationType: 'UriLocation',
+  },
+}
 const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const SYNTENY_CONFIG = 'test_data/grape_peach_synteny/config.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
@@ -297,6 +313,119 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
   },
 
+  // Paired-end reads colored by insert size on the volvox synthetic-SV CRAM:
+  // pairs whose mates map an unexpected distance apart stand out against the
+  // background. Same track/region as the arc + read-cloud specs above.
+  {
+    mode: 'url',
+    name: 'alignments/color_by_insert_size',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: [
+            {
+              trackId: 'volvox_sv_cram',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                configOverrides: { colorBy: { type: 'insertSize' } },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 5000,
+  },
+
+  // The Filter by dialog (SAM flag bitmask editor), opened by driving the track
+  // menu. Illustrates the "Filtering reads" section.
+  {
+    mode: 'url',
+    name: 'alignments/filter_dialog',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox_sv_cram'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Filter by' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Edit filters' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Group by strand: two session sub-tracks of volvox_sv_cram, one filtered to
+  // forward reads and one to reverse (the same flag filters the Group by dialog
+  // applies), each colored by strand so the split reads cleanly.
+  {
+    mode: 'url',
+    name: 'alignments/group_by_strand',
+    url: sessionSpec(VOLVOX, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'volvox_sv_cram_fwd',
+          name: 'volvox-sv (+)',
+          assemblyNames: ['volvox'],
+          adapter: VOLVOX_SV_CRAM_ADAPTER,
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'volvox_sv_cram_rev',
+          name: 'volvox-sv (-)',
+          assemblyNames: ['volvox'],
+          adapter: VOLVOX_SV_CRAM_ADAPTER,
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: [
+            {
+              trackId: 'volvox_sv_cram_fwd',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                configOverrides: {
+                  filterBy: { flagInclude: 0, flagExclude: 1556 },
+                  colorBy: { type: 'strand' },
+                },
+              },
+            },
+            {
+              trackId: 'volvox_sv_cram_rev',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                configOverrides: {
+                  filterBy: { flagInclude: 16, flagExclude: 1540 },
+                  colorBy: { type: 'strand' },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    viewportHeight: 1000,
+    settleMs: 5000,
+  },
+
   {
     mode: 'url',
     name: 'dotplot',
@@ -322,6 +451,61 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     settleMs: 6000,
+  },
+
+  // Center line over a long-read SV CRAM. Migrated from a hand-captured shot —
+  // showCenterLine is a view-level flag.
+  {
+    mode: 'url',
+    name: 'alignments_center_line',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:2636-2746',
+          showCenterLine: true,
+          tracks: ['volvox-long-reads-sv-cram'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+  },
+
+  // Sort by base pair at the center line. Migrated from a hand-captured shot —
+  // sortedBy is the same override the "Sort by → Base pair" menu item writes.
+  {
+    mode: 'url',
+    name: 'alignments_sort_by_base',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:14427-14534',
+          showCenterLine: true,
+          tracks: [
+            {
+              trackId: 'volvox_bam',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                configOverrides: {
+                  sortedBy: {
+                    type: 'basePair',
+                    pos: 14481,
+                    refName: 'ctgA',
+                    assemblyName: 'volvox',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
   },
 
   {

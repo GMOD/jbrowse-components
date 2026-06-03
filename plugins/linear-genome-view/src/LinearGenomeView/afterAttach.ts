@@ -7,17 +7,21 @@ import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
+import type { InitState } from './types.ts'
 
-// keep in sync with the InitState interface (types.ts) — a missing entry here
-// makes a valid init key warn as "unknown" below
-const knownInitKeys = new Set([
-  'loc',
-  'assembly',
-  'tracks',
-  'tracklist',
-  'nav',
-  'highlight',
-])
+// Derived from InitState so the two can't drift: the Record requires exactly
+// one entry per InitState key, so adding/removing a field without updating
+// here is a compile error rather than a key that silently warns as "unknown".
+const knownInitKeyMap: Record<keyof InitState, true> = {
+  loc: true,
+  assembly: true,
+  tracks: true,
+  tracklist: true,
+  nav: true,
+  highlight: true,
+  showCenterLine: true,
+}
+const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
 
 function tryParseJson(s: string): Record<string, unknown> | undefined {
   try {
@@ -116,6 +120,10 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
 
           if (init.nav !== undefined) {
             self.setHideHeader(!init.nav)
+          }
+
+          if (init.showCenterLine !== undefined) {
+            self.setShowCenterLine(init.showCenterLine)
           }
 
           // backfill assemblyName on any session-authored highlights that

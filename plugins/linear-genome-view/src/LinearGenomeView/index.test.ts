@@ -1799,6 +1799,17 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     })
   })
 
+  test('init.showCenterLine enables the center line', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      showCenterLine: true,
+    })
+    await waitFor(() => {
+      expect(model.showCenterLine).toBe(true)
+    })
+  })
+
   test('unknown init key warns instead of silently dropping', async () => {
     // deliberately typo'd key (tracksList vs tracks) to exercise the diagnostic
     const model = makeModel({

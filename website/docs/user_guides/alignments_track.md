@@ -68,6 +68,24 @@ coloring and sorting by the HP (haplotype) tag to see phased reads.
 
 <Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag." src="/img/alignments/haplotype.png" />
 
+### Filtering reads
+
+The **Filter by** dialog hides reads based on their SAM flags. The common use is
+cleaning up a dense pileup: exclude PCR/optical duplicates and secondary
+alignments, or keep only properly-paired reads. You can also filter to a
+specific read name, or by a tag value — `HP:1` for one haplotype, or `HP:*` for
+any read carrying the tag.
+
+<Figure caption="The Filter by dialog. The two flag columns are an include/exclude bitmask: by default unmapped, QC-fail, and duplicate reads are excluded. Tag and read-name filters are below." src="/img/alignments/filter_dialog.png" />
+
+### Grouping reads
+
+**Group by** splits the pileup into stacked sub-tracks. Grouping by the HP tag
+turns a phased BAM into one pileup per haplotype, which is easier to read than
+coloring alone. Strand, read group (RG), or any other tag work the same way.
+
+<Figure caption="Group by strand splits the track into a forward-strand pileup (top) and a reverse-strand pileup (bottom)." src="/img/alignments/group_by_strand.png" />
+
 ### Color by modifications/methylation
 
 If a BAM or CRAM file has MM-tag annotations for DNA/RNA modifications, the
@@ -115,6 +133,19 @@ for background. Assuming standard `fr` (Illumina) pairs:
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
 <Figure caption="An inverted duplication, where pair-orientation coloring highlights reads whose mates point in unexpected directions. See the SV visualization guide for an interpreted example." src="/img/inverted_duplication.png" />
+
+### Color by insert size
+
+For paired-end data, **Color by → Insert size** tints reads by the distance
+between mates. Pairs mapping farther apart than expected flag a possible
+deletion; pairs much closer suggest an insertion. The gradient variant shades
+the distance continuously instead of in bins. Together with pair-orientation
+coloring and the read-connection arcs, this is the main way to scan short-read
+data for structural variants — the
+[SV visualization guide](/docs/user_guides/sv_visualization) walks through
+worked examples.
+
+<Figure caption="Paired-end reads colored by insert size. Grey pairs map a normal distance apart; the red/blue/pink pairs clustered on the right flag the structural variants." src="/img/alignments/color_by_insert_size.png" />
 
 ### Sashimi-style arcs
 
