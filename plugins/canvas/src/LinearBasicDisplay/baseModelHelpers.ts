@@ -47,6 +47,28 @@ export async function fetchCanvasFeatureDetails(
   }
 }
 
+// A "Show..."/track-menu submenu of mutually-exclusive radio options. Keeps the
+// call sites declarative (just the option data) instead of repeating the
+// checked/onClick mapping at each menu.
+export function radioSubMenu<T extends string>(
+  label: string,
+  current: T,
+  options: readonly { value: T; label: string }[],
+  onSelect: (value: T) => void,
+) {
+  return {
+    label,
+    subMenu: options.map(option => ({
+      label: option.label,
+      type: 'radio' as const,
+      checked: current === option.value,
+      onClick: () => {
+        onSelect(option.value)
+      },
+    })),
+  }
+}
+
 // Per-region density sample written after each fetch. featureCount comes from
 // the worker; regionWidthBp is derived locally from the request's region.
 export interface RegionDensityStats {

@@ -6,6 +6,7 @@ import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
+import { radioSubMenu } from './baseModelHelpers.ts'
 
 const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
@@ -148,60 +149,42 @@ export default function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            {
-              label: 'Subfeature labels',
-              subMenu: (
-                [
-                  { value: 'none', label: 'None' },
-                  { value: 'overlay', label: 'Overlay' },
-                  { value: 'below', label: 'Below' },
-                ] as const
-              ).map(({ value, label }) => ({
-                label,
-                type: 'radio' as const,
-                checked: self.subfeatureLabels === value,
-                onClick: () => {
-                  self.setSubfeatureLabels(value)
-                },
-              })),
-            },
-            {
-              label: 'Gene glyph',
-              subMenu: (
-                [
-                  { value: 'auto', label: 'Auto' },
-                  { value: 'all', label: 'All transcripts' },
-                  {
-                    value: 'longestCoding',
-                    label: 'Longest coding transcript',
-                  },
-                ] as const
-              ).map(({ value, label }) => ({
-                label,
-                type: 'radio' as const,
-                checked: self.geneGlyphMode === value,
-                onClick: () => {
-                  self.setGeneGlyphMode(value)
-                },
-              })),
-            },
-            {
-              label: 'Display mode',
-              subMenu: (
-                [
-                  { value: 'normal', label: 'Normal' },
-                  { value: 'compact', label: 'Compact' },
-                  { value: 'superCompact', label: 'Super-compact' },
-                ] as const
-              ).map(({ value, label }) => ({
-                label,
-                type: 'radio' as const,
-                checked: self.displayMode === value,
-                onClick: () => {
-                  self.setDisplayMode(value)
-                },
-              })),
-            },
+            radioSubMenu(
+              'Subfeature labels',
+              self.subfeatureLabels,
+              [
+                { value: 'none', label: 'None' },
+                { value: 'overlay', label: 'Overlay' },
+                { value: 'below', label: 'Below' },
+              ],
+              value => {
+                self.setSubfeatureLabels(value)
+              },
+            ),
+            radioSubMenu(
+              'Gene glyph',
+              self.geneGlyphMode,
+              [
+                { value: 'auto', label: 'Auto' },
+                { value: 'all', label: 'All transcripts' },
+                { value: 'longestCoding', label: 'Longest coding transcript' },
+              ],
+              value => {
+                self.setGeneGlyphMode(value)
+              },
+            ),
+            radioSubMenu(
+              'Display mode',
+              self.displayMode,
+              [
+                { value: 'normal', label: 'Normal' },
+                { value: 'compact', label: 'Compact' },
+                { value: 'superCompact', label: 'Super-compact' },
+              ],
+              value => {
+                self.setDisplayMode(value)
+              },
+            ),
           ]
         },
 

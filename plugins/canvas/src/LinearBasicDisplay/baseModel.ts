@@ -36,6 +36,7 @@ import {
   fetchCanvasFeatureDetails,
   findSubfeatureById,
   indexById,
+  radioSubMenu,
   screenDensity,
 } from './baseModelHelpers.ts'
 import {
@@ -44,7 +45,6 @@ import {
 } from './components/hitTesting.ts'
 import { createIncrementalLayout } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
-import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
@@ -1273,22 +1273,18 @@ export default function baseStateModelFactory(
         // "Show..." submenu without rebuilding trackMenuItems from scratch.
         showSubmenuMenuItems() {
           return [
-            {
-              label: 'Show labels',
-              subMenu: SHOW_LABELS_MODES.map(mode => ({
-                label:
-                  mode === 'auto'
-                    ? 'Auto (hide when dense)'
-                    : mode === 'on'
-                      ? 'Always on'
-                      : 'Always off',
-                type: 'radio' as const,
-                checked: self.showLabelsMode === mode,
-                onClick: () => {
-                  self.setShowLabels(mode)
-                },
-              })),
-            },
+            radioSubMenu(
+              'Show labels',
+              self.showLabelsMode,
+              [
+                { value: 'auto', label: 'Auto (hide when dense)' },
+                { value: 'on', label: 'Always on' },
+                { value: 'off', label: 'Always off' },
+              ],
+              mode => {
+                self.setShowLabels(mode)
+              },
+            ),
             {
               label: 'Show descriptions',
               type: 'checkbox' as const,
