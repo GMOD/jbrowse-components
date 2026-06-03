@@ -9,17 +9,17 @@ const EditGCContentParamsDialog = observer(function EditGCContentParamsDialog({
   handleClose,
 }: {
   model: {
-    windowSizeSetting: number
-    windowDeltaSetting: number
+    windowSize: number
+    windowDelta: number
     setGCContentParams: (a: { windowSize: number; windowDelta: number }) => void
   }
   handleClose: () => void
 }) {
   const [windowSize, setWindowSize] = useState<number | undefined>(
-    model.windowSizeSetting,
+    model.windowSize,
   )
   const [windowDelta, setWindowDelta] = useState<number | undefined>(
-    model.windowDeltaSetting,
+    model.windowDelta,
   )
   const stepLargerThanWindow =
     windowDelta !== undefined &&
@@ -54,12 +54,12 @@ const EditGCContentParamsDialog = observer(function EditGCContentParamsDialog({
         <ErrorBanner error="It is not recommended to make the step size larger than the window size" />
       ) : null}
       <NumberTextField
-        defaultValue={model.windowSizeSetting}
+        defaultValue={model.windowSize}
         label="Size of sliding window (bp)"
         onValueChange={setWindowSize}
       />
       <NumberTextField
-        defaultValue={model.windowDeltaSetting}
+        defaultValue={model.windowDelta}
         label="Step size of sliding window (bp)"
         onValueChange={setWindowDelta}
       />

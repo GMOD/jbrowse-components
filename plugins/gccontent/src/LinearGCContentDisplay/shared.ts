@@ -5,6 +5,8 @@ import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 
+import { migrateGCContentSnapshot } from './migration.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
@@ -29,17 +31,26 @@ export default function SharedModelF(
       types.model({
         /**
          * #property
+         * explicit override; the `windowSize` getter resolves it over the
+         * config `windowSize` slot
          */
-        windowSize: types.maybe(types.number),
+        windowSizeOverride: types.maybe(types.number),
         /**
          * #property
+         * explicit override; resolved by the `windowDelta` getter
          */
-        windowDelta: types.maybe(types.number),
+        windowDeltaOverride: types.maybe(types.number),
         /**
          * #property
+         * explicit override; resolved by the `gcMode` getter
          */
-        gcMode: types.maybe(types.enumeration('gcMode', ['content', 'skew'])),
+        gcModeOverride: types.maybe(
+          types.enumeration('gcMode', ['content', 'skew']),
+        ),
       }),
+    )
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
+      migrateGCContentSnapshot(snap),
     )
     .actions(self => ({
       setGCContentParams({
@@ -49,24 +60,24 @@ export default function SharedModelF(
         windowSize: number
         windowDelta: number
       }) {
-        self.windowSize = windowSize
-        self.windowDelta = windowDelta
+        self.windowSizeOverride = windowSize
+        self.windowDeltaOverride = windowDelta
         self.reload()
       },
       setGCMode(mode: 'content' | 'skew') {
-        self.gcMode = mode
+        self.gcModeOverride = mode
         self.reload()
       },
     }))
     .views(self => ({
-      get windowSizeSetting() {
-        return self.windowSize ?? getConf(self, 'windowSize')
+      get windowSize() {
+        return self.windowSizeOverride ?? getConf(self, 'windowSize')
       },
-      get windowDeltaSetting() {
-        return self.windowDelta ?? getConf(self, 'windowDelta')
+      get windowDelta() {
+        return self.windowDeltaOverride ?? getConf(self, 'windowDelta')
       },
-      get gcModeSetting() {
-        return self.gcMode ?? getConf(self, 'gcMode')
+      get gcMode() {
+        return self.gcModeOverride ?? getConf(self, 'gcMode')
       },
     }))
     .views(self => {
@@ -87,11 +98,9 @@ export default function SharedModelF(
             {
               label: 'GC skew',
               type: 'checkbox',
-              checked: self.gcModeSetting === 'skew',
+              checked: self.gcMode === 'skew',
               onClick: () => {
-                self.setGCMode(
-                  self.gcModeSetting === 'skew' ? 'content' : 'skew',
-                )
+                self.setGCMode(self.gcMode === 'skew' ? 'content' : 'skew')
               },
             },
           ]
@@ -106,9 +115,9 @@ export default function SharedModelF(
           return {
             type: 'GCContentAdapter',
             sequenceAdapter,
-            windowSize: self.windowSizeSetting,
-            windowDelta: self.windowDeltaSetting,
-            gcMode: self.gcModeSetting,
+            windowSize: self.windowSize,
+            windowDelta: self.windowDelta,
+            gcMode: self.gcMode,
           }
         },
       }

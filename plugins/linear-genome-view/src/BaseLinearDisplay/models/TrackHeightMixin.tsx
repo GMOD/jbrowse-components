@@ -1,6 +1,8 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { migrateTrackHeightSnapshot } from './migration.ts'
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const minDisplayHeight = 20
@@ -69,22 +71,7 @@ export default function TrackHeightMixin<
         return self.height - oldHeight
       },
     }))
-    .preProcessSnapshot(snap => {
-      // Back-compat: the field was `heightPreConfig` and older snapshots also
-      // stored a bare `height`. Both now normalize to `heightOverride`. This is
-      // composed into every TrackHeightMixin display, so it covers the displays
-      // that don't have their own height migration.
-      const s = snap as
-        | (typeof snap & { height?: number; heightPreConfig?: number })
-        | undefined
-      if (
-        s &&
-        s.heightOverride === undefined &&
-        (s.height !== undefined || s.heightPreConfig !== undefined)
-      ) {
-        const { height, heightPreConfig, ...rest } = s
-        return { ...rest, heightOverride: height ?? heightPreConfig }
-      }
-      return snap
-    })
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
+      migrateTrackHeightSnapshot(snap),
+    )
 }

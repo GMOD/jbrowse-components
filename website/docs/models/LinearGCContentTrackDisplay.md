@@ -64,7 +64,7 @@ and docs.
 
 ### Available via [SharedGCContentModel](../sharedgccontentmodel)
 
-**Properties:** windowSize, windowDelta, gcMode
+**Properties:** windowSizeOverride, windowDeltaOverride, gcModeOverride
 
 **Getters:** adapterConfig
 
@@ -74,8 +74,8 @@ and docs.
 
 **Volatiles:** featureUnderMouse
 
-**Getters:** DisplayMessageComponent, color, useBicolor, isDensityMode,
-effectiveBicolorPivot, ticks, renderState
+**Getters:** DisplayMessageComponent, color, useBicolor, isDensityMode, ticks,
+renderState
 
 **Methods:** rpcProps, gpuProps, trackMenuItems
 

@@ -119,14 +119,14 @@ const Arcs = observer(function Arcs({
 }) {
   const view = getContainingView(model) as LGV
   const { assemblyManager } = getSession(model)
-  const { arcStyles, height, displayModeSetting, selectedFeatureId } = model
+  const { arcStyles, height, displayMode, selectedFeatureId } = model
   const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
   if (!assembly) {
     return null
   }
 
-  const semicircle = displayModeSetting === 'semicircles'
+  const semicircle = displayMode === 'semicircles'
   const arcs = arcStyles?.map(style => (
     <Arc
       key={style.feature.id()}

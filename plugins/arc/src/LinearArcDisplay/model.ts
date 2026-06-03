@@ -9,6 +9,8 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { migrateArcSnapshot } from './migrate.ts'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -64,9 +66,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
+         * explicit display-mode override; the `displayMode` getter resolves it
+         * over the config `displayMode` slot
          */
-        displayMode: types.maybe(types.string),
+        displayModeOverride: types.maybe(types.string),
       }),
+    )
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
+      migrateArcSnapshot(snap),
     )
     .volatile(() => ({
       features: undefined as Feature[] | undefined,
@@ -84,8 +91,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get displayModeSetting() {
-        return self.displayMode ?? getConf(self, 'displayMode')
+      get displayMode() {
+        return self.displayModeOverride ?? getConf(self, 'displayMode')
       },
       /**
        * #getter
@@ -143,7 +150,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setDisplayMode(flag: string) {
-        self.displayMode = flag
+        self.displayModeOverride = flag
       },
     }))
     .actions(self => ({
@@ -187,7 +194,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => {
                     self.setDisplayMode('arcs')
                   },
-                  checked: self.displayModeSetting === 'arcs',
+                  checked: self.displayMode === 'arcs',
                 },
                 {
                   type: 'radio',
@@ -195,7 +202,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   onClick: () => {
                     self.setDisplayMode('semicircles')
                   },
-                  checked: self.displayModeSetting === 'semicircles',
+                  checked: self.displayMode === 'semicircles',
                 },
               ],
             },

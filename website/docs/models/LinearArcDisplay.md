@@ -99,13 +99,16 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: displayMode
+#### property: displayModeOverride
+
+explicit display-mode override; the `displayMode` getter resolves it over the
+config `displayMode` slot
 
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
 // code
-displayMode: types.maybe(types.string)
+displayModeOverride: types.maybe(types.string)
 ```
 
 ### LinearArcDisplay - Getters
@@ -117,7 +120,7 @@ displayMode: types.maybe(types.string)
 boolean
 ```
 
-#### getter: displayModeSetting
+#### getter: displayMode
 
 ```js
 // type

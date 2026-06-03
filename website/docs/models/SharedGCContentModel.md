@@ -35,8 +35,8 @@ and docs.
 
 **Volatiles:** featureUnderMouse
 
-**Getters:** DisplayMessageComponent, color, useBicolor, isDensityMode,
-effectiveBicolorPivot, ticks, renderState
+**Getters:** DisplayMessageComponent, color, useBicolor, isDensityMode, ticks,
+renderState
 
 **Methods:** rpcProps, gpuProps, trackMenuItems
 
@@ -136,31 +136,40 @@ setAutoscale, isCacheValid
 
 ### SharedGCContentModel - Properties
 
-#### property: windowSize
+#### property: windowSizeOverride
+
+explicit override; the `windowSize` getter resolves it over the config
+`windowSize` slot
 
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
 // code
-windowSize: types.maybe(types.number)
+windowSizeOverride: types.maybe(types.number)
 ```
 
-#### property: windowDelta
+#### property: windowDeltaOverride
+
+explicit override; resolved by the `windowDelta` getter
 
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
 // code
-windowDelta: types.maybe(types.number)
+windowDeltaOverride: types.maybe(types.number)
 ```
 
-#### property: gcMode
+#### property: gcModeOverride
+
+explicit override; resolved by the `gcMode` getter
 
 ```js
 // type signature
 IMaybe<ISimpleType<"content" | "skew">>
 // code
-gcMode: types.maybe(types.enumeration('gcMode', ['content', 'skew']))
+gcModeOverride: types.maybe(
+          types.enumeration('gcMode', ['content', 'skew']),
+        )
 ```
 
 ### SharedGCContentModel - Getters
