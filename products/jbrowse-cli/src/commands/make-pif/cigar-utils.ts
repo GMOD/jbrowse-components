@@ -1,25 +1,25 @@
-const cigarRegex = /([MIDNSHPX=])/
-
-export function parseCigar(cigar: string): string[] {
-  return cigar.split(cigarRegex).slice(0, -1)
-}
-
-export function flipCigar(cigar: string[]): string[] {
-  const arr: string[] = []
-  for (let i = cigar.length - 2; i >= 0; i -= 2) {
-    arr.push(cigar[i]!)
-    const op = cigar[i + 1]!
-    if (op === 'D') {
-      arr.push('I')
-    } else if (op === 'I') {
-      arr.push('D')
-    } else {
-      arr.push(op)
+// Two-pass: collect token start indices, then walk backward slicing the digit
+// run directly from the original string — avoids intermediate number/op arrays.
+export function flipCigar(cigar: string): string {
+  const starts: number[] = []
+  let i = 0
+  while (i < cigar.length) {
+    starts.push(i)
+    while (cigar.charCodeAt(i) >= 48 && cigar.charCodeAt(i) <= 57) {
+      i++
     }
+    i++ // skip op char
   }
-  return arr
+  let result = ''
+  for (let j = starts.length - 1; j >= 0; j--) {
+    const s = starts[j]!
+    const end = j + 1 < starts.length ? starts[j + 1]! : cigar.length
+    const op = cigar[end - 1]!
+    result += cigar.slice(s, end - 1) + (op === 'D' ? 'I' : op === 'I' ? 'D' : op)
+  }
+  return result
 }
 
 export function swapIndelCigar(cigar: string): string {
-  return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
+  return cigar.replace(/[DI]/g, op => (op === 'D' ? 'I' : 'D'))
 }

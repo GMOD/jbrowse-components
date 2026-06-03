@@ -5,7 +5,7 @@ import { Transform } from 'stream'
 import { pipeline } from 'stream/promises'
 import { createGunzip } from 'zlib'
 
-import { flipCigar, parseCigar, swapIndelCigar } from './cigar-utils.ts'
+import { flipCigar, swapIndelCigar } from './cigar-utils.ts'
 import { splitCigarOnLargeGaps } from './structural-summary.ts'
 
 import type { Writable } from 'stream'
@@ -19,7 +19,6 @@ export const DEFAULT_COARSE_SPLIT_GAP = 10_000
 
 function processLine(
   line: string,
-  emitCoarse: boolean,
   coarseSplitGap: number | undefined,
 ): string {
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
@@ -29,28 +28,41 @@ function processLine(
 
   const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
   const CIGAR = rest[cigarIdx]
-  if (CIGAR) {
+  const cigarStr = CIGAR ? CIGAR.slice(5) : undefined
+  if (cigarStr) {
     rest[cigarIdx] = `cg:Z:${
-      strand === '-'
-        ? flipCigar(parseCigar(CIGAR.slice(5))).join('')
-        : swapIndelCigar(CIGAR.slice(5))
+      strand === '-' ? flipCigar(cigarStr) : swapIndelCigar(cigarStr)
     }`
   }
   const qRow = `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`
 
-  if (!emitCoarse) {
+  if (coarseSplitGap === undefined) {
     return tRow + qRow
   }
 
-  const segments = splitCigarOnLargeGaps({
-    cigar: CIGAR ? CIGAR.slice(5) : undefined,
-    strand: strand!,
-    tstart: +s2!,
-    tend: +e2!,
-    qstart: +s1!,
-    qend: +e1!,
-    splitGap: coarseSplitGap,
-  })
+  // When no CIGAR is present, fall back to the PAF's own num_matches/block_len
+  // so coarse-tier identity (de:f:) reflects the aligner's reported value rather
+  // than defaulting to 100% divergence.
+  const segments = cigarStr
+    ? splitCigarOnLargeGaps({
+        cigar: cigarStr,
+        strand: strand!,
+        tstart: +s2!,
+        tend: +e2!,
+        qstart: +s1!,
+        qend: +e1!,
+        splitGap: coarseSplitGap,
+      })
+    : [
+        {
+          tstart: +s2!,
+          tend: +e2!,
+          qstart: +s1!,
+          qend: +e1!,
+          numMatches: +rest[0]!,
+          blockLen: +rest[1]!,
+        },
+      ]
   const mapq = rest[2]
   let coarseRows = ''
   for (const seg of segments) {
@@ -91,7 +103,6 @@ function processLine(
 }
 
 function makePifTransform(coarseSplitGap?: number): Transform {
-  const emitCoarse = coarseSplitGap !== undefined
   let tail = ''
   return new Transform({
     transform(chunk: Buffer, _enc, callback) {
@@ -109,12 +120,12 @@ function makePifTransform(coarseSplitGap?: number): Transform {
           .slice(0, lastNl)
           .split('\n')
           .filter(Boolean)
-          .map(l => processLine(l, emitCoarse, coarseSplitGap))
+          .map(l => processLine(l, coarseSplitGap))
           .join(''),
       )
     },
     flush(callback) {
-      callback(null, tail ? processLine(tail, emitCoarse, coarseSplitGap) : '')
+      callback(null, tail ? processLine(tail, coarseSplitGap) : '')
     },
   })
 }

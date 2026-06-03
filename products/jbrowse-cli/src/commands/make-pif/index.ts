@@ -65,7 +65,7 @@ export async function run(args?: string[]) {
 
   const file = positionals[0]
   validateFileArgument(file, 'make-pif', 'paf')
-  validateRequiredCommands(['sh', 'sort', 'grep', 'tabix', 'bgzip'])
+  validateRequiredCommands(['sh', 'sort', 'tabix', 'bgzip'])
 
   const { out, csi = false, coarse, 'no-coarse': noCoarse = false } = flags
   const outputFile = getOutputFilename(file, out)

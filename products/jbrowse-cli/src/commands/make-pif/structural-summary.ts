@@ -20,7 +20,7 @@ export function splitCigarOnLargeGaps({
   qend,
   splitGap,
 }: {
-  cigar: string | undefined
+  cigar: string
   strand: string
   tstart: number
   tend: number
@@ -28,13 +28,6 @@ export function splitCigarOnLargeGaps({
   qend: number
   splitGap: number | undefined
 }): CigarSegment[] {
-  if (!cigar) {
-    return [
-      { tstart, tend, qstart, qend, numMatches: 0, blockLen: tend - tstart },
-    ]
-  }
-
-  const splitThreshold = splitGap !== undefined && splitGap > 0 ? splitGap : 0
   const qStep = strand === '-' ? -1 : 1
   let tCursor = tstart
   let qCursor = strand === '-' ? qend : qstart
@@ -77,7 +70,7 @@ export function splitCigarOnLargeGaps({
         segMatches += len
       }
     } else if (op === 'D' || op === 'I' || op === 'N') {
-      const isLarge = splitThreshold > 0 && len >= splitThreshold
+      const isLarge = splitGap !== undefined && splitGap > 0 && len >= splitGap
       if (isLarge) {
         emit()
       }
