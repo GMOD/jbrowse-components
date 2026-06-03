@@ -503,9 +503,7 @@ function App() {
 // HorizontallyFlipped*
 // ---------------------------------------------------------------------------
 
-type HFlipViewState = ReturnType<typeof createViewState>
-
-function FlipButton({ state }: { state: HFlipViewState }) {
+function FlipButton({ state }: { state: ViewModel }) {
   const [error, setError] = useState<unknown>()
   return (
     <div>
@@ -937,14 +935,12 @@ export function App() {
 // ShadowDOMOneLinearGenomeView
 // ---------------------------------------------------------------------------
 
-type ShadowViewState = ReturnType<typeof createViewState>
-
 const ShadowComponent = () => {
   const node = useRef<HTMLDivElement>(null)
   const nodeForPin = useRef(null)
   const [rootNode, setRootNode] = useState<ShadowRoot>()
   const [cacheNode, setCacheNode] = useState<EmotionCache>()
-  const [config, setConfig] = useState<ShadowViewState>()
+  const [config, setConfig] = useState<ViewModel>()
   useEffect(() => {
     if (!node.current) {
       return
@@ -1673,11 +1669,9 @@ const hg19Assembly = {
   },
 }
 
-type ExternalPluginViewState = ReturnType<typeof createViewState>
-
 function WithExternalPluginRender() {
   const [error, setError] = useState<unknown>()
-  const [viewState, setViewState] = useState<ExternalPluginViewState>()
+  const [viewState, setViewState] = useState<ViewModel>()
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -1716,7 +1710,7 @@ function WithExternalPluginRender() {
   }, [])
 
   return error ? (
-    <div style={{ color: 'red' }}>{`${error}`}</div>
+    <ErrorBanner error={error} />
   ) : !viewState ? (
     <div>Loading...</div>
   ) : (
@@ -1732,6 +1726,7 @@ export const WithExternalPlugin = {
         language: 'tsx',
         code: `\
 import { useEffect, useState } from 'react'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -1791,7 +1786,7 @@ function App() {
   }, [])
 
   return error ? (
-    <div style={{ color: 'red' }}>{String(error)}</div>
+    <ErrorBanner error={error} />
   ) : !viewState ? (
     <div>Loading...</div>
   ) : (
@@ -2948,6 +2943,9 @@ const VisibleFeatures = observer(function VisibleFeatures({
         return
       }
       const track = view.tracks[0]
+      if (!track) {
+        return
+      }
       const adapterConfig = getConf(track, 'adapter')
       const sessionId = getRpcSessionId(track)
       const { coarseDynamicBlocks } = view
@@ -3048,6 +3046,7 @@ const VisibleFeatures = observer(function VisibleFeatures({
     return autorun(() => {
       if (!view.initialized) return
       const track = view.tracks[0]
+      if (!track) return
       const adapterConfig = getConf(track, 'adapter')
       const sessionId = getRpcSessionId(track)
       void rpcManager
@@ -3110,14 +3109,12 @@ function loc(r: BaseBlock) {
     : ''
 }
 
-type VisibleRegionsViewState = ReturnType<typeof useCreateViewState>
-
 const VisibleRegions = observer(function VisibleRegions({
   viewState,
 }: {
-  viewState: VisibleRegionsViewState
+  viewState: ViewModel
 }) {
-  const view = viewState.session.views[0]!
+  const view = viewState.session.view
   return view.initialized ? (
     <div>
       <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>
@@ -3163,7 +3160,7 @@ function loc(r: BaseBlock) {
 type ViewState = ReturnType<typeof useCreateViewState>
 
 const VisibleRegions = observer(function VisibleRegions({ viewState }: { viewState: ViewState }) {
-  const view = viewState.session.views[0]!
+  const view = viewState.session.view
   return view.initialized ? (
     <div>
       <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>
