@@ -72,6 +72,35 @@ export function chooseGridPitch(
   return { majorPitch, minorPitch }
 }
 
+/**
+ * Generate tick positions for the overview scalebar. Anchors at the first neat
+ * majorPitch multiple strictly inside the block so ticks land on round numbers
+ * regardless of where the block starts/ends.
+ */
+export function makeOverviewTicks(
+  start: number,
+  end: number,
+  overviewScale: number,
+  reversed: boolean,
+) {
+  const { majorPitch } = chooseGridPitch(overviewScale, 120, 15)
+  const firstTick = reversed
+    ? Math.floor((end - 1) / majorPitch) * majorPitch
+    : Math.ceil((start + 1) / majorPitch) * majorPitch
+  const numTicks = reversed
+    ? Math.floor((firstTick - start - 1) / majorPitch) + 1
+    : Math.floor((end - firstTick) / majorPitch) + 1
+  return Array.from({ length: Math.max(0, numTicks) }, (_, i) => {
+    const genomicCoord = reversed
+      ? firstTick - i * majorPitch
+      : firstTick + i * majorPitch
+    const offsetPx = reversed
+      ? (end - genomicCoord) / overviewScale
+      : (genomicCoord - start) / overviewScale
+    return { genomicCoord, offsetPx }
+  })
+}
+
 export function makeTicks(
   start: number,
   end: number,

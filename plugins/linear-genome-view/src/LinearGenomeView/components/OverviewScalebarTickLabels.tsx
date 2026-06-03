@@ -4,7 +4,7 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
-import { chooseGridPitch } from '../util.ts'
+import { makeOverviewTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -31,33 +31,23 @@ const OverviewScalebarTickLabels = observer(
     const { classes } = useStyles()
     const { start, end, reversed, refName, assemblyName } = block
     const { overviewScale, overviewLayout } = model
-    const { majorPitch } = chooseGridPitch(overviewScale, 120, 15)
     const { assemblyManager } = getSession(model)
     const assembly = assemblyManager.get(assemblyName)
     const refNameColor = assembly?.getRefNameColor(refName)
-
-    const numTicks = Math.floor((end - start) / majorPitch)
-    return Array.from({ length: numTicks }, (_, i) => {
-      const tickNum = i + 1
-      // Pixel position is the same regardless of strand; genomicCoord only
-      // affects the displayed label text.
-      const genomicCoord = reversed
-        ? end - tickNum * majorPitch
-        : start + tickNum * majorPitch
-      return (
-        <Typography
-          key={genomicCoord}
-          className={classes.scalebarLabel}
-          variant="body2"
-          style={{
-            transform: `translateX(${(tickNum * majorPitch) / overviewScale}px)`,
-            color: refNameColor,
-          }}
-        >
-          {getTickDisplayStr(genomicCoord, overviewLayout.bpPerPx)}
-        </Typography>
-      )
-    })
+    const ticks = makeOverviewTicks(start, end, overviewScale, reversed)
+    return ticks.map(({ genomicCoord, offsetPx }) => (
+      <Typography
+        key={genomicCoord}
+        className={classes.scalebarLabel}
+        variant="body2"
+        style={{
+          transform: `translateX(${offsetPx}px)`,
+          color: refNameColor,
+        }}
+      >
+        {getTickDisplayStr(genomicCoord, overviewLayout.bpPerPx)}
+      </Typography>
+    ))
   },
 )
 
