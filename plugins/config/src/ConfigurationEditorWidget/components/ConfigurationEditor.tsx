@@ -14,7 +14,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  FormGroup,
   TextField,
   Typography,
 } from '@mui/material'
@@ -140,13 +139,13 @@ const Member = observer(function Member(props: {
               }}
             />
           ) : null}
-          <FormGroup className={classes.noOverflow}>
+          <div className={classes.noOverflow}>
             <Schema
               schema={slot}
               path={[...path, slotName]}
               filter={childFilter}
             />
-          </FormGroup>
+          </div>
         </AccordionDetails>
       </Accordion>
     )

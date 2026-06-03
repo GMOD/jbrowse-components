@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Box, FormGroup, FormHelperText, InputLabel } from '@mui/material'
+import { Box, FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LocationInput from './LocationInput.tsx'
@@ -79,33 +79,31 @@ const FileSelector = observer(function FileSelector({
       <Box sx={{ display: 'flex' }}>
         <InputLabel shrink>{name}</InputLabel>
       </Box>
-      <FormGroup>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: inline ? 'row' : 'column',
-            gap: 0.5,
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: inline ? 'row' : 'column',
+          gap: 0.5,
+        }}
+      >
+        <SourceTypeSelector
+          value={sourceType}
+          shownAccountIds={shownAccountIds}
+          hiddenAccountIds={hiddenAccountIds}
+          accountMap={accountMap}
+          onChange={(_event, newValue) => {
+            handleSourceTypeChange(newValue)
           }}
-        >
-          <SourceTypeSelector
-            value={sourceType}
-            shownAccountIds={shownAccountIds}
-            hiddenAccountIds={hiddenAccountIds}
-            accountMap={accountMap}
-            onChange={(_event, newValue) => {
-              handleSourceTypeChange(newValue)
-            }}
-            onHiddenAccountSelect={handleSourceTypeChange}
-          />
-          <LocationInput
-            toggleButtonValue={sourceType}
-            selectedAccount={selectedAccount}
-            location={location}
-            inline={inline}
-            setLocation={handleLocationChange}
-          />
-        </Box>
-      </FormGroup>
+          onHiddenAccountSelect={handleSourceTypeChange}
+        />
+        <LocationInput
+          toggleButtonValue={sourceType}
+          selectedAccount={selectedAccount}
+          location={location}
+          inline={inline}
+          setLocation={handleLocationChange}
+        />
+      </Box>
       <FormHelperText>{description}</FormHelperText>
     </>
   )

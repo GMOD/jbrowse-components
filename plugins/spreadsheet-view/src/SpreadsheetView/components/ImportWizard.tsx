@@ -13,7 +13,6 @@ import {
   Button,
   FormControl,
   FormControlLabel,
-  FormGroup,
   FormLabel,
   Paper,
   Radio,
@@ -85,18 +84,14 @@ const ImportWizard = observer(function ImportWizard({
         </div>
         {selectorType === 'custom' ? (
           <div>
-            <FormControl component="fieldset">
-              <FormGroup>
-                <FileSelector
-                  inline
-                  location={fileSource}
-                  rootModel={rootModel as AbstractRootModel}
-                  setLocation={arg => {
-                    importWizard.setFileSource(arg)
-                  }}
-                />
-              </FormGroup>
-            </FormControl>
+            <FileSelector
+              inline
+              location={fileSource}
+              rootModel={rootModel as AbstractRootModel}
+              setLocation={arg => {
+                importWizard.setFileSource(arg)
+              }}
+            />
           </div>
         ) : selectedAssembly ? (
           <TrackSelector

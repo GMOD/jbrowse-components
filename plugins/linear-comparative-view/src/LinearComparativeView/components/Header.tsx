@@ -1,11 +1,11 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { useLocalStorage } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
-import { FormGroup, ToggleButton } from '@mui/material'
+import { ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
@@ -17,8 +17,8 @@ import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
-  header: {
-    flexWrap: 'nowrap',
+  headerBar: {
+    display: 'flex',
     alignItems: 'center',
   },
   inline: {
@@ -32,7 +32,7 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     minWidth: 0,
   },
-  toggleButton: {
+  scrollZoomButton: {
     height: 44,
     border: 'none',
     textTransform: 'none',
@@ -65,7 +65,7 @@ const Header = observer(function Header({
       : undefined
 
   return (
-    <FormGroup row className={classes.header}>
+    <div className={classes.headerBar}>
       <CascadingMenuButton
         menuItems={
           views.length === 2
@@ -167,7 +167,7 @@ const Header = observer(function Header({
           model.setScrollZoom(!model.scrollZoom)
         }}
         title="Toggle scroll zoom"
-        className={classes.toggleButton}
+        className={classes.scrollZoomButton}
         size="small"
       >
         <ZoomInMapIcon />
@@ -182,7 +182,7 @@ const Header = observer(function Header({
 
       {showSearchBoxes ? (
         <span
-          className={`${classes.searchBoxContainer} ${sideBySide ? classes.inline : classes.vertical}`}
+          className={cx(classes.searchBoxContainer, sideBySide ? classes.inline : classes.vertical)}
         >
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />
@@ -191,7 +191,7 @@ const Header = observer(function Header({
       ) : null}
 
       <SyntenyWarnings model={model} />
-    </FormGroup>
+    </div>
   )
 })
 export default Header
