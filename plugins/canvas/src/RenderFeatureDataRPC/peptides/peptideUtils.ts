@@ -63,17 +63,13 @@ export function findTranscriptsWithCDS(
     const subfeatures = feature.get('subfeatures')
 
     if (type === 'gene' && subfeatures?.length) {
-      let hasTranscriptWithCDS = false
-      for (const subfeature of subfeatures) {
-        if (
-          isTranscriptType(subfeature.get('type')) &&
-          hasCDSSubfeature(subfeature)
-        ) {
-          transcripts.push(subfeature)
-          hasTranscriptWithCDS = true
-        }
-      }
-      if (!hasTranscriptWithCDS && hasCDSSubfeature(feature)) {
+      const matchingTranscripts = subfeatures.filter(
+        (sf: Feature) =>
+          isTranscriptType(sf.get('type')) && hasCDSSubfeature(sf),
+      )
+      if (matchingTranscripts.length > 0) {
+        transcripts.push(...matchingTranscripts)
+      } else if (hasCDSSubfeature(feature)) {
         transcripts.push(feature)
       }
     } else if (isTranscriptType(type) && hasCDSSubfeature(feature)) {
@@ -103,16 +99,13 @@ function processTranscriptFromSeq(
   transcript: Feature,
 ): PeptideData | undefined {
   const strand = transcript.get('strand')
-  let cds = extractCDSRegions(transcript)
-  if (cds.length === 0) {
+  const rawCds = extractCDSRegions(transcript)
+  if (rawCds.length === 0) {
     return undefined
   }
 
-  let processedSeq = seq
-  if (strand === -1) {
-    processedSeq = revcom(seq)
-    cds = revlist(cds, processedSeq.length)
-  }
+  const processedSeq = strand === -1 ? revcom(seq) : seq
+  const cds = strand === -1 ? revlist(rawCds, processedSeq.length) : rawCds
 
   try {
     const protein = convertCodingSequenceToPeptides({

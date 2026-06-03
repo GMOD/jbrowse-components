@@ -267,10 +267,9 @@ function emitExonRects(
   const transcriptStrand = transcriptFeature.get('strand') ?? 0
   const protein = ctx.peptideDataMap?.get(transcriptFeature.id())?.protein
 
-  let g2p: Record<number, number> | undefined
-  if (protein) {
-    g2p = genomeToTranscriptSeqMapping(featureToFeat(transcriptFeature)).g2p
-  }
+  const g2p = protein
+    ? genomeToTranscriptSeqMapping(featureToFeat(transcriptFeature)).g2p
+    : undefined
 
   for (const childLayout of transcript.children) {
     const childFeature = childLayout.feature
