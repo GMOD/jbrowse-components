@@ -18,6 +18,18 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+## Example usage
+
+A `.2bit` file is self-contained; add `chromSizes` to skip an initial full-file
+scan on genomes with many contigs:
+
+```js
+{
+  type: 'TwoBitAdapter',
+  uri: 'https://example.com/genome.2bit',
+}
+```
+
 ### TwoBitAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config (note that adding chromSizes improves

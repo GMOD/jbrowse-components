@@ -20,6 +20,18 @@ reference the markdown files in our repo of the checked out git tag
 
 used to load bgzip-compressed, tabix-indexed GFF3 files
 
+## Example usage
+
+The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
+index instead:
+
+```js
+{
+  type: 'Gff3TabixAdapter',
+  uri: 'https://example.com/genes.gff3.gz',
+}
+```
+
 ### Gff3TabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi

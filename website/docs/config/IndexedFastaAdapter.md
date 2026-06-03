@@ -18,6 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+## Example usage
+
+The `uri` shorthand auto-resolves the `.fai` index:
+
+```js
+{
+  type: 'IndexedFastaAdapter',
+  uri: 'https://example.com/genome.fa',
+}
+```
+
 ### IndexedFastaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.fa.fai:

@@ -20,6 +20,19 @@ reference the markdown files in our repo of the checked out git tag
 
 used to configure CRAM adapter
 
+## Example usage
+
+The `uri` shorthand auto-resolves the `.crai` index. CRAM also needs a sequence
+adapter, supplied by the enclosing assembly, so a track usually only sets the
+file locations:
+
+```js
+{
+  type: 'CramAdapter',
+  uri: 'https://example.com/sample.cram',
+}
+```
+
 ### CramAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.cram.crai:

@@ -2,6 +2,16 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config TwoBitAdapter
+ *
+ * #example
+ * A `.2bit` file is self-contained; add `chromSizes` to skip an initial
+ * full-file scan on genomes with many contigs:
+ * ```js
+ * {
+ *   type: 'TwoBitAdapter',
+ *   uri: 'https://example.com/genome.2bit',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

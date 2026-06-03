@@ -18,6 +18,18 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+## Example usage
+
+The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
+index instead:
+
+```js
+{
+  type: 'BedTabixAdapter',
+  uri: 'https://example.com/features.bed.gz',
+}
+```
+
 ### BedTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:

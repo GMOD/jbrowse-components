@@ -2,6 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config IndexedFastaAdapter
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.fai` index:
+ * ```js
+ * {
+ *   type: 'IndexedFastaAdapter',
+ *   uri: 'https://example.com/genome.fa',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

@@ -2,6 +2,14 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config BigBedAdapter
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'BigBedAdapter',
+ *   uri: 'https://example.com/features.bb',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

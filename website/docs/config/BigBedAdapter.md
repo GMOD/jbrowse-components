@@ -18,6 +18,15 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+## Example usage
+
+```js
+{
+  type: 'BigBedAdapter',
+  uri: 'https://example.com/features.bb',
+}
+```
+
 ### BigBedAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:

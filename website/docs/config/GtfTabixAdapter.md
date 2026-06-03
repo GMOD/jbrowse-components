@@ -20,6 +20,17 @@ reference the markdown files in our repo of the checked out git tag
 
 used to load bgzip-compressed, tabix-indexed GTF files
 
+## Example usage
+
+The `uri` shorthand auto-resolves the `.tbi` index:
+
+```js
+{
+  type: 'GtfTabixAdapter',
+  uri: 'https://example.com/genes.gtf.gz',
+}
+```
+
 ### GtfTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:

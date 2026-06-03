@@ -18,6 +18,20 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+## Example usage
+
+A PAF has no index, but it needs the query and target assembly names (query
+first):
+
+```js
+{
+  type: 'PAFAdapter',
+  uri: 'https://example.com/aln.paf',
+  queryAssembly: 'hg19',
+  targetAssembly: 'hg38',
+}
+```
+
 ### PAFAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:

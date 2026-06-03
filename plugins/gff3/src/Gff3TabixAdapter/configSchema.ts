@@ -5,6 +5,16 @@ import { types } from '@jbrowse/mobx-state-tree'
  * #config Gff3TabixAdapter
  * #category adapter
  * used to load bgzip-compressed, tabix-indexed GFF3 files
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
+ * `.csi` index instead:
+ * ```js
+ * {
+ *   type: 'Gff3TabixAdapter',
+ *   uri: 'https://example.com/genes.gff3.gz',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

@@ -19,6 +19,16 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config BedTabixAdapter
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
+ * `.csi` index instead:
+ * ```js
+ * {
+ *   type: 'BedTabixAdapter',
+ *   uri: 'https://example.com/features.bed.gz',
+ * }
+ * ```
  */
 
 const BedTabixAdapter = ConfigurationSchema(

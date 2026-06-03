@@ -3,6 +3,17 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config CramAdapter
  * used to configure CRAM adapter
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.crai` index. CRAM also needs a
+ * sequence adapter, supplied by the enclosing assembly, so a track usually only
+ * sets the file locations:
+ * ```js
+ * {
+ *   type: 'CramAdapter',
+ *   uri: 'https://example.com/sample.cram',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

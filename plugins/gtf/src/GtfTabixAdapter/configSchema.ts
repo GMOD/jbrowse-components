@@ -5,6 +5,15 @@ import { types } from '@jbrowse/mobx-state-tree'
  * #config GtfTabixAdapter
  * #category adapter
  * used to load bgzip-compressed, tabix-indexed GTF files
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.tbi` index:
+ * ```js
+ * {
+ *   type: 'GtfTabixAdapter',
+ *   uri: 'https://example.com/genes.gtf.gz',
+ * }
+ * ```
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

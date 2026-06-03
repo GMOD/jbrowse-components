@@ -1,6 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config BgzipFastaAdapter
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
+ * ```js
+ * {
+ *   type: 'BgzipFastaAdapter',
+ *   uri: 'https://example.com/genome.fa.gz',
+ * }
+ * ```
  */
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
