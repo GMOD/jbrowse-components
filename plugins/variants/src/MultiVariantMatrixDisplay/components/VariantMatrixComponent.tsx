@@ -1,8 +1,8 @@
-import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
@@ -10,6 +10,7 @@ import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
+import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { LinearVariantMatrixDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -17,15 +18,7 @@ type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(scrollbarStyles)
 
-interface MatrixHit {
-  genotype: string
-  alleles: string
-  featureName: string
-  description: string
-  length: string
-  sampleName: string
-  name: string
-  featureId: string
+interface MatrixHit extends VariantTooltipFields {
   featureData: MatrixCellData['featureData'][number]
 }
 
@@ -85,17 +78,13 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
       const genotype = feature.genotypes[sampleName]
       if (genotype) {
         return {
-          genotype,
-          alleles: makeSimpleAltString(genotype, feature.ref, feature.alt),
-          featureName: feature.name,
-          description:
-            feature.alt.length >= 3
-              ? 'multiple ALT alleles'
-              : feature.description,
-          length: getBpDisplayStr(feature.length),
-          sampleName,
-          name: source.name,
-          featureId: feature.featureId,
+          ...buildVariantHit({
+            info: feature,
+            genotype,
+            sampleName,
+            name: source.name,
+            featureId: feature.featureId,
+          }),
           featureData: feature,
         }
       }

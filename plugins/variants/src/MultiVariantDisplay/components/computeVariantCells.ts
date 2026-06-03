@@ -42,7 +42,6 @@ export interface VariantCellData {
   flatbushGenomicEnds: Uint32Array
   flatbushFeatureIndices: Uint32Array
   featureIdList: string[]
-  sourceNameList: string[]
 }
 
 function getShapeType(featureType: string, featureStrand?: number) {
@@ -101,7 +100,6 @@ export function computeVariantCells({
   const fbGenomicStarts = new Uint32Array(maxCells)
   const fbGenomicEnds = new Uint32Array(maxCells)
   const fbFeatureIndices = new Uint32Array(maxCells)
-  const sourceNameList = sources.map(s => s.name)
   const featureIdList: string[] = []
 
   const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
@@ -477,6 +475,5 @@ export function computeVariantCells({
     flatbushGenomicEnds: outFbGenomicEnds,
     flatbushFeatureIndices: outFbFeatureIndices,
     featureIdList,
-    sourceNameList,
   }
 }

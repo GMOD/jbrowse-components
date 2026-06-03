@@ -48,11 +48,7 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
   const lastHoveredRef = useRef<string | undefined>(undefined)
 
   function applyHoverChange(hit: H | undefined) {
-    if (hit) {
-      model.setHoveredGenotype(getTooltip(hit))
-    } else {
-      model.setHoveredGenotype(undefined)
-    }
+    model.setHoveredGenotype(hit ? getTooltip(hit) : undefined)
     onHoverChange?.(hit)
   }
 

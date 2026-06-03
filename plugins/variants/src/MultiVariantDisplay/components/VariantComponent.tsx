@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
@@ -12,6 +12,7 @@ import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { FeatureGenotypeInfo } from './computeVariantCells.ts'
+import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { MultiLinearVariantDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -26,15 +27,7 @@ interface HoveredCell {
   displayedRegionIndex: number
 }
 
-interface VariantHit {
-  genotype: string
-  alleles: string
-  featureName: string
-  description: string
-  length: string
-  sampleName: string
-  name: string
-  featureId: string
+interface VariantHit extends VariantTooltipFields {
   featureInfo: FeatureGenotypeInfo
   cell: HoveredCell
 }
@@ -114,26 +107,29 @@ function getFeatureUnderMouse(
     regionCellData.featureIdList[
       regionCellData.flatbushFeatureIndices[bestIdx]!
     ]!
-  const sourceName =
-    regionCellData.sourceNameList[regionCellData.cellRowIndices[bestIdx]!]!
+  const rowIndex = regionCellData.cellRowIndices[bestIdx]!
+  // The cell row index maps directly into model.sources (same effectiveSources
+  // ordering used to compute the cells), so no per-region sourceNameList is
+  // shipped over RPC.
+  const source = model.sources?.[rowIndex]
+  if (!source) {
+    return undefined
+  }
   const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
   const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
   const info = regionCellData.featureGenotypeMap[featureId]!
-  const source = model.sourceMap?.[sourceName]
-  const genotype = info.genotypes[source?.sampleName ?? sourceName]!
+  const genotype = info.genotypes[source.sampleName]!
   return {
-    genotype,
-    alleles: makeSimpleAltString(genotype, info.ref, info.alt),
-    featureName: info.name,
-    description:
-      info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
-    length: getBpDisplayStr(info.length),
-    sampleName: source?.sampleName ?? sourceName,
-    name: sourceName,
-    featureId,
+    ...buildVariantHit({
+      info,
+      genotype,
+      sampleName: source.sampleName,
+      name: source.name,
+      featureId,
+    }),
     featureInfo: info,
     cell: {
-      rowIndex: regionCellData.cellRowIndices[bestIdx]!,
+      rowIndex,
       genomicStart,
       genomicEnd,
       displayedRegionIndex: region.displayedRegionIndex,
