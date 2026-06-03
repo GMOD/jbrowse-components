@@ -49,6 +49,12 @@ declare module '@mui/material/styles' {
     }
     frames: Frames
     framesCDS: Frames
+    alignmentFill: {
+      pairLR: string
+      pairRL: string
+      pairLL: string
+      pairRR: string
+    }
   }
   interface PaletteOptions {
     tertiary?: PaletteColorOptions
@@ -75,43 +81,57 @@ declare module '@mui/material/styles' {
     }
     framesCDS?: Frames
     frames?: Frames
+    alignmentFill?: {
+      pairLR?: string
+      pairRL?: string
+      pairLL?: string
+      pairRR?: string
+    }
   }
 }
 
 const refTheme = createTheme()
-const midnight = refTheme.palette.augmentColor({ color: { main: '#0D233F' } })
-const grape = refTheme.palette.augmentColor({ color: { main: '#721E63' } })
-const forest = refTheme.palette.augmentColor({ color: { main: '#135560' } })
-const mandarin = refTheme.palette.augmentColor({ color: { main: '#FFB11D' } })
-const textHighlight = refTheme.palette.augmentColor({ color: { main: '#ffe066' } })
-const lightgrey = refTheme.palette.augmentColor({ color: { main: '#aaa' } })
+
+// augment a color (a '#rrggbb' main shade or a full MUI color object) into a
+// PaletteColor with light/dark/contrastText variants
+function augment(color: PaletteColorOptions) {
+  return refTheme.palette.augmentColor({ color })
+}
+const hex = (main: string) => augment({ main })
+
+const midnight = hex('#0D233F')
+const grape = hex('#721E63')
+const forest = hex('#135560')
+const mandarin = hex('#FFB11D')
+const textHighlight = hex('#ffe066')
+const lightgrey = hex('#aaa')
 const bases = {
-  A: refTheme.palette.augmentColor({ color: green }),
-  C: refTheme.palette.augmentColor({ color: blue }),
-  G: refTheme.palette.augmentColor({ color: orange }),
-  T: refTheme.palette.augmentColor({ color: red }),
+  A: augment(green),
+  C: augment(blue),
+  G: augment(orange),
+  T: augment(red),
   // N / ambiguous bases: muted brown — a distinct hue so it never blends into
   // the grey coverage histogram the way mutedSnpBase (reserved for the
   // show-modifications muting) does.
-  N: refTheme.palette.augmentColor({ color: brown }),
+  N: augment(brown),
 }
 const framesCDS: Frames = [
   null,
-  refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
-  refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
-  refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
-  refTheme.palette.augmentColor({ color: { main: '#8080FF' } }),
-  refTheme.palette.augmentColor({ color: { main: '#80FF80' } }),
-  refTheme.palette.augmentColor({ color: { main: '#FF8080' } }),
+  hex('#FF8080'),
+  hex('#80FF80'),
+  hex('#8080FF'),
+  hex('#8080FF'),
+  hex('#80FF80'),
+  hex('#FF8080'),
 ]
 const frames: Frames = [
   null,
-  refTheme.palette.augmentColor({ color: { main: '#8f8f8f' } }),
-  refTheme.palette.augmentColor({ color: { main: '#adadad' } }),
-  refTheme.palette.augmentColor({ color: { main: '#d8d8d8' } }),
-  refTheme.palette.augmentColor({ color: { main: '#d8d8d8' } }),
-  refTheme.palette.augmentColor({ color: { main: '#adadad' } }),
-  refTheme.palette.augmentColor({ color: { main: '#8f8f8f' } }),
+  hex('#8f8f8f'),
+  hex('#adadad'),
+  hex('#d8d8d8'),
+  hex('#d8d8d8'),
+  hex('#adadad'),
+  hex('#8f8f8f'),
 ]
 const stopCodon = '#e22'
 const startCodon = '#3e3'
@@ -127,10 +147,48 @@ const skip = '#009a8a'
 const modificationFwd = '#c8c8c8'
 const modificationRev = '#c8dcc8'
 const mutedSnpBase = '#888'
+
+// Alignment read fill colors — exported as plain constants (not palette entries)
+// so they can be imported in RPC workers that have no MUI theme context.
+export const colorFwdStrandNotProper = '#ECC8C8'
+export const colorRevStrandNotProper = '#BEBED8'
+/** #color alignments-strand | Forward strand | Read maps to the forward strand */
+export const colorFwdStrand = '#EC8B8B'
+/** #color alignments-strand | Reverse strand | Read maps to the reverse strand */
+export const colorRevStrand = '#8F8FD8'
+export const colorFwdMissingMate = '#D11919'
+export const colorRevMissingMate = '#1919D1'
+export const colorFwdDiffChr = '#000'
+export const colorRevDiffChr = '#969696'
+/** #color alignments-pair-orientation | LR (→ ←, normal proper pair) | Concordant */
+export const colorPairLR = '#d3d3d3'
+/** #color alignments-pair-orientation | RL (← →, mates point away from each other) | Abnormal orientation */
+export const colorPairRL = '#0099bb'
+/** #color alignments-pair-orientation | LL (→ →, both mates forward strand) | Abnormal orientation */
+export const colorPairLL = '#4d9a4d'
+/** #color alignments-pair-orientation | RR (← ←, both mates reverse strand) | Abnormal orientation */
+export const colorPairRR = '#5555bb'
+export const colorNostrand = '#c8c8c8'
+export const colorInterchrom = '#aa00aa'
+export const colorLongInsert = '#ff0000'
+export const colorShortInsert = '#ffc0cb'
+export const colorUnmappedMate = '#b05a20'
+export const colorUnknown = '#808080'
+export const colorLongreadRevFwd = '#6688ee'
+export const colorLongreadInv = '#7755bb'
+export const colorSupplementary = '#f0b878'
+
 export const methylated5mC = '#ff0000'
 export const unmethylated5mC = '#0000ff'
 export const methylated5hmC = '#ffc0cb'
 export const unmethylated5hmC = '#800080'
+
+const alignmentFill = {
+  pairLR: colorPairLR,
+  pairRL: colorPairRL,
+  pairLL: colorPairLL,
+  pairRR: colorPairRR,
+}
 
 const defaults = {
   primary: midnight,
@@ -153,67 +211,15 @@ const defaults = {
   frames,
   framesCDS,
   skip,
+  alignmentFill,
 }
 
-function stockTheme() {
-  return {
-    palette: {
-      ...defaults,
-      mode: undefined,
-    },
-  } satisfies ThemeOptions
-}
+const stock = { palette: { ...defaults, mode: undefined } }
 
-function getDefaultTheme() {
-  return {
-    ...stockTheme(),
-    name: 'Default (from config)',
-  }
-}
-
-function getLightStockTheme() {
-  return {
-    ...stockTheme(),
-    name: 'Light (stock)',
-  }
-}
-
-function getDarkStockTheme() {
-  return {
-    name: 'Dark (stock)',
-    palette: {
-      ...defaults,
-      mode: 'dark',
-      coverage: grey[700],
-    },
-    components: {
-      // enableColorOnDark keeps the AppBar tinted with primary.main in dark
-      // mode (default MUI behavior is to flatten it to the paper color)
-      MuiAppBar: {
-        defaultProps: {
-          enableColorOnDark: true,
-        },
-      },
-    },
-  } satisfies ThemeOptions & { name: string }
-}
-
-function getDarkMinimalTheme() {
-  return {
-    name: 'Dark (minimal)',
-    palette: {
-      ...defaults,
-      mode: 'dark' as const,
-      coverage: grey[700],
-      primary: { main: grey[700] },
-      secondary: { main: grey[800] },
-      tertiary: { main: grey[900] },
-    },
-  } satisfies ThemeOptions & { name: string }
-}
-
-function getLightMinimalTheme() {
-  return {
+export const defaultThemes = {
+  default: { ...stock, name: 'Default (from config)' },
+  lightStock: { ...stock, name: 'Light (stock)' },
+  lightMinimal: {
     name: 'Light (minimal)',
     palette: {
       ...defaults,
@@ -221,19 +227,52 @@ function getLightMinimalTheme() {
       secondary: { main: grey[800] },
       tertiary: { main: grey[900] },
     },
-  } satisfies ThemeOptions & { name: string }
-}
-
-export const defaultThemes = {
-  default: getDefaultTheme(),
-  lightStock: getLightStockTheme(),
-  lightMinimal: getLightMinimalTheme(),
-  darkMinimal: getDarkMinimalTheme(),
-  darkStock: getDarkStockTheme(),
-} as ThemeMap
+  },
+  darkMinimal: {
+    name: 'Dark (minimal)',
+    palette: {
+      ...defaults,
+      mode: 'dark',
+      coverage: grey[700],
+      primary: { main: grey[700] },
+      secondary: { main: grey[800] },
+      tertiary: { main: grey[900] },
+    },
+  },
+  darkStock: {
+    name: 'Dark (stock)',
+    palette: { ...defaults, mode: 'dark', coverage: grey[700] },
+    components: {
+      // enableColorOnDark keeps the AppBar tinted with primary.main in dark
+      // mode (default MUI behavior is to flatten it to the paper color)
+      MuiAppBar: { defaultProps: { enableColorOnDark: true } },
+    },
+  },
+} satisfies ThemeMap
 
 function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {
   return sourceArray
+}
+
+// The default primary (midnight) has poor contrast as a text/control color in
+// dark mode, so fall back to a text-like color there. The extra selectors let
+// callers also recolor checked/focused states.
+// xref https://stackoverflow.com/a/72546130/2129219
+function darkModeContrastOverride(extraSelectors: string[] = []) {
+  return {
+    root: ({ theme }: { theme: Theme }) =>
+      theme.palette.mode === 'dark'
+        ? {
+            color: theme.palette.text.secondary,
+            ...Object.fromEntries(
+              extraSelectors.map(selector => [
+                selector,
+                { color: theme.palette.text.secondary },
+              ]),
+            ),
+          }
+        : undefined,
+  }
 }
 
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
@@ -259,10 +298,6 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
           // the default button, especially when not using variant=contained,
           // uses theme.palette.primary.main for text which is very bad with
           // dark mode+midnight primary
-          //
-          // keeps text secondary for darkmode, uses
-          // a text-like coloring to ensure contrast
-          // xref https://stackoverflow.com/a/72546130/2129219
           root: ({ theme }) =>
             theme.palette.mode === 'dark'
               ? {
@@ -386,66 +421,13 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
         },
       },
       MuiCheckbox: {
-        styleOverrides: {
-          // the default checkbox-when-checked color uses
-          // theme.palette.primary.main which is very bad with dark
-          // mode+midnight primary
-          //
-          // keeps the forest-green checkbox by default but for darkmode, uses
-          // a text-like coloring to ensure contrast xref
-          // https://stackoverflow.com/a/72546130/2129219
-          root: ({ theme }) =>
-            theme.palette.mode === 'dark'
-              ? {
-                  color: theme.palette.text.secondary,
-                  '&.Mui-checked': {
-                    color: theme.palette.text.secondary,
-                  },
-                }
-              : undefined,
-        },
+        styleOverrides: darkModeContrastOverride(['&.Mui-checked']),
       },
       MuiRadio: {
-        styleOverrides: {
-          // the default checkbox-when-checked color uses
-          // theme.palette.primary.main which is very bad with dark
-          // mode+midnight primary
-          //
-          // keeps the forest-green checkbox by default but for darkmode, uses
-          // a text-like coloring to ensure contrast
-          // xref https://stackoverflow.com/a/72546130/2129219
-          root: ({ theme }) =>
-            theme.palette.mode === 'dark'
-              ? {
-                  color: theme.palette.text.secondary,
-                  '&.Mui-checked': {
-                    color: theme.palette.text.secondary,
-                  },
-                }
-              : undefined,
-        },
+        styleOverrides: darkModeContrastOverride(['&.Mui-checked']),
       },
       MuiFormLabel: {
-        styleOverrides: {
-          // the default checkbox-when-checked color uses
-          // theme.palette.primary.main which is very bad with dark
-          // mode+midnight primary
-          //
-          // keeps the forest-green checkbox by default but for darkmode, uses
-          // a text-like coloring to ensure contrast
-          // xref https://stackoverflow.com/a/72546130/2129219
-          //
-
-          root: ({ theme }) =>
-            theme.palette.mode === 'dark'
-              ? {
-                  color: theme.palette.text.secondary,
-                  '&.Mui-focused': {
-                    color: theme.palette.text.secondary,
-                  },
-                }
-              : undefined,
-        },
+        styleOverrides: darkModeContrastOverride(['&.Mui-focused']),
       },
       MuiAccordionSummary: {
         styleOverrides: {
@@ -490,17 +472,20 @@ const themeCache = new Map<string, Theme>()
 
 function getThemeCacheKey(
   configTheme: ThemeOptions,
+  selectedTheme: ThemeOptions | undefined,
   themeName: string,
 ): string {
-  return JSON.stringify({ configTheme, themeName })
+  // key on the single selected theme definition, not the whole themes map,
+  // so configurable extraThemes that reuse a name still bust the cache
+  return JSON.stringify({ configTheme, selectedTheme, themeName })
 }
 
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
-  themes = defaultThemes,
+  themes: ThemeMap = defaultThemes,
   themeName = 'default',
 ) {
-  const cacheKey = getThemeCacheKey(configTheme, themeName)
+  const cacheKey = getThemeCacheKey(configTheme, themes[themeName], themeName)
   const cached = themeCache.get(cacheKey)
   if (cached) {
     return cached
@@ -535,11 +520,12 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
   ] as const) {
     const paletteEntry = theme.palette?.[entry]
     if (paletteEntry) {
-      augmentedPalette[entry] = refTheme.palette.augmentColor(
+      augmentedPalette[entry] =
         'color' in paletteEntry
-          ? (paletteEntry as PaletteAugmentColorOptions)
-          : { color: paletteEntry },
-      )
+          ? refTheme.palette.augmentColor(
+              paletteEntry as PaletteAugmentColorOptions,
+            )
+          : augment(paletteEntry)
     }
   }
   return Object.keys(augmentedPalette).length > 0
@@ -551,28 +537,35 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
 function addMissingColors(theme: ThemeOptions = {}) {
   const { palette } = theme
   return augmentThemeColors(
-    deepmerge(theme, {
-      palette: {
-        quaternary: palette?.quaternary ?? lightgrey,
-        tertiary: palette?.tertiary ?? lightgrey,
-        highlight: palette?.highlight ?? mandarin,
-        textHighlight: palette?.textHighlight ?? textHighlight,
-        coverage: palette?.coverage ?? coverage,
-        insertion: palette?.insertion ?? insertion,
-        softclip: palette?.softclip ?? softclip,
-        skip: palette?.skip ?? skip,
-        hardclip: palette?.hardclip ?? hardclip,
-        deletion: palette?.deletion ?? deletion,
-        modificationFwd: palette?.modificationFwd ?? modificationFwd,
-        modificationRev: palette?.modificationRev ?? modificationRev,
-        mutedSnpBase: palette?.mutedSnpBase ?? mutedSnpBase,
-        startCodon: palette?.startCodon ?? startCodon,
-        stopCodon: palette?.stopCodon ?? stopCodon,
-        bases: { ...bases, ...palette?.bases },
-        frames: palette?.frames ?? frames,
-        framesCDS: palette?.framesCDS ?? framesCDS,
+    deepmerge(
+      theme,
+      {
+        palette: {
+          quaternary: palette?.quaternary ?? lightgrey,
+          tertiary: palette?.tertiary ?? lightgrey,
+          highlight: palette?.highlight ?? mandarin,
+          textHighlight: palette?.textHighlight ?? textHighlight,
+          coverage: palette?.coverage ?? coverage,
+          insertion: palette?.insertion ?? insertion,
+          softclip: palette?.softclip ?? softclip,
+          skip: palette?.skip ?? skip,
+          hardclip: palette?.hardclip ?? hardclip,
+          deletion: palette?.deletion ?? deletion,
+          modificationFwd: palette?.modificationFwd ?? modificationFwd,
+          modificationRev: palette?.modificationRev ?? modificationRev,
+          mutedSnpBase: palette?.mutedSnpBase ?? mutedSnpBase,
+          startCodon: palette?.startCodon ?? startCodon,
+          stopCodon: palette?.stopCodon ?? stopCodon,
+          bases: { ...bases, ...palette?.bases },
+          frames: palette?.frames ?? frames,
+          framesCDS: palette?.framesCDS ?? framesCDS,
+          alignmentFill: { ...alignmentFill, ...palette?.alignmentFill },
+        },
       },
-    }),
+      // overwrite (don't concatenate) the frames/framesCDS arrays, matching
+      // the default-theme merge in createJBrowseTheme
+      { arrayMerge: overwriteArrayMerge },
+    ),
   )
 }
 

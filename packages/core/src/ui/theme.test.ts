@@ -89,3 +89,17 @@ test('dark theme has different coverage color', () => {
   const dark = createJBrowseTheme({}, undefined, 'darkStock')
   expect(light.palette.coverage).not.toBe(dark.palette.coverage)
 })
+
+test('frames arrays are not duplicated for named themes', () => {
+  for (const name of ['default', 'lightStock', 'lightMinimal', 'darkMinimal', 'darkStock']) {
+    const theme = createJBrowseTheme({}, undefined, name)
+    expect(theme.palette.frames).toHaveLength(7)
+    expect(theme.palette.framesCDS).toHaveLength(7)
+  }
+})
+
+test('orientation alignmentFill colors present for named themes', () => {
+  const theme = createJBrowseTheme({}, undefined, 'darkStock')
+  expect(theme.palette.alignmentFill.pairLR).toBeTruthy()
+  expect(theme.palette.alignmentFill.pairRR).toBeTruthy()
+})
