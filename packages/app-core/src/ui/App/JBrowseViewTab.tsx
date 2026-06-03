@@ -18,6 +18,9 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     padding: '0 4px',
     gap: 4,
+    '&:hover .jbrowse-tab-menu': {
+      visibility: 'visible',
+    },
   },
   tabTitle: {
     display: 'flex',
@@ -75,7 +78,6 @@ const JBrowseViewTab = observer(function JBrowseViewTab({
   const { panelId, session } = params
   const { classes } = useStyles()
   const [isEditing, setIsEditing] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
   const [editValue, setEditValue] = useState('')
 
   if (!session) {
@@ -114,15 +116,7 @@ const JBrowseViewTab = observer(function JBrowseViewTab({
   }
 
   return (
-    <div
-      className={classes.tabContainer}
-      onMouseEnter={() => {
-        setIsHovered(true)
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false)
-      }}
-    >
+    <div className={classes.tabContainer}>
       <div className={classes.tabTitle}>
         {isEditing ? (
           <InputBase
@@ -149,7 +143,6 @@ const JBrowseViewTab = observer(function JBrowseViewTab({
               {title}
             </Typography>
             <JBrowseTabMenu
-              isHovered={isHovered}
               onRename={handleStartEdit}
               onClose={() => {
                 api.close()
