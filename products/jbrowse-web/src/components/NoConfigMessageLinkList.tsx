@@ -1,26 +1,41 @@
-import { useState } from 'react'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { SampleLink } from './NoConfigMessageSampleData.ts'
+
+const useStyles = makeStyles()({
+  item: {
+    marginBottom: 4,
+  },
+  badges: {
+    color: '#666',
+  },
+  badge: {
+    color: '#666',
+    textDecoration: 'none',
+    cursor: 'pointer',
+    '&:hover': {
+      color: '#000',
+      textDecoration: 'underline',
+    },
+  },
+})
+
+const defaultRenderers = ['webgpu', 'webgl', 'canvas']
 
 export default function NoConfigMessageLinkList({
   links,
   buildUrl,
 }: {
   links: readonly SampleLink[]
-  buildUrl?: (config: string, params?: Record<string, string>) => string
+  buildUrl: (config: string, params?: Record<string, string>) => string
 }) {
-  const [hoveredBadge, setHoveredBadge] = useState<string | null>(null)
+  const { classes } = useStyles()
 
   return (
     <ul>
       {links.map(({ config, href, label, renderers }) => {
-        const finalHref =
-          href ??
-          (config && buildUrl ? buildUrl(config) : `?config=${config ?? ''}`)
-
-        const defaultRenderers = ['webgpu', 'webgl', 'canvas']
+        const finalHref = href ?? (config ? buildUrl(config) : '')
         const badgeList = renderers?.length ? renderers : defaultRenderers
-        const badgeKey = `${label}:${renderers?.length ? renderers.join(',') : 'default'}`
 
         const buildBadgeHref = (r: string) => {
           if (href) {
@@ -28,39 +43,18 @@ export default function NoConfigMessageLinkList({
             params.set('renderer', r)
             return `?${params}`
           }
-          return config && buildUrl
-            ? buildUrl(config, { renderer: r })
-            : finalHref
+          return config ? buildUrl(config, { renderer: r }) : finalHref
         }
 
         return (
-          <li key={label} style={{ marginBottom: 4 }}>
+          <li key={label} className={classes.item}>
             <a href={finalHref}>{label}</a>{' '}
-            <small style={{ color: '#666' }}>
-              {badgeList.map(r => {
-                const badgeId = `${badgeKey}:${r}`
-                return (
-                  <span key={r}>
-                    <a
-                      href={buildBadgeHref(r)}
-                      onMouseEnter={() => {
-                        setHoveredBadge(badgeId)
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredBadge(null)
-                      }}
-                      style={{
-                        color: hoveredBadge === badgeId ? '#000' : '#666',
-                        textDecoration:
-                          hoveredBadge === badgeId ? 'underline' : 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      [{r}]
-                    </a>
-                  </span>
-                )
-              })}
+            <small className={classes.badges}>
+              {badgeList.map(r => (
+                <a key={r} href={buildBadgeHref(r)} className={classes.badge}>
+                  [{r}]
+                </a>
+              ))}
             </small>
           </li>
         )
