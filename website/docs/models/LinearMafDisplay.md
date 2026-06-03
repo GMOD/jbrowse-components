@@ -23,6 +23,33 @@ reference the markdown files in our repo of the checked out git tag
 extends BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin +
 TreeSidebarMixin
 
+## Example usage
+
+A complete `MafTrack` config to paste into `tracks`. `samples` lists the aligned
+species in track order; `rowHeight` sets the per-sample band height:
+
+```js
+{
+  type: 'MafTrack',
+  trackId: 'multiz',
+  name: 'Multiz alignment',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigMafAdapter',
+    bigBedLocation: { uri: 'https://example.com/multiz.bb' },
+    samples: ['hg38', 'panTro4', 'mm10'],
+  },
+  displays: [
+    {
+      type: 'LinearMafDisplay',
+      displayId: 'multiz-LinearMafDisplay',
+      rowHeight: 16,
+      showCoverage: true,
+    },
+  ],
+}
+```
+
 ### LinearMafDisplay - Properties
 
 #### property: type

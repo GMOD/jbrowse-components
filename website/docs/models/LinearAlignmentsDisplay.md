@@ -31,19 +31,66 @@ extends
 
 ## Example usage
 
-A snapshot of this model is what you put in a track's `displaySnapshot` to set
-initial display state declaratively — here opening taller, with soft-clipping
-shown and reads colored by pair orientation:
+The display goes in a track's `displays` array; here are three complete
+`AlignmentsTrack` configs to paste into `tracks`.
+
+Basic BAM, opened taller:
 
 ```js
 {
-  trackId: 'my-cram-track',
-  displaySnapshot: {
-    type: 'LinearAlignmentsDisplay',
-    height: 250,
-    showSoftClipping: true,
-    colorBySetting: { type: 'pairOrientation' },
-  },
+  type: 'AlignmentsTrack',
+  trackId: 'ngs_reads',
+  name: 'NGS reads',
+  assemblyNames: ['hg38'],
+  adapter: { type: 'BamAdapter', uri: 'https://example.com/sample.bam' },
+  displays: [
+    {
+      type: 'LinearAlignmentsDisplay',
+      displayId: 'ngs_reads-LinearAlignmentsDisplay',
+      height: 250,
+    },
+  ],
+}
+```
+
+CRAM colored by CpG methylation (modBAM MM/ML tags):
+
+```js
+{
+  type: 'AlignmentsTrack',
+  trackId: 'methylation',
+  name: 'Methylation',
+  assemblyNames: ['hg38'],
+  adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
+  displays: [
+    {
+      type: 'LinearAlignmentsDisplay',
+      displayId: 'methylation-LinearAlignmentsDisplay',
+      colorBySetting: { type: 'methylation' },
+    },
+  ],
+}
+```
+
+Long reads with soft-clipping shown and split/mate reads connected by arcs:
+
+```js
+{
+  type: 'AlignmentsTrack',
+  trackId: 'long_reads',
+  name: 'Long reads',
+  assemblyNames: ['hg38'],
+  adapter: { type: 'BamAdapter', uri: 'https://example.com/longreads.bam' },
+  displays: [
+    {
+      type: 'LinearAlignmentsDisplay',
+      displayId: 'long_reads-LinearAlignmentsDisplay',
+      height: 400,
+      showSoftClipping: true,
+      linkedReads: 'normal',
+      readConnections: 'arc',
+    },
+  ],
 }
 ```
 

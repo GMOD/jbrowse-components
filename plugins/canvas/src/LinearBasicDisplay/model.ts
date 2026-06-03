@@ -24,6 +24,31 @@ export type { Region } from '@jbrowse/core/util'
  * shared canvas base display (`LinearCanvasBaseDisplay`). This is the GPU
  * stack — despite the name it does NOT extend `BaseLinearDisplay` (the legacy
  * block stack). See agent-docs/TRACK_DISPLAY_CONCEPTS.md.
+ *
+ * #example
+ * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
+ * `tracks`. `configOverrides.displayMode` switches between `normal`, `compact`,
+ * `superCompact`, `reducedRepresentation`, and `collapse`:
+ * ```js
+ * {
+ *   type: 'FeatureTrack',
+ *   trackId: 'genes',
+ *   name: 'Genes',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'Gff3TabixAdapter',
+ *     uri: 'https://example.com/genes.gff3.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearBasicDisplay',
+ *       displayId: 'genes-LinearBasicDisplay',
+ *       height: 200,
+ *       configOverrides: { displayMode: 'compact' },
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,

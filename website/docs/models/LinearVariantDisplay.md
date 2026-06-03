@@ -24,6 +24,30 @@ GPU-accelerated variant display with custom feature widget on click. extends
 
 - [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 
+## Example usage
+
+A complete `VariantTrack` config to paste into `tracks`:
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'variants',
+  name: 'Variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/variants.vcf.gz',
+  },
+  displays: [
+    {
+      type: 'LinearVariantDisplay',
+      displayId: 'variants-LinearVariantDisplay',
+      height: 150,
+    },
+  ],
+}
+```
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

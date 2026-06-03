@@ -29,6 +29,33 @@ the upload autorun (which watches every display's `instanceData` and keys it by
 `displayKey`), and the render autorun. This display only carries per-track state
 and the `renderParams` the view reads out.
 
+## Example usage
+
+A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs the
+query (first) and target (second) assembly names, matched by the track's
+`assemblyNames`:
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'hg38_vs_mm10',
+  name: 'hg38 vs mm10',
+  assemblyNames: ['hg38', 'mm10'],
+  adapter: {
+    type: 'PAFAdapter',
+    uri: 'https://example.com/hg38_vs_mm10.paf',
+    queryAssembly: 'hg38',
+    targetAssembly: 'mm10',
+  },
+  displays: [
+    {
+      type: 'LinearSyntenyDisplay',
+      displayId: 'hg38_vs_mm10-LinearSyntenyDisplay',
+    },
+  ],
+}
+```
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

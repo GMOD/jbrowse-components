@@ -21,3 +21,31 @@ reference the markdown files in our repo of the checked out git tag
 ## Docs
 
 base model `SharedGCContentModel`
+
+## Example usage
+
+This display attaches to a `ReferenceSequenceTrack` — it derives GC from the
+track's own sequence adapter, so no extra adapter is needed. `gcMode` is
+`content` or `skew`:
+
+```js
+{
+  type: 'ReferenceSequenceTrack',
+  trackId: 'refseq',
+  name: 'Reference sequence',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'IndexedFastaAdapter',
+    uri: 'https://example.com/genome.fa',
+  },
+  displays: [
+    {
+      type: 'LinearGCContentDisplay',
+      displayId: 'refseq-LinearGCContentDisplay',
+      windowSize: 100,
+      windowDelta: 100,
+      gcMode: 'content',
+    },
+  ],
+}
+```
