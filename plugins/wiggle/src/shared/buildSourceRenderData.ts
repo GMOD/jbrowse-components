@@ -60,7 +60,11 @@ export function buildSourceRenderData(
     const negColor = overlay ? posColor : defaultNegColor
     const row = overlay ? 0 : i
 
-    if (summaryScoreMode === 'whiskers') {
+    // Solid-color sources use summaryScoreMode-specific rendering.
+    // Bicolor (color undefined) always uses pos/neg avg split so the pivot
+    // is visible regardless of summaryScoreMode — whiskers and min/max do
+    // not have a meaningful bicolor variant.
+    if (orderedSource.color && summaryScoreMode === 'whiskers') {
       for (const s of makeWhiskersSourceData(
         rpcSource,
         posColor,
@@ -70,7 +74,10 @@ export function buildSourceRenderData(
       )) {
         result.push(s)
       }
-    } else if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
+    } else if (
+      orderedSource.color &&
+      (summaryScoreMode === 'min' || summaryScoreMode === 'max')
+    ) {
       const scores = getEffectiveScores(rpcSource, summaryScoreMode)
       result.push({
         featurePositions: rpcSource.featurePositions,

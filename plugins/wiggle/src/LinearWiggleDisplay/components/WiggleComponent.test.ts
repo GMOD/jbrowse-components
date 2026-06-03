@@ -1,5 +1,8 @@
 import { buildSourceRenderData } from '../../shared/buildSourceRenderData.ts'
-import { SINGLE_WIGGLE_SOURCE_NAME, WIGGLE_POS_COLOR_DEFAULT } from '../../util.ts'
+import {
+  SINGLE_WIGGLE_SOURCE_NAME,
+  WIGGLE_POS_COLOR_DEFAULT,
+} from '../../util.ts'
 
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleDataResult } from '../../util.ts'

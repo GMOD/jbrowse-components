@@ -91,7 +91,11 @@ export function migrateWiggleSnapshot(
     minScore: minScoreSetting ?? cons?.min,
     maxScore: maxScoreSetting ?? cons?.max,
     color: isSentinelColor ? undefined : effectiveColor,
-    useBicolor: isSentinelColor ? true : effectiveColor !== undefined ? false : undefined,
+    useBicolor: isSentinelColor
+      ? true
+      : effectiveColor !== undefined
+        ? false
+        : undefined,
     posColor: posColorSetting ?? posColorGen1,
     negColor: negColorSetting ?? negColorGen1,
     showTree: showTreeSetting ?? showSidebar,

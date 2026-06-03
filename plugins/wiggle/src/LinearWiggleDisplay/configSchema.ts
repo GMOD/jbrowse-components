@@ -55,7 +55,8 @@ export default ConfigurationSchema(
     useBicolor: {
       type: 'boolean',
       defaultValue: true,
-      description: 'Use separate positive/negative colors instead of a single color',
+      description:
+        'Use separate positive/negative colors instead of a single color',
     },
     /**
      * #slot
