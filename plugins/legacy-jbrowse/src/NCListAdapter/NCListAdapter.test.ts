@@ -19,10 +19,8 @@ function generateReadBuffer(
 }
 
 beforeEach(() => {
-  // @ts-expect-error
-  fetch.resetMocks()
-  // @ts-expect-error
-  fetch.mockResponse(
+  fetchMock.resetMocks()
+  fetchMock.mockResponse(
     generateReadBuffer(
       (url: string) =>
         new LocalFile(path.join(__dirname, `../../test_data/${url}`)),

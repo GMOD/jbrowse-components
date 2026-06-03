@@ -31,4 +31,9 @@ if (!isNodeEnvironment) {
   }
 
   Object.assign(global.fetch, jestFetchMock)
+
+  // Expose the same mock under `fetchMock` so tests can call the helpers
+  // (.mockResponse/.resetMocks/etc.) with a properly typed global. See
+  // global.d.ts.
+  global.fetchMock = global.fetch
 }

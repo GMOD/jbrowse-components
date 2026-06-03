@@ -8,8 +8,7 @@ import { readSessionFromDynamo } from './sessionSharing.ts'
 describe('readSessionFromDynamo', () => {
   describe('sessionId extraction', () => {
     it('strips share- prefix and uses remainder as sessionId in the URL', async () => {
-      // @ts-expect-error
-      fetch.mockResponse(JSON.stringify({ session: 'enc' }))
+      fetchMock.mockResponse(JSON.stringify({ session: 'enc' }))
       await readSessionFromDynamo(
         'https://api.example.com/',
         'share-myId123',
@@ -22,8 +21,7 @@ describe('readSessionFromDynamo', () => {
     })
 
     it('URL-encodes the sessionId', async () => {
-      // @ts-expect-error
-      fetch.mockResponse(JSON.stringify({ session: 'enc' }))
+      fetchMock.mockResponse(JSON.stringify({ session: 'enc' }))
       await readSessionFromDynamo(
         'https://api.example.com/',
         'share-id with spaces',
@@ -36,8 +34,7 @@ describe('readSessionFromDynamo', () => {
     })
 
     it('passes signal to fetch', async () => {
-      // @ts-expect-error
-      fetch.mockResponse(JSON.stringify({ session: 'enc' }))
+      fetchMock.mockResponse(JSON.stringify({ session: 'enc' }))
       const controller = new AbortController()
       await readSessionFromDynamo(
         'https://api.example.com/',
@@ -54,8 +51,7 @@ describe('readSessionFromDynamo', () => {
 
   describe('error message extraction', () => {
     it('uses message field from JSON error body', async () => {
-      // @ts-expect-error
-      fetch.mockResponse(JSON.stringify({ message: 'session not found' }), {
+      fetchMock.mockResponse(JSON.stringify({ message: 'session not found' }), {
         status: 404,
       })
       await expect(
@@ -64,8 +60,7 @@ describe('readSessionFromDynamo', () => {
     })
 
     it('uses raw body when JSON has no message field', async () => {
-      // @ts-expect-error
-      fetch.mockResponse(JSON.stringify({ error: 'something went wrong' }), {
+      fetchMock.mockResponse(JSON.stringify({ error: 'something went wrong' }), {
         status: 500,
       })
       await expect(
@@ -74,8 +69,7 @@ describe('readSessionFromDynamo', () => {
     })
 
     it('uses raw body when response is not JSON', async () => {
-      // @ts-expect-error
-      fetch.mockResponse('Internal Server Error', { status: 500 })
+      fetchMock.mockResponse('Internal Server Error', { status: 500 })
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-xyz', 'pass'),
       ).rejects.toThrow('Internal Server Error')

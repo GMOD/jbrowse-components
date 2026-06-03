@@ -28,8 +28,7 @@ const getFile = (url: string) => {
 beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation()
   jest.spyOn(console, 'error').mockImplementation()
-  // @ts-expect-error
-  fetch.mockResponse(async (request: Request) => {
+  fetchMock.mockResponse(async (request: Request) => {
     const url = request.url
     if (url.includes('jb2=true')) {
       return '{}'

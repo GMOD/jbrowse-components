@@ -151,10 +151,8 @@ export function doBeforeEach(
   clearCache()
   clearAdapterCache()
 
-  // @ts-expect-error
-  fetch.resetMocks()
-  // @ts-expect-error
-  fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
+  fetchMock.resetMocks()
+  fetchMock.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }
 interface Results2 extends Results {
   autocomplete: HTMLElement
@@ -209,8 +207,7 @@ export function mockFile404(
   str: string,
   readBuffer: (request: Request) => Promise<Response>,
 ) {
-  // @ts-expect-error
-  fetch.mockResponse(async request => {
+  fetchMock.mockResponse(async request => {
     const matches = request.url.includes(str)
     return matches ? { status: 404 } : readBuffer(request)
   })
@@ -275,8 +272,7 @@ export async function testFileReload(config: {
     fireEvent.click(await findByTestId(hts(config.trackId), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
 
-    // @ts-expect-error
-    fetch.mockResponse(config.readBuffer)
+    fetchMock.mockResponse(config.readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 

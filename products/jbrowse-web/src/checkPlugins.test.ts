@@ -170,13 +170,11 @@ describe('checkPluginsAgainstStore', () => {
 
 describe('checkPlugins with real plugin store', () => {
   beforeEach(() => {
-    // @ts-expect-error
-    fetch.enableMocks()
+    fetchMock.enableMocks()
   })
 
   afterEach(() => {
-    // @ts-expect-error
-    fetch.resetMocks()
+    fetchMock.resetMocks()
   })
 
   it('validates mafviewer plugin from plugins.json', async () => {
@@ -188,8 +186,7 @@ describe('checkPlugins with real plugin store', () => {
         },
       ],
     }
-    // @ts-expect-error
-    fetch.mockResponseOnce(JSON.stringify(mockPluginsJson))
+    fetchMock.mockResponseOnce(JSON.stringify(mockPluginsJson))
 
     const storePlugins = await fetchPlugins()
     const plugins: PluginDefinition[] = [
@@ -210,8 +207,7 @@ describe('checkPlugins with real plugin store', () => {
         },
       ],
     }
-    // @ts-expect-error
-    fetch.mockResponseOnce(JSON.stringify(mockPluginsJson))
+    fetchMock.mockResponseOnce(JSON.stringify(mockPluginsJson))
 
     const storePlugins = await fetchPlugins()
     const plugins: PluginDefinition[] = [

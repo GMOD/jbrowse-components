@@ -20,8 +20,7 @@ const root = 'https://jbrowse.org/volvoxhub/'
 
 test('Open up a UCSC trackhub connection', async () => {
   const user = userEvent.setup()
-  // @ts-expect-error
-  fetch.mockResponse(async request => {
+  fetchMock.mockResponse(async request => {
     if (request.url.startsWith(root)) {
       const str = request.url.replace(root, '')
       return handleRequest(
