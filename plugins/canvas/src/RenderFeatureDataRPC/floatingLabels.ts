@@ -1,7 +1,7 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { LABEL_FONT_SIZE } from './constants.ts'
-import { hasVisibleText, truncateLabel } from './util.ts'
+import { LABEL_FONT_SIZE, MAX_DESCRIPTION_LABEL_WIDTH_PX } from './constants.ts'
+import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 
 import type { LabelItem } from './rpcTypes.ts'
 
@@ -16,7 +16,11 @@ export function createFeatureFloatingLabels({
   description: string | undefined
 }) {
   const name = truncateLabel(rawName ?? '')
-  const description = truncateLabel(rawDescription ?? '', 30)
+  const description = truncateToWidth(
+    rawDescription ?? '',
+    MAX_DESCRIPTION_LABEL_WIDTH_PX,
+    LABEL_FONT_SIZE,
+  )
 
   const shouldShowLabel = hasVisibleText(name)
   const shouldShowDescription = hasVisibleText(description)

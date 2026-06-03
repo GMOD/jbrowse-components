@@ -1,4 +1,4 @@
-import { getFrame, stripAlpha } from '@jbrowse/core/util'
+import { getFrame, measureText, stripAlpha } from '@jbrowse/core/util'
 
 import { THEME_DERIVED_COLOR, readConfigValue } from './renderConfig.ts'
 
@@ -11,6 +11,34 @@ const UTR_REGEX = /(\bUTR|_UTR|untranslated[_\s]region)\b/i
 
 export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
+}
+
+// Truncates text so its rendered width at fontSize never exceeds maxWidthPx,
+// appending an ellipsis when shortened. Returns a string whose
+// measureText(result, fontSize) is guaranteed <= maxWidthPx, so the caller's
+// stored textWidth is bounded by construction and layout reservations match
+// what is drawn. Single pass over the per-char widths; only over-budget strings
+// enter the loop.
+export function truncateToWidth(
+  text: string,
+  maxWidthPx: number,
+  fontSize: number,
+) {
+  if (measureText(text, fontSize) <= maxWidthPx) {
+    return text
+  }
+  const budget = maxWidthPx - measureText('…', fontSize)
+  let width = 0
+  let i = 0
+  while (i < text.length) {
+    const next = width + measureText(text[i]!, fontSize)
+    if (next > budget) {
+      break
+    }
+    width = next
+    i++
+  }
+  return `${text.slice(0, i)}…`
 }
 
 // True when the string contains at least one non-whitespace character.

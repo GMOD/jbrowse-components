@@ -1,5 +1,9 @@
 import { LABEL_FONT_SIZE } from './constants.ts'
-import { applyLabelDimensions } from './labelUtils.ts'
+import {
+  applyLabelDimensions,
+  getFeatureName,
+  readFeatureLabels,
+} from './labelUtils.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
 import type { FeatureLayout } from './types.ts'
@@ -29,6 +33,59 @@ function createMockFeature(name: string, id = 'feat-1') {
     id: () => id,
   } as any
 }
+
+describe('getFeatureName', () => {
+  function featureWith(values: Record<string, unknown>) {
+    return {
+      get: (key: string) => values[key],
+      id: () => 'x',
+    } as any
+  }
+
+  it('joins a multi-valued (array) name into a string', () => {
+    expect(getFeatureName(featureWith({ name: ['BRCA1', 'alias2'] }))).toBe(
+      'BRCA1,alias2',
+    )
+  })
+
+  it('falls back to id when name is empty', () => {
+    expect(getFeatureName(featureWith({ name: '', id: 'feat-9' }))).toBe(
+      'feat-9',
+    )
+  })
+
+  it('returns undefined when name and id are both absent', () => {
+    expect(getFeatureName(featureWith({}))).toBe(undefined)
+  })
+})
+
+describe('readFeatureLabels', () => {
+  const feature = createMockFeature('GENE')
+
+  it('joins a multi-valued (array) description into a single string', () => {
+    // RefSeq GFFs with unescaped commas in a description get parsed into an
+    // array of values; the label must still be a string.
+    const config = mockDisplayConfig()
+    config.labels.description = [
+      'microRNAs are short',
+      ' which are cleaved',
+    ] as unknown as string
+    const { description } = readFeatureLabels(config, feature)
+    expect(description).toBe('microRNAs are short, which are cleaved')
+  })
+
+  it('passes a plain string description through', () => {
+    const config = mockDisplayConfig()
+    config.labels.description = 'A gene'
+    expect(readFeatureLabels(config, feature).description).toBe('A gene')
+  })
+
+  it('returns undefined for an empty description', () => {
+    expect(readFeatureLabels(mockDisplayConfig(), feature).description).toBe(
+      undefined,
+    )
+  })
+})
 
 describe('applyLabelDimensions', () => {
   describe('transcript children with "below" subfeature labels', () => {

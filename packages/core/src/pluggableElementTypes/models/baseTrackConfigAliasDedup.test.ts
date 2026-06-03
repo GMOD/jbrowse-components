@@ -1,3 +1,5 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
 import PluginManager from '../../PluginManager.ts'
 import { ConfigurationSchema } from '../../configuration/index.ts'
 import DisplayType from '../DisplayType.ts'
@@ -22,7 +24,9 @@ function pluginManagerWithAliasedDisplay() {
     return new TrackType({
       name: 'AlignmentsTrack',
       configSchema,
-      stateModel: configSchema,
+      // stateModel is unused by the alias-dedup path under test; a stub model
+      // avoids importing a full track state model.
+      stateModel: types.model('AlignmentsTrack', {}),
     })
   })
   pluginManager.addDisplayType(
@@ -34,8 +38,8 @@ function pluginManagerWithAliasedDisplay() {
           {},
           { explicitIdentifier: 'displayId', explicitlyTyped: true },
         ),
-        // unused at runtime here; cast avoids importing a full state model
-        stateModel: ConfigurationSchema('LinearAlignmentsDisplay', {}),
+        // unused at runtime here; stub model avoids importing a full state model
+        stateModel: types.model('LinearAlignmentsDisplay', {}),
         trackType: 'AlignmentsTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: () => null,

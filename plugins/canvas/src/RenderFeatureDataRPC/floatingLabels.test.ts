@@ -1,4 +1,9 @@
-import { LABEL_FONT_SIZE } from './constants.ts'
+import { measureText } from '@jbrowse/core/util'
+
+import {
+  LABEL_FONT_SIZE,
+  MAX_DESCRIPTION_LABEL_WIDTH_PX,
+} from './constants.ts'
 import {
   createFeatureFloatingLabels,
   createTranscriptFloatingLabel,
@@ -42,6 +47,30 @@ describe('floatingLabels', () => {
       })
       expect(result.nameLabel!.textWidth).toBeGreaterThan(0)
       expect(result.descriptionLabel!.textWidth).toBeGreaterThan(0)
+    })
+
+    it('truncates a long description so its textWidth stays within budget', () => {
+      const longDescription =
+        'The protein encoded by this gene catalyzes the reduction of a long sentence'
+      const result = createFeatureFloatingLabels({
+        name: 'Gene1',
+        description: longDescription,
+      })
+      const label = result.descriptionLabel!
+      expect(label.text).toContain('…')
+      expect(label.text.length).toBeLessThan(longDescription.length)
+      // The stored textWidth equals the drawn text width and is bounded by
+      // the budget, so layout reservations match what is rendered.
+      expect(label.textWidth).toBe(measureText(label.text, LABEL_FONT_SIZE))
+      expect(label.textWidth).toBeLessThanOrEqual(MAX_DESCRIPTION_LABEL_WIDTH_PX)
+    })
+
+    it('leaves a short description untruncated', () => {
+      const result = createFeatureFloatingLabels({
+        name: 'Gene1',
+        description: 'A gene',
+      })
+      expect(result.descriptionLabel!.text).toBe('A gene')
     })
 
     it('returns only name label when description is empty', () => {

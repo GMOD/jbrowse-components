@@ -31,6 +31,7 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     colors: {} as RenderState['colors'],
     linkedReads: 'off',
     readConnections: 'off',
+    showLinkedReadLines: false,
     pileupTopOffset: 50,
     ...overrides,
   }
