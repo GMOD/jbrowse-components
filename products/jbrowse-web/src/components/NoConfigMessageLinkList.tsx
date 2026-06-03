@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const defaultRenderers = ['webgpu', 'webgl', 'canvas']
+const renderers = ['webgpu', 'webgl', 'canvas']
 
 export default function NoConfigMessageLinkList({
   links,
@@ -33,9 +33,8 @@ export default function NoConfigMessageLinkList({
 
   return (
     <ul>
-      {links.map(({ config, href, label, renderers }) => {
+      {links.map(({ config, href, label }) => {
         const finalHref = href ?? (config ? buildUrl(config) : '')
-        const badgeList = renderers?.length ? renderers : defaultRenderers
 
         const buildBadgeHref = (r: string) => {
           if (href) {
@@ -50,7 +49,7 @@ export default function NoConfigMessageLinkList({
           <li key={label} className={classes.item}>
             <a href={finalHref}>{label}</a>{' '}
             <small className={classes.badges}>
-              {badgeList.map(r => (
+              {renderers.map(r => (
                 <a key={r} href={buildBadgeHref(r)} className={classes.badge}>
                   [{r}]
                 </a>

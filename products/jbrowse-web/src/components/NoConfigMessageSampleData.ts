@@ -2,7 +2,6 @@ export interface SampleLink {
   config?: string
   href?: string
   label: string
-  renderers?: readonly string[]
 }
 
 export const sampleConfigs: readonly SampleLink[] = [
