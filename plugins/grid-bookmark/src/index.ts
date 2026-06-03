@@ -162,7 +162,7 @@ export default class GridBookmarkPlugin extends Plugin {
                   return [
                     ...superRubberBandMenuItems(),
                     {
-                      label: 'Highlight region',
+                      label: 'Highlight region (temporary)',
                       icon: HighlightAltIcon,
                       onClick: () => {
                         const { leftOffset, rightOffset } = self

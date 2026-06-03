@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
@@ -9,6 +8,7 @@ import {
   DialogContent,
   MenuItem,
   Select,
+  Stack,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -18,19 +18,6 @@ import { downloadBookmarkFile } from '../../utils.ts'
 
 import type { GridBookmarkModel } from '../../model.ts'
 
-const useStyles = makeStyles()({
-  flexItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
-  },
-  container: {
-    display: 'flex',
-    flexFlow: 'column',
-    gap: '5px',
-  },
-})
-
 const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   model,
   onClose,
@@ -38,21 +25,13 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   model: GridBookmarkModel
   onClose: () => void
 }) {
-  const { classes } = useStyles()
   const [fileType, setFileType] = useState('BED')
-  const { selectedBookmarks } = model
-  const exportAll = selectedBookmarks.length === 0
+  const exportAll = model.selectedBookmarks.length === 0
   return (
-    <Dialog
-      open
-      title="Export bookmarks"
-      onClose={() => {
-        onClose()
-      }}
-    >
-      <DialogContent className={classes.container}>
+    <Dialog open title="Export bookmarks" onClose={onClose}>
+      <DialogContent>
         <BookmarkSelectionAlert all={exportAll} verb="exported" />
-        <div className={classes.flexItem}>
+        <Stack direction="row" sx={{ alignItems: 'center', gap: 1, mt: 1 }}>
           <Typography>Format to download:</Typography>
           <Select
             size="small"
@@ -64,16 +43,10 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
             <MenuItem value="BED">BED</MenuItem>
             <MenuItem value="TSV">TSV</MenuItem>
           </Select>
-        </div>
+        </Stack>
       </DialogContent>
       <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            onClose()
-          }}
-        >
+        <Button variant="contained" color="secondary" onClick={onClose}>
           Cancel
         </Button>
         <Button

@@ -10,7 +10,7 @@ import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   container: {
     display: 'flex',
   },
@@ -40,7 +40,7 @@ const useStyles = makeStyles()(theme => ({
     lineHeight: 'normal',
     pointerEvents: 'none',
   },
-}))
+})
 
 const ContentBlockTicks = observer(function ContentBlockTicks({
   block,

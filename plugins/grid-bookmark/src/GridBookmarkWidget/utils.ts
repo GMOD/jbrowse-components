@@ -104,4 +104,3 @@ export async function downloadBookmarkFile(
   }
 }
 
-export { b64PadSuffix, fromUrlSafeB64, toUrlSafeB64 } from '@jbrowse/core/util'

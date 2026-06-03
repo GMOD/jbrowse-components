@@ -341,7 +341,7 @@ export default function f(_pluginManager: PluginManager) {
     })
     .postProcessSnapshot(snap => {
       const { bookmarks, ...rest } = snap
-      return bookmarks?.length ? { ...rest, sharedBookmarks: bookmarks } : rest
+      return bookmarks.length ? { ...rest, sharedBookmarks: bookmarks } : rest
     })
 }
 

@@ -540,8 +540,8 @@ describe('blockToFeature', () => {
     expect(feature).toBeDefined()
     expect(feature!.alignments).toHaveProperty('hg38')
     expect(feature!.alignments).toHaveProperty('mm10')
-    expect(feature!.alignments['hg38']!.chr).toBe('chr1')
-    expect(feature!.alignments['mm10']!.chr).toBe('chr2')
+    expect(feature!.alignments.hg38!.chr).toBe('chr1')
+    expect(feature!.alignments.mm10!.chr).toBe('chr2')
   })
 
   test('sampleFilter with plain names — rows not in filter are dropped', () => {
