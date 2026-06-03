@@ -120,7 +120,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 onClick: async () => {
                   const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
                   const session = getSession(self)
-                  const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+                  const { default: copy } =
+                    await import('@jbrowse/core/util/copyToClipboard')
                   copy(JSON.stringify(rest, null, 4))
                   session.notify('Copied to clipboard', 'success')
                 },

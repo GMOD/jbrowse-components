@@ -76,7 +76,7 @@ addTrackConfs: (trackConfs: TrackConf[]) => void
 
 ```js
 // type signature
-setTrackConfs: (trackConfs: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]) => void
+setTrackConfs: (trackConfs: TrackConf[]) => void
 ```
 
 #### action: clear

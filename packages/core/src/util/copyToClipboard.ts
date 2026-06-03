@@ -28,9 +28,7 @@ export default function copyToClipboard(
 function execCommandCopy(text: string, format: string) {
   const selection = document.getSelection()
   const previousRange =
-    selection && selection.rangeCount > 0
-      ? selection.getRangeAt(0)
-      : undefined
+    selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : undefined
 
   // offscreen span carrying the text, with whitespace preserved
   const span = document.createElement('span')

@@ -29,6 +29,24 @@ extends
 - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
 - [ConfigOverrideMixin](../configoverridemixin)
 
+## Example usage
+
+A snapshot of this model is what you put in a track's `displaySnapshot` to set
+initial display state declaratively — here opening taller, with soft-clipping
+shown and reads colored by pair orientation:
+
+```js
+{
+  trackId: 'my-cram-track',
+  displaySnapshot: {
+    type: 'LinearAlignmentsDisplay',
+    height: 250,
+    showSoftClipping: true,
+    colorBySetting: { type: 'pairOrientation' },
+  },
+}
+```
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -133,10 +151,22 @@ linkedReads: types.optional(
             types.enumeration<LinkedReadsMode>('LinkedReadsMode', [
               'off',
               'normal',
-              'bezier',
             ]),
             'off',
           )
+```
+
+#### property: showBezierConnections
+
+Draw paired-read connection curves (bezier overlay + GPU straight lines for
+normal pairs). Orthogonal to `linkedReads` layout, so curves work over an
+ordinary pileup or chain layout.
+
+```js
+// type signature
+false
+// code
+showBezierConnections: false
 ```
 
 #### property: showCoverage
@@ -424,15 +454,6 @@ visibleModifications: observable.map<
           >({})
 ```
 
-#### volatile: simplexModifications
-
-```js
-// type signature
-Set<string>
-// code
-simplexModifications: new Set<string>()
-```
-
 #### volatile: modificationsReady
 
 ```js
@@ -463,6 +484,18 @@ colorPalette: null as ColorPalette | null
 ### LinearAlignmentsDisplay - Getters
 
 #### getter: isChainMode
+
+```js
+// type
+boolean
+```
+
+#### getter: showLinkedReadLines
+
+Whether to draw the straight-line pass connecting normal read-pairs in pileup
+layout. Only meaningful when bezier connections are on AND we are in pileup mode
+— chain layout has its own connecting-line pass that already covers normal
+pairs.
 
 ```js
 // type
@@ -799,7 +832,7 @@ string | undefined
 
 ```js
 // type
-{ scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 21 more ...; arcsYDomainBp: number | undefined; } | undefined
+{ scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 22 more ...; arcsYDomainBp: number | undefined; } | undefined
 ```
 
 #### getter: arcsYDomainBp
@@ -1208,18 +1241,22 @@ setFlipStrandLongReadChains: (flag: boolean) => void
 setLinkedReads: (mode: LinkedReadsMode) => void
 ```
 
+#### action: setShowBezierConnections
+
+Toggle the paired-read connection overlay. A main-thread tier-2/4 setting (read
+in `laidOutPileupMap` + `renderState`), not in `rpcProps` — toggling it never
+refetches.
+
+```js
+// type signature
+setShowBezierConnections: (flag: boolean) => void
+```
+
 #### action: updateVisibleModifications
 
 ```js
 // type signature
 updateVisibleModifications: (uniqueModifications: string[]) => void
-```
-
-#### action: setSimplexModifications
-
-```js
-// type signature
-setSimplexModifications: (simplex: string[]) => void
 ```
 
 #### action: setModificationsReady

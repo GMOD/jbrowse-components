@@ -1,6 +1,5 @@
 import path from 'path'
 
-
 import { isURL } from '../../types/common.ts'
 
 import type { Track } from '../../base.ts'

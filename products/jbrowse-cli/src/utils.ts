@@ -2,7 +2,6 @@ import { promises as fsPromises } from 'fs'
 import path from 'path'
 import zlib from 'zlib'
 
-
 import fetch from './cliFetch.ts'
 
 interface GithubRelease {

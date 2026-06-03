@@ -12,7 +12,8 @@ export default function Formatter({ value }: { value: unknown }) {
       <button
         type="button"
         onClick={async () => {
-          const { default: copy } = await import('../../util/copyToClipboard.ts')
+          const { default: copy } =
+            await import('../../util/copyToClipboard.ts')
           void copy(display)
           setCopied(true)
           setTimeout(() => {

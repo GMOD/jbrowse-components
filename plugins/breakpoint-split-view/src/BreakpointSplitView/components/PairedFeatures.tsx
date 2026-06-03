@@ -1,4 +1,8 @@
-import { VariantOverlay, buildSimplePath, canonicalPairs } from './overlayUtils.tsx'
+import {
+  VariantOverlay,
+  buildSimplePath,
+  canonicalPairs,
+} from './overlayUtils.tsx'
 
 import type { OverlayProps, PathSpec } from './overlayUtils.tsx'
 

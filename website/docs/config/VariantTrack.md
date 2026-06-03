@@ -21,6 +21,21 @@ reference the markdown files in our repo of the checked out git tag
 Mostly similar to feature track, but has `ChordDisplayType` registered to it,
 and custom feature details in `LinearVariantDisplay`
 
+## Example usage
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'my-variants',
+  name: 'My variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/variants.vcf.gz',
+  },
+}
+```
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so

@@ -20,6 +20,15 @@ reference the markdown files in our repo of the checked out git tag
 
 used to load BigWig or BigBed quantitative signal files
 
+## Example usage
+
+```js
+{
+  type: 'BigWigAdapter',
+  uri: 'https://example.com/coverage.bw',
+}
+```
+
 ### BigWigAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:

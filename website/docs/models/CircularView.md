@@ -24,6 +24,21 @@ extends
 
 - [BaseViewModel](../baseviewmodel)
 
+## Example usage
+
+Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
+`assembly` and the structural-variant `tracks` to draw as arcs:
+
+```js
+{
+  type: 'CircularView',
+  init: {
+    assembly: 'hg38',
+    tracks: ['my-sv-vcf'],
+  },
+}
+```
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

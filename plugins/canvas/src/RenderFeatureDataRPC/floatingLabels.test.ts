@@ -1,9 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
-import {
-  LABEL_FONT_SIZE,
-  MAX_DESCRIPTION_LABEL_WIDTH_PX,
-} from './constants.ts'
+import { LABEL_FONT_SIZE, MAX_DESCRIPTION_LABEL_WIDTH_PX } from './constants.ts'
 import {
   createFeatureFloatingLabels,
   createTranscriptFloatingLabel,
@@ -62,7 +59,9 @@ describe('floatingLabels', () => {
       // The stored textWidth equals the drawn text width and is bounded by
       // the budget, so layout reservations match what is rendered.
       expect(label.textWidth).toBe(measureText(label.text, LABEL_FONT_SIZE))
-      expect(label.textWidth).toBeLessThanOrEqual(MAX_DESCRIPTION_LABEL_WIDTH_PX)
+      expect(label.textWidth).toBeLessThanOrEqual(
+        MAX_DESCRIPTION_LABEL_WIDTH_PX,
+      )
     })
 
     it('returns only name label when description is empty', () => {

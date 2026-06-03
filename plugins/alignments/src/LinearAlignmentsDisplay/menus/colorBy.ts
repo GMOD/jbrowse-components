@@ -203,8 +203,9 @@ function getModificationsSubMenu(model: ModificationsModel) {
               { value: 'all', label: 'All cytosines' },
             ],
             cytosineContext,
-            context =>
-              { applyContextMode(isBisType ? 'bisulfite' : 'methylation', context) },
+            context => {
+              applyContextMode(isBisType ? 'bisulfite' : 'methylation', context)
+            },
           ),
         ]
       : []),

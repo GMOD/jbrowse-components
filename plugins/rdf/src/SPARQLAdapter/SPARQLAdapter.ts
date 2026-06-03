@@ -22,10 +22,7 @@ type SPARQLBinding = Record<string, SPARQLEntry>
 // fill `{name}` placeholders from data; `{{name}}` is an escaped literal.
 // replaces the `string-template` dependency
 const templateRegex = /\{([0-9a-zA-Z_]+)\}/g
-function fillTemplate(
-  template: string,
-  data: Record<string, string | number>,
-) {
+function fillTemplate(template: string, data: Record<string, string | number>) {
   return template.replace(templateRegex, (match, key: string, index: number) =>
     template[index - 1] === '{' && template[index + match.length] === '}'
       ? key

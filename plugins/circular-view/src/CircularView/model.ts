@@ -46,6 +46,19 @@ export interface ExportSvgOptions {
  * #stateModel CircularView
  * extends
  * - [BaseViewModel](../baseviewmodel)
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. The `init` shorthand takes a
+ * single `assembly` and the structural-variant `tracks` to draw as arcs:
+ * ```js
+ * {
+ *   type: 'CircularView',
+ *   init: {
+ *     assembly: 'hg38',
+ *     tracks: ['my-sv-vcf'],
+ *   },
+ * }
+ * ```
  */
 function stateModelFactory(pluginManager: PluginManager) {
   const twoPi = 2 * Math.PI

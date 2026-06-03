@@ -212,6 +212,22 @@ const COLOR_BY_TO_SCHEME: Record<string, number> = {
  * - [TrackHeightMixin](../trackheightmixin)
  * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
  * - [ConfigOverrideMixin](../configoverridemixin)
+ *
+ * #example
+ * A snapshot of this model is what you put in a track's `displaySnapshot` to set
+ * initial display state declaratively — here opening taller, with soft-clipping
+ * shown and reads colored by pair orientation:
+ * ```js
+ * {
+ *   trackId: 'my-cram-track',
+ *   displaySnapshot: {
+ *     type: 'LinearAlignmentsDisplay',
+ *     height: 250,
+ *     showSoftClipping: true,
+ *     colorBySetting: { type: 'pairOrientation' },
+ *   },
+ * }
+ * ```
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -2010,7 +2026,8 @@ export default function stateModelFactory(
                   const session = getSession(self)
                   try {
                     const { uniqueId, ...rest } = feat.toJSON()
-                    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+                    const { default: copy } =
+                      await import('@jbrowse/core/util/copyToClipboard')
                     copy(JSON.stringify(rest, null, 4))
                     session.notify('Copied to clipboard', 'success')
                   } catch (e) {

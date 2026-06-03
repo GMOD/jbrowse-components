@@ -20,6 +20,16 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 /**
  * #config VcfTabixAdapter
  * used to load bgzip-compressed, tabix-indexed VCF files
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
+ * `.csi` index):
+ * ```js
+ * {
+ *   type: 'VcfTabixAdapter',
+ *   uri: 'https://example.com/variants.vcf.gz',
+ * }
+ * ```
  */
 
 const VcfTabixAdapter = ConfigurationSchema(

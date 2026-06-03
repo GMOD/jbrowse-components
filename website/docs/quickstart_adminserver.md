@@ -134,8 +134,8 @@ index file explicitly.
 
 First, open a Linear Genome View, and click on the "Select Tracks" button.
 
-The configuration settings are accessible by clicking the three-dot (...) menu on each
-track.
+The configuration settings are accessible by clicking the three-dot (...) menu
+on each track.
 
 <Figure caption="The configuration editor, which will persist settings to the config file if editing using the admin-server." src="/img/admin_settings_access.png"/>
 

@@ -1,7 +1,6 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
-
 import { debug, printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import {
   findAndUpdateOrAdd,

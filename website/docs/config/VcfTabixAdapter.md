@@ -20,6 +20,18 @@ reference the markdown files in our repo of the checked out git tag
 
 used to load bgzip-compressed, tabix-indexed VCF files
 
+## Example usage
+
+The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
+`.csi` index):
+
+```js
+{
+  type: 'VcfTabixAdapter',
+  uri: 'https://example.com/variants.vcf.gz',
+}
+```
+
 ### VcfTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:

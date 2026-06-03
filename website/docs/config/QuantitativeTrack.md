@@ -18,6 +18,24 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+a numerical signal track (coverage, conservation, etc.), typically backed by a
+BigWig file and drawn as an XY plot or density
+
+## Example usage
+
+```js
+{
+  type: 'QuantitativeTrack',
+  trackId: 'coverage',
+  name: 'Coverage',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://example.com/coverage.bw',
+  },
+}
+```
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so

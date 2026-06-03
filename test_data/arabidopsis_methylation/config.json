@@ -7,8 +7,14 @@
         "trackId": "arabidopsis-ReferenceSequenceTrack",
         "adapter": {
           "type": "IndexedFastaAdapter",
-          "fastaLocation": { "uri": "arabidopsis_chr1.fa", "locationType": "UriLocation" },
-          "faiLocation": { "uri": "arabidopsis_chr1.fa.fai", "locationType": "UriLocation" }
+          "fastaLocation": {
+            "uri": "arabidopsis_chr1.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "arabidopsis_chr1.fa.fai",
+            "locationType": "UriLocation"
+          }
         }
       }
     }
@@ -20,15 +26,27 @@
       "name": "Arabidopsis 5mC/5hmC (ONT)",
       "adapter": {
         "type": "BamAdapter",
-        "bamLocation": { "uri": "arabidopsis_meth.bam", "locationType": "UriLocation" },
+        "bamLocation": {
+          "uri": "arabidopsis_meth.bam",
+          "locationType": "UriLocation"
+        },
         "index": {
-          "location": { "uri": "arabidopsis_meth.bam.bai", "locationType": "UriLocation" },
+          "location": {
+            "uri": "arabidopsis_meth.bam.bai",
+            "locationType": "UriLocation"
+          },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "IndexedFastaAdapter",
-          "fastaLocation": { "uri": "arabidopsis_chr1.fa", "locationType": "UriLocation" },
-          "faiLocation": { "uri": "arabidopsis_chr1.fa.fai", "locationType": "UriLocation" }
+          "fastaLocation": {
+            "uri": "arabidopsis_chr1.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "arabidopsis_chr1.fa.fai",
+            "locationType": "UriLocation"
+          }
         }
       },
       "assemblyNames": ["arabidopsis"]

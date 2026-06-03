@@ -34,29 +34,30 @@ and docs.
 
 ### Available via [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
-**Properties:** type, configuration, linkedReads, showCoverage, coverageHeight,
-showMismatches, showInterbaseIndicators, drawSingletons, drawProperPairs,
-flipStrandLongReadChains, drawInter, drawLongRange, arcColorByType,
-readConnections, readConnectionsDown, showSashimiArcs, sashimiArcsHeight,
-readConnectionsHeight, showSoftClipping
+**Properties:** type, configuration, linkedReads, showBezierConnections,
+showCoverage, coverageHeight, showMismatches, showInterbaseIndicators,
+drawSingletons, drawProperPairs, flipStrandLongReadChains, drawInter,
+drawLongRange, arcColorByType, readConnections, readConnectionsDown,
+showSashimiArcs, sashimiArcsHeight, readConnectionsHeight, showSoftClipping
 
 **Volatiles:** featureIdUnderMouse, mouseoverExtraInformation,
 contextMenuFeature, contextMenuCoord, contextMenuCigarHit,
 contextMenuIndicatorHit, contextMenuRefName, rpcDataMap, scrollTop,
 highlightedChainIds, selectedChainIds, colorTagMap, visibleModifications,
-simplexModifications, modificationsReady, overCigarItem, colorPalette
+modificationsReady, overCigarItem, colorPalette
 
-**Getters:** isChainMode, scaleType, autoscaleType, minScore, maxScore,
-minScoreConfig, maxScoreConfig, numStdDev, featureWidgetType, selectedFeatureId,
-TooltipComponent, visibleModificationTypes, colorBy, filterBy,
-featureHeightSetting, featureSpacing, chainIdMap, mismatchAlpha, showLegend,
-sortedBy, coverageIsLog, coverageStats, coverageDomain, coverageTicks,
-legendItems, laidOutPileupMap, maxY, arcsComputed, arcsRpcDataMap,
-modificationThreshold, colorSchemeIndex, showModifications, showPerBaseQuality,
-totalPileupHeight, readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs,
-belowCoverageBands, coverageDisplayHeight, pileupViewportHeight,
-scalebarOverlapLeft, showOutlineSetting, visibleLabels, scrollableHeight,
-sortTag, renderState, arcsYDomainBp, insertSizeTicks, featureUnderMouse
+**Getters:** isChainMode, showLinkedReadLines, scaleType, autoscaleType,
+minScore, maxScore, minScoreConfig, maxScoreConfig, numStdDev,
+featureWidgetType, selectedFeatureId, TooltipComponent,
+visibleModificationTypes, colorBy, filterBy, featureHeightSetting,
+featureSpacing, chainIdMap, mismatchAlpha, showLegend, sortedBy, coverageIsLog,
+coverageStats, coverageDomain, coverageTicks, legendItems, laidOutPileupMap,
+maxY, arcsComputed, arcsRpcDataMap, modificationThreshold, colorSchemeIndex,
+showModifications, showPerBaseQuality, totalPileupHeight, readIdIndexMap,
+readConnectionsLineWidth, hasSashimiArcs, belowCoverageBands,
+coverageDisplayHeight, pileupViewportHeight, scalebarOverlapLeft,
+showOutlineSetting, visibleLabels, scrollableHeight, sortTag, renderState,
+arcsYDomainBp, insertSizeTicks, featureUnderMouse
 
 **Methods:** findFeatureInRpcData, searchFeatureByID, getFeatureInfoById,
 rpcProps, trackMenuItems, contextMenuItems
@@ -73,7 +74,7 @@ setCoverageHeight, setReadConnectionsHeight, setSashimiArcsHeight,
 setReadConnectionsLineWidth, setDrawInter, setDrawLongRange, setColorByType,
 setShowMismatches, setShowLegend, setDrawSingletons, setDrawProperPairs,
 setShowInterbaseIndicators, setFlipStrandLongReadChains, setLinkedReads,
-updateVisibleModifications, setSimplexModifications, setModificationsReady,
+setShowBezierConnections, updateVisibleModifications, setModificationsReady,
 setFeatureIdUnderMouse, setMouseoverExtraInformation, setHoverState,
 setContextMenuFeature, setContextMenuCoord, setContextMenuCigarHit,
 setContextMenuIndicatorHit, clearContextMenu, setContextMenuRefName,

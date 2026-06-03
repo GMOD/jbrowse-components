@@ -74,6 +74,19 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
+### LinearPairedArcDisplay - Getters
+
+#### getter: arcStyles
+
+per-arc styling and endpoint pairs (one per ALT), evaluated once when
+features/config change. Keeps the color jexl and makeFeaturePair (which runs
+parseSvAlt) out of the per-pan render loop.
+
+```js
+// type
+{ k1: { refName: string; start: number; end: number; strand: number; mateDirection: number; }; k2: { refName: string; start: number; end: number; mateDirection?: number | undefined; }; feature: Feature; alt: string | undefined; color: any; }[] | undefined
+```
+
 ### LinearPairedArcDisplay - Actions
 
 #### action: selectFeature

@@ -116,7 +116,8 @@ const ShareDialog = observer(function ShareDialog({
             startIcon={<ContentCopyIcon />}
             disabled={disabled}
             onClick={async () => {
-              const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+              const { default: copy } =
+                await import('@jbrowse/core/util/copyToClipboard')
               if (copy(url)) {
                 session.notify('Copied to clipboard', 'success')
               }

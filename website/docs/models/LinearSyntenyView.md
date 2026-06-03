@@ -24,6 +24,22 @@ extends
 
 - [LinearComparativeView](../linearcomparativeview)
 
+## Example usage
+
+Hand-authored under `defaultSession.views`. `init.views` declares the two member
+assemblies (stacked as linear views) and `tracks` the synteny feature track
+connecting them with a ribbon:
+
+```js
+{
+  type: 'LinearSyntenyView',
+  init: {
+    views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
+    tracks: ['hg38_vs_mm10.paf'],
+  },
+}
+```
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

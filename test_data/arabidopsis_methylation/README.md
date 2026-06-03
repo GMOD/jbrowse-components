@@ -1,19 +1,20 @@
 # Arabidopsis methylation demo
 
-A small slice of real *Arabidopsis thaliana* ONT 5mC/5hmC data for exercising
+A small slice of real _Arabidopsis thaliana_ ONT 5mC/5hmC data for exercising
 the methylation cytosine-context views (CpG / CHG / CHH / all).
 
 - `arabidopsis_meth.bam` — 154 reads on chromosome 1 (`NC_003070.9`), the first
   ~50 kb, coordinate-sorted and indexed. Carries `MM`/`ML` modification tags.
 - `arabidopsis_chr1.fa` — `NC_003070.9:1-50000`, renamed to the full chromosome
   name so read coordinates line up.
-- `config.json` — opens zoomed into `NC_003070.9:2,000-5,000` in the CHH context.
+- `config.json` — opens zoomed into `NC_003070.9:2,000-5,000` in the CHH
+  context.
 
 ## Bisulfite / EM-seq demo (hosted)
 
-`config_emseq_bisulfite.json` loads a real *Arabidopsis* EM-seq track for the
-`bisulfite` color mode (read-vs-reference C→T, no MM/ML tags). The data is hosted
-rather than committed (the BAM is region-rich at ~20×):
+`config_emseq_bisulfite.json` loads a real _Arabidopsis_ EM-seq track for the
+`bisulfite` color mode (read-vs-reference C→T, no MM/ML tags). The data is
+hosted rather than committed (the BAM is region-rich at ~20×):
 
 - `https://jbrowse.org/demos/arabidopsis/arabidopsis_emseq.bam` (+ `.bai`) —
   ~22k EM-seq reads over `NC_003070.9:1-150000`, ~20× even coverage,

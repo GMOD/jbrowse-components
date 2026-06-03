@@ -81,6 +81,20 @@ export interface ExportSvgOptions {
  * #category view
  * extends
  * - [BaseViewModel](../baseviewmodel)
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. `init.views` lists the two
+ * assemblies on the axes and `tracks` the synteny track(s) to plot
+ * (self-vs-self is allowed):
+ * ```js
+ * {
+ *   type: 'DotplotView',
+ *   init: {
+ *     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
+ *     tracks: ['hg38_vs_mm10.paf'],
+ *   },
+ * }
+ * ```
  */
 export default function stateModelFactory(pm: PluginManager) {
   return (

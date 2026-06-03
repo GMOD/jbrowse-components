@@ -470,7 +470,8 @@ function stateModelFactory(pluginManager: PluginManager) {
     .preProcessSnapshot<
       // legacy snapshots stored `tracks` at the top level before the `levels`
       // restructure; accept the loose shape and let MST revalidate at runtime
-      ({ tracks?: unknown; levels?: unknown } & Record<string, unknown>) | undefined
+      | ({ tracks?: unknown; levels?: unknown } & Record<string, unknown>)
+      | undefined
     >(snap => {
       const { tracks, levels = [{ tracks, level: 0 }], ...rest } = snap || {}
       return {

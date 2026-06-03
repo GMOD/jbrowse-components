@@ -35,6 +35,20 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
  * #stateModel LinearSyntenyView
  * extends
  * - [LinearComparativeView](../linearcomparativeview)
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. `init.views` declares the two
+ * member assemblies (stacked as linear views) and `tracks` the synteny feature
+ * track connecting them with a ribbon:
+ * ```js
+ * {
+ *   type: 'LinearSyntenyView',
+ *   init: {
+ *     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
+ *     tracks: ['hg38_vs_mm10.paf'],
+ *   },
+ * }
+ * ```
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types

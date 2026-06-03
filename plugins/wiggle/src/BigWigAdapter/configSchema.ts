@@ -3,6 +3,14 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config BigWigAdapter
  * used to load BigWig or BigBed quantitative signal files
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'BigWigAdapter',
+ *   uri: 'https://example.com/coverage.bw',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

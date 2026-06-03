@@ -11,11 +11,12 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 ### getMethBins
 
 Bins per-read base modifications and their probabilities onto reference
-positions, returning typed arrays for methylated/unmethylated calls.
+positions, returning typed arrays for methylated/unmethylated calls. Only
+cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
 
 ```js
 // type signature
-({ modifications, probabilities, cigarOps, seq, fstrand, flen, }: ParsedModData) => { methBins: number[]; hydroxyMethBins: number[]; methProbs: number[]; hydroxyMethProbs: number[]; }
+({ modifications, probabilities, cigarOps, seq, fstrand, flen }: ParsedModData, context?: CytosineContext) => { methBins: number[]; hydroxyMethBins: number[]; methProbs: number[]; hydroxyMethProbs: number[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)
@@ -55,16 +56,35 @@ Read a tag by its canonical name, falling back to a lowercase-suffixed alias
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getTagAlt.ts)
 
-### modProbAt
+### matchesCytosineContext
 
-Returns the probability value from the flat probabilities array at the correct
-offset for a given modification position, handling the reverse-strand index
-reversal that getModPositions applies (positions stored in descending order for
-reverse-strand reads).
+Whether the cytosine at read position `pos` sits in the given context.
+
+The pattern is defined on the template (the strand the C is on), read 5'->3'.
+For forward reads the stored sequence IS the template, so we read forward from
+`pos`. getModPositions works reverse-strand reads in stored-sequence space,
+where the template runs backwards and complemented, so we read backwards from
+`pos` and complement each base before matching.
 
 ```js
 // type signature
-(probabilities: number[] | undefined, probIndex: number, isReverse: boolean, idx: number, posLen: number) => number
+(seq: string, pos: number, isReverse: boolean, context: CytosineContext) => boolean
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/cytosineContext.ts)
+
+### modProbAt
+
+Returns the probability value from the flat ML array for a modification's
+position. `idx` is the position's index within the mod's stored `positions`
+array; we recover its MM-tag order (reverse-strand reads store positions in
+descending order) and step into ML by `probStart + mmOrder * probStride`.
+`probStride` is >1 for combined codes (e.g. 'C+mh'), where ML values are
+interleaved per position.
+
+```js
+// type signature
+(probabilities: number[] | undefined, probStart: number, probStride: number, isReverse: boolean, idx: number, posLen: number) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)

@@ -20,6 +20,18 @@ reference the markdown files in our repo of the checked out git tag
 
 used to configure BAM adapter
 
+## Example usage
+
+The `uri` shorthand auto-resolves the `.bai` index. For a `.csi` index or a
+differently-named index, set `index` explicitly with the full slot form:
+
+```js
+{
+  type: 'BamAdapter',
+  uri: 'https://example.com/sample.bam',
+}
+```
+
 ### BamAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bam.bai:

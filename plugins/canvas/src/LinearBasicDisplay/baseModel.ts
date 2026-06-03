@@ -193,17 +193,19 @@ export default function baseStateModelFactory(
          * #getter
          */
         // Current features-per-pixel across the visible regions, recomputed
-        // from cached per-region counts and the LIVE bpPerPx. Unlike a
-        // fetch-time snapshot, this tracks zoom immediately, so label
-        // visibility and the regionTooLarge banner react together rather than
-        // lagging until the next refetch lands.
+        // from cached per-region counts and the debounced coarseBpPerPx (500ms
+        // after the gesture settles). Drives label visibility and the
+        // regionTooLarge banner; both also feed the coarse-packed layout, so
+        // using coarseBpPerPx keeps all three on one cadence and avoids
+        // per-frame relayout/banner flicker when a smooth zoom hovers near a
+        // threshold. Still far faster than the old fetch-time snapshot.
         get visibleFeatureDensityPerPx() {
           const view = getView(self)
           return Math.max(
             0,
             ...view.visibleRegions.map(r => {
               const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
-              return ds ? screenDensity(ds, view.bpPerPx) : 0
+              return ds ? screenDensity(ds, view.coarseBpPerPx) : 0
             }),
           )
         },
@@ -1363,7 +1365,8 @@ export default function baseStateModelFactory(
                   }
                   try {
                     const { uniqueId: _, ...rest } = fullFeature.toJSON()
-                    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+                    const { default: copy } =
+                      await import('@jbrowse/core/util/copyToClipboard')
                     copy(JSON.stringify(rest, null, 4))
                     session.notify('Copied to clipboard', 'success')
                   } catch (e) {

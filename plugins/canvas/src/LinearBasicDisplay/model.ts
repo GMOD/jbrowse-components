@@ -58,7 +58,10 @@ export default function stateModelFactory(
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
         if (this.geneGlyphMode === 'auto') {
-          return getView(self).bpPerPx > 100 ? 'longestCoding' : 'all'
+          // coarseBpPerPx (debounced) so crossing the threshold during a zoom
+          // gesture doesn't thrash the RPC cache key — the collapse refetch
+          // fires once zoom settles, on the same cadence as the layout.
+          return getView(self).coarseBpPerPx > 100 ? 'longestCoding' : 'all'
         }
         return this.geneGlyphMode
       },

@@ -1014,6 +1014,21 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 12000,
   },
+  {
+    mode: 'url',
+    name: 'methylation/arabidopsis_chh',
+    url: '?config=test_data/arabidopsis_methylation/config.json&sessionName=Screenshot',
+    readyText: 'NC_003070',
+    settleMs: 9000,
+  },
+  {
+    mode: 'url',
+    name: 'methylation/arabidopsis_bisulfite_chh',
+    url: '?config=test_data/arabidopsis_methylation/config_emseq_bisulfite.json&sessionName=Screenshot',
+    readyText: 'NC_003070',
+    readyTimeout: 60000,
+    settleMs: 14000,
+  },
 ]
 
 // jbrowse.org hosts the same test_data/ configs (and the cgiab/hpylori demos)

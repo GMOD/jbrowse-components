@@ -20,6 +20,24 @@ reference the markdown files in our repo of the checked out git tag
 
 has very little config; most config and state logic is on the display
 
+## Example usage
+
+A BAM track — swap the adapter to `CramAdapter` with a `uri` to a `.cram` for
+CRAM:
+
+```js
+{
+  type: 'AlignmentsTrack',
+  trackId: 'ngs-reads',
+  name: 'NGS reads',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BamAdapter',
+    uri: 'https://example.com/sample.bam',
+  },
+}
+```
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so

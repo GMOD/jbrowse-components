@@ -20,6 +20,22 @@ reference the markdown files in our repo of the checked out git tag
 
 used to display base level DNA sequence tracks
 
+## Example usage
+
+Usually authored as the `sequence` member of an assembly rather than a top-level
+track:
+
+```js
+sequence: {
+  type: 'ReferenceSequenceTrack',
+  trackId: 'hg38-ref',
+  adapter: {
+    type: 'IndexedFastaAdapter',
+    uri: 'https://example.com/hg38.fa',
+  },
+}
+```
+
 ### ReferenceSequenceTrack - Identifier
 
 #### slot: explicitIdentifier

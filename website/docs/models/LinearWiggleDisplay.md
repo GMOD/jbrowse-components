@@ -29,6 +29,23 @@ extends
 - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
 - [WiggleCommonMixin](../wigglecommonmixin)
 
+## Example usage
+
+A snapshot of this model goes in a track's `displaySnapshot`. `height` is the
+most common override; score-range and rendering options (autoscale, min/max
+score, renderer) are config slots on the track — see the properties and the
+`QuantitativeTrack` config for the rest:
+
+```js
+{
+  trackId: 'my-bigwig-track',
+  displaySnapshot: {
+    type: 'LinearWiggleDisplay',
+    height: 100,
+  },
+}
+```
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

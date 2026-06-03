@@ -20,6 +20,27 @@ reference the markdown files in our repo of the checked out git tag
 
 This corresponds to the assemblies section of the config
 
+## Example usage
+
+A hand-authored assembly. `sequence` is a `ReferenceSequenceTrack` whose adapter
+points at an indexed FASTA — the `uri` shorthand auto-resolves the companion
+`.fai`/`.gzi` index files:
+
+```js
+{
+  name: 'hg38',
+  aliases: ['GRCh38'],
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'hg38-ref',
+    adapter: {
+      type: 'BgzipFastaAdapter',
+      uri: 'https://example.com/hg38.fa.gz',
+    },
+  },
+}
+```
+
 ### BaseAssembly - Identifier
 
 #### slot: name

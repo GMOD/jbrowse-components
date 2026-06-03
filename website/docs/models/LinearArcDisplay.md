@@ -20,32 +20,19 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
+a non-block-based display drawing an arc connecting the start and end of each
+feature, rendered as plain SVG on the main thread
+
 extends
 
-- [BaseLinearDisplay](../baselineardisplay)
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
 and docs.
-
-### Available via [BaseLinearDisplay](../baselineardisplay)
-
-**Properties:** blockState, configuration, showLegend, showTooltips
-
-**Volatiles:** featureIdUnderMouse, subfeatureIdUnderMouse, contextMenuFeature
-
-**Getters:** DisplayMessageComponent, blockType, blockDefinitions, renderDelay,
-TooltipComponent, selectedFeatureId, featureWidgetType, showTooltipsEnabled,
-features, featureUnderMouse, searchFeatureByID
-
-**Methods:** legendItems, svgLegendWidth, getFeatureById, trackMenuItems,
-contextMenuItems, renderingProps, renderProps, renderSvg
-
-**Actions:** addBlock, deleteBlock, selectFeature, navToFeature,
-clearFeatureSelection, setFeatureIdUnderMouse, setSubfeatureIdUnderMouse,
-setContextMenuFeature, setMouseoverExtraInformation, setShowLegend,
-setShowTooltips, reload, selectFeatureById, setContextMenuFeatureById
 
 ### Available via [BaseDisplay](../basedisplay)
 
@@ -98,25 +85,11 @@ displayMode: types.maybe(types.string)
 
 ### LinearArcDisplay - Getters
 
-#### getter: blockType
+#### getter: fetchSettled
 
 ```js
 // type
-string
-```
-
-#### getter: renderDelay
-
-```js
-// type
-number
-```
-
-#### getter: rendererTypeName
-
-```js
-// type
-any
+boolean
 ```
 
 #### getter: displayModeSetting
@@ -126,21 +99,35 @@ any
 any
 ```
 
-#### getter: rendererConfig
+#### getter: arcStyles
+
+per-feature arc styling, evaluated once when features/config change. Kept out of
+the render loop so panning (which only changes pixel positions) doesn't re-run
+these jexl expressions per feature per frame.
 
 ```js
 // type
-any
+{
+  feature: Feature
+  color: any
+  thickness: any
+  label: any
+  caption: any
+  arcHeight: number
+}
+;[] | undefined
+```
+
+#### getter: selectedFeatureId
+
+returns the id of the globally-selected feature, used to highlight it
+
+```js
+// type
+string | undefined
 ```
 
 ### LinearArcDisplay - Methods
-
-#### method: renderProps
-
-```js
-// type signature
-renderProps: () => any
-```
 
 #### method: trackMenuItems
 
@@ -151,9 +138,37 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ### LinearArcDisplay - Actions
 
+#### action: selectFeature
+
+```js
+// type signature
+selectFeature: (feature: Feature) => void
+```
+
+#### action: setLoading
+
+```js
+// type signature
+setLoading: (flag: boolean) => void
+```
+
+#### action: setFeatures
+
+```js
+// type signature
+setFeatures: (f: Feature[]) => void
+```
+
 #### action: setDisplayMode
 
 ```js
 // type signature
 setDisplayMode: (flag: string) => void
+```
+
+#### action: renderSvg
+
+```js
+// type signature
+renderSvg: (opts: { rasterizeLayers?: boolean | undefined; }) => Promise<ReactNode>
 ```

@@ -45,7 +45,12 @@ export function matchesCytosineContext(
     const expected = pattern[i]!
     if (isReverse) {
       const actual = seq[pos - i]?.toLowerCase()
-      if (!baseMatches(expected, actual === undefined ? undefined : COMPLEMENT[actual])) {
+      if (
+        !baseMatches(
+          expected,
+          actual === undefined ? undefined : COMPLEMENT[actual],
+        )
+      ) {
         return false
       }
     } else if (!baseMatches(expected, seq[pos + i]?.toLowerCase())) {

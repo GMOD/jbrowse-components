@@ -6,6 +6,25 @@ import type PluginManager from '../PluginManager.ts'
  * #config BaseAssembly
  * #category assemblyManagement
  * This corresponds to the assemblies section of the config
+ *
+ * #example
+ * A hand-authored assembly. `sequence` is a `ReferenceSequenceTrack` whose
+ * adapter points at an indexed FASTA — the `uri` shorthand auto-resolves the
+ * companion `.fai`/`.gzi` index files:
+ * ```js
+ * {
+ *   name: 'hg38',
+ *   aliases: ['GRCh38'],
+ *   sequence: {
+ *     type: 'ReferenceSequenceTrack',
+ *     trackId: 'hg38-ref',
+ *     adapter: {
+ *       type: 'BgzipFastaAdapter',
+ *       uri: 'https://example.com/hg38.fa.gz',
+ *     },
+ *   },
+ * }
+ * ```
  */
 function assemblyConfigSchema(pluginManager: PluginManager) {
   return ConfigurationSchema(

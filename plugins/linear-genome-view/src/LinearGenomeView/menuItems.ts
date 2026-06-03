@@ -333,7 +333,8 @@ export function buildRubberBandMenuItems(
       label: 'Copy range',
       icon: ContentCopyIcon,
       onClick: async () => {
-        const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+        const { default: copy } =
+          await import('@jbrowse/core/util/copyToClipboard')
         copy(rangeString)
       },
     },
@@ -372,7 +373,8 @@ export function buildRubberbandClickMenuItems(
       label: `Copy coordinate (${locString})`,
       icon: ContentCopyIcon,
       onClick: async () => {
-        const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+        const { default: copy } =
+          await import('@jbrowse/core/util/copyToClipboard')
         copy(locString)
       },
     },
