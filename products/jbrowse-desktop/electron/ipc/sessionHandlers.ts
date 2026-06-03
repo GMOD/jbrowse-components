@@ -1,8 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import parseJson from 'json-parse-even-better-errors'
-
 import { getThumbnailPath, stringify } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
 
@@ -19,7 +17,7 @@ async function readRecentSessions(
   recentSessionsPath: string,
 ): Promise<RecentSession[]> {
   try {
-    return parseJson(await readFile(recentSessionsPath, ENCODING))
+    return JSON.parse(await readFile(recentSessionsPath, ENCODING))
   } catch (e) {
     console.error(
       `Failed to load recent sessions file ${recentSessionsPath}: ${e}`,
@@ -32,7 +30,7 @@ async function readSession(
   sessionPath: string,
 ): Promise<{ assemblies?: unknown[] }> {
   try {
-    return parseJson(await readFile(sessionPath, ENCODING))
+    return JSON.parse(await readFile(sessionPath, ENCODING))
   } catch (e) {
     throw new Error(`Failed to read session ${sessionPath}: ${e}`, { cause: e })
   }
@@ -129,7 +127,7 @@ export function registerSessionHandlers(
 
   ipcHandle('renameSession', async (_, sessionPath, newName) => {
     const sessions = await readRecentSessions(paths.recentSessionsPath)
-    const session = parseJson(await readFile(sessionPath, ENCODING))
+    const session = JSON.parse(await readFile(sessionPath, ENCODING))
     const idx = sessions.findIndex(row => row.path === sessionPath)
 
     if (idx === -1) {

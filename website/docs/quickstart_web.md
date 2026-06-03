@@ -21,6 +21,8 @@ title: JBrowse web setup using the CLI
   `brew install samtools`
 - [tabix](http://www.htslib.org/doc/tabix.html): `sudo apt install tabix` or
   `brew install htslib`
+- [bcftools](https://samtools.github.io/bcftools/) (optional, for VCF
+  sorting/indexing): `sudo apt install bcftools` or `brew install bcftools`
 
 ## Installing the JBrowse CLI
 
@@ -42,17 +44,14 @@ command below.
 jbrowse create jbrowse2
 ```
 
-This downloads and unzips jbrowse-web into a folder named `jbrowse2`.
-Alternatively, download the zip manually from
-https://github.com/GMOD/jbrowse-components/releases.
+This downloads and unzips jbrowse-web into a folder named `jbrowse2`. Run
+`cd jbrowse2` before any further commands. Alternatively, download the zip
+manually from https://github.com/GMOD/jbrowse-components/releases.
 
 ## Running JBrowse 2
 
 JBrowse 2 requires a web server — opening `index.html` directly in your browser
 won't work.
-
-For production, place the folder in your web server's static directory (e.g.
-`/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
 
 To verify locally:
 
@@ -63,6 +62,9 @@ npx serve -S .
 
 Navigate to `http://localhost:3000`. Click the sample config to confirm things
 are working.
+
+For production, place the folder in your web server's static directory (e.g.
+`/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
 
 <Figure caption="JBrowse 2 screen showing no configuration found" src="/img/config_not_found.png"/>
 
@@ -109,7 +111,9 @@ tabix file.vcf.gz
 jbrowse add-track file.vcf.gz --load copy --out /var/www/html/jbrowse2
 ```
 
-:::note If tabix reports the VCF is unsorted, sort it first:
+:::note
+
+If tabix reports the VCF is unsorted, sort it first:
 
 ```bash
 bcftools sort file.vcf > file.sorted.vcf

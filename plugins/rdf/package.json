@@ -33,8 +33,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.10.6",
     "mobx": "^6.15.4",
-    "rxjs": "^7.8.2",
-    "string-template": "^1.0.0"
+    "rxjs": "^7.8.2"
   },
   "publishConfig": {
     "access": "public",

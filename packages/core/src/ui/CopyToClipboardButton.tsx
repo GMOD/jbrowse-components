@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@mui/material'
-import copy from 'copy-to-clipboard'
+
+import copy from '../util/copyToClipboard.ts'
 
 import type { ButtonProps } from '@mui/material'
 

@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
+import { getSession } from '../util/index.ts'
+
 import type { NotificationLevel, SnackAction } from '../util/types/index.ts'
 
 // lazies
@@ -71,8 +73,7 @@ export default function SnackbarModel() {
         const reportAction: SnackAction = {
           name: 'report',
           onClick: () => {
-            // @ts-expect-error
-            self.queueDialog((onClose: () => void) => [
+            getSession(self).queueDialog(onClose => [
               ErrorMessageStackTraceDialog,
               {
                 onClose,

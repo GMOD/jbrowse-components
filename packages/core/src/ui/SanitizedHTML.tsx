@@ -1,7 +1,5 @@
 import { Suspense, lazy, useLayoutEffect, useRef } from 'react'
 
-import escapeHTML from 'escape-html'
-
 declare global {
   interface Element {
     setHTML?(html: string): void
@@ -62,6 +60,17 @@ const full = new RegExp(
 )
 function isHTML(str: string) {
   return full.test(str)
+}
+
+const htmlEscapes: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+}
+function escapeHTML(str: string) {
+  return str.replace(/[&<>"']/g, c => htmlEscapes[c]!)
 }
 
 function needsSanitization(str: string) {

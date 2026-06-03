@@ -4,7 +4,7 @@ title: URL query parameter API
 
 JBrowse Web supports URL parameters for initializing a session.
 
-:::info note
+:::note
 
 Embedded components like @jbrowse/react-linear-genome-view2 make no assumptions
 about URL parameters — that logic must be implemented by the consuming

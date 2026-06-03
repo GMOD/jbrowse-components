@@ -8,7 +8,7 @@ guide_category: Getting started
 
 This guide covers creating a no-build plugin for JBrowse 2.
 
-## Pre-requisites
+## Prerequisites
 
 - you can run an instance of JBrowse 2 on the web, see
   [any of our quickstart guides](/docs/quickstart_web) for details

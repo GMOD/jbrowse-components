@@ -1,7 +1,8 @@
 // This file is a ponyfill for the HTML5 OffscreenCanvas API.
 
 import { CanvasSequence } from 'canvas-sequencer-ts'
-import isNode from 'detect-node'
+
+import { isNode } from './index.ts'
 
 // Re-export transferable utilities for convenience
 export { collectTransferables, isDetachedBuffer } from './transferables.ts'

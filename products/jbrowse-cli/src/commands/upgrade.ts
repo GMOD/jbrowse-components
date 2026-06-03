@@ -2,9 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
-import decompress from 'decompress'
-
 import {
+  extractZip,
   fetchGithubVersions,
   fetchReleaseArchive,
   printHelp,
@@ -117,6 +116,6 @@ export async function run(args: string[]) {
     }
   }
 
-  await decompress(archive, argsPath)
+  await extractZip(archive, argsPath)
   console.log(`Unpacked ${locationUrl} at ${argsPath}`)
 }

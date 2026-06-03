@@ -71,7 +71,7 @@ once, use `File` → `Open connection...`. See the
 
 <Figure caption="After opening the menu item for 'Open track..' a drawer widget for the 'Add a track' form will appear" src="/img/add_track_form.png" />
 
-:::info Tip
+:::tip
 
 There is a circular plus (+) icon button inside the "Available tracks" widget
 that can also be used to access the "Add a track" form.
@@ -129,7 +129,7 @@ Additional data formats can be supported via plugins; check out the
 Index types: BAM accepts BAI or CSI; CRAM requires CRAI; tabix files accept TBI
 or CSI.
 
-:::info Note
+:::note
 
 If you are an administrator, you can add tracks with the
 [command line](/docs/quickstart_web/#adding-tracks) (CLI) or with the
@@ -150,7 +150,7 @@ send to other users.
 The address-bar URL does not capture full session state — always use the Share
 button to get a shareable link.
 
-:::info Note
+:::note
 
 Sharing sessions is not available for JBrowse Desktop.
 

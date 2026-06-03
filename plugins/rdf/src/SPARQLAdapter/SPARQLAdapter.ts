@@ -2,7 +2,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import format from 'string-template'
 
 import type MyConfigSchema from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -19,6 +18,20 @@ interface SPARQLEntry {
 }
 
 type SPARQLBinding = Record<string, SPARQLEntry>
+
+// fill `{name}` placeholders from data; `{{name}}` is an escaped literal.
+// replaces the `string-template` dependency
+const templateRegex = /\{([0-9a-zA-Z_]+)\}/g
+function fillTemplate(
+  template: string,
+  data: Record<string, string | number>,
+) {
+  return template.replace(templateRegex, (match, key: string, index: number) =>
+    template[index - 1] === '{' && template[index + match.length] === '}'
+      ? key
+      : `${data[key] ?? ''}`,
+  )
+}
 
 interface SPARQLResponseHead {
   vars: string[]
@@ -88,10 +101,10 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
+      const { refName, start, end } = query
       const filledTemplate = encodeURIComponent(
-        format(this.queryTemplate, query),
+        fillTemplate(this.queryTemplate, { refName, start, end }),
       )
-      const { refName } = query
       const results = await this.querySparql(filledTemplate, opts)
       const features = this.resultsToFeatures(results, refName)
       for (const feature of features) {

@@ -1,8 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import parseJson from 'json-parse-even-better-errors'
-
 import { LEGACY_QUICKSTARTS } from '../fileSystemInit.ts'
 import { getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
@@ -14,7 +12,7 @@ const ENCODING = 'utf8'
 
 async function readQuickstart(quickstartPath: string): Promise<unknown> {
   try {
-    return parseJson(await readFile(quickstartPath, ENCODING))
+    return JSON.parse(await readFile(quickstartPath, ENCODING))
   } catch (e) {
     throw new Error(`Failed to read quickstart file ${quickstartPath}: ${e}`, {
       cause: e,

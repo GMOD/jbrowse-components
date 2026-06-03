@@ -111,6 +111,16 @@ export const isElectron = /electron/i.test(
   typeof navigator !== 'undefined' ? navigator.userAgent : '',
 )
 
+// equivalent to the `detect-node` package: true only inside a real Node.js
+// process, not in browsers where `process` may be polyfilled by the bundler
+// (the toString brand is '[object process]' only for the genuine global).
+// `process` isn't in core's browser-targeted build lib, so read it off
+// globalThis rather than referencing the bare global
+export const isNode =
+  Object.prototype.toString.call(
+    (globalThis as { process?: unknown }).process,
+  ) === '[object process]'
+
 /**
  * Convert a browser File (from a drop zone or file input) into a FileLocation:
  * a native local path under electron, or an in-memory blob location otherwise.

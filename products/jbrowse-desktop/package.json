@@ -92,7 +92,6 @@
     "electron-context-menu": "^4.1.2",
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.8.3",
-    "json-parse-even-better-errors": "^6.0.0",
     "mobx": "^6.15.4",
     "mobx-react": "^9.2.2",
     "react": "^19.2.7",
@@ -105,8 +104,8 @@
     "@electron/packager": "^20.0.0",
     "@types/selenium-webdriver": "^4.35.6",
     "cross-env": "^10.1.0",
-    "electron": "42.3.0",
-    "electron-chromedriver": "^42.3.0",
+    "electron": "42.3.1",
+    "electron-chromedriver": "^42.3.1",
     "esbuild": "^0.28.0",
     "selenium-webdriver": "^4.44.0"
   },

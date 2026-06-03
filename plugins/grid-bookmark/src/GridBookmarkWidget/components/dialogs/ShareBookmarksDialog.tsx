@@ -5,6 +5,7 @@ import {
   shareSessionToDynamo,
   useFetch,
 } from '@jbrowse/core/util'
+import copy from '@jbrowse/core/util/copyToClipboard'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import {
@@ -15,7 +16,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
@@ -110,7 +110,7 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
           disabled={loading}
           startIcon={<ContentCopyIcon />}
           onClick={async () => {
-            await copy(url)
+            copy(url)
             session.notify('Copied to clipboard', 'success')
             onClose()
           }}

@@ -1,3 +1,5 @@
+import type { CytosineContext } from '@jbrowse/modifications-utils'
+
 export interface ModificationTypeWithColor {
   color: string
   type: string
@@ -17,6 +19,9 @@ export interface ModificationColorBy {
   // discovered in the data default to visible.
   hiddenModifications?: string[]
   threshold?: number
+  // cytosine context for the methylation view; absent means CpG. CHG/CHH support
+  // plant methylation. Only consumed in methylation mode (getMethBins).
+  cytosineContext?: CytosineContext
 }
 
 // Every color-by scheme; mirrors the keys of COLOR_BY_TO_SCHEME in the display

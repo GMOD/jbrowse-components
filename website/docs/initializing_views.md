@@ -61,7 +61,7 @@ JBrowse Web maps query parameters straight onto `init`:
 See [URL query parameter API](/docs/urlparams) for every parameter, session
 specs for all view types, and shareable/encoded sessions.
 
-:::info note
+:::note
 
 Embedded components (`@jbrowse/react-linear-genome-view2`,
 `@jbrowse/react-app2`) make no assumptions about URL parameters — that logic is

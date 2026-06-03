@@ -8,18 +8,11 @@ import {
   CIGAR_X,
 } from '@jbrowse/cigar-utils'
 
+import { matchesCytosineContext } from './cytosineContext.ts'
 import { forEachModRefPos } from './forEachModRefPos.ts'
 
+import type { CytosineContext } from './cytosineContext.ts'
 import type { ModWithPositions } from './getModPositions.ts'
-
-// Check CpG dinucleotide context at a read sequence position.
-// getModPositions stores reverse-strand positions in revcomp space, where
-// a CpG appears as seq[pos]='G' preceded by seq[pos-1]='C'.
-function isCpGAt(seq: string, pos: number, isReverse: boolean) {
-  return isReverse
-    ? seq[pos]?.toLowerCase() === 'g' && seq[pos - 1]?.toLowerCase() === 'c'
-    : seq[pos]?.toLowerCase() === 'c' && seq[pos + 1]?.toLowerCase() === 'g'
-}
 
 export interface ParsedModData {
   modifications: ModWithPositions[]
@@ -33,16 +26,13 @@ export interface ParsedModData {
 /**
  * #api
  * Bins per-read base modifications and their probabilities onto reference
- * positions, returning typed arrays for methylated/unmethylated calls.
+ * positions, returning typed arrays for methylated/unmethylated calls. Only
+ * cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
  */
-export function getMethBins({
-  modifications,
-  probabilities,
-  cigarOps,
-  seq,
-  fstrand,
-  flen,
-}: ParsedModData) {
+export function getMethBins(
+  { modifications, probabilities, cigarOps, seq, fstrand, flen }: ParsedModData,
+  context: CytosineContext = 'CG',
+) {
   const isReverse = fstrand === -1
   const methBins: number[] = []
   const hydroxyMethBins: number[] = []
@@ -60,7 +50,7 @@ export function getMethBins({
         isMeth &&
         ref >= 0 &&
         ref < flen &&
-        isCpGAt(seq, positions[idx]!, isReverse)
+        matchesCytosineContext(seq, positions[idx]!, isReverse, context)
       ) {
         if (type === 'm') {
           methBins[ref] = 1
@@ -73,9 +63,9 @@ export function getMethBins({
     },
   )
 
-  // Only fill undetected CpGs as unmethylated when the read actually carries a
+  // Only fill undetected sites as unmethylated when the read actually carries a
   // 5mC ('m') call. A read with only e.g. 6mA modifications never assayed
-  // methylation, so inventing unmethylated CpGs for it would be wrong.
+  // methylation, so inventing unmethylated cytosines for it would be wrong.
   // Additionally, per SAMtags the '?' flag means the status of bases not listed
   // in the MM tag is unknown, so we must NOT assume them unmethylated; only the
   // '.'/absent flag (low probability for skipped bases) lets us fill them in.
@@ -83,12 +73,8 @@ export function getMethBins({
   const fillUnmethylated =
     hasMeth && !modifications.some(m => m.type === 'm' && m.unknownSkip)
 
-  // Scan the full read sequence for ALL CpG dinucleotides and mark any not
+  // Scan the full read sequence for every cytosine in `context` and mark any not
   // already detected from the MM tag as unmethylated (prob=0).
-  // Forward strand: C at readPos followed by G at readPos+1.
-  // Reverse strand: the CIGAR scan runs in revcomp coordinate space (same
-  // space that getModPositions uses), so a CpG in revcomp appears as
-  // seq[readPos]='G' preceded by seq[readPos-1]='C' in the stored read.
   if (fillUnmethylated) {
     let readPos = 0
     let refPos = 0
@@ -105,7 +91,7 @@ export function getMethBins({
           const rp = readPos + j
           const rf = refPos + j
           if (
-            isCpGAt(seq, rp, isReverse) &&
+            matchesCytosineContext(seq, rp, isReverse, context) &&
             rf >= 0 &&
             rf < flen &&
             !methBins[rf]

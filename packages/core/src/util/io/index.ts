@@ -1,8 +1,7 @@
-import isNode from 'detect-node'
 import { BlobFile, LocalFile } from 'generic-filehandle2'
 
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache.ts'
-import { isElectron } from '../index.ts'
+import { isElectron, isNode } from '../index.ts'
 import { getBlob, getFileFromCache } from '../tracks.ts'
 import {
   AuthNeededError,

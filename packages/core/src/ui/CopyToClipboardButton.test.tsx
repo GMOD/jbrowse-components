@@ -1,9 +1,12 @@
 import { cleanup, fireEvent, render } from '@testing-library/react'
-import copy from 'copy-to-clipboard'
 
 import CopyToClipboardButton from './CopyToClipboardButton.tsx'
+import copy from '../util/copyToClipboard.ts'
 
-jest.mock('copy-to-clipboard', () => ({ __esModule: true, default: jest.fn() }))
+jest.mock('../util/copyToClipboard.ts', () => ({
+  __esModule: true,
+  default: jest.fn(),
+}))
 
 const copyMock = copy as jest.MockedFunction<typeof copy>
 

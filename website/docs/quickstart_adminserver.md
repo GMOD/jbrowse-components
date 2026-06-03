@@ -13,7 +13,7 @@ state of the application. For a more reliable setup, use the
 This guide covers configuring JBrowse 2 — adding assemblies and tracks — through
 the graphical admin interface.
 
-## Pre-requisites
+## Prerequisites
 
 This tutorial requires the following software
 
@@ -122,7 +122,7 @@ The following file formats are supported in core JBrowse 2:
 - 2bit
 - .hic (Hi-C contact matrix visualization)
 
-Additional data formats can be supported via plugins; checkout the
+Additional data formats can be supported via plugins; check out the
 [plugin store](/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
@@ -134,7 +134,7 @@ index file explicitly.
 
 First, open a Linear Genome View, and click on the "Select Tracks" button.
 
-The configuration settings are accessible by clicking on the ellipses by each
+The configuration settings are accessible by clicking the three-dot (...) menu on each
 track.
 
 <Figure caption="The configuration editor, which will persist settings to the config file if editing using the admin-server." src="/img/admin_settings_access.png"/>

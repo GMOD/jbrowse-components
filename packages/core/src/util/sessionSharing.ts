@@ -1,5 +1,13 @@
 import { aesDecrypt, aesEncrypt } from './crypto.ts'
 
+function bytesToBinaryString(bytes: Uint8Array) {
+  let str = ''
+  for (const b of bytes) {
+    str += String.fromCharCode(b)
+  }
+  return str
+}
+
 // from https://stackoverflow.com/questions/1349404/
 // crypto.getRandomValues is available in non-secure contexts per MDN,
 // unlike crypto.subtle which requires HTTPS.
@@ -50,9 +58,8 @@ export async function fromUrlSafeB64(b64: string) {
   const originalB64 = b64PadSuffix(
     b64.replaceAll('-', '+').replaceAll('_', '/'),
   )
-  const { toByteArray } = await import('base64-js')
   const { inflate } = await import('pako-esm2')
-  const bytes = toByteArray(originalB64)
+  const bytes = Uint8Array.from(atob(originalB64), c => c.charCodeAt(0))
   const inflated = inflate(bytes, undefined)
   return new TextDecoder('utf8').decode(inflated)
 }
@@ -64,9 +71,8 @@ export async function fromUrlSafeB64(b64: string) {
 export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
   const { deflate } = await import('pako-esm2')
-  const { fromByteArray } = await import('base64-js')
   const deflated = deflate(bytes, undefined)
-  const encoded = fromByteArray(deflated)
+  const encoded = btoa(bytesToBinaryString(deflated))
   const pos = encoded.indexOf('=')
   return pos > 0
     ? encoded.slice(0, pos).replaceAll('+', '-').replaceAll('/', '_')

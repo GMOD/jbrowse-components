@@ -114,6 +114,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         region,
         modData,
         modifications,
+        colorBy.modifications?.cytosineContext ?? 'CG',
       )
     }
 

@@ -19,6 +19,7 @@ import type { ColorBy } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type {
+  CytosineContext,
   ModificationType,
   ParsedModData,
 } from '@jbrowse/modifications-utils'
@@ -137,10 +138,11 @@ export function extractMethylation(
   region: Region,
   modData: ParsedModData,
   modificationsData: ModificationEntry[],
+  context: CytosineContext,
 ) {
   const { start: regionStart, end: regionEnd } = region
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-    getMethBins(modData)
+    getMethBins(modData, context)
 
   const methStrand = strand === -1 ? -1 : 1
   const iStart = Math.max(0, regionStart - featureStart)

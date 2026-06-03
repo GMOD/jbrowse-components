@@ -1,4 +1,6 @@
 export { modificationRegex, parseModHeader } from './consts.ts'
+export { matchesCytosineContext } from './cytosineContext.ts'
+export type { CytosineContext } from './cytosineContext.ts'
 export { detectSimplexModifications } from './detectSimplexModifications.ts'
 export { forEachModRefPos } from './forEachModRefPos.ts'
 export { getMethBins } from './getMethBins.ts'

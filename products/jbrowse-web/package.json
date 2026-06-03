@@ -63,7 +63,6 @@
     "@types/body-parser": "^1.19.6",
     "@types/file-saver-es": "^2.0.3",
     "body-parser": "^2.2.2",
-    "copy-to-clipboard": "^4.0.2",
     "date-fns": "^4.4.0",
     "dockview-core": "^6.6.1",
     "dockview-react": "^6.6.1",

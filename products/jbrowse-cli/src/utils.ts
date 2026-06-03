@@ -1,7 +1,7 @@
 import { promises as fsPromises } from 'fs'
 import path from 'path'
+import zlib from 'zlib'
 
-import parseJSON from 'json-parse-better-errors'
 
 import fetch from './cliFetch.ts'
 
@@ -36,7 +36,7 @@ export async function readFile(location: string) {
 
 export async function readJsonFile<T>(location: string): Promise<T> {
   const contents = await fsPromises.readFile(location, { encoding: 'utf8' })
-  return parseJSON(contents)
+  return JSON.parse(contents)
 }
 
 export async function writeJsonFile(location: string, contents: unknown) {
@@ -48,7 +48,7 @@ export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
   let result: T
   // see if it's inline JSON
   try {
-    result = parseJSON(inlineOrFileName) as T
+    result = JSON.parse(inlineOrFileName) as T
   } catch (error) {
     debug(
       `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
@@ -176,6 +176,66 @@ export async function fetchReleaseArchive(
   }
 
   return Buffer.from(await response.arrayBuffer())
+}
+
+// ZIP record signatures (little-endian)
+const EOCD_SIG = 0x06054b50 // end of central directory
+const CDH_SIG = 0x02014b50 // central directory header
+
+// Extracts a ZIP archive (a JBrowse web build) into destPath. Walks the central
+// directory for accurate per-entry offsets/sizes (which stays correct even when
+// local headers use data descriptors), then inflates each entry with the
+// built-in node:zlib. Replaces the `decompress` dependency and its large,
+// unmaintained transitive tree without pulling in a new one.
+export async function extractZip(archive: Buffer, destPath: string) {
+  const eocd = findEndOfCentralDirectory(archive)
+  const entryCount = archive.readUInt16LE(eocd + 10)
+  let ptr = archive.readUInt32LE(eocd + 16)
+
+  const writes: Promise<void>[] = []
+  for (let i = 0; i < entryCount; i++) {
+    if (archive.readUInt32LE(ptr) !== CDH_SIG) {
+      throw new Error('Corrupt ZIP: bad central directory header')
+    }
+    const method = archive.readUInt16LE(ptr + 10)
+    const compressedSize = archive.readUInt32LE(ptr + 20)
+    const nameLen = archive.readUInt16LE(ptr + 28)
+    const extraLen = archive.readUInt16LE(ptr + 30)
+    const commentLen = archive.readUInt16LE(ptr + 32)
+    const localOffset = archive.readUInt32LE(ptr + 42)
+    const name = archive.toString('utf8', ptr + 46, ptr + 46 + nameLen)
+    ptr += 46 + nameLen + extraLen + commentLen
+
+    // directory entries (trailing slash) carry no file data; files below create
+    // their own parent dirs
+    if (!name.endsWith('/')) {
+      // the local header's name/extra lengths can differ from the central one
+      const localNameLen = archive.readUInt16LE(localOffset + 26)
+      const localExtraLen = archive.readUInt16LE(localOffset + 28)
+      const dataStart = localOffset + 30 + localNameLen + localExtraLen
+      const raw = archive.subarray(dataStart, dataStart + compressedSize)
+      const data = method === 0 ? raw : zlib.inflateRawSync(raw)
+      writes.push(writeZipEntry(destPath, name, data))
+    }
+  }
+  await Promise.all(writes)
+}
+
+async function writeZipEntry(destPath: string, name: string, data: Buffer) {
+  const outPath = path.join(destPath, name)
+  await fsPromises.mkdir(path.dirname(outPath), { recursive: true })
+  await fsPromises.writeFile(outPath, data)
+}
+
+function findEndOfCentralDirectory(archive: Buffer) {
+  // the EOCD sits at the end, after an optional comment of up to 64KB, so scan
+  // backwards for its signature
+  for (let i = archive.length - 22; i >= 0; i--) {
+    if (archive.readUInt32LE(i) === EOCD_SIG) {
+      return i
+    }
+  }
+  throw new Error('Corrupt ZIP: no end-of-central-directory record')
 }
 
 function wrapText(text: string, width: number, indent: string) {

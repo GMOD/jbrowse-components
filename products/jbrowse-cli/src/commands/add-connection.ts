@@ -1,7 +1,6 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
-import parseJSON from 'json-parse-better-errors'
 
 import { debug, printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import {
@@ -159,7 +158,7 @@ export async function run(args?: string[]) {
       : configType === 'JBrowse1Connection'
         ? [configContents.assemblies[0]?.name]
         : undefined,
-    ...(config ? parseJSON(config) : {}),
+    ...(config ? JSON.parse(config) : {}),
   }
 
   const { updatedItems: connections, wasOverwritten } = findAndUpdateOrAdd({

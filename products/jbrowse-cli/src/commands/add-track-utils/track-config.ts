@@ -1,6 +1,5 @@
 import path from 'path'
 
-import parseJSON from 'json-parse-better-errors'
 
 import { isURL } from '../../types/common.ts'
 
@@ -45,7 +44,7 @@ export function buildTrackConfig({
   config?: string
   adapter: { type: string; [key: string]: unknown }
 }): Track {
-  const configObj = config ? parseJSON(config) : {}
+  const configObj = config ? JSON.parse(config) : {}
   return {
     type: trackType,
     trackId,

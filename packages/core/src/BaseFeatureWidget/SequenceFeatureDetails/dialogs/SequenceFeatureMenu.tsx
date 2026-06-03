@@ -40,21 +40,25 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
           {
             label: 'Copy plaintext',
             onClick: async () => {
-              const { default: copy } = await import('copy-to-clipboard')
+              const { default: copy } = await import(
+                '../../../util/copyToClipboard.ts'
+              )
               const r = ref.current
               if (r) {
                 // || not ??: textContent is typed as string, ?? triggers no-unnecessary-condition
-                await copy(r.textContent || '', { format: 'text/plain' })
+                copy(r.textContent || '', { format: 'text/plain' })
               }
             },
           },
           {
             label: 'Copy HTML',
             onClick: async () => {
-              const { default: copy } = await import('copy-to-clipboard')
+              const { default: copy } = await import(
+                '../../../util/copyToClipboard.ts'
+              )
               const r = ref.current
               if (r) {
-                await copy(r.outerHTML, { format: 'text/html' })
+                copy(r.outerHTML, { format: 'text/html' })
               }
             },
           },

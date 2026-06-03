@@ -35,7 +35,6 @@
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "copy-to-clipboard": "^4.0.2",
     "mobx": "^6.15.4",
     "mobx-react": "^9.2.2"
   },
