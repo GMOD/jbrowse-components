@@ -34,7 +34,7 @@
   "dependencies": {
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.6",
+    "@jbrowse/mobx-state-tree": "^5.10.7",
     "@jbrowse/product-core": "workspace:^",
     "@mui/material": "^9.0.1",
     "dockview-core": "^6.6.1",

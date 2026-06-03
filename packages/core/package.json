@@ -175,7 +175,7 @@
     "@floating-ui/react": "^0.27.19",
     "@gmod/bgzf-filehandle": "^6.2.0",
     "@jbrowse/jexl": "^3.0.2",
-    "@jbrowse/mobx-state-tree": "^5.10.6",
+    "@jbrowse/mobx-state-tree": "^5.10.7",
     "@jbrowse/quick-lru": "^7.3.5",
     "@leeoniya/ufuzzy": "^1.0.19",
     "@mui/icons-material": "^9.0.1",

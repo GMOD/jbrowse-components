@@ -13,10 +13,10 @@
     "review-screenshots-web": "node --experimental-strip-types scripts/review-screenshots-web.ts"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.6",
+    "@astrojs/react": "^5.0.7",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "astro": "^6.4.2",
+    "astro": "^6.4.3",
     "astro-icon": "^1.1.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
