@@ -6,8 +6,8 @@ interface HicMenuSelf {
   useLogScale: boolean
   useColorPercentile: boolean
   showLegend: boolean | undefined
-  mode: string
-  colorScheme: string | undefined
+  mode: HicRenderMode
+  colorScheme: HicColorScheme | undefined
   resolutionBias: number
   availableNormalizations: string[] | undefined
   activeNormalization: string
@@ -16,6 +16,7 @@ interface HicMenuSelf {
   setShowLegend: (f: boolean) => void
   setMode: (m: HicRenderMode) => void
   setColorScheme: (s?: HicColorScheme) => void
+  nextResolution: (dir: -1 | 1) => number | undefined
   stepResolution: (dir: -1 | 1) => void
   resetResolutionBias: () => void
   setActiveNormalization: (s: string) => void
@@ -113,12 +114,14 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
       subMenu: [
         {
           label: 'Finer resolution',
+          disabled: self.nextResolution(-1) === undefined,
           onClick: () => {
             self.stepResolution(-1)
           },
         },
         {
           label: 'Coarser resolution',
+          disabled: self.nextResolution(1) === undefined,
           onClick: () => {
             self.stepResolution(1)
           },

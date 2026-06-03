@@ -105,7 +105,13 @@ export default function stateModelFactory(
          */
         useColorPercentile: false,
         activeNormalization: 'KR',
-        mode: 'triangular',
+        mode: types.optional(
+          types.enumeration<HicRenderMode>('HicRenderMode', [
+            'triangular',
+            'adjust',
+          ]),
+          'triangular',
+        ),
       }),
     )
     .volatile(() => ({

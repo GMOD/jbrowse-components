@@ -1,23 +1,28 @@
 import { toLocale } from '@jbrowse/core/util'
 
-import { getLegendSvgStops } from './colorRamp.ts'
+import {
+  DEFAULT_HIC_COLOR_SCHEME,
+  type HicColorScheme,
+  getLegendSvgStops,
+} from './colorRamp.ts'
 import { getNiceScale } from './niceScale.ts'
 
 export default function HicSVGColorLegend({
   maxScore,
-  colorScheme = 'juicebox',
+  colorScheme,
   useLogScale,
   width,
   legendAreaWidth,
 }: {
   maxScore: number
-  colorScheme?: string
+  colorScheme?: HicColorScheme
   useLogScale?: boolean
   width: number
   legendAreaWidth?: number
 }) {
-  const gradientId = `hic-gradient-${colorScheme}`
-  const stops = getLegendSvgStops(colorScheme)
+  const resolvedScheme = colorScheme ?? DEFAULT_HIC_COLOR_SCHEME
+  const gradientId = `hic-gradient-${resolvedScheme}`
+  const stops = getLegendSvgStops(resolvedScheme)
   const { min, max } = getNiceScale(maxScore, useLogScale)
   const minLabel = min !== undefined ? toLocale(min) : ''
   const maxLabel = `${max !== undefined ? toLocale(max) : ''}${useLogScale ? ' (log)' : ''}`

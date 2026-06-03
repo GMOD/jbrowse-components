@@ -1,7 +1,5 @@
 export type RGBA = readonly [number, number, number, number]
 
-export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
-
 // Single source of truth for each scheme. Used to build the GPU/Canvas2D
 // 256x1 RGBA ramp AND the CSS/SVG legend gradients. Stops are evenly spaced.
 interface ColorStops {
@@ -61,14 +59,10 @@ const SCHEMES = {
 
 export type HicColorScheme = keyof typeof SCHEMES
 
-function isHicColorScheme(s: string): s is HicColorScheme {
-  return s in SCHEMES
-}
+export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
 
-function getScheme(name?: string) {
-  return SCHEMES[
-    name && isHicColorScheme(name) ? name : DEFAULT_HIC_COLOR_SCHEME
-  ]
+function getScheme(name?: HicColorScheme) {
+  return SCHEMES[name ?? DEFAULT_HIC_COLOR_SCHEME]
 }
 
 function lerp(a: number, b: number, t: number) {
@@ -113,14 +107,12 @@ const RAMPS: Record<HicColorScheme, Uint8Array> = {
   viridis: buildRamp(VIRIDIS_FULL_STOPS),
 }
 
-export function generateColorRamp(colorScheme?: string): Uint8Array {
-  return colorScheme && isHicColorScheme(colorScheme)
-    ? RAMPS[colorScheme]
-    : RAMPS[DEFAULT_HIC_COLOR_SCHEME]
+export function generateColorRamp(colorScheme?: HicColorScheme): Uint8Array {
+  return RAMPS[colorScheme ?? DEFAULT_HIC_COLOR_SCHEME]
 }
 
 // Sample N evenly-spaced legend stops from the same source as the GPU ramp.
-export function getLegendStops(colorScheme: string | undefined, n = 11) {
+export function getLegendStops(colorScheme: HicColorScheme | undefined, n = 11) {
   const scheme = getScheme(colorScheme)
   const out: { offset: number; rgba: RGBA }[] = []
   for (let i = 0; i < n; i++) {
@@ -134,7 +126,7 @@ function rgbaCss([r, g, b, a]: RGBA) {
   return `rgba(${r},${g},${b},${(a / 255).toFixed(3)})`
 }
 
-export function getLegendCssGradient(colorScheme: string | undefined) {
+export function getLegendCssGradient(colorScheme: HicColorScheme | undefined) {
   const stops = getLegendStops(colorScheme)
   const parts = stops.map(
     s => `${rgbaCss(s.rgba)} ${(s.offset * 100).toFixed(0)}%`,
@@ -142,7 +134,7 @@ export function getLegendCssGradient(colorScheme: string | undefined) {
   return `linear-gradient(to right, ${parts.join(', ')})`
 }
 
-export function getLegendSvgStops(colorScheme: string | undefined) {
+export function getLegendSvgStops(colorScheme: HicColorScheme | undefined) {
   const stops = getLegendStops(colorScheme)
   return stops.map(s => ({
     offset: `${(s.offset * 100).toFixed(0)}%`,
