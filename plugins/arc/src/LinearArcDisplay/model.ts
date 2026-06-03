@@ -61,14 +61,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get rendererConfig() {
-        return self.configuration.renderer
-      },
-      /**
-       * #getter
-       */
       get displayModeSetting() {
-        return self.displayMode ?? getConf(self, ['renderer', 'displayMode'])
+        return self.displayMode ?? getConf(self, 'displayMode')
       },
       /**
        * #getter
@@ -115,7 +109,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./afterAttach.tsx')
+            const { doAfterAttach } = await import('../shared/afterAttach.ts')
             doAfterAttach(self as LinearArcDisplayModel)
           } catch (e) {
             console.error(e)

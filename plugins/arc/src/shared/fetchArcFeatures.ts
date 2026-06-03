@@ -1,10 +1,10 @@
 import { dedupe, getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import type { LinearArcDisplayModel } from './model.ts'
+import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export async function fetchFeatures(self: LinearArcDisplayModel) {
+export async function fetchArcFeatures(self: ArcDisplayModel) {
   const sessionId = getRpcSessionId(self)
   const { rpcManager } = getSession(self)
   const view = getContainingView(self) as LinearGenomeViewModel

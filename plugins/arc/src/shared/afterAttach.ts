@@ -1,17 +1,17 @@
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { fetchChains } from './fetchChains.ts'
+import { fetchArcFeatures } from './fetchArcFeatures.ts'
 
-import type { LinearArcDisplayModel } from './model.ts'
+import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 
-export function doAfterAttach(self: LinearArcDisplayModel) {
+export function doAfterAttach(self: ArcDisplayModel) {
   addDisposer(
     self,
     autorun(
       async () => {
         try {
-          await fetchChains(self)
+          await fetchArcFeatures(self)
         } catch (e) {
           if (isAlive(self)) {
             self.setError(e)

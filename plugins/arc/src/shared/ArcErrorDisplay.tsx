@@ -3,12 +3,12 @@ import { observer } from 'mobx-react'
 
 import ErrorActions from './ErrorActions.tsx'
 
-import type { LinearArcDisplayModel } from '../model.ts'
+import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 
 const ArcErrorDisplay = observer(function ArcErrorDisplay({
   model,
 }: {
-  model: LinearArcDisplayModel
+  model: ArcDisplayModel
 }) {
   const { error } = model
   return (

@@ -2,7 +2,7 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import type { LinearArcDisplayModel } from '../model.ts'
+import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 
 const useStyles = makeStyles()(theme => ({
   loading: {
@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => ({
 const LoadingBar = observer(function LoadingBar({
   model,
 }: {
-  model: LinearArcDisplayModel
+  model: ArcDisplayModel
 }) {
   const { classes } = useStyles()
   const { statusMessage } = model

@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingView,
   getSession,
@@ -10,7 +10,6 @@ import { observer } from 'mobx-react'
 
 import type { LinearArcDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -50,7 +49,6 @@ function getBezierPath(left: number, right: number, height: number) {
 const Arc = observer(function Arc({
   model,
   feature,
-  config,
   assembly,
   view,
   semicircle,
@@ -58,7 +56,6 @@ const Arc = observer(function Arc({
 }: {
   feature: Feature
   model: LinearArcDisplayModel
-  config: AnyConfigurationModel
   assembly: Assembly
   view: LGV
   semicircle: boolean
@@ -77,15 +74,15 @@ const Arc = observer(function Arc({
 
   const left = l - view.offsetPx
   const right = r - view.offsetPx
-  const stroke = selected ? 'red' : readConfObject(config, 'color', { feature })
+  const stroke = selected ? 'red' : getConf(model, 'color', { feature })
   const textStroke = selected ? 'red' : 'black'
-  const label = readConfObject(config, 'label', { feature })
-  const caption = readConfObject(config, 'caption', { feature })
-  const strokeWidth = readConfObject(config, 'thickness', { feature }) ?? 2
+  const label = getConf(model, 'label', { feature })
+  const caption = getConf(model, 'caption', { feature })
+  const strokeWidth = getConf(model, 'thickness', { feature }) ?? 2
   const centerX = left + (right - left) / 2
   const radius = (right - left) / 2
   const arcHeight = Math.min(
-    readConfObject(config, 'height', { feature }) ?? 100,
+    getConf(model, 'arcHeight', { feature }) ?? 100,
     height,
   )
   const { d, textYCoord } = semicircle
@@ -135,7 +132,7 @@ const Arcs = observer(function Arcs({
 }) {
   const view = getContainingView(model) as LGV
   const { assemblyManager } = getSession(model)
-  const { features, height, rendererConfig, displayModeSetting } = model
+  const { features, height, displayModeSetting } = model
   const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
   if (!assembly) {
@@ -148,7 +145,6 @@ const Arcs = observer(function Arcs({
     <Arc
       key={f.id()}
       feature={f}
-      config={rendererConfig}
       view={view}
       model={model}
       assembly={assembly}

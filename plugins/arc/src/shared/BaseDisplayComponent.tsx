@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import LoadingBar from './LoadingBar.tsx'
 
-import type { LinearArcDisplayModel } from '../model.ts'
+import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 
 const ArcErrorDisplay = lazy(() => import('./ArcErrorDisplay.tsx'))
 
@@ -19,7 +19,7 @@ const BaseDisplayComponent = observer(function BaseDisplayComponent({
   model,
   children,
 }: {
-  model: LinearArcDisplayModel
+  model: ArcDisplayModel
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()

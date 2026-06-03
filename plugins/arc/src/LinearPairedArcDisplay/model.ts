@@ -82,7 +82,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./afterAttach.tsx')
+            const { doAfterAttach } = await import('../shared/afterAttach.ts')
             doAfterAttach(self as LinearArcDisplayModel)
           } catch (e) {
             console.error(e)
