@@ -119,18 +119,17 @@ export default function sessionModelFactory({
     sessionModel,
   ) as typeof sessionModel
 
-  return types.snapshotProcessor(extendedSessionModel, {
-    // @ts-expect-error
-    preProcessor(snapshot: Record<string, unknown> | undefined) {
-      // connectionInstances schema changed from object to an array, so any old
-      // connectionInstances as object in snapshot should be filtered out
-      // https://github.com/GMOD/jbrowse-components/issues/1903
-      if (snapshot && !Array.isArray(snapshot.connectionInstances)) {
-        const { connectionInstances: _, ...rest } = snapshot
-        return rest
-      }
-      return snapshot
-    },
+  return extendedSessionModel.preProcessSnapshot<
+    Record<string, unknown> | undefined
+  >(snapshot => {
+    // connectionInstances schema changed from object to an array, so any old
+    // connectionInstances as object in snapshot should be filtered out
+    // https://github.com/GMOD/jbrowse-components/issues/1903
+    if (snapshot && !Array.isArray(snapshot.connectionInstances)) {
+      const { connectionInstances: _, ...rest } = snapshot
+      return rest
+    }
+    return snapshot
   })
 }
 

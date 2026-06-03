@@ -467,9 +467,11 @@ function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-    .preProcessSnapshot(snap => {
-      // @ts-expect-error
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    .preProcessSnapshot<
+      // legacy snapshots stored `tracks` at the top level before the `levels`
+      // restructure; accept the loose shape and let MST revalidate at runtime
+      ({ tracks?: unknown; levels?: unknown } & Record<string, unknown>) | undefined
+    >(snap => {
       const { tracks, levels = [{ tracks, level: 0 }], ...rest } = snap || {}
       return {
         ...rest,
