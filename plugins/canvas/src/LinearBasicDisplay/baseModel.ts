@@ -36,6 +36,7 @@ import {
   fetchCanvasFeatureDetails,
   findSubfeatureById,
   indexById,
+  radioSubMenu,
   screenDensity,
 } from './baseModelHelpers.ts'
 import {
@@ -267,8 +268,23 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // Effective boolean visibility used by layout, hit testing, the DOM
+        // overlay, and SVG export. 'auto' switches to false once feature
+        // density crosses the readability threshold so layout-reserved label
+        // space, the rendered DOM elements, and the hit-test geometry all
+        // agree — otherwise rows reserve label height that never gets used.
         get showLabels() {
-          return this.showLabelsMode === 'on'
+          const mode = this.showLabelsMode
+          if (mode === 'off') {
+            return false
+          }
+          if (mode === 'on') {
+            return true
+          }
+          return (
+            self.visibleFeatureDensityPerPx <=
+            self.getConfWithOverride<number>('maxLabelFeatureDensity')
+          )
         },
 
         /**
@@ -307,7 +323,13 @@ export default function baseStateModelFactory(
          * #getter
          */
         get effectiveShowDescriptions() {
-          return this.showDescriptions && this.showLabels
+          // In auto mode the density gate hides both labels and descriptions
+          // together. Manual 'off' only hides labels — descriptions remain
+          // independently controllable.
+          return (
+            this.showDescriptions &&
+            (this.showLabelsMode !== 'auto' || this.showLabels)
+          )
         },
 
         /**
@@ -1259,14 +1281,18 @@ export default function baseStateModelFactory(
         // "Show..." submenu without rebuilding trackMenuItems from scratch.
         showSubmenuMenuItems() {
           return [
-            {
-              label: 'Show labels',
-              type: 'checkbox' as const,
-              checked: self.showLabels,
-              onClick: () => {
-                self.setShowLabels(self.showLabels ? 'off' : 'on')
+            radioSubMenu(
+              'Show labels',
+              self.showLabelsMode,
+              [
+                { value: 'auto', label: 'Auto (hide when dense)' },
+                { value: 'on', label: 'Always on' },
+                { value: 'off', label: 'Always off' },
+              ],
+              mode => {
+                self.setShowLabels(mode)
               },
-            },
+            ),
             {
               label: 'Show descriptions',
               type: 'checkbox' as const,

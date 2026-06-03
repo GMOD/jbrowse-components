@@ -6,6 +6,7 @@ import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
+import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -50,8 +51,18 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       showLabels: {
         type: 'stringEnum',
         model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
-        defaultValue: 'on',
-        description: 'Show feature labels',
+        defaultValue: 'auto',
+        description:
+          'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
+      },
+      /**
+       * #slot
+       */
+      maxLabelFeatureDensity: {
+        type: 'number',
+        defaultValue: MAX_LABEL_FEATURE_DENSITY,
+        description:
+          'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
       },
       /**
        * #slot

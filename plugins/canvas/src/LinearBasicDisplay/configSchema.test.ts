@@ -215,7 +215,7 @@ describe('LinearBasicDisplay configSchema', () => {
         },
         { pluginManager: pm },
       )
-      expect(readConfObject(config, 'showLabels')).toBe('on')
+      expect(readConfObject(config, 'showLabels')).toBe('auto')
     })
 
     it('converts boolean showLabels=false to off', () => {

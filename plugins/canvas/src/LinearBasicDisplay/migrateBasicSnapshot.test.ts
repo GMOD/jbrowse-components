@@ -33,12 +33,12 @@ test('strips removed FeatureDensityMixin fields', () => {
 // TrackHeightMixin (see TrackHeightMixin.test.ts); migrateBasicSnapshot leaves
 // height untouched.
 
-test('migrates legacy trackShowLabels=true to "on"', () => {
+test('migrates legacy trackShowLabels=true to "auto"', () => {
   const result = migrateBasicSnapshot({
     trackShowLabels: true,
   })
   expect(result).toEqual({
-    configOverrides: { showLabels: 'on' },
+    configOverrides: { showLabels: 'auto' },
   })
 })
 
@@ -232,7 +232,7 @@ test('normalizes boolean showLabels in existing configOverrides to enum', () => 
       configOverrides: { showLabels: true, autoHeight: true },
     }),
   ).toEqual({
-    configOverrides: { showLabels: 'on', autoHeight: true },
+    configOverrides: { showLabels: 'auto', autoHeight: true },
   })
   expect(
     migrateBasicSnapshot({
