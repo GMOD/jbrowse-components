@@ -87,7 +87,11 @@ const JBrowseViewTab = observer(function JBrowseViewTab({
   }
 
   const views = getViewsForPanel(panelId, session)
-  const title = api.title || getTabDisplayName(views, session)
+  // dockview restores an unset title as the panel id (state.title ?? this.id),
+  // so a title equal to the panelId means "not renamed" — derive from the views.
+  // Only a real, user-set title (via api.setTitle) differs from the panelId.
+  const hasCustomTitle = !!api.title && api.title !== panelId
+  const title = hasCustomTitle ? api.title : getTabDisplayName(views, session)
 
   const handleStartEdit = () => {
     setEditValue(title)

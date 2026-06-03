@@ -3,12 +3,15 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   applyInitLayout,
   cleanLayoutForStorage,
+  createPanelId,
   getPanelPosition,
   rearrangePanelsWithDirection,
+  restoreLayout,
+  serializeLayout,
 } from './dockviewUtils.ts'
 import { DockviewLayoutMixin } from '../../DockviewLayout/index.ts'
 
-import type { DockviewApi } from 'dockview-react'
+import type { DockviewApi, SerializedDockview } from 'dockview-react'
 
 const TestSessionModel = types.compose(
   'TestSession',
@@ -100,6 +103,71 @@ describe('getPanelPosition', () => {
       referenceGroup: group,
       direction: 'below',
     })
+  })
+})
+
+describe('createPanelId', () => {
+  it('produces unique, panel-prefixed ids', () => {
+    const a = createPanelId()
+    const b = createPanelId()
+    expect(a).toMatch(/^panel-/)
+    expect(b).toMatch(/^panel-/)
+    expect(a).not.toBe(b)
+  })
+})
+
+describe('serializeLayout', () => {
+  it('strips live params off every panel via toJSON', () => {
+    const layout = {
+      grid: { root: {}, width: 0, height: 0, orientation: 'HORIZONTAL' },
+      activeGroup: 'g1',
+      panels: {
+        'panel-1': {
+          id: 'panel-1',
+          params: { panelId: 'panel-1', session: {} },
+        },
+      },
+    } as unknown as ReturnType<DockviewApi['toJSON']>
+    const api = { toJSON: () => layout } as unknown as DockviewApi
+
+    const out = serializeLayout(api)
+
+    expect(out.panels['panel-1']!.params).toEqual({})
+    expect(out.activeGroup).toBe('g1')
+  })
+})
+
+describe('restoreLayout', () => {
+  it('applies the layout and re-injects the session into every panel', () => {
+    const session = createSession()
+    const updated: { params: { panelId: string; session: unknown } }[] = []
+    const fromJSONCalls: unknown[] = []
+    const api = {
+      fromJSON: (l: unknown) => {
+        fromJSONCalls.push(l)
+      },
+      panels: [
+        {
+          id: 'panel-1',
+          update: (e: { params: { panelId: string; session: unknown } }) => {
+            updated.push(e)
+          },
+        },
+        {
+          id: 'panel-2',
+          update: (e: { params: { panelId: string; session: unknown } }) => {
+            updated.push(e)
+          },
+        },
+      ],
+    } as unknown as DockviewApi
+    const layout = { grid: {}, panels: {} } as unknown as SerializedDockview
+
+    restoreLayout(api, session as unknown as SessionArg, layout)
+
+    expect(fromJSONCalls).toEqual([layout])
+    expect(updated.map(u => u.params.panelId)).toEqual(['panel-1', 'panel-2'])
+    expect(updated.every(u => u.params.session === session)).toBe(true)
   })
 })
 

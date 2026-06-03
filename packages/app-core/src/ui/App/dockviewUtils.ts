@@ -6,7 +6,22 @@ import type {
   SessionWithDockviewLayout,
 } from '../../DockviewLayout/index.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
-import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
+import type {
+  DockviewApi,
+  DockviewGroupPanel,
+  SerializedDockview,
+} from 'dockview-react'
+
+/**
+ * Single source of truth for the panel-id format. Every panel id is created
+ * here, so the `panel-` prefix never has to be reproduced by hand. JBrowseViewTab
+ * relies on a panel's id being a stable, unique string to tell an auto-named tab
+ * (title === id, see dockview's `state.title ?? this.id` restore) from a
+ * user-renamed one.
+ */
+export function createPanelId() {
+  return `panel-${createElementId()}`
+}
 
 export function getViewsForPanel(
   panelId: string,
@@ -18,16 +33,17 @@ export function getViewsForPanel(
     .filter((v): v is AbstractViewModel => v !== undefined)
 }
 
+// No `title`: an unset title makes JBrowseViewTab derive the tab name from the
+// panel's views (see getTabDisplayName). A title is only ever set when the user
+// explicitly renames a tab via api.setTitle.
 export function createPanelConfig(
   panelId: string,
   session: DockviewSessionType & SessionWithDockviewLayout,
-  title = 'Main',
 ) {
   return {
     id: panelId,
     component: 'jbrowseView' as const,
     tabComponent: 'jbrowseTab' as const,
-    title,
     params: { panelId, session },
   }
 }
@@ -61,6 +77,30 @@ export function updatePanelParams(
   }
 }
 
+/**
+ * Serialize the live layout for persistence. Pairs `toJSON` with the
+ * param-stripping of `cleanLayoutForStorage` so a layout can never be persisted
+ * with the live MST session embedded in it (which would be a circular snapshot).
+ */
+export function serializeLayout(api: DockviewApi) {
+  return cleanLayoutForStorage(api.toJSON())
+}
+
+/**
+ * Restore a persisted layout and re-inject the live session in one step.
+ * `fromJSON` alone would leave every panel with the blanked params produced by
+ * `serializeLayout` (no session -> permanent "Loading..."), so the restore and
+ * the `updatePanelParams` re-injection always travel together.
+ */
+export function restoreLayout(
+  api: DockviewApi,
+  session: DockviewSessionType & SessionWithDockviewLayout,
+  layout: SerializedDockview,
+) {
+  api.fromJSON(layout)
+  updatePanelParams(api, session)
+}
+
 export function getPanelPosition(
   group: DockviewGroupPanel | undefined,
   direction?: 'right' | 'below',
@@ -92,12 +132,12 @@ export function applyInitLayout(
       return undefined
     }
     if (node.viewIds !== undefined) {
-      const panelId = `panel-${createElementId()}`
+      const panelId = createPanelId()
       if (!firstPanelId) {
         firstPanelId = panelId
       }
       api.addPanel({
-        ...createPanelConfig(panelId, session, 'Tab'),
+        ...createPanelConfig(panelId, session),
         position: getPanelPosition(referenceGroup, direction),
       })
       for (const viewId of node.viewIds) {

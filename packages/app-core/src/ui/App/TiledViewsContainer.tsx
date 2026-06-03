@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { createElementId } from '@jbrowse/core/util/types/mst'
 import { useTheme } from '@mui/material'
 import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
@@ -14,10 +13,11 @@ import JBrowseViewPanel from './JBrowseViewPanel.tsx'
 import JBrowseViewTab from './JBrowseViewTab.tsx'
 import {
   applyInitLayout,
-  cleanLayoutForStorage,
   createPanelConfig,
+  createPanelId,
   getPanelPosition,
-  updatePanelParams,
+  restoreLayout,
+  serializeLayout,
 } from './dockviewUtils.ts'
 
 import type { DockviewSessionType } from './types.ts'
@@ -58,19 +58,29 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   const sessionRef = useRef(session)
   sessionRef.current = session
 
+  // Run `fn` with layout->session syncing suppressed. dockview fires its
+  // onDidLayoutChange/onDidRemovePanel listeners synchronously while we
+  // imperatively rearrange panels; the flag tells those listeners to ignore
+  // our own mutations. The `finally` guarantees the flag is always reset, so
+  // it can never get stuck on (which would silently disable persistence).
+  const withSuppressedSync = useCallback((fn: () => void) => {
+    rearrangingRef.current = true
+    try {
+      fn()
+    } finally {
+      rearrangingRef.current = false
+    }
+  }, [])
+
   const rearrangePanels = useCallback(
     (arrange: (api: DockviewApi) => void) => {
-      if (!api) {
-        return
-      }
-      rearrangingRef.current = true
-      try {
-        arrange(api)
-      } finally {
-        rearrangingRef.current = false
+      if (api) {
+        withSuppressedSync(() => {
+          arrange(api)
+        })
       }
     },
-    [api],
+    [api, withSuppressedSync],
   )
 
   const addEmptyTab = useCallback(
@@ -78,10 +88,10 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       if (!api) {
         return
       }
-      const panelId = `panel-${createElementId()}`
+      const panelId = createPanelId()
       const group = targetGroup ?? api.activeGroup
       api.addPanel({
-        ...createPanelConfig(panelId, session, 'New Tab'),
+        ...createPanelConfig(panelId, session),
         position: getPanelPosition(group),
       })
       session.setActivePanelId(panelId)
@@ -97,9 +107,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       session.removeViewFromPanel(viewId)
 
-      const panelId = `panel-${createElementId()}`
+      const panelId = createPanelId()
       api.addPanel({
-        ...createPanelConfig(panelId, session, 'New Tab'),
+        ...createPanelConfig(panelId, session),
         position: getPanelPosition(api.activeGroup, direction),
       })
       session.assignViewToPanel(panelId, viewId)
@@ -136,7 +146,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         session.setActivePanelId(firstPanelId)
         dockviewApi.getPanel(firstPanelId)?.api.setActive()
       }
-      session.setDockviewLayout(cleanLayoutForStorage(dockviewApi.toJSON()))
+      session.setDockviewLayout(serializeLayout(dockviewApi))
       return
     }
 
@@ -156,7 +166,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       let firstGroup: DockviewGroupPanel | undefined
       if (otherViewIds.length > 0) {
-        const firstPanelId = `panel-${createElementId()}`
+        const firstPanelId = createPanelId()
         dockviewApi.addPanel(createPanelConfig(firstPanelId, session))
         firstGroup = dockviewApi.getPanel(firstPanelId)?.group
         for (const viewId of otherViewIds) {
@@ -164,10 +174,10 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         }
       }
 
-      const pendingPanelId = `panel-${createElementId()}`
+      const pendingPanelId = createPanelId()
       const direction = type === 'splitRight' ? 'right' : undefined
       dockviewApi.addPanel({
-        ...createPanelConfig(pendingPanelId, session, 'New Tab'),
+        ...createPanelConfig(pendingPanelId, session),
         position: getPanelPosition(firstGroup, direction),
       })
       session.assignViewToPanel(pendingPanelId, pendingViewId)
@@ -177,14 +187,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // dockview's onDidLayoutChange fires asynchronously, so without this the
       // second mount would find dockviewLayout still undefined and fall back to
       // creating a single panel instead of restoring the split.
-      session.setDockviewLayout(cleanLayoutForStorage(dockviewApi.toJSON()))
+      session.setDockviewLayout(serializeLayout(dockviewApi))
 
       session.setPendingMove(undefined)
     } else {
-      const panelId = `panel-${createElementId()}`
+      const panelId = createPanelId()
       dockviewApi.addPanel(createPanelConfig(panelId, session))
       session.setActivePanelId(panelId)
-      session.setDockviewLayout(cleanLayoutForStorage(dockviewApi.toJSON()))
+      session.setDockviewLayout(serializeLayout(dockviewApi))
     }
   }, [])
 
@@ -213,9 +223,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       event.api.onDidLayoutChange(() => {
         if (!rearrangingRef.current) {
-          sessionRef.current.setDockviewLayout(
-            cleanLayoutForStorage(event.api.toJSON()),
-          )
+          sessionRef.current.setDockviewLayout(serializeLayout(event.api))
         }
       })
 
@@ -223,24 +231,22 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       const savedLayout = !hasPendingAction && sessionRef.current.dockviewLayout
 
       if (savedLayout) {
-        try {
-          rearrangingRef.current = true
-          event.api.fromJSON(savedLayout)
-          updatePanelParams(event.api, sessionRef.current)
-          if (event.api.panels.length === 0) {
-            throw new Error('No panels after fromJSON restore')
+        withSuppressedSync(() => {
+          try {
+            restoreLayout(event.api, sessionRef.current, savedLayout)
+            if (event.api.panels.length === 0) {
+              throw new Error('No panels after fromJSON restore')
+            }
+          } catch (e) {
+            console.error('Failed to restore dockview layout:', e)
+            createInitialPanels(event.api)
           }
-        } catch (e) {
-          console.error('Failed to restore dockview layout:', e)
-          createInitialPanels(event.api)
-        } finally {
-          rearrangingRef.current = false
-        }
+        })
       } else {
         createInitialPanels(event.api)
       }
     },
-    [createInitialPanels],
+    [createInitialPanels, withSuppressedSync],
   )
 
   useEffect(() => {
@@ -260,7 +266,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
             if (firstPanel) {
               activePanelId = firstPanel.id
             } else {
-              activePanelId = `panel-${createElementId()}`
+              activePanelId = createPanelId()
               api.addPanel(createPanelConfig(activePanelId, session))
             }
             session.setActivePanelId(activePanelId)
@@ -292,24 +298,22 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         return
       }
 
-      const currentLayout = cleanLayoutForStorage(api.toJSON())
+      const currentLayout = serializeLayout(api)
       if (JSON.stringify(currentLayout) === JSON.stringify(dockviewLayout)) {
         return
       }
 
-      rearrangingRef.current = true
-      try {
-        api.fromJSON(dockviewLayout)
-        updatePanelParams(api, sessionRef.current)
-      } catch (e) {
-        console.error('Failed to restore dockview layout from undo:', e)
-      } finally {
-        rearrangingRef.current = false
-      }
+      withSuppressedSync(() => {
+        try {
+          restoreLayout(api, sessionRef.current, dockviewLayout)
+        } catch (e) {
+          console.error('Failed to restore dockview layout from undo:', e)
+        }
+      })
     })
 
     return dispose
-  }, [session, api])
+  }, [session, api, withSuppressedSync])
 
   const themeClass =
     theme.palette.mode === 'dark'
