@@ -57,7 +57,6 @@ const useStyles = makeStyles()({
     position: 'absolute',
     transform: 'translateX(-50%)',
     fontFamily: 'monospace',
-    textShadow: '0 0 1px white',
     pointerEvents: 'none',
     userSelect: 'none',
     whiteSpace: 'nowrap',
@@ -248,7 +247,12 @@ export function useAminoAcidOverlay(
               lineHeight: `${item.heightPx}px`,
               color: item.isStopOrNonTriplet
                 ? theme.palette.error.main
-                : theme.palette.text.primary,
+                : item.lightText
+                  ? theme.palette.common.white
+                  : theme.palette.text.primary,
+              textShadow: item.lightText
+                ? '0 0 2px black'
+                : '0 0 2px white',
             }}
           >
             {cell.text}

@@ -1,6 +1,7 @@
 import {
   cssColorToABGR as colorToUint32,
   formatHEX,
+  getLuminance,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 import { darken, lighten } from '@mui/material'
@@ -122,9 +123,11 @@ function emitCodonRects(
   rects: RectData[],
   overlayItems: AminoAcidOverlayItem[],
 ) {
-  const baseHex = formatHEX(parseCssColor(baseColor))
+  const parsedBase = parseCssColor(baseColor)
+  const baseHex = formatHEX(parsedBase)
   const color1 = colorToUint32(lighten(baseHex, 0.2))
   const color2 = colorToUint32(darken(baseHex, 0.1))
+  const lightText = getLuminance(parsedBase) < 0.5
 
   for (const [i, aa] of aminoAcids.entries()) {
     rects.push({
@@ -144,6 +147,7 @@ function emitCodonRects(
       heightPx: height,
       isStopOrNonTriplet: aa.isStopOrNonTriplet,
       flatbushIdx,
+      lightText,
     })
   }
 }
