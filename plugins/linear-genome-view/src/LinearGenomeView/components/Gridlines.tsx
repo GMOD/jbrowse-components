@@ -2,7 +2,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { elidedBlockStyles } from './util.ts'
-import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -52,36 +51,18 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Reads only staticBlocks + bpPerPx. Re-renders on zoom or region change,
-// not on per-frame offsetPx changes — those move the outer transform only.
+// Reads only staticBlocks + the shared gridlineTicks view. Re-renders on zoom
+// or region change, not on per-frame offsetPx changes — those move the outer
+// transform only.
 const GridlinesContent = observer(function GridlinesContent({
   model,
 }: {
   model: LGV
 }) {
   const { classes, cx } = useStyles()
-  const { staticBlocks, bpPerPx } = model
+  const { staticBlocks, gridlineTicks } = model
   const blocks = staticBlocks.blocks
   const firstBlockOffset = blocks[0]?.offsetPx ?? 0
-
-  const ticks: { key: string; x: number; major: boolean }[] = []
-  for (const block of blocks) {
-    if (block.type !== 'ContentBlock') {
-      continue
-    }
-    const { start, end, reversed, widthPx } = block
-    const blockLeft = block.offsetPx - firstBlockOffset
-    for (const { type, base } of makeTicks(start, end, bpPerPx)) {
-      const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
-      if (x >= blockLeft && x <= blockLeft + widthPx) {
-        ticks.push({
-          key: `${block.key}-${base}`,
-          x,
-          major: type === 'major' || type === 'labeledMajor',
-        })
-      }
-    }
-  }
 
   return (
     <>
@@ -116,7 +97,7 @@ const GridlinesContent = observer(function GridlinesContent({
         })}
       </div>
       <div className={classes.absoluteFill}>
-        {ticks.map(({ key, x, major }) => (
+        {gridlineTicks.map(({ key, x, major }) => (
           <div
             key={key}
             className={cx(

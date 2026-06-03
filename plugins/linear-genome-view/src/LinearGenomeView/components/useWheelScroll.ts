@@ -1,6 +1,13 @@
 import type React from 'react'
 import { useEffect, useRef } from 'react'
 
+import {
+  applyZoomAccum,
+  getZoomNormalizer,
+  normalizeWheelDelta,
+  wheelFrameElapsedMs,
+} from '@jbrowse/core/util'
+
 interface GenomeViewModel {
   bpPerPx: number
   scrollZoom?: boolean
@@ -9,38 +16,6 @@ interface GenomeViewModel {
 }
 
 const SCROLL_ZOOM_FACTOR_DIVISOR = 500
-// max zoom delta per millisecond — equivalent to 0.2 per frame at 60fps
-const MAX_ZOOM_RATE_PER_MS = 0.2 / 16.67
-
-// NOTE: The getNormalizer function and zoom logic below are also implemented in
-// plugins/breakpoint-split-view/src/BreakpointSplitView/components/BreakpointSplitViewOverlay.tsx
-// If you modify the normalizer logic or zoom calculations here, you must also update
-// the corresponding code in BreakpointSplitViewOverlay.tsx to keep wheel zoom behavior
-// consistent across all genome views.
-
-export function getNormalizer(deltaY: number) {
-  const abs = Math.abs(deltaY)
-  if (abs < 6) {
-    return 25
-  }
-  if (abs > 150) {
-    return 500
-  }
-  if (abs > 30) {
-    return 150
-  }
-  return 75
-}
-
-export function normalizeWheel(delta: number, mode: number) {
-  if (mode === 1) {
-    return delta * 16
-  }
-  if (mode === 2) {
-    return delta * 100
-  }
-  return delta
-}
 
 interface WheelState {
   scrollDelta: number
@@ -95,8 +70,8 @@ export function useWheelScroll(
         return
       }
 
-      const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
-      const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
+      const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
+      const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
       const isCtrlZoom = event.ctrlKey || event.metaKey
       const isScrollZoom =
         model.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX)
@@ -111,7 +86,7 @@ export function useWheelScroll(
         event.preventDefault()
         s.zoomAccum +=
           deltaY /
-          (isCtrlZoom ? getNormalizer(deltaY) : SCROLL_ZOOM_FACTOR_DIVISOR)
+          (isCtrlZoom ? getZoomNormalizer(deltaY) : SCROLL_ZOOM_FACTOR_DIVISOR)
         s.lastClientX = event.clientX
       } else {
         // when scrollZoom is on, always preventDefault to stop the page
@@ -136,20 +111,13 @@ export function useWheelScroll(
       // of events (e.g. fast trackpad scrolling) don't each trigger expensive
       // model updates
       s.rafId ??= requestAnimationFrame(now => {
-        const elapsed = Math.min(
-          100,
-          s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
-        )
-
+        const elapsed = wheelFrameElapsedMs(now, s.lastRafTime)
         s.lastRafTime = now
-        const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
         if (s.zoomAccum !== 0) {
-          const d = Math.max(-maxZoomDelta, Math.min(maxZoomDelta, s.zoomAccum))
           model.zoomTo(
-            d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
+            applyZoomAccum(model.bpPerPx, s.zoomAccum, elapsed),
             s.lastClientX - s.rectLeft,
           )
-
           s.zoomAccum = 0
         }
         if (s.scrollDelta !== 0) {

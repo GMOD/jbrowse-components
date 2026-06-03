@@ -50,6 +50,9 @@ const TracksContainer = observer(function TracksContainer({
   const { mouseDown: sideScrollMouseDown, mouseUp } = useSideScroll(model)
   const { showGridlines, showCenterLine } = model
   const ref = useRef<HTMLDivElement>(null)
+  // shift-drag range select over the whole tracks area. This is intentionally
+  // a separate range-select instance from the one inside <Rubberband> (the
+  // scalebar control); don't dedupe them — they cover different regions.
   const range = useRangeSelect(ref, model, true)
 
   const additional = pluginManager.evaluateExtensionPoint(
@@ -68,6 +71,7 @@ const TracksContainer = observer(function TracksContainer({
         range.mouseDown(event)
       }}
       onMouseMove={range.mouseMove}
+      onMouseOut={range.mouseOut}
       onMouseUp={mouseUp}
     >
       {showGridlines ? <Gridlines model={model} /> : null}

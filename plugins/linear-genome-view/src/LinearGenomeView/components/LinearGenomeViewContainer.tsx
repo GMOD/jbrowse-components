@@ -48,9 +48,29 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   const { classes } = useStyles()
   const session = getSession(model)
   const ref = useRef<HTMLDivElement>(null)
+  // cached left edge of the view, refreshed on resize, so the mousemove hover
+  // handler doesn't call getBoundingClientRect() (a layout reflow) every move
+  const rectLeft = useRef(0)
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
   useWheelScroll(ref, model)
+  useEffect(() => {
+    const curr = ref.current
+    if (!curr) {
+      return
+    }
+    rectLeft.current = curr.getBoundingClientRect().left
+    const observer =
+      'ResizeObserver' in window
+        ? new ResizeObserver(() => {
+            rectLeft.current = curr.getBoundingClientRect().left
+          })
+        : undefined
+    observer?.observe(curr)
+    return () => {
+      observer?.disconnect()
+    }
+  }, [])
   useEffect(() => {
     // sets the focused view id based on a click within the LGV;
     // necessary for subviews to be focused properly
@@ -76,11 +96,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         session.setHovered(undefined)
       }}
       onMouseMove={event => {
-        const c = ref.current
-        if (!c) {
-          return
-        }
-        const leftPx = event.clientX - c.getBoundingClientRect().left
+        const leftPx = event.clientX - rectLeft.current
         const hoverPosition = model.pxToBp(leftPx)
         const hoverFeature = tracks.find(t => t.displays[0].featureUnderMouse)
         session.setHovered({ hoverPosition, hoverFeature })

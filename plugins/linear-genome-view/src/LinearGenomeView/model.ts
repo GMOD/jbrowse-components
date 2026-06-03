@@ -62,6 +62,7 @@ import {
   calculateVisibleLocStrings,
   expandRegion,
   generateLocations,
+  makeTicks,
 } from './util.ts'
 
 import type {
@@ -1522,6 +1523,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           }
           return m
+        },
+        /**
+         * #getter
+         * Gridline tick positions (x relative to the staticBlocks frame),
+         * derived from staticBlocks + bpPerPx. Computed once and shared by every
+         * Gridlines instance (scalebar, main view, each pinned track) rather
+         * than recomputing the makeTicks loop per component.
+         */
+        get gridlineTicks() {
+          const { bpPerPx } = self
+          const blocks = this.staticBlocks.blocks
+          const firstBlockOffset = blocks[0]?.offsetPx ?? 0
+          const ticks: { key: string; x: number; major: boolean }[] = []
+          for (const block of blocks) {
+            if (block.type !== 'ContentBlock') {
+              continue
+            }
+            const { start, end, reversed, widthPx } = block
+            const blockLeft = block.offsetPx - firstBlockOffset
+            for (const { type, base } of makeTicks(start, end, bpPerPx)) {
+              const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
+              if (x >= blockLeft && x <= blockLeft + widthPx) {
+                ticks.push({
+                  key: `${block.key}-${base}`,
+                  x,
+                  major: type === 'major' || type === 'labeledMajor',
+                })
+              }
+            }
+          }
+          return ticks
         },
         /**
          * #getter

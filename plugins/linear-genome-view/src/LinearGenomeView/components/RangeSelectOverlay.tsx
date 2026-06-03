@@ -25,11 +25,7 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
   const {
     guideX,
     rubberbandOn,
-    leftBpOffset,
-    rightBpOffset,
-    numOfBpSelected,
-    width,
-    left,
+    rubberband,
     anchorPosition,
     open,
     isClick,
@@ -42,14 +38,10 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
     <>
       {guideX !== undefined && !isScalebarRefNameMenuOpen ? (
         <VerticalGuide model={model} coordX={guideX} />
-      ) : rubberbandOn ? (
+      ) : rubberbandOn && rubberband ? (
         <Suspense fallback={null}>
           <RubberbandSpan
-            leftBpOffset={leftBpOffset}
-            rightBpOffset={rightBpOffset}
-            numOfBpSelected={numOfBpSelected}
-            width={width}
-            left={left}
+            {...rubberband}
             top={rubberbandTop}
             sticky={stickyViewHeaders}
           />

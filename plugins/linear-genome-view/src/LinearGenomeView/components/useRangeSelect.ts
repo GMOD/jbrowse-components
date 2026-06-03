@@ -9,7 +9,9 @@ interface AnchorPosition {
   offsetX: number
   clientX: number
   clientY: number
-  isClick?: boolean
+  // true = a click (show click menu), false = a drag-selection (show range
+  // menu). Always set at construction, so it's never optional.
+  isClick: boolean
 }
 
 export function useRangeSelect(
@@ -102,6 +104,9 @@ export function useRangeSelect(
 
     event.preventDefault()
     event.stopPropagation()
+    // clear any leftover menu/selection so a fresh drag isn't blocked by a
+    // stale anchorPosition keeping mouseDragging false
+    setAnchorPosition(undefined)
     const relativeX = getRelativeX(event, ref.current)
     setStartX(relativeX)
     setCurrentX(relativeX)
@@ -133,43 +138,43 @@ export function useRangeSelect(
     ? model.pxToBp(anchorPosition.offsetX)
     : undefined
 
-  if (startX === undefined) {
-    return {
-      open,
-      isClick,
-      clickBpOffset,
-      guideX,
-      mouseDown,
-      mouseMove,
-      mouseOut,
-      handleClose,
-      handleMenuItemClick,
-      anchorPosition,
+  // rubberband geometry only exists while a drag is in progress (startX set);
+  // grouped so a single truthiness check narrows all fields for RubberbandSpan
+  let rubberband:
+    | undefined
+    | {
+        leftBpOffset: ReturnType<LinearGenomeViewModel['pxToBp']>
+        rightBpOffset: ReturnType<LinearGenomeViewModel['pxToBp']>
+        numOfBpSelected: number
+        width: number
+        left: number
+      }
+  if (startX !== undefined) {
+    const right = anchorPosition ? anchorPosition.offsetX : (currentX ?? startX)
+    const left = Math.min(right, startX)
+    const width = Math.abs(right - startX)
+    rubberband = {
+      leftBpOffset: model.pxToBp(left),
+      rightBpOffset: model.pxToBp(left + width),
+      numOfBpSelected: Math.ceil(width * model.bpPerPx),
+      width,
+      left,
     }
   }
-  const right = anchorPosition ? anchorPosition.offsetX : (currentX ?? startX)
-  const left = Math.min(right, startX)
-  const width = Math.abs(right - startX)
-  const leftBpOffset = model.pxToBp(left)
-  const rightBpOffset = model.pxToBp(left + width)
-  const numOfBpSelected = Math.ceil(width * model.bpPerPx)
 
   return {
     open,
     isClick,
     clickBpOffset,
     guideX,
-    rubberbandOn: !isClick,
+    // true only mid-drag and not a click — drives RubberbandSpan vs guide
+    rubberbandOn: rubberband !== undefined && !isClick,
     mouseDown,
     mouseMove,
     mouseOut,
     handleClose,
     handleMenuItemClick,
-    leftBpOffset,
-    rightBpOffset,
     anchorPosition,
-    numOfBpSelected,
-    width,
-    left,
+    rubberband,
   }
 }

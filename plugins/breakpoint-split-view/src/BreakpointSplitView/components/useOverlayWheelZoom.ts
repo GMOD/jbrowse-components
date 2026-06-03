@@ -1,5 +1,12 @@
 import { useEffect, useRef } from 'react'
 
+import {
+  applyZoomAccum,
+  getZoomNormalizer,
+  normalizeWheelDelta,
+  wheelFrameElapsedMs,
+} from '@jbrowse/core/util'
+
 import type { BreakpointViewModel } from '../model.ts'
 
 interface WheelState {
@@ -8,33 +15,6 @@ interface WheelState {
   lastViewIndex: number
   rafId: number | null
   lastRafTime: number | null
-}
-
-// Mirrors the zoom normalizer in
-// plugins/linear-genome-view/src/LinearGenomeView/components/useWheelScroll.ts.
-// Keep in sync if you change the zoom logic there.
-function getNormalizer(deltaY: number) {
-  const abs = Math.abs(deltaY)
-  if (abs < 6) {
-    return 25
-  }
-  if (abs > 150) {
-    return 500
-  }
-  if (abs > 30) {
-    return 150
-  }
-  return 75
-}
-
-function normalizeWheel(delta: number, mode: number) {
-  if (mode === 1) {
-    return delta * 16
-  }
-  if (mode === 2) {
-    return delta * 100
-  }
-  return delta
 }
 
 function findTrackContainers() {
@@ -95,8 +75,8 @@ export function useOverlayWheelZoom(
         return
       }
 
-      const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
-      const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
+      const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
+      const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
       const isCtrlZoom = event.ctrlKey || event.metaKey
 
       if (
@@ -104,7 +84,7 @@ export function useOverlayWheelZoom(
         (targetView.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
       ) {
         event.preventDefault()
-        s.zoomAccum += deltaY / getNormalizer(deltaY)
+        s.zoomAccum += deltaY / getZoomNormalizer(deltaY)
         s.lastClientX = event.clientX
         s.lastViewIndex = viewIndex
       } else {
@@ -113,22 +93,14 @@ export function useOverlayWheelZoom(
       }
 
       s.rafId ??= requestAnimationFrame(now => {
-        const elapsed = Math.min(
-          100,
-          s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
-        )
+        const elapsed = wheelFrameElapsedMs(now, s.lastRafTime)
         s.lastRafTime = now
-        const maxZoomDelta = (0.2 / 16.67) * elapsed
         if (s.zoomAccum !== 0) {
           const view = views[s.lastViewIndex]
           const container = findTrackContainers()[s.lastViewIndex]
           if (view?.zoomTo && container) {
-            const d = Math.max(
-              -maxZoomDelta,
-              Math.min(maxZoomDelta, s.zoomAccum),
-            )
             view.zoomTo(
-              d > 0 ? view.bpPerPx * (1 + d) : view.bpPerPx / (1 - d),
+              applyZoomAccum(view.bpPerPx, s.zoomAccum, elapsed),
               s.lastClientX - container.getBoundingClientRect().left,
             )
           }
