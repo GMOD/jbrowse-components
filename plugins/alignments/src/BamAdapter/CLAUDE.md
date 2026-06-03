@@ -9,6 +9,15 @@ Direct typed property access on the worker-side class would skip the switch
 entirely. Worth doing, but it touches the `Feature` abstraction; treat as a
 deliberate refactor, not a drive-by.
 
+## `fields` vs `get()` — keep conversion out of `fields`
+
+`get('tags')` hits the switch and returns raw `this.tags` directly — it never
+touches `fields`. The `fields` getter is only reached via the `default` branch
+for uncommon fields not in the switch. Do **not** move `convertTagsToPlainArrays`
+into `fields`; it belongs only in `toJSON()` (the MST/serialization path). Putting
+it in `fields` would be dead code for the hot render path and inconsistent with
+what `get('tags')` returns.
+
 ## `mismatches` getter allocates
 
 `get mismatches` builds the full `Mismatch[]` array. The single remaining
