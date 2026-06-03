@@ -74,8 +74,8 @@ const GridlinesContent = observer(function GridlinesContent({
                 key={`${block.key}-sep`}
                 className={cx(classes.block, classes.regionSeparator)}
                 style={{
-                  transform: `translateX(${block.offsetPx - firstBlockOffset + block.widthPx}px)`,
-                  width: 1,
+                  transform: `translateX(${block.offsetPx - firstBlockOffset + block.widthPx - 1}px)`,
+                  width: 3,
                 }}
               />
             ) : null
