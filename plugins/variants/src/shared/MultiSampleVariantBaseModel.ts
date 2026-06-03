@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { set1 } from '@jbrowse/core/ui/colors'
 import {
   SimpleFeature,
   getContainingView,
@@ -34,16 +33,13 @@ import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
-import {
-  GENOTYPE_SPLITTER,
-  NO_CALL_COLOR,
-  OTHER_ALT_COLOR,
-  REFERENCE_COLOR,
-  UNPHASED_COLOR,
-  getAltColorForDosage,
-} from './constants.ts'
+import { GENOTYPE_SPLITTER } from './constants.ts'
 import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
+import {
+  getGenotypeLegendItems,
+  getSampleGroupLegendItems,
+} from './variantLegend.ts'
 
 import type { ProcessedSource, Source } from './types.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -66,7 +62,7 @@ import type {
 // when the user hasn't already set a layout. Returns the colored sources, or
 // undefined when there's nothing to apply (no colorBy config, or sources lack
 // the requested attribute).
-function maybeApplyColorByPalette(
+export function maybeApplyColorByPalette(
   configuration: AnyConfigurationModel,
   sources: Source[],
 ): Source[] | undefined {
@@ -200,15 +196,15 @@ export default function MultiSampleVariantBaseModelF(
   return (
     types
       .compose(
-        // Abstract base shared by both MultiLinearVariantDisplay and
-        // LinearVariantMatrixDisplay. The name below is borrowed from the
+        // Abstract base shared by both LinearMultiSampleVariantDisplay and
+        // LinearMultiSampleVariantMatrixDisplay. The name below is borrowed from the
         // matrix subclass for historical reasons. `type` is `types.string`
         // (not a literal) because the base is never registered or instantiated
         // directly — the concrete subclass that composes this always overrides
         // `type` with its own literal, and a plain string keeps those subclass
         // models assignable to this base type. Don't rename the subclass `type`
         // literals — they appear in stored session snapshots.
-        'LinearVariantMatrixDisplay',
+        'LinearMultiSampleVariantMatrixDisplay',
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
@@ -976,29 +972,18 @@ export default function MultiSampleVariantBaseModelF(
          * Returns legend items for rendering colors based on current mode
          */
         legendItems(): LegendItem[] {
-          if (self.renderingMode === 'phased') {
-            const items: LegendItem[] = [
-              { color: REFERENCE_COLOR, label: 'Reference' },
-              { color: set1[0], label: 'Alt allele' },
-            ]
-            if (self.hasSecondaryAlt) {
-              items.push({ color: set1[1], label: 'Other alt allele' })
-            }
-            if (self.hasUnphased) {
-              items.push({ color: UNPHASED_COLOR, label: 'Unphased' })
-            }
-            return items
-          }
-          const items: LegendItem[] = [
-            { color: REFERENCE_COLOR, label: 'Homozygous reference' },
-            { color: getAltColorForDosage(0.5), label: 'Heterozygous alt' },
-            { color: getAltColorForDosage(1), label: 'Homozygous alt' },
+          return [
+            ...getGenotypeLegendItems({
+              renderingMode: self.renderingMode,
+              hasSecondaryAlt: self.hasSecondaryAlt,
+              hasUnphased: self.hasUnphased,
+            }),
+            // sidebar row colors encode the colorBy sample-metadata group
+            ...getSampleGroupLegendItems(
+              getConf(self, 'colorBy') as string,
+              self.sources,
+            ),
           ]
-          if (self.hasSecondaryAlt) {
-            items.push({ color: OTHER_ALT_COLOR, label: 'Other alt allele' })
-          }
-          items.push({ color: NO_CALL_COLOR, label: 'No call' })
-          return items
         },
       }))
       .actions(self => ({

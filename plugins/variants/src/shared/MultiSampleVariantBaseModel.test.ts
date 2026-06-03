@@ -2,6 +2,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { applyColorPalette } from '@jbrowse/tree-sidebar'
 
+import { maybeApplyColorByPalette } from './MultiSampleVariantBaseModel.ts'
 import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
 
 describe('SharedVariantConfigSchema', () => {
@@ -207,6 +208,46 @@ describe('colorBy config slot', () => {
       colorBy: 'population',
     })
     expect(readConfObject(config, 'colorBy')).toBe('population')
+  })
+})
+
+// Guards the on-initial-load wiring (setSources -> maybeApplyColorByPalette):
+// the display reads its `colorBy` config slot when sources first arrive and
+// colors them, or no-ops when colorBy is unset / the attribute is missing.
+describe('maybeApplyColorByPalette', () => {
+  const configSchema = sharedVariantConfigFactory()
+  function makeConfig(colorBy: string) {
+    return configSchema.create({
+      type: 'SharedVariantDisplay',
+      displayId: `maybe-colorby-${colorBy || 'empty'}`,
+      colorBy,
+    })
+  }
+  const sources = [
+    { name: 'sample1', population: 'EUR' },
+    { name: 'sample2', population: 'AFR' },
+    { name: 'sample3', population: 'EUR' },
+  ]
+
+  it('returns undefined when colorBy is unset (no palette applied on load)', () => {
+    expect(maybeApplyColorByPalette(makeConfig(''), sources)).toBeUndefined()
+  })
+
+  it('colors sources by the configured attribute on load', () => {
+    const result = maybeApplyColorByPalette(makeConfig('population'), sources)
+    expect(result).toBeDefined()
+    // same population => same color, different population => different color
+    expect(result![0]!.color).toBe(result![2]!.color)
+    expect(result![0]!.color).not.toBe(result![1]!.color)
+  })
+
+  it('returns undefined when the configured attribute is absent from sources', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(maybeApplyColorByPalette(makeConfig('nonexistent'), sources)).toBe(
+      undefined,
+    )
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
   })
 })
 

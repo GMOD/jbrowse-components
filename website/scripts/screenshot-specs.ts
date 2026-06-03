@@ -178,6 +178,39 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
+  // Multi-sample variant display colored by population: the 1000 Genomes phase 3
+  // chr1 callset (2,504 samples) with a population samples-TSV, so the per-sample
+  // rows group/color by the 26 population codes. The track config in
+  // config_demo.json sets colorBy: 'population' on its LinearMultiSampleVariantDisplay.
+  // Remote NCBI VCF — give it a long ready timeout and settle.
+  {
+    mode: 'url',
+    name: 'variants/population_1000genomes',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr1:1,000,000-1,020,000',
+          tracks: [
+            {
+              trackId:
+                '1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantDisplay',
+                height: 500,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 90000,
+    settleMs: 18000,
+    viewportHeight: 650,
+  },
+
   {
     mode: 'url',
     name: 'bigwig_xyplot',

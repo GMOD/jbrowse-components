@@ -44,9 +44,7 @@ import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// tags: ['!dev'] keeps these out of the sidebar; they still power <Canvas of={...}>
-// embeds in the MDX docs pages and remain available via "Show code"
-export default { title: 'Source code for examples', tags: ['!dev'] }
+export default { title: 'Source code for examples' }
 
 // ---------------------------------------------------------------------------
 // Shared volvox inline config used in source.code strings
@@ -638,80 +636,6 @@ function App() {
       <JBrowseLinearGenomeView viewState={state} />
     </div>
   )
-}`,
-      },
-    },
-  },
-}
-
-function HorizontallyFlippedViaDisplayedRegionsRender() {
-  const { assembly, tracks } = getVolvoxConfig()
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Horizontally flipped via displayedRegions',
-        view: {
-          type: 'LinearGenomeView',
-          offsetPx: 0,
-          bpPerPx: 1,
-          displayedRegions: [
-            {
-              refName: 'ctgA',
-              start: 0,
-              end: 50001,
-              reversed: true,
-              assemblyName: 'volvox',
-            },
-          ],
-        },
-      },
-    }),
-  )
-  return (
-    <div>
-      <p>
-        Set <code>reversed: true</code> on a region in{' '}
-        <code>displayedRegions</code> in your <code>defaultSession</code> to
-        start in the horizontally flipped orientation.
-      </p>
-      <JBrowseLinearGenomeView viewState={state} />
-    </div>
-  )
-}
-
-export const HorizontallyFlippedViaDisplayedRegions = {
-  render: HorizontallyFlippedViaDisplayedRegionsRender,
-  parameters: {
-    docs: {
-      source: {
-        language: 'tsx',
-        code: `\
-import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
-
-${VOLVOX_SOURCE_CONFIG}
-
-function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Horizontally flipped via displayedRegions',
-        view: {
-          type: 'LinearGenomeView',
-          offsetPx: 0,
-          bpPerPx: 1,
-          displayedRegions: [
-            { refName: 'ctgA', start: 0, end: 50001, reversed: true, assemblyName: 'volvox' },
-          ],
-        },
-      },
-    }),
-  )
-  return <JBrowseLinearGenomeView viewState={state} />
 }`,
       },
     },
@@ -2132,6 +2056,166 @@ function App() {
                 },
               },
             ],
+          },
+        },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}`,
+      },
+    },
+  },
+}
+
+// ---------------------------------------------------------------------------
+// WithMultiSampleVariantDisplay
+// ---------------------------------------------------------------------------
+
+const multiSampleVariantTrackId = 'volvox_multisample_sv'
+
+const multiSampleVariantAssembly = {
+  name: 'volvox',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+    },
+  },
+}
+
+// A multi-sample VCF (one genotype column per sample) plus a samples TSV that
+// maps each sample to metadata. The TSV's first column is the sample name; the
+// remaining columns (here "population") become groupable/colorable attributes.
+const multiSampleVariantTracks = [
+  {
+    type: 'VariantTrack',
+    trackId: multiSampleVariantTrackId,
+    name: 'volvox multi-sample SV',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: {
+        uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.vcf.gz',
+      },
+      index: {
+        location: {
+          uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.vcf.gz.tbi',
+        },
+      },
+      samplesTsvLocation: {
+        uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.samples.tsv',
+      },
+    },
+    displays: [
+      {
+        type: 'LinearMultiSampleVariantDisplay',
+        displayId: `${multiSampleVariantTrackId}-LinearMultiSampleVariantDisplay`,
+        // colorBy names a samples-TSV column. On initial track load the samples
+        // are grouped and colored by this attribute (here, population).
+        colorBy: 'population',
+      },
+    ],
+  },
+]
+
+function WithMultiSampleVariantDisplayRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly: multiSampleVariantAssembly,
+      tracks: multiSampleVariantTracks,
+      defaultSession: {
+        name: 'Multi-sample variants colored by population',
+        view: {
+          type: 'LinearGenomeView',
+          init: {
+            loc: 'ctgA:1..50,000',
+            assembly: 'volvox',
+            // opening by trackId auto-selects displays[0] from the track config
+            // (LinearMultiSampleVariantDisplay), so no displaySnapshot is needed
+            tracks: [multiSampleVariantTrackId],
+          },
+        },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithMultiSampleVariantDisplay = {
+  render: WithMultiSampleVariantDisplayRender,
+  parameters: {
+    docs: {
+      source: {
+        language: 'tsx',
+        code: `\
+import { useState } from 'react'
+import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+const assembly = {
+  name: 'volvox',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+    },
+  },
+}
+
+// A multi-sample VCF (one genotype column per sample) plus a samples TSV that
+// maps each sample to metadata. The TSV's first column is the sample name; the
+// remaining columns (here "population") become groupable/colorable attributes.
+const tracks = [
+  {
+    type: 'VariantTrack',
+    trackId: 'volvox_multisample_sv',
+    name: 'volvox multi-sample SV',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: {
+        uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.vcf.gz',
+      },
+      index: {
+        location: {
+          uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.vcf.gz.tbi',
+        },
+      },
+      samplesTsvLocation: {
+        uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.samples.tsv',
+      },
+    },
+    displays: [
+      {
+        type: 'LinearMultiSampleVariantDisplay',
+        displayId: 'volvox_multisample_sv-LinearMultiSampleVariantDisplay',
+        // colorBy names a samples-TSV column. On initial track load the samples
+        // are grouped and colored by this attribute (here, population).
+        colorBy: 'population',
+      },
+    ],
+  },
+]
+
+function App() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      defaultSession: {
+        name: 'Multi-sample variants colored by population',
+        view: {
+          type: 'LinearGenomeView',
+          init: {
+            loc: 'ctgA:1..50,000',
+            assembly: 'volvox',
+            // opening by trackId auto-selects displays[0] from the track config
+            // (LinearMultiSampleVariantDisplay), so no displaySnapshot is needed
+            tracks: ['volvox_multisample_sv'],
           },
         },
       },

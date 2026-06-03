@@ -2571,7 +2571,8 @@
       "assemblyNames": ["volvox"],
       "displays": [
         {
-          "type": "MultiLinearVariantDisplay",
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "volvox multi-sample sv-LinearMultiSampleVariantDisplay",
           "showReferenceAlleles": true,
           "colorBy": "population"
         }

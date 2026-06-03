@@ -4433,7 +4433,8 @@
     {
       "type": "VariantTrack",
       "trackId": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf",
-      "name": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf",
+      "name": "1000 Genomes phase 3 chr1 (colored by population)",
+      "category": ["1000 Genomes"],
       "metadata": {
         "samples": "The population codes were manually downloaded from internationalgenome.org, filtered and sorted for samples that have a population code"
       },
@@ -4454,6 +4455,13 @@
           "indexType": "TBI"
         }
       },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf-LinearMultiSampleVariantDisplay",
+          "colorBy": "population"
+        }
+      ],
       "assemblyNames": ["hg19"]
     },
     {
