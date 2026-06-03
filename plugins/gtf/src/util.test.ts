@@ -9,8 +9,6 @@ function makeLoc(attributes: Record<string, unknown[]>): FeatureLoc {
     strand: '+',
     seq_name: 'ctgA',
     attributes,
-    data: undefined,
-    derived_features: undefined,
   }
 }
 
@@ -23,6 +21,16 @@ test('strips GTF quotes from single- and multi-value attributes alike', () => {
   )
   expect(f.gene_id).toBe('ENSG01')
   expect(f.tag).toEqual(['basic', 'CCDS'])
+})
+
+test('keeps a comma inside an attribute value intact', () => {
+  // GTF expresses multiple values via repeated keys, not comma separation, so a
+  // comma inside a quoted value must not split it
+  const gtf =
+    'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "g1"; transcript_id "t1"; note "a, b";'
+  const [transcript] = parseGtf(gtf)
+  const exon = featureData(transcript!.child_features![0]![0]!)
+  expect(exon.note).toBe('a, b')
 })
 
 test('synthesizes a transcript spanning its children when no transcript line exists', () => {

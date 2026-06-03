@@ -76,7 +76,10 @@ function nullIfDot(s: string | undefined) {
 }
 
 /**
- * Parse the GTF 9th column (`gene_id "X"; transcript_id "Y";`). Values keep
+ * Parse the GTF 9th column (`gene_id "X"; transcript_id "Y";`). Each `key
+ * "value"` entry contributes one value; GTF expresses multiple values per key
+ * via repeated keys (`tag "A"; tag "B"`), not comma separation, so the value is
+ * taken whole (a comma inside it, e.g. `note "a, b"`, stays intact). Values keep
  * their surrounding quotes here; quote stripping happens in featureData.
  */
 function parseGtfAttributes(attrString: string) {
@@ -87,13 +90,9 @@ function parseGtfAttributes(attrString: string) {
       const sp = trimmed.indexOf(' ')
       if (sp !== -1) {
         const key = trimmed.slice(0, sp)
-        const values = trimmed
-          .slice(sp + 1)
-          .split(',')
-          .map(v => v.trim())
-          .filter(v => v.length > 0)
-        if (values.length > 0) {
-          ;(attrs[key] ??= []).push(...values)
+        const value = trimmed.slice(sp + 1).trim()
+        if (value.length > 0) {
+          ;(attrs[key] ??= []).push(value)
         }
       }
     }
