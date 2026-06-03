@@ -176,12 +176,12 @@ export function finalizeBlock(
 
 /**
  * Build a TafFeature from a finalized block, optionally filtering rows
- * whose assembly isn't in `sampleFilter`. Reference row (`row0`) determines
+ * whose assembly isn't in `sampleIds`. Reference row (`row0`) determines
  * the feature's genomic span; alignments are keyed by assembly name.
  */
 export function blockToFeature(
   block: AlignmentBlock,
-  sampleFilter?: Set<string>,
+  sampleIds?: Set<string>,
 ): TafFeature | undefined {
   if (block.rows.length === 0 || block.columnNumber === 0) {
     return undefined
@@ -191,8 +191,8 @@ export function blockToFeature(
   const alignments: Record<string, AlignmentRecord> = {}
 
   for (const row of block.rows) {
-    const parsed = sampleFilter
-      ? matchSampleId(row.sequenceName, sampleFilter)
+    const parsed = sampleIds
+      ? matchSampleId(row.sequenceName, sampleIds)
       : parseAssemblyAndChrSimple(row.sequenceName)
     if (parsed?.assemblyName) {
       alignments[parsed.assemblyName] = {

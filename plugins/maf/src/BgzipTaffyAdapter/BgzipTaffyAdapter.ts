@@ -52,7 +52,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   *parseTafBlocksStreaming(
     buffer: Uint8Array,
     runLengthEncodeBases: boolean,
-    sampleFilter?: Set<string>,
+    sampleIds?: Set<string>,
   ): Generator<TafFeature> {
     let pBlock: AlignmentBlock | undefined
     let currentBlock: AlignmentBlock | undefined
@@ -75,7 +75,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
         // If we have a current block with columns, finalize and yield it
         if (currentBlock && columns.length > 0) {
           finalizeBlock(currentBlock, columns, this.decoder)
-          const feature = blockToFeature(currentBlock, sampleFilter)
+          const feature = blockToFeature(currentBlock, sampleIds)
           if (feature) {
             yield feature
           }
@@ -116,7 +116,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     // Finalize and yield last block
     if (currentBlock && columns.length > 0) {
       finalizeBlock(currentBlock, columns, this.decoder)
-      const feature = blockToFeature(currentBlock, sampleFilter)
+      const feature = blockToFeature(currentBlock, sampleIds)
       if (feature) {
         yield feature
       }
@@ -170,7 +170,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { index, runLengthEncodeBases } = await this.setup(opts)
-        const sampleFilter = buildSampleFilter(opts)
+        const sampleIds = buildSampleFilter(opts)
 
         // Get byte range for this query
         const records = index[query.refName]
@@ -223,7 +223,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
         for (const feat of this.parseTafBlocksStreaming(
           slice,
           runLengthEncodeBases,
-          sampleFilter,
+          sampleIds,
         )) {
           // Filter features that overlap with query region
           if (feat.end > query.start && feat.start < query.end) {
