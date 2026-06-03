@@ -13,8 +13,8 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // Args for the single RenderAlignmentData RPC. `linkedReads` selects the
-// pileup (`'off'`) vs chain (`'normal'`/`'bezier'`) path inside the worker —
-// the same flag the client already tracks, so no separate `mode` is needed.
+// pileup (`'off'`) vs chain (`'normal'`) path inside the worker — the same flag
+// the client already tracks, so no separate `mode` is needed.
 // `sortTag`/`showSoftClipping` are pileup-only; `drawSingletons`/
 // `drawProperPairs` are chain-only (the unused side is ignored per mode).
 export interface RenderAlignmentDataArgs {
@@ -29,7 +29,7 @@ export interface RenderAlignmentDataArgs {
   // invalidate the fetched data — main-thread layout re-runs instead.
   sortTag?: string
   showSoftClipping?: boolean
-  linkedReads?: 'off' | 'normal' | 'bezier'
+  linkedReads?: 'off' | 'normal'
   drawSingletons?: boolean
   drawProperPairs?: boolean
   statusCallback?: (status: string) => void

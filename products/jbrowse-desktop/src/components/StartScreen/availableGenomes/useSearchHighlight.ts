@@ -1,4 +1,5 @@
 import { type RefObject, useLayoutEffect } from 'react'
+
 import { alpha, useTheme } from '@mui/material'
 
 const HIGHLIGHT_NAME = 'jbrowse-search'

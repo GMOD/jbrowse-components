@@ -1,6 +1,12 @@
+import { observer } from 'mobx-react'
+
 // Shown over the plot when LD coloring is on but the index SNP wasn't found in
 // the LD data for the loaded region, so every point is grey.
-export default function LdIndexWarning({ offsetTop }: { offsetTop: number }) {
+const LdIndexWarning = observer(function LdIndexWarning({
+  offsetTop,
+}: {
+  offsetTop: number
+}) {
   return (
     <div
       style={{
@@ -19,4 +25,6 @@ export default function LdIndexWarning({ offsetTop }: { offsetTop: number }) {
       track menu
     </div>
   )
-}
+})
+
+export default LdIndexWarning

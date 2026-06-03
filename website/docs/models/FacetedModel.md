@@ -160,6 +160,16 @@ string[]
 string[]
 ```
 
+#### getter: nonMetadataFieldSet
+
+Used to detect when a metadata key collides with a non-metadata column name (so
+the header can show "x (from metadata)").
+
+```js
+// type
+Set<string>
+```
+
 #### getter: filteredRows
 
 ```js

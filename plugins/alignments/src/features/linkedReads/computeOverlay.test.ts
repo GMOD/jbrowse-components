@@ -41,10 +41,9 @@ const baseOpts = {
   pileupTopOffset: 0,
   scrollTop: 0,
   viewportH: 1000,
-  pairedArcsDown: false,
 }
 
-// Parse `M sx1 sy1 C cp1x apexY cp2x apexY sx2 sy2`.
+// Parse `M sx1 sy1 C cp1x cp1y cp2x cp2y sx2 sy2`.
 function controlPoints(d: string) {
   const n = String.raw`[-\d.]+`
   const re = new RegExp(

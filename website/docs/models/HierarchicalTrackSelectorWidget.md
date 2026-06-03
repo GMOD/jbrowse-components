@@ -84,9 +84,9 @@ selection: [] as AnyConfigurationModel[]
 
 ```js
 // type signature
-MaybeBoolean
+boolean | undefined
 // code
-sortTrackNames: localStorageGetJSON<MaybeBoolean>(
+sortTrackNames: localStorageGetJSON<boolean | undefined>(
         sortTrackNamesK,
         undefined,
       )
@@ -96,9 +96,9 @@ sortTrackNames: localStorageGetJSON<MaybeBoolean>(
 
 ```js
 // type signature
-MaybeBoolean
+boolean | undefined
 // code
-sortCategories: localStorageGetJSON<MaybeBoolean>(
+sortCategories: localStorageGetJSON<boolean | undefined>(
         sortCategoriesK,
         undefined,
       )
@@ -289,7 +289,7 @@ isRecentlyUsed: (trackId: string) => boolean
 
 ```js
 // type signature
-getRefSeqTrackConf: (assemblyName: string) => MaybeAnyConfigurationModel
+getRefSeqTrackConf: (assemblyName: string) => (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>) | undefined
 ```
 
 ### HierarchicalTrackSelectorWidget - Actions

@@ -1,28 +1,6 @@
-import { SimpleFeature } from '@jbrowse/core/util'
-
+import { feat, testLd as ld } from './ldTestHelpers.ts'
 import { makeLdColorEvaluator } from './makeLdColorEvaluator.ts'
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
-
-import type { LdToIndex } from './ldToIndex.ts'
-
-const ld: LdToIndex = {
-  r2ByKey: new Map([
-    ['rsB', 0.9],
-    ['chr1:200', 0.9],
-    ['chr1:300', 0.3],
-  ]),
-  indexFound: true,
-}
-
-function feat(p: { name?: string; start: number }) {
-  return new SimpleFeature({
-    uniqueId: String(p.start),
-    refName: 'chr1',
-    start: p.start,
-    end: p.start + 1,
-    ...(p.name === undefined ? {} : { name: p.name }),
-  })
-}
 
 test('index SNP (by name) gets the index color', () => {
   const fn = makeLdColorEvaluator(ld, 'rsIndex', 'chr1')

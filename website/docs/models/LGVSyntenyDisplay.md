@@ -54,9 +54,9 @@ sortedBy, coverageIsLog, coverageStats, coverageDomain, coverageTicks,
 legendItems, laidOutPileupMap, maxY, arcsComputed, arcsRpcDataMap,
 modificationThreshold, colorSchemeIndex, showModifications, showPerBaseQuality,
 totalPileupHeight, readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs,
-coverageDisplayHeight, pileupViewportHeight, scalebarOverlapLeft,
-showOutlineSetting, visibleLabels, scrollableHeight, sortTag, renderState,
-arcsYDomainBp, insertSizeTicks, featureUnderMouse
+belowCoverageBands, coverageDisplayHeight, pileupViewportHeight,
+scalebarOverlapLeft, showOutlineSetting, visibleLabels, scrollableHeight,
+sortTag, renderState, arcsYDomainBp, insertSizeTicks, featureUnderMouse
 
 **Methods:** findFeatureInRpcData, searchFeatureByID, getFeatureInfoById,
 rpcProps, trackMenuItems, contextMenuItems

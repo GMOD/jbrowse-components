@@ -20,7 +20,10 @@ export default {
 // clone before tagging baseUri so we never mutate the shared imported JSON
 const volvoxConfigPath = 'test_data/volvox/config.json'
 const volvoxConfig = structuredClone(volvoxConfigJson)
-addRelativeUris(volvoxConfig, new URL(volvoxConfigPath, window.location.href).href)
+addRelativeUris(
+  volvoxConfig,
+  new URL(volvoxConfigPath, window.location.href).href,
+)
 
 // ---------------------------------------------------------------------------
 // BasicExample

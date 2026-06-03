@@ -1,8 +1,5 @@
 import { Canvas, Meta } from '@storybook/addon-docs/blocks'
-import {
-  EmbeddedPlugin,
-  WithExternalPlugin,
-} from './JBrowseReactApp.stories'
+import { EmbeddedPlugin, WithExternalPlugin } from './JBrowseReactApp.stories'
 
 <Meta title="Using Plugins" />
 
@@ -38,14 +35,17 @@ to see it:
 
 ## Loading a plugin from a URL at runtime
 
-If you don't want to bundle a plugin, fetch it at runtime with `loadPlugins`
-and pass the resulting classes to `createViewState`:
+If you don't want to bundle a plugin, fetch it at runtime with `loadPlugins` and
+pass the resulting classes to `createViewState`:
 
 ```js
 import { loadPlugins, createViewState } from '@jbrowse/react-app2'
 
 const plugins = await loadPlugins([
-  { name: 'UCSC', url: 'https://unpkg.com/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js' },
+  {
+    name: 'UCSC',
+    url: 'https://unpkg.com/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js',
+  },
 ])
 const state = createViewState({ config, plugins: plugins.map(p => p.plugin) })
 ```

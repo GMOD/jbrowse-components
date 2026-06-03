@@ -97,8 +97,13 @@ are unaffected.
   draw in the coverage band and flow through the unified canvas pass, so they
   serialize straight into `SvgCanvas` on export. Non-interactive.
 - **Linked-read bezier arcs** (`PileupBezierOverlay`, `computePileupBezierArcs`,
-  `linkedReads === 'bezier'`) span the pileup and are an interactive React SVG
-  overlay (hover tooltip + click-to-select), like sashimi below.
+  gated on the `showBezierConnections` flag) span the pileup and are an
+  interactive React SVG overlay (hover tooltip + click-to-select), like sashimi
+  below. `showBezierConnections` is orthogonal to `linkedReads` layout — the
+  curves draw over an ordinary pileup or a chain layout. Toggling it is a
+  main-thread tier-2/4 setting (`laidOutPileupMap` + `renderState`), never in
+  `rpcProps`. The horizontal-tangent oval shape mirrors BreakpointSplitView's
+  `AlignmentConnections`.
 
 The overlay was renamed from `PileupArcsOverlay` precisely so "Arcs" reads as
 the coverage-band feature and "Bezier" as the linked-read overlay. Don't route

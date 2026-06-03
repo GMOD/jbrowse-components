@@ -189,11 +189,10 @@ describe('Canvas2DWiggleRenderer', () => {
     const source0 = { ...makeSource([5], [0], [1000]), rowIndex: 0 }
     const source1 = { ...makeSource([8], [0], [1000]), rowIndex: 1 }
 
-    renderer.renderBlocks(
-      [defaultBlock],
-      new Map([[0, [source0, source1]]]),
-      { ...defaultState, numRows: 2 },
-    )
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source0, source1]]]), {
+      ...defaultState,
+      numRows: 2,
+    })
 
     expect(fillRectCalls.length).toBe(2)
     // First source in top half (0-100px), second in bottom half (100-200px)

@@ -20,7 +20,9 @@ describe('openTrackMenuItem', () => {
     const notify = jest.fn()
     const addWidget = jest.fn()
     clickOf(openTrackMenuItem())({ views: [], notify, addWidget })
-    expect(notify).toHaveBeenCalledWith('Please open a view to add a track first')
+    expect(notify).toHaveBeenCalledWith(
+      'Please open a view to add a track first',
+    )
     expect(addWidget).not.toHaveBeenCalled()
   })
 
@@ -79,7 +81,10 @@ describe('preferencesMenuItem', () => {
     clickOf(item)(session)
     const [[cb]] = queueDialog.mock.calls
     const handleClose = jest.fn()
-    expect(cb(handleClose)).toEqual([Dialog, { session, pluginManager, handleClose }])
+    expect(cb(handleClose)).toEqual([
+      Dialog,
+      { session, pluginManager, handleClose },
+    ])
   })
 })
 

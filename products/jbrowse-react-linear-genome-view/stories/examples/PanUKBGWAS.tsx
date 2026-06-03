@@ -105,6 +105,34 @@ const assembly = {
   },
 }
 
+const NCBI_REFSEQ_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'ncbi_refseq_hg38',
+  name: 'NCBI RefSeq genes',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: { uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz' },
+    index: {
+      indexType: 'CSI',
+      location: { uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi' },
+    },
+  },
+  displays: [
+    {
+      type: 'LinearBasicDisplay',
+      displayId: 'ncbi_refseq_hg38-LinearBasicDisplay',
+      height: 200,
+      // gene_id holds the symbol; description is on the first transcript subfeature
+      labels: {
+        name: "jexl:get(feature,'gene_id') || get(feature,'name') || get(feature,'id')",
+        description:
+          "jexl:get(feature,'description') || get(feature,'note') || (get(feature,'subfeatures')[0] ? get(get(feature,'subfeatures')[0],'description') : '')",
+      },
+    },
+  ],
+}
+
 function makeTrack(phenotypeId: string, scoreColumn: string) {
   return {
     type: 'GWASTrack',
@@ -119,6 +147,13 @@ function makeTrack(phenotypeId: string, scoreColumn: string) {
         location: { uri: `${BASE}/${phenotypeId}.tsv.bgz.tbi` },
       },
     },
+    displays: [
+      {
+        type: 'LinearManhattanDisplay',
+        displayId: 'panukb_gwas-LinearManhattanDisplay',
+        height: 250,
+      },
+    ],
   }
 }
 
@@ -135,13 +170,17 @@ function GenomeView({
   const [state] = useState(() =>
     createViewState({
       assembly,
-      tracks: [makeTrack(phenotypeId, scoreColumn)],
+      tracks: [makeTrack(phenotypeId, scoreColumn), NCBI_REFSEQ_TRACK],
       plugins: [GWASPlugin],
       defaultSession: {
         name: 'Pan-UKB GWAS',
         view: {
           type: 'LinearGenomeView',
-          init: { assembly: 'hg38', loc, tracks: ['panukb_gwas'] },
+          init: {
+            assembly: 'hg38',
+            loc,
+            tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
+          },
         },
       },
     }),
@@ -204,10 +243,13 @@ import { useState } from 'react'
 import GWASPlugin from '@jbrowse/plugin-gwas'
 import { JBrowseLinearGenomeView, createViewState } from '@jbrowse/react-linear-genome-view2'
 
+// _hq columns exclude low-confidence variants (recommended over non-_hq)
+// Per-population columns (neglog10_pval_EUR etc.) contain NA for variants not
+// tested in that ancestry — those points are silently skipped in the plot.
 const PHENOTYPES = [
-  { id: 'continuous-50-both_sexes-irnt', label: 'Standing height' },
-  { id: 'continuous-21001-both_sexes-irnt', label: 'Body mass index' },
-  { id: 'icd10-E11-both_sexes', label: 'Type 2 diabetes' },
+  { id: 'continuous-50-both_sexes-irnt', label: 'Standing height', defaultLoc: 'chr12:64,000,000..67,000,000' },
+  { id: 'continuous-21001-both_sexes-irnt', label: 'Body mass index', defaultLoc: 'chr16:53,000,000..55,000,000' },
+  { id: 'icd10-E11-both_sexes', label: 'Type 2 diabetes', defaultLoc: 'chr10:112,500,000..113,500,000' },
   // add more from https://pan.ukbb.broadinstitute.org
 ]
 
@@ -245,6 +287,32 @@ const assembly = {
   },
 }
 
+const NCBI_REFSEQ_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'ncbi_refseq_hg38',
+  name: 'NCBI RefSeq genes',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: { uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz' },
+    index: {
+      indexType: 'CSI',
+      location: { uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi' },
+    },
+  },
+  displays: [
+    {
+      type: 'LinearBasicDisplay',
+      displayId: 'ncbi_refseq_hg38-LinearBasicDisplay',
+      height: 200,
+      labels: {
+        name: "jexl:get(feature,'gene_id') || get(feature,'name') || get(feature,'id')",
+        description: "jexl:get(feature,'description') || get(feature,'note') || (get(feature,'subfeatures')[0] ? get(get(feature,'subfeatures')[0],'description') : '')",
+      },
+    },
+  ],
+}
+
 function makeTrack(phenotypeId, scoreColumn) {
   return {
     type: 'GWASTrack',
@@ -259,24 +327,28 @@ function makeTrack(phenotypeId, scoreColumn) {
         location: { uri: \`\${BASE}/\${phenotypeId}.tsv.bgz.tbi\` },
       },
     },
+    displays: [
+      {
+        type: 'LinearManhattanDisplay',
+        displayId: 'panukb_gwas-LinearManhattanDisplay',
+        height: 250,
+      },
+    ],
   }
 }
 
 function GenomeView({ phenotypeId, scoreColumn }) {
+  const loc = PHENOTYPES.find(p => p.id === phenotypeId)?.defaultLoc ?? 'chr1:1..248956422'
   const [state] = useState(() =>
     createViewState({
       assembly,
-      tracks: [makeTrack(phenotypeId, scoreColumn)],
+      tracks: [makeTrack(phenotypeId, scoreColumn), NCBI_REFSEQ_TRACK],
       plugins: [GWASPlugin],
       defaultSession: {
         name: 'Pan-UKB GWAS',
         view: {
           type: 'LinearGenomeView',
-          init: {
-            assembly: 'hg38',
-            loc: 'chr1:1..248956422',
-            tracks: ['panukb_gwas'],
-          },
+          init: { assembly: 'hg38', loc, tracks: ['panukb_gwas', 'ncbi_refseq_hg38'] },
         },
       },
     }),

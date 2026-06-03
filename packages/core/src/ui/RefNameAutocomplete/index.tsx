@@ -4,64 +4,20 @@ import type { CSSProperties, ReactNode } from 'react'
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
-import { measureText, useDebounce, useFetch } from '../../util/index.ts'
+import {
+  cap,
+  coerceToResult,
+  getDeduplicatedResult,
+  getFiltered,
+  getInputWidth,
+  getOptionLabel,
+} from './util.ts'
+import { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
+import { useDebounce, useFetch } from '../../util/index.ts'
 
+import type { Option } from './util.ts'
+import type BaseResult from '../../TextSearch/BaseResults.ts'
 import type { AbstractSessionModel } from '../../util/index.ts'
-
-// matches the rendered font-size of the TextField
-const INPUT_FONT_SIZE = 14
-// reserve room for the search/help icons and input padding
-const ADORNMENT_RESERVE_PX = 100
-
-// MUI Autocomplete is not virtualized, so a broad query that returns thousands
-// of hits would render thousands of DOM nodes; cap the visible list instead
-const MAX_OPTIONS = 100
-
-interface Option {
-  group?: string
-  result: BaseResult
-}
-
-function cap(options: Option[]) {
-  return options.length > MAX_OPTIONS
-    ? [
-        ...options.slice(0, MAX_OPTIONS),
-        {
-          group: 'limitOption',
-          result: new BaseResult({ label: 'keep typing for more results' }),
-        },
-      ]
-    : options
-}
-
-function getFiltered(options: Option[], inputValue: string) {
-  const query = inputValue.toLowerCase()
-  return cap(
-    options.filter(({ result }) =>
-      result.getLabel().toLowerCase().includes(query),
-    ),
-  )
-}
-
-function getDeduplicatedResult(results: BaseResult[]): Option[] {
-  const m: Record<string, BaseResult[]> = {}
-  for (const result of results) {
-    const key = result.getDisplayString()
-    ;(m[key] ??= []).push(result)
-  }
-  return Object.entries(m).map(([displayString, dupes]) =>
-    dupes.length === 1
-      ? { result: dupes[0]! }
-      : {
-          result: new BaseResult({
-            displayString,
-            results: dupes,
-            label: displayString,
-          }),
-        },
-  )
-}
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
   session,
@@ -115,13 +71,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     },
   )
 
-  const width = Math.min(
-    Math.max(
-      measureText(externalValue, INPUT_FONT_SIZE) + ADORNMENT_RESERVE_PX,
-      minWidth,
-    ),
-    maxWidth,
-  )
+  const width = getInputWidth(externalValue, minWidth, maxWidth)
   const regionOptions: Option[] =
     assembly?.regions?.map(region => ({
       result: new RefSequenceResult({
@@ -161,18 +111,20 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       loadingText="loading results"
       onChange={(_event, selectedOption) => {
         if (selectedOption) {
-          onSelect?.(
-            typeof selectedOption === 'string'
-              ? new BaseResult({ label: selectedOption })
-              : selectedOption.result,
-          )
+          onSelect?.(coerceToResult(selectedOption))
           // snap back to the current loc; if navigation succeeds the parent
           // updates `value` and MUI's 'reset' event will reflect the new loc
           setInputValue(externalValue)
         }
       }}
       options={hasSearchResults ? searchOptions : regionOptions}
-      getOptionDisabled={option => option.group === 'limitOption'}
+      getOptionDisabled={option => !!option.isLimit}
+      // the two option sources are filtered against different query snapshots:
+      // searchOptions are already server-filtered for `debouncedSearch` (so we
+      // only cap), while regionOptions are filtered live against `searchQuery`.
+      // when a fetch resolves empty, hasSearchResults flips and the list swaps
+      // from search mode to region mode — both stay consistent because regions
+      // re-filter by the same query
       filterOptions={opts =>
         hasSearchResults ? cap(opts) : getFiltered(opts, searchQuery)
       }
@@ -196,9 +148,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           placeholder="Search for location"
         />
       )}
-      getOptionLabel={opt =>
-        typeof opt === 'string' ? opt : opt.result.getDisplayString()
-      }
+      getOptionLabel={getOptionLabel}
     />
   )
 })

@@ -237,7 +237,7 @@ round-trip.
 
 ```js
 // type
-{ colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 11 more ...; instanceCount: number; } | undefined
+{ colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 9 more ...; instanceCount: number; } | undefined
 ```
 
 #### getter: renderParams

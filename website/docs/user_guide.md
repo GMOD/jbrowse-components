@@ -5,12 +5,13 @@ title: User guide
 ## General usage
 
 - [Basic usage](/docs/user_guides/basic_usage) - Navigation, searching, opening files, and common UI controls
-- [Connections](/docs/user_guides/connections) - UCSC track hubs and JBrowse 1 data directories
+- [Connections](/docs/user_guides/connections) - UCSC track hubs, JB2 track hubs, and JBrowse 1 data directories
 
 ## Track types
 
 - [Alignments track](/docs/user_guides/alignments_track) - Learn how to show BAM and CRAM files
 - [Feature sequence panel](/docs/user_guides/feature_sequence) - Sequence extraction for selected features
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - Visualize genome-wide association study results as an interactive Manhattan plot
 - [Hi-C track](/docs/user_guides/hic_track) - Contact matrix display
 - [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track) - Multiple signal tracks displayed together
 - [Multi-sample variant displays](/docs/user_guides/multivariant_track) - Population-level variant views

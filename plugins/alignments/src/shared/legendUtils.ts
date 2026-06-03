@@ -1,4 +1,16 @@
-import { fillColor } from './color.ts'
+import {
+  colorFwdStrand,
+  colorInterchrom,
+  colorLongInsert,
+  colorPairLL,
+  colorPairLR,
+  colorPairRL,
+  colorPairRR,
+  colorRevStrand,
+  colorShortInsert,
+  colorSupplementary,
+  colorUnmappedMate,
+} from '@jbrowse/core/ui/theme'
 
 import type { ColorBy, ModificationTypeWithColor } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
@@ -6,30 +18,30 @@ import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 export type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 const supplementaryItem: LegendItem = {
-  color: fillColor.color_supplementary,
+  color: colorSupplementary,
   label: 'Supplementary/split',
 }
 
 const unmappedMateItem: LegendItem = {
-  color: fillColor.color_unmapped_mate,
+  color: colorUnmappedMate,
   label: 'Unmapped mate',
 }
 
 const orientationItems: LegendItem[] = [
-  { color: fillColor.color_pair_lr, label: 'LR - Normal pair orientation' },
-  { color: fillColor.color_pair_rl, label: 'RL - Mates point outward' },
-  { color: fillColor.color_pair_ll, label: 'LL - Both mates forward strand' },
-  { color: fillColor.color_pair_rr, label: 'RR - Both mates reverse strand' },
+  { color: colorPairLR, label: 'LR - Normal pair orientation' },
+  { color: colorPairRL, label: 'RL - Mates point outward' },
+  { color: colorPairLL, label: 'LL - Both mates forward strand' },
+  { color: colorPairRR, label: 'RR - Both mates reverse strand' },
 ]
 
 const insertSizeItems: LegendItem[] = [
-  { color: fillColor.color_longinsert, label: 'Long insert' },
-  { color: fillColor.color_shortinsert, label: 'Short insert' },
-  { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
+  { color: colorLongInsert, label: 'Long insert' },
+  { color: colorShortInsert, label: 'Short insert' },
+  { color: colorInterchrom, label: 'Inter-chromosomal' },
 ]
 
 const insertSizeLegendItems: LegendItem[] = [
-  { color: fillColor.color_pair_lr, label: 'Normal' },
+  { color: colorPairLR, label: 'Normal' },
   ...insertSizeItems,
   unmappedMateItem,
   supplementaryItem,
@@ -93,8 +105,8 @@ export function getReadDisplayLegendItems(
   }
   if (colorType === 'strand') {
     return [
-      { color: fillColor.color_fwd_strand, label: 'Forward strand' },
-      { color: fillColor.color_rev_strand, label: 'Reverse strand' },
+      { color: colorFwdStrand, label: 'Forward strand' },
+      { color: colorRevStrand, label: 'Reverse strand' },
       supplementaryItem,
     ]
   }

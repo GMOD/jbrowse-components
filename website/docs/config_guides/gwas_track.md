@@ -1,0 +1,213 @@
+---
+title: GWAS track configuration
+description:
+  Preparing GWAS and LD files and configuring GWASTrack, GWASAdapter, and
+  LinearManhattanDisplay
+guide_category: Track types
+---
+
+[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_gwas.json)
+
+## Preparing the GWAS file
+
+`GWASAdapter` reads a bgzipped, tabix-indexed BED-like file with a `#`-prefixed
+header row. Starting from a tab-separated GWAS results file:
+
+```bash
+# Sort by chromosome then position
+sort -k1,1 -k2,2n results.tsv > results.sorted.tsv
+
+# Prefix the header with '#' so tabix skips it
+sed -i '1s/^/#/' results.sorted.tsv
+
+bgzip results.sorted.tsv
+tabix -p bed results.sorted.tsv.gz
+```
+
+The score column must already be in **-log₁₀(p) units**. If only raw p-values
+are available, add a transformed column:
+
+```bash
+awk 'NR==1 {print $0"\tneg_log_pvalue"; next}
+     {printf "%s\t%.6f\n", $0, -log($5)/log(10)}' results.tsv > results.tsv
+```
+
+Replace `$5` with the actual column number of the raw p-value. The `name` column
+(4th BED field) is used as the SNP identifier for LD lookups; if absent, lookups
+fall back to `chr:bp` (1-based).
+
+Example file:
+
+```
+#chrom  chromStart  chromEnd  name      neg_log_pvalue
+chr1    109817590   109817591 rs4970383 1.234
+chr1    110162459   110162460 rs4971059 7.891
+```
+
+## Preparing the LD file
+
+LD data must be in PLINK `--r2` output format. For regional analyses a plain
+`.ld` file works fine. For chromosome-scale or genome-wide LD, bgzip and tabix
+the file so only pairs in the visible region are fetched:
+
+```bash
+# Preserve the header, sort remaining lines by CHR_A then BP_A
+(head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n) > study.sorted.ld
+
+bgzip study.sorted.ld
+# -c C: skip lines starting with 'C' (the PLINK header 'CHR_A ...')
+# BP positions in PLINK output are 1-based, matching tabix's default
+tabix -s 1 -b 2 -e 2 -c C study.sorted.ld.gz
+```
+
+## GWASAdapter
+
+| Slot              | Type               | Default            | Description                              |
+| ----------------- | ------------------ | ------------------ | ---------------------------------------- |
+| `bedGzLocation`   | file location      | required           | bgzipped GWAS results file               |
+| `index.location`  | file location      | `<file>.tbi`       | tabix index                              |
+| `index.indexType` | `"TBI"` \| `"CSI"` | `"TBI"`            | CSI for chromosomes > 512 Mb             |
+| `scoreColumn`     | string             | `"neg_log_pvalue"` | Header column name to plot on the Y axis |
+
+Files ending in `.txt.gz` are auto-detected as `GWASAdapter` in the Add Track
+dialog. `.bed.gz` files require manual adapter selection.
+
+## LinearManhattanDisplay
+
+| Slot                     | Type                 | Default     | Description                                          |
+| ------------------------ | -------------------- | ----------- | ---------------------------------------------------- |
+| `color`                  | color / jexl         | `"#0068d1"` | Point color — CSS literal or `jexl:` expression      |
+| `colorBy`                | `"normal"` \| `"ld"` | `"normal"`  | `"ld"` colors by r² to the index SNP                 |
+| `ldAdapter`              | frozen               | `null`      | LD adapter config; required when `colorBy` is `"ld"` |
+| `showSignificanceLines`  | boolean              | `true`      | Show genome-wide and suggestive cutoff lines         |
+| `genomeWideSignificance` | number               | `7.30103`   | Genome-wide threshold (-log₁₀ of 5 × 10⁻⁸)           |
+| `suggestiveSignificance` | number               | `5`         | Suggestive threshold (-log₁₀ of 1 × 10⁻⁵)            |
+
+`displayId` auto-generates to `"<trackId>-LinearManhattanDisplay"` when omitted.
+
+## Examples
+
+### Minimal track
+
+```json
+{
+  "type": "GWASTrack",
+  "trackId": "my_gwas",
+  "name": "My GWAS",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "GWASAdapter",
+    "bedGzLocation": {
+      "uri": "https://yourhost/results.bed.gz",
+      "locationType": "UriLocation"
+    },
+    "index": {
+      "location": {
+        "uri": "https://yourhost/results.bed.gz.tbi",
+        "locationType": "UriLocation"
+      }
+    }
+  }
+}
+```
+
+### LD coloring with plain .ld
+
+```json
+{
+  "type": "GWASTrack",
+  "trackId": "sle_gwas",
+  "name": "SLE GWAS",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "GWASAdapter",
+    "scoreColumn": "neg_log_pvalue",
+    "bedGzLocation": {
+      "uri": "https://yourhost/sle.bed.gz",
+      "locationType": "UriLocation"
+    },
+    "index": {
+      "location": {
+        "uri": "https://yourhost/sle.bed.gz.tbi",
+        "locationType": "UriLocation"
+      }
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearManhattanDisplay",
+      "displayId": "sle_gwas-LinearManhattanDisplay",
+      "colorBy": "ld",
+      "ldAdapter": {
+        "type": "PlinkLDAdapter",
+        "ldLocation": {
+          "uri": "https://yourhost/sle.ld",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  ]
+}
+```
+
+### LD coloring with tabix-indexed .ld.gz
+
+```json
+{
+  "displays": [
+    {
+      "type": "LinearManhattanDisplay",
+      "displayId": "my_gwas-LinearManhattanDisplay",
+      "colorBy": "ld",
+      "ldAdapter": {
+        "type": "PlinkLDTabixAdapter",
+        "ldLocation": {
+          "uri": "https://yourhost/study.ld.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://yourhost/study.ld.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+### Per-feature jexl color
+
+```json
+{
+  "displays": [
+    {
+      "type": "LinearManhattanDisplay",
+      "displayId": "my_gwas-LinearManhattanDisplay",
+      "color": "jexl:get(feature,'score') > 7.3 ? 'red' : '#0068d1'"
+    }
+  ]
+}
+```
+
+See the [jexl guide](/docs/config_guides/jexl) for expression syntax.
+
+### Custom significance thresholds
+
+```json
+{
+  "displays": [
+    {
+      "type": "LinearManhattanDisplay",
+      "displayId": "my_gwas-LinearManhattanDisplay",
+      "genomeWideSignificance": 8,
+      "suggestiveSignificance": 6
+    }
+  ]
+}
+```
+
+See the autogenerated [GWASAdapter](/docs/config/gwasadapter) and
+[LinearManhattanDisplay](/docs/config/linearmanhattandisplay) docs for the full
+slot reference.

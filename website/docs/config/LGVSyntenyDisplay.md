@@ -44,7 +44,7 @@ featureHeight: {
 ```js
 featureSpacing: {
         type: 'number',
-        defaultValue: 1,
+        defaultValue: 0,
         description: 'Spacing between features in pixels',
       }
 ```

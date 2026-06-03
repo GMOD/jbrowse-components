@@ -9,7 +9,7 @@ import type { Theme } from '@mui/material'
 export function getHighlightColor(highlight: { color?: string }, theme: Theme) {
   return highlight.color
     ? colord(highlight.color)
-    : colord(theme.palette.highlight.main).alpha(0.35)
+    : colord(theme.palette.highlight.main).alpha(0.2)
 }
 
 // Shared style for elided (collapsed) blocks — striped grey pattern used

@@ -120,7 +120,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                     sessionId,
                     adapterConfig,
                     stopToken,
-                    bpPerPx: view.bpPerPx / parseSamplesPerPixel(samplesPerPixel),
+                    bpPerPx:
+                      view.bpPerPx / parseSamplesPerPixel(samplesPerPixel),
                     statusCallback: (arg: string) => {
                       setProgress(arg)
                     },

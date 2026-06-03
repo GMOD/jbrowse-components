@@ -11,11 +11,11 @@ const SetFeatureHeightDialog = lazy(
 // both drive. Both the menu radios' `checked` state and `setCompactness`
 // derive from this — adding a preset means updating one place.
 //
-// 'Normal' here matches the config-schema default for featureSpacing (1) so
-// that a fresh display with no overrides already reads as Normal-checked
-// and clicking Normal is a no-op rather than a silent 1→2 spacing jump.
+// 'Normal' matches the config-schema defaults (featureHeight=7, featureSpacing=0)
+// so a fresh display with no overrides reads as Normal-checked and clicking
+// Normal is a no-op.
 export const COMPACTNESS_PRESETS = {
-  normal: { label: 'Normal', featureHeight: 7, featureSpacing: 1 },
+  normal: { label: 'Normal', featureHeight: 7, featureSpacing: 0 },
   compact: { label: 'Compact', featureHeight: 3, featureSpacing: 0 },
   'super-compact': {
     label: 'Super-compact',

@@ -50,8 +50,8 @@ export function buildManhattanResult(
       scoreMax = score
     }
     colors[i] = evalColor(f)
-    if (evalR2 && r2s) {
-      r2s[i] = evalR2(f)
+    if (r2s) {
+      r2s[i] = evalR2!(f)
     }
   }
 

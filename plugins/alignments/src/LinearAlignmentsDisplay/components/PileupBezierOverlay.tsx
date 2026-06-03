@@ -32,10 +32,10 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
 }) {
   const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { linkedReads, scrollTop, height } = model
+  const { showBezierConnections, scrollTop, height } = model
   const { initialized, width } = view
 
-  if (linkedReads !== 'bezier' || !initialized) {
+  if (!showBezierConnections || !initialized) {
     return null
   }
 
@@ -54,7 +54,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
         pointerEvents: 'none',
         height,
         width,
-        overflow: 'hidden',
+        overflow: 'visible',
       }}
     >
       {arcs.map(arc => {
@@ -65,7 +65,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
             key={arcId}
             d={arc.d}
             stroke={arc.stroke}
-            strokeWidth={isSelected ? 3 : 1.5}
+            strokeWidth={isSelected ? 5 : 1}
             strokeOpacity={0.8}
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}

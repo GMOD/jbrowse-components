@@ -331,7 +331,8 @@ describe('processMutableMenuActions', () => {
     ]
     const first = processMutableMenuActions([], actions)
     const second = processMutableMenuActions([], actions)
-    const labelsOf = (r: Menu[]) => itemsOf(r[0]!).map(i => ('label' in i ? i.label : ''))
+    const labelsOf = (r: Menu[]) =>
+      itemsOf(r[0]!).map(i => ('label' in i ? i.label : ''))
     expect(labelsOf(first)).toEqual(['About'])
     expect(labelsOf(second)).toEqual(['About'])
   })

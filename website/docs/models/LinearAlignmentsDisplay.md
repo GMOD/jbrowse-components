@@ -727,6 +727,25 @@ whether the below-coverage band reserves space.
 boolean
 ```
 
+#### getter: belowCoverageBands
+
+Geometry of the bands stacked below coverage in arcs-down mode, top to bottom:
+coverage → paired-end arcs → sashimi. Single source of truth so the layout
+height, the renderers, and the three resize handles can't drift apart.
+`arcsBandTop`/`sashimiBandTop` are each band's top edge; `bottom` is where the
+pileup begins (== coverageDisplayHeight).
+
+```js
+// type
+{
+  hasArcsBand: boolean
+  hasSashimiBand: boolean
+  arcsBandTop: number
+  sashimiBandTop: number
+  bottom: number
+}
+```
+
 #### getter: coverageDisplayHeight
 
 ```js

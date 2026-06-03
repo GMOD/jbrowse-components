@@ -499,7 +499,7 @@ renderSvg: (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<
 
 ```js
 // type signature
-showSubmenuMenuItems: () => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; type?: undefined; checked?: undefined; onClick?: undefined; } | { label: string; type: "checkbox"; checked: boolean; onClick: () => void; subMenu?: undefined; })[]
+showSubmenuMenuItems: () => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: "checkbox"; checked: boolean; onClick: () => void; })[]
 ```
 
 #### method: contextMenuItems
@@ -513,7 +513,7 @@ contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeM
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; type?: undefined; checked?: undefined; onClick?: undefined; } | { ...; })[]; onClick?: undefined; } | {...
+trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; })[]; onClick?: undefined; } | { ...; })[]
 ```
 
 ### LinearCanvasBaseDisplay - Actions

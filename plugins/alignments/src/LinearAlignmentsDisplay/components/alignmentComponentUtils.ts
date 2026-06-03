@@ -1,7 +1,20 @@
 import { useEffect, useRef } from 'react'
 import type React from 'react'
 
-import { fillColor } from '../../shared/color.ts'
+import {
+  colorFwdStrand,
+  colorLongInsert,
+  colorNostrand,
+  colorPairLL,
+  colorPairLR,
+  colorPairRL,
+  colorPairRR,
+  colorRevStrand,
+  colorShortInsert,
+  colorSupplementary,
+  colorUnmappedMate,
+} from '@jbrowse/core/ui/theme'
+
 import { toRgb } from '../shaders/colors.ts'
 
 import type { CigarCoords } from '../../shared/hitTestTypes.ts'
@@ -20,13 +33,13 @@ export function makeBpToScreenX(view: LinearGenomeViewModel) {
 export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
   const { palette } = theme
   return {
-    colorFwdStrand: toRgb(fillColor.color_fwd_strand),
-    colorRevStrand: toRgb(fillColor.color_rev_strand),
-    colorNostrand: toRgb(fillColor.color_nostrand),
-    colorPairLR: toRgb(fillColor.color_pair_lr),
-    colorPairRL: toRgb(fillColor.color_pair_rl),
-    colorPairRR: toRgb(fillColor.color_pair_rr),
-    colorPairLL: toRgb(fillColor.color_pair_ll),
+    colorFwdStrand: toRgb(colorFwdStrand),
+    colorRevStrand: toRgb(colorRevStrand),
+    colorNostrand: toRgb(colorNostrand),
+    colorPairLR: toRgb(colorPairLR),
+    colorPairRL: toRgb(colorPairRL),
+    colorPairRR: toRgb(colorPairRR),
+    colorPairLL: toRgb(colorPairLL),
     colorBaseA: toRgb(palette.bases.A.main),
     colorBaseC: toRgb(palette.bases.C.main),
     colorBaseG: toRgb(palette.bases.G.main),
@@ -41,10 +54,10 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorModificationFwd: toRgb(palette.modificationFwd),
     colorModificationRev: toRgb(palette.modificationRev),
     colorMutedSnpBase: toRgb(palette.mutedSnpBase),
-    colorLongInsert: toRgb(fillColor.color_longinsert),
-    colorShortInsert: toRgb(fillColor.color_shortinsert),
-    colorSupplementary: toRgb(fillColor.color_supplementary),
-    colorUnmappedMate: toRgb(fillColor.color_unmapped_mate),
+    colorLongInsert: toRgb(colorLongInsert),
+    colorShortInsert: toRgb(colorShortInsert),
+    colorSupplementary: toRgb(colorSupplementary),
+    colorUnmappedMate: toRgb(colorUnmappedMate),
   }
 }
 

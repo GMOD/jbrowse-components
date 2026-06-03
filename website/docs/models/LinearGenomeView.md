@@ -777,6 +777,23 @@ labels.
 Map<number, number>
 ```
 
+#### getter: gridlineTicks
+
+Gridline tick positions (x relative to the staticBlocks frame), derived from
+staticBlocks + bpPerPx. Computed once and shared by every Gridlines instance
+(scalebar, main view, each pinned track) rather than recomputing the makeTicks
+loop per component.
+
+```js
+// type
+{
+  key: string
+  x: number
+  major: boolean
+}
+;[]
+```
+
 #### getter: totalWidthPx
 
 Integer-rounded sum of all visible block widths. Slightly less than view.width

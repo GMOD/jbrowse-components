@@ -105,7 +105,7 @@ menus: () => Menu[]
 
 ```js
 // type signature
-setPluginsUpdated: (flag: boolean) => void
+setPluginsUpdated: () => void
 ```
 
 #### action: setDefaultSession

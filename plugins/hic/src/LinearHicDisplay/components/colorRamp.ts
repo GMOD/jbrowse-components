@@ -66,7 +66,9 @@ function isHicColorScheme(s: string): s is HicColorScheme {
 }
 
 function getScheme(name?: string) {
-  return name && isHicColorScheme(name) ? SCHEMES[name] : JUICEBOX_STOPS
+  return SCHEMES[
+    name && isHicColorScheme(name) ? name : DEFAULT_HIC_COLOR_SCHEME
+  ]
 }
 
 function lerp(a: number, b: number, t: number) {

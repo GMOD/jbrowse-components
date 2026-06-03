@@ -163,7 +163,7 @@ const suite: TestSuite = {
                 {
                   trackId: 'volvox-inv-pbsim',
                   displaySnapshot: {
-                    linkedReads: 'bezier',
+                    showBezierConnections: true,
                     readConnections: 'arc',
                   },
                 },
@@ -194,7 +194,7 @@ const suite: TestSuite = {
                 {
                   trackId: 'volvox-simple-inv.bam',
                   displaySnapshot: {
-                    linkedReads: 'bezier',
+                    showBezierConnections: true,
                     readConnections: 'arc',
                   },
                 },

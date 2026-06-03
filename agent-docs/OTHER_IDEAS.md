@@ -281,3 +281,6 @@ disappear.
 ## sort by modifiaction
 
 sophisticated abort system
+
+- search advanced panel
+- might need pagefind inverted index

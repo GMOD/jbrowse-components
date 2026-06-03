@@ -142,13 +142,16 @@ test('adapter reads 1-based skip-line header (Pan-UKB style)', async () => {
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   expect(featuresArray).toHaveLength(2)
 
-  const [f0, f1] = featuresArray as [typeof featuresArray[0], typeof featuresArray[0]]
+  const [f0, f1] = featuresArray as [
+    (typeof featuresArray)[0],
+    (typeof featuresArray)[0],
+  ]
   // 1-based pos 1000 → 0-based start 999, end 1000
-  expect(f0!.get('start')).toBe(999)
-  expect(f0!.get('end')).toBe(1000)
-  expect(f0!.get('score')).toBe(5.5)
-  expect(f1!.get('start')).toBe(1999)
-  expect(f1!.get('score')).toBe(3.2)
+  expect(f0.get('start')).toBe(999)
+  expect(f0.get('end')).toBe(1000)
+  expect(f0.get('score')).toBe(5.5)
+  expect(f1.get('start')).toBe(1999)
+  expect(f1.get('score')).toBe(3.2)
 })
 
 test('adapter can use gwas header', async () => {

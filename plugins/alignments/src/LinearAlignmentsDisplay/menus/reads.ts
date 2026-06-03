@@ -24,6 +24,8 @@ interface ReadsModel {
   toggleSashimiArcs: () => void
   linkedReads: LinkedReadsMode
   setLinkedReads: (mode: LinkedReadsMode) => void
+  showBezierConnections: boolean
+  setShowBezierConnections: (flag: boolean) => void
   readConnections: ReadConnectionsMode
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
@@ -75,10 +77,8 @@ export function getReadsMenuItem(model: ReadsModel) {
       checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
         model.toggleSashimiArcs()
       }),
-      checkboxItem('Bezier curves', model.linkedReads === 'bezier', () => {
-        model.setLinkedReads(
-          model.linkedReads === 'bezier' ? 'normal' : 'bezier',
-        )
+      checkboxItem('Bezier curves', model.showBezierConnections, () => {
+        model.setShowBezierConnections(!model.showBezierConnections)
       }),
       getArcDirectionMenuItem(model),
       {

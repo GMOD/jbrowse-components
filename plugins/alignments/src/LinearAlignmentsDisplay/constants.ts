@@ -30,10 +30,11 @@ export const ColorScheme = {
 
 export const ALIGNMENTS_FUDGE_FACTOR = 0.8
 
-// Linked-reads rendering mode. 'off' → ordinary pileup; 'normal' → chain
-// layout with straight connecting lines; 'bezier' → chain layout with
-// bezier curves.
-export type LinkedReadsMode = 'off' | 'normal' | 'bezier'
+// Linked-reads layout mode. 'off' → ordinary pileup; 'normal' → chain layout
+// grouping mates/supplementary alignments onto shared rows with connecting
+// lines. Bezier connection curves are orthogonal to layout (see the
+// `showBezierConnections` flag) and draw over either mode.
+export type LinkedReadsMode = 'off' | 'normal'
 
 // How read connections (mate pairs + split/chimeric reads) are rendered.
 // Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs;

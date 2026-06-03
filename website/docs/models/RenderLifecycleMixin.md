@@ -67,9 +67,9 @@ autoruns. Don't "fix" the cast.
 
 ```js
 // type signature
-unknown
+undefined
 // code
-currentRenderingBackend: undefined as unknown
+currentRenderingBackend: undefined
 ```
 
 #### volatile: renderTick
@@ -105,9 +105,9 @@ retry overlay).
 
 ```js
 // type signature
-unknown
+undefined
 // code
-renderError: undefined as unknown
+renderError: undefined
 ```
 
 ### RenderLifecycleMixin - Actions

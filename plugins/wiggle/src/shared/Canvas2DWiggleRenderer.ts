@@ -32,8 +32,14 @@ export function drawWiggleBlocks(
   blocks: RenderBlock[],
   state: WiggleGPURenderState,
 ) {
-  const { canvasWidth, canvasHeight, renderingType, scaleType, domainY, numRows } =
-    state
+  const {
+    canvasWidth,
+    canvasHeight,
+    renderingType,
+    scaleType,
+    domainY,
+    numRows,
+  } = state
   const rowHeight = canvasHeight / numRows
 
   for (const block of blocks) {

@@ -1,8 +1,14 @@
+import { observer } from 'mobx-react'
+
 import { LD_LEGEND } from '../ldBins.ts'
 
 // LocusZoom-style r² key, shown when the display colors points by LD to the
 // index SNP. Positioned top-right over the plot, like LocusZoom.
-export default function LdColorLegend({ offsetTop }: { offsetTop: number }) {
+const LdColorLegend = observer(function LdColorLegend({
+  offsetTop,
+}: {
+  offsetTop: number
+}) {
   return (
     <div
       style={{
@@ -36,4 +42,6 @@ export default function LdColorLegend({ offsetTop }: { offsetTop: number }) {
       ))}
     </div>
   )
-}
+})
+
+export default LdColorLegend

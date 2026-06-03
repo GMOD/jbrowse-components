@@ -18,6 +18,7 @@ a JBrowse 2 session.
 ## Track types
 
 - [Alignments track configuration](/docs/config_guides/alignments_track) - BAM/CRAM track config with BamAdapter and CramAdapter options
+- [GWAS track configuration](/docs/config_guides/gwas_track) - Preparing GWAS and LD files and configuring GWASTrack, GWASAdapter, and LinearManhattanDisplay
 - [Hi-C track configuration](/docs/config_guides/hic_track) - Contact matrix track config using the HicAdapter
 - [Multi-quantitative tracks](/docs/config_guides/multiquantitative_track) - Multiple BigWig/BedGraph signals combined into one display
 - [Quantitative tracks](/docs/config_guides/quantitative_track) - BigWig/BedGraph signal track config and display options

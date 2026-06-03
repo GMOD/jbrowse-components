@@ -6,7 +6,10 @@ import GenomicSequence from './seqtypes/GenomicSequence.tsx'
 import ProteinSequence from './seqtypes/ProteinSequence.tsx'
 import { getSequenceData } from './useSequenceData.ts'
 
-import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from './model.ts'
+import type {
+  SequenceDisplayMode,
+  SequenceFeatureDetailsModel,
+} from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Feat, SeqState } from '../util.tsx'
 

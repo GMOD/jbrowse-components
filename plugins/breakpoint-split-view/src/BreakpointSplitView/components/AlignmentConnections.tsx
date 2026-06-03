@@ -2,10 +2,7 @@ import { getSession, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  getLongReadOrientation,
-  getPairedOrientation,
-} from './getOrientationColor.tsx'
+import { useOrientationColor } from './getOrientationColor.tsx'
 import {
   LEFT,
   RIGHT,
@@ -25,6 +22,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
 }: OverlayProps) {
   const { interactiveOverlay, views, showIntraviewLinks, assembly } = model
   const theme = useTheme()
+  const { getPairedOrientation, getLongReadOrientation } = useOrientationColor()
   const session = getSession(model)
   const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
   const match = model.overlayMatches.get(trackId)

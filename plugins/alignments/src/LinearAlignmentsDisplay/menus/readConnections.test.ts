@@ -5,8 +5,8 @@ import {
 
 function makeModel() {
   return {
-    linkedReads: 'off' as 'off' | 'normal' | 'bezier',
-    setLinkedReads(mode: 'off' | 'normal' | 'bezier') {
+    linkedReads: 'off' as 'off' | 'normal',
+    setLinkedReads(mode: 'off' | 'normal') {
       this.linkedReads = mode
     },
     readConnections: 'off' as 'off' | 'arc' | 'samplot',

@@ -73,8 +73,8 @@
     "mobx-react": "^9.2.2",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "browserslist": {
     "production": [

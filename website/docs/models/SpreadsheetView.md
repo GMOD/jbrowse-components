@@ -71,7 +71,7 @@ hideFilterControls: false
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>; selectedAssemblyName: IMaybe<ISimpleType<string>>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>; selectedAssemblyName: IMaybe<ISimpleType<string>>; cachedFileLocation: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 importWizard: types.optional(ImportWizardModel, () =>
             ImportWizardModel.create(),
@@ -82,7 +82,7 @@ importWizard: types.optional(ImportWizardModel, () =>
 
 ```js
 // type signature
-IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 spreadsheet: types.maybe(Spreadsheet())
 ```
@@ -163,7 +163,7 @@ load a new spreadsheet and set our mode to display it
 
 ```js
 // type signature
-displaySpreadsheet: (spreadsheet?: (ModelInstanceTypeProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IType<...>; }> & ... 5 more ... & IStateTreeNode<...>) | undefined) => void
+displaySpreadsheet: (spreadsheet?: ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }>> | undefined) => void
 ```
 
 #### action: setInit
@@ -171,4 +171,26 @@ displaySpreadsheet: (spreadsheet?: (ModelInstanceTypeProps<{ rowSet: IType<RowSe
 ```js
 // type signature
 setInit: (init?: SpreadsheetViewInit | undefined) => void
+```
+
+#### action: loadSpreadsheet
+
+the single load funnel: fetch+parse via the import wizard, then display the
+result. Every entry point (declarative init, cached reload, the import form's
+Open button) routes through here so the view stays the sole owner of
+displaySpreadsheet
+
+```js
+// type signature
+loadSpreadsheet: (assemblyName: string) => Promise<void>
+```
+
+#### action: applyInit
+
+apply a declarative init (from addView / sv-inspector): point the import wizard
+at the file and load it
+
+```js
+// type signature
+applyInit: (init: SpreadsheetViewInit) => Promise<void>
 ```

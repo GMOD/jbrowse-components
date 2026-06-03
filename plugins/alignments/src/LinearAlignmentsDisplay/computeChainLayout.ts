@@ -246,11 +246,11 @@ function cloneWithChainLayout(
   }
 }
 
-// Layer linked-read straight-line records on top of an already chain-laid-out
-// map. The line builder needs Y values to be finalized (which they are once
-// `cloneWithChainLayout` has run) and traverses by readName across regions to
-// classify pairs, so this runs as a post-pass over the whole map.
-function attachLinkedReadLines(
+// Layer linked-read straight-line records on top of an already-laid-out map
+// (pileup or chain). The line builder needs finalized Y values and traverses by
+// readName across regions to classify pairs, so this runs as a post-pass over
+// the whole map. Driven by `showBezierConnections`, orthogonal to layout.
+export function attachLinkedReadLines(
   laidOutMap: Map<number, PileupDataResult>,
 ): Map<number, PileupDataResult> {
   const linesByIdx = computeLinkedReadLinesByRegion(laidOutMap)
@@ -278,7 +278,6 @@ function attachLinkedReadLines(
  */
 export function buildLaidOutChainMap(
   dataMap: ReadonlyMap<number, PileupDataResult>,
-  linkedReads: 'normal' | 'bezier',
 ): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
@@ -297,5 +296,5 @@ export function buildLaidOutChainMap(
     const readYs = readYsFromRowMap(data, rowMap)
     out.set(idx, cloneWithChainLayout(data, readYs, maxY))
   }
-  return linkedReads === 'bezier' ? attachLinkedReadLines(out) : out
+  return out
 }

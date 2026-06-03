@@ -1,8 +1,9 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+import { observer } from 'mobx-react'
 
 // Black ring around the hovered point. Drawn in an SVG overlay so it can sit
 // above the canvas without disturbing GPU re-renders.
-export default function HoverHighlight({
+const HoverHighlight = observer(function HoverHighlight({
   screenX,
   screenY,
   width,
@@ -34,4 +35,6 @@ export default function HoverHighlight({
       />
     </svg>
   )
-}
+})
+
+export default HoverHighlight

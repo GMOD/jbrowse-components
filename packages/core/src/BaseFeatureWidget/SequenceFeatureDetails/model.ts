@@ -14,7 +14,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
 
-function parseShowCoordinatesMode(val: string | undefined): ShowCoordinatesMode {
+function parseShowCoordinatesMode(
+  val: string | undefined,
+): ShowCoordinatesMode {
   return val === 'relative' || val === 'genomic' ? val : 'none'
 }
 

@@ -30,7 +30,9 @@ const INTERBASE_SORT_LABEL: Record<string, string> = {
 export function getSortByMenuItem(model: SortByModel) {
   const sortType = model.sortedBy?.type
   const activeLabel = sortType ? INTERBASE_SORT_LABEL[sortType] : undefined
-  const interbaseLabel = activeLabel ? `${activeLabel} at position` : 'Base pair'
+  const interbaseLabel = activeLabel
+    ? `${activeLabel} at position`
+    : 'Base pair'
   return {
     label: 'Sort by...',
     icon: SwapVertIcon,

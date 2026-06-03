@@ -15,7 +15,6 @@ import { findManhattanHit } from '../findManhattanHit.ts'
 import HoverHighlight from './HoverHighlight.tsx'
 import LdColorLegend from './LdColorLegend.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
-import SignificanceLines from './SignificanceLines.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
@@ -128,13 +127,7 @@ const ManhattanBody = observer(function ManhattanBody({
   contextMenu?: { coord: [number, number]; hit: ManhattanHit }
   setContextMenu: (v?: { coord: [number, number]; hit: ManhattanHit }) => void
 }) {
-  const {
-    ticks,
-    featureUnderMouse,
-    displayCrossHatches,
-    colorBy,
-    significanceLines,
-  } = model
+  const { ticks, featureUnderMouse, displayCrossHatches, colorBy } = model
   const scalebarLeft = model.scalebarOverlapLeft
   const ldMode = colorBy === 'ld' && model.canvasDrawn
 
@@ -159,13 +152,6 @@ const ManhattanBody = observer(function ManhattanBody({
       ) : null}
       {displayCrossHatches && ticks ? (
         <CrossHatches ticks={ticks} width={width} height={height} />
-      ) : null}
-      {significanceLines.length > 0 ? (
-        <SignificanceLines
-          lines={significanceLines}
-          width={width}
-          height={height}
-        />
       ) : null}
       {featureUnderMouse ? (
         <HoverHighlight

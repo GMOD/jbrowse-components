@@ -15,7 +15,8 @@ export function flipCigar(cigar: string): string {
     const s = starts[j]!
     const end = j + 1 < starts.length ? starts[j + 1]! : cigar.length
     const op = cigar[end - 1]!
-    result += cigar.slice(s, end - 1) + (op === 'D' ? 'I' : op === 'I' ? 'D' : op)
+    result +=
+      cigar.slice(s, end - 1) + (op === 'D' ? 'I' : op === 'I' ? 'D' : op)
   }
   return result
 }

@@ -17,10 +17,7 @@ import type { Writable } from 'stream'
 // served), so smaller gaps that would be sub-pixel there don't fragment rows.
 export const DEFAULT_COARSE_SPLIT_GAP = 10_000
 
-function processLine(
-  line: string,
-  coarseSplitGap: number | undefined,
-): string {
+function processLine(line: string, coarseSplitGap: number | undefined): string {
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
 

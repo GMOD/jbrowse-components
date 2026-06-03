@@ -122,8 +122,8 @@ middle is the part that is skipped.
 Each of the ~20,000 human protein-coding genes can be **alternatively spliced**,
 producing different proteins from different exon combinations. Because
 transcription varies by cell type and condition, scientists typically run
-RNA-seq across multiple conditions — for example, drought vs. healthy in a
-plant — to identify which genes are activated.
+RNA-seq across multiple conditions — for example, drought vs. healthy in a plant
+— to identify which genes are activated.
 
 ## Short reads and long reads
 

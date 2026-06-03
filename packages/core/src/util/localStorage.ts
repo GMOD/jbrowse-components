@@ -23,3 +23,7 @@ export function localStorageGetBoolean(key: string, defaultVal: boolean) {
 export function localStorageSetBoolean(key: string, value: boolean) {
   localStorageSetItem(key, JSON.stringify(value))
 }
+
+export function localStorageSetNumber(key: string, value: number) {
+  localStorageSetItem(key, JSON.stringify(value))
+}

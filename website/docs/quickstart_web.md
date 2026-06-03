@@ -99,7 +99,6 @@ Run `jbrowse add-track --help` for more options.
 
 <Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>
 
-
 ### VCF
 
 VCFs must be bgzip-compressed and tabix-indexed:
@@ -202,7 +201,8 @@ can be typed directly into the location search box. See the
 - [Config guide](/docs/config_guide) — advanced track and assembly configuration
 - [CLI reference](/docs/cli) — full reference for all CLI commands
 - [FAQ](/docs/faq) — common questions including text searching
-- [CORS errors](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files) — if tracks fail to load from remote URLs
+- [CORS errors](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files) —
+  if tracks fail to load from remote URLs
 
 ## Tips
 

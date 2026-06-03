@@ -5,71 +5,44 @@ import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/pa
 import type { ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
-// Minimum horizontal bezier handle in screen pixels so the direction is visible
-// even for very tightly-spaced pairs.
+// Minimum horizontal bezier handle in screen pixels so the tangent direction
+// stays visible even for tightly-spaced pairs.
 const MIN_TANGENT_PX = 15
 
-// Fraction of horizontal arc width used as the bezier handle length.
-// At 0 this degenerates to a symmetric arch; larger values make the S-curve
-// more pronounced for inversions and duplications.
+// Bezier handle length as a fraction of the horizontal span. The control points
+// sit at each endpoint's own Y (no apex), so the curve leaves each read
+// horizontally in its 5'→3' direction — the BreakpointSplitView
+// AlignmentConnections oval, not an arch.
 const TANGENT_FACTOR = 0.3
 
-// Arc peak height above the read center, in units of rowHeight.
-const PEAK_ROW_FACTOR = 3
+// The control points sit at the endpoints' own Y, so the curve stays within the
+// [min, max] Y band — no apex to extend the bounds.
+function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
+  return Math.min(sy1, sy2) < viewportBottom && Math.max(sy1, sy2) > 0
+}
 
-function arcIsVisible(
+// Horizontal-tangent curve matching BreakpointSplitView's AlignmentConnections:
+// each control point sits at its endpoint's Y and is offset horizontally along
+// the read's actual BAM strand (fwd → right, rev → left), so the curve leaves
+// each read horizontally and arcs across as a flat oval. Use the real strand
+// (not the classifier-negated one): for split reads `connectionBp` puts sx1 at
+// read1's right edge and sx2 at read2's left edge, and the tangent must still
+// follow the strand.
+function bezierPath(
+  sx1: number,
   sy1: number,
+  sx2: number,
   sy2: number,
-  peakH: number,
-  isNormal: boolean,
-  arcsDown: boolean,
-  viewportH: number,
+  s1: number,
+  s2: number,
 ) {
-  const minY = Math.min(sy1, sy2)
-  const maxY = Math.max(sy1, sy2)
-  const extra = isNormal ? 0 : peakH
-  const arcTop = arcsDown ? minY : minY - extra
-  const arcBottom = arcsDown ? maxY + extra : maxY
-  return arcTop < viewportH && arcBottom > 0
-}
-
-interface BezierOpts {
-  sx1: number
-  sy1: number
-  sx2: number
-  sy2: number
-  s1: number
-  s2: number
-  peakH: number
-  arcsDown: boolean
-}
-
-// Tangent control points leave each endpoint in the read's 5'→3' direction,
-// so a fwd read's curve heads right and a rev read's curve heads left. Use
-// the *actual* strand here (not the classifier-negated one): for split reads
-// `connectionBp` puts sx1 at read1's right edge and sx2 at read2's left edge,
-// and the tangent direction must still match the strand to produce a
-// symmetric curve over the junction.
-function bezierPath({
-  sx1,
-  sy1,
-  sx2,
-  sy2,
-  s1,
-  s2,
-  peakH,
-  arcsDown,
-}: BezierOpts) {
-  const apexY = arcsDown
-    ? Math.max(sy1, sy2) + peakH
-    : Math.min(sy1, sy2) - peakH
   const tangentDx = Math.max(
     MIN_TANGENT_PX,
     Math.abs(sx2 - sx1) * TANGENT_FACTOR,
   )
   const cp1x = sx1 + s1 * tangentDx
   const cp2x = sx2 + s2 * tangentDx
-  return `M ${sx1} ${sy1} C ${cp1x} ${apexY} ${cp2x} ${apexY} ${sx2} ${sy2}`
+  return `M ${sx1} ${sy1} C ${cp1x} ${sy1} ${cp2x} ${sy2} ${sx2} ${sy2}`
 }
 
 export interface PileupArc {
@@ -88,13 +61,11 @@ interface Opts {
   pileupTopOffset: number
   scrollTop: number
   viewportH: number
-  pairedArcsDown: boolean
 }
 
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
-// cross-region normal pairs (the GPU straight-line pass cannot span regions).
-// Within-region normal pairs are rendered by the GPU + Canvas2D pipelines, so
-// they are intentionally absent here.
+// cross-region normal pairs. Within-region normal pairs are rendered by the
+// GPU + Canvas2D pipelines and intentionally absent here.
 export function computePileupBezierArcs(opts: Opts): PileupArc[] {
   const {
     laidOutPileupMap,
@@ -105,11 +76,9 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     pileupTopOffset,
     scrollTop,
     viewportH,
-    pairedArcsDown,
   } = opts
 
   const rowH = featureHeight + featureSpacing
-  const peakH = rowH * PEAK_ROW_FACTOR
   const readCenterDy = featureHeight / 2
   const paletteLen = linkedReadColorPalette.length
   const readScreenY = (e: ReadEntry) =>
@@ -141,22 +110,13 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     const sy1 = readScreenY(e1)
     const sy2 = readScreenY(e2)
 
-    if (!arcIsVisible(sy1, sy2, peakH, c.isNormal, pairedArcsDown, viewportH)) {
+    if (!arcIsVisible(sy1, sy2, pileupTopOffset + viewportH)) {
       continue
     }
 
     const d = c.isNormal
       ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
-      : bezierPath({
-          sx1,
-          sy1,
-          sx2,
-          sy2,
-          s1: c.s1,
-          s2: c.s2,
-          peakH,
-          arcsDown: pairedArcsDown,
-        })
+      : bezierPath(sx1, sy1, sx2, sy2, c.s1, c.s2)
     const stroke = rgb255(linkedReadColorPalette[c.colorType % paletteLen]!)
 
     result.push({

@@ -26,7 +26,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       featureSpacing: {
         type: 'number',
-        defaultValue: 1,
+        defaultValue: 0,
         description: 'Spacing between features in pixels',
       },
       /**

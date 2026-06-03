@@ -11,6 +11,7 @@
  *   - renderingMode → linkedReads enum
  *   - showReadCloud → linkedReads enum
  *   - showLinkedReads + showLinkedReadsAsBeziers booleans → linkedReads enum
+ *   - linkedReads 'bezier' → linkedReads 'off' + showBezierConnections overlay
  *   - showArcs + pairedArcsDown booleans → pairedArcs enum
  *   - pairedArcs enum → readConnections mode + readConnectionsDown direction
  *   - sashimiArcsDown dropped (direction is the shared readConnectionsDown)
@@ -192,6 +193,14 @@ function migrateBooleanPairsToEnum(snap: Record<string, unknown>) {
         ? 'bezier'
         : 'normal'
       : 'off'
+  }
+
+  // 'bezier' is no longer a `linkedReads` layout mode — it became the
+  // orthogonal `showBezierConnections` overlay. Remap stored/derived 'bezier'
+  // to the ideal pileup + curves look. Runs for enum-era snapshots too.
+  if (result.linkedReads === 'bezier') {
+    result.linkedReads = 'off'
+    result.showBezierConnections = true
   }
 
   if (showArcs !== undefined || pairedArcsDown !== undefined) {

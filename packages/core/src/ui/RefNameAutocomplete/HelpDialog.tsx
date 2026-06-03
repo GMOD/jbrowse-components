@@ -11,7 +11,9 @@ export default function HelpDialog({
     <Dialog
       open
       maxWidth="xl"
-      onClose={handleClose}
+      onClose={() => {
+        handleClose()
+      }}
       title="Using the search box"
     >
       <DialogContent>

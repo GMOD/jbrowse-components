@@ -255,7 +255,9 @@ export function insertInSubMenu({
 // the caller's array; leaf items (with their onClick/icon) are shared by ref
 function cloneMenuItems(items: MenuItem[]): MenuItem[] {
   return items.map(item =>
-    'subMenu' in item ? { ...item, subMenu: cloneMenuItems(item.subMenu) } : item,
+    'subMenu' in item
+      ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
+      : item,
   )
 }
 

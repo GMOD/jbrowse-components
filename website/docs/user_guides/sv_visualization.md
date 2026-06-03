@@ -66,12 +66,12 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation START -->
 
-| Color                                                                                                                                                                           | Name                                       | Value       | Description          |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------- | -------------------- |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:lightgrey;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="lightgrey"></span> | LR (→ ←, normal proper pair)               | `lightgrey` | Concordant           |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:teal;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="teal"></span>           | RL (← →, mates point away from each other) | `teal`      | Abnormal orientation |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:green;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="green"></span>         | LL (→ →, both mates forward strand)        | `green`     | Abnormal orientation |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3a3a9d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3a3a9d"></span>     | RR (← ←, both mates reverse strand)        | `#3a3a9d`   | Abnormal orientation |
+| Color                                                                                                                                                                       | Name                                       | Value     | Description          |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------- | -------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#d3d3d3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#d3d3d3"></span> | LR (→ ←, normal proper pair)               | `#d3d3d3` | Concordant           |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0099bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0099bb"></span> | RL (← →, mates point away from each other) | `#0099bb` | Abnormal orientation |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#4d9a4d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#4d9a4d"></span> | LL (→ →, both mates forward strand)        | `#4d9a4d` | Abnormal orientation |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#5555bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#5555bb"></span> | RR (← ←, both mates reverse strand)        | `#5555bb` | Abnormal orientation |
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 

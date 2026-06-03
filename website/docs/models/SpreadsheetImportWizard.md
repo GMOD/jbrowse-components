@@ -151,10 +151,11 @@ setCachedFileHandle: (arg: FileLocation) => void
 
 #### action: import
 
-fetch and parse the file, make a new Spreadsheet model for it, then set the
-parent to display it
+fetch and parse the file, returning a spreadsheet snapshot for the owning view
+to display (the view owns displaySpreadsheet; this stays a pure fetch/parse with
+no reach into the parent)
 
 ```js
 // type signature
-import: (assemblyName: string) => Promise<void>
+import: (assemblyName: string) => Promise<ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { ...; }[], { ...; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }>> | undefined>
 ```

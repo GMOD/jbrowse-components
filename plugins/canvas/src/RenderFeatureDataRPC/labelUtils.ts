@@ -19,13 +19,9 @@ export function readFeatureLabels(
   feature: Feature,
 ): { name: string | undefined; description: string | undefined } {
   const name =
-    (readConfigValue(config, ['labels', 'name'], feature) as
-      | string
-      | undefined) || undefined
+    (readConfigValue(config, ['labels', 'name'], feature)) || undefined
   const description =
-    (readConfigValue(config, ['labels', 'description'], feature) as
-      | string
-      | undefined) || undefined
+    (readConfigValue(config, ['labels', 'description'], feature)) || undefined
   return { name, description }
 }
 

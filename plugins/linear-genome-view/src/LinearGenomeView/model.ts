@@ -1543,7 +1543,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const { start, end, reversed, widthPx } = block
             const blockLeft = block.offsetPx - firstBlockOffset
             for (const { type, base } of makeTicks(start, end, bpPerPx)) {
-              const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
+              const x =
+                blockLeft + (reversed ? end - base : base - start) / bpPerPx
               if (x >= blockLeft && x <= blockLeft + widthPx) {
                 ticks.push({
                   key: `${block.key}-${base}`,

@@ -84,7 +84,7 @@ onlyDisplayRelevantRegionsInCircularView: false
 
 ```js
 // type signature
-IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; } & ... 6 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
+IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({

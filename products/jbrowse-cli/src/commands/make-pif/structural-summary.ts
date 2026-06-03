@@ -15,7 +15,6 @@ export function splitCigarOnLargeGaps({
   cigar,
   strand,
   tstart,
-  tend,
   qstart,
   qend,
   splitGap,

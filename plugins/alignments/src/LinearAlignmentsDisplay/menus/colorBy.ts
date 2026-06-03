@@ -117,7 +117,10 @@ function getModificationsSubMenu(model: ModificationsModel) {
         : 'byType'
       : undefined
 
-  const applyModifications = (opts: { twoColor: boolean; hidden: string[] }) => {
+  const applyModifications = (opts: {
+    twoColor: boolean
+    hidden: string[]
+  }) => {
     model.setColorScheme({
       type: 'modifications',
       modifications: {

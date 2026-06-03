@@ -99,6 +99,10 @@ saveSession: (val: unknown) => Promise<void>
 
 #### action: setPluginsUpdated
 
+Persist the session, then rebuild the plugin manager from disk so the changed
+plugin set takes effect (Loader wires openNewSessionCallback to reload from the
+session path).
+
 ```js
 // type signature
 setPluginsUpdated: () => Promise<void>

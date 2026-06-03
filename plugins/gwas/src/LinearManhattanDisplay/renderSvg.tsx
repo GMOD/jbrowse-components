@@ -13,7 +13,6 @@ import {
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
-import type { SignificanceLine } from './significanceLines.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type {
   ExportSvgDisplayOptions,
@@ -32,7 +31,6 @@ interface RenderSvgModel {
   ticks?: YScaleTicks
   rpcDataMap: ReadonlyMap<number, ManhattanRpcResult>
   renderState?: ManhattanRenderState
-  significanceLines: SignificanceLine[]
   error: unknown
   regionTooLarge: boolean
 }
@@ -66,26 +64,6 @@ export async function renderSvg(
     </g>
   ) : null
 
-  // Same full-height coordinate space as the YScaleBar (line y already
-  // includes the label offset), so no translate is applied here.
-  const significanceEl =
-    model.significanceLines.length > 0 ? (
-      <g>
-        {model.significanceLines.map(line => (
-          <line
-            key={line.label}
-            x1={0}
-            x2={view.width}
-            y1={line.y}
-            y2={line.y}
-            stroke={line.color}
-            strokeWidth={1}
-            strokeDasharray="4 3"
-          />
-        ))}
-      </g>
-    ) : null
-
   const totalWidth = view.totalWidthPx
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   // SVG export spans all visible regions side-by-side, so canvasWidth is
@@ -108,7 +86,6 @@ export async function renderSvg(
         height={height}
       >
         {manhattanNode}
-        {significanceEl}
       </SvgClipRect>
       {legendEl}
     </>

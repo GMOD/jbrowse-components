@@ -181,7 +181,7 @@ setSessionDB: (sessionDB: IDBPDatabase<SessionDB>) => void
 
 ```js
 // type signature
-setPluginsUpdated: (flag: boolean) => void
+setPluginsUpdated: () => void
 ```
 
 #### action: setReloadPluginManagerCallback

@@ -30,6 +30,17 @@ export interface LdToIndex {
   indexFound: boolean
 }
 
+// Shared lookup: feature → r² to the index SNP, or undefined if absent.
+// Checks both the feature's name (SNP id) and its position key.
+export function lookupR2(
+  ld: LdToIndex,
+  name: string | undefined,
+  key: string,
+): number | undefined {
+  const byName = name !== undefined ? ld.r2ByKey.get(name) : undefined
+  return byName !== undefined ? byName : ld.r2ByKey.get(key)
+}
+
 // Build the per-SNP r²-to-index lookup from a PLINK .ld source. Reads every
 // pair touching the region, keeps those where one side is the index SNP, and
 // maps the *other* side's r². Captures both orientations (index as SNP_A or

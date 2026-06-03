@@ -60,9 +60,12 @@ describe('readSessionFromDynamo', () => {
     })
 
     it('uses raw body when JSON has no message field', async () => {
-      fetchMock.mockResponse(JSON.stringify({ error: 'something went wrong' }), {
-        status: 500,
-      })
+      fetchMock.mockResponse(
+        JSON.stringify({ error: 'something went wrong' }),
+        {
+          status: 500,
+        },
+      )
       await expect(
         readSessionFromDynamo('https://api.example.com/', 'share-xyz', 'pass'),
       ).rejects.toThrow('{"error":"something went wrong"}')

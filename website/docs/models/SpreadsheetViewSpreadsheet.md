@@ -53,9 +53,12 @@ assemblyName: types.maybe(types.string)
 
 ```js
 // type signature
-IType<Record<string, boolean>, Record<string, boolean>, Record<string, boolean>>
+IOptionalIType<IType<Record<string, boolean>, Record<string, boolean>, Record<string, boolean>>, [undefined]>
 // code
-visibleColumns: types.frozen<Record<string, boolean>>()
+visibleColumns: types.optional(
+        types.frozen<Record<string, boolean>>(),
+        {},
+      )
 ```
 
 ### SpreadsheetViewSpreadsheet - Volatiles

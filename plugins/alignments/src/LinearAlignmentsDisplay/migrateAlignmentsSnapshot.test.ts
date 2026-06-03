@@ -265,12 +265,24 @@ describe('migrateAlignmentsSnapshot', () => {
     })
     expect(normal.linkedReads).toBe('normal')
 
+    // Bezier is now an overlay orthogonal to layout: the old chain+bezier
+    // state migrates to the ideal pileup + curves look.
     const bezier = migrateAlignmentsSnapshot({
       type: 'LinearAlignmentsDisplay',
       showLinkedReads: true,
       showLinkedReadsAsBeziers: true,
     })
-    expect(bezier.linkedReads).toBe('bezier')
+    expect(bezier.linkedReads).toBe('off')
+    expect(bezier.showBezierConnections).toBe(true)
+  })
+
+  test('migrates enum-era linkedReads:bezier to the overlay flag', () => {
+    const migrated = migrateAlignmentsSnapshot({
+      type: 'LinearAlignmentsDisplay',
+      linkedReads: 'bezier',
+    })
+    expect(migrated.linkedReads).toBe('off')
+    expect(migrated.showBezierConnections).toBe(true)
   })
 
   test('folds showArcs+pairedArcsDown booleans into readConnections', () => {

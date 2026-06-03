@@ -1,6 +1,14 @@
+import {
+  colorInterchrom,
+  colorLongInsert,
+  colorLongreadRevFwd,
+  colorPairLL,
+  colorPairLR,
+  colorPairRL,
+  colorPairRR,
+  colorShortInsert,
+} from '@jbrowse/core/ui/theme'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-
-import { fillColor } from '../../shared/color.ts'
 
 import type { RGBColor } from './colors.ts'
 
@@ -14,31 +22,31 @@ export const ARC_HEIGHT_MARGIN = 8
 const rgb = cssColorToNormalizedRgb
 
 export const arcColorPalette: RGBColor[] = [
-  rgb(fillColor.color_pair_lr),
-  rgb(fillColor.color_longinsert),
-  rgb(fillColor.color_shortinsert),
-  rgb(fillColor.color_interchrom),
-  rgb(fillColor.color_pair_ll),
-  rgb(fillColor.color_pair_rr),
-  rgb(fillColor.color_pair_rl),
-  rgb(fillColor.color_longread_rev_fwd),
+  rgb(colorPairLR),
+  rgb(colorLongInsert),
+  rgb(colorShortInsert),
+  rgb(colorInterchrom),
+  rgb(colorPairLL),
+  rgb(colorPairRR),
+  rgb(colorPairRL),
+  rgb(colorLongreadRevFwd),
 ]
 
 export const arcLineColorPalette: RGBColor[] = [
-  rgb(fillColor.color_interchrom),
-  rgb(fillColor.color_longinsert),
+  rgb(colorInterchrom),
+  rgb(colorLongInsert),
 ]
 
 // Indices match LINKED_READ_COLOR_* in features/linkedReads/compute.ts. Used by the
 // GPU palette UBO, the Canvas2D draw, and the SVG export so the three paths
 // stay in lockstep.
 export const linkedReadColorPalette: RGBColor[] = [
-  rgb(fillColor.color_pair_lr), // 0 unknown
-  rgb(fillColor.color_pair_lr), // 1 LR
-  rgb(fillColor.color_pair_rl), // 2 RL
-  rgb(fillColor.color_pair_rr), // 3 RR
-  rgb(fillColor.color_pair_ll), // 4 LL
-  rgb(fillColor.color_pair_lr), // 5 split normal (same-strand deletion)
-  rgb(fillColor.color_pair_rr), // 6 split inversion (different-strand, matches paired RR)
-  rgb(fillColor.color_pair_lr), // 7 fallback
+  rgb(colorPairLR), // 0 unknown
+  rgb(colorPairLR), // 1 LR
+  rgb(colorPairRL), // 2 RL
+  rgb(colorPairRR), // 3 RR
+  rgb(colorPairLL), // 4 LL
+  rgb(colorPairLR), // 5 split normal (same-strand deletion)
+  rgb(colorPairRR), // 6 split inversion (different-strand, matches paired RR)
+  rgb(colorPairLR), // 7 fallback
 ]

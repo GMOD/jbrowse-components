@@ -1,4 +1,4 @@
-import { posKey } from './ldToIndex.ts'
+import { lookupR2, posKey } from './ldToIndex.ts'
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 
 import type { LdToIndex } from './ldToIndex.ts'
@@ -19,9 +19,6 @@ export function makeLdColorEvaluator(
     if (name === indexSnp || key === indexSnp) {
       return ldIndexColor
     }
-    const r2 =
-      (name !== undefined ? ld.r2ByKey.get(name) : undefined) ??
-      ld.r2ByKey.get(key)
-    return ldBinColor(r2)
+    return ldBinColor(lookupR2(ld, name, key))
   }
 }

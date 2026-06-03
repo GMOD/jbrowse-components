@@ -91,7 +91,13 @@ test('dark theme has different coverage color', () => {
 })
 
 test('frames arrays are not duplicated for named themes', () => {
-  for (const name of ['default', 'lightStock', 'lightMinimal', 'darkMinimal', 'darkStock']) {
+  for (const name of [
+    'default',
+    'lightStock',
+    'lightMinimal',
+    'darkMinimal',
+    'darkStock',
+  ]) {
     const theme = createJBrowseTheme({}, undefined, name)
     expect(theme.palette.frames).toHaveLength(7)
     expect(theme.palette.framesCDS).toHaveLength(7)
