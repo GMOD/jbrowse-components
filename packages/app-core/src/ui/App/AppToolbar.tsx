@@ -41,20 +41,21 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// bind the session into each item's onClick (the renderer invokes onClick with
+// no args), recursing into sub-menus; dividers/sub-headers pass through
 function wrapMenuItems(items: JBMenuItem[], session: AppSession): JBMenuItem[] {
-  return items.map(item => ({
-    ...item,
-    ...('onClick' in item
-      ? {
-          onClick: () => {
-            item.onClick(session)
-          },
-        }
-      : {}),
-    ...('subMenu' in item
-      ? { subMenu: wrapMenuItems(item.subMenu, session) }
-      : {}),
-  }))
+  return items.map(item =>
+    'subMenu' in item
+      ? { ...item, subMenu: wrapMenuItems(item.subMenu, session) }
+      : 'onClick' in item
+        ? {
+            ...item,
+            onClick: () => {
+              item.onClick(session)
+            },
+          }
+        : item,
+  )
 }
 
 const AppToolbar = observer(function AppToolbar({

@@ -8,7 +8,7 @@ import {
   processMutableMenuActions,
 } from './menus.ts'
 
-import type { Menu } from './menus.ts'
+import type { Menu, MenuAction } from './menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 function makeMenus(): Menu[] {
@@ -316,5 +316,23 @@ describe('processMutableMenuActions', () => {
       { type: 'appendMenu', menuName: 'Edit' },
     ])
     expect(result.map(m => m.label)).toEqual(['Help', 'Edit'])
+  })
+
+  // menus() replays the same stored action list on every re-render, so the
+  // processor must not mutate the arrays carried by setMenus actions
+  it('is idempotent across replays when setMenus precedes a mutation', () => {
+    const actions: MenuAction[] = [
+      { type: 'setMenus', newMenus: [{ label: 'Help', menuItems: [] }] },
+      {
+        type: 'appendToMenu',
+        menuName: 'Help',
+        menuItem: { label: 'About' } as unknown as MenuItem,
+      },
+    ]
+    const first = processMutableMenuActions([], actions)
+    const second = processMutableMenuActions([], actions)
+    const labelsOf = (r: Menu[]) => itemsOf(r[0]!).map(i => ('label' in i ? i.label : ''))
+    expect(labelsOf(first)).toEqual(['About'])
+    expect(labelsOf(second)).toEqual(['About'])
   })
 })

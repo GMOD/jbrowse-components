@@ -8,23 +8,24 @@ import {
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import { DNA } from '@jbrowse/core/ui/Icons'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
+  openConnectionMenuItem,
+  openTrackMenuItem,
+  pluginStoreMenuItem,
+  preferencesMenuItem,
+  workspacesMenuItem,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
-import ExtensionIcon from '@mui/icons-material/Extension'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import RedoIcon from '@mui/icons-material/Redo'
-import SettingsIcon from '@mui/icons-material/Settings'
-import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StarIcon from '@mui/icons-material/Star'
-import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 
 import packageJSON from '../../package.json' with { type: 'json' }
@@ -37,7 +38,6 @@ import type { Session, SessionDB, SessionMetadata } from '../types.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
-import type { BaseSession } from '@jbrowse/product-core'
 import type { WebRootModelInterface } from '@jbrowse/web-core'
 import type { IDBPDatabase } from 'idb'
 
@@ -194,8 +194,8 @@ export default function RootModel({
       /**
        * #action
        */
-      setPluginsUpdated(flag: boolean) {
-        self.pluginsUpdated = flag
+      setPluginsUpdated() {
+        self.pluginsUpdated = true
       },
       /**
        * #action
@@ -381,44 +381,8 @@ export default function RootModel({
                   }),
                 },
                 { type: 'divider' },
-                {
-                  label: 'Open track...',
-                  icon: StorageIcon,
-                  onClick: () => {
-                    if (self.session) {
-                      if (self.session.views.length === 0) {
-                        self.session.notify(
-                          'Please open a view to add a track first',
-                        )
-                      } else {
-                        const widget = self.session.addWidget(
-                          'AddTrackWidget',
-                          'addTrackWidget',
-                          { view: self.session.views[0]!.id },
-                        )
-                        self.session.showWidget(widget)
-                        if (self.session.views.length > 1) {
-                          self.session.notify(
-                            'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                          )
-                        }
-                      }
-                    }
-                  },
-                },
-                {
-                  label: 'Open connection...',
-                  icon: Cable,
-                  onClick: () => {
-                    const widget = self.session?.addWidget(
-                      'AddConnectionWidget',
-                      'addConnectionWidget',
-                    )
-                    if (widget) {
-                      self.session?.showWidget(widget)
-                    }
-                  },
-                },
+                openTrackMenuItem(),
+                openConnectionMenuItem(),
               ]
             },
           },
@@ -469,20 +433,7 @@ export default function RootModel({
                 },
               },
               { type: 'divider' },
-              {
-                label: 'Plugin store',
-                icon: ExtensionIcon,
-                onClick: () => {
-                  if (self.session) {
-                    self.session.showWidget(
-                      self.session.addWidget(
-                        'PluginStoreWidget',
-                        'pluginStoreWidget',
-                      ),
-                    )
-                  }
-                },
-              },
+              pluginStoreMenuItem(),
               {
                 label: 'Assembly manager',
                 icon: DNA,
@@ -498,34 +449,8 @@ export default function RootModel({
                 },
               },
 
-              {
-                label: 'Preferences',
-                icon: SettingsIcon,
-                onClick: () => {
-                  if (self.session) {
-                    const session = self.session as BaseSession
-                    session.queueDialog(handleClose => [
-                      PreferencesDialog,
-                      {
-                        session: self.session,
-                        pluginManager,
-                        handleClose,
-                      },
-                    ])
-                  }
-                },
-              },
-              {
-                label: 'Use workspaces',
-                icon: SpaceDashboardIcon,
-                type: 'checkbox',
-                checked: self.session?.useWorkspaces ?? false,
-                helpText:
-                  'Workspaces allow you to organize views into tabs and tiles. There are a variety of unique features, for instance, you can drag views between tabs or split them side-by-side. Try clicking and dragging the tab header to create a new split',
-                onClick: () => {
-                  self.session?.setUseWorkspaces(!self.session.useWorkspaces)
-                },
-              },
+              preferencesMenuItem(pluginManager, PreferencesDialog),
+              workspacesMenuItem(self.session),
             ],
           },
         ]

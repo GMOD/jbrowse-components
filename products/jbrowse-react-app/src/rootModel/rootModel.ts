@@ -5,19 +5,19 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable } from '@jbrowse/core/ui/Icons'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
+  openConnectionMenuItem,
+  openTrackMenuItem,
+  preferencesMenuItem,
+  workspacesMenuItem,
 } from '@jbrowse/product-core'
 import { PreferencesDialog } from '@jbrowse/web-core'
 import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
-import SettingsIcon from '@mui/icons-material/Settings'
-import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
-import StorageIcon from '@mui/icons-material/Storage'
 import { autorun } from 'mobx'
 
 import { version } from '../version.ts'
@@ -120,8 +120,8 @@ export default function RootModel({
         /**
          * #action
          */
-        setPluginsUpdated(flag: boolean) {
-          self.pluginsUpdated = flag
+        setPluginsUpdated() {
+          self.pluginsUpdated = true
         },
         /**
          * #action
@@ -189,38 +189,8 @@ export default function RootModel({
                 },
 
                 { type: 'divider' },
-                {
-                  label: 'Open track...',
-                  icon: StorageIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    if (session.views.length === 0) {
-                      session.notify('Please open a view to add a track first')
-                    } else {
-                      const widget = session.addWidget(
-                        'AddTrackWidget',
-                        'addTrackWidget',
-                        { view: session.views[0]!.id },
-                      )
-                      session.showWidget(widget)
-                      if (session.views.length > 1) {
-                        session.notify(
-                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                        )
-                      }
-                    }
-                  },
-                },
-                {
-                  label: 'Open connection...',
-                  icon: Cable,
-                  onClick: (session: SessionWithWidgets) => {
-                    const widget = session.addWidget(
-                      'AddConnectionWidget',
-                      'addConnectionWidget',
-                    )
-                    session.showWidget(widget)
-                  },
-                },
+                openTrackMenuItem(),
+                openConnectionMenuItem(),
               ],
             },
             {
@@ -230,31 +200,8 @@ export default function RootModel({
             {
               label: 'Tools',
               menuItems: [
-                {
-                  label: 'Preferences',
-                  icon: SettingsIcon,
-                  onClick: () => {
-                    self.session?.queueDialog((handleClose: () => void) => [
-                      PreferencesDialog,
-                      {
-                        session: self.session,
-                        pluginManager,
-                        handleClose,
-                      },
-                    ])
-                  },
-                },
-                {
-                  label: 'Use workspaces',
-                  icon: SpaceDashboardIcon,
-                  type: 'checkbox',
-                  checked: self.session?.useWorkspaces ?? false,
-                  helpText:
-                    'Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.',
-                  onClick: () => {
-                    self.session?.setUseWorkspaces(!self.session.useWorkspaces)
-                  },
-                },
+                preferencesMenuItem(pluginManager, PreferencesDialog),
+                workspacesMenuItem(self.session),
               ],
             },
           ],

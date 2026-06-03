@@ -1,12 +1,9 @@
 import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
-import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui'
+import type { Menu } from '../../menus.ts'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
-export interface Menu {
-  label: string
-  menuItems: JBMenuItem[] | (() => JBMenuItem[])
-}
+export { type Menu } from '../../menus.ts'
 
 export type AppSession = SessionWithFocusedViewAndDrawerWidgets & {
   menus: () => Menu[]

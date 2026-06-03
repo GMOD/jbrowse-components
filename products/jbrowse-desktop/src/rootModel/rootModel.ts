@@ -7,22 +7,23 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import { DNA } from '@jbrowse/core/ui/Icons'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
+  openConnectionMenuItem,
+  openTrackMenuItem,
+  pluginStoreMenuItem,
+  preferencesMenuItem,
+  workspacesMenuItem,
 } from '@jbrowse/product-core'
 import AppsIcon from '@mui/icons-material/Apps'
-import ExtensionIcon from '@mui/icons-material/Extension'
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import RedoIcon from '@mui/icons-material/Redo'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
-import SettingsIcon from '@mui/icons-material/Settings'
-import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
-import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { autorun } from 'mobx'
 
@@ -35,10 +36,7 @@ import makeWorkerInstance from '../makeWorkerInstance.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  AbstractSessionModel,
-  SessionWithWidgets,
-} from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 
@@ -138,30 +136,36 @@ export default function rootModelFactory({
           await ipcRenderer.invoke('saveSession', self.sessionPath, val)
         }
       },
+    }))
+    // separate actions block so saveSession (defined above) is visible on
+    // `self` with its real type, rather than casting self to the composed model
+    .actions(self => ({
       /**
        * #action
+       * Persist the session, then rebuild the plugin manager from disk so the
+       * changed plugin set takes effect (Loader wires openNewSessionCallback to
+       * reload from the session path).
        */
       async setPluginsUpdated() {
-        const root = self as DesktopRootModel
-        if (root.session) {
-          await root.saveSession(getSaveSession(root))
+        if (self.session) {
+          await self.saveSession(getSaveSession(self))
         }
-        await root.openNewSessionCallback(root.sessionPath)
+        await self.openNewSessionCallback(self.sessionPath)
       },
-    }))
-    .actions(self => ({
       afterCreate() {
         addDisposer(
           self,
           autorun(
             async () => {
-              const root = self as DesktopRootModel
-              if (root.session) {
+              // capture the session up front so a save failure reports to the
+              // same session even if it changed during the awaited save
+              const { session } = self
+              if (session) {
                 try {
-                  await root.saveSession(getSaveSession(root))
+                  await self.saveSession(getSaveSession(self))
                 } catch (e) {
                   console.error(e)
-                  root.session.notifyError(`${e}`, e)
+                  session.notifyError(`${e}`, e)
                 }
               }
             },
@@ -244,42 +248,8 @@ export default function rootModelFactory({
                     }
                   },
                 },
-                {
-                  label: 'Open track...',
-                  icon: StorageIcon,
-
-                  onClick: (session: SessionWithWidgets) => {
-                    const firstView = session.views[0]
-                    if (!firstView) {
-                      session.notify('Please open a view to add a track first')
-                    } else {
-                      const widget = session.addWidget(
-                        'AddTrackWidget',
-                        'addTrackWidget',
-                        { view: firstView.id },
-                      )
-                      session.showWidget(widget)
-                      if (session.views.length > 1) {
-                        session.notify(
-                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                        )
-                      }
-                    }
-                  },
-                },
-                {
-                  label: 'Open connection...',
-                  icon: Cable,
-                  onClick: () => {
-                    if (self.session) {
-                      const widget = self.session.addWidget(
-                        'AddConnectionWidget',
-                        'addConnectionWidget',
-                      )
-                      self.session.showWidget(widget)
-                    }
-                  },
-                },
+                openTrackMenuItem(),
+                openConnectionMenuItem(),
                 {
                   type: 'divider',
                 },
@@ -325,36 +295,8 @@ export default function rootModelFactory({
                   },
                 },
                 { type: 'divider' },
-                {
-                  label: 'Plugin store',
-                  icon: ExtensionIcon,
-                  onClick: () => {
-                    if (self.session) {
-                      const widget = self.session.addWidget(
-                        'PluginStoreWidget',
-                        'pluginStoreWidget',
-                      )
-                      self.session.showWidget(widget)
-                    }
-                  },
-                },
-                {
-                  label: 'Preferences',
-                  icon: SettingsIcon,
-                  onClick: () => {
-                    if (self.session) {
-                      const session = self.session as BaseSession
-                      session.queueDialog(handleClose => [
-                        PreferencesDialog,
-                        {
-                          session: self.session,
-                          pluginManager,
-                          handleClose,
-                        },
-                      ])
-                    }
-                  },
-                },
+                pluginStoreMenuItem(),
+                preferencesMenuItem(pluginManager, PreferencesDialog),
                 {
                   label: 'Open assembly manager',
                   icon: DNA,
@@ -370,17 +312,7 @@ export default function rootModelFactory({
                     )
                   },
                 },
-                {
-                  label: 'Use workspaces',
-                  icon: SpaceDashboardIcon,
-                  type: 'checkbox',
-                  checked: self.session?.useWorkspaces ?? false,
-                  helpText:
-                    'Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.',
-                  onClick: () => {
-                    self.session?.setUseWorkspaces(!self.session.useWorkspaces)
-                  },
-                },
+                workspacesMenuItem(self.session),
               ],
             },
           ],

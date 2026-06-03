@@ -141,7 +141,8 @@ export function appendToMenu({
  *
  * @param position - Position to insert menu item. If negative, counts
  * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
- * the second-to-last one.
+ * the second-to-last one. Note: a menu item with a `priority` set is
+ * re-sorted at render time, which overrides this position.
  *
  * @returns The new length of the menu
  */
@@ -250,22 +251,56 @@ export function insertInSubMenu({
   return subMenu.length
 }
 
+// recursively copy the array spine so later splice/push helpers never mutate
+// the caller's array; leaf items (with their onClick/icon) are shared by ref
+function cloneMenuItems(items: MenuItem[]): MenuItem[] {
+  return items.map(item =>
+    'subMenu' in item ? { ...item, subMenu: cloneMenuItems(item.subMenu) } : item,
+  )
+}
+
 export function processMutableMenuActions(ret: Menu[], actions: MenuAction[]) {
   for (const action of actions) {
-    if (action.type === 'setMenus') {
-      ret = action.newMenus
-    } else if (action.type === 'appendMenu') {
-      appendMenu({ menus: ret, ...action })
-    } else if (action.type === 'insertMenu') {
-      insertMenu({ menus: ret, ...action })
-    } else if (action.type === 'insertInSubMenu') {
-      insertInSubMenu({ menus: ret, ...action })
-    } else if (action.type === 'appendToSubMenu') {
-      appendToSubMenu({ menus: ret, ...action })
-    } else if (action.type === 'appendToMenu') {
-      appendToMenu({ menus: ret, ...action })
-    } else {
-      insertInMenu({ menus: ret, ...action })
+    switch (action.type) {
+      case 'setMenus': {
+        // clone, otherwise subsequent mutating actions splice into the stored
+        // action's array and accumulate across every menus() re-render
+        ret = action.newMenus.map(m => ({
+          ...m,
+          menuItems:
+            typeof m.menuItems === 'function'
+              ? m.menuItems
+              : cloneMenuItems(m.menuItems),
+        }))
+        break
+      }
+      case 'appendMenu': {
+        appendMenu({ menus: ret, ...action })
+        break
+      }
+      case 'insertMenu': {
+        insertMenu({ menus: ret, ...action })
+        break
+      }
+      case 'insertInSubMenu': {
+        insertInSubMenu({ menus: ret, ...action })
+        break
+      }
+      case 'appendToSubMenu': {
+        appendToSubMenu({ menus: ret, ...action })
+        break
+      }
+      case 'appendToMenu': {
+        appendToMenu({ menus: ret, ...action })
+        break
+      }
+      case 'insertInMenu': {
+        insertInMenu({ menus: ret, ...action })
+        break
+      }
+      default: {
+        return action satisfies never
+      }
     }
   }
   return ret
