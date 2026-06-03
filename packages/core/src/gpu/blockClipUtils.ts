@@ -3,8 +3,11 @@ import { clampBlockScissor } from './canvas2dUtils.ts'
 // hp-math split: factor a bp position into a (hi, lo) pair safe to feed
 // shaders as float32 (cumulative-bp coordinates can exceed 2^31, so a plain
 // `intValue & 0xfff` would wrap). Float64 modulo handles the full 2^53
-// safe range. Matches the shader-side `splitPositionWithFrac` in
-// shaders/hpmath.slang — renderer-side uniform writes use this to mirror.
+// safe range. The CPU counterpart of the shader-side `hpSplitUint` in
+// shaders/hpmath.slang — but not a byte-for-byte mirror: `hpSplitUint` masks a
+// `uint`, whereas this also carries the fractional part and tolerates
+// cumulative-bp beyond 2^31. Renderer-side uniform writes use this to mirror
+// the shader's hi/lo coordinate space.
 export function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
   const frac = value - intValue

@@ -47,7 +47,13 @@ export interface RenderingBackendCallbacks<B> {
 export function RenderLifecycleMixin() {
   return types
     .model('RenderLifecycle', {})
-    .volatile(() => ({
+    .volatile<{
+      canvasDrawn: boolean
+      currentRenderingBackend: unknown
+      renderTick: number
+      autorunsInstalled: boolean
+      renderError: unknown
+    }>(() => ({
       /**
        * #volatile
        * flips true on first paint; read by test selectors to detect render
@@ -61,8 +67,7 @@ export function RenderLifecycleMixin() {
        * type `B` isn't known here — it's supplied at `attachRenderingBackend<B>`
        * and narrowed with `as B` inside the autoruns. Don't "fix" the cast.
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      currentRenderingBackend: undefined as unknown,
+      currentRenderingBackend: undefined,
       /**
        * #volatile
        * counter the render autorun observes; bumped to force a re-render
@@ -82,8 +87,7 @@ export function RenderLifecycleMixin() {
        * `loadingOverlayVisible` (suppresses the scrim) and by `DisplayChrome`
        * (shows the retry overlay).
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      renderError: undefined as unknown,
+      renderError: undefined,
     }))
     .actions(self => ({
       /**

@@ -497,11 +497,14 @@ export class WebGPUHal implements GpuHal {
       this.uniformStaging.set(new Uint8Array(data), offset)
       this.uniformSlot++
     } else {
-      // Outside a frame: write directly to slot 0. This is used by renderers
-      // that upload uniforms once (e.g. on data load) rather than per-frame.
-      // Note: endFrame's staging upload overwrites slot 0, so this pre-frame
-      // write is only visible to drawPass calls that happen before beginFrame
-      // (which is unusual; in-frame paths are the normal case).
+      // No active frame (currentEncoder is null). Every renderer writes
+      // uniforms strictly between beginFrame and endFrame, so the only way to
+      // land here is when beginFrame early-returned on a zero-size canvas
+      // (it skips creating the encoder and resetting uniformSlot). The paired
+      // drawPass/endFrame also no-op on that path, so this write never reaches
+      // the screen — but writing to slot 0 and marking it used keeps the ring
+      // state coherent rather than appending to a stale uniformSlot. Defensive,
+      // not a real render path.
       this.device.queue.writeBuffer(this.uniformRingBuffer, 0, data)
       this.uniformSlot = 1
     }
@@ -568,12 +571,10 @@ export class WebGPUHal implements GpuHal {
     // between writeUniforms calls intentionally share the same slot.
     //
     // Edge case: if drawPass is called before any writeUniforms in this frame
-    // (uniformSlot === 0), Math.max clamps the offset to 0 — the draw reads
-    // slot 0, which is whatever was written most recently to it (either a
-    // pre-frame writeUniforms via the else-branch, or stale data from a prior
-    // frame's first writeUniforms). This mostly serves the "upload uniforms
-    // once at data load" path; in-frame renderers should always pair
-    // writeUniforms with drawPass.
+    // (uniformSlot === 0), Math.max clamps the offset to 0 so we never index
+    // slot -1. Every renderer pairs writeUniforms with its draws, so this
+    // clamp is purely defensive — the clamped draw reads whatever slot 0 last
+    // held, which is acceptable only because no renderer relies on it.
     const dynamicOffset =
       Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
