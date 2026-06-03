@@ -3,7 +3,11 @@ import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
+import {
+  DataGrid,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
+  useGridApiRef,
+} from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import { DEFAULT_HIGHLIGHT } from '../model.ts'
@@ -29,6 +33,7 @@ const BookmarkGrid = observer(function BookmarkGrid({
   model: GridBookmarkModel
 }) {
   const { classes } = useStyles()
+  const apiRef = useGridApiRef()
   const {
     bookmarks,
     bookmarksWithValidAssemblies,
@@ -71,8 +76,14 @@ const BookmarkGrid = observer(function BookmarkGrid({
   return (
     <DataGridFlexContainer>
       <DataGrid
+        apiRef={apiRef}
         density="compact"
         disableRowSelectionOnClick
+        onCellClick={params => {
+          if (params.field === 'label') {
+            apiRef.current?.startCellEditMode({ id: params.id, field: 'label' })
+          }
+        }}
         hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
         rows={rows}
         columns={[
@@ -101,6 +112,14 @@ const BookmarkGrid = observer(function BookmarkGrid({
             headerName: 'Label',
             width: widths[2],
             editable: true,
+            renderCell: ({ value }) =>
+              value ? (
+                <span className={classes.cell}>{value}</span>
+              ) : (
+                <span style={{ color: 'grey', fontStyle: 'italic' }}>
+                  Add label...
+                </span>
+              ),
           },
           {
             field: 'assemblyName',

@@ -8,7 +8,7 @@ import Menu from '@mui/icons-material/Menu'
 import Palette from '@mui/icons-material/Palette'
 import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
-import { Alert, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AssemblySelector from './AssemblySelector.tsx'
@@ -41,10 +41,6 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
 }) {
   return (
     <div>
-      <Alert severity="info">
-        Click and type within the <strong>label</strong> field to annotate your
-        bookmark
-      </Alert>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <CascadingMenuButton
           data-testid="grid_bookmark_menu"
