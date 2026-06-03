@@ -83,32 +83,6 @@ export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
   correspondingObj: ILabeledRegionModel
 }
 
-interface ShareableBookmark {
-  refName: string
-  start: number
-  end: number
-  reversed: boolean
-  assemblyName: string
-  label: string
-  highlight: string
-}
-
-// strips volatile-only fields (id, correspondingObj) down to the plain region
-// fields that the share dialog serializes
-function toSharedBookmarks(list: ShareableBookmark[]) {
-  return list.map(
-    ({ refName, start, end, reversed, assemblyName, label, highlight }) => ({
-      refName,
-      start,
-      end,
-      reversed,
-      assemblyName,
-      label,
-      highlight,
-    }),
-  )
-}
-
 const localStorageKeyF = () =>
   typeof window !== 'undefined'
     ? `bookmarks-${window.location.host}${window.location.pathname}`
@@ -130,7 +104,8 @@ export default function f(_pluginManager: PluginManager) {
       type: types.literal('GridBookmarkWidget'),
       /**
        * #property
-       * removed by postProcessSnapshot, only loaded from localStorage
+       * loaded from localStorage when not present in snapshot; sharedBookmarks
+       * from a shared URL are merged in via preProcessSnapshot
        */
       bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
@@ -194,23 +169,6 @@ export default function f(_pluginManager: PluginManager) {
         return self.bookmarks.filter(e =>
           self.validAssemblies.has(e.assemblyName),
         )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Plain snapshot of the selected bookmarks for the share dialog.
-       */
-      get sharedBookmarksSnapshot() {
-        return { sharedBookmarks: toSharedBookmarks(self.selectedBookmarks) }
-      },
-      /**
-       * #getter
-       */
-      get allBookmarksSnapshot() {
-        return {
-          sharedBookmarks: toSharedBookmarks(self.bookmarksWithValidAssemblies),
-        }
       },
     }))
     .actions(self => ({
@@ -356,9 +314,34 @@ export default function f(_pluginManager: PluginManager) {
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap || typeof snap !== 'object') {
+        return snap
+      }
+      const s = snap as Record<string, unknown>
+      if (!s.sharedBookmarks) {
+        return snap
+      }
+      const { sharedBookmarks, ...rest } = s
+      const local = JSON.parse(
+        localStorageGetItem(localStorageKeyF()) || '[]',
+      ) as SnapshotIn<typeof LabeledRegionModel>[]
+      const shared = sharedBookmarks as SnapshotIn<typeof LabeledRegionModel>[]
+      const seen = new Set(
+        local.map(b => `${b.assemblyName}_${b.refName}_${b.start}_${b.end}`),
+      )
+      const merged = [
+        ...local,
+        ...shared.filter(
+          b => !seen.has(`${b.assemblyName}_${b.refName}_${b.start}_${b.end}`),
+        ),
+      ]
+      return { ...rest, bookmarks: merged } as unknown as typeof snap
+    })
     .postProcessSnapshot(snap => {
-      const { bookmarks: _, ...rest } = snap
-      return rest
+      const { bookmarks, ...rest } = snap
+      return bookmarks?.length ? { ...rest, sharedBookmarks: bookmarks } : rest
     })
 }
 

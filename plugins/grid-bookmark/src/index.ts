@@ -140,7 +140,7 @@ export default class GridBookmarkPlugin extends Plugin {
                   return [
                     ...superHighlightMenuItems(highlight),
                     {
-                      label: 'Bookmark highlighted region',
+                      label: 'Convert highlight to bookmark',
                       icon: BookmarkIcon,
                       onClick: () => {
                         if (highlight.assemblyName) {
@@ -148,6 +148,7 @@ export default class GridBookmarkPlugin extends Plugin {
                             ...highlight,
                             assemblyName: highlight.assemblyName,
                           })
+                          self.removeHighlight(highlight)
                         }
                       },
                     },

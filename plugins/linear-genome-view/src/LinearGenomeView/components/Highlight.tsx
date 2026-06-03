@@ -1,5 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -37,6 +38,13 @@ const Highlight = observer(function Highlight({
             icon: CloseIcon,
             onClick: () => {
               model.removeHighlight(highlight)
+            },
+          },
+          {
+            label: 'Turn off highlights',
+            icon: VisibilityOffIcon,
+            onClick: () => {
+              model.setHighlightsVisible(false)
             },
           },
           ...model.highlightMenuItems(highlight),

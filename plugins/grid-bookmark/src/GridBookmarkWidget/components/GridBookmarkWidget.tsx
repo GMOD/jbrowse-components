@@ -8,7 +8,6 @@ import Menu from '@mui/icons-material/Menu'
 import Palette from '@mui/icons-material/Palette'
 import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
-import Share from '@mui/icons-material/Share'
 import { Alert, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -24,9 +23,6 @@ const ExportBookmarksDialog = lazy(
 )
 const ImportBookmarksDialog = lazy(
   () => import('./dialogs/ImportBookmarksDialog.tsx'),
-)
-const ShareBookmarksDialog = lazy(
-  () => import('./dialogs/ShareBookmarksDialog.tsx'),
 )
 const HighlightSettingsDialog = lazy(
   () => import('./dialogs/HighlightSettingsDialog.tsx'),
@@ -79,16 +75,6 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               onClick: () => {
                 getSession(model).queueDialog(onClose => [
                   DeleteBookmarksDialog,
-                  { model, onClose },
-                ])
-              },
-            },
-            {
-              label: 'Share',
-              icon: Share,
-              onClick: () => {
-                getSession(model).queueDialog(onClose => [
-                  ShareBookmarksDialog,
                   { model, onClose },
                 ])
               },
