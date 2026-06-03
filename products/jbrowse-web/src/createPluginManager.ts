@@ -99,11 +99,13 @@ export function createPluginManager(
       rootModel.setSession(sessionSnapshot)
     } else if (hubSpec) {
       initAfterConfigure = () =>
-        // @ts-expect-error
+        // @ts-expect-error hubSpec is dynamic JSON (Record<string,unknown>); the
+        // required shape is validated at runtime inside loadHubSpec
         loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
     } else if (sessionSpec) {
       initAfterConfigure = () =>
-        // @ts-expect-error
+        // @ts-expect-error sessionSpec is dynamic JSON (Record<string,unknown>);
+        // the required shape is validated at runtime inside loadSessionSpec
         loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
     } else {
       rootModel.setDefaultSession()

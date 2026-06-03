@@ -49,7 +49,6 @@ export async function fetchRemoteConfig(configPath: string) {
   const text = await openLocation({
     uri:
       configPath +
-      // @ts-expect-error
       (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
     locationType: 'UriLocation',
   }).readFile('utf8')

@@ -190,12 +190,6 @@ const SessionLoader = types
     /**
      * #getter
      */
-    get ready(): boolean {
-      return this.isSessionLoaded && !self.configError && this.pluginsLoaded
-    },
-    /**
-     * #getter
-     */
     get pluginsLoaded() {
       // session-plugins are only needed when we're loading from a snapshot
       const needSessionPlugins =
@@ -226,6 +220,14 @@ const SessionLoader = types
      */
     get resolvedConfigPath() {
       return self.configPath || window.__jbrowseConfigPath || 'config.json'
+    },
+  }))
+  .views(self => ({
+    /**
+     * #getter
+     */
+    get ready(): boolean {
+      return self.isSessionLoaded && !self.configError && self.pluginsLoaded
     },
   }))
   .actions(self => ({

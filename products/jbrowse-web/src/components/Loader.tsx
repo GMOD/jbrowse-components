@@ -7,7 +7,6 @@
  */
 import { useState } from 'react'
 
-import { setGpuOverride } from '@jbrowse/core/gpu/gpuDevice'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 
@@ -17,10 +16,6 @@ import Renderer from './Renderer.tsx'
 import { useLoaderLifecycle } from './useLoaderLifecycle.ts'
 import { createSessionLoaderFromUrl } from '../createSessionLoader.ts'
 import factoryReset from '../factoryReset.ts'
-
-setGpuOverride(
-  new URLSearchParams(window.location.search).get('renderer') ?? null,
-)
 
 export function Loader({ initialTimestamp }: { initialTimestamp?: number }) {
   const [loader, setLoader] = useState(() =>
