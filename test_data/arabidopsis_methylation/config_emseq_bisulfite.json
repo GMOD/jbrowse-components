@@ -1,0 +1,80 @@
+{
+  "assemblies": [
+    {
+      "name": "arabidopsis",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "arabidopsis-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "arabidopsis_emseq",
+      "name": "Arabidopsis EM-seq (bisulfite-style)",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_emseq.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_emseq.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["arabidopsis"]
+    }
+  ],
+  "defaultSession": {
+    "name": "Arabidopsis EM-seq bisulfite (CHH context)",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "arabidopsis",
+          "loc": "NC_003070.9:50,000-53,000",
+          "tracks": [
+            {
+              "trackId": "arabidopsis_emseq",
+              "displaySnapshot": {
+                "type": "LinearAlignmentsDisplay",
+                "colorBySetting": {
+                  "type": "bisulfite",
+                  "modifications": { "cytosineContext": "CHH" }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "configuration": { "disableAnalytics": true }
+}

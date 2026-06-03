@@ -9,6 +9,21 @@ the methylation cytosine-context views (CpG / CHG / CHH / all).
   name so read coordinates line up.
 - `config.json` — opens zoomed into `NC_003070.9:2,000-5,000` in the CHH context.
 
+## Bisulfite / EM-seq demo (hosted)
+
+`config_emseq_bisulfite.json` loads a real *Arabidopsis* EM-seq track for the
+`bisulfite` color mode (read-vs-reference C→T, no MM/ML tags). The data is hosted
+rather than committed (the BAM is region-rich at ~20×):
+
+- `https://jbrowse.org/demos/arabidopsis/arabidopsis_emseq.bam` (+ `.bai`) —
+  ~22k EM-seq reads over `NC_003070.9:1-150000`, ~20× even coverage,
+  coordinate-sorted. Real chr1 coordinates (full-length reference).
+- `https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa` (+ `.fai`).
+
+Opens at `NC_003070.9:50,000-53,000` in the CHH context; switch CpG/CHG/CHH from
+the track menu. Source file:
+`Analysis/emseq_bam/plants/Arabidopsis/Arabidopsis.deduplicated.bam`.
+
 ## Source / attribution
 
 Derived from the **ONT base-modification benchmark** dataset on the AWS Registry
