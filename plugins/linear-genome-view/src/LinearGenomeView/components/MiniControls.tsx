@@ -1,4 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
@@ -46,6 +47,16 @@ const MiniControls = observer(function MiniControls({
       <Paper
         className={focusedViewId === id ? classes.focusedBackground : undefined}
       >
+        <Tooltip title="Open track selector">
+          <IconButton
+            size="small"
+            onClick={() => {
+              model.activateTrackSelector()
+            }}
+          >
+            <TrackSelectorIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
         <CascadingMenuButton menuItems={() => model.menuItems()}>
           <MoreVertIcon fontSize="small" />
         </CascadingMenuButton>
