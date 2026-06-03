@@ -9,7 +9,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import LocationCell from './components/LocationCell.tsx'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { GridColDef } from '@mui/x-data-grid'
 
 export interface Row {
@@ -51,7 +51,10 @@ export default function stateModelFactory() {
       /**
        * #property
        */
-      visibleColumns: types.frozen<Record<string, boolean>>(),
+      visibleColumns: types.optional(
+        types.frozen<Record<string, boolean>>(),
+        {},
+      ),
     })
     .volatile(() => ({
       /**
@@ -206,3 +209,4 @@ export default function stateModelFactory() {
 
 export type SpreadsheetStateModel = ReturnType<typeof stateModelFactory>
 export type SpreadsheetModel = Instance<SpreadsheetStateModel>
+export type SpreadsheetSnapshot = SnapshotIn<SpreadsheetStateModel>

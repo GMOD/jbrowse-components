@@ -15,7 +15,7 @@ const SpreadsheetContainer = observer(function SpreadsheetContainer({
 }) {
   return !model.spreadsheet?.initialized ? (
     <Suspense fallback={null}>
-      <ImportWizard model={model.importWizard} />
+      <ImportWizard model={model} />
     </Suspense>
   ) : (
     <SpreadsheetViewActual model={model} />

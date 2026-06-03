@@ -57,7 +57,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
           },
           feature: {
             uniqueId: `bedpe-${idx}`,
-            refName: cols[0],
+            refName: cols[0]!,
             start: +cols[1]!,
             end: +cols[2]!,
             strand: parseStrand(cols[8]),

@@ -2,8 +2,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
+import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -238,10 +239,14 @@ export default function stateModelFactory() {
     .actions(self => ({
       /**
        * #action
-       * fetch and parse the file, make a new Spreadsheet model for it, then set
-       * the parent to display it
+       * fetch and parse the file, returning a spreadsheet snapshot for the
+       * owning view to display (the view owns displaySpreadsheet; this stays a
+       * pure fetch/parse with no reach into the parent)
        */
-      async import(assemblyName: string) {
+      async import(
+        assemblyName: string,
+      ): Promise<SpreadsheetSnapshot | undefined> {
+        let result: SpreadsheetSnapshot | undefined
         if (self.fileSource) {
           self.selectedAssemblyName = assemblyName
           const typeParser = await fileTypeParsers[self.fileType]()
@@ -269,12 +274,10 @@ export default function stateModelFactory() {
                 self.setCachedFileHandle(self.fileSource)
               }
               const data = await fetchAndMaybeUnzip(filehandle)
-              getParent<{ displaySpreadsheet(d: object): void }>(
-                self,
-              ).displaySpreadsheet({
+              result = {
                 ...typeParser(data),
                 assemblyName,
-              })
+              }
             }
           } catch (e) {
             console.error(e)
@@ -283,24 +286,7 @@ export default function stateModelFactory() {
             self.setLoading(false)
           }
         }
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        // just a one-time thing on load
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            if (self.cachedFileLocation && self.selectedAssemblyName) {
-              self.setFileSource(self.cachedFileLocation)
-              await self.import(self.selectedAssemblyName)
-            }
-          } catch (e) {
-            console.error(e)
-            getSession(self).notifyError(`${e}`, e)
-          }
-        })()
+        return result
       },
     }))
 }

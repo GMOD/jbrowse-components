@@ -41,7 +41,7 @@ export function parseBedBuffer(buffer: Uint8Array) {
           },
           feature: {
             uniqueId: `bed-${idx}`,
-            refName: cols[0],
+            refName: cols[0]!,
             start: +cols[1]!,
             end: +cols[2]!,
             name: cols[3],

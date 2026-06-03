@@ -4,7 +4,7 @@ import { bufferToLines, parseStrand } from './util.ts'
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
   return {
-    refName: fields[0],
+    refName: fields[0]!,
     start: +fields[1]!,
     end: +fields[1]! + 1,
     strand: parseStrand(fields[2]),

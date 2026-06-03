@@ -24,7 +24,7 @@ import { observer } from 'mobx-react'
 import TrackSelector from './TrackSelector.tsx'
 import { fileTypes } from '../ImportWizard.ts'
 
-import type { ImportWizardModel } from '../ImportWizard.ts'
+import type { SpreadsheetViewModel } from '../SpreadsheetViewModel.ts'
 import type { AbstractRootModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
@@ -38,14 +38,15 @@ const useStyles = makeStyles()({
 const ImportWizard = observer(function ImportWizard({
   model,
 }: {
-  model: ImportWizardModel
+  model: SpreadsheetViewModel
 }) {
   const session = getSession(model)
   const { classes } = useStyles()
   const { assemblyNames, assemblyManager } = session
-  const { loading, fileType, fileSource, isReadyToOpen, error } = model
+  const { importWizard } = model
+  const { loading, fileType, fileSource, isReadyToOpen, error } = importWizard
   const [selectedAssembly, setSelectedAssembly] = useState(
-    model.selectedAssemblyName ?? assemblyNames[0],
+    importWizard.selectedAssemblyName ?? assemblyNames[0],
   )
   const [selectorType, setSelectorType] = useState('custom')
   const err = assemblyManager.get(selectedAssembly!)?.error ?? error
@@ -91,14 +92,17 @@ const ImportWizard = observer(function ImportWizard({
                   location={fileSource}
                   rootModel={rootModel as AbstractRootModel}
                   setLocation={arg => {
-                    model.setFileSource(arg)
+                    importWizard.setFileSource(arg)
                   }}
                 />
               </FormGroup>
             </FormControl>
           </div>
         ) : selectedAssembly ? (
-          <TrackSelector model={model} selectedAssembly={selectedAssembly} />
+          <TrackSelector
+            model={importWizard}
+            selectedAssembly={selectedAssembly}
+          />
         ) : (
           <div>Select assembly</div>
         )}
@@ -111,7 +115,7 @@ const ImportWizard = observer(function ImportWizard({
               name="type"
               value={fileType}
               onChange={event => {
-                model.setFileType(event.target.value)
+                importWizard.setFileType(event.target.value)
               }}
             >
               {fileTypes.map(fileTypeName => (
@@ -144,7 +148,7 @@ const ImportWizard = observer(function ImportWizard({
             color="primary"
             onClick={() => {
               // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              model.import(selectedAssembly!)
+              model.loadSpreadsheet(selectedAssembly!)
             }}
           >
             Open

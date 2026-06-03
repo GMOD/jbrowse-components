@@ -7,7 +7,7 @@ import { reaction } from 'mobx'
 import ImportWizard from './ImportWizard.ts'
 import Spreadsheet from './SpreadsheetModel.tsx'
 
-import type { SpreadsheetModel } from './SpreadsheetModel.tsx'
+import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface SpreadsheetViewInit {
@@ -121,7 +121,7 @@ export default function stateModelFactory() {
            * #action
            * load a new spreadsheet and set our mode to display it
            */
-          displaySpreadsheet(spreadsheet?: SpreadsheetModel) {
+          displaySpreadsheet(spreadsheet?: SpreadsheetSnapshot) {
             self.spreadsheet = cast(spreadsheet)
           },
 
@@ -135,21 +135,18 @@ export default function stateModelFactory() {
         .actions(self => ({
           /**
            * #action
-           * apply a declarative init (from addView / sv-inspector): point the
-           * import wizard at the file and load it
+           * the single load funnel: fetch+parse via the import wizard, then
+           * display the result. Every entry point (declarative init, cached
+           * reload, the import form's Open button) routes through here so the
+           * view stays the sole owner of displaySpreadsheet
            */
-          async applyInit(init: SpreadsheetViewInit) {
+          async loadSpreadsheet(assemblyName: string) {
             const session = getSession(self)
             try {
-              self.importWizard.setSelectedAssemblyName(init.assembly)
-              self.importWizard.setFileSource({
-                uri: init.uri,
-                locationType: 'UriLocation',
-              })
-              if (init.fileType) {
-                self.importWizard.setFileType(init.fileType)
+              const data = await self.importWizard.import(assemblyName)
+              if (data) {
+                self.displaySpreadsheet(data)
               }
-              await self.importWizard.import(init.assembly)
             } catch (e) {
               console.error(e)
               session.notifyError(`${e}`, e)
@@ -157,7 +154,26 @@ export default function stateModelFactory() {
           },
         }))
         .actions(self => ({
+          /**
+           * #action
+           * apply a declarative init (from addView / sv-inspector): point the
+           * import wizard at the file and load it
+           */
+          async applyInit(init: SpreadsheetViewInit) {
+            self.importWizard.setSelectedAssemblyName(init.assembly)
+            self.importWizard.setFileSource({
+              uri: init.uri,
+              locationType: 'UriLocation',
+            })
+            if (init.fileType) {
+              self.importWizard.setFileType(init.fileType)
+            }
+            await self.loadSpreadsheet(init.assembly)
+          },
+        }))
+        .actions(self => ({
           afterAttach() {
+            const hadInit = !!self.init
             addDisposer(
               self,
               // Trigger on `init` ONLY. A reaction tracks just its data fn, so
@@ -179,6 +195,18 @@ export default function stateModelFactory() {
                 { fireImmediately: true, name: 'SpreadsheetViewInit' },
               ),
             )
+            // reload a session-cached URI (init and a cached file are mutually
+            // exclusive — fresh addView vs reloaded session — but guard anyway)
+            const { importWizard } = self
+            if (
+              !hadInit &&
+              importWizard.cachedFileLocation &&
+              importWizard.selectedAssemblyName
+            ) {
+              importWizard.setFileSource(importWizard.cachedFileLocation)
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              self.loadSpreadsheet(importWizard.selectedAssemblyName)
+            }
           },
         }))
         .views(self => ({
