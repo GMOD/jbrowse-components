@@ -1,22 +1,14 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  SimpleFeature,
-  doesIntersect2,
-  fetchAndMaybeUnzip,
-  max,
-  min,
-} from '@jbrowse/core/util'
+import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   groupLinesByRef,
   makeFeatureIntervalTreeMap,
 } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { parseStringSync } from 'gtf-nostream'
 
-import { featureData } from '../util.ts'
+import { aggregateGtfFeatures, featureData, parseGtf } from '../util.ts'
 
-import type { FeatureLoc } from '../util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
@@ -59,15 +51,13 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     const intervalTreeMap = makeFeatureIntervalTreeMap<SimpleFeatureSerialized>(
       linesByRef,
       (lines, refName) =>
-        (parseStringSync(lines.join('\n')) as FeatureLoc[][])
-          .flat()
-          .map(
-            (f, i) =>
-              featureData(
-                f,
-                `${this.id}-${refName}-${i}`,
-              ) as SimpleFeatureSerialized,
-          ),
+        parseGtf(lines.join('\n')).map(
+          (f, i) =>
+            featureData(
+              f,
+              `${this.id}-${refName}-${i}`,
+            ) as SimpleFeatureSerialized,
+        ),
       'Parsing GTF data',
     )
 
@@ -153,36 +143,15 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      const parentAggregation: Record<string, SimpleFeatureSerialized[]> = {}
-      for (const feat of feats) {
-        const aggr = feat[aggregateField] as string
-        if (aggr) {
-          ;(parentAggregation[aggr] ??= []).push(feat)
-        } else {
-          observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
-        }
-      }
-
-      for (const [name, subfeatures] of Object.entries(parentAggregation)) {
-        const s = min(subfeatures.map(f => f.start))
-        const e = max(subfeatures.map(f => f.end))
-        if (doesIntersect2(s, e, originalQuery.start, originalQuery.end)) {
-          const { uniqueId, strand } = subfeatures[0]!
-          observer.next(
-            new SimpleFeature({
-              id: `${uniqueId}-parent`,
-              data: {
-                type: 'gene',
-                subfeatures,
-                strand,
-                name,
-                start: s,
-                end: e,
-                refName: query.refName,
-              },
-            }),
-          )
-        }
+      const aggregated = aggregateGtfFeatures({
+        feats,
+        aggregateField,
+        refName: query.refName,
+        regionStart: originalQuery.start,
+        regionEnd: originalQuery.end,
+      })
+      for (const feat of aggregated) {
+        observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
       }
     }
     observer.complete()

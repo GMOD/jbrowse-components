@@ -30,8 +30,9 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
+    "@gmod/tabix": "^3.3.9",
     "@jbrowse/core": "workspace:^",
-    "gtf-nostream": "^1.3.4",
+    "@jbrowse/mobx-state-tree": "^5.10.6",
     "rxjs": "^7.8.2"
   },
   "peerDependencies": {

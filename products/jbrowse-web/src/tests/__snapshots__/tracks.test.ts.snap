@@ -182,11 +182,18 @@ exports[`file types 17`] = `
 
 exports[`file types 18`] = `
 {
-  "gtfLocation": {
+  "gtfGzLocation": {
     "locationType": "UriLocation",
     "uri": "test.gtf.gz",
   },
-  "type": "GtfAdapter",
+  "index": {
+    "indexType": "TBI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.gtf.gz.tbi",
+    },
+  },
+  "type": "GtfTabixAdapter",
 }
 `;
 
