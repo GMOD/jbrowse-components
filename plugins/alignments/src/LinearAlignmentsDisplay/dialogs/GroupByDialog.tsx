@@ -147,8 +147,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   const [tag, setGroupByTag] = useState('')
   const [type, setType] = useState('')
 
-  const validTag = TAG_REGEX.exec(tag)
-  const isInvalid = tag.length === 2 && !validTag
+  const isInvalid = tag.length === 2 && !TAG_REGEX.test(tag)
   const debouncedTag = useDebounce(tag, 1000)
   const isValidTag = TAG_REGEX.test(debouncedTag)
   const shouldFetch = type === 'tag' && isValidTag

@@ -7,13 +7,14 @@ import {
 } from '@jbrowse/core/util'
 import { getAssemblyName, launchBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { getSAFeatures } from './getSAFeatures.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
 
-export default function LaunchBreakpointSplitViewPanel({
+const LaunchBreakpointSplitViewPanel = observer(function LaunchBreakpointSplitViewPanel({
   model,
   feature,
 }: {
@@ -57,4 +58,6 @@ export default function LaunchBreakpointSplitViewPanel({
       </ul>
     </div>
   ) : null
-}
+})
+
+export default LaunchBreakpointSplitViewPanel

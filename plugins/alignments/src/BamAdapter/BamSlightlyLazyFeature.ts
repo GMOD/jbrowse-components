@@ -204,7 +204,7 @@ export default class BamSlightlyLazyFeature
       strand: this.strand,
       template_length: this.template_length,
       flags: this.flags,
-      tags: this.tags,
+      tags: convertTagsToPlainArrays(this.tags),
       refName: this.refName,
       type: 'match',
       pair_orientation: this.pair_orientation,

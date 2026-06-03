@@ -5,7 +5,7 @@ import type { Feature } from '@jbrowse/core/util'
 function getEffectiveStrand(feature: Feature) {
   const tags = feature.get('tags') as Record<string, string> | undefined
   const fstrand = feature.get('strand') ?? 0
-  const xs = tags?.XS || tags?.TS
+  const xs = tags?.XS ?? tags?.TS
   const ts = tags?.ts
   if (xs === '+') {
     return 1
@@ -23,23 +23,12 @@ export function emitGap(
   feature: Feature,
   gapsData: GapData[],
 ) {
-  if (mm.type === 'deletion') {
-    gapsData.push({
-      featureId,
-      start: featureStart + mm.start,
-      end: featureStart + mm.start + mm.length,
-      type: mm.type,
-      strand,
-      featureStrand: strand,
-    })
-  } else {
-    gapsData.push({
-      featureId,
-      start: featureStart + mm.start,
-      end: featureStart + mm.start + mm.length,
-      type: mm.type,
-      strand: getEffectiveStrand(feature),
-      featureStrand: strand,
-    })
-  }
+  gapsData.push({
+    featureId,
+    start: featureStart + mm.start,
+    end: featureStart + mm.start + mm.length,
+    type: mm.type,
+    strand: mm.type === 'deletion' ? strand : getEffectiveStrand(feature),
+    featureStrand: strand,
+  })
 }

@@ -96,9 +96,9 @@ export function buildSegmentArrays(
 
   const numSegments = segIdx
   return {
-    segmentPositions: segmentPositions.slice(0, numSegments * 2),
-    segmentReadIndices: segmentReadIndices.slice(0, numSegments),
-    segmentEdgeFlags: segmentEdgeFlags.slice(0, numSegments),
+    segmentPositions: segmentPositions.subarray(0, numSegments * 2),
+    segmentReadIndices: segmentReadIndices.subarray(0, numSegments),
+    segmentEdgeFlags: segmentEdgeFlags.subarray(0, numSegments),
     numSegments,
   }
 }

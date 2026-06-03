@@ -103,8 +103,8 @@ export function readFeaturesToNumericCIGAR(
     oplen += remaining
   }
 
-  // Flush pending insertions
-  if (remaining && insLen) {
+  // Flush pending insertions (independent of `remaining`)
+  if (insLen) {
     cigarParts.push((insLen << 4) | CIGAR_OP_I)
   }
   // Flush final operation

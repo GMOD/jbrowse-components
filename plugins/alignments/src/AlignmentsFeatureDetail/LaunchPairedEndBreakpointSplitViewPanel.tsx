@@ -2,11 +2,12 @@ import { ActionLink } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { getAssemblyName, launchBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
 
-export default function LaunchPairedEndBreakpointSplitViewPanel({
+const LaunchPairedEndBreakpointSplitViewPanel = observer(function LaunchPairedEndBreakpointSplitViewPanel({
   model,
   feature,
 }: {
@@ -48,4 +49,6 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
       </ActionLink>
     </div>
   ) : null
-}
+})
+
+export default LaunchPairedEndBreakpointSplitViewPanel

@@ -3,10 +3,11 @@ import { ActionLink } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
 import { navToLoc } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 
-export default function SupplementaryAlignmentsLocStrings({
+const SupplementaryAlignmentsLocStrings = observer(function SupplementaryAlignmentsLocStrings({
   tag,
   model,
 }: {
@@ -47,4 +48,6 @@ export default function SupplementaryAlignmentsLocStrings({
       </ul>
     </div>
   )
-}
+})
+
+export default SupplementaryAlignmentsLocStrings

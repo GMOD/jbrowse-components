@@ -35,7 +35,7 @@ export function randomColor(str: string) {
 }
 
 export function getColorForModification(str: string) {
-  return modificationData[str]?.color || randomColor(str)
+  return modificationData[str]?.color ?? randomColor(str)
 }
 
 export { getTagAlt } from '@jbrowse/modifications-utils'
