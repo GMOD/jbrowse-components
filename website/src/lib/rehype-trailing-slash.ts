@@ -4,7 +4,6 @@ import type { Root } from 'hast'
 import type { Plugin } from 'unified'
 
 const HAS_EXTENSION = /\.[a-z0-9]+$/i
-const IS_ABSOLUTE_INTERNAL = /^\//
 
 const rehypeTrailingSlash: Plugin<[], Root> = () => {
   return tree => {
@@ -16,7 +15,7 @@ const rehypeTrailingSlash: Plugin<[], Root> = () => {
       if (
         typeof href === 'string' &&
         href.startsWith('/') &&
-        !href.includes('://') &&
+        !href.startsWith('//') &&
         !HAS_EXTENSION.test(href.split('#')[0].split('?')[0]) &&
         !href.endsWith('/')
       ) {

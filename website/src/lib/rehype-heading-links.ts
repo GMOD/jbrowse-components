@@ -1,20 +1,19 @@
+import { visit } from 'unist-util-visit'
+
 import type { Element, Root } from 'hast'
 import type { Plugin } from 'unified'
 
+const HEADING_TAGS = new Set(['h2', 'h3', 'h4'])
+
 const rehypeHeadingLinks: Plugin<[], Root> = () => {
   return tree => {
-    const children = tree.children
-    for (let i = 0; i < children.length; i++) {
-      const node = children[i] as Element
-      if (
-        node.type !== 'element' ||
-        !['h2', 'h3', 'h4'].includes(node.tagName)
-      ) {
-        continue
+    visit(tree, 'element', (node: Element) => {
+      if (!HEADING_TAGS.has(node.tagName)) {
+        return
       }
       const id = node.properties?.id as string | undefined
       if (!id) {
-        continue
+        return
       }
       const anchor: Element = {
         type: 'element',
@@ -27,8 +26,8 @@ const rehypeHeadingLinks: Plugin<[], Root> = () => {
         },
         children: [{ type: 'text', value: '#' }],
       }
-      children[i] = { ...node, children: [...node.children, anchor] }
-    }
+      node.children = [...node.children, anchor]
+    })
   }
 }
 

@@ -1,4 +1,4 @@
-import sidebarsJson from '../../../website/sidebars.json'
+import sidebarsJson from '../../sidebars.json'
 
 export interface SidebarLink {
   type: 'link'
