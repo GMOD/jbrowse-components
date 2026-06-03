@@ -79,10 +79,10 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { width, maxBpPerPx, minBpPerPx, coarseBpPerPx } = model
+  const { width, maxBpPerPx, minBpPerPx, bpPerPx, coarseBpPerPx } = model
 
   const [dragValue, setDragValue] = useState<number | null>(null)
-  const value = dragValue ?? -Math.log2(coarseBpPerPx) * 100
+  const value = dragValue ?? -Math.log2(bpPerPx) * 100
   const zoomInDisabled = coarseBpPerPx <= minBpPerPx + 0.0001
   const zoomOutDisabled = coarseBpPerPx >= maxBpPerPx - 0.0001
   return (
