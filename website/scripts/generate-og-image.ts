@@ -11,10 +11,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const websiteRoot = path.resolve(__dirname, '..')
 const outPath = path.join(websiteRoot, 'static', 'img', 'jbrowse-og.png')
 
-// Roboto (Apache-2.0) vendored from @fontsource so the card renders in the real
-// site typeface without depending on system fonts or a transitive package path.
+// Wordmark uses Liberation Sans (Arial-metric, OFL) subset to just the glyphs
+// in "JBrowse 2" — its capital J sits on the baseline, matching the site
+// header. Roboto's J has a descender that looks odd at this size. Embedded as a
+// data URI so the card renders without depending on installed system fonts.
 const fontBase64 = fs.readFileSync(
-  path.join(__dirname, 'roboto-latin-500-normal.woff2'),
+  path.join(__dirname, 'jbrowse-wordmark.woff2'),
   'base64',
 )
 
@@ -23,7 +25,7 @@ const HEIGHT = 630
 const NAVY = '#0d223f'
 
 // the grayscale logo paths (viewBox 0 0 206 214) read well on the navy card
-const logo = `<g transform="translate(195,220) scale(0.89)">
+const logo = `<g transform="translate(185,222) scale(0.89)">
   <path fill="#e6e6e6" d="M146.668,87.223c.308.133.6.283.908.42l6.746-15.618c-.153-.067-.3-.143-.454-.21a81.36,81.36,0,0,0-71.777,3.5q-2.8,1.544-5.469,3.309l9.249,14.054A63.93,63.93,0,0,1,146.668,87.223Z"/>
   <path fill="#ffffff" d="M118.5,58.5c.168,0,.333.012.5.013V41.506c-.167,0-.333-.006-.5-.006a98.325,98.325,0,0,0-77.4,37.565q-2.664,3.378-5.023,6.994l14.206,9.327Q52.043,92.709,54,90.179A81.363,81.363,0,0,1,118.5,58.5Z"/>
   <path fill="#b3b3b3" d="M148.921,151.314c.04.163.07.326.107.489l16.509-4.058c-.039-.163-.067-.326-.107-.489A48.457,48.457,0,0,0,133.575,112.8l-5.515,15.591A32.466,32.466,0,0,1,148.921,151.314Z"/>
@@ -32,10 +34,10 @@ const logo = `<g transform="translate(195,220) scale(0.89)">
 </g>`
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
-  <style>@font-face{font-family:'Roboto';font-style:normal;font-weight:500;src:url(data:font/woff2;base64,${fontBase64}) format('woff2');}</style>
+  <style>@font-face{font-family:'Wordmark';src:url(data:font/woff2;base64,${fontBase64}) format('woff2');}</style>
   <rect width="${WIDTH}" height="${HEIGHT}" fill="${NAVY}"/>
   ${logo}
-  <text x="425" y="358" font-family="Roboto, sans-serif" font-size="130" font-weight="500" fill="#ffffff">JBrowse 2</text>
+  <text x="415" y="362" font-family="Wordmark, sans-serif" font-size="130" fill="#ffffff">JBrowse 2</text>
 </svg>`
 
 await sharp(new TextEncoder().encode(svg)).png().toFile(outPath)
