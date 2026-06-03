@@ -74,13 +74,13 @@ and docs.
 
 **Volatiles:** featureUnderMouse
 
-**Getters:** DisplayMessageComponent, color, isDensityMode,
+**Getters:** DisplayMessageComponent, color, useBicolor, isDensityMode,
 effectiveBicolorPivot, ticks, renderState
 
 **Methods:** rpcProps, gpuProps, trackMenuItems
 
-**Actions:** setRpcData, setPosColor, setNegColor, setFeatureUnderMouse,
-fetchNeeded, renderSvg, startRenderingBackend
+**Actions:** setRpcData, setUseBicolor, setPosColor, setNegColor,
+setFeatureUnderMouse, fetchNeeded, renderSvg, startRenderingBackend
 
 ### Available via [BaseDisplay](../basedisplay)
 
@@ -96,7 +96,7 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** heightPreConfig
+**Properties:** heightOverride
 
 **Volatiles:** scrollTop
 

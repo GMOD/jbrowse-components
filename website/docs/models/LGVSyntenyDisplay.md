@@ -122,7 +122,7 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** heightPreConfig
+**Properties:** heightOverride
 
 **Volatiles:** scrollTop
 

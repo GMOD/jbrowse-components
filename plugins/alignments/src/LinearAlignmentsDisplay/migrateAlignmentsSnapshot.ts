@@ -15,7 +15,7 @@
  *   - showArcs + pairedArcsDown booleans → pairedArcs enum
  *   - pairedArcs enum → readConnections mode + readConnectionsDown direction
  *   - sashimiArcsDown dropped (direction is the shared readConnectionsDown)
- *   - height → heightPreConfig
+ *   - height → heightOverride
  *   - arcsHeight → readConnectionsHeight
  *   - Individual override properties → configOverrides map
  *   - lineWidth / lineWidthSetting → configOverrides.readConnectionsLineWidth
@@ -41,10 +41,10 @@ export function migrateAlignmentsSnapshot(
   const { blockState, showTooltips, ...cleaned } = snap
   let result = cleaned
 
-  // Rewrite "height" from older snapshots to "heightPreConfig"
-  if (result.height !== undefined && result.heightPreConfig === undefined) {
+  // Rewrite "height" from older snapshots to "heightOverride"
+  if (result.height !== undefined && result.heightOverride === undefined) {
     const { height, ...rest } = result
-    result = { ...rest, heightPreConfig: height }
+    result = { ...rest, heightOverride: height }
   }
 
   // arcsHeight → readConnectionsHeight (the read-connections band height,

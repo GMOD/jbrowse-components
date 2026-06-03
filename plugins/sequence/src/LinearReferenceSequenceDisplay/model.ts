@@ -174,7 +174,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * otherwise the zoom-aware computed height.
        */
       get height() {
-        return self.heightPreConfig ?? this.computedHeight
+        return self.heightOverride ?? this.computedHeight
       },
       get rowHeight() {
         return this.numRows > 0 ? this.height / this.numRows : 0
@@ -241,21 +241,21 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       toggleShowForward() {
         self.showForward = !self.showForward
-        self.heightPreConfig = undefined
+        self.heightOverride = undefined
       },
       /**
        * #action
        */
       toggleShowReverse() {
         self.showReverse = !self.showReverse
-        self.heightPreConfig = undefined
+        self.heightOverride = undefined
       },
       /**
        * #action
        */
       toggleShowTranslation() {
         self.showTranslation = !self.showTranslation
-        self.heightPreConfig = undefined
+        self.heightOverride = undefined
       },
     }))
     .actions(self => ({

@@ -608,9 +608,9 @@ function stateModelFactory() {
       if (!snap) {
         return snap
       }
-      // rewrite "height" from older snapshots to "heightPreConfig"
+      // rewrite "height" from older snapshots to "heightOverride"
       const { height, ...rest } = snap as typeof snap & { height?: number }
-      return { heightPreConfig: height, ...rest }
+      return { heightOverride: height, ...rest }
     })
     .postProcessSnapshot(snap => {
       // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524

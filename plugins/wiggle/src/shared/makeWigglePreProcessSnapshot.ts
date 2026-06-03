@@ -8,10 +8,10 @@ export function makeWigglePreProcessSnapshot(opts?: { multiWiggle?: boolean }) {
     const { blockState, showLegend, showTooltips, ...withoutLegacy } = snap
     if (
       withoutLegacy.height !== undefined &&
-      withoutLegacy.heightPreConfig === undefined
+      withoutLegacy.heightOverride === undefined
     ) {
       const { height, ...rest } = withoutLegacy
-      return migrateWiggleSnapshot({ ...rest, heightPreConfig: height }, opts)
+      return migrateWiggleSnapshot({ ...rest, heightOverride: height }, opts)
     }
     return migrateWiggleSnapshot(withoutLegacy, opts)
   }

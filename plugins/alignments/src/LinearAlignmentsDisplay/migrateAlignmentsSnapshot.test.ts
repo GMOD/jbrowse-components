@@ -27,10 +27,10 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result.showCoverage).toBe(true)
   })
 
-  test('migrates height → heightPreConfig', () => {
+  test('migrates height → heightOverride', () => {
     const snap = { type: 'LinearAlignmentsDisplay', height: 400 }
     const result = migrateAlignmentsSnapshot(snap)
-    expect(result.heightPreConfig).toBe(400)
+    expect(result.heightOverride).toBe(400)
     expect(result).not.toHaveProperty('height')
   })
 
@@ -41,14 +41,14 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result).not.toHaveProperty('arcsHeight')
   })
 
-  test('does not overwrite existing heightPreConfig', () => {
+  test('does not overwrite existing heightOverride', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       height: 400,
-      heightPreConfig: 300,
+      heightOverride: 300,
     }
     const result = migrateAlignmentsSnapshot(snap)
-    expect(result.heightPreConfig).toBe(300)
+    expect(result.heightOverride).toBe(300)
     expect(result.height).toBe(400)
   })
 
@@ -192,7 +192,7 @@ describe('migrateAlignmentsSnapshot', () => {
     }
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.type).toBe('LinearAlignmentsDisplay')
-    expect(result.heightPreConfig).toBe(300)
+    expect(result.heightOverride).toBe(300)
     expect(result.linkedReads).toBe('normal')
     expect(result).not.toHaveProperty('showLinkedReads')
     const overrides = result.configOverrides as Record<string, unknown>

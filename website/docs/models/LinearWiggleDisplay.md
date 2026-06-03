@@ -72,7 +72,7 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** heightPreConfig
+**Properties:** heightOverride
 
 **Volatiles:** scrollTop
 
@@ -196,6 +196,13 @@ LazyExoticComponent<({ model, }: { model: WiggleDisplayModel; }) => Element>
 string
 ```
 
+#### getter: useBicolor
+
+```js
+// type
+boolean
+```
+
 #### getter: isDensityMode
 
 ```js
@@ -205,11 +212,9 @@ boolean
 
 #### getter: effectiveBicolorPivot
 
-Sent to the worker as `bicolorPivot`. When the user picked a custom color we set
-the pivot to -Infinity so `score >= pivot` is always true and every feature
-lands in the worker's pos arrays — the display then paints that single bucket
-with the user's chosen color. Default (`#f0f`) color keeps the configured pivot
-for the standard pos/neg split.
+Sent to the worker as `bicolorPivot`. In bicolor mode the pivot splits features
+into pos/neg buckets. In solid-color mode we set -Infinity so every feature
+lands in the pos bucket, then paint that bucket with the user's chosen color.
 
 ```js
 // type
@@ -246,12 +251,11 @@ rpcProps: () => {
 
 single-source gpuProps mapped onto the multi-source build path:
 
-- useBicolor (default color): no source override, multi build emits pos+neg
-  arrays with their respective colors
-- !useBicolor (custom solid color): worker put all features in pos arrays
-  (effectiveBicolorPivot=-Infinity); whiskers and non-density modes want the
-  user's solid color, density wants posColor (which is the multi build default
-  already, so leave undefined)
+- bicolor: no source color override; build emits pos+neg with their respective
+  colors
+- solid: worker put all features in pos arrays (effectiveBicolorPivot =
+  -Infinity); non-density modes use the user's color; density uses posColor
+  (multi default, so leave source.color undefined)
 
 ```js
 // type signature
@@ -283,6 +287,13 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```js
 // type signature
 setRpcData: (displayedRegionIndex: number, data: WiggleDataResult) => void
+```
+
+#### action: setUseBicolor
+
+```js
+// type signature
+setUseBicolor: (val?: boolean | undefined) => void
 ```
 
 #### action: setPosColor

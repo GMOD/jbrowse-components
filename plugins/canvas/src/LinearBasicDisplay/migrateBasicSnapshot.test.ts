@@ -12,7 +12,7 @@ test('non-migrated snapshot passes through unchanged', () => {
   const snap = {
     type: 'LinearBasicDisplay',
     configuration: 'cfg',
-    heightPreConfig: 200,
+    heightOverride: 200,
   }
   expect(migrateBasicSnapshot(snap)).toEqual(snap)
 })
@@ -29,39 +29,39 @@ test('strips removed FeatureDensityMixin fields', () => {
   expect(result).toEqual({ type: 'LinearBasicDisplay' })
 })
 
-test('lifts height to heightPreConfig', () => {
+test('lifts height to heightOverride', () => {
   const result = migrateBasicSnapshot({
     type: 'LinearBasicDisplay',
     height: 150,
   })
   expect(result).toEqual({
     type: 'LinearBasicDisplay',
-    heightPreConfig: 150,
+    heightOverride: 150,
   })
 })
 
-// Regression: a partially-migrated session may already have heightPreConfig
+// Regression: a partially-migrated session may already have heightOverride
 // (newer field) AND height (legacy artifact). The new value must win, otherwise
 // re-saving a session would overwrite the user's chosen height with whatever
 // the old snapshot had.
-test('does not overwrite existing heightPreConfig', () => {
+test('does not overwrite existing heightOverride', () => {
   const result = migrateBasicSnapshot({
     type: 'LinearBasicDisplay',
     height: 150,
-    heightPreConfig: 200,
+    heightOverride: 200,
   })
   expect(result).toEqual({
     type: 'LinearBasicDisplay',
-    heightPreConfig: 200,
+    heightOverride: 200,
   })
 })
 
-test('does not add heightPreConfig when neither field is present', () => {
+test('does not add heightOverride when neither field is present', () => {
   const result = migrateBasicSnapshot({
     type: 'LinearBasicDisplay',
   })
   expect(result).toEqual({ type: 'LinearBasicDisplay' })
-  expect(result).not.toHaveProperty('heightPreConfig')
+  expect(result).not.toHaveProperty('heightOverride')
 })
 
 // Legacy trackShowLabels: true used to mean "always show labels". The enum
@@ -299,7 +299,7 @@ test('full legacy snapshot: strips, lifts, and merges', () => {
   expect(result).toEqual({
     type: 'LinearBasicDisplay',
     configuration: 'gene_track',
-    heightPreConfig: 180,
+    heightOverride: 180,
     configOverrides: {
       autoHeight: true,
       showLabels: 'off',

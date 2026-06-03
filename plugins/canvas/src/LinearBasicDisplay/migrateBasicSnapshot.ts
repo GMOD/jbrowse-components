@@ -61,7 +61,7 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
 }
 
 // Migrate legacy snapshot shapes: strip removed FeatureDensityMixin fields,
-// lift `height` to `heightPreConfig`, and promote the old per-property
+// lift `height` to `heightOverride`, and promote the old per-property
 // `track<Setting>` values into the unified configOverrides map.
 export function migrateBasicSnapshot(
   snap: Record<string, unknown> | undefined,
@@ -155,8 +155,8 @@ export function migrateBasicSnapshot(
 
   return {
     ...rest,
-    ...(height !== undefined && rest.heightPreConfig === undefined
-      ? { heightPreConfig: height }
+    ...(height !== undefined && rest.heightOverride === undefined
+      ? { heightOverride: height }
       : undefined),
     ...((Object.keys(migrated).length > 0 || normalizedOverrides) && {
       configOverrides: { ...normalizedOverrides, ...migrated },

@@ -22,13 +22,18 @@ reference the markdown files in our repo of the checked out git tag
 
 ### TrackHeightMixin - Properties
 
-#### property: heightPreConfig
+#### property: heightOverride
+
+the explicitly-set display height (e.g. from a drag-resize); the `height` getter
+resolves this over the config `height` slot. Named with the `Override` suffix to
+match the override convention used elsewhere (`configOverrides`, `setOverride`);
+the bare `height` name belongs to the resolving getter.
 
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
 // code
-heightPreConfig: types.maybe(
+heightOverride: types.maybe(
         types.refinement(
           'displayHeight',
           types.number,

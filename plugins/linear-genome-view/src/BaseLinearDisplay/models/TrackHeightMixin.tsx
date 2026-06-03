@@ -18,8 +18,13 @@ export default function TrackHeightMixin<
     .model({
       /**
        * #property
+       * the explicitly-set display height (e.g. from a drag-resize); the
+       * `height` getter resolves this over the config `height` slot. Named with
+       * the `Override` suffix to match the override convention used elsewhere
+       * (`configOverrides`, `setOverride`); the bare `height` name belongs to
+       * the resolving getter.
        */
-      heightPreConfig: types.maybe(
+      heightOverride: types.maybe(
         types.refinement(
           'displayHeight',
           types.number,
@@ -36,7 +41,7 @@ export default function TrackHeightMixin<
     .views(self => ({
       get height() {
         return (
-          self.heightPreConfig ??
+          self.heightOverride ??
           (getConf(self as unknown as TConf, 'height') as number)
         )
       },
@@ -52,7 +57,7 @@ export default function TrackHeightMixin<
        * #action
        */
       setHeight(displayHeight: number) {
-        self.heightPreConfig = Math.max(displayHeight, minDisplayHeight)
+        self.heightOverride = Math.max(displayHeight, minDisplayHeight)
         return self.height
       },
       /**
@@ -60,11 +65,26 @@ export default function TrackHeightMixin<
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        self.heightPreConfig = Math.max(
-          self.height + distance,
-          minDisplayHeight,
-        )
+        self.heightOverride = Math.max(self.height + distance, minDisplayHeight)
         return self.height - oldHeight
       },
     }))
+    .preProcessSnapshot(snap => {
+      // Back-compat: the field was `heightPreConfig` and older snapshots also
+      // stored a bare `height`. Both now normalize to `heightOverride`. This is
+      // composed into every TrackHeightMixin display, so it covers the displays
+      // that don't have their own height migration.
+      const s = snap as
+        | (typeof snap & { height?: number; heightPreConfig?: number })
+        | undefined
+      if (
+        s &&
+        s.heightOverride === undefined &&
+        (s.height !== undefined || s.heightPreConfig !== undefined)
+      ) {
+        const { height, heightPreConfig, ...rest } = s
+        return { ...rest, heightOverride: height ?? heightPreConfig }
+      }
+      return snap
+    })
 }
