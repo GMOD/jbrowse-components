@@ -30,7 +30,10 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
-import { buildLaidOutChainMap } from './computeChainLayout.ts'
+import {
+  attachLinkedReadLines,
+  buildLaidOutChainMap,
+} from './computeChainLayout.ts'
 import { ColorScheme } from './constants.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
@@ -242,10 +245,16 @@ export default function stateModelFactory(
             types.enumeration<LinkedReadsMode>('LinkedReadsMode', [
               'off',
               'normal',
-              'bezier',
             ]),
             'off',
           ),
+          /**
+           * #property
+           * Draw paired-read connection curves (bezier overlay + GPU
+           * straight lines for normal pairs). Orthogonal to `linkedReads`
+           * layout, so curves work over an ordinary pileup or chain layout.
+           */
+          showBezierConnections: false,
           /**
            * #property
            */
@@ -413,15 +422,26 @@ export default function stateModelFactory(
           colorPalette: null as ColorPalette | null,
         }
       })
-      // `isChainMode` is its own getter — it's used in many places as a
-      // domain concept ("are we drawing the chain layout?") that reads
-      // better than the equivalent `linkedReads === 'normal'`.
+      // Named getters for frequently-tested conditions so the inline boolean
+      // expression doesn't have to be re-derived (and re-explained) at each
+      // call site.
       .views(self => ({
         /**
          * #getter
          */
         get isChainMode() {
           return self.linkedReads === 'normal'
+        },
+
+        /**
+         * #getter
+         * Whether to draw the straight-line pass connecting normal read-pairs
+         * in pileup layout. Only meaningful when bezier connections are on AND
+         * we are in pileup mode — chain layout has its own connecting-line pass
+         * that already covers normal pairs.
+         */
+        get showLinkedReadLines() {
+          return self.showBezierConnections && self.linkedReads === 'off'
         },
       }))
       // Canonical ScoreScaleModel shape (shared with wiggle/manhattan) so the
@@ -656,14 +676,17 @@ export default function stateModelFactory(
          * #getter
          */
         get laidOutPileupMap() {
-          const laidOut =
-            self.linkedReads !== 'off'
-              ? buildLaidOutChainMap(self.rpcDataMap, self.linkedReads)
+          const base =
+            self.linkedReads === 'normal'
+              ? buildLaidOutChainMap(self.rpcDataMap)
               : buildLaidOutPileupMap({
                   dataMap: self.rpcDataMap,
                   sortedBy: this.sortedBy,
                   showSoftClipping: self.showSoftClipping,
                 })
+          const laidOut = self.showLinkedReadLines
+            ? attachLinkedReadLines(base)
+            : base
           // Tag colors are baked here (not in the worker) so colorTagMap stays
           // a main-thread tier-2 setting — see readTagColors.ts.
           return overlayReadTagColors(laidOut, this.colorBy, self.colorTagMap)
@@ -1059,6 +1082,7 @@ export default function stateModelFactory(
               self.linkedReads === 'normal' ? self.selectedChainIds : [],
             colors: palette,
             linkedReads: self.linkedReads,
+            showLinkedReadLines: self.showLinkedReadLines,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
             readConnectionsLineWidth: self.readConnectionsLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
@@ -1612,6 +1636,16 @@ export default function stateModelFactory(
               }
               self.invalidateLoadedRegions()
             }
+          },
+
+          /**
+           * #action
+           * Toggle the paired-read connection overlay. A main-thread tier-2/4
+           * setting (read in `laidOutPileupMap` + `renderState`), not in
+           * `rpcProps` — toggling it never refetches.
+           */
+          setShowBezierConnections(flag: boolean) {
+            self.showBezierConnections = flag
           },
 
           /**

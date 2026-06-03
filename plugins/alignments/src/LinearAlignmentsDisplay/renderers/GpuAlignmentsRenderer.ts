@@ -159,10 +159,10 @@ function fillFrameUniforms(
   i[U.colorScheme] = state.colorScheme
   i[U.highlightIdx] = -1
   i[U.highlightOnly] = 0
-  // Bezier mode is a chain mode for read-coloring purposes (supplementary
-  // colors, strand flipping, mate-unmapped coloring, chevrons) — only the
-  // connecting-line geometry differs.
-  i[U.chainMode] = state.linkedReads !== 'off' ? 1 : 0
+  // Chain layout drives read-coloring (supplementary colors, strand flipping,
+  // mate-unmapped coloring, chevrons). The bezier connection overlay is
+  // orthogonal and does not switch coloring into chain mode.
+  i[U.chainMode] = state.linkedReads === 'normal' ? 1 : 0
   i[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
   i[U.flipStrandLongRead] = state.flipStrandLongReadChains !== false ? 1 : 0
   f[U.reversed] = frame.reversed ? 1 : 0
@@ -559,7 +559,8 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
       if (state.linkedReads === 'normal') {
         this.hal.drawPass(PASS_CONN_LINE, block.displayedRegionIndex)
-      } else if (state.linkedReads === 'bezier') {
+      }
+      if (state.showLinkedReadLines) {
         this.hal.drawPass(PASS_LINKED_READ_LINE, block.displayedRegionIndex)
       }
       this.hal.drawPass(PASS_READ, block.displayedRegionIndex)

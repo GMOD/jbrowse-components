@@ -45,6 +45,10 @@ export interface RenderState {
   // Color palette from theme
   colors: ColorPalette
   linkedReads: LinkedReadsMode
+  // Straight-line pass connecting normal read-pairs in pileup layout.
+  // True when bezier connections are on AND linkedReads === 'off' (pileup).
+  // Chain layout has its own connecting-line pass, so this is never needed there.
+  showLinkedReadLines: boolean
   flipStrandLongReadChains?: boolean
   readConnectionsLineWidth?: number
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode

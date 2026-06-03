@@ -352,7 +352,8 @@ export function drawAlignmentBlocks(
 
     if (state.linkedReads === 'normal') {
       drawConnectingLines(ctx, region, block, bpLength, fullBlockWidth, state)
-    } else if (state.linkedReads === 'bezier') {
+    }
+    if (state.showLinkedReadLines) {
       drawLinkedReadLines(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
