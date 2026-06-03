@@ -127,7 +127,6 @@ export function makeScoreSubMenu(
   return {
     label,
     icon: EqualizerIcon,
-    type: 'subMenu' as const,
     subMenu: [
       ...leadingItems,
       ...(scaleType ? [makeScaleTypeSubMenu(self)] : []),

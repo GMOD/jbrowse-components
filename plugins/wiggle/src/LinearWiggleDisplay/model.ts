@@ -10,13 +10,17 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { computeYTicks, resolveRenderState } from '@jbrowse/wiggle-core'
+import {
+  computeYTicks,
+  makeCrossHatchItem,
+  makeScoreSubMenu,
+  resolveRenderState,
+} from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
-import { rendererMenuItems } from '../shared/rendererMenuItems.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
   makeRenderingTypeSubMenu,
@@ -281,13 +285,13 @@ export default function stateModelFactory(
       trackMenuItems() {
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
-          // scaleType: true injects the wiggle-only scale-type submenu into the
-          // shared Score submenu (manhattan, linear-only, leaves it off);
-          // resolution/summary lead the submenu, matching multi-wiggle.
-          ...rendererMenuItems(self, {
+          // scaleType: true keeps the scale-type submenu (manhattan, linear-only,
+          // drops it); resolution/summary lead the submenu, matching multi-wiggle.
+          makeScoreSubMenu(self, {
             scaleType: true,
             leadingItems: makeResolutionAndSummarySubMenus(self),
           }),
+          makeCrossHatchItem(self),
           {
             label: 'Color',
             icon: PaletteIcon,

@@ -52,7 +52,6 @@ export {
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay/index.ts'
 
-export { rendererMenuItems } from './shared/rendererMenuItems.ts'
 export { WiggleCommonMixin } from './shared/WiggleCommonMixin.ts'
 export { WiggleScoreConfigMixin } from './shared/WiggleScoreConfigMixin.ts'
 

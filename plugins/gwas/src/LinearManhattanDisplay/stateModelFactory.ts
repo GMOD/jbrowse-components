@@ -18,14 +18,13 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import {
-  WiggleScoreConfigMixin,
-  rendererMenuItems,
-} from '@jbrowse/plugin-wiggle'
+import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
 import {
   YSCALEBAR_LABEL_OFFSET,
   computeYTicks,
   getNiceDomain,
+  makeCrossHatchItem,
+  makeScoreSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import { autorun, observable } from 'mobx'
@@ -295,7 +294,8 @@ export function stateModelFactory(
       // circular.
       trackMenuItems() {
         return [
-          ...rendererMenuItems(self),
+          makeScoreSubMenu(self, { scaleType: false }),
+          makeCrossHatchItem(self),
           {
             label: 'Color by LD to index SNP',
             type: 'checkbox' as const,
