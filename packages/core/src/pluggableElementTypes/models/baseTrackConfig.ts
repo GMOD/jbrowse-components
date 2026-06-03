@@ -211,6 +211,14 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         const knownRendererTypes = new Set(
           pluginManager.getRendererTypes().map(r => r.name),
         )
+        // Old sessions can carry several display configs whose types are all
+        // aliases of one canonical type (e.g. v4.3.0 alignments had separate
+        // LinearPileupDisplay/LinearSNPCoverageDisplay/... that now collapse to
+        // LinearAlignmentsDisplay). After alias normalization, dedupe by type so
+        // the track config holds one display per type — otherwise the Display
+        // types menu shows duplicate radio entries. First occurrence wins to
+        // preserve the default (displays[0]).
+        const seenTypes = new Set<string>()
         return {
           ...snap,
           displays: displays
@@ -219,6 +227,11 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
               return canonical ? { ...d, type: canonical } : d
             })
             .filter(d => knownDisplayTypes.has(d.type))
+            .filter(d => {
+              const dup = seenTypes.has(d.type)
+              seenTypes.add(d.type)
+              return !dup
+            })
             .map(d =>
               liftLegacyRendererConfig(d, snap.trackId, knownRendererTypes),
             ),
