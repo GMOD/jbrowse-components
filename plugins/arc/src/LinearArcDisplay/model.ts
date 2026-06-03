@@ -1,19 +1,35 @@
+import type React from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { getSession, isFeature, openFeatureWidget } from '@jbrowse/core/util'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  FeatureDensityMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearArcDisplay
+ * a non-block-based display drawing an arc connecting the start and end of each
+ * feature, rendered as plain SVG on the main thread
+ *
  * extends
- * - [BaseLinearDisplay](../baselineardisplay)
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearArcDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
+      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -29,28 +45,25 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         displayMode: types.maybe(types.string),
       }),
     )
-
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get blockType() {
-        return 'staticBlocks'
-      },
-      /**
-       * #getter
-       */
-      get renderDelay() {
-        return 500
-      },
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return self.configuration.renderer.type
-      },
+    .volatile(() => ({
+      features: undefined as Feature[] | undefined,
+      loading: false,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get fetchSettled() {
+        return (
+          self.features !== undefined || !!self.error || self.regionTooLarge
+        )
+      },
+      /**
+       * #getter
+       */
+      get rendererConfig() {
+        return self.configuration.renderer
+      },
       /**
        * #getter
        */
@@ -59,33 +72,65 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * returns the id of the globally-selected feature, used to highlight it
        */
-      get rendererConfig() {
-        return self.configuration.renderer
+      get selectedFeatureId() {
+        if (isAlive(self)) {
+          const { selection } = getSession(self)
+          if (isFeature(selection)) {
+            return selection.id()
+          }
+        }
+        return undefined
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        renderProps() {
-          return {
-            ...superRenderProps(),
-            config: self.rendererConfig,
-            displayMode: self.displayModeSetting,
-            height: self.height,
-          }
-        },
-      }
-    })
     .actions(self => ({
+      /**
+       * #action
+       */
+      selectFeature(feature: Feature) {
+        openFeatureWidget(self, feature.toJSON())
+      },
+      /**
+       * #action
+       */
+      setLoading(flag: boolean) {
+        self.loading = flag
+      },
+      /**
+       * #action
+       */
+      setFeatures(f: Feature[]) {
+        self.features = f
+      },
       /**
        * #action
        */
       setDisplayMode(flag: string) {
         self.displayMode = flag
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./afterAttach.tsx')
+            doAfterAttach(self as LinearArcDisplayModel)
+          } catch (e) {
+            console.error(e)
+            self.setError(e)
+          }
+        })()
+      },
+      /**
+       * #action
+       */
+      async renderSvg(opts: {
+        rasterizeLayers?: boolean
+      }): Promise<React.ReactNode> {
+        const { renderArcSvg } = await import('./renderSvg.tsx')
+        return renderArcSvg(self as LinearArcDisplayModel, opts)
       },
     }))
     .views(self => {
@@ -123,3 +168,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }
     })
 }
+
+export type LinearArcDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearArcDisplayModel = Instance<LinearArcDisplayStateModel>

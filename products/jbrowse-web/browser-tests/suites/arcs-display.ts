@@ -29,6 +29,7 @@ const suite: TestSuite = {
         })
 
         await findByText(page, 'ctgA')
+        await findByTestId(page, 'arc-display-done', 60000)
         await waitForDataLoaded(page)
         await pageSnapshot(page, 'arcs-arc-test')
       },
