@@ -113,6 +113,7 @@ export interface RawFeatureArrays {
 export function processFeaturesFromArrays(
   raw: RawFeatureArrays,
   bicolorPivot: number,
+  useBicolor = true,
 ): WiggleFeatureArrays {
   const { starts, ends, scores, minScores, maxScores, count } = raw
   const featurePositions = new Uint32Array(count * 2)
@@ -142,7 +143,7 @@ export function processFeaturesFromArrays(
       hasSummaryScores = true
     }
 
-    if (score >= bicolorPivot) {
+    if (!useBicolor || score >= bicolorPivot) {
       posFeaturePositionsBuf[posCount * 2] = startPos
       posFeaturePositionsBuf[posCount * 2 + 1] = endPos
       posFeatureScoresBuf[posCount] = score

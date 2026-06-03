@@ -27,6 +27,7 @@ interface ExecuteParams {
     sessionId: string
     adapterConfig: Record<string, unknown>
     region: Region
+    useBicolor?: boolean
     bicolorPivot?: number
     stopToken?: StopToken
     bpPerPx?: number
@@ -54,6 +55,7 @@ export async function executeRenderWiggleData({
     sessionId,
     adapterConfig,
     region,
+    useBicolor = true,
     bicolorPivot = 0,
     stopToken,
     bpPerPx = 0,
@@ -82,7 +84,7 @@ export async function executeRenderWiggleData({
 
   checkStopToken2(stopTokenCheck)
 
-  const arrays = processFeaturesFromArrays(raw, bicolorPivot)
+  const arrays = processFeaturesFromArrays(raw, bicolorPivot, useBicolor)
   const result: WiggleDataResult = {
     sources: [{ name: SINGLE_WIGGLE_SOURCE_NAME, ...arrays }],
   }

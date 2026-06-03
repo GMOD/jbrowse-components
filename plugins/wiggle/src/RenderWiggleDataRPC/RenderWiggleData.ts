@@ -9,6 +9,7 @@ interface RenderWiggleDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
+  useBicolor?: boolean
   bicolorPivot?: number
   stopToken?: StopToken
   bpPerPx?: number

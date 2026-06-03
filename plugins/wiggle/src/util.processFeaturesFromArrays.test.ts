@@ -85,7 +85,6 @@ describe('processFeaturesFromArrays', () => {
     expect(Array.from(result.featureMaxScores)).toEqual([8, 15])
   })
 
-
   test('splits positive and negative features by bicolorPivot', () => {
     const result = processFeaturesFromArrays(
       {
@@ -103,6 +102,25 @@ describe('processFeaturesFromArrays', () => {
     expect(result.negNumFeatures).toBe(1)
     expect(Array.from(result.posFeatureScores)).toEqual([5, 0])
     expect(Array.from(result.negFeatureScores)).toEqual([-3])
+  })
+
+  test('useBicolor=false puts all features in pos arrays regardless of score', () => {
+    const result = processFeaturesFromArrays(
+      {
+        starts: new Int32Array([0, 100, 200]),
+        ends: new Int32Array([100, 200, 300]),
+        scores: new Float32Array([5, -3, 0]),
+        minScores: undefined,
+        maxScores: undefined,
+        count: 3,
+      },
+      0,
+      false,
+    )
+
+    expect(result.posNumFeatures).toBe(3)
+    expect(result.negNumFeatures).toBe(0)
+    expect(Array.from(result.posFeatureScores)).toEqual([5, -3, 0])
   })
 
   test('stores absolute positions', () => {
@@ -146,4 +164,3 @@ describe('normalizeScore', () => {
     expect(result).toBeLessThan(1)
   })
 })
-

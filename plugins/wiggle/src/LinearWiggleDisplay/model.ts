@@ -146,18 +146,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Sent to the worker as `bicolorPivot`. In bicolor mode the pivot
-       * splits features into pos/neg buckets. In solid-color mode we set
-       * -Infinity so every feature lands in the pos bucket, then paint that
-       * bucket with the user's chosen color.
-       */
-      get effectiveBicolorPivot() {
-        return self.useBicolor ? self.bicolorPivot : -Infinity
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        */
       get ticks() {
         return computeYTicks({
@@ -195,7 +183,8 @@ export default function stateModelFactory(
        */
       rpcProps() {
         return {
-          bicolorPivot: self.effectiveBicolorPivot,
+          useBicolor: self.useBicolor,
+          bicolorPivot: self.bicolorPivot,
           resolution: self.resolution,
         }
       },
@@ -205,9 +194,9 @@ export default function stateModelFactory(
        * single-source gpuProps mapped onto the multi-source build path:
        * - bicolor: no source color override; build emits pos+neg with their
        *   respective colors
-       * - solid: worker put all features in pos arrays (effectiveBicolorPivot
-       *   = -Infinity); non-density modes use the user's color; density uses
-       *   posColor (multi default, so leave source.color undefined)
+       * - solid: worker put all features in pos arrays (useBicolor=false);
+       *   non-density modes use the user's color; density uses posColor
+       *   (multi default, so leave source.color undefined)
        */
       gpuProps() {
         const wantsSolidColor = !self.useBicolor && !self.isDensityMode
