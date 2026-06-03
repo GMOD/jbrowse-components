@@ -10,7 +10,7 @@ import {
   createFeatureFloatingLabels,
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
-import { getFeatureDescription, getFeatureName } from './labelUtils.ts'
+import { getFeatureName, readFeatureLabels } from './labelUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 import { aggregateAminos } from './peptides/aggregateAminoAcids.ts'
 import { isLabelAllowed } from './renderConfig.ts'
@@ -403,8 +403,7 @@ function processFeatureRecord(
   const featureEnd = feature.get('end')
   const strand = feature.get('strand') ?? 0
 
-  const name = getFeatureName(feature)
-  const description = getFeatureDescription(feature)
+  const { name, description } = readFeatureLabels(ctx.config, feature)
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     name,
     description,

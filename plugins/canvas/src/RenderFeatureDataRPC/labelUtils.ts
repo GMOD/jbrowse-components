@@ -12,11 +12,21 @@ export function getFeatureName(feature: Feature): string | undefined {
   return v || undefined
 }
 
-export function getFeatureDescription(feature: Feature): string | undefined {
-  return (
-    (feature.get('note') as string | undefined) ??
-    (feature.get('description') as string | undefined)
-  )
+// Reads the config-jexl name/description for a top-level feature.
+// Returns undefined for empty/falsy values so callers can use simple truthiness.
+export function readFeatureLabels(
+  config: DisplayConfig,
+  feature: Feature,
+): { name: string | undefined; description: string | undefined } {
+  const name =
+    (readConfigValue(config, ['labels', 'name'], feature) as
+      | string
+      | undefined) || undefined
+  const description =
+    (readConfigValue(config, ['labels', 'description'], feature) as
+      | string
+      | undefined) || undefined
+  return { name, description }
 }
 
 export function applyLabelDimensions(
@@ -36,14 +46,14 @@ export function applyLabelDimensions(
     isLabelAllowed(config) &&
     (!isNested || (isTranscriptChild && showSubfeatureLabels))
   ) {
+    const { name: configName, description: configDescription } =
+      isTranscriptChild
+        ? { name: undefined, description: undefined }
+        : readFeatureLabels(config, feature)
     const name = isTranscriptChild
       ? truncateLabel(getFeatureName(feature) ?? '')
-      : truncateLabel(readConfigValue(config, ['labels', 'name'], feature))
-    const description = isTranscriptChild
-      ? ''
-      : truncateLabel(
-          readConfigValue(config, ['labels', 'description'], feature),
-        )
+      : (configName ?? '')
+    const description = configDescription ?? ''
     const labelCount =
       (hasVisibleText(name) ? 1 : 0) + (hasVisibleText(description) ? 1 : 0)
 

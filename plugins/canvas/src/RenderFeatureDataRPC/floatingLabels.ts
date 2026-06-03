@@ -16,7 +16,7 @@ export function createFeatureFloatingLabels({
   description: string | undefined
 }) {
   const name = truncateLabel(rawName ?? '')
-  const description = truncateLabel(rawDescription ?? '')
+  const description = truncateLabel(rawDescription ?? '', 30)
 
   const shouldShowLabel = hasVisibleText(name)
   const shouldShowDescription = hasVisibleText(description)
