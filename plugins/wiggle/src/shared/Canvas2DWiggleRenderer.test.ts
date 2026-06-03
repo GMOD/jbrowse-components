@@ -79,6 +79,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderingType: RENDERING_TYPE_XYPLOT,
     canvasWidth: 800,
     canvasHeight: 200,
+    numRows: 1,
   }
 
   test('renderBlocks draws XY plot rectangles', () => {
@@ -191,7 +192,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks(
       [defaultBlock],
       new Map([[0, [source0, source1]]]),
-      defaultState,
+      { ...defaultState, numRows: 2 },
     )
 
     expect(fillRectCalls.length).toBe(2)
@@ -217,6 +218,7 @@ const lineState = {
   renderingType: RENDERING_TYPE_LINE,
   canvasWidth: 800,
   canvasHeight: 200,
+  numRows: 1,
 }
 const zeroY = 200
 const score5Y = 100

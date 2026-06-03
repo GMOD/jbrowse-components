@@ -168,6 +168,7 @@ export default function stateModelFactory(
               self.renderingType,
               width,
               height,
+              self.isOverlay ? 1 : self.numSources,
             ),
         )
       },

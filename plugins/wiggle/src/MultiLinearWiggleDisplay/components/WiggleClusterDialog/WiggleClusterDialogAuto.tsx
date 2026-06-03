@@ -20,6 +20,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
+
 import type { ReducedModel } from './types.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -105,7 +107,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               }
               const { rpcManager } = getSession(model)
               const { sourcesWithoutLayout, adapterConfig } = model
-              if (sourcesWithoutLayout) {
+              if (sourcesWithoutLayout.length) {
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
@@ -118,7 +120,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                     sessionId,
                     adapterConfig,
                     stopToken,
-                    bpPerPx: view.bpPerPx / +samplesPerPixel,
+                    bpPerPx: view.bpPerPx / parseSamplesPerPixel(samplesPerPixel),
                     statusCallback: (arg: string) => {
                       setProgress(arg)
                     },

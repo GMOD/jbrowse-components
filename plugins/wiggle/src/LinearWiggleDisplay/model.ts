@@ -159,6 +159,7 @@ export default function stateModelFactory(
               self.renderingType,
               width,
               height,
+              1,
             ),
         )
       },

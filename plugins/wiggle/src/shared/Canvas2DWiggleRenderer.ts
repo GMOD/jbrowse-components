@@ -15,7 +15,6 @@ import {
   drawScatter,
   drawXYPlot,
 } from './wiggleDrawFunctions.ts'
-import { computeNumRows } from './wiggleInstanceBuffer.ts'
 
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -33,7 +32,9 @@ export function drawWiggleBlocks(
   blocks: RenderBlock[],
   state: WiggleGPURenderState,
 ) {
-  const { canvasWidth, canvasHeight, renderingType, scaleType, domainY } = state
+  const { canvasWidth, canvasHeight, renderingType, scaleType, domainY, numRows } =
+    state
+  const rowHeight = canvasHeight / numRows
 
   for (const block of blocks) {
     const sources = regions.get(block.displayedRegionIndex)
@@ -49,8 +50,6 @@ export function drawWiggleBlocks(
     ctx.beginPath()
     ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
     ctx.clip()
-
-    const rowHeight = canvasHeight / computeNumRows(sources)
 
     for (const source of sources) {
       const rowTop = source.rowIndex * rowHeight

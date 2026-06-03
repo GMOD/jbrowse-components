@@ -24,6 +24,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
+
 import type { ReducedModel } from './types.ts'
 import type { Source } from '../../../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -46,7 +48,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
   const [samplesPerPixel, setSamplesPerPixel] = useState('1')
 
   const view = getContainingView(model) as LinearGenomeViewModel
-  const shouldFetch = view.initialized && !!model.sourcesWithoutLayout?.length
+  const shouldFetch = view.initialized && !!model.sourcesWithoutLayout.length
   const {
     data: ret,
     error,
@@ -60,10 +62,10 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
       const sessionId = getRpcSessionId(model)
       return rpcManager.call(sessionId, 'MultiWiggleGetScoreMatrix', {
         regions: dynamicBlocks.contentBlocks,
-        sources: sourcesWithoutLayout!,
+        sources: sourcesWithoutLayout,
         sessionId,
         adapterConfig,
-        bpPerPx: bpPerPx / +samplesPerPixel,
+        bpPerPx: bpPerPx / parseSamplesPerPixel(samplesPerPixel),
       })
     },
   )
@@ -231,7 +233,7 @@ cat(resultClusters$order,sep='\n')`
           variant="contained"
           onClick={() => {
             const { sourcesWithoutLayout } = model
-            if (sourcesWithoutLayout) {
+            if (sourcesWithoutLayout.length) {
               try {
                 const currentLayout = model.layout.length
                   ? model.layout

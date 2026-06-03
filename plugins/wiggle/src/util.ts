@@ -220,6 +220,11 @@ export function getEffectiveScores(
   return data.featureScores
 }
 
+// Widen each Canvas2D bar slightly past its true pixel span so adjacent
+// histogram bars overlap by a fraction of a pixel instead of leaving thin
+// anti-aliased gaps between them. The GPU shader intentionally does NOT apply
+// this — it relies on its own min-clip-width floor (minClipW in wiggle.slang),
+// so the two backends differ by sub-pixel amounts by design.
 export const WIGGLE_FUDGE_FACTOR = 0.8
 
 export const WIGGLE_MIN_PX = 1.5

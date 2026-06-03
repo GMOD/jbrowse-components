@@ -57,7 +57,3 @@ export function interleaveInstances(
   }
   return buf
 }
-
-export function computeNumRows(sources: SourceRenderData[]) {
-  return sources.reduce((max, s) => Math.max(max, s.rowIndex + 1), 0)
-}

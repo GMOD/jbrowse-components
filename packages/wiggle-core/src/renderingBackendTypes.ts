@@ -9,6 +9,10 @@ export interface WiggleGPURenderState {
   renderingType: WiggleRenderingType
   canvasWidth: number
   canvasHeight: number
+  // Authoritative row count from the model (overlay = 1, else numSources).
+  // Drives rowHeight in both backends so it matches getRowHeight/findHit even
+  // when a source has no features in the visible region.
+  numRows: number
 }
 
 export interface SourceRenderData {

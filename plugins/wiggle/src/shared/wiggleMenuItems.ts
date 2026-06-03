@@ -47,6 +47,14 @@ export function makeResolutionAndSummarySubMenus(
             self.setResolution(self.resolution / 5)
           },
         },
+        {
+          label: 'Reset resolution',
+          type: 'checkbox',
+          checked: self.resolution === 1,
+          onClick: () => {
+            self.setResolution(1)
+          },
+        },
       ],
     },
     {

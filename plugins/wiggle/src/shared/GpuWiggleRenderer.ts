@@ -5,7 +5,7 @@ import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
 import { RENDERING_TYPE_LINE } from './wiggleComponentUtils.ts'
-import { computeNumRows, interleaveInstances } from './wiggleInstanceBuffer.ts'
+import { interleaveInstances } from './wiggleInstanceBuffer.ts'
 
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
@@ -96,7 +96,7 @@ export class GpuWiggleRenderer
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformI32[U.scaleType] = state.scaleType
       this.uniformI32[U.renderingType] = state.renderingType
-      this.uniformF32[U.numRows] = computeNumRows(sources)
+      this.uniformF32[U.numRows] = state.numRows
       this.uniformF32[U.domainYMin] = state.domainY[0]
       this.uniformF32[U.domainYMax] = state.domainY[1]
       // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision

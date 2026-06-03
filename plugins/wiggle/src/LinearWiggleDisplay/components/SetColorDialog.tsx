@@ -20,8 +20,8 @@ const SetColorDialog = observer(function SetColorDialog({
 }: {
   model: {
     color: string
-    posColor?: string
-    negColor?: string
+    posColor: string
+    negColor: string
     setColor: (arg?: string) => void
     setPosColor: (arg?: string) => void
     setNegColor: (arg?: string) => void
@@ -61,7 +61,7 @@ const SetColorDialog = observer(function SetColorDialog({
           <>
             <Typography>Positive color</Typography>
             <ColorPicker
-              color={model.posColor ?? 'black'}
+              color={model.posColor}
               onChange={event => {
                 model.setPosColor(event)
                 model.setColor(undefined)
@@ -70,7 +70,7 @@ const SetColorDialog = observer(function SetColorDialog({
             <Typography>Negative color</Typography>
 
             <ColorPicker
-              color={model.negColor ?? 'black'}
+              color={model.negColor}
               onChange={event => {
                 model.setNegColor(event)
                 model.setColor(undefined)

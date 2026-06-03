@@ -43,9 +43,12 @@ export function buildSourceRenderData(
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
   const orderedSources = sources.length > 0 ? sources : data.sources
   const result: SourceRenderData[] = []
-  let rowCounter = 0
 
-  for (const orderedSource of orderedSources) {
+  // rowIndex is the source's position in orderedSources so it lines up with the
+  // model's numSources-based rowHeight and findHit's visibleSources[rowIdx],
+  // even when an earlier source is missing from the RPC payload.
+  for (let i = 0; i < orderedSources.length; i++) {
+    const orderedSource = orderedSources[i]!
     const rpcSource = sourcesByName.get(orderedSource.name)
     if (!rpcSource) {
       continue
@@ -55,8 +58,7 @@ export function buildSourceRenderData(
       ? cssColorToNormalizedRgb(orderedSource.color)
       : defaultPosColor
     const negColor = overlay ? posColor : defaultNegColor
-    const row = overlay ? 0 : rowCounter
-    rowCounter++
+    const row = overlay ? 0 : i
 
     if (summaryScoreMode === 'whiskers') {
       for (const s of makeWhiskersSourceData(

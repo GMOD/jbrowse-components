@@ -51,6 +51,7 @@ const DEFAULT_STATE = {
   renderingType: RENDERING_TYPE_XYPLOT,
   scaleType: SCALE_TYPE_LINEAR,
   domainY: [0, 20] as [number, number],
+  numRows: 1,
 }
 
 describe('GpuWiggleRenderer', () => {

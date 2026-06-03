@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
+import { makeTrackId } from '../MultiWiggleAddTrackWorkflow/util.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
@@ -24,9 +26,9 @@ function makeTrack({
     ...readConfObject(c, 'adapter'),
     source: readConfObject(c, 'name'),
   }))
-  const trackId = `multitrack-${Date.now()}-sessionTrack`
 
   const session = getSession(model)
+  const trackId = makeTrackId(arg.name, !!session.adminMode)
   if (isSessionWithAddTracks(session)) {
     session.addTrackConf({
       type: 'MultiQuantitativeTrack',
@@ -40,7 +42,7 @@ function makeTrack({
         subadapters,
       },
     })
-    model.view.showTrack(trackId)
+    model.view?.showTrack(trackId)
   }
 }
 

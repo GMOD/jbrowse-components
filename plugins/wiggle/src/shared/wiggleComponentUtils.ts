@@ -211,6 +211,7 @@ export function makeRenderState(
   renderingType: string,
   width: number,
   height: number,
+  numRows: number,
 ): WiggleGPURenderState {
   return {
     domainY: domain,
@@ -218,5 +219,6 @@ export function makeRenderState(
     renderingType: renderingTypeToInt(renderingType),
     canvasWidth: width,
     canvasHeight: height,
+    numRows,
   }
 }
