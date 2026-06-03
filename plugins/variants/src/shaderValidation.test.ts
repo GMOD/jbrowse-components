@@ -5,8 +5,8 @@ import path from 'path'
 
 import { WGSL_SOURCE as ldGenomicShader } from './LDDisplay/components/shaders/ldGenomic.generated.ts'
 import { WGSL_SOURCE as ldUniformShader } from './LDDisplay/components/shaders/ldUniform.generated.ts'
-import { WGSL_SOURCE as variantShader } from './MultiVariantDisplay/components/shaders/variant.generated.ts'
-import { WGSL_SOURCE as variantMatrixShader } from './MultiVariantMatrixDisplay/components/shaders/variantMatrix.generated.ts'
+import { WGSL_SOURCE as variantShader } from './LinearMultiSampleVariantDisplay/components/shaders/variant.generated.ts'
+import { WGSL_SOURCE as variantMatrixShader } from './LinearMultiSampleVariantMatrixDisplay/components/shaders/variantMatrix.generated.ts'
 
 let tmpDir: string
 

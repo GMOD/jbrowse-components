@@ -11,7 +11,7 @@ import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
-import type { LinearVariantMatrixDisplayModel } from '../model.ts'
+import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -30,7 +30,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   canvasRef,
   canvas,
 }: {
-  model: LinearVariantMatrixDisplayModel
+  model: LinearMultiSampleVariantMatrixDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
 }) {

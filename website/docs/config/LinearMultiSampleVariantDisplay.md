@@ -1,6 +1,6 @@
 ---
-id: multivariantdisplay
-title: MultiVariantDisplay
+id: linearmultisamplevariantdisplay
+title: LinearMultiSampleVariantDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our
@@ -12,9 +12,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/MultiVariantDisplay/configSchema.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/MultiVariantDisplay.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearMultiSampleVariantDisplay.md)
 
 ## Docs
 
@@ -22,7 +22,7 @@ extends
 
 - [SharedVariantDisplay](../sharedvariantdisplay)
 
-### MultiVariantDisplay - Slots
+### LinearMultiSampleVariantDisplay - Slots
 
 #### slot: defaultRendering
 
@@ -115,7 +115,7 @@ jexlFilters: {
     }
 ```
 
-### MultiVariantDisplay - Derives from
+### LinearMultiSampleVariantDisplay - Derives from
 
 - [SharedVariantDisplay](../sharedvariantdisplay)
 

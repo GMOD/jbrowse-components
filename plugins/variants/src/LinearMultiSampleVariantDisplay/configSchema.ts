@@ -4,14 +4,14 @@ import { types } from '@jbrowse/mobx-state-tree'
 import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
 
 /**
- * #config MultiVariantDisplay
+ * #config LinearMultiSampleVariantDisplay
  * extends
  * - [SharedVariantDisplay](../sharedvariantdisplay)
  */
 
 export default function configSchemaFactory() {
   return ConfigurationSchema(
-    'MultiLinearVariantDisplay',
+    'LinearMultiSampleVariantDisplay',
     {
       /**
        * #slot

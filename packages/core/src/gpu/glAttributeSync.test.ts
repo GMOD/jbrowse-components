@@ -3,8 +3,8 @@ import { DOTPLOT_PASSES } from '../../../../plugins/dotplot-view/src/DotplotDisp
 import { HIC_PASSES } from '../../../../plugins/hic/src/LinearHicDisplay/components/GpuHicRenderer.ts'
 import { SYNTENY_PASSES } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/GpuSyntenyRenderer.ts'
 import { LD_PASSES } from '../../../../plugins/variants/src/LDDisplay/components/GpuLDRenderer.ts'
-import { VARIANT_PASSES } from '../../../../plugins/variants/src/MultiVariantDisplay/components/GpuVariantRenderer.ts'
-import { VARIANT_MATRIX_PASSES } from '../../../../plugins/variants/src/MultiVariantMatrixDisplay/components/GpuVariantMatrixRenderer.ts'
+import { VARIANT_PASSES } from '../../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/GpuVariantRenderer.ts'
+import { VARIANT_MATRIX_PASSES } from '../../../../plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/GpuVariantMatrixRenderer.ts'
 import { WIGGLE_PASSES } from '../../../../plugins/wiggle/src/shared/GpuWiggleRenderer.ts'
 
 import type { GlAttributeLayout, PassDescriptor } from './hal/types.ts'

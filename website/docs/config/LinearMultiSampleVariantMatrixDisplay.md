@@ -1,6 +1,6 @@
 ---
-id: variantmatrixdisplay
-title: VariantMatrixDisplay
+id: linearmultisamplevariantmatrixdisplay
+title: LinearMultiSampleVariantMatrixDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our
@@ -12,13 +12,13 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/MultiVariantMatrixDisplay/configSchema.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/configSchema.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/VariantMatrixDisplay.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearMultiSampleVariantMatrixDisplay.md)
 
 ## Docs
 
-### VariantMatrixDisplay - Slots
+### LinearMultiSampleVariantMatrixDisplay - Slots
 
 #### slot: height
 
@@ -99,7 +99,7 @@ jexlFilters: {
     }
 ```
 
-### VariantMatrixDisplay - Derives from
+### LinearMultiSampleVariantMatrixDisplay - Derives from
 
 - [BaseLinearDisplay](../baselineardisplay)
 

@@ -2,7 +2,7 @@ import { fireEvent } from '@testing-library/react'
 
 import { createView, expectCanvasMatch, hts } from './util.tsx'
 
-export async function testMultiVariantDisplay({
+export async function testLinearMultiSampleVariantDisplay({
   displayType,
   phasedMode,
   timeout = 60000,

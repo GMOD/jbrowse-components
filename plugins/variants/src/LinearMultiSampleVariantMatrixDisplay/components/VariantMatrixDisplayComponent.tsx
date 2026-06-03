@@ -15,12 +15,12 @@ import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
-import type { LinearVariantMatrixDisplayModel } from '../model.ts'
+import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const VariantMatrixDisplayComponent = observer(
   function VariantMatrixDisplayComponent(props: {
-    model: LinearVariantMatrixDisplayModel
+    model: LinearMultiSampleVariantMatrixDisplayModel
   }) {
     const { model } = props
     const {

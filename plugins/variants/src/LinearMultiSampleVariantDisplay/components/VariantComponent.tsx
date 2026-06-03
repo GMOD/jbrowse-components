@@ -13,7 +13,7 @@ import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts
 
 import type { FeatureGenotypeInfo } from './computeVariantCells.ts'
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
-import type { MultiLinearVariantDisplayModel } from '../model.ts'
+import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -33,7 +33,7 @@ interface VariantHit extends VariantTooltipFields {
 }
 
 function getFeatureUnderMouse(
-  model: MultiLinearVariantDisplayModel,
+  model: LinearMultiSampleVariantDisplayModel,
   rect: DOMRect,
   eventClientX: number,
   eventClientY: number,
@@ -147,7 +147,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     genomicEnd: number
     displayedRegionIndex: number
   }
-  model: MultiLinearVariantDisplayModel
+  model: LinearMultiSampleVariantDisplayModel
 }) {
   const region = model.visibleRegions.find(
     r => r.displayedRegionIndex === cell.displayedRegionIndex,
@@ -194,7 +194,7 @@ const VariantBody = observer(function VariantBody({
   canvasRef,
   canvas,
 }: {
-  model: MultiLinearVariantDisplayModel
+  model: LinearMultiSampleVariantDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
 }) {

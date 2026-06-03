@@ -6,12 +6,12 @@ import { sharedVariantConfigSlots } from '../shared/SharedVariantConfigSchema.ts
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * #config VariantMatrixDisplay
+ * #config LinearMultiSampleVariantMatrixDisplay
  */
 
 export default function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
-    'LinearVariantMatrixDisplay',
+    'LinearMultiSampleVariantMatrixDisplay',
     {
       /**
        * #slot

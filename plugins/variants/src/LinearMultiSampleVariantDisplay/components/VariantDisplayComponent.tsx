@@ -13,11 +13,11 @@ import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
-import type { MultiLinearVariantDisplayModel } from '../model.ts'
+import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 
 const VariantDisplayComponent = observer(
   function VariantDisplayComponent(props: {
-    model: MultiLinearVariantDisplayModel
+    model: LinearMultiSampleVariantDisplayModel
   }) {
     const { model } = props
     const { availableHeight, showTree, showLegend, hierarchy, treeAreaWidth } =

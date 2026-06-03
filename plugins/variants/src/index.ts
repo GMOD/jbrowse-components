@@ -2,9 +2,9 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import LDDisplayF from './LDDisplay/index.ts'
 import LDTrackF from './LDTrack/index.ts'
+import LinearMultiSampleVariantDisplayF from './LinearMultiSampleVariantDisplay/index.ts'
+import LinearMultiSampleVariantMatrixDisplayF from './LinearMultiSampleVariantMatrixDisplay/index.ts'
 import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
-import MultiVariantDisplayF from './MultiVariantDisplay/index.ts'
-import MultiVariantMatrixDisplayF from './MultiVariantMatrixDisplay/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
 import LDDataRPCMethodsF from './RenderLDDataRPC/index.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
@@ -36,8 +36,8 @@ export default class VariantsPlugin extends Plugin {
     LDTrackF(pluginManager)
     ExtensionPointsF(pluginManager)
     LinearVariantDisplayF(pluginManager)
-    MultiVariantDisplayF(pluginManager)
-    MultiVariantMatrixDisplayF(pluginManager)
+    LinearMultiSampleVariantDisplayF(pluginManager)
+    LinearMultiSampleVariantMatrixDisplayF(pluginManager)
     LDDisplayF(pluginManager)
     LDDataRPCMethodsF(pluginManager)
 

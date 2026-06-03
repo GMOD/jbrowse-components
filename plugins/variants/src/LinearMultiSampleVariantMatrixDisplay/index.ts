@@ -7,13 +7,13 @@ import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default function MultiVariantMatrixDisplayF(
+export default function LinearMultiSampleVariantMatrixDisplayF(
   pluginManager: PluginManager,
 ) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
-      name: 'LinearVariantMatrixDisplay',
+      name: 'LinearMultiSampleVariantMatrixDisplay',
       displayName: 'Multi-sample variant display (matrix)',
       helpText:
         'GPU accelerated matrix variant display. Draws variants as columns in a heatmap grid with GPU-accelerated rendering for smooth scrolling.',
@@ -24,6 +24,9 @@ export default function MultiVariantMatrixDisplayF(
       ReactComponent: lazy(
         () => import('./components/VariantMatrixDisplayComponent.tsx'),
       ),
+      // renamed from LinearVariantMatrixDisplay; alias remaps old track configs
+      // (active display instances are remapped in model.ts preProcessSnapshot)
+      aliases: ['LinearVariantMatrixDisplay'],
     })
   })
 }
