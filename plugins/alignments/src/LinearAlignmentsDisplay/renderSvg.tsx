@@ -156,7 +156,9 @@ function renderSashimiArcs(
     sashimiArcsDown: isDown,
   })
   arcs.sort((a, b) => a.score - b.score)
-  const top = isDown ? model.coverageHeight : YSCALEBAR_LABEL_OFFSET
+  const top = isDown
+    ? model.belowCoverageBands.sashimiBandTop
+    : YSCALEBAR_LABEL_OFFSET
   return (
     <g transform={`translate(0,${top})`}>
       {arcs.map(arc => (

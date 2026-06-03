@@ -46,8 +46,8 @@ interface ColorByMenuOptions {
   includeTagOption?: boolean
   colorOptions?: ColorOption[]
   // Read-connection arc coloring lives here rather than in the Read connections
-  // menu — it's a rare setting and colors belong together. Passed only when arc
-  // mode is active, so it stays hidden otherwise.
+  // menu — it's a rare setting and colors belong together. Passed whenever an
+  // overlay (arcs or read cloud) is active, since both share this coloring.
   arcColor?: {
     current: ArcColorByType
     setColor: (type: ArcColorByType) => void

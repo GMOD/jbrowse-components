@@ -121,13 +121,10 @@ const PileupBody = observer(function PileupBody({
     height,
     showCoverage,
     coverageHeight,
-    readConnections,
-    readConnectionsDown,
-    showSashimiArcs,
     isChainMode,
-    coverageDisplayHeight: topOffset,
-    sashimiArcsHeight,
+    belowCoverageBands: bands,
   } = model
+  const topOffset = bands.bottom
 
   function chainIdsForHit(hit: FeatureHit, resolved: ResolvedBlock) {
     const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
@@ -217,10 +214,10 @@ const PileupBody = observer(function PileupBody({
         />
       ) : null}
 
-      {readConnections !== 'off' && readConnectionsDown ? (
+      {bands.hasArcsBand ? (
         <ResizeHandle
           className={classes.resizeHandle}
-          style={{ top: topOffset - YSCALEBAR_LABEL_OFFSET }}
+          style={{ top: bands.sashimiBandTop - YSCALEBAR_LABEL_OFFSET }}
           onDrag={dy => {
             model.setReadConnectionsHeight(
               Math.max(20, model.readConnectionsHeight + dy),
@@ -231,12 +228,10 @@ const PileupBody = observer(function PileupBody({
         />
       ) : null}
 
-      {showSashimiArcs && readConnectionsDown && showCoverage ? (
+      {bands.hasSashimiBand ? (
         <ResizeHandle
           className={classes.resizeHandle}
-          style={{
-            top: coverageHeight + sashimiArcsHeight - YSCALEBAR_LABEL_OFFSET,
-          }}
+          style={{ top: bands.bottom - YSCALEBAR_LABEL_OFFSET }}
           onDrag={dy => {
             model.setSashimiArcsHeight(
               Math.max(20, model.sashimiArcsHeight + dy),

@@ -25,6 +25,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     showCoverage,
     coverageHeight,
     sashimiArcsHeight,
+    belowCoverageBands,
     rpcDataMap,
   } = model
   const { initialized, visibleRegions, width } = view
@@ -52,7 +53,9 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     <svg
       style={{
         position: 'absolute',
-        top: isDown ? coverageHeight : YSCALEBAR_LABEL_OFFSET,
+        top: isDown
+          ? belowCoverageBands.sashimiBandTop
+          : YSCALEBAR_LABEL_OFFSET,
         left: 0,
         pointerEvents: 'none',
         height: isDown ? sashimiArcsHeight : effectiveHeight,

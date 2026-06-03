@@ -842,20 +842,40 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Geometry of the bands stacked below coverage in arcs-down mode, top to
+         * bottom: coverage → paired-end arcs → sashimi. Single source of truth so
+         * the layout height, the renderers, and the three resize handles can't
+         * drift apart. `arcsBandTop`/`sashimiBandTop` are each band's top edge;
+         * `bottom` is where the pileup begins (== coverageDisplayHeight).
          */
-        get coverageDisplayHeight() {
-          return (
-            (self.showCoverage ? self.coverageHeight : 0) +
-            (self.readConnections !== 'off' && self.readConnectionsDown
-              ? self.readConnectionsHeight
-              : 0) +
-            (self.showSashimiArcs &&
+        get belowCoverageBands() {
+          const coverageBand = self.showCoverage ? self.coverageHeight : 0
+          const hasArcsBand =
+            self.readConnections !== 'off' && self.readConnectionsDown
+          const hasSashimiBand =
+            self.showSashimiArcs &&
             self.readConnectionsDown &&
             self.showCoverage &&
             this.hasSashimiArcs
-              ? self.sashimiArcsHeight
-              : 0)
-          )
+          const arcsBandTop = coverageBand
+          const sashimiBandTop =
+            arcsBandTop + (hasArcsBand ? self.readConnectionsHeight : 0)
+          const bottom =
+            sashimiBandTop + (hasSashimiBand ? self.sashimiArcsHeight : 0)
+          return {
+            hasArcsBand,
+            hasSashimiBand,
+            arcsBandTop,
+            sashimiBandTop,
+            bottom,
+          }
+        },
+
+        /**
+         * #getter
+         */
+        get coverageDisplayHeight() {
+          return this.belowCoverageBands.bottom
         },
       }))
       .views(self => ({
@@ -1861,7 +1881,7 @@ export default function stateModelFactory(
             getColorByMenuItem(self, {
               includeTagOption: true,
               arcColor:
-                self.readConnections === 'arc'
+                self.readConnections !== 'off'
                   ? {
                       current: self.arcColorByType,
                       setColor: (type: ArcColorByType) => {
