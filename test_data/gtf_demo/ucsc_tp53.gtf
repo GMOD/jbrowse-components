@@ -1,0 +1,12 @@
+chr17	hg19_refGene	exon	7590692	7590868	.	-	.	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	exon	7579839	7579940	.	-	.	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	exon	7578177	7578289	.	-	.	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	exon	7573927	7574033	.	-	.	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	exon	7571720	7573008	.	-	.	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	CDS	7590692	7590740	.	-	0	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	CDS	7579839	7579940	.	-	0	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	CDS	7578177	7578289	.	-	0	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	CDS	7573927	7574033	.	-	0	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	CDS	7572950	7573008	.	-	0	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	start_codon	7590738	7590740	.	-	0	gene_id "TP53"; transcript_id "NM_000546";
+chr17	hg19_refGene	stop_codon	7572947	7572949	.	-	0	gene_id "TP53"; transcript_id "NM_000546";

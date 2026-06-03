@@ -1,0 +1,6 @@
+chr17	StringTie	transcript	7571720	7590868	1000	-	.	gene_id "XLOC_000001"; transcript_id "TCONS_00000001"; gene_name "TP53"; cov "12.5"; FPKM "8.421"; TPM "15.30";
+chr17	StringTie	exon	7590692	7590868	1000	-	.	gene_id "XLOC_000001"; transcript_id "TCONS_00000001"; exon_number "1"; cov "10.1";
+chr17	StringTie	exon	7579839	7579940	1000	-	.	gene_id "XLOC_000001"; transcript_id "TCONS_00000001"; exon_number "2"; cov "10.1";
+chr17	StringTie	exon	7578177	7578289	1000	-	.	gene_id "XLOC_000001"; transcript_id "TCONS_00000001"; exon_number "3"; cov "10.1";
+chr17	StringTie	exon	7573927	7574033	1000	-	.	gene_id "XLOC_000001"; transcript_id "TCONS_00000001"; exon_number "4"; cov "10.1";
+chr17	StringTie	exon	7571720	7573008	1000	-	.	gene_id "XLOC_000001"; transcript_id "TCONS_00000001"; exon_number "5"; cov "10.1";

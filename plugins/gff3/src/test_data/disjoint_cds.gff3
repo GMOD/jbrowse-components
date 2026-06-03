@@ -1,0 +1,6 @@
+##gff-version 3
+ctgA	test	gene	1	1000	.	+	.	ID=gene1;Name=gene1
+ctgA	test	mRNA	1	1000	.	+	.	ID=mRNA1;Parent=gene1
+ctgA	test	CDS	1	100	.	+	0	ID=cds1;Parent=mRNA1
+ctgA	test	CDS	200	300	.	+	0	ID=cds1;Parent=mRNA1
+ctgA	test	CDS	400	500	.	+	0	ID=cds1;Parent=mRNA1

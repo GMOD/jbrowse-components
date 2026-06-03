@@ -3,9 +3,11 @@ import { lazy } from 'react'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
-import { getSession } from '../util/index.ts'
-
-import type { NotificationLevel, SnackAction } from '../util/types/index.ts'
+import type {
+  AbstractSessionModel,
+  NotificationLevel,
+  SnackAction,
+} from '../util/types/index.ts'
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(
@@ -73,7 +75,9 @@ export default function SnackbarModel() {
         const reportAction: SnackAction = {
           name: 'report',
           onClick: () => {
-            getSession(self).queueDialog(onClose => [
+            // SnackbarModel is composed into the session, so `self` is the
+            // session at runtime; assert the queueDialog contract structurally
+            ;(self as unknown as AbstractSessionModel).queueDialog(onClose => [
               ErrorMessageStackTraceDialog,
               {
                 onClose,
