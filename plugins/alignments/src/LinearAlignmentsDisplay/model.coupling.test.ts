@@ -7,8 +7,10 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import { stateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/model'
+import {
+  BaseLinearDisplayComponent,
+  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'

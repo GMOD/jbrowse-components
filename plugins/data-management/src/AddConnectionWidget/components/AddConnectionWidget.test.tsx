@@ -1,12 +1,12 @@
 import { ThemeProvider } from '@emotion/react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { render } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import AddConnectionWidget2 from './AddConnectionWidget.tsx'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function AddConnectionWidget({ model }: { model: unknown }) {
   return (

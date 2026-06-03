@@ -1,9 +1,9 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { render, waitFor } from '@testing-library/react'
 
 import Scalebar from './Scalebar.tsx'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 describe('Scalebar genome view component', () => {
   it('renders two regions', async () => {

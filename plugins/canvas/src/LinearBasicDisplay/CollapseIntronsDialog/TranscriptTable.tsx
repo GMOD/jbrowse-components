@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@mui/material'
 
-import { collapseIntrons, getExonsAndCDS } from './util.ts'
+import { collapseIntrons, getExonsAndCDS, replaceIntrons } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
@@ -54,6 +54,7 @@ export default function TranscriptTable({
   assembly,
   padding,
   validPadding,
+  canLaunchView,
   handleClose,
 }: {
   transcripts: Feature[]
@@ -61,6 +62,7 @@ export default function TranscriptTable({
   assembly: Assembly
   padding: number
   validPadding: boolean
+  canLaunchView: boolean
   handleClose: () => void
 }) {
   const rows = useMemo(() => buildRows(transcripts), [transcripts])
@@ -92,9 +94,9 @@ export default function TranscriptTable({
                   variant="contained"
                   color="primary"
                   disabled={!validPadding}
-                  onClick={async () => {
+                  onClick={() => {
                     try {
-                      await collapseIntrons({
+                      replaceIntrons({
                         view,
                         transcripts: [row.transcript],
                         assembly,
@@ -107,8 +109,32 @@ export default function TranscriptTable({
                     }
                   }}
                 >
-                  Select
+                  Replace
                 </Button>
+                {canLaunchView ? (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    disabled={!validPadding}
+                    onClick={async () => {
+                      try {
+                        await collapseIntrons({
+                          view,
+                          transcripts: [row.transcript],
+                          assembly,
+                          padding,
+                        })
+                        handleClose()
+                      } catch (e) {
+                        getSession(view).notifyError(`${e}`, e)
+                        console.error(e)
+                      }
+                    }}
+                  >
+                    Launch
+                  </Button>
+                ) : null}
               </TableCell>
             </TableRow>
           ))}

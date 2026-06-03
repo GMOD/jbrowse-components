@@ -1,7 +1,7 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 // Real assembly manager: addAssemblyConf kicks off async loading, so the init
 // autorun runs while isValidRefName still throws "assembly has not finished

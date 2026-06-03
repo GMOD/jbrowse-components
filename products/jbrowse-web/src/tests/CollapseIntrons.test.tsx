@@ -28,7 +28,7 @@ xtest('collapse introns on gene feature', async () => {
 
   fireEvent.click(await findByText('Collapse introns', ...opts))
   await findByText('Select transcript to collapse', ...opts)
-  fireEvent.click(await findByText('Submit', ...opts))
+  fireEvent.click(await findByText('Open in new view', ...opts))
 
   await waitFor(
     () => {

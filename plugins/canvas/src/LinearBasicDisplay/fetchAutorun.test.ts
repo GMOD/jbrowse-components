@@ -7,8 +7,10 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import { stateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/model'
+import {
+  BaseLinearDisplayComponent,
+  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
+} from '@jbrowse/plugin-linear-genome-view'
 import { waitFor } from '@testing-library/react'
 
 import configSchemaFactory from './configSchema.ts'
@@ -17,7 +19,7 @@ import stateModelFactory from './model.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/model'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 function makeEmptyFeatureData(): FeatureDataResult {
   return {

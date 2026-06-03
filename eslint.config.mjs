@@ -362,6 +362,21 @@ export default defineConfig(
       ],
     },
   },
+  // Catch jest.mock/unmock calls that reach into another package's src/.
+  // no-restricted-imports only covers import statements, not call expressions.
+  {
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.object.name='jest'][callee.property.name=/^(un)?mock$/] > Literal[value=/^@jbrowse\\/[^/]+\\/src(\\/.+)?$/]",
+          message:
+            'Do not mock from the src directory of another package. Use the package public API instead.',
+        },
+      ],
+    },
+  },
   // useEffectEvent returns a stale closure inside mobx-react observer()
   // components (its useInsertionEffect impl-swap does not run under observer's
   // reactive render), and nearly every JBrowse component is an observer. Use
@@ -377,6 +392,13 @@ export default defineConfig(
               importNames: ['useEffectEvent'],
               message:
                 'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['@jbrowse/*/src', '@jbrowse/*/src/**'],
+              message:
+                'Do not import from the src directory of another package. Use the package public API instead.',
             },
           ],
         },

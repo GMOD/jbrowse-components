@@ -1,10 +1,10 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, waitFor, within } from '@testing-library/react'
 
 import AddTrackWidget from './AddTrackWidget.tsx'
 import ConfirmTrack from './ConfirmTrack.tsx'
 import TextIndexingConfig from './TextIndexingConfig.tsx'
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function getSession() {
   const session = createTestSession()

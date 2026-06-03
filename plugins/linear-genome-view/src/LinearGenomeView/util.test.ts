@@ -7,16 +7,16 @@ describe('makeOverviewTicks', () => {
   test('forward from start=0 lands on neat multiples', () => {
     const ticks = makeOverviewTicks(0, 10_000_000, SCALE, false)
     expect(ticks.map(t => t.genomicCoord)).toEqual([
-      1_000_000, 2_000_000, 3_000_000, 4_000_000, 5_000_000,
-      6_000_000, 7_000_000, 8_000_000, 9_000_000, 10_000_000,
+      1_000_000, 2_000_000, 3_000_000, 4_000_000, 5_000_000, 6_000_000,
+      7_000_000, 8_000_000, 9_000_000, 10_000_000,
     ])
   })
 
   test('forward from non-zero start still lands on neat multiples', () => {
     const ticks = makeOverviewTicks(123_456, 10_000_000, SCALE, false)
     expect(ticks.map(t => t.genomicCoord)).toEqual([
-      1_000_000, 2_000_000, 3_000_000, 4_000_000, 5_000_000,
-      6_000_000, 7_000_000, 8_000_000, 9_000_000, 10_000_000,
+      1_000_000, 2_000_000, 3_000_000, 4_000_000, 5_000_000, 6_000_000,
+      7_000_000, 8_000_000, 9_000_000, 10_000_000,
     ])
   })
 
@@ -29,8 +29,8 @@ describe('makeOverviewTicks', () => {
   test('reversed from end=10M lands on neat multiples', () => {
     const ticks = makeOverviewTicks(0, 10_000_000, SCALE, true)
     expect(ticks.map(t => t.genomicCoord)).toEqual([
-      9_000_000, 8_000_000, 7_000_000, 6_000_000, 5_000_000,
-      4_000_000, 3_000_000, 2_000_000, 1_000_000,
+      9_000_000, 8_000_000, 7_000_000, 6_000_000, 5_000_000, 4_000_000,
+      3_000_000, 2_000_000, 1_000_000,
     ])
   })
 
@@ -38,8 +38,8 @@ describe('makeOverviewTicks', () => {
     // start=500_000: tick at 1_000_000 should be included (> start)
     const ticks = makeOverviewTicks(500_000, 10_000_000, SCALE, true)
     expect(ticks.map(t => t.genomicCoord)).toEqual([
-      9_000_000, 8_000_000, 7_000_000, 6_000_000, 5_000_000,
-      4_000_000, 3_000_000, 2_000_000, 1_000_000,
+      9_000_000, 8_000_000, 7_000_000, 6_000_000, 5_000_000, 4_000_000,
+      3_000_000, 2_000_000, 1_000_000,
     ])
   })
 

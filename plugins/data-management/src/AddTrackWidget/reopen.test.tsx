@@ -1,6 +1,6 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function addAsm(session: ReturnType<typeof createTestSession>, name: string) {
   session.addAssemblyConf({

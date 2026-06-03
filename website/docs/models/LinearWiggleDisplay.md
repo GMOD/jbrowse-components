@@ -210,17 +210,6 @@ boolean
 boolean
 ```
 
-#### getter: effectiveBicolorPivot
-
-Sent to the worker as `bicolorPivot`. In bicolor mode the pivot splits features
-into pos/neg buckets. In solid-color mode we set -Infinity so every feature
-lands in the pos bucket, then paint that bucket with the user's chosen color.
-
-```js
-// type
-number
-```
-
 #### getter: ticks
 
 ```js
@@ -242,6 +231,7 @@ WiggleGPURenderState | undefined
 ```js
 // type signature
 rpcProps: () => {
+  useBicolor: boolean
   bicolorPivot: number
   resolution: number
 }
@@ -253,9 +243,9 @@ single-source gpuProps mapped onto the multi-source build path:
 
 - bicolor: no source color override; build emits pos+neg with their respective
   colors
-- solid: worker put all features in pos arrays (effectiveBicolorPivot =
-  -Infinity); non-density modes use the user's color; density uses posColor
-  (multi default, so leave source.color undefined)
+- solid: worker put all features in pos arrays (useBicolor=false); non-density
+  modes use the user's color; density uses posColor (multi default, so leave
+  source.color undefined)
 
 ```js
 // type signature

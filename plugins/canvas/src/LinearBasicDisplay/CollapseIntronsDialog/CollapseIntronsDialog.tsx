@@ -8,9 +8,10 @@ import {
   DialogContent,
   DialogContentText,
 } from '@mui/material'
+import { isObservableArray } from 'mobx'
 
 import TranscriptTable from './TranscriptTable.tsx'
-import { collapseIntrons } from './util.ts'
+import { collapseIntrons, replaceIntrons } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
@@ -30,12 +31,15 @@ export default function CollapseIntronsDialog({
   const [showAll, setShowAll] = useState(false)
   const [windowSize, setWindowSize] = useState<number | undefined>(100)
   const validWindowSize = windowSize !== undefined
+  const canLaunchView = isObservableArray(getSession(view).views)
 
   return (
     <Dialog
       open
       maxWidth="md"
-      onClose={handleClose}
+      onClose={() => {
+        handleClose()
+      }}
       title="Select transcript to collapse"
     >
       <DialogContent>
@@ -46,10 +50,9 @@ export default function CollapseIntronsDialog({
             region around splice boundary
           </p>
           <p>
-            By default the union of exons from all transcripts will be used to
-            create the collapsed intron view, but you can optionally use the
-            exons of only a specific transcript by clicking "Show all
-            transcripts" and then "Select"
+            By default the union of exons from all transcripts will be used. To
+            use a specific transcript, click "Show all transcripts" and then
+            "Replace" (or "Launch") on the desired row.
           </p>
         </DialogContentText>
         <NumberTextField
@@ -77,6 +80,7 @@ export default function CollapseIntronsDialog({
             assembly={assembly}
             padding={windowSize ?? 0}
             validPadding={validWindowSize}
+            canLaunchView={canLaunchView}
             handleClose={handleClose}
           />
         ) : null}
@@ -87,9 +91,9 @@ export default function CollapseIntronsDialog({
           variant="contained"
           color="primary"
           disabled={!validWindowSize}
-          onClick={async () => {
+          onClick={() => {
             try {
-              await collapseIntrons({
+              replaceIntrons({
                 view,
                 transcripts,
                 assembly,
@@ -102,9 +106,39 @@ export default function CollapseIntronsDialog({
             }
           }}
         >
-          Submit
+          Replace current view
         </Button>
-        <Button onClick={handleClose} variant="contained" color="secondary">
+        {canLaunchView ? (
+          <Button
+            size="small"
+            variant="contained"
+            color="primary"
+            disabled={!validWindowSize}
+            onClick={async () => {
+              try {
+                await collapseIntrons({
+                  view,
+                  transcripts,
+                  assembly,
+                  padding: windowSize ?? 0,
+                })
+                handleClose()
+              } catch (e) {
+                getSession(view).notifyError(`${e}`, e)
+                console.error(e)
+              }
+            }}
+          >
+            Open in new view
+          </Button>
+        ) : null}
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          variant="contained"
+          color="secondary"
+        >
           Cancel
         </Button>
       </DialogActions>

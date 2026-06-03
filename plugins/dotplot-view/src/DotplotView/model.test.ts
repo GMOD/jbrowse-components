@@ -1,6 +1,6 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 // self-vs-self layout: both axes show ctgA at bpPerPx=1, offsetPx=0.
 // height 600 - borderY 100 => viewHeight 500.

@@ -1,7 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
@@ -20,7 +20,7 @@ import type { HierarchicalTrackSelectorModel } from '../model.ts'
 // test data
 
 // mock
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function timeout(ms: number) {
   return new Promise(res => setTimeout(res, ms))

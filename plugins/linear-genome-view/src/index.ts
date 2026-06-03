@@ -128,6 +128,7 @@ export {
   OverviewHighlightBand,
   RefNameAutocomplete,
   SearchBox,
+  stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
 export { fetchResults } from './searchUtils.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'

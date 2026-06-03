@@ -64,13 +64,24 @@ height: {
     }
 ```
 
+#### slot: useBicolor
+
+```js
+useBicolor: {
+      type: 'boolean',
+      defaultValue: true,
+      description:
+        'Use separate positive/negative colors instead of a single color',
+    }
+```
+
 #### slot: color
 
 ```js
 color: {
       type: 'color',
-      defaultValue: WIGGLE_COLOR_DEFAULT,
-      description: 'Color for the wiggle bars',
+      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
+      description: 'Color for the wiggle bars (when not using bicolor mode)',
     }
 ```
 

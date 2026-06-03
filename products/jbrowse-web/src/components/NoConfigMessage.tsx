@@ -29,7 +29,10 @@ export default function NoConfigMessage() {
             (local test data, requires dev server)
           </small>
         </h3>
-        <NoConfigMessageLinkList links={sampleConfigs} buildUrl={buildConfigUrl} />
+        <NoConfigMessageLinkList
+          links={sampleConfigs}
+          buildUrl={buildConfigUrl}
+        />
 
         <h3 style={{ margin: '16px 0 4px' }}>Synteny and dotplot</h3>
         <NoConfigMessageLinkList
@@ -40,12 +43,18 @@ export default function NoConfigMessage() {
 
       <div style={{ flex: 1 }}>
         <h3 style={{ margin: '0 0 4px' }}>Demo sessions</h3>
-        <NoConfigMessageLinkList links={demoSessions} buildUrl={buildConfigUrl} />
+        <NoConfigMessageLinkList
+          links={demoSessions}
+          buildUrl={buildConfigUrl}
+        />
       </div>
 
       <div style={{ flex: 1 }}>
         <h3 style={{ margin: '0 0 4px' }}>Gallery demos</h3>
-        <NoConfigMessageLinkList links={galleryDemos} buildUrl={buildConfigUrl} />
+        <NoConfigMessageLinkList
+          links={galleryDemos}
+          buildUrl={buildConfigUrl}
+        />
       </div>
     </div>
   )

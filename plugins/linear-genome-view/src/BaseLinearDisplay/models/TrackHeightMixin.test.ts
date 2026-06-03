@@ -1,6 +1,6 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
-import TrackHeightMixin from './TrackHeightMixin'
+import TrackHeightMixin from './TrackHeightMixin.tsx'
 
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
@@ -19,8 +19,7 @@ type Legacy = SnapshotIn<typeof TestModel> & {
   height?: number
   heightPreConfig?: number
 }
-const create = (snap: Legacy) =>
-  TestModel.create(snap as SnapshotIn<typeof TestModel>)
+const create = (snap: Legacy) => TestModel.create(snap)
 
 test('legacy heightPreConfig snapshot migrates to heightOverride', () => {
   const m = create({ type: 'test', heightPreConfig: 300 })

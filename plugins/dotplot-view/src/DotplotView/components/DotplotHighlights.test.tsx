@@ -1,12 +1,12 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
 import DotplotHighlightBands from './DotplotHighlightBands.tsx'
 import DotplotHighlights from './DotplotHighlights.tsx'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function setup() {
   const session = createTestSession({

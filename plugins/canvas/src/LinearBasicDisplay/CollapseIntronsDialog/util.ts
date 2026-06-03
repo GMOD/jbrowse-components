@@ -90,7 +90,7 @@ export function calculateInitialViewState(
   return { bpPerPx, offsetPx }
 }
 
-export async function collapseIntrons({
+function buildArgs({
   view,
   transcripts,
   assembly,
@@ -103,31 +103,65 @@ export async function collapseIntrons({
 }) {
   const r0 = transcripts[0]?.get('refName')
   if (!r0) {
-    return
+    return undefined
   }
   const refName = assembly.getCanonicalRefName2(r0)
   const subs = getExonsAndCDS(transcripts)
-  const snapshot = getSnapshot(view)
-  const { id, ...rest } = snapshot
-
   const mergedRegions = buildCollapsedRegions({
     intervals: subs.map(f => ({ start: f.get('start'), end: f.get('end') })),
     padding,
     refName,
     assemblyName: assembly.name,
   })
+  return {
+    mergedRegions,
+    initialState: calculateInitialViewState(mergedRegions, view.width),
+  }
+}
 
-  // Compute the correct bpPerPx and offsetPx for the new regions BEFORE creating the view.
-  // We do this upfront (instead of calling showAllRegions() after creation) to avoid
-  // rendering with incorrect values and then updating, which would cause layout thrashing.
-  const initialState = calculateInitialViewState(mergedRegions, view.width)
+export function replaceIntrons({
+  view,
+  transcripts,
+  assembly,
+  padding,
+}: {
+  view: LinearGenomeViewModel
+  transcripts: Feature[]
+  assembly: Assembly
+  padding: number
+}) {
+  const args = buildArgs({ view, transcripts, assembly, padding })
+  if (!args) {
+    return
+  }
+  view.setDisplayedRegions(args.mergedRegions)
+  view.setNewView(args.initialState.bpPerPx, args.initialState.offsetPx)
+}
 
+export async function collapseIntrons({
+  view,
+  transcripts,
+  assembly,
+  padding,
+}: {
+  view: LinearGenomeViewModel
+  transcripts: Feature[]
+  assembly: Assembly
+  padding: number
+}) {
+  const args = buildArgs({ view, transcripts, assembly, padding })
+  if (!args) {
+    return
+  }
+  const snapshot = getSnapshot(view)
+  const { id, ...rest } = snapshot
+  // Compute bpPerPx/offsetPx upfront to avoid layout thrashing on the new view
   const newView = getSession(view).addView('LinearGenomeView', {
     ...rest,
     tracks: rest.tracks.map(({ id, ...r }) => r),
-    displayedRegions: mergedRegions,
-    bpPerPx: initialState.bpPerPx,
-    offsetPx: initialState.offsetPx,
+    displayedRegions: args.mergedRegions,
+    bpPerPx: args.initialState.bpPerPx,
+    offsetPx: args.initialState.offsetPx,
   }) as LinearGenomeViewModel
   await when(() => newView.initialized)
 }

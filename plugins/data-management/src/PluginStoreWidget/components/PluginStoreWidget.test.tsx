@@ -1,7 +1,7 @@
 import { DialogQueue } from '@jbrowse/app-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
@@ -10,7 +10,7 @@ import PluginStoreWidget from './PluginStoreWidget.tsx'
 
 import type { PluginStoreModel } from '../model.ts'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 const plugins = {
   plugins: [

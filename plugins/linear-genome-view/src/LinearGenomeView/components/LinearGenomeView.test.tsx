@@ -1,5 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 
@@ -8,7 +8,7 @@ import LinearGenomeView from './LinearGenomeView.tsx'
 import type { LinearGenomeViewModel } from '../model.ts'
 
 // mock
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function LGV({ model }: { model: LinearGenomeViewModel }) {
   return (
