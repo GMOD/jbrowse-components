@@ -24,11 +24,11 @@ import {
   addRelativeUris,
   getVolvoxConfig,
 } from './examples/util.tsx'
-import nextstrainConfig from '../public/nextstrain_covid.json' with { type: 'json' }
 import makeWorkerInstance from '../src/makeWorkerInstance.ts'
 
 // barrel re-exports for stories not shown in MDX (appear in "Source code for examples" page)
 export {
+  NextstrainExample,
   OneLinearGenomeView,
   PanUKBGWAS,
   UseCreateViewState,
@@ -44,7 +44,9 @@ import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export default { title: 'Source code for examples' }
+// tags: ['!dev'] keeps these out of the sidebar; they still power <Canvas of={...}>
+// embeds in the MDX docs pages and remain available via "Show code"
+export default { title: 'Source code for examples', tags: ['!dev'] }
 
 // ---------------------------------------------------------------------------
 // Shared volvox inline config used in source.code strings
@@ -858,71 +860,6 @@ function App() {
             loc: '1:100,987,269..100,987,368',
             assembly: 'GRCh38',
             tracks: ['NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'],
-          },
-        },
-      },
-    }),
-  )
-  return <JBrowseLinearGenomeView viewState={state} />
-}`,
-      },
-    },
-  },
-}
-
-// ---------------------------------------------------------------------------
-// NextstrainExample
-// ---------------------------------------------------------------------------
-
-function NextstrainExampleRender() {
-  const {
-    assembly: nsAssembly,
-    tracks: nsTracks,
-    defaultSession: nsDefaultSession,
-  } = nextstrainConfig
-  const [state] = useState(() =>
-    createViewState({
-      assembly: nsAssembly,
-      tracks: nsTracks,
-      defaultSession: nsDefaultSession,
-      location: 'SARS-CoV-2:1..29,903',
-      configuration: {
-        theme: {
-          palette: {
-            primary: { main: '#5da8a3' },
-            secondary: { main: '#333' },
-          },
-        },
-      },
-    }),
-  )
-  return <JBrowseLinearGenomeView viewState={state} />
-}
-
-export const NextstrainExample = {
-  render: NextstrainExampleRender,
-  parameters: {
-    docs: {
-      source: {
-        language: 'tsx',
-        code: `\
-import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
-import nextstrainConfig from './nextstrain_covid.json'
-
-export function App() {
-  const { assembly, tracks, defaultSession } = nextstrainConfig
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession,
-      location: 'SARS-CoV-2:1..29,903',
-      configuration: {
-        theme: {
-          palette: {
-            primary: { main: '#5da8a3' },
-            secondary: { main: '#333' },
           },
         },
       },

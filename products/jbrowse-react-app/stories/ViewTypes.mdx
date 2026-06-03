@@ -5,22 +5,46 @@ import {
   DotplotExample,
   SpreadsheetExample,
   SvInspectorExample,
+  SyntenyExample,
+  WithLaunchLinearGenomeView,
 } from './JBrowseReactApp.stories'
 
 <Meta title="View Types" />
 
-# View types via declarative `init`
+# View types
 
-`react-app2` can hold any view type the bundled plugins provide, and each is
-launched the same declarative way: a `defaultSession.views` entry with a `type`
-and an `init` field. `init` is the same shape JBrowse Web serializes into its
-`?session=spec-…` URL parameter (see the
+One of the things `react-app2` gives you that the standalone LGV component does
+not is a **session that can hold any number of views of any type**, side by
+side — `LinearGenomeView`, `LinearSyntenyView`, `DotplotView`, `CircularView`,
+`SpreadsheetView`, and more.
+
+Each view type launches the same declarative way: a `defaultSession.views` entry
+with a `type` and an `init` field. `init` is the same shape JBrowse Web
+serializes into its `?session=spec-…` URL parameter (see the
 [URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/)) — so these
-examples are the programmatic equivalent of those URLs.
+examples are the programmatic equivalent of those URLs. The exact fields each
+view's `init`/snapshot accepts come from its
+[state model docs](https://jbrowse.org/jb2/docs/models/).
 
-`LinearGenomeView` and `LinearSyntenyView` are covered in
-[Multiple Views](?path=/docs/multiple-views--docs); this page collects the
-others.
+## Synteny: two assemblies in one session
+
+`LinearSyntenyView` shows two linear genome views with a connecting ribbon for
+synteny features (PAF, MUMMER, etc.). The `init` field declares the two member
+assemblies and the synteny track that ties them together — much terser than
+hand-building two `LinearGenomeView` snapshots plus a synteny view snapshot:
+
+```js
+{
+  id: 'synteny_view',
+  type: 'LinearSyntenyView',
+  init: {
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
+    tracks: ['volvox_del.paf'],
+  },
+}
+```
+
+<Canvas of={SyntenyExample} />
 
 ## Dotplot
 
@@ -116,3 +140,18 @@ between the breakpoints of split/translocated reads. `init.views` is an array of
 ```
 
 <Canvas of={BreakpointSplitExample} />
+
+## Launching a view programmatically
+
+For views that should appear in response to runtime conditions (a button click,
+a search hit, a backend event) rather than at first paint, use the
+`LaunchView-*` extension points instead of baking the view into
+`defaultSession`. The example below boots an empty session and then launches a
+`LinearGenomeView` after mount:
+
+<Canvas of={WithLaunchLinearGenomeView} />
+
+This is the same machinery the import wizard uses internally, so anything the
+user can launch from the UI you can launch from code. See the
+[API Reference](?path=/docs/api-reference--docs) for the full list of
+`LaunchView-*` extension points.

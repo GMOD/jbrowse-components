@@ -4,6 +4,9 @@ import { JBrowseCircularGenomeView, createViewState } from '../src/index.ts'
 
 const JBrowseCircularGenomeViewStories = {
   title: 'Circular Genome View',
+  // tags: ['!dev'] keeps these out of the sidebar; they still power
+  // <Canvas of={...}> embeds in Getting Started and remain available via "Show code"
+  tags: ['!dev'],
 }
 
 export default JBrowseCircularGenomeViewStories

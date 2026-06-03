@@ -24,6 +24,37 @@ extends
 
 - [BaseViewModel](../baseviewmodel)
 
+## Example usage
+
+A `LinearGenomeView` is what you hand-author under `defaultSession.views`. The
+`init` shorthand fills in `displayedRegions`/`bpPerPx`/`offsetPx` for you:
+
+```js
+defaultSession: {
+  name: 'My session',
+  views: [
+    {
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'hg38',
+        loc: 'chr1:1,000,000-1,100,000',
+        tracks: ['genes', 'alignments'],
+      },
+    },
+  ],
+}
+```
+
+At runtime the same model is driven imperatively — every property and action
+below is reachable on `viewState.session.views[0]`:
+
+```js
+const view = viewState.session.views[0]
+await view.navToLocString('chr1:2,000,000-2,100,000')
+view.showTrack('alignments')
+view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
+```
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

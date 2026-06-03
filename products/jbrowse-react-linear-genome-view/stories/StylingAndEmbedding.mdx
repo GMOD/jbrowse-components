@@ -1,0 +1,125 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks'
+import {
+  DisableAddTrack,
+  ShadowDOMOneLinearGenomeView,
+  WithCustomTheme,
+  WithDarkTheme,
+  WithDisableZoomAndSideScroll,
+  WithDrawerWidget,
+  WithOutsideStyling,
+} from './JBrowseLinearGenomeView.stories'
+
+<Meta title="Styling and Embedding" />
+
+# Styling and embedding
+
+This page covers how the view looks and how it integrates into a host page:
+theme colors, composing with surrounding CSS, locking down interaction, the side
+drawer, and Shadow DOM isolation.
+
+## Theming
+
+The embedded view accepts a Material-UI-style theme on its `configuration`
+block. JBrowse defines four named palette colors — `primary`, `secondary`,
+`tertiary`, and `quaternary` — that drive most of the chrome (toolbars, buttons,
+highlights). The DNA-base colors used in the sequence display are configurable
+separately. See the
+[theming guide](https://jbrowse.org/jb2/docs/config_guides/theme/) for the full
+set of options.
+
+### Custom theme
+
+Overrides the four named colors and the DNA base colors:
+
+<Canvas of={WithCustomTheme} />
+
+### Dark mode
+
+Set `palette.mode: 'dark'` on the theme to render in dark mode. JBrowse has been
+tuned to look reasonable under both light and dark palettes:
+
+<Canvas of={WithDarkTheme} />
+
+## Composing with parent styles
+
+The embedded view inherits CSS from its host. There's no shadow-DOM isolation in
+the default rendering path (see [Shadow DOM](#shadow-dom) below if you need
+that), so wrapping the component in a styled container composes normally —
+borders, margins, backgrounds all work:
+
+<Canvas of={WithOutsideStyling} />
+
+## Customizing interaction
+
+The embedded view is interactive by default — wheel zoom, click-drag pan, the
+full track-selector UI. The settings below cover the most common adjustments
+when embedding into a host page that wants tighter control.
+
+### Locking down the track list
+
+By default users can add tracks via the UI. Pass `disableAddTracks: true` to
+hide the "+ Add track" button — this also disables on-the-fly track creation
+features like sequence-search tracks and multi-wiggle tracks.
+
+```js
+const state = createViewState({
+  assembly,
+  tracks,
+  location: 'ctgA:1,000..5,000',
+  disableAddTracks: true,
+})
+```
+
+<Canvas of={DisableAddTrack} />
+
+### Disabling zoom and side-scroll
+
+For dashboard or report layouts where the page (not the view) should own scroll
+and zoom, a small plugin can override the view model's `scrollTo` and `zoomTo`
+actions with no-ops:
+
+<Canvas of={WithDisableZoomAndSideScroll} />
+
+## Drawer widget
+
+By default, widgets like the hierarchical track selector open in a modal dialog.
+Passing `drawerViewHeight` to `createViewState` switches widgets to render in a
+resizable side drawer alongside the view, which matches the behavior of the full
+JBrowse Web app.
+
+```js
+const state = createViewState({
+  assembly,
+  tracks,
+  location: 'ctgA:1105..1221',
+  drawerViewHeight: '100vh',
+  defaultSession: {
+    /* ... */
+  },
+})
+```
+
+`drawerViewHeight` accepts any CSS height value (`'100vh'`, `'600px'`, `'80%'`,
+etc.). It constrains the height of the embedded view's grid container while a
+drawer is open, giving the drawer a fixed scroll region. When no drawer widget
+is visible, the view sizes to its parent as usual — the height override applies
+only when needed.
+
+The drawer is resizable (drag the handle), repositionable left ↔ right via the ⋮
+menu, minimizable, and closeable. With no drawer widget visible, widget popups
+fall back to the modal presentation.
+
+<Canvas of={WithDrawerWidget} />
+
+## Shadow DOM
+
+`@jbrowse/react-linear-genome-view2` can be mounted inside a Shadow DOM — useful
+when embedding into a host page that has its own conflicting global styles, or
+when packaging the view as a custom element.
+
+The component itself doesn't require any special configuration; the example
+below shows it rendered inside a shadow root via React's portal mechanism.
+Styles created inside the shadow root (Material-UI's emotion output) stay scoped
+to the root, and styles outside it cannot leak in.
+
+<Canvas of={ShadowDOMOneLinearGenomeView} />

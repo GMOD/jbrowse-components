@@ -15,6 +15,9 @@ import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 export default {
   title: 'JBrowse React App',
+  // tags: ['!dev'] keeps these out of the sidebar; they still power
+  // <Canvas of={...}> embeds in the MDX docs and remain available via "Show code"
+  tags: ['!dev'],
 }
 
 // clone before tagging baseUri so we never mutate the shared imported JSON

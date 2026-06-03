@@ -20,6 +20,24 @@ reference the markdown files in our repo of the checked out git tag
 
 used for basic gene and feature tracks, generally used with LinearBasicDisplay
 
+## Example usage
+
+A minimal hand-authored entry in the top-level `tracks` array — `adapter` points
+at the data file, and the track opens with a `LinearBasicDisplay`:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'genes',
+  name: 'Genes',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://example.com/genes.sorted.gff.gz',
+  },
+}
+```
+
 ### FeatureTrack - Identifier
 
 #### slot: explicitIdentifier

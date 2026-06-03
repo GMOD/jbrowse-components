@@ -4,6 +4,7 @@ import slugify from 'slugify'
 
 import {
   codeBlock,
+  exampleSection,
   parseTaggedComment,
   removeComments,
   section,
@@ -14,11 +15,13 @@ import type { ExtractedNode } from './util.ts'
 interface Item {
   name: string
   docs: string
+  examples: string
   code: string
 }
 interface ConfigHeader {
   name: string
   docs: string
+  examples: string
   id: string
   // "file:pos" identity of the declaration this #config sits on. A deriving
   // config's `baseConfiguration:` slot resolves (alias-followed) to this same
@@ -43,8 +46,12 @@ interface BaseRef {
 }
 
 function buildItem(obj: ExtractedNode): Item {
-  const { name, docs } = parseTaggedComment(obj.comment, obj.type, obj.name)
-  return { name, docs, code: removeComments(obj.node) }
+  const { name, docs, examples } = parseTaggedComment(
+    obj.comment,
+    obj.type,
+    obj.name,
+  )
+  return { name, docs, examples, code: removeComments(obj.node) }
 }
 
 const cwd = `${process.cwd()}/`
@@ -64,6 +71,7 @@ export function accumulateConfig(
     file.header = {
       name: item.name,
       docs: item.docs,
+      examples: item.examples,
       id: slugify(item.name, { lower: true }),
       declId: obj.selfDeclId,
     }
@@ -200,14 +208,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-${header.docs}
-
-${sections}
+${section(header.docs, exampleSection(header.examples), sections)}
 `
 }
 
-function slotBlock({ name, docs, code }: Item) {
-  return section(`#### slot: ${name}`, docs, codeBlock(code))
+function slotBlock({ name, docs, examples, code }: Item) {
+  return section(
+    `#### slot: ${name}`,
+    docs,
+    codeBlock(code),
+    exampleSection(examples, '_Example_'),
+  )
 }
 
 function validateBaseConfig(config: ConfigWithHeader, bases: BaseRef[]) {

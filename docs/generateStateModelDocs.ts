@@ -4,6 +4,7 @@ import slugify from 'slugify'
 
 import {
   codeBlock,
+  exampleSection,
   parseExtends,
   parseTaggedComment,
   removeComments,
@@ -15,6 +16,7 @@ import type { ExtendsRef, ExtractedNode } from './util.ts'
 interface Member {
   name: string
   docs: string
+  examples: string
   code: string
   signature: string
 }
@@ -22,6 +24,7 @@ interface ModelHeader {
   name: string
   id: string
   docs: string
+  examples: string
 }
 export interface StateModel {
   header?: ModelHeader
@@ -39,10 +42,15 @@ interface Ancestor {
 }
 
 function buildMember(obj: ExtractedNode): Member {
-  const { name, docs } = parseTaggedComment(obj.comment, obj.type, obj.name)
+  const { name, docs, examples } = parseTaggedComment(
+    obj.comment,
+    obj.type,
+    obj.name,
+  )
   return {
     name,
     docs,
+    examples,
     code: removeComments(obj.node),
     signature: obj.signature,
   }
@@ -72,6 +80,7 @@ export function accumulateModel(
     file.header = {
       name: member.name,
       docs: member.docs,
+      examples: member.examples,
       id: slugify(member.name, { lower: true }),
     }
   } else if (obj.type === 'property') {
@@ -198,7 +207,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-${section(header.docs, inheritedSection(ancestors), sections)}
+${section(header.docs, exampleSection(header.examples), inheritedSection(ancestors), sections)}
 `
 }
 
@@ -213,7 +222,12 @@ function memberSection(
     ? section(
         `### ${modelName} - ${label}`,
         ...members.map(m =>
-          section(`#### ${kind}: ${m.name}`, m.docs, renderBody(m)),
+          section(
+            `#### ${kind}: ${m.name}`,
+            m.docs,
+            renderBody(m),
+            exampleSection(m.examples, '_Example_'),
+          ),
         ),
       )
     : ''

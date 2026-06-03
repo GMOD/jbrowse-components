@@ -201,12 +201,18 @@ function getOwnJSDocText(node: ts.Node): string {
     .join('\n')
 }
 
-// Extracts the entity name and human-readable description from a comment body
-// like:
+// Extracts the entity name, human-readable description, and optional example
+// usage from a comment body like:
 //   #stateModel LinearGenomeView
 //   #category view
 //   The actual description...
-// Returns { name: "LinearGenomeView" || fallback, docs: "The actual description..." }
+//   #example
+//   ```js
+//   const state = createViewState({ ... })
+//   ```
+// Returns { name, docs, examples }. Everything after an `#example` marker is
+// runnable usage rendered in its own section — authored LAST so it stays out of
+// the prose `docs` and the `extends` block that parseExtends reads from docs.
 export function parseTaggedComment(
   comment: string,
   type: TagType,
@@ -216,17 +222,27 @@ export function parseTaggedComment(
   const lines = comment.split('\n')
   let name = fallbackName
   const docs: string[] = []
+  const examples: string[] = []
+  let inExample = false
   for (const line of lines) {
-    if (line.includes(tag)) {
+    if (line.includes('#example')) {
+      inExample = true
+    } else if (line.includes(tag)) {
       const fromTag = line.replace(tag, '').trim()
       if (fromTag) {
         name = fromTag
       }
+    } else if (inExample) {
+      examples.push(line)
     } else if (!line.includes('#category')) {
       docs.push(line)
     }
   }
-  return { name, docs: docs.join('\n') }
+  return {
+    name,
+    docs: docs.join('\n'),
+    examples: examples.join('\n').trim(),
+  }
 }
 
 // Strip JSDoc/inline comments from extracted source. Token-aware (via the TS
@@ -264,6 +280,13 @@ export function codeBlock(...lines: string[]) {
 // `0` from `arr.length && ...`) are dropped, so empty sections vanish cleanly.
 export function section(...parts: (string | false | 0 | undefined)[]) {
   return parts.filter(Boolean).join('\n\n')
+}
+
+// Renders an authored `#example` block under a consistent heading so every
+// config/state-model page surfaces copy-pasteable usage the same way. Empty when
+// no example was authored.
+export function exampleSection(examples: string, heading = '## Example usage') {
+  return examples ? section(heading, examples) : ''
 }
 
 export interface ExtendsRef {
