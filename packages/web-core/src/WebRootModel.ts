@@ -49,7 +49,7 @@ export interface WebRootModelInterface {
     redo(): void
   }
   menus(): Menu[]
-  setPluginsUpdated(flag: boolean): void
+  setPluginsUpdated(): void
   deleteSavedSession(id: string): Promise<void>
   setSavedSessionFavorite(id: string, favorite: boolean): Promise<void>
   renameCurrentSession(name: string): void

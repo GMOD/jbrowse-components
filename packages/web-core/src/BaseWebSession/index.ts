@@ -202,7 +202,7 @@ export function BaseWebSession({
           throw new Error('session plugin cannot be installed twice')
         }
         self.sessionPlugins.push(plugin)
-        self.root.setPluginsUpdated(true)
+        self.root.setPluginsUpdated()
       },
 
       /**
@@ -227,7 +227,7 @@ export function BaseWebSession({
             )
           }),
         )
-        self.root.setPluginsUpdated(true)
+        self.root.setPluginsUpdated()
       },
 
       /**

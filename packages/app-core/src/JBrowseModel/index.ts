@@ -12,6 +12,18 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
+// This config model always lives at rootModel.jbrowse, so its MST parent is the
+// root model. This is the slice of the root model this file reaches for; typing
+// it replaces `getParent<any>` so the contract is checked rather than assumed.
+// setPluginsUpdated takes no argument: every product reacts to "plugins
+// changed" by rebuilding the plugin manager (desktop reloads from disk, web
+// reloads the page), so there is no state to pass.
+interface JBrowseModelParent {
+  rpcManager: RpcManager
+  session?: { name: string }
+  setPluginsUpdated: () => void
+}
+
 /**
  * #stateModel AppCoreJBrowseModel
  * note that JBrowseRootConfig is a config model, but config models are MST
@@ -43,7 +55,7 @@ export function JBrowseModelF({
        * #getter
        */
       get rpcManager(): RpcManager {
-        return getParent<any>(self).rpcManager
+        return getParent<JBrowseModelParent>(self).rpcManager
       },
     }))
     .actions(self => ({
@@ -135,9 +147,7 @@ export function JBrowseModelF({
        */
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
-
-        const rootModel = getParent<any>(self)
-        rootModel.setPluginsUpdated(true)
+        getParent<JBrowseModelParent>(self).setPluginsUpdated()
       },
       /**
        * #action
@@ -147,8 +157,7 @@ export function JBrowseModelF({
         self.plugins = cast(
           self.plugins.filter(plugin => pluginUrl(plugin) !== targetUrl),
         )
-
-        getParent<any>(self).setPluginsUpdated(true)
+        getParent<JBrowseModelParent>(self).setPluginsUpdated()
       },
 
       /**
@@ -156,7 +165,7 @@ export function JBrowseModelF({
        */
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         const newDefault =
-          getParent<any>(self).session.name === sessionConf.name
+          getParent<JBrowseModelParent>(self).session?.name === sessionConf.name
             ? getSnapshot(sessionConf)
             : toJS(sessionConf)
 
