@@ -134,6 +134,14 @@ const sampleConfigs: {
     label: 'Nanopore methylation',
   },
   {
+    config: 'test_data/arabidopsis_methylation/config.json',
+    label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
+  },
+  {
+    config: 'test_data/arabidopsis_methylation/config_emseq_bisulfite.json',
+    label: 'Arabidopsis methylation (EM-seq bisulfite)',
+  },
+  {
     config: 'test_data/config_gwas.json',
     label: 'GWAS (Manhattan plot + LocusZoom LD coloring)',
   },
