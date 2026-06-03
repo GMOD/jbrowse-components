@@ -28,7 +28,7 @@ import nextstrainConfig from '../public/nextstrain_covid.json' with { type: 'jso
 import makeWorkerInstance from '../src/makeWorkerInstance.ts'
 
 // barrel re-exports for stories not shown in MDX (appear in "Source code for examples" page)
-export { OneLinearGenomeView, UseCreateViewState } from './examples/index.ts'
+export { OneLinearGenomeView, PanUKBGWAS, UseCreateViewState } from './examples/index.ts'
 
 import type { ViewModel } from '../src/index.ts'
 import type { EmotionCache } from '@emotion/cache'

@@ -80,10 +80,11 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts?: BaseOptions) {
     const { stopToken, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { columnNumbers } = await this.getMetadata()
+      const { columnNumbers, coordinateType } = await this.getMetadata()
       const colRef = columnNumbers.ref - 1
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
+      const oneBased = coordinateType === '1-based-closed'
       const names = await this.getNames()
       const scoreColumn: string = this.getConf('scoreColumn')
       const disableGeneHeuristic: boolean = this.getConf('disableGeneHeuristic')
@@ -99,8 +100,8 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
                 featureData({
                   splitLine,
                   refName: splitLine[colRef]!,
-                  start: +splitLine[colStart]!,
-                  end: +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0),
+                  start: +splitLine[colStart]! - (oneBased ? 1 : 0),
+                  end: +splitLine[colEnd]! + (colStart === colEnd && !oneBased ? 1 : 0),
                   scoreColumn,
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,
