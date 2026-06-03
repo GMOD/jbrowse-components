@@ -136,17 +136,13 @@ export function createAuthWindow(
   })
 
   return new Promise(resolve => {
-    win.webContents.on(
-      // @ts-expect-error - 'will-redirect' is missing from Electron's WebContents event types
-      'will-redirect',
-      (event: Event, redirectUrl: string) => {
-        if (redirectUrl.startsWith(params.data.redirect_uri)) {
-          event.preventDefault()
-          resolve(redirectUrl)
-          win.close()
-        }
-      },
-    )
+    win.webContents.on('will-redirect', details => {
+      if (details.url.startsWith(params.data.redirect_uri)) {
+        details.preventDefault()
+        resolve(details.url)
+        win.close()
+      }
+    })
     win.on('closed', () => {
       resolve(undefined)
     })

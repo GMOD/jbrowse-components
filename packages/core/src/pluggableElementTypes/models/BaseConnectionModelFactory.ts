@@ -58,7 +58,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setTrackConfs(trackConfs: AnyConfigurationModel[]) {
+      setTrackConfs(trackConfs: TrackConf[]) {
         self.tracks = cast(trackConfs)
       },
       /**

@@ -1,5 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
+
 export const NoAssemblyRegion = types
   .model('NoAssemblyRegion', {
     refName: types.string,
@@ -69,38 +71,47 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   },
 })
 
-export const FileLocation = types.snapshotProcessor(
-  types.union(LocalPathLocation, UriLocation, BlobLocation, FileHandleLocation),
-  {
-    // @ts-expect-error
-    preProcessor(snap) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return undefined
-      }
-
-      // @ts-expect-error
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { locationType, ...rest } = snap
-      if (!locationType) {
-        // @ts-expect-error
-        const { uri, localPath, blob, handleId } = rest
-        let locationType = ''
-        if (uri !== undefined) {
-          locationType = 'UriLocation'
-        } else if (localPath !== undefined) {
-          locationType = 'LocalPathLocation'
-        } else if (blob !== undefined) {
-          locationType = 'BlobLocation'
-        } else if (handleId !== undefined) {
-          locationType = 'FileHandleLocation'
-        }
-
-        return { ...rest, locationType }
-      }
-      return snap
-    },
-  },
+const FileLocationUnion = types.union(
+  LocalPathLocation,
+  UriLocation,
+  BlobLocation,
+  FileHandleLocation,
 )
+
+// pre-locationType legacy snapshots stored only the discriminating field (uri,
+// localPath, blob, handleId) with no locationType tag
+interface LegacyFileLocation {
+  locationType?: undefined
+  uri?: string
+  localPath?: string
+  blob?: string
+  handleId?: string
+}
+
+export const FileLocation = types.snapshotProcessor<
+  typeof FileLocationUnion,
+  SnapshotIn<typeof FileLocationUnion> | LegacyFileLocation
+>(FileLocationUnion, {
+  // legacy untagged snapshots are loosely shaped (e.g. a bare `uri` with no
+  // blobId/name for the blob case), so the inferred result can't statically
+  // satisfy the strict union; MST re-validates it against the union at runtime
+  // @ts-expect-error
+  preProcessor(snap) {
+    if (snap.locationType) {
+      return snap
+    } else {
+      const { uri, localPath, blob } = snap
+      const inferredLocationType =
+        uri !== undefined
+          ? 'UriLocation'
+          : localPath !== undefined
+            ? 'LocalPathLocation'
+            : blob !== undefined
+              ? 'BlobLocation'
+              : 'FileHandleLocation'
+      return { ...snap, locationType: inferredLocationType }
+    }
+  },
+})
 
 export { ElementId, createElementId } from './ElementId.ts'

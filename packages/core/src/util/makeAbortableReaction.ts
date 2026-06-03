@@ -33,8 +33,7 @@ export function makeAbortableReaction<T, U, V>(
     model: T,
     handle: IReactionPublic,
   ) => Promise<V>,
-  // @ts-expect-error
-  reactionOptions: IReactionOptions,
+  reactionOptions: IReactionOptions<U | undefined, boolean>,
   startedFunction: (stopToken: StopToken) => void,
   successFunction: (arg: V) => void,
   errorFunction: (err: unknown) => void,
@@ -61,7 +60,7 @@ export function makeAbortableReaction<T, U, V>(
           return undefined
         }
       },
-      async (data, mobxReactionHandle) => {
+      async (data, _prev, mobxReactionHandle) => {
         if (inProgress) {
           stopStopToken(inProgress)
         }
@@ -77,7 +76,6 @@ export function makeAbortableReaction<T, U, V>(
             data,
             inProgress,
             self,
-            // @ts-expect-error
             mobxReactionHandle,
           )
           if (isAlive(self)) {
