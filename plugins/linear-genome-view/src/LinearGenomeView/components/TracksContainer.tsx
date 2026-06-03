@@ -3,7 +3,21 @@ import type { ReactNode } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import Gridlines from './Gridlines.tsx'
+import OverviewHighlightBand from './OverviewHighlightBand.tsx'
+import RangeSelectOverlay from './RangeSelectOverlay.tsx'
+import Rubberband from './Rubberband.tsx'
+import Scalebar from './Scalebar.tsx'
+import VerticalGuide from './VerticalGuide.tsx'
+import { getHighlightColor } from './util.ts'
+import { SCALE_BAR_HEIGHT } from '../consts.ts'
+import { useRangeSelect } from './useRangeSelect.ts'
+import { useSideScroll } from './useSideScroll.ts'
+
+import type { LinearGenomeViewModel } from '../index.ts'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
@@ -12,19 +26,13 @@ declare module '@jbrowse/core/PluginManager' {
       result: ReactNode[]
       props: { model: LinearGenomeViewModel }
     }
+    'LinearGenomeView-ScalebarHighlightComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel }
+    }
   }
 }
-
-import Gridlines from './Gridlines.tsx'
-import RangeSelectOverlay from './RangeSelectOverlay.tsx'
-import Rubberband from './Rubberband.tsx'
-import Scalebar from './Scalebar.tsx'
-import VerticalGuide from './VerticalGuide.tsx'
-import { SCALE_BAR_HEIGHT } from '../consts.ts'
-import { useRangeSelect } from './useRangeSelect.ts'
-import { useSideScroll } from './useSideScroll.ts'
-
-import type { LinearGenomeViewModel } from '../index.ts'
 
 const CenterLine = lazy(() => import('./CenterLine.tsx'))
 const Highlight = lazy(() => import('./Highlight.tsx'))
@@ -33,6 +41,16 @@ const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
     contain: 'layout style',
+  },
+  scalebarHighlights: {
+    position: 'absolute',
+    top: 0,
+    height: SCALE_BAR_HEIGHT,
+    width: '100%',
+    // above Rubberband div (825) so bands show over the scalebar,
+    // below RubberbandSpan (830) so the selection rect stays on top
+    zIndex: 826,
+    pointerEvents: 'none',
   },
 })
 
@@ -94,6 +112,7 @@ const TracksContainer = observer(function TracksContainer({
           />
         }
       />
+      <ScalebarHighlightGroup model={model} />
       <HighlightGroup model={model} />
       {additional}
       {children}
@@ -117,6 +136,39 @@ const HighlightGroup = observer(function HighlightGroup({
       ))}
     </Suspense>
   ) : null
+})
+
+const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
+  model,
+}: {
+  model: LGV
+}) {
+  const theme = useTheme()
+  const { pluginManager } = getEnv(model)
+  const { classes } = useStyles()
+  const viewBands = model.highlightsVisible
+    ? model.highlight.map((h, idx) => {
+        const coords = model.getHighlightCoords(h)
+        return coords ? (
+          <OverviewHighlightBand
+            key={`${h.assemblyName}-${h.refName}:${h.start}-${h.end}-${idx}`}
+            coords={coords}
+            background={getHighlightColor(h, theme).toRgbString()}
+          />
+        ) : null
+      })
+    : []
+  const additional = pluginManager.evaluateExtensionPoint(
+    'LinearGenomeView-ScalebarHighlightComponent',
+    [] as ReactNode[],
+    { model },
+  )
+  return (
+    <div className={classes.scalebarHighlights}>
+      {viewBands}
+      {additional}
+    </div>
+  )
 })
 
 export default TracksContainer

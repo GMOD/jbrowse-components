@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.7",
+    "@jbrowse/mobx-state-tree": "^5.10.8",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
     "@mui/icons-material": "^9.0.1",

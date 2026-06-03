@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import { getSession, isAbstractMenuManager } from '@jbrowse/core/util'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
+import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
@@ -159,6 +160,20 @@ export default class GridBookmarkPlugin extends Plugin {
                 rubberBandMenuItems() {
                   return [
                     ...superRubberBandMenuItems(),
+                    {
+                      label: 'Highlight region',
+                      icon: HighlightAltIcon,
+                      onClick: () => {
+                        const { leftOffset, rightOffset } = self
+                        const selectedRegions = self.getSelectedRegions(
+                          leftOffset,
+                          rightOffset,
+                        )
+                        if (selectedRegions.length) {
+                          self.addToHighlights(selectedRegions[0]!)
+                        }
+                      },
+                    },
                     {
                       label: 'Bookmark region',
                       icon: BookmarkIcon,

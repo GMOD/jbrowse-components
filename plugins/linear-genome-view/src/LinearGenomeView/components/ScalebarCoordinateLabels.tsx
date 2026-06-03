@@ -39,7 +39,6 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 1,
     lineHeight: 'normal',
     pointerEvents: 'none',
-    background: theme.palette.background.paper,
   },
 }))
 

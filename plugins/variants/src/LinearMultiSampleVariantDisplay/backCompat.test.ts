@@ -15,6 +15,7 @@ describe('multi-sample variant display rename back-compat', () => {
     const configSchema = multiSampleConfigFactory()
     const model = multiSampleStateModelFactory(configSchema)
     const inst = model.create({
+      // @ts-expect-error -- testing back-compat: preProcessSnapshot remaps this old type string
       type: 'MultiLinearVariantDisplay',
       displayId: 'old-regular',
       configuration: configSchema.create({
@@ -29,6 +30,7 @@ describe('multi-sample variant display rename back-compat', () => {
     const configSchema = matrixConfigFactory(new PluginManager())
     const model = matrixStateModelFactory(configSchema)
     const inst = model.create({
+      // @ts-expect-error -- testing back-compat: preProcessSnapshot remaps this old type string
       type: 'LinearVariantMatrixDisplay',
       displayId: 'old-matrix',
       configuration: configSchema.create({

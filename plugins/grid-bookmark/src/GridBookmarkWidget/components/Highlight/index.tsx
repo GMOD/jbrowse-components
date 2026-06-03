@@ -1,6 +1,7 @@
 import DotplotHighlight from './DotplotHighlight.tsx'
 import Highlight from './Highlight.tsx'
 import OverviewHighlight from './OverviewHighlight.tsx'
+import ScalebarHighlight from './ScalebarHighlight.tsx'
 
 import type { IExtendedDotplotView, IExtendedLGV } from '../../model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -11,6 +12,16 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
     (rest, { model }) => [
       ...rest,
       <Highlight key="highlight_grid_bookmark" model={model as IExtendedLGV} />,
+    ],
+  )
+  pluginManager.addToExtensionPoint(
+    'LinearGenomeView-ScalebarHighlightComponent',
+    (rest, { model }) => [
+      ...rest,
+      <ScalebarHighlight
+        key="scalebar_highlight_grid_bookmark"
+        model={model as IExtendedLGV}
+      />,
     ],
   )
   pluginManager.addToExtensionPoint(

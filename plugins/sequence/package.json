@@ -34,7 +34,7 @@
     "@gmod/indexedfasta": "^5.0.7",
     "@gmod/twobit": "^6.0.9",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.7",
+    "@jbrowse/mobx-state-tree": "^5.10.8",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/material": "^9.0.1",
     "mobx": "^6.15.4",

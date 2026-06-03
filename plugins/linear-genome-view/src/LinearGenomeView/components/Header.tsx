@@ -42,12 +42,12 @@ const Controls = observer(function Controls({
       <ToggleButton
         value="scrollZoom"
         selected={model.scrollZoom}
-        onChange={() => {
-          model.setScrollZoom(!model.scrollZoom)
-        }}
         title="Toggle scroll zoom on WebGL tracks"
         className={classes.scrollZoomButton}
         size="small"
+        onChange={() => {
+          model.setScrollZoom(!model.scrollZoom)
+        }}
       >
         <ZoomInMapIcon />
       </ToggleButton>
