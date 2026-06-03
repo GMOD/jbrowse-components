@@ -138,7 +138,7 @@ const ImportWizard = observer(function ImportWizard({
         </div>
         <div>
           <Button
-            disabled={!isReadyToOpen || !!err}
+            disabled={!isReadyToOpen || !!err || loading}
             variant="contained"
             data-testid="open_spreadsheet"
             color="primary"
