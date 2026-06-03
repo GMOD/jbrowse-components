@@ -3,7 +3,7 @@ import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 
 import Arcs from './components/Arcs.tsx'
 
-import type { LinearArcDisplayModel } from './model.ts'
+import type { LinearPairedArcDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Bezier-arc-overlay exception (see ARCHITECTURE.md "SVG export pipeline"):
@@ -11,7 +11,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // hover/tooltips work natively. The clip wrapper still uses the shared
 // SvgClipRect for consistency with every other plugin.
 export async function renderArcSvg(
-  model: LinearArcDisplayModel,
+  model: LinearPairedArcDisplayModel,
   _opts: {
     rasterizeLayers?: boolean
   },

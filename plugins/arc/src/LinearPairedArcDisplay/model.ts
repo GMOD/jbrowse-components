@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -8,6 +8,8 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+
+import { makeFeaturePair } from './components/util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -52,6 +54,24 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.features !== undefined || !!self.error || self.regionTooLarge
         )
       },
+      /**
+       * #getter
+       * per-arc styling and endpoint pairs (one per ALT), evaluated once when
+       * features/config change. Keeps the color jexl and makeFeaturePair (which
+       * runs parseSvAlt) out of the per-pan render loop.
+       */
+      get arcStyles() {
+        return self.features?.flatMap(feature => {
+          const alts = feature.get('ALT') as string[] | undefined
+          const make = (alt: string | undefined) => ({
+            feature,
+            alt,
+            color: getConf(self, 'color', { feature, alt }),
+            ...makeFeaturePair(feature, alt),
+          })
+          return alts?.length ? alts.map(alt => make(alt)) : [make(undefined)]
+        })
+      },
     }))
 
     .actions(self => ({
@@ -83,7 +103,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('../shared/afterAttach.ts')
-            doAfterAttach(self as LinearArcDisplayModel)
+            doAfterAttach(self as LinearPairedArcDisplayModel)
           } catch (e) {
             console.error(e)
             self.setError(e)
@@ -97,10 +117,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         rasterizeLayers?: boolean
       }): Promise<React.ReactNode> {
         const { renderArcSvg } = await import('./renderSvg.tsx')
-        return renderArcSvg(self as LinearArcDisplayModel, opts)
+        return renderArcSvg(self as LinearPairedArcDisplayModel, opts)
       },
     }))
 }
 
-export type LinearArcDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type LinearArcDisplayModel = Instance<LinearArcDisplayStateModel>
+export type LinearPairedArcDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type LinearPairedArcDisplayModel =
+  Instance<LinearPairedArcDisplayStateModel>

@@ -66,6 +66,25 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * per-feature arc styling, evaluated once when features/config change.
+       * Kept out of the render loop so panning (which only changes pixel
+       * positions) doesn't re-run these jexl expressions per feature per frame.
+       */
+      get arcStyles() {
+        return self.features?.map(feature => ({
+          feature,
+          color: getConf(self, 'color', { feature }),
+          thickness: getConf(self, 'thickness', { feature }) ?? 2,
+          label: getConf(self, 'label', { feature }),
+          caption: getConf(self, 'caption', { feature }),
+          arcHeight: Math.min(
+            getConf(self, 'arcHeight', { feature }) ?? 100,
+            self.height,
+          ),
+        }))
+      },
+      /**
+       * #getter
        * returns the id of the globally-selected feature, used to highlight it
        */
       get selectedFeatureId() {

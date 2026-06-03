@@ -1,6 +1,5 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingView,
   getSession,
@@ -10,35 +9,23 @@ import { observer } from 'mobx-react'
 
 import type { LinearArcDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ArcTooltip = lazy(() => import('../../ArcTooltip.tsx'))
 
 type LGV = LinearGenomeViewModel
+type ArcStyle = NonNullable<LinearArcDisplayModel['arcStyles']>[number]
 
-function polarToCartesian(
-  centerX: number,
-  centerY: number,
-  radius: number,
-  angleInDegrees: number,
-) {
-  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180
+// semicircle dipping down from (left,0) to (right,0); SVG arc sweep-flag 0
+function getSemicirclePath(left: number, right: number) {
+  const radius = (right - left) / 2
   return {
-    x: centerX + radius * Math.cos(angleInRadians),
-    y: centerY + radius * Math.sin(angleInRadians),
-  }
-}
-
-function getSemicirclePath(centerX: number, radius: number) {
-  const start = polarToCartesian(centerX, 0, radius, 270)
-  const end = polarToCartesian(centerX, 0, radius, 90)
-  return {
-    d: `M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`,
+    d: `M ${left} 0 A ${radius} ${radius} 0 0 0 ${right} 0`,
     textYCoord: radius,
   }
 }
 
+// symmetric cubic bezier; control points at `height` put the apex at 0.75*height
 function getBezierPath(left: number, right: number, height: number) {
   return {
     d: `M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`,
@@ -48,21 +35,23 @@ function getBezierPath(left: number, right: number, height: number) {
 
 const Arc = observer(function Arc({
   model,
-  feature,
+  style,
   assembly,
   view,
   semicircle,
   selected,
+  exportSVG,
 }: {
-  feature: Feature
   model: LinearArcDisplayModel
+  style: ArcStyle
   assembly: Assembly
   view: LGV
   semicircle: boolean
   selected: boolean
+  exportSVG?: boolean
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
-  const { height } = model
+  const { feature, color, thickness, label, caption, arcHeight } = style
   const refName = feature.get('refName')
   const ra = assembly.getCanonicalRefName(refName) || refName
   const l = view.bpToPx({ refName: ra, coord: feature.get('start') })?.offsetPx
@@ -74,19 +63,17 @@ const Arc = observer(function Arc({
 
   const left = l - view.offsetPx
   const right = r - view.offsetPx
-  const stroke = selected ? 'red' : getConf(model, 'color', { feature })
+  // on-screen arcs are clipped by the container; skip ones entirely off-screen.
+  // export keeps everything so the full region is captured.
+  if (!exportSVG && (right < 0 || left > view.width)) {
+    return null
+  }
+
+  const stroke = selected ? 'red' : color
   const textStroke = selected ? 'red' : 'black'
-  const label = getConf(model, 'label', { feature })
-  const caption = getConf(model, 'caption', { feature })
-  const strokeWidth = getConf(model, 'thickness', { feature }) ?? 2
-  const centerX = left + (right - left) / 2
-  const radius = (right - left) / 2
-  const arcHeight = Math.min(
-    getConf(model, 'arcHeight', { feature }) ?? 100,
-    height,
-  )
+  const centerX = (left + right) / 2
   const { d, textYCoord } = semicircle
-    ? getSemicirclePath(centerX, radius)
+    ? getSemicirclePath(left, right)
     : getBezierPath(left, right, arcHeight)
 
   return (
@@ -94,7 +81,7 @@ const Arc = observer(function Arc({
       <path
         {...getStrokeProps(stroke)}
         d={d}
-        strokeWidth={strokeWidth}
+        strokeWidth={thickness}
         fill="transparent"
         style={{ cursor: 'pointer' }}
         onClick={() => {
@@ -132,7 +119,7 @@ const Arcs = observer(function Arcs({
 }) {
   const view = getContainingView(model) as LGV
   const { assemblyManager } = getSession(model)
-  const { features, height, displayModeSetting } = model
+  const { arcStyles, height, displayModeSetting, selectedFeatureId } = model
   const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
   if (!assembly) {
@@ -140,16 +127,16 @@ const Arcs = observer(function Arcs({
   }
 
   const semicircle = displayModeSetting === 'semicircles'
-  const { selectedFeatureId } = model
-  const arcs = features?.map(f => (
+  const arcs = arcStyles?.map(style => (
     <Arc
-      key={f.id()}
-      feature={f}
-      view={view}
+      key={style.feature.id()}
       model={model}
+      style={style}
+      view={view}
       assembly={assembly}
       semicircle={semicircle}
-      selected={selectedFeatureId === f.id()}
+      selected={selectedFeatureId === style.feature.id()}
+      exportSVG={exportSVG}
     />
   ))
 
