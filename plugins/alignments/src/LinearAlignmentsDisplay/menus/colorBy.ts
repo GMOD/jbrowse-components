@@ -117,6 +117,17 @@ function getModificationsSubMenu(model: ModificationsModel) {
         : 'byType'
       : undefined
 
+  const applyModifications = (opts: { twoColor: boolean; hidden: string[] }) => {
+    model.setColorScheme({
+      type: 'modifications',
+      modifications: {
+        ...(opts.twoColor ? { twoColor: true } : {}),
+        ...(opts.hidden.length ? { hiddenModifications: opts.hidden } : {}),
+        threshold: modificationThreshold,
+      },
+    })
+  }
+
   // Per-mode setColorScheme that preserves the current threshold and (for the
   // modification modes) the hidden-type selection.
   const setMode = (next: ModColorMode) => {
@@ -126,14 +137,7 @@ function getModificationsSubMenu(model: ModificationsModel) {
         modifications: { threshold: modificationThreshold },
       })
     } else {
-      model.setColorScheme({
-        type: 'modifications',
-        modifications: {
-          ...(next === 'twoColor' ? { twoColor: true } : {}),
-          ...(hidden.length ? { hiddenModifications: hidden } : {}),
-          threshold: modificationThreshold,
-        },
-      })
+      applyModifications({ twoColor: next === 'twoColor', hidden })
     }
   }
 
@@ -141,14 +145,7 @@ function getModificationsSubMenu(model: ModificationsModel) {
     const nextHidden = hidden.includes(key)
       ? hidden.filter(k => k !== key)
       : [...hidden, key]
-    model.setColorScheme({
-      type: 'modifications',
-      modifications: {
-        ...(twoColor ? { twoColor: true } : {}),
-        ...(nextHidden.length ? { hiddenModifications: nextHidden } : {}),
-        threshold: modificationThreshold,
-      },
-    })
+    applyModifications({ twoColor, hidden: nextHidden })
   }
 
   return [

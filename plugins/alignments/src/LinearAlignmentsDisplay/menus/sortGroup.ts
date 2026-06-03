@@ -16,13 +16,10 @@ interface SortByModel {
   clearSortedBy: () => void
 }
 
-const INTERBASE_SORT_TYPES = new Set([
-  'basePair',
-  'insertion',
-  'softclip',
-  'hardclip',
-])
-
+// Keys double as the membership set for the "Base pair" radio: a sort on any of
+// these (basePair set by clicking the radio, or insertion/softclip/hardclip set
+// by a context-menu "sort at position") keeps the radio checked and surfaces the
+// active type in its label so users see what's active and know how to clear it.
 const INTERBASE_SORT_LABEL: Record<string, string> = {
   basePair: 'Base pair',
   insertion: 'Insertion',
@@ -32,13 +29,8 @@ const INTERBASE_SORT_LABEL: Record<string, string> = {
 
 export function getSortByMenuItem(model: SortByModel) {
   const sortType = model.sortedBy?.type
-  // When a context-menu action set the sort to insertion/softclip/hardclip,
-  // surface the active type in the radio label so users see what's active
-  // and know how to clear it.
-  const interbaseLabel =
-    sortType && INTERBASE_SORT_TYPES.has(sortType)
-      ? `${INTERBASE_SORT_LABEL[sortType]} at position`
-      : 'Base pair'
+  const activeLabel = sortType ? INTERBASE_SORT_LABEL[sortType] : undefined
+  const interbaseLabel = activeLabel ? `${activeLabel} at position` : 'Base pair'
   return {
     label: 'Sort by...',
     icon: SwapVertIcon,
@@ -62,7 +54,7 @@ export function getSortByMenuItem(model: SortByModel) {
       {
         label: interbaseLabel,
         type: 'radio' as const,
-        checked: !!sortType && INTERBASE_SORT_TYPES.has(sortType),
+        checked: !!activeLabel,
         subLabel:
           'tip: right-click a base / indel / clip to sort at that position',
         onClick: () => {
