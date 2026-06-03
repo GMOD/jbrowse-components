@@ -40,6 +40,9 @@ function CascadingMenuButton({
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
   const open = Boolean(anchorEl)
 
+  // an empty array can be detected up front to grey out the button; a getter
+  // can't be checked without calling it, which we defer to click time below.
+  // callers that know a getter may be empty can pass `disabled` explicitly
   const isDisabled =
     disabled ?? (Array.isArray(menuItems) && menuItems.length === 0)
 
@@ -50,8 +53,13 @@ function CascadingMenuButton({
           if (stopPropagation) {
             event.stopPropagation()
           }
-          setAnchorEl(event.currentTarget)
-          setOpen?.(true)
+          // resolve here (only on click, never per-render) so a getter that
+          // yields no items opens nothing rather than an empty popover
+          const items = Array.isArray(menuItems) ? menuItems : menuItems()
+          if (items.length > 0) {
+            setAnchorEl(event.currentTarget)
+            setOpen?.(true)
+          }
           onClickExtra?.(event)
         }}
         {...rest}

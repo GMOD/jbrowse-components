@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
@@ -88,5 +89,25 @@ describe('CascadingMenu', () => {
     )
     await user.click(screen.getByTestId('menu-button'))
     expect(await screen.findByText('Item 1')).toBeTruthy()
+  })
+
+  it('should not open an empty menu for a getter that yields no items', async () => {
+    const user = userEvent.setup()
+    render(
+      <CascadingMenuButton data-testid="menu-button" menuItems={() => []}>
+        <span>Open Menu</span>
+      </CascadingMenuButton>,
+    )
+    const button = screen.getByTestId('menu-button')
+    expect(button).not.toBeDisabled()
+    await user.click(button)
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).toBeNull()
+    })
+  })
+
+  it('should disable the button for an empty array of items', async () => {
+    await setup([])
+    expect(screen.getByTestId('menu-button')).toBeDisabled()
   })
 })
