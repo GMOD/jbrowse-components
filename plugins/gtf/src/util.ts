@@ -10,34 +10,34 @@ export interface FeatureLoc {
   strand: Strand
   seq_name: string
   child_features?: FeatureLoc[][]
-  data: unknown
-  derived_features: unknown
   attributes: Record<string, unknown[]>
 }
 
 const strandMap = { '+': 1, '-': -1, '.': 0, '?': undefined } as const
 
-const defaultFields = new Set([
+// structural output fields an attribute must not overwrite; a clashing
+// attribute key gets a `2` suffix instead (compared lowercase, so camelCase
+// output fields like refName never collide)
+const reservedFields = new Set([
+  'type',
+  'source',
   'start',
   'end',
-  'seq_name',
-  'score',
-  'featureType',
-  'source',
-  'frame',
   'strand',
+  'score',
+  'phase',
 ])
 
 export function featureData(
   data: FeatureLoc,
   id?: string,
 ): Record<string, unknown> {
-  // process attributes: lowercase keys, suffix clashes with default fields,
+  // process attributes: lowercase keys, suffix clashes with reserved fields,
   // strip GTF double-quotes from every value, unwrap single-element arrays
   const processedAttrs = Object.fromEntries(
     Object.entries(data.attributes).map(([a, vals]) => {
       const lower = a.toLowerCase()
-      const key = defaultFields.has(lower) ? `${lower}2` : lower
+      const key = reservedFields.has(lower) ? `${lower}2` : lower
       const dequoted = vals.map(v => String(v).replaceAll(/^"|"$/g, ''))
       return [key, dequoted.length === 1 ? dequoted[0] : dequoted] as const
     }),
@@ -49,27 +49,21 @@ export function featureData(
       )
     : undefined
 
+  // build the output explicitly rather than spreading `data` and clearing its
+  // raw parser fields, which would leave them as `undefined`-valued keys
   return {
-    ...data,
-    start: data.start - 1,
-    strand: strandMap[data.strand],
-    phase: data.frame !== null ? Number(data.frame) : undefined,
     refName: data.seq_name,
-    score: data.score === null ? undefined : data.score,
-    ...processedAttrs,
     type: data.featureType,
+    source: data.source,
+    start: data.start - 1,
+    end: data.end,
+    strand: strandMap[data.strand],
+    score: data.score === null ? undefined : data.score,
+    phase: data.frame !== null ? Number(data.frame) : undefined,
+    ...processedAttrs,
     ...(subfeatures !== undefined && { subfeatures }),
     ...(processedAttrs.transcript_id && { name: processedAttrs.transcript_id }),
     ...(id !== undefined && { uniqueId: id }),
-    // clear raw fields subsumed by the above
-    child_features: undefined,
-    data: undefined,
-    derived_features: undefined,
-    _linehash: undefined,
-    seq_name: undefined,
-    featureType: undefined,
-    frame: undefined,
-    attributes: undefined,
   }
 }
 
@@ -120,8 +114,6 @@ function parseGtfLine(line: string): FeatureLoc {
     strand: toStrand(c[6]),
     frame: nullIfDot(c[7]),
     attributes: parseGtfAttributes(c[8] ?? ''),
-    data: undefined,
-    derived_features: undefined,
   }
 }
 
@@ -152,8 +144,6 @@ function synthesizeTranscript(child: FeatureLoc): FeatureLoc {
     frame: null,
     attributes,
     child_features: [],
-    data: undefined,
-    derived_features: undefined,
   }
 }
 
