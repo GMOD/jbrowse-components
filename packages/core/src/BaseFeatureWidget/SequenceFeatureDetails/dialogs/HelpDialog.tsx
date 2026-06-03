@@ -1,6 +1,7 @@
-import { Dialog } from '@jbrowse/core/ui'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+
+import { Dialog } from '../../../ui/index.ts'
 
 export default function HelpDialog({
   handleClose,
@@ -37,7 +38,7 @@ export default function HelpDialog({
           </li>
           <li>
             Genomic w/ introns +/- Nbp up+down stream - the sequence underlying
-            the entire gene including including introns, with UTR and CDS
+            the entire gene including introns, with UTR and CDS
             highlighted
           </li>
         </ul>

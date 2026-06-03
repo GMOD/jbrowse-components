@@ -49,7 +49,7 @@ function processFeatureData(
     children.filter(sub => sub.type?.toLowerCase() === 'exon'),
   )
   let utr = filterSuccessiveElementsWithSameStartAndEndCoord(
-    children.filter(sub => sub.type?.match(/utr/i)),
+    children.filter(sub => /utr/i.test(sub.type ?? '')),
   )
 
   if (!utr.length && cds.length && exons.length) {

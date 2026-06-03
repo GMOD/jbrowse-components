@@ -5,20 +5,19 @@ import {
   localStorageGetBoolean,
   localStorageGetItem,
   localStorageGetNumber,
+  localStorageSetBoolean,
   localStorageSetItem,
+  localStorageSetNumber,
 } from '../../util/index.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function localStorageSetNumber(key: string, value: number) {
-  localStorageSetItem(key, JSON.stringify(value))
-}
-
-function localStorageSetBoolean(key: string, value: boolean) {
-  localStorageSetItem(key, JSON.stringify(value))
-}
-
 export type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
+
+function parseShowCoordinatesMode(val: string | undefined): ShowCoordinatesMode {
+  return val === 'relative' || val === 'genomic' ? val : 'none'
+}
+
 export type SequenceDisplayMode =
   | 'gene'
   | 'gene_collapsed_intron'
@@ -39,8 +38,9 @@ export function SequenceFeatureDetailsF() {
       /**
        * #volatile
        */
-      showCoordinatesSetting:
-        localStorageGetItem(`${p}-showCoordinatesSetting`) || 'none',
+      showCoordinatesSetting: parseShowCoordinatesMode(
+        localStorageGetItem(`${p}-showCoordinatesSetting`) ?? undefined,
+      ),
       /**
        * #volatile
        */

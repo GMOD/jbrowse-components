@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
 import { cdsColor, updownstreamColor, utrColor } from '../consts.ts'
-import { splitString } from '../util.ts'
+import { computeCoordProps, getIntronDisplayStr, splitString } from '../util.ts'
 import SequenceDisplay from './SequenceDisplay.tsx'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
@@ -45,16 +45,12 @@ const CDNASequence = observer(function CDNASequence({
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
 
-  const strand = feature.strand === -1 ? -1 : 1
-  const fullGenomicCoordinates =
-    showCoordinatesSetting === 'genomic' && includeIntrons && !collapseIntron
-
-  const mult = fullGenomicCoordinates ? strand : 1
-  let coordStart = fullGenomicCoordinates
-    ? strand > 0
-      ? feature.start + 1 - (upstream?.length ?? 0)
-      : feature.end + (upstream?.length ?? 0)
-    : 0
+  const { mult, coordStart: initialCoordStart } = computeCoordProps(
+    feature,
+    showCoordinatesSetting === 'genomic' && !!includeIntrons && !collapseIntron,
+    upstream,
+  )
+  let coordStart = initialCoordStart
   let currStart = 0
   let currRemainder = 0
 
@@ -110,9 +106,7 @@ const CDNASequence = observer(function CDNASequence({
 
     if (intron && includeIntrons && idx < chunks.length - 1) {
       const str = toLower(
-        collapseIntron && intron.length > intronBp * 2
-          ? `${intron.slice(0, intronBp)}...${intron.slice(-intronBp)}`
-          : intron,
+        getIntronDisplayStr(intron, intronBp, collapseIntron ?? false),
       )
       const { segments: intronSegments, remainder: intronRemainder } =
         splitString({

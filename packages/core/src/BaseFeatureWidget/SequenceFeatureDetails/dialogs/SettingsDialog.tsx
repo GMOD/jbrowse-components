@@ -1,7 +1,5 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
@@ -14,6 +12,9 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { Dialog } from '../../../ui/index.ts'
+import { makeStyles } from '../../../util/tss-react/index.ts'
 
 import type { SequenceFeatureDetailsModel } from '../model.ts'
 
@@ -42,8 +43,8 @@ const SequenceFeatureSettingsDialog = observer(
     const { upperCaseCDS } = model
     const [intronBp, setIntronBp] = useState(`${model.intronBp}`)
     const [upDownBp, setUpDownBp] = useState(`${model.upDownBp}`)
-    const intronBpValid = !Number.isNaN(+intronBp)
-    const upDownBpValid = !Number.isNaN(+upDownBp)
+    const intronBpValid = intronBp.trim() !== '' && !Number.isNaN(+intronBp)
+    const upDownBpValid = upDownBp.trim() !== '' && !Number.isNaN(+upDownBp)
     return (
       <Dialog
         maxWidth="xl"

@@ -63,11 +63,13 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
       {openInDialog ? (
         <Suspense fallback={<LoadingEllipses />}>
           <SequenceDialog
-            model={model}
             sequenceFeatureDetails={sequenceFeatureDetails}
             feature={feature}
             mode={mode}
             setMode={setMode}
+            sequence={sequence}
+            error={error}
+            onForceLoad={onForceLoad}
             handleClose={() => {
               setOpenInDialog(false)
             }}

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
 import { genomeColor, updownstreamColor } from '../consts.ts'
-import { splitString } from '../util.ts'
+import { computeCoordProps, splitString } from '../util.ts'
 import SequenceDisplay from './SequenceDisplay.tsx'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
@@ -24,14 +24,12 @@ const GenomicSequence = observer(function GenomicSequence({
   let currStart = 0
   let upstreamChunk: React.ReactNode = null
   let currRemainder = 0
-  const strand = feature.strand === -1 ? -1 : 1
-  const fullGenomicCoordinates = showCoordinatesSetting === 'genomic'
-  const mult = fullGenomicCoordinates ? strand : 1
-  let coordStart = fullGenomicCoordinates
-    ? strand > 0
-      ? feature.start + 1 - (upstream?.length ?? 0)
-      : feature.end + (upstream?.length ?? 0)
-    : 0
+  const { mult, coordStart: initialCoordStart } = computeCoordProps(
+    feature,
+    showCoordinatesSetting === 'genomic',
+    upstream,
+  )
+  let coordStart = initialCoordStart
   if (upstream) {
     const { segments, remainder } = splitString({
       str: upstream,
@@ -42,6 +40,7 @@ const GenomicSequence = observer(function GenomicSequence({
       <SequenceDisplay
         model={model}
         color={updownstreamColor}
+        strand={mult}
         start={currStart}
         coordStart={coordStart}
         chunks={segments}
@@ -62,6 +61,7 @@ const GenomicSequence = observer(function GenomicSequence({
     <SequenceDisplay
       model={model}
       color={genomeColor}
+      strand={mult}
       start={currStart}
       coordStart={coordStart}
       chunks={segments}
@@ -83,6 +83,7 @@ const GenomicSequence = observer(function GenomicSequence({
       <SequenceDisplay
         start={currStart}
         model={model}
+        strand={mult}
         chunks={segments}
         coordStart={coordStart}
         color={updownstreamColor}

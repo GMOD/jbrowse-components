@@ -43,6 +43,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
               const { default: copy } = await import('copy-to-clipboard')
               const r = ref.current
               if (r) {
+                // || not ??: textContent is typed as string, ?? triggers no-unnecessary-condition
                 await copy(r.textContent || '', { format: 'text/plain' })
               }
             },

@@ -179,6 +179,39 @@ test('single exon cDNA display genomic coords', () => {
   expect(element.textContent).toMatchSnapshot()
 })
 
+test('reverse strand genomic coords count down across rows', () => {
+  const seq = 'ACGT'.repeat(75) // 300bp, 3 rows at 100/row
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const revFeature = {
+    start: 0,
+    end: 300,
+    refName: 'chr1',
+    strand: -1,
+    type: 'region',
+    uniqueId: 'rev',
+    name: 'rev',
+  }
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq }}
+      feature={revFeature}
+    />,
+  )
+
+  const rowStarts = getByTestId('sequence_panel')
+    .textContent.split('\n')
+    .slice(1)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => +s.split(/\s+/)[0]!)
+
+  // reverse strand genomic coordinates must decrement, not increment
+  expect(rowStarts).toEqual([300, 200, 100])
+})
+
 test('single exon cDNA display relative coords', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()

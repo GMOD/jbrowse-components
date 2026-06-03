@@ -8,10 +8,9 @@ import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 import { Dialog } from '../../../ui/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
-import { useSequenceFetch } from '../useSequenceFetch.ts'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
-import type { BaseFeatureWidgetModel } from '../../stateModelFactory.ts'
+import type { ErrorState, SeqState } from '../../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
@@ -25,27 +24,25 @@ const useStyles = makeStyles()({
 
 const SequenceDialog = observer(function SequenceDialog({
   handleClose,
-  model,
   sequenceFeatureDetails,
   feature,
   mode,
   setMode,
+  sequence,
+  error,
+  onForceLoad,
 }: {
   handleClose: () => void
   feature: SimpleFeatureSerialized
-  model: BaseFeatureWidgetModel
   sequenceFeatureDetails: SequenceFeatureDetailsModel
   mode: SequenceDisplayMode
   setMode: (mode: SequenceDisplayMode) => void
+  sequence: SeqState | ErrorState | undefined
+  error: unknown
+  onForceLoad: () => void
 }) {
-  const { upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
-  const { sequence, error, onForceLoad } = useSequenceFetch({
-    model,
-    feature,
-    upDownBp,
-  })
 
   return (
     <Dialog

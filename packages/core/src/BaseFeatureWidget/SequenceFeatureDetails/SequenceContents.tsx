@@ -6,7 +6,7 @@ import GenomicSequence from './seqtypes/GenomicSequence.tsx'
 import ProteinSequence from './seqtypes/ProteinSequence.tsx'
 import { getSequenceData } from './useSequenceData.ts'
 
-import type { SequenceFeatureDetailsModel } from './model.ts'
+import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Feat, SeqState } from '../util.tsx'
 
@@ -16,7 +16,7 @@ function RenderedSequenceComponent({
   model,
   sequenceData,
 }: {
-  mode: string
+  mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
   model: SequenceFeatureDetailsModel
   sequenceData: {
@@ -83,7 +83,7 @@ const SequenceContents = observer(function SequenceContents({
   sequence,
   model,
 }: {
-  mode: string
+  mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
   sequence: SeqState
   model: SequenceFeatureDetailsModel

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { toLocale } from '../../util/index.ts'
 import { getStrandStr } from '../util.tsx'
 
-import type { SequenceFeatureDetailsModel } from './model.ts'
+import type { SequenceDisplayMode, SequenceFeatureDetailsModel } from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 
 const SequenceName = observer(function SequenceName({
@@ -12,7 +12,7 @@ const SequenceName = observer(function SequenceName({
   feature,
 }: {
   model: SequenceFeatureDetailsModel
-  mode: string
+  mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
 }) {
   return (
