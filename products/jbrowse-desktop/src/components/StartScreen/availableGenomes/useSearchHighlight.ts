@@ -1,11 +1,19 @@
 import { type RefObject, useLayoutEffect } from 'react'
+import { alpha, useTheme } from '@mui/material'
 
 const HIGHLIGHT_NAME = 'jbrowse-search'
 
-if (typeof document !== 'undefined' && typeof CSS !== 'undefined') {
-  const style = document.createElement('style')
-  style.textContent = `::highlight(${HIGHLIGHT_NAME}) { background-color: yellow; color: black; }`
-  document.head.append(style)
+let styleEl: HTMLStyleElement | null = null
+
+function setHighlightStyle(color: string) {
+  if (typeof document === 'undefined') {
+    return
+  }
+  if (!styleEl) {
+    styleEl = document.createElement('style')
+    document.head.append(styleEl)
+  }
+  styleEl.textContent = `::highlight(${HIGHLIGHT_NAME}) { background-color: ${color}; }`
 }
 
 function getTextNodes(root: Element): Text[] {
@@ -23,14 +31,16 @@ export function useSearchHighlight(
   containerRef: RefObject<HTMLElement | null>,
   query: string,
 ) {
+  const theme = useTheme()
+
   // No deps: must re-run after every render so paginating to a new page
   // re-applies highlights to the new DOM content (Range objects detach on removal).
-
   useLayoutEffect(() => {
     // generally just jest test but maybe unsupported browser
     if (typeof CSS === 'undefined') {
       return
     }
+    setHighlightStyle(alpha(theme.palette.textHighlight.main, 0.45))
     const container = containerRef.current
     if (container && query.trim()) {
       const queryLower = query.toLowerCase().trim()

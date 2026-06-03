@@ -28,6 +28,7 @@ declare module '@mui/material/styles' {
     tertiary: PaletteColor
     quaternary: PaletteColor
     highlight: PaletteColor
+    textHighlight: PaletteColor
     stopCodon: string
     startCodon: string
     coverage: string
@@ -53,6 +54,7 @@ declare module '@mui/material/styles' {
     tertiary?: PaletteColorOptions
     quaternary?: PaletteColorOptions
     highlight?: PaletteColorOptions
+    textHighlight?: PaletteColorOptions
     stopCodon?: string
     startCodon?: string
     coverage?: string
@@ -81,6 +83,7 @@ const midnight = refTheme.palette.augmentColor({ color: { main: '#0D233F' } })
 const grape = refTheme.palette.augmentColor({ color: { main: '#721E63' } })
 const forest = refTheme.palette.augmentColor({ color: { main: '#135560' } })
 const mandarin = refTheme.palette.augmentColor({ color: { main: '#FFB11D' } })
+const textHighlight = refTheme.palette.augmentColor({ color: { main: '#ffe066' } })
 const lightgrey = refTheme.palette.augmentColor({ color: { main: '#aaa' } })
 const bases = {
   A: refTheme.palette.augmentColor({ color: green }),
@@ -135,6 +138,7 @@ const defaults = {
   tertiary: forest,
   quaternary: mandarin,
   highlight: mandarin,
+  textHighlight,
   stopCodon,
   startCodon,
   coverage,
@@ -527,6 +531,7 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
     'tertiary',
     'quaternary',
     'highlight',
+    'textHighlight',
   ] as const) {
     const paletteEntry = theme.palette?.[entry]
     if (paletteEntry) {
@@ -551,6 +556,7 @@ function addMissingColors(theme: ThemeOptions = {}) {
         quaternary: palette?.quaternary ?? lightgrey,
         tertiary: palette?.tertiary ?? lightgrey,
         highlight: palette?.highlight ?? mandarin,
+        textHighlight: palette?.textHighlight ?? textHighlight,
         coverage: palette?.coverage ?? coverage,
         insertion: palette?.insertion ?? insertion,
         softclip: palette?.softclip ?? softclip,
