@@ -45,7 +45,7 @@ const Header = observer(function Header({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { views, levels } = model
+  const { views } = model
   const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
     'lcv-showSearchBoxes',
     views.length <= 3,
@@ -55,7 +55,6 @@ const Header = observer(function Header({
     views.length <= 3,
   )
 
-  const hasDisplays = levels[0]?.tracks[0]?.displays[0]
   // The dynamic-control widgets are synteny-specific (colorBy, alpha, etc).
   // Gate on the actual MST type discriminator so a non-synteny
   // LinearComparativeView never renders these controls against a model that
@@ -174,7 +173,7 @@ const Header = observer(function Header({
         <ZoomInMapIcon />
       </ToggleButton>
 
-      {hasDisplays && syntenyModel ? (
+      {syntenyModel ? (
         <>
           <ColorBySelector model={syntenyModel} />
           <SyntenySettingsPopover model={syntenyModel} />

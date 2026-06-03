@@ -340,7 +340,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...superShowMenuItems(),
             {
               label: 'Show all regions',
-              onClick: self.showAllRegions,
+              onClick: () => {
+                self.showAllRegions()
+              },
             },
             {
               label: 'Show curved lines',
@@ -370,7 +372,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...superHeaderMenuItems(),
             {
               label: 'Square view',
-              onClick: self.squareView,
+              onClick: () => {
+                self.squareView()
+              },
               icon: CropFreeIcon,
             },
             {
@@ -437,7 +441,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                           self.expandAllViews()
                         },
                       },
-                      { label: '', type: 'divider' as const },
                       ...self.views.map((view, idx) => ({
                         label: view.assemblyNames[0] ?? `View ${idx + 1}`,
                         type: 'checkbox' as const,
