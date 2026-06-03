@@ -58,6 +58,31 @@ export function createVariantMouseHandlers(
   }
 }
 
+export function createAlignmentMouseHandlers(
+  id: string,
+  setMouseoverElt: (id: string | undefined) => void,
+  session: ReturnType<typeof getSession>,
+  feature1: unknown,
+  feature2: unknown,
+) {
+  return {
+    onClick: () => {
+      const featureWidget = session.addWidget?.(
+        'BreakpointAlignmentsWidget',
+        'breakpointAlignments',
+        { featureData: { feature1, feature2 } },
+      )
+      session.showWidget?.(featureWidget)
+    },
+    onMouseOver: () => {
+      setMouseoverElt(id)
+    },
+    onMouseOut: () => {
+      setMouseoverElt(undefined)
+    },
+  }
+}
+
 export function getTestId(trackId: string, hasMatches: boolean) {
   return hasMatches ? `${trackId}-loaded` : trackId
 }
@@ -184,4 +209,49 @@ export function isLevelPairMinimized(
   level2: number,
 ) {
   return !!(tracks[level1]?.minimized || tracks[level2]?.minimized)
+}
+
+// Walks each layoutMatch chunk's adjacent feature pairs, skipping minimized
+// level pairs, unresolvable canonical refs, and off-view coordinates. Yields
+// the resolved screen coords so simple variant overlays (paired/breakend) only
+// describe the path they draw.
+export function* canonicalPairs({
+  match,
+  assembly,
+  tracks,
+  getX,
+  getY,
+}: VariantOverlayContext) {
+  for (const chunk of match.layoutMatches) {
+    for (let i = 0; i < chunk.length - 1; i++) {
+      const { layout: c1, feature: f1, level: level1 } = chunk[i]!
+      const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
+      if (isLevelPairMinimized(tracks, level1, level2)) {
+        continue
+      }
+      const refs = getCanonicalRefPair(
+        assembly,
+        f1.get('refName'),
+        f2.get('refName'),
+      )
+      if (!refs) {
+        continue
+      }
+      const x1 = getX(level1, refs.f1ref, c1[LEFT])
+      const x2 = getX(level2, refs.f2ref, c2[LEFT])
+      if (x1 == null || x2 == null) {
+        continue
+      }
+      yield {
+        f1,
+        f2,
+        level1,
+        level2,
+        x1,
+        x2,
+        y1: getY(level1, c1),
+        y2: getY(level2, c2),
+      }
+    }
+  }
 }

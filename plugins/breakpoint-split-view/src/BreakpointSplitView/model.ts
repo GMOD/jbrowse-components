@@ -267,18 +267,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return features.map(c =>
           c
             .map(feature => {
+              const clipLengthAtStartOfRead =
+                (feature.get('clipLengthAtStartOfRead') as
+                  | number
+                  | undefined) ?? 0
               for (const [level, track] of tracks.entries()) {
                 const layout = calc(track, feature)
                 if (layout) {
-                  return {
-                    feature,
-                    layout,
-                    level,
-                    clipLengthAtStartOfRead:
-                      (feature.get('clipLengthAtStartOfRead') as
-                        | number
-                        | undefined) ?? 0,
-                  }
+                  return { feature, layout, level, clipLengthAtStartOfRead }
                 }
               }
               // Feature wasn't found in any track's pileup layout — usually
@@ -286,21 +282,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               // pushed it off the bottom, or it hasn't loaded yet. Synthesize
               // an off-display LayoutRecord so the connection still draws to
               // the track's bottom edge (see makeOffscreenLayout / getY).
-              const refName = feature.get('refName')
               const start = feature.get('start')
-              const level = findFeatureViewLevel(views, refName, start)
-              if (level === undefined) {
-                return undefined
-              }
-              return {
-                feature,
-                layout: makeOffscreenLayout(start, feature.get('end')),
-                level,
-                clipLengthAtStartOfRead:
-                  (feature.get('clipLengthAtStartOfRead') as
-                    | number
-                    | undefined) ?? 0,
-              }
+              const level = findFeatureViewLevel(
+                views,
+                feature.get('refName'),
+                start,
+              )
+              return level === undefined
+                ? undefined
+                : {
+                    feature,
+                    layout: makeOffscreenLayout(start, feature.get('end')),
+                    level,
+                    clipLengthAtStartOfRead,
+                  }
             })
             .filter(notEmpty),
         )

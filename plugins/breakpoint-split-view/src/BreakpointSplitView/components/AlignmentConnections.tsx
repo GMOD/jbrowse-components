@@ -6,6 +6,7 @@ import { useOrientationColor } from './getOrientationColor.tsx'
 import {
   LEFT,
   RIGHT,
+  createAlignmentMouseHandlers,
   getCanonicalRefPair,
   getTestId,
   isLevelPairMinimized,
@@ -106,25 +107,13 @@ const AlignmentConnections = observer(function AlignmentConnections({
               {...getStrokeProps(
                 orientationColor || theme.palette.text.disabled,
               )}
-              onClick={() => {
-                const featureWidget = session.addWidget?.(
-                  'BreakpointAlignmentsWidget',
-                  'breakpointAlignments',
-                  {
-                    featureData: {
-                      feature1: allFeatures.get(f1.id())?.toJSON(),
-                      feature2: allFeatures.get(f2.id())?.toJSON(),
-                    },
-                  },
-                )
-                session.showWidget?.(featureWidget)
-              }}
-              onMouseOver={() => {
-                setMouseoverElt(id)
-              }}
-              onMouseOut={() => {
-                setMouseoverElt(undefined)
-              }}
+              {...createAlignmentMouseHandlers(
+                id,
+                setMouseoverElt,
+                session,
+                allFeatures.get(f1.id())?.toJSON(),
+                allFeatures.get(f2.id())?.toJSON(),
+              )}
             />,
           ]
         }),
