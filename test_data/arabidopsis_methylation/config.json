@@ -1,0 +1,62 @@
+{
+  "assemblies": [
+    {
+      "name": "arabidopsis",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "arabidopsis-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": { "uri": "arabidopsis_chr1.fa", "locationType": "UriLocation" },
+          "faiLocation": { "uri": "arabidopsis_chr1.fa.fai", "locationType": "UriLocation" }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "arabidopsis_meth",
+      "name": "Arabidopsis 5mC/5hmC (ONT)",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": { "uri": "arabidopsis_meth.bam", "locationType": "UriLocation" },
+        "index": {
+          "location": { "uri": "arabidopsis_meth.bam.bai", "locationType": "UriLocation" },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": { "uri": "arabidopsis_chr1.fa", "locationType": "UriLocation" },
+          "faiLocation": { "uri": "arabidopsis_chr1.fa.fai", "locationType": "UriLocation" }
+        }
+      },
+      "assemblyNames": ["arabidopsis"]
+    }
+  ],
+  "defaultSession": {
+    "name": "Arabidopsis methylation (CHH context)",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "arabidopsis",
+          "loc": "NC_003070.9:2,000-5,000",
+          "tracks": [
+            {
+              "trackId": "arabidopsis_meth",
+              "displaySnapshot": {
+                "type": "LinearAlignmentsDisplay",
+                "colorBySetting": {
+                  "type": "methylation",
+                  "modifications": { "cytosineContext": "CHH" }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "configuration": { "disableAnalytics": true }
+}
