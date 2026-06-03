@@ -159,29 +159,21 @@ function getModificationsSubMenu(model: ModificationsModel) {
     applyModifications({ twoColor, hidden: nextHidden })
   }
 
-  return [
-    ...radioItems<ModColorMode>(
-      [
-        { value: 'byType', label: 'Color by modification type' },
-        { value: 'twoColor', label: 'Two-color (low-confidence blue)' },
-        { value: 'methylation', label: 'Methylation (modBAM MM/ML)' },
-        { value: 'bisulfite', label: 'Bisulfite / EM-seq' },
-      ],
-      mode,
-      setMode,
-    ),
-    // Hint when the BAM carries no MM/ML tags — the MM/ML modes do nothing, but
-    // bisulfite still works since it reads methylation from the reference.
+  // MM/ML modes need detected modifications; bisulfite is reference-based and
+  // works on any BAM, so it's the only option offered when no MM/ML is present.
+  const modeOptions: { value: ModColorMode; label: string }[] = [
     ...(visibleModificationTypes.length
-      ? []
-      : [
-          {
-            label: 'No MM/ML modifications detected',
-            subLabel: 'bisulfite reads methylation from the reference',
-            disabled: true,
-            onClick: () => {},
-          },
-        ]),
+      ? ([
+          { value: 'byType', label: 'Color by modification type' },
+          { value: 'twoColor', label: 'Two-color (low-confidence blue)' },
+          { value: 'methylation', label: 'Methylation (modBAM)' },
+        ] as const)
+      : []),
+    { value: 'bisulfite', label: 'Bisulfite / EM-seq' },
+  ]
+
+  return [
+    ...radioItems<ModColorMode>(modeOptions, mode, setMode),
     // Per-type visibility only applies once coloring by modification type; the
     // methylation mode renders cytosines rather than individual MM/ML types.
     ...(isModType && visibleModificationTypes.length
