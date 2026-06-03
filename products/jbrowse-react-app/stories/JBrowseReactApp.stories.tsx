@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 
 import Plugin from '@jbrowse/core/Plugin'
+import { ErrorMessage } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 
 import { addRelativeUris } from './util.ts'
 import volvoxConfigJson from '../public/test_data/volvox/config.json' with { type: 'json' }
-import { JBrowseApp, createViewState } from '../src/index.ts'
+import { JBrowseApp, createViewState, loadPlugins } from '../src/index.ts'
 import makeWorkerInstance from '../src/makeWorkerInstance.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -16,11 +17,10 @@ export default {
   title: 'JBrowse React App',
 }
 
+// clone before tagging baseUri so we never mutate the shared imported JSON
 const volvoxConfigPath = 'test_data/volvox/config.json'
-addRelativeUris(
-  volvoxConfigJson,
-  new URL(volvoxConfigPath, window.location.href).href,
-)
+const volvoxConfig = structuredClone(volvoxConfigJson)
+addRelativeUris(volvoxConfig, new URL(volvoxConfigPath, window.location.href).href)
 
 // ---------------------------------------------------------------------------
 // BasicExample
@@ -272,7 +272,6 @@ function HumanDemoRender() {
         ],
         defaultSession: {
           name: 'Human demo',
-          margin: 0,
           views: [
             {
               id: 'linearGenomeView',
@@ -388,7 +387,7 @@ export const HumanDemo = () => {
 // ---------------------------------------------------------------------------
 
 function WithImportConfigJsonRender() {
-  const [state] = useState(() => createViewState({ config: volvoxConfigJson }))
+  const [state] = useState(() => createViewState({ config: volvoxConfig }))
   return <JBrowseApp viewState={state} />
 }
 
@@ -668,7 +667,7 @@ function SyntenyExampleRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
-        ...volvoxConfigJson,
+        ...volvoxConfig,
         defaultSession: {
           name: 'Volvox vs Volvox Del synteny',
           views: [
@@ -767,63 +766,6 @@ function WithLaunchLinearGenomeViewRender() {
             ],
             tracks: [
               {
-                type: 'FeatureTrack',
-                trackId: 'genes',
-                name: 'NCBI RefSeq Genes',
-                assemblyNames: ['GRCh38'],
-                category: ['Genes'],
-                adapter: {
-                  type: 'Gff3TabixAdapter',
-                  uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-                },
-                textSearching: {
-                  textSearchAdapter: {
-                    type: 'TrixTextSearchAdapter',
-                    textSearchAdapterId: 'gff3tabix_genes-index',
-                    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
-                    assemblyNames: ['GRCh38'],
-                  },
-                },
-              },
-              {
-                type: 'FeatureTrack',
-                trackId: 'repeats_hg38',
-                name: 'Repeats',
-                assemblyNames: ['hg38'],
-                category: ['Annotation'],
-                adapter: {
-                  type: 'BigBedAdapter',
-                  uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
-                },
-              },
-              {
-                type: 'AlignmentsTrack',
-                trackId: 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
-                name: 'NA12878 Exome',
-                assemblyNames: ['GRCh38'],
-                category: ['1000 Genomes', 'Alignments'],
-                adapter: {
-                  type: 'CramAdapter',
-                  uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-                  sequenceAdapter: {
-                    type: 'BgzipFastaAdapter',
-                    uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-                  },
-                },
-              },
-              {
-                type: 'VariantTrack',
-                trackId:
-                  'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
-                name: '1000 Genomes Variant Calls',
-                assemblyNames: ['GRCh38'],
-                category: ['1000 Genomes', 'Variants'],
-                adapter: {
-                  type: 'VcfTabixAdapter',
-                  uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
-                },
-              },
-              {
                 type: 'QuantitativeTrack',
                 trackId: 'hg38.100way.phyloP100way',
                 name: 'hg38.100way.phyloP100way',
@@ -858,7 +800,7 @@ function WithLaunchLinearGenomeViewRender() {
 
   return viewState ? (
     <>
-      {error ? <div style={{ color: 'red' }}>{`${error}`}</div> : null}
+      {error ? <ErrorMessage error={error} /> : null}
       <JBrowseApp viewState={viewState} />
     </>
   ) : null
@@ -872,6 +814,7 @@ export const WithLaunchLinearGenomeView = {
         language: 'tsx',
         code: `import { useEffect, useState } from 'react'
 import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
+import { ErrorMessage } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 
 export const WithLaunchLinearGenomeView = () => {
@@ -937,7 +880,7 @@ export const WithLaunchLinearGenomeView = () => {
 
   return viewState ? (
     <>
-      {error ? <div style={{ color: 'red' }}>{String(error)}</div> : null}
+      {error ? <ErrorMessage error={error} /> : null}
       <JBrowseApp viewState={viewState} />
     </>
   ) : null
@@ -956,7 +899,7 @@ function DotplotExampleRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
-        ...volvoxConfigJson,
+        ...volvoxConfig,
         defaultSession: {
           name: 'Volvox dotplot (self-vs-self)',
           views: [
@@ -1025,7 +968,7 @@ function CircularExampleRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
-        ...volvoxConfigJson,
+        ...volvoxConfig,
         defaultSession: {
           name: 'Volvox structural variants (circular)',
           views: [
@@ -1094,7 +1037,7 @@ function SpreadsheetExampleRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
-        ...volvoxConfigJson,
+        ...volvoxConfig,
         defaultSession: {
           name: 'Volvox VCF spreadsheet',
           views: [
@@ -1162,7 +1105,7 @@ function SvInspectorExampleRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
-        ...volvoxConfigJson,
+        ...volvoxConfig,
         defaultSession: {
           name: 'Volvox SV inspector',
           views: [
@@ -1230,7 +1173,7 @@ function BreakpointSplitExampleRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
-        ...volvoxConfigJson,
+        ...volvoxConfig,
         defaultSession: {
           name: 'Volvox breakpoint split view',
           views: [
@@ -1307,7 +1250,7 @@ export const BreakpointSplitExample = () => {
 // AddTracksProgrammatically
 // ---------------------------------------------------------------------------
 
-const genesTrackConf = volvoxConfigJson.tracks.find(
+const genesTrackConf = volvoxConfig.tracks.find(
   (t: { trackId: string }) => t.trackId === 'gff3tabix_genes',
 )!
 
@@ -1317,8 +1260,8 @@ function AddTracksProgrammaticallyRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
-        assemblies: volvoxConfigJson.assemblies,
-        tracks: volvoxConfigJson.tracks.filter(
+        assemblies: volvoxConfig.assemblies,
+        tracks: volvoxConfig.tracks.filter(
           (t: { trackId: string }) => t.trackId !== 'gff3tabix_genes',
         ),
         defaultSession: {
@@ -1464,7 +1407,7 @@ class HighlightRegionPlugin extends Plugin {
 function EmbeddedPluginRender() {
   const [state] = useState(() =>
     createViewState({
-      config: volvoxConfigJson,
+      config: volvoxConfig,
       plugins: [HighlightRegionPlugin],
     }),
   )
@@ -1551,7 +1494,7 @@ function WithWebWorkerRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
-        ...volvoxConfigJson,
+        ...volvoxConfig,
         configuration: {
           rpc: {
             defaultDriver: 'WebWorkerRpcDriver',
@@ -1617,6 +1560,301 @@ export const WithWebWorker = () => {
   )
 
   return <JBrowseApp viewState={state} />
+}
+`,
+      },
+    },
+  },
+}
+
+// ---------------------------------------------------------------------------
+// WithOnChange
+// ---------------------------------------------------------------------------
+
+function WithOnChangeRender() {
+  const [log, setLog] = useState<string[]>([])
+  const [state] = useState(() =>
+    createViewState({
+      config: {
+        ...volvoxConfig,
+        defaultSession: {
+          name: 'onChange example',
+          views: [
+            {
+              id: 'view1',
+              type: 'LinearGenomeView',
+              init: {
+                assembly: 'volvox',
+                loc: 'ctgA:1..50000',
+                tracks: ['volvox_cram'],
+              },
+            },
+          ],
+        },
+      },
+      onChange: patch => {
+        setLog(prev => [`${patch.op} ${patch.path}`, ...prev].slice(0, 8))
+      },
+    }),
+  )
+
+  return (
+    <div>
+      <div
+        style={{
+          padding: 8,
+          fontFamily: 'monospace',
+          fontSize: 12,
+          background: '#8881',
+        }}
+      >
+        <div>Recent session patches (pan/zoom, or show/hide a track):</div>
+        <pre style={{ margin: 0 }}>
+          {log.join('\n') || '(interact with the view to see patches)'}
+        </pre>
+      </div>
+      <JBrowseApp viewState={state} />
+    </div>
+  )
+}
+
+export const WithOnChange = {
+  render: WithOnChangeRender,
+  parameters: {
+    docs: {
+      source: {
+        language: 'tsx',
+        code: `import { useState } from 'react'
+import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
+
+// onChange fires on every MST patch. Use it to persist the session (e.g. to
+// localStorage or a backend), drive an undo/redo stack, or sync external UI.
+export const WithOnChange = () => {
+  const [log, setLog] = useState<string[]>([])
+  const [state] = useState(() =>
+    createViewState({
+      config: {
+        assemblies: [
+          {
+            name: 'volvox',
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              trackId: 'volvox_refseq',
+              adapter: { type: 'TwoBitAdapter', uri: 'volvox.2bit' },
+            },
+          },
+        ],
+        tracks: [
+          {
+            type: 'AlignmentsTrack',
+            trackId: 'volvox_cram',
+            name: 'volvox-sorted.cram',
+            assemblyNames: ['volvox'],
+            adapter: {
+              type: 'CramAdapter',
+              uri: 'volvox-sorted.cram',
+              sequenceAdapter: { type: 'TwoBitAdapter', uri: 'volvox.2bit' },
+            },
+          },
+        ],
+        defaultSession: {
+          name: 'onChange example',
+          views: [
+            {
+              id: 'view1',
+              type: 'LinearGenomeView',
+              init: {
+                assembly: 'volvox',
+                loc: 'ctgA:1..50000',
+                tracks: ['volvox_cram'],
+              },
+            },
+          ],
+        },
+      },
+      onChange: patch => {
+        setLog(prev => [\`\${patch.op} \${patch.path}\`, ...prev].slice(0, 8))
+      },
+    }),
+  )
+
+  return (
+    <div>
+      <pre>{log.join('\\n')}</pre>
+      <JBrowseApp viewState={state} />
+    </div>
+  )
+}
+`,
+      },
+    },
+  },
+}
+
+// ---------------------------------------------------------------------------
+// WithExternalPlugin
+// ---------------------------------------------------------------------------
+
+function WithExternalPluginRender() {
+  const [viewState, setViewState] =
+    useState<ReturnType<typeof createViewState>>()
+  const [error, setError] = useState<unknown>()
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
+      try {
+        const plugins = await loadPlugins([
+          {
+            name: 'UCSC',
+            url: 'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
+          },
+        ])
+        const state = createViewState({
+          config: {
+            assemblies: [
+              {
+                name: 'hg19',
+                aliases: ['GRCh37'],
+                sequence: {
+                  type: 'ReferenceSequenceTrack',
+                  trackId: 'Pd8Wh30ei9R',
+                  adapter: {
+                    type: 'BgzipFastaAdapter',
+                    uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+                  },
+                },
+                refNameAliases: {
+                  adapter: {
+                    type: 'RefNameAliasAdapter',
+                    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+                  },
+                },
+              },
+            ],
+            tracks: [
+              {
+                type: 'FeatureTrack',
+                trackId: 'segdups_ucsc_hg19',
+                name: 'UCSC SegDups',
+                assemblyNames: ['hg19'],
+                adapter: { type: 'UCSCAdapter', track: 'genomicSuperDups' },
+              },
+            ],
+            defaultSession: {
+              name: 'External plugin example',
+              views: [
+                {
+                  id: 'view1',
+                  type: 'LinearGenomeView',
+                  init: {
+                    assembly: 'hg19',
+                    loc: '1:2,467,681..2,667,681',
+                    tracks: ['segdups_ucsc_hg19'],
+                  },
+                },
+              ],
+            },
+          },
+          plugins: plugins.map(p => p.plugin),
+        })
+        setViewState(state)
+      } catch (e) {
+        console.error(e)
+        setError(e)
+      }
+    })()
+  }, [])
+
+  return error ? (
+    <ErrorMessage error={error} />
+  ) : viewState ? (
+    <JBrowseApp viewState={viewState} />
+  ) : null
+}
+
+export const WithExternalPlugin = {
+  render: WithExternalPluginRender,
+  parameters: {
+    docs: {
+      source: {
+        language: 'tsx',
+        code: `import { useEffect, useState } from 'react'
+import { JBrowseApp, createViewState, loadPlugins } from '@jbrowse/react-app2'
+import { ErrorMessage } from '@jbrowse/core/ui'
+
+type ViewState = ReturnType<typeof createViewState>
+
+// loadPlugins fetches plugins at runtime from a URL (here the UCSC plugin from
+// unpkg), so you don't have to bundle them. Pass the resulting classes to
+// createViewState the same way you would inline plugins.
+export const WithExternalPlugin = () => {
+  const [viewState, setViewState] = useState<ViewState>()
+  const [error, setError] = useState<unknown>()
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const plugins = await loadPlugins([
+          {
+            name: 'UCSC',
+            url: 'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
+          },
+        ])
+        const state = createViewState({
+          config: {
+            assemblies: [
+              {
+                name: 'hg19',
+                aliases: ['GRCh37'],
+                sequence: {
+                  type: 'ReferenceSequenceTrack',
+                  trackId: 'Pd8Wh30ei9R',
+                  adapter: {
+                    type: 'BgzipFastaAdapter',
+                    uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+                  },
+                },
+              },
+            ],
+            tracks: [
+              {
+                type: 'FeatureTrack',
+                trackId: 'segdups_ucsc_hg19',
+                name: 'UCSC SegDups',
+                assemblyNames: ['hg19'],
+                adapter: { type: 'UCSCAdapter', track: 'genomicSuperDups' },
+              },
+            ],
+            defaultSession: {
+              name: 'External plugin example',
+              views: [
+                {
+                  id: 'view1',
+                  type: 'LinearGenomeView',
+                  init: {
+                    assembly: 'hg19',
+                    loc: '1:2,467,681..2,667,681',
+                    tracks: ['segdups_ucsc_hg19'],
+                  },
+                },
+              ],
+            },
+          },
+          plugins: plugins.map(p => p.plugin),
+        })
+        setViewState(state)
+      } catch (e) {
+        setError(e)
+      }
+    })()
+  }, [])
+
+  return error ? (
+    <ErrorMessage error={error} />
+  ) : viewState ? (
+    <JBrowseApp viewState={viewState} />
+  ) : null
 }
 `,
       },

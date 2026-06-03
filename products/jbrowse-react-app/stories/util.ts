@@ -3,15 +3,13 @@
 // relative paths using a helper function here
 
 export function addRelativeUris(config: unknown, baseUri: string) {
-  if (typeof config === 'object' && config !== null) {
+  if (config !== null && typeof config === 'object') {
     const obj = config as Record<string, unknown>
-    for (const key of Object.keys(obj)) {
-      const val = obj[key]
-      if (typeof val === 'object' && val !== null) {
-        addRelativeUris(val, baseUri)
-      } else if (key === 'uri' && !obj.baseUri) {
-        obj.baseUri = baseUri
-      }
+    if (typeof obj.uri === 'string' && obj.baseUri === undefined) {
+      obj.baseUri = baseUri
+    }
+    for (const value of Object.values(obj)) {
+      addRelativeUris(value, baseUri)
     }
   }
 }

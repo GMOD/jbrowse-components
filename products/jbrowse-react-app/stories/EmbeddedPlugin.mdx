@@ -1,5 +1,8 @@
 import { Canvas, Meta } from '@storybook/addon-docs/blocks'
-import { EmbeddedPlugin } from './JBrowseReactApp.stories'
+import {
+  EmbeddedPlugin,
+  WithExternalPlugin,
+} from './JBrowseReactApp.stories'
 
 <Meta title="Using Plugins" />
 
@@ -32,3 +35,22 @@ This example adds a custom rubber band menu item — click and drag on the ruler
 to see it:
 
 <Canvas of={EmbeddedPlugin} />
+
+## Loading a plugin from a URL at runtime
+
+If you don't want to bundle a plugin, fetch it at runtime with `loadPlugins`
+and pass the resulting classes to `createViewState`:
+
+```js
+import { loadPlugins, createViewState } from '@jbrowse/react-app2'
+
+const plugins = await loadPlugins([
+  { name: 'UCSC', url: 'https://unpkg.com/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js' },
+])
+const state = createViewState({ config, plugins: plugins.map(p => p.plugin) })
+```
+
+The example below loads the UCSC plugin from unpkg and shows a `UCSCAdapter`
+track on hg19:
+
+<Canvas of={WithExternalPlugin} />
