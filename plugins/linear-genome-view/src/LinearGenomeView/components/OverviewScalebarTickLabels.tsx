@@ -34,7 +34,7 @@ const OverviewScalebarTickLabels = observer(
     const { assemblyManager } = getSession(model)
     const assembly = assemblyManager.get(assemblyName)
     const refNameColor = assembly?.getRefNameColor(refName)
-    const ticks = makeOverviewTicks(start, end, overviewScale, reversed)
+    const ticks = makeOverviewTicks(start, end, overviewScale, reversed ?? false)
     return ticks.map(({ genomicCoord, offsetPx }) => (
       <Typography
         key={genomicCoord}
