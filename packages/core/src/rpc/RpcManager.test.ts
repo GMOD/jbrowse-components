@@ -32,9 +32,15 @@ class StubDriver extends BaseRpcDriver {
   name = 'StubDriver'
   freedSessions: string[] = []
   callLog: { sessionId: string; functionName: string }[] = []
+  destroyed = false
 
   async makeWorker() {
     return new NoopWorker()
+  }
+
+  destroy() {
+    this.destroyed = true
+    super.destroy()
   }
 
   freeSession(sessionId: string) {
@@ -165,5 +171,31 @@ describe('RpcManager driver registry', () => {
     const a = manager.getDriver('StubDriver')
     const b = manager.getDriver('StubDriver')
     expect(a).toBe(b)
+  })
+})
+
+describe('RpcManager.destroy', () => {
+  test('destroys every instantiated driver and clears the cache', () => {
+    const { manager } = makeManager()
+    let built = 0
+    manager.registerDriverFactory('StubDriver', () => {
+      built++
+      return new StubDriver({
+        config: manager.mainConfiguration.drivers.get('StubDriver')!,
+      })
+    })
+
+    const driver = manager.getDriver('StubDriver') as StubDriver
+    expect(built).toBe(1)
+    expect(driver.destroyed).toBe(false)
+
+    manager.destroy()
+    expect(driver.destroyed).toBe(true)
+
+    // cache was cleared, so the next getDriver builds a fresh, live instance
+    const rebuilt = manager.getDriver('StubDriver') as StubDriver
+    expect(built).toBe(2)
+    expect(rebuilt).not.toBe(driver)
+    expect(rebuilt.destroyed).toBe(false)
   })
 })

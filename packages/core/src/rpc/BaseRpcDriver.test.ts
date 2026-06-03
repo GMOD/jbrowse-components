@@ -142,6 +142,51 @@ describe('BaseRpcDriver worker assignment', () => {
   })
 })
 
+describe('BaseRpcDriver.destroy', () => {
+  test('terminates every booted worker in the pool', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
+    await driver.getWorker('s1')
+    await driver.getWorker('s2')
+    await driver.getWorker('s3')
+    expect(driver.workers).toHaveLength(3)
+
+    driver.destroy()
+    await Promise.resolve()
+    expect(driver.workers.every(w => w.destroyed)).toBe(true)
+  })
+
+  test('does not boot workers that were never requested', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
+    await driver.getWorker('s1')
+
+    driver.destroy()
+    await Promise.resolve()
+    // only the one lazily-booted worker was ever created
+    expect(driver.workers).toHaveLength(1)
+  })
+
+  test('a failed worker boot does not throw on destroy', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
+    driver.failNextMake = true
+    await expect(driver.getWorker('s')).rejects.toThrow('boom')
+    expect(() => {
+      driver.destroy()
+    }).not.toThrow()
+  })
+
+  test('a fresh slot is assigned after destroy resets the pool', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
+    const before = await driver.getWorker('s')
+    driver.destroy()
+    const after = await driver.getWorker('s')
+    expect(after).not.toBe(before)
+    expect(driver.workers).toHaveLength(2)
+    // the original worker was terminated, the replacement stays live
+    expect(driver.workers[0]!.destroyed).toBe(true)
+    expect(driver.workers[1]!.destroyed).toBe(false)
+  })
+})
+
 describe('BaseRpcDriver LazyWorker retry on failure', () => {
   test('a failed makeWorker call lets a subsequent call retry', async () => {
     const driver = new TestDriver(makeConfig({ workerCount: 1 }))

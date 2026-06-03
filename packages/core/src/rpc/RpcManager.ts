@@ -207,4 +207,16 @@ export default class RpcManager {
       driver.freeSession(sessionId)
     }
   }
+
+  /**
+   * Terminate every driver's worker threads. Call when discarding the owning
+   * root model (e.g. switching sessions or reloading after a plugin change) so
+   * orphaned workers don't accumulate across a desktop run.
+   */
+  destroy() {
+    for (const driver of this.driverObjects.values()) {
+      driver.destroy()
+    }
+    this.driverObjects.clear()
+  }
 }

@@ -78,6 +78,17 @@ class LazyWorker {
     }
     return this.workerP
   }
+
+  destroy() {
+    // terminate the underlying worker once it resolves; a worker that never
+    // booted (rejected promise) has nothing to terminate, so swallow that
+    this.workerP
+      ?.then(worker => {
+        worker.destroy()
+      })
+      .catch(() => {})
+    this.workerP = undefined
+  }
 }
 
 export default abstract class BaseRpcDriver {
@@ -133,6 +144,17 @@ export default abstract class BaseRpcDriver {
 
   freeSession(sessionId: string) {
     this.workerAssignments.delete(sessionId)
+  }
+
+  // terminate every pooled worker and reset assignment bookkeeping; call when
+  // discarding the driver so its worker threads don't outlive it
+  destroy() {
+    for (const worker of this.workerPool ?? []) {
+      worker.destroy()
+    }
+    this.workerPool = undefined
+    this.workerAssignments.clear()
+    this.lastWorkerAssignment = -1
   }
 
   createWorkerPool(): LazyWorker[] {

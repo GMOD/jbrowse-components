@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 import JBrowse from './JBrowse.tsx'
 import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
-import { loadPluginManager } from './StartScreen/util.tsx'
+import { destroyPluginManager, loadPluginManager } from './StartScreen/util.tsx'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -61,7 +61,15 @@ const Loader = observer(function Loader() {
         handleSetPluginManager(await loadPluginManager(path))
       })
 
-      setPluginManager(pm)
+      setPluginManager(prev => {
+        // a new session/plugin-reload replaces the manager: tear down the old
+        // one so its RPC workers + autosave loop don't leak. destroy is
+        // idempotent (guarded by isAlive) so this stays safe under re-renders.
+        if (prev && prev !== pm) {
+          destroyPluginManager(prev)
+        }
+        return pm
+      })
       setError(undefined)
       setConfig('')
     },

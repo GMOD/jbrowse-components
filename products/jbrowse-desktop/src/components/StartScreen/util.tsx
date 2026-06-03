@@ -6,6 +6,7 @@ import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
+import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 
 import corePlugins from '../../corePlugins.ts'
@@ -25,6 +26,18 @@ export async function loadPluginManager(configPath: string) {
   const pm = await createPluginManager(snap)
   ;(pm.rootModel as DesktopRootModel | undefined)?.setSessionPath(configPath)
   return pm
+}
+
+// Tear down a plugin manager that is being replaced: terminate its RPC worker
+// threads and destroy the root model so its autorun disposers (e.g. autosave)
+// fire. Without this, every session switch / plugin reload orphans the previous
+// worker pool and leaves a live autosave loop holding the old tree.
+export function destroyPluginManager(pluginManager: PluginManager) {
+  const rootModel = pluginManager.rootModel as DesktopRootModel | undefined
+  if (rootModel && isAlive(rootModel)) {
+    rootModel.rpcManager.destroy()
+    destroy(rootModel)
+  }
 }
 
 export async function createPluginManager(
