@@ -21,12 +21,8 @@ import * as ts from 'typescript'
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
-// Files scanned for `#color` tags. The shared rendering palette lives in
-// theme.ts; the per-read strand/pair fills live in the alignments color.ts.
-const COLOR_SOURCES = [
-  'packages/core/src/ui/theme.ts',
-  'plugins/alignments/src/shared/color.ts',
-]
+// Files scanned for `#color` tags.
+const COLOR_SOURCES = ['packages/core/src/ui/theme.ts']
 
 interface Row {
   label: string
