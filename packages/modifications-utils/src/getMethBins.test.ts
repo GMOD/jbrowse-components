@@ -3,6 +3,7 @@ import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { getMethBins } from './getMethBins.ts'
 import { getModPositions } from './getModPositions.ts'
 
+import type { CytosineContext } from './cytosineContext.ts'
 import type { ParsedModData } from './getMethBins.ts'
 
 function makeModData(
@@ -32,8 +33,9 @@ function bins(
   ml: number[],
   strand: 1 | -1 = 1,
   cigar = `${seq.length}M`,
+  context: CytosineContext = 'CG',
 ) {
-  return getMethBins(makeModData(seq, mm, ml, strand, cigar))
+  return getMethBins(makeModData(seq, mm, ml, strand, cigar), context)
 }
 
 describe('getMethBins CpG filtering', () => {
@@ -136,6 +138,27 @@ describe('getMethBins CpG filtering', () => {
     const { methBins } = bins('AACGATCGAA', 'C+m?,0;', [230])
     expect(methBins[2]).toBe(1)
     expect(methBins[6]).toBeUndefined()
+  })
+
+  test('CHG context: forward CHG site stored, dropped under default CpG', () => {
+    // seq CAGAA: C@0 in CHG context (C,A,G). Methylation call at C@0.
+    expect(bins('CAGAA', 'C+m,0;', [200], 1, '5M', 'CHG').methBins[0]).toBe(1)
+    // same call under the default CpG context is not a CpG, so it is dropped
+    expect(bins('CAGAA', 'C+m,0;', [200]).methBins[0]).toBeUndefined()
+  })
+
+  test('CHH context: forward CHH site stored', () => {
+    // seq CATAA: C@0 in CHH context (C,A,T)
+    expect(bins('CATAA', 'C+m,0;', [200], 1, '5M', 'CHH').methBins[0]).toBe(1)
+    expect(bins('CATAA', 'C+m,0;', [200]).methBins[0]).toBeUndefined()
+  })
+
+  test('CHG context on reverse strand', () => {
+    // stored CAGT, reverse: getModPositions places the modified C at stored
+    // index 2 (the G). Reading backwards+complement gives C,H,G → CHG match.
+    expect(bins('CAGT', 'C+m,0;', [200], -1, '4M', 'CHG').methBins[2]).toBe(1)
+    // under default CpG the backward neighbour is H (T after complement), not G
+    expect(bins('CAGT', 'C+m,0;', [200], -1).methBins[2]).toBeUndefined()
   })
 
   test('two CpGs on reverse strand read both stored', () => {

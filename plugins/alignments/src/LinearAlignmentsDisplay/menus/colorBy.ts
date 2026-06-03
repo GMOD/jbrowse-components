@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
-import { checkboxItem, radioItems } from './menuHelpers.ts'
+import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 
 import type {
@@ -11,6 +11,7 @@ import type {
   ColorBy,
   ColorSchemeType,
 } from '../../shared/types.ts'
+import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
 const SetModificationThresholdDialog = lazy(
@@ -105,6 +106,7 @@ function getModificationsSubMenu(model: ModificationsModel) {
   const mods = model.colorBy.modifications
   const hidden = mods?.hiddenModifications ?? []
   const twoColor = !!mods?.twoColor
+  const cytosineContext = mods?.cytosineContext ?? 'CG'
   const isModType = model.colorBy.type === 'modifications'
   const isMethType = model.colorBy.type === 'methylation'
   // undefined when the display is in some non-modification color scheme, so no
@@ -131,14 +133,22 @@ function getModificationsSubMenu(model: ModificationsModel) {
     })
   }
 
+  const applyMethylation = (context: CytosineContext) => {
+    model.setColorScheme({
+      type: 'methylation',
+      modifications: {
+        threshold: modificationThreshold,
+        // omit the default so CpG sessions don't carry a redundant field
+        ...(context === 'CG' ? {} : { cytosineContext: context }),
+      },
+    })
+  }
+
   // Per-mode setColorScheme that preserves the current threshold and (for the
   // modification modes) the hidden-type selection.
   const setMode = (next: ModColorMode) => {
     if (next === 'methylation') {
-      model.setColorScheme({
-        type: 'methylation',
-        modifications: { threshold: modificationThreshold },
-      })
+      applyMethylation(cytosineContext)
     } else {
       applyModifications({ twoColor: next === 'twoColor', hidden })
     }
@@ -156,13 +166,13 @@ function getModificationsSubMenu(model: ModificationsModel) {
       [
         { value: 'byType', label: 'Color by modification type' },
         { value: 'twoColor', label: 'Two-color (low-confidence blue)' },
-        { value: 'methylation', label: 'Methylation (all CpGs)' },
+        { value: 'methylation', label: 'Methylation' },
       ],
       mode,
       setMode,
     ),
     // Per-type visibility only applies once coloring by modification type; the
-    // methylation mode renders CpGs rather than individual MM/ML types.
+    // methylation mode renders cytosines rather than individual MM/ML types.
     ...(isModType
       ? [
           {
@@ -174,6 +184,24 @@ function getModificationsSubMenu(model: ModificationsModel) {
               }),
             ),
           },
+        ]
+      : []),
+    // Cytosine context picker — CpG is the mammalian default; CHG/CHH (and all)
+    // cover plant methylation. Load the file as separate per-context tracks for
+    // the classic 3-context view.
+    ...(isMethType
+      ? [
+          radioModeMenuItem<CytosineContext>(
+            'Cytosine context',
+            [
+              { value: 'CG', label: 'CpG' },
+              { value: 'CHG', label: 'CHG' },
+              { value: 'CHH', label: 'CHH' },
+              { value: 'all', label: 'All cytosines' },
+            ],
+            cytosineContext,
+            applyMethylation,
+          ),
         ]
       : []),
     {
