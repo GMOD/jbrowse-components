@@ -2,7 +2,7 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import { autorun } from 'mobx'
+import { reaction } from 'mobx'
 
 import ImportWizard from './ImportWizard.ts'
 import Spreadsheet from './SpreadsheetModel.tsx'
@@ -133,33 +133,50 @@ export default function stateModelFactory() {
           },
         }))
         .actions(self => ({
+          /**
+           * #action
+           * apply a declarative init (from addView / sv-inspector): point the
+           * import wizard at the file and load it
+           */
+          async applyInit(init: SpreadsheetViewInit) {
+            const session = getSession(self)
+            try {
+              self.importWizard.setSelectedAssemblyName(init.assembly)
+              self.importWizard.setFileSource({
+                uri: init.uri,
+                locationType: 'UriLocation',
+              })
+              if (init.fileType) {
+                self.importWizard.setFileType(init.fileType)
+              }
+              await self.importWizard.import(init.assembly)
+            } catch (e) {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            }
+          },
+        }))
+        .actions(self => ({
           afterAttach() {
             addDisposer(
               self,
-              autorun(
-                async function spreadsheetViewInitAutorun() {
-                  const { init, width } = self
-                  if (width && init) {
-                    const session = getSession(self)
-                    try {
-                      self.importWizard.setSelectedAssemblyName(init.assembly)
-                      self.importWizard.setFileSource({
-                        uri: init.uri,
-                        locationType: 'UriLocation',
-                      })
-                      if (init.fileType) {
-                        self.importWizard.setFileType(init.fileType)
-                      }
-                      await self.importWizard.import(init.assembly)
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
-                    } finally {
-                      self.setInit(undefined)
-                    }
+              // Trigger on `init` ONLY. A reaction tracks just its data fn, so
+              // the async apply can read width/etc without making them
+              // dependencies — width churn (sv-inspector resizes, dockview /
+              // StrictMode settling) can no longer retrigger the load. `init`
+              // is cleared synchronously up front so the same request can't be
+              // applied twice; a later setInit supersedes. Re-entrancy is
+              // excluded by the dependency graph rather than a guard flag.
+              reaction(
+                () => self.init,
+                init => {
+                  if (init) {
+                    self.setInit(undefined)
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    self.applyInit(init)
                   }
                 },
-                { name: 'SpreadsheetViewInit' },
+                { fireImmediately: true, name: 'SpreadsheetViewInit' },
               ),
             )
           },

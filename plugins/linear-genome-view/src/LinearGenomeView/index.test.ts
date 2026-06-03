@@ -114,6 +114,9 @@ function initialize() {
       rpcManager: 'rpcManagerExists',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.string),
+      // presence of `widgets` is what isSessionModelWithWidgets keys off, so
+      // activateTrackSelector (used by init.tracklist) works in the stub
+      widgets: types.map(types.frozen<{ type: string; id: string }>()),
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
@@ -140,6 +143,13 @@ function initialize() {
       notifyError(message: string, _error?: unknown) {
         console.error(message)
       },
+      addWidget(typeName: string, id: string) {
+        const widget = { type: typeName, id }
+        self.widgets.set(id, widget)
+        return widget
+      },
+      showWidget() {},
+      hideWidget() {},
     }))
 
   return { Session, LinearGenomeModel, Assembly }
@@ -1750,6 +1760,32 @@ describe('declarative init: highlight, nav, unknown keys', () => {
       expect(model.highlight.length).toBe(1)
     })
     expect(model.highlight[0]!.assemblyName).toBe('volvox2')
+  })
+
+  // regression: with init.tracklist the autorun reads raw volatileWidth and
+  // awaits a width settle, so a width change while init is mid-apply re-triggers
+  // it before `init` is cleared. addToHighlights pushes, so a re-entrant pass
+  // duplicated the highlight (the double highlights seen under React StrictMode's
+  // double mount, which churns volatileWidth). Without tracklist this doesn't
+  // reproduce: the autorun's only width dependency is the `initialized`
+  // computed, which doesn't re-notify while its boolean value stays true.
+  test('init.highlight is applied once when width churns mid-init', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      tracklist: true,
+      highlight: ['ctgA:100-200'],
+    })
+    // makeModel already setWidth(800), kicking off the async init autorun which
+    // is now suspended on the tracklist width-settle await. Churn volatileWidth
+    // in the same tick to re-trigger the autorun while init is still set.
+    model.setWidth(801)
+    model.setWidth(802)
+    model.setWidth(803)
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
+    expect(model.highlight.length).toBe(1)
   })
 
   test('init.nav false hides the header', async () => {

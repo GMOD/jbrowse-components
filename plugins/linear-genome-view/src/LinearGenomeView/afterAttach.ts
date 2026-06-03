@@ -35,15 +35,25 @@ function tryParseJson(s: string): Record<string, unknown> | undefined {
  * showing tracks, etc.
  */
 export function setupInitAutorun(self: LinearGenomeViewModel) {
+  // This autorun is async and only clears `init` at the end, yet it reads
+  // volatileWidth (directly for the tracklist-width settle, and via the
+  // `initialized` getter) — so a width change mid-apply re-triggers it while
+  // `init` is still set, and the second pass re-applies init.highlight as a
+  // duplicate (most visible under React StrictMode's double mount, which
+  // churns volatileWidth). This plain closure flag (intentionally NOT an
+  // observable, so it stays out of the dependency graph) makes re-entrant runs
+  // no-op until the in-flight apply finishes and clears init.
+  let applyingInit = false
   addDisposer(
     self,
     autorun(
       async function initAutorun() {
         const { init, initialized } = self
-        if (!initialized) {
+        if (!initialized || !init || applyingInit) {
           return
         }
-        if (init) {
+        applyingInit = true
+        try {
           const session = getSession(self)
           const { assemblyManager } = session
 
@@ -168,9 +178,11 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
               }
             }
           }
-
-          // clear init state
+        } finally {
+          // always clear init (even on a thrown apply) so a re-entrant run
+          // early-returns, and release the guard for any future setInit
           self.setInit(undefined)
+          applyingInit = false
         }
       },
       { name: 'LGVInit' },
