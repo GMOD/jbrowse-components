@@ -232,7 +232,6 @@ export default class BamSlightlyLazyFeature
       ...this.fields,
       CIGAR: this.CIGAR,
       seq: this.seq,
-      tags: convertTagsToPlainArrays(this.tags),
       qual: this.qualString,
     }
   }
