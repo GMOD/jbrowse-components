@@ -27,7 +27,7 @@ describe('migrateWiggleSnapshot', () => {
     })
   })
 
-  test('migrates generation 1: color properties', () => {
+  test('migrates generation 1: color properties (solid color → useBicolor:false)', () => {
     const result = migrateWiggleSnapshot({
       color: '#ff0000',
       posColor: '#0000ff',
@@ -36,10 +36,21 @@ describe('migrateWiggleSnapshot', () => {
     expect(result).toEqual({
       configOverrides: {
         color: '#ff0000',
+        useBicolor: false,
         posColor: '#0000ff',
         negColor: '#00ff00',
       },
     })
+  })
+
+  test('migrates sentinel #f0f color → useBicolor:true, strips color', () => {
+    const result = migrateWiggleSnapshot({ color: '#f0f' })
+    expect(result).toEqual({ configOverrides: { useBicolor: true } })
+  })
+
+  test('migrates sentinel #ff00ff color → useBicolor:true, strips color', () => {
+    const result = migrateWiggleSnapshot({ colorSetting: '#ff00ff' })
+    expect(result).toEqual({ configOverrides: { useBicolor: true } })
   })
 
   test('migrates generation 1: constraints.{min,max}', () => {
@@ -121,14 +132,19 @@ describe('migrateWiggleSnapshot', () => {
     expect(result).not.toHaveProperty('minSize')
   })
 
-  test('migrates generation 2: *Setting properties', () => {
+  test('migrates generation 2: *Setting properties (solid color → useBicolor:false)', () => {
     const result = migrateWiggleSnapshot({
       colorSetting: 'red',
       scaleTypeSetting: 'log',
       autoscaleSetting: 'local',
     })
     expect(result).toEqual({
-      configOverrides: { color: 'red', scaleType: 'log', autoscale: 'local' },
+      configOverrides: {
+        color: 'red',
+        useBicolor: false,
+        scaleType: 'log',
+        autoscale: 'local',
+      },
     })
   })
 

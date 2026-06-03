@@ -77,6 +77,12 @@ export function migrateWiggleSnapshot(
       ? 'multixyplot'
       : oldRendering)
 
+  const effectiveColor = colorSetting ?? colorGen1
+  // Old sessions used '#f0f'/'#ff00ff' as a sentinel meaning "bicolor mode".
+  // Migrate to an explicit useBicolor flag; strip the sentinel from color.
+  const isSentinelColor =
+    effectiveColor === '#f0f' || effectiveColor === '#ff00ff'
+
   const candidates: Record<string, unknown> = {
     defaultRendering,
     scaleType: scaleTypeSetting ?? scale,
@@ -84,7 +90,8 @@ export function migrateWiggleSnapshot(
     summaryScoreMode: summaryScoreModeSetting ?? summaryScoreModeGen1,
     minScore: minScoreSetting ?? cons?.min,
     maxScore: maxScoreSetting ?? cons?.max,
-    color: colorSetting ?? colorGen1,
+    color: isSentinelColor ? undefined : effectiveColor,
+    useBicolor: isSentinelColor ? true : effectiveColor !== undefined ? false : undefined,
     posColor: posColorSetting ?? posColorGen1,
     negColor: negColorSetting ?? negColorGen1,
     showTree: showTreeSetting ?? showSidebar,

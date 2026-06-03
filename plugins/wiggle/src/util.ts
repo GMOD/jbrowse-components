@@ -48,12 +48,7 @@ export const MULTI_WIGGLE_RENDERING_TYPES = MULTI_WIGGLE_RENDERINGS.map(
 )
 
 // Default color used by wiggle config schema
-export const WIGGLE_COLOR_DEFAULT = '#f0f'
 export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
-
-export function isDefaultBicolor(color: string) {
-  return color === WIGGLE_COLOR_DEFAULT || color === '#ff00ff'
-}
 
 // There was confusion about whether source or name was required, and effort to
 // remove one or the other was thwarted. Adapters like BigWigAdapter, even in

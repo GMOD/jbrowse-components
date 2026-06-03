@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
-import { WIGGLE_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
+import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
 
 /**
  * #config LinearWiggleDisplay
@@ -52,10 +52,18 @@ export default ConfigurationSchema(
     /**
      * #slot
      */
+    useBicolor: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'Use separate positive/negative colors instead of a single color',
+    },
+    /**
+     * #slot
+     */
     color: {
       type: 'color',
-      defaultValue: WIGGLE_COLOR_DEFAULT,
-      description: 'Color for the wiggle bars',
+      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
+      description: 'Color for the wiggle bars (when not using bicolor mode)',
     },
     ...wiggleConfigSchemaFields,
     /**

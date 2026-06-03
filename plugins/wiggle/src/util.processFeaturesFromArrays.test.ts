@@ -1,6 +1,5 @@
 import {
   featuresToRaw,
-  isDefaultBicolor,
   makeScoreNormalizer,
   processFeaturesFromArrays,
 } from './util.ts'
@@ -86,6 +85,7 @@ describe('processFeaturesFromArrays', () => {
     expect(Array.from(result.featureMaxScores)).toEqual([8, 15])
   })
 
+
   test('splits positive and negative features by bicolorPivot', () => {
     const result = processFeaturesFromArrays(
       {
@@ -147,17 +147,3 @@ describe('normalizeScore', () => {
   })
 })
 
-describe('isDefaultBicolor', () => {
-  test('short hex format', () => {
-    expect(isDefaultBicolor('#f0f')).toBe(true)
-  })
-
-  test('full hex format', () => {
-    expect(isDefaultBicolor('#ff00ff')).toBe(true)
-  })
-
-  test('other colors return false', () => {
-    expect(isDefaultBicolor('#0068d1')).toBe(false)
-    expect(isDefaultBicolor('red')).toBe(false)
-  })
-})

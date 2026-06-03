@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { Dialog } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import {
@@ -12,8 +10,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isDefaultBicolor } from '../../util.ts'
-
 const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,
@@ -22,16 +18,14 @@ const SetColorDialog = observer(function SetColorDialog({
     color: string
     posColor: string
     negColor: string
+    useBicolor: boolean
     setColor: (arg?: string) => void
     setPosColor: (arg?: string) => void
     setNegColor: (arg?: string) => void
+    setUseBicolor: (arg?: boolean) => void
   }
   handleClose: () => void
 }) {
-  // Default (#f0f) color means the pos/neg split is active; a custom overall
-  // color means it isn't. Seed the radio from that so reopening reflects state.
-  const [posneg, setPosNeg] = useState(() => isDefaultBicolor(model.color))
-
   return (
     <Dialog open onClose={handleClose} title="Set color">
       <DialogContent>
@@ -41,30 +35,29 @@ const SetColorDialog = observer(function SetColorDialog({
           colors
         </Typography>
         <FormControlLabel
-          checked={!posneg}
+          checked={!model.useBicolor}
           onClick={() => {
-            setPosNeg(false)
+            model.setUseBicolor(false)
           }}
           control={<Radio />}
           label="Overall color"
         />
         <FormControlLabel
-          checked={posneg}
+          checked={model.useBicolor}
           onClick={() => {
-            setPosNeg(true)
+            model.setUseBicolor(true)
           }}
           control={<Radio />}
           label="Positive/negative color"
         />
 
-        {posneg ? (
+        {model.useBicolor ? (
           <>
             <Typography>Positive color</Typography>
             <ColorPicker
               color={model.posColor}
               onChange={event => {
                 model.setPosColor(event)
-                model.setColor(undefined)
               }}
             />
             <Typography>Negative color</Typography>
@@ -73,7 +66,6 @@ const SetColorDialog = observer(function SetColorDialog({
               color={model.negColor}
               onChange={event => {
                 model.setNegColor(event)
-                model.setColor(undefined)
               }}
             />
           </>
@@ -95,6 +87,7 @@ const SetColorDialog = observer(function SetColorDialog({
             model.setPosColor(undefined)
             model.setNegColor(undefined)
             model.setColor(undefined)
+            model.setUseBicolor(undefined)
           }}
           color="secondary"
           variant="contained"

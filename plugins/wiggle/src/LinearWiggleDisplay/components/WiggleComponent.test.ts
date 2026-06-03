@@ -1,10 +1,5 @@
 import { buildSourceRenderData } from '../../shared/buildSourceRenderData.ts'
-import {
-  SINGLE_WIGGLE_SOURCE_NAME,
-  WIGGLE_COLOR_DEFAULT,
-  WIGGLE_POS_COLOR_DEFAULT,
-  isDefaultBicolor,
-} from '../../util.ts'
+import { SINGLE_WIGGLE_SOURCE_NAME, WIGGLE_POS_COLOR_DEFAULT } from '../../util.ts'
 
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleDataResult } from '../../util.ts'
@@ -40,6 +35,7 @@ function makeData(numFeatures = 2, withNeg = false): WiggleDataResult {
 }
 
 interface SingleModelLike {
+  useBicolor: boolean
   color: string
   posColor: string
   negColor: string
@@ -54,7 +50,8 @@ function singleGpuProps(
   overrides: Partial<SingleModelLike> = {},
 ): WiggleGpuProps {
   const m: SingleModelLike = {
-    color: WIGGLE_COLOR_DEFAULT,
+    useBicolor: true,
+    color: WIGGLE_POS_COLOR_DEFAULT,
     posColor: WIGGLE_POS_COLOR_DEFAULT,
     negColor: '#e10000',
     renderingType: 'xyplot',
@@ -62,9 +59,7 @@ function singleGpuProps(
     summaryScoreMode: 'avg',
     ...overrides,
   }
-  const useBicolor = isDefaultBicolor(m.color)
-  const wantsSolidColor =
-    !useBicolor && (m.summaryScoreMode === 'whiskers' || !m.isDensityMode)
+  const wantsSolidColor = !m.useBicolor && !m.isDensityMode
   return {
     sources: [
       {
@@ -81,23 +76,20 @@ function singleGpuProps(
 }
 
 describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
-  it('uses posColor/negColor when color is default bicolor', () => {
+  it('uses posColor/negColor when useBicolor is true', () => {
     const data = makeData(2, true)
-    const sources = buildSourceRenderData(
-      data,
-      singleGpuProps({ color: WIGGLE_COLOR_DEFAULT }),
-    )
+    const sources = buildSourceRenderData(data, singleGpuProps())
     expect(sources.length).toBeGreaterThan(0)
     for (const s of sources) {
       expect(s.color).not.toEqual([1, 0, 1])
     }
   })
 
-  it('uses base color when color is custom (non-bicolor)', () => {
+  it('uses base color when useBicolor is false', () => {
     const data = makeData()
     const sources = buildSourceRenderData(
       data,
-      singleGpuProps({ color: '#00ff00' }),
+      singleGpuProps({ useBicolor: false, color: '#00ff00' }),
     )
     expect(sources).toHaveLength(1)
     expect(sources[0]!.color[0]).toBeCloseTo(0)
@@ -110,11 +102,11 @@ describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
 
     const sources1 = buildSourceRenderData(
       data,
-      singleGpuProps({ color: '#ff0000' }),
+      singleGpuProps({ useBicolor: false, color: '#ff0000' }),
     )
     const sources2 = buildSourceRenderData(
       data,
-      singleGpuProps({ color: '#0000ff' }),
+      singleGpuProps({ useBicolor: false, color: '#0000ff' }),
     )
 
     expect(sources1[0]!.color).not.toEqual(sources2[0]!.color)
@@ -125,11 +117,11 @@ describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
 
     const sources1 = buildSourceRenderData(
       data,
-      singleGpuProps({ color: WIGGLE_COLOR_DEFAULT, posColor: '#0068d1' }),
+      singleGpuProps({ posColor: '#0068d1' }),
     )
     const sources2 = buildSourceRenderData(
       data,
-      singleGpuProps({ color: WIGGLE_COLOR_DEFAULT, posColor: '#ff0000' }),
+      singleGpuProps({ posColor: '#ff0000' }),
     )
 
     expect(sources1[0]!.color).not.toEqual(sources2[0]!.color)
@@ -140,11 +132,11 @@ describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
 
     const sources1 = buildSourceRenderData(
       data,
-      singleGpuProps({ color: WIGGLE_COLOR_DEFAULT, negColor: '#e10000' }),
+      singleGpuProps({ negColor: '#e10000' }),
     )
     const sources2 = buildSourceRenderData(
       data,
-      singleGpuProps({ color: WIGGLE_COLOR_DEFAULT, negColor: '#00ff00' }),
+      singleGpuProps({ negColor: '#00ff00' }),
     )
 
     const negSource1 = sources1.find(s => s.color[0] > 0.5 && s.color[1] < 0.5)
@@ -158,24 +150,21 @@ describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
     const data = makeData()
     const sources = buildSourceRenderData(
       data,
-      singleGpuProps({
-        color: WIGGLE_COLOR_DEFAULT,
-        isDensityMode: true,
-        renderingType: 'density',
-      }),
+      singleGpuProps({ isDensityMode: true, renderingType: 'density' }),
     )
     expect(sources).toHaveLength(1)
   })
 
-  it('density mode + custom color falls back to posColor', () => {
+  it('density mode + solid color falls back to posColor', () => {
     const data = makeData()
     const props = singleGpuProps({
+      useBicolor: false,
       color: '#00ff00',
       isDensityMode: true,
       renderingType: 'density',
       posColor: '#0068d1',
     })
-    // gpuProps leaves source.color undefined in density+!useBicolor, so multi
+    // gpuProps leaves source.color undefined in density+solid mode, so multi
     // build uses defaultPosColor — preserving single's prior behavior of using
     // posColor (not the custom solid color) in density mode.
     expect(props.sources[0]!.color).toBeUndefined()
