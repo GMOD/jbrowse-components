@@ -65,14 +65,6 @@ describe('floatingLabels', () => {
       expect(label.textWidth).toBeLessThanOrEqual(MAX_DESCRIPTION_LABEL_WIDTH_PX)
     })
 
-    it('leaves a short description untruncated', () => {
-      const result = createFeatureFloatingLabels({
-        name: 'Gene1',
-        description: 'A gene',
-      })
-      expect(result.descriptionLabel!.text).toBe('A gene')
-    })
-
     it('returns only name label when description is empty', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',

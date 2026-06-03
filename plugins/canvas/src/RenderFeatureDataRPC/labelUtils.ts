@@ -6,22 +6,21 @@ import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-export function getFeatureName(feature: Feature): string | undefined {
-  // empty-string name falls back to id; toLabelString also collapses a
-  // multi-valued (array) name attribute to a string. See toLabelString below.
-  return toLabelString(feature.get('name')) ?? toLabelString(feature.get('id'))
-}
-
-// A config label value may be a string, a multi-valued array (e.g. a GFF
-// attribute whose value contained unescaped commas, parsed into multiple
-// values), or absent. Normalize to a single string so downstream
-// width-measurement and truncation always operate on text, never an array.
+// A label value may be a string, a multi-valued array (e.g. a GFF attribute
+// whose value contained unescaped commas, parsed into multiple values), or
+// absent. Normalize to a single string so downstream width-measurement and
+// truncation always operate on text, never an array.
 function toLabelString(value: unknown) {
   if (value === undefined || value === null) {
     return undefined
   }
   const text = Array.isArray(value) ? value.join(',') : String(value)
   return text || undefined
+}
+
+export function getFeatureName(feature: Feature): string | undefined {
+  // empty-string name falls back to id
+  return toLabelString(feature.get('name')) ?? toLabelString(feature.get('id'))
 }
 
 // Reads the config-jexl name/description for a top-level feature.
