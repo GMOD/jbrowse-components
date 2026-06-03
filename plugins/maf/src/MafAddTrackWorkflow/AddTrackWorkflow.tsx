@@ -131,7 +131,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           onChange={event => {
             setSamples(event.target.value)
           }}
-          helperText="Sample names (optional if .nh supplied, required if not)"
+          helperText="Sample names (optional — taken from the .nh tree, or auto-detected from the file, when left blank)"
           placeholder={
             'Enter sample names from the MAF file, one per line, or JSON formatted array of samples'
           }
@@ -153,12 +153,9 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
         onClick={() => {
           try {
             const session = getSession(model)
+            // Samples + tree are both optional: when neither is supplied the
+            // adapter discovers the genomes from the data itself.
             const sampleNames = parseSampleNames(samples)
-            if (!sampleNames.length && !nhLoc) {
-              throw new Error(
-                'Please supply sample names or a newick tree (.nh) file',
-              )
-            }
             const safeName = trackName.toLowerCase().replaceAll(' ', '_')
             const sessionSuffix = session.adminMode ? '' : '-sessionTrack'
             const trackId = `${safeName}-${Date.now()}${sessionSuffix}`

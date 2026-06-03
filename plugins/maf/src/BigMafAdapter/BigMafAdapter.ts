@@ -5,7 +5,10 @@ import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
 import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
-import { parseAssemblyAndChrSimple } from '../util/parseAssemblyName.ts'
+import {
+  matchSampleId,
+  parseAssemblyAndChrSimple,
+} from '../util/parseAssemblyName.ts'
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -35,7 +38,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     return ObservableCreate<Feature>(async observer => {
       const { adapter } = await this.setupPre(opts)
-      const sampleFilter = buildSampleFilter(opts)
+      const sampleIds = buildSampleFilter(opts)
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const maf = feature.get('mafBlock') as string
@@ -49,19 +52,18 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
             const sequence = parts[6]!
             const organismChr = parts[1]!
 
-            const { assemblyName: org, chr } =
-              parseAssemblyAndChrSimple(organismChr)
-
             referenceSeq ??= sequence
 
-            if (sampleFilter && !sampleFilter.has(org)) {
-              continue
-            }
+            const parsed = sampleIds
+              ? matchSampleId(organismChr, sampleIds)
+              : parseAssemblyAndChrSimple(organismChr)
 
-            alignments[org] = {
-              chr,
-              start: +parts[2]!,
-              seq: sequence,
+            if (parsed?.assemblyName) {
+              alignments[parsed.assemblyName] = {
+                chr: parsed.chr,
+                start: parseInt(parts[2]!, 10),
+                seq: sequence,
+              }
             }
           }
         }

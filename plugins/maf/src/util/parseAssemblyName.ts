@@ -52,6 +52,35 @@ export function parseAssemblyAndChr(
 }
 
 /**
+ * Resolve a `genome.sequence` source token against a known sample set by its
+ * longest dot-bounded prefix (or the whole token). The genome can itself
+ * contain dots (a `.1`/`.2` haplotype, e.g. `Species1.1.chr3`), so a fixed
+ * dot-position split is ambiguous — the known set removes the guess.
+ * `Species1.1` beats `Species1` when both are present.
+ *
+ * Returns undefined when no sample matches, so callers skip that token.
+ */
+export function matchSampleId(
+  token: string,
+  sampleIds: Set<string>,
+): ParsedAssemblyName | undefined {
+  if (sampleIds.has(token)) {
+    return { assemblyName: token, chr: '' }
+  }
+  for (
+    let dot = token.lastIndexOf('.');
+    dot > 0;
+    dot = token.lastIndexOf('.', dot - 1)
+  ) {
+    const candidate = token.slice(0, dot)
+    if (sampleIds.has(candidate)) {
+      return { assemblyName: candidate, chr: token.slice(dot + 1) }
+    }
+  }
+  return undefined
+}
+
+/**
  * Parses assembly name and chromosome from a combined string in BigMaf format.
  *
  * Uses simple dot splitting: org.chr where org is before the first dot,

@@ -16,10 +16,7 @@ export function parseSampleNames(input: string): string[] {
   try {
     const parsed: unknown = JSON.parse(input)
     if (Array.isArray(parsed)) {
-      return parsed
-        .map(String)
-        .map(s => s.trim())
-        .filter(Boolean)
+      return parsed.map(s => String(s).trim()).filter(Boolean)
     }
   } catch {
     // fall through to line split

@@ -1,8 +1,58 @@
 import {
+  matchSampleId,
   parseAssemblyAndChr,
   parseAssemblyAndChrSimple,
   selectReferenceSequenceString,
 } from './parseAssemblyName.ts'
+
+describe('matchSampleId (sample-set aware splitting)', () => {
+  const samples = new Set(['Species1.1', 'Species1.2', 'mm10'])
+
+  test('haplotype-suffixed sample with a contig', () => {
+    expect(matchSampleId('Species1.1.chr3', samples)).toEqual({
+      assemblyName: 'Species1.1',
+      chr: 'chr3',
+    })
+  })
+
+  test('haplotype-suffixed sample with a dotted accession contig', () => {
+    expect(matchSampleId('Species1.2.CM012345.1', samples)).toEqual({
+      assemblyName: 'Species1.2',
+      chr: 'CM012345.1',
+    })
+  })
+
+  test('bare sample token with no contig (regression: do not drop .1)', () => {
+    // `parseAssemblyAndChr` would mis-split this to `Species1` + `1`; with the
+    // known set we resolve it exactly.
+    expect(matchSampleId('Species1.1', samples)).toEqual({
+      assemblyName: 'Species1.1',
+      chr: '',
+    })
+  })
+
+  test('longest matching prefix wins', () => {
+    const overlapping = new Set(['Species1', 'Species1.1'])
+    expect(matchSampleId('Species1.1.chr3', overlapping)).toEqual({
+      assemblyName: 'Species1.1',
+      chr: 'chr3',
+    })
+  })
+
+  test('falls through to a shorter (bare-species) sample id', () => {
+    // tree leaves are bare species names but the data carries haplotypes —
+    // haplotypes group under the species rather than vanishing.
+    const bare = new Set(['Species1'])
+    expect(matchSampleId('Species1.1.chr3', bare)).toEqual({
+      assemblyName: 'Species1',
+      chr: '1.chr3',
+    })
+  })
+
+  test('token belonging to no configured sample is skipped', () => {
+    expect(matchSampleId('Species9.1.chr3', samples)).toBeUndefined()
+  })
+})
 
 describe('parseAssemblyAndChr (MafTabix format)', () => {
   test('no dot - entire string is assembly name', () => {

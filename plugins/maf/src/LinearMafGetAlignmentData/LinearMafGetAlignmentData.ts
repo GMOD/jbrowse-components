@@ -80,27 +80,59 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     const adapter = dataAdapter as MafAdapter
 
-    // Server is authoritative for samples + tree (derived from track config).
-    // Shipping them with every region response avoids a separate setup RPC.
-    const { samples, treeNewick } = await adapter.getSamples()
+    // Sample set + tree ship with every region response (avoids a setup RPC).
+    const { samples: configSamples, treeNewick } = await adapter.getSamples()
+    const hasConfiguredSamples = configSamples.length > 0
+
+    // Samples come from config or the guide tree (see getSamples). With a
+    // set, the adapter resolves tokens against it. With neither, the adapter
+    // discovers the genomes from the alignment data, so the track still
+    // renders without a hand-listed sample list.
+    const opts = hasConfiguredSamples
+      ? { ...deserializedArgs, samples: configSamples }
+      : deserializedArgs
 
     const enc = new TextEncoder()
-    const sampleToRow = new Map(samples.map((s, i) => [s.id, i]))
 
-    // One MAF feature = one alignment block. A single fetched region can
-    // contain many disjoint blocks at unrelated genomic anchors.
-    const blocks: MafBlock[] = []
+    // Pass 1: buffer blocks + collect sample order. Row indices are assigned
+    // in pass 2 once the full set is known; encoding is deferred to then too.
+    const rawBlocks: {
+      startBp: number
+      refSeqBytes: Uint8Array
+      alignments: Record<string, AlignmentRecord>
+    }[] = []
+    const discoveredOrder = new Map<string, number>()
     await subscribeToObservable(
-      adapter.getFeatures(region, deserializedArgs),
+      adapter.getFeatures(region, opts),
       (feature: Feature) => {
-        const refSeqBytes = enc.encode(feature.get('seq') as string)
-        const startBp = feature.get('start')
         const alignments = feature.get('alignments') as Record<
           string,
           AlignmentRecord
         >
+        for (const sampleId in alignments) {
+          if (!discoveredOrder.has(sampleId)) {
+            discoveredOrder.set(sampleId, discoveredOrder.size)
+          }
+        }
+        rawBlocks.push({
+          startBp: feature.get('start'),
+          refSeqBytes: enc.encode(feature.get('seq') as string),
+          alignments,
+        })
+      },
+    )
+
+    const samples: Sample[] = hasConfiguredSamples
+      ? configSamples
+      : [...discoveredOrder.keys()].map(id => ({ id, label: id }))
+    const sampleToRow = new Map(samples.map((s, i) => [s.id, i]))
+
+    // One MAF feature = one alignment block. A single fetched region can
+    // contain many disjoint blocks at unrelated genomic anchors.
+    const blocks: MafBlock[] = rawBlocks.map(
+      ({ startBp, refSeqBytes, alignments }) => {
         // for...in + push avoids the Object.entries+flatMap temp array
-        // allocations on a per-feature hot path.
+        // allocations on a per-block hot path.
         const rows: { rowIndex: number; alignmentBytes: Uint8Array }[] = []
         for (const sampleId in alignments) {
           const rowIndex = sampleToRow.get(sampleId)
@@ -111,7 +143,7 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
             })
           }
         }
-        blocks.push({ startBp, refSeqBytes, rows })
+        return { startBp, refSeqBytes, rows }
       },
     )
 

@@ -1,5 +1,8 @@
 import { DASH } from '../util/asciiBytes.ts'
-import { parseAssemblyAndChrSimple } from '../util/parseAssemblyName.ts'
+import {
+  matchSampleId,
+  parseAssemblyAndChrSimple,
+} from '../util/parseAssemblyName.ts'
 
 import type { RowInstruction } from './rowInstructions.ts'
 import type { AlignmentRecord } from './types.ts'
@@ -188,14 +191,15 @@ export function blockToFeature(
   const alignments: Record<string, AlignmentRecord> = {}
 
   for (const row of block.rows) {
-    const { assemblyName, chr } = parseAssemblyAndChrSimple(row.sequenceName)
-    if (sampleFilter && !sampleFilter.has(assemblyName)) {
-      continue
-    }
-    alignments[assemblyName] = {
-      chr,
-      start: row.start,
-      seq: row.bases,
+    const parsed = sampleFilter
+      ? matchSampleId(row.sequenceName, sampleFilter)
+      : parseAssemblyAndChrSimple(row.sequenceName)
+    if (parsed?.assemblyName) {
+      alignments[parsed.assemblyName] = {
+        chr: parsed.chr,
+        start: row.start,
+        seq: row.bases,
+      }
     }
   }
 

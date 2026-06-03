@@ -8,6 +8,7 @@ import {
   parseRowInstructions,
 } from './rowInstructions.ts'
 import {
+  blockToFeature,
   finalizeBlock,
   parseBases,
   parseCoordinatesAndEstablishBlock,
@@ -517,6 +518,85 @@ describe('BgzipTaffyAdapter methods', () => {
     expect(block.rows[0]!.length).toBe(2)
     expect(block.rows[1]!.bases).toBe('CCC')
     expect(block.rows[1]!.length).toBe(3)
+  })
+})
+
+describe('blockToFeature', () => {
+  const makeRow = (sequenceName: string, bases: string) => ({
+    sequenceName,
+    start: 100,
+    strand: 1,
+    sequenceLength: 1000,
+    bases,
+    length: bases.replace(/-/g, '').length,
+  })
+
+  test('no sampleFilter — all rows included, simple dot-split', () => {
+    const block = {
+      rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('mm10.chr2', 'ACGT')],
+      columnNumber: 4,
+    }
+    const feature = blockToFeature(block)
+    expect(feature).toBeDefined()
+    expect(feature!.alignments).toHaveProperty('hg38')
+    expect(feature!.alignments).toHaveProperty('mm10')
+    expect(feature!.alignments['hg38']!.chr).toBe('chr1')
+    expect(feature!.alignments['mm10']!.chr).toBe('chr2')
+  })
+
+  test('sampleFilter with plain names — rows not in filter are dropped', () => {
+    const block = {
+      rows: [
+        makeRow('hg38.chr1', 'ACGT'),
+        makeRow('mm10.chr2', 'ACGT'),
+        makeRow('panTro6.chr1', 'ACGT'),
+      ],
+      columnNumber: 4,
+    }
+    const filter = new Set(['hg38', 'panTro6'])
+    const feature = blockToFeature(block, filter)
+    expect(feature!.alignments).toHaveProperty('hg38')
+    expect(feature!.alignments).toHaveProperty('panTro6')
+    expect(feature!.alignments).not.toHaveProperty('mm10')
+  })
+
+  test('sampleFilter with haplotype-suffixed names — matchSampleId resolves correctly', () => {
+    const block = {
+      rows: [
+        makeRow('Species1.1.chr3', 'ACGT'),
+        makeRow('Species1.2.chr3', 'TGCA'),
+        makeRow('Species2.1.chr3', 'ACGT'),
+      ],
+      columnNumber: 4,
+    }
+    const filter = new Set(['Species1.1', 'Species1.2'])
+    const feature = blockToFeature(block, filter)
+    const aln = feature!.alignments
+    expect(aln['Species1.1']).toBeDefined()
+    expect(aln['Species1.2']).toBeDefined()
+    expect(aln['Species2.1']).toBeUndefined()
+    expect(aln['Species1.1']!.chr).toBe('chr3')
+    expect(aln['Species1.2']!.seq).toBe('TGCA')
+  })
+
+  test('returns undefined for empty block', () => {
+    expect(blockToFeature({ rows: [], columnNumber: 0 })).toBeUndefined()
+    expect(
+      blockToFeature({
+        rows: [makeRow('hg38.chr1', 'ACGT')],
+        columnNumber: 0,
+      }),
+    ).toBeUndefined()
+  })
+
+  test('ref row drives genomic span (start + length)', () => {
+    const block = {
+      rows: [makeRow('hg38.chr1', 'AC-GT')],
+      columnNumber: 5,
+    }
+    const feature = blockToFeature(block)!
+    expect(feature.start).toBe(100)
+    expect(feature.end).toBe(104) // 4 non-gap bases
   })
 })
 

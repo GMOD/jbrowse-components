@@ -6,6 +6,7 @@ import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
 import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
+  matchSampleId,
   parseAssemblyAndChr,
   selectReferenceSequenceString,
 } from '../util/parseAssemblyName.ts'
@@ -36,9 +37,9 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
   getFeatures(query: Region, opts?: MafAdapterOptions) {
     return ObservableCreate<Feature>(async observer => {
       const { adapter } = await this.setupPre(opts)
-      let firstAssemblyNameFound = ''
+      let firstAssemblyNameFound: string | undefined
       const refAssemblyName = this.getConf('refAssemblyName')
-      const sampleFilter = buildSampleFilter(opts)
+      const sampleIds = buildSampleFilter(opts)
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const data = (feature.get('field5') as string).split(',')
@@ -54,20 +55,21 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
             continue
           }
 
-          const { assemblyName, chr } = parseAssemblyAndChr(assemblyAndChr)
+          // Known set → exact resolution (keeps the haplotype suffix, e.g.
+          // `Species1.1`). No set → dot-position split to discover genomes.
+          const parsed = sampleIds
+            ? matchSampleId(assemblyAndChr, sampleIds)
+            : parseAssemblyAndChr(assemblyAndChr)
 
-          if (assemblyName) {
+          if (parsed?.assemblyName) {
+            const { assemblyName, chr } = parsed
             if (!firstAssemblyNameFound) {
               firstAssemblyNameFound = assemblyName
             }
 
-            if (sampleFilter && !sampleFilter.has(assemblyName)) {
-              continue
-            }
-
             alignments[assemblyName] = {
               chr,
-              start: +startStr!,
+              start: parseInt(startStr!, 10),
               seq,
             }
           }
