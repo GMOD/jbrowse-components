@@ -204,7 +204,7 @@ export default class BamSlightlyLazyFeature
       strand: this.strand,
       template_length: this.template_length,
       flags: this.flags,
-      tags: convertTagsToPlainArrays(this.tags),
+      tags: this.tags,
       refName: this.refName,
       type: 'match',
       pair_orientation: this.pair_orientation,
@@ -232,6 +232,7 @@ export default class BamSlightlyLazyFeature
       ...this.fields,
       CIGAR: this.CIGAR,
       seq: this.seq,
+      tags: convertTagsToPlainArrays(this.tags),
       qual: this.qualString,
     }
   }
