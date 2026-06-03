@@ -18,7 +18,7 @@ import {
 import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { ThemeOptions } from '@mui/material'
+import type { ThemeMap } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()({
   container: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles()({
 })
 
 export interface PreferencesDialogSession {
-  allThemes: () => Record<string, ThemeOptions & { name?: string }>
+  allThemes: () => ThemeMap
   themeName?: string
   setThemeName: (arg: string) => void
   stickyViewHeaders: boolean

@@ -8,10 +8,8 @@ import { isBaseSession } from './BaseSession.ts'
 
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ThemeMap } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { ThemeOptions } from '@mui/material'
-
-type ThemeMap = Record<string, ThemeOptions>
 
 /**
  * #stateModel ThemeManagerSessionMixin

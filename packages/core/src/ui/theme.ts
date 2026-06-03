@@ -9,9 +9,6 @@ import type {
   ThemeOptions,
 } from '@mui/material/styles'
 
-// Re-export Theme as JBrowseTheme for type imports that need custom palette properties
-// (framesCDS, frames, bases, etc.). Use this instead of importing Theme directly from @mui/material
-
 interface PaletteAugmentColorOptions {
   color: PaletteColorOptions
 }
@@ -160,17 +157,6 @@ function stockTheme() {
       ...defaults,
       mode: undefined,
     },
-    components: {
-      MuiLink: {
-        styleOverrides: {
-          // the default link color uses theme.palette.primary.main which is
-          // very bad with dark mode+midnight primary
-          root: ({ theme }) => ({
-            color: theme.palette.tertiary.main,
-          }),
-        },
-      },
-    },
   } satisfies ThemeOptions
 }
 
@@ -197,12 +183,11 @@ function getDarkStockTheme() {
       coverage: grey[700],
     },
     components: {
+      // enableColorOnDark keeps the AppBar tinted with primary.main in dark
+      // mode (default MUI behavior is to flatten it to the paper color)
       MuiAppBar: {
         defaultProps: {
           enableColorOnDark: true,
-        },
-        styleOverrides: {
-          root: ({ theme }) => theme.palette.primary.main,
         },
       },
     },
@@ -218,19 +203,19 @@ function getDarkMinimalTheme() {
       coverage: grey[700],
       primary: { main: grey[700] },
       secondary: { main: grey[800] },
-      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
+      tertiary: { main: grey[900] },
     },
   } satisfies ThemeOptions & { name: string }
 }
 
-function getMinimalTheme() {
+function getLightMinimalTheme() {
   return {
     name: 'Light (minimal)',
     palette: {
       ...defaults,
       primary: { main: grey[900] },
       secondary: { main: grey[800] },
-      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
+      tertiary: { main: grey[900] },
     },
   } satisfies ThemeOptions & { name: string }
 }
@@ -238,7 +223,7 @@ function getMinimalTheme() {
 export const defaultThemes = {
   default: getDefaultTheme(),
   lightStock: getLightStockTheme(),
-  lightMinimal: getMinimalTheme(),
+  lightMinimal: getLightMinimalTheme(),
   darkMinimal: getDarkMinimalTheme(),
   darkStock: getDarkStockTheme(),
 } as ThemeMap
@@ -385,9 +370,14 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       MuiLink: {
         styleOverrides: {
           // the default link color uses theme.palette.primary.main which is
-          // very bad with dark mode+midnight primary
+          // very bad with dark mode+midnight primary. use forest-green
+          // (tertiary) in light mode, but fall back to a text-like color in
+          // dark mode where tertiary has poor contrast on the dark background
           root: ({ theme }) => ({
-            color: theme.palette.text.secondary,
+            color:
+              theme.palette.mode === 'dark'
+                ? theme.palette.text.secondary
+                : theme.palette.tertiary.main,
           }),
         },
       },
@@ -488,7 +478,9 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   return deepmerge(themeP, theme ?? {}, { arrayMerge: overwriteArrayMerge })
 }
 
-type ThemeMap = Record<string, ThemeOptions>
+// themes carry a display `name` (shown in the theme picker) on top of the
+// standard MUI ThemeOptions
+export type ThemeMap = Record<string, ThemeOptions & { name?: string }>
 
 const themeCache = new Map<string, Theme>()
 
@@ -559,17 +551,17 @@ function addMissingColors(theme: ThemeOptions = {}) {
         quaternary: palette?.quaternary ?? lightgrey,
         tertiary: palette?.tertiary ?? lightgrey,
         highlight: palette?.highlight ?? mandarin,
-        coverage: palette?.coverage || coverage,
-        insertion: palette?.insertion || insertion,
-        softclip: palette?.softclip || softclip,
-        skip: palette?.skip || skip,
-        hardclip: palette?.hardclip || hardclip,
-        deletion: palette?.deletion || deletion,
-        modificationFwd: palette?.modificationFwd || modificationFwd,
-        modificationRev: palette?.modificationRev || modificationRev,
-        mutedSnpBase: palette?.mutedSnpBase || mutedSnpBase,
-        startCodon: palette?.startCodon || startCodon,
-        stopCodon: palette?.stopCodon || stopCodon,
+        coverage: palette?.coverage ?? coverage,
+        insertion: palette?.insertion ?? insertion,
+        softclip: palette?.softclip ?? softclip,
+        skip: palette?.skip ?? skip,
+        hardclip: palette?.hardclip ?? hardclip,
+        deletion: palette?.deletion ?? deletion,
+        modificationFwd: palette?.modificationFwd ?? modificationFwd,
+        modificationRev: palette?.modificationRev ?? modificationRev,
+        mutedSnpBase: palette?.mutedSnpBase ?? mutedSnpBase,
+        startCodon: palette?.startCodon ?? startCodon,
+        stopCodon: palette?.stopCodon ?? stopCodon,
         bases: { ...bases, ...palette?.bases },
         frames: palette?.frames ?? frames,
         framesCDS: palette?.framesCDS ?? framesCDS,
@@ -578,4 +570,7 @@ function addMissingColors(theme: ThemeOptions = {}) {
   )
 }
 
+// Alias for Theme; the `declare module` augmentation above adds the custom
+// palette properties (frames, framesCDS, bases, etc.). Import this instead of
+// Theme directly so those properties are typed.
 export type JBrowseTheme = Theme
