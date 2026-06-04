@@ -40,15 +40,17 @@ export function ColorPopover({
   onChange,
   onClose,
   color,
+  presetAlpha,
 }: {
   color: string
   anchorEl: HTMLElement | null
   onChange: (val: string) => void
   onClose: () => void
+  presetAlpha?: number
 }) {
   return (
     <Popover open={!!anchorEl} anchorEl={anchorEl} onClose={onClose}>
-      <ColorPicker color={color} onChange={onChange} />
+      <ColorPicker color={color} onChange={onChange} presetAlpha={presetAlpha} />
     </Popover>
   )
 }
@@ -56,9 +58,13 @@ export function ColorPopover({
 export default function ColorPicker({
   onChange,
   color,
+  presetAlpha,
 }: {
   color: string
   onChange: (val: string) => void
+  // when set, clicking a preset swatch applies this alpha (e.g. 0.2 so
+  // highlights default to translucent); the alpha slider can still override it
+  presetAlpha?: number
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useLocalStorage('colorPickerPalette', 'set1')
@@ -103,7 +109,11 @@ export default function ColorPicker({
               className={classes.swatch}
               style={{ background: presetColor }}
               onClick={() => {
-                handleChange(presetColor)
+                handleChange(
+                  presetAlpha === undefined
+                    ? presetColor
+                    : colord(presetColor).alpha(presetAlpha).toRgbString(),
+                )
               }}
             />
           ))}

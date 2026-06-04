@@ -106,8 +106,10 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
+  // navToBookmark grows the region by 0.2 for context, so a 40bp bookmark
+  // (ctgA:201..240) lands zoomed out by 8bp on each side
   await waitFor(() => {
-    expect(view.visibleLocStrings).toBe('ctgA:201..240')
+    expect(view.visibleLocStrings).toBe('ctgA:193..248')
   })
 }, 40000)
 

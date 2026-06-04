@@ -13,7 +13,11 @@ import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export const DEFAULT_HIGHLIGHT = 'rgba(247, 129, 192, 0.35)'
+// alpha applied to highlight colors so they overlay the view rather than
+// obscure it; shared by the default highlight and the color-picker presets
+export const HIGHLIGHT_ALPHA = 0.2
+
+export const DEFAULT_HIGHLIGHT = `rgba(247, 129, 192, ${HIGHLIGHT_ALPHA})`
 
 const LabeledRegionModel = types
   .compose(
@@ -118,6 +122,7 @@ export default function f(_pluginManager: PluginManager) {
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
       /**
        * #volatile
+       * undefined = "all valid assemblies"; an array = explicit filter
        */
       selectedAssembliesPre: undefined as string[] | undefined,
       /**
@@ -269,7 +274,9 @@ export default function f(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      clearAllBookmarks() {
+      // keeps bookmarks from unknown assemblies (they have no valid home to
+      // navigate to, but discarding them silently would lose user data)
+      clearBookmarksForLoadedAssemblies() {
         self.setBookmarkedRegions(
           self.bookmarks.filter(
             bookmark => !self.validAssemblies.has(bookmark.assemblyName),

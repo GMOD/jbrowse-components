@@ -5,15 +5,18 @@ export default function ActionLink({
   onClick,
   children,
   className,
+  title,
 }: {
   onClick: () => void
   children: React.ReactNode
   className?: string
+  title?: string
 }) {
   return (
     <Link
       href="#"
       className={className}
+      title={title}
       onClick={(e: React.MouseEvent) => {
         e.preventDefault()
         onClick()

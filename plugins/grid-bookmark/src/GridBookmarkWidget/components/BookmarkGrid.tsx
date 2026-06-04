@@ -1,8 +1,5 @@
-import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   DataGrid,
   GRID_CHECKBOX_SELECTION_COL_DEF,
@@ -10,29 +7,41 @@ import {
 } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { DEFAULT_HIGHLIGHT } from '../model.ts'
-import { colWidth, navToBookmark } from '../utils.ts'
+import EmptyState from './EmptyState.tsx'
+import SelectionActions from './SelectionActions.tsx'
+import {
+  COMPACT_ROW_HEIGHT,
+  assemblyColumn,
+  colorColumn,
+  labelColumn,
+  locationColumn,
+  startLabelEditOnClick,
+  useCellStyles,
+} from './columns.tsx'
+import { navToBookmark } from '../utils.ts'
 
-import type { GridBookmarkModel } from '../model.ts'
+import type { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model.ts'
 
-const useStyles = makeStyles()(() => ({
-  cell: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-}))
+interface BookmarkRow extends IExtendedLabeledRegionModel {
+  locString: string
+}
 
 // MUI DataGrid default page size for pagination; hide the footer pager when
 // the row count fits in a single page
 const DEFAULT_PAGE_SIZE = 100
+
+function NoBookmarksOverlay() {
+  return (
+    <EmptyState message="No bookmarks yet. Drag across a view to bookmark a region, or import from the menu." />
+  )
+}
 
 const BookmarkGrid = observer(function BookmarkGrid({
   model,
 }: {
   model: GridBookmarkModel
 }) {
-  const { classes } = useStyles()
+  const { classes } = useCellStyles()
   const apiRef = useGridApiRef()
   const {
     bookmarks,
@@ -45,7 +54,7 @@ const BookmarkGrid = observer(function BookmarkGrid({
   const selectedSet = new Set(selectedAssemblies)
   const rows = bookmarks
     .filter(r => selectedSet.has(r.assemblyName))
-    .map((region, index) => {
+    .map((region, index): BookmarkRow => {
       const { assemblyName, ...rest } = region
       return {
         ...region,
@@ -56,89 +65,47 @@ const BookmarkGrid = observer(function BookmarkGrid({
       }
     })
 
-  const widths = [
-    50,
-    colWidth(
-      'Bookmark link',
-      rows.map(row => row.locString),
-    ),
-    colWidth(
-      'Label',
-      rows.map(row => row.label),
-    ),
-    colWidth(
-      'Assembly',
-      rows.map(row => row.assemblyName),
-    ),
-    100,
-  ]
-
   return (
     <DataGridFlexContainer>
+      <SelectionActions
+        count={selectedBookmarks.length}
+        color={selectedBookmarks[0]?.highlight}
+        onDelete={() => {
+          model.clearSelectedBookmarks()
+        }}
+        onRecolor={color => {
+          model.updateBulkBookmarkHighlights(color)
+        }}
+      />
       <DataGrid
         apiRef={apiRef}
         density="compact"
+        rowHeight={COMPACT_ROW_HEIGHT}
         disableRowSelectionOnClick
-        onCellClick={params => {
-          if (params.field === 'label') {
-            apiRef.current?.startCellEditMode({ id: params.id, field: 'label' })
-          }
-        }}
+        hideFooterSelectedRowCount
+        onCellClick={startLabelEditOnClick(apiRef)}
         hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
+        slots={{ noRowsOverlay: NoBookmarksOverlay }}
         rows={rows}
         columns={[
-          {
-            ...GRID_CHECKBOX_SELECTION_COL_DEF,
-            width: widths[0],
-          },
-          {
-            field: 'locString',
-            headerName: 'Bookmark link',
-            width: widths[1],
-            renderCell: ({ value, row }) => (
-              <ActionLink
-                className={classes.cell}
-                onClick={async () => {
-                  const { views } = session
-                  await navToBookmark(value, row.assemblyName, views, model)
-                }}
-              >
-                {value}
-              </ActionLink>
-            ),
-          },
-          {
-            field: 'label',
-            headerName: 'Label',
-            width: widths[2],
-            editable: true,
-            renderCell: ({ value }) =>
-              value ? (
-                <span className={classes.cell}>{value}</span>
-              ) : (
-                <span style={{ color: 'grey', fontStyle: 'italic' }}>
-                  Add label...
-                </span>
-              ),
-          },
-          {
-            field: 'assemblyName',
-            headerName: 'Assembly',
-            width: widths[3],
-          },
-          {
-            field: 'highlight',
-            headerName: 'Highlight',
-            width: widths[4],
-            renderCell: ({ value, row }) => (
-              <PopoverPicker
-                color={value ?? DEFAULT_HIGHLIGHT}
-                onChange={event => {
-                  model.updateBookmarkHighlight(row, event)
-                }}
-              />
-            ),
-          },
+          { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
+          locationColumn<BookmarkRow>(classes.cell, 'Bookmark link', row => {
+            void navToBookmark(
+              row.locString,
+              row.assemblyName,
+              session.views,
+              model,
+            )
+          }),
+          labelColumn<BookmarkRow>(classes.cell),
+          ...assemblyColumn<BookmarkRow>(rows.map(row => row.assemblyName)),
+          colorColumn<BookmarkRow>(
+            'highlight',
+            row => row.highlight,
+            (row, color) => {
+              model.updateBookmarkHighlight(row, color)
+            },
+          ),
         ]}
         processRowUpdate={row => {
           const target = rows[row.id]!

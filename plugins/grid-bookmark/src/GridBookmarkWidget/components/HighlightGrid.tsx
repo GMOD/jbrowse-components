@@ -1,34 +1,55 @@
 import { useState } from 'react'
 
-import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import Delete from '@mui/icons-material/Delete'
-import { IconButton, Tooltip, useTheme } from '@mui/material'
-import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
+import { useTheme } from '@mui/material'
+import {
+  DataGrid,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
+  useGridApiRef,
+} from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { colWidth } from '../utils.ts'
+import EmptyState from './EmptyState.tsx'
+import SelectionActions from './SelectionActions.tsx'
+import {
+  COMPACT_ROW_HEIGHT,
+  assemblyColumn,
+  colorColumn,
+  labelColumn,
+  locationColumn,
+  startLabelEditOnClick,
+  useCellStyles,
+} from './columns.tsx'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../model.ts'
 import type { GridRowId } from '@mui/x-data-grid'
 
-const useStyles = makeStyles()({
-  cell: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-})
+function NoHighlightsOverlay() {
+  return (
+    <EmptyState message="No highlights yet. Highlights added to a view appear here." />
+  )
+}
+
+type Highlight = IExtendedLGV['highlight'][number]
+
+interface HighlightRow {
+  id: string
+  view: IExtendedLGV
+  highlight: Highlight
+  locString: string
+  label: string
+  assemblyName: string
+  color?: string
+}
 
 const HighlightGrid = observer(function HighlightGrid({
   model,
 }: {
   model: GridBookmarkModel
 }) {
-  const { classes } = useStyles()
+  const { classes } = useCellStyles()
+  const apiRef = useGridApiRef()
   const theme = useTheme()
   const session = getSession(model)
   const [selectedIds, setSelectedIds] = useState(new Set<GridRowId>())
@@ -40,7 +61,7 @@ const HighlightGrid = observer(function HighlightGrid({
         Array.isArray((v as IExtendedLGV).highlight),
     )
     .flatMap(view =>
-      view.highlight.map((highlight, hIdx) => {
+      view.highlight.map((highlight, hIdx): HighlightRow => {
         const { assemblyName = '', refName, start, end } = highlight
         return {
           id: `${view.id}-${hIdx}`,
@@ -58,112 +79,57 @@ const HighlightGrid = observer(function HighlightGrid({
     // hidden by the filter
     .filter(r => !r.assemblyName || selectedSet.has(r.assemblyName))
 
-  return rows.length ? (
+  return (
     <DataGridFlexContainer>
-      {selectedIds.size > 0 ? (
-        <Tooltip title={`Delete ${selectedIds.size} selected highlight(s)`}>
-          <IconButton
-            size="small"
-            sx={{ ml: 1 }}
-            onClick={() => {
-              for (const r of rows.filter(r => selectedIds.has(r.id))) {
-                r.view.removeHighlight(r.highlight)
-              }
-              setSelectedIds(new Set())
-            }}
-          >
-            <Delete fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      ) : null}
+      <SelectionActions
+        count={selectedIds.size}
+        color={rows.find(r => selectedIds.has(r.id))?.color}
+        onDelete={() => {
+          for (const r of rows.filter(r => selectedIds.has(r.id))) {
+            r.view.removeHighlight(r.highlight)
+          }
+          setSelectedIds(new Set())
+        }}
+        onRecolor={color => {
+          for (const r of rows.filter(r => selectedIds.has(r.id))) {
+            r.view.updateHighlight(r.highlight, { color })
+          }
+        }}
+      />
       <DataGrid
+        apiRef={apiRef}
         density="compact"
+        rowHeight={COMPACT_ROW_HEIGHT}
         disableRowSelectionOnClick
         hideFooterSelectedRowCount
+        onCellClick={startLabelEditOnClick(apiRef)}
         hideFooterPagination={rows.length <= 100}
+        slots={{ noRowsOverlay: NoHighlightsOverlay }}
         rows={rows}
         columns={[
-          {
-            ...GRID_CHECKBOX_SELECTION_COL_DEF,
-            width: 50,
-          },
-          {
-            field: 'locString',
-            headerName: 'Location',
-            width: colWidth(
-              'Location',
-              rows.map(r => r.locString),
-            ),
-            renderCell: ({ value, row }) => (
-              <ActionLink
-                className={classes.cell}
-                onClick={() =>
-                  row.view.navTo(
-                    {
-                      refName: row.highlight.refName,
-                      start: row.highlight.start,
-                      end: row.highlight.end,
-                      assemblyName: row.highlight.assemblyName,
-                    },
-                    // slightly zoom out so the highlighted region has
-                    // context on either side
-                    0.2,
-                  )
-                }
-              >
-                {value}
-              </ActionLink>
-            ),
-          },
-          {
-            field: 'label',
-            headerName: 'Label',
-            editable: true,
-            width: colWidth(
-              'Label',
-              rows.map(r => r.label),
-            ),
-          },
-          {
-            field: 'assemblyName',
-            headerName: 'Assembly',
-            width: colWidth(
-              'Assembly',
-              rows.map(r => r.assemblyName),
-            ),
-          },
-          {
-            field: 'color',
-            headerName: 'Color',
-            width: 100,
-            renderCell: ({ value, row }) => (
-              <PopoverPicker
-                color={value ?? theme.palette.highlight.main}
-                onChange={newColor => {
-                  row.view.updateHighlight(row.highlight, { color: newColor })
-                }}
-              />
-            ),
-          },
-          {
-            field: 'actions',
-            headerName: '',
-            width: 50,
-            sortable: false,
-            filterable: false,
-            renderCell: ({ row }) => (
-              <Tooltip title="Remove highlight">
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    row.view.removeHighlight(row.highlight)
-                  }}
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            ),
-          },
+          { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
+          locationColumn<HighlightRow>(classes.cell, 'Location', row => {
+            row.view.navTo(
+              {
+                refName: row.highlight.refName,
+                start: row.highlight.start,
+                end: row.highlight.end,
+                assemblyName: row.highlight.assemblyName,
+              },
+              // slightly zoom out so the highlighted region has context on
+              // either side
+              0.2,
+            )
+          }),
+          labelColumn<HighlightRow>(classes.cell),
+          ...assemblyColumn<HighlightRow>(rows.map(r => r.assemblyName)),
+          colorColumn<HighlightRow>(
+            'color',
+            row => row.color ?? theme.palette.highlight.main,
+            (row, color) => {
+              row.view.updateHighlight(row.highlight, { color })
+            },
+          ),
         ]}
         checkboxSelection
         onRowSelectionModelChange={({ ids }) => {
@@ -181,7 +147,7 @@ const HighlightGrid = observer(function HighlightGrid({
         }}
       />
     </DataGridFlexContainer>
-  ) : null
+  )
 })
 
 export default HighlightGrid

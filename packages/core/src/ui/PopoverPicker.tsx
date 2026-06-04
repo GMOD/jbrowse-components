@@ -20,9 +20,11 @@ const useStyles = makeStyles()({
 export default function PopoverPicker({
   color,
   onChange,
+  presetAlpha,
 }: {
   color: string
   onChange: (color: string) => void
+  presetAlpha?: number
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
   const { classes } = useStyles()
@@ -42,6 +44,7 @@ export default function PopoverPicker({
         }}
         color={color}
         onChange={onChange}
+        presetAlpha={presetAlpha}
       />
     </div>
   )

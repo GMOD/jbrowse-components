@@ -14,9 +14,14 @@ type LGV = LinearGenomeViewModel
 type MaybeLGV = LGV | undefined
 
 // DataGrid column width fitting the wider of the header text and the cell
-// values, shared by the bookmark and highlight grids
-export function colWidth(header: string, values: string[]) {
-  return Math.max(measureText(header, 12) + 30, measureGridWidth(values))
+// values, shared by the bookmark and highlight grids. Capped at maxWidth so
+// long values ellipsize (via the .cell style) instead of overflowing the
+// narrow sidebar widget
+export function colWidth(header: string, values: string[], maxWidth = 200) {
+  return Math.min(
+    Math.max(measureText(header, 12) + 30, measureGridWidth(values)),
+    maxWidth,
+  )
 }
 
 export async function navToBookmark(
@@ -47,7 +52,8 @@ export async function navToBookmark(
         id: newViewId,
       }) as LGV
     }
-    await view.navToLocString(locString, assembly)
+    // slightly zoom out so the bookmarked region has context on either side
+    await view.navToLocString(locString, assembly, 0.2)
   } catch (e) {
     console.error(e)
     session.notifyError(`${e}`, e)
