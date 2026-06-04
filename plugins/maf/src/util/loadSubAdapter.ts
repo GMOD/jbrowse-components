@@ -11,11 +11,13 @@ import type {
  * BedTabix) and need identical "download index → snapshot config → swap type
  * → typecast" plumbing. This is the single source of truth.
  */
-export async function loadSubAdapter(
+export async function loadSubAdapter<
+  T extends BaseFeatureDataAdapter = BaseFeatureDataAdapter,
+>(
   self: BaseFeatureDataAdapter,
   subType: string,
   opts?: BaseOptions,
-): Promise<{ adapter: BaseFeatureDataAdapter }> {
+): Promise<{ adapter: T }> {
   if (!self.getSubAdapter) {
     throw new Error('no getSubAdapter available')
   }
@@ -25,7 +27,7 @@ export async function loadSubAdapter(
       ...getSnapshot(self.config),
       type: subType,
     })
-    return { adapter: result.dataAdapter as BaseFeatureDataAdapter }
+    return { adapter: result.dataAdapter as T }
   })
 }
 

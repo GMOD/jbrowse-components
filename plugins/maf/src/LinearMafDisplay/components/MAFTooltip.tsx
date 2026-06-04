@@ -42,12 +42,12 @@ const MAFTooltip = observer(function ({
     ) : null
   }
 
-  // Per-cell hover: convert (mouseX, mouseY) to (bp, rowIndex into
-  // `sources`) and look up the sample/base at that cell. Skipped during a
-  // selection drag (origMouseX set) so the drag's range readout stays.
-  const cell =
+  // Per-row hover: convert (mouseX, mouseY) to (bp, rowIndex into `sources`)
+  // and resolve the aligned base or bridged/empty region at that row. Skipped
+  // during a selection drag (origMouseX set) so the drag's range readout stays.
+  const hover =
     origMouseX === undefined && !p2.oob
-      ? model.cellHoverInfo(
+      ? model.rowHoverInfo(
           p2.index,
           p2.coord - 1,
           Math.floor((mouseY + scrollTop - coverageDisplayHeight) / rowHeight),
@@ -56,7 +56,7 @@ const MAFTooltip = observer(function ({
 
   return (
     <BaseTooltip>
-      <SanitizedHTML html={generateTooltipContent(p1, p2, cell)} />
+      <SanitizedHTML html={generateTooltipContent(p1, p2, hover)} />
     </BaseTooltip>
   )
 })

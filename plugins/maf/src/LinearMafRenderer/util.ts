@@ -13,6 +13,10 @@ export interface MafColorPalette {
   mismatchOffColor: string
   unknownBaseColor: string
   insertionColor: string
+  /** Color of the single/double bridge lines drawn for `e`-line rows */
+  bridgeLineColor: string
+  /** Pale fill for `M`-status (missing-data) bridged rows, à la UCSC */
+  missingDataColor: string
 }
 
 export function getColorBaseMap(theme: Theme) {
@@ -34,6 +38,8 @@ export function getMafColorPalette(theme: Theme): MafColorPalette {
     mismatchOffColor: theme.palette.mutedSnpBase,
     unknownBaseColor: theme.palette.text.primary,
     insertionColor: theme.palette.insertion,
+    bridgeLineColor: theme.palette.text.secondary,
+    missingDataColor: '#ffffcc',
   }
 }
 

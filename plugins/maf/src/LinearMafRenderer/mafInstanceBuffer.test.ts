@@ -36,11 +36,13 @@ function block(
   const enc = new TextEncoder()
   return {
     startBp,
+    endBp: startBp + ref.replace(/-/g, '').length,
     refSeqBytes: enc.encode(ref),
     rows: rows.map(([rowIndex, seq]) => ({
       rowIndex,
       alignmentBytes: enc.encode(seq),
     })),
+    empties: [],
   }
 }
 
@@ -58,6 +60,8 @@ const args = {
     mismatchOffColor: '#ffa500',
     unknownBaseColor: '#000000',
     insertionColor: '#800080',
+    bridgeLineColor: '#888888',
+    missingDataColor: '#ffffcc',
   },
   showAllLetters: false,
   mismatchRendering: true,

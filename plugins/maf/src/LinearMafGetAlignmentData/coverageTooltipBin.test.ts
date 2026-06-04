@@ -13,11 +13,13 @@ function block(
 ): MafBlock {
   return {
     startBp,
+    endBp: startBp + refSeq.replace(/-/g, '').length,
     refSeqBytes: enc.encode(refSeq),
     rows: rows.map(r => ({
       rowIndex: r.rowIndex,
       alignmentBytes: enc.encode(r.sample),
     })),
+    empties: [],
   }
 }
 

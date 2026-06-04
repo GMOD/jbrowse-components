@@ -1,4 +1,5 @@
 import type { MafColorPalette } from './util.ts'
+import type { AlignmentContext, MafStatus } from '../types.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
@@ -25,12 +26,37 @@ export interface MafGPURenderState {
 export interface MafAlignedRow {
   rowIndex: number
   alignmentBytes: Uint8Array
+  // Per-row species coords + context, retained for hover tooltips only (the
+  // per-base color encoder and coverage code ignore them). Optional because
+  // they are tooltip metadata, not needed to render.
+  chr?: string
+  start?: number
+  strand?: number
+  srcSize?: number
+  context?: AlignmentContext
+}
+
+// A bridged/empty row (MAF `e` line): the species has no aligned bases in this
+// block but its flanking blocks are chained. Drawn as a single/double line or
+// pale bar across the block's reference extent (see emptyLines.ts).
+export interface MafEmptyRow {
+  rowIndex: number
+  status: MafStatus
+  chr: string
+  start: number
+  size: number
+  strand: number
+  srcSize: number
 }
 
 export interface MafBlock {
   startBp: number
+  // Absolute genomic end (startBp + count of non-dash reference bytes). Lets
+  // the e-line overlay span the block without re-walking refSeqBytes.
+  endBp: number
   refSeqBytes: Uint8Array
   rows: MafAlignedRow[]
+  empties: MafEmptyRow[]
 }
 
 // Per-region MAF coverage area data. `coverageDepths[i]` covers

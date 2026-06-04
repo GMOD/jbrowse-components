@@ -9,12 +9,11 @@ import {
   matchSampleId,
   parseAssemblyAndChrSimple,
 } from '../util/parseAssemblyName.ts'
+import { parseBigMafStanza } from '../util/parseBigMaf.ts'
 
-import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
+import type { MafAdapterOptions } from '../types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
-
-const WHITESPACE_REGEX = / +/
 
 export default class BigMafAdapter extends BaseFeatureDataAdapter {
   public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
@@ -40,34 +39,18 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
       const { adapter } = await this.setupPre(opts)
       const sampleIds = buildSampleFilter(opts)
 
+      // bigMaf packs the full MAF stanza (s/i/e/q lines) into one ';'-joined
+      // `mafBlock` field; parseBigMafStanza turns it into aligned + empty rows.
+      const resolve = (organismChr: string) =>
+        sampleIds
+          ? matchSampleId(organismChr, sampleIds)
+          : parseAssemblyAndChrSimple(organismChr)
+
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
-        const maf = feature.get('mafBlock') as string
-        const blocks = maf.split(';')
-        const alignments: Record<string, AlignmentRecord> = {}
-        let referenceSeq: string | undefined
-
-        for (const block of blocks) {
-          if (block.startsWith('s')) {
-            const parts = block.split(WHITESPACE_REGEX)
-            const sequence = parts[6]!
-            const organismChr = parts[1]!
-
-            referenceSeq ??= sequence
-
-            const parsed = sampleIds
-              ? matchSampleId(organismChr, sampleIds)
-              : parseAssemblyAndChrSimple(organismChr)
-
-            if (parsed?.assemblyName) {
-              alignments[parsed.assemblyName] = {
-                chr: parsed.chr,
-                start: parseInt(parts[2]!, 10),
-                seq: sequence,
-              }
-            }
-          }
-        }
-
+        const { alignments, empties, referenceSeq } = parseBigMafStanza(
+          feature.get('mafBlock') as string,
+          resolve,
+        )
         observer.next(
           new MafFeature(
             feature.id(),
@@ -76,7 +59,8 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
             feature.get('refName'),
             0, // strand not in BigMaf format
             alignments,
-            referenceSeq ?? '',
+            referenceSeq,
+            empties,
           ),
         )
       })
@@ -87,5 +71,21 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
 
   async getSamples() {
     return getSamplesFromConfig(key => this.getConf(key))
+  }
+
+  // bbi exposes no per-region byte size, so estimate the fetch budget from span
+  // × configured sample count (the dominant term: ~one char per base per
+  // species). Falls back to no gate when samples aren't configured.
+  async getMultiRegionFeatureDensityStats(regions: Region[]) {
+    const samples = this.getConf('samples')
+    const n = Array.isArray(samples) ? samples.length : 0
+    if (!n) {
+      return { featureDensity: 0 }
+    }
+    let bp = 0
+    for (const r of regions) {
+      bp += r.end - r.start
+    }
+    return { bytes: bp * n }
   }
 }

@@ -8,6 +8,7 @@ import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
 import DragSelectionRect from './DragSelectionRect.tsx'
+import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
 import MafCoverageResizeHandle from './MafCoverageResizeHandle.tsx'
@@ -129,6 +130,12 @@ const MafBody = observer(function MafBody({
             width,
             height: rowsHeight,
           }}
+        />
+        <EmptyLinesOverlay
+          segments={model.visibleEmptyLines}
+          width={width}
+          height={rowsHeight}
+          palette={palette}
         />
         <VisibleLabelsOverlay
           labels={model.visibleLabels}

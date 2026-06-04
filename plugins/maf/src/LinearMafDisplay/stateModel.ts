@@ -3,7 +3,7 @@ import {
   computeCoverageTicks,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -25,8 +25,9 @@ import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
 import { observable } from 'mobx'
 
+import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { findCellAtBp } from './components/findCellAtBp.ts'
+import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { fetchMafAlignmentData } from './fetchMafAlignmentData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
@@ -470,35 +471,30 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * Resolve a per-cell hover hit: given a region index, absolute genomic
-       * bp (uint32, per worker-output convention), and a row index into
-       * `sources`, return the sample label + base at that cell. Returns
-       * undefined when no fetched block covers the bp, the row is out of
-       * range, or the cell is a gap. Base-case folding mirrors
-       * `computeVisibleLabels`.
+       * Resolve a hover hit on `rowIndex` at absolute genomic `bp` (uint32, per
+       * worker-output convention): an aligned base (`cell`) or a bridged/empty
+       * region (`empty`), each tagged with the sample label. Returns undefined
+       * when no fetched block covers the bp, the row is out of range, or the
+       * cell is a gap.
        */
-      cellHoverInfo(
+      rowHoverInfo(
         displayedRegionIndex: number,
         bp: number,
         rowIndex: number,
       ) {
         const { sources } = self
-        if (!sources || rowIndex < 0 || rowIndex >= sources.length) {
-          return undefined
-        }
-        const region = self.rpcDataMap.get(displayedRegionIndex)
-        if (!region) {
-          return undefined
-        }
-        const cell = findCellAtBp(region, bp, rowIndex, self.showAsUpperCase)
-        if (!cell) {
+        const region =
+          sources && rowIndex >= 0 && rowIndex < sources.length
+            ? self.rpcDataMap.get(displayedRegionIndex)
+            : undefined
+        const hit = region
+          ? findRowHoverAtBp(region, bp, rowIndex, self.showAsUpperCase)
+          : undefined
+        if (!hit || !sources) {
           return undefined
         }
         const source = sources[rowIndex]!
-        return {
-          sampleLabel: source.label ?? source.name,
-          base: cell.base,
-        }
+        return { ...hit, sampleLabel: source.label ?? source.name }
       },
       /**
        * #method
@@ -543,6 +539,22 @@ export default function stateModelFactory(
           rowProportion: self.rowProportion,
           showAllLetters: self.showAllLetters,
           showAsUpperCase: self.showAsUpperCase,
+        })
+      },
+      /**
+       * #getter
+       * Positioned bridge-line segments for `e`-line (empty/bridged) rows.
+       */
+      get visibleEmptyLines() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return []
+        }
+        return computeVisibleEmptyLines({
+          view,
+          rpcDataMap: self.rpcDataMap,
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
         })
       },
     }))
@@ -628,6 +640,22 @@ export default function stateModelFactory(
     .actions(self => ({
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         return fetchMafAlignmentData(self, needed)
+      },
+      /**
+       * #action
+       * Enable byte-estimate gating: above ~20kb visible, the adapter's
+       * MAF-aware byte estimate (per-species sequence × span) is checked against
+       * `fetchSizeLimit`, blocking the detail fetch with a force-load prompt
+       * rather than downloading hundreds of species' bases at genome scale.
+       */
+      getByteEstimateConfig() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return {
+          adapterConfig: self.adapterConfig,
+          fetchSizeLimit: getConf(self, 'fetchSizeLimit'),
+          userByteSizeLimit: self.userByteSizeLimit,
+          visibleBp: view.visibleBp,
+        }
       },
     }))
     .actions(self => {

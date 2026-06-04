@@ -56,6 +56,15 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.bed.getHeader(opts)
   }
 
+  /**
+   * Estimate compressed bytes for regions straight from the tabix index — no
+   * feature download. Lets wrapping adapters (e.g. MafTabix) byte-budget a
+   * fetch before pulling the (potentially huge) per-line payload.
+   */
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    return this.bed.bytesForRegions(regions, opts)
+  }
+
   private async configure() {
     this.setupP ??= this.bed.getMetadata().catch((e: unknown) => {
       this.setupP = undefined

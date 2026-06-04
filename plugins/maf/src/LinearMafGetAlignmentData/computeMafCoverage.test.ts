@@ -13,7 +13,13 @@ function block(
   refSeq: string,
   rows: { rowIndex: number; alignmentBytes: Uint8Array }[],
 ): MafBlock {
-  return { startBp, refSeqBytes: enc.encode(refSeq), rows }
+  return {
+    startBp,
+    endBp: startBp + refSeq.replace(/-/g, '').length,
+    refSeqBytes: enc.encode(refSeq),
+    rows,
+    empties: [],
+  }
 }
 
 test('counts per-position depth across sample rows', () => {

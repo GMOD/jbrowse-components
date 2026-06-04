@@ -12,16 +12,21 @@ import {
 } from '../util/parseAssemblyName.ts'
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseFeatureDataAdapter as BaseAdapter, BaseOptions  } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class MafTabixAdapter extends BaseFeatureDataAdapter {
-  public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
+// BedTabixAdapter exposes an index-only byte estimate (tabix bytesForRegions).
+type TabixByteAdapter = BaseAdapter & {
+  getRegionByteSize: (regions: Region[], opts?: BaseOptions) => Promise<number>
+}
 
-  async setupPre(
-    opts?: BaseOptions,
-  ): Promise<{ adapter: BaseFeatureDataAdapter }> {
-    return lazyInit(this, () => loadSubAdapter(this, 'BedTabixAdapter', opts))
+export default class MafTabixAdapter extends BaseFeatureDataAdapter {
+  public setupP?: Promise<{ adapter: TabixByteAdapter }>
+
+  async setupPre(opts?: BaseOptions): Promise<{ adapter: TabixByteAdapter }> {
+    return lazyInit(this, () =>
+      loadSubAdapter<TabixByteAdapter>(this, 'BedTabixAdapter', opts),
+    )
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -99,5 +104,16 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
 
   async getSamples() {
     return getSamplesFromConfig(key => this.getConf(key))
+  }
+
+  // Byte budget for the fetch gate comes straight from the tabix index (the
+  // .bed.gz already contains every species' sequence, so the compressed block
+  // size is a faithful download estimate). No feature download.
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
+    const { adapter } = await this.setupPre(opts)
+    return { bytes: await adapter.getRegionByteSize(regions, opts) }
   }
 }

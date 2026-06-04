@@ -11,6 +11,7 @@ import { when } from 'mobx'
 
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
+import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import {
   getContrastBaseMap,
@@ -88,6 +89,7 @@ export async function renderSvg(
       <g transform={`translate(0, ${coverageDisplayHeight})`}>
         {paintLayer(width, rowsHeight, opts, ctx => {
           drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
+          drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
           drawMafLabels(
             ctx,
             model.visibleLabels,

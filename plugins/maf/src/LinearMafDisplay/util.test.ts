@@ -62,4 +62,43 @@ describe('generateTooltipContent', () => {
     })
     expect(result).toBe('Ref: chr1:150')
   })
+
+  test('cell hover shows sample, base, species location, and context', () => {
+    const result = generateTooltipContent(
+      undefined,
+      { refName: 'chr1', coord: 150 },
+      {
+        kind: 'cell',
+        sampleLabel: 'mouse',
+        base: 'G',
+        chr: 'chr5',
+        pos: 999,
+        strand: -1,
+        context: { leftStatus: 'I', leftCount: 234 },
+      },
+    )
+    expect(result).toContain('Sample: mouse')
+    expect(result).toContain('Base: G')
+    expect(result).toContain('Location: chr5:1,000 (-)')
+    expect(result).toContain('Left: intervening bases (234 bp)')
+  })
+
+  test('empty hover explains the bridged status', () => {
+    const result = generateTooltipContent(
+      undefined,
+      { refName: 'chr1', coord: 150 },
+      {
+        kind: 'empty',
+        sampleLabel: 'rat',
+        status: 'M',
+        chr: 'chr9',
+        start: 4,
+        size: 200,
+        strand: 1,
+      },
+    )
+    expect(result).toContain('Sample: rat')
+    expect(result).toContain('No alignment: missing data (Ns)')
+    expect(result).toContain('Location: chr9:5 (+), 200 bp')
+  })
 })

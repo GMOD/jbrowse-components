@@ -30,6 +30,8 @@ function makeContext(ctx: object): RenderingContext {
       mismatchOffColor: '#ffa500',
       unknownBaseColor: '#000',
       insertionColor: '#800080',
+      bridgeLineColor: '#888888',
+      missingDataColor: '#ffffcc',
     },
     showAllLetters: false,
     mismatchRendering: true,

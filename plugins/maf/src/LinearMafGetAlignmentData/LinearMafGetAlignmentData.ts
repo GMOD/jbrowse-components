@@ -10,13 +10,14 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import { computeMafCoverage } from './computeMafCoverage.ts'
+import { DASH } from '../util/asciiBytes.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type {
   MafBlock,
   MafRegionData,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { AlignmentRecord, Sample } from '../types.ts'
+import type { AlignmentRecord, EmptyRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -100,8 +101,14 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       startBp: number
       refSeqBytes: Uint8Array
       alignments: Record<string, AlignmentRecord>
+      empties: Record<string, EmptyRecord>
     }[] = []
     const discoveredOrder = new Map<string, number>()
+    const discover = (sampleId: string) => {
+      if (!discoveredOrder.has(sampleId)) {
+        discoveredOrder.set(sampleId, discoveredOrder.size)
+      }
+    }
     await subscribeToObservable(
       adapter.getFeatures(region, opts),
       (feature: Feature) => {
@@ -109,15 +116,20 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
           string,
           AlignmentRecord
         >
+        const empties = feature.get('empties') as Record<string, EmptyRecord>
         for (const sampleId in alignments) {
-          if (!discoveredOrder.has(sampleId)) {
-            discoveredOrder.set(sampleId, discoveredOrder.size)
-          }
+          discover(sampleId)
+        }
+        // A species present only on `e` lines (bridged in every fetched block)
+        // still needs a row so its bridge line renders.
+        for (const sampleId in empties) {
+          discover(sampleId)
         }
         rawBlocks.push({
           startBp: feature.get('start'),
           refSeqBytes: enc.encode(feature.get('seq') as string),
           alignments,
+          empties,
         })
       },
     )
@@ -130,20 +142,47 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     // One MAF feature = one alignment block. A single fetched region can
     // contain many disjoint blocks at unrelated genomic anchors.
     const blocks: MafBlock[] = rawBlocks.map(
-      ({ startBp, refSeqBytes, alignments }) => {
+      ({ startBp, refSeqBytes, alignments, empties }) => {
         // for...in + push avoids the Object.entries+flatMap temp array
         // allocations on a per-block hot path.
-        const rows: { rowIndex: number; alignmentBytes: Uint8Array }[] = []
+        const rows: MafBlock['rows'] = []
         for (const sampleId in alignments) {
           const rowIndex = sampleToRow.get(sampleId)
           if (rowIndex !== undefined) {
+            const a = alignments[sampleId]!
             rows.push({
               rowIndex,
-              alignmentBytes: enc.encode(alignments[sampleId]!.seq),
+              alignmentBytes: enc.encode(a.seq),
+              chr: a.chr,
+              start: a.start,
+              strand: a.strand ?? 1,
+              srcSize: a.srcSize,
+              context: a.context,
             })
           }
         }
-        return { startBp, refSeqBytes, rows }
+        const emptyRows: MafBlock['empties'] = []
+        for (const sampleId in empties) {
+          const rowIndex = sampleToRow.get(sampleId)
+          if (rowIndex !== undefined) {
+            const e = empties[sampleId]!
+            emptyRows.push({ rowIndex, ...e })
+          }
+        }
+        // Genomic extent of the block = non-dash reference columns.
+        let refLen = 0
+        for (const b of refSeqBytes) {
+          if (b !== DASH) {
+            refLen++
+          }
+        }
+        return {
+          startBp,
+          endBp: startBp + refLen,
+          refSeqBytes,
+          rows,
+          empties: emptyRows,
+        }
       },
     )
 
