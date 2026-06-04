@@ -12,7 +12,7 @@ type LGV = LinearGenomeViewModel
 interface MenuState {
   anchorEl: HTMLElement
   refName: string
-  displayedRegionIndex: number | undefined
+  displayedRegionIndex: number
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -110,7 +110,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           setMenuState({
             anchorEl: e.currentTarget,
             refName,
-            displayedRegionIndex,
+            displayedRegionIndex: displayedRegionIndex!,
           })
         }}
       >
@@ -160,62 +160,6 @@ function getLabelLayout(
   return { transform, maxWidth }
 }
 
-function buildActionItems(
-  displayedRegionIndex: number,
-  numRegions: number,
-  move: (from: number, to: number) => void,
-  remove: (index: number) => void,
-) {
-  return [
-    ...(displayedRegionIndex > 0
-      ? [
-          {
-            label: 'Move left',
-            onClick: () => {
-              move(displayedRegionIndex, displayedRegionIndex - 1)
-            },
-          },
-        ]
-      : []),
-    ...(displayedRegionIndex < numRegions - 1
-      ? [
-          {
-            label: 'Move right',
-            onClick: () => {
-              move(displayedRegionIndex, displayedRegionIndex + 1)
-            },
-          },
-        ]
-      : []),
-    ...(numRegions > 2 && displayedRegionIndex > 0
-      ? [
-          {
-            label: 'Move to far left',
-            onClick: () => {
-              move(displayedRegionIndex, 0)
-            },
-          },
-        ]
-      : []),
-    ...(numRegions > 2 && displayedRegionIndex < numRegions - 1
-      ? [
-          {
-            label: 'Move to far right',
-            onClick: () => {
-              move(displayedRegionIndex, numRegions - 1)
-            },
-          },
-        ]
-      : []),
-    {
-      label: 'Remove this region from view',
-      onClick: () => {
-        remove(displayedRegionIndex)
-      },
-    },
-  ]
-}
-
 const RefNameMenu = observer(function RefNameMenu({
   model,
   menuState,
@@ -241,15 +185,12 @@ const RefNameMenu = observer(function RefNameMenu({
     model.setDisplayedRegions(regions)
   }
 
-  const canManageRegions = displayedRegionIndex !== undefined && numRegions > 1
-  const actionItems = canManageRegions
-    ? buildActionItems(
-        displayedRegionIndex,
-        numRegions,
-        moveRegion,
-        removeRegion,
-      )
-    : []
+  function reverseRegion(index: number) {
+    const regions = displayedRegions.map((r, i) =>
+      i === index ? { ...r, reversed: !r.reversed } : r,
+    )
+    model.setDisplayedRegions(regions)
+  }
 
   return (
     <Menu
@@ -267,14 +208,67 @@ const RefNameMenu = observer(function RefNameMenu({
             model.navTo({ refName })
           },
         },
-        ...(canManageRegions
-          ? [
-              {
-                label: 'Actions',
-                subMenu: actionItems,
+        {
+          label: 'Actions',
+          subMenu: [
+            {
+              label: 'Reverse region',
+              onClick: () => {
+                reverseRegion(displayedRegionIndex)
               },
-            ]
-          : []),
+            },
+            ...(numRegions > 1 && displayedRegionIndex > 0
+              ? [
+                  {
+                    label: 'Move left',
+                    onClick: () => {
+                      moveRegion(displayedRegionIndex, displayedRegionIndex - 1)
+                    },
+                  },
+                ]
+              : []),
+            ...(numRegions > 1 && displayedRegionIndex < numRegions - 1
+              ? [
+                  {
+                    label: 'Move right',
+                    onClick: () => {
+                      moveRegion(displayedRegionIndex, displayedRegionIndex + 1)
+                    },
+                  },
+                ]
+              : []),
+            ...(numRegions > 2 && displayedRegionIndex > 0
+              ? [
+                  {
+                    label: 'Move to far left',
+                    onClick: () => {
+                      moveRegion(displayedRegionIndex, 0)
+                    },
+                  },
+                ]
+              : []),
+            ...(numRegions > 2 && displayedRegionIndex < numRegions - 1
+              ? [
+                  {
+                    label: 'Move to far right',
+                    onClick: () => {
+                      moveRegion(displayedRegionIndex, numRegions - 1)
+                    },
+                  },
+                ]
+              : []),
+            ...(numRegions > 1
+              ? [
+                  {
+                    label: 'Remove this region from view',
+                    onClick: () => {
+                      removeRegion(displayedRegionIndex)
+                    },
+                  },
+                ]
+              : []),
+          ],
+        },
       ]}
     />
   )
