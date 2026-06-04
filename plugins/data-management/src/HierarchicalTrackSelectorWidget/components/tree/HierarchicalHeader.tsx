@@ -16,6 +16,7 @@ const useStyles = makeStyles()(theme => ({
   },
   searchBox: {
     margin: theme.spacing(2),
+    flexGrow: 1,
   },
 }))
 
