@@ -54,14 +54,24 @@ function drawInstances(
     const isCigar = data.kinds[i]! >= KIND_CIGAR_MATCH
     let fillStyle = fillStyleCache.get(packed)
     if (isHovered) {
-      // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
-      // the fill shaders' hover branch so the highlight looks identical
-      // across all backends.
-      const r = ((packed & 0xff) * 0.7) | 0
-      const g = (((packed >> 8) & 0xff) * 0.7) | 0
-      const b = (((packed >> 16) & 0xff) * 0.7) | 0
-      const effectiveAlpha = Math.min(a * alpha * 5, 0.35)
-      fillStyle = `rgba(${r},${g},${b},${effectiveAlpha})`
+      // SYNC: hover branch must match the fill shaders.
+      // CIGAR indels: darken the pre-blended color (same opaque path as normal).
+      // BASE blocks: standard 0.7 darkening + 5x alpha boost capped at 0.35.
+      const r = packed & 0xff
+      const g = (packed >> 8) & 0xff
+      const b = (packed >> 16) & 0xff
+      if (isCigar) {
+        const pr = ((r * alpha + 255 * (1 - alpha)) * 0.7) | 0
+        const pg = ((g * alpha + 255 * (1 - alpha)) * 0.7) | 0
+        const pb = ((b * alpha + 255 * (1 - alpha)) * 0.7) | 0
+        fillStyle = `rgba(${pr},${pg},${pb},${a})`
+      } else {
+        const dr = (r * 0.7) | 0
+        const dg = (g * 0.7) | 0
+        const db = (b * 0.7) | 0
+        const effectiveAlpha = Math.min(a * alpha * 5, 0.35)
+        fillStyle = `rgba(${dr},${dg},${db},${effectiveAlpha})`
+      }
     } else if (fillStyle === undefined) {
       const r = packed & 0xff
       const g = (packed >> 8) & 0xff

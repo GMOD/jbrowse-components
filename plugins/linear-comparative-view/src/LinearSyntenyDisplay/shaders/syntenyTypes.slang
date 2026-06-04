@@ -159,8 +159,9 @@ public float4 shadeFill(float4 color, float featureId, float coverage,
   float3 rgb = color.rgb;
   bool isHovered = u.hoveredFeatureId > 0.0
     && abs(featureId - u.hoveredFeatureId) < 0.5;
-  if (isCigar > 0.5 && !isHovered) {
+  if (isCigar > 0.5) {
     rgb = rgb * u.alpha + float3(1.0, 1.0, 1.0) * (1.0 - u.alpha);
+    rgb *= isHovered ? 0.7 : 1.0;
     return float4(rgb, color.a * coverage);
   }
   float baseAlpha = color.a * u.alpha;
