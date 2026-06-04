@@ -1883,6 +1883,9 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Read connections' },
       { type: 'delay', ms: 300 },
       { type: 'hover', text: 'Read connections' },
+      { type: 'waitForText', text: 'Show pair overlay' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Show pair overlay' },
       { type: 'waitForText', text: 'Arcs' },
       { type: 'delay', ms: 500 },
     ],
@@ -1910,17 +1913,10 @@ export const specs: ScreenshotSpec[] = [
           assemblyNames: ['volvox'],
           adapter: {
             type: 'BamAdapter',
-            bamLocation: {
-              uri: 'test_data/volvox/MM-chebi-volvox.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'test_data/volvox/MM-chebi-volvox.bam.bai',
-                locationType: 'UriLocation',
-              },
-              indexType: 'BAI',
-            },
+            // session tracks resolve relative uris against the page root, not the
+            // config dir, so use the jbrowse.org-hosted volvox fixture (same
+            // pattern as VOLVOX_SV_CRAM)
+            uri: `${VOLVOX_SV_CRAM}/MM-chebi-volvox.bam`,
           },
         },
       ],
@@ -2028,8 +2024,11 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'Open track selector' },
       { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
       { type: 'delay', ms: 500 },
+      // filter the (virtualized) list so the target row is rendered
+      { type: 'type', text: 'Filter tracks', value: 'GFF3Tabix' },
+      { type: 'delay', ms: 800 },
       // mark the track as a favorite from its per-track menu in the selector
-      { type: 'click', selector: '[data-testid="htsTrackEntryMenu-gff3tabix_genes"]' },
+      { type: 'click', selector: '[data-testid="htsTrackEntryMenu-Tracks,gff3tabix_genes"]' },
       { type: 'waitForText', text: 'Add to favorites' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Add to favorites' },
