@@ -1302,6 +1302,38 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 12000,
   },
+  // Gene feature-details sequence panel: click the multi-exon EDEN gene to open
+  // its details, expand "Show feature sequence", and switch the type selector to
+  // the genomic-with-introns + up/down-stream mode so the panel shows the colored
+  // upstream / exon / intron / downstream sequence the caption describes.
+  {
+    mode: 'url',
+    name: 'feature_detail_sequence',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1050-9000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    viewportHeight: 900,
+    actions: [
+      { type: 'click', from: { x: 400, y: 215 } },
+      { type: 'waitForText', text: 'Show feature sequence' },
+      { type: 'click', text: 'Show feature sequence' },
+      { type: 'click', selector: '.MuiSelect-select' },
+      {
+        type: 'click',
+        text: 'Genomic w/ full introns +/- 100bp up+down stream',
+      },
+      { type: 'delay', ms: 2500 },
+    ],
+  },
   {
     mode: 'url',
     name: 'methylation/arabidopsis_chh',

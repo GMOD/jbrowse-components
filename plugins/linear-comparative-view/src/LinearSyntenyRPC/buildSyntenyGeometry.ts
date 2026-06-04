@@ -86,7 +86,7 @@ export function buildSyntenyGeometry({
   const emitRight = viewWidth + panBufferPx
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
-  const minCigarPxWidth = 4
+  const minCigarPxWidth = 8
 
   const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? When true, pass 1 emits
