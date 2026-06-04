@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -79,6 +79,7 @@ const MafBody = observer(function MafBody({
     samples,
   } = model
   const theme = useTheme()
+  const [resizeActive, setResizeActive] = useState(false)
   const session = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { width } = view
@@ -114,7 +115,7 @@ const MafBody = observer(function MafBody({
     <>
       <MafCoverageCanvas model={model} />
       <MafCoverageYScale model={model} />
-      <MafCoverageResizeHandle model={model} />
+      <MafCoverageResizeHandle model={model} onActiveChange={setResizeActive} />
       <div
         style={{
           position: 'absolute',
@@ -180,7 +181,8 @@ const MafBody = observer(function MafBody({
       mouseX !== undefined &&
       mouseX > sidebarOffset &&
       samples &&
-      !contextCoord ? (
+      !contextCoord &&
+      !resizeActive ? (
         <div style={{ position: 'relative' }}>
           <Crosshairs
             width={width}

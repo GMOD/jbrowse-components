@@ -40,7 +40,11 @@ export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
   }
 
   function handleMouseDown(e: React.MouseEvent) {
-    if (e.shiftKey) {
+    // Don't start a selection when the press lands on a resize handle (or any
+    // control that stamps data-resizer): the container owns this invariant, so
+    // controls dropped into the chrome are non-selectable without each one
+    // needing to stopPropagation.
+    if (e.shiftKey || (e.target as Element).closest('[data-resizer]')) {
       return
     }
     const { x, y } = relativeXY(ref, e)

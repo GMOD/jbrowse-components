@@ -28,6 +28,8 @@ const useStyles = makeStyles()(theme => ({
 
 function ResizeHandle({
   onDrag,
+  onDragStart,
+  onDragEnd,
   vertical = false,
   flexbox = false,
   className: originalClassName,
@@ -38,6 +40,8 @@ function ResizeHandle({
     lastFrameDistance: number,
     totalDistance: number,
   ) => number | undefined
+  onDragStart?: () => void
+  onDragEnd?: () => void
   onMouseDown?: (event: React.MouseEvent) => void
   vertical?: boolean
   flexbox?: boolean
@@ -49,6 +53,7 @@ function ResizeHandle({
   const prevPos = useRef(0)
   const { classes } = useStyles()
   const onDragStable = useEventCallback(onDrag)
+  const onDragEndStable = useEventCallback(() => onDragEnd?.())
 
   const getPos = useCallback(
     (event: MouseEvent | React.MouseEvent) =>
@@ -72,6 +77,7 @@ function ResizeHandle({
 
     function mouseUp() {
       setMouseDragging(false)
+      onDragEndStable()
     }
 
     window.addEventListener('mousemove', mouseMove, true)
@@ -80,7 +86,7 @@ function ResizeHandle({
       window.removeEventListener('mousemove', mouseMove, true)
       window.removeEventListener('mouseup', mouseUp, true)
     }
-  }, [mouseDragging, getPos, onDragStable])
+  }, [mouseDragging, getPos, onDragStable, onDragEndStable])
 
   const handleMouseDown = useCallback(
     (event: React.MouseEvent) => {
@@ -89,9 +95,10 @@ function ResizeHandle({
       initialPosition.current = pos
       prevPos.current = pos
       setMouseDragging(true)
+      onDragStart?.()
       onMouseDown?.(event)
     },
-    [getPos, onMouseDown],
+    [getPos, onMouseDown, onDragStart],
   )
 
   const className = flexbox

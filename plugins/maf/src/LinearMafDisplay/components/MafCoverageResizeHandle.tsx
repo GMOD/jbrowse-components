@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -11,7 +11,8 @@ const useStyles = makeStyles()({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 4,
+    height: 5,
+    cursor: 'row-resize',
     zIndex: 10,
     background: 'transparent',
     '&:hover': {
@@ -23,22 +24,40 @@ const useStyles = makeStyles()({
 /**
  * Thin row-resize strip at the bottom of the coverage band. Drives
  * `setCoverageHeight` via the shared `ResizeHandle` from `@jbrowse/core/ui`
- * (no per-plugin drag plumbing).
+ * (no per-plugin drag plumbing). Reports "active" (hovered or mid-drag) so the
+ * parent can suppress crosshairs/tooltips — the drag continues after the cursor
+ * leaves the thin strip, so hover alone isn't enough.
  */
 const MafCoverageResizeHandle = observer(function MafCoverageResizeHandle({
   model,
+  onActiveChange,
 }: {
   model: LinearMafDisplayModel
+  onActiveChange: (active: boolean) => void
 }) {
   const { classes } = useStyles()
   const { showCoverage, coverageHeight } = model
+  const [hovered, setHovered] = useState(false)
+  const [dragging, setDragging] = useState(false)
+
+  // The handle is "active" while hovered or mid-drag; the drag continues after
+  // the cursor leaves the thin strip, so `dragging` (driven by ResizeHandle's
+  // own drag lifecycle) is what keeps tooltips suppressed to mouseup.
+  useEffect(() => {
+    onActiveChange(hovered || dragging)
+  }, [hovered, dragging, onActiveChange])
+
   return showCoverage ? (
     <ResizeHandle
       onDrag={n => {
         model.setCoverageHeight(Math.max(20, coverageHeight + n))
         return undefined
       }}
-      style={{ top: coverageHeight - 4 }}
+      onDragStart={() => { setDragging(true) }}
+      onDragEnd={() => { setDragging(false) }}
+      onMouseEnter={() => { setHovered(true) }}
+      onMouseLeave={() => { setHovered(false) }}
+      style={{ top: coverageHeight - 4 }} // straddles the coverage/rows seam
       className={classes.handle}
     />
   ) : null
