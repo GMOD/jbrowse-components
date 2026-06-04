@@ -88,6 +88,7 @@ export {
   computeVisibleCoverageStats,
   countSnpsAtPosition,
   downsampleMinMax,
+  findSignificantInBin,
   niceStep,
 } from './coverageDownsampling.ts'
 export type {

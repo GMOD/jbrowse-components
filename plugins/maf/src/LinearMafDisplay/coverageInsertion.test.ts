@@ -34,6 +34,20 @@ test('pixel gate: misses when the cursor is past the bar at high zoom', () => {
   expect(coverageInsertionAt(cov({}), 102.1, 0.1)).toMatchObject({ count: 1 })
 })
 
+test('zoomed out: snaps to the nearest insertion within the pixel target', () => {
+  // bpPerPx 10 → one pixel spans 10bp, so round(gposFrac) rarely equals the
+  // exact insertion coord (102). Cursor at 100.5 is within ~2.5px of the bar.
+  expect(coverageInsertionAt(cov({}), 100.5, 10)).toMatchObject({
+    position: 102,
+    count: 1,
+  })
+})
+
+test('zoomed out: misses when the cursor is past the bar pixel target', () => {
+  // bpPerPx 10, small insertion → ~2.5px half-width = 25bp; 90 is 12bp away.
+  expect(coverageInsertionAt(cov({}), 130, 10)).toBeUndefined()
+})
+
 test('aggregates multiple insertions at the same boundary', () => {
   const coverage = cov({
     insertionPositions: new Uint32Array([102, 102]),

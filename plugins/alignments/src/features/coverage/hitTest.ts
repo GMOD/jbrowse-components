@@ -1,33 +1,7 @@
+import { findSignificantInBin } from '@jbrowse/alignments-core'
+
 import type { CoverageHitResult } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-
-// Find the first significant position in [binStart, binEnd). "Significant"
-// = at least `threshold` fraction of reads at that position, relative to
-// the local coverage depth. Single pass + small Map keyed by uint32 position.
-function findSignificantInBin(
-  positions: Uint32Array,
-  coverageDepths: Float32Array,
-  coverageStartPos: number,
-  binStart: number,
-  binEnd: number,
-  threshold: number,
-) {
-  const hitsByPos = new Map<number, number>()
-  for (const pos of positions) {
-    if (pos >= binStart && pos < binEnd) {
-      hitsByPos.set(pos, (hitsByPos.get(pos) ?? 0) + 1)
-    }
-  }
-  let best = -1
-  for (const [pos, n] of hitsByPos) {
-    const binIdx = Math.floor(pos - coverageStartPos)
-    const depth = coverageDepths[binIdx]
-    if (depth && n / depth > threshold && (best < 0 || pos < best)) {
-      best = pos
-    }
-  }
-  return best < 0 ? undefined : best
-}
 
 export function hitTestCoverage(
   genomicPos: number,

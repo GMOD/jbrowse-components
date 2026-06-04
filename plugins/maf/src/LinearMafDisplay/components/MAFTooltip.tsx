@@ -63,7 +63,7 @@ const MAFTooltip = observer(function ({
     }
     const bin = p2.oob
       ? undefined
-      : model.coverageTooltipBin(p2.index, p2.coord - 1)
+      : model.coverageTooltipBin(p2.index, p2.coord - 1, view.bpPerPx)
     return bin ? (
       <BaseTooltip clientPoint={clientPoint}>
         <MafCoverageTooltipContents bin={bin} refName={p2.refName} />

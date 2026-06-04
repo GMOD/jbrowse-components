@@ -2,6 +2,7 @@ import {
   buildCoverageTooltipBin,
   computeCoverageTicks,
   computeVisibleCoverageStats,
+  findSignificantInBin,
 } from '@jbrowse/alignments-core'
 import {
   ConfigurationReference,
@@ -577,13 +578,32 @@ export default function stateModelFactory(
        * `coverageInsertionHit`, so they never mix into the depth/SNP table.
        * Returns undefined when the region has no fetched data or depth is zero.
        */
-      coverageTooltipBin(displayedRegionIndex: number, position: number) {
+      coverageTooltipBin(
+        displayedRegionIndex: number,
+        position: number,
+        bpPerPx: number,
+      ) {
         const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
         if (!coverage) {
           return undefined
         }
+        // Zoomed out a pixel spans many bp, so the exact cursor position rarely
+        // lands on the SNP coordinate. Tooltip the most significant SNP in the
+        // pixel's bp range instead (mirrors alignments' `hitTestCoverage`);
+        // depth still falls back to the exact position when none qualifies.
+        const snpPos =
+          bpPerPx > 1
+            ? findSignificantInBin(
+                coverage.mismatchPositions,
+                coverage.coverageDepths,
+                coverage.coverageStartPos,
+                position,
+                position + Math.ceil(bpPerPx),
+                0.05,
+              )
+            : undefined
         return buildCoverageTooltipBin(
-          position,
+          snpPos ?? position,
           {
             coverageDepths: coverage.coverageDepths,
             coverageStartPos: coverage.coverageStartPos,

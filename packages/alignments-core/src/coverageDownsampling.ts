@@ -275,6 +275,37 @@ export function countSnpsAtPosition(
   return snps
 }
 
+// Genomic position of the first event in [binStart, binEnd) that is
+// "significant" — at least `threshold` fraction of the local coverage depth at
+// that position. When a pixel spans many bp (zoomed out), an exact-position
+// lookup misses the event sitting elsewhere in the bin; callers scan the pixel's
+// bp range with this and tooltip the significant position instead. Single pass +
+// a small Map keyed by uint32 position. Returns undefined if nothing qualifies.
+export function findSignificantInBin(
+  positions: Uint32Array,
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+  binStart: number,
+  binEnd: number,
+  threshold: number,
+) {
+  const hitsByPos = new Map<number, number>()
+  for (const pos of positions) {
+    if (pos >= binStart && pos < binEnd) {
+      hitsByPos.set(pos, (hitsByPos.get(pos) ?? 0) + 1)
+    }
+  }
+  let best = -1
+  for (const [pos, n] of hitsByPos) {
+    const binIdx = Math.floor(pos - coverageStartPos)
+    const depth = coverageDepths[binIdx]
+    if (depth && n / depth > threshold && (best < 0 || pos < best)) {
+      best = pos
+    }
+  }
+  return best < 0 ? undefined : best
+}
+
 // Flat per-event interbase arrays (one entry per insertion), parallel to
 // `MismatchArrays`. Only insertion-type events are modeled — the callers that
 // pass these (e.g. MAF) emit no soft/hard clips.
