@@ -11,7 +11,6 @@ import {
 import {
   methylated5hmC,
   methylated5mC,
-  unmethylated5hmC,
   unmethylated5mC,
 } from '@jbrowse/core/ui/theme'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
@@ -40,7 +39,6 @@ import type {
 const METH_5MC_METHYLATED_RGB = cssColorToRgb(methylated5mC)
 const METH_5MC_UNMETHYLATED_RGB = cssColorToRgb(unmethylated5mC)
 const METH_5HMC_METHYLATED_RGB = cssColorToRgb(methylated5hmC)
-const METH_5HMC_UNMETHYLATED_RGB = cssColorToRgb(unmethylated5hmC)
 
 function methColorAndProb(
   methP: number,
@@ -162,35 +160,36 @@ export function extractMethylation(
     if (!methBins[i] && !hydroxyMethBins[i]) {
       continue
     }
+    // 5mC and 5hmC are competing modifications of the same cytosine, so their
+    // likelihoods plus the implicit unmodified call sum to 1 (SAMtags). A model
+    // that emits both (e.g. ONT 5mCG_5hmCG) reports a 5hmC probability at every
+    // CpG, almost always low. Drawing each channel as its own methylated/
+    // unmethylated mark therefore painted an "unmethylated 5hmC" mark at nearly
+    // every CpG, flooding the view. Instead pick the single most-likely state
+    // per cytosine — 5mC, 5hmC, or unmodified — mirroring IGV's no-mod logic.
+    const mProb = methBins[i] ? (methProbs[i] ?? 0) : 0
+    const hProb = hydroxyMethBins[i] ? (hydroxyMethProbs[i] ?? 0) : 0
+    const noModProb = Math.max(0, 1 - mProb - hProb)
     const genomicPos = i + featureStart
-    if (methBins[i]) {
-      modificationsData.push({
-        featureId,
-        position: genomicPos,
-        base: 'C',
-        modType: 'm',
-        strand: methStrand,
-        ...methColorAndProb(
-          methProbs[i] ?? 0,
-          METH_5MC_METHYLATED_RGB,
-          METH_5MC_UNMETHYLATED_RGB,
-        ),
-      })
-    }
-    if (hydroxyMethBins[i]) {
-      modificationsData.push({
-        featureId,
-        position: genomicPos,
-        base: 'C',
-        modType: 'h',
-        strand: methStrand,
-        ...methColorAndProb(
-          hydroxyMethProbs[i] ?? 0,
-          METH_5HMC_METHYLATED_RGB,
-          METH_5HMC_UNMETHYLATED_RGB,
-        ),
-      })
-    }
+
+    const winner =
+      hProb > mProb && hProb > noModProb
+        ? { modType: 'h', rgb: METH_5HMC_METHYLATED_RGB, prob: hProb }
+        : mProb > noModProb
+          ? { modType: 'm', rgb: METH_5MC_METHYLATED_RGB, prob: mProb }
+          : { modType: 'm', rgb: METH_5MC_UNMETHYLATED_RGB, prob: noModProb }
+
+    modificationsData.push({
+      featureId,
+      position: genomicPos,
+      base: 'C',
+      modType: winner.modType,
+      strand: methStrand,
+      r: winner.rgb[0],
+      g: winner.rgb[1],
+      b: winner.rgb[2],
+      prob: winner.prob,
+    })
   }
 }
 

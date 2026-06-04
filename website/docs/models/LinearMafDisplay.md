@@ -124,6 +124,18 @@ true
 showTree: DEFAULTS.showTree
 ```
 
+#### property: showBranchLength
+
+Position tree nodes by their cluster merge height (dendrogram) rather than
+evenly by topology (cladogram).
+
+```js
+// type signature
+false
+// code
+showBranchLength: DEFAULTS.showBranchLength
+```
+
 #### property: showCoverage
 
 ```js
@@ -131,6 +143,18 @@ showTree: DEFAULTS.showTree
 true
 // code
 showCoverage: DEFAULTS.showCoverage
+```
+
+#### property: showAlignments
+
+Show the per-sample alignment rows. When off, only the coverage band renders
+(independent of `showCoverage`).
+
+```js
+// type signature
+true
+// code
+showAlignments: DEFAULTS.showAlignments
 ```
 
 #### property: coverageHeight
@@ -151,6 +175,20 @@ coverageHeight: DEFAULTS.coverageHeight
 ObservableMap<number, MafRegionData>
 // code
 rpcDataMap: observable.map<number, MafRegionData>()
+```
+
+#### volatile: summaryDataMap
+
+Per-region `bigMafSummary` rows for the zoom-out path, populated by
+`fetchMafSummaryData` only while `showSummary` is active. Kept separate from
+`rpcDataMap` so the GPU sequence canvas and the summary overlay never read each
+other's data.
+
+```js
+// type signature
+ObservableMap<number, MafSummaryRecord[]>
+// code
+summaryDataMap: observable.map<number, MafSummaryRecord[]>()
 ```
 
 #### volatile: prefersOffset
@@ -216,7 +254,8 @@ Sample[] | undefined
 
 #### getter: rowsHeight
 
-Height of the per-sample rows area (excludes the coverage band).
+Height of the per-sample rows area (excludes the coverage band). Zero when
+alignments are hidden, collapsing the display to the coverage band.
 
 ```js
 // type
@@ -276,8 +315,8 @@ MafGPURenderState | undefined
 #### getter: coverageStats
 
 Per-position depth stats across the currently visible content blocks, derived
-from the worker-shipped `coverage.coverageDepths` arrays. Feeds `coverageDomain`
-→ `coverageTicks`.
+from the worker-shipped `coverage.coverageDepths` arrays (which already reflect
+the active subtree — see `rpcProps`). Feeds `coverageDomain` → `coverageTicks`.
 
 ```js
 // type
@@ -310,6 +349,57 @@ YScaleTicks | undefined
 VisibleLabel[]
 ```
 
+#### getter: visibleEmptyLines
+
+Positioned bridge-line segments for `e`-line (empty/bridged) rows.
+
+```js
+// type
+EmptyLineSegment[]
+```
+
+#### getter: visibleInsertions
+
+Positioned insertion markers (interbase) for the visible aligned rows.
+
+```js
+// type
+InsertionMarker[]
+```
+
+#### getter: visibleDeletions
+
+Positioned deletion runs for the visible aligned rows; the overlay draws the
+deleted-base count inside each run when it fits.
+
+```js
+// type
+DeletionMarker[]
+```
+
+#### getter: showSummary
+
+Use the cheap summary path when a `bigMafSummary` sub-adapter is configured and
+the view is zoomed out past the force-load threshold — exactly where the full
+alignment fetch would be blocked by the byte gate. Tracks without a summary
+never enter this path.
+
+```js
+// type
+boolean
+```
+
+#### getter: visibleSummaryBars
+
+Positioned per-species presence bars for the zoom-out summary overlay. Empty
+unless `showSummary` is active. Unmatched `src` rows drop via the `sources`
+index, keeping the render robust to summary files that list extra species.
+
+```js
+// type
+SummaryBar[]
+```
+
 #### getter: msaHighlights
 
 Get highlight regions from connected MSA views
@@ -333,17 +423,30 @@ driven by shader uniforms).
 gpuProps: () => MafGpuProps | undefined
 ```
 
-#### method: cellHoverInfo
+#### method: rpcProps
 
-Resolve a per-cell hover hit: given a region index, absolute genomic bp (uint32,
-per worker-output convention), and a row index into `sources`, return the sample
-label + base at that cell. Returns undefined when no fetched block covers the
-bp, the row is out of range, or the cell is a gap. Base-case folding mirrors
-`computeVisibleLabels`.
+Worker-fetch inputs that invalidate cached data when changed (tier-1, via
+MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).
+`subtreeFilter` is user-set — never derived from worker output — so it is
+loop-safe here; changing the visible subtree refetches and the worker recomputes
+coverage over only those samples. A future arbitrary-sample selection belongs
+here too.
 
 ```js
 // type signature
-cellHoverInfo: (displayedRegionIndex: number, bp: number, rowIndex: number) => { sampleLabel: string; base: string; } | undefined
+rpcProps: () => { subtreeFilter: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IMaybe<IArrayType<ISimpleType<string>>>>) | undefined; }
+```
+
+#### method: rowHoverInfo
+
+Resolve a hover hit on `rowIndex` at absolute genomic `bp` (uint32, per
+worker-output convention): an aligned base (`cell`) or a bridged/empty region
+(`empty`), each tagged with the sample label. Returns undefined when no fetched
+block covers the bp, the row is out of range, or the cell is a gap.
+
+```js
+// type signature
+rowHoverInfo: (displayedRegionIndex: number, gposFrac: number, rowIndex: number, bpPerPx: number) => { sampleLabel: string; kind: "cell"; base: string; chr?: string | undefined; pos?: number | undefined; strand?: number | undefined; context?: AlignmentContext | undefined; } | { ...; } | { ...; } | { ...; } | undefined
 ```
 
 #### method: coverageTooltipBin
@@ -351,12 +454,25 @@ cellHoverInfo: (displayedRegionIndex: number, bp: number, rowIndex: number) => {
 Build a per-position coverage tooltip bin (depth + SNP base counts) for the
 given absolute genomic bp + region index. Delegates the math to
 alignments-core's `buildCoverageTooltipBin` — same code path the alignments
-display uses for hover info. Returns undefined when the region has no fetched
-data or the bin has zero depth.
+display uses. Insertions are reported separately via `coverageInsertionHit`, so
+they never mix into the depth/SNP table. Returns undefined when the region has
+no fetched data or depth is zero.
 
 ```js
 // type signature
-coverageTooltipBin: (displayedRegionIndex: number, position: number) => CoverageTooltipBin | undefined
+coverageTooltipBin: (displayedRegionIndex: number, position: number, bpPerPx: number) => CoverageTooltipBin | undefined
+```
+
+#### method: coverageInsertionHit
+
+Hit-test an insertion bar in the coverage band at fractional genomic `gposFrac`.
+Returns the interbase summary (count + length range + interbaseDepth) when the
+cursor is on the bar, else undefined — drives the dedicated interbase tooltip,
+kept separate from the depth/SNP one.
+
+```js
+// type signature
+coverageInsertionHit: (displayedRegionIndex: number, gposFrac: number, bpPerPx: number) => CoverageInsertionHit | undefined
 ```
 
 #### method: trackMenuItems
@@ -436,11 +552,25 @@ setShowAsUpperCase: (arg: boolean) => void
 setShowTree: (arg: boolean) => void
 ```
 
+#### action: setShowBranchLength
+
+```js
+// type signature
+setShowBranchLength: (arg: boolean) => void
+```
+
 #### action: setShowCoverage
 
 ```js
 // type signature
 setShowCoverage: (arg: boolean) => void
+```
+
+#### action: setShowAlignments
+
+```js
+// type signature
+setShowAlignments: (arg: boolean) => void
 ```
 
 #### action: setCoverageHeight
@@ -455,6 +585,33 @@ setCoverageHeight: (arg: number) => void
 ```js
 // type signature
 showInsertionSequenceDialog: (insertionData: { sequence: string; sampleLabel: string; chr: string; pos: number; }) => void
+```
+
+#### action: isCacheValid
+
+Force a refetch when the loaded data is the wrong kind for the current zoom:
+crossing the summary↔detail threshold within an already-loaded region wouldn't
+trip the bounds-based coverage check, so the mode is keyed on which map holds
+the region.
+
+```js
+// type signature
+isCacheValid: (displayedRegionIndex: number) => boolean
+```
+
+#### action: getByteEstimateConfig
+
+Enable byte-estimate gating: above ~20kb visible, the adapter's MAF-aware byte
+estimate (per-species sequence × span) is checked against `fetchSizeLimit`,
+blocking the detail fetch with a force-load prompt rather than downloading
+hundreds of species' bases at genome scale.
+
+Returns null in summary mode — the summary read is cheap (zoom-reduced BigBed),
+so it must never be blocked by the gate.
+
+```js
+// type signature
+getByteEstimateConfig: () => { adapterConfig: any; fetchSizeLimit: any; userByteSizeLimit: number | undefined; visibleBp: number; } | null
 ```
 
 #### action: renderSvg

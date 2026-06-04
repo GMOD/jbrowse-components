@@ -657,6 +657,13 @@ number
 number
 ```
 
+#### getter: maxHeight
+
+```js
+// type
+number
+```
+
 #### getter: chainIdMap
 
 ```js
@@ -665,6 +672,13 @@ Map<number, string[]>
 ```
 
 #### getter: mismatchAlpha
+
+```js
+// type
+boolean
+```
+
+#### getter: showLowFreqMismatches
 
 ```js
 // type
@@ -734,6 +748,16 @@ Map<number, PileupDataResult>
 number
 ```
 
+#### getter: pileupTruncated
+
+True when any displayed region hit `maxRows` and overflow reads were collapsed —
+drives the "max height reached" indicator.
+
+```js
+// type
+boolean
+```
+
 #### getter: arcsComputed
 
 ```js
@@ -770,6 +794,13 @@ boolean
 ```
 
 #### getter: showPerBaseQuality
+
+```js
+// type
+boolean
+```
+
+#### getter: showPerBaseLetter
 
 ```js
 // type
@@ -859,6 +890,18 @@ boolean
 ```js
 // type
 VisibleLabel[]
+```
+
+#### getter: highlightBoxes
+
+Screen boxes for the hovered read / chain, painted by the `HighlightOverlay`
+div. Deliberately NOT part of `renderState`: the hovered id changes on nearly
+every mousemove, and routing it through the canvas would repaint the whole
+pileup each move.
+
+```js
+// type
+HighlightBox[]
 ```
 
 #### getter: scrollableHeight
@@ -1085,6 +1128,13 @@ toggleSoftClipping: () => void
 toggleMismatchAlpha: () => void
 ```
 
+#### action: toggleShowLowFreqMismatches
+
+```js
+// type signature
+toggleShowLowFreqMismatches: () => void
+```
+
 #### action: setSortedBy
 
 ```js
@@ -1146,6 +1196,13 @@ setFeatureHeight: (height?: number | undefined) => void
 ```js
 // type signature
 setFeatureSpacing: (spacing?: number | undefined) => void
+```
+
+#### action: setMaxHeight
+
+```js
+// type signature
+setMaxHeight: (height?: number | undefined) => void
 ```
 
 #### action: setCompactness

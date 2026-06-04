@@ -581,18 +581,11 @@ startRenderingBackend: (backend: CanvasFeatureRenderingBackend) => void
 setFeatureDensityStatsLimit: (stats?: { bytes?: number | undefined; fetchSizeLimit?: number | undefined; } | undefined) => void
 ```
 
-#### action: setFeatureIdUnderMouse
+#### action: setHover
 
 ```js
 // type signature
-setFeatureIdUnderMouse: (featureId: string | null) => void
-```
-
-#### action: setSubfeatureIdUnderMouse
-
-```js
-// type signature
-setSubfeatureIdUnderMouse: (featureId: string | null) => void
+setHover: (featureId: string | null, subfeatureId: string | null, tooltip: string | undefined) => void
 ```
 
 #### action: clearHover
@@ -600,13 +593,6 @@ setSubfeatureIdUnderMouse: (featureId: string | null) => void
 ```js
 // type signature
 clearHover: () => void
-```
-
-#### action: setMouseoverExtraInformation
-
-```js
-// type signature
-setMouseoverExtraInformation: (info: string | undefined) => void
 ```
 
 #### action: setContextMenuFeature

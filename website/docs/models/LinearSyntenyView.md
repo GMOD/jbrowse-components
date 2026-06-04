@@ -293,7 +293,7 @@ wait, otherwise just "Loading".
 
 ```js
 // type
-;'Loading' | 'Reordering chromosomes…' | undefined
+;'Loading' | 'Reordering chromosomes' | undefined
 ```
 
 #### getter: showImportForm

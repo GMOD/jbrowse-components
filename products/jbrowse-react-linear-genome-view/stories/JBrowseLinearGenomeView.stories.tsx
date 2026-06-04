@@ -2115,6 +2115,15 @@ const multiSampleVariantTracks = [
         displayId: `${multiSampleVariantTrackId}-LinearMultiSampleVariantDisplay`,
         // colorBy names a samples-TSV column. On initial track load the samples
         // are grouped and colored by this attribute (here, population).
+        //
+        // colorBy / renderingMode / minorAlleleFrequencyFilter are config slots
+        // (SharedVariantConfigSchema): set them directly here to change a
+        // display's default. Swap `type` to
+        // 'LinearMultiSampleVariantMatrixDisplay' for the matrix view, and set
+        // renderingMode: 'phased' (phased VCFs only) for haplotype rows. To
+        // preset these on a saved session's display *instance* instead, nest
+        // them under `configOverrides` in that display's snapshot — a top-level
+        // renderingMode there is dropped (it's a getter, not a property).
         colorBy: 'population',
       },
     ],
@@ -2195,6 +2204,15 @@ const tracks = [
         displayId: 'volvox_multisample_sv-LinearMultiSampleVariantDisplay',
         // colorBy names a samples-TSV column. On initial track load the samples
         // are grouped and colored by this attribute (here, population).
+        //
+        // colorBy / renderingMode / minorAlleleFrequencyFilter are config slots
+        // (SharedVariantConfigSchema): set them directly here to change a
+        // display's default. Swap \`type\` to
+        // 'LinearMultiSampleVariantMatrixDisplay' for the matrix view, and set
+        // renderingMode: 'phased' (phased VCFs only) for haplotype rows. To
+        // preset these on a saved session's display *instance* instead, nest
+        // them under \`configOverrides\` in that display's snapshot — a top-level
+        // renderingMode there is dropped (it's a getter, not a property).
         colorBy: 'population',
       },
     ],

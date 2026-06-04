@@ -75,8 +75,7 @@ showSubmenuMenuItems, contextMenuItems, trackMenuItems
 
 **Actions:** expandToFit, collapseFromExpand, clearHeightBeforeExpand,
 setRpcData, setDensityStats, clearDisplaySpecificData, pruneRpcDataMapToVisible,
-startRenderingBackend, setFeatureDensityStatsLimit, setFeatureIdUnderMouse,
-setSubfeatureIdUnderMouse, clearHover, setMouseoverExtraInformation,
+startRenderingBackend, setFeatureDensityStatsLimit, setHover, clearHover,
 setContextMenuFeature, setContextMenuInfo, selectFeature, clearSelection,
 setShowLabels, setAutoHeight, setShowDescriptions, setShowOutline,
 setFeatureColor, setUtrColor, showContextMenuForFeature, fetchFullFeature,

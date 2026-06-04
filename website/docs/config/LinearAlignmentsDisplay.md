@@ -37,7 +37,7 @@ featureHeight: {
 ```js
 featureSpacing: {
         type: 'number',
-        defaultValue: 0,
+        defaultValue: 1,
         description: 'Spacing between features in pixels',
       }
 ```
@@ -57,8 +57,9 @@ readConnectionsLineWidth: {
 ```js
 maxHeight: {
         type: 'number',
-        defaultValue: 1200,
-        description: 'Maximum height of the display in pixels',
+        defaultValue: 6000,
+        description:
+          'Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)',
       }
 ```
 

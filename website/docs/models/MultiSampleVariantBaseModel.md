@@ -25,6 +25,41 @@ extends
 - [BaseDisplay](../basedisplay)
 - [TrackHeightMixin](../trackheightmixin)
 
+## Example usage
+
+`renderingMode`, `colorBy`, and `minorAlleleFrequencyFilter` are config slots
+(see `SharedVariantConfigSchema`) read at runtime through `getConfWithOverride`
+— they are NOT plain MST properties. How you preset one depends on whether
+you're writing a track _config_ or a display _instance_ snapshot:
+
+In a track's `displays` array (config schema), set the slot directly to change
+the default:
+
+```js
+displays: [
+  {
+    type: 'LinearMultiSampleVariantMatrixDisplay',
+    displayId: 'my-matrix',
+    renderingMode: 'phased',
+  },
+]
+```
+
+In a display _instance_ snapshot (a session / `displaySnapshot`), the
+configuration is a reference, so the runtime override goes in the
+`configOverrides` map (via `ConfigOverrideMixin`) — exactly what a saved session
+serializes. A top-level `renderingMode` here is silently dropped because there
+is no MST property by that name:
+
+```js
+{
+  type: 'LinearMultiSampleVariantMatrixDisplay',
+  configOverrides: {
+    renderingMode: 'phased',
+  },
+}
+```
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -296,7 +331,7 @@ boolean
 
 ```js
 // type signature
-showSubmenuItems: () => ({ label: string; type: string; checked: boolean; onClick: () => void; disabled?: undefined; } | { label: string; type: string; checked: boolean; disabled: boolean; onClick: () => void; } | { label: string; onClick: () => void; type?: undefined; checked?: undefined; disabled?: undefined; })[]
+showSubmenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 #### method: trackMenuItems

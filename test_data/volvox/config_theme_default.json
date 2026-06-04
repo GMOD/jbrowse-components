@@ -2,9 +2,7 @@
   "assemblies": [
     {
       "name": "volvox",
-      "aliases": [
-        "vvx"
-      ],
+      "aliases": ["vvx"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "volvox_refseq",
@@ -42,18 +40,12 @@
             {
               "refName": "ctgA",
               "uniqueId": "alias1",
-              "aliases": [
-                "A",
-                "contigA"
-              ]
+              "aliases": ["A", "contigA"]
             },
             {
               "refName": "ctgB",
               "uniqueId": "alias2",
-              "aliases": [
-                "B",
-                "contigB"
-              ]
+              "aliases": ["B", "contigB"]
             }
           ]
         }
@@ -66,12 +58,8 @@
       "trackId": "volvox_sv_test",
       "description": "A uniquely interesting track",
       "name": "volvox structural variant test (<a href=\"https://google.com\"><i>HTML italic+link</i></a>)",
-      "category": [
-        "Variants"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Variants"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -90,13 +78,8 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray",
       "name": "wiggle_track xyplot",
-      "category": [
-        "Integration test",
-        "Wiggle"
-      ],
-      "assemblyNames": [
-        "volvox"
-      ],
+      "category": ["Integration test", "Wiggle"],
+      "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -109,12 +92,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-sv-bam",
       "name": "volvox-long reads with SV",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -132,17 +111,13 @@
     {
       "type": "FeatureTrack",
       "trackId": "gff3tabix_genes",
-      "assemblyNames": [
-        "volvox"
-      ],
+      "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes",
       "formatDetails": {
         "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
         "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>Subfeature: '+(!feature.name?'No name':feature.name)+'</a>'}"
       },
-      "category": [
-        "Miscellaneous"
-      ],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -161,12 +136,8 @@
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam",
       "name": "volvox-sorted.bam",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Alignments"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -185,12 +156,8 @@
       "type": "VariantTrack",
       "trackId": "volvox_filtered_vcf",
       "name": "volvox filtered vcf",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Variants"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Variants"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {

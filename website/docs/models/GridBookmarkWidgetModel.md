@@ -42,7 +42,8 @@ type: types.literal('GridBookmarkWidget')
 
 #### property: bookmarks
 
-removed by postProcessSnapshot, only loaded from localStorage
+loaded from localStorage when not present in snapshot; sharedBookmarks from a
+shared URL are merged in via preProcessSnapshot
 
 ```js
 // type signature
@@ -65,6 +66,8 @@ selectedBookmarks: [] as IExtendedLabeledRegionModel[]
 ```
 
 #### volatile: selectedAssembliesPre
+
+undefined = "all valid assemblies"; an array = explicit filter
 
 ```js
 // type signature
@@ -119,44 +122,6 @@ boolean
 ```js
 // type
 (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>)[]
-```
-
-#### getter: sharedBookmarksSnapshot
-
-Plain snapshot of the selected bookmarks for the share dialog.
-
-```js
-// type
-{
-  sharedBookmarks: {
-    refName: string
-    start: number
-    end: number
-    reversed: boolean
-    assemblyName: string
-    label: string
-    highlight: string
-  }
-  ;[]
-}
-```
-
-#### getter: allBookmarksSnapshot
-
-```js
-// type
-{
-  sharedBookmarks: {
-    refName: string
-    start: number
-    end: number
-    reversed: boolean
-    assemblyName: string
-    label: string
-    highlight: string
-  }
-  ;[]
-}
 ```
 
 #### getter: selectedAssemblies
@@ -245,11 +210,11 @@ setBookmarkHighlightsVisible: (arg: boolean) => void
 setBookmarkLabelsVisible: (arg: boolean) => void
 ```
 
-#### action: clearAllBookmarks
+#### action: clearBookmarksForLoadedAssemblies
 
 ```js
 // type signature
-clearAllBookmarks: () => void
+clearBookmarksForLoadedAssemblies: () => void
 ```
 
 #### action: clearSelectedBookmarks
