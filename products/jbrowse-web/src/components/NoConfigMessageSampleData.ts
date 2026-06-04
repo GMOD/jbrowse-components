@@ -4,22 +4,15 @@ export interface SampleLink {
   label: string
 }
 
+// Long-standing core demos (volvox, the organism instances, themes, auth).
 export const sampleConfigs: readonly SampleLink[] = [
   {
     config: 'test_data/volvox/config.json',
-    label: 'Volvox (sample data)',
+    label: 'Volvox',
   },
   {
     href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["gff3tabix_genes","volvox_microarray_multi","volvox_bam"]}]}',
     label: 'Volvox (genes + multi-wiggle + BAM)',
-  },
-  {
-    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}}]}]}',
-    label: 'Volvox SV (arc display)',
-  },
-  {
-    config: 'test_data/volvox/config_broken.json',
-    label: 'Broken track config (toggle track for error snackbar)',
   },
   {
     config: 'test_data/config.json',
@@ -35,7 +28,7 @@ export const sampleConfigs: readonly SampleLink[] = [
   },
   {
     config: 'test_data/cfam2/config.json',
-    label: 'Dog (NCBI adapter)',
+    label: 'Dog (NCBI)',
   },
   {
     config: 'test_data/honeybee/config.json',
@@ -62,18 +55,6 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'Nanopore methylation',
   },
   {
-    config: 'test_data/arabidopsis_methylation/config.json',
-    label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
-  },
-  {
-    config: 'test_data/arabidopsis_methylation/config_emseq_bisulfite.json',
-    label: 'Arabidopsis methylation (EM-seq bisulfite)',
-  },
-  {
-    config: 'test_data/config_gwas.json',
-    label: 'GWAS (Manhattan plot + LocusZoom LD coloring)',
-  },
-  {
     config: 'test_data/volvox/config_main_thread.json',
     label: 'Volvox (main thread)',
   },
@@ -86,10 +67,6 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'Volvox (auth)',
   },
   {
-    config: 'test_data/volvox/config_spec.json',
-    label: 'Volvox (w/ spec session)',
-  },
-  {
     config: 'test_data/volvoxhub/config.json',
     label: 'Volvox (UCSC hub)',
   },
@@ -100,6 +77,38 @@ export const sampleConfigs: readonly SampleLink[] = [
   {
     config: 'test_data/volvox/theme2.json',
     label: 'Theme (wormbase)',
+  },
+]
+
+// Demos added more recently (2025+): newer feature/data showcases.
+export const recentConfigs: readonly SampleLink[] = [
+  {
+    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}}]}]}',
+    label: 'Volvox SV (arc display)',
+  },
+  {
+    config: 'test_data/volvox/config_broken.json',
+    label: 'Broken track config',
+  },
+  {
+    config: 'test_data/volvox/config_spec.json',
+    label: 'Volvox (spec session)',
+  },
+  {
+    config: 'test_data/config_gwas.json',
+    label: 'GWAS (Manhattan + LD)',
+  },
+  {
+    config: 'test_data/arabidopsis_methylation/config.json',
+    label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
+  },
+  {
+    config: 'test_data/arabidopsis_methylation/config_emseq_bisulfite.json',
+    label: 'Arabidopsis methylation (EM-seq bisulfite)',
+  },
+  {
+    href: '?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-{"views":[{"assembly":"hg38","loc":"chr17:43044000-43126000","type":"LinearGenomeView","tracks":["hg38-cactus447way"]}]}',
+    label: 'hg38 MAF (447-way)',
   },
 ]
 
@@ -241,7 +250,7 @@ export const demoSessions: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/config_gwas.json&session=spec-{"views":[{"assembly":"hg19","loc":"2:191790000-192120000","type":"LinearGenomeView","tracks":["sle_gwas_ld"]}]}',
-    label: 'GWAS LocusZoom-style LD coloring (SLE, STAT4 locus)',
+    label: 'GWAS LocusZoom-style LD coloring',
   },
   {
     href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["volvox_bedpe"]}]}',

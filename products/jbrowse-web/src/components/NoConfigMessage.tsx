@@ -2,6 +2,7 @@ import NoConfigMessageLinkList from './NoConfigMessageLinkList.tsx'
 import {
   demoSessions,
   galleryDemos,
+  recentConfigs,
   sampleConfigs,
   syntenyConfigs,
 } from './NoConfigMessageSampleData.ts'
@@ -31,6 +32,12 @@ export default function NoConfigMessage() {
         </h3>
         <NoConfigMessageLinkList
           links={sampleConfigs}
+          buildUrl={buildConfigUrl}
+        />
+
+        <h3 style={{ margin: '16px 0 4px' }}>Recently added</h3>
+        <NoConfigMessageLinkList
+          links={recentConfigs}
           buildUrl={buildConfigUrl}
         />
 
