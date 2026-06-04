@@ -674,8 +674,8 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get filterMismatchesByFrequency() {
-          return self.getOverride<boolean>('filterMismatchesByFrequency') !== false
+        get showLowFreqMismatches() {
+          return !!self.getOverride<boolean>('showLowFreqMismatches')
         },
 
         /**
@@ -1171,7 +1171,7 @@ export default function stateModelFactory(
             coverageMaxDepth: self.coverageDomain?.[1],
             coverageIsLog: self.coverageIsLog,
             showMismatches: self.showMismatches,
-            filterMismatchesByFrequency: self.filterMismatchesByFrequency,
+            filterMismatchesByFrequency: !self.showLowFreqMismatches,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,
@@ -1469,10 +1469,10 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          toggleFilterMismatchesByFrequency() {
+          toggleShowLowFreqMismatches() {
             self.setOverride(
-              'filterMismatchesByFrequency',
-              !self.filterMismatchesByFrequency,
+              'showLowFreqMismatches',
+              !self.showLowFreqMismatches,
             )
           },
 
