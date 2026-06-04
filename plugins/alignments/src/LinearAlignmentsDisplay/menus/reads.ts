@@ -16,6 +16,8 @@ interface ReadsModel {
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
   toggleMismatchAlpha: () => void
+  filterMismatchesByFrequency: boolean
+  toggleFilterMismatchesByFrequency: () => void
   showOutlineSetting: boolean
   setShowOutline: (v: boolean | undefined) => void
   flipStrandLongReadChains: boolean
@@ -62,6 +64,13 @@ export function getReadsMenuItem(model: ReadsModel) {
         model.mismatchAlpha,
         () => {
           model.toggleMismatchAlpha()
+        },
+      ),
+      checkboxItem(
+        'Filter low-frequency mismatches by coverage depth',
+        model.filterMismatchesByFrequency,
+        () => {
+          model.toggleFilterMismatchesByFrequency()
         },
       ),
       checkboxItem('Show outlines', model.showOutlineSetting, () => {

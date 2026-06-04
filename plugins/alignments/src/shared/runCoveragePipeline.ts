@@ -47,6 +47,7 @@ export async function runCoveragePipeline({
   mismatchArrays,
   interbaseArrays,
   gapArrays,
+  filterMismatchesByFrequency,
   trackStrands,
   regionSequence,
   regionSequenceStart,
@@ -65,6 +66,7 @@ export async function runCoveragePipeline({
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
   interbaseArrays: Parameters<typeof computeFrequenciesAndThresholds>[1]
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
+  filterMismatchesByFrequency?: boolean
   trackStrands?: boolean
   regionSequence?: string
   regionSequenceStart?: number
@@ -72,6 +74,7 @@ export async function runCoveragePipeline({
   stopTokenCheck: StopTokenChecker
 }) {
   const { start: regionStart, end: regionEnd } = region
+  const applyFrequencyFilter = filterMismatchesByFrequency !== false
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,
@@ -88,6 +91,7 @@ export async function runCoveragePipeline({
       gapArrays,
       coverage.depths,
       coverage.startPos,
+      applyFrequencyFilter,
     )
 
   const snpCoverage = computeSNPCoverage(mismatches, regionStart, coverage)

@@ -29,6 +29,7 @@ export interface RenderAlignmentDataArgs {
   // invalidate the fetched data — main-thread layout re-runs instead.
   sortTag?: string
   showSoftClipping?: boolean
+  filterMismatchesByFrequency?: boolean
   linkedReads?: 'off' | 'normal'
   drawSingletons?: boolean
   drawProperPairs?: boolean
@@ -173,6 +174,14 @@ export interface PileupDataResult {
   perBaseQualYs: Uint16Array // pileup row, filled by main-thread layout
   perBaseQualScores: Uint8Array // raw 0-255 quality score
   perBaseQualReadIndices: Uint32Array // maps to parent read index
+
+  // Per-base lettering overlay data — only populated when
+  // colorBy.type === 'perBaseLetter'. One entry per ref-aligned base; every
+  // base is drawn in its nucleotide color via the shared mismatch pass.
+  perBaseLetterPositions: Uint32Array // absolute genomic uint32
+  perBaseLetterYs: Uint16Array // pileup row, filled by main-thread layout
+  perBaseLetterBases: Uint8Array // uppercase ASCII base code
+  perBaseLetterReadIndices: Uint32Array // maps to parent read index
 
   // Modification coverage data - stacked colored bars in coverage area.
   // yOffset/height are fractions of THIS position's coverage bar.

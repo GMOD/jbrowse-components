@@ -122,6 +122,7 @@ export async function executeRenderAlignmentData({
     colorBy,
     sortTag,
     showSoftClipping = false,
+    filterMismatchesByFrequency = true,
     linkedReads = 'off',
     drawSingletons = true,
     drawProperPairs = true,
@@ -181,6 +182,7 @@ export async function executeRenderAlignmentData({
     hardclips,
     modifications,
     perBaseQualities,
+    perBaseLetters,
     tagColorValues,
     sortTagValues,
     uniqueTagValues,
@@ -239,6 +241,7 @@ export async function executeRenderAlignmentData({
     interbaseArrays,
     modificationArrays,
     perBaseQualityArrays,
+    perBaseLetterArrays,
     segmentArrays,
   } = await buildAlignmentDetailArrays({
     features,
@@ -249,6 +252,7 @@ export async function executeRenderAlignmentData({
     hardclips,
     modifications,
     perBaseQualities,
+    perBaseLetters,
     detectedModifications,
     region,
     getReadIndex,
@@ -279,6 +283,7 @@ export async function executeRenderAlignmentData({
     mismatchArrays,
     interbaseArrays,
     gapArrays,
+    filterMismatchesByFrequency,
     trackStrands,
     regionSequence,
     regionSequenceStart,
@@ -298,6 +303,7 @@ export async function executeRenderAlignmentData({
     interbaseFrequencies: pipeline.interbaseFrequencies,
     ...modificationArrays,
     ...perBaseQualityArrays,
+    ...perBaseLetterArrays,
 
     // Worker leaves readTagColors empty; the main thread bakes it from
     // readTagValues + colorTagMap (see overlayReadTagColors).

@@ -175,12 +175,6 @@ const AlignmentsTooltip = lazy(
 
 export { ColorScheme } from './constants.ts'
 
-// colorBy.type → shader colorScheme index. Aliases listed explicitly:
-//   stranded → firstOfPairStrand
-//   methylation → modifications (same shader path, different config)
-//   perBaseQuality → normal (per-base quality paints colored rects on top
-//     of a neutral read body via drawPerBaseQuality; shader uses normal
-//     coloring for the background pass).
 // Max pileup rows the layout may produce before overflow reads collapse to the
 // bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
 // `readYs`) and the overflow sentinel never wrap.
@@ -191,6 +185,12 @@ export function maxRowsFor(maxHeight: number, rowHeight: number) {
   )
 }
 
+// colorBy.type → shader colorScheme index. Aliases listed explicitly:
+//   stranded → firstOfPairStrand
+//   methylation → modifications (same shader path, different config)
+//   perBaseQuality / perBaseLetter → normal (the per-base overlay paints
+//     colored rects on top of a neutral read body; shader uses normal coloring
+//     for the background pass).
 const COLOR_BY_TO_SCHEME: Record<string, number> = {
   normal: ColorScheme.normal,
   strand: ColorScheme.strand,
@@ -207,6 +207,9 @@ const COLOR_BY_TO_SCHEME: Record<string, number> = {
   tag: ColorScheme.tag,
   baseQuality: ColorScheme.baseQuality,
   perBaseQuality: ColorScheme.normal,
+  // Like perBaseQuality, the read body uses the normal shader path; the
+  // per-base nucleotide quads paint over it (see showPerBaseLetter).
+  perBaseLetter: ColorScheme.normal,
 }
 
 // Material UI 200-tone palette for color-by-tag values. The first value
@@ -671,6 +674,13 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        get filterMismatchesByFrequency() {
+          return self.getOverride<boolean>('filterMismatchesByFrequency') !== false
+        },
+
+        /**
+         * #getter
+         */
         get showLegend() {
           return self.getOverride<boolean>('showLegend')
         },
@@ -886,6 +896,13 @@ export default function stateModelFactory(
          */
         get showPerBaseQuality() {
           return self.colorBy.type === 'perBaseQuality'
+        },
+
+        /**
+         * #getter
+         */
+        get showPerBaseLetter() {
+          return self.colorBy.type === 'perBaseLetter'
         },
 
         /**
@@ -1128,6 +1145,7 @@ export default function stateModelFactory(
             colorBy: self.colorBy,
             sortTag: this.sortTag,
             showSoftClipping: self.showSoftClipping,
+            filterMismatchesByFrequency: self.filterMismatchesByFrequency,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
             linkedReads: self.linkedReads,
@@ -1158,6 +1176,7 @@ export default function stateModelFactory(
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,
             showPerBaseQuality: self.showPerBaseQuality,
+            showPerBaseLetter: self.showPerBaseLetter,
             showOutline: self.showOutlineSetting,
             readConnections: self.readConnections,
             readConnectionsDown: self.readConnectionsDown,
@@ -1444,6 +1463,16 @@ export default function stateModelFactory(
             self.setOverride(
               'mismatchAlpha',
               !self.getOverride<boolean>('mismatchAlpha'),
+            )
+          },
+
+          /**
+           * #action
+           */
+          toggleFilterMismatchesByFrequency() {
+            self.setOverride(
+              'filterMismatchesByFrequency',
+              self.getOverride<boolean>('filterMismatchesByFrequency') === false,
             )
           },
 
