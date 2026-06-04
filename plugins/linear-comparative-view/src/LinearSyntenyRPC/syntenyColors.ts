@@ -21,13 +21,11 @@ import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 // syntenyTypes.slang. The CIGAR kinds must stay contiguous and above the
 // non-CIGAR kinds, with KIND_CIGAR_MATCH as the boundary.
 export const KIND_BASE = 0
-export const KIND_BASE_HIDDEN = 1
 export const KIND_MARKER = 2
 export const KIND_CIGAR_MATCH = 3
 export const KIND_CIGAR_I = 4
 export const KIND_CIGAR_D = 5
 export const KIND_CIGAR_N = 6
-export const KIND_CIGAR_HIDDEN = 7
 
 const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)
 const STRAND_NEG = cssColorToABGR(colorSchemes.strand.negColor)
@@ -153,8 +151,6 @@ export function computeSyntenyColors({
     const kind = kinds[i]!
     if (kind === KIND_MARKER) {
       out[i] = BLACK
-    } else if (kind === KIND_CIGAR_HIDDEN) {
-      out[i] = 0
     } else if (kind === KIND_CIGAR_I) {
       out[i] = colorI
     } else if (kind === KIND_CIGAR_D) {
@@ -164,9 +160,7 @@ export function computeSyntenyColors({
     } else {
       const f = instanceFeatureIdx[i]!
       const base = colorFn(f)
-      if (kind === KIND_BASE_HIDDEN) {
-        out[i] = base & 0x00ffffff
-      } else if (opacityByIdentity) {
+      if (opacityByIdentity) {
         // Identity in [0,1] -> alpha byte in [0x4c, 0xff] (30% floor so
         // low-identity blocks remain perceptible). Unknown identity (-1)
         // gets full alpha.

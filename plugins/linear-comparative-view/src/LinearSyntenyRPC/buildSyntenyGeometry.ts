@@ -86,10 +86,8 @@ export function buildSyntenyGeometry({
   const minCigarPxWidth = 8
 
   const alignmentLengths = new Float32Array(featureCount)
-  // Per-feature: did we decide to draw CIGAR detail? When true, pass 1 emits
-  // KIND_BASE_HIDDEN (alpha-zero fill, but edge pass still draws the outline)
-  // and pass 2 runs the visitor. When false, pass 1 emits KIND_BASE and pass
-  // 2 skips the feature.
+  // Per-feature: did we decide to draw CIGAR detail? Pass 1 always emits
+  // KIND_BASE. When true, pass 2 runs the visitor and emits indel quads on top.
   const willDrawCigarArr = new Uint8Array(featureCount)
 
   // Single pre-pass: fill alignmentLengths, willDrawCigar, and accumulate the exact
