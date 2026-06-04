@@ -1,4 +1,5 @@
 import {
+  CIGAR_CLICK_MIN_FREQ,
   getInsertionType,
   insertionBarWidth as getInsertionRectWidthPx,
 } from '../../LinearAlignmentsDisplay/constants.ts'
@@ -25,6 +26,7 @@ function hitTestInsertion(
     interbaseLengths,
     interbaseTypes,
     interbaseSequences,
+    interbaseFrequencies,
   } = resolved.rpcData
   const numInterbases = interbasePositions.length
   const pxPerBp = 1 / bpPerPx
@@ -38,6 +40,16 @@ function hitTestInsertion(
       const len = interbaseLengths[i] ?? 0
       const isSmall = getInsertionType(len, pxPerBp) === 'small'
       if (sizeFilter === 'small' ? isSmall : !isSmall) {
+        // Small insertions are narrow bars; when not at base-level zoom only
+        // let high-frequency insertions intercept clicks so the read body
+        // remains easy to click through.
+        if (
+          sizeFilter === 'small' &&
+          bpPerPx > 1 &&
+          (interbaseFrequencies[i] ?? 0) < CIGAR_CLICK_MIN_FREQ
+        ) {
+          continue
+        }
         const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
         const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
         if (Math.abs(genomicPos - pos) < rectHalfWidthBp) {

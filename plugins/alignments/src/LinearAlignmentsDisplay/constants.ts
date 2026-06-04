@@ -38,6 +38,12 @@ export type LinkedReadsMode = 'off' | 'normal'
 // Both color by arcColorByType (red/green/teal/navy by insert size + orientation).
 export type ReadConnectionsMode = 'off' | 'arc' | 'samplot'
 
+// Minimum frequency (0-255 scale) for a mismatch/small-insertion to intercept
+// a click/hover when bpPerPx > 1. At individual-base zoom (bpPerPx <= 1) clicks
+// are precise enough that all features are clickable regardless of frequency.
+// 128 ≈ 50%: only positions where at least half of reads share the variant.
+export const CIGAR_CLICK_MIN_FREQ = 128
+
 // Returns the minimum frequency at which a feature (mismatch, insertion, etc.)
 // is shown at a given coverage depth. Features below this threshold are zeroed
 // out. At low depth we require high frequency (80%) since a single read's noise
