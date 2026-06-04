@@ -30,12 +30,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      clearFilterText() {
-        self.filterText = ''
-      },
-      /**
-       * #action
-       */
       setFilterText(newText: string) {
         self.filterText = newText
       },

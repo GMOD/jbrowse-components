@@ -796,7 +796,7 @@ exports[`renders with the available plugins 1`] = `
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
                     >
-                      MafViewerPlugin
+                      MafPlugin
                     </p>
                   </li>
                   <li

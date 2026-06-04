@@ -99,9 +99,8 @@ const InstalledPlugin = observer(function InstalledPlugin({
         <LockedPluginIconButton />
       )}
       <Typography>
-        {[plugin.name, plugin.version ? `(v${plugin.version})` : '']
-          .filter(f => !!f)
-          .join(' ')}
+        {plugin.name}
+        {plugin.version ? ` (v${plugin.version})` : ''}
       </Typography>
     </ListItem>
   )

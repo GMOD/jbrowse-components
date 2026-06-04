@@ -1,4 +1,6 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, {
+  dropVendoredPlugins,
+} from '@jbrowse/core/PluginLoader'
 
 import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 
@@ -14,7 +16,10 @@ export default async function loadPlugins(
     baseUrl?: string
   },
 ) {
-  const pluginLoader = new PluginLoader(pluginDefinitions, args)
+  const pluginLoader = new PluginLoader(
+    dropVendoredPlugins(pluginDefinitions),
+    args,
+  )
   pluginLoader.installGlobalReExports(window)
   return pluginLoader.load(args?.baseUrl)
 }

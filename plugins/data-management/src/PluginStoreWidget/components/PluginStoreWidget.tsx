@@ -89,7 +89,7 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
         fullWidth
         label="Filter plugins"
         value={filterText}
-        onChange={model.setFilterText}
+        onChange={text => { model.setFilterText(text) }}
       />
       <Accordion defaultExpanded>
         <AccordionSummary
@@ -111,12 +111,17 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
           <Typography color="error">{`${error}`}</Typography>
         ) : plugins ? (
           plugins
-            .filter(
-              plugin =>
-                // If plugin only has cjsUrl, don't display outside desktop
-                !(isElectron && plugin.cjsUrl) &&
-                plugin.name.toLowerCase().includes(filterText.toLowerCase()),
-            )
+            .filter(plugin => {
+              // a plugin with only a cjsUrl (no web build) can't load on web,
+              // so hide it unless we're on desktop
+              const hasWebBuild = Boolean(
+                plugin.esmUrl || plugin.url || plugin.umdUrl,
+              )
+              return (
+                (isElectron || hasWebBuild) &&
+                plugin.name.toLowerCase().includes(filterText.toLowerCase())
+              )
+            })
             .map(plugin => (
               <PluginCard key={plugin.name} plugin={plugin} model={model} />
             ))

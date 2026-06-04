@@ -1,4 +1,6 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, {
+  dropVendoredPlugins,
+} from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
@@ -44,10 +46,13 @@ export async function createPluginManager(
   configSnapshot: JBrowseConfig,
   initialTimestamp = Date.now(),
 ) {
-  const pluginLoader = new PluginLoader(configSnapshot.plugins, {
-    fetchESM: url => import(/* webpackIgnore:true */ url),
-    fetchCJS,
-  })
+  const pluginLoader = new PluginLoader(
+    dropVendoredPlugins(configSnapshot.plugins ?? []),
+    {
+      fetchESM: url => import(/* webpackIgnore:true */ url),
+      fetchCJS,
+    },
+  )
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load(window.location.href)
   const pluginManager = new PluginManager([

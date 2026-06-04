@@ -99,6 +99,24 @@ export type PluginDefinition =
   | ESMUrlPluginDefinition
   | CJSPluginDefinition
 
+// Plugins that used to ship as external config `plugins[]` entries but are now
+// bundled into the jbrowse-web/desktop core build. Remote configs on jbrowse.org
+// still list them, so we drop those entries before loading: core already
+// registers the same elements (and wins, since core plugins register first), and
+// skipping the external copy avoids a redundant network fetch plus a flurry of
+// "already registered" console warnings. Matched on the config-level `name`
+// (the external plugin's, e.g. "MafViewer"), not the core class name. Apply only
+// in products whose core bundle actually vendors these — not globally — so CLI
+// indexing, @jbrowse/img, and react-circular (which don't bundle them) still load
+// the external plugin.
+export const vendoredPluginNames = new Set(['MafViewer'])
+
+export function dropVendoredPlugins(defs: PluginDefinition[]) {
+  return defs.filter(
+    d => !(isUMDPluginDefinition(d) && vendoredPluginNames.has(d.name)),
+  )
+}
+
 export interface PluginRecord {
   plugin: PluginConstructor
   definition: PluginDefinition

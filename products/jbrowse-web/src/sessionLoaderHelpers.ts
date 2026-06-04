@@ -1,4 +1,6 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, {
+  dropVendoredPlugins,
+} from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { openDB } from 'idb'
 
@@ -8,7 +10,7 @@ import type { SessionDB, Snap } from './types.ts'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 export async function loadPluginRecords(defs: PluginDefinition[]) {
-  const loader = new PluginLoader(defs, {
+  const loader = new PluginLoader(dropVendoredPlugins(defs), {
     fetchESM: url => import(/* webpackIgnore:true */ url),
   })
   loader.installGlobalReExports(window)

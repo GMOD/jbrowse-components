@@ -12,8 +12,8 @@ import MafTrackF from './MafTrack/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default class MafViewerPlugin extends Plugin {
-  name = 'MafViewerPlugin'
+export default class MafPlugin extends Plugin {
+  name = 'MafPlugin'
 
   install(pluginManager: PluginManager) {
     BgzipTaffyAdapterF(pluginManager)

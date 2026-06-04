@@ -51,9 +51,9 @@ const PluginCard = observer(function PluginCard({
   )
   const [tempDisabled, setTempDisabled] = useState(false)
   const { adminMode, jbrowse } = session
-  const { name, authors, description } = plugin
+  const { authors, description } = plugin
   return (
-    <Card variant="outlined" key={name} className={classes.card}>
+    <Card variant="outlined" className={classes.card}>
       <CardContent>
         <Typography variant="h5">
           <ExternalLink href={`${plugin.location}#readme`}>
