@@ -1,1 +1,1 @@
-((microvolvox:0.5,minivolvox:0.3):0.2,(simvolvox:0.2,volvox:0.1):0.4);
+(((volvox:0.1,simvolvox:0.2):0.3,(minivolvox:0.3,microvolvox:0.5):0.2):0.2,((nanovolvox:0.4,megavolvox:0.15):0.25,((ultravolvox:0.2,picovolvox:0.6):0.1,(hypervolvox:0.3,metavolvox:0.12):0.35):0.18):0.22);

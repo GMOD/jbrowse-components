@@ -2658,6 +2658,49 @@
           }
         }
       }
+    },
+    {
+      "type": "MafTrack",
+      "trackId": "volvox_maf",
+      "name": "MAF multiple alignment (tabix)",
+      "category": ["Multiple alignment"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "samples": [
+          "volvox",
+          "simvolvox",
+          "minivolvox",
+          "microvolvox",
+          "nanovolvox",
+          "megavolvox",
+          "ultravolvox",
+          "picovolvox",
+          "hypervolvox",
+          "metavolvox"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox.maf.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "nhLocation": {
+          "uri": "volvox.maf.nh",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "volvox.maf.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMafDisplay",
+          "displayId": "volvox_maf-LinearMafDisplay"
+        }
+      ]
     }
   ],
   "plugins": [
