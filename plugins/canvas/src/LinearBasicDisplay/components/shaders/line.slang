@@ -18,8 +18,8 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
-  float sx1 = hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero);
-  float sx2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
+  float sx1 = bpToClipX(inst.startEnd.x, u);
+  float sx2 = bpToClipX(inst.startEnd.y, u);
 
   float cy = snapPixelCenterY(inst.y, u.scrollY, u.canvasHeight);
   float halfPx = 1.0 / u.canvasHeight;

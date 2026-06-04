@@ -40,8 +40,8 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float localX = q.x, localY = q.y;
 
-  float sx1 = snapToPixelX(hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero), u.canvasWidth);
-  float sx2 = snapToPixelX(hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero), u.canvasWidth);
+  float sx1 = snapToPixelX(bpToClipX(inst.startEnd.x, u), u.canvasWidth);
+  float sx2 = snapToPixelX(bpToClipX(inst.startEnd.y, u), u.canvasWidth);
 
   float minWidth = MIN_RECT_WIDTH_PX * 2.0 / u.canvasWidth;
   float dx = sx2 - sx1;

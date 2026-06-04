@@ -26,6 +26,10 @@ struct Uniforms {
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
+float bpToClipX(uint bp, Uniforms u) {
+  return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
+}
+
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
@@ -40,10 +44,8 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
-  // startEnd is absolute genomic uint32; hpSplitUint preserves float32
-  // precision against the per-block bpRangeX.
-  float clipX1 = hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero);
-  float clipX2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
+  float clipX1 = bpToClipX(inst.startEnd.x, u);
+  float clipX2 = bpToClipX(inst.startEnd.y, u);
 
   float pxSize = 2.0 / u.canvasWidth;
   float cx1 = floor(clipX1 / pxSize + 0.5) * pxSize;

@@ -39,6 +39,10 @@ struct Uniforms {
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
+float bpToClipX(uint bp, Uniforms u) {
+  return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
+}
+
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
@@ -71,8 +75,8 @@ float rowScoreToClipY(float score, float rowTop, float rowHeight, float pxToClip
 
 [shader("vertex")]
 VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
-  float sx1 = hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero);
-  float sx2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
+  float sx1 = bpToClipX(inst.startEnd.x, u);
+  float sx2 = bpToClipX(inst.startEnd.y, u);
 
   float rowHeight = u.canvasHeight / u.numRows;
   float rowTop = inst.rowIndex * rowHeight;

@@ -30,7 +30,7 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
-  float cx = hpToClipX(hpSplitUint(inst.x), u.bpRangeX, u.zero);
+  float cx = bpToClipX(inst.x, u);
 
   float cy = snapPixelCenterY(inst.y, u.scrollY, u.canvasHeight);
 
@@ -38,7 +38,7 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
   float stemHalf = STEM_HALF_H_PX / u.canvasHeight * 2.0;
   float headHalf = HEAD_HALF_H_PX / u.canvasHeight * 2.0;
 
-  float dir = lerp(inst.direction, -inst.direction, u.reversed);
+  float dir = flipX(inst.direction, u);
 
   float sx;
   float sy;

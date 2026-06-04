@@ -34,6 +34,10 @@ struct Uniforms {
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
+float bpToClipX(uint bp, Uniforms u) {
+  return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
+}
+
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
@@ -48,11 +52,8 @@ VsOut vs_main(MafInstance inst, uint vid : SV_VertexID) {
   float offset = (u.rowHeight - h) * 0.5;
   float rowY   = offset + u.rowHeight * float(inst.rowIndex);
 
-  // High-precision x conversion.
-  float2 startSplit = hpSplitUint(inst.startBp);
-  float2 endSplit   = hpSplitUint(inst.endBp);
-  float sx1 = hpToClipX(startSplit, u.bpRangeX, u.zero);
-  float sx2 = hpToClipX(endSplit,   u.bpRangeX, u.zero);
+  float sx1 = bpToClipX(inst.startBp, u);
+  float sx2 = bpToClipX(inst.endBp, u);
 
   // Enforce minimum 1-pixel width at any zoom level.
   float minClipW = 1.0 / u.viewportWidth * 2.0;

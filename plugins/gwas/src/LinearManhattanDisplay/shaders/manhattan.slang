@@ -27,6 +27,10 @@ struct Uniforms {
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
+float bpToClipX(uint bp, Uniforms u) {
+  return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
+}
+
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
@@ -48,7 +52,7 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
   float qy = yZero ? 0.0 : 1.0;
   float2 local = float2(qx, qy) * 2.0 - float2(1.0, 1.0);
 
-  float centerClipX = hpToClipX(hpSplitUint(inst.absPosition), u.bpRangeX, u.zero);
+  float centerClipX = bpToClipX(inst.absPosition, u);
   float scoreNorm = clamp(
     (inst.score - u.domainYMin) / (u.domainYMax - u.domainYMin),
     0.0,

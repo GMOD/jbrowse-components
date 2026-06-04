@@ -68,7 +68,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
   float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
   float2 splitChevron = float2(splitLine.x, splitLine.y + chevronOffsetBp);
-  float cx = hpToClipX(splitChevron, u.bpRangeX, u.zero);
+  float cx = hpClipX(splitChevron, u);
 
   float cy = snapPixelCenterY(inst.y, u.scrollY, u.canvasHeight);
 
@@ -80,7 +80,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float extHalfThickness = coreHalfThickness + aaPad;
   // Perpendicular-pixel-distance carried by `dist` varying.
   float armHalfPx = CHEVRON_THICKNESS_PX * 0.5 + 1.0;
-  float dir = lerp(inst.direction, -inst.direction, u.reversed);
+  float dir = flipX(inst.direction, u);
 
   bool isTopArm = v < 6u;
   uint qv = v % 6u;
