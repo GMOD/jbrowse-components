@@ -317,7 +317,7 @@ export const galleryDemos: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl',
-    label: 'Methylated and unmethylated CpG',
+    label: 'COLO829 tumor nanopore methylation',
   },
   {
     href: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw',

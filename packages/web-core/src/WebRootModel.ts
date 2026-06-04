@@ -52,6 +52,7 @@ export interface WebRootModelInterface {
   setPluginsUpdated(): void
   deleteSavedSession(id: string): Promise<void>
   setSavedSessionFavorite(id: string, favorite: boolean): Promise<void>
+  renameSavedSession(id: string, name: string): Promise<void>
   renameCurrentSession(name: string): void
   activateSession(id: string): Promise<void>
   setDefaultSession(): void

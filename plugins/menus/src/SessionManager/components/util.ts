@@ -10,7 +10,8 @@ export interface SessionMetadata {
 
 export interface SessionModel extends AbstractSessionModel {
   savedSessionMetadata?: SessionMetadata[]
-  activateSession: (id: string) => void
-  deleteSavedSession: (id: string) => void
-  setSavedSessionFavorite: (id: string, favorite: boolean) => void
+  activateSession: (id: string) => Promise<void>
+  deleteSavedSession: (id: string) => Promise<void>
+  setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
+  renameSavedSession: (id: string, name: string) => Promise<void>
 }

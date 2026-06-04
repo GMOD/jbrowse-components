@@ -25,7 +25,7 @@ export function buildModTooltipData({
       posEntry = {}
       result[mod.position] = posEntry
     }
-    const modKey = `${mod.modType}_${mod.r}_${mod.g}_${mod.b}`
+    const modKey = `${mod.modType}_${mod.noMod ? 'nomod' : 'mod'}_${mod.r}_${mod.g}_${mod.b}`
     let entry = posEntry[modKey]
     if (!entry) {
       entry = {
@@ -34,7 +34,11 @@ export function buildModTooltipData({
         rev: 0,
         probabilityTotal: 0,
         color: `rgb(${mod.r},${mod.g},${mod.b})`,
-        name: getModificationName(mod.modType),
+        // The no-mod bucket is "Unmodified C" (IGV's NONE_C), not "5mC"; its
+        // probability is the confidence the base is unmodified.
+        name: mod.noMod
+          ? `Unmodified ${mod.base}`
+          : getModificationName(mod.modType),
       }
       posEntry[modKey] = entry
     }

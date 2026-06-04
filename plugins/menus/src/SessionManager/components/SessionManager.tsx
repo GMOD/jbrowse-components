@@ -18,6 +18,13 @@ import { observer } from 'mobx-react'
 
 import type { SessionModel } from './util.ts'
 
+interface Row {
+  id: string
+  name: string
+  createdAt: Date
+  fav: boolean
+}
+
 const useStyles = makeStyles()(theme => ({
   mb: {
     margin: theme.spacing(1),
@@ -35,7 +42,7 @@ const SessionManager = observer(function SessionManager({
     'sessionManager-showOnlyFavs',
     false,
   )
-  const rows = session.savedSessionMetadata
+  const rows: Row[] | undefined = session.savedSessionMetadata
     ?.map(r => ({
       id: r.id,
       name: r.name,
@@ -44,13 +51,11 @@ const SessionManager = observer(function SessionManager({
     }))
     .filter(f => !showOnlyFavs || f.fav)
 
-  function handleDeleteOld() {
+  async function handleDeleteOld() {
     const toDelete = (session.savedSessionMetadata ?? []).filter(
       elt => differenceInDays(Date.now(), elt.createdAt) > 1 && !elt.favorite,
     )
-    for (const elt of toDelete) {
-      session.deleteSavedSession(elt.id)
-    }
+    await Promise.all(toDelete.map(elt => session.deleteSavedSession(elt.id)))
     session.notify(`${toDelete.length} sessions deleted`, 'info')
   }
 
@@ -59,10 +64,10 @@ const SessionManager = observer(function SessionManager({
       field: 'fav',
       headerName: 'Fav',
       width: 20,
-      renderCell: ({ row }: { row: { id: string; fav: boolean } }) => (
+      renderCell: ({ row }: { row: Row }) => (
         <IconButton
           onClick={() => {
-            session.setSavedSessionFavorite(row.id, !row.fav)
+            void session.setSavedSessionFavorite(row.id, !row.fav)
           }}
         >
           {row.fav ? <StarIcon /> : <StarBorderIcon />}
@@ -74,11 +79,11 @@ const SessionManager = observer(function SessionManager({
       headerName: 'Name',
       editable: true,
       width: measureGridWidth((rows ?? []).map(r => r.name)),
-      renderCell: ({ row }: { row: { id: string; name: string } }) => (
+      renderCell: ({ row }: { row: Row }) => (
         <>
           <ActionLink
             onClick={() => {
-              session.activateSession(row.id)
+              void session.activateSession(row.id)
             }}
           >
             {row.name}
@@ -90,7 +95,7 @@ const SessionManager = observer(function SessionManager({
     {
       headerName: 'Created at',
       field: 'createdAt',
-      renderCell: ({ row }: { row: { createdAt: Date } }) => (
+      renderCell: ({ row }: { row: Row }) => (
         <Tooltip
           disableInteractive
           slotProps={{ transition: { timeout: 0 } }}
@@ -104,10 +109,10 @@ const SessionManager = observer(function SessionManager({
       field: 'delete',
       width: 10,
       headerName: 'Delete',
-      renderCell: ({ row }: { row: { id: string } }) => (
+      renderCell: ({ row }: { row: Row }) => (
         <IconButton
           onClick={() => {
-            session.deleteSavedSession(row.id)
+            void session.deleteSavedSession(row.id)
           }}
         >
           <DeleteIcon />
@@ -133,7 +138,10 @@ const SessionManager = observer(function SessionManager({
         <Button
           variant="contained"
           onClick={() => {
-            handleDeleteOld()
+            handleDeleteOld().catch((e: unknown) => {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            })
           }}
         >
           Delete non-fav sessions older than 1 day?
@@ -146,9 +154,20 @@ const SessionManager = observer(function SessionManager({
             columnHeaderHeight={35}
             rowHeight={25}
             hideFooter={rows.length < 100}
+            showToolbar
             slotProps={{ toolbar: { showQuickFilter: true } }}
             rows={rows}
             columns={columns}
+            processRowUpdate={(newRow: Row, oldRow: Row) => {
+              if (newRow.name !== oldRow.name) {
+                void session.renameSavedSession(newRow.id, newRow.name)
+              }
+              return newRow
+            }}
+            onProcessRowUpdateError={e => {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            }}
           />
         </DataGridFlexContainer>
       ) : (

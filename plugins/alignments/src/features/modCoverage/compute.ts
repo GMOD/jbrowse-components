@@ -2,15 +2,11 @@ import { packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { calculateModificationCounts } from '../../shared/calculateModificationCounts.ts'
 
+import type { StrandBaseCounts } from '../../shared/calculateModificationCounts.ts'
 import type {
   MismatchData,
   ModificationEntry,
 } from '../../shared/webglRpcTypes.ts'
-
-interface SnpCountEntry {
-  baseCounts: Record<string, number>
-  strandBaseCounts: Record<string, { fwd: number; rev: number }>
-}
 
 interface ModificationColorEntry {
   r: number
@@ -20,6 +16,41 @@ interface ModificationColorEntry {
   probabilityCount: number
   base: string
   modType: string
+  noMod: boolean
+}
+
+// Fixed stack order so a position's segments never swap between frames (they
+// otherwise stacked in read-arrival order). Mirrors IGV's modificationRankOrder
+// but renders modified calls BELOW the no-modification bucket, so e.g. red 5mC
+// always sits under blue unmodified. Lower rank = drawn first = bottom.
+const MOD_TYPE_RANK: Record<string, number> = {
+  m: 0,
+  h: 1,
+  f: 2,
+  c: 3,
+  C: 4,
+  g: 5,
+  e: 6,
+  b: 7,
+  a: 8,
+  o: 9,
+}
+// Total order (no ties) so it's deterministic for numeric ChEBI codes too, which
+// share the fallback rank and need the lexical modType tiebreak to not swap.
+function compareModEntries(a: ModificationColorEntry, b: ModificationColorEntry) {
+  const ra = MOD_TYPE_RANK[a.modType] ?? 99
+  const rb = MOD_TYPE_RANK[b.modType] ?? 99
+  return a.noMod !== b.noMod
+    ? a.noMod
+      ? 1
+      : -1
+    : ra !== rb
+      ? ra - rb
+      : a.modType < b.modType
+        ? -1
+        : a.modType > b.modType
+          ? 1
+          : 0
 }
 
 export function computeModificationCoverage(
@@ -55,27 +86,35 @@ export function computeModificationCoverage(
     }
   }
 
-  const snpByPosition = new Map<number, SnpCountEntry>()
+  // The simplex denominator is computed from per-strand base counts, which the
+  // mod-coverage path always supplies (trackStrands is enabled whenever
+  // methylation/modification coloring is on). Treat their absence as a bug
+  // rather than silently falling back to a strand-blind count that would drop
+  // reverse-strand simplex calls.
+  if (!fwdDepths || !revDepths) {
+    throw new Error('modification coverage requires per-strand depths')
+  }
+
+  const snpByPosition = new Map<number, StrandBaseCounts>()
   for (const mm of mismatches) {
     if (mm.position < regionStart) {
       continue
     }
     let entry = snpByPosition.get(mm.position)
     if (!entry) {
-      entry = { baseCounts: {}, strandBaseCounts: {} }
+      entry = {}
       snpByPosition.set(mm.position, entry)
     }
     const base = String.fromCharCode(mm.base)
-    entry.baseCounts[base] = (entry.baseCounts[base] ?? 0) + 1
-    entry.strandBaseCounts[base] ??= { fwd: 0, rev: 0 }
+    entry[base] ??= { fwd: 0, rev: 0 }
     if (mm.strand === 1) {
-      entry.strandBaseCounts[base].fwd++
+      entry[base].fwd++
     } else {
-      entry.strandBaseCounts[base].rev++
+      entry[base].rev++
     }
   }
 
-  const byPosition = new Map<number, Map<string, ModificationColorEntry>>()
+  const byPosition = new Map<number, Map<number, ModificationColorEntry>>()
 
   for (const mod of modifications) {
     if (mod.position < regionStart) {
@@ -86,7 +125,9 @@ export function computeModificationCoverage(
       colorMap = new Map()
       byPosition.set(mod.position, colorMap)
     }
-    const key = `${mod.r},${mod.g},${mod.b}`
+    // Pack the 0-255 rgb channels into one integer key — avoids a per-call
+    // template-string allocation in this per-modification hot loop.
+    const key = (mod.r << 16) | (mod.g << 8) | mod.b
     let entry = colorMap.get(key)
     if (!entry) {
       entry = {
@@ -97,6 +138,7 @@ export function computeModificationCoverage(
         probabilityCount: 0,
         base: mod.base,
         modType: mod.modType,
+        noMod: mod.noMod ?? false,
       }
       colorMap.set(key, entry)
     }
@@ -129,46 +171,34 @@ export function computeModificationCoverage(
       ? regionSequence[position - regionSequenceStart]!.toUpperCase()
       : 'N'
 
-    const snpEntry = snpByPosition.get(position)
-    const snpBaseCounts = snpEntry?.baseCounts ?? {}
-    const snpStrandBaseCounts = snpEntry?.strandBaseCounts ?? {}
-
-    const totalSnp = Object.values(snpBaseCounts).reduce((a, b) => a + b, 0)
-    const refCount = Math.max(0, depthAtPosition - totalSnp)
-
-    const baseCounts: Record<string, number> = { ...snpBaseCounts }
-    baseCounts[refbase] = (baseCounts[refbase] ?? 0) + refCount
-
-    const strandBaseCounts: Record<string, { fwd: number; rev: number }> = {}
-    for (const [base, sc] of Object.entries(snpStrandBaseCounts)) {
-      strandBaseCounts[base] = { ...sc }
-    }
-
-    if (fwdDepths && revDepths) {
-      const fwdDepthAtPosition = fwdDepths[binIdx] ?? 0
-      const revDepthAtPosition = revDepths[binIdx] ?? 0
-      let snpFwd = 0
-      let snpRev = 0
-      for (const sc of Object.values(snpStrandBaseCounts)) {
+    // Copy the SNP strand counts and tally their per-strand totals in one pass;
+    // every non-SNP read shows the reference base, so the leftover fwd/rev depth
+    // is attributed to refbase. This is the single source for both the modifiable
+    // and detectable denominators (the strand-blind count is just fwd + rev).
+    // SNP bases never collide with refbase (a SNP is by definition a non-ref
+    // base), so the refbase entry below is always fresh.
+    const strandBaseCounts: StrandBaseCounts = {}
+    let snpFwd = 0
+    let snpRev = 0
+    const snpStrandBaseCounts = snpByPosition.get(position)
+    if (snpStrandBaseCounts) {
+      for (const base in snpStrandBaseCounts) {
+        const sc = snpStrandBaseCounts[base]!
+        strandBaseCounts[base] = { fwd: sc.fwd, rev: sc.rev }
         snpFwd += sc.fwd
         snpRev += sc.rev
       }
-      const refFwd = Math.max(0, fwdDepthAtPosition - snpFwd)
-      const refRev = Math.max(0, revDepthAtPosition - snpRev)
-      strandBaseCounts[refbase] ??= { fwd: 0, rev: 0 }
-      strandBaseCounts[refbase].fwd += refFwd
-      strandBaseCounts[refbase].rev += refRev
-    } else {
-      strandBaseCounts[refbase] ??= { fwd: 0, rev: 0 }
-      strandBaseCounts[refbase].fwd += refCount
     }
+    const refFwd = Math.max(0, (fwdDepths[binIdx] ?? 0) - snpFwd)
+    const refRev = Math.max(0, (revDepths[binIdx] ?? 0) - snpRev)
+    strandBaseCounts[refbase] = { fwd: refFwd, rev: refRev }
 
     let yOffset = 0
-    for (const entry of colorMap.values()) {
-      const { detectable } = calculateModificationCounts({
+    const orderedEntries = [...colorMap.values()].sort(compareModEntries)
+    for (const entry of orderedEntries) {
+      const { modifiable, detectable } = calculateModificationCounts({
         base: entry.base,
         isSimplex: simplexModifications.has(entry.modType),
-        baseCounts,
         strandBaseCounts,
       })
 
@@ -176,13 +206,19 @@ export function computeModificationCoverage(
         continue
       }
 
-      // This modification's share of the position's coverage bar: probability-
-      // weighted modified reads / total depth. Bounded to [0,1] per position
-      // (total mod calls <= depth), so stacked colored segments never exceed the
-      // coverage histogram. An IGV-style modifiable/detectable extrapolation
-      // estimates the true methylation rate among informative reads instead, but
-      // that can exceed observed coverage and overflow the bar.
-      const height = entry.probabilityTotal / depthAtPosition
+      // This modification's share of the position's coverage bar, mirroring
+      // IGV's BaseModificationCoverageRenderer: (modifiable/depth) scales the
+      // count of above-threshold reads down to the reads that even carry the
+      // base, and dividing by `detectable` (not `depth`) corrects for simplex
+      // data, where only the examined strand was basecalled so half the reads
+      // could never show the modification. For duplex `detectable === modifiable`
+      // and this collapses to `probabilityCount / depth`. The bar height is a
+      // plain read COUNT, not a probability-weighted sum — IGV weights each
+      // qualifying read as 1; likelihood only feeds the color/alpha below
+      // (averageLikelihood). Bounded to [0,1]: modifiable <= depth and
+      // probabilityCount <= detectable (every modified read is detectable).
+      const height =
+        (modifiable / depthAtPosition) * (entry.probabilityCount / detectable)
 
       const avgProbability = entry.probabilityTotal / entry.probabilityCount
 

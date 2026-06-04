@@ -222,33 +222,69 @@ export default function RootModel({
        * #action
        */
       async activateSession(id: string) {
-        const ret = await self.sessionDB?.get('sessions', id)
-        if (ret) {
-          self.setSession(ret)
-        } else {
-          self.session?.notifyError('Session not found')
+        try {
+          const ret = await self.sessionDB?.get('sessions', id)
+          if (ret) {
+            self.setSession(ret)
+          } else {
+            self.session?.notifyError('Session not found')
+          }
+        } catch (e) {
+          console.error(e)
+          self.session?.notifyError(`${e}`, e)
         }
       },
       /**
        * #action
        */
       async setSavedSessionFavorite(id: string, favorite: boolean) {
-        if (self.sessionDB) {
+        try {
           const ret = self.savedSessionMetadata?.find(f => f.id === id)
-          if (ret) {
+          if (self.sessionDB && ret) {
             await self.sessionDB.put('metadata', { ...ret, favorite }, ret.id)
             await self.fetchSessionMetadata()
           }
+        } catch (e) {
+          console.error(e)
+          self.session?.notifyError(`${e}`, e)
         }
       },
       /**
        * #action
        */
       async deleteSavedSession(id: string) {
-        if (self.sessionDB) {
-          await self.sessionDB.delete('metadata', id)
-          await self.sessionDB.delete('sessions', id)
-          await self.fetchSessionMetadata()
+        try {
+          if (self.sessionDB) {
+            await self.sessionDB.delete('metadata', id)
+            await self.sessionDB.delete('sessions', id)
+            await self.fetchSessionMetadata()
+          }
+        } catch (e) {
+          console.error(e)
+          self.session?.notifyError(`${e}`, e)
+        }
+      },
+      /**
+       * #action
+       */
+      async renameSavedSession(id: string, name: string) {
+        try {
+          // renaming the active session goes through the live model so the
+          // autosave autorun rewrites both stores; otherwise edit IDB directly
+          if (id === self.session?.id) {
+            self.renameCurrentSession(name)
+          } else if (self.sessionDB) {
+            const meta = self.savedSessionMetadata?.find(f => f.id === id)
+            const snap = await self.sessionDB.get('sessions', id)
+            if (meta && snap) {
+              await self.sessionDB.put('metadata', { ...meta, name }, id)
+              await self.sessionDB.put('sessions', { ...snap, name }, id)
+              await self.fetchSessionMetadata()
+            }
+          }
+        } catch (e) {
+          console.error(e)
+          self.session?.notifyError(`${e}`, e)
         }
       },
     }))
@@ -260,7 +296,7 @@ export default function RootModel({
         const preConfiguredSessions = readConfObject(
           self.jbrowse,
           'preConfiguredSessions',
-        )
+        ) as { name: string; [key: string]: unknown }[] | undefined
 
         const ret: Menu[] = [
           {
@@ -274,9 +310,6 @@ export default function RootModel({
                 .slice(0, 5)
               const sessionMenuActions = {
                 activate: (id: string) => self.activateSession(id),
-                notifyError: (msg: string, e: unknown) => {
-                  self.session?.notifyError(msg, e)
-                },
                 showMore: () => {
                   const widget = self.session?.addWidget(
                     'SessionManager',
@@ -346,14 +379,12 @@ export default function RootModel({
                   ? [
                       {
                         label: 'Pre-configured sessions...',
-                        subMenu: preConfiguredSessions.map(
-                          (r: { name: string }) => ({
-                            label: r.name,
-                            onClick: () => {
-                              self.setSession(r)
-                            },
-                          }),
-                        ),
+                        subMenu: preConfiguredSessions.map(r => ({
+                          label: r.name,
+                          onClick: () => {
+                            self.setSession(r)
+                          },
+                        })),
                       },
                     ]
                   : []),

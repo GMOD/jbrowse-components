@@ -233,6 +233,12 @@ export function BaseWebSession({
       /**
        * #action
        */
+      renameSavedSession(id: string, name: string) {
+        return self.root.renameSavedSession(id, name)
+      },
+      /**
+       * #action
+       */
       renameCurrentSession(sessionName: string) {
         self.root.renameCurrentSession(sessionName)
       },

@@ -11,3 +11,4 @@
 - fullpage_arcs-collapse-introns-sashimi.png need to scroll down to see the collapsed arcs
 - does yeast demo really need remote
 - no max height react-app
+- persistent no-close cascading submenu for subselectingmultiple items

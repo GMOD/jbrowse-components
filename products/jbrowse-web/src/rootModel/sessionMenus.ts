@@ -7,7 +7,6 @@ import type { SessionMetadata } from '@jbrowse/web-core'
 
 interface SessionMenuActions {
   activate: (id: string) => Promise<void>
-  notifyError: (msg: string, e: unknown) => void
   showMore: () => void
 }
 
@@ -40,14 +39,8 @@ function sessionItem(
     disabled: r.id === currentSessionId,
     icon,
     onClick: () => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      ;(async () => {
-        try {
-          await actions.activate(r.id)
-        } catch (e) {
-          actions.notifyError(`${e}`, e)
-        }
-      })()
+      // activate handles its own errors (console.error + notifyError)
+      void actions.activate(r.id)
     },
   }
 }

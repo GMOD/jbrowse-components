@@ -47,7 +47,9 @@ function methColorAndProb(
 ) {
   const isMeth = methP > 0.5
   const [r, g, b] = isMeth ? methylatedRgb : unmethylatedRgb
-  return { r, g, b, prob: isMeth ? methP : 1 - methP }
+  // !isMeth → the no-modification bucket; prob becomes the confidence it is
+  // unmodified (1 - methP) so the bar/tooltip reflect that call.
+  return { r, g, b, prob: isMeth ? methP : 1 - methP, noMod: !isMeth }
 }
 
 export function extractModifications(
@@ -112,9 +114,10 @@ export function extractModifications(
           g,
           b,
           prob: alpha,
+          noMod,
         } = twoColor
           ? methColorAndProb(prob, modRgb, METH_5MC_UNMETHYLATED_RGB)
-          : { r: modRgb[0], g: modRgb[1], b: modRgb[2], prob }
+          : { r: modRgb[0], g: modRgb[1], b: modRgb[2], prob, noMod: false }
         modificationsData.push({
           featureId,
           position: featureStart + refPos,
@@ -125,6 +128,7 @@ export function extractModifications(
           g,
           b,
           prob: alpha,
+          noMod,
         })
       }
     }
@@ -174,10 +178,15 @@ export function extractMethylation(
 
     const winner =
       hProb > mProb && hProb > noModProb
-        ? { modType: 'h', rgb: METH_5HMC_METHYLATED_RGB, prob: hProb }
+        ? { modType: 'h', rgb: METH_5HMC_METHYLATED_RGB, prob: hProb, noMod: false }
         : mProb > noModProb
-          ? { modType: 'm', rgb: METH_5MC_METHYLATED_RGB, prob: mProb }
-          : { modType: 'm', rgb: METH_5MC_UNMETHYLATED_RGB, prob: noModProb }
+          ? { modType: 'm', rgb: METH_5MC_METHYLATED_RGB, prob: mProb, noMod: false }
+          : {
+              modType: 'm',
+              rgb: METH_5MC_UNMETHYLATED_RGB,
+              prob: noModProb,
+              noMod: true,
+            }
 
     modificationsData.push({
       featureId,
@@ -189,6 +198,7 @@ export function extractMethylation(
       g: winner.rgb[1],
       b: winner.rgb[2],
       prob: winner.prob,
+      noMod: winner.noMod,
     })
   }
 }
@@ -255,7 +265,7 @@ export function extractBisulfite(
           const readBase = seq[readPos + j]?.toUpperCase()
           const methylated = readBase === methRead
           if (methylated || readBase === unmethRead) {
-            const { r, g, b, prob } = methColorAndProb(
+            const { r, g, b, prob, noMod } = methColorAndProb(
               methylated ? 1 : 0,
               METH_5MC_METHYLATED_RGB,
               METH_5MC_UNMETHYLATED_RGB,
@@ -270,6 +280,7 @@ export function extractBisulfite(
               g,
               b,
               prob,
+              noMod,
             })
           }
         }

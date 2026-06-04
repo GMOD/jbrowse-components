@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
-import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
+import { checkboxItem, radioItems } from './menuHelpers.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 
 import type {
@@ -78,7 +78,18 @@ const arcColorOptions: { label: string; type: ArcColorByType }[] = [
   { label: 'Orientation', type: 'orientation' },
 ]
 
-type ModColorMode = 'byType' | 'twoColor' | 'methylation' | 'bisulfite'
+// MM/ML coloring modes. byType/twoColor mirror IGV's "base modification" and
+// "base modification 2-color"; methylation is the cytosine-context summary IGV
+// gets from a 5mC filter plus its global cytosine-context preference. Bisulfite
+// is a separate, reference-based color-by (getBisulfiteSubMenu), not a mode.
+type ModColorMode = 'byType' | 'twoColor' | 'methylation'
+
+const cytosineContextOptions: { value: CytosineContext; label: string }[] = [
+  { value: 'CG', label: 'CpG' },
+  { value: 'CHG', label: 'CHG' },
+  { value: 'CHH', label: 'CHH' },
+  { value: 'all', label: 'All cytosines' },
+]
 
 function getModificationsSubMenu(model: ModificationsModel) {
   const {
@@ -100,18 +111,15 @@ function getModificationsSubMenu(model: ModificationsModel) {
   const cytosineContext = mods?.cytosineContext ?? 'CG'
   const isModType = model.colorBy.type === 'modifications'
   const isMethType = model.colorBy.type === 'methylation'
-  const isBisType = model.colorBy.type === 'bisulfite'
   // undefined when the display is in some non-modification color scheme, so no
   // mode radio shows as selected until the user enters a modification mode.
   const mode: ModColorMode | undefined = isMethType
     ? 'methylation'
-    : isBisType
-      ? 'bisulfite'
-      : isModType
-        ? twoColor
-          ? 'twoColor'
-          : 'byType'
-        : undefined
+    : isModType
+      ? twoColor
+        ? 'twoColor'
+        : 'byType'
+      : undefined
 
   const applyModifications = (opts: {
     twoColor: boolean
@@ -127,27 +135,20 @@ function getModificationsSubMenu(model: ModificationsModel) {
     })
   }
 
-  // Methylation (modBAM MM/ML) and bisulfite (read-vs-reference C->T) share the
-  // methylated/unmethylated rendering and the cytosine-context picker.
-  const applyContextMode = (
-    type: 'methylation' | 'bisulfite',
-    context: CytosineContext,
-  ) => {
+  const applyMethylation = (context: CytosineContext) => {
     model.setColorScheme({
-      type,
+      type: 'methylation',
       modifications: {
-        ...(type === 'methylation' ? { threshold: modificationThreshold } : {}),
+        threshold: modificationThreshold,
         // omit the default so CpG sessions don't carry a redundant field
         ...(context === 'CG' ? {} : { cytosineContext: context }),
       },
     })
   }
 
-  // Per-mode setColorScheme that preserves the current threshold and (for the
-  // modification modes) the hidden-type selection.
   const setMode = (next: ModColorMode) => {
-    if (next === 'methylation' || next === 'bisulfite') {
-      applyContextMode(next, cytosineContext)
+    if (next === 'methylation') {
+      applyMethylation(cytosineContext)
     } else {
       applyModifications({ twoColor: next === 'twoColor', hidden })
     }
@@ -160,23 +161,36 @@ function getModificationsSubMenu(model: ModificationsModel) {
     applyModifications({ twoColor, hidden: nextHidden })
   }
 
-  // MM/ML modes need detected modifications; bisulfite is reference-based and
-  // works on any BAM, so it's the only option offered when no MM/ML is present.
-  const modeOptions: { value: ModColorMode; label: string }[] = [
-    ...(visibleModificationTypes.length
-      ? ([
-          { value: 'byType', label: 'Color by modification type' },
-          { value: 'twoColor', label: 'Two-color (low-confidence blue)' },
-          { value: 'methylation', label: 'Methylation (modBAM)' },
-        ] as const)
-      : []),
-    { value: 'bisulfite', label: 'Bisulfite / EM-seq' },
-  ]
-
   return [
-    ...radioItems<ModColorMode>(modeOptions, mode, setMode),
-    // Per-type visibility only applies once coloring by modification type; the
-    // methylation mode renders cytosines rather than individual MM/ML types.
+    // helpText (a per-item info dialog) spells out how the modes differ — the
+    // distinction (especially two-color vs methylation) is otherwise easy to
+    // confuse — and where the probability threshold applies.
+    ...radioItems<ModColorMode>(
+      [
+        {
+          value: 'byType',
+          label: 'By modification type',
+          helpText: `Colors each modification call by its type. Only calls at or above the probability threshold (${modificationThreshold}%) are shown.`,
+        },
+        {
+          value: 'twoColor',
+          label: 'Two-color',
+          helpText:
+            'Colors every called base: at least 50% probability in the modification color, below 50% in blue.',
+        },
+        {
+          value: 'methylation',
+          label: 'Methylation',
+          helpText:
+            'Summarizes methylated vs unmethylated cytosines, restricted to a cytosine context (CpG by default). Picks the single most likely state per cytosine.',
+        },
+      ],
+      mode,
+      setMode,
+    ),
+    // Per-type show/hide applies to the type-colored modes; methylation renders
+    // cytosine state rather than individual MM/ML types, so it gets the
+    // cytosine-context picker instead.
     ...(isModType && visibleModificationTypes.length
       ? [
           {
@@ -190,41 +204,48 @@ function getModificationsSubMenu(model: ModificationsModel) {
           },
         ]
       : []),
-    // Cytosine context picker — shared by methylation and bisulfite modes. CpG
-    // is the mammalian default; CHG/CHH (and all) cover plant methylation. Load
-    // the file as separate per-context tracks for the classic 3-context view.
-    ...(isMethType || isBisType
+    ...(isMethType
       ? [
-          radioModeMenuItem<CytosineContext>(
-            'Cytosine context',
-            [
-              { value: 'CG', label: 'CpG' },
-              { value: 'CHG', label: 'CHG' },
-              { value: 'CHH', label: 'CHH' },
-              { value: 'all', label: 'All cytosines' },
-            ],
-            cytosineContext,
-            context => {
-              applyContextMode(isBisType ? 'bisulfite' : 'methylation', context)
-            },
-          ),
+          {
+            label: 'Cytosine context',
+            type: 'subMenu' as const,
+            subMenu: radioItems<CytosineContext>(
+              cytosineContextOptions,
+              cytosineContext,
+              applyMethylation,
+            ),
+          },
         ]
       : []),
-    // Threshold is an MM/ML probability cutoff; bisulfite calls are binary.
-    ...(isBisType
-      ? []
-      : [
-          {
-            label: `Adjust threshold (${modificationThreshold}%)`,
-            onClick: () => {
-              getSession(model).queueDialog(handleClose => [
-                SetModificationThresholdDialog,
-                { model, handleClose },
-              ])
-            },
-          },
-        ]),
+    {
+      label: `Adjust threshold (${modificationThreshold}%)`,
+      onClick: () => {
+        getSession(model).queueDialog(handleClose => [
+          SetModificationThresholdDialog,
+          { model, handleClose },
+        ])
+      },
+    },
   ]
+}
+
+// Bisulfite / EM-seq is reference-based (read-vs-reference C->T), so it needs no
+// MM/ML tags and is its own color-by. Each cytosine-context item activates the
+// bisulfite scheme with that context, like IGV's bisulfite context menu.
+function getBisulfiteSubMenu(model: ModificationsModel) {
+  const isBisType = model.colorBy.type === 'bisulfite'
+  const context = model.colorBy.modifications?.cytosineContext ?? 'CG'
+  return radioItems<CytosineContext>(
+    cytosineContextOptions,
+    isBisType ? context : undefined,
+    next => {
+      model.setColorScheme({
+        type: 'bisulfite',
+        // omit the default so CpG sessions don't carry a redundant field
+        modifications: next === 'CG' ? {} : { cytosineContext: next },
+      })
+    },
+  )
 }
 
 export function getColorByMenuItem(
@@ -265,12 +286,27 @@ export function getColorByMenuItem(
       ]
     : []
 
-  const modItem = hasModifications(model)
+  // MM/ML modes only when the data actually carries modifications (still shown
+  // while loading); bisulfite is reference-based so it applies to any alignments
+  // display regardless of MM/ML tags.
+  const modItem =
+    hasModifications(model) &&
+    (!model.modificationsReady || model.visibleModificationTypes.length)
+      ? [
+          {
+            label: 'Modifications (MM tag)',
+            type: 'subMenu' as const,
+            subMenu: getModificationsSubMenu(model),
+          },
+        ]
+      : []
+
+  const bisulfiteItem = hasModifications(model)
     ? [
         {
-          label: 'Modifications...',
+          label: 'Bisulfite / EM-seq',
           type: 'subMenu' as const,
-          subMenu: getModificationsSubMenu(model),
+          subMenu: getBisulfiteSubMenu(model),
         },
       ]
     : []
@@ -295,6 +331,12 @@ export function getColorByMenuItem(
   return {
     label: 'Color by...',
     icon: Palette,
-    subMenu: [...headItems, ...tagItem, ...modItem, ...arcColorItem],
+    subMenu: [
+      ...headItems,
+      ...tagItem,
+      ...modItem,
+      ...bisulfiteItem,
+      ...arcColorItem,
+    ],
   }
 }

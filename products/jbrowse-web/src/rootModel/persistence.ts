@@ -1,9 +1,9 @@
 import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
-import { openDB } from 'idb'
 import { autorun } from 'mobx'
 
+import { openSessionDB } from '../openSessionDB.ts'
+
 import type { WebRootModel } from './rootModel.ts'
-import type { SessionDB } from '../types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // Opens the IndexedDB for autosave persistence, then mirrors session changes
@@ -11,12 +11,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 // indexedDB is unavailable (tests, restricted environments).
 export async function setupSessionDB(self: WebRootModel) {
   try {
-    const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
-      upgrade(db) {
-        db.createObjectStore('metadata')
-        db.createObjectStore('sessions')
-      },
-    })
+    const sessionDB = await openSessionDB()
     self.setSessionDB(sessionDB)
 
     addDisposer(

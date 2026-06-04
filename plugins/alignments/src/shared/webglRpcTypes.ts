@@ -65,4 +65,9 @@ export interface ModificationEntry {
   g: number
   b: number
   prob: number // probability (0-1)
+  // The "no modification" / unmethylated bucket (IGV's NONE_<base>). modType
+  // stays the canonical mod ('m'/'h') so the coverage denominator and simplex
+  // logic are shared with the modified bucket, but `prob` is the confidence the
+  // base is UNmodified and tooltips label it "Unmodified <base>", not "5mC".
+  noMod?: boolean
 }

@@ -1,10 +1,10 @@
 import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
-import { openDB } from 'idb'
 
+import { openSessionDB } from './openSessionDB.ts'
 import { addRelativeUris } from './util.ts'
 
-import type { SessionDB, Snap } from './types.ts'
+import type { Snap } from './types.ts'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 export async function loadPluginRecords(defs: PluginDefinition[]) {
@@ -32,12 +32,7 @@ export function readSessionFromStorage(query: string) {
 
 export async function readSessionFromIDB(query: string) {
   try {
-    const db = await openDB<SessionDB>('sessionsDB', 2, {
-      upgrade(db) {
-        db.createObjectStore('metadata')
-        db.createObjectStore('sessions')
-      },
-    })
+    const db = await openSessionDB()
     return await db.get('sessions', query)
   } catch (e) {
     console.error(e)
