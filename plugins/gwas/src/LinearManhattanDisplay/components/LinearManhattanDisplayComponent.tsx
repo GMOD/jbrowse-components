@@ -90,9 +90,7 @@ const LinearManhattanDisplayComponent = observer(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        onContextMenu={event => {
-          handleContextMenu(event)
-        }}
+        onContextMenu={event => handleContextMenu(event)}
       >
         {({ canvasRef }) => (
           <ManhattanBody
