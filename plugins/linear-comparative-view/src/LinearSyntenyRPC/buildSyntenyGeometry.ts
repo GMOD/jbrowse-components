@@ -4,11 +4,8 @@ import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 import { writeHiLo } from './hpMathSplit.ts'
 import {
   KIND_BASE,
-  KIND_BASE_HIDDEN,
   KIND_CIGAR_D,
-  KIND_CIGAR_HIDDEN,
   KIND_CIGAR_I,
-  KIND_CIGAR_MATCH,
   KIND_CIGAR_N,
   KIND_MARKER,
 } from './syntenyColors.ts'
@@ -221,8 +218,10 @@ export function buildSyntenyGeometry({
     }
   }
 
-  // Emit whole-polygon instances. Features with CIGAR detail use
-  // KIND_BASE_HIDDEN (alpha-zero fill, but edge/outline pass still draws them).
+  // Emit whole-polygon instances. Always KIND_BASE (visible) — the base block
+  // provides continuous gapless match-color coverage; only indel quads are
+  // drawn on top. KIND_BASE_HIDDEN is gone: hiding the base block required
+  // perfect tiling of CIGAR quads, which broke at sub-pixel FP boundaries.
   function emitNonCigarFeature(i: number) {
     const x11 = p11_cumBp[i]!
     const x12 = p12_cumBp[i]!
@@ -234,7 +233,7 @@ export function buildSyntenyGeometry({
       x12,
       x22,
       x21,
-      willDrawCigar ? KIND_BASE_HIDDEN : KIND_BASE,
+      KIND_BASE,
       i,
       alignmentLengths[i]!,
     )
@@ -247,9 +246,8 @@ export function buildSyntenyGeometry({
     emitNonCigarFeature(i)
   }
 
-  // Second loop: CIGAR instances (using cached parsed CIGARs). The visitor
-  // merges sub-pixel ops, so features with no >= 1 px indels collapse to a
-  // single KIND_CIGAR_MATCH quad — no separate fast path needed.
+  // Second loop: indel quads only. The base block (KIND_BASE) provides match
+  // color; only CIGAR_I/D/N quads need to be drawn on top.
   for (let i = 0; i < featureCount; i++) {
     if (!willDrawCigarArr[i]) {
       continue
@@ -289,29 +287,27 @@ export function buildSyntenyGeometry({
             resolvedOp === CIGAR_I ||
             resolvedOp === CIGAR_D ||
             resolvedOp === CIGAR_N
-          let kind: number
-          if (drawCIGARMatchesOnly && isIndel) {
-            kind = KIND_CIGAR_HIDDEN
-          } else if (resolvedOp === CIGAR_I) {
-            kind = KIND_CIGAR_I
-          } else if (resolvedOp === CIGAR_D) {
-            kind = KIND_CIGAR_D
-          } else if (resolvedOp === CIGAR_N) {
-            kind = KIND_CIGAR_N
-          } else {
-            kind = KIND_CIGAR_MATCH
+          // Only emit indel quads; match segments are covered by the base
+          // block. drawCIGARMatchesOnly suppresses indels entirely.
+          if (isIndel && !drawCIGARMatchesOnly) {
+            const kind =
+              resolvedOp === CIGAR_I
+                ? KIND_CIGAR_I
+                : resolvedOp === CIGAR_D
+                  ? KIND_CIGAR_D
+                  : KIND_CIGAR_N
+            addInstance(
+              segBp1Start,
+              segBp1End,
+              segBp2End,
+              segBp2Start,
+              kind,
+              i,
+              alignmentLength,
+            )
           }
-          addInstance(
-            segBp1Start,
-            segBp1End,
-            segBp2End,
-            segBp2Start,
-            kind,
-            i,
-            alignmentLength,
-          )
 
-          if (drawLocationMarkers && !(drawCIGARMatchesOnly && isIndel)) {
+          if (drawLocationMarkers) {
             addLocationMarkers(
               segBp1Start,
               segBp1End,
