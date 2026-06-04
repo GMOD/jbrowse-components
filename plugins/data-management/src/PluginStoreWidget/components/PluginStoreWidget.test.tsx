@@ -1,4 +1,5 @@
 import { DialogQueue } from '@jbrowse/app-core'
+import Plugin from '@jbrowse/core/Plugin'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
@@ -86,6 +87,49 @@ test('removeSessionPlugin removes a plugin that carries a cjsUrl', () => {
   // the resolved url, not the cjsUrl, so removal must match on url alone
   session.removeSessionPlugin({ name: plugin.name, url: plugin.url })
   expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
+})
+
+test('uninstalls a session plugin through the full UI flow', async () => {
+  const user = userEvent.setup()
+  // a store-style definition carrying both a web (url) and desktop (cjsUrl)
+  // build, loaded into the plugin manager so it appears as installed
+  const definition = {
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+    cjsUrl: 'https://example.com/msaview.cjs.js',
+  }
+  class MsaViewPlugin extends Plugin {
+    name = 'MsaView'
+    version = '1.0.0'
+  }
+  const session = createTestSession({
+    sessionSnapshot: { sessionPlugins: [definition] },
+    runtimePlugins: [{ plugin: new MsaViewPlugin(), definition }],
+  })
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  // the debounced autosave reloads the plugin manager after removal; give it a
+  // no-op so it doesn't hit the default "unimplemented" handler post-teardown
+  // @ts-expect-error
+  getRoot(session).setReloadPluginManagerCallback(() => {})
+
+  const { findByText, findByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DialogQueue session={session} />
+      <PluginStoreWidget model={model} />
+    </ThemeProvider>,
+  )
+
+  // the loaded session plugin shows an uninstall button
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(1)
+  await user.click(await findByTestId('removePlugin-MsaView'))
+  await user.click(await findByText('Remove'))
+
+  await waitFor(() => {
+    expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
+  })
 })
 
 test('plugin store admin - adds a custom plugin correctly', async () => {
