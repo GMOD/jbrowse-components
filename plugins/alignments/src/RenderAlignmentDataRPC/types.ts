@@ -29,7 +29,6 @@ export interface RenderAlignmentDataArgs {
   // invalidate the fetched data — main-thread layout re-runs instead.
   sortTag?: string
   showSoftClipping?: boolean
-  filterMismatchesByFrequency?: boolean
   linkedReads?: 'off' | 'normal'
   drawSingletons?: boolean
   drawProperPairs?: boolean

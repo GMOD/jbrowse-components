@@ -2,6 +2,7 @@ import { buildBaseColorTupleMap } from './baseColors.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
+  frequencyAlpha,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -36,10 +37,10 @@ export function drawMismatches(
     // N has a palette entry; any other non-A/C/G/T byte falls back to the N
     // color, matching the GPU shader (mismatch.slang baseColor catch-all).
     const colorTuple = baseColors[base] ?? state.colors.colorBaseN
-    let alpha = 1
-    if (state.filterMismatchesByFrequency && pxPerBp < 1) {
-      alpha = pxPerBp + frequency * (1 - pxPerBp)
-    }
+    const alpha =
+      state.filterMismatchesByFrequency && pxPerBp < 1
+        ? frequencyAlpha(pxPerBp, frequency)
+        : 1
     ctx.fillStyle = alpha >= 1 ? rgb255(colorTuple) : rgba255(colorTuple, alpha)
     ctx.fillRect(x, y, w, fH)
   }

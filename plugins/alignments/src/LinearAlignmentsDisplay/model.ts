@@ -1145,7 +1145,6 @@ export default function stateModelFactory(
             colorBy: self.colorBy,
             sortTag: this.sortTag,
             showSoftClipping: self.showSoftClipping,
-            filterMismatchesByFrequency: self.filterMismatchesByFrequency,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
             linkedReads: self.linkedReads,
@@ -1473,7 +1472,7 @@ export default function stateModelFactory(
           toggleFilterMismatchesByFrequency() {
             self.setOverride(
               'filterMismatchesByFrequency',
-              self.getOverride<boolean>('filterMismatchesByFrequency') === false,
+              !self.filterMismatchesByFrequency,
             )
           },
 

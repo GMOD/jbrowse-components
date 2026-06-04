@@ -108,7 +108,6 @@ export function computeFrequenciesAndThresholds(
   gapArrays: { gapPositions: Uint32Array },
   depths: Float32Array,
   coverageStartPos: number,
-  applyFrequencyFilter = true,
 ) {
   const mismatchFrequencies = computeMismatchFrequencies(
     mismatchArrays.mismatchPositions,
@@ -116,30 +115,26 @@ export function computeFrequenciesAndThresholds(
     depths,
     coverageStartPos,
   )
-  if (applyFrequencyFilter) {
-    applyDepthDependentThreshold(
-      mismatchFrequencies,
-      mismatchArrays.mismatchPositions,
-      depths,
-      coverageStartPos,
-      featureFrequencyThreshold,
-    )
-  }
+  applyDepthDependentThreshold(
+    mismatchFrequencies,
+    mismatchArrays.mismatchPositions,
+    depths,
+    coverageStartPos,
+    featureFrequencyThreshold,
+  )
   const interbaseFrequencies = computePositionFrequencies(
     interbaseArrays.interbasePositions,
     depths,
     coverageStartPos,
   )
-  if (applyFrequencyFilter) {
-    applyDepthDependentThreshold(
-      interbaseFrequencies,
-      interbaseArrays.interbasePositions,
-      depths,
-      coverageStartPos,
-      featureFrequencyThreshold,
-      true,
-    )
-  }
+  applyDepthDependentThreshold(
+    interbaseFrequencies,
+    interbaseArrays.interbasePositions,
+    depths,
+    coverageStartPos,
+    featureFrequencyThreshold,
+    true,
+  )
   const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
   for (let i = 0; i < gapStartPositions.length; i++) {
     gapStartPositions[i] = gapArrays.gapPositions[i * 2]!
@@ -149,16 +144,14 @@ export function computeFrequenciesAndThresholds(
     depths,
     coverageStartPos,
   )
-  if (applyFrequencyFilter) {
-    applyDepthDependentThreshold(
-      gapFrequencies,
-      gapStartPositions,
-      depths,
-      coverageStartPos,
-      featureFrequencyThreshold,
-      true,
-    )
-  }
+  applyDepthDependentThreshold(
+    gapFrequencies,
+    gapStartPositions,
+    depths,
+    coverageStartPos,
+    featureFrequencyThreshold,
+    true,
+  )
 
   return { mismatchFrequencies, interbaseFrequencies, gapFrequencies }
 }

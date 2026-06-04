@@ -1,6 +1,7 @@
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
+  frequencyAlpha,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -40,11 +41,10 @@ export function drawGaps(
 
     if (gapType === GAP_DELETION) {
       const frequency = region.gapFrequencies[i]! / 255
-      let alpha = 1
-      if (state.filterMismatchesByFrequency && widthPx < 1) {
-        const base = widthPx * widthPx
-        alpha = base + frequency * (1 - base)
-      }
+      const alpha =
+        state.filterMismatchesByFrequency && widthPx < 1
+          ? frequencyAlpha(widthPx * widthPx, frequency)
+          : 1
       ctx.fillStyle =
         alpha >= 1 ? rgb255(delColorBase) : rgba255(delColorBase, alpha)
       ctx.fillRect(x1, y, w, fH)

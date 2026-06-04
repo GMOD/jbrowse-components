@@ -105,6 +105,14 @@ export function computeBlockHeights(state: RenderState) {
   }
 }
 
+// Sub-pixel alpha blend: lerp between `base` (full-row coverage) and 1 using
+// per-site frequency. Same formula as the three GPU shaders (mismatch /
+// gap / insertion). Callers compute `base` from their geometry (pxPerBp or
+// widthPx²) then call this once per feature.
+export function frequencyAlpha(base: number, frequency: number) {
+  return base + frequency * (1 - base)
+}
+
 // Canvas Y for a pileup row index, mirroring shader-side `pileupY()` in
 // alignmentsUniforms.slang. Single source of truth for the row → canvas-Y
 // formula used by every Canvas2D draw method.
