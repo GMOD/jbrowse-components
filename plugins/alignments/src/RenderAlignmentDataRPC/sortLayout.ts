@@ -167,14 +167,14 @@ function sortOverlappingByIndex(
 }
 
 // Place a rect but never let the layout grow past `maxRows` rows. When
-// placeRect would open a row beyond the cap it appends one (placeRect has no
-// limit by design); we pop that overflow row back off and hand the read the
-// `maxRows` sentinel, which renders flush against the content bottom (just out
-// of view) so capped reads don't expand the pileup. Returns the assigned row.
+// placeRect opens a row beyond the cap (it has no limit by design) we pop that
+// overflow row back off and return the `maxRows` sentinel, which renders flush
+// against the content bottom (just out of view) so capped reads don't expand
+// the pileup. Callers treat a `maxRows` result as truncation. A bare number
+// rather than a {y, overflow} pair so the per-read hot loop allocates nothing.
 //
-// `maxRows` is also bounded ≤ 65534 by the caller so the sentinel and every
-// real row index fit the Uint16Array — at >65535x coverage the raw row count
-// would otherwise silently wrap.
+// `maxRows` is bounded ≤ 65534 by the caller so the sentinel and every real row
+// index fit the Uint16Array — at >65535x coverage the raw count would wrap.
 function placeRectCapped(
   rows: number[][],
   start: number,
@@ -182,11 +182,11 @@ function placeRectCapped(
   maxRows: number,
 ) {
   const y = placeRect(rows, start, end)
-  if (y >= maxRows) {
+  const overflow = y >= maxRows
+  if (overflow) {
     rows.pop()
-    return { y: maxRows, overflow: true }
   }
-  return { y, overflow: false }
+  return overflow ? maxRows : y
 }
 
 /**
@@ -226,16 +226,16 @@ export function computeLayout(
     })
     for (const i of readIndices) {
       const { start, end } = readExtent(data, i, expansions)
-      const placed = placeRectCapped(rows, start, end, maxRows)
-      readYs[i] = placed.y
-      truncated = truncated || placed.overflow
+      const y = placeRectCapped(rows, start, end, maxRows)
+      readYs[i] = y
+      truncated = truncated || y === maxRows
     }
   } else {
     for (let i = 0; i < numReads; i++) {
       const { start, end } = readExtent(data, i, expansions)
-      const placed = placeRectCapped(rows, start, end, maxRows)
-      readYs[i] = placed.y
-      truncated = truncated || placed.overflow
+      const y = placeRectCapped(rows, start, end, maxRows)
+      readYs[i] = y
+      truncated = truncated || y === maxRows
     }
   }
 
@@ -280,15 +280,15 @@ export function computeSortedLayout(
   let truncated = false
   for (const i of overlapping) {
     const { start, end } = readExtent(data, i, expansions)
-    const placed = placeRectCapped(rows, start, end, maxRows)
-    readYs[i] = placed.y
-    truncated = truncated || placed.overflow
+    const y = placeRectCapped(rows, start, end, maxRows)
+    readYs[i] = y
+    truncated = truncated || y === maxRows
   }
   for (const i of nonOverlapping) {
     const { start, end } = readExtent(data, i, expansions)
-    const placed = placeRectCapped(rows, start, end, maxRows)
-    readYs[i] = placed.y
-    truncated = truncated || placed.overflow
+    const y = placeRectCapped(rows, start, end, maxRows)
+    readYs[i] = y
+    truncated = truncated || y === maxRows
   }
   return { readYs, maxY: rows.length, truncated }
 }
@@ -322,9 +322,9 @@ export function computeMultiRegionLayout(
   const rows: number[][] = []
   let truncated = false
   for (const { id, start, end } of reads) {
-    const placed = placeRectCapped(rows, start, end, maxRows)
-    rowMap.set(id, placed.y)
-    truncated = truncated || placed.overflow
+    const y = placeRectCapped(rows, start, end, maxRows)
+    rowMap.set(id, y)
+    truncated = truncated || y === maxRows
   }
   return { rowMap, maxY: rows.length, truncated }
 }
