@@ -166,13 +166,38 @@ function sortOverlappingByIndex(
   }
 }
 
+// Place a rect but never let the layout grow past `maxRows` rows. When
+// placeRect would open a row beyond the cap it appends one (placeRect has no
+// limit by design); we pop that overflow row back off and hand the read the
+// `maxRows` sentinel, which renders flush against the content bottom (just out
+// of view) so capped reads don't expand the pileup. Returns the assigned row.
+//
+// `maxRows` is also bounded ≤ 65534 by the caller so the sentinel and every
+// real row index fit the Uint16Array — at >65535x coverage the raw row count
+// would otherwise silently wrap.
+function placeRectCapped(
+  rows: number[][],
+  start: number,
+  end: number,
+  maxRows: number,
+) {
+  const y = placeRect(rows, start, end)
+  if (y >= maxRows) {
+    rows.pop()
+    return { y: maxRows, overflow: true }
+  }
+  return { y, overflow: false }
+}
+
 /**
  * Compute pileup row layout for a single region. Returns
- * readYs[i] = pileup row for read i, and maxY = total row count.
+ * readYs[i] = pileup row for read i, maxY = total row count, and `truncated`
+ * when `maxRows` clipped the stack.
  */
 export function computeLayout(
   data: PileupDataResult,
   showSoftClipping?: boolean,
+  maxRows = Number.POSITIVE_INFINITY,
 ) {
   const numReads = data.readIds.length
   const expansions = showSoftClipping
@@ -181,6 +206,7 @@ export function computeLayout(
 
   const readYs = new Uint16Array(numReads)
   const rows: number[][] = []
+  let truncated = false
 
   // When soft-clipping is on, sort by layout left edge (which includes soft-clip
   // expansion) instead of genomic position. The placeRect algorithm requires
@@ -200,16 +226,20 @@ export function computeLayout(
     })
     for (const i of readIndices) {
       const { start, end } = readExtent(data, i, expansions)
-      readYs[i] = placeRect(rows, start, end)
+      const placed = placeRectCapped(rows, start, end, maxRows)
+      readYs[i] = placed.y
+      truncated = truncated || placed.overflow
     }
   } else {
     for (let i = 0; i < numReads; i++) {
       const { start, end } = readExtent(data, i, expansions)
-      readYs[i] = placeRect(rows, start, end)
+      const placed = placeRectCapped(rows, start, end, maxRows)
+      readYs[i] = placed.y
+      truncated = truncated || placed.overflow
     }
   }
 
-  return { readYs, maxY: rows.length }
+  return { readYs, maxY: rows.length, truncated }
 }
 
 /**
@@ -222,6 +252,7 @@ export function computeSortedLayout(
   data: PileupDataResult,
   sortedBy: SortedBy,
   showSoftClipping?: boolean,
+  maxRows = Number.POSITIVE_INFINITY,
 ) {
   const { readPositions } = data
   const numReads = data.readIds.length
@@ -246,15 +277,20 @@ export function computeSortedLayout(
 
   const readYs = new Uint16Array(numReads)
   const rows: number[][] = []
+  let truncated = false
   for (const i of overlapping) {
     const { start, end } = readExtent(data, i, expansions)
-    readYs[i] = placeRect(rows, start, end)
+    const placed = placeRectCapped(rows, start, end, maxRows)
+    readYs[i] = placed.y
+    truncated = truncated || placed.overflow
   }
   for (const i of nonOverlapping) {
     const { start, end } = readExtent(data, i, expansions)
-    readYs[i] = placeRect(rows, start, end)
+    const placed = placeRectCapped(rows, start, end, maxRows)
+    readYs[i] = placed.y
+    truncated = truncated || placed.overflow
   }
-  return { readYs, maxY: rows.length }
+  return { readYs, maxY: rows.length, truncated }
 }
 
 /**
@@ -264,6 +300,7 @@ export function computeSortedLayout(
  */
 export function computeMultiRegionLayout(
   entries: [number, PileupDataResult][],
+  maxRows = Number.POSITIVE_INFINITY,
 ) {
   const seen = new Set<string>()
   const reads: { id: string; start: number; end: number }[] = []
@@ -283,10 +320,13 @@ export function computeMultiRegionLayout(
 
   const rowMap = new Map<string, number>()
   const rows: number[][] = []
+  let truncated = false
   for (const { id, start, end } of reads) {
-    rowMap.set(id, placeRect(rows, start, end))
+    const placed = placeRectCapped(rows, start, end, maxRows)
+    rowMap.set(id, placed.y)
+    truncated = truncated || placed.overflow
   }
-  return { rowMap, maxY: rows.length }
+  return { rowMap, maxY: rows.length, truncated }
 }
 
 /**
@@ -299,6 +339,7 @@ export function cloneWithLayout(
   data: PileupDataResult,
   readYs: Uint16Array,
   maxY: number,
+  truncated = false,
 ): PileupDataResult {
   const numGaps = data.gapPositions.length / 2
   const numMismatches = data.mismatchPositions.length
@@ -351,6 +392,7 @@ export function cloneWithLayout(
     softclipBaseYs,
     perBaseQualYs,
     maxY,
+    truncated,
     modFlatbush,
   }
 }
@@ -367,10 +409,12 @@ export function buildLaidOutPileupMap({
   dataMap,
   sortedBy,
   showSoftClipping,
+  maxRows = Number.POSITIVE_INFINITY,
 }: {
   dataMap: ReadonlyMap<number, PileupDataResult>
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean | undefined
+  maxRows?: number
 }): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
@@ -386,19 +430,22 @@ export function buildLaidOutPileupMap({
   }
   if (withReads.length === 1) {
     const [idx, data] = withReads[0]!
-    const { readYs, maxY } = sortedBy
-      ? computeSortedLayout(data, sortedBy, showSoftClipping)
-      : computeLayout(data, showSoftClipping)
-    out.set(idx, cloneWithLayout(data, readYs, maxY))
+    const { readYs, maxY, truncated } = sortedBy
+      ? computeSortedLayout(data, sortedBy, showSoftClipping, maxRows)
+      : computeLayout(data, showSoftClipping, maxRows)
+    out.set(idx, cloneWithLayout(data, readYs, maxY, truncated))
   } else {
-    const { rowMap, maxY } = computeMultiRegionLayout(withReads)
+    const { rowMap, maxY, truncated } = computeMultiRegionLayout(
+      withReads,
+      maxRows,
+    )
     for (const [idx, data] of withReads) {
       const numReads = data.readIds.length
       const readYs = new Uint16Array(numReads)
       for (let i = 0; i < numReads; i++) {
         readYs[i] = rowMap.get(data.readIds[i]!)!
       }
-      out.set(idx, cloneWithLayout(data, readYs, maxY))
+      out.set(idx, cloneWithLayout(data, readYs, maxY, truncated))
     }
   }
   return out

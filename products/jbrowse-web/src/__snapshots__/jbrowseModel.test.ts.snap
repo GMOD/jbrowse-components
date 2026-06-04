@@ -1652,6 +1652,40 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sort.gff3.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "color": "jexl:get(feature,'type')=='CDS'?'#d62728':get(feature,'type')=='exon'?'#2ca02c':'#1f77b4'",
+          "displayId": "gff3tabix_genes_jexl_color_linear",
+          "type": "LinearBasicDisplay",
+        },
+      ],
+      "metadata": {
+        "skipTextIndex": true,
+      },
+      "name": "GFF3Tabix genes (per-feature jexl color)",
+      "trackId": "gff3tabix_genes_jexl_color",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
         "craiLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
@@ -3182,6 +3216,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearBasicDisplay",
         },
       ],
+      "metadata": {
+        "skipTextIndex": true,
+      },
       "name": "Custom Tooltips (mouseover callback)",
       "trackId": "gff3_custom_tooltips",
       "type": "FeatureTrack",
@@ -3216,6 +3253,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearBasicDisplay",
         },
       ],
+      "metadata": {
+        "skipTextIndex": true,
+      },
       "name": "_mouseOver Attributes",
       "trackId": "gff3_mouseover_attr",
       "type": "FeatureTrack",
@@ -3313,9 +3353,59 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "Synteny",
       ],
+      "metadata": {
+        "skipTextIndex": true,
+      },
       "name": "volvox variants (vg deconstruct -a -u)",
       "trackId": "volvox_variants_vcf",
       "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "bedGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.maf.bed.gz",
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.maf.bed.gz.tbi",
+          },
+        },
+        "nhLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.maf.nh",
+        },
+        "samples": [
+          "volvox",
+          "simvolvox",
+          "minivolvox",
+          "microvolvox",
+          "nanovolvox",
+          "megavolvox",
+          "ultravolvox",
+          "picovolvox",
+          "hypervolvox",
+          "metavolvox",
+        ],
+        "type": "MafTabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Multiple alignment",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_maf-LinearMafDisplay",
+          "type": "LinearMafDisplay",
+        },
+      ],
+      "name": "MAF multiple alignment (tabix)",
+      "trackId": "volvox_maf",
+      "type": "MafTrack",
     },
   ],
 }

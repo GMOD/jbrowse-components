@@ -181,6 +181,16 @@ export { ColorScheme } from './constants.ts'
 //   perBaseQuality → normal (per-base quality paints colored rects on top
 //     of a neutral read body via drawPerBaseQuality; shader uses normal
 //     coloring for the background pass).
+// Max pileup rows the layout may produce before overflow reads collapse to the
+// bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
+// `readYs`) and the overflow sentinel never wrap.
+export function maxRowsFor(maxHeight: number, rowHeight: number) {
+  return Math.max(
+    1,
+    Math.min(65534, Math.floor(maxHeight / Math.max(1, rowHeight))),
+  )
+}
+
 const COLOR_BY_TO_SCHEME: Record<string, number> = {
   normal: ColorScheme.normal,
   strand: ColorScheme.strand,
@@ -620,6 +630,13 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        get maxHeight() {
+          return self.getConfWithOverride<number>('maxHeight')
+        },
+
+        /**
+         * #getter
+         */
         get chainIdMap() {
           const map = new Map<number, string[]>()
           if (self.linkedReads !== 'off') {
@@ -741,6 +758,11 @@ export default function stateModelFactory(
                   dataMap: self.rpcDataMap,
                   sortedBy: this.sortedBy,
                   showSoftClipping: self.showSoftClipping,
+                  maxRows: maxRowsFor(
+                    self.getConfWithOverride<number>('maxHeight'),
+                    self.getConfWithOverride<number>('featureHeight') +
+                      self.getConfWithOverride<number>('featureSpacing'),
+                  ),
                 })
           const laidOut = self.showLinkedReadLines
             ? attachLinkedReadLines(base)
@@ -761,6 +783,20 @@ export default function stateModelFactory(
             }
           }
           return max
+        },
+
+        /**
+         * #getter
+         * True when any displayed region hit `maxRows` and overflow reads were
+         * collapsed — drives the "max height reached" indicator.
+         */
+        get pileupTruncated() {
+          for (const data of this.laidOutPileupMap.values()) {
+            if (data.truncated) {
+              return true
+            }
+          }
+          return false
         },
 
         // The heavy work — running `computeArcsFromPileupData` over every
@@ -1517,6 +1553,14 @@ export default function stateModelFactory(
            */
           setFeatureSpacing(spacing?: number) {
             self.setOverride('featureSpacing', spacing)
+            self.scrollTop = 0
+          },
+
+          /**
+           * #action
+           */
+          setMaxHeight(height?: number) {
+            self.setOverride('maxHeight', height)
             self.scrollTop = 0
           },
 

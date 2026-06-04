@@ -5,14 +5,14 @@ import { createView, expectCanvasMatch, findCanvasIn, hts } from './util.tsx'
 type DisplayMode = 'arc' | 'samplot' | 'cloud' | 'bezier' | 'stack'
 
 // Menu path from track menu → submenu → final click, per displayMode.
-// 'stack' / 'cloud' enable linked reads via the "Link supplementary
-// alignments" checkbox.
+// 'stack' / 'cloud' enable linked reads via the "View as pairs / link
+// supplementary alignments" checkbox.
 const MENU_PATHS: Record<DisplayMode, string[]> = {
   arc: ['Read connections', 'View as pairs', 'Arcs'],
   samplot: ['Read connections', 'View as pairs', 'Read cloud'],
   bezier: ['Show...', 'Bezier curves'],
-  cloud: ['Read connections', 'Link supplementary alignments'],
-  stack: ['Read connections', 'Link supplementary alignments'],
+  cloud: ['Read connections', 'View as pairs / link supplementary alignments'],
+  stack: ['Read connections', 'View as pairs / link supplementary alignments'],
 }
 
 export async function testLinkedReadsDisplay({

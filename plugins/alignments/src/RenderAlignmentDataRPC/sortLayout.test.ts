@@ -224,6 +224,42 @@ describe('computeLayout', () => {
     expect(readYs[0]).not.toBe(readYs[1])
     expect(maxY).toBe(2)
   })
+
+  test('maxRows caps the stack and flags truncation', () => {
+    // Five reads all overlapping the same column would need 5 rows; cap at 3.
+    const data = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 100, end: 400 },
+        { start: 100, end: 400 },
+        { start: 100, end: 400 },
+        { start: 100, end: 400 },
+        { start: 100, end: 400 },
+      ],
+    })
+    const { readYs, maxY, truncated } = computeLayout(data, false, 3)
+    expect(maxY).toBe(3)
+    expect(truncated).toBe(true)
+    // Overflow reads collapse to the sentinel row (=== maxRows), and no row
+    // index exceeds it so the Uint16 store never wraps.
+    for (const y of readYs) {
+      expect(y).toBeLessThanOrEqual(3)
+    }
+    expect([...readYs].filter(y => y === 3).length).toBe(2)
+  })
+
+  test('maxRows leaves a fitting stack untruncated', () => {
+    const data = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 100, end: 400 },
+        { start: 100, end: 400 },
+      ],
+    })
+    const { maxY, truncated } = computeLayout(data, false, 3)
+    expect(maxY).toBe(2)
+    expect(truncated).toBe(false)
+  })
 })
 
 describe('computeSortedLayout', () => {

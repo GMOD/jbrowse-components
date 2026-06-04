@@ -29,6 +29,17 @@ the blue (inverted) and red (non-inverted) blocks on each linear genome view
 
 ---
 
+![Whole-genome linear synteny view](/jb2/img/hs1_vs_mm39_synteny.png)
+
+A whole-genome linear synteny view comparing the human (hs1/T2T-CHM13) and mouse
+(mm39) genomes, using liftOver chains converted to indexed PAF. The chromosomes
+are automatically diagonalized and the ribbons are colored by query chromosome,
+turning what is otherwise a dense "hairball" into a readable map of conserved
+synteny blocks
+([live link](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fhs1_vs_mm39%2Fconfig.json))
+
+---
+
 ![Hi-C contact matrix](/jb2/img/hic_track.png)
 
 Screenshot showing a Hi-C contact matrix rendered in JBrowse using the .hic file

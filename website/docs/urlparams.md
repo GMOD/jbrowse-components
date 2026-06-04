@@ -27,10 +27,10 @@ Example
 `?config=test_data/volvox/config.json`
 
 A path to a JBrowse 2 config file, relative to the current folder on the disk.
-Note that this just uses client side fetch to read the file, not server side
+Note that this just uses client-side fetch to read the file, not server-side
 file reads. If ?config= is not specified, it looks for a file named config.json
 e.g. http://host/jbrowse2/config.json, which is what the @jbrowse/cli tool sets
-up by default
+up by default.
 
 The special value `?config=none` skips loading a config file entirely. This is
 useful with `&hubURL=` (below), which supplies its own assemblies and tracks.
@@ -141,7 +141,7 @@ Example
 
 `&tracks=gene_track,vcf_track`
 
-This is a comma separated list of trackIds. You can find your trackIds in the
+This is a comma-separated list of trackIds. You can find your trackIds in the
 config.json. Note, you can also refer to a trackId added by &sessionTracks=
 here. This is only used for launching a single linear genome view.
 
@@ -151,7 +151,7 @@ If you want to dynamically add a track to the session, you can do so with
 `&sessionTracks=`
 
 You can also use this method to add a `FromConfigAdapter` track, which lets you
-specify features in JSON format, so you can e.g. add BLAST hits via the URL bar
+specify features in JSON format, so you can e.g. add BLAST hits via the URL bar.
 
 Example
 
@@ -161,7 +161,7 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:
 
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL%20track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}])
 
-This creates a track dynamically that has a single feature at `ctgA:100-200`
+This creates a track dynamically that has a single feature at `ctgA:100-200`.
 
 The data to supply to `&sessionTracks=` is an array of track configs, and in the
 above URL, looks like this when pretty-printed
@@ -794,7 +794,7 @@ Similar to encoded sessions, but more readable, `&session=json-` type sessions
 let you specify the input as a JSON snapshot of a session. This is slightly
 different from a session spec, which has extra logic that loads the session.
 JSON sessions are literal session snapshots, like those that might come from the
-"Export session..." process
+"Export session..." process.
 
 Example
 
@@ -802,7 +802,7 @@ Example
 &session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
 ```
 
-This loads a session with an extra plugin loaded
+This loads a session with an extra plugin loaded.
 
 ### &session=encoded-
 

@@ -63,6 +63,7 @@ const VOLVOX_SV_CRAM_ADAPTER = {
 }
 const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const SYNTENY_CONFIG = 'test_data/grape_peach_synteny/config.json'
+const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
 const CGIAB_BASE =
   'https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json'
@@ -484,6 +485,35 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     settleMs: 6000,
+  },
+
+  // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the
+  // hs1_vs_mm39 config defaultSession: 500k minlen drops short-alignment
+  // hairball noise, autoDiagonalize reorders mm39 chroms into clean diagonals,
+  // and drawCurves + low alpha + per-query coloring give legible bezier ribbons
+  // (matches data/hs1ToMm39/ribbon-500k.png reference). Remote UCSC liftOver PIF
+  // + two 2bit genomes, so allow a long ready/settle.
+  {
+    mode: 'url',
+    name: 'hs1_vs_mm39_synteny',
+    url: sessionSpec(HS1_MM39_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: ['hs1ToMm39.over.chain.pif'],
+          minAlignmentLength: 500000,
+          drawCurves: true,
+          autoDiagonalize: true,
+          colorBy: 'query',
+          alpha: 0.4,
+          levelHeights: [350],
+          views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
   },
 
   // Center line over a long-read SV CRAM. Migrated from a hand-captured shot —

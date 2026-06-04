@@ -5,6 +5,7 @@ import { LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import PileupBody from './PileupComponent.tsx'
@@ -13,7 +14,7 @@ import { AlignmentsRenderer } from '../renderers/AlignmentsRenderer.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   display: {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -21,7 +22,25 @@ const useStyles = makeStyles()({
     width: '100%',
     minHeight: '100%',
   },
-})
+  maxHeight: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    zIndex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    padding: '0 4px',
+    fontSize: 11,
+    color: theme.palette.text.secondary,
+    background: theme.palette.background.paper,
+    opacity: 0.9,
+  },
+}))
+
+// maxHeight is in pixels; this is far above the Uint16 row ceiling so the
+// `maxRows` getter clamps to the real limit and every stacked read shows.
+const SHOW_ALL_MAX_HEIGHT = 1_000_000
 
 const AlignmentsDisplayComponent = observer(
   function AlignmentsDisplayComponent({
@@ -45,7 +64,8 @@ const AlignmentsDisplayComponent = observer(
       )
     }
 
-    const { TooltipComponent, height, contextMenuCoord } = model
+    const { TooltipComponent, height, contextMenuCoord, pileupTruncated } =
+      model
     const items = contextMenuCoord ? model.contextMenuItems() : []
     return (
       <DisplayChrome
@@ -67,6 +87,21 @@ const AlignmentsDisplayComponent = observer(
         {({ canvasRef, canvas }) => (
           <>
             <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
+            {pileupTruncated ? (
+              <div className={classes.maxHeight}>
+                <span>Max layout height reached</span>
+                <Link
+                  component="button"
+                  variant="caption"
+                  underline="hover"
+                  onClick={() => {
+                    model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
+                  }}
+                >
+                  Show all alignments
+                </Link>
+              </div>
+            ) : null}
             <Suspense fallback={null}>
               <TooltipComponent
                 model={model}

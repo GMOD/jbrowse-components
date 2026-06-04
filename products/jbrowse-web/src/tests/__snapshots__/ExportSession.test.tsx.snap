@@ -40,6 +40,7 @@ exports[`export session with alignments and gff tracks 1`] = `
                 "readConnectionsDown": false,
                 "readConnectionsHeight": 40,
                 "sashimiArcsHeight": 40,
+                "showBezierConnections": false,
                 "showCoverage": true,
                 "showInterbaseIndicators": true,
                 "showMismatches": true,

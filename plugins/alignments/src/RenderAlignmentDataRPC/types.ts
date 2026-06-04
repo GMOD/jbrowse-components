@@ -195,6 +195,10 @@ export interface PileupDataResult {
   // Layout info
   maxY: number
 
+  // Set by main-thread layout when the pileup stack was clipped at the
+  // configured maxHeight (reads beyond the cap collapse to the bottom row).
+  truncated?: boolean
+
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]
 

@@ -56,7 +56,6 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '24'
-          cache: 'pnpm'
       - name: Install deps
         run: pnpm install --frozen-lockfile
       - name: Test codebase
@@ -115,7 +114,6 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '24'
-          cache: 'pnpm'
       - name: Install deps
         run: pnpm install --frozen-lockfile
       - name: Check @jbrowse/core exports are up-to-date
@@ -151,7 +149,6 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '24'
-          cache: 'pnpm'
       - name: Install deps
         run: pnpm install --frozen-lockfile
       - name: Check codebase format
@@ -201,7 +198,6 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '24'
-          cache: 'pnpm'
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -239,7 +235,6 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '24'
-          cache: 'pnpm'
       - name: Install deps
         run: pnpm install --frozen-lockfile
       - name: Validate branch/tag name for S3 path safety
@@ -323,7 +318,6 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '22'
-          cache: 'pnpm'
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -385,6 +379,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '18'
+          cache: ''
       - name: Download packed artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -412,6 +407,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '24'
+          cache: ''
       - name: Download packed artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -440,7 +436,6 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '22'
-          cache: 'pnpm'
       - name: Install deps
         run: pnpm install --frozen-lockfile
       - name: Build and test Electron on Windows

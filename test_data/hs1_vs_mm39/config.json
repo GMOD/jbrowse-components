@@ -55,7 +55,7 @@
           "tracks": ["hs1ToMm39.over.chain.pif"],
           "autoDiagonalize": true,
           "colorBy": "query",
-          "minAlignmentLength": 100000,
+          "minAlignmentLength": 500000,
           "levelHeights": [500],
           "drawCurves": true,
           "alpha": 0.4
