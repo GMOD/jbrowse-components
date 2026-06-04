@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LabelsCanvas from './LabelsCanvas.tsx'
@@ -48,6 +49,13 @@ const useStyles = makeStyles()(theme => ({
   },
   sequenceInner: {
     position: 'relative',
+  },
+  hoverColumn: {
+    position: 'absolute',
+    top: 0,
+    width: CHAR_WIDTH,
+    pointerEvents: 'none',
+    background: alpha(theme.palette.highlight.main, 0.5),
   },
 }))
 
@@ -228,7 +236,6 @@ const SequenceDisplay = observer(function SequenceDisplay({
             samples={samples}
             sequences={sequences}
             colorBackground={colorBackground}
-            hoveredCol={hoveredCol}
             scrollTop={scrollTop}
             scrollLeft={scrollLeft}
             containerHeight={containerHeight}
@@ -236,6 +243,12 @@ const SequenceDisplay = observer(function SequenceDisplay({
             onHover={handleHover}
             onLeave={handleLeave}
           />
+          {hoveredCol !== undefined ? (
+            <div
+              className={classes.hoverColumn}
+              style={{ left: hoveredCol * CHAR_WIDTH, height: totalHeight }}
+            />
+          ) : null}
         </div>
       </div>
       {tooltipPos && hoveredSample && (

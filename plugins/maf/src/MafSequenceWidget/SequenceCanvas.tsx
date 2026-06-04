@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 
-import { alpha, useTheme } from '@mui/material'
+import { useTheme } from '@mui/material'
 
 import { getBaseColor, getContrastText } from './baseColors.ts'
 import { CHAR_WIDTH, FONT, ROW_HEIGHT } from './constants.ts'
@@ -11,7 +11,6 @@ interface SequenceCanvasProps {
   samples: Sample[]
   sequences: string[]
   colorBackground: boolean
-  hoveredCol?: number
   scrollTop: number
   scrollLeft: number
   containerHeight: number
@@ -32,7 +31,6 @@ export default function SequenceCanvas({
   samples,
   sequences,
   colorBackground,
-  hoveredCol,
   scrollTop,
   scrollLeft,
   containerHeight,
@@ -108,11 +106,6 @@ export default function SequenceCanvas({
           ctx.fillRect(x, y, CHAR_WIDTH, ROW_HEIGHT)
         }
 
-        if (colIdx === hoveredCol) {
-          ctx.fillStyle = alpha(theme.palette.highlight.main, 0.5)
-          ctx.fillRect(x, y, CHAR_WIDTH, ROW_HEIGHT)
-        }
-
         if (char === '-') {
           ctx.fillStyle = theme.palette.grey[400]
         } else if (char === '.') {
@@ -134,7 +127,6 @@ export default function SequenceCanvas({
     endRow,
     startCol,
     endCol,
-    hoveredCol,
     colorBackground,
     theme,
   ])
