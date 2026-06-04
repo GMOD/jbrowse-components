@@ -87,6 +87,16 @@ bedToBigBed -type=bed3+4 -as=mafSummary.as -tab bigMafSummary.bed chrom.sizes bi
 `util/mafStatus.ts` — so the summary's bridge-line rendering reuses
 `rendering/emptyLines.ts` and the tooltip phrasing verbatim.
 
+**Verified against a real UCSC summary** (mouseStrains `AKR_J.bigMafSummary.bb`,
+read with `@gmod/bbi`): the autoSql matches exactly; the existing
+`BigBedAdapter` reads it with no new parser and exposes the extra columns as
+named getters (`feature.get('src')`, `'score'`, `'leftStatus'`,
+`'rightStatus'`); rows are **one-per-species at a block's coords** (multiple
+`src` values share the same `start`/`end`), confirming the species-count
+coverage band; and **statuses are often blank** in pairwise summaries
+(`rest: "AKR_J\t0.97\t\t"`), so `getSummaryFeatures` maps blank → `undefined`
+via `toMafStatus`.
+
 **The summary is a swappable sub-adapter, NOT a bare file slot.** Declare it as
 a `frozen` nested-adapter config (like `GCContentAdapter.sequenceAdapter`), not
 a `summaryLocation` `fileLocation`. This is the genuinely-swappable pattern: a
@@ -109,8 +119,8 @@ Scope (✓ = landed):
 
 | Piece | File | Change |
 |---|---|---|
-| ✓ Config slot | `BigMafAdapter/configSchema.ts` | `summaryAdapter: { type: 'frozen', defaultValue: null }` (optional → no summary keeps Stage-1 gate). Tested in `configSchema.test.ts`. The slot exists but **nothing consumes it yet** — it stores a valid sub-adapter config that the rows below will read |
-| Instantiate | `BigMafAdapter/BigMafAdapter.ts` | `getSummaryAdapter()` — lazy `getSubAdapter(getConf('summaryAdapter'))` memoized on `summaryAdapterP` with catch-clear, mirroring CRAM `getSequenceAdapter`. `getSummaryFeatures(region)` maps BigBed rows → `{src,score,leftStatus,rightStatus}` (defer the row shape until the display consumer drives it) |
+| ✓ Config slot | `BigMafAdapter/configSchema.ts` | `summaryAdapter: { type: 'frozen', defaultValue: null }` (optional → no summary keeps Stage-1 gate). Tested in `configSchema.test.ts` |
+| ✓ Instantiate | `BigMafAdapter/BigMafAdapter.ts` | `getSummaryAdapter()` — lazy `getSubAdapter(getConf('summaryAdapter'))` memoized on `summaryAdapterP` with catch-clear, mirroring CRAM `getSequenceAdapter`. `getSummaryFeatures(region)` streams `MafSummaryRecord` rows (`{refName,start,end,src,score,leftStatus?,rightStatus?}`). Tested in `BigMafAdapter.summary.test.ts`. **Still unconsumed** until the display rows below land |
 | Add-track | `MafAddTrackWorkflow` | summary cannot be auto-guessed from the data file (no standard suffix; `bigMafSummary.bb` is just UCSC's tutorial filename). Add an **optional explicit field** for the summary `.bb` location; leave `summaryAdapter` `null` when unset |
 | Display gate | `LinearMafDisplay/stateModel.ts` | above `AUTO_FORCE_LOAD_BP` (the `getByteEstimateConfig` threshold), if a summary adapter is configured, fetch summary rows instead of full alignment data |
 | Render | `LinearMafRenderer` + `LinearMafDisplay/components` | per-species presence bars (optionally `score`-shaded) reusing `emptyLines.ts` status primitives; coverage band = species-count depth (highest-value, most compact for 447-way) |

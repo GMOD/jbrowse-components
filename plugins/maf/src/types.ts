@@ -73,6 +73,23 @@ export interface EmptyRecord {
 }
 
 /**
+ * One row of a UCSC bigMafSummary.bb (autoSql `mafSummary`): a single
+ * alignment block for a single species, with no sequence — cheap to fetch at
+ * zoom-out. `leftStatus`/`rightStatus` reuse the same C/I/N/n/M/T scheme as
+ * e/i lines, and are `undefined` when the summary leaves them blank.
+ */
+export interface MafSummaryRecord {
+  refName: string
+  start: number
+  end: number
+  /** species / source db name, e.g. "panTro6" */
+  src: string
+  score: number
+  leftStatus?: MafStatus
+  rightStatus?: MafStatus
+}
+
+/**
  * Sample/organism metadata for display
  */
 export interface Sample {
