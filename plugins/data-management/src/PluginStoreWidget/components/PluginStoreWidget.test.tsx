@@ -72,6 +72,22 @@ test('Installs a session plugin', async () => {
   expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
 })
 
+test('removeSessionPlugin removes a plugin that carries a cjsUrl', () => {
+  const { session } = setup()
+  const plugin = {
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+    cjsUrl: 'https://example.com/msaview.cjs.js',
+  }
+  session.addSessionPlugin(plugin)
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(1)
+
+  // mirrors what InstalledPlugin passes: pluginManager metadata carries only
+  // the resolved url, not the cjsUrl, so removal must match on url alone
+  session.removeSessionPlugin({ name: plugin.name, url: plugin.url })
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
+})
+
 test('plugin store admin - adds a custom plugin correctly', async () => {
   const { user, session, model, reloadPluginManagerMock } = setup({}, true)
   const { findByText, findByLabelText } = render(

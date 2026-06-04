@@ -1,4 +1,5 @@
 import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
@@ -209,23 +210,9 @@ export function BaseWebSession({
        * #action
        */
       removeSessionPlugin(pluginDefinition: PluginDefinition) {
-        type PluginUrls = Partial<{
-          url: string
-          umdUrl: string
-          cjsUrl: string
-          esmUrl: string
-        }>
-        const def = pluginDefinition as PluginUrls
+        const targetUrl = pluginUrl(pluginDefinition)
         self.sessionPlugins = cast(
-          self.sessionPlugins.filter(plugin => {
-            const p = plugin as PluginUrls
-            return (
-              p.url !== def.url ||
-              p.umdUrl !== def.umdUrl ||
-              p.cjsUrl !== def.cjsUrl ||
-              p.esmUrl !== def.esmUrl
-            )
-          }),
+          self.sessionPlugins.filter(p => pluginUrl(p) !== targetUrl),
         )
         self.root.setPluginsUpdated()
       },
