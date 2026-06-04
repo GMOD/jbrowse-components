@@ -570,7 +570,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         this.hal.drawPass(PASS_LINKED_READ_LINE, block.displayedRegionIndex)
       }
       this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
-      if (state.linkedReads !== 'off') {
+      if (state.linkedReads !== 'off' && state.featureHeight >= 3) {
         this.hal.drawPass(PASS_OVERLAP, block.displayedRegionIndex)
       }
 
@@ -700,8 +700,11 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       ? (region.readIdToIndex.get(state.selectedFeatureId) ?? -1)
       : -1
 
-    const needsFeatureSelection =
-      state.selectedChainIds.length === 0 && regionSelectIdx >= 0
+    // Nothing selected in this block — skip all allocs below.
+    if (regionSelectIdx < 0 && state.selectedChainIds.length === 0) return
+
+    // After the guard: if no chains are selected then regionSelectIdx >= 0 (implied).
+    const needsFeatureSelection = state.selectedChainIds.length === 0
 
     const covOff = state.pileupTopOffset
     // Capture per-block transforms so the toClipRect call sites below
@@ -722,44 +725,18 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     // selection box looks the same when the GPU fallback fires.
     const tx = 2 / scissorW
     const ty = 2 / state.canvasHeight
+    // JBrowse brand blue (#00B8FF approx) in normalized linear RGB.
+    const [SR, SG, SB, SA] = [0, 0.722, 1, 1]
     // 4 quads forming a 2px-wide selection frame (top + bottom + two sides).
     const pushSelectionFrame = (
       out: number[],
       c: { sx1: number; sx2: number; syTop: number; syBot: number },
     ) => {
       out.push(
-        c.sx1,
-        c.syTop,
-        c.sx2,
-        c.syTop - ty,
-        0,
-        0.722,
-        1,
-        1,
-        c.sx1,
-        c.syBot + ty,
-        c.sx2,
-        c.syBot,
-        0,
-        0.722,
-        1,
-        1,
-        c.sx1,
-        c.syTop,
-        c.sx1 + tx,
-        c.syBot,
-        0,
-        0.722,
-        1,
-        1,
-        c.sx2 - tx,
-        c.syTop,
-        c.sx2,
-        c.syBot,
-        0,
-        0.722,
-        1,
-        1,
+        c.sx1, c.syTop,      c.sx2,      c.syTop - ty, SR, SG, SB, SA,
+        c.sx1, c.syBot + ty, c.sx2,      c.syBot,      SR, SG, SB, SA,
+        c.sx1, c.syTop,      c.sx1 + tx, c.syBot,      SR, SG, SB, SA,
+        c.sx2 - tx, c.syTop, c.sx2,      c.syBot,      SR, SG, SB, SA,
       )
     }
 

@@ -4,7 +4,6 @@
 //! layout-out: packages/alignments-core/src/interbaseHistogramLayout.generated.ts
 
 import alignmentsUniforms;
-import colorPack;
 import hpmath;
 
 
@@ -18,17 +17,12 @@ struct Instance {
   float colorType : ATTR3;  // 1=insertion 2=softclip 3=hardclip
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   float2 local = quadLocal(vid);
 
-  float cx = hpClipX(hpSplitUint(inst.position), u);
+  float cx = bpToClipX(inst.position, u);
   float barW = 2.0 / u.canvasW;
 
   // Sits just above the bottom coverage-area edge, below the indicator row.
@@ -45,6 +39,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

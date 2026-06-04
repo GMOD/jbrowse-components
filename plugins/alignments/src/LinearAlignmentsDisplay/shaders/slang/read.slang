@@ -5,7 +5,6 @@
 
 import alignmentsUniforms;
 import colorPack;
-import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 9u;
@@ -152,8 +151,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
 
   uint v = vid % 9u;
-  float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
-  float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
+  float sx1 = bpToClipX(inst.startOff, u);
+  float sx2 = bpToClipX(inst.endOff, u);
 
   float2 yy = pileupY(float(inst.y), u);
   float syTop = yy.x;

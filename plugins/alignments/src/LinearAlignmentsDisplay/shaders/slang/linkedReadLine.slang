@@ -6,7 +6,6 @@
 
 import alignmentsUniforms;
 import colorPack;
-import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 2u;
@@ -21,11 +20,6 @@ struct Instance {
   float colorType : ATTR4;
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 float3 linkedReadColorByIndex(uint idx, Uniforms u) {
   uint colors[8];
   colors[0] = u.linkedReadColor0; colors[1] = u.linkedReadColor1;
@@ -36,14 +30,14 @@ float3 linkedReadColorByIndex(uint idx, Uniforms u) {
 }
 
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   uint v = vid % 2u;
 
   uint bp = (v == 0u) ? inst.bp1 : inst.bp2;
   float y = (v == 0u) ? inst.y1 : inst.y2;
 
-  float sx = hpClipX(hpSplitUint(bp), u);
+  float sx = bpToClipX(bp, u);
   float px2clip = 2.0 / u.canvasH;
   float sy = 1.0 - pileupRowCenterPx(y, u) * px2clip;
 
@@ -54,6 +48,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

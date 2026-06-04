@@ -18,29 +18,20 @@ struct Instance {
   uint  kind      : ATTR3;  // 0 = softclip, 1 = hardclip
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   float2 local = quadLocal(vid);
 
   float pxPerBp = u.pxPerBp;
 
   float alpha = 1.0;
   if (pxPerBp < 1.0) {
-    alpha = pxPerBp + inst.frequency * (1.0 - pxPerBp);
+    alpha = frequencyAlpha(pxPerBp, inst.frequency);
   }
-  if (alpha <= 0.0) {
-    o.position = float4(0.0);
-    o.color = float4(0.0);
-    return o;
-  }
+  if (alpha <= 0.0) { return discardVertex(); }
 
-  float clipCx = hpClipX(hpSplitUint(inst.position), u);
+  float clipCx = bpToClipX(inst.position, u);
   float halfWClip = 1.0 / u.canvasW;
   float sx1 = clipCx - halfWClip;
   float sx2 = clipCx + halfWClip;
@@ -53,6 +44,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

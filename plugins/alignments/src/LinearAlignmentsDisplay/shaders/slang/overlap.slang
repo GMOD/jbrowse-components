@@ -26,8 +26,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   float2 local = quadLocal(vid);
 
-  float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
-  float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
+  float sx1 = bpToClipX(inst.startOff, u);
+  float sx2 = bpToClipX(inst.endOff, u);
 
   float2 yy = pileupY(inst.y, u);
   float syTop = yy.x;
@@ -42,6 +42,5 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  if (u.featHeight < 3.0) { return float4(0.0); }
   return float4(0.0, 0.0, 0.0, 1.0);
 }

@@ -15,7 +15,6 @@
 
 import alignmentsUniforms;
 import colorPack;
-import hpmath;
 
 
 // 128 segments: the curve is a triangle-strip polyline, and its facet kinks run
@@ -67,8 +66,8 @@ struct ArcPoint { float2 pos; float2 tang; };
 // Analytic tangent removes the 3× evalArc calls the finite-difference version
 // needed — one call per vertex instead of three.
 ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
-  float x1Norm = hpLinear(hpSplitUint(inst.x1), u);
-  float x2Norm = hpLinear(hpSplitUint(inst.x2), u);
+  float x1Norm = bpToLinear(inst.x1, u);
+  float x2Norm = bpToLinear(inst.x2, u);
   float availH = u.canvasH - ARC_HEIGHT_MARGIN;
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
 
@@ -92,13 +91,11 @@ ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
     float dydt = (destY > 0.0) ? PI * cos(angle) * destY * yDir : 0.0;
     ap.tang = float2(-PI * sin(angle) * rNorm * u.blockWidth, dydt);
   } else {
-    // Cubic Bezier with control points at x1,x1,x2,x2 (so the curve
-    // approaches each anchor tangent to the x-axis).
-    // Derivative: B'(t) = 6(x2-x1)(1-t)t  (x), 3·destY·(1-2t) (y).
-    float mt = 1.0 - t; float mt2 = mt*mt; float mt3 = mt2*mt;
-    float t2 = t*t;     float t3 = t2*t;
-    float xNorm = mt3*x1Norm + 3.0*mt2*t*x1Norm + 3.0*mt*t2*x2Norm + t3*x2Norm;
-    float yPx = (3.0*mt2*t*destY + 3.0*mt*t2*destY) * yDir;
+    // Cubic Bezier with control points at x1,x1,x2,x2: x = smoothstep(x1,x2,t),
+    // y = 3(1-t)t·destY peaks at t=0.5. Derivatives: 6(x2-x1)(1-t)t and 3·destY·(1-2t).
+    float mt = 1.0 - t;
+    float xNorm = lerp(x1Norm, x2Norm, t*t*(3.0 - 2.0*t));
+    float yPx = 3.0 * mt * t * destY * yDir;
     ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, yPx);
     ap.tang = float2(6.0*(x2Norm-x1Norm)*mt*t * u.blockWidth,
                      3.0*destY*yDir*(1.0 - 2.0*t));

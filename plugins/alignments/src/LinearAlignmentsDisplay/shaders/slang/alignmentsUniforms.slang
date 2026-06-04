@@ -139,6 +139,16 @@ public float hpLinear(float2 splitPos, Uniforms u) {
   return hpScaleLinear(splitPos, bpRange(u), u.hpZero);
 }
 
+// Type-safe bp→clip/linear converters. Accept a raw uint genomic position and
+// perform the hpSplitUint internally — callers can't accidentally pass a
+// pre-split float2 or a region-relative offset.
+public float bpToClipX(uint bp, Uniforms u) {
+  return hpClipX(hpSplitUint(bp), u);
+}
+public float bpToLinear(uint bp, Uniforms u) {
+  return hpLinear(hpSplitUint(bp), u);
+}
+
 public float flipX(float x, Uniforms u) {
   return lerp(x, -x, u.reversed);
 }
@@ -220,5 +230,33 @@ public float normalizeDepth(float relDepth, Uniforms u) {
     return clamp(log2(max(rawDepth, 1.0)) / logMax, 0.0, 1.0);
   }
   return relDepth * u.depthScale;
+}
+
+// Sub-pixel alpha blend: lerp between `base` and 1.0 using per-site frequency.
+// Mirrors frequencyAlpha() in rendererTypes.ts.
+public float frequencyAlpha(float base, float freq) {
+  return base + freq * (1.0 - base);
+}
+
+// Shared vertex output for passes that only need clip-space position + color.
+// Passes with extra varyings (read, arc, indicator, overlap) define their own.
+public struct ColorVsOut {
+  public float4 position : SV_Position;
+  public float4 color    : COLOR0;
+};
+
+// Fold a vertex to the origin (degenerate, invisible). Call when alpha == 0 to
+// skip rasterization of sub-pixel-transparent geometry.
+public ColorVsOut discardVertex() {
+  ColorVsOut o;
+  o.position = float4(0.0);
+  o.color = float4(0.0);
+  return o;
+}
+
+// Coverage bar height scale: maps relDepth to a clip-space height multiplier.
+// Shared by snpCoverage and modCoverage so the formula can't drift between them.
+public float covBarScale(float relDepth, Uniforms u) {
+  return normalizeDepth(relDepth, u) * effHeight(u) / u.canvasH * 2.0;
 }
 

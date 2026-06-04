@@ -15,18 +15,13 @@ struct Instance {
   float y        : ATTR2;
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   float2 local = quadLocal(vid);
 
-  float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
-  float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
+  float sx1 = bpToClipX(inst.startOff, u);
+  float sx2 = bpToClipX(inst.endOff, u);
 
   float yTop = floor(pileupRowCenterPx(inst.y, u) - 0.5);
   float yBot = yTop + 1.0;
@@ -43,6 +38,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

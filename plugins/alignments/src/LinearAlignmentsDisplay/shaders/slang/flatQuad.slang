@@ -17,14 +17,9 @@ struct Instance {
   float4 rgba : ATTR4;
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   float2 local = quadLocal(vid);
   o.position = float4(
     lerp(inst.sx1, inst.sx2, local.x),
@@ -35,6 +30,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

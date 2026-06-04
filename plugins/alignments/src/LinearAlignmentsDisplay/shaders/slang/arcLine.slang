@@ -4,7 +4,6 @@
 
 import alignmentsUniforms;
 import colorPack;
-import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 2u;
@@ -18,22 +17,17 @@ struct Instance {
   float colorType : ATTR2;
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 float3 arcLineColorByIndex(uint idx, Uniforms u) {
   if (idx == 0u) { return unpackRGBA(u.arcLineColor0).xyz; }
   return unpackRGBA(u.arcLineColor1).xyz;
 }
 
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   uint v = vid % 2u;
 
-  float norm = hpLinear(hpSplitUint(inst.position), u);
+  float norm = bpToLinear(inst.position, u);
   float screenX = u.blockStartPx + norm * u.blockWidth;
   float sx = (screenX / u.canvasW) * 2.0 - 1.0;
 
@@ -52,6 +46,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

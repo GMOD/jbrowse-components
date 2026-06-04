@@ -410,7 +410,10 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
   }
 
   for (const action of spec.actions ?? []) {
-    await runAction(page, action)
+    await runAction(page, action).catch(async e => {
+      await debugDump(page, spec.name)
+      throw e
+    })
   }
 
   const screenshotOptions =

@@ -1513,6 +1513,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Track actions' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Track actions' },
       { type: 'waitForText', text: 'Settings' },
       { type: 'delay', ms: 500 },
     ],
@@ -1568,7 +1571,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="share-button"]' },
-      { type: 'waitForText', text: 'Shareable link' },
+      { type: 'waitForText', text: 'Copy the URL below' },
       { type: 'delay', ms: 1500 },
     ],
   },
@@ -1699,8 +1702,8 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'Open bookmark widget' },
       { type: 'waitForText', text: 'ctgA' },
       { type: 'delay', ms: 1000 },
-      // type a label into the label cell
-      { type: 'type', selector: '[placeholder="Add label"]', value: 'my region', clear: true },
+      // single-click the "Add label..." cell to enter edit mode, then type
+      { type: 'type', text: 'Add label...', value: 'my region' },
       { type: 'delay', ms: 1500 },
     ],
   },
@@ -1743,7 +1746,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Settings' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Settings' },
-      { type: 'waitForText', text: 'Highlight all' },
+      { type: 'waitForText', text: 'Toggle bookmark highlights on all open views' },
       { type: 'delay', ms: 1000 },
     ],
   },
@@ -1827,54 +1830,6 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Share bookmarks dialog (select a bookmark, then share).
-  {
-    mode: 'url',
-    name: 'bookmark_widget_share_dialog',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    settleMs: 4000,
-    actions: [
-      // create a bookmark
-      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
-      { type: 'waitForText', text: 'Bookmark region' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Bookmark region' },
-      { type: 'delay', ms: 500 },
-      // open bookmark widget
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Bookmarks/highlights' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Bookmarks/highlights' },
-      { type: 'waitForText', text: 'Open bookmark widget' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Open bookmark widget' },
-      { type: 'waitForText', text: 'ctgA' },
-      { type: 'delay', ms: 1000 },
-      // select the checkbox (first checkbox in the grid)
-      { type: 'click', selector: '[aria-label="Select all rows"]' },
-      { type: 'delay', ms: 500 },
-      // open menu > Share
-      { type: 'click', selector: '[data-testid="grid_bookmark_menu"]' },
-      // wait for menu and try to click Share if present, otherwise it may
-      // appear inline once rows are selected
-      { type: 'waitForText', text: 'Share' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Share' },
-      { type: 'waitForText', text: 'Shareable' },
-      { type: 'delay', ms: 1500 },
-    ],
-  },
-
   // ────────────────────────────────────────────────────────────────────────
   // Alignments track interactions
   // ────────────────────────────────────────────────────────────────────────
@@ -1897,12 +1852,12 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Display type' },
+      { type: 'waitForText', text: 'Set feature height...' },
       { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Display type' },
-      { type: 'waitForText', text: 'Compact pileup' },
+      { type: 'hover', text: 'Set feature height...' },
+      { type: 'waitForText', text: 'Compact' },
       { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Compact pileup' },
+      { type: 'click', text: 'Compact' },
       { type: 'delay', ms: 2000 },
     ],
   },
@@ -1928,7 +1883,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Read connections' },
       { type: 'delay', ms: 300 },
       { type: 'hover', text: 'Read connections' },
-      { type: 'waitForText', text: 'Arc display' },
+      { type: 'waitForText', text: 'Arcs' },
       { type: 'delay', ms: 500 },
     ],
   },
@@ -1944,28 +1899,7 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-3000',
-          tracks: [
-            {
-              trackId: 'MM-chebi-volvox-bam',
-              type: 'AlignmentsTrack',
-              name: 'MM-chebi modifications',
-              assemblyNames: ['volvox'],
-              adapter: {
-                type: 'BamAdapter',
-                bamLocation: {
-                  uri: 'test_data/volvox/MM-chebi-volvox.bam',
-                  locationType: 'UriLocation',
-                },
-                index: {
-                  location: {
-                    uri: 'test_data/volvox/MM-chebi-volvox.bam.bai',
-                    locationType: 'UriLocation',
-                  },
-                  indexType: 'BAI',
-                },
-              },
-            },
-          ],
+          tracks: ['MM-chebi-volvox-bam'],
         },
       ],
       sessionTracks: [
@@ -1995,10 +1929,10 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Color scheme' },
+      { type: 'waitForText', text: 'Color by...' },
       { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Color scheme' },
-      { type: 'waitForText', text: 'Modifications' },
+      { type: 'hover', text: 'Color by...' },
+      { type: 'waitForText', text: 'Modifications...' },
       { type: 'delay', ms: 500 },
     ],
   },
@@ -2087,12 +2021,6 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 4000,
     actions: [
-      // add the track to favorites from the track menu
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Add to favorites' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Add to favorites' },
-      { type: 'delay', ms: 500 },
       // open track selector
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       { type: 'waitForText', text: 'Open track selector' },
@@ -2100,7 +2028,13 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'Open track selector' },
       { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
       { type: 'delay', ms: 500 },
-      // click the favorite tracks button
+      // mark the track as a favorite from its per-track menu in the selector
+      { type: 'click', selector: '[data-testid="htsTrackEntryMenu-gff3tabix_genes"]' },
+      { type: 'waitForText', text: 'Add to favorites' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Add to favorites' },
+      { type: 'delay', ms: 500 },
+      // open the favorite tracks dropdown
       { type: 'click', selector: '[data-testid="favorite-tracks-button"]' },
       { type: 'waitForText', text: 'GFF3Tabix genes' },
       { type: 'delay', ms: 500 },
@@ -2129,9 +2063,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Renderer type' },
+      { type: 'waitForText', text: 'Rendering type' },
       { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Renderer type' },
+      { type: 'hover', text: 'Rendering type' },
       { type: 'waitForText', text: 'Multi-row XY plot' },
       { type: 'delay', ms: 500 },
     ],
@@ -2158,7 +2092,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Edit colors/arrangement...' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Edit colors/arrangement...' },
-      { type: 'waitForText', text: 'Edit subtrack colors' },
+      { type: 'waitForText', text: 'Multi-wiggle color/arrangement editor' },
       { type: 'delay', ms: 1000 },
     ],
   },
@@ -2185,8 +2119,8 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'Open track...' },
       { type: 'waitForText', text: 'Type of add track workflow' },
       { type: 'delay', ms: 500 },
-      // open the workflow selector dropdown
-      { type: 'click', selector: '[data-testid="widget-drawer-selects"] > div' },
+      // open the workflow selector dropdown (shows its current value as text)
+      { type: 'click', text: 'Default add track workflow' },
       { type: 'waitForText', text: 'Multi-wiggle track' },
       { type: 'delay', ms: 800 },
     ],
@@ -2258,8 +2192,8 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'synteny_from_dotplot_view',
-    url: `?config=${SYNTENY_CONFIG}&sessionName=Screenshot`,
-    readyText: 'Vitis',
+    url: `?config=${DOTPLOT_CONFIG}&sessionName=Screenshot`,
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
     readyTimeout: 30000,
     settleMs: 5000,
     actions: [
@@ -2287,7 +2221,7 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'chr7',
+    readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -2305,7 +2239,7 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'chr7',
+    readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -2329,7 +2263,7 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'chr7',
+    readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -2347,7 +2281,7 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'chr7',
+    readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -2366,7 +2300,7 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'chr7',
+    readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
   },

@@ -22,11 +22,6 @@ struct Instance {
   float frequency : ATTR3;
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 // SYNC(labelConstants.ts:textWidthForNumber)
 float textWidth(uint num) {
   float cw = 6.0;
@@ -39,13 +34,13 @@ float textWidth(uint num) {
 }
 
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   uint rectIdx = vid / 6u;
   float2 local = quadLocal(vid);
 
   float pxPerBp = u.pxPerBp;
-  float cx = hpClipX(hpSplitUint(inst.position), u);
+  float cx = bpToClipX(inst.position, u);
 
   bool isLong = inst.length >= LONG_INSERTION_MIN_LENGTH;
   float insWPx = float(inst.length) * pxPerBp;
@@ -96,14 +91,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float alpha = 1.0;
   if (!isLong && u.filterMismatchesByFrequency != 0 && pxPerBp < 1.0) {
-    float base = pxPerBp * pxPerBp;
-    alpha = base + inst.frequency * (1.0 - base);
+    alpha = frequencyAlpha(pxPerBp * pxPerBp, inst.frequency);
   }
-  if (alpha <= 0.0) {
-    o.position = float4(0.0);
-    o.color = float4(0.0);
-    return o;
-  }
+  if (alpha <= 0.0) { return discardVertex(); }
 
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
   o.color = float4(unpackRGBA(u.colorInsertion).xyz, alpha);
@@ -111,6 +101,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

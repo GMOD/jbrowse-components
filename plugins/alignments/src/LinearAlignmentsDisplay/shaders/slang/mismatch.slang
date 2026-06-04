@@ -17,11 +17,6 @@ struct Instance {
   float frequency : ATTR3;   // 0..1, fraction of reads with this base
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 float3 baseColor(uint b, Uniforms u) {
   // Non-A/C/G/T bases (e.g. N) hit `default` and use the dedicated N color,
   // matching the Canvas2D path (drawMismatches / drawSoftclipBases) and MAF's
@@ -37,8 +32,8 @@ float3 baseColor(uint b, Uniforms u) {
 }
 
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   float2 local = quadLocal(vid);
 
   float pxPerBp = u.pxPerBp;
@@ -46,16 +41,12 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // per-site frequency so thinly-covered mismatches fade out.
   float alpha = 1.0;
   if (u.filterMismatchesByFrequency != 0 && pxPerBp < 1.0) {
-    alpha = pxPerBp + inst.frequency * (1.0 - pxPerBp);
+    alpha = frequencyAlpha(pxPerBp, inst.frequency);
   }
-  if (alpha <= 0.0) {
-    o.position = float4(0.0);
-    o.color = float4(0.0);
-    return o;
-  }
+  if (alpha <= 0.0) { return discardVertex(); }
 
-  float clip1 = hpClipX(hpSplitUint(inst.position), u);
-  float clip2 = hpClipX(hpSplitUint(inst.position + 1u), u);
+  float clip1 = bpToClipX(inst.position, u);
+  float clip2 = bpToClipX(inst.position + 1u, u);
   float sx1 = snapToPixelX(clip1, u.canvasW);
   float sx2 = max(sx1 + 2.0 / u.canvasW, snapToPixelX(clip2, u.canvasW));
   float sx = lerp(sx1, sx2, local.x);
@@ -69,6 +60,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

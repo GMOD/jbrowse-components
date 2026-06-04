@@ -23,11 +23,6 @@ struct Instance {
   float relDepth   : ATTR4;
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 float3 snpColor(float ct, Uniforms u) {
   // 5=N and any other type hit `default` and use the dedicated N color.
   switch (int(ct)) {
@@ -40,19 +35,19 @@ float3 snpColor(float ct, Uniforms u) {
 }
 
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   float2 local = quadLocal(vid);
 
   float2 xx = expandMinWidthX(
-    hpClipX(hpSplitUint(inst.position), u),
-    hpClipX(hpSplitUint(inst.position + 1u), u),
+    bpToClipX(inst.position, u),
+    bpToClipX(inst.position + 1u, u),
     u.canvasW);
   float x1 = xx.x;
   float x2 = xx.y;
 
   float bottom = covBottom(u);
-  float k = normalizeDepth(inst.relDepth, u) * effHeight(u) / u.canvasH * 2.0;
+  float k = covBarScale(inst.relDepth, u);
   float segBot = bottom + inst.yOffset * k;
   float segTop = segBot + inst.segHeight * k;
   o.position = float4(
@@ -64,6 +59,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

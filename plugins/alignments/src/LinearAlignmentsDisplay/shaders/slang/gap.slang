@@ -20,18 +20,13 @@ struct Instance {
   float frequency : ATTR4;
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   float2 local = quadLocal(vid);
 
-  float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
-  float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
+  float sx1 = bpToClipX(inst.startOff, u);
+  float sx2 = bpToClipX(inst.endOff, u);
 
   float2 yy = pileupY(float(inst.y), u);
   float yTop = yy.x;
@@ -49,15 +44,10 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   if (inst.gapType == GAP_DELETION && u.filterMismatchesByFrequency != 0) {
     float widthPx = float(inst.endOff - inst.startOff) * u.pxPerBp;
     if (widthPx < 1.0) {
-      float base = widthPx * widthPx;
-      alpha = base + inst.frequency * (1.0 - base);
+      alpha = frequencyAlpha(widthPx * widthPx, inst.frequency);
     }
   }
-  if (alpha <= 0.0) {
-    o.position = float4(0.0);
-    o.color = float4(0.0);
-    return o;
-  }
+  if (alpha <= 0.0) { return discardVertex(); }
 
   float sx = lerp(sx1, sx2, local.x);
   float sy = lerp(yBot, yTop, local.y);
@@ -68,6 +58,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

@@ -16,19 +16,14 @@ struct Instance {
   float depth    : ATTR1;
 };
 
-struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-};
-
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  VsOut o;
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
   float2 local = quadLocal(vid);
 
   float2 xx = expandMinWidthX(
-    hpClipX(hpSplitUint(inst.position), u),
-    hpClipX(hpSplitUint(inst.position + uint(u.binSize)), u),
+    bpToClipX(inst.position, u),
+    bpToClipX(inst.position + uint(u.binSize), u),
     u.canvasW);
   float x1 = xx.x;
   float x2 = xx.y;
@@ -45,6 +40,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 }
 
 [shader("fragment")]
-float4 fs_main(VsOut fragIn) : SV_Target {
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
   return fragIn.color;
 }
