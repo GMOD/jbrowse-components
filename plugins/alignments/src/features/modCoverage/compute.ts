@@ -165,7 +165,7 @@ export function computeModificationCoverage(
 
     let yOffset = 0
     for (const entry of colorMap.values()) {
-      const { modifiable, detectable } = calculateModificationCounts({
+      const { detectable } = calculateModificationCounts({
         base: entry.base,
         isSimplex: simplexModifications.has(entry.modType),
         baseCounts,
@@ -176,8 +176,13 @@ export function computeModificationCoverage(
         continue
       }
 
-      const height =
-        (modifiable * entry.probabilityTotal) / (detectable * depthAtPosition)
+      // This modification's share of the position's coverage bar: probability-
+      // weighted modified reads / total depth. Bounded to [0,1] per position
+      // (total mod calls <= depth), so stacked colored segments never exceed the
+      // coverage histogram. An IGV-style modifiable/detectable extrapolation
+      // estimates the true methylation rate among informative reads instead, but
+      // that can exceed observed coverage and overflow the bar.
+      const height = entry.probabilityTotal / depthAtPosition
 
       const avgProbability = entry.probabilityTotal / entry.probabilityCount
 

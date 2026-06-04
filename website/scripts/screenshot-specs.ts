@@ -894,7 +894,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: 'chr8:48,000,000-68,000,000',
+          loc: 'chr8:50,000,000-55,000,000',
           tracks: ['ncbi_gff_hg19', 'hic'],
         },
       ],
@@ -2331,9 +2331,17 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'dotplot_menu',
-    url: `?config=${DOTPLOT_CONFIG}&sessionName=Screenshot`,
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+          tracks: ['grape_peach_paf'],
+        },
+      ],
+    }),
     readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
-    readyTimeout: 30000,
+    readyTimeout: 60000,
     settleMs: 3000,
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
@@ -2346,9 +2354,17 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'synteny_from_dotplot_view',
-    url: `?config=${DOTPLOT_CONFIG}&sessionName=Screenshot`,
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+          tracks: ['grape_peach_paf'],
+        },
+      ],
+    }),
     readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
-    readyTimeout: 30000,
+    readyTimeout: 60000,
     settleMs: 5000,
     actions: [
       // rubberband-drag on the dotplot canvas area (approximate center coords)
@@ -2411,9 +2427,7 @@ export const specs: ScreenshotSpec[] = [
             'ncbi_gff_hg19',
             {
               trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-              displaySnapshot: {
-                configOverrides: { featureHeight: 3, featureSpacing: 0 },
-              },
+              displaySnapshot: { featureHeight: 3, featureSpacing: 0 },
             },
           ],
         },

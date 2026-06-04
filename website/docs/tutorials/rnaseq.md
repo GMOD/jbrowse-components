@@ -97,12 +97,6 @@ arcs indicate forward-strand splicing events.
 Recall that DNA is a double helix with a forward and a reverse strand (sometimes
 called the Watson and Crick strands; 5'→3' is forward and 3'→5' is reverse).
 
-<Figure caption="Splice arcs derived from reads with skips (N) in their CIGAR strings. Blue arcs indicate reverse-strand splicing; red arcs would indicate forward-strand splicing." src="/img/rnaseq/splice_arcs.png" />
-
-[Live demo — splice arcs over ACTB introns](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5566000-5571000","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
-
-ACTB is on the reverse strand, so its splice arcs render blue — consistent with
-the rule above.
 
 ## Looking at a specific read
 
