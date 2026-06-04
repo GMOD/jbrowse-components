@@ -71,7 +71,7 @@ export function drawMafCoverage(
         ctx,
         region.coverage.snpPackedBuffer,
         normalize,
-        domainMax,
+        region.coverage.coverageMaxDepth,
         coverageHeight,
         snpColors,
         bpToX,

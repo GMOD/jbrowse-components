@@ -101,6 +101,8 @@ const MafBody = observer(function MafBody({
     showSelectionBox,
     mouseX,
     mouseY,
+    mouseClientX,
+    mouseClientY,
     contextCoord,
     setContextCoord,
   } = drag
@@ -191,6 +193,8 @@ const MafBody = observer(function MafBody({
             model={model}
             mouseX={mouseX}
             mouseY={mouseY}
+            clientX={mouseClientX}
+            clientY={mouseClientY}
             origMouseX={isDragging ? dragStartX : undefined}
           />
         </div>

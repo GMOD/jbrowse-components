@@ -1,6 +1,4 @@
-import PluginLoader, {
-  dropVendoredPlugins,
-} from '@jbrowse/core/PluginLoader'
+import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { openDB } from 'idb'
 

@@ -1,6 +1,4 @@
-import PluginLoader, {
-  dropVendoredPlugins,
-} from '@jbrowse/core/PluginLoader'
+import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'

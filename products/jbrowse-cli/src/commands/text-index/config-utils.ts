@@ -1,12 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
-import { parseCommaSeparatedString } from '../../utils.ts'
 import { supported } from '../../types/common.ts'
+import { parseCommaSeparatedString } from '../../utils.ts'
 
 import type { Config, Track } from '../../base.ts'
-
-export { parseCommaSeparatedString }
 
 export function validatePrefixSize(
   value?: string | number,
@@ -130,3 +128,5 @@ export function getTrackConfigs(
 }
 
 export { sanitizeForFilename as sanitizeNameForPath } from '@jbrowse/text-indexing-core'
+
+export { parseCommaSeparatedString } from '../../utils.ts'

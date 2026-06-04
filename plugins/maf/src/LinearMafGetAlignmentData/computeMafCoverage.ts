@@ -98,5 +98,23 @@ export function computeMafCoverage(
       maxDepth = d
     }
   }
+
+  // TEMP DEBUG: match-vs-mismatch + column-length sanity
+  let depthSum = 0
+  for (let i = 0; i < length; i++) {
+    depthSum += depths[i]!
+  }
+  const firstBlock = blocks[0]
+  // eslint-disable-next-line no-console
+  console.log('[computeMafCoverage]', {
+    blocks: blocks.length,
+    depthSum,
+    mismatches: mismatches.length,
+    mismatchFrac: mismatches.length / depthSum,
+    maxDepth,
+    firstBlockRefLen: firstBlock?.refSeqBytes.length,
+    firstBlockRowLens: firstBlock?.rows.slice(0, 5).map(r => r.alignmentBytes.length),
+  })
+
   return { depths, maxDepth, startPos: regionStart, mismatches, insertions }
 }

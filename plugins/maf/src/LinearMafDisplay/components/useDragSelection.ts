@@ -17,7 +17,7 @@ interface DragState {
   drag?: DragRect
   isDragging: boolean
   showSelectionBox: boolean
-  mouse?: { x: number; y: number }
+  mouse?: { x: number; y: number; clientX: number; clientY: number }
 }
 
 function relativeXY(
@@ -48,7 +48,7 @@ export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
       isDragging: true,
       showSelectionBox: false,
       drag: { startX: x, startY: y, endX: x, endY: y },
-      mouse: { x, y },
+      mouse: { x, y, clientX: e.clientX, clientY: e.clientY },
     })
     e.stopPropagation()
   }
@@ -57,7 +57,7 @@ export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
     const { x, y } = relativeXY(ref, e)
     setState(s => ({
       ...s,
-      mouse: { x, y },
+      mouse: { x, y, clientX: e.clientX, clientY: e.clientY },
       drag: s.isDragging && s.drag ? { ...s.drag, endX: x, endY: y } : s.drag,
     }))
   }
@@ -129,6 +129,8 @@ export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
     showSelectionBox,
     mouseX: mouse?.x,
     mouseY: mouse?.y,
+    mouseClientX: mouse?.clientX,
+    mouseClientY: mouse?.clientY,
     contextCoord,
     setContextCoord,
     handleMouseDown,

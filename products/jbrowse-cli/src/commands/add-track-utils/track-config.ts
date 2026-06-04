@@ -1,7 +1,7 @@
 import path from 'path'
 
-import { parseCommaSeparatedString } from '../../utils.ts'
 import { isURL } from '../../types/common.ts'
+import { parseCommaSeparatedString } from '../../utils.ts'
 
 import type { Track } from '../../base.ts'
 

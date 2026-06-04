@@ -16,7 +16,12 @@ interface GithubRelease {
 }
 
 export function parseCommaSeparatedString(value?: string): string[] {
-  return value?.split(',').map(s => s.trim()).filter(Boolean) ?? []
+  return (
+    value
+      ?.split(',')
+      .map(s => s.trim())
+      .filter(Boolean) ?? []
+  )
 }
 
 export function ignoreNotFound<T>(promise: Promise<T>) {

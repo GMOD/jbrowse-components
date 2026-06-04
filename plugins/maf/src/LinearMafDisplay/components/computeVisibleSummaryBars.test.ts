@@ -22,7 +22,14 @@ const view = {
 }
 
 function rec(over: Partial<MafSummaryRecord>): MafSummaryRecord {
-  return { refName: 'chr1', start: 100, end: 110, src: 'mm10', score: 0.9, ...over }
+  return {
+    refName: 'chr1',
+    start: 100,
+    end: 110,
+    src: 'mm10',
+    score: 0.9,
+    ...over,
+  }
 }
 
 test('positions a summary bar on its species row across the block extent', () => {
@@ -35,7 +42,15 @@ test('positions a summary bar on its species row across the block extent', () =>
   })
   // row 2: h=12, offset=1.5, rowTop = 1.5 + 15*2 = 31.5; x spans bp100..110
   expect(bars).toEqual([
-    { x: 0, width: 10, rowTop: 31.5, h: 12, score: 0.9, leftStatus: 'C', rightStatus: undefined },
+    {
+      x: 0,
+      width: 10,
+      rowTop: 31.5,
+      h: 12,
+      score: 0.9,
+      leftStatus: 'C',
+      rightStatus: undefined,
+    },
   ])
 })
 

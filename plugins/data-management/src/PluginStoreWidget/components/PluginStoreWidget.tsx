@@ -89,7 +89,9 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
         fullWidth
         label="Filter plugins"
         value={filterText}
-        onChange={text => { model.setFilterText(text) }}
+        onChange={text => {
+          model.setFilterText(text)
+        }}
       />
       <Accordion defaultExpanded>
         <AccordionSummary

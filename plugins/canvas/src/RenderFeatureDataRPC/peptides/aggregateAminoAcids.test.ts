@@ -12,7 +12,11 @@ describe('aminoAcidsBySegment', () => {
       endBp: 103,
       isStopOrNonTriplet: false,
     })
-    expect(pieces[1]).toMatchObject({ aminoAcid: 'K', startBp: 103, endBp: 106 })
+    expect(pieces[1]).toMatchObject({
+      aminoAcid: 'K',
+      startBp: 103,
+      endBp: 106,
+    })
   })
 
   it('reverse strand: codon genomic ranges are correct', () => {
@@ -20,8 +24,16 @@ describe('aminoAcidsBySegment', () => {
     const result = aminoAcidsBySegment([{ start: 100, end: 106 }], 'MK', -1)
     const pieces = result.get('100-106')!
     expect(pieces).toHaveLength(2)
-    expect(pieces[0]).toMatchObject({ aminoAcid: 'M', startBp: 103, endBp: 106 })
-    expect(pieces[1]).toMatchObject({ aminoAcid: 'K', startBp: 100, endBp: 103 })
+    expect(pieces[0]).toMatchObject({
+      aminoAcid: 'M',
+      startBp: 103,
+      endBp: 106,
+    })
+    expect(pieces[1]).toMatchObject({
+      aminoAcid: 'K',
+      startBp: 100,
+      endBp: 103,
+    })
   })
 
   it('partial codon (segment shorter than a triplet) is flagged', () => {
@@ -38,7 +50,9 @@ describe('aminoAcidsBySegment', () => {
 
   it('stop codons are flagged', () => {
     const result = aminoAcidsBySegment([{ start: 100, end: 103 }], '*', 1)
-    expect(result.get('100-103')![0]).toMatchObject({ isStopOrNonTriplet: true })
+    expect(result.get('100-103')![0]).toMatchObject({
+      isStopOrNonTriplet: true,
+    })
   })
 
   it('splits a codon that straddles an exon boundary into partial pieces', () => {

@@ -15,14 +15,25 @@ const MAFTooltip = observer(function ({
   model,
   mouseX,
   mouseY,
+  clientX,
+  clientY,
   origMouseX,
 }: {
   mouseX: number
   mouseY: number
+  clientX?: number
+  clientY?: number
   model: LinearMafDisplayModel
   origMouseX?: number
 }) {
   const { showCoverage, coverageDisplayHeight, rowHeight, scrollTop } = model
+  // Controlled point for floating-ui. Without it, `useClientPoint` enters
+  // pointer-tracking mode: a window `mousemove` listener that allocates a fresh
+  // virtual reference every move. Every other display tooltip passes this.
+  const clientPoint =
+    clientX !== undefined && clientY !== undefined
+      ? { x: clientX, y: clientY }
+      : undefined
   const view = getContainingView(model) as LinearGenomeViewModel
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
   const p2 = view.pxToBp(mouseX)
@@ -36,7 +47,7 @@ const MAFTooltip = observer(function ({
       ? undefined
       : model.coverageTooltipBin(p2.index, p2.coord - 1)
     return bin ? (
-      <BaseTooltip>
+      <BaseTooltip clientPoint={clientPoint}>
         <MafCoverageTooltipContents bin={bin} refName={p2.refName} />
       </BaseTooltip>
     ) : null
@@ -55,7 +66,7 @@ const MAFTooltip = observer(function ({
       : undefined
 
   return (
-    <BaseTooltip>
+    <BaseTooltip clientPoint={clientPoint}>
       <SanitizedHTML html={generateTooltipContent(p1, p2, hover)} />
     </BaseTooltip>
   )
