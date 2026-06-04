@@ -7,7 +7,6 @@ import { useTheme } from '@mui/material'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
-
 import { forEachRenderedPeptide } from './peptidePositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'

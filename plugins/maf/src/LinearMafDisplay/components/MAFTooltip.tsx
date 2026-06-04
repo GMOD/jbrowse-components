@@ -8,8 +8,8 @@ import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
 import MafCoverageTooltipContents from './MafCoverageTooltipContents.tsx'
 import MafInterbaseTooltipContents from './MafInterbaseTooltipContents.tsx'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const MAFTooltip = observer(function ({
   model,

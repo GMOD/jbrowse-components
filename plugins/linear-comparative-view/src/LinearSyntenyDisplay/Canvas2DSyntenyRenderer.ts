@@ -1,3 +1,4 @@
+import { KIND_CIGAR_MATCH } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import {
   buildFeaturePath,
@@ -50,6 +51,7 @@ function drawInstances(
     const isHovered = featureId === hoveredFeatureId
     const isClicked = featureId === clickedFeatureId
 
+    const isCigar = data.kinds[i]! >= KIND_CIGAR_MATCH
     let fillStyle = fillStyleCache.get(packed)
     if (isHovered) {
       // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
@@ -64,7 +66,17 @@ function drawInstances(
       const r = packed & 0xff
       const g = (packed >> 8) & 0xff
       const b = (packed >> 16) & 0xff
-      fillStyle = `rgba(${r},${g},${b},${a * alpha})`
+      if (isCigar) {
+        // Pre-blend with white so indel quads visually fade against the page
+        // background rather than compositing semi-transparently over the base
+        // block (which would mix the indel color with the match/base color).
+        const pr = (r * alpha + 255 * (1 - alpha)) | 0
+        const pg = (g * alpha + 255 * (1 - alpha)) | 0
+        const pb = (b * alpha + 255 * (1 - alpha)) | 0
+        fillStyle = `rgba(${pr},${pg},${pb},${a})`
+      } else {
+        fillStyle = `rgba(${r},${g},${b},${a * alpha})`
+      }
       fillStyleCache.set(packed, fillStyle)
     }
 
