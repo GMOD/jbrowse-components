@@ -30,12 +30,12 @@ function cellLines(h: CellHit & { sampleLabel: string }) {
       ? undefined
       : `Location: ${h.chr}:${toLocale(h.pos + 1)} (${strandStr(h.strand)})`,
     contextLine(
-      'Left',
+      'Before block',
       ctx?.leftStatus && describeMafStatus(ctx.leftStatus),
       ctx?.leftCount,
     ),
     contextLine(
-      'Right',
+      'After block',
       ctx?.rightStatus && describeMafStatus(ctx.rightStatus),
       ctx?.rightCount,
     ),
@@ -45,7 +45,8 @@ function cellLines(h: CellHit & { sampleLabel: string }) {
 function emptyLines(h: EmptyHit & { sampleLabel: string }) {
   return [
     `Sample: ${h.sampleLabel}`,
-    `No alignment: ${describeMafStatus(h.status)}`,
+    'No aligning sequence here; the flanking alignments are bridged by a chain (UCSC e-line)',
+    `Reason: ${describeMafStatus(h.status)}`,
     `Location: ${h.chr}:${toLocale(h.start + 1)} (${strandStr(h.strand)}), ${toLocale(h.size)} bp`,
   ]
 }

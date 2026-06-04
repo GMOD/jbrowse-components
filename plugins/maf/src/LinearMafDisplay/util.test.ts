@@ -80,7 +80,9 @@ describe('generateTooltipContent', () => {
     expect(result).toContain('Sample: mouse')
     expect(result).toContain('Base: G')
     expect(result).toContain('Location: chr5:1,000 (-)')
-    expect(result).toContain('Left: intervening bases (234 bp)')
+    expect(result).toContain(
+      'Before block: intervening non-aligning bases between the flanking blocks (234 bp)',
+    )
   })
 
   test('empty hover explains the bridged status', () => {
@@ -98,7 +100,8 @@ describe('generateTooltipContent', () => {
       },
     )
     expect(result).toContain('Sample: rat')
-    expect(result).toContain('No alignment: missing data (Ns)')
+    expect(result).toContain('bridged by a chain')
+    expect(result).toContain('Reason: missing data — unknown bases (Ns) in this region')
     expect(result).toContain('Location: chr9:5 (+), 200 bp')
   })
 })
