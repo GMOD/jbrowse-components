@@ -76,8 +76,11 @@ export async function loadSessionSpec(
     }
 
     await Promise.all(
-      views.map(view =>
-        pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${view.type}`, {
+      // `type` is the dispatch key, not view init data: forwarding it would
+      // land in the view's declarative init blob and trip the spurious
+      // "init ignored unknown key(s): type" warning meant to catch real typos
+      views.map(({ type, ...view }) =>
+        pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${type}`, {
           ...view,
           session: rootModel.session,
         }),

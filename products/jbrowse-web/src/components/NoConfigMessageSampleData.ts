@@ -280,7 +280,7 @@ export const galleryDemos: readonly SampleLink[] = [
     label: 'Synteny grape vs peach',
   },
   {
-    href: 'test_data/hs1_vs_mm39/config.json?config=test_data%2Fhs1_vs_mm39%2Fconfig.json&session=share-sYw9py4ItD&password=fAVJa',
+    href: '?config=test_data%2Fhs1_vs_mm39%2Fconfig.json&session=share-sYw9py4ItD&password=fAVJa',
     label: 'Hs1 vs mm39 synteny',
   },
   {

@@ -1,18 +1,14 @@
-import {
-  LONG_INSERTION_MIN_LENGTH,
-  LONG_INSERTION_TEXT_THRESHOLD_PX,
-  textWidthForNumber,
-} from '@jbrowse/alignments-core'
-
 export {
+  INSERTION_SERIF_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
   computeLabelFontSize,
+  getInsertionType,
+  insertionBarWidth,
   textWidthForNumber,
 } from '@jbrowse/alignments-core'
-
-export const INSERTION_SERIF_MIN_PX_PER_BP = 3
+export type { InsertionType } from '@jbrowse/alignments-core'
 
 export const ColorScheme = {
   normal: 0,
@@ -41,37 +37,6 @@ export type LinkedReadsMode = 'off' | 'normal'
 // 'samplot' (read cloud) draws flat lines at Y=|tlen|, discordant pairs only.
 // Both color by arcColorByType (red/green/teal/navy by insert size + orientation).
 export type ReadConnectionsMode = 'off' | 'arc' | 'samplot'
-
-export type InsertionType = 'large' | 'long' | 'small'
-
-export function getInsertionType(
-  length: number,
-  pxPerBp: number,
-): InsertionType {
-  if (length >= LONG_INSERTION_MIN_LENGTH) {
-    if (length * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
-      return 'large'
-    }
-    return 'long'
-  }
-  return 'small'
-}
-
-// SYNC: mirrors the rectW logic in
-// LinearAlignmentsDisplay/shaders/slang/insertion.slang (vs_main). The single
-// source of truth for an insertion's box width, shared by the GPU shader (via
-// this mirror), the Canvas2D/SVG renderer, hit-testing, and SNP-letter
-// shadowing. insertionWidth.test.ts pins this against the shader.
-export function insertionBarWidth(len: number, pxPerBp: number) {
-  const type = getInsertionType(len, pxPerBp)
-  if (type === 'large') {
-    return textWidthForNumber(len)
-  }
-  if (type === 'long') {
-    return Math.min(5, (len * pxPerBp) / 3)
-  }
-  return 1
-}
 
 // Returns the minimum frequency at which a feature (mismatch, insertion, etc.)
 // is shown at a given coverage depth. Features below this threshold are zeroed

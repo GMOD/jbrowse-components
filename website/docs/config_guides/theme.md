@@ -101,7 +101,7 @@ Example
 ### Logo
 
 It is also possible to supply a custom logo to be displayed in the top right
-corner of the app instead of the JBrowse 2 logo. To do this, store a SVG file
+corner of the app instead of the JBrowse 2 logo. To do this, store an SVG file
 containing your logo on your server, and specify the path in your configuration:
 
 ```json

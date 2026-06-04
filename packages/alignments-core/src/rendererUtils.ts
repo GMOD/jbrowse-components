@@ -67,9 +67,52 @@ export const CANVAS2D_COVERAGE = {
   FIELD: { position: 0, bandBottom: 1, bandTop: 2 },
 } as const
 
+// A coverage buffer in the CANVAS2D_COVERAGE layout (raw depth, 3-float). The
+// nominal brand stops a GPU coverage buffer (relDepth, 2-float, from
+// `packCoverageBinsForGpu`) being handed to `drawCoverageBins`, which reads them
+// at incompatible offsets — a silent mis-render with no runtime error. The two
+// casts below are the only ones: the layout boundary is enforced here so every
+// consumer stays cast-free. The brand is erased at the worker transfer boundary.
+declare const canvas2dCoverageBrand: unique symbol
+export type Canvas2DCoverageBuffer = ArrayBuffer & {
+  readonly [canvas2dCoverageBrand]: true
+}
+
+// Empty placeholder (no bins) carrying the Canvas2D coverage brand. A fresh
+// buffer per call: the worker transfers these, which detaches them, so a shared
+// singleton would throw DataCloneError on the second RPC reply.
+export function emptyCanvas2DCoverageBuffer(): Canvas2DCoverageBuffer {
+  return new ArrayBuffer(0) as Canvas2DCoverageBuffer
+}
+
+// Pack per-position depths into the Canvas2D coverage buffer that
+// `drawCoverageBins` reads. Stores raw depth (not pre-normalized) so the
+// normalizer — linear or log — is chosen at draw time. Co-located with the
+// format constant + draw function so the layout has a single source of truth;
+// `bandBottom`/`bandTop` make each bin a band, with `bandBottom` 0 for a plain
+// depth bar. Distinct from the GPU `packCoverageBinsForGpu` (relDepth + 2-float
+// shader layout) — don't feed a GPU coverage buffer to `drawCoverageBins`.
+export function packCoverageBinsCanvas2D(
+  depths: Float32Array,
+  startPos: number,
+): Canvas2DCoverageBuffer {
+  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
+  const n = depths.length
+  const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  for (let i = 0; i < n; i++) {
+    const off = i * STRIDE_F32
+    u32[off + FIELD.position] = startPos + i
+    f32[off + FIELD.bandBottom] = 0
+    f32[off + FIELD.bandTop] = depths[i]!
+  }
+  return buf as Canvas2DCoverageBuffer
+}
+
 export function drawCoverageBins(
   ctx: Ctx,
-  buffer: ArrayBuffer,
+  buffer: Canvas2DCoverageBuffer,
   normalizeDepth: (depth: number) => number,
   coverageHeight: number,
   coverageColor: string,

@@ -1,9 +1,12 @@
 import {
+  CANVAS2D_COVERAGE,
   coverageLayout,
   drawCoverageBins,
   drawIndicators,
   drawModCovSegments,
   drawSnpSegments,
+  emptyCanvas2DCoverageBuffer,
+  packCoverageBinsCanvas2D,
   snpColorForType,
 } from './rendererUtils.ts'
 
@@ -63,22 +66,34 @@ describe('snpColorForType', () => {
   })
 })
 
+describe('packCoverageBinsCanvas2D', () => {
+  // Guards the pack/read contract that broke MAF's grey histogram: the buffer
+  // must be the 3-float CANVAS2D_COVERAGE layout (raw depth in `bandTop`), the
+  // format `drawCoverageBins` reads — NOT the 2-float GPU `relDepth` layout.
+  it('packs raw depths in the CANVAS2D_COVERAGE layout', () => {
+    const buf = packCoverageBinsCanvas2D(new Float32Array([7, 0, 3]), 100)
+    const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
+    expect(buf.byteLength).toBe(3 * STRIDE_F32 * 4)
+
+    const u32 = new Uint32Array(buf)
+    const f32 = new Float32Array(buf)
+    for (let i = 0; i < 3; i++) {
+      const off = i * STRIDE_F32
+      expect(u32[off + FIELD.position]).toBe(100 + i)
+      expect(f32[off + FIELD.bandBottom]).toBe(0)
+    }
+    expect(f32[0 * STRIDE_F32 + FIELD.bandTop]).toBe(7)
+    expect(f32[2 * STRIDE_F32 + FIELD.bandTop]).toBe(3)
+  })
+})
+
 describe('drawCoverageBins', () => {
   const identity = (d: number) => d
 
-  it('draws bins as rectangles', () => {
-    const buf = new ArrayBuffer(2 * 12)
-    const f32 = new Float32Array(buf)
-    const u32 = new Uint32Array(buf)
-    // bin 0: pos=100, yOffset=0.2, depth=0.8
-    u32[0] = 100
-    f32[1] = 0.2
-    f32[2] = 0.8
-    // bin 1: pos=101, yOffset=0.1, depth=0.5
-    u32[3] = 101
-    f32[4] = 0.1
-    f32[5] = 0.5
-
+  it('draws a packed bin to the right height + width', () => {
+    // depth 0.8: coverageHeight 50 → effectiveH 40, bottom 45, so the bar spans
+    // y=[45-0.8*40, 45] = [13, 45], height 32. Round-trips pack → draw.
+    const buf = packCoverageBinsCanvas2D(new Float32Array([0.8, 0.5]), 100)
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 100) * 10
 
@@ -86,16 +101,26 @@ describe('drawCoverageBins', () => {
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(2)
+    const [x, y, w, h] = fillCalls[0]!.args as number[]
+    expect(x).toBe(0)
+    expect(w).toBe(10)
+    expect(y).toBeCloseTo(13)
+    expect(h).toBeCloseTo(32)
+  })
+
+  it('applies width compensation so adjacent bars overlap', () => {
+    const buf = packCoverageBinsCanvas2D(new Float32Array([0.5]), 100)
+    const { ctx, calls } = makeCtx()
+    const bpToX = (bp: number) => (bp - 100) * 10
+
+    drawCoverageBins(ctx, buf, identity, 50, 'blue', bpToX, 200, 0.8)
+
+    const fillCall = calls.find(c => c.method === 'fillRect')
+    expect(fillCall!.args[2]).toBe(10.8)
   })
 
   it('skips bins outside viewport', () => {
-    const buf = new ArrayBuffer(12)
-    const f32 = new Float32Array(buf)
-    const u32 = new Uint32Array(buf)
-    u32[0] = 1000
-    f32[1] = 0.5
-    f32[2] = 0.5
-
+    const buf = packCoverageBinsCanvas2D(new Float32Array([0.5]), 1000)
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 1000) * 10 + 500
 
@@ -109,7 +134,7 @@ describe('drawCoverageBins', () => {
     const { ctx, calls } = makeCtx()
     drawCoverageBins(
       ctx,
-      new ArrayBuffer(0),
+      emptyCanvas2DCoverageBuffer(),
       identity,
       50,
       'blue',

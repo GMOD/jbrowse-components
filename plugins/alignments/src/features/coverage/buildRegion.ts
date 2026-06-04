@@ -1,16 +1,16 @@
-import { CANVAS2D_COVERAGE } from '@jbrowse/alignments-core'
+import {
+  emptyCanvas2DCoverageBuffer,
+  packCoverageBinsCanvas2D,
+} from '@jbrowse/alignments-core'
 
 import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
-
-// Empty ArrayBuffers must be allocated per-call: the worker transfers them,
-// which detaches them. A module-level singleton causes DataCloneError on
-// the second RPC reply.
+import type { Canvas2DCoverageBuffer } from '@jbrowse/alignments-core'
 
 // coverageMaxDepth is the per-region max depth used for vertical scaling at
 // draw time. Carried alongside the buffer because it's needed even when the
 // buffer is empty (the y-axis legend uses it).
 export interface CoverageRegionFields {
-  coverageBuffer: ArrayBuffer
+  coverageBuffer: Canvas2DCoverageBuffer
   coverageMaxDepth: number
 }
 
@@ -21,23 +21,17 @@ export function buildCoverageFields(
 ): CoverageRegionFields {
   const n = data.coverageDepths.length
   if (!(n > 0 && data.coverageMaxDepth > 0)) {
-    return { coverageBuffer: new ArrayBuffer(0), coverageMaxDepth: 0 }
+    return { coverageBuffer: emptyCanvas2DCoverageBuffer(), coverageMaxDepth: 0 }
   }
-  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
-  const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const startPos = data.coverageStartPos
-  const depths = data.coverageDepths
-  for (let i = 0; i < n; i++) {
-    const off = i * STRIDE_F32
-    u32[off + FIELD.position] = startPos + i
-    f32[off + FIELD.bandBottom] = 0
-    f32[off + FIELD.bandTop] = depths[i]!
+  return {
+    coverageBuffer: packCoverageBinsCanvas2D(
+      data.coverageDepths,
+      data.coverageStartPos,
+    ),
+    coverageMaxDepth: data.coverageMaxDepth,
   }
-  return { coverageBuffer: buf, coverageMaxDepth: data.coverageMaxDepth }
 }
 
 export function emptyCoverageFields(): CoverageRegionFields {
-  return { coverageBuffer: new ArrayBuffer(0), coverageMaxDepth: 0 }
+  return { coverageBuffer: emptyCanvas2DCoverageBuffer(), coverageMaxDepth: 0 }
 }

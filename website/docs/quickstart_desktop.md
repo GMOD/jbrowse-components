@@ -35,7 +35,7 @@ Make the file executable:
 
 ```sh
 # Make the AppImage file executable, only need to do this once
-chmod  a+x jbrowse-desktop-*-linux.AppImage
+chmod a+x jbrowse-desktop-*-linux.AppImage
 # Run!
 ./jbrowse-desktop-*-linux.AppImage
 ```

@@ -60,6 +60,82 @@ export function textWidthForNumber(num: number) {
   return charWidth * 5 + padding
 }
 
+export type InsertionType = 'large' | 'long' | 'small'
+
+export function getInsertionType(
+  length: number,
+  pxPerBp: number,
+): InsertionType {
+  if (length >= LONG_INSERTION_MIN_LENGTH) {
+    return length * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
+      ? 'large'
+      : 'long'
+  }
+  return 'small'
+}
+
+// SYNC: mirrors the rectW logic in
+// plugins/alignments LinearAlignmentsDisplay/shaders/slang/insertion.slang
+// (vs_main). Single source of truth for an insertion's box width, shared by the
+// GPU shader (via that mirror), the Canvas2D/SVG renderer, hit-testing (both
+// alignments and MAF), and SNP-letter shadowing. insertionWidth.test.ts pins
+// this against the shader.
+export function insertionBarWidth(len: number, pxPerBp: number) {
+  const type = getInsertionType(len, pxPerBp)
+  if (type === 'large') {
+    return textWidthForNumber(len)
+  }
+  if (type === 'long') {
+    return Math.min(5, (len * pxPerBp) / 3)
+  }
+  return 1
+}
+
+// Shared tooltip body for an insertion, used by both plugin-alignments and
+// plugin-maf so the phrasing stays identical. Callers append their own location
+// suffix ("at <pos>" / a Location line).
+export function formatInsertionLabel(length: number, sequence?: string) {
+  return sequence && sequence.length <= 20
+    ? `Insertion (${length}bp): ${sequence}`
+    : `Insertion (${length}bp)`
+}
+
+// Below this zoom (px per bp), small-insertion serif caps are not drawn.
+export const INSERTION_SERIF_MIN_PX_PER_BP = 3
+
+// Draw one insertion marker centered on `xCenter`: a box whose width follows
+// insertionBarWidth (1px small / short bar long / number-label-width large) plus
+// serif caps on small insertions when zoomed in. The caller sets `ctx.fillStyle`
+// (including any frequency alpha) and draws the count text. Shared by plugin-
+// alignments (Canvas2D/SVG export) and plugin-maf (insertion overlay + export)
+// so the marker geometry can't drift between the two displays.
+export function drawInsertionMarker(
+  ctx: DrawCtx,
+  xCenter: number,
+  y: number,
+  height: number,
+  length: number,
+  pxPerBp: number,
+) {
+  const w = insertionBarWidth(length, pxPerBp)
+  ctx.fillRect(xCenter - w / 2, y, w, height)
+  const isLong = length >= LONG_INSERTION_MIN_LENGTH
+  if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
+    ctx.beginPath()
+    ctx.moveTo(xCenter - 2, y)
+    ctx.lineTo(xCenter + 2, y)
+    ctx.lineTo(xCenter, y + 2)
+    ctx.closePath()
+    ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(xCenter - 2, y + height)
+    ctx.lineTo(xCenter + 2, y + height)
+    ctx.lineTo(xCenter, y + height - 2)
+    ctx.closePath()
+    ctx.fill()
+  }
+}
+
 interface DrawCtx {
   fillStyle: string | CanvasGradient | CanvasPattern
   font: string

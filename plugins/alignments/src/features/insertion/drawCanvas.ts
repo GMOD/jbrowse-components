@@ -1,9 +1,7 @@
+import { drawInsertionMarker } from '@jbrowse/alignments-core'
+
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import {
-  INSERTION_SERIF_MIN_PX_PER_BP,
-  LONG_INSERTION_MIN_LENGTH,
-  insertionBarWidth,
-} from '../../LinearAlignmentsDisplay/constants.ts'
+import { LONG_INSERTION_MIN_LENGTH } from '../../LinearAlignmentsDisplay/constants.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -47,27 +45,11 @@ export function drawInsertions(
       alpha = base + frequency * (1 - base)
     }
 
-    // Same box width as the GPU shader: a wide labelled box for large
-    // insertions, a short bar for long, 1px for small. Centered on the bp.
-    const w = insertionBarWidth(length, pxPerBp)
+    // Box + serif caps shared with plugin-maf via drawInsertionMarker: a wide
+    // labelled box for large insertions, a short bar for long, 1px + serifs for
+    // small. Centered on the bp.
     ctx.fillStyle =
       alpha >= 1 ? rgb255(insColorBase) : rgba255(insColorBase, alpha)
-    ctx.fillRect(x - w / 2, y, w, fH)
-
-    const drawSerifs = !isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP
-    if (drawSerifs) {
-      ctx.beginPath()
-      ctx.moveTo(x - 2, y)
-      ctx.lineTo(x + 2, y)
-      ctx.lineTo(x, y + 2)
-      ctx.closePath()
-      ctx.fill()
-      ctx.beginPath()
-      ctx.moveTo(x - 2, y + fH)
-      ctx.lineTo(x + 2, y + fH)
-      ctx.lineTo(x, y + fH - 2)
-      ctx.closePath()
-      ctx.fill()
-    }
+    drawInsertionMarker(ctx, x, y, fH, length, pxPerBp)
   }
 }

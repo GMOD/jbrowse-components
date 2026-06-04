@@ -63,6 +63,23 @@ test('shows whole genome when no loc is specified', async () => {
   }, delay)
 }, 60000)
 
+test('spec url with multiple tracks opens the view and shows every track', async () => {
+  // mirrors the "Volvox (genes + multi-wiggle + BAM)" no-config sample link:
+  // a spec session carrying a loc plus several tracks. guards the
+  // loader -> loadSessionSpec -> LaunchView-LinearGenomeView -> init autorun
+  // chain against silently dropping the view or any of its tracks.
+  const { findByText, findByPlaceholderText } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["gff3tabix_genes","volvox_bam_pileup"]}]}' />,
+  )
+
+  const elt = await findByPlaceholderText('Search for location', {}, delay)
+  await waitFor(() => {
+    expect((elt as HTMLInputElement).value).toBe('ctgA:1..50,000')
+  }, delay)
+  await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)', {}, delay)
+  await findByText(/GFF3Tabix genes/, {}, delay)
+}, 60000)
+
 test('unknown view type in spec surfaces an error instead of failing silently', async () => {
   jest.spyOn(console, 'error').mockImplementation()
   const { findByText } = render(

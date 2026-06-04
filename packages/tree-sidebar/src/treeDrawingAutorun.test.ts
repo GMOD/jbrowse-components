@@ -30,7 +30,8 @@ const stubCtx = {
 } as unknown as CanvasRenderingContext2D
 
 beforeAll(() => {
-  HTMLCanvasElement.prototype.getContext = () => stubCtx
+  HTMLCanvasElement.prototype.getContext = (() =>
+    stubCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext
 })
 
 const Display = types

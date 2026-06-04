@@ -208,7 +208,7 @@ Non-admin users must copy a track before editing it. The copy is saved to your
 Click and drag on either the main (lower) or overview (upper) scale bar to
 rubberband-select a region.
 
-<Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc.." src="/img/rubberband.png" />
+<Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
 
 ### Track label positioning
 

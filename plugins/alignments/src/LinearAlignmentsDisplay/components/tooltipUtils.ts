@@ -1,4 +1,4 @@
-import { countSnpsAtPosition } from '@jbrowse/alignments-core'
+import { countSnpsAtPosition, formatInsertionLabel } from '@jbrowse/alignments-core'
 import { toLocale } from '@jbrowse/core/util'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
@@ -141,9 +141,7 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
     case 'mismatch':
       return `SNP: ${cigarHit.base} at ${pos}`
     case 'insertion':
-      return cigarHit.sequence && cigarHit.sequence.length <= 20
-        ? `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
-        : `Insertion (${cigarHit.length}bp) at ${pos}`
+      return `${formatInsertionLabel(cigarHit.length ?? 0, cigarHit.sequence)} at ${pos}`
     case 'deletion':
       return `Deletion (${cigarHit.length}bp) at ${pos}`
     case 'skip':
