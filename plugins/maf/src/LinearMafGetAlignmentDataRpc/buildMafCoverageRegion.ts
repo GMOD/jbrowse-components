@@ -72,7 +72,10 @@ export function buildMafCoverageRegion(
     mismatchBases,
     insertionPositions,
     insertionLengths,
-    coveragePackedBuffer: packCoverageBinsCanvas2D(mafCov.depths, mafCov.startPos),
+    coveragePackedBuffer: packCoverageBinsCanvas2D(
+      mafCov.depths,
+      mafCov.startPos,
+    ),
     snpPackedBuffer: packSnpSegmentsForGpu(
       snpCoverage.positions,
       snpCoverage.yOffsets,

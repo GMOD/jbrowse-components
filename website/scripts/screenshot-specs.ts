@@ -44,6 +44,9 @@ interface CommonSpecFields {
   // capture-viewport height in CSS px for this spec (default 800); raise it for
   // tall multi-row pileups so the track isn't clipped by the default viewport
   viewportHeight?: number
+  // capture-viewport width in CSS px for this spec (default 1500); raise it for
+  // wide multi-panel layouts (dotplot/synteny/whole-genome) that get cut off
+  viewportWidth?: number
   // callouts drawn over the page before capture (arrows/boxes/text)
   annotations?: Annotation[]
   // suppress the hover/right-click BaseTooltip (which lingers while a context
@@ -317,7 +320,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'volvox',
-          loc: 'ctgA:1-10000',
+          loc: 'ctgA:2615-2725',
           tracks: [
             {
               trackId: 'volvox-long-reads-sv-bam',
@@ -348,7 +351,7 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'volvox_sv_cram',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                pairedArcs: 'up',
+                readConnections: 'arc',
               },
             },
           ],
@@ -359,10 +362,29 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
+  // Paired arcs (top) vs linked reads / read-cloud (bottom) on the same volvox
+  // synthetic-SV CRAM, so the doc can contrast them side by side. Two session
+  // copies of the same adapter let both display modes render at once.
   {
     mode: 'url',
     name: 'alignments/read_cloud',
     url: sessionSpec(VOLVOX, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'volvox_sv_cram_arcs',
+          name: 'volvox-sv paired arcs',
+          assemblyNames: ['volvox'],
+          adapter: VOLVOX_SV_CRAM_ADAPTER,
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'volvox_sv_cram_linked',
+          name: 'volvox-sv linked reads',
+          assemblyNames: ['volvox'],
+          adapter: VOLVOX_SV_CRAM_ADAPTER,
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -370,10 +392,17 @@ export const specs: ScreenshotSpec[] = [
           loc: 'ctgA:1-50000',
           tracks: [
             {
-              trackId: 'volvox_sv_cram',
+              trackId: 'volvox_sv_cram_arcs',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                pairedArcs: 'samplot',
+                readConnections: 'arc',
+              },
+            },
+            {
+              trackId: 'volvox_sv_cram_linked',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                linkedReads: 'normal',
               },
             },
           ],
@@ -381,7 +410,8 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    settleMs: 5000,
+    viewportHeight: 1100,
+    settleMs: 6000,
   },
 
   // Paired-end reads colored by insert size on the volvox synthetic-SV CRAM:
@@ -688,10 +718,20 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'dotplot',
-    url: `?config=${DOTPLOT_CONFIG}&sessionName=Screenshot`,
+    // use the full peach_grape.paf (grape_peach_paf), not the small in-repo paf
+    // that the config defaultSession loads
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+          tracks: ['grape_peach_paf'],
+        },
+      ],
+    }),
     readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
-    readyTimeout: 30000,
-    settleMs: 3000,
+    readyTimeout: 60000,
+    settleMs: 8000,
   },
 
   {
@@ -702,13 +742,19 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           tracks: ['grape_peach_synteny_tblastx'],
+          // the subset peach_vs_grape.tsv only contains Pp05<->grape chr18
+          // alignments, so this is the region pair that actually draws ribbons
           views: [
-            { loc: 'Pp01:1-5000000', assembly: 'peach' },
-            { loc: 'chr1:1-5000000', assembly: 'grape' },
+            { loc: 'Pp05:1-1100000', assembly: 'peach' },
+            { loc: 'chr18:1-1000000', assembly: 'grape' },
           ],
         },
       ],
     }),
+    // wait for the synteny ribbons to actually paint, else the panels capture
+    // empty (the bug the review flagged)
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 30000,
     settleMs: 6000,
   },
 
@@ -966,6 +1012,9 @@ export const specs: ScreenshotSpec[] = [
     name: 'breakpoint_split_view',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-pjaAq1hNxB&password=Z9teR',
     readyText: 'SKBR3',
+    // taller viewport so both panels of the breakpoint split view are visible
+    viewportHeight: 1200,
+    readyTimeout: 60000,
     settleMs: 12000,
   },
 
@@ -1153,12 +1202,13 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_show_all_regions',
+    // an LGV with an assembly but no loc opens on all regions (whole genome)
     url: cgiabUrl({
       views: [{ type: 'LinearGenomeView', assembly: 'GRCh38_GIABv3' }],
     }),
-    readyText: 'chr1',
+    readyText: 'chrY',
     readyTimeout: 60000,
-    settleMs: 3000,
+    settleMs: 4000,
   },
 
   {
@@ -1237,7 +1287,9 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    settleMs: 20000,
+    viewportWidth: 1800,
+    // giant remote assembly PAF; needs a long settle for the dots to paint
+    settleMs: 60000,
   },
 
   {
@@ -1262,8 +1314,11 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr3',
-    readyTimeout: 60000,
-    settleMs: 15000,
+    readyTimeout: 90000,
+    viewportWidth: 1800,
+    // giant remote assembly PAF; synteny_canvas_done can exceed 90s, so settle
+    // long rather than gate on it
+    settleMs: 45000,
   },
 
   // H. pylori synteny tutorial (synteny_visualization.md) — live hpylori demo
@@ -1381,9 +1436,30 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
     annotations: [
       { type: 'text', x: 10, y: 45, text: '1', color: '#e3242b', fontSize: 18 },
-      { type: 'text', x: 340, y: 45, text: '2', color: '#e3242b', fontSize: 18 },
-      { type: 'text', x: 560, y: 45, text: '3', color: '#e3242b', fontSize: 18 },
-      { type: 'text', x: 10, y: 220, text: '4', color: '#e3242b', fontSize: 18 },
+      {
+        type: 'text',
+        x: 340,
+        y: 45,
+        text: '2',
+        color: '#e3242b',
+        fontSize: 18,
+      },
+      {
+        type: 'text',
+        x: 560,
+        y: 45,
+        text: '3',
+        color: '#e3242b',
+        fontSize: 18,
+      },
+      {
+        type: 'text',
+        x: 10,
+        y: 220,
+        text: '4',
+        color: '#e3242b',
+        fontSize: 18,
+      },
     ],
   },
 
@@ -1436,7 +1512,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Open track selector' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
-      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
       { type: 'delay', ms: 500 },
       // open the FAB popup menu
       { type: 'click', selector: '[data-testid="hierarchical-add-track-fab"]' },
@@ -1544,7 +1623,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Open track selector' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
-      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
       { type: 'delay', ms: 500 },
       // click the MoreVert to open the position menu
       { type: 'click', selector: '[data-testid="drawer-position-button"]' },
@@ -1580,7 +1662,9 @@ export const specs: ScreenshotSpec[] = [
   // Bookmark widget screenshots
   // ────────────────────────────────────────────────────────────────────────
 
-  // Bookmark widget opened from the view's Bookmarks menu.
+  // How to open the bookmark widget: the view menu's Bookmarks/highlights submenu
+  // open with the "Open bookmark widget" item hovered/highlighted (not clicked),
+  // matching the origin/main figure that shows the menu path.
   {
     mode: 'url',
     name: 'bookmark_widget_open',
@@ -1603,9 +1687,8 @@ export const specs: ScreenshotSpec[] = [
       { type: 'hover', text: 'Bookmarks/highlights' },
       { type: 'waitForText', text: 'Open bookmark widget' },
       { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Open bookmark widget' },
-      { type: 'waitForText', text: 'No bookmarks' },
-      { type: 'delay', ms: 1000 },
+      { type: 'hover', text: 'Open bookmark widget' },
+      { type: 'delay', ms: 800 },
     ],
   },
 
@@ -1746,7 +1829,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Settings' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Settings' },
-      { type: 'waitForText', text: 'Toggle bookmark highlights on all open views' },
+      {
+        type: 'waitForText',
+        text: 'Toggle bookmark highlights on all open views',
+      },
       { type: 'delay', ms: 1000 },
     ],
   },
@@ -1891,38 +1977,25 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track menu showing the Color scheme > Modifications option for
-  // a BAM file with the MM tag.
+  // Track menu showing the Color scheme > Modifications option, over the real
+  // chr20 5mC/5hmC CRAM from the demo config (the MM/ML-tagged example the doc
+  // describes), at the CpG-island locus used by the methylation figures.
   {
     mode: 'url',
     name: 'alignments/modifications1',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-3000',
-          tracks: ['MM-chebi-volvox-bam'],
-        },
-      ],
-      sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'MM-chebi-volvox-bam',
-          name: 'MM-chebi modifications',
-          assemblyNames: ['volvox'],
-          adapter: {
-            type: 'BamAdapter',
-            // session tracks resolve relative uris against the page root, not the
-            // config dir, so use the jbrowse.org-hosted volvox fixture (same
-            // pattern as VOLVOX_SV_CRAM)
-            uri: `${VOLVOX_SV_CRAM}/MM-chebi-volvox.bam`,
-          },
+          assembly: 'hg38',
+          loc: '20:19,749,000-19,770,000',
+          tracks: ['human_chr20_mod_call_5mC_5hmC_CG_cram'],
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 5000,
+    readyText: 'human_chr20',
+    readyTimeout: 60000,
+    settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'waitForText', text: 'Color by...' },
@@ -1959,7 +2032,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Open track selector' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
-      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
       { type: 'delay', ms: 500 },
       // open the hamburger menu
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
@@ -1991,10 +2067,16 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Open track selector' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
-      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
       { type: 'delay', ms: 500 },
       // click the recently-used button
-      { type: 'click', selector: '[data-testid="recently-used-tracks-button"]' },
+      {
+        type: 'click',
+        selector: '[data-testid="recently-used-tracks-button"]',
+      },
       { type: 'delay', ms: 1000 },
     ],
   },
@@ -2022,13 +2104,19 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Open track selector' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track selector' },
-      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
       { type: 'delay', ms: 500 },
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'GFF3Tabix' },
       { type: 'delay', ms: 800 },
       // mark the track as a favorite from its per-track menu in the selector
-      { type: 'click', selector: '[data-testid="htsTrackEntryMenu-Tracks,gff3tabix_genes"]' },
+      {
+        type: 'click',
+        selector: '[data-testid="htsTrackEntryMenu-Tracks,gff3tabix_genes"]',
+      },
       { type: 'waitForText', text: 'Add to favorites' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Add to favorites' },
@@ -2413,6 +2501,271 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 12000,
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Previously hand-captured UI-guide figures, now autogenerated
+  // ────────────────────────────────────────────────────────────────────────
+
+  // SV inspector import form (sv_inspector_view.md getting-started figure) —
+  // the empty SpreadsheetImportWidget the SvInspectorView opens with.
+  {
+    mode: 'url',
+    name: 'sv_inspector_importform',
+    url: sessionSpec(VOLVOX, {
+      views: [{ type: 'SvInspectorView' }],
+    }),
+    readyText: 'Open file from URL or local computer',
+    settleMs: 3000,
+  },
+
+  // LGV assembly/sequence import form (quickstart_web.md) — a linear genome view
+  // with an assembly but no region opens on the assembly + sequence selectors.
+  {
+    mode: 'url',
+    name: 'lgv_assembly',
+    url: sessionSpec(VOLVOX, { views: [] }),
+    readyText: 'Select a view to launch',
+    settleMs: 2000,
+    actions: [
+      { type: 'click', text: 'Launch view' },
+      { type: 'waitForText', text: 'Select assembly to view' },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // Sample-configuration start state (quickstart_web.md) — volvox loaded with the
+  // track selector open so the available tracks are visible.
+  {
+    mode: 'url',
+    name: 'sample_config',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'Open track selector' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Customized feature details (customizing_feature_details.md) — volvox's
+  // gff3tabix_genes track config carries a formatDetails JEXL callback that links
+  // the name to a Google search, adds a custom "extrafield", and drops the type
+  // field; clicking a gene shows the resulting panel.
+  {
+    mode: 'url',
+    name: 'customized_feature_details',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:17200-23200',
+          tracks: [
+            { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    viewportHeight: 900,
+    actions: [
+      { type: 'click', from: { x: 430, y: 314 } },
+      { type: 'waitForText', text: 'extrafield' },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
+
+  // Feature-details upstream/downstream sequence panel (v1.1.0 blog post) — the
+  // multi-exon volvox EDEN gene with "Show feature sequence" expanded into the
+  // genomic-with-introns + up/down-stream mode so the colored upstream / exon /
+  // intron / downstream sequence is shown.
+  {
+    mode: 'url',
+    name: 'upstream_downstream_details',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:17200-23200',
+          tracks: [
+            { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    viewportHeight: 900,
+    actions: [
+      { type: 'click', from: { x: 430, y: 314 } },
+      { type: 'waitForText', text: 'Show feature sequence' },
+      { type: 'delay', ms: 1000 },
+      { type: 'click', text: 'Show feature sequence' },
+      { type: 'delay', ms: 2000 },
+      { type: 'click', selector: '[aria-label="Sequence type"]' },
+      { type: 'delay', ms: 1000 },
+      {
+        type: 'click',
+        text: 'Genomic w/ full introns +/- 100bp up+down stream',
+      },
+      { type: 'delay', ms: 3000 },
+    ],
+  },
+
+  // Track selector with all top-level categories collapsed (track_selector.md) —
+  // driven through the hamburger menu's "Collapse..." submenu instead of a
+  // config so it stays on plain volvox.
+  {
+    mode: 'url',
+    name: 'hierarchical/collapse_toplevelcategories-fs8',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'Open track selector' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
+      { type: 'delay', ms: 500 },
+      { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
+      { type: 'waitForText', text: 'Collapse...' },
+      { type: 'hover', text: 'Collapse...' },
+      { type: 'waitForText', text: 'Collapse top-level categories' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Collapse top-level categories' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Track selector with all sub-categories collapsed (track_selector.md) — the
+  // top-level categories stay open but their nested subcategory headers collapse.
+  {
+    mode: 'url',
+    name: 'hierarchical/collapse_subcategories-fs8',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'Open track selector' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
+      { type: 'delay', ms: 500 },
+      { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
+      { type: 'waitForText', text: 'Collapse...' },
+      { type: 'hover', text: 'Collapse...' },
+      { type: 'waitForText', text: 'Collapse subcategories' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Collapse subcategories' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Cytoband ideogram in the overview scale bar (v1.5.1 blog post) — hg19 from
+  // the demo config (which carries a cytobands adapter) zoomed to a chr1 region.
+  {
+    mode: 'url',
+    name: 'cytobands',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '1:38,543,322-41,918,323',
+          tracks: ['ncbi_gff_hg19'],
+        },
+      ],
+    }),
+    readyText: 'NCBI RefSeq',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+
+  // SV inspector import form with a VCF URL pasted (sv_inspector_view.md) — the
+  // SKBR3 Sniffles translocation calls typed into the URL field before opening.
+  {
+    mode: 'url',
+    name: 'sv_inspector_importform_after',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [{ type: 'SvInspectorView' }],
+    }),
+    readyText: 'Open file from URL or local computer',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'VCF' },
+      {
+        type: 'type',
+        selector: '[data-testid="urlInput"]',
+        value:
+          'https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf',
+      },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // Default UI theme (theme.md) — a small volvox config with the track selector
+  // open so the default primary/secondary/tertiary/quaternary palette is shown.
+  {
+    mode: 'url',
+    name: 'default_theme',
+    url: sessionSpec('test_data/volvox/config_theme_default.json', {
+      views: [
+        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'Open track selector' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Customized UI theme (theme.md) — same config carrying the documented custom
+  // palette (#311b92 / #0097a7 / #f57c00 / #d50000) via configuration.theme.
+  {
+    mode: 'url',
+    name: 'customized_theme',
+    url: sessionSpec('test_data/volvox/config_theme_custom.json', {
+      views: [
+        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'Open track selector' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
+      { type: 'delay', ms: 1000 },
+    ],
   },
 ]
 

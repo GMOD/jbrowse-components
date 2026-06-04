@@ -189,10 +189,7 @@ describe('collectRenderData for mature protein regions', () => {
       'mature_protein_region',
     ])
     const config = mockDisplayConfig()
-    const layout = findGlyph(
-      feature,
-      config,
-    )({ feature, config })
+    const layout = findGlyph(feature, config)({ feature, config })
 
     const result = collectRenderData([layout], 0, 10000, config, theme, false)
 
@@ -218,10 +215,7 @@ describe('collectRenderData for mature protein regions', () => {
       parentFeature: parent,
     })
     const config = mockDisplayConfig()
-    const layout = findGlyph(
-      feature,
-      config,
-    )({ feature, config })
+    const layout = findGlyph(feature, config)({ feature, config })
 
     const result = collectRenderData([layout], 0, 10000, config, theme, false)
     expect(result.rectPositions).toHaveLength(2 * 2)

@@ -3,7 +3,12 @@ import {
   buildReadVsRefTemporaryAssembly,
 } from '@jbrowse/alignments-core'
 import { getConf } from '@jbrowse/core/configuration'
-import { gatherOverlaps, getSession, sum, truncateMiddle } from '@jbrowse/core/util'
+import {
+  gatherOverlaps,
+  getSession,
+  sum,
+  truncateMiddle,
+} from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'

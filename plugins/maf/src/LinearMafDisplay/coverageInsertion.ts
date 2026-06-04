@@ -1,4 +1,7 @@
-import { buildCoverageTooltipBin, insertionBarWidth } from '@jbrowse/alignments-core'
+import {
+  buildCoverageTooltipBin,
+  insertionBarWidth,
+} from '@jbrowse/alignments-core'
 
 import type { MafCoverageRegion } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 

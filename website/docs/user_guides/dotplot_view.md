@@ -4,10 +4,10 @@ description: Whole-genome synteny dotplot
 guide_category: Views
 ---
 
-The dotplot view shows alignments between genome assemblies, or between a
-single read and a reference genome. Syntenic regions
-appear as diagonal lines or blocks; inversions appear as reverse-diagonal
-segments; translocations and rearrangements appear as off-diagonal blocks.
+The dotplot view shows alignments between genome assemblies, or between a single
+read and a reference genome. Syntenic regions appear as diagonal lines or
+blocks; inversions appear as reverse-diagonal segments; translocations and
+rearrangements appear as off-diagonal blocks.
 
 ### Opening a dotplot view
 

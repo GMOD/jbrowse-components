@@ -4,8 +4,8 @@ title: Initializing and launching views
 
 Whether you're launching a view from a URL, an embedded component, or a
 config/session file, the same `init` spec controls what it shows — assembly,
-location, tracks, highlights, and so on. This page covers those fields and
-links to the detailed reference for each surface.
+location, tracks, highlights, and so on. This page covers those fields and links
+to the detailed reference for each surface.
 
 ## The `init` fields
 

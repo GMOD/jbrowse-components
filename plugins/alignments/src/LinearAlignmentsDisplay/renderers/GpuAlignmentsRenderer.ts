@@ -701,7 +701,9 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       : -1
 
     // Nothing selected in this block — skip all allocs below.
-    if (regionSelectIdx < 0 && state.selectedChainIds.length === 0) return
+    if (regionSelectIdx < 0 && state.selectedChainIds.length === 0) {
+      return
+    }
 
     // After the guard: if no chains are selected then regionSelectIdx >= 0 (implied).
     const needsFeatureSelection = state.selectedChainIds.length === 0
@@ -733,10 +735,38 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       c: { sx1: number; sx2: number; syTop: number; syBot: number },
     ) => {
       out.push(
-        c.sx1, c.syTop,      c.sx2,      c.syTop - ty, SR, SG, SB, SA,
-        c.sx1, c.syBot + ty, c.sx2,      c.syBot,      SR, SG, SB, SA,
-        c.sx1, c.syTop,      c.sx1 + tx, c.syBot,      SR, SG, SB, SA,
-        c.sx2 - tx, c.syTop, c.sx2,      c.syBot,      SR, SG, SB, SA,
+        c.sx1,
+        c.syTop,
+        c.sx2,
+        c.syTop - ty,
+        SR,
+        SG,
+        SB,
+        SA,
+        c.sx1,
+        c.syBot + ty,
+        c.sx2,
+        c.syBot,
+        SR,
+        SG,
+        SB,
+        SA,
+        c.sx1,
+        c.syTop,
+        c.sx1 + tx,
+        c.syBot,
+        SR,
+        SG,
+        SB,
+        SA,
+        c.sx2 - tx,
+        c.syTop,
+        c.sx2,
+        c.syBot,
+        SR,
+        SG,
+        SB,
+        SA,
       )
     }
 

@@ -16,8 +16,8 @@ buttons in the LGV header also scroll left and right.
 
 #### Zooming
 
-Use the zoom buttons and slider in the LGV header to zoom in and out.
-You can also:
+Use the zoom buttons and slider in the LGV header to zoom in and out. You can
+also:
 
 - hold `Ctrl` and use the mousewheel to zoom (on Mac, trackpad pinch-to-zoom
   also works)
@@ -72,8 +72,8 @@ once, use `File` → `Open connection...`. See the
 
 :::tip
 
-A circular plus (+) icon button in the "Available tracks" widget also opens
-the "Add a track" form.
+A circular plus (+) icon button in the "Available tracks" widget also opens the
+"Add a track" form.
 
 :::
 

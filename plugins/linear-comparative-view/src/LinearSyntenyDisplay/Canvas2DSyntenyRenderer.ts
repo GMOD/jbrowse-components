@@ -1,4 +1,3 @@
-import { KIND_CIGAR_MATCH } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import {
   buildFeaturePath,
@@ -7,6 +6,7 @@ import {
   pickFeatureAtPoint,
   projectCorners,
 } from './syntenyPickEngine.ts'
+import { KIND_CIGAR_MATCH } from '../LinearSyntenyRPC/syntenyColors.ts'
 
 import type { CanvasLike, ComputedTransform } from './syntenyPickEngine.ts'
 import type {

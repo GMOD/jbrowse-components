@@ -63,7 +63,12 @@ export function useAlignmentsBase(
   const theme = useTheme()
   const colorPalette = useMemo(() => buildColorPaletteFromTheme(theme), [theme])
   const contrastMap = useMemo(
-    () => getMismatchContrastMap(model.colorBy.type, model.showModifications, theme),
+    () =>
+      getMismatchContrastMap(
+        model.colorBy.type,
+        model.showModifications,
+        theme,
+      ),
     [theme, model.colorBy.type, model.showModifications],
   )
 
@@ -154,6 +159,7 @@ export function useAlignmentsBase(
       result.type === 'feature'
     ) {
       e.preventDefault()
+      model.clearMouseoverState()
       model.setContextMenuCoord([e.clientX, e.clientY])
       model.setContextMenuRefName(resolved?.refName)
       model.setContextMenuCigarHit(

@@ -81,11 +81,7 @@ describe('reversed convention', () => {
     const renderer = new GpuManhattanRenderer(hal)
     const data = mkData([500], [5], [0xff0000ff])
     renderer.uploadRegion(0, data)
-    renderer.renderBlocks(
-      [{ ...block, reversed }],
-      new Map([[0, data]]),
-      state,
-    )
+    renderer.renderBlocks([{ ...block, reversed }], new Map([[0, data]]), state)
     return hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.bpRangeX + 2]!
   }
 

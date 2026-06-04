@@ -1,4 +1,7 @@
-import { countSnpsAtPosition, formatInsertionLabel } from '@jbrowse/alignments-core'
+import {
+  countSnpsAtPosition,
+  formatInsertionLabel,
+} from '@jbrowse/alignments-core'
 import { toLocale } from '@jbrowse/core/util'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'

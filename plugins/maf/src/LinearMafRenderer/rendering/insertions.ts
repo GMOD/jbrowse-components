@@ -31,7 +31,12 @@ export function renderInsertions(
     if (getInsertionType(length, scale) === 'large' && h > CHAR_HEIGHT) {
       const text = String(length)
       ctx.fillStyle = 'white'
-      ctx.fillText(text, xCenter, rowTop + (h * 7) / 8, CHAR_SIZE_WIDTH * text.length)
+      ctx.fillText(
+        text,
+        xCenter,
+        rowTop + (h * 7) / 8,
+        CHAR_SIZE_WIDTH * text.length,
+      )
     }
   })
 }

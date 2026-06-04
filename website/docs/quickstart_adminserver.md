@@ -125,8 +125,8 @@ Additional data formats can be supported via plugins; check out the
 [plugin store](/docs/user_guides/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
-Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files (e.g. `filename.bai`); specify
-it explicitly if yours differs.
+Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
+(e.g. `filename.bai`); specify it explicitly if yours differs.
 
 ### Editing a track
 
@@ -144,8 +144,8 @@ value for a given track.
 ## Setting a default session
 
 You can also use the graphical admin server to set the default session of your
-JBrowse 2 instance. This is the session that will appear when JBrowse 2
-is first visited. To do so, open the Set default session form (Admin menu):
+JBrowse 2 instance. This is the session that will appear when JBrowse 2 is first
+visited. To do so, open the Set default session form (Admin menu):
 
 <Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session." src="/img/default_session_form.png"/>
 

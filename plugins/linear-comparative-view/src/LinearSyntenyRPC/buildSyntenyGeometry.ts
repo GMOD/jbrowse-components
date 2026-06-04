@@ -226,15 +226,7 @@ export function buildSyntenyGeometry({
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
     const willDrawCigar = willDrawCigarArr[i]!
-    addInstance(
-      x11,
-      x12,
-      x22,
-      x21,
-      KIND_BASE,
-      i,
-      alignmentLengths[i]!,
-    )
+    addInstance(x11, x12, x22, x21, KIND_BASE, i, alignmentLengths[i]!)
     if (!willDrawCigar && drawLocationMarkers) {
       addLocationMarkers(x11, x12, x22, x21, i, alignmentLengths[i]!)
     }

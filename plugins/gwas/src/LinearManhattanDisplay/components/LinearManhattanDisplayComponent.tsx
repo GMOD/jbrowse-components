@@ -77,6 +77,8 @@ const LinearManhattanDisplayComponent = observer(
       const hit = hitAt(event)
       if (hit) {
         event.preventDefault()
+        // clear the hover tooltip so it doesn't stay stuck behind the menu
+        model.setFeatureUnderMouse(undefined)
         setContextMenu({ coord: [event.clientX, event.clientY], hit })
       }
     }
@@ -90,7 +92,9 @@ const LinearManhattanDisplayComponent = observer(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        onContextMenu={event => handleContextMenu(event)}
+        onContextMenu={event => {
+          handleContextMenu(event)
+        }}
       >
         {({ canvasRef }) => (
           <ManhattanBody

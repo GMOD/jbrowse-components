@@ -101,7 +101,9 @@ describe('generateTooltipContent', () => {
     )
     expect(result).toContain('Sample: rat')
     expect(result).toContain('bridged by a chain')
-    expect(result).toContain('Reason: missing data — unknown bases (Ns) in this region')
+    expect(result).toContain(
+      'Reason: missing data — unknown bases (Ns) in this region',
+    )
     expect(result).toContain('Location: chr9:5 (+), 200 bp')
   })
 })

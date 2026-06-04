@@ -84,6 +84,9 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
     const enriched = hit ? enrich(hit) : undefined
     if (enriched) {
       e.preventDefault()
+      // clear the hover tooltip so it doesn't stay stuck behind the menu
+      lastHoveredRef.current = undefined
+      applyHoverChange(undefined)
       model.setContextMenuFeature(enriched)
       setContextMenuCoord([e.clientX, e.clientY])
     }

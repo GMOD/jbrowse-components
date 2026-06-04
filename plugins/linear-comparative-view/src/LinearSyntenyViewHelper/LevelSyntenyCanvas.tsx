@@ -225,6 +225,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const hitDisplay = model.displaysByKey.get(hit.key)
     const feat = hitDisplay?.getFeature(hit.featureIndex)
     if (hitDisplay && feat) {
+      // clear the hover tooltip so it doesn't stay stuck behind the menu
+      setHoverOnDisplays(model, undefined, -1)
       hitDisplay.openContextMenu({
         clientX: event.clientX,
         clientY: event.clientY,

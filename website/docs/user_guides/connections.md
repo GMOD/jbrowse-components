@@ -22,8 +22,8 @@ JBrowse supports three built-in connection types:
 
 Use the menu bar: `File` → `Open connection...`
 
-A form asks for the connection URL and type. Paste the hub URL
-(see below for the format), choose the connection type, and click Submit.
+A form asks for the connection URL and type. Paste the hub URL (see below for
+the format), choose the connection type, and click Submit.
 
 Tracks from the connection will appear in the track selector under a category
 named after the connection.

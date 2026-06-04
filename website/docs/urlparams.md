@@ -62,10 +62,11 @@ Example strings
 &loc=GENEID // if you have used `jbrowse text-index`
 ```
 
-Navigating via `&loc=GENEID` requires a text index built with `jbrowse text-index`.
+Navigating via `&loc=GENEID` requires a text index built with
+`jbrowse text-index`.
 
-For specialized navigation (e.g. combining URL navigation with a `defaultSession`),
-a small plugin is the recommended approach —
+For specialized navigation (e.g. combining URL navigation with a
+`defaultSession`), a small plugin is the recommended approach —
 [see this example](https://gist.github.com/cmdcolin/eedfcb11f8f153ba1fb07e56dfddd3b3).
 
 ### &highlight=

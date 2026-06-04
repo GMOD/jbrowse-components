@@ -186,27 +186,30 @@ describe('Canvas2DWiggleRenderer', () => {
     ['xyplot', RENDERING_TYPE_XYPLOT],
     ['density', RENDERING_TYPE_DENSITY],
     ['scatter', RENDERING_TYPE_SCATTER],
-  ])('reversed block fills the full mirrored cell (%s)', (_name, renderingType) => {
-    const { canvas, fillRectCalls } = createMockCanvas()
-    Object.defineProperty(window, 'devicePixelRatio', {
-      value: 1,
-      writable: true,
-    })
+  ])(
+    'reversed block fills the full mirrored cell (%s)',
+    (_name, renderingType) => {
+      const { canvas, fillRectCalls } = createMockCanvas()
+      Object.defineProperty(window, 'devicePixelRatio', {
+        value: 1,
+        writable: true,
+      })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
-    const source = makeSource([5], [0], [500])
+      const renderer = new Canvas2DWiggleRenderer(canvas)
+      const source = makeSource([5], [0], [500])
 
-    renderer.renderBlocks(
-      [{ ...defaultBlock, reversed: true }],
-      new Map([[0, [source]]]),
-      { ...defaultState, renderingType },
-    )
+      renderer.renderBlocks(
+        [{ ...defaultBlock, reversed: true }],
+        new Map([[0, [source]]]),
+        { ...defaultState, renderingType },
+      )
 
-    expect(fillRectCalls.length).toBe(1)
-    const [x, , w] = fillRectCalls[0]!
-    expect(x).toBeCloseTo(400)
-    expect(w).toBeCloseTo(400.8)
-  })
+      expect(fillRectCalls.length).toBe(1)
+      const [x, , w] = fillRectCalls[0]!
+      expect(x).toBeCloseTo(400)
+      expect(w).toBeCloseTo(400.8)
+    },
+  )
 
   test('multi-row sources render at correct vertical offsets', () => {
     const { canvas, fillRectCalls } = createMockCanvas()

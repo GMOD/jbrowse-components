@@ -53,10 +53,18 @@ const MafCoverageResizeHandle = observer(function MafCoverageResizeHandle({
         model.setCoverageHeight(Math.max(20, coverageHeight + n))
         return undefined
       }}
-      onDragStart={() => { setDragging(true) }}
-      onDragEnd={() => { setDragging(false) }}
-      onMouseEnter={() => { setHovered(true) }}
-      onMouseLeave={() => { setHovered(false) }}
+      onDragStart={() => {
+        setDragging(true)
+      }}
+      onDragEnd={() => {
+        setDragging(false)
+      }}
+      onMouseEnter={() => {
+        setHovered(true)
+      }}
+      onMouseLeave={() => {
+        setHovered(false)
+      }}
       style={{ top: coverageHeight - 4 }} // straddles the coverage/rows seam
       className={classes.handle}
     />

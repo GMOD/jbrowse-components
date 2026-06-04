@@ -315,7 +315,8 @@ sudo a2enmod deflate
 sudo systemctl restart apache2
 ```
 
-Then add to your Apache config (e.g. `/etc/apache2/sites-available/000-default.conf`):
+Then add to your Apache config (e.g.
+`/etc/apache2/sites-available/000-default.conf`):
 
 ```
 <IfModule mod_deflate.c>
@@ -448,8 +449,8 @@ Example config for a CRAM file with a small `fetchSizeLimit` configured:
 
 ### Why am I running out of disk space while trix is running
 
-`jbrowse text-index` writes temporary data to `/tmp`. If that filesystem is
-low on space, override the directory with:
+`jbrowse text-index` writes temporary data to `/tmp`. If that filesystem is low
+on space, override the directory with:
 
 ```bash
 TMPDIR=~/alt_tmp_dir jbrowse text-index
@@ -457,8 +458,8 @@ TMPDIR=~/alt_tmp_dir jbrowse text-index
 
 ### How does the jbrowse text-index trix format work
 
-The `jbrowse text-index` command creates text search indexes using `trix`.
-The trix format follows the
+The `jbrowse text-index` command creates text search indexes using `trix`. The
+trix format follows the
 [UCSC trix spec](https://genome.ucsc.edu/goldenPath/help/trix.html), but is
 re-implemented in the JBrowse CLI so you don't need UCSC tools.
 

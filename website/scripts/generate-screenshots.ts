@@ -536,10 +536,10 @@ async function main() {
       const browser = await launch(launchOptions)
       try {
         const page = await browser.newPage()
-        if (spec.viewportHeight) {
+        if (spec.viewportHeight || spec.viewportWidth) {
           await page.setViewport({
-            width: vpWidth,
-            height: spec.viewportHeight,
+            width: spec.viewportWidth ?? vpWidth,
+            height: spec.viewportHeight ?? 800,
             deviceScaleFactor,
           })
         }
