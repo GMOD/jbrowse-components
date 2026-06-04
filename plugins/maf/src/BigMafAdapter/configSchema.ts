@@ -37,6 +37,15 @@ const configSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     */
+    summaryAdapter: {
+      type: 'frozen',
+      description:
+        'optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
+      defaultValue: null,
+    },
   },
   { explicitlyTyped: true },
 )

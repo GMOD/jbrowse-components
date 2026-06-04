@@ -105,12 +105,12 @@ pipeline don't move.
 >   parent snapshot + overrides `type`) — wrong: summary is a *different file*
 >   with its own locations, needs its own full config, not a type-swap.
 
-Scope:
+Scope (✓ = landed):
 
 | Piece | File | Change |
 |---|---|---|
-| Config slot | `BigMafAdapter/configSchema.ts` | add `summaryAdapter: { type: 'frozen', defaultValue: null }` (optional → no summary keeps Stage-1 gate) |
-| Instantiate | `BigMafAdapter/BigMafAdapter.ts` | `getSummaryAdapter()` — lazy `getSubAdapter(getConf('summaryAdapter'))` memoized on `summaryAdapterP` with catch-clear, mirroring CRAM `getSequenceAdapter`. `getSummaryFeatures(region)` maps BigBed rows → `{src,score,leftStatus,rightStatus}` |
+| ✓ Config slot | `BigMafAdapter/configSchema.ts` | `summaryAdapter: { type: 'frozen', defaultValue: null }` (optional → no summary keeps Stage-1 gate). Tested in `configSchema.test.ts`. The slot exists but **nothing consumes it yet** — it stores a valid sub-adapter config that the rows below will read |
+| Instantiate | `BigMafAdapter/BigMafAdapter.ts` | `getSummaryAdapter()` — lazy `getSubAdapter(getConf('summaryAdapter'))` memoized on `summaryAdapterP` with catch-clear, mirroring CRAM `getSequenceAdapter`. `getSummaryFeatures(region)` maps BigBed rows → `{src,score,leftStatus,rightStatus}` (defer the row shape until the display consumer drives it) |
 | Add-track | `MafAddTrackWorkflow` | summary cannot be auto-guessed from the data file (no standard suffix; `bigMafSummary.bb` is just UCSC's tutorial filename). Add an **optional explicit field** for the summary `.bb` location; leave `summaryAdapter` `null` when unset |
 | Display gate | `LinearMafDisplay/stateModel.ts` | above `AUTO_FORCE_LOAD_BP` (the `getByteEstimateConfig` threshold), if a summary adapter is configured, fetch summary rows instead of full alignment data |
 | Render | `LinearMafRenderer` + `LinearMafDisplay/components` | per-species presence bars (optionally `score`-shaded) reusing `emptyLines.ts` status primitives; coverage band = species-count depth (highest-value, most compact for 447-way) |
