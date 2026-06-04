@@ -1,5 +1,7 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 
+import { colorTypeToStrand } from './compute.ts'
+
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Single source of truth for sashimi arc geometry, color, and stroke width.
@@ -36,12 +38,6 @@ export interface ComputeSashimiArcsOpts {
 const FWD_ARC_COLOR = 'rgba(255,170,170,0.7)'
 const REV_ARC_COLOR = 'rgba(160,160,255,0.7)'
 const UNKNOWN_ARC_COLOR = 'rgba(200,200,200,0.7)'
-
-// colorType from the worker: 0 forward, 1 reverse, 2 strand-unknown (read had
-// no XS/TS/ts tag). Map to +1/-1/0 so the tooltip and color stay in sync.
-function colorTypeToStrand(colorType: number) {
-  return colorType === 0 ? 1 : colorType === 1 ? -1 : 0
-}
 
 function getArcColor(strand: number) {
   return strand === 1

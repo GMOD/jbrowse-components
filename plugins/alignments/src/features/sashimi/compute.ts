@@ -1,5 +1,21 @@
 import type { CoverageGap } from '@jbrowse/alignments-core'
 
+// colorType encoding for a sashimi arc, shared with `computeOverlay.ts`: the
+// worker packs these into the `sashimiColorTypes` Uint8Array and the overlay
+// decodes them via `colorTypeToStrand`. Keeping both ends on these constants
+// stops the producer/consumer mapping from drifting across the worker boundary.
+export const SASHIMI_FORWARD = 0
+export const SASHIMI_REVERSE = 1
+export const SASHIMI_UNKNOWN = 2
+
+export function colorTypeToStrand(colorType: number) {
+  return colorType === SASHIMI_FORWARD
+    ? 1
+    : colorType === SASHIMI_REVERSE
+      ? -1
+      : 0
+}
+
 // Bucket skip-gaps by (start,end) and emit one arc per (junction, strand). The
 // junction Map is keyed by string concat — gap counts are typically small, so
 // the string-key cost is negligible vs needing two parallel maps.
@@ -43,14 +59,15 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
     colorType: number
   }[] = []
   for (const j of junctions.values()) {
+    const { start, end } = j
     if (j.fwd > 0) {
-      arcs.push({ start: j.start, end: j.end, count: j.fwd, colorType: 0 })
+      arcs.push({ start, end, count: j.fwd, colorType: SASHIMI_FORWARD })
     }
     if (j.rev > 0) {
-      arcs.push({ start: j.start, end: j.end, count: j.rev, colorType: 1 })
+      arcs.push({ start, end, count: j.rev, colorType: SASHIMI_REVERSE })
     }
     if (j.unknown > 0) {
-      arcs.push({ start: j.start, end: j.end, count: j.unknown, colorType: 2 })
+      arcs.push({ start, end, count: j.unknown, colorType: SASHIMI_UNKNOWN })
     }
   }
 
