@@ -92,7 +92,7 @@
     "electron-context-menu": "^4.1.2",
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.8.3",
-    "mobx": "^6.15.4",
+    "mobx": "^6.16.0",
     "mobx-react": "^9.2.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

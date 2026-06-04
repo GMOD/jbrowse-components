@@ -37,7 +37,7 @@
     "@jbrowse/mobx-state-tree": "^5.10.8",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "mobx": "^6.15.4",
+    "mobx": "^6.16.0",
     "mobx-react": "^9.2.2"
   },
   "peerDependencies": {

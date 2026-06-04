@@ -39,7 +39,7 @@ export interface ViewSpec {
   type: string
   tracks?: TrackInit[]
   assembly: string
-  loc: string
+  loc?: string
 }
 
 /**

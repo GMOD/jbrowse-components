@@ -39,7 +39,7 @@
     "@mui/material": "^9.0.1",
     "dockview-core": "^6.6.1",
     "dockview-react": "^6.6.1",
-    "mobx": "^6.15.4",
+    "mobx": "^6.16.0",
     "mobx-react": "^9.2.2"
   },
   "peerDependencies": {

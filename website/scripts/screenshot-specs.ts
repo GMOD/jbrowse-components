@@ -23,18 +23,41 @@ export interface ScreenshotAction {
 // A callout drawn over the captured page (SVG overlay) before the screenshot,
 // to reproduce the red arrows / boxes / text labels that hand-made teaching
 // figures use. Coordinates are viewport CSS px.
+//
+// Instead of hand-tuning pixel coordinates, an annotation can `anchor` to a live
+// DOM element (by CSS selector or visible text): its position (and a box/ring's
+// size) is then computed from that element's bounding box at capture time, so
+// the callout tracks the real UI. `dx`/`dy` nudge the anchored position.
 export interface Annotation {
-  type: 'arrow' | 'box' | 'text'
-  // arrow: tail -> head; box uses x/y/width/height; text uses x/y as baseline
+  // arrow: tail -> head; box/highlight: x/y/width/height (ring around a region);
+  // text: x/y baseline; circle: filled numbered badge (with text) or an outline
+  // ring around the anchored element (without text)
+  type: 'arrow' | 'box' | 'text' | 'circle'
   from?: { x: number; y: number }
   to?: { x: number; y: number }
   x?: number
   y?: number
   width?: number
   height?: number
+  radius?: number // circle radius (default 16, or derived from anchored element)
   text?: string
   color?: string // default red (#e3242b)
-  fontSize?: number // text, default 18
+  textColor?: string // circle/text label color (circle default white)
+  fontSize?: number // text/circle label, default 18
+  anchor?: { selector?: string; text?: string }
+  dx?: number
+  dy?: number
+}
+
+// One frame of a multi-stage figure. The page is captured after this stage's
+// actions run; the frames are stacked vertically (ImageMagick `-append`) into a
+// single image, replacing the hand-run `convert -append` teaching figures.
+export interface ScreenshotStage {
+  actions?: ScreenshotAction[]
+  annotations?: Annotation[]
+  // press Escape before this stage's actions to dismiss a menu/popover the
+  // previous stage left open
+  closeMenusFirst?: boolean
 }
 
 interface CommonSpecFields {
@@ -47,8 +70,10 @@ interface CommonSpecFields {
   // capture-viewport width in CSS px for this spec (default 1500); raise it for
   // wide multi-panel layouts (dotplot/synteny/whole-genome) that get cut off
   viewportWidth?: number
-  // callouts drawn over the page before capture (arrows/boxes/text)
+  // callouts drawn over the page before capture (arrows/boxes/text/circles)
   annotations?: Annotation[]
+  // multi-stage figure: each stage is captured and the frames stacked vertically
+  stages?: ScreenshotStage[]
   // suppress the hover/right-click BaseTooltip (which lingers while a context
   // menu is open) so it doesn't clutter the capture
   hideTooltip?: boolean
@@ -1419,8 +1444,10 @@ export const specs: ScreenshotSpec[] = [
   // Basic UI guides
   // ────────────────────────────────────────────────────────────────────────
 
-  // LGV usage guide: annotated with numbered callouts matching the caption
-  // (1) Add menu, (2) pan buttons, (3) zoom slider, (4) drag handle.
+  // LGV usage guide: numbered callout badges anchored to the live toolbar
+  // controls (so positions track the UI, no hand-tuned coords). (1) Add menu,
+  // (2) pan buttons, (3) zoom controls, (4) track drag handle, (5) track menu,
+  // (6) scroll-zoom toggle, (7) search box.
   {
     mode: 'url',
     name: 'lgv_usage_guide',
@@ -1437,30 +1464,38 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 5000,
     annotations: [
-      { type: 'text', x: 10, y: 45, text: '1', color: '#e3242b', fontSize: 18 },
+      { type: 'circle', text: '1', anchor: { text: 'Add' } },
       {
-        type: 'text',
-        x: 340,
-        y: 45,
+        type: 'circle',
         text: '2',
-        color: '#e3242b',
-        fontSize: 18,
+        anchor: { selector: 'button[aria-label="Pan left"]' },
       },
       {
-        type: 'text',
-        x: 560,
-        y: 45,
+        type: 'circle',
         text: '3',
-        color: '#e3242b',
-        fontSize: 18,
+        anchor: { selector: '[data-testid="zoom_in"]' },
       },
       {
-        type: 'text',
-        x: 10,
-        y: 220,
+        type: 'circle',
         text: '4',
-        color: '#e3242b',
-        fontSize: 18,
+        anchor: { selector: '[data-testid^="dragHandle-"]' },
+      },
+      {
+        type: 'circle',
+        text: '5',
+        anchor: { selector: '[data-testid="track_menu_icon"]' },
+      },
+      {
+        type: 'circle',
+        text: '6',
+        anchor: {
+          selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+        },
+      },
+      {
+        type: 'circle',
+        text: '7',
+        anchor: { selector: 'input[placeholder="Search for location"]' },
       },
     ],
   },
@@ -1491,8 +1526,9 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track selector with the FAB (+) button visible, showing the add-track
-  // popup menu: "Add track" / "Add connection".
+  // Track selector open, with callout badges pointing at (1) the track-selector
+  // icon in the LGV header and (2) the add-track FAB. The FAB is left unclicked
+  // so its popup menu doesn't cover it.
   {
     mode: 'url',
     name: 'add_track_tracklist',
@@ -1518,11 +1554,19 @@ export const specs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
-      { type: 'delay', ms: 500 },
-      // open the FAB popup menu
-      { type: 'click', selector: '[data-testid="hierarchical-add-track-fab"]' },
-      { type: 'waitForText', text: 'Add track' },
-      { type: 'delay', ms: 500 },
+      { type: 'delay', ms: 800 },
+    ],
+    annotations: [
+      {
+        type: 'circle',
+        text: '1',
+        anchor: { selector: 'button[title="Open track selector"]' },
+      },
+      {
+        type: 'circle',
+        text: '2',
+        anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
+      },
     ],
   },
 
@@ -2088,8 +2132,9 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Favorite tracks dropdown in the track selector (star icon). Marking a
-  // track as a favorite from its track menu before opening the selector.
+  // Favorite tracks: two-stage figure. Top frame shows the per-track menu's
+  // "Add to favorites" item with a ring around the Favorites (star) button;
+  // bottom frame shows the resulting Favorites dropdown.
   {
     mode: 'url',
     name: 'favorite_tracks',
@@ -2119,19 +2164,32 @@ export const specs: ScreenshotSpec[] = [
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'GFF3Tabix' },
       { type: 'delay', ms: 800 },
-      // mark the track as a favorite from its per-track menu in the selector
+      // open the track's per-track menu (showing "Add to favorites")
       {
         type: 'click',
         selector: '[data-testid="htsTrackEntryMenu-Tracks,gff3tabix_genes"]',
       },
       { type: 'waitForText', text: 'Add to favorites' },
       { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Add to favorites' },
-      { type: 'delay', ms: 500 },
-      // open the favorite tracks dropdown
-      { type: 'click', selector: '[data-testid="favorite-tracks-button"]' },
-      { type: 'waitForText', text: 'GFF3Tabix genes' },
-      { type: 'delay', ms: 500 },
+    ],
+    stages: [
+      {
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="favorite-tracks-button"]' },
+          },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Add to favorites' },
+          { type: 'delay', ms: 500 },
+          { type: 'click', selector: '[data-testid="favorite-tracks-button"]' },
+          { type: 'waitForText', text: 'GFF3Tabix genes' },
+          { type: 'delay', ms: 500 },
+        ],
+      },
     ],
   },
 

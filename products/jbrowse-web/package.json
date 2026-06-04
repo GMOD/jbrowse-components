@@ -68,7 +68,7 @@
     "dockview-react": "^6.6.1",
     "generic-filehandle2": "^2.1.10",
     "idb": "^8.0.3",
-    "mobx": "^6.15.4",
+    "mobx": "^6.16.0",
     "mobx-react": "^9.2.2",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",

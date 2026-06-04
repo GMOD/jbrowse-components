@@ -36,7 +36,7 @@
     "@mui/x-charts-vendor": "^9.0.0",
     "generic-filehandle2": "^2.1.10",
     "hic-straw": "^2.1.4",
-    "mobx": "^6.15.4",
+    "mobx": "^6.16.0",
     "mobx-react": "^9.2.2"
   },
   "peerDependencies": {

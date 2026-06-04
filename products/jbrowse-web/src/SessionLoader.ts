@@ -212,7 +212,7 @@ const SessionLoader = types
     /**
      * #getter
      */
-    get sessionTracksParsed() {
+    get sessionTracksParsed(): Record<string, unknown>[] {
       return self.sessionTracks ? JSON.parse(self.sessionTracks) : []
     },
     /**

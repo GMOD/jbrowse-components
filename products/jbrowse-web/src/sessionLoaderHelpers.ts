@@ -95,7 +95,7 @@ export function buildJb1SessionSpec(args: {
   tracklist?: boolean
   nav?: boolean
   highlight?: string
-  sessionTracks: unknown
+  sessionTracks: Record<string, unknown>[]
 }) {
   return {
     sessionTracks: args.sessionTracks,
@@ -103,7 +103,6 @@ export function buildJb1SessionSpec(args: {
       {
         type: 'LinearGenomeView',
         tracks: args.tracks?.split(','),
-        sessionTracks: args.sessionTracks,
         loc: args.loc,
         assembly: args.assembly,
         tracklist: args.tracklist,

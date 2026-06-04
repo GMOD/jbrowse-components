@@ -22,6 +22,7 @@ export default function HeaderPanControls({ model }: { model: LGV }) {
     <>
       <Button
         variant="outlined"
+        aria-label="Pan left"
         className={classes.panButton}
         onClick={() => {
           model.slide(-0.9)
@@ -31,6 +32,7 @@ export default function HeaderPanControls({ model }: { model: LGV }) {
       </Button>
       <Button
         variant="outlined"
+        aria-label="Pan right"
         className={classes.panButton}
         onClick={() => {
           model.slide(0.9)

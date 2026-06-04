@@ -260,8 +260,34 @@ Expanded JSON of the contents of the URL
 ```
 
 The `views` array accepts multiple views opened simultaneously. Each can specify
-`loc`, `tracks`, `assembly`, and view type. Different view types accept
-different params — dotplot, for example, takes two assemblies.
+`loc`, `tracks`, `assembly`, and view type. `loc` is optional — omitting it
+shows the whole genome. Different view types accept different params — dotplot,
+for example, takes two assemblies.
+
+A top-level `sessionTracks` array can dynamically register tracks into the
+session before the views open, equivalent to combining `&sessionTracks=` with a
+simple URL:
+
+```json
+{
+  "sessionTracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "my_track",
+      "name": "My track",
+      "assemblyNames": ["hg38"],
+      "adapter": { "type": "FromConfigAdapter", "features": [] }
+    }
+  ],
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "hg38",
+      "tracks": ["my_track"]
+    }
+  ]
+}
+```
 
 You can also use `&sessionName=` with session specs to set a custom session
 name:

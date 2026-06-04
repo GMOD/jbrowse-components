@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
+import { execFileSync } from 'child_process'
 import fs from 'fs'
 import http from 'http'
+import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -335,69 +337,221 @@ async function captureUrl(
   await delay(spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
+const ANNOTATION_OVERLAY_ID = '__screenshot_annotation_overlay'
+
+// Remove any annotation overlay left over from a previous frame so staged
+// figures don't carry one stage's callouts into the next.
+async function clearAnnotations(page: Page) {
+  await page.evaluate(id => {
+    document.getElementById(id)?.remove()
+  }, ANNOTATION_OVERLAY_ID)
+}
+
 // Draw spec.annotations as a fixed SVG overlay covering the viewport so the
 // callouts composite into the screenshot, reproducing the red arrows / boxes /
 // text labels of hand-made teaching figures without an external image editor.
+// Anchored annotations resolve their geometry from a live DOM element's bounding
+// box at capture time, removing the need to hand-tune viewport coordinates.
 async function drawAnnotations(page: Page, annotations: Annotation[]) {
-  await page.evaluate(items => {
-    const NS = 'http://www.w3.org/2000/svg'
-    const svg = document.createElementNS(NS, 'svg')
-    svg.setAttribute(
-      'style',
-      'position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483647;pointer-events:none',
-    )
-    const defs = document.createElementNS(NS, 'defs')
-    const marker = document.createElementNS(NS, 'marker')
-    marker.setAttribute('id', 'arrowhead')
-    marker.setAttribute('markerWidth', '10')
-    marker.setAttribute('markerHeight', '10')
-    marker.setAttribute('refX', '8')
-    marker.setAttribute('refY', '3')
-    marker.setAttribute('orient', 'auto')
-    const arrowPath = document.createElementNS(NS, 'path')
-    arrowPath.setAttribute('d', 'M0,0 L8,3 L0,6 Z')
-    arrowPath.setAttribute('fill', '#e3242b')
-    marker.appendChild(arrowPath)
-    defs.appendChild(marker)
-    svg.appendChild(defs)
-    for (const a of items) {
-      const color = a.color ?? '#e3242b'
-      if (a.type === 'arrow' && a.from && a.to) {
-        const line = document.createElementNS(NS, 'line')
-        line.setAttribute('x1', String(a.from.x))
-        line.setAttribute('y1', String(a.from.y))
-        line.setAttribute('x2', String(a.to.x))
-        line.setAttribute('y2', String(a.to.y))
-        line.setAttribute('stroke', color)
-        line.setAttribute('stroke-width', '4')
-        line.setAttribute('marker-end', 'url(#arrowhead)')
-        // recolor the shared arrowhead to match the last arrow's stroke
-        arrowPath.setAttribute('fill', color)
-        svg.appendChild(line)
-      } else if (a.type === 'box') {
-        const rect = document.createElementNS(NS, 'rect')
-        rect.setAttribute('x', String(a.x ?? 0))
-        rect.setAttribute('y', String(a.y ?? 0))
-        rect.setAttribute('width', String(a.width ?? 0))
-        rect.setAttribute('height', String(a.height ?? 0))
-        rect.setAttribute('fill', 'none')
-        rect.setAttribute('stroke', color)
-        rect.setAttribute('stroke-width', '3')
-        svg.appendChild(rect)
-      } else if (a.type === 'text' && a.text) {
-        const text = document.createElementNS(NS, 'text')
-        text.setAttribute('x', String(a.x ?? 0))
-        text.setAttribute('y', String(a.y ?? 0))
-        text.setAttribute('fill', color)
-        text.setAttribute('font-family', 'system-ui, sans-serif')
-        text.setAttribute('font-size', String(a.fontSize ?? 18))
-        text.setAttribute('font-weight', '600')
-        text.textContent = a.text
-        svg.appendChild(text)
+  await clearAnnotations(page)
+  await page.evaluate(
+    (items, overlayId) => {
+      const NS = 'http://www.w3.org/2000/svg'
+      const svg = document.createElementNS(NS, 'svg')
+      svg.id = overlayId
+      svg.setAttribute(
+        'style',
+        'position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483647;pointer-events:none',
+      )
+
+      // Resolve an anchor to a live element: a CSS selector, or the
+      // smallest-area element whose visible text matches (so a callout can point
+      // at a menu item / button without a testid).
+      function resolveAnchor(anchor: { selector?: string; text?: string }) {
+        if (anchor.selector) {
+          return document.querySelector(anchor.selector)
+        }
+        if (anchor.text) {
+          const want = anchor.text.trim().toLowerCase()
+          let best: Element | undefined
+          let bestArea = Number.POSITIVE_INFINITY
+          for (const el of document.querySelectorAll('body *')) {
+            const txt = (el.textContent ?? '').trim().toLowerCase()
+            const matches =
+              txt === want || (el.childElementCount === 0 && txt.includes(want))
+            const rect = el.getBoundingClientRect()
+            const area = rect.width * rect.height
+            if (matches && rect.width > 0 && rect.height > 0 && area < bestArea) {
+              best = el
+              bestArea = area
+            }
+          }
+          return best ?? null
+        }
+        return null
+      }
+
+      // Apply anchoring: fill in x/y (element center) and, for box/ring shapes,
+      // width/height (element bounds + padding), then nudge by dx/dy.
+      const resolved = items.map(a => {
+        const dx = a.dx ?? 0
+        const dy = a.dy ?? 0
+        if (!a.anchor) {
+          return { ...a, x: (a.x ?? 0) + dx, y: (a.y ?? 0) + dy }
+        }
+        const el = resolveAnchor(a.anchor)
+        if (!el) {
+          return { ...a, x: (a.x ?? 0) + dx, y: (a.y ?? 0) + dy }
+        }
+        const r = el.getBoundingClientRect()
+        const pad = 6
+        // a numbered badge stays a fixed small disc; a hollow ring grows to wrap
+        // the anchored element
+        const ringRadius = Math.max(r.width, r.height) / 2 + pad
+        return {
+          ...a,
+          x: a.type === 'box' ? r.left - pad + dx : r.left + r.width / 2 + dx,
+          y: a.type === 'box' ? r.top - pad + dy : r.top + r.height / 2 + dy,
+          width: a.width ?? r.width + pad * 2,
+          height: a.height ?? r.height + pad * 2,
+          radius: a.radius ?? (a.text ? 16 : ringRadius),
+        }
+      })
+
+      const defs = document.createElementNS(NS, 'defs')
+      const marker = document.createElementNS(NS, 'marker')
+      marker.setAttribute('id', 'arrowhead')
+      marker.setAttribute('markerWidth', '10')
+      marker.setAttribute('markerHeight', '10')
+      marker.setAttribute('refX', '8')
+      marker.setAttribute('refY', '3')
+      marker.setAttribute('orient', 'auto')
+      const arrowPath = document.createElementNS(NS, 'path')
+      arrowPath.setAttribute('d', 'M0,0 L8,3 L0,6 Z')
+      arrowPath.setAttribute('fill', '#e3242b')
+      marker.appendChild(arrowPath)
+      defs.appendChild(marker)
+      svg.appendChild(defs)
+      for (const a of resolved) {
+        const color = a.color ?? '#e3242b'
+        const cx = a.x ?? 0
+        const cy = a.y ?? 0
+        if (a.type === 'arrow' && a.from) {
+          // anchored arrow: head points at the resolved element center
+          const headX = a.anchor ? cx : (a.to?.x ?? 0)
+          const headY = a.anchor ? cy : (a.to?.y ?? 0)
+          const line = document.createElementNS(NS, 'line')
+          line.setAttribute('x1', String(a.from.x))
+          line.setAttribute('y1', String(a.from.y))
+          line.setAttribute('x2', String(headX))
+          line.setAttribute('y2', String(headY))
+          line.setAttribute('stroke', color)
+          line.setAttribute('stroke-width', '4')
+          line.setAttribute('marker-end', 'url(#arrowhead)')
+          // recolor the shared arrowhead to match the last arrow's stroke
+          arrowPath.setAttribute('fill', color)
+          svg.appendChild(line)
+        } else if (a.type === 'box') {
+          const rect = document.createElementNS(NS, 'rect')
+          rect.setAttribute('x', String(cx))
+          rect.setAttribute('y', String(cy))
+          rect.setAttribute('width', String(a.width ?? 0))
+          rect.setAttribute('height', String(a.height ?? 0))
+          rect.setAttribute('rx', '4')
+          rect.setAttribute('fill', 'none')
+          rect.setAttribute('stroke', color)
+          rect.setAttribute('stroke-width', '3')
+          svg.appendChild(rect)
+        } else if (a.type === 'circle') {
+          const radius = a.radius ?? 16
+          const circle = document.createElementNS(NS, 'circle')
+          circle.setAttribute('cx', String(cx))
+          circle.setAttribute('cy', String(cy))
+          circle.setAttribute('r', String(radius))
+          circle.setAttribute('stroke', color)
+          circle.setAttribute('stroke-width', '3')
+          // filled badge when it carries a label, hollow ring otherwise
+          circle.setAttribute('fill', a.text ? color : 'none')
+          svg.appendChild(circle)
+          if (a.text) {
+            const text = document.createElementNS(NS, 'text')
+            text.setAttribute('x', String(cx))
+            text.setAttribute('y', String(cy))
+            text.setAttribute('fill', a.textColor ?? '#fff')
+            text.setAttribute('text-anchor', 'middle')
+            text.setAttribute('dominant-baseline', 'central')
+            text.setAttribute('font-family', 'system-ui, sans-serif')
+            text.setAttribute('font-size', String(a.fontSize ?? 18))
+            text.setAttribute('font-weight', '700')
+            text.textContent = a.text
+            svg.appendChild(text)
+          }
+        } else if (a.type === 'text' && a.text) {
+          const text = document.createElementNS(NS, 'text')
+          text.setAttribute('x', String(cx))
+          text.setAttribute('y', String(cy))
+          text.setAttribute('fill', a.textColor ?? color)
+          text.setAttribute('font-family', 'system-ui, sans-serif')
+          text.setAttribute('font-size', String(a.fontSize ?? 18))
+          text.setAttribute('font-weight', '600')
+          text.textContent = a.text
+          svg.appendChild(text)
+        }
+      }
+      document.body.appendChild(svg)
+    },
+    annotations,
+    ANNOTATION_OVERLAY_ID,
+  )
+}
+
+async function hideLingeringTooltip(page: Page) {
+  // BaseTooltip renders into a portal with inline z-index:100000 (MUI menus
+  // use 1300), so this targets the lingering hover tooltip without touching
+  // the context menu we want to keep.
+  await page.evaluate(() => {
+    for (const el of document.querySelectorAll<HTMLElement>('div')) {
+      if (el.style.zIndex === '100000') {
+        el.style.display = 'none'
       }
     }
-    document.body.appendChild(svg)
-  }, annotations)
+  })
+}
+
+// Apply the shared pre-shot steps (hide stray tooltip, draw/clear callouts,
+// flush pending WebGL frames) then screenshot straight to `file`.
+async function shoot(
+  page: Page,
+  spec: ScreenshotSpec,
+  annotations: Annotation[] | undefined,
+  file: string,
+) {
+  if (spec.hideTooltip) {
+    await hideLingeringTooltip(page)
+  }
+  if (annotations && annotations.length > 0) {
+    await drawAnnotations(page, annotations)
+  } else {
+    await clearAnnotations(page)
+  }
+  await page.evaluate(
+    () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())),
+  )
+  const clip = spec.crop
+  await page.screenshot(clip ? { path: file, clip } : { path: file })
+}
+
+async function runActions(
+  page: Page,
+  name: string,
+  actions: ScreenshotAction[] | undefined,
+) {
+  for (const action of actions ?? []) {
+    await runAction(page, action).catch(async e => {
+      await debugDump(page, name)
+      throw e
+    })
+  }
 }
 
 async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
@@ -409,55 +563,34 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
     await captureLGV(page, spec, port)
   }
 
-  for (const action of spec.actions ?? []) {
-    await runAction(page, action).catch(async e => {
-      await debugDump(page, spec.name)
-      throw e
-    })
-  }
-
-  const screenshotOptions =
-    spec.crop !== undefined
-      ? {
-          clip: {
-            x: spec.crop.x,
-            y: spec.crop.y,
-            width: spec.crop.width,
-            height: spec.crop.height,
-          },
-        }
-      : {}
-
+  await runActions(page, spec.name, spec.actions)
   await assertViewsRendered(page, spec.name)
 
-  if (spec.hideTooltip) {
-    // BaseTooltip renders into a portal with inline z-index:100000 (MUI menus
-    // use 1300), so this targets the lingering hover tooltip without touching
-    // the context menu we want to keep.
-    await page.evaluate(() => {
-      for (const el of document.querySelectorAll<HTMLElement>('div')) {
-        if (el.style.zIndex === '100000') {
-          el.style.display = 'none'
-        }
-      }
-    })
-  }
-
-  if (spec.annotations && spec.annotations.length > 0) {
-    await drawAnnotations(page, spec.annotations)
-  }
-
-  // Flush any pending WebGL frames to the compositor before capturing
-  await page.evaluate(
-    () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())),
-  )
-  const png = await page.screenshot(screenshotOptions)
   const outputPath = path.join(outDir, `${spec.name}.png`)
-  const outputDir = path.dirname(outputPath)
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true })
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+
+  if (spec.stages && spec.stages.length > 0) {
+    // capture each stage to a temp file, then stack them vertically with
+    // ImageMagick (`convert f0 f1 -append`), the same composition the hand-made
+    // two-stage teaching figures used
+    const stageFiles = spec.stages.map((_, i) =>
+      path.join(os.tmpdir(), `jb-shot-${process.pid}-${i}.png`),
+    )
+    for (const [i, stage] of spec.stages.entries()) {
+      if (stage.closeMenusFirst) {
+        await page.keyboard.press('Escape')
+        await delay(300)
+      }
+      await runActions(page, spec.name, stage.actions)
+      await shoot(page, spec, stage.annotations, stageFiles[i]!)
+    }
+    execFileSync('convert', [...stageFiles, '-append', outputPath])
+    for (const f of stageFiles) {
+      fs.rmSync(f, { force: true })
+    }
+  } else {
+    await shoot(page, spec, spec.annotations, outputPath)
   }
-  fs.writeFileSync(outputPath, png)
   console.log(`  ✓ ${spec.name}.png`)
 }
 

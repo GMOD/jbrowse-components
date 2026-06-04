@@ -16,7 +16,7 @@
     "@astrojs/react": "^5.0.7",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "astro": "^6.4.3",
+    "astro": "^6.4.4",
     "astro-icon": "^1.1.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
