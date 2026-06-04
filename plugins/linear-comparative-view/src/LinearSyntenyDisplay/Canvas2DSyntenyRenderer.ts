@@ -61,10 +61,12 @@ function drawInstances(
       const g = (packed >> 8) & 0xff
       const b = (packed >> 16) & 0xff
       if (isCigar) {
+        // Apply 0.7 darkening inside the blend — same order as origin/main
+        // (darken first, then blend with white) so hover color matches exactly.
         const blendAlpha = Math.min(a * alpha * 5, 0.35)
-        const pr = (r * blendAlpha + 255 * (1 - blendAlpha)) | 0
-        const pg = (g * blendAlpha + 255 * (1 - blendAlpha)) | 0
-        const pb = (b * blendAlpha + 255 * (1 - blendAlpha)) | 0
+        const pr = (r * 0.7 * blendAlpha + 255 * (1 - blendAlpha)) | 0
+        const pg = (g * 0.7 * blendAlpha + 255 * (1 - blendAlpha)) | 0
+        const pb = (b * 0.7 * blendAlpha + 255 * (1 - blendAlpha)) | 0
         fillStyle = `rgba(${pr},${pg},${pb},${a})`
       } else {
         const dr = (r * 0.7) | 0
@@ -118,7 +120,7 @@ function drawInstances(
       ctx.fillStyle = fillStyle
       buildFeaturePath(ctx, c, height, drawCurves)
       ctx.fill()
-      if (isClicked) {
+      if (isClicked && !isCigar) {
         ctx.strokeStyle = 'rgba(0,0,0,0.4)'
         ctx.lineWidth = 1
         ctx.stroke()

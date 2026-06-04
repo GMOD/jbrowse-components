@@ -160,13 +160,16 @@ public float4 shadeFill(float4 color, float featureId, float coverage,
   bool isHovered = u.hoveredFeatureId > 0.0
     && abs(featureId - u.hoveredFeatureId) < 0.5;
   if (isCigar > 0.5) {
-    // Pre-blend with white using the same alpha that the original hover logic
-    // used. Normal: u.alpha; hover: min(u.alpha*5, 0.35) (lower blend = more
-    // white = lighter, matching original hover appearance).
+    // Pre-blend with white so the indel fades against white regardless of what
+    // the base block drew. blendAlpha mirrors the original alpha formula so
+    // hover (min(u.alpha*5, 0.35)) and normal (u.alpha) match origin/main.
+    // Apply 0.7 darkening inside the blend — same order as the original formula
+    // (darken first, then blend with white) so the hover color is identical.
     float blendAlpha = isHovered
       ? min(color.a * u.alpha * 5.0, 0.35)
       : color.a * u.alpha;
-    rgb = rgb * blendAlpha + float3(1.0, 1.0, 1.0) * (1.0 - blendAlpha);
+    float darken = isHovered ? 0.7 : 1.0;
+    rgb = rgb * darken * blendAlpha + float3(1.0, 1.0, 1.0) * (1.0 - blendAlpha);
     return float4(rgb, color.a * coverage);
   }
   float baseAlpha = color.a * u.alpha;
