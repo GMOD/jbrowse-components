@@ -24,6 +24,7 @@ const BadgeDropdownTracks = observer(function BadgeDropdownTracks({
   emptyLabel,
   onClear,
   onOpen,
+  'data-testid': testId,
 }: {
   model: HierarchicalTrackSelectorModel
   tracks: AnyConfigurationModel[]
@@ -34,6 +35,7 @@ const BadgeDropdownTracks = observer(function BadgeDropdownTracks({
   emptyLabel: string
   onClear: () => void
   onOpen: () => void
+  'data-testid'?: string
 }) {
   const { classes } = useSmallBadgeStyles()
   return model.view ? (
@@ -43,6 +45,7 @@ const BadgeDropdownTracks = observer(function BadgeDropdownTracks({
       }}
       tracks={tracks}
       model={model}
+      data-testid={testId}
       extraMenuItems={getDropdownMenuItems({
         hasTracks: tracks.length > 0,
         clearLabel,

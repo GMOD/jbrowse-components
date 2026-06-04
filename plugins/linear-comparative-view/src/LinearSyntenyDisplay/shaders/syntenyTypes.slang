@@ -150,11 +150,14 @@ public float fillCoverage(float2 localPos, float xL, float xR,
 // premultiplied by coverage.
 // SYNC: 0.7 darkening + 5x alpha boost capped at 0.35 must match
 // Canvas2DSyntenyRenderer.ts's hover branch.
-public float4 shadeFill(float4 color, float featureId, float coverage, Uniforms u) {
+// isCigar: 1.0 for indel quads drawn over a visible base block — skip
+// u.alpha so they fully occlude the base block instead of double-fading.
+public float4 shadeFill(float4 color, float featureId, float coverage,
+                        float isCigar, Uniforms u) {
   float3 rgb = color.rgb;
   bool isHovered = u.hoveredFeatureId > 0.0
     && abs(featureId - u.hoveredFeatureId) < 0.5;
-  float baseAlpha = color.a * u.alpha;
+  float baseAlpha = isCigar > 0.5 ? color.a : color.a * u.alpha;
   rgb *= isHovered ? 0.7 : 1.0;
   float finalAlpha = isHovered ? min(baseAlpha * 5.0, 0.35) : baseAlpha;
   return float4(rgb, finalAlpha * coverage);

@@ -18,11 +18,13 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
   extraMenuItems,
   children,
   onClick,
+  'data-testid': testId,
 }: {
   model: HierarchicalTrackSelectorModel
   tracks: AnyConfigurationModel[]
   extraMenuItems: MenuItem[]
   onClick?: () => void
+  'data-testid'?: string
   children: React.ReactElement
 }) {
   const { view } = model
@@ -32,6 +34,7 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
     <CascadingMenuButton
       closeAfterItemClick={false}
       onClick={onClick}
+      data-testid={testId}
       menuItems={[
         ...tracks.map(t => ({
           type: 'checkbox' as const,

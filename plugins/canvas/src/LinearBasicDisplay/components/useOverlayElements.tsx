@@ -7,10 +7,10 @@ import { useTheme } from '@mui/material'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
+
 import { forEachRenderedPeptide } from './peptidePositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
-
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
@@ -328,7 +328,8 @@ export function useHighlightOverlays(
       style: React.CSSProperties,
       key: string,
       extraWidth = 0,
-      padding = 0,
+      xPadding = 0,
+      yPadding = 0,
     ) => {
       for (const vr of visibleRegions) {
         if (vr.refName !== refName) {
@@ -341,10 +342,10 @@ export function useHighlightOverlays(
               key={`${key}-${vr.displayedRegionIndex}`}
               style={{
                 position: 'absolute',
-                left: rect.leftPx - padding,
-                top: rect.topPx - padding,
-                width: rect.width + extraWidth + padding * 2,
-                height: rect.heightPx + padding * 2,
+                left: rect.leftPx - xPadding,
+                top: rect.topPx - yPadding,
+                width: rect.width + extraWidth + xPadding * 2,
+                height: rect.heightPx + yPadding * 2,
                 pointerEvents: 'none',
                 ...style,
               }}
@@ -388,6 +389,7 @@ export function useHighlightOverlays(
           'hover',
           extraWidth,
           HIT_PAD_PX,
+          0,
         )
       }
     }
@@ -404,6 +406,7 @@ export function useHighlightOverlays(
           },
           'selected',
           computeExtraWidth(entry),
+          2,
           2,
         )
       }

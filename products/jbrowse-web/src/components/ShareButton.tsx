@@ -37,6 +37,7 @@ const ShareButton = observer(function ShareButton(props: {
   return (
     <div className={classes.shareDiv}>
       <Button
+        data-testid="share-button"
         size="small"
         color="inherit"
         startIcon={<ShareIcon />}

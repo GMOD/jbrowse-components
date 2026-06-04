@@ -1314,8 +1314,13 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'volvox',
-          loc: 'ctgA:1050-9000',
-          tracks: ['gff3tabix_genes'],
+          loc: 'ctgA:17200-23200',
+          tracks: [
+            {
+              trackId: 'gff3tabix_genes',
+              displaySnapshot: { height: 300 },
+            },
+          ],
         },
       ],
     }),
@@ -1323,15 +1328,18 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     viewportHeight: 900,
     actions: [
-      { type: 'click', from: { x: 400, y: 215 } },
+      { type: 'click', from: { x: 430, y: 314 } },
       { type: 'waitForText', text: 'Show feature sequence' },
+      { type: 'delay', ms: 1000 },
       { type: 'click', text: 'Show feature sequence' },
-      { type: 'click', selector: '.MuiSelect-select' },
+      { type: 'delay', ms: 2000 },
+      { type: 'click', selector: '[aria-label="Sequence type"]' },
+      { type: 'delay', ms: 1000 },
       {
         type: 'click',
         text: 'Genomic w/ full introns +/- 100bp up+down stream',
       },
-      { type: 'delay', ms: 2500 },
+      { type: 'delay', ms: 3000 },
     ],
   },
   {
@@ -1348,6 +1356,1130 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'NC_003070',
     readyTimeout: 60000,
     settleMs: 14000,
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Basic UI guides
+  // ────────────────────────────────────────────────────────────────────────
+
+  // LGV usage guide: annotated with numbered callouts matching the caption
+  // (1) Add menu, (2) pan buttons, (3) zoom slider, (4) drag handle.
+  {
+    mode: 'url',
+    name: 'lgv_usage_guide',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['volvox_cram_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 5000,
+    annotations: [
+      { type: 'text', x: 10, y: 45, text: '1', color: '#e3242b', fontSize: 18 },
+      { type: 'text', x: 340, y: 45, text: '2', color: '#e3242b', fontSize: 18 },
+      { type: 'text', x: 560, y: 45, text: '3', color: '#e3242b', fontSize: 18 },
+      { type: 'text', x: 10, y: 220, text: '4', color: '#e3242b', fontSize: 18 },
+    ],
+  },
+
+  // Add track: "File > Open track..." opens the AddTrackWidget drawer.
+  {
+    mode: 'url',
+    name: 'add_track_form',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'File' },
+      { type: 'waitForText', text: 'Open track...' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open track...' },
+      { type: 'waitForText', text: 'Type of add track workflow' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Track selector with the FAB (+) button visible, showing the add-track
+  // popup menu: "Add track" / "Add connection".
+  {
+    mode: 'url',
+    name: 'add_track_tracklist',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      // open the track selector
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open track selector' },
+      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      { type: 'delay', ms: 500 },
+      // open the FAB popup menu
+      { type: 'click', selector: '[data-testid="hierarchical-add-track-fab"]' },
+      { type: 'waitForText', text: 'Add track' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Track menu opened on a VCF track, showing available actions.
+  {
+    mode: 'url',
+    name: 'track_menu',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['volvox_sv_test'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'About track' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Track label positioning submenu in the view menu.
+  {
+    mode: 'url',
+    name: 'tracklabels',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes', 'volvox_sv_test'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Track labels' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Track labels' },
+      { type: 'waitForText', text: 'Overlapping' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Track settings: track menu showing Settings and Copy track options,
+  // illustrating that a track must be copied before its settings can be edited.
+  {
+    mode: 'url',
+    name: 'edit_track_settings',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Settings' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Drawer widget position menu open (showing left/right options), triggered
+  // by clicking the MoreVert icon in the drawer header.
+  {
+    mode: 'url',
+    name: 'drawer_widget_toggle',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      // open the track selector to get a widget in the drawer
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open track selector' },
+      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      { type: 'delay', ms: 500 },
+      // click the MoreVert to open the position menu
+      { type: 'click', selector: '[data-testid="drawer-position-button"]' },
+      { type: 'waitForText', text: 'left' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Share session dialog, opened from the Share button in the app header.
+  {
+    mode: 'url',
+    name: 'share_button',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['volvox_cram_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="share-button"]' },
+      { type: 'waitForText', text: 'Shareable link' },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Bookmark widget screenshots
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Bookmark widget opened from the view's Bookmarks menu.
+  {
+    mode: 'url',
+    name: 'bookmark_widget_open',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Bookmarks/highlights' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Bookmarks/highlights' },
+      { type: 'waitForText', text: 'Open bookmark widget' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open bookmark widget' },
+      { type: 'waitForText', text: 'No bookmarks' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Rubberband context menu with "Bookmark region" option visible.
+  {
+    mode: 'url',
+    name: 'bookmark_widget_create',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      { type: 'waitForText', text: 'Bookmark region' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Bookmark widget with a bookmark created (checkbox visible).
+  {
+    mode: 'url',
+    name: 'bookmark_widget_select',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      // create a bookmark via rubberband
+      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      { type: 'waitForText', text: 'Bookmark region' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Bookmark region' },
+      { type: 'delay', ms: 500 },
+      // open the bookmark widget
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Bookmarks/highlights' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Bookmarks/highlights' },
+      { type: 'waitForText', text: 'Open bookmark widget' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open bookmark widget' },
+      { type: 'waitForText', text: 'ctgA' },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // Bookmark widget with a bookmark label showing a highlight on the LGV.
+  {
+    mode: 'url',
+    name: 'bookmark_widget_edit_label',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    viewportHeight: 900,
+    actions: [
+      // create a bookmark via rubberband
+      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      { type: 'waitForText', text: 'Bookmark region' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Bookmark region' },
+      { type: 'delay', ms: 500 },
+      // open the bookmark widget
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Bookmarks/highlights' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Bookmarks/highlights' },
+      { type: 'waitForText', text: 'Open bookmark widget' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open bookmark widget' },
+      { type: 'waitForText', text: 'ctgA' },
+      { type: 'delay', ms: 1000 },
+      // type a label into the label cell
+      { type: 'type', selector: '[placeholder="Add label"]', value: 'my region', clear: true },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // Highlight settings dialog (edit colors for bookmarks).
+  {
+    mode: 'url',
+    name: 'bookmark_widget_edit_colors',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      // create a bookmark
+      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      { type: 'waitForText', text: 'Bookmark region' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Bookmark region' },
+      { type: 'delay', ms: 500 },
+      // open the bookmark widget
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Bookmarks/highlights' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Bookmarks/highlights' },
+      { type: 'waitForText', text: 'Open bookmark widget' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open bookmark widget' },
+      { type: 'waitForText', text: 'ctgA' },
+      { type: 'delay', ms: 1000 },
+      // open the menu > Settings
+      { type: 'click', selector: '[data-testid="grid_bookmark_menu"]' },
+      { type: 'waitForText', text: 'Settings' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Settings' },
+      { type: 'waitForText', text: 'Highlight all' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Export bookmarks dialog.
+  {
+    mode: 'url',
+    name: 'bookmark_widget_export_dialog',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      // create a bookmark
+      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      { type: 'waitForText', text: 'Bookmark region' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Bookmark region' },
+      { type: 'delay', ms: 500 },
+      // open bookmark widget
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Bookmarks/highlights' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Bookmarks/highlights' },
+      { type: 'waitForText', text: 'Open bookmark widget' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open bookmark widget' },
+      { type: 'waitForText', text: 'ctgA' },
+      { type: 'delay', ms: 1000 },
+      // open menu > Export
+      { type: 'click', selector: '[data-testid="grid_bookmark_menu"]' },
+      { type: 'waitForText', text: 'Export' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Export' },
+      { type: 'waitForText', text: 'Export bookmarks' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Import bookmarks dialog.
+  {
+    mode: 'url',
+    name: 'bookmark_widget_import_dialog',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      // open bookmark widget (empty state, no need to create bookmarks first)
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Bookmarks/highlights' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Bookmarks/highlights' },
+      { type: 'waitForText', text: 'Open bookmark widget' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open bookmark widget' },
+      { type: 'waitForText', text: 'No bookmarks' },
+      { type: 'delay', ms: 500 },
+      // open menu > Import
+      { type: 'click', selector: '[data-testid="grid_bookmark_menu"]' },
+      { type: 'waitForText', text: 'Import' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Import' },
+      { type: 'waitForText', text: 'Import bookmarks' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Share bookmarks dialog (select a bookmark, then share).
+  {
+    mode: 'url',
+    name: 'bookmark_widget_share_dialog',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      // create a bookmark
+      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      { type: 'waitForText', text: 'Bookmark region' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Bookmark region' },
+      { type: 'delay', ms: 500 },
+      // open bookmark widget
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Bookmarks/highlights' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Bookmarks/highlights' },
+      { type: 'waitForText', text: 'Open bookmark widget' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open bookmark widget' },
+      { type: 'waitForText', text: 'ctgA' },
+      { type: 'delay', ms: 1000 },
+      // select the checkbox (first checkbox in the grid)
+      { type: 'click', selector: '[aria-label="Select all rows"]' },
+      { type: 'delay', ms: 500 },
+      // open menu > Share
+      { type: 'click', selector: '[data-testid="grid_bookmark_menu"]' },
+      // wait for menu and try to click Share if present, otherwise it may
+      // appear inline once rows are selected
+      { type: 'waitForText', text: 'Share' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Share' },
+      { type: 'waitForText', text: 'Shareable' },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Alignments track interactions
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Compact pileup display mode selected from the track menu.
+  {
+    mode: 'url',
+    name: 'alignments/compact',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1000-8000',
+          tracks: ['volvox_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 5000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Display type' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Display type' },
+      { type: 'waitForText', text: 'Compact pileup' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Compact pileup' },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
+
+  // Read connections (arc display) toggle in the track menu.
+  {
+    mode: 'url',
+    name: 'alignments/select_arc_display',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:2400-2800',
+          tracks: ['volvox_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 5000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Read connections' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Read connections' },
+      { type: 'waitForText', text: 'Arc display' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Track menu showing the Color scheme > Modifications option for
+  // a BAM file with the MM tag.
+  {
+    mode: 'url',
+    name: 'alignments/modifications1',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-3000',
+          tracks: [
+            {
+              trackId: 'MM-chebi-volvox-bam',
+              type: 'AlignmentsTrack',
+              name: 'MM-chebi modifications',
+              assemblyNames: ['volvox'],
+              adapter: {
+                type: 'BamAdapter',
+                bamLocation: {
+                  uri: 'test_data/volvox/MM-chebi-volvox.bam',
+                  locationType: 'UriLocation',
+                },
+                index: {
+                  location: {
+                    uri: 'test_data/volvox/MM-chebi-volvox.bam.bai',
+                    locationType: 'UriLocation',
+                  },
+                  indexType: 'BAI',
+                },
+              },
+            },
+          ],
+        },
+      ],
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'MM-chebi-volvox-bam',
+          name: 'MM-chebi modifications',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'test_data/volvox/MM-chebi-volvox.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'test_data/volvox/MM-chebi-volvox.bam.bai',
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 5000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Color scheme' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Color scheme' },
+      { type: 'waitForText', text: 'Modifications' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Track selector interactions
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Track selector hamburger menu showing settings options.
+  {
+    mode: 'url',
+    name: 'hierarchical/hierarchical_user_menu-fs8',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      // open the track selector
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open track selector' },
+      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      { type: 'delay', ms: 500 },
+      // open the hamburger menu
+      { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
+      { type: 'waitForText', text: 'Open faceted track selector' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Recently used tracks dropdown in the track selector (clock icon).
+  // Load a track and re-open the selector to have recent tracks.
+  {
+    mode: 'url',
+    name: 'recent_tracks',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes', 'volvox_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      // open track selector so recently-used counter populates
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open track selector' },
+      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      { type: 'delay', ms: 500 },
+      // click the recently-used button
+      { type: 'click', selector: '[data-testid="recently-used-tracks-button"]' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Favorite tracks dropdown in the track selector (star icon). Marking a
+  // track as a favorite from its track menu before opening the selector.
+  {
+    mode: 'url',
+    name: 'favorite_tracks',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['gff3tabix_genes'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      // add the track to favorites from the track menu
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Add to favorites' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Add to favorites' },
+      { type: 'delay', ms: 500 },
+      // open track selector
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open track selector' },
+      { type: 'waitForSelector', selector: '[data-testid="hierarchical_track_selector"]' },
+      { type: 'delay', ms: 500 },
+      // click the favorite tracks button
+      { type: 'click', selector: '[data-testid="favorite-tracks-button"]' },
+      { type: 'waitForText', text: 'GFF3Tabix genes' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Multi-quantitative (MultiWig) screenshots
+  // ────────────────────────────────────────────────────────────────────────
+
+  // MultiWig track menu showing the renderer type submenu.
+  {
+    mode: 'url',
+    name: 'multiwig/multi_renderer_types',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox_microarray_multi'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 5000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Renderer type' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Renderer type' },
+      { type: 'waitForText', text: 'Multi-row XY plot' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // MultiWig color/arrangement editor dialog.
+  {
+    mode: 'url',
+    name: 'multiwig/multi_colorselect',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox_microarray_multi'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 5000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Edit colors/arrangement...' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Edit colors/arrangement...' },
+      { type: 'waitForText', text: 'Edit subtrack colors' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // Add track dialog showing the multi-wiggle workflow selector.
+  {
+    mode: 'url',
+    name: 'multiwig/addtrack',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'File' },
+      { type: 'waitForText', text: 'Open track...' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open track...' },
+      { type: 'waitForText', text: 'Type of add track workflow' },
+      { type: 'delay', ms: 500 },
+      // open the workflow selector dropdown
+      { type: 'click', selector: '[data-testid="widget-drawer-selects"] > div' },
+      { type: 'waitForText', text: 'Multi-wiggle track' },
+      { type: 'delay', ms: 800 },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Plugin store
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Plugin store dialog opened from the Tools menu.
+  {
+    mode: 'url',
+    name: 'plugin_store',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'Tools' },
+      { type: 'waitForText', text: 'Plugin store' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Plugin store' },
+      { type: 'waitForText', text: 'Installed plugins' },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Dotplot / synteny interactions
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Add menu showing the Dotplot view option.
+  {
+    mode: 'url',
+    name: 'dotplot_add',
+    url: `?config=${VOLVOX}&sessionName=Screenshot`,
+    readyText: 'ctgA',
+    settleMs: 2500,
+    actions: [
+      { type: 'click', text: 'Add' },
+      { type: 'waitForText', text: 'Dotplot view' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Dotplot view hamburger menu showing view-specific options.
+  {
+    mode: 'url',
+    name: 'dotplot_menu',
+    url: `?config=${DOTPLOT_CONFIG}&sessionName=Screenshot`,
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 30000,
+    settleMs: 3000,
+    actions: [
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Dotplot drag-selection context menu showing "Open linear synteny view".
+  {
+    mode: 'url',
+    name: 'synteny_from_dotplot_view',
+    url: `?config=${SYNTENY_CONFIG}&sessionName=Screenshot`,
+    readyText: 'Vitis',
+    readyTimeout: 30000,
+    settleMs: 5000,
+    actions: [
+      // rubberband-drag on the dotplot canvas area (approximate center coords)
+      { type: 'drag', from: { x: 400, y: 250 }, to: { x: 700, y: 450 } },
+      { type: 'waitForText', text: 'Open linear synteny view' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // RNA-seq tutorial screenshots (use hg19 ACTB region from DEMO_CONFIG)
+  // ────────────────────────────────────────────────────────────────────────
+
+  {
+    mode: 'url',
+    name: 'rnaseq/overview',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr7:5,562,000-5,575,000',
+          tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
+        },
+      ],
+    }),
+    readyText: 'chr7',
+    readyTimeout: 60000,
+    settleMs: 15000,
+  },
+
+  {
+    mode: 'url',
+    name: 'rnaseq/reads_zoomed',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr7:5,568,000-5,569,000',
+          tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
+        },
+      ],
+    }),
+    readyText: 'chr7',
+    readyTimeout: 60000,
+    settleMs: 15000,
+  },
+
+  {
+    mode: 'url',
+    name: 'rnaseq/compact_stacked',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr7:5,566,500-5,570,500',
+          tracks: [
+            'ncbi_gff_hg19',
+            {
+              trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+              displaySnapshot: { compactness: 'compact' },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr7',
+    readyTimeout: 60000,
+    settleMs: 15000,
+  },
+
+  {
+    mode: 'url',
+    name: 'rnaseq/splice_arcs',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr7:5,567,500-5,570,000',
+          tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
+        },
+      ],
+    }),
+    readyText: 'chr7',
+    readyTimeout: 60000,
+    settleMs: 15000,
+  },
+
+  // Long-read IsoSeq RNA-seq at ACTB.
+  {
+    mode: 'url',
+    name: 'rnaseq/longread_isoseq',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr7:5,566,000-5,571,000',
+          tracks: ['ncbi_gff_hg19', 'hg_isoforms.fasta_bam'],
+        },
+      ],
+    }),
+    readyText: 'chr7',
+    readyTimeout: 60000,
+    settleMs: 15000,
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Phased trio analysis tutorial screenshots
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Initial VCF load with default (LinearVariantDisplay) display.
+  {
+    mode: 'url',
+    name: 'trio-basic',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr1:1-500,000',
+          tracks: ['HG02024_VN049_KHVTrio.chr1.vcf'],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+
+  // Multi-sample variant display (matrix view).
+  {
+    mode: 'url',
+    name: 'trio-matrix',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr1:1-500,000',
+          tracks: [
+            {
+              trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantDisplay',
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+
+  // Phased matrix with the "Rendering mode" menu visible.
+  {
+    mode: 'url',
+    name: 'trio-matrix-phased',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr1:1-500,000',
+          tracks: [
+            {
+              trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantDisplay',
+                renderingMode: 'phased',
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 60000,
+    settleMs: 12000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Rendering mode' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Rendering mode' },
+      { type: 'waitForText', text: 'Phased' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Phased matrix clean (no menu overlay).
+  {
+    mode: 'url',
+    name: 'trio-matrix-phased-clean',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr1:1-500,000',
+          tracks: [
+            {
+              trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantDisplay',
+                renderingMode: 'phased',
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 60000,
+    settleMs: 12000,
   },
 ]
 

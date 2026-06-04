@@ -18,6 +18,7 @@ const DrawerControls = observer(function DrawerControls({
   return (
     <>
       <IconButton
+        data-testid="drawer-position-button"
         color="inherit"
         onClick={event => {
           setAnchorEl(event.currentTarget)

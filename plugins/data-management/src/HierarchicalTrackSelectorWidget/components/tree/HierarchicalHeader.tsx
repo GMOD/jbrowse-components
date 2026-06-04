@@ -43,6 +43,7 @@ const HierarchicalTrackSelectorHeader = observer(
           }}
         />
         <BadgeDropdownTracks
+          data-testid="recently-used-tracks-button"
           model={model}
           tracks={model.recentlyUsedTracks}
           counter={model.recentlyUsedCounter}
@@ -58,6 +59,7 @@ const HierarchicalTrackSelectorHeader = observer(
           }}
         />
         <BadgeDropdownTracks
+          data-testid="favorite-tracks-button"
           model={model}
           tracks={model.favoriteTracks}
           counter={model.favoritesCounter}

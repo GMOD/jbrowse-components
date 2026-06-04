@@ -41,6 +41,7 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
         onChange={event => {
           setMode(event.target.value)
         }}
+        aria-label="Sequence type"
       >
         {[
           ...(hasCDS

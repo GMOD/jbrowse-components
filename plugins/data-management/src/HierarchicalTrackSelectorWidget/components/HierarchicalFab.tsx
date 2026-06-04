@@ -38,6 +38,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
   return hasAddTrack || hasConnections ? (
     <>
       <Fab
+        data-testid="hierarchical-add-track-fab"
         color="secondary"
         className={classes.fab}
         onClick={event => {
