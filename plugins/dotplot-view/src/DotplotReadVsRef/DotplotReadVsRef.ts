@@ -1,4 +1,7 @@
-import { buildReadVsRefFeatures } from '@jbrowse/alignments-core'
+import {
+  buildReadVsRefFeatures,
+  buildReadVsRefTemporaryAssembly,
+} from '@jbrowse/alignments-core'
 import { getConf } from '@jbrowse/core/configuration'
 import { gatherOverlaps, getSession, sum, truncateMiddle } from '@jbrowse/core/util'
 
@@ -22,42 +25,34 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
     // The synthetic read assembly must be registered for the DotplotView to
     // initialize (assembliesInitialized gates on every assemblyName resolving);
     // it is torn down by DotplotView.beforeDestroy via removeTemporaryAssembly.
-    session.addTemporaryAssembly?.({
-      name: readAssembly,
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        name: 'Read sequence',
+    session.addTemporaryAssembly?.(
+      buildReadVsRefTemporaryAssembly({
+        readName,
+        readAssembly,
+        totalLength,
+        seq,
         trackId: `${readName}_${stamp}`,
-        assemblyNames: [readAssembly],
-        adapter: {
-          type: 'FromConfigSequenceAdapter',
-          noAssemblyManager: true,
-          features: [
-            {
-              start: 0,
-              end: totalLength,
-              seq: seq ?? '',
-              refName: readName,
-              uniqueId: `${readName}_${stamp}`,
-            },
-          ],
-        },
-      },
-    })
+        uniqueId: `${readName}_${stamp}`,
+      }),
+    )
+
+    // Size hview's bpPerPx from the regions it actually draws, so overlap
+    // merging in gatherOverlaps is reflected exactly.
+    const hviewRegions = gatherOverlaps(
+      features.map(f => ({
+        start: f.start,
+        end: f.end,
+        refName: f.refName,
+        assemblyName: trackAssembly,
+      })),
+    )
 
     session.addView('DotplotView', {
       type: 'DotplotView',
       hview: {
         offsetPx: 0,
-        bpPerPx: sum(features.map(f => f.end - f.start)) / 800,
-        displayedRegions: gatherOverlaps(
-          features.map(f => ({
-            start: f.start,
-            end: f.end,
-            refName: f.refName,
-            assemblyName: trackAssembly,
-          })),
-        ),
+        bpPerPx: sum(hviewRegions.map(r => r.end - r.start)) / 800,
+        displayedRegions: hviewRegions,
       },
       vview: {
         offsetPx: 0,

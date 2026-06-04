@@ -1,29 +1,14 @@
-import { buildReadVsRefFeatures } from '@jbrowse/alignments-core'
+import {
+  buildReadVsRefFeatures,
+  buildReadVsRefTemporaryAssembly,
+} from '@jbrowse/alignments-core'
 import { gatherOverlaps, truncateMiddle } from '@jbrowse/core/util'
 
+import type { ReadVsRefTemporaryAssembly } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface ReadVsRefSpec {
-  temporaryAssembly: {
-    name: string
-    sequence: {
-      type: 'ReferenceSequenceTrack'
-      name: string
-      trackId: string
-      assemblyNames: string[]
-      adapter: {
-        type: 'FromConfigSequenceAdapter'
-        noAssemblyManager: true
-        features: {
-          start: number
-          end: number
-          seq: string
-          refName: string
-          uniqueId: string
-        }[]
-      }
-    }
-  }
+  temporaryAssembly: ReadVsRefTemporaryAssembly
   viewSpec: {
     type: 'LinearSyntenyView'
     displayName: string
@@ -88,9 +73,6 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
   // so the read assembly can be drawn against itself in the lower panel.
   const configFeatureStore = [...features, ...features.map(f => f.mate)]
 
-  const expand = 2 * windowSize
-  const refLen = features.reduce((a, f) => a + f.end - f.start + expand, 0)
-
   const lgvRegions = gatherOverlaps(
     features.map(f => ({
       refName: f.refName,
@@ -100,29 +82,19 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     })),
   )
 
+  // Size the top (ref) view's bpPerPx from the regions it actually draws, so
+  // overlap-merging and start-clamping in gatherOverlaps are reflected exactly.
+  const refLen = lgvRegions.reduce((a, r) => a + r.end - r.start, 0)
+
   return {
-    temporaryAssembly: {
-      name: readAssembly,
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        name: 'Read sequence',
-        trackId: seqTrackId,
-        assemblyNames: [readAssembly],
-        adapter: {
-          type: 'FromConfigSequenceAdapter',
-          noAssemblyManager: true,
-          features: [
-            {
-              start: 0,
-              end: totalLength,
-              seq: featSeq ?? '',
-              refName: readName,
-              uniqueId: `${rand()}`,
-            },
-          ],
-        },
-      },
-    },
+    temporaryAssembly: buildReadVsRefTemporaryAssembly({
+      readName,
+      readAssembly,
+      totalLength,
+      seq: featSeq,
+      trackId: seqTrackId,
+      uniqueId: `${rand()}`,
+    }),
     viewSpec: {
       type: 'LinearSyntenyView',
       displayName: `${shortName} vs ${trackAssembly}`,

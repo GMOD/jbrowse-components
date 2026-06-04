@@ -40,6 +40,8 @@ export type {
   ReadVsRefFeatures,
   ReadVsRefMate,
 } from './buildReadVsRefFeatures.ts'
+export { buildReadVsRefTemporaryAssembly } from './buildReadVsRefTemporaryAssembly.ts'
+export type { ReadVsRefTemporaryAssembly } from './buildReadVsRefTemporaryAssembly.ts'
 export { getTag } from './getTag.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
