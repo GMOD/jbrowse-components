@@ -121,10 +121,6 @@ export function setupRoutes({
       return
     }
 
-    if (body.adminKey) {
-      delete body.adminKey
-    }
-
     try {
       fs.writeFileSync(validation.configPath!, JSON.stringify(config, null, 2))
       res.setHeader('Content-Type', 'text/plain')

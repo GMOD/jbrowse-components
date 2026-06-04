@@ -15,6 +15,19 @@ interface GithubRelease {
   ]
 }
 
+export function parseCommaSeparatedString(value?: string): string[] {
+  return value?.split(',').map(s => s.trim()).filter(Boolean) ?? []
+}
+
+export function ignoreNotFound<T>(promise: Promise<T>) {
+  return promise.catch((err: unknown) => {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw err
+    }
+    return null
+  })
+}
+
 export function debug(message: string) {
   if (process.env.DEBUG) {
     console.log(`DEBUG: ${message}`)

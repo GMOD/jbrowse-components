@@ -1,6 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
+import { ignoreNotFound } from '../../utils.ts'
+
 const { copyFile, rename, symlink, unlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
 
@@ -22,13 +24,7 @@ export async function loadFile({
   }
   const dest = path.join(destDir, subDir, path.basename(src))
   if (force) {
-    try {
-      await unlink(dest)
-    } catch (e) {
-      if (e && typeof e === 'object' && 'code' in e && e.code !== 'ENOENT') {
-        throw e
-      }
-    }
+    await ignoreNotFound(unlink(dest))
   }
 
   if (mode === 'copy') {

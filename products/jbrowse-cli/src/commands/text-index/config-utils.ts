@@ -1,18 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 
+import { parseCommaSeparatedString } from '../../utils.ts'
 import { supported } from '../../types/common.ts'
 
 import type { Config, Track } from '../../base.ts'
 
-export function parseCommaSeparatedString(value?: string): string[] {
-  return (
-    value
-      ?.split(',')
-      .map(s => s.trim())
-      .filter(Boolean) ?? []
-  )
-}
+export { parseCommaSeparatedString }
 
 export function validatePrefixSize(
   value?: string | number,

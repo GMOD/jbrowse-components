@@ -1,5 +1,6 @@
 import path from 'path'
 
+import { parseCommaSeparatedString } from '../../utils.ts'
 import { isURL } from '../../types/common.ts'
 
 import type { Track } from '../../base.ts'
@@ -49,8 +50,8 @@ export function buildTrackConfig({
     trackId,
     name,
     adapter,
-    category: category?.split(',').map(c => c.trim()),
-    assemblyNames: assemblyNames.split(',').map(a => a.trim()),
+    category: category ? parseCommaSeparatedString(category) : undefined,
+    assemblyNames: parseCommaSeparatedString(assemblyNames),
     description,
     ...configObj,
   }
@@ -63,7 +64,7 @@ export function addSyntenyAssemblyNames(
   if (SYNTENY_ADAPTERS.has(adapter.type)) {
     return {
       ...adapter,
-      assemblyNames: assemblyNames?.split(',').map(a => a.trim()),
+      assemblyNames: parseCommaSeparatedString(assemblyNames),
     }
   }
   return adapter

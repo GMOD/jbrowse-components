@@ -2,7 +2,13 @@ import fs from 'fs'
 import path from 'path'
 
 import { isURL } from '../../types/common.ts'
-import { debug, readInlineOrFileJson, readJsonFile } from '../../utils.ts'
+import {
+  debug,
+  ignoreNotFound,
+  parseCommaSeparatedString,
+  readInlineOrFileJson,
+  readJsonFile,
+} from '../../utils.ts'
 import { mapLocationForFiles } from '../add-track-utils/track-config.ts'
 import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
@@ -201,12 +207,12 @@ export async function getAssembly({
 }
 
 export async function resolveTargetPath(output: string): Promise<string> {
-  const stat = await fs.promises.stat(output).catch(() => null)
+  const stat = await ignoreNotFound(fs.promises.stat(output))
   if (!stat) {
     const dir = output.endsWith('.json') ? path.dirname(output) : output
     await fs.promises.mkdir(dir, { recursive: true })
   }
-  const finalStat = stat ?? (await fs.promises.stat(output).catch(() => null))
+  const finalStat = stat ?? (await ignoreNotFound(fs.promises.stat(output)))
   return finalStat?.isDirectory() ? path.join(output, 'config.json') : output
 }
 
@@ -239,7 +245,7 @@ export async function enhanceAssembly(
     ...assembly,
     ...(runFlags.alias?.length && { aliases: runFlags.alias }),
     ...(runFlags.refNameColors && {
-      refNameColors: runFlags.refNameColors.split(',').map(c => c.trim()),
+      refNameColors: parseCommaSeparatedString(runFlags.refNameColors),
     }),
     ...(runFlags.displayName && { displayName: runFlags.displayName }),
     ...(runFlags.refNameAliases && {
