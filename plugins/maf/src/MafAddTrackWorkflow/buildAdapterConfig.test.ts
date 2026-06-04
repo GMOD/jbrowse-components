@@ -5,6 +5,10 @@ import type { FileLocation } from '@jbrowse/core/util'
 const loc: FileLocation = { uri: 'data.bb', locationType: 'UriLocation' }
 const indexLoc: FileLocation = { uri: 'data.tbi', locationType: 'UriLocation' }
 const nhLoc: FileLocation = { uri: 'tree.nh', locationType: 'UriLocation' }
+const summaryLoc: FileLocation = {
+  uri: 'data.summary.bb',
+  locationType: 'UriLocation',
+}
 
 describe('parseSampleNames', () => {
   test('one name per line, trimmed and blanks dropped', () => {
@@ -47,6 +51,7 @@ describe('buildAdapterConfig', () => {
         loc,
         indexLoc: undefined,
         nhLoc,
+        summaryLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -54,6 +59,29 @@ describe('buildAdapterConfig', () => {
       bigBedLocation: loc,
       samples: sampleNames,
       nhLocation: nhLoc,
+    })
+  })
+
+  test('BigMafAdapter with summary emits swappable summaryAdapter', () => {
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice: 'BigMafAdapter',
+        indexTypeChoice: 'TBI',
+        loc,
+        indexLoc: undefined,
+        nhLoc,
+        summaryLoc,
+        sampleNames,
+      }),
+    ).toEqual({
+      type: 'BigMafAdapter',
+      bigBedLocation: loc,
+      samples: sampleNames,
+      nhLocation: nhLoc,
+      summaryAdapter: {
+        type: 'BigBedAdapter',
+        bigBedLocation: summaryLoc,
+      },
     })
   })
 
@@ -65,6 +93,7 @@ describe('buildAdapterConfig', () => {
         loc,
         indexLoc,
         nhLoc,
+        summaryLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -84,6 +113,7 @@ describe('buildAdapterConfig', () => {
         loc,
         indexLoc,
         nhLoc,
+        summaryLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -103,6 +133,7 @@ describe('buildAdapterConfig', () => {
         loc: undefined,
         indexLoc,
         nhLoc,
+        summaryLoc: undefined,
         sampleNames,
       }),
     ).toThrow(/data file/)
@@ -116,6 +147,7 @@ describe('buildAdapterConfig', () => {
         loc,
         indexLoc: undefined,
         nhLoc,
+        summaryLoc: undefined,
         sampleNames,
       }),
     ).toThrow(/index/)
@@ -129,6 +161,7 @@ describe('buildAdapterConfig', () => {
         loc,
         indexLoc: undefined,
         nhLoc,
+        summaryLoc: undefined,
         sampleNames,
       }),
     ).toThrow(/index/)

@@ -3,7 +3,11 @@ import {
   computeCoverageTicks,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -13,6 +17,7 @@ import {
 } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -27,8 +32,9 @@ import { observable } from 'mobx'
 
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
-import { fetchMafAlignmentData } from './fetchMafAlignmentData.ts'
+import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
@@ -40,7 +46,7 @@ import type {
   MafRenderingBackend,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
-import type { Sample } from '../types.ts'
+import type { MafSummaryRecord, Sample } from '../types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -158,6 +164,14 @@ export default function stateModelFactory(
        * #volatile
        */
       rpcDataMap: observable.map<number, MafRegionData>(),
+      /**
+       * #volatile
+       * Per-region `bigMafSummary` rows for the zoom-out path, populated by
+       * `fetchMafSummaryData` only while `showSummary` is active. Kept separate
+       * from `rpcDataMap` so the GPU sequence canvas and the summary overlay
+       * never read each other's data.
+       */
+      summaryDataMap: observable.map<number, MafSummaryRecord[]>(),
       /**
        * #volatile
        */
@@ -554,6 +568,47 @@ export default function stateModelFactory(
         })
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * Use the cheap summary path when a `bigMafSummary` sub-adapter is
+       * configured and the view is zoomed out past the force-load threshold —
+       * exactly where the full alignment fetch would be blocked by the byte
+       * gate. Tracks without a summary never enter this path.
+       */
+      get showSummary() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return (
+          !!readConfObject(self.adapterConfig, 'summaryAdapter') &&
+          view.initialized &&
+          view.visibleBp >= AUTO_FORCE_LOAD_BP
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Positioned per-species presence bars for the zoom-out summary overlay.
+       * Empty unless `showSummary` is active. Unmatched `src` rows drop via the
+       * `sources` index, keeping the render robust to summary files that list
+       * extra species.
+       */
+      get visibleSummaryBars() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!self.showSummary || !self.sources) {
+          return []
+        }
+        return computeVisibleSummaryBars({
+          view,
+          summaryDataMap: self.summaryDataMap,
+          rowIndexBySrc: new Map(
+            self.sources.map((s, i): [string, number] => [s.name, i]),
+          ),
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
+        })
+      },
+    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
@@ -581,8 +636,17 @@ export default function stateModelFactory(
       setRpcData(regionIndex: number, data: MafRegionData) {
         self.rpcDataMap.set(regionIndex, data)
       },
+      setSummaryData(regionIndex: number, records: MafSummaryRecord[]) {
+        self.summaryDataMap.set(regionIndex, records)
+      },
+      // Drop alignment blocks when entering summary mode so the GPU sequence
+      // canvas paints nothing under the summary overlay (and vice versa).
+      clearAlignmentData() {
+        self.rpcDataMap.clear()
+      },
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
+        self.summaryDataMap.clear()
       },
       reload() {
         self.clearAllRpcData()
@@ -635,7 +699,23 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-        return fetchMafAlignmentData(self, needed)
+        // Zoom-out with a configured summary → cheap per-species summary rows;
+        // otherwise the full alignment fetch (subject to the byte gate below).
+        return self.showSummary
+          ? fetchMafSummaryData(self, needed)
+          : fetchMafAlignmentData(self, needed)
+      },
+      /**
+       * #action
+       * Force a refetch when the loaded data is the wrong kind for the current
+       * zoom: crossing the summary↔detail threshold within an already-loaded
+       * region wouldn't trip the bounds-based coverage check, so the mode is
+       * keyed on which map holds the region.
+       */
+      isCacheValid(displayedRegionIndex: number) {
+        return self.showSummary
+          ? self.summaryDataMap.has(displayedRegionIndex)
+          : self.rpcDataMap.has(displayedRegionIndex)
       },
       /**
        * #action
@@ -643,8 +723,14 @@ export default function stateModelFactory(
        * MAF-aware byte estimate (per-species sequence × span) is checked against
        * `fetchSizeLimit`, blocking the detail fetch with a force-load prompt
        * rather than downloading hundreds of species' bases at genome scale.
+       *
+       * Returns null in summary mode — the summary read is cheap (zoom-reduced
+       * BigBed), so it must never be blocked by the gate.
        */
       getByteEstimateConfig() {
+        if (self.showSummary) {
+          return null
+        }
         const view = getContainingView(self) as LinearGenomeViewModel
         return {
           adapterConfig: self.adapterConfig,

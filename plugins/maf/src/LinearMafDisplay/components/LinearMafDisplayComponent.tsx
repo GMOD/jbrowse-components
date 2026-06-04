@@ -15,6 +15,7 @@ import MafCoverageResizeHandle from './MafCoverageResizeHandle.tsx'
 import MafCoverageYScale from './MafCoverageYScale.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
+import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { useDragSelection } from './useDragSelection.ts'
 import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
@@ -133,6 +134,12 @@ const MafBody = observer(function MafBody({
         />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
+          width={width}
+          height={rowsHeight}
+          palette={palette}
+        />
+        <SummaryBarsOverlay
+          bars={model.visibleSummaryBars}
           width={width}
           height={rowsHeight}
           palette={palette}

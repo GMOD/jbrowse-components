@@ -33,12 +33,20 @@ interface BuildArgs {
   loc: FileLocation | undefined
   indexLoc: FileLocation | undefined
   nhLoc: FileLocation | undefined
+  summaryLoc: FileLocation | undefined
   sampleNames: string[]
 }
 
 export function buildAdapterConfig(args: BuildArgs) {
-  const { fileTypeChoice, indexTypeChoice, loc, indexLoc, nhLoc, sampleNames } =
-    args
+  const {
+    fileTypeChoice,
+    indexTypeChoice,
+    loc,
+    indexLoc,
+    nhLoc,
+    summaryLoc,
+    sampleNames,
+  } = args
   if (!loc) {
     throw new Error('Please supply a data file')
   }
@@ -49,6 +57,17 @@ export function buildAdapterConfig(args: BuildArgs) {
         bigBedLocation: loc,
         samples: sampleNames,
         nhLocation: nhLoc,
+        // Optional UCSC bigMafSummary.bb for cheap zoom-out rendering; no
+        // standard suffix to guess, so it's an explicit field left null
+        // when unset.
+        ...(summaryLoc
+          ? {
+              summaryAdapter: {
+                type: 'BigBedAdapter',
+                bigBedLocation: summaryLoc,
+              },
+            }
+          : {}),
       }
     case 'MafTabixAdapter':
       if (!indexLoc) {

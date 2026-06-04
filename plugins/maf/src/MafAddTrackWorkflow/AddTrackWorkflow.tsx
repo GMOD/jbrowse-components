@@ -38,6 +38,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
   const [loc, setLoc] = useState<FileLocation>()
   const [indexLoc, setIndexLoc] = useState<FileLocation>()
   const [nhLoc, setNhLoc] = useState<FileLocation>()
+  const [summaryLoc, setSummaryLoc] = useState<FileLocation>()
   const [error, setError] = useState<unknown>()
   const [trackName, setTrackName] = useState('MAF track')
   const [fileTypeChoice, setFileTypeChoice] =
@@ -59,14 +60,24 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           }}
         />
         {fileTypeChoice === 'BigMafAdapter' ? (
-          <FileSelector
-            location={loc}
-            name="Path to bigMaf"
-            rootModel={rootModel}
-            setLocation={arg => {
-              setLoc(arg)
-            }}
-          />
+          <>
+            <FileSelector
+              location={loc}
+              name="Path to bigMaf"
+              rootModel={rootModel}
+              setLocation={arg => {
+                setLoc(arg)
+              }}
+            />
+            <FileSelector
+              location={summaryLoc}
+              name="Path to bigMafSummary (.bb, optional — enables cheap zoom-out rendering)"
+              rootModel={rootModel}
+              setLocation={arg => {
+                setSummaryLoc(arg)
+              }}
+            />
+          </>
         ) : fileTypeChoice === 'MafTabixAdapter' ? (
           <>
             <RadioSelector
@@ -172,6 +183,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
                   loc,
                   indexLoc,
                   nhLoc,
+                  summaryLoc,
                   sampleNames,
                 }),
               })

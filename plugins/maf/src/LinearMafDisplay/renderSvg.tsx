@@ -13,6 +13,7 @@ import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
+import { drawMafSummaryBars } from '../LinearMafRenderer/rendering/summaryBars.ts'
 import {
   getContrastBaseMap,
   getMafColorPalette,
@@ -90,6 +91,7 @@ export async function renderSvg(
         {paintLayer(width, rowsHeight, opts, ctx => {
           drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
           drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
+          drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)
           drawMafLabels(
             ctx,
             model.visibleLabels,

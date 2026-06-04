@@ -121,12 +121,45 @@ Scope (✓ = landed):
 |---|---|---|
 | ✓ Config slot | `BigMafAdapter/configSchema.ts` | `summaryAdapter: { type: 'frozen', defaultValue: null }` (optional → no summary keeps Stage-1 gate). Tested in `configSchema.test.ts` |
 | ✓ Instantiate | `BigMafAdapter/BigMafAdapter.ts` | `getSummaryAdapter()` — lazy `getSubAdapter(getConf('summaryAdapter'))` memoized on `summaryAdapterP` with catch-clear, mirroring CRAM `getSequenceAdapter`. `getSummaryFeatures(region)` streams `MafSummaryRecord` rows (`{refName,start,end,src,score,leftStatus?,rightStatus?}`). Tested in `BigMafAdapter.summary.test.ts`. **Still unconsumed** until the display rows below land |
-| Add-track | `MafAddTrackWorkflow` | summary cannot be auto-guessed from the data file (no standard suffix; `bigMafSummary.bb` is just UCSC's tutorial filename). Add an **optional explicit field** for the summary `.bb` location; leave `summaryAdapter` `null` when unset |
-| Display gate | `LinearMafDisplay/stateModel.ts` | above `AUTO_FORCE_LOAD_BP` (the `getByteEstimateConfig` threshold), if a summary adapter is configured, fetch summary rows instead of full alignment data |
-| Render | `LinearMafRenderer` + `LinearMafDisplay/components` | per-species presence bars (optionally `score`-shaded) reusing `emptyLines.ts` status primitives; coverage band = species-count depth (highest-value, most compact for 447-way) |
+| ✓ Add-track | `MafAddTrackWorkflow` | optional explicit summary `.bb` field (no standard suffix to guess); `buildAdapterConfig` emits `summaryAdapter: { type: 'BigBedAdapter', bigBedLocation }` only for `BigMafAdapter` + only when set. Tested in `buildAdapterConfig.test.ts` |
+| ✓ Real fixture | `plugins/maf/test_data/cactus447way.summary.bb` (50 kb) | extracted from a live UCSC `cactus447waySummary.bb` (chr1:1M–1.05M) via `bigBedToBed` → `bedToBigBed -type=bed3+4 -as=mafSummary.as`. `BigMafAdapter.summaryFixture.test.ts` drives `getSummaryFeatures` through a **real** `BigBedAdapter` against it, proving the autoSql columns (`src`/`score`/`leftStatus`/`rightStatus`) read through named |
+| ✓ Summary RPC | `LinearMafGetSummaryData` | streams `MafSummaryRecord[]` + `samples`/`treeNewick` for one region; tolerant of adapters with no `getSummaryFeatures` (tabix/TAF) |
+| ✓ Display gate | `LinearMafDisplay/stateModel.ts` | `showSummary = summaryConfigured && visibleBp >= AUTO_FORCE_LOAD_BP`. `fetchNeeded` branches to `fetchMafSummaryData`; `getByteEstimateConfig` returns null in summary mode (cheap read, never gated); `isCacheValid` keys on which map holds the region so the summary↔detail threshold crossing refetches. Entirely gated on `summaryConfigured` → zero behaviour change for tracks without a summary |
+| ✓ Render | `rendering/summaryBars.ts` + `components/{computeVisibleSummaryBars,SummaryBarsOverlay}` | per-species presence bars, `score`-shaded (alpha baked into `matchColor` since `Ctx2D`/SVG has no `globalAlpha`), composited on a backend-independent Canvas2D overlay exactly like `EmptyLinesOverlay`; also wired into `renderSvg.tsx`. Pure layout + draw unit-tested |
 
 Removes the zoom-out download instead of just refusing it. See
 https://genome.ucsc.edu/goldenpath/help/bigMaf.html.
+
+**Real-data corrections (verified with `@gmod/bbi` + `bigBedToBed`):**
+- `multiz470waySummary.bb` / `cactus447waySummary.bb` are proper `mafSummary`
+  (bed3+4: `src,score,leftStatus,rightStatus`) — `getSummaryFeatures` reads them
+  verbatim. These are the ones wired into the hg38 config in `jb2hubs`.
+- cactus241way's trackDb declares `summary /gbdb/hg38/cactus241way/tinySummary.bb`
+  — but that file is a **degenerate `bed4+1`** (`name`,`score 0-1000`,
+  whole-chromosome spans), NOT `mafSummary`. It would feed `getSummaryFeatures`
+  rows with `src=undefined`. In `jb2hubs`, `isUsableMafSummary` (hubtools) skips
+  any `tinySummary.bb` in **both** emitters (`createTrackConfiguration.ts`,
+  `mergeBigFileTracks.ts`), so regenerating won't re-add it.
+- A proper `cactus241waySummary.bb` (goldenPath) exists but is **22 GB** (its
+  alignment is far more fragmented → ~18× more block×species rows than
+  cactus447). **Disqualified** — not worth accommodating. It's never
+  auto-discovered anyway (trackDb names tinySummary, which the guard drops).
+
+Note: `BigBedAdapter` reads **raw** rows in the region (no bigBed zoom-reduction),
+so the zoom-out win is real at moderate zoom-out but degrades at chromosome
+scale. Still far smaller than the full MAF (per-row `src,score,2 chars` vs every
+base × species). A future fix is to read the bigBed zoom levels as the
+species-count coverage band.
+- **Coverage band = species-count depth is NOT yet wired** — at summary zoom the
+  coverage band is empty (it reads alignment `rpcDataMap`, cleared in summary
+  mode). The presence bars are the species-count signal for now.
+- **Not visually verified.** Like the e-lines, the summary fetch/gate/render is
+  unit-tested but the pixels + the summary↔detail mode-switch behaviour need a
+  browser check against a real summary-configured track (the hg38
+  multiz470way/cactus447way configs, or the committed fixture). The species
+  `src`↔configured-`samples.id` match in particular is data-dependent: unmatched
+  `src` rows drop silently via `rowIndexBySrc`, so a mismatch shows as missing
+  bars, not a crash.
 - **q lines (quality)** — deferred; per-cell quality would break the color
   run-merge in `mafInstanceBuffer`. Best as pre-blended alpha later.
 - **e/i for MafTabix / TAF** — their encodings drop e/i at conversion (MafTabix
@@ -142,12 +175,21 @@ https://genome.ucsc.edu/goldenpath/help/bigMaf.html.
 ## Verify
 
 ```
-pnpm test plugins/maf plugins/bed     # 30 suites / 268 tests
+pnpm test plugins/maf plugins/bed     # 24 maf suites / 208 tests
 npx tsgo --noEmit -p tsconfig.json    # clean
 npx eslint --cache plugins/maf/src    # clean
 ```
 
 ## Gotchas
+
+- `BigMafAdapter.summaryFixture.test.ts` imports `BigBedAdapter` by **relative
+  source path** (`../../../bed/src/...`) — plugin-maf doesn't depend on
+  plugin-bed, but at runtime the summary BigBed is loaded through the plugin
+  system, and jest's babel transform resolves the path directly. It's the real
+  reading path, not a mock.
+- Summary `src` (species name like `Pongo_abelii`) must match the configured
+  `samples[].id`; `rowIndexBySrc` drops non-matches, so a mismatch is silent
+  missing bars. This is the first thing to check if zoom-out renders blank.
 
 - `MafAlignedRow` tooltip fields (`chr/start/strand/srcSize/context`) are
   optional on purpose so coverage/label/instance-buffer test builders don't need
