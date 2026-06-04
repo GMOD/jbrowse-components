@@ -1,4 +1,5 @@
 import {
+  assignBranchLengthY,
   assignDepthY,
   clusterLayout,
   descendants,
@@ -7,9 +8,8 @@ import {
   leafNameMap,
   leaves,
   links,
-  maxLength,
+  maxNodeHeight,
   renderTreeSVG,
-  setBrLength,
   sort,
   sum,
 } from './hierarchy.ts'
@@ -116,7 +116,8 @@ test('clusterLayout positions leaves uniformly and parents at child mean', () =>
   expect(c!.x).toBe(15)
   expect(d!.x).toBe(25)
   expect(laid.children![1]!.x).toBe(20)
-  expect(laid.children![0]!.y).toBe(5)
+  // leaf A aligns at the right edge (depth-to-leaf 0), not midway
+  expect(laid.children![0]!.y).toBe(10)
   expect(laid.children![1]!.children![0]!.y).toBe(10)
 })
 
@@ -127,26 +128,65 @@ test('clusterLayout handles a single leaf without dividing by zero', () => {
   expect(laid.y).toBe(10)
 })
 
-test('assignDepthY scales by root.height', () => {
+test('assignDepthY positions by depth-to-leaf, aligning leaves at the edge', () => {
   const root = hierarchy(sample(), childrenOf)
   assignDepthY(root, 100)
+  // root at 0; leaf A and leaf C both reach the right edge despite A being
+  // shallower (depth 1 vs 2) — they share depth-to-leaf 0
   expect(root.y).toBe(0)
-  expect(root.children![0]!.y).toBe(50)
+  expect(root.children![0]!.y).toBe(100)
+  expect(root.children![1]!.y).toBe(50)
   expect(root.children![1]!.children![0]!.y).toBe(100)
 })
 
-test('maxLength sums root-to-leaf branch lengths', () => {
-  const root = hierarchy(sample(), childrenOf)
-  expect(maxLength(root)).toBe(3.5)
+// hclust dendrogram shape: internal nodes carry an absolute merge height in
+// `length` (the `(A,(C,D)0.5)2` Newick form); leaves carry none.
+const dendro = (): Node => ({
+  name: 'root',
+  length: 2,
+  children: [
+    { name: 'A' },
+    { name: 'inner', length: 0.5, children: [{ name: 'C' }, { name: 'D' }] },
+  ],
 })
 
-test('setBrLength assigns scaled cumulative branch length', () => {
-  const root = hierarchy(sample(), childrenOf)
-  root.data.length = 0
-  setBrLength(root, 0, 10)
-  expect(root.len).toBe(0)
-  expect(root.children![0]!.len).toBe(10)
-  expect(root.children![1]!.children![0]!.len).toBe(25)
+// topology-only tree: no heights anywhere
+const cladogram = (): Node => ({
+  name: 'root',
+  children: [{ name: 'A' }, { children: [{ name: 'C' }, { name: 'D' }] }],
+})
+
+test('maxNodeHeight returns the largest merge height', () => {
+  expect(maxNodeHeight(hierarchy(dendro(), childrenOf))).toBe(2)
+  expect(maxNodeHeight(hierarchy(cladogram(), childrenOf))).toBe(0)
+})
+
+test('assignBranchLengthY positions nodes by absolute merge height', () => {
+  const root = hierarchy(dendro(), childrenOf)
+  assignBranchLengthY(root, 100)
+  // root (max height) at 0, all leaves (height 0) at the right edge, the inner
+  // cluster at its merge height fraction (1 - 0.5/2)
+  expect(root.y).toBe(0)
+  expect(root.children![0]!.y).toBe(100)
+  expect(root.children![1]!.y).toBe(75)
+  expect(root.children![1]!.children![0]!.y).toBe(100)
+})
+
+test('clusterLayout uses branch-length layout when enabled', () => {
+  const root = hierarchy(dendro(), childrenOf)
+  clusterLayout(root, 30, 100, true)
+  expect(root.y).toBe(0)
+  expect(root.children![1]!.y).toBe(75)
+})
+
+test('clusterLayout falls back to cladogram when no merge heights exist', () => {
+  const withLen = hierarchy(cladogram(), childrenOf)
+  clusterLayout(withLen, 30, 100, true)
+  const clado = hierarchy(cladogram(), childrenOf)
+  clusterLayout(clado, 30, 100, false)
+  expect(descendants(withLen).map(n => n.y)).toEqual(
+    descendants(clado).map(n => n.y),
+  )
 })
 
 test('renderTreeSVG emits orthogonal connector path', () => {

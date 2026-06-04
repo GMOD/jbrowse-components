@@ -24,6 +24,7 @@ import {
   applyColorPalette,
   buildSpatialIndex,
   clusterLayout,
+  treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
@@ -471,6 +472,9 @@ export default function MultiSampleVariantBaseModelF(
         setShowTree(arg: boolean) {
           self.setOverride('showTree', arg)
         },
+        setShowBranchLength(arg: boolean) {
+          self.setOverride('showBranchLength', arg)
+        },
         // Sets `layout` and stashes the cluster tree as pending — the tree
         // only applies once the matching cellData arrives, see `setCellData`.
         // Distinct from the mixin's `setLayoutAndClusterTree` (which applies
@@ -548,6 +552,10 @@ export default function MultiSampleVariantBaseModelF(
 
         get showTree() {
           return self.getConfWithOverride<boolean>('showTree')
+        },
+
+        get showBranchLength() {
+          return self.getConfWithOverride<boolean>('showBranchLength')
         },
 
         get referenceDrawingMode(): string {
@@ -709,6 +717,7 @@ export default function MultiSampleVariantBaseModelF(
             r,
             this.rowHeight * this.nrow,
             self.treeAreaWidth,
+            self.showBranchLength,
           )
         },
       }))
@@ -753,6 +762,7 @@ export default function MultiSampleVariantBaseModelF(
                 self.setShowTree(!self.showTree)
               },
             },
+            treeBranchLengthMenuItem(self),
             ...(self.subtreeFilter?.length
               ? [
                   {

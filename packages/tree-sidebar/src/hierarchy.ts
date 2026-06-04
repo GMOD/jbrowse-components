@@ -7,8 +7,6 @@ export interface HierarchyNode<T> {
   value?: number
   x?: number
   y?: number
-  // position derived from cumulative branch lengths (see setBrLength)
-  len?: number
 }
 
 export interface PositionedHierarchyNode<T> extends HierarchyNode<T> {
@@ -129,10 +127,11 @@ export function links<N extends { children: N[] | null }>(
   return result
 }
 
-export function clusterLayout<T>(
+export function clusterLayout<T extends { length?: number }>(
   root: HierarchyNode<T>,
   sizeX: number,
   sizeY: number,
+  showBranchLength = false,
 ): PositionedHierarchyNode<T> {
   const leafNodes = leaves(root)
   const n = leafNodes.length
@@ -149,7 +148,13 @@ export function clusterLayout<T>(
       node.x = totalX / node.children.length
     }
   })
-  assignDepthY(root, sizeY)
+  // A dendrogram with no merge heights (e.g. a topology-only tree) can't show a
+  // meaningful phylogram, so fall back to the cladogram layout in that case.
+  if (showBranchLength && maxNodeHeight(root) > 0) {
+    assignBranchLengthY(root, sizeY)
+  } else {
+    assignDepthY(root, sizeY)
+  }
   return root as unknown as PositionedHierarchyNode<T>
 }
 
@@ -166,43 +171,62 @@ export function eachAfter<T>(
   fn(node)
 }
 
-// Assigns y positions based on depth — root at 0, leaves at sizeY
+// Assigns y positions by topological depth-to-leaf — root at 0, every leaf at
+// sizeY. `node.height` is already the distance from a node to its farthest
+// descendant leaf, so positioning by `(rootHeight - height)` aligns all leaves
+// at the right edge regardless of tree balance, matching ape::plot.phylo.
+// Positioning by depth-from-root instead would leave shallow leaves dangling
+// short of the row labels.
 export function assignDepthY<T>(node: HierarchyNode<T>, sizeY: number) {
   const rootHeight = node.height
-  function visit(n: HierarchyNode<T>, depth: number) {
-    n.y = rootHeight === 0 ? sizeY : (depth / rootHeight) * sizeY
+  function visit(n: HierarchyNode<T>) {
+    n.y =
+      rootHeight === 0 ? sizeY : ((rootHeight - n.height) / rootHeight) * sizeY
     if (n.children) {
       for (const child of n.children) {
-        visit(child, depth + 1)
+        visit(child)
       }
     }
   }
-  visit(node, 0)
+  visit(node)
 }
 
-// Largest root-to-leaf cumulative branch length
-export function maxLength<T extends { length?: number }>(
-  d: HierarchyNode<T>,
+// Largest merge height in the subtree. For an hclust dendrogram the `length`
+// field on an internal node is its absolute merge height (the `(A,B)1.5` Newick
+// form), so the root usually holds the max — but a subtree-filtered root does
+// not, hence the full traversal.
+export function maxNodeHeight<T extends { length?: number }>(
+  node: HierarchyNode<T>,
 ): number {
-  return (
-    (d.data.length ?? 0) +
-    (d.children ? d.children.reduce((m, c) => Math.max(m, maxLength(c)), 0) : 0)
-  )
-}
-
-// Assigns `len` (x position scaled by `k`) from cumulative branch lengths
-export function setBrLength<T extends { length?: number }>(
-  d: HierarchyNode<T>,
-  y0: number,
-  k: number,
-) {
-  const newY0 = y0 + Math.max(d.data.length ?? 0, 0)
-  d.len = newY0 * k
-  if (d.children) {
-    for (const child of d.children) {
-      setBrLength(child, newY0, k)
+  let max = node.data.length ?? 0
+  if (node.children) {
+    for (const child of node.children) {
+      max = Math.max(max, maxNodeHeight(child))
     }
   }
+  return max
+}
+
+// Phylogram (dendrogram) y positions from absolute merge heights: root (max
+// height) at 0, every leaf (height 0) at sizeY, internal nodes proportional to
+// where their cluster merged. Unlike a cumulative branch-length sum, this reads
+// each node's height directly, matching the hclust `(A,B)1.5` encoding where the
+// number is an absolute height, not an incremental branch length.
+export function assignBranchLengthY<T extends { length?: number }>(
+  node: HierarchyNode<T>,
+  sizeY: number,
+) {
+  const max = maxNodeHeight(node)
+  function visit(n: HierarchyNode<T>) {
+    const h = n.data.length ?? 0
+    n.y = max === 0 ? sizeY : (1 - h / max) * sizeY
+    if (n.children) {
+      for (const child of n.children) {
+        visit(child)
+      }
+    }
+  }
+  visit(node)
 }
 
 // Single post-order pass building a Map from every node to the array of

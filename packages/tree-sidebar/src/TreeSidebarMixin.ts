@@ -1,6 +1,7 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
+import { maxNodeHeight } from './hierarchy.ts'
 
 import type { HoveredTreeNode } from './types.ts'
 
@@ -29,6 +30,14 @@ export function TreeSidebarMixin<
         return self.parsedTree
           ? applySubtreeFilter(self.parsedTree, self.subtreeFilter)
           : undefined
+      },
+    }))
+    .views(self => ({
+      // True when the tree carries cluster merge heights, i.e. a branch-length
+      // (dendrogram) layout would actually differ from the cladogram. Gates the
+      // "Tree branch lengths" toggle so it isn't a no-op on a height-less tree.
+      get treeHasBranchLengths() {
+        return !!self.root && maxNodeHeight(self.root) > 0
       },
     }))
     .actions(self => ({

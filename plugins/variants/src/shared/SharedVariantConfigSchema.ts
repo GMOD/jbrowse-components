@@ -15,6 +15,10 @@ export const sharedVariantConfigSlots = {
     type: 'boolean',
     defaultValue: true,
   },
+  showBranchLength: {
+    type: 'boolean',
+    defaultValue: false,
+  },
   renderingMode: {
     type: 'stringEnum',
     model: types.enumeration('RenderingMode', ['alleleCount', 'phased']),

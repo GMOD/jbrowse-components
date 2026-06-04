@@ -13,6 +13,7 @@ export {
   parseClusterTree,
 } from './clusterUtils.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+export { treeBranchLengthMenuItem } from './treeMenuItems.ts'
 export {
   extraColumns,
   moveDown,
@@ -33,9 +34,7 @@ export {
   leafNameMap,
   leaves,
   links,
-  maxLength,
   renderTreeSVG,
-  setBrLength,
   sort,
   sum,
 } from './hierarchy.ts'

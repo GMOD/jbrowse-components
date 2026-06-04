@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -15,6 +16,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showAsUpperCase: boolean
   showTree: boolean
   showBranchLength: boolean
+  treeHasBranchLengths: boolean
   showCoverage: boolean
   showAlignments: boolean
   subtreeFilter?: readonly string[]
@@ -24,6 +26,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setMismatchRendering: (f: boolean) => void
   setShowAsUpperCase: (f: boolean) => void
   setShowTree: (f: boolean) => void
+  setShowBranchLength: (f: boolean) => void
   setShowCoverage: (f: boolean) => void
   setShowAlignments: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
@@ -96,15 +99,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
             self.setShowTree(!self.showTree)
           },
         },
-        {
-          label: 'Tree branch lengths',
-          type: 'checkbox',
-          checked: self.showBranchLength,
-          disabled: !self.showTree,
-          onClick: () => {
-            self.setShowBranchLength(!self.showBranchLength)
-          },
-        },
+        treeBranchLengthMenuItem(self),
         {
           label: 'Coverage',
           type: 'checkbox',

@@ -18,6 +18,7 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   clusterLayout,
+  treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import {
   computeYTicks,
@@ -198,6 +199,10 @@ export default function stateModelFactory(
         return self.getOverride<boolean>('showTree') ?? true
       },
 
+      get showBranchLength() {
+        return self.getOverride<boolean>('showBranchLength') ?? false
+      },
+
       get showRowSeparators() {
         return self.getOverride<boolean>('showRowSeparators') ?? false
       },
@@ -208,7 +213,12 @@ export default function stateModelFactory(
         if (!r || !self.sources.length) {
           return undefined
         }
-        return clusterLayout(r, self.height, self.treeAreaWidth)
+        return clusterLayout(
+          r,
+          self.height,
+          self.treeAreaWidth,
+          self.showBranchLength,
+        )
       },
     }))
     .views(self => ({
@@ -262,6 +272,10 @@ export default function stateModelFactory(
 
         setShowTree(arg: boolean) {
           self.setOverride('showTree', arg)
+        },
+
+        setShowBranchLength(arg: boolean) {
+          self.setOverride('showBranchLength', arg)
         },
 
         setShowRowSeparators(arg: boolean) {
@@ -364,6 +378,7 @@ export default function stateModelFactory(
                   self.setShowTree(!self.showTree)
                 },
               },
+              treeBranchLengthMenuItem(self),
               {
                 label: 'Show row separators',
                 type: 'checkbox',
