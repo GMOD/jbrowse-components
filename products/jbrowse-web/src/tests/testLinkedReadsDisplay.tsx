@@ -8,8 +8,8 @@ type DisplayMode = 'arc' | 'samplot' | 'cloud' | 'bezier' | 'stack'
 // 'stack' / 'cloud' enable linked reads via the "View as pairs / link
 // supplementary alignments" checkbox.
 const MENU_PATHS: Record<DisplayMode, string[]> = {
-  arc: ['Read connections', 'View as pairs', 'Arcs'],
-  samplot: ['Read connections', 'View as pairs', 'Read cloud'],
+  arc: ['Read connections', 'Show pair overlay', 'Arcs'],
+  samplot: ['Read connections', 'Show pair overlay', 'Read cloud'],
   bezier: ['Show...', 'Bezier curves'],
   cloud: ['Read connections', 'View as pairs / link supplementary alignments'],
   stack: ['Read connections', 'View as pairs / link supplementary alignments'],
