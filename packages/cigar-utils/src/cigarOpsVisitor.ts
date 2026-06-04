@@ -45,11 +45,17 @@ export function visitCigarOps(
   }
 }
 
+// Indels narrower than this (in pixels) are merged into surrounding match
+// context rather than rendered as separate quads. 2px suppresses the
+// aliasing artifacts from 1bp indels on noisy long reads without hiding
+// genuinely visible indels.
+const MIN_INDEL_PX = 2
+
 /**
  * Walks pre-parsed (packed int) CIGAR ops in bp-space and fires a callback
- * for each rendered segment. Small indels (len < bpPerPx) are merged into
- * surrounding context; tiny M segments (both accumulators advance < bpPerPx)
- * are accumulated before emitting.
+ * for each rendered segment. Small indels (width < MIN_INDEL_PX) are merged
+ * into surrounding context; tiny M segments (both accumulators advance <
+ * bpPerPx) are accumulated before emitting.
  *
  * Used by synteny and dotplot GPU renderers so both stay in sync.
  * Re-exported via @jbrowse/synteny-core for consistent import paths.
@@ -100,7 +106,7 @@ export function visitCigarRenderedSegments(
 
     if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
       const relevantBpPerPx = op === CIGAR_I ? bpPerPx1 : bpPerPx0
-      if (len < relevantBpPerPx) {
+      if (len < relevantBpPerPx * MIN_INDEL_PX) {
         continuingFlag = true
         continue
       }
