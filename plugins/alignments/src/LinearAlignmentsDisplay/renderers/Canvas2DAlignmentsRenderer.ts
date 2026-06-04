@@ -372,6 +372,14 @@ export function drawAlignmentBlocks(
       drawOverlaps(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
+    if (state.showModifications) {
+      drawModifications(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    if (state.showPerBaseQuality) {
+      drawPerBaseQuality(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
     if (state.showMismatches) {
       drawGaps(ctx, region, block, bpLength, fullBlockWidth, state)
       drawMismatches(ctx, region, block, bpLength, fullBlockWidth, state)
@@ -385,20 +393,11 @@ export function drawAlignmentBlocks(
       drawSoftclipBases(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
-    if (state.showModifications) {
-      drawModifications(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
-    if (state.showPerBaseQuality) {
-      drawPerBaseQuality(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
     if (state.showPerBaseLetter) {
       drawPerBaseLetter(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
-    drawHighlightOverlays(ctx, region, block, state)
-    drawChainOverlays(ctx, region, block, state)
+    drawSelectionOverlays(ctx, region, block, state)
 
     ctx.restore() // pileup clip
 
@@ -458,29 +457,20 @@ interface OverlayBlock {
   reversed?: boolean
 }
 
-function paintOverlayBox(
+function paintSelectionBox(
   ctx: Ctx2D,
   bounds: OverlayBounds,
   block: OverlayBlock,
   state: RenderState,
-  style: 'highlight' | 'selection' | 'chainHighlight',
 ) {
   const bpLength = block.end - block.start
   const fullBlockWidth = block.screenEndPx - block.screenStartPx
   const x1 = bpToScreenX(bounds.startBp, block, bpLength, fullBlockWidth)
   const x2 = bpToScreenX(bounds.endBp, block, bpLength, fullBlockWidth)
   const y = pileupRowY(bounds.yRow, state)
-  const w = x2 - x1
-  const h = state.featureHeight
-  if (style === 'selection') {
-    ctx.strokeStyle = '#00b8ff'
-    ctx.lineWidth = 2
-    ctx.strokeRect(x1, y, w, h)
-  } else {
-    ctx.fillStyle =
-      style === 'chainHighlight' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.15)'
-    ctx.fillRect(x1, y, w, h)
-  }
+  ctx.strokeStyle = '#00b8ff'
+  ctx.lineWidth = 2
+  ctx.strokeRect(x1, y, x2 - x1, state.featureHeight)
 }
 
 function readBoundsForId(
@@ -498,42 +488,23 @@ function readBoundsForId(
   }
 }
 
-function drawHighlightOverlays(
+// Selection only — the hover highlight is a React overlay (HighlightOverlay).
+function drawSelectionOverlays(
   ctx: Ctx2D,
   region: Canvas2DRegionData,
   block: OverlayBlock,
   state: RenderState,
 ) {
-  if (state.highlightedChainIds.length === 0 && state.highlightedFeatureId) {
-    const bounds = readBoundsForId(region, state.highlightedFeatureId)
-    if (bounds) {
-      paintOverlayBox(ctx, bounds, block, state, 'highlight')
-    }
-  }
   if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
     const bounds = readBoundsForId(region, state.selectedFeatureId)
     if (bounds) {
-      paintOverlayBox(ctx, bounds, block, state, 'selection')
-    }
-  }
-}
-
-function drawChainOverlays(
-  ctx: Ctx2D,
-  region: Canvas2DRegionData,
-  block: OverlayBlock,
-  state: RenderState,
-) {
-  if (state.highlightedChainIds.length > 0) {
-    const bounds = getChainBounds(state.highlightedChainIds, region)
-    if (bounds) {
-      paintOverlayBox(ctx, bounds, block, state, 'chainHighlight')
+      paintSelectionBox(ctx, bounds, block, state)
     }
   }
   if (state.selectedChainIds.length > 0) {
     const bounds = getChainBounds(state.selectedChainIds, region)
     if (bounds) {
-      paintOverlayBox(ctx, bounds, block, state, 'selection')
+      paintSelectionBox(ctx, bounds, block, state)
     }
   }
 }

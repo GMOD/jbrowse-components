@@ -40,9 +40,10 @@ export interface RenderState {
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number
-  highlightedFeatureId?: string
+  // Hover highlight is NOT here — it's a React overlay (HighlightOverlay) so a
+  // mousemove repaints only the overlay div, not the canvas. Selection stays
+  // canvas-side: it changes on click (rare) and belongs in SVG export.
   selectedFeatureId?: string
-  highlightedChainIds: string[]
   selectedChainIds: string[]
   // Color palette from theme
   colors: ColorPalette

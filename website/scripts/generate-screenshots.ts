@@ -8,7 +8,11 @@ import { launch } from 'puppeteer'
 import handler from 'serve-handler'
 
 import { specs } from './screenshot-specs.ts'
-import type { ScreenshotAction, ScreenshotSpec } from './screenshot-specs.ts'
+import type {
+  Annotation,
+  ScreenshotAction,
+  ScreenshotSpec,
+} from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -122,23 +126,71 @@ async function assertViewsRendered(page: Page, name: string) {
   }
 }
 
-async function runAction(page: Page, action: ScreenshotAction) {
-  if (action.type === 'delay') {
-    await delay(action.ms ?? 500)
-  } else if (action.type === 'click' && action.text) {
-    // click an element by its visible text (e.g. an HTML floating feature label
-    // like a variant name) to trigger its handler, e.g. open feature details
-    const el = await page.waitForSelector(`::-p-text(${action.text})`, {
+// Resolve an action's target element from either a CSS selector or visible
+// text. Text matching (::-p-text) is how HTML floating labels / menu items are
+// reached; selectors handle testid'd buttons.
+async function resolveTarget(page: Page, action: ScreenshotAction) {
+  if (action.selector) {
+    return page.waitForSelector(action.selector, {
       visible: true,
       timeout: 30000,
     })
-    await el?.click()
-  } else if (action.type === 'click' && action.selector) {
+  }
+  if (action.text) {
+    return page.waitForSelector(`::-p-text(${action.text})`, {
+      visible: true,
+      timeout: 30000,
+    })
+  }
+  return null
+}
+
+async function runAction(page: Page, action: ScreenshotAction) {
+  if (action.type === 'delay') {
+    await delay(action.ms ?? 500)
+  } else if (action.type === 'click') {
+    // canvas-drawn features (reads, gene glyphs) have no DOM node, so allow a
+    // viewport-coordinate click via action.from
+    if (action.from) {
+      await page.mouse.click(action.from.x, action.from.y)
+    } else {
+      const el = await resolveTarget(page, action)
+      await el?.click()
+    }
+  } else if (action.type === 'rightclick') {
+    if (action.from) {
+      await page.mouse.click(action.from.x, action.from.y, { button: 'right' })
+    } else {
+      const el = await resolveTarget(page, action)
+      await el?.click({ button: 'right' })
+    }
+  } else if (action.type === 'hover') {
+    // a bare coordinate move (e.g. off a read to dismiss its hover tooltip while
+    // a just-opened context menu stays put)
+    if (action.from) {
+      await page.mouse.move(action.from.x, action.from.y)
+    } else {
+      const el = await resolveTarget(page, action)
+      await el?.hover()
+    }
+  } else if (action.type === 'type') {
+    const el = await resolveTarget(page, action)
+    if (action.clear) {
+      await el?.click({ count: 3 })
+    } else {
+      await el?.click()
+    }
+    await page.keyboard.type(action.value ?? '')
+  } else if (action.type === 'drag' && action.from && action.to) {
+    await page.mouse.move(action.from.x, action.from.y)
+    await page.mouse.down()
+    await page.mouse.move(action.to.x, action.to.y, { steps: 20 })
+    await page.mouse.up()
+  } else if (action.type === 'waitForSelector' && action.selector) {
     await page.waitForSelector(action.selector, {
       visible: true,
       timeout: 30000,
     })
-    await page.click(action.selector)
   } else if (action.type === 'waitForText' && action.text) {
     await page.waitForSelector(`::-p-text(${action.text})`, {
       visible: true,
@@ -283,6 +335,71 @@ async function captureUrl(
   await delay(spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
+// Draw spec.annotations as a fixed SVG overlay covering the viewport so the
+// callouts composite into the screenshot, reproducing the red arrows / boxes /
+// text labels of hand-made teaching figures without an external image editor.
+async function drawAnnotations(page: Page, annotations: Annotation[]) {
+  await page.evaluate(items => {
+    const NS = 'http://www.w3.org/2000/svg'
+    const svg = document.createElementNS(NS, 'svg')
+    svg.setAttribute(
+      'style',
+      'position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483647;pointer-events:none',
+    )
+    const defs = document.createElementNS(NS, 'defs')
+    const marker = document.createElementNS(NS, 'marker')
+    marker.setAttribute('id', 'arrowhead')
+    marker.setAttribute('markerWidth', '10')
+    marker.setAttribute('markerHeight', '10')
+    marker.setAttribute('refX', '8')
+    marker.setAttribute('refY', '3')
+    marker.setAttribute('orient', 'auto')
+    const arrowPath = document.createElementNS(NS, 'path')
+    arrowPath.setAttribute('d', 'M0,0 L8,3 L0,6 Z')
+    arrowPath.setAttribute('fill', '#e3242b')
+    marker.appendChild(arrowPath)
+    defs.appendChild(marker)
+    svg.appendChild(defs)
+    for (const a of items) {
+      const color = a.color ?? '#e3242b'
+      if (a.type === 'arrow' && a.from && a.to) {
+        const line = document.createElementNS(NS, 'line')
+        line.setAttribute('x1', String(a.from.x))
+        line.setAttribute('y1', String(a.from.y))
+        line.setAttribute('x2', String(a.to.x))
+        line.setAttribute('y2', String(a.to.y))
+        line.setAttribute('stroke', color)
+        line.setAttribute('stroke-width', '4')
+        line.setAttribute('marker-end', 'url(#arrowhead)')
+        // recolor the shared arrowhead to match the last arrow's stroke
+        arrowPath.setAttribute('fill', color)
+        svg.appendChild(line)
+      } else if (a.type === 'box') {
+        const rect = document.createElementNS(NS, 'rect')
+        rect.setAttribute('x', String(a.x ?? 0))
+        rect.setAttribute('y', String(a.y ?? 0))
+        rect.setAttribute('width', String(a.width ?? 0))
+        rect.setAttribute('height', String(a.height ?? 0))
+        rect.setAttribute('fill', 'none')
+        rect.setAttribute('stroke', color)
+        rect.setAttribute('stroke-width', '3')
+        svg.appendChild(rect)
+      } else if (a.type === 'text' && a.text) {
+        const text = document.createElementNS(NS, 'text')
+        text.setAttribute('x', String(a.x ?? 0))
+        text.setAttribute('y', String(a.y ?? 0))
+        text.setAttribute('fill', color)
+        text.setAttribute('font-family', 'system-ui, sans-serif')
+        text.setAttribute('font-size', String(a.fontSize ?? 18))
+        text.setAttribute('font-weight', '600')
+        text.textContent = a.text
+        svg.appendChild(text)
+      }
+    }
+    document.body.appendChild(svg)
+  }, annotations)
+}
+
 async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
   console.log(`  → ${spec.name}`)
 
@@ -309,6 +426,23 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
       : {}
 
   await assertViewsRendered(page, spec.name)
+
+  if (spec.hideTooltip) {
+    // BaseTooltip renders into a portal with inline z-index:100000 (MUI menus
+    // use 1300), so this targets the lingering hover tooltip without touching
+    // the context menu we want to keep.
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll<HTMLElement>('div')) {
+        if (el.style.zIndex === '100000') {
+          el.style.display = 'none'
+        }
+      }
+    })
+  }
+
+  if (spec.annotations && spec.annotations.length > 0) {
+    await drawAnnotations(page, spec.annotations)
+  }
 
   // Flush any pending WebGL frames to the compositor before capturing
   await page.evaluate(

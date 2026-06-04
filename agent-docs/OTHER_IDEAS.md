@@ -284,3 +284,51 @@ sophisticated abort system
 
 - search advanced panel
 - might need pagefind inverted index
+
+## alignments
+
+ In plugins/alignments we have a system that renders reads with different 'color by' options. but this often does not affect the coverage bar. however, i have had a 'vision' for awhile that actually summarizing the color by of the reads could make interesting coverage visualizations. for example, summarizing per-base quality in coverage, or per-base haplotype tag proportion, or per-base read discordancy, or other things like this. do you think this is worth doing? you can cross reference tools like https://github.com/brentp/bigly/ which also show read discordance measures alongside coverage
+
+This is a great design question. Let me look at how coverage and color-by currently work in the codebase so my opinion is grounded in what you actually have, rather than hand-waving.
+
+  Listed 1 directory, ran 2 shell commands
+
+Interesting — there's already snpCoverage and modCoverage. Let me look at how those work, since they're precedents for exactly the kind of thing you're describing.
+
+  Searched for 2 patterns, read 1 file, ran 2 shell commands
+
+The architecture already has snpCoverage (SNP proportions per base) and modCoverage (modification proportions per base). So you've already proven the core pattern. Let me see how these get wired to the color-by setting and the coverage region build.
+
+  Searched for 1 pattern, read 2 files, ran 1 shell command
+
+Yes — I think this is worth doing, and the strongest evidence is that you've already built two-thirds of the machinery for it. Let me lay out why, and where I'd push back.
+
+You already have the pattern
+
+The coverage track isn't a flat depth bar — it's already a decomposition engine:
+
+- snpCoverage — partitions each column's depth by base (the classic colored coverage)
+- modCoverage — partitions by modification/methylation proportion (computeModificationCoverage)
+- interbaseCoverage — insertions/clips as indicators
+
+runCoveragePipeline.ts is literally a list of "compute layer → pack → draw" steps, and modCoverage gives you a complete template: compute.ts + packGpu.ts + drawCanvas.ts + a .slang shader. So your "vision" isn't a new subsystem — it's new decomposition modes on an existing scaffold. That dramatically changes the cost/benefit: the expensive part (worker plumbing, GPU packing, stacked-segment draw) is solved.
+
+And the input data is mostly already extracted in the worker for the color-by features that exist: MAPQ, pair orientation/discordancy (pair-orientation color-by), tags (color-by-tag), per-base quality (features/perBaseQuality).  already fetch.
+
+Where I'd be selective (not every c summary)
+                                                                                                Ranked by scientific value, since dl of these:
+                                                                                                - MAPQ decomposition / MAPQ0 fractiest-value one. A column that's 60%MAPQ0 instantly flags repetitive/CNV/segdup regions. This is exactly bigly's spirit.            - Discordancy (improper pairs, splibigly's core feature. Stratifyingdepth into concordant vs. discordant surfaces SV breakpoints far better than per-read coloring, where the signal is diluted across
+- Haplotype (HP tag) proportion — genuinely novel and high-value. Allelic balance at a glance,  loss-of-heterozygosity, allele-spec this well.
+                                                                                                The design fork worth getting right
+                                                                                                There are two distinct idioms and y
+                                                                                                - Stacked partition (like snp/modCoso you partition the bar. Works forHP tag, MAPQ bucket, strand, concordant/discordant. ✔                                           - Continuous signal overlay: mean b, fraction-clipped. These aren'tpartitions of depth — they're a line/heatstrip riding on top. Forcing "per-base quality" into a stacked bar produces a misleading v
+                                                                                                So I'd resist the temptation to maker-base quality and insert-size arebetter as a thin signal lane (mean ± a band), not depth decomposition.
+On the "color-by drives coverage" coupling
+It's an elegant, discoverable principle — whatever you color reads by, coverage summarizes the saxis. But I'd decouple the storage  that defaults to follow color-bywhere a mapping exists) rather than hard-binding them, because several color-by modes (insert-sigradient, per-base lettering) have analog. Auto-follow when it maps,fall back to plain depth otherwise.
+Caveats that could make it not worth it
+- Mode sprawl / maintenance: each mode is a compute+pack+draw+shader quadruple (modCoverage alrecarries a hand-written .slang). Thrative ones.
+- Interpretation burden: coverage that means different things per mode can confuse. Needs a clealegend/axis label that changes with
+- Per ADR-016 it belongs in the worker — mode changes infrequently and the per-base pass is     cheap/linear, so this is rpcProps, rf concern.
+                                                                                                Bottom line: worth doing, and cheapoverage already proved the path. I'd start with one mode — MAPQ/discordancy decomposition — as the proof point (highest value, data  already in the worker, directly comnuous metrics as a separatesignal-lane idiom, and make coverage-summary-mode a setting that defaults to following color-by rather than being welded to it.
+
+Want me to sketch the concrete plumon mode against the currentpipeline, or prototype it?

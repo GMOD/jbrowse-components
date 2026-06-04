@@ -39,6 +39,7 @@ import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import { overlayReadTagColors } from './readTagColors.ts'
 import { buildLaidOutPileupMap } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
   arcsToRegionResult,
@@ -1064,6 +1065,38 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Screen boxes for the hovered read / chain, painted by the
+         * `HighlightOverlay` div. Deliberately NOT part of `renderState`: the
+         * hovered id changes on nearly every mousemove, and routing it through
+         * the canvas would repaint the whole pileup each move.
+         */
+        get highlightBoxes() {
+          const view = getContainingView(self) as LGV
+          const chainIds =
+            self.linkedReads === 'normal' ? self.highlightedChainIds : []
+          const ids =
+            chainIds.length > 0
+              ? chainIds
+              : self.featureIdUnderMouse
+                ? [self.featureIdUnderMouse]
+                : []
+          return view.initialized
+            ? computeHighlightBoxes({
+                view,
+                laidOutPileupMap: self.laidOutPileupMap,
+                readIdIndexMap: self.readIdIndexMap,
+                ids,
+                height: self.height,
+                featureHeightSetting: self.featureHeightSetting,
+                featureSpacing: self.featureSpacing,
+                topOffset: self.coverageDisplayHeight,
+                scrollTop: self.scrollTop,
+              })
+            : []
+        },
+
+        /**
          * #method
          */
         searchFeatureByID(
@@ -1184,15 +1217,14 @@ export default function stateModelFactory(
             pileupTopOffset: self.coverageDisplayHeight,
             canvasWidth: view.width,
             canvasHeight: self.height,
-            highlightedFeatureId: self.featureIdUnderMouse,
             selectedFeatureId: self.selectedFeatureId,
-            // Chain highlights are only valid in 'normal' linked-reads mode.
+            // Chain selection is only valid in 'normal' linked-reads mode.
             // Gating here makes a stale selection unrenderable in off/bezier by
             // construction — render correctness no longer depends on any
             // clear-on-transition. The renderers draw on `length > 0` with no
             // mode check, so this is the one place the invariant must hold.
-            highlightedChainIds:
-              self.linkedReads === 'normal' ? self.highlightedChainIds : [],
+            // (Hover highlight lives in `highlightBoxes` / `HighlightOverlay`,
+            // not here, so a hover never triggers a canvas repaint.)
             selectedChainIds:
               self.linkedReads === 'normal' ? self.selectedChainIds : [],
             colors: palette,

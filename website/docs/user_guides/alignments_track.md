@@ -33,7 +33,7 @@ Turn on the "Show soft clipping" option in the track menu to display them. This
 is useful around structural variants and regions with difficult mappability —
 clusters of soft-clipped bases often mark a breakpoint.
 
-<Figure caption="The soft clipping option is a toggle in the 'Pileup settings' menu." src="/img/alignments_soft_clipped_menu.png" />
+<Figure caption="The soft clipping option is a toggle in the track menu's 'Show...' submenu." src="/img/alignments_soft_clipped_menu.png" />
 <Figure caption="Soft-clipping enabled on a simulated long-read dataset. A simulated deletion causes reads to have bases mapping to the other side of the breakpoint." src="/img/alignments_soft_clipped.png" />
 
 ### Sort by options

@@ -24,6 +24,17 @@ MobX tracking.
 | 3 arc recompute | rebuild arcs (no refetch)           | read in `arcsComputed` getter               |
 | 4 rerender      | redraw only                         | read in `renderState` getter                |
 
+**Tier 4 means a full canvas repaint** — every field in `renderState` redraws
+all pileup layers. So per-mousemove state must NOT be tier 4. The hover
+highlight is deliberately a React overlay (`HighlightOverlay` /
+`computeHighlightBoxes` / `model.highlightBoxes`), not a `renderState` field:
+`featureIdUnderMouse` changes on nearly every mousemove, and routing it through
+the canvas re-rasterized the whole pileup each move (catastrophic on the
+Canvas2D fallback with per-base-quality — every base is a `fillRect`). Selection
+(`selectedFeatureId`/`selectedChainIds`) stays in `renderState` on purpose: it
+changes on click (rare) and belongs in SVG export. Don't move the hover
+highlight back into `renderState`.
+
 Gotchas: arc settings
 (`drawInter`/`drawLongRange`/`arcColorByType`/`pairedArcs`) stay tier 3 — don't
 add them to `rpcProps()`. Only `sortedBy.tag` flows to the worker (`sortTag`

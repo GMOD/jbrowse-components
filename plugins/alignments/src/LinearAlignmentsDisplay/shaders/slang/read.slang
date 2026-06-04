@@ -1,9 +1,6 @@
 // Read pass: one 9-vertex "quad + optional chevron cap" per alignment
 // segment. Verts 0..5 draw the body rectangle; 6..8 draw a chevron tip
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
-//
-// highlightOnly=1 mode draws a translucent dark overlay across the full
-// read span (mate-to-mate) for feature/selection highlighting.
 //! targets: wgsl, glsl
 
 import alignmentsUniforms;
@@ -41,10 +38,7 @@ struct Instance {
   int   strand         : ATTR8;
   uint  tagColor       : ATTR9;   // ABGR u32; 0 = not set
   uint  chainHasSupp   : ATTR10;  // 0=no supp, 1=supp + primary fwd, 2=supp + primary rev
-  uint  readIndex      : ATTR11;
-  uint  edgeFlags      : ATTR12;  // bit 0 = is_first, bit 1 = is_last
-  uint  readStartOff   : ATTR13;  // full-read-span start absolute bp (for highlight overlay)
-  uint  readEndOff     : ATTR14;  // absolute bp
+  uint  edgeFlags      : ATTR11;  // bit 0 = is_first, bit 1 = is_last
 };
 
 struct VsOut {
@@ -157,15 +151,6 @@ float3 getReadColor(Instance inst, Uniforms u) {
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
 
-  if (u.highlightOnly == 1 && (u.highlightIdx < 0 || uint(u.highlightIdx) != inst.readIndex)) {
-    o.position = float4(0.0);
-    o.color = float4(0.0);
-    o.localPos = float2(0.0);
-    o.featSize = float2(0.0);
-    o.edgeFlag = 0.0;
-    return o;
-  }
-
   uint v = vid % 9u;
   float sx1 = hpClipX(hpSplitUint(inst.startOff), u);
   float sx2 = hpClipX(hpSplitUint(inst.endOff), u);
@@ -185,16 +170,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sx, sy, lx, ly;
   float ef = 0.0;
 
-  if (u.highlightOnly == 1) {
-    // Overlay spans full read (incl. introns) for cross-segment highlight.
-    float hlSx1 = hpClipX(hpSplitUint(inst.readStartOff), u);
-    float hlSx2 = hpClipX(hpSplitUint(inst.readEndOff), u);
-    lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
-    ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
-    sx = lerp(hlSx1, hlSx2, lx);
-    sy = lerp(syBot, syTop, ly);
-    if (v >= 6u) { sx = hlSx1; sy = syTop; lx = 0.5; ly = 0.5; }
-  } else if (v < 6u) {
+  if (v < 6u) {
     lx = (v == 0u || v == 2u || v == 3u) ? 0.0 : 1.0;
     ly = (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0;
     sx = lerp(sx1, sx2, lx);
@@ -231,12 +207,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.localPos = float2(lx, ly);
   o.edgeFlag = ef;
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
-
-  if (u.highlightOnly == 1) {
-    o.color = float4(0.0, 0.0, 0.0, 0.4);
-  } else {
-    o.color = float4(getReadColor(inst, u), 1.0);
-  }
+  o.color = float4(getReadColor(inst, u), 1.0);
   return o;
 }
 

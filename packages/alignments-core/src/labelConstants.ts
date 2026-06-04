@@ -128,9 +128,9 @@ export function drawInsertionMarker(
     ctx.closePath()
     ctx.fill()
     ctx.beginPath()
-    ctx.moveTo(xCenter - 2, y + height)
-    ctx.lineTo(xCenter + 2, y + height)
-    ctx.lineTo(xCenter, y + height - 2)
+    ctx.moveTo(xCenter - 2, y + height - 1)
+    ctx.lineTo(xCenter + 2, y + height - 1)
+    ctx.lineTo(xCenter, y + height - 3)
     ctx.closePath()
     ctx.fill()
   }

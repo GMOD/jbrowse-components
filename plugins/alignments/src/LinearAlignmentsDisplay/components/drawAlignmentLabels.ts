@@ -35,7 +35,7 @@ export function drawAlignmentLabels(
     } else if (label.type === 'mismatch') {
       fillColor = contrastMap[label.text] ?? 'black'
     } else if (label.type === 'deletion') {
-      fillColor = 'black'
+      fillColor = white
     } else {
       fillColor = white
     }

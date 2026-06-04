@@ -22,7 +22,6 @@ export function packReadSegments(data: ReadUploadData): ArrayBuffer {
   const tagColors = data.readTagColors
   const hasTagColors = tagColors.length > 0
   const chainHasSupp = data.readChainHasSupp
-  const readPositions = data.readPositions
   const readYs = data.readYs
   const readFlags = data.readFlags
   const readMapqs = data.readMapqs
@@ -47,10 +46,7 @@ export function packReadSegments(data: ReadUploadData): ArrayBuffer {
     i32[o + F.strand] = readStrands[ri]!
     u32[o + F.tagColor] = hasTagColors ? tagColors[ri]! : 0
     u32[o + F.chainHasSupp] = chainHasSupp ? chainHasSupp[ri]! : 0
-    u32[o + F.readIndex] = ri
     u32[o + F.edgeFlags] = segmentEdgeFlags[j]!
-    u32[o + F.readStartOff] = readPositions[ri * 2]!
-    u32[o + F.readEndOff] = readPositions[ri * 2 + 1]!
   }
   return buf
 }

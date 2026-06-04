@@ -58,8 +58,6 @@ public struct Uniforms {
 
   // Flags (ints / float-as-bool)
   public int colorScheme;
-  public int highlightIdx;
-  public int highlightOnly;
   public int chainMode;
   public int showStroke;
   public int flipStrandLongRead;

@@ -1,8 +1,40 @@
 export interface ScreenshotAction {
-  type: 'click' | 'waitForText' | 'delay'
+  type:
+    | 'click'
+    | 'rightclick'
+    | 'hover'
+    | 'type'
+    | 'drag'
+    | 'waitForText'
+    | 'waitForSelector'
+    | 'delay'
   selector?: string
   text?: string
   ms?: number
+  // for 'type': text to type into the focused/selected input
+  value?: string
+  // for 'type': triple-click the field to select existing content first
+  clear?: boolean
+  // for 'drag': start/end points in viewport CSS px (used for rubberband drags)
+  from?: { x: number; y: number }
+  to?: { x: number; y: number }
+}
+
+// A callout drawn over the captured page (SVG overlay) before the screenshot,
+// to reproduce the red arrows / boxes / text labels that hand-made teaching
+// figures use. Coordinates are viewport CSS px.
+export interface Annotation {
+  type: 'arrow' | 'box' | 'text'
+  // arrow: tail -> head; box uses x/y/width/height; text uses x/y as baseline
+  from?: { x: number; y: number }
+  to?: { x: number; y: number }
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  text?: string
+  color?: string // default red (#e3242b)
+  fontSize?: number // text, default 18
 }
 
 interface CommonSpecFields {
@@ -12,6 +44,11 @@ interface CommonSpecFields {
   // capture-viewport height in CSS px for this spec (default 800); raise it for
   // tall multi-row pileups so the track isn't clipped by the default viewport
   viewportHeight?: number
+  // callouts drawn over the page before capture (arrows/boxes/text)
+  annotations?: Annotation[]
+  // suppress the hover/right-click BaseTooltip (which lingers while a context
+  // menu is open) so it doesn't clutter the capture
+  hideTooltip?: boolean
 }
 
 // Mode 1: navigate to app, interact via UI to open tracks.
@@ -373,6 +410,194 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 5000,
+  },
+
+  // The top-level "Add" menu (Circular / Dotplot / Linear genome / Linear
+  // synteny / Tabular data / SV inspector), cropped to the menu for the
+  // developer "menus" guide. Replaces a stale capture where Add was nested
+  // under File.
+  {
+    mode: 'url',
+    name: 'top_level_menus',
+    url: `?config=${VOLVOX}&sessionName=Screenshot`,
+    readyText: 'ctgA',
+    settleMs: 2500,
+    actions: [
+      { type: 'click', text: 'Add' },
+      { type: 'waitForText', text: 'Linear genome view' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // About track dialog (config + file header), opened from the track menu of a
+  // CRAM track so the FILE INFO panel shows the full @SQ/@PG header.
+  {
+    mode: 'url',
+    name: 'about_track',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['volvox_cram'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'About track' },
+      { type: 'waitForText', text: 'AlignmentsTrack' },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // Location-search autocomplete: typing a gene name into the search box surfaces
+  // matching features from the assembly's text-search index.
+  {
+    mode: 'url',
+    name: 'searching_lgv',
+    url: `?config=${VOLVOX}&sessionName=Screenshot`,
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      {
+        type: 'type',
+        selector: 'input[placeholder="Search for location"]',
+        value: 'eden',
+        clear: true,
+      },
+      { type: 'waitForText', text: 'EDEN.1' },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // Rubberband selection on the main scalebar, which pops the "Zoom to region /
+  // Get sequence / Copy range / Bookmark region" menu.
+  {
+    mode: 'url',
+    name: 'rubberband',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['volvox_cram'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 5000,
+    actions: [
+      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      { type: 'waitForText', text: 'Zoom to region' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  // The LGV view (hamburger) menu open, showing the "Show center line" toggle.
+  {
+    mode: 'url',
+    name: 'alignments_center_line_menu',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:2615-2725',
+          tracks: ['volvox-long-reads-sv-cram'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'delay', ms: 500 },
+      { type: 'hover', text: 'Show...' },
+      { type: 'waitForText', text: 'Show center line' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Track menu -> "Show..." submenu exposing the "Show soft clipping" toggle.
+  {
+    mode: 'url',
+    name: 'alignments_soft_clipped_menu',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:2615-2725',
+          tracks: ['volvox-long-reads-sv-cram'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'delay', ms: 500 },
+      { type: 'hover', text: 'Show...' },
+      { type: 'waitForText', text: 'Show soft clipping' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Right-click context menu on a read in a LinearAlignmentsDisplay (Open
+  // feature details / Copy info / Dotplot of read vs ref / Linear read vs ref).
+  // Read glyphs are canvas-drawn, so the rightclick uses a viewport coordinate;
+  // a follow-up mouse move off the read clears its hover tooltip.
+  {
+    mode: 'url',
+    name: 'linear_align_ctx_menu',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1000-3000',
+          tracks: ['volvox-long-reads-sv-cram'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 6000,
+    hideTooltip: true,
+    actions: [
+      { type: 'rightclick', from: { x: 400, y: 250 } },
+      { type: 'waitForText', text: 'Linear read vs ref' },
+      { type: 'delay', ms: 800 },
+    ],
+  },
+
+  // Variant feature-details panel for an SNV, with the per-sample genotype table
+  // in the SAMPLES section. Opened by clicking the SNV's floating label.
+  {
+    mode: 'url',
+    name: 'variant_panel',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:6257-6305',
+          tracks: ['volvox_test_vcf'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'C -> T' },
+      { type: 'waitForText', text: 'HG00096' },
+      { type: 'delay', ms: 1500 },
+    ],
   },
 
   // The Filter by dialog (SAM flag bitmask editor), opened by driving the track

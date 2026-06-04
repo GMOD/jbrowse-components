@@ -15,6 +15,7 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
+import HighlightOverlay from './HighlightOverlay.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import TlenAxisLabel from './TlenAxisLabel.tsx'
@@ -185,6 +186,8 @@ const PileupBody = observer(function PileupBody({
         handleClick={handleClick}
         handleContextMenu={handleContextMenu}
       />
+
+      <HighlightOverlay model={model} />
 
       <SashimiArcsOverlay model={model} />
       <PileupBezierOverlay model={model} />

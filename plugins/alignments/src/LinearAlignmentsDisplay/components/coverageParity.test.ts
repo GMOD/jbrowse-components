@@ -329,7 +329,6 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         colorSoftclip: [0, 0.5, 1] as [number, number, number],
         colorHardclip: [1, 0.5, 0] as [number, number, number],
       },
-      highlightedChainIds: [],
       selectedChainIds: [],
       showInterbaseIndicators: false,
       start: REGION_START,

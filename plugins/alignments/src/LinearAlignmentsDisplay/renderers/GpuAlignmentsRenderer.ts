@@ -163,8 +163,6 @@ function fillFrameUniforms(
   f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
   i[U.colorScheme] = state.colorScheme
-  i[U.highlightIdx] = -1
-  i[U.highlightOnly] = 0
   // Chain layout drives read-coloring (supplementary colors, strand flipping,
   // mate-unmapped coloring, chevrons). The bezier connection overlay is
   // orthogonal and does not switch coloring into chain mode.
@@ -576,6 +574,14 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         this.hal.drawPass(PASS_OVERLAP, block.displayedRegionIndex)
       }
 
+      if (state.showModifications) {
+        this.hal.drawPass(PASS_MOD, block.displayedRegionIndex)
+      }
+
+      if (state.showPerBaseQuality) {
+        this.hal.drawPass(PASS_PER_BASE_QUAL, block.displayedRegionIndex)
+      }
+
       if (state.showMismatches) {
         this.hal.drawPass(PASS_GAP, block.displayedRegionIndex)
         this.hal.drawPass(PASS_MISMATCH, block.displayedRegionIndex)
@@ -585,14 +591,6 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       this.hal.drawPass(PASS_CLIP, block.displayedRegionIndex)
       if (state.showSoftClipping) {
         this.hal.drawPass(PASS_SOFTCLIP_BASES, block.displayedRegionIndex)
-      }
-
-      if (state.showModifications) {
-        this.hal.drawPass(PASS_MOD, block.displayedRegionIndex)
-      }
-
-      if (state.showPerBaseQuality) {
-        this.hal.drawPass(PASS_PER_BASE_QUAL, block.displayedRegionIndex)
       }
 
       if (state.showPerBaseLetter) {
@@ -698,20 +696,15 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   ) {
     const { region, clippedBpStart, clippedBpEnd } = frame
     const bpLen = clippedBpEnd - clippedBpStart
-    const regionHighlightIdx = state.highlightedFeatureId
-      ? (region.readIdToIndex.get(state.highlightedFeatureId) ?? -1)
-      : -1
     const regionSelectIdx = state.selectedFeatureId
       ? (region.readIdToIndex.get(state.selectedFeatureId) ?? -1)
       : -1
 
-    const needsFeatureHighlight =
-      state.highlightedChainIds.length === 0 && regionHighlightIdx >= 0
     const needsFeatureSelection =
       state.selectedChainIds.length === 0 && regionSelectIdx >= 0
 
     const covOff = state.pileupTopOffset
-    // Capture per-block transforms so the 3 toClipRect call sites below
+    // Capture per-block transforms so the toClipRect call sites below
     // don't each have to repeat the same 7 uniform-derived args.
     const clipFor = (absStart: number, absEnd: number, y: number) =>
       toClipRect(
@@ -770,56 +763,20 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       )
     }
 
-    if (
-      (needsFeatureHighlight || needsFeatureSelection) &&
-      this.hal.getBufferCount(block.displayedRegionIndex, PASS_READ) > 0
-    ) {
-      if (needsFeatureHighlight) {
-        this.saveUBO()
-        this.uI32[U.highlightOnly] = 1
-        this.uI32[U.highlightIdx] = regionHighlightIdx
-        this.hal.writeUniforms(this.uData)
+    // Selection frames (single read + chain) accumulate into one quad buffer
+    // and draw together — the hover highlight moved to the HighlightOverlay div.
+    const quads: number[] = []
 
-        const vpX = Math.round(scissorX * dpr)
-        const vpW = Math.round(scissorW * dpr)
-        this.hal.setViewport(vpX, 0, vpW, bufH)
-        this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
-        this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
-
-        this.restoreUBO()
-        this.hal.writeUniforms(this.uData)
-      }
-
-      if (needsFeatureSelection) {
-        const idx = regionSelectIdx
-        const clip = clipFor(
+    if (needsFeatureSelection) {
+      const idx = regionSelectIdx
+      pushSelectionFrame(
+        quads,
+        clipFor(
           region.readPositions[idx * 2]!,
           region.readPositions[idx * 2 + 1]!,
           region.readYs[idx]!,
-        )
-        const frame: number[] = []
-        pushSelectionFrame(frame, clip)
-        this.drawOverlayQuads(
-          new Float32Array(frame),
-          4,
-          scissorX,
-          scissorW,
-          pileupTop,
-          pileupH,
-          bufH,
-          dpr,
-        )
-      }
-    }
-
-    const quads: number[] = []
-
-    if (state.highlightedChainIds.length > 0) {
-      const bounds = getChainBounds(state.highlightedChainIds, region)
-      if (bounds) {
-        const clip = clipFor(bounds.startBp, bounds.endBp, bounds.yRow)
-        quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
-      }
+        ),
+      )
     }
 
     if (state.selectedChainIds.length > 0) {

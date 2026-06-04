@@ -209,9 +209,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get loadingMessage() {
         if (self.awaitingAutoDiagonalize) {
-          return 'Reordering chromosomes…'
+          return 'Reordering chromosomes'
+        } else {
+          return this.showLoading ? 'Loading' : undefined
         }
-        return this.showLoading ? 'Loading' : undefined
       },
       /**
        * #getter
