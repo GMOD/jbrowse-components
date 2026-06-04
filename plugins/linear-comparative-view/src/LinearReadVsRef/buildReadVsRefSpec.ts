@@ -1,5 +1,5 @@
 import { buildReadVsRefFeatures } from '@jbrowse/alignments-core'
-import { gatherOverlaps } from '@jbrowse/core/util'
+import { gatherOverlaps, truncateMiddle } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -71,7 +71,8 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
   const stamp = now()
   const readAssembly = `${readName}_assembly_${stamp}`
   const syntenyTrackId = `track-${stamp}`
-  const syntenyTrackName = `${readName}_vs_${trackAssembly}`
+  const shortName = truncateMiddle(readName)
+  const syntenyTrackName = `${shortName}_vs_${trackAssembly}`
   const seqTrackId = `${readName}_${stamp}`
 
   // features are already sorted along the read; assign canonical refNames and
@@ -124,7 +125,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     },
     viewSpec: {
       type: 'LinearSyntenyView',
-      displayName: `${readName} vs ${trackAssembly}`,
+      displayName: `${shortName} vs ${trackAssembly}`,
       views: [
         {
           type: 'LinearGenomeView',

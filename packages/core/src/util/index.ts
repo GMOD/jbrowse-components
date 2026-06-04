@@ -269,6 +269,14 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined
 }
 
+export function truncateMiddle(str: string, maxLen = 40) {
+  if (str.length <= maxLen) {
+    return str
+  }
+  const half = Math.floor((maxLen - 3) / 2)
+  return `${str.slice(0, half)}...${str.slice(-half)}`
+}
+
 export function stripAlpha(str: string) {
   return colord(str).alpha(1).toHex()
 }

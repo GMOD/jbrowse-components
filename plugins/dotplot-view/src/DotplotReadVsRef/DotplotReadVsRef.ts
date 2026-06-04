@@ -1,6 +1,6 @@
 import { buildReadVsRefFeatures } from '@jbrowse/alignments-core'
 import { getConf } from '@jbrowse/core/configuration'
-import { gatherOverlaps, getSession, sum } from '@jbrowse/core/util'
+import { gatherOverlaps, getSession, sum, truncateMiddle } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
@@ -16,7 +16,8 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
     const readAssembly = `${readName}_assembly_${stamp}`
     const assemblyNames = [trackAssembly!, readAssembly]
     const trackId = `track-${stamp}`
-    const trackName = `${readName}_vs_${trackAssembly}`
+    const shortName = truncateMiddle(readName)
+    const trackName = `${shortName}_vs_${trackAssembly}`
 
     // The synthetic read assembly must be registered for the DotplotView to
     // initialize (assembliesInitialized gates on every assemblyName resolving);
@@ -98,7 +99,7 @@ export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
         },
       ],
 
-      displayName: `${readName} vs ${trackAssembly}`,
+      displayName: `${shortName} vs ${trackAssembly}`,
     })
   } catch (e) {
     console.error(e)
