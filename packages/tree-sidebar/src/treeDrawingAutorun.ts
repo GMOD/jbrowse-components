@@ -22,6 +22,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           hierarchy,
           treeAreaWidth,
           height,
+          lineZoneHeight = 0,
           scrollTop = 0,
         } = self
 
@@ -34,9 +35,25 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           return
         }
 
+        // Own the backing-store size here rather than letting React set the
+        // canvas width/height attributes: a React-driven resize clears the
+        // canvas, and since this autorun fires synchronously on the state
+        // change (before React commits), a resize landing afterward would wipe
+        // the freshly drawn tree with no follow-up redraw. Sizing and drawing
+        // in the same reaction keeps them atomic.
+        const contentHeight = height - lineZoneHeight
+        const w = treeAreaWidth * 2
+        const h = contentHeight * 2
+        if (treeCanvas.width !== w) {
+          treeCanvas.width = w
+        }
+        if (treeCanvas.height !== h) {
+          treeCanvas.height = h
+        }
+
         ctx.resetTransform()
         ctx.scale(2, 2)
-        ctx.clearRect(0, 0, treeAreaWidth, height)
+        ctx.clearRect(0, 0, treeAreaWidth, contentHeight)
 
         ctx.translate(0, -scrollTop)
         ctx.strokeStyle = '#0008'
@@ -77,6 +94,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           rowHeight,
           hoveredTreeNode,
           height,
+          lineZoneHeight = 0,
           scrollTop = 0,
           sources,
         } = self
@@ -95,7 +113,17 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
         const viewWidth = view.width
 
-        ctx.clearRect(0, 0, viewWidth, height)
+        // Own the backing-store size here (see treeDrawAutorun) so a
+        // React-driven resize can't clear the highlight out from under us.
+        const contentHeight = height - lineZoneHeight
+        if (mouseoverCanvas.width !== viewWidth) {
+          mouseoverCanvas.width = viewWidth
+        }
+        if (mouseoverCanvas.height !== contentHeight) {
+          mouseoverCanvas.height = contentHeight
+        }
+
+        ctx.clearRect(0, 0, viewWidth, contentHeight)
 
         if (hierarchy && hoveredTreeNode && sources) {
           ctx.save()

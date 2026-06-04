@@ -107,8 +107,6 @@ const TreeSidebar = observer(function TreeSidebar({
         />
         <canvas
           ref={treeCanvasRef}
-          width={treeAreaWidth * 2}
-          height={contentHeight * 2}
           style={{
             width: treeAreaWidth,
             height: contentHeight,
@@ -120,8 +118,6 @@ const TreeSidebar = observer(function TreeSidebar({
         />
         <canvas
           ref={mouseoverCanvasRef}
-          width={viewWidth}
-          height={contentHeight}
           style={{
             width: viewWidth,
             height: contentHeight,

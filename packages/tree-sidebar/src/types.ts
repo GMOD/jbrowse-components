@@ -43,6 +43,7 @@ export interface TreeDrawingModel {
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number
+  lineZoneHeight?: number
   scrollTop?: number
   rowHeight: number
   totalHeight?: number
