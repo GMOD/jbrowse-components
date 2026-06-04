@@ -93,6 +93,27 @@ describe('getTrackConfigs', () => {
     expect(tracks.map(t => t.trackId)).toEqual(['vcf_track'])
   })
 
+  test('skips tracks with metadata.skipTextIndex', () => {
+    const config: Config = {
+      assemblies: [{ name: 'test_assembly' } as Assembly],
+      tracks: [
+        ...mockConfig.tracks!,
+        {
+          trackId: 'skipped_gff3_track',
+          name: 'Skipped GFF3 Track',
+          assemblyNames: ['test_assembly'],
+          metadata: { skipTextIndex: true },
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: { uri: 'skipped.gff3.gz' },
+          },
+        },
+      ],
+    }
+    const tracks = getTrackConfigs(config, undefined, 'test_assembly')
+    expect(tracks.map(t => t.trackId)).toEqual(['gff3_track', 'vcf_track'])
+  })
+
   test('returns empty array when no tracks in config', () => {
     const emptyConfig: Config = { assemblies: [] }
     const tracks = getTrackConfigs(emptyConfig, undefined, 'test_assembly')

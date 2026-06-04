@@ -1267,6 +1267,36 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_jexl_color",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (per-feature jexl color)",
+      "category": ["Miscellaneous"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3tabix_genes_jexl_color_linear",
+          "color": "jexl:get(feature,'type')=='CDS'?'#d62728':get(feature,'type')=='exon'?'#2ca02c':'#1f77b4'"
+        }
+      ]
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted.cram",
@@ -2479,6 +2509,9 @@
       "assemblyNames": ["volvox"],
       "name": "Custom Tooltips (mouseover callback)",
       "category": ["Label Positioning Examples"],
+      "metadata": {
+        "skipTextIndex": true
+      },
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -2517,6 +2550,9 @@
       "assemblyNames": ["volvox"],
       "name": "_mouseOver Attributes",
       "category": ["Label Positioning Examples"],
+      "metadata": {
+        "skipTextIndex": true
+      },
       "adapter": {
         "type": "Gff3Adapter",
         "gffLocation": {
@@ -2606,6 +2642,9 @@
       "name": "volvox variants (vg deconstruct -a -u)",
       "category": ["Synteny"],
       "assemblyNames": ["volvox"],
+      "metadata": {
+        "skipTextIndex": true
+      },
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {

@@ -119,6 +119,9 @@ export function getTrackConfigs(
       if (excludeSet.has(track.trackId)) {
         return false
       }
+      if (track.metadata?.skipTextIndex) {
+        return false
+      }
       if (!supported(track.adapter?.type)) {
         return false
       }

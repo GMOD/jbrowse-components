@@ -321,11 +321,12 @@ test('indexes single assembly volvox config', async () => {
       '--force',
       '--attributes',
       'Name,ID,Note',
-      '--excludeTracks',
-      'gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf',
     ])
+    // tracks excluded from indexing carry metadata.skipTextIndex in the volvox
+    // config (gff3_custom_tooltips, gff3_mouseover_attr, volvox_variants_vcf,
+    // gff3tabix_genes_jexl_color), so no --excludeTracks flag is needed.
     // to update (e.g. if volvox config is updated) run:
-    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force --excludeTracks gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
@@ -345,11 +346,12 @@ test('indexes entire volvox config', async () => {
       '--force',
       '--attributes',
       'Name,ID,Note',
-      '--excludeTracks',
-      'gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf',
     ])
+    // tracks excluded from indexing carry metadata.skipTextIndex in the volvox
+    // config (gff3_custom_tooltips, gff3_mouseover_attr, volvox_variants_vcf,
+    // gff3tabix_genes_jexl_color), so no --excludeTracks flag is needed.
     // to update (e.g. if volvox config is updated) run:
-    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force --excludeTracks gff3_custom_tooltips,gff3_mouseover_attr,volvox_variants_vcf
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)

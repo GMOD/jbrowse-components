@@ -42,6 +42,12 @@ export interface Track {
     indexingAttributes?: string[]
     [key: string]: unknown
   }
+  metadata?: {
+    // when true, `jbrowse text-index` always skips this track (declarative
+    // equivalent of passing its trackId to --excludeTracks)
+    skipTextIndex?: boolean
+    [key: string]: unknown
+  }
   name: string
   assemblyNames: string[]
   trackId: string
