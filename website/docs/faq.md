@@ -173,7 +173,7 @@ If you've manually downloaded jbrowse-web, the newest releases can be found
 
 The CLI is the easiest way to add assemblies and tracks — `jbrowse add-track`
 will figure out the track type, index files, and config entries for you — so we
-recommend it for most setups. But it is not required.
+recommend it for most setups. But it's optional.
 
 To set up JBrowse without the CLI, download a zip from the
 [releases page](https://github.com/GMOD/jbrowse-components/releases) and unzip
@@ -308,15 +308,14 @@ gzip on;
 gzip_types application/json text/plain text/html text/css text/javascript application/javascript;
 ```
 
-To enable compression in Apache, you can use the mod_deflate module.
+To enable compression in Apache, use the `mod_deflate` module:
 
 ```
 sudo a2enmod deflate
 sudo systemctl restart apache2
 ```
 
-Add the following configuration to your Apache configuration file (e.g.,
-/etc/apache2/sites-available/000-default.conf):
+Then add to your Apache config (e.g. `/etc/apache2/sites-available/000-default.conf`):
 
 ```
 <IfModule mod_deflate.c>
@@ -326,8 +325,7 @@ Add the following configuration to your Apache configuration file (e.g.,
 
 ```
 
-With gzip enabled, config.json and other specified files are served compressed,
-reducing download sizes.
+With gzip enabled, `config.json` and other text files are served compressed.
 
 ## Behavior and design
 
@@ -382,8 +380,8 @@ JBrowse uses "stats estimation" rules to decide when to show this message:
 - Hi-C, BigWig, and sequence adapters are hardcoded to `{ featureDensity:0 }`
   and always render
 
-If you need to customize your particular track, you can set config variables on
-the "display" section of your config
+To customize this for a specific track, set these config variables on the
+`displays` section:
 
 - `maxFeatureScreenDensity` - the maximum number of features per pixel allowed
   before the "zoom in to see features" message is shown (default 0.3)
@@ -450,27 +448,28 @@ Example config for a CRAM file with a small `fetchSizeLimit` configured:
 
 ### Why am I running out of disk space while trix is running
 
-The `jbrowse text-index` program will output data to a TMP directory while
-indexing. If your filesystem has low diskspace for /tmp you can set an
-alternative temporary directory using the environment variable
-`TMPDIR=~/alt_tmp_dir/ jbrowse text-index`.
+`jbrowse text-index` writes temporary data to `/tmp`. If that filesystem is
+low on space, override the directory with:
+
+```bash
+TMPDIR=~/alt_tmp_dir jbrowse text-index
+```
 
 ### How does the jbrowse text-index trix format work
 
-The `jbrowse text-index` command creates text searching indexes using `trix`.
-The trix indexes are based on the format described by UCSC here
-https://genome.ucsc.edu/goldenPath/help/trix.html, but we re-implemented the
-code to create these index formats in the JBrowse CLI so you do not have to
-install the UCSC tools.
+The `jbrowse text-index` command creates text search indexes using `trix`.
+The trix format follows the
+[UCSC trix spec](https://genome.ucsc.edu/goldenPath/help/trix.html), but is
+re-implemented in the JBrowse CLI so you don't need UCSC tools.
 
-The main idea is that you give trix:
+Given input like:
 
 ```
 GENEID001  Wnt signalling
 GENEID002  ey  Pax6
 ```
 
-Then this will generate a new file, the .ix file, sorted in alphabetical order:
+It generates an `.ix` file, sorted alphabetically:
 
 ```
 ey  GENEID002
@@ -479,16 +478,15 @@ signalling  GENEID001
 Wnt  GENEID001
 ```
 
-Then a second file, the `.ixx` file, tells us at what byte offset certain lines
-in the file are e.g.
+A second file, `.ixx`, records the byte offset of each line, e.g.:
 
 ```
 signa000000435
 ```
 
-Note that JBrowse creates a specialized trix index also. Instead of creating a
-`ix` file with just the gene names, it also provides their name and location in
-an encoded format.
+JBrowse also extends the standard trix format: the `.ix` file includes each
+feature's name and genomic location in an encoded format, not just the gene
+name.
 
 ## URL params
 
@@ -498,12 +496,12 @@ Sessions can grow too large to fit in a URL, so JBrowse stores the session in
 sessionStorage/IndexedDB and keeps only the session ID in the URL bar. Use the
 Share button to generate a proper shareable link.
 
-Note 1: @jbrowse/react-linear-genome-view2 makes no attempt to access URL query
-params — that logic must be implemented by the embedding application.
+`@jbrowse/react-linear-genome-view2` makes no attempt to access URL query params
+— that logic must be implemented by the embedding application.
 
-Note 2: Pasting the URL bar into another tab on the same computer will restore
-the session from sessionStorage (same tab) or IndexedDB (new tab), but those
-sessions are not accessible to other users.
+Pasting the URL bar into another tab on the same computer restores the session
+from sessionStorage (same tab) or IndexedDB (new tab), but those sessions are
+not accessible to other users.
 
 ### How does session sharing with shortened URLs work in JBrowse Web
 

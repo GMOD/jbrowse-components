@@ -32,8 +32,8 @@ tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and
 
 ## SV signals in the alignments track
 
-The standard alignments track gives you several SV-relevant signals without
-requiring any extra steps:
+The standard alignments track gives you several SV-relevant signals without any
+extra steps:
 
 - **Soft clipping** — reads that extend past a breakpoint have their overhanging
   bases soft-clipped; enabling Show soft clipping from the track menu makes

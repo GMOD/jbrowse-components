@@ -7,7 +7,7 @@ guide_category: Callbacks and customization
 We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration
 callbacks.
 
-An example of a Jexl configuration callback might look like this:
+A Jexl configuration callback looks like this:
 
 ```json
     "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
@@ -114,10 +114,8 @@ The equivalent with concatenation:
 
 ### Making sophisticated color callbacks
 
-If you have a color callback that has a lot of logic in it, then using jexl to
-express all that logic may be hard. Instead, you can make a small plugin which
-adds a function to the jexl language, and call that function in your jexl
-callback.
+For complex color callbacks, write a plugin that adds a function to the jexl
+language and call it from your callback.
 
 For example, create a file named "myplugin.js":
 
@@ -126,8 +124,8 @@ For example, create a file named "myplugin.js":
 The example below uses the IIFE/`umdLoc` format. If you are using `esmLoc`, use
 `export default class MyPlugin` instead (see
 [customizing feature colors](/docs/config_guides/customizing_feature_colors) for
-that pattern). `myplugin.js` does not need the jbrowse-plugin-template as long
-as it is self-contained and does not import other modules.
+that pattern). `myplugin.js` doesn't need jbrowse-plugin-template as long as it's
+self-contained and doesn't import other modules.
 
 :::
 

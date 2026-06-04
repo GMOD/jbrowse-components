@@ -7,7 +7,7 @@ guide_category: Other features
 Text searching comes in two forms: per-track indexes, and aggregate indexes that
 search across multiple tracks.
 
-Aggregate indexes may look like this:
+An aggregate index looks like this:
 
 ```json
 {
@@ -33,7 +33,7 @@ Aggregate indexes may look like this:
 }
 ```
 
-An example per-track config may look like this:
+A per-track config looks like this:
 
 ```json
 {

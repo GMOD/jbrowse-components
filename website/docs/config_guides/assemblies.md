@@ -51,7 +51,7 @@ Here is a complete config.json file containing only the hg19 assembly:
 
 Each assembly contains:
 
-- `name` - a name to refer to the assembly by; each track references this name
+- `name` - unique assembly name; each track references this name
 - `aliases` - alternate names for the assembly (e.g. hg19/GRCh37). Aliases are
   most useful when connecting to a UCSC trackHub, which specifies assembly names
   that may differ from your own

@@ -15,7 +15,7 @@ the graphical admin interface.
 
 ## Prerequisites
 
-This tutorial requires the following software
+This tutorial requires the following software:
 
 - [JBrowse CLI](/docs/quickstart_web/#installing-the-jbrowse-cli)
 
@@ -50,17 +50,16 @@ To start the `admin-server`, navigate into your JBrowse 2 directory and run:
 jbrowse admin-server
 ```
 
-This will then generate a link that you can visit in your web browser:
+This generates a link you can visit in your web browser:
 
-<Figure caption="JBrowse CLI admin-server output, which provides a link that can be used." src="/img/admin_server.png"/>
+<Figure caption="JBrowse CLI admin-server output showing the access link." src="/img/admin_server.png"/>
 
 ## Adding a genome assembly
 
 A key first step in configuring a genome browser is adding an assembly to view.
 To do this, open the Assembly manager from the menu bar.
 
-This opens up a table which can be used to create, edit, and delete assemblies
-in your application:
+This opens a table to create, edit, and delete assemblies in your application:
 
 <Figure caption="Screenshot showing the assembly manager, with no assemblies loaded yet." src="/img/assembly_manager.png"/>
 
@@ -123,12 +122,11 @@ The following file formats are supported in core JBrowse 2:
 - .hic (Hi-C contact matrix visualization)
 
 Additional data formats can be supported via plugins; check out the
-[plugin store](/plugin_store).
+[plugin store](/docs/user_guides/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
-Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
-as e.g. filename+'.bai'. If it is different from this, make sure to specify the
-index file explicitly.
+Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files (e.g. `filename.bai`); specify
+it explicitly if yours differs.
 
 ### Editing a track
 
@@ -145,8 +143,8 @@ value for a given track.
 
 ## Setting a default session
 
-It is also possible to use the graphical admin server to set the default session
-of your JBrowse 2 instance. This is the session that will appear when JBrowse 2
+You can also use the graphical admin server to set the default session of your
+JBrowse 2 instance. This is the session that will appear when JBrowse 2
 is first visited. To do so, open the Set default session form (Admin menu):
 
 <Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session." src="/img/default_session_form.png"/>

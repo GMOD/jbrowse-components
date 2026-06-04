@@ -11,20 +11,19 @@ https://www.npmjs.com/package/@jbrowse/img.
 
 ## Installation
 
-The command line tools can be installed globally using `npm` as follows
+Install globally with `npm`:
 
 ```bash
 $ npm install -g @jbrowse/cli
 ```
 
-A CLI tool called `jbrowse` should then be available in the path. You can test
-your installation with
+A `jbrowse` command should then be available in your PATH. Test with:
 
 ```bash
 $ jbrowse --version
 ```
 
-It is also possible to do one-off executions using npx, e.g.
+For one-off runs, use npx:
 
 ```bash
 npx @jbrowse/cli create myfolder

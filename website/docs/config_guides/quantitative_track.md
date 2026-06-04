@@ -27,7 +27,7 @@ Example QuantitativeTrack config:
 #### Display options
 
 Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
-`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are slots on the
+`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) live on
 `LinearWiggleDisplay`, not on the track. Setting them at the track top level has
 no effect — nest them in a `displays` entry to change the defaults:
 

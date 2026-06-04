@@ -2,12 +2,10 @@
 title: Initializing and launching views
 ---
 
-There is **one concept** for telling a view what to show when it opens: a
-declarative `init` spec. The same set of fields — assembly, location, tracks,
-track selector, header, highlights — is used everywhere a view is launched,
-whether from a URL, an embedded component, or a config/session file. This page
-explains that one concept and points you to the detailed reference for whichever
-surface you are using.
+Whether you're launching a view from a URL, an embedded component, or a
+config/session file, the same `init` spec controls what it shows — assembly,
+location, tracks, highlights, and so on. This page covers those fields and
+links to the detailed reference for each surface.
 
 ## The `init` fields
 

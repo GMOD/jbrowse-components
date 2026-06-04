@@ -34,7 +34,7 @@ is useful around structural variants and regions with difficult mappability —
 clusters of soft-clipped bases often mark a breakpoint.
 
 <Figure caption="The soft clipping option is a toggle in the 'Pileup settings' menu." src="/img/alignments_soft_clipped_menu.png" />
-<Figure caption="Shows what turning on soft-clipping enables for a simulated long-read dataset. There is a simulated structural variant, a deletion, at this position, so the read has bases that map to the other side of the deletion being revealed by this." src="/img/alignments_soft_clipped.png" />
+<Figure caption="Soft-clipping enabled on a simulated long-read dataset. A simulated deletion causes reads to have bases mapping to the other side of the breakpoint." src="/img/alignments_soft_clipped.png" />
 
 ### Sort by options
 
@@ -97,7 +97,7 @@ alignments track can color reads by modification. Two modes are available:
   positions are not in the MM tag; this mode infers them from the reference CpG
   context
 
-<Figure caption="The track menu can be used to access the settings to color by modifications or methylation." src="/img/alignments/modifications1.png" />
+<Figure caption="Access modifications/methylation coloring from the track menu." src="/img/alignments/modifications1.png" />
 <Figure caption="Screenshot showing the same track in both modifications mode and methylation mode. This is a hypo-methylated CpG island (there are no methylation marks in a CpG island)" src="/img/alignments/modifications2.png" />
 <Figure caption="After the setting has been enabled you can revisit the dialog box to see the current coloring settings." src="/img/alignments/modifications3.png" />
 
@@ -154,7 +154,7 @@ Sashimi-style arcs are drawn automatically over spliced alignments (reads with
 
 <Figure caption="Sashimi-style arcs over spliced alignments. Drawn by default for both short-read (RNA-seq) and long-read (Iso-Seq) data." src="/img/alignments_track_arcs.png" />
 
-They can be turned off from the track menu.
+Turn them off from the track menu.
 
 ### Insertion and clipping indicators
 

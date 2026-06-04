@@ -62,13 +62,11 @@ Example strings
 &loc=GENEID // if you have used `jbrowse text-index`
 ```
 
-Note 1: Navigating via &loc=GENEID requires a text-index built with
-`jbrowse text-index`
+Navigating via `&loc=GENEID` requires a text index built with `jbrowse text-index`.
 
-Note 2: If you have a specialized use case for navigating, e.g. you need to
-combine URL navigation with defaultSession, then you might consider making a
-small plugin to do so. Here is a code listing example:
-https://gist.github.com/cmdcolin/eedfcb11f8f153ba1fb07e56dfddd3b3
+For specialized navigation (e.g. combining URL navigation with a `defaultSession`),
+a small plugin is the recommended approach —
+[see this example](https://gist.github.com/cmdcolin/eedfcb11f8f153ba1fb07e56dfddd3b3).
 
 ### &highlight=
 
@@ -229,10 +227,10 @@ for your use case before relying on it.
 
 ### Linear genome view
 
-We can specify a "session spec" (short for specification) using JSON. Each view
-object below is the serialized form of a view's declarative `init` field; the
-embedded `@jbrowse/react-linear-genome-view2` component accepts the same shape
-directly via `defaultSession.view.init` (it does not parse URLs itself).
+A "session spec" encodes a session as JSON in the URL. Each view object is the
+serialized form of a view's declarative `init` field; the embedded
+`@jbrowse/react-linear-genome-view2` component accepts the same shape directly
+via `defaultSession.view.init` (it does not parse URLs itself).
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]}

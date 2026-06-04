@@ -4,8 +4,8 @@ description: Whole-genome synteny dotplot
 guide_category: Views
 ---
 
-The dotplot view is a 2D comparative view that displays alignments between
-genome assemblies, or between a single read and the genome. Syntenic regions
+The dotplot view shows alignments between genome assemblies, or between a
+single read and a reference genome. Syntenic regions
 appear as diagonal lines or blocks; inversions appear as reverse-diagonal
 segments; translocations and rearrangements appear as off-diagonal blocks.
 
@@ -17,7 +17,7 @@ segments; translocations and rearrangements appear as off-diagonal blocks.
 
 <Figure caption="Adding a new dotplot or synteny view via the menubar." src="/img/dotplot_menu.png" />
 
-<Figure caption="Screenshot of the import form for a dotplot or synteny view. You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
+<Figure caption="Import form for a dotplot or synteny view. Select two assemblies and optionally supply a synteny file." src="/img/dotplot_add.png" />
 
 <Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes. Diagonal streaks are syntenic blocks where the two genomes are collinear. Off-diagonal blocks indicate chromosomal rearrangements; reverse-diagonal segments indicate inversions." src="/img/dotplot.png" />
 

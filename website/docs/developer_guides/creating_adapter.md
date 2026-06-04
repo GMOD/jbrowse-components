@@ -11,8 +11,8 @@ An adapter is a class that fetches and parses your data and returns it in a
 format JBrowse understands.
 
 If you have a data source containing genes and want to display them using
-JBrowse's existing gene displays, you can write a custom adapter. If you want a
-custom display, you'll also need a custom display and/or renderer.
+JBrowse's existing gene displays, write a custom adapter. For custom rendering,
+you'll also need a custom display and/or renderer.
 
 ### Adapter types
 

@@ -16,7 +16,7 @@ buttons in the LGV header also scroll left and right.
 
 #### Zooming
 
-The zoom buttons and slider in the LGV header can be used to zoom in and out.
+Use the zoom buttons and slider in the LGV header to zoom in and out.
 You can also:
 
 - hold `Ctrl` and use the mousewheel to zoom (on Mac, trackpad pinch-to-zoom
@@ -54,10 +54,9 @@ The location search box at the top of the LGV accepts several search formats:
   `chr1:1-100[rev]`
 - Gene name or feature keyword (if a text index is configured), e.g. `BRCA1`
 
-To enable name searching, you or the instance admin will need to create a text
-index. See the
+Name searching requires a text index — see the
 [configuration guide](/docs/quickstart_web/#indexing-feature-names-for-searching)
-for more information.
+for setup.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
 
@@ -69,12 +68,12 @@ To load an entire track hub (UCSC track hub or JBrowse 1 data directory) at
 once, use `File` → `Open connection...`. See the
 [Connections guide](/docs/user_guides/connections) for details.
 
-<Figure caption="After opening the menu item for 'Open track..' a drawer widget for the 'Add a track' form will appear" src="/img/add_track_form.png" />
+<Figure caption="After opening the menu item for 'Open track..', the 'Add a track' form appears as a drawer widget." src="/img/add_track_form.png" />
 
 :::tip
 
-There is a circular plus (+) icon button inside the "Available tracks" widget
-that can also be used to access the "Add a track" form.
+A circular plus (+) icon button in the "Available tracks" widget also opens
+the "Add a track" form.
 
 :::
 
