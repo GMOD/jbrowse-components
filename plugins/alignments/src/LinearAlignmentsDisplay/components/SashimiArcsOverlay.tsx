@@ -64,7 +64,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
       }}
     >
       {arcs.map(arc => {
-        const arcKey = `${arc.refName}:${arc.start}:${arc.end}`
+        const arcKey = `${arc.refName}:${arc.start}:${arc.end}:${arc.strand}`
         const isSelected = arcKey === selectedArcKey
         return (
           <path

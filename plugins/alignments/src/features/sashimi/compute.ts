@@ -10,7 +10,7 @@ import type { CoverageGap } from '@jbrowse/alignments-core'
 export function computeSashimiJunctions(gaps: CoverageGap[]) {
   const junctions = new Map<
     string,
-    { start: number; end: number; fwd: number; rev: number }
+    { start: number; end: number; fwd: number; rev: number; unknown: number }
   >()
 
   for (const gap of gaps) {
@@ -20,13 +20,19 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
     const key = `${gap.start}:${gap.end}`
     let j = junctions.get(key)
     if (!j) {
-      j = { start: gap.start, end: gap.end, fwd: 0, rev: 0 }
+      j = { start: gap.start, end: gap.end, fwd: 0, rev: 0, unknown: 0 }
       junctions.set(key, j)
     }
+    // gap.strand is the transcript strand from getEffectiveStrand: +1/-1 when a
+    // strand tag (XS/TS/ts) was present, 0 when the read carried none (e.g.
+    // default STAR output without --outSAMstrandField). Keep the three states
+    // distinct so untagged junctions render as "unknown", not reverse.
     if (gap.strand === 1) {
       j.fwd++
-    } else {
+    } else if (gap.strand === -1) {
       j.rev++
+    } else {
+      j.unknown++
     }
   }
 
@@ -42,6 +48,9 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
     }
     if (j.rev > 0) {
       arcs.push({ start: j.start, end: j.end, count: j.rev, colorType: 1 })
+    }
+    if (j.unknown > 0) {
+      arcs.push({ start: j.start, end: j.end, count: j.unknown, colorType: 2 })
     }
   }
 

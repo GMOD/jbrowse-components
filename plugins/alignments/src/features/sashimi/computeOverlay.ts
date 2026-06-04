@@ -33,14 +33,22 @@ export interface ComputeSashimiArcsOpts {
   sashimiArcsDown: boolean
 }
 
+const FWD_ARC_COLOR = 'rgba(255,170,170,0.7)'
+const REV_ARC_COLOR = 'rgba(160,160,255,0.7)'
+const UNKNOWN_ARC_COLOR = 'rgba(200,200,200,0.7)'
+
+// colorType from the worker: 0 forward, 1 reverse, 2 strand-unknown (read had
+// no XS/TS/ts tag). Map to +1/-1/0 so the tooltip and color stay in sync.
+function colorTypeToStrand(colorType: number) {
+  return colorType === 0 ? 1 : colorType === 1 ? -1 : 0
+}
+
 function getArcColor(strand: number) {
-  if (strand === 1) {
-    return 'rgba(255,170,170,0.7)'
-  }
-  if (strand === -1) {
-    return 'rgba(160,160,255,0.7)'
-  }
-  return 'rgba(200,200,200,0.7)'
+  return strand === 1
+    ? FWD_ARC_COLOR
+    : strand === -1
+      ? REV_ARC_COLOR
+      : UNKNOWN_ARC_COLOR
 }
 
 export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
@@ -80,7 +88,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       if (left === undefined || right === undefined) {
         continue
       }
-      const strand = sashimiColorTypes[i] === 0 ? 1 : -1
+      const strand = colorTypeToStrand(sashimiColorTypes[i]!)
       arcs.push({
         d: `M ${left} ${baseline} C ${left} ${peak}, ${right} ${peak}, ${right} ${baseline}`,
         stroke: getArcColor(strand),

@@ -167,7 +167,7 @@ function renderSashimiArcs(
     <g transform={`translate(0,${top})`}>
       {arcs.map(arc => (
         <path
-          key={`${arc.refName}:${arc.start}:${arc.end}`}
+          key={`${arc.refName}:${arc.start}:${arc.end}:${arc.strand}`}
           d={arc.d}
           stroke={arc.stroke}
           strokeWidth={arc.strokeWidth}
