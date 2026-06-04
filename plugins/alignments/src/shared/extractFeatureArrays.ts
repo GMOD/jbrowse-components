@@ -7,6 +7,7 @@ import {
   extractMethylation,
   extractModifications,
 } from '../features/modification/extract.ts'
+import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 
 import type { ColorBy } from './types.ts'
@@ -19,6 +20,7 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
+import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { Mismatch } from '@jbrowse/alignments-core'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -56,6 +58,8 @@ export function extractFeatureArrays<T extends FeatureData>(
   const modifications: ModificationEntry[] = []
   const perBaseQualities: PerBaseQualityEntry[] = []
   const isPerBaseQualityMode = colorBy?.type === 'perBaseQuality'
+  const perBaseLetters: PerBaseLetterEntry[] = []
+  const isPerBaseLetterMode = colorBy?.type === 'perBaseLetter'
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
   const nextRefs: string[] = []
@@ -140,6 +144,10 @@ export function extractFeatureArrays<T extends FeatureData>(
     if (isPerBaseQualityMode) {
       extractPerBaseQuality(feature, featureId, region, perBaseQualities)
     }
+
+    if (isPerBaseLetterMode) {
+      extractPerBaseLetter(feature, featureId, region, perBaseLetters)
+    }
   }
 
   modifications.sort((a, b) => a.modType.localeCompare(b.modType))
@@ -159,6 +167,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     ...cigarOutput,
     modifications,
     perBaseQualities,
+    perBaseLetters,
     tagColorValues,
     uniqueTagValues,
     sortTagValues,

@@ -35,6 +35,7 @@ import { drawModCoverageCanvas } from '../../features/modCoverage/drawCanvas.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
 import { drawOverlaps } from '../../features/overlap/drawCanvas.ts'
 import { emptyOverlapsUploadData } from '../../features/overlap/types.ts'
+import { drawPerBaseLetter } from '../../features/perBaseLetter/drawCanvas.ts'
 import { drawPerBaseQuality } from '../../features/perBaseQuality/drawCanvas.ts'
 import {
   buildReadFields,
@@ -55,6 +56,7 @@ import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types
 import type { MismatchUploadData } from '../../features/mismatch/types.ts'
 import type { ModificationUploadData } from '../../features/modification/types.ts'
 import type { OverlapsUploadData } from '../../features/overlap/types.ts'
+import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types.ts'
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -70,7 +72,8 @@ export interface Canvas2DRegionData
     MismatchUploadData,
     ModificationUploadData,
     OverlapsUploadData,
-    PerBaseQualityUploadData {
+    PerBaseQualityUploadData,
+    PerBaseLetterUploadData {
   // interbase arrays sliced from merged worker buffer
   insertionPositions: Uint32Array
   insertionYs: Uint16Array
@@ -145,6 +148,9 @@ const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
   perBaseQualPositions: new Uint32Array(0),
   perBaseQualYs: new Uint16Array(0),
   perBaseQualScores: new Uint8Array(0),
+  perBaseLetterPositions: new Uint32Array(0),
+  perBaseLetterYs: new Uint16Array(0),
+  perBaseLetterBases: new Uint8Array(0),
   ...emptyCoverageFields(),
   snpPackedBuffer: new ArrayBuffer(0),
   modCovPackedBuffer: new ArrayBuffer(0),
@@ -170,6 +176,9 @@ function buildPileupRegion(
     perBaseQualPositions: data.perBaseQualPositions,
     perBaseQualYs: data.perBaseQualYs,
     perBaseQualScores: data.perBaseQualScores,
+    perBaseLetterPositions: data.perBaseLetterPositions,
+    perBaseLetterYs: data.perBaseLetterYs,
+    perBaseLetterBases: data.perBaseLetterBases,
     ...buildCoverageFields(data),
     snpPackedBuffer: data.snpPackedBuffer,
     modCovPackedBuffer: data.modCovPackedBuffer,
@@ -382,6 +391,10 @@ export function drawAlignmentBlocks(
 
     if (state.showPerBaseQuality) {
       drawPerBaseQuality(ctx, region, block, bpLength, fullBlockWidth, state)
+    }
+
+    if (state.showPerBaseLetter) {
+      drawPerBaseLetter(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
     drawHighlightOverlays(ctx, region, block, state)

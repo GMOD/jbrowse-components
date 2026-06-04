@@ -23,7 +23,7 @@ export function drawAlignmentLabels(
         label.type === 'hardclip') &&
       label.text.startsWith('(')
 
-    let fillColor = white
+    let fillColor: string
     if (isSmallInterbase) {
       if (label.type === 'insertion') {
         fillColor = palette.insertion
@@ -33,7 +33,11 @@ export function drawAlignmentLabels(
         fillColor = palette.hardclip
       }
     } else if (label.type === 'mismatch') {
-      fillColor = contrastMap[label.text] ?? white
+      fillColor = contrastMap[label.text] ?? 'black'
+    } else if (label.type === 'deletion') {
+      fillColor = 'black'
+    } else {
+      fillColor = white
     }
 
     ctx.font = `bold ${label.fontSize}px sans-serif`

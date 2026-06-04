@@ -11,6 +11,7 @@ import {
   colorSupplementary,
   colorUnmappedMate,
 } from '@jbrowse/core/ui/theme'
+import { blue, brown, green, orange, red } from '@mui/material/colors'
 
 import type { ColorBy, ModificationTypeWithColor } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
@@ -101,6 +102,17 @@ export function getReadDisplayLegendItems(
       { color: 'hsl(30, 55%, 50%)', label: 'BQ 20' },
       { color: 'hsl(45, 55%, 50%)', label: 'BQ 30' },
       { color: 'hsl(60, 55%, 50%)', label: 'BQ 40' },
+    ]
+  }
+  if (colorType === 'perBaseLetter') {
+    // Mirrors theme.palette.bases (augment(green/blue/orange/red/brown)); the
+    // actual rects use the live theme palette, these swatches the defaults.
+    return [
+      { color: green[500], label: 'A' },
+      { color: blue[500], label: 'C' },
+      { color: orange[500], label: 'G' },
+      { color: red[500], label: 'T' },
+      { color: brown[500], label: 'N' },
     ]
   }
   if (colorType === 'strand') {

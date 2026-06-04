@@ -25,7 +25,7 @@ import {
   formatIndicatorTooltip,
   formatModificationTooltip,
 } from './tooltipUtils.ts'
-import { getContrastBaseMap } from '../../shared/util.ts'
+import { getMismatchContrastMap } from '../../shared/util.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
@@ -62,7 +62,10 @@ export function useAlignmentsBase(
 
   const theme = useTheme()
   const colorPalette = useMemo(() => buildColorPaletteFromTheme(theme), [theme])
-  const contrastMap = useMemo(() => getContrastBaseMap(theme), [theme])
+  const contrastMap = useMemo(
+    () => getMismatchContrastMap(model.colorBy.type, model.showModifications, theme),
+    [theme, model.colorBy.type, model.showModifications],
+  )
 
   const {
     featureHeightSetting,

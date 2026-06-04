@@ -40,6 +40,7 @@ export type ColorSchemeType =
   | 'insertSizeAndOrientation'
   | 'baseQuality'
   | 'perBaseQuality'
+  | 'perBaseLetter'
   | 'tag'
   | 'modifications'
   | 'methylation'

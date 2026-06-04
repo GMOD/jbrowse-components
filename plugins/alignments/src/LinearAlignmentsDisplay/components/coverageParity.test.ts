@@ -155,6 +155,10 @@ const EMPTY_PILEUP_STUBS = {
   perBaseQualYs: new Uint16Array(),
   perBaseQualScores: new Uint8Array(),
   perBaseQualReadIndices: new Uint32Array(),
+  perBaseLetterPositions: new Uint32Array(),
+  perBaseLetterYs: new Uint16Array(),
+  perBaseLetterBases: new Uint8Array(),
+  perBaseLetterReadIndices: new Uint32Array(),
 }
 
 function makeMinimalPileupResult(cov: CoverageUploadData) {

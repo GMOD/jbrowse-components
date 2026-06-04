@@ -347,12 +347,14 @@ export function cloneWithLayout(
   const numModifications = data.modificationPositions.length
   const numSoftclipBases = data.softclipBasePositions.length
   const numPerBaseQual = data.perBaseQualPositions.length
+  const numPerBaseLetter = data.perBaseLetterPositions.length
   const gapYs = new Uint16Array(numGaps)
   const mismatchYs = new Uint16Array(numMismatches)
   const interbaseYs = new Uint16Array(numInterbases)
   const modificationYs = new Uint16Array(numModifications)
   const softclipBaseYs = new Uint16Array(numSoftclipBases)
   const perBaseQualYs = new Uint16Array(numPerBaseQual)
+  const perBaseLetterYs = new Uint16Array(numPerBaseLetter)
   for (let i = 0; i < numGaps; i++) {
     gapYs[i] = readYs[data.gapReadIndices[i]!]!
   }
@@ -370,6 +372,9 @@ export function cloneWithLayout(
   }
   for (let i = 0; i < numPerBaseQual; i++) {
     perBaseQualYs[i] = readYs[data.perBaseQualReadIndices[i]!]!
+  }
+  for (let i = 0; i < numPerBaseLetter; i++) {
+    perBaseLetterYs[i] = readYs[data.perBaseLetterReadIndices[i]!]!
   }
   let modFlatbush: Flatbush | undefined
   if (numModifications > 0) {
@@ -391,6 +396,7 @@ export function cloneWithLayout(
     modificationYs,
     softclipBaseYs,
     perBaseQualYs,
+    perBaseLetterYs,
     maxY,
     truncated,
     modFlatbush,

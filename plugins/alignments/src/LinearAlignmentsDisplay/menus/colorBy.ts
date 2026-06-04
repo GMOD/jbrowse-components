@@ -61,6 +61,7 @@ const basicColorOptions: ColorOption[] = [
   { label: 'Mapping quality', type: 'mappingQuality' },
   { label: 'Base quality', type: 'baseQuality' },
   { label: 'Per-base quality', type: 'perBaseQuality' },
+  { label: 'Per-base lettering', type: 'perBaseLetter' },
 ]
 
 const pairedEndColorOptions: ColorOption[] = [

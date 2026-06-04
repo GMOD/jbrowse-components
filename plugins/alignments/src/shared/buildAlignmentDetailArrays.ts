@@ -4,6 +4,7 @@ import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 import { buildGapArrays } from '../features/gap/buildArrays.ts'
 import { buildMismatchArrays } from '../features/mismatch/buildArrays.ts'
 import { buildModificationArrays } from '../features/modification/buildArrays.ts'
+import { buildPerBaseLetterArrays } from '../features/perBaseLetter/buildArrays.ts'
 import { buildPerBaseQualityArrays } from '../features/perBaseQuality/buildArrays.ts'
 import { buildSegmentArrays } from '../features/read/buildSegments.ts'
 import { buildSoftclipBaseArrays } from '../features/softclip/buildArrays.ts'
@@ -17,6 +18,7 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
+import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -39,6 +41,7 @@ export async function buildAlignmentDetailArrays({
   hardclips,
   modifications,
   perBaseQualities,
+  perBaseLetters,
   detectedModifications,
   region,
   getReadIndex,
@@ -53,6 +56,7 @@ export async function buildAlignmentDetailArrays({
   hardclips: HardclipData[]
   modifications: ModificationEntry[]
   perBaseQualities: PerBaseQualityEntry[]
+  perBaseLetters: PerBaseLetterEntry[]
   detectedModifications: Set<string>
   region: Region
   getReadIndex: (id: string) => number
@@ -89,6 +93,10 @@ export async function buildAlignmentDetailArrays({
       ),
       perBaseQualityArrays: buildPerBaseQualityArrays(
         perBaseQualities,
+        getReadIndex,
+      ),
+      perBaseLetterArrays: buildPerBaseLetterArrays(
+        perBaseLetters,
         getReadIndex,
       ),
       segmentArrays: buildSegmentArrays(features, gaps, region, getReadIndex),
