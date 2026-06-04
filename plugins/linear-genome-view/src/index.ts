@@ -148,5 +148,6 @@ export {
   SVGTracks,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
+export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'

@@ -182,7 +182,10 @@ const Header = observer(function Header({
 
       {showSearchBoxes ? (
         <span
-          className={cx(classes.searchBoxContainer, sideBySide ? classes.inline : classes.vertical)}
+          className={cx(
+            classes.searchBoxContainer,
+            sideBySide ? classes.inline : classes.vertical,
+          )}
         >
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />

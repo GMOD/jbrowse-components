@@ -50,7 +50,11 @@ export function ColorPopover({
 }) {
   return (
     <Popover open={!!anchorEl} anchorEl={anchorEl} onClose={onClose}>
-      <ColorPicker color={color} onChange={onChange} presetAlpha={presetAlpha} />
+      <ColorPicker
+        color={color}
+        onChange={onChange}
+        presetAlpha={presetAlpha}
+      />
     </Popover>
   )
 }

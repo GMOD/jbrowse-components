@@ -13,10 +13,10 @@ deliberate refactor, not a drive-by.
 
 `get('tags')` hits the switch and returns raw `this.tags` directly — it never
 touches `fields`. The `fields` getter is only reached via the `default` branch
-for uncommon fields not in the switch. Do **not** move `convertTagsToPlainArrays`
-into `fields`; it belongs only in `toJSON()` (the MST/serialization path). Putting
-it in `fields` would be dead code for the hot render path and inconsistent with
-what `get('tags')` returns.
+for uncommon fields not in the switch. Do **not** move
+`convertTagsToPlainArrays` into `fields`; it belongs only in `toJSON()` (the
+MST/serialization path). Putting it in `fields` would be dead code for the hot
+render path and inconsistent with what `get('tags')` returns.
 
 ## `mismatches` getter allocates
 

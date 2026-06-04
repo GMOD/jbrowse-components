@@ -1,5 +1,6 @@
 import DotplotHighlight from './DotplotHighlight.tsx'
 import Highlight from './Highlight.tsx'
+import LGVHighlightSVG from './LGVHighlightSVG.tsx'
 import OverviewHighlight from './OverviewHighlight.tsx'
 import ScalebarHighlight from './ScalebarHighlight.tsx'
 
@@ -41,6 +42,17 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
       <DotplotHighlight
         key="dotplot_highlight_grid_bookmark"
         model={model as IExtendedDotplotView}
+      />,
+    ],
+  )
+  pluginManager.addToExtensionPoint(
+    'LinearGenomeView-HighlightSVGComponent',
+    (rest, { model, height }) => [
+      ...rest,
+      <LGVHighlightSVG
+        key="lgv_highlight_svg_grid_bookmark"
+        model={model as IExtendedLGV}
+        height={height}
       />,
     ],
   )

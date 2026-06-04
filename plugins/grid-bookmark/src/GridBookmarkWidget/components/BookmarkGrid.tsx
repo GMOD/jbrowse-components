@@ -20,7 +20,10 @@ import {
 } from './columns.tsx'
 import { navToBookmark } from '../utils.ts'
 
-import type { GridBookmarkModel, IExtendedLabeledRegionModel } from '../model.ts'
+import type {
+  GridBookmarkModel,
+  IExtendedLabeledRegionModel,
+} from '../model.ts'
 
 interface BookmarkRow extends IExtendedLabeledRegionModel {
   locString: string

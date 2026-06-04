@@ -477,11 +477,7 @@ export default function stateModelFactory(
        * when no fetched block covers the bp, the row is out of range, or the
        * cell is a gap.
        */
-      rowHoverInfo(
-        displayedRegionIndex: number,
-        bp: number,
-        rowIndex: number,
-      ) {
+      rowHoverInfo(displayedRegionIndex: number, bp: number, rowIndex: number) {
         const { sources } = self
         const region =
           sources && rowIndex >= 0 && rowIndex < sources.length

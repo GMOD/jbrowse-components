@@ -5,10 +5,12 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
+import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
 import { forEachRenderedPeptide } from './peptidePositioning.ts'
 import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
+
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
@@ -385,6 +387,7 @@ export function useHighlightOverlays(
           { backgroundColor: 'rgba(0, 0, 0, 0.15)' },
           'hover',
           extraWidth,
+          HIT_PAD_PX,
         )
       }
     }

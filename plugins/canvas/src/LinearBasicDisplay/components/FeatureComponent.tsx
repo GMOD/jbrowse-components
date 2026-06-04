@@ -68,11 +68,13 @@ export interface LinearBasicDisplayModel {
   reload: () => void
   expandToFit: () => void
   collapseFromExpand: () => void
-  setFeatureIdUnderMouse: (featureId: string | null) => void
-  setSubfeatureIdUnderMouse: (featureId: string | null) => void
   clearHover: () => void
   mouseoverExtraInformation: string | undefined
-  setMouseoverExtraInformation: (info: string | undefined) => void
+  setHover: (
+    featureId: string | null,
+    subfeatureId: string | null,
+    tooltip: string | undefined,
+  ) => void
   selectFeatureById: (
     featureInfo: FlatbushItem,
     subfeatureInfo: SubfeatureInfo | undefined,
@@ -212,7 +214,6 @@ const FeatureBody = observer(function FeatureBody({
       // Set contextMenuInfo synchronously so hover guards below can see it
       // during the async fetch window (before contextMenuCoord is set).
       model.showContextMenuForFeature(feature, displayedRegionIndex)
-      model.setMouseoverExtraInformation(undefined)
       const fullFeature = await model.fetchFullFeature(
         feature.featureId,
         displayedRegionIndex,
@@ -249,67 +250,57 @@ const FeatureBody = observer(function FeatureBody({
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (contextMenuCoord || model.contextMenuInfo) {
+    if (model.contextMenuInfo) {
       return
     }
     setClientXY([e.clientX, e.clientY])
-    if (model.laidOutDataMap.size === 0) {
-      model.clearHover()
-      return
-    }
-
     const result = hitTestAtEvent(e)
-
     if (result.feature) {
-      if (result.subfeature) {
-        model.setMouseoverExtraInformation(
-          result.subfeature.tooltip ?? result.subfeature.type,
-        )
-        model.setSubfeatureIdUnderMouse(result.subfeature.featureId)
-      } else {
-        model.setMouseoverExtraInformation(result.feature.tooltip)
-        model.setSubfeatureIdUnderMouse(null)
-      }
-      model.setFeatureIdUnderMouse(result.feature.featureId)
+      const sub = result.subfeature
+      model.setHover(
+        result.feature.featureId,
+        sub?.featureId ?? null,
+        sub ? (sub.tooltip ?? sub.type) : result.feature.tooltip,
+      )
     } else {
       model.clearHover()
     }
   }
 
-  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (model.laidOutDataMap.size === 0) {
-      return
-    }
-    const result = hitTestAtEvent(e)
-    if (result.feature) {
-      model.selectFeatureById(
-        result.feature,
-        result.subfeature ?? undefined,
-        result.displayedRegionIndex,
-      )
+  const handleClick = () => {
+    const { hoveredFeature, hoveredSubfeature } = model
+    if (hoveredFeature) {
+      const entry = model.featureItemMap.get(hoveredFeature.featureId)
+      if (entry) {
+        model.selectFeatureById(
+          hoveredFeature,
+          hoveredSubfeature ?? undefined,
+          entry.vr.displayedRegionIndex,
+        )
+      }
     } else {
       model.clearSelection()
     }
   }
 
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (model.laidOutDataMap.size === 0) {
-      return
-    }
-    const result = hitTestAtEvent(e)
-    if (result.feature) {
+    const { hoveredFeature } = model
+    if (hoveredFeature) {
       e.preventDefault()
-      void openContextMenu(
-        result.feature,
-        result.displayedRegionIndex,
-        e.clientX,
-        e.clientY,
-      )
+      const entry = model.featureItemMap.get(hoveredFeature.featureId)
+      if (entry) {
+        void openContextMenu(
+          hoveredFeature,
+          entry.vr.displayedRegionIndex,
+          e.clientX,
+          e.clientY,
+        )
+      }
     }
   }
 
   const handleMouseLeave = () => {
-    if (!contextMenuCoord && !model.contextMenuInfo) {
+    if (!model.contextMenuInfo) {
       model.clearHover()
     }
   }
@@ -320,9 +311,7 @@ const FeatureBody = observer(function FeatureBody({
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem, e: React.MouseEvent) => {
       setClientXY([e.clientX, e.clientY])
-      model.setFeatureIdUnderMouse(item.featureId)
-      model.setSubfeatureIdUnderMouse(null)
-      model.setMouseoverExtraInformation(item.tooltip)
+      model.setHover(item.featureId, null, item.tooltip)
     },
     [model],
   )
@@ -370,8 +359,12 @@ const FeatureBody = observer(function FeatureBody({
           <canvas
             ref={canvasRef}
             onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            onClick={handleClick}
+            onMouseLeave={() => {
+              handleMouseLeave()
+            }}
+            onClick={() => {
+              handleClick()
+            }}
             onContextMenu={handleContextMenu}
             className={classes.canvas}
             style={{

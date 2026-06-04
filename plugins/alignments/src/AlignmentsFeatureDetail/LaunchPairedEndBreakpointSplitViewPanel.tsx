@@ -7,48 +7,50 @@ import { observer } from 'mobx-react'
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
 
-const LaunchPairedEndBreakpointSplitViewPanel = observer(function LaunchPairedEndBreakpointSplitViewPanel({
-  model,
-  feature,
-}: {
-  model: AlignmentFeatureWidgetModel
-  feature: AlignmentFeatureSerialized
-}) {
-  const session = getSession(model)
-  const { uniqueId, refName, start, end, strand, next_ref, next_pos, id } =
-    feature
-  const assemblyName = getAssemblyName(model.view)
-  return assemblyName && next_ref !== undefined && next_pos !== undefined ? (
-    <div>
-      <Typography>Launch split view</Typography>
-      <ActionLink
-        onClick={() => {
-          launchBreakpointSplitView({
-            session,
-            view: model.view,
-            assemblyName,
-            feature: new SimpleFeature({
-              uniqueId,
-              refName,
-              start,
-              end,
-              strand,
-              mate: {
-                uniqueId: `${id}-mate`,
-                refName: next_ref,
-                start: next_pos,
-                end: next_pos + 1,
+const LaunchPairedEndBreakpointSplitViewPanel = observer(
+  function LaunchPairedEndBreakpointSplitViewPanel({
+    model,
+    feature,
+  }: {
+    model: AlignmentFeatureWidgetModel
+    feature: AlignmentFeatureSerialized
+  }) {
+    const session = getSession(model)
+    const { uniqueId, refName, start, end, strand, next_ref, next_pos, id } =
+      feature
+    const assemblyName = getAssemblyName(model.view)
+    return assemblyName && next_ref !== undefined && next_pos !== undefined ? (
+      <div>
+        <Typography>Launch split view</Typography>
+        <ActionLink
+          onClick={() => {
+            launchBreakpointSplitView({
+              session,
+              view: model.view,
+              assemblyName,
+              feature: new SimpleFeature({
+                uniqueId,
+                refName,
+                start,
+                end,
                 strand,
-              },
-            }),
-          })
-        }}
-      >
-        {refName}:{toLocale(start)} -&gt; {next_ref}:{toLocale(next_pos)}{' '}
-        (breakpoint split view)
-      </ActionLink>
-    </div>
-  ) : null
-})
+                mate: {
+                  uniqueId: `${id}-mate`,
+                  refName: next_ref,
+                  start: next_pos,
+                  end: next_pos + 1,
+                  strand,
+                },
+              }),
+            })
+          }}
+        >
+          {refName}:{toLocale(start)} -&gt; {next_ref}:{toLocale(next_pos)}{' '}
+          (breakpoint split view)
+        </ActionLink>
+      </div>
+    ) : null
+  },
+)
 
 export default LaunchPairedEndBreakpointSplitViewPanel

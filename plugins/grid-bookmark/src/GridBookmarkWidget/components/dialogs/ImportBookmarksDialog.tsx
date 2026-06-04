@@ -99,12 +99,14 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
               if (location) {
                 const data = await openLocation(location).readFile('utf8')
                 const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
-                const fileType = guessFileType(lines[0]!)
-                model.importBookmarks(
-                  fileType === 'BED'
-                    ? getBookmarksFromBEDFile(lines, selectedAsm)
-                    : getBookmarksFromTSVFile(lines),
-                )
+                if (lines.length) {
+                  const fileType = guessFileType(lines[0]!)
+                  model.importBookmarks(
+                    fileType === 'BED'
+                      ? getBookmarksFromBEDFile(lines, selectedAsm)
+                      : getBookmarksFromTSVFile(lines),
+                  )
+                }
               }
               onClose()
             } catch (e) {

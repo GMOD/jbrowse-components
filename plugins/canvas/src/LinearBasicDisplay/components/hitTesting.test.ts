@@ -366,6 +366,31 @@ function makeDataWithLabel(
   }
 }
 
+test('hit pad expands hit area on both sides of small features', () => {
+  // 1 bp/px, feature 1000-1010. HIT_PAD_PX=4 so hit zone is 996..1014.
+  const data = makeData([makeItem('gene1', 1000, 1010, 0, 20)])
+  const region = makeRegion(0, 0, 2000, 0, 2000) // 1 bp/px
+  expect(hit(new Map([[0, data]]), [region], 997, 10).feature?.featureId).toBe(
+    'gene1',
+  )
+  expect(hit(new Map([[0, data]]), [region], 1013, 10).feature?.featureId).toBe(
+    'gene1',
+  )
+  expect(hit(new Map([[0, data]]), [region], 990, 10).feature).toBeNull()
+  expect(hit(new Map([[0, data]]), [region], 1020, 10).feature).toBeNull()
+})
+
+test('hit pad expands un-stranded features equally', () => {
+  const data = makeData([makeItem('region1', 500, 502, 0, 20)])
+  const region = makeRegion(0, 0, 2000, 0, 2000) // 1 bp/px
+  expect(hit(new Map([[0, data]]), [region], 498, 10).feature?.featureId).toBe(
+    'region1',
+  )
+  expect(hit(new Map([[0, data]]), [region], 505, 10).feature?.featureId).toBe(
+    'region1',
+  )
+})
+
 test('label hit area extends past feature when showLabels is true', () => {
   const data = makeDataWithLabel([makeItem('gene1', 1000, 1100, 0, 20)], 200)
   const result = hit(

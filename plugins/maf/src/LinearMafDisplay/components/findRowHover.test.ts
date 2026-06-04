@@ -82,9 +82,7 @@ test('passes i-line context through on the cell hit', () => {
       startBp: 100,
       endBp: 101,
       refSeqBytes: enc.encode('A'),
-      rows: [
-        { rowIndex: 0, alignmentBytes: enc.encode('c'), context },
-      ],
+      rows: [{ rowIndex: 0, alignmentBytes: enc.encode('c'), context }],
       empties: [],
     },
   ])

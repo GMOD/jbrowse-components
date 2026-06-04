@@ -7,8 +7,19 @@ import type {
 
 const enc = new TextEncoder()
 
-function emptyRow(rowIndex: number, status: MafBlock['empties'][number]['status']) {
-  return { rowIndex, status, chr: 'c', start: 0, size: 10, strand: 1, srcSize: 1 }
+function emptyRow(
+  rowIndex: number,
+  status: MafBlock['empties'][number]['status'],
+) {
+  return {
+    rowIndex,
+    status,
+    chr: 'c',
+    start: 0,
+    size: 10,
+    strand: 1,
+    srcSize: 1,
+  }
 }
 
 function regionData(blocks: MafBlock[]): MafRegionData {
@@ -59,9 +70,7 @@ test('positions an empty-row segment across the block extent', () => {
     rowProportion: 0.8,
   })
   // h = 12, offset = 1.5, rowTop = 1.5 + 15*2; x spans bp 100..110 at scale 1
-  expect(segs).toEqual([
-    { x: 0, width: 10, rowTop: 31.5, h: 12, status: 'C' },
-  ])
+  expect(segs).toEqual([{ x: 0, width: 10, rowTop: 31.5, h: 12, status: 'C' }])
 })
 
 test('emits nothing for blocks without empties', () => {

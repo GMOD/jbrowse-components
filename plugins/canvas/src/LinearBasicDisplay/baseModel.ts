@@ -832,15 +832,14 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        setFeatureIdUnderMouse(featureId: string | null) {
+        setHover(
+          featureId: string | null,
+          subfeatureId: string | null,
+          tooltip: string | undefined,
+        ) {
           self.featureIdUnderMouse = featureId
-        },
-
-        /**
-         * #action
-         */
-        setSubfeatureIdUnderMouse(featureId: string | null) {
-          self.subfeatureIdUnderMouse = featureId
+          self.subfeatureIdUnderMouse = subfeatureId
+          self.mouseoverExtraInformation = tooltip
         },
 
         /**
@@ -850,13 +849,6 @@ export default function baseStateModelFactory(
           self.featureIdUnderMouse = null
           self.subfeatureIdUnderMouse = null
           self.mouseoverExtraInformation = undefined
-        },
-
-        /**
-         * #action
-         */
-        setMouseoverExtraInformation(info: string | undefined) {
-          self.mouseoverExtraInformation = info
         },
 
         /**
@@ -957,6 +949,7 @@ export default function baseStateModelFactory(
           displayedRegionIndex: number,
         ) {
           self.setContextMenuInfo({ item: featureInfo, displayedRegionIndex })
+          self.mouseoverExtraInformation = undefined
         },
       }))
       .actions(self => ({

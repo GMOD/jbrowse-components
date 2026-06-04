@@ -31,6 +31,11 @@ declare module '@jbrowse/core/PluginManager' {
       result: ReactNode[]
       props: { model: LinearGenomeViewModel }
     }
+    'LinearGenomeView-HighlightSVGComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel; height: number }
+    }
   }
 }
 

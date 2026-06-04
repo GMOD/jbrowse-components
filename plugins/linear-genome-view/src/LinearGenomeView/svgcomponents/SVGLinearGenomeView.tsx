@@ -1,7 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 
+import type { ReactNode } from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
+  getEnv,
   getSession,
   max,
   measureText,
@@ -14,6 +17,7 @@ import { when } from 'mobx'
 import SVGBackground from './SVGBackground.tsx'
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
+import SVGHighlights from './SVGHighlights.tsx'
 import SVGTracks from './SVGTracks.tsx'
 import { totalHeight } from './util.ts'
 
@@ -81,6 +85,13 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset + legendWidth
 
+  const { pluginManager } = getEnv(model)
+  const bookmarkHighlights = pluginManager.evaluateExtensionPoint(
+    'LinearGenomeView-HighlightSVGComponent',
+    [] as ReactNode[],
+    { model, height: tracksHeight },
+  )
+
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
     <ThemeProvider theme={jbrowseTheme}>
@@ -118,6 +129,17 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 leftBuffer={shift}
                 legendWidth={legendWidth}
               />
+            </g>
+            <g transform={`translate(${trackLabelOffset} ${offset})`}>
+              <defs>
+                <clipPath id="highlight-clip">
+                  <rect x={0} y={0} width={width} height={tracksHeight} />
+                </clipPath>
+              </defs>
+              <g clipPath="url(#highlight-clip)">
+                <SVGHighlights model={model} height={tracksHeight} />
+                {bookmarkHighlights}
+              </g>
             </g>
           </g>
         </svg>

@@ -1,6 +1,10 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import { computeLabelExtraWidth } from './highlightUtils.ts'
+
+// Extra pixels added to each side of every feature's hit box so small
+// zoomed-out features (including un-stranded ones) remain hoverable.
+export const HIT_PAD_PX = 4
 
 import type {
   FeatureDataResult,
@@ -65,18 +69,20 @@ export function buildFeatureFlatbushIndex(
   }
   const index = new Flatbush(items.length)
   for (const item of items) {
-    let hitStartBp = item.startBp
-    let hitEndBp = item.endBp
+    const padBp = HIT_PAD_PX * bpPerPx
+    let hitStartBp = item.startBp - padBp
+    let hitEndBp = item.endBp + padBp
     const labelData = floatingLabelsData[item.featureId]
     if (labelData) {
-      const maxLabelWidthPx = maxLabelTextWidth(
-        labelData,
-        labels.showLabels,
-        labels.showDescriptions,
-      )
       const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
-      if (maxLabelWidthPx > featureWidthPx) {
-        const extraBp = (maxLabelWidthPx - featureWidthPx) * bpPerPx
+      const extraBp =
+        computeLabelExtraWidth(
+          labelData,
+          featureWidthPx,
+          labels.showLabels,
+          labels.showDescriptions,
+        ) * bpPerPx
+      if (extraBp > 0) {
         if (reversed) {
           hitStartBp -= extraBp
         } else {

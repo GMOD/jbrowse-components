@@ -12,7 +12,10 @@ import {
 } from '../util/parseAssemblyName.ts'
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
-import type { BaseFeatureDataAdapter as BaseAdapter, BaseOptions  } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter as BaseAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // BedTabixAdapter exposes an index-only byte estimate (tabix bytesForRegions).

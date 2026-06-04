@@ -1,3 +1,4 @@
+import { getFillProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -22,7 +23,7 @@ const DotplotHighlightBands = observer(function DotplotHighlightBands({
           y={0}
           width={h.width}
           height={viewHeight}
-          fill={color}
+          {...getFillProps(color)}
         />
       ) : null}
       {v ? (
@@ -31,7 +32,7 @@ const DotplotHighlightBands = observer(function DotplotHighlightBands({
           y={v.top}
           width={viewWidth}
           height={v.height}
-          fill={color}
+          {...getFillProps(color)}
         />
       ) : null}
     </>

@@ -19,9 +19,8 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
   model: GridBookmarkModel
 }) {
   return (
-    <Dialog open onClose={onClose} title="Highlight bookmarks">
+    <Dialog open onClose={onClose} title="Settings">
       <DialogContent>
-        <Typography variant="h6">Highlight toggles</Typography>
         <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Switch
             data-testid="toggle_highlight_all_switch"

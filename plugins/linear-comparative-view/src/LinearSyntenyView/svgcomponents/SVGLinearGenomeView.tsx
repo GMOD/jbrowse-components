@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 
-import { getFillProps } from '@jbrowse/core/util'
+import { getEnv, getFillProps } from '@jbrowse/core/util'
 import {
   SVGGridlines,
+  SVGHighlights,
   SVGRuler,
   SVGTracks,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -47,6 +48,14 @@ export default function SVGLinearGenomeView({
   tracksHeight: number
 }) {
   const theme = useTheme()
+  const { view } = displayResults
+  const { pluginManager } = getEnv(view)
+  const clipId = `highlight-clip-${view.id}`
+  const bookmarkHighlights = pluginManager.evaluateExtensionPoint(
+    'LinearGenomeView-HighlightSVGComponent',
+    [] as ReactNode[],
+    { model: view, height: tracksHeight },
+  )
   return (
     <g transform={`translate(${shift} ${fontSize})`}>
       <g transform={`translate(${trackLabelOffset})`}>
@@ -55,15 +64,15 @@ export default function SVGLinearGenomeView({
           fontSize={fontSize}
           {...getFillProps(theme.palette.text.primary)}
         >
-          {displayResults.view.assemblyNames.join(', ')}
+          {view.assemblyNames.join(', ')}
         </text>
-        <SVGRuler model={displayResults.view} fontSize={fontSize} />
+        <SVGRuler model={view} fontSize={fontSize} />
       </g>
       {showGridlines ? (
         <g
           transform={`translate(${trackLabelOffset} ${rulerHeight + fontSize})`}
         >
-          <SVGGridlines model={displayResults.view} height={tracksHeight} />
+          <SVGGridlines model={view} height={tracksHeight} />
         </g>
       ) : null}
       <g transform={`translate(0 ${rulerHeight + fontSize})`}>
@@ -71,10 +80,21 @@ export default function SVGLinearGenomeView({
           textHeight={textHeight}
           trackLabels={trackLabels}
           fontSize={fontSize}
-          model={displayResults.view}
+          model={view}
           displayResults={displayResults.data}
           trackLabelOffset={trackLabelOffset}
         />
+      </g>
+      <g transform={`translate(${trackLabelOffset} ${rulerHeight + fontSize})`}>
+        <defs>
+          <clipPath id={clipId}>
+            <rect x={0} y={0} width={view.width} height={tracksHeight} />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${clipId})`}>
+          <SVGHighlights model={view} height={tracksHeight} />
+          {bookmarkHighlights}
+        </g>
       </g>
     </g>
   )
