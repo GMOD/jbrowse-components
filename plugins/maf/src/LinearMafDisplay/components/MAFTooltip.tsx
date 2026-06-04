@@ -1,16 +1,15 @@
 import React from 'react'
 
-import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
 import MafCoverageTooltipContents from './MafCoverageTooltipContents.tsx'
 import MafInterbaseTooltipContents from './MafInterbaseTooltipContents.tsx'
-import { generateTooltipContent } from '../util.ts'
 
-import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 const MAFTooltip = observer(function ({
   model,
@@ -86,7 +85,7 @@ const MAFTooltip = observer(function ({
 
   return (
     <BaseTooltip clientPoint={clientPoint}>
-      <SanitizedHTML html={generateTooltipContent(p1, p2, hover)} />
+      <MafAlignmentTooltipContents p1={p1} p2={p2} hover={hover} />
     </BaseTooltip>
   )
 })
