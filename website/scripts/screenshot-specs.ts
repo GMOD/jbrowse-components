@@ -591,7 +591,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'volvox',
-          loc: 'ctgA:1000-3000',
+          loc: 'ctgA:1500-2000',
           tracks: ['volvox-long-reads-sv-cram'],
         },
       ],
@@ -1272,6 +1272,8 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'chr5',
     readyTimeout: 60000,
+    // wider viewport so the whole-chromosome CNV + bed track aren't cut off
+    viewportWidth: 1800,
     settleMs: 12000,
   },
 
@@ -1654,7 +1656,9 @@ export const specs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="share-button"]' },
       { type: 'waitForText', text: 'Copy the URL below' },
-      { type: 'delay', ms: 1500 },
+      // the short-URL request is async; wait for it to resolve so the dialog
+      // shows the final link instead of the "Generating short URL" spinner
+      { type: 'delay', ms: 7000 },
     ],
   },
 
@@ -1920,7 +1924,8 @@ export const specs: ScreenshotSpec[] = [
   // Alignments track interactions
   // ────────────────────────────────────────────────────────────────────────
 
-  // Compact pileup display mode selected from the track menu.
+  // Track menu open on the "Set feature height..." submenu, showing the Compact
+  // option (the menu path the doc describes, left visible rather than clicked).
   {
     mode: 'url',
     name: 'alignments/compact',
@@ -1942,9 +1947,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 300 },
       { type: 'hover', text: 'Set feature height...' },
       { type: 'waitForText', text: 'Compact' },
-      { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Compact' },
-      { type: 'delay', ms: 2000 },
+      { type: 'delay', ms: 800 },
     ],
   },
 
@@ -2037,9 +2040,13 @@ export const specs: ScreenshotSpec[] = [
         selector: '[data-testid="hierarchical_track_selector"]',
       },
       { type: 'delay', ms: 500 },
-      // open the hamburger menu
+      // open the hamburger menu, then open the Collapse... submenu so its
+      // options are visible alongside the main menu
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      { type: 'waitForText', text: 'Open faceted track selector' },
+      { type: 'waitForText', text: 'Collapse...' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Collapse...' },
+      { type: 'waitForText', text: 'Collapse top-level categories' },
       { type: 'delay', ms: 500 },
     ],
   },
@@ -2158,22 +2165,24 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // MultiWig color/arrangement editor dialog.
+  // MultiWig color/arrangement editor dialog, over the ENCODE multi-bigWig demo
+  // track (microarray_multi) from config_demo.json.
   {
     mode: 'url',
     name: 'multiwig/multi_colorselect',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_microarray_multi'],
+          assembly: 'hg19',
+          loc: 'chr1:1,000,000-2,000,000',
+          tracks: ['microarray_multi'],
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 5000,
+    readyText: 'chr1',
+    readyTimeout: 60000,
+    settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'waitForText', text: 'Edit colors/arrangement...' },
@@ -2415,7 +2424,8 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
-  // Multi-sample variant display (matrix view).
+  // Multi-sample variant display (matrix view), with the track menu open on the
+  // Display types submenu showing the "(matrix)" option highlighted.
   {
     mode: 'url',
     name: 'trio-matrix',
@@ -2424,12 +2434,12 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:1-500,000',
+          loc: 'chr1:62,174,000-65,097,304',
           tracks: [
             {
               trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
               displaySnapshot: {
-                type: 'LinearMultiSampleVariantDisplay',
+                type: 'LinearMultiSampleVariantMatrixDisplay',
               },
             },
           ],
@@ -2439,6 +2449,14 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 12000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Display types' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Display types' },
+      { type: 'waitForText', text: 'Multi-sample variant display (matrix)' },
+      { type: 'delay', ms: 500 },
+    ],
   },
 
   // Phased matrix with the "Rendering mode" menu visible.
@@ -2450,12 +2468,12 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:1-500,000',
+          loc: 'chr1:62,174,000-65,097,304',
           tracks: [
             {
               trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
               displaySnapshot: {
-                type: 'LinearMultiSampleVariantDisplay',
+                type: 'LinearMultiSampleVariantMatrixDisplay',
                 renderingMode: 'phased',
               },
             },
@@ -2485,12 +2503,12 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:1-500,000',
+          loc: 'chr1:62,174,000-65,097,304',
           tracks: [
             {
               trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
               displaySnapshot: {
-                type: 'LinearMultiSampleVariantDisplay',
+                type: 'LinearMultiSampleVariantMatrixDisplay',
                 renderingMode: 'phased',
               },
             },
