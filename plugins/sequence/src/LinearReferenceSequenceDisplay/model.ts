@@ -198,7 +198,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           showForward: self.showForward,
           showReverse: self.effectiveShowReverse,
           showTranslation: self.effectiveShowTranslation,
-          sequenceType: self.sequenceType,
+          isDna: self.isDna,
           rowHeight: self.rowHeight,
           palette: colorState.palette,
           textColors: colorState.textColors,
@@ -360,7 +360,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         ...(showForward ? {} : { showForward }),
         ...(showReverse ? {} : { showReverse }),
         ...(showTranslation ? {} : { showTranslation }),
-      } as typeof snap
+      } as typeof snap // cast: omitted fields default to true, which is correct
     })
 }
 

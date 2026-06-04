@@ -69,13 +69,12 @@ function drawBaseRow(
   y: number,
   rowHeight: number,
   showBorders: boolean,
-  sequenceType: string,
+  isDna: boolean,
   palette: ColorPalette,
   textColors: TextColors,
 ) {
   const iStart = Math.max(0, Math.floor(block.start - seqStart))
   const iEnd = Math.min(seq.length, Math.ceil(block.end - seqStart))
-  const isDna = sequenceType === 'dna'
 
   for (let i = iStart; i < iEnd; i++) {
     const letter = seq[i]!
@@ -156,7 +155,7 @@ function drawTranslationRow(
     }
 
     if (showBorders) {
-      const letter = codonTable[normalizedCodon] || ''
+      const letter = codonTable[normalizedCodon] ?? ''
       ctx.fillStyle = isStart
         ? textColors.startContrast
         : isStop
@@ -172,7 +171,7 @@ export interface DrawSequenceState {
   showForward: boolean
   showReverse: boolean
   showTranslation: boolean
-  sequenceType: string
+  isDna: boolean
   rowHeight: number
   palette: ColorPalette
   textColors: TextColors
@@ -191,7 +190,7 @@ export function drawSequenceBlocks(
     showForward,
     showReverse,
     showTranslation,
-    sequenceType,
+    isDna,
     rowHeight,
     palette,
     textColors,
@@ -260,7 +259,7 @@ export function drawSequenceBlocks(
         currentY,
         rowHeight,
         showBorders,
-        sequenceType,
+        isDna,
         palette,
         textColors,
       )
@@ -277,7 +276,7 @@ export function drawSequenceBlocks(
         currentY,
         rowHeight,
         showBorders,
-        sequenceType,
+        isDna,
         palette,
         textColors,
       )

@@ -26,7 +26,7 @@ interface SequenceDisplayModel {
   showForward: boolean
   effectiveShowReverse: boolean
   effectiveShowTranslation: boolean
-  sequenceType: string
+  isDna: boolean
   rowHeight: number
   zoomedOut: boolean
 }
@@ -56,7 +56,7 @@ export async function renderSvg(
       showForward: model.showForward,
       showReverse: model.effectiveShowReverse,
       showTranslation: model.effectiveShowTranslation,
-      sequenceType: model.sequenceType,
+      isDna: model.isDna,
       rowHeight: model.rowHeight,
       palette,
       textColors,

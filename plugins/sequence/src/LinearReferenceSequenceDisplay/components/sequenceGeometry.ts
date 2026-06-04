@@ -44,6 +44,9 @@ export function buildColorPalette(theme: Theme): ColorPalette {
     bases.set(base, entry(themeBases[base]!.main))
   }
   const frames = new Map<Frame, ColorEntry>()
+  // Frames array layout: [null, f1, f2, f3, f-3, f-2, f-1]
+  // null at index 0 lets positive frames use 1-based .at(1/2/3);
+  // negative frames use JS .at() negative-index semantics.
   for (const frame of [1, 2, 3, -1, -2, -3] as Frame[]) {
     frames.set(frame, entry(theme.palette.frames.at(frame)!.main))
   }
