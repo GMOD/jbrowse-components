@@ -27,7 +27,6 @@ struct Uniforms {
   float3 bpRangeX;      // [bpStartHi, bpStartLo, ±clippedLengthBp]
   float  canvasHeight;  // CSS px
   float  viewportWidth;
-  float  reversed;
   float  zero;          // always 0.0 — prevents hp-split collapse
   float  rowHeight;     // CSS px per row
   float  rowProportion; // rect height = rowHeight * rowProportion
@@ -55,14 +54,16 @@ VsOut vs_main(MafInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startBp, u);
   float sx2 = bpToClipX(inst.endBp, u);
 
-  // Enforce minimum 1-pixel width at any zoom level.
+  // Enforce minimum 1-pixel width at any zoom level. Reversal is baked into
+  // bpRangeX (negated length), so sx2 < sx1 for reversed blocks — extend in the
+  // sign direction of dx to preserve orientation (see rect.slang).
   float minClipW = 1.0 / u.viewportWidth * 2.0;
-  if ((sx2 - sx1) < minClipW) {
-    sx2 = sx1 + minClipW;
+  float dx = sx2 - sx1;
+  if (abs(dx) < minClipW) {
+    sx2 = sx1 + (dx < 0.0 ? -minClipW : minClipW);
   }
 
   float clipX = lerp(sx1, sx2, local.x);
-  clipX = lerp(clipX, -clipX, u.reversed);
 
   float yPx  = lerp(rowY, rowY + h, local.y);
   float clipY = yPxToClipY(yPx, u.canvasHeight);

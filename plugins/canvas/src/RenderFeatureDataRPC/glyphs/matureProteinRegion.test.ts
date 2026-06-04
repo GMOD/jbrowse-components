@@ -81,7 +81,7 @@ describe('hasMatureProteinChildren', () => {
 
 describe('findGlyph routing for CDS', () => {
   const config = mockDisplayConfig()
-  const args = { reversed: false, config }
+  const args = { config }
 
   it('routes a CDS with mature regions to MatureProteinRegion', () => {
     const feature = viralPolyprotein([
@@ -128,7 +128,6 @@ describe('layoutMatureProteinRegion', () => {
     })
     const layout = layoutMatureProteinRegion({
       feature,
-      reversed: false,
       config: mockDisplayConfig(),
     })
 
@@ -144,7 +143,6 @@ describe('layoutMatureProteinRegion', () => {
     ])
     const layout = layoutMatureProteinRegion({
       feature,
-      reversed: false,
       config: mockDisplayConfig({ subfeatureLabels: 'none' }),
     })
     // rowHeight = featureHeight(10), padding 1 -> boxHeight 8
@@ -161,7 +159,6 @@ describe('layoutMatureProteinRegion', () => {
     ])
     const layout = layoutMatureProteinRegion({
       feature,
-      reversed: false,
       config: mockDisplayConfig({ subfeatureLabels: 'below' }),
     })
     // rowHeight = 20, boxHeight = floor(20/2)-1 = 9
@@ -175,7 +172,6 @@ describe('layoutMatureProteinRegion', () => {
     const feature = mockFeature({ type: 'CDS', start: 1, end: 9 })
     const layout = layoutMatureProteinRegion({
       feature,
-      reversed: false,
       config: mockDisplayConfig(),
     })
     expect(layout.height).toBe(10)
@@ -196,7 +192,7 @@ describe('collectRenderData for mature protein regions', () => {
     const layout = findGlyph(
       feature,
       config,
-    )({ feature, reversed: false, config })
+    )({ feature, config })
 
     const result = collectRenderData([layout], 0, 10000, config, theme, false)
 
@@ -225,7 +221,7 @@ describe('collectRenderData for mature protein regions', () => {
     const layout = findGlyph(
       feature,
       config,
-    )({ feature, reversed: false, config })
+    )({ feature, config })
 
     const result = collectRenderData([layout], 0, 10000, config, theme, false)
     expect(result.rectPositions).toHaveLength(2 * 2)

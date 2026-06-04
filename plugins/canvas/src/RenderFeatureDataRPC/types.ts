@@ -24,7 +24,6 @@ export interface FeatureLayout {
 // `feature.get('end')` in `collectRenderData`, not pre-baked here.
 export interface LayoutArgs {
   feature: Feature
-  reversed: boolean
   config: DisplayConfig
   parentFeature?: Feature
 }

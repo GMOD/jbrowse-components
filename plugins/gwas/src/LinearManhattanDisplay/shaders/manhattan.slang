@@ -22,7 +22,6 @@ struct Uniforms {
   float  domainYMax;
   float  zero;
   float  viewportWidth;
-  float  reversed;
   float  pointRadius;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -67,7 +66,7 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
   float dy = local.y * halfPx * 2.0 / u.canvasHeight;
 
   VsOut o;
-  o.position = float4(lerp(centerClipX, -centerClipX, u.reversed) + dx, centerClipY + dy, 0.0, 1.0);
+  o.position = float4(centerClipX + dx, centerClipY + dy, 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
   o.localPos = local * expand;
   return o;

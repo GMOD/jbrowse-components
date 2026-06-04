@@ -110,14 +110,10 @@ export async function executeRenderFeatureData({
     'Computing layout',
     statusCallback,
     async () => {
-      const reversed = region.reversed ?? false
       const records: FeatureLayout[] = []
       for (const feature of features.values()) {
         records.push(
-          findGlyph(
-            feature,
-            displayConfig,
-          )({ feature, reversed, config: displayConfig }),
+          findGlyph(feature, displayConfig)({ feature, config: displayConfig }),
         )
       }
       return records

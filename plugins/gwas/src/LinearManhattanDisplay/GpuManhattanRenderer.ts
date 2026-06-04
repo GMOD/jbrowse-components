@@ -77,7 +77,6 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
       // CSS-scaled canvasHeight produces vertically-stretched ellipses on
       // hi-DPI displays.
       this.uniformF32[U.viewportWidth] = clip.scissorW
-      this.uniformF32[U.reversed] = block.reversed ? 1 : 0
       this.uniformF32[U.pointRadius] = POINT_RADIUS_PX
 
       this.hal.writeUniforms(this.uniformData)

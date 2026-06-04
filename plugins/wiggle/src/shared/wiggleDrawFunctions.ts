@@ -60,12 +60,13 @@ export function drawXYPlot(
       reversed,
     )
     const scoreY = scoreToY(scores[i]!) + rowTop
-    const w = Math.max(WIGGLE_MIN_PX, x2 - x1 + WIGGLE_FUDGE_FACTOR)
+    const left = Math.min(x1, x2)
+    const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
     const h = originY - scoreY
     if (h >= 0) {
-      ctx.fillRect(x1, scoreY, w, h)
+      ctx.fillRect(left, scoreY, w, h)
     } else {
-      ctx.fillRect(x1, originY, w, -h)
+      ctx.fillRect(left, originY, w, -h)
     }
   }
 }
@@ -111,9 +112,10 @@ export function drawDensity(
       screenEndPx,
       reversed,
     )
-    const w = Math.max(WIGGLE_MIN_PX, x2 - x1 + WIGGLE_FUDGE_FACTOR)
+    const left = Math.min(x1, x2)
+    const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
     ctx.fillStyle = colorFn(scores[i]!)
-    ctx.fillRect(x1, rowTop, w, rowHeight)
+    ctx.fillRect(left, rowTop, w, rowHeight)
   }
 }
 
@@ -220,7 +222,8 @@ export function drawScatter(
       reversed,
     )
     const scoreY = scoreToY(scores[i]!) + rowTop
-    const w = Math.max(WIGGLE_MIN_PX, x2 - x1 + WIGGLE_FUDGE_FACTOR)
-    ctx.fillRect(x1, scoreY - 1, w, 2)
+    const left = Math.min(x1, x2)
+    const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
+    ctx.fillRect(left, scoreY - 1, w, 2)
   }
 }

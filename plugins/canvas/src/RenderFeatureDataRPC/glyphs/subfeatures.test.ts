@@ -69,7 +69,6 @@ describe('layoutSubfeatures layout', () => {
 
       const layout = layoutSubfeatures({
         feature: gene,
-        reversed: false,
         config,
       })
 
@@ -95,7 +94,6 @@ describe('layoutSubfeatures layout', () => {
 
       const layout = layoutSubfeatures({
         feature: gene,
-        reversed: false,
         config,
       })
 
@@ -114,7 +112,6 @@ describe('layoutSubfeatures layout', () => {
 
       const layout = layoutSubfeatures({
         feature: gene,
-        reversed: false,
         config,
       })
 
@@ -135,7 +132,6 @@ describe('layoutSubfeatures layout', () => {
 
       const layout = layoutSubfeatures({
         feature: gene,
-        reversed: false,
         config,
       })
 
@@ -153,13 +149,11 @@ describe('layoutSubfeatures layout', () => {
 
       const belowLayout = layoutSubfeatures({
         feature: gene,
-        reversed: false,
         config: mockDisplayConfig({ subfeatureLabels: 'below' }),
       })
 
       const noneLayout = layoutSubfeatures({
         feature: gene,
-        reversed: false,
         config: mockDisplayConfig({ subfeatureLabels: 'none' }),
       })
 

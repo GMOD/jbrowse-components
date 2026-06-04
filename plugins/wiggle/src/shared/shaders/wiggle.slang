@@ -35,7 +35,6 @@ struct Uniforms {
   float  domainYMax;
   float  zero;
   float  viewportWidth;
-  float  reversed;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -109,10 +108,13 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     }
   } else {
     // 3px (1.5 CSS px) minimum width keeps sub-pixel features visible, matching
-    // WIGGLE_MIN_PX in the Canvas2D path.
+    // WIGGLE_MIN_PX in the Canvas2D path. Reversal is baked into bpRangeX
+    // (negated length), so sx2 < sx1 for reversed blocks — extend in the sign
+    // direction of dx to preserve orientation (see rect.slang).
     float minClipW = 3.0 / u.viewportWidth;
-    if (sx2 - sx1 < minClipW) {
-      sx2 = sx1 + minClipW;
+    float dx = sx2 - sx1;
+    if (abs(dx) < minClipW) {
+      sx2 = sx1 + (dx < 0.0 ? -minClipW : minClipW);
     }
     float2 q = quadLocal(vid);
     sx = lerp(sx1, sx2, q.x);
@@ -149,10 +151,8 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     outColor = float4(instColor.rgb, 1.0);
   }
 
-  float flippedX = lerp(sx, -sx, u.reversed);
-
   VsOut o;
-  o.position = float4(flippedX, sy, 0.0, 1.0);
+  o.position = float4(sx, sy, 0.0, 1.0);
   o.color = outColor;
   return o;
 }

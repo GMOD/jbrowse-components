@@ -23,7 +23,6 @@ export interface RenderFeatureDataArgs {
     start: number
     end: number
     assemblyName: string
-    reversed?: boolean
     seqAdapterRefName?: string
   }
   bpPerPx: number
@@ -45,7 +44,6 @@ export interface GetFeatureDetailsArgs {
     start: number
     end: number
     assemblyName: string
-    reversed?: boolean
   }
 }
 

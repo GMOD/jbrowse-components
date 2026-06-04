@@ -164,7 +164,8 @@ describe('GpuWiggleRenderer', () => {
     expect(f32[U.domainYMax]).toBe(20)
     // zero MUST be 0.0 for hp-math precision
     expect(f32[U.zero]).toBe(0)
-    expect(f32[U.reversed]).toBe(0)
+    // forward block: bpRangeX length component is positive
+    expect(f32[U.bpRangeX + 2]!).toBeGreaterThan(0)
   })
 
   it('uses line pass for LINE rendering type', () => {
@@ -267,8 +268,9 @@ describe('GpuWiggleRenderer', () => {
       DEFAULT_STATE,
     )
 
+    // reversed block pivots on bpEnd with a negated length component
     const f32 = hal.getLastUniformsF32()!
-    expect(f32[U.reversed]).toBe(1)
+    expect(f32[U.bpRangeX + 2]!).toBeLessThan(0)
   })
 
   it('handles multiple sources with different row indices', () => {

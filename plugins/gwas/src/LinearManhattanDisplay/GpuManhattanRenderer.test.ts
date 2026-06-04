@@ -1,7 +1,20 @@
-import { buildInstanceBuffer } from './GpuManhattanRenderer.ts'
+import { MockHal } from '@jbrowse/core/gpu/hal'
+
+import {
+  GpuManhattanRenderer,
+  MANHATTAN_PASSES,
+  buildInstanceBuffer,
+} from './GpuManhattanRenderer.ts'
 import * as shader from './shaders/manhattan.generated.ts'
 
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+
+Object.defineProperty(globalThis, 'devicePixelRatio', {
+  value: 1,
+  writable: true,
+  configurable: true,
+})
 
 function mkData(
   positions: number[],
@@ -46,4 +59,43 @@ test('preserves uint32 positions above the float32-safe range', () => {
   const bigPos = 250_000_001
   const buf = buildInstanceBuffer(mkData([bigPos], [1], [0]))
   expect(new Uint32Array(buf)[shader.FIELD_OFFSET_F32.absPosition]).toBe(bigPos)
+})
+
+describe('reversed convention', () => {
+  const state: ManhattanRenderState = {
+    domainY: [0, 10],
+    canvasWidth: 800,
+    canvasHeight: 400,
+  }
+  const block = {
+    displayedRegionIndex: 0,
+    start: 0,
+    end: 1000,
+    screenStartPx: 0,
+    screenEndPx: 800,
+    reversed: false,
+  }
+
+  function bpRangeLen(reversed: boolean) {
+    const hal = new MockHal(MANHATTAN_PASSES)
+    const renderer = new GpuManhattanRenderer(hal)
+    const data = mkData([500], [5], [0xff0000ff])
+    renderer.uploadRegion(0, data)
+    renderer.renderBlocks(
+      [{ ...block, reversed }],
+      new Map([[0, data]]),
+      state,
+    )
+    return hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.bpRangeX + 2]!
+  }
+
+  // Reversal is baked into bpRangeX's negated length (no separate `reversed`
+  // uniform + shader flip, which double-flipped reversed points to the forward
+  // orientation). Forward → positive length, reversed → negative.
+  test('forward block writes a positive bpRangeX length', () => {
+    expect(bpRangeLen(false)).toBeGreaterThan(0)
+  })
+  test('reversed block writes a negated bpRangeX length', () => {
+    expect(bpRangeLen(true)).toBeLessThan(0)
+  })
 })

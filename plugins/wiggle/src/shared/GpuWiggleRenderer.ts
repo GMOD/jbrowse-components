@@ -1,4 +1,4 @@
-import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
+import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
@@ -90,9 +90,10 @@ export class GpuWiggleRenderer
       this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
 
-      this.uniformF32[U.bpRangeX] = clip.bpStartHi
-      this.uniformF32[U.bpRangeX + 1] = clip.bpStartLo
-      this.uniformF32[U.bpRangeX + 2] = clip.clippedLengthBp
+      const [bpHi, bpLo, bpLen] = bpRangeXTuple(clip, block.reversed)
+      this.uniformF32[U.bpRangeX] = bpHi
+      this.uniformF32[U.bpRangeX + 1] = bpLo
+      this.uniformF32[U.bpRangeX + 2] = bpLen
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformI32[U.scaleType] = state.scaleType
       this.uniformI32[U.renderingType] = state.renderingType
@@ -106,7 +107,6 @@ export class GpuWiggleRenderer
       // resolves to a stable 1.5 CSS px floor across DPRs, matching
       // WIGGLE_MIN_PX in the Canvas2D path.
       this.uniformF32[U.viewportWidth] = clip.scissorW
-      this.uniformF32[U.reversed] = block.reversed ? 1 : 0
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(passId, block.displayedRegionIndex, PASS_FILL)

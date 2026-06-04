@@ -83,7 +83,6 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
       this.uniformF32[U.bpRangeX + 2] = bpLen
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformF32[U.viewportWidth] = clip.pxW
-      this.uniformF32[U.reversed] = block.reversed ? 1 : 0
       this.uniformF32[U.zero] = 0
       this.uniformF32[U.rowHeight] = rowHeight
       this.uniformF32[U.rowProportion] = rowProportion
