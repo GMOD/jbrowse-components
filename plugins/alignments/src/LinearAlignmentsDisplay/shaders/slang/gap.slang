@@ -46,7 +46,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   }
 
   float alpha = 1.0;
-  if (inst.gapType == GAP_DELETION) {
+  if (inst.gapType == GAP_DELETION && u.filterMismatchesByFrequency != 0) {
     float widthPx = float(inst.endOff - inst.startOff) * u.pxPerBp;
     if (widthPx < 1.0) {
       float base = widthPx * widthPx;

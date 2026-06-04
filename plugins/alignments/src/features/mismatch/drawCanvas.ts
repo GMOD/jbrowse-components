@@ -37,7 +37,7 @@ export function drawMismatches(
     // color, matching the GPU shader (mismatch.slang baseColor catch-all).
     const colorTuple = baseColors[base] ?? state.colors.colorBaseN
     let alpha = 1
-    if (pxPerBp < 1) {
+    if (state.filterMismatchesByFrequency && pxPerBp < 1) {
       alpha = pxPerBp + frequency * (1 - pxPerBp)
     }
     ctx.fillStyle = alpha >= 1 ? rgb255(colorTuple) : rgba255(colorTuple, alpha)

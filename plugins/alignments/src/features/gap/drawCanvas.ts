@@ -41,7 +41,7 @@ export function drawGaps(
     if (gapType === GAP_DELETION) {
       const frequency = region.gapFrequencies[i]! / 255
       let alpha = 1
-      if (widthPx < 1) {
+      if (state.filterMismatchesByFrequency && widthPx < 1) {
         const base = widthPx * widthPx
         alpha = base + frequency * (1 - base)
       }

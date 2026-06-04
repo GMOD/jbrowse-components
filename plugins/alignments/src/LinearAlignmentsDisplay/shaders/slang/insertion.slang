@@ -95,7 +95,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sy = lerp(y1, y2, local.y);
 
   float alpha = 1.0;
-  if (!isLong && pxPerBp < 1.0) {
+  if (!isLong && u.filterMismatchesByFrequency != 0 && pxPerBp < 1.0) {
     float base = pxPerBp * pxPerBp;
     alpha = base + inst.frequency * (1.0 - base);
   }

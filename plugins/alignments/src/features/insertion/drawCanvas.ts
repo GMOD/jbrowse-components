@@ -40,7 +40,7 @@ export function drawInsertions(
 
     const isLong = length >= LONG_INSERTION_MIN_LENGTH
     let alpha = 1
-    if (!isLong && pxPerBp < 1) {
+    if (!isLong && state.filterMismatchesByFrequency && pxPerBp < 1) {
       const base = pxPerBp * pxPerBp
       alpha = base + frequency * (1 - base)
     }

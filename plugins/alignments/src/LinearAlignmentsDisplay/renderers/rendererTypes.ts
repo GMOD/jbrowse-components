@@ -31,10 +31,12 @@ export interface RenderState {
   coverageMaxDepth: number | undefined
   coverageIsLog: boolean
   showMismatches: boolean
+  filterMismatchesByFrequency: boolean
   showSoftClipping: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean
   showPerBaseQuality: boolean
+  showPerBaseLetter: boolean
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number

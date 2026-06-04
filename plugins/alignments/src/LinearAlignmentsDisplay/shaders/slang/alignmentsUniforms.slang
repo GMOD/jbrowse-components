@@ -64,6 +64,9 @@ public struct Uniforms {
   public int showStroke;
   public int flipStrandLongRead;
   public int coverageScaleType; // 0 = linear, 1 = log2
+  // 1 = filter low-freq mismatches/insertions/gaps by coverage depth (default);
+  // 0 = show all at full alpha (user has disabled frequency filtering)
+  public int filterMismatchesByFrequency;
   public float reversed;
 
   // Color palette — each uint is a packed ABGR value (1 byte per channel,

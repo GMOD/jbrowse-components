@@ -11,7 +11,7 @@ export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 304
+export const UNIFORMS_SIZE_BYTES = 320
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -46,51 +46,52 @@ export const UNIFORM_OFFSET_F32 = {
   showStroke: 28,
   flipStrandLongRead: 29,
   coverageScaleType: 30,
-  reversed: 31,
-  colorFwd: 32,
-  colorRev: 33,
-  colorNostrand: 34,
-  colorPairLR: 35,
-  colorPairRL: 36,
-  colorPairRR: 37,
-  colorPairLL: 38,
-  colorBaseA: 39,
-  colorBaseC: 40,
-  colorBaseG: 41,
-  colorBaseT: 42,
-  colorBaseN: 43,
-  colorInsertion: 44,
-  colorDeletion: 45,
-  colorSkip: 46,
-  colorSoftclip: 47,
-  colorHardclip: 48,
-  colorCoverage: 49,
-  colorModFwd: 50,
-  colorModRev: 51,
-  colorLongInsert: 52,
-  colorShortInsert: 53,
-  colorSupplementary: 54,
-  colorUnmappedMate: 55,
-  colorMutedSnpBase: 56,
-  arcColor0: 57,
-  arcColor1: 58,
-  arcColor2: 59,
-  arcColor3: 60,
-  arcColor4: 61,
-  arcColor5: 62,
-  arcColor6: 63,
-  arcColor7: 64,
-  arcLineColor0: 65,
-  arcLineColor1: 66,
-  linkedReadColor0: 67,
-  linkedReadColor1: 68,
-  linkedReadColor2: 69,
-  linkedReadColor3: 70,
-  linkedReadColor4: 71,
-  linkedReadColor5: 72,
-  linkedReadColor6: 73,
-  linkedReadColor7: 74,
-  pxPerBp: 75,
+  filterMismatchesByFrequency: 31,
+  reversed: 32,
+  colorFwd: 33,
+  colorRev: 34,
+  colorNostrand: 35,
+  colorPairLR: 36,
+  colorPairRL: 37,
+  colorPairRR: 38,
+  colorPairLL: 39,
+  colorBaseA: 40,
+  colorBaseC: 41,
+  colorBaseG: 42,
+  colorBaseT: 43,
+  colorBaseN: 44,
+  colorInsertion: 45,
+  colorDeletion: 46,
+  colorSkip: 47,
+  colorSoftclip: 48,
+  colorHardclip: 49,
+  colorCoverage: 50,
+  colorModFwd: 51,
+  colorModRev: 52,
+  colorLongInsert: 53,
+  colorShortInsert: 54,
+  colorSupplementary: 55,
+  colorUnmappedMate: 56,
+  colorMutedSnpBase: 57,
+  arcColor0: 58,
+  arcColor1: 59,
+  arcColor2: 60,
+  arcColor3: 61,
+  arcColor4: 62,
+  arcColor5: 63,
+  arcColor6: 64,
+  arcColor7: 65,
+  arcLineColor0: 66,
+  arcLineColor1: 67,
+  linkedReadColor0: 68,
+  linkedReadColor1: 69,
+  linkedReadColor2: 70,
+  linkedReadColor3: 71,
+  linkedReadColor4: 72,
+  linkedReadColor5: 73,
+  linkedReadColor6: 74,
+  linkedReadColor7: 75,
+  pxPerBp: 76,
 } as const
 
 
@@ -98,9 +99,9 @@ export const UNIFORM_OFFSET_F32 = {
 // fields, indexed into the 4-byte-word uniform buffer (works with
 // either Uint32Array or Float32Array views — the field kind picks).
 export const UNIFORM_SLOT_ARRAYS = {
-  arcColor: [57, 58, 59, 60, 61, 62, 63, 64] as const,
-  arcLineColor: [65, 66] as const,
-  linkedReadColor: [67, 68, 69, 70, 71, 72, 73, 74] as const,
+  arcColor: [58, 59, 60, 61, 62, 63, 64, 65] as const,
+  arcLineColor: [66, 67] as const,
+  linkedReadColor: [68, 69, 70, 71, 72, 73, 74, 75] as const,
 } as const
 
 export interface Uniforms {
@@ -135,6 +136,7 @@ export interface Uniforms {
   showStroke: number
   flipStrandLongRead: number
   coverageScaleType: number
+  filterMismatchesByFrequency: number
   reversed: number
   colorFwd: number
   colorRev: number
@@ -217,51 +219,52 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[28] = uniforms.showStroke
   i32[29] = uniforms.flipStrandLongRead
   i32[30] = uniforms.coverageScaleType
-  f32[31] = uniforms.reversed
-  u32[32] = uniforms.colorFwd
-  u32[33] = uniforms.colorRev
-  u32[34] = uniforms.colorNostrand
-  u32[35] = uniforms.colorPairLR
-  u32[36] = uniforms.colorPairRL
-  u32[37] = uniforms.colorPairRR
-  u32[38] = uniforms.colorPairLL
-  u32[39] = uniforms.colorBaseA
-  u32[40] = uniforms.colorBaseC
-  u32[41] = uniforms.colorBaseG
-  u32[42] = uniforms.colorBaseT
-  u32[43] = uniforms.colorBaseN
-  u32[44] = uniforms.colorInsertion
-  u32[45] = uniforms.colorDeletion
-  u32[46] = uniforms.colorSkip
-  u32[47] = uniforms.colorSoftclip
-  u32[48] = uniforms.colorHardclip
-  u32[49] = uniforms.colorCoverage
-  u32[50] = uniforms.colorModFwd
-  u32[51] = uniforms.colorModRev
-  u32[52] = uniforms.colorLongInsert
-  u32[53] = uniforms.colorShortInsert
-  u32[54] = uniforms.colorSupplementary
-  u32[55] = uniforms.colorUnmappedMate
-  u32[56] = uniforms.colorMutedSnpBase
-  u32[57] = uniforms.arcColor0
-  u32[58] = uniforms.arcColor1
-  u32[59] = uniforms.arcColor2
-  u32[60] = uniforms.arcColor3
-  u32[61] = uniforms.arcColor4
-  u32[62] = uniforms.arcColor5
-  u32[63] = uniforms.arcColor6
-  u32[64] = uniforms.arcColor7
-  u32[65] = uniforms.arcLineColor0
-  u32[66] = uniforms.arcLineColor1
-  u32[67] = uniforms.linkedReadColor0
-  u32[68] = uniforms.linkedReadColor1
-  u32[69] = uniforms.linkedReadColor2
-  u32[70] = uniforms.linkedReadColor3
-  u32[71] = uniforms.linkedReadColor4
-  u32[72] = uniforms.linkedReadColor5
-  u32[73] = uniforms.linkedReadColor6
-  u32[74] = uniforms.linkedReadColor7
-  f32[75] = uniforms.pxPerBp
+  i32[31] = uniforms.filterMismatchesByFrequency
+  f32[32] = uniforms.reversed
+  u32[33] = uniforms.colorFwd
+  u32[34] = uniforms.colorRev
+  u32[35] = uniforms.colorNostrand
+  u32[36] = uniforms.colorPairLR
+  u32[37] = uniforms.colorPairRL
+  u32[38] = uniforms.colorPairRR
+  u32[39] = uniforms.colorPairLL
+  u32[40] = uniforms.colorBaseA
+  u32[41] = uniforms.colorBaseC
+  u32[42] = uniforms.colorBaseG
+  u32[43] = uniforms.colorBaseT
+  u32[44] = uniforms.colorBaseN
+  u32[45] = uniforms.colorInsertion
+  u32[46] = uniforms.colorDeletion
+  u32[47] = uniforms.colorSkip
+  u32[48] = uniforms.colorSoftclip
+  u32[49] = uniforms.colorHardclip
+  u32[50] = uniforms.colorCoverage
+  u32[51] = uniforms.colorModFwd
+  u32[52] = uniforms.colorModRev
+  u32[53] = uniforms.colorLongInsert
+  u32[54] = uniforms.colorShortInsert
+  u32[55] = uniforms.colorSupplementary
+  u32[56] = uniforms.colorUnmappedMate
+  u32[57] = uniforms.colorMutedSnpBase
+  u32[58] = uniforms.arcColor0
+  u32[59] = uniforms.arcColor1
+  u32[60] = uniforms.arcColor2
+  u32[61] = uniforms.arcColor3
+  u32[62] = uniforms.arcColor4
+  u32[63] = uniforms.arcColor5
+  u32[64] = uniforms.arcColor6
+  u32[65] = uniforms.arcColor7
+  u32[66] = uniforms.arcLineColor0
+  u32[67] = uniforms.arcLineColor1
+  u32[68] = uniforms.linkedReadColor0
+  u32[69] = uniforms.linkedReadColor1
+  u32[70] = uniforms.linkedReadColor2
+  u32[71] = uniforms.linkedReadColor3
+  u32[72] = uniforms.linkedReadColor4
+  u32[73] = uniforms.linkedReadColor5
+  u32[74] = uniforms.linkedReadColor6
+  u32[75] = uniforms.linkedReadColor7
+  f32[76] = uniforms.pxPerBp
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

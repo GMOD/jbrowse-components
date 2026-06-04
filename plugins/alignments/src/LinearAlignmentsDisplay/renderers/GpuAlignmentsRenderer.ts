@@ -65,6 +65,11 @@ import { uploadModifications } from '../../features/modification/uploadGpu.ts'
 import { OVERLAP_PASS, PASS_OVERLAP } from '../../features/overlap/packGpu.ts'
 import { uploadOverlaps } from '../../features/overlap/uploadGpu.ts'
 import {
+  PASS_PER_BASE_LETTER,
+  PER_BASE_LETTER_PASS,
+} from '../../features/perBaseLetter/packGpu.ts'
+import { uploadPerBaseLetter } from '../../features/perBaseLetter/uploadGpu.ts'
+import {
   PASS_PER_BASE_QUAL,
   PER_BASE_QUALITY_PASS,
 } from '../../features/perBaseQuality/packGpu.ts'
@@ -149,6 +154,7 @@ function fillFrameUniforms(
       : 1
   f[U.depthDomainMax] = domainMax ?? 0
   i[U.coverageScaleType] = state.coverageIsLog ? 1 : 0
+  i[U.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   f[U.binSize] = region.binSize
   f[U.interbaseHeight] =
     region.interbaseMaxCount > 0
@@ -266,6 +272,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
   CLIP_PASS,
   MODIFICATION_PASS,
   PER_BASE_QUALITY_PASS,
+  PER_BASE_LETTER_PASS,
   COVERAGE_PASS,
   SNP_COVERAGE_PASS,
   MOD_COVERAGE_PASS,
@@ -368,6 +375,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       uploadSoftclipBases(this.hal, idx, data)
       uploadModifications(this.hal, idx, data)
       uploadPerBaseQuality(this.hal, idx, data)
+      uploadPerBaseLetter(this.hal, idx, data)
       this.uploadCoverage(idx, data)
       uploadModCoverage(
         this.hal,
@@ -585,6 +593,10 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
       if (state.showPerBaseQuality) {
         this.hal.drawPass(PASS_PER_BASE_QUAL, block.displayedRegionIndex)
+      }
+
+      if (state.showPerBaseLetter) {
+        this.hal.drawPass(PASS_PER_BASE_LETTER, block.displayedRegionIndex)
       }
 
       this.renderFeatureOverlays(

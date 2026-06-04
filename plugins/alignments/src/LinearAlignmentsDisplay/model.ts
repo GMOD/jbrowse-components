@@ -1172,6 +1172,7 @@ export default function stateModelFactory(
             coverageMaxDepth: self.coverageDomain?.[1],
             coverageIsLog: self.coverageIsLog,
             showMismatches: self.showMismatches,
+            filterMismatchesByFrequency: self.filterMismatchesByFrequency,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,

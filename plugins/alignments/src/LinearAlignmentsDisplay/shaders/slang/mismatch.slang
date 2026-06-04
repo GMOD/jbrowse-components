@@ -45,7 +45,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // Sub-pixel alpha: at <1 px/bp, blend toward full-row alpha based on the
   // per-site frequency so thinly-covered mismatches fade out.
   float alpha = 1.0;
-  if (pxPerBp < 1.0) {
+  if (u.filterMismatchesByFrequency != 0 && pxPerBp < 1.0) {
     alpha = pxPerBp + inst.frequency * (1.0 - pxPerBp);
   }
   if (alpha <= 0.0) {
