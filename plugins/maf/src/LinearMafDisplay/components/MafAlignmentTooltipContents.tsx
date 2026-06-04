@@ -8,9 +8,6 @@ import { describeMafStatus } from '../../util/mafStatus.ts'
 import type { GenomicPosition, MafHover } from '../util.ts'
 
 const useStyles = makeStyles()(theme => ({
-  td: {
-    whiteSpace: 'nowrap',
-  },
   table: {
     fontSize: theme.typography.fontSize * 0.85,
     borderCollapse: 'collapse',
@@ -162,13 +159,14 @@ export default function MafAlignmentTooltipContents({
   p2: GenomicPosition
   hover?: MafHover
 }) {
+  const { classes } = useStyles()
+
   if (p1) {
     return <RangeContents p1={p1} p2={p2} />
   }
   if (hover) {
     return <HoverContents hover={hover} refName={p2.refName} coord={p2.coord} />
   }
-  const { classes } = useStyles()
   return (
     <table className={classes.table}>
       <tbody>
