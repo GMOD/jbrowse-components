@@ -59,14 +59,64 @@ three adapters override `getMultiRegionFeatureDensityStats` (the method
 
 ## Not done (next steps)
 
-- **Stage 2 — `bigMafSummary` zoom-out render** (the real volume fix). UCSC ships
-  `bigMafSummary.bb` (autoSql `mafSummary`: `chrom,chromStart,chromEnd,src,score,
-  leftStatus,rightStatus`, one row per block×species, **size independent of block
-  length** — no sequence). Plan: add a `bigMafSummaryLocation` config slot;
-  above the gate fetch the summary instead of full bigMaf and render per-species
-  presence bars (optionally shaded by `score`) reusing the bridge-line
-  statuses, coverage = species count. This removes the zoom-out download instead
-  of just refusing it. See https://genome.ucsc.edu/goldenpath/help/bigMaf.html.
+### Stage 2 — `bigMafSummary` zoom-out render (the real volume fix)
+
+UCSC ships `bigMafSummary.bb` alongside the bigMaf. It is a plain BigBed
+(`bed3+4`, autoSql `mafSummary`):
+
+```
+string  chrom;       "Reference sequence chromosome or scaffold"
+uint    chromStart;  "Start position in chromosome"
+uint    chromEnd;    "End position in chromosome"
+string  src;         "Sequence name or database of alignment"
+float   score;       "Floating point score."
+char[1] leftStatus;  "Gap/break annotation for preceding block"
+char[1] rightStatus; "Gap/break annotation for following block"
+```
+
+One row per block×species, **size independent of block length** (no sequence),
+and `bedToBigBed`'s zoom-level reduction makes zoom-out reads cheap for free.
+Generated upstream by:
+
+```
+mafToBigMafSummary <db> in.maf stdout | sort -k1,1 -k2,2n > bigMafSummary.bed
+bedToBigBed -type=bed3+4 -as=mafSummary.as -tab bigMafSummary.bed chrom.sizes bigMafSummary.bb
+```
+
+`leftStatus`/`rightStatus` are the same C/I/N/n/M/T chars already decoded by
+`util/mafStatus.ts` — so the summary's bridge-line rendering reuses
+`rendering/emptyLines.ts` and the tooltip phrasing verbatim.
+
+**The summary is a swappable sub-adapter, NOT a bare file slot.** Declare it as
+a `frozen` nested-adapter config (like `GCContentAdapter.sequenceAdapter`), not
+a `summaryLocation` `fileLocation`. This is the genuinely-swappable pattern: a
+BigBed today, but a tabix bed / TAF-derived / bespoke precomputed summary later
+by changing the sub-adapter `type` only — the MAF adapter, display, and e/i
+pipeline don't move.
+
+> Three sub-adapter patterns exist in-tree; pick the right one:
+> - **assembly-injected runtime** (CRAM/BAM `sequenceAdapter` via
+>   `setSequenceAdapterConfig` from `CoreGetRefNames`) — wrong here, summary is
+>   track-specific, not an assembly resource.
+> - **frozen nested-adapter slot** (`GCContentAdapter.sequenceAdapter`,
+>   `defaultValue:null`, built via `getSubAdapter(getConf('summaryAdapter'))`) —
+>   **this one.**
+> - **hardcoded type-swap** (MAF's own `util/loadSubAdapter.ts`, reuses the
+>   parent snapshot + overrides `type`) — wrong: summary is a *different file*
+>   with its own locations, needs its own full config, not a type-swap.
+
+Scope:
+
+| Piece | File | Change |
+|---|---|---|
+| Config slot | `BigMafAdapter/configSchema.ts` | add `summaryAdapter: { type: 'frozen', defaultValue: null }` (optional → no summary keeps Stage-1 gate) |
+| Instantiate | `BigMafAdapter/BigMafAdapter.ts` | `getSummaryAdapter()` — lazy `getSubAdapter(getConf('summaryAdapter'))` memoized on `summaryAdapterP` with catch-clear, mirroring CRAM `getSequenceAdapter`. `getSummaryFeatures(region)` maps BigBed rows → `{src,score,leftStatus,rightStatus}` |
+| Add-track | `MafAddTrackWorkflow` | summary cannot be auto-guessed from the data file (no standard suffix; `bigMafSummary.bb` is just UCSC's tutorial filename). Add an **optional explicit field** for the summary `.bb` location; leave `summaryAdapter` `null` when unset |
+| Display gate | `LinearMafDisplay/stateModel.ts` | above `AUTO_FORCE_LOAD_BP` (the `getByteEstimateConfig` threshold), if a summary adapter is configured, fetch summary rows instead of full alignment data |
+| Render | `LinearMafRenderer` + `LinearMafDisplay/components` | per-species presence bars (optionally `score`-shaded) reusing `emptyLines.ts` status primitives; coverage band = species-count depth (highest-value, most compact for 447-way) |
+
+Removes the zoom-out download instead of just refusing it. See
+https://genome.ucsc.edu/goldenpath/help/bigMaf.html.
 - **q lines (quality)** — deferred; per-cell quality would break the color
   run-merge in `mafInstanceBuffer`. Best as pre-blended alpha later.
 - **e/i for MafTabix / TAF** — their encodings drop e/i at conversion (MafTabix
