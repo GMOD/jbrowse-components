@@ -51,6 +51,14 @@ public float yPxToClipY(float yPx, float canvasHeight) {
   return 1.0 - (yPx / canvasHeight) * 2.0;
 }
 
+// Snap a thin glyph's screen-y to a pixel center before converting to clip
+// space. Shared by arrow/line/chevron so the centering convention lives in one
+// place; rect uses pixel-edge snapping instead (solid fills need exact edges).
+public float snapPixelCenterY(float yScreen, float scrollY, float canvasHeight) {
+  float yPx = floor(yScreen - scrollY + 0.5) + 0.5;
+  return yPxToClipY(yPx, canvasHeight);
+}
+
 // (cumBp - viewBp)/bpPerPx == cumBp/bpPerPx - offsetPx (LGV render position).
 // Used by synteny + dotplot. Same hi/lo precision trick as hpToClipX — see
 // comment there.

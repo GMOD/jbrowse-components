@@ -21,8 +21,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float sx1 = hpToClipX(hpSplitUint(inst.startEnd.x), u.bpRangeX, u.zero);
   float sx2 = hpToClipX(hpSplitUint(inst.startEnd.y), u.bpRangeX, u.zero);
 
-  float yPx = floor(inst.y - u.scrollY + 0.5) + 0.5;
-  float cy = yPxToClipY(yPx, u.canvasHeight);
+  float cy = snapPixelCenterY(inst.y, u.scrollY, u.canvasHeight);
   float halfPx = 1.0 / u.canvasHeight;
 
   float2 q = quadLocal(vid);
