@@ -1,19 +1,28 @@
 export {
   DEFAULT_CIGAR_OP_DRAW_COLORS,
   INSERTION_COLOR,
+  INSERTION_SERIF_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
   MISMATCH_COLOR,
   computeLabelFontSize,
   drawIndicatorTriangle,
+  drawInsertionMarker,
   extractIndelsFromCs,
   extractMismatchesFromCs,
+  formatInsertionLabel,
+  getInsertionType,
+  insertionBarWidth,
   isCsOpChar,
   isDigit,
   textWidthForNumber,
 } from './labelConstants.ts'
-export type { CigarOpDrawColors, IndelEntry } from './labelConstants.ts'
+export type {
+  CigarOpDrawColors,
+  IndelEntry,
+  InsertionType,
+} from './labelConstants.ts'
 export {
   CIGAR_D,
   CIGAR_I,
@@ -55,8 +64,11 @@ export {
   drawInterbaseSegments,
   drawModCovSegments,
   drawSnpSegments,
+  emptyCanvas2DCoverageBuffer,
   getDevicePixelRatio,
+  packCoverageBinsCanvas2D,
 } from './rendererUtils.ts'
+export type { Canvas2DCoverageBuffer } from './rendererUtils.ts'
 export {
   packCoverageBinsForGpu,
   packIndicatorsForGpu,
@@ -81,6 +93,7 @@ export {
 export type {
   CoverageRegion,
   CoverageTooltipBin,
+  InterbaseArrays,
   MismatchEntry,
   SNPCoverageResult,
 } from './coverageDownsampling.ts'

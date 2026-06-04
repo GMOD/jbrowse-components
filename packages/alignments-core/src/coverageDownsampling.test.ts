@@ -230,4 +230,45 @@ describe('buildCoverageTooltipBin', () => {
     const data = makeData([5, 10])
     expect(buildCoverageTooltipBin(200, data, data)).toBeUndefined()
   })
+
+  test('summarizes insertion-type interbase events at the interbase position', () => {
+    const data = makeData([0, 5, 5])
+    const interbase = {
+      interbasePositions: new Uint32Array([102, 102, 103]),
+      interbaseLengths: new Uint32Array([3, 7, 1]),
+    }
+    // depth keyed on the cell (102=floor), insertions on the boundary (round)
+    const bin = buildCoverageTooltipBin(102, data, data, interbase, 102)
+    expect(bin!.interbase.insertion).toEqual({
+      count: 2,
+      minLen: 3,
+      maxLen: 7,
+      avgLen: 5,
+    })
+    expect(bin!.interbaseDepth).toBe(5)
+  })
+
+  test('interbasePosition is distinct from the depth/SNP position', () => {
+    // cursor in cell 101 (depth 5) but nearest boundary is 102 → insertion shows
+    const data = makeData([0, 5, 5])
+    const interbase = {
+      interbasePositions: new Uint32Array([102]),
+      interbaseLengths: new Uint32Array([4]),
+    }
+    const bin = buildCoverageTooltipBin(101, data, data, interbase, 102)
+    expect(bin!.depth).toBe(5)
+    expect(bin!.interbase.insertion!.count).toBe(1)
+  })
+
+  test('returns a bin for an insertion-only position with zero depth', () => {
+    const data = makeData([0, 0, 0])
+    const interbase = {
+      interbasePositions: new Uint32Array([101]),
+      interbaseLengths: new Uint32Array([2]),
+    }
+    const bin = buildCoverageTooltipBin(101, data, data, interbase, 101)
+    expect(bin).toBeDefined()
+    expect(bin!.depth).toBe(0)
+    expect(bin!.interbase.insertion!.count).toBe(1)
+  })
 })

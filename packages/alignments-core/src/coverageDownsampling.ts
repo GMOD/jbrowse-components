@@ -275,23 +275,73 @@ export function countSnpsAtPosition(
   return snps
 }
 
+// Flat per-event interbase arrays (one entry per insertion), parallel to
+// `MismatchArrays`. Only insertion-type events are modeled — the callers that
+// pass these (e.g. MAF) emit no soft/hard clips.
+export interface InterbaseArrays {
+  interbasePositions: Uint32Array
+  interbaseLengths: Uint32Array
+}
+
+// Aggregate insertion-type interbase events anchored at `position` into the
+// tooltip bin's `interbase.insertion` summary (count + length range/avg).
+function countInterbaseAtPosition(
+  position: number,
+  { interbasePositions, interbaseLengths }: InterbaseArrays,
+) {
+  let count = 0
+  let minLen = Infinity
+  let maxLen = 0
+  let lenSum = 0
+  for (let i = 0; i < interbasePositions.length; i++) {
+    if (interbasePositions[i] === position) {
+      const len = interbaseLengths[i]!
+      count++
+      lenSum += len
+      if (len < minLen) {
+        minLen = len
+      }
+      if (len > maxLen) {
+        maxLen = len
+      }
+    }
+  }
+  const interbase: CoverageTooltipBin['interbase'] = {}
+  if (count > 0) {
+    interbase.insertion = { count, minLen, maxLen, avgLen: lenSum / count }
+  }
+  return interbase
+}
+
 export function buildCoverageTooltipBin(
   position: number,
   coverage: CoverageArrays,
   mismatches: MismatchArrays,
+  interbaseArrays?: InterbaseArrays,
+  // Interbase events are anchored at a base *boundary*, not inside a cell, so
+  // callers pass the nearest boundary (`round(gposFrac)`) here while `position`
+  // stays the containing cell (`floor`) used for depth/SNP. Defaults to
+  // `position` for callers that don't distinguish.
+  interbasePosition = position,
 ): CoverageTooltipBin | undefined {
   const binIdx = Math.floor(position - coverage.coverageStartPos)
   const depth = coverage.coverageDepths[binIdx] ?? 0
-  if (depth === 0) {
+  const interbase = interbaseArrays
+    ? countInterbaseAtPosition(interbasePosition, interbaseArrays)
+    : {}
+  const hasInterbase = interbase.insertion !== undefined
+  if (depth === 0 && !hasInterbase) {
     return undefined
   }
-  const snps = countSnpsAtPosition(position, mismatches)
+  // Interbase events sit between bins, so their depth basis is the deeper of the
+  // two flanking bins (mirrors the alignments display's interbaseDepth).
+  const leftDepth = coverage.coverageDepths[binIdx - 1] ?? 0
   return {
     position,
     depth,
-    interbaseDepth: 0,
-    snps,
-    interbase: {},
+    interbaseDepth: hasInterbase ? Math.max(leftDepth, depth) : 0,
+    snps: depth > 0 ? countSnpsAtPosition(position, mismatches) : {},
+    interbase,
   }
 }
 
