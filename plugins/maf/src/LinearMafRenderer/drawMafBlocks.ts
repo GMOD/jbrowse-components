@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/core/gpu/canvas2dUtils'
 
 import { renderBases } from './rendering/bases.ts'
+import { renderDeletions } from './rendering/deletions.ts'
 import { renderInsertions } from './rendering/insertions.ts'
 
 import type {
@@ -40,8 +41,7 @@ export function drawMafBlocks(
     if (!clip) {
       continue
     }
-    const bpPerPx = clip.bpLength / clip.fullBlockWidth
-    const scale = 1 / bpPerPx
+    const scale = clip.fullBlockWidth / clip.bpLength
     const { reversed } = renderBlock
     const bpToPx = makeBpMapper(renderBlock)
     // For non-reversed, bpToPx(bp) is the LEFT edge of the cell at bp.
@@ -84,7 +84,13 @@ export function drawMafBlocks(
           refSeqBytes,
           blockStartBp,
           rowTop,
-          bpPerPx,
+        )
+        renderDeletions(
+          renderingContext,
+          alignmentBytes,
+          refSeqBytes,
+          blockStartBp,
+          rowTop,
         )
       }
     }

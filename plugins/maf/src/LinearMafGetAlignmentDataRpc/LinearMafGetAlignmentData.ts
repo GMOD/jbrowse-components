@@ -1,15 +1,7 @@
-import {
-  computeInterbaseCoverage,
-  computeSNPCoverage,
-  packCoverageBinsForGpu,
-  packIndicatorsForGpu,
-  packInterbaseSegmentsForGpu,
-  packSnpSegmentsForGpu,
-} from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import { computeMafCoverage } from './computeMafCoverage.ts'
+import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 import { DASH } from '../util/asciiBytes.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
@@ -43,6 +35,10 @@ export interface LinearMafGetAlignmentDataArgs {
   adapterConfig: AnyConfigurationModel
   sessionId: string
   region: Region
+  // Sample ids to include in the coverage computation (the visible subtree).
+  // Undefined = all samples. Only scopes coverage; the rendered blocks always
+  // carry every sample's row.
+  sampleFilter?: string[]
   stopToken?: StopToken
   statusCallback?: (msg: string) => void
 }
@@ -186,71 +182,29 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       },
     )
 
-    const mafCov = computeMafCoverage(blocks, region.start, region.end)
-    const coverageForSnp = {
-      depths: mafCov.depths,
-      maxDepth: mafCov.maxDepth,
-      startPos: mafCov.startPos,
+    // Coverage is scoped to the visible subtree: filter the rows fed to the
+    // coverage computation to the requested samples. The rendered `blocks`
+    // always keep every row — only the depth/SNP/insertion bars narrow.
+    const { sampleFilter } = deserializedArgs
+    let coverageBlocks = blocks
+    if (sampleFilter?.length) {
+      const allowed = new Set<number>()
+      for (const id of sampleFilter) {
+        const idx = sampleToRow.get(id)
+        if (idx !== undefined) {
+          allowed.add(idx)
+        }
+      }
+      coverageBlocks = blocks.map(b => ({
+        ...b,
+        rows: b.rows.filter(r => allowed.has(r.rowIndex)),
+      }))
     }
-    const snpCoverage = computeSNPCoverage(
-      mafCov.mismatches,
+    const coverage = buildMafCoverageRegion(
+      coverageBlocks,
       region.start,
-      coverageForSnp,
+      region.end,
     )
-    const interbaseCoverage = computeInterbaseCoverage(
-      mafCov.insertions,
-      [],
-      [],
-      region.start,
-      coverageForSnp,
-    )
-
-    // Pack mismatch list into MismatchArrays form so alignments-core's
-    // `buildCoverageTooltipBin` / `countSnpsAtPosition` can read it directly
-    // — same shape the alignments worker ships.
-    const mmCount = mafCov.mismatches.length
-    const mismatchPositions = new Uint32Array(mmCount)
-    const mismatchBases = new Uint8Array(mmCount)
-    for (let i = 0; i < mmCount; i++) {
-      const m = mafCov.mismatches[i]!
-      mismatchPositions[i] = m.position
-      mismatchBases[i] = m.base
-    }
-
-    const coverage = {
-      coverageDepths: mafCov.depths,
-      coverageStartPos: mafCov.startPos,
-      coverageMaxDepth: mafCov.maxDepth,
-      mismatchPositions,
-      mismatchBases,
-      coveragePackedBuffer: packCoverageBinsForGpu(
-        mafCov.depths,
-        mafCov.maxDepth,
-        mafCov.startPos,
-        mafCov.depths.length,
-      ),
-      snpPackedBuffer: packSnpSegmentsForGpu(
-        snpCoverage.positions,
-        snpCoverage.yOffsets,
-        snpCoverage.heights,
-        snpCoverage.colorTypes,
-        snpCoverage.relDepths,
-        snpCoverage.count,
-      ),
-      interbasePackedBuffer: packInterbaseSegmentsForGpu(
-        interbaseCoverage.positions,
-        interbaseCoverage.yOffsets,
-        interbaseCoverage.heights,
-        interbaseCoverage.colorTypes,
-        interbaseCoverage.segmentCount,
-      ),
-      interbaseMaxCount: interbaseCoverage.maxCount,
-      indicatorPackedBuffer: packIndicatorsForGpu(
-        interbaseCoverage.indicatorPositions,
-        interbaseCoverage.indicatorColorTypes,
-        interbaseCoverage.indicatorCount,
-      ),
-    }
 
     return { samples, treeNewick, regionData: { blocks, coverage } }
   }

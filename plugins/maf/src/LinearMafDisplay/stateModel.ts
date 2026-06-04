@@ -30,10 +30,13 @@ import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
 import { observable } from 'mobx'
 
+import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
+import { computeVisibleInsertions } from './components/computeVisibleInsertions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
+import { coverageInsertionAt } from './coverageInsertion.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
@@ -73,7 +76,9 @@ const DEFAULTS = {
   mismatchRendering: true,
   showAsUpperCase: true,
   showTree: true,
+  showBranchLength: false,
   showCoverage: true,
+  showAlignments: true,
   coverageHeight: 45,
 } as const
 
@@ -151,8 +156,20 @@ export default function stateModelFactory(
         showTree: DEFAULTS.showTree,
         /**
          * #property
+         * Position tree nodes by their cluster merge height (dendrogram) rather
+         * than evenly by topology (cladogram).
+         */
+        showBranchLength: DEFAULTS.showBranchLength,
+        /**
+         * #property
          */
         showCoverage: DEFAULTS.showCoverage,
+        /**
+         * #property
+         * Show the per-sample alignment rows. When off, only the coverage band
+         * renders (independent of `showCoverage`).
+         */
+        showAlignments: DEFAULTS.showAlignments,
         /**
          * #property
          */
@@ -271,8 +288,20 @@ export default function stateModelFactory(
       /**
        * #action
        */
+      setShowBranchLength(arg: boolean) {
+        self.showBranchLength = arg
+      },
+      /**
+       * #action
+       */
       setShowCoverage(arg: boolean) {
         self.showCoverage = arg
+      },
+      /**
+       * #action
+       */
+      setShowAlignments(arg: boolean) {
+        self.showAlignments = arg
       },
       /**
        * #action
@@ -339,9 +368,13 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Height of the per-sample rows area (excludes the coverage band).
+       * Height of the per-sample rows area (excludes the coverage band). Zero
+       * when alignments are hidden, collapsing the display to the coverage band.
        */
       get rowsHeight() {
+        if (!self.showAlignments) {
+          return 0
+        }
         return self.sources ? self.sources.length * self.rowHeight : 1
       },
       /**
@@ -381,7 +414,12 @@ export default function stateModelFactory(
         if (!r || !self.sources?.length) {
           return undefined
         }
-        return clusterLayout(r, self.rowsHeight, self.treeAreaWidth)
+        return clusterLayout(
+          r,
+          self.rowsHeight,
+          self.treeAreaWidth,
+          self.showBranchLength,
+        )
       },
     }))
     .views(self => ({
@@ -429,13 +467,26 @@ export default function stateModelFactory(
           mismatchRendering: self.mismatchRendering,
         }
       },
+      /**
+       * #method
+       * Worker-fetch inputs that invalidate cached data when changed (tier-1,
+       * via MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).
+       * `subtreeFilter` is user-set — never derived from worker output — so it is
+       * loop-safe here; changing the visible subtree refetches and the worker
+       * recomputes coverage over only those samples. A future arbitrary-sample
+       * selection belongs here too.
+       */
+      rpcProps() {
+        return { subtreeFilter: self.subtreeFilter }
+      },
     }))
     .views(self => ({
       /**
        * #getter
        * Per-position depth stats across the currently visible content blocks,
-       * derived from the worker-shipped `coverage.coverageDepths` arrays.
-       * Feeds `coverageDomain` → `coverageTicks`.
+       * derived from the worker-shipped `coverage.coverageDepths` arrays (which
+       * already reflect the active subtree — see `rpcProps`). Feeds
+       * `coverageDomain` → `coverageTicks`.
        */
       get coverageStats() {
         if (!self.showCoverage) {
@@ -491,14 +542,25 @@ export default function stateModelFactory(
        * when no fetched block covers the bp, the row is out of range, or the
        * cell is a gap.
        */
-      rowHoverInfo(displayedRegionIndex: number, bp: number, rowIndex: number) {
+      rowHoverInfo(
+        displayedRegionIndex: number,
+        gposFrac: number,
+        rowIndex: number,
+        bpPerPx: number,
+      ) {
         const { sources } = self
         const region =
           sources && rowIndex >= 0 && rowIndex < sources.length
             ? self.rpcDataMap.get(displayedRegionIndex)
             : undefined
         const hit = region
-          ? findRowHoverAtBp(region, bp, rowIndex, self.showAsUpperCase)
+          ? findRowHoverAtBp(
+              region,
+              gposFrac,
+              rowIndex,
+              self.showAsUpperCase,
+              bpPerPx,
+            )
           : undefined
         if (!hit || !sources) {
           return undefined
@@ -508,18 +570,18 @@ export default function stateModelFactory(
       },
       /**
        * #method
-       * Build a per-position coverage tooltip bin (depth + SNP base counts)
-       * for the given absolute genomic bp + region index. Delegates the math
-       * to alignments-core's `buildCoverageTooltipBin` — same code path the
-       * alignments display uses for hover info. Returns undefined when the
-       * region has no fetched data or the bin has zero depth.
+       * Build a per-position coverage tooltip bin (depth + SNP base counts) for
+       * the given absolute genomic bp + region index. Delegates the math to
+       * alignments-core's `buildCoverageTooltipBin` — same code path the
+       * alignments display uses. Insertions are reported separately via
+       * `coverageInsertionHit`, so they never mix into the depth/SNP table.
+       * Returns undefined when the region has no fetched data or depth is zero.
        */
       coverageTooltipBin(displayedRegionIndex: number, position: number) {
-        const region = self.rpcDataMap.get(displayedRegionIndex)
-        if (!region) {
+        const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
+        if (!coverage) {
           return undefined
         }
-        const { coverage } = region
         return buildCoverageTooltipBin(
           position,
           {
@@ -531,6 +593,23 @@ export default function stateModelFactory(
             mismatchBases: coverage.mismatchBases,
           },
         )
+      },
+      /**
+       * #method
+       * Hit-test an insertion bar in the coverage band at fractional genomic
+       * `gposFrac`. Returns the interbase summary (count + length range +
+       * interbaseDepth) when the cursor is on the bar, else undefined — drives
+       * the dedicated interbase tooltip, kept separate from the depth/SNP one.
+       */
+      coverageInsertionHit(
+        displayedRegionIndex: number,
+        gposFrac: number,
+        bpPerPx: number,
+      ) {
+        const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
+        return coverage
+          ? coverageInsertionAt(coverage, gposFrac, bpPerPx)
+          : undefined
       },
     }))
     .views(self => ({
@@ -561,6 +640,39 @@ export default function stateModelFactory(
           return []
         }
         return computeVisibleEmptyLines({
+          view,
+          rpcDataMap: self.rpcDataMap,
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
+        })
+      },
+      /**
+       * #getter
+       * Positioned insertion markers (interbase) for the visible aligned rows.
+       */
+      get visibleInsertions() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return []
+        }
+        return computeVisibleInsertions({
+          view,
+          rpcDataMap: self.rpcDataMap,
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
+        })
+      },
+      /**
+       * #getter
+       * Positioned deletion runs for the visible aligned rows; the overlay draws
+       * the deleted-base count inside each run when it fits.
+       */
+      get visibleDeletions() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return []
+        }
+        return computeVisibleDeletions({
           view,
           rpcDataMap: self.rpcDataMap,
           rowHeight: self.rowHeight,
@@ -776,7 +888,9 @@ export default function stateModelFactory(
         treeAreaWidth,
         showAsUpperCase,
         showTree,
+        showBranchLength,
         showCoverage,
+        showAlignments,
         coverageHeight,
         subtreeFilter,
         layout: _layout,
@@ -796,7 +910,11 @@ export default function stateModelFactory(
           showAsUpperCase,
         }),
         ...(showTree !== DEFAULTS.showTree && { showTree }),
+        ...(showBranchLength !== DEFAULTS.showBranchLength && {
+          showBranchLength,
+        }),
         ...(showCoverage !== DEFAULTS.showCoverage && { showCoverage }),
+        ...(showAlignments !== DEFAULTS.showAlignments && { showAlignments }),
         ...(coverageHeight !== DEFAULTS.coverageHeight && { coverageHeight }),
         ...(subtreeFilter?.length && { subtreeFilter }),
       }

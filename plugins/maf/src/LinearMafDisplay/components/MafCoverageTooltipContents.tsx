@@ -22,9 +22,9 @@ const useStyles = makeStyles()(theme => ({
 /**
  * Depth + SNP-base-counts table for the MAF coverage band. Consumes the same
  * `CoverageTooltipBin` shape the alignments display uses (built via
- * alignments-core's `buildCoverageTooltipBin`); MAF only ever populates
- * `depth` + `snps`, so we render just that subset — no interbase / deletions
- * / modifications branches.
+ * alignments-core's `buildCoverageTooltipBin`). Insertions are shown by the
+ * separate `MafInterbaseTooltipContents` (interbase events are not mixed into
+ * the depth table), mirroring the alignments indicator-vs-coverage split.
  */
 export default function MafCoverageTooltipContents({
   bin,
@@ -37,7 +37,6 @@ export default function MafCoverageTooltipContents({
   const { position, depth, snps } = bin
   const pos = toLocale(position + 1)
   const location = refName ? `${refName}:${pos}` : pos
-  const snpEntries = Object.entries(snps)
   return (
     <table className={classes.table}>
       <caption>Coverage - {location}</caption>
@@ -52,7 +51,7 @@ export default function MafCoverageTooltipContents({
           <td>Total</td>
           <td>{depth}</td>
         </tr>
-        {snpEntries.map(([base, data]) => (
+        {Object.entries(snps).map(([base, data]) => (
           <tr key={base}>
             <td>{base.toUpperCase()}</td>
             <td className={classes.td}>

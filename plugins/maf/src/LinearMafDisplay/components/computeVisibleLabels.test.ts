@@ -1,4 +1,5 @@
 import { computeVisibleLabels } from './computeVisibleLabels.ts'
+import { emptyMafCoverage } from './coverageTestFixture.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
@@ -15,18 +16,7 @@ function regionData(refSeq: string, alignment: string): MafRegionData {
         empties: [],
       },
     ],
-    coverage: {
-      coverageDepths: new Float32Array(0),
-      coverageStartPos: 100,
-      coverageMaxDepth: 0,
-      mismatchPositions: new Uint32Array(0),
-      mismatchBases: new Uint8Array(0),
-      coveragePackedBuffer: new ArrayBuffer(0),
-      snpPackedBuffer: new ArrayBuffer(0),
-      interbasePackedBuffer: new ArrayBuffer(0),
-      interbaseMaxCount: 0,
-      indicatorPackedBuffer: new ArrayBuffer(0),
-    },
+    coverage: emptyMafCoverage(100),
   }
 }
 

@@ -1,8 +1,15 @@
+import { formatInsertionLabel } from '@jbrowse/alignments-core'
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 
 import { describeMafStatus } from '../util/mafStatus.ts'
 
-import type { CellHit, EmptyHit, RowHit } from './components/findRowHover.ts'
+import type {
+  CellHit,
+  DeletionHit,
+  EmptyHit,
+  InsertionHit,
+  RowHit,
+} from './components/findRowHover.ts'
 
 export interface GenomicPosition {
   refName: string
@@ -42,6 +49,20 @@ function cellLines(h: CellHit & { sampleLabel: string }) {
   ]
 }
 
+function insertionLines(h: InsertionHit & { sampleLabel: string }) {
+  return [
+    `Sample: ${h.sampleLabel}`,
+    formatInsertionLabel(h.length, h.sequence),
+    h.pos === undefined || !h.chr
+      ? undefined
+      : `Location: ${h.chr}:${toLocale(h.pos + 1)} (${strandStr(h.strand)})`,
+  ]
+}
+
+function deletionLines(h: DeletionHit & { sampleLabel: string }) {
+  return [`Sample: ${h.sampleLabel}`, `${toLocale(h.length)} bp deletion`]
+}
+
 function emptyLines(h: EmptyHit & { sampleLabel: string }) {
   return [
     `Sample: ${h.sampleLabel}`,
@@ -51,24 +72,34 @@ function emptyLines(h: EmptyHit & { sampleLabel: string }) {
   ]
 }
 
+function hoverLines(hover: MafHover) {
+  switch (hover.kind) {
+    case 'cell':
+      return cellLines(hover)
+    case 'insertion':
+      return insertionLines(hover)
+    case 'deletion':
+      return deletionLines(hover)
+    case 'empty':
+      return emptyLines(hover)
+  }
+}
+
 export function generateTooltipContent(
   p1: GenomicPosition | undefined,
   p2: GenomicPosition,
   hover?: MafHover,
 ): string {
   const ref = `Ref: ${p2.refName}:${toLocale(p2.coord)}`
-  if (p1) {
-    return [
-      `Start: ${p1.refName}:${toLocale(p1.coord)}`,
-      `End: ${p2.refName}:${toLocale(p2.coord)}`,
-      `Length: ${getBpDisplayStr(Math.abs(p1.coord - p2.coord))}`,
-    ].join('<br/>')
-  }
-  if (hover) {
-    const lines = hover.kind === 'cell' ? cellLines(hover) : emptyLines(hover)
-    return [...lines.filter(Boolean), ref].join('<br/>')
-  }
-  return ref
+  return p1
+    ? [
+        `Start: ${p1.refName}:${toLocale(p1.coord)}`,
+        `End: ${p2.refName}:${toLocale(p2.coord)}`,
+        `Length: ${getBpDisplayStr(Math.abs(p1.coord - p2.coord))}`,
+      ].join('<br/>')
+    : hover
+      ? [...hoverLines(hover).filter(Boolean), ref].join('<br/>')
+      : ref
 }
 
 export interface MsaHighlight {

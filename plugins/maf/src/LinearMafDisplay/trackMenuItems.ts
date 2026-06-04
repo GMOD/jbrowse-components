@@ -14,7 +14,9 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   mismatchRendering: boolean
   showAsUpperCase: boolean
   showTree: boolean
+  showBranchLength: boolean
   showCoverage: boolean
+  showAlignments: boolean
   subtreeFilter?: readonly string[]
   setRowHeight: (n: number) => void
   setRowProportion: (n: number) => void
@@ -23,6 +25,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowAsUpperCase: (f: boolean) => void
   setShowTree: (f: boolean) => void
   setShowCoverage: (f: boolean) => void
+  setShowAlignments: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
 }
 
@@ -94,11 +97,28 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           },
         },
         {
-          label: 'Coverage bar',
+          label: 'Tree branch lengths',
+          type: 'checkbox',
+          checked: self.showBranchLength,
+          disabled: !self.showTree,
+          onClick: () => {
+            self.setShowBranchLength(!self.showBranchLength)
+          },
+        },
+        {
+          label: 'Coverage',
           type: 'checkbox',
           checked: self.showCoverage,
           onClick: () => {
             self.setShowCoverage(!self.showCoverage)
+          },
+        },
+        {
+          label: 'Alignments',
+          type: 'checkbox',
+          checked: self.showAlignments,
+          onClick: () => {
+            self.setShowAlignments(!self.showAlignments)
           },
         },
       ],

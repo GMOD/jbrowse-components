@@ -1,8 +1,14 @@
+import { measureText } from '@jbrowse/core/util'
+
 import type { MafColorPalette } from '../util.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export const FONT_CONFIG = 'bold 10px Courier New,monospace'
 export const CHAR_SIZE_WIDTH = 10
+// Approx cap height for centering count labels vertically in a row; the `-2`
+// matches the fudge the overlays/renderers used. Shared so the insertion and
+// deletion count labels stay vertically consistent.
+export const CHAR_HEIGHT = measureText('M') - 2
 // Used to overlap adjacent cells by a sub-pixel so hairlines don't appear at
 // scale ~1px/bp; mirrors the +0.5/+0.4 fudge used in plugin-alignments.
 export const GAP_STROKE_OFFSET = 0.4

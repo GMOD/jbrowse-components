@@ -50,9 +50,9 @@ export function drawMafCoverage(
     baseN: theme.palette.bases.N.main,
   }
   for (const block of blocks) {
-    const region = regions.get(block.displayedRegionIndex)
-    const clip = region ? clipBlockForCanvas(block, canvasWidth) : null
-    if (region && clip) {
+    const coverage = regions.get(block.displayedRegionIndex)?.coverage
+    const clip = coverage ? clipBlockForCanvas(block, canvasWidth) : null
+    if (coverage && clip) {
       const bpToX = makeBpMapper(block)
       ctx.save()
       ctx.beginPath()
@@ -60,18 +60,21 @@ export function drawMafCoverage(
       ctx.clip()
       drawCoverageBins(
         ctx,
-        region.coverage.coveragePackedBuffer,
+        coverage.coveragePackedBuffer,
         normalize,
         coverageHeight,
         coverageColor,
         bpToX,
         canvasWidth,
+        // widen each bar slightly so adjacent depth bars overlap instead of
+        // showing subpixel gaps from bpToX rounding (mirrors alignments)
+        0.8,
       )
       drawSnpSegments(
         ctx,
-        region.coverage.snpPackedBuffer,
+        coverage.snpPackedBuffer,
         normalize,
-        region.coverage.coverageMaxDepth,
+        coverage.coverageMaxDepth,
         coverageHeight,
         snpColors,
         bpToX,
@@ -84,15 +87,15 @@ export function drawMafCoverage(
       }
       drawInterbaseSegments(
         ctx,
-        region.coverage.interbasePackedBuffer,
-        region.coverage.interbaseMaxCount,
+        coverage.interbasePackedBuffer,
+        coverage.interbaseMaxCount,
         interbaseColors,
         bpToX,
         canvasWidth,
       )
       drawIndicators(
         ctx,
-        region.coverage.indicatorPackedBuffer,
+        coverage.indicatorPackedBuffer,
         interbaseColors,
         bpToX,
         canvasWidth,

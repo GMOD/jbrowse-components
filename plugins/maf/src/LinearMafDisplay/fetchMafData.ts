@@ -10,6 +10,7 @@ import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 interface MafFetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
+  subtreeFilter?: readonly string[]
   fetchRegions: (
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
@@ -76,6 +77,9 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
         sessionId,
         adapterConfig: self.adapterConfig,
         region,
+        // Restrict the coverage computation to the visible subtree; undefined =
+        // all samples. Changing it refetches via the SettingsInvalidate autorun.
+        sampleFilter: self.subtreeFilter ? [...self.subtreeFilter] : undefined,
         stopToken: ctx.stopToken,
       }),
     results => {

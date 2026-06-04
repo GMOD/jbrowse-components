@@ -1,8 +1,6 @@
-import { useEffect, useRef } from 'react'
-
-import { getPreparedCanvas2D } from '@jbrowse/core/gpu/canvas2dUtils'
 import { observer } from 'mobx-react'
 
+import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawMafSummaryBars } from '../../LinearMafRenderer/rendering/summaryBars.ts'
 
 import type { SummaryBar } from './computeVisibleSummaryBars.ts'
@@ -22,29 +20,15 @@ const SummaryBarsOverlay = observer(function SummaryBarsOverlay({
   height: number
   palette: MafColorPalette
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const ctx = getPreparedCanvas2D(canvasRef.current, width, height)
-    if (ctx) {
-      drawMafSummaryBars(ctx, bars, palette)
-    }
-  }, [bars, width, height, palette])
-
   if (bars.length === 0) {
     return null
   }
-
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width,
-        height,
-        pointerEvents: 'none',
+    <OverlayCanvas
+      width={width}
+      height={height}
+      draw={ctx => {
+        drawMafSummaryBars(ctx, bars, palette)
       }}
     />
   )

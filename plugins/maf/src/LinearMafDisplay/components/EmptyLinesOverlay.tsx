@@ -1,8 +1,6 @@
-import { useEffect, useRef } from 'react'
-
-import { getPreparedCanvas2D } from '@jbrowse/core/gpu/canvas2dUtils'
 import { observer } from 'mobx-react'
 
+import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawMafEmptyLines } from '../../LinearMafRenderer/rendering/emptyLines.ts'
 
 import type { EmptyLineSegment } from './computeVisibleEmptyLines.ts'
@@ -19,29 +17,15 @@ const EmptyLinesOverlay = observer(function EmptyLinesOverlay({
   height: number
   palette: MafColorPalette
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const ctx = getPreparedCanvas2D(canvasRef.current, width, height)
-    if (ctx) {
-      drawMafEmptyLines(ctx, segments, palette)
-    }
-  }, [segments, width, height, palette])
-
   if (segments.length === 0) {
     return null
   }
-
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width,
-        height,
-        pointerEvents: 'none',
+    <OverlayCanvas
+      width={width}
+      height={height}
+      draw={ctx => {
+        drawMafEmptyLines(ctx, segments, palette)
       }}
     />
   )

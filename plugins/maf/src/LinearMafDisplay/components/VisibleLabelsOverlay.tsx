@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 
-import { getPreparedCanvas2D } from '@jbrowse/core/gpu/canvas2dUtils'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawMafLabels } from '../../LinearMafRenderer/rendering/labels.ts'
 import { getContrastBaseMap } from '../../LinearMafRenderer/util.ts'
 
@@ -23,30 +23,17 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   mismatchRendering,
 }: Props) {
   const theme = useTheme()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const contrastForBase = useMemo(() => getContrastBaseMap(theme), [theme])
-
-  useEffect(() => {
-    const ctx = getPreparedCanvas2D(canvasRef.current, width, height)
-    if (ctx) {
-      drawMafLabels(ctx, labels, contrastForBase, mismatchRendering)
-    }
-  }, [labels, width, height, mismatchRendering, contrastForBase])
 
   if (labels.length === 0) {
     return null
   }
-
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width,
-        height,
-        pointerEvents: 'none',
+    <OverlayCanvas
+      width={width}
+      height={height}
+      draw={ctx => {
+        drawMafLabels(ctx, labels, contrastForBase, mismatchRendering)
       }}
     />
   )

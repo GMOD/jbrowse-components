@@ -1,3 +1,4 @@
+import { emptyMafCoverage } from './coverageTestFixture.ts'
 import { findRowHoverAtBp } from './findRowHover.ts'
 
 import type {
@@ -8,21 +9,7 @@ import type {
 const enc = new TextEncoder()
 
 function region(blocks: MafBlock[]): MafRegionData {
-  return {
-    blocks,
-    coverage: {
-      coverageDepths: new Float32Array(0),
-      coverageStartPos: 0,
-      coverageMaxDepth: 0,
-      mismatchPositions: new Uint32Array(0),
-      mismatchBases: new Uint8Array(0),
-      coveragePackedBuffer: new ArrayBuffer(0),
-      snpPackedBuffer: new ArrayBuffer(0),
-      interbasePackedBuffer: new ArrayBuffer(0),
-      interbaseMaxCount: 0,
-      indicatorPackedBuffer: new ArrayBuffer(0),
-    },
-  }
+  return { blocks, coverage: emptyMafCoverage() }
 }
 
 test('returns cell hit with base + forward-strand position', () => {
@@ -43,12 +30,47 @@ test('returns cell hit with base + forward-strand position', () => {
       empties: [],
     },
   ])
-  expect(findRowHoverAtBp(r, 102, 0, false)).toMatchObject({
+  expect(findRowHoverAtBp(r, 102, 0, false, 1)).toMatchObject({
     kind: 'cell',
     base: 'g',
     chr: 'chrX',
     pos: 102,
     strand: 1,
+  })
+})
+
+test('resolves an insertion (reference-gap columns) over the abutting base', () => {
+  // ref has two gaps after the first base → this sample carries a 2bp insertion
+  // anchored before genomic 101. Inserted bases are 'cc'.
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 102,
+      refSeqBytes: enc.encode('A--A'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('accA'),
+          chr: 'chrX',
+          start: 100,
+          strand: 1,
+        },
+      ],
+      empties: [],
+    },
+  ])
+  // cursor right at the insertion anchor (genomic 101), wide cells (bpPerPx<1)
+  expect(findRowHoverAtBp(r, 101, 0, false, 0.1)).toMatchObject({
+    kind: 'insertion',
+    length: 2,
+    sequence: 'cc',
+    chr: 'chrX',
+    // first inserted base is the 2nd non-gap base of the sample → start + 1
+    pos: 101,
+  })
+  // cursor a full bp away from the marker → falls back to the plain base
+  expect(findRowHoverAtBp(r, 101.9, 0, false, 0.1)).toMatchObject({
+    kind: 'cell',
   })
 })
 
@@ -72,7 +94,7 @@ test('mirrors position through srcSize for reverse-strand rows', () => {
     },
   ])
   // baseOffset 0 → srcSize - 1 - start - 0 = 1000 - 1 - 100 = 899
-  expect(findRowHoverAtBp(r, 100, 0, false)).toMatchObject({ pos: 899 })
+  expect(findRowHoverAtBp(r, 100, 0, false, 1)).toMatchObject({ pos: 899 })
 })
 
 test('passes i-line context through on the cell hit', () => {
@@ -86,7 +108,7 @@ test('passes i-line context through on the cell hit', () => {
       empties: [],
     },
   ])
-  expect(findRowHoverAtBp(r, 100, 0, false)).toMatchObject({ context })
+  expect(findRowHoverAtBp(r, 100, 0, false, 1)).toMatchObject({ context })
 })
 
 test('returns empty hit when the row is bridged (e line) at this block', () => {
@@ -109,7 +131,7 @@ test('returns empty hit when the row is bridged (e line) at this block', () => {
       ],
     },
   ])
-  expect(findRowHoverAtBp(r, 101, 1, false)).toEqual({
+  expect(findRowHoverAtBp(r, 101, 1, false, 1)).toEqual({
     kind: 'empty',
     status: 'I',
     chr: 'mm.chr1',
@@ -119,7 +141,30 @@ test('returns empty hit when the row is bridged (e line) at this block', () => {
   })
 })
 
-test('returns undefined for gap cells and out-of-block positions', () => {
+test('resolves a deletion run on a gap cell', () => {
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 104,
+      // sample deletes the two reference bases at 101-102
+      refSeqBytes: enc.encode('AAAA'),
+      rows: [{ rowIndex: 0, alignmentBytes: enc.encode('a--g') }],
+      empties: [],
+    },
+  ])
+  expect(findRowHoverAtBp(r, 101, 0, false, 1)).toEqual({
+    kind: 'deletion',
+    length: 2,
+  })
+  expect(findRowHoverAtBp(r, 102, 0, false, 1)).toEqual({
+    kind: 'deletion',
+    length: 2,
+  })
+  // a non-gap base in the same row is still a cell, not the deletion
+  expect(findRowHoverAtBp(r, 103, 0, false, 1)).toMatchObject({ kind: 'cell' })
+})
+
+test('returns undefined for out-of-block and out-of-row positions', () => {
   const r = region([
     {
       startBp: 100,
@@ -129,7 +174,6 @@ test('returns undefined for gap cells and out-of-block positions', () => {
       empties: [],
     },
   ])
-  expect(findRowHoverAtBp(r, 101, 0, false)).toBeUndefined()
-  expect(findRowHoverAtBp(r, 500, 0, false)).toBeUndefined()
-  expect(findRowHoverAtBp(r, 100, 9, false)).toBeUndefined()
+  expect(findRowHoverAtBp(r, 500, 0, false, 1)).toBeUndefined()
+  expect(findRowHoverAtBp(r, 100, 9, false, 1)).toBeUndefined()
 })

@@ -1,4 +1,5 @@
 import { computeVisibleEmptyLines } from './computeVisibleEmptyLines.ts'
+import { emptyMafCoverage } from './coverageTestFixture.ts'
 
 import type {
   MafBlock,
@@ -23,21 +24,7 @@ function emptyRow(
 }
 
 function regionData(blocks: MafBlock[]): MafRegionData {
-  return {
-    blocks,
-    coverage: {
-      coverageDepths: new Float32Array(0),
-      coverageStartPos: 0,
-      coverageMaxDepth: 0,
-      mismatchPositions: new Uint32Array(0),
-      mismatchBases: new Uint8Array(0),
-      coveragePackedBuffer: new ArrayBuffer(0),
-      snpPackedBuffer: new ArrayBuffer(0),
-      interbasePackedBuffer: new ArrayBuffer(0),
-      interbaseMaxCount: 0,
-      indicatorPackedBuffer: new ArrayBuffer(0),
-    },
-  }
+  return { blocks, coverage: emptyMafCoverage() }
 }
 
 const view = {

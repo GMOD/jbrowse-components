@@ -7,8 +7,10 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
+import DeletionsOverlay from './DeletionsOverlay.tsx'
 import DragSelectionRect from './DragSelectionRect.tsx'
 import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
+import InsertionsOverlay from './InsertionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
 import MafCoverageResizeHandle from './MafCoverageResizeHandle.tsx'
@@ -146,6 +148,18 @@ const MafBody = observer(function MafBody({
           width={width}
           height={rowsHeight}
           palette={palette}
+        />
+        <InsertionsOverlay
+          markers={model.visibleInsertions}
+          width={width}
+          height={rowsHeight}
+          palette={palette}
+          pxPerBp={1 / view.bpPerPx}
+        />
+        <DeletionsOverlay
+          markers={model.visibleDeletions}
+          width={width}
+          height={rowsHeight}
         />
         <VisibleLabelsOverlay
           labels={model.visibleLabels}

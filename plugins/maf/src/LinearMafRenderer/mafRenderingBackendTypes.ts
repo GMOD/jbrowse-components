@@ -1,5 +1,6 @@
 import type { MafColorPalette } from './util.ts'
 import type { AlignmentContext, MafStatus } from '../types.ts'
+import type { Canvas2DCoverageBuffer } from '@jbrowse/alignments-core'
 import type { PerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
@@ -61,22 +62,28 @@ export interface MafBlock {
 
 // Per-region MAF coverage area data. `coverageDepths[i]` covers
 // `[coverageStartPos + i, coverageStartPos + i + 1)` as an absolute genomic
-// uint32; `coverageMaxDepth` is the per-region max used to normalize the bar
-// height in the GPU-packed buffer. The two packed buffers are produced in the
-// worker via the alignments-core packers and consumed by alignments-core
-// `drawCoverageBins` / `drawSnpSegments` on the main thread — no per-region
-// re-pack on theme/zoom changes.
+// uint32; `coverageMaxDepth` is the per-region max used to scale the SNP bar
+// height. The packed buffers are produced in the worker via the alignments-core
+// packers and consumed by alignments-core `drawCoverageBins` / `drawSnpSegments`
+// on the main thread — no per-region re-pack on theme/zoom changes. The MAF
+// coverage band is Canvas2D-only, so `coveragePackedBuffer` carries the Canvas2D
+// layout brand (raw depth), not the GPU `relDepth` layout.
 //
 // `mismatchPositions` / `mismatchBases` mirror the alignments worker's
 // MismatchArrays shape so alignments-core's `buildCoverageTooltipBin` /
 // `countSnpsAtPosition` can consume the data unchanged for hover tooltips.
+// `insertionPositions` / `insertionLengths` likewise mirror the InterbaseArrays
+// shape, feeding the insertion summary in the coverage-band tooltip (one entry
+// per insertion, anchored at the reference position following the inserted run).
 export interface MafCoverageRegion {
   coverageDepths: Float32Array
   coverageStartPos: number
   coverageMaxDepth: number
   mismatchPositions: Uint32Array
   mismatchBases: Uint8Array
-  coveragePackedBuffer: ArrayBuffer
+  insertionPositions: Uint32Array
+  insertionLengths: Uint32Array
+  coveragePackedBuffer: Canvas2DCoverageBuffer
   snpPackedBuffer: ArrayBuffer
   interbasePackedBuffer: ArrayBuffer
   interbaseMaxCount: number
