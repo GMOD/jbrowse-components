@@ -54,14 +54,6 @@ directly in the Highlight field, or change multiple bookmarks in bulk via the
 Highlights and labels can be toggled app-wide (via the "Edit colors" dialog) or
 per-view (via a view's "Bookmarks" menu).
 
-### Sharing bookmarks
-
-Select bookmarks with the checkboxes and click "Share" to get a URL you can send
-to collaborators or paste into the Import form
-[described below](#importing-bookmarks).
-
-<Figure caption="Bookmarks can be shared using the Share option in the bookmarks widget." src="/img/bookmark_widget_share_dialog.png"/>
-
 ### Exporting bookmarks
 
 You can export bookmarks into a list of regions as a BED or TSV file.
