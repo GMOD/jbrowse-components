@@ -61,9 +61,10 @@ function drawInstances(
       const g = (packed >> 8) & 0xff
       const b = (packed >> 16) & 0xff
       if (isCigar) {
-        const pr = ((r * alpha + 255 * (1 - alpha)) * 0.7) | 0
-        const pg = ((g * alpha + 255 * (1 - alpha)) * 0.7) | 0
-        const pb = ((b * alpha + 255 * (1 - alpha)) * 0.7) | 0
+        const blendAlpha = Math.min(a * alpha * 5, 0.35)
+        const pr = (r * blendAlpha + 255 * (1 - blendAlpha)) | 0
+        const pg = (g * blendAlpha + 255 * (1 - blendAlpha)) | 0
+        const pb = (b * blendAlpha + 255 * (1 - blendAlpha)) | 0
         fillStyle = `rgba(${pr},${pg},${pb},${a})`
       } else {
         const dr = (r * 0.7) | 0
