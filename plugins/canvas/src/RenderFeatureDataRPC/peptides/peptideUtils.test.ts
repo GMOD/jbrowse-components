@@ -1,4 +1,7 @@
-import { findTranscriptsWithCDS } from './peptideUtils.ts'
+import {
+  findTranscriptsWithCDS,
+  processTranscriptFromSeq,
+} from './peptideUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -224,5 +227,51 @@ describe('findTranscriptsWithCDS', () => {
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('transcript-1')
+  })
+})
+
+function createCoordFeature(opts: {
+  type?: string
+  start: number
+  end: number
+  phase?: number
+  strand?: number
+  subfeatures?: Feature[]
+}): Feature {
+  const data: Record<string, unknown> = { ...opts }
+  return {
+    get: (key: string) => data[key],
+    id: () => 'transcript-1',
+  } as unknown as Feature
+}
+
+describe('processTranscriptFromSeq', () => {
+  // ATG=M, AAA=K
+  const seq = 'ATGAAA'
+
+  it('translates a forward-strand CDS', () => {
+    const transcript = createCoordFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 6,
+      strand: 1,
+      subfeatures: [createCoordFeature({ type: 'CDS', start: 0, end: 6 })],
+    })
+    expect(processTranscriptFromSeq(seq, transcript)?.protein).toBe('MK')
+  })
+
+  it('dedupes duplicate CDS rows so the protein is not frameshifted', () => {
+    const transcript = createCoordFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 6,
+      strand: 1,
+      subfeatures: [
+        createCoordFeature({ type: 'CDS', start: 0, end: 6 }),
+        createCoordFeature({ type: 'CDS', start: 0, end: 6 }),
+      ],
+    })
+    // without dedup the duplicate row would stitch to ATGAAAATGAAA -> MKMK
+    expect(processTranscriptFromSeq(seq, transcript)?.protein).toBe('MK')
   })
 })

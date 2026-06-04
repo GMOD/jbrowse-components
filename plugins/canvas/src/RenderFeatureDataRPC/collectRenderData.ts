@@ -4,7 +4,6 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 import { lighten } from '@mui/material'
-import { genomeToTranscriptSeqMapping } from 'g2p_mapper'
 
 import {
   createFeatureFloatingLabels,
@@ -12,12 +11,15 @@ import {
 } from './floatingLabels.ts'
 import { getFeatureName, readFeatureLabels } from './labelUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
-import { aggregateAminos } from './peptides/aggregateAminoAcids.ts'
+import { aminoAcidsBySegment } from './peptides/aggregateAminoAcids.ts'
 import { isLabelAllowed } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isCDS, isUTR } from './util.ts'
 
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
-import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
+import type {
+  AggregatedAminoAcid,
+  CdsSegment,
+} from './peptides/aggregateAminoAcids.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
@@ -28,7 +30,6 @@ import type {
 import type { FeatureLayout, PeptideData } from './types.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-import type { Feat } from 'g2p_mapper'
 
 interface RenderContext {
   config: DisplayConfig
@@ -204,16 +205,25 @@ function strokeColor(feature: Feature, ctx: RenderContext) {
   return getStrokeColor({ feature, config: ctx.config, theme: ctx.theme })
 }
 
-function featureToFeat(f: Feature): Feat {
-  return {
-    refName: f.get('refName'),
-    start: f.get('start'),
-    end: f.get('end'),
-    type: f.get('type'),
-    strand: f.get('strand'),
-    phase: f.get('phase'),
-    subfeatures: f.get('subfeatures')?.map(featureToFeat),
+// CDS segments in transcription order (ascending genomic start on +, descending
+// on -), deduped on start/end. Duplicate CDS rows (e.g. Gencode v36) would
+// otherwise shift the translation frame; this matches the dedup the peptide
+// string was translated with so protein indices align.
+function transcriptCDS(feature: Feature, strand: number): CdsSegment[] {
+  const seen = new Set<string>()
+  const cds: CdsSegment[] = []
+  for (const sub of feature.get('subfeatures') ?? []) {
+    const start = sub.get('start')
+    const end = sub.get('end')
+    if (isCDS(sub) && start < end) {
+      const key = `${start}-${end}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        cds.push({ start, end, phase: sub.get('phase') ?? 0 })
+      }
+    }
   }
+  return cds.sort((a, b) => strand * (a.start - b.start))
 }
 
 function pushBoxRect(
@@ -267,8 +277,12 @@ function emitExonRects(
   const transcriptStrand = transcriptFeature.get('strand') ?? 0
   const protein = ctx.peptideDataMap?.get(transcriptFeature.id())?.protein
 
-  const g2p = protein
-    ? genomeToTranscriptSeqMapping(featureToFeat(transcriptFeature)).g2p
+  const aminoAcidsBySeg = protein
+    ? aminoAcidsBySegment(
+        transcriptCDS(transcriptFeature, transcriptStrand),
+        protein,
+        transcriptStrand,
+      )
     : undefined
 
   for (const childLayout of transcript.children) {
@@ -277,10 +291,7 @@ function emitExonRects(
     const childEnd = childFeature.get('end')
     const childIsUTR = isUTR(childFeature)
 
-    const aminoAcids =
-      isCDS(childFeature) && g2p && protein
-        ? aggregateAminos(protein, g2p, childStart, childEnd, transcriptStrand)
-        : undefined
+    const aminoAcids = aminoAcidsBySeg?.get(`${childStart}-${childEnd}`)
 
     if (aminoAcids?.length) {
       const [childTopPx, childHeight] = applyUTRSizing(

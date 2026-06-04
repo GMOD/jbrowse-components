@@ -6,53 +6,57 @@ export interface AggregatedAminoAcid {
   isStopOrNonTriplet: boolean
 }
 
-export function aggregateAminos(
+export interface CdsSegment {
+  start: number
+  end: number
+  phase?: number
+}
+
+// Maps the already-translated `protein` onto the genome, splitting each CDS
+// segment into its amino-acid pieces keyed by the segment's `start-end` so the
+// renderer can look up a CDS child's residues in O(1). A codon straddling an
+// exon boundary becomes a partial piece in each segment (flagged
+// isStopOrNonTriplet) because its three bases are not genomically contiguous.
+//
+// The transcription counter carries across segments, matching the phase
+// convention in convertCodingSequenceToPeptides: a phase>0 transcript reserves
+// protein index 0 for the leading partial codon.
+//
+// `cds` must be deduped and sorted in transcription order (ascending genomic
+// start on the + strand, descending on the - strand) — i.e. the same shape the
+// peptide string was translated from, so protein indices line up.
+export function aminoAcidsBySegment(
+  cds: CdsSegment[],
   protein: string,
-  g2p: Record<number, number>,
-  featureStart: number,
-  featureEnd: number,
   strand: number,
-): AggregatedAminoAcid[] {
-  const aggregated: AggregatedAminoAcid[] = []
-  const len = featureEnd - featureStart
+): Map<string, AggregatedAminoAcid[]> {
+  const bySegment = new Map<string, AggregatedAminoAcid[]>()
+  const firstPhase = cds[0]?.phase ?? 0
+  let counter = (3 - firstPhase) % 3
 
-  let groupElt = -1
-  let groupStart = 0
-  let groupEnd = 0
-
-  const flush = (endI: number) => {
-    if (groupElt === -1) {
-      return
+  for (const seg of cds) {
+    const len = seg.end - seg.start
+    const pieces: AggregatedAminoAcid[] = []
+    let offset = 0
+    while (offset < len) {
+      const c = counter + offset
+      const proteinIndex = Math.floor(c / 3)
+      // bases remaining in this codon, capped by what's left in the segment
+      const chunkLen = Math.min((proteinIndex + 1) * 3 - c, len - offset)
+      const aminoAcid = protein[proteinIndex] ?? '&'
+      pieces.push({
+        aminoAcid,
+        startBp:
+          strand === -1 ? seg.end - offset - chunkLen : seg.start + offset,
+        endBp: strand === -1 ? seg.end - offset : seg.start + offset + chunkLen,
+        proteinIndex,
+        isStopOrNonTriplet: aminoAcid === '*' || chunkLen !== 3,
+      })
+      offset += chunkLen
     }
-    const aa = protein[groupElt] ?? '&'
-    const length = endI - groupStart + 1
-    aggregated.push({
-      aminoAcid: aa,
-      startBp:
-        strand === -1 ? featureEnd - 1 - endI : featureStart + groupStart,
-      endBp: strand === -1 ? featureEnd - groupStart : featureStart + endI + 1,
-      proteinIndex: groupElt,
-      isStopOrNonTriplet: aa === '*' || length !== 3,
-    })
-    groupElt = -1
+    counter += len
+    bySegment.set(`${seg.start}-${seg.end}`, pieces)
   }
 
-  for (let i = 0; i < len; i++) {
-    const pos = strand === -1 ? featureEnd - 1 - i : featureStart + i
-    const elt = g2p[pos]
-    if (elt === undefined) {
-      console.warn(`No g2p mapping for position ${pos}`)
-      flush(groupEnd)
-      continue
-    }
-    if (elt !== groupElt) {
-      flush(groupEnd)
-      groupElt = elt
-      groupStart = i
-    }
-    groupEnd = i
-  }
-  flush(groupEnd)
-
-  return aggregated
+  return bySegment
 }

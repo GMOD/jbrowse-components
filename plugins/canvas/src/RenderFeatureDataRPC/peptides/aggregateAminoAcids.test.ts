@@ -1,107 +1,101 @@
-import { aggregateAminos } from './aggregateAminoAcids.ts'
+import { aminoAcidsBySegment } from './aggregateAminoAcids.ts'
 
-// g2p_mapper iterates reverse strand positions as f.end-1 down to f.start,
-// so g2p[featureEnd] is always undefined and g2p[featureStart] is always set.
-function makeReverseG2p(start: number, end: number) {
-  const g2p: Record<number, number> = {}
-  let counter = 0
-  for (let pos = end - 1; pos >= start; pos--) {
-    g2p[pos] = Math.floor(counter++ / 3)
-  }
-  return g2p
-}
-
-function makeForwardG2p(start: number, end: number) {
-  const g2p: Record<number, number> = {}
-  let counter = 0
-  for (let pos = start; pos < end; pos++) {
-    g2p[pos] = Math.floor(counter++ / 3)
-  }
-  return g2p
-}
-
-describe('aggregateAminos', () => {
+describe('aminoAcidsBySegment', () => {
   it('forward strand: codon genomic ranges are correct', () => {
-    // CDS [100,106): pos 100-102 → aa0 (M), pos 103-105 → aa1 (K)
-    const g2p = makeForwardG2p(100, 106)
-    const result = aggregateAminos('MK', g2p, 100, 106, 1)
-    expect(result).toHaveLength(2)
-    expect(result[0]).toMatchObject({
-      aminoAcid: 'M',
-      startBp: 100,
-      endBp: 103,
-    })
-    expect(result[1]).toMatchObject({
-      aminoAcid: 'K',
-      startBp: 103,
-      endBp: 106,
-    })
-  })
-
-  it('reverse strand: codon genomic ranges are correct', () => {
-    // CDS [100,106), reverse strand.
-    // g2p_mapper yields 105,104,103 → aa0 (M) and 102,101,100 → aa1 (K)
-    const g2p = makeReverseG2p(100, 106)
-    const result = aggregateAminos('MK', g2p, 100, 106, -1)
-    expect(result).toHaveLength(2)
-    expect(result[0]).toMatchObject({
-      aminoAcid: 'M',
-      startBp: 103,
-      endBp: 106,
-    })
-    expect(result[1]).toMatchObject({
-      aminoAcid: 'K',
-      startBp: 100,
-      endBp: 103,
-    })
-  })
-
-  it('reverse strand: featureStart position is included in mapping', () => {
-    const g2p = makeReverseG2p(100, 103)
-    const result = aggregateAminos('M', g2p, 100, 103, -1)
-    expect(result).toHaveLength(1)
-    expect(result[0]).toMatchObject({
+    // CDS [100,106): 100-102 → aa0 (M), 103-105 → aa1 (K)
+    const result = aminoAcidsBySegment([{ start: 100, end: 106 }], 'MK', 1)
+    const pieces = result.get('100-106')!
+    expect(pieces).toHaveLength(2)
+    expect(pieces[0]).toMatchObject({
       aminoAcid: 'M',
       startBp: 100,
       endBp: 103,
       isStopOrNonTriplet: false,
     })
+    expect(pieces[1]).toMatchObject({ aminoAcid: 'K', startBp: 103, endBp: 106 })
   })
 
-  it('isStopOrNonTriplet is true for stop codons', () => {
-    const g2p = makeForwardG2p(100, 103)
-    const result = aggregateAminos('*', g2p, 100, 103, 1)
-    expect(result[0]).toMatchObject({ isStopOrNonTriplet: true })
+  it('reverse strand: codon genomic ranges are correct', () => {
+    // CDS [100,106), reverse: codon0 is the highest-coordinate triplet
+    const result = aminoAcidsBySegment([{ start: 100, end: 106 }], 'MK', -1)
+    const pieces = result.get('100-106')!
+    expect(pieces).toHaveLength(2)
+    expect(pieces[0]).toMatchObject({ aminoAcid: 'M', startBp: 103, endBp: 106 })
+    expect(pieces[1]).toMatchObject({ aminoAcid: 'K', startBp: 100, endBp: 103 })
   })
 
-  it('isStopOrNonTriplet is true for partial codons', () => {
-    // 2-bp CDS — one codon with only 2 positions (split exon boundary)
-    const g2p = makeForwardG2p(100, 102)
-    const result = aggregateAminos('MK', g2p, 100, 102, 1)
-    expect(result).toHaveLength(1)
-    expect(result[0]).toMatchObject({ isStopOrNonTriplet: true })
-  })
-
-  it('undefined g2p position closes current group rather than spanning the gap', () => {
-    // Positions 100-101 → aa0 (M), 102 missing, 103-105 → aa1 (K)
-    const g2p = makeForwardG2p(100, 106)
-
-    delete g2p[102]
-    const spy = jest.spyOn(console, 'warn').mockImplementation()
-    const result = aggregateAminos('MK', g2p, 100, 106, 1)
-    expect(spy).toHaveBeenCalledWith('No g2p mapping for position 102')
-
-    // aa0 must end at 102, not 103 — no rect should span the unmapped position
-    expect(result[0]).toMatchObject({
+  it('partial codon (segment shorter than a triplet) is flagged', () => {
+    const result = aminoAcidsBySegment([{ start: 100, end: 102 }], 'M', 1)
+    const pieces = result.get('100-102')!
+    expect(pieces).toHaveLength(1)
+    expect(pieces[0]).toMatchObject({
       aminoAcid: 'M',
       startBp: 100,
       endBp: 102,
+      isStopOrNonTriplet: true,
     })
-    expect(result[1]).toMatchObject({
-      aminoAcid: 'K',
-      startBp: 103,
-      endBp: 106,
+  })
+
+  it('stop codons are flagged', () => {
+    const result = aminoAcidsBySegment([{ start: 100, end: 103 }], '*', 1)
+    expect(result.get('100-103')![0]).toMatchObject({ isStopOrNonTriplet: true })
+  })
+
+  it('splits a codon that straddles an exon boundary into partial pieces', () => {
+    // seg1 [100,102) holds the first 2 bases of codon0; codon0 finishes in
+    // seg2 [200,205), so codon0 appears as a partial piece in both segments
+    const result = aminoAcidsBySegment(
+      [
+        { start: 100, end: 102 },
+        { start: 200, end: 205 },
+      ],
+      'MK',
+      1,
+    )
+    const seg1 = result.get('100-102')!
+    const seg2 = result.get('200-205')!
+    expect(seg1).toHaveLength(1)
+    expect(seg1[0]).toMatchObject({
+      proteinIndex: 0,
+      startBp: 100,
+      endBp: 102,
+      isStopOrNonTriplet: true,
     })
-    spy.mockRestore()
+    // seg2 continues codon0 (1 base), then codon1 (full), then codon2 (partial)
+    expect(seg2[0]).toMatchObject({
+      proteinIndex: 0,
+      startBp: 200,
+      endBp: 201,
+      isStopOrNonTriplet: true,
+    })
+    expect(seg2[1]).toMatchObject({
+      proteinIndex: 1,
+      startBp: 201,
+      endBp: 204,
+      isStopOrNonTriplet: false,
+    })
+  })
+
+  it('phase>0 reserves protein index 0 for the leading partial codon', () => {
+    // phase 1: 1 leading base is the tail of an upstream codon → index 0 = '&'
+    const result = aminoAcidsBySegment(
+      [{ start: 100, end: 107, phase: 1 }],
+      '&MK',
+      1,
+    )
+    const pieces = result.get('100-107')!
+    expect(pieces[0]).toMatchObject({
+      aminoAcid: '&',
+      proteinIndex: 0,
+      startBp: 100,
+      endBp: 101,
+      isStopOrNonTriplet: true,
+    })
+    expect(pieces[1]).toMatchObject({
+      aminoAcid: 'M',
+      proteinIndex: 1,
+      startBp: 101,
+      endBp: 104,
+    })
   })
 })

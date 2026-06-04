@@ -84,7 +84,7 @@ function extractCDSRegions(feature: Feature) {
   const subfeatures = feature.get('subfeatures') ?? []
   const featureStart = feature.get('start')
 
-  return subfeatures
+  const regions = subfeatures
     .filter((sub: Feature) => isCDS(sub))
     .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
     .map((sub: Feature) => ({
@@ -92,9 +92,20 @@ function extractCDSRegions(feature: Feature) {
       end: sub.get('end') - featureStart,
       phase: sub.get('phase') ?? 0,
     }))
+
+  // Dedupe CDS rows sharing start/end: GFF3 files (e.g. Gencode v36) can repeat
+  // a CDS, which would otherwise stitch the duplicated bases into the translated
+  // sequence and frameshift the protein. Matches the dedup in the g2p mapper so
+  // the peptide string and the amino-acid rects stay index-aligned.
+  return regions.filter(
+    (r, i) =>
+      i === 0 ||
+      r.start !== regions[i - 1]!.start ||
+      r.end !== regions[i - 1]!.end,
+  )
 }
 
-function processTranscriptFromSeq(
+export function processTranscriptFromSeq(
   seq: string,
   transcript: Feature,
 ): PeptideData | undefined {
