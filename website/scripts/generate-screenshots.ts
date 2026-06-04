@@ -190,12 +190,12 @@ async function runAction(page: Page, action: ScreenshotAction) {
     await page.mouse.up()
   } else if (action.type === 'waitForSelector' && action.selector) {
     await page.waitForSelector(action.selector, {
-      visible: true,
+      [action.hidden ? 'hidden' : 'visible']: true,
       timeout: 30000,
     })
   } else if (action.type === 'waitForText' && action.text) {
     await page.waitForSelector(`::-p-text(${action.text})`, {
-      visible: true,
+      [action.hidden ? 'hidden' : 'visible']: true,
       timeout: 30000,
     })
   }

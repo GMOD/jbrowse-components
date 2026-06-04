@@ -11,6 +11,8 @@ export interface ScreenshotAction {
   selector?: string
   text?: string
   ms?: number
+  // for 'waitForText'/'waitForSelector': wait for the element to be hidden
+  hidden?: boolean
   // for 'type': text to type into the focused/selected input
   value?: string
   // for 'type': triple-click the field to select existing content first
@@ -1700,9 +1702,7 @@ export const specs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="share-button"]' },
       { type: 'waitForText', text: 'Copy the URL below' },
-      // the short-URL request is async; wait for it to resolve so the dialog
-      // shows the final link instead of the "Generating short URL" spinner
-      { type: 'delay', ms: 7000 },
+      { type: 'waitForText', text: 'Generating', hidden: true },
     ],
   },
 
@@ -2411,7 +2411,9 @@ export const specs: ScreenshotSpec[] = [
             'ncbi_gff_hg19',
             {
               trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-              displaySnapshot: { compactness: 'compact' },
+              displaySnapshot: {
+                configOverrides: { featureHeight: 3, featureSpacing: 0 },
+              },
             },
           ],
         },
@@ -2532,7 +2534,7 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
               displaySnapshot: {
                 type: 'LinearMultiSampleVariantMatrixDisplay',
-                renderingMode: 'phased',
+                configOverrides: { renderingMode: 'phased' },
               },
             },
           ],
@@ -2567,7 +2569,7 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
               displaySnapshot: {
                 type: 'LinearMultiSampleVariantMatrixDisplay',
-                renderingMode: 'phased',
+                configOverrides: { renderingMode: 'phased' },
               },
             },
           ],
