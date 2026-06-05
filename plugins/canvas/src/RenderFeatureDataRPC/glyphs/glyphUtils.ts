@@ -1,10 +1,14 @@
 import { isCDS } from '../util.ts'
 
-import type { DisplayConfig } from '../renderConfig.ts'
+import type { DisplayConfig, DisplayMode } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-const HEIGHT_MULTIPLIERS: Record<DisplayConfig['displayMode'], number> = {
+// Exported for main-thread post-processing in layout.ts: after the worker
+// returns geometry in normal-mode units (multiplier=1), the layout step scales
+// all height/y fields by this factor so compact/superCompact never require a
+// re-fetch.
+export const HEIGHT_MULTIPLIERS: Record<DisplayMode, number> = {
   normal: 1,
   compact: 0.6,
   superCompact: 0.3,
@@ -24,8 +28,11 @@ export function sortByPosition(children: FeatureLayout[]) {
   })
 }
 
+// Worker always returns geometry at multiplier=1 (normal scale). The compact
+// multiplier is applied on the main thread in layout.ts so switching
+// compact/superCompact doesn't invalidate the RPC cache.
 export function getFeatureHeightPx(config: DisplayConfig) {
-  return config.featureHeight * HEIGHT_MULTIPLIERS[config.displayMode]
+  return config.featureHeight
 }
 
 // Direct CDS child: picks the ProcessedTranscript layout (CDS + implied UTRs)

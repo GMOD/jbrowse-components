@@ -9,6 +9,7 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import CascadingMenuHelpIconButton, {
   CascadingMenuHelpIconSpacer,
@@ -226,7 +227,7 @@ function CascadingMenuList({
   )
 }
 
-export default function CascadingMenu({
+const CascadingMenu = observer(function CascadingMenu({
   onMenuItemClick,
   closeAfterItemClick = true,
   menuItems,
@@ -275,4 +276,6 @@ export default function CascadingMenu({
       />
     </Menu>
   )
-}
+})
+
+export default CascadingMenu

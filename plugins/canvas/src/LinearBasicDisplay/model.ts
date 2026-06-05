@@ -12,7 +12,10 @@ const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
-import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type {
+  DisplayConfig,
+  DisplayMode,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -65,10 +68,8 @@ export default function stateModelFactory(
         )
       },
 
-      get displayMode(): DisplayConfig['displayMode'] {
-        return self.getConfWithOverride<DisplayConfig['displayMode']>(
-          'displayMode',
-        )
+      get displayMode(): DisplayMode {
+        return self.getConfWithOverride<DisplayMode>('displayMode')
       },
 
       get geneGlyphMode(): DisplayConfig['geneGlyphMode'] {
@@ -125,7 +126,7 @@ export default function stateModelFactory(
         self.setOverride('geneGlyphMode', value)
       },
 
-      setDisplayMode(value: DisplayConfig['displayMode']) {
+      setDisplayMode(value: DisplayMode) {
         self.setOverride('displayMode', value)
       },
 

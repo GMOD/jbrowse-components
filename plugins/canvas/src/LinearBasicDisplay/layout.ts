@@ -1,9 +1,13 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
-import { STRAND_ARROW_WIDTH } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import {
+  HEIGHT_MULTIPLIERS,
+  STRAND_ARROW_WIDTH,
+} from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
+import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
   FeatureDataResult,
   FeatureLabelData,
@@ -23,6 +27,7 @@ export interface LayoutInputs {
   showLabels: boolean
   showDescriptions: boolean
   reversedRegions: ReadonlySet<number>
+  displayMode: DisplayMode
 }
 
 function reservedLabelWidthPx(
@@ -34,6 +39,43 @@ function reservedLabelWidthPx(
   return width > 0 ? width + LABEL_PADDING_PX : 0
 }
 
+// Scales all height/y fields in a cloned FeatureDataResult by the compact
+// multiplier. Worker geometry is always in normal-mode units (multiplier=1);
+// this makes compact/superCompact a pure main-thread operation.
+function applyHeightScale(data: FeatureDataResult, multiplier: number) {
+  if (multiplier === 1) {
+    return
+  }
+  for (let i = 0; i < data.rectYs.length; i++) {
+    data.rectYs[i]! *= multiplier
+  }
+  for (let i = 0; i < data.rectHeights.length; i++) {
+    data.rectHeights[i]! *= multiplier
+  }
+  for (let i = 0; i < data.lineYs.length; i++) {
+    data.lineYs[i]! *= multiplier
+  }
+  for (let i = 0; i < data.arrowYs.length; i++) {
+    data.arrowYs[i]! *= multiplier
+  }
+  for (const item of data.flatbushItems) {
+    item.featureHeightPx *= multiplier
+  }
+  for (const info of data.subfeatureInfos) {
+    info.topPx *= multiplier
+    info.bottomPx *= multiplier
+  }
+  for (const labelData of Object.values(data.floatingLabelsData)) {
+    labelData.topY *= multiplier
+    labelData.featureHeight *= multiplier
+  }
+  if (data.aminoAcidOverlay) {
+    for (const aa of data.aminoAcidOverlay) {
+      aa.topPx *= multiplier
+    }
+  }
+}
+
 // Pure layout. Raw data from the worker has Y coordinates relative to feature
 // top (topPx = 0). This returns a new map where each region's Y values have
 // been shifted by the per-feature top computed by GranularRectLayout.
@@ -43,14 +85,27 @@ export function computeLaidOutData(
   rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
   inputs: LayoutInputs,
 ): Map<number, FeatureDataResult> {
-  const { bpPerPx, regionKeys, showLabels, showDescriptions, reversedRegions } =
-    inputs
+  const {
+    bpPerPx,
+    regionKeys,
+    showLabels,
+    showDescriptions,
+    reversedRegions,
+    displayMode,
+  } = inputs
+  const heightMultiplier = HEIGHT_MULTIPLIERS[displayMode]
 
   const out = new Map<number, FeatureDataResult>()
   // Empty regions need no layout mutations — share the raw object rather than
   // allocating clone arrays that will never be written.
   for (const [n, raw] of rpcDataMap) {
-    out.set(n, raw.flatbushItems.length > 0 ? cloneMutableFields(raw) : raw)
+    if (raw.flatbushItems.length === 0) {
+      out.set(n, raw)
+    } else {
+      const cloned = cloneMutableFields(raw)
+      applyHeightScale(cloned, heightMultiplier)
+      out.set(n, cloned)
+    }
   }
 
   const refGroups = new Map<string, [number, FeatureDataResult][]>()
@@ -87,6 +142,7 @@ interface GroupCache {
   bpPerPx: number
   showLabels: boolean
   showDescriptions: boolean
+  displayMode: DisplayMode
   // idx -> raw fetch object, by reference. A new fetch swaps the reference.
   members: Map<number, FeatureDataResult>
   // members currently rendered reversed (affects label-overhang packing)
@@ -100,11 +156,18 @@ function groupUnchanged(
   members: Map<number, FeatureDataResult>,
   inputs: LayoutInputs,
 ) {
-  const { bpPerPx, showLabels, showDescriptions, reversedRegions } = inputs
+  const {
+    bpPerPx,
+    showLabels,
+    showDescriptions,
+    reversedRegions,
+    displayMode,
+  } = inputs
   const paramsSame =
     prev.bpPerPx === bpPerPx &&
     prev.showLabels === showLabels &&
     prev.showDescriptions === showDescriptions &&
+    prev.displayMode === displayMode &&
     prev.members.size === members.size
   return (
     paramsSame &&
@@ -174,6 +237,7 @@ export function createIncrementalLayout() {
           bpPerPx: inputs.bpPerPx,
           showLabels: inputs.showLabels,
           showDescriptions: inputs.showDescriptions,
+          displayMode: inputs.displayMode,
           members: new Map(members),
           reversed,
           output,
@@ -194,6 +258,7 @@ function cloneMutableFields(raw: FeatureDataResult) {
   return {
     ...raw,
     rectYs: new Float32Array(raw.rectYs),
+    rectHeights: new Float32Array(raw.rectHeights),
     lineYs: new Float32Array(raw.lineYs),
     arrowYs: new Float32Array(raw.arrowYs),
     flatbushItems: raw.flatbushItems.map(item => ({ ...item })),

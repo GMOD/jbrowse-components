@@ -6,14 +6,19 @@ export { readConfigValue } from '@jbrowse/core/configuration'
 // the contract explicit.
 export const THEME_DERIVED_COLOR = '#f0f'
 
+export type DisplayMode =
+  | 'normal'
+  | 'compact'
+  | 'superCompact'
+  | 'reducedRepresentation'
+  | 'collapse'
+
 export interface DisplayConfig {
   [key: string]: unknown
-  displayMode:
-    | 'normal'
-    | 'compact'
-    | 'superCompact'
-    | 'reducedRepresentation'
-    | 'collapse'
+  // displayMode is NOT sent to the worker — compact/superCompact scaling is
+  // applied on the main thread so switching modes skips an RPC round-trip.
+  // Only collapse's label-suppression effect is communicated via suppressLabels.
+  suppressLabels: boolean
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
   subfeatureLabels: 'none' | 'below' | 'overlay'
   transcriptTypes: string[]
@@ -33,5 +38,5 @@ export interface DisplayConfig {
 }
 
 export function isLabelAllowed(config: DisplayConfig) {
-  return config.displayMode !== 'collapse'
+  return !config.suppressLabels
 }

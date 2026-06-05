@@ -5,7 +5,9 @@ import { getFeatureHeightPx, hasCodingSubfeature } from './glyphUtils.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-const TRANSCRIPT_PADDING = 2
+// Expressed as a fraction of heightPx so the entire within-gene layout scales
+// linearly — main-thread compact scaling (multiplier × all y values) is exact.
+const TRANSCRIPT_PADDING_RATIO = 0.2
 
 function longestCodingTranscript(
   subfeatures: Feature[],
@@ -95,7 +97,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
       : childLayout.height
     currentYPx += heightForStacking
     if (i < subfeatures.length - 1) {
-      currentYPx += TRANSCRIPT_PADDING
+      currentYPx += heightPx * TRANSCRIPT_PADDING_RATIO
     }
   }
 

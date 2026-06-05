@@ -88,24 +88,17 @@ function draw(
 ) {
   const ctx = new SvgCanvas()
   const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
-  drawReads(
-    ctx,
-    makeRegion(reads),
-    block,
-    100,
-    fullBlockWidth,
-    {
-      featureHeight: 10,
-      featureSpacing: 0,
-      pileupTopOffset: 0,
-      scrollTop: 0,
-      linkedReads: 'off',
-      colorScheme: ColorScheme.strand,
-      colors: palette,
-      showOutline: false,
-      ...state,
-    } as unknown as RenderState,
-  )
+  drawReads(ctx, makeRegion(reads), block, 100, fullBlockWidth, {
+    featureHeight: 10,
+    featureSpacing: 0,
+    pileupTopOffset: 0,
+    scrollTop: 0,
+    linkedReads: 'off',
+    colorScheme: ColorScheme.strand,
+    colors: palette,
+    showOutline: false,
+    ...state,
+  } as unknown as RenderState)
   return ctx.getSerializedSvg()
 }
 
@@ -178,8 +171,7 @@ function shaderShowChev(
   widthPx: number,
 ) {
   const baseShow = (f.chainMode || f.pxPerBp > 0.1) && f.featureHeight >= 3
-  const dirMoot =
-    f.colorScheme === 0 || (flags & 8) !== 0 || interchrom !== 0
+  const dirMoot = f.colorScheme === 0 || (flags & 8) !== 0 || interchrom !== 0
   const isPaired = (flags & 1) !== 0
   const pairTooTight = isPaired && Math.abs(insertSize) * f.pxPerBp < 10
   return baseShow && !pairTooTight && (!dirMoot || widthPx > 30)

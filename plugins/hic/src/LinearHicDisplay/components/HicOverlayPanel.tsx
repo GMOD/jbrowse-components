@@ -1,8 +1,7 @@
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { observer } from 'mobx-react'
-
 import { getNiceScale } from '@jbrowse/wiggle-core'
+import { observer } from 'mobx-react'
 
 import { getLegendCssGradient } from './colorRamp.ts'
 

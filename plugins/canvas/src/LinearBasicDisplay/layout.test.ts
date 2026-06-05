@@ -59,6 +59,12 @@ function layout(
   showLabels = true,
   showDescriptions = true,
   reversedRegions = new Set<number>(),
+  displayMode:
+    | 'normal'
+    | 'compact'
+    | 'superCompact'
+    | 'reducedRepresentation'
+    | 'collapse' = 'normal',
 ) {
   return computeLaidOutData(raw, {
     bpPerPx,
@@ -66,6 +72,7 @@ function layout(
     showLabels,
     showDescriptions,
     reversedRegions,
+    displayMode,
   })
 }
 
@@ -440,6 +447,7 @@ function incInputs(
     showLabels: true,
     showDescriptions: true,
     reversedRegions,
+    displayMode: 'normal' as const,
   }
 }
 

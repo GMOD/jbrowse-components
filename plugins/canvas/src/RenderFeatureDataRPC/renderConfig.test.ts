@@ -44,12 +44,12 @@ describe('readConfigValue', () => {
 })
 
 describe('isLabelAllowed', () => {
-  it('returns true for normal mode', () => {
+  it('returns true when suppressLabels is false', () => {
     expect(isLabelAllowed(mockDisplayConfig())).toBe(true)
   })
 
-  it('returns false for collapse mode', () => {
-    expect(isLabelAllowed(mockDisplayConfig({ displayMode: 'collapse' }))).toBe(
+  it('returns false when suppressLabels is true (collapse mode)', () => {
+    expect(isLabelAllowed(mockDisplayConfig({ suppressLabels: true }))).toBe(
       false,
     )
   })

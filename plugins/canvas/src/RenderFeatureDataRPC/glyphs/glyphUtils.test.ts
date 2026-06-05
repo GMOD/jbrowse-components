@@ -76,18 +76,14 @@ describe('sortByPosition', () => {
 })
 
 describe('getFeatureHeightPx', () => {
-  it('returns config.featureHeight by default', () => {
+  it('returns config.featureHeight unchanged (multiplier applied main-thread)', () => {
     expect(getFeatureHeightPx(mockDisplayConfig())).toBe(10)
   })
 
-  it('applies the compact multiplier', () => {
-    const config = mockDisplayConfig({ displayMode: 'compact' })
-    expect(getFeatureHeightPx(config)).toBe(6) // 10 * 0.6
-  })
-
-  it('applies the super-compact multiplier', () => {
-    const config = mockDisplayConfig({ displayMode: 'superCompact' })
-    expect(getFeatureHeightPx(config)).toBe(3) // 10 * 0.3
+  it('returns config.featureHeight even with compact in config (multiplier is main-thread only)', () => {
+    expect(getFeatureHeightPx(mockDisplayConfig({ featureHeight: 10 }))).toBe(
+      10,
+    )
   })
 })
 

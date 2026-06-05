@@ -1,8 +1,4 @@
-import {
-  scaleLinear,
-  scaleLog,
-  scaleQuantize,
-} from './vendor/d3-scale.ts'
+import { scaleLinear, scaleLog, scaleQuantize } from './vendor/d3-scale.ts'
 
 export interface ScaleOpts {
   domain: number[]

@@ -6,9 +6,9 @@
 
 // ── d3-array: ticks, tickIncrement ────────────────────────────────────────────
 
-const e10 = Math.sqrt(50),
-  e5 = Math.sqrt(10),
-  e2 = Math.sqrt(2)
+const e10 = Math.sqrt(50)
+const e5 = Math.sqrt(10)
+const e2 = Math.sqrt(2)
 
 function tickSpec(
   start: number,
@@ -19,20 +19,30 @@ function tickSpec(
   const power = Math.floor(Math.log10(step))
   const error = step / 10 ** power
   const factor = error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1
-  let i1: number, i2: number, inc: number
+  let i1: number
+  let i2: number
+  let inc: number
   if (power < 0) {
     inc = 10 ** -power / factor
     i1 = Math.round(start * inc)
     i2 = Math.round(stop * inc)
-    if (i1 / inc < start) ++i1
-    if (i2 / inc > stop) --i2
+    if (i1 / inc < start) {
+      ++i1
+    }
+    if (i2 / inc > stop) {
+      --i2
+    }
     inc = -inc
   } else {
     inc = 10 ** power * factor
     i1 = Math.round(start / inc)
     i2 = Math.round(stop / inc)
-    if (i1 * inc < start) ++i1
-    if (i2 * inc > stop) --i2
+    if (i1 * inc < start) {
+      ++i1
+    }
+    if (i2 * inc > stop) {
+      --i2
+    }
   }
   if (i2 < i1 && count >= 0.5 && count < 2) {
     return tickSpec(start, stop, count * 2)
@@ -121,8 +131,8 @@ function bimap(domain: number[], range: number[]): (x: number) => number {
 
 function polymap(domain: number[], range: number[]): (x: number) => number {
   const j = Math.min(domain.length, range.length) - 1
-  let d = domain.slice(),
-    r = range.slice()
+  let d = domain.slice()
+  let r = range.slice()
   if (d[j]! < d[0]!) {
     d = d.reverse()
     r = r.reverse()
@@ -170,72 +180,72 @@ function continuous(xform: (x: number) => number = x => x): InternalScale {
 
   function rescale() {
     const mapped = _domain.map(_transform)
-    _output = _domain.length > 2 ? polymap(mapped, _range) : bimap(mapped, _range)
+    _output =
+      _domain.length > 2 ? polymap(mapped, _range) : bimap(mapped, _range)
     return scale
   }
 
-  const scale = Object.assign(
-    (x: number) => _output(_transform(x)),
-    {
-      domain(d?: number[]): any {
-        if (!d) {
-          return _domain.slice()
-        }
-        _domain = Array.from(d, Number)
-        return rescale()
-      },
-
-      range(r?: number[]): any {
-        if (!r) {
-          return _range.slice()
-        }
-        _range = Array.from(r)
-        return rescale()
-      },
-
-      // linearish.nice from d3-scale
-      nice(count = 10): any {
-        const d = _domain.slice()
-        let i0 = 0,
-          i1 = d.length - 1
-        let start = d[i0]!,
-          stop = d[i1]!
-        if (stop < start) {
-          ;[i0, i1] = [i1, i0]
-          ;[start, stop] = [stop, start]
-        }
-        let prestep: number | undefined, step: number, maxIter = 10
-        while (maxIter-- > 0) {
-          step = tickIncrement(start, stop, count)
-          if (step === prestep) {
-            d[i0] = start
-            d[i1] = stop
-            _domain = d
-            return rescale()
-          } else if (step > 0) {
-            start = Math.floor(start / step) * step
-            stop = Math.ceil(stop / step) * step
-          } else if (step < 0) {
-            start = Math.ceil(start * step) / step
-            stop = Math.floor(stop * step) / step
-          } else {
-            break
-          }
-          prestep = step
-        }
-        return scale
-      },
-
-      ticks(count = 10): number[] {
-        return d3ticks(_domain[0]!, _domain[_domain.length - 1]!, count)
-      },
-
-      _setXform(t: (x: number) => number): any {
-        _transform = t
-        return rescale()
-      },
+  const scale = Object.assign((x: number) => _output(_transform(x)), {
+    domain(d?: number[]): any {
+      if (!d) {
+        return _domain.slice()
+      }
+      _domain = Array.from(d, Number)
+      return rescale()
     },
-  ) as InternalScale
+
+    range(r?: number[]): any {
+      if (!r) {
+        return _range.slice()
+      }
+      _range = Array.from(r)
+      return rescale()
+    },
+
+    // linearish.nice from d3-scale
+    nice(count = 10): any {
+      const d = _domain.slice()
+      let i0 = 0
+      let i1 = d.length - 1
+      let start = d[i0]!
+      let stop = d[i1]!
+      if (stop < start) {
+        ;[i0, i1] = [i1, i0]
+        ;[start, stop] = [stop, start]
+      }
+      let prestep: number | undefined
+      let step: number
+      let maxIter = 10
+      while (maxIter-- > 0) {
+        step = tickIncrement(start, stop, count)
+        if (step === prestep) {
+          d[i0] = start
+          d[i1] = stop
+          _domain = d
+          return rescale()
+        } else if (step > 0) {
+          start = Math.floor(start / step) * step
+          stop = Math.ceil(stop / step) * step
+        } else if (step < 0) {
+          start = Math.ceil(start * step) / step
+          stop = Math.floor(stop * step) / step
+        } else {
+          break
+        }
+        prestep = step
+      }
+      return scale
+    },
+
+    ticks(count = 10): number[] {
+      return d3ticks(_domain[0]!, _domain[_domain.length - 1]!, count)
+    },
+
+    _setXform(t: (x: number) => number): any {
+      _transform = t
+      return rescale()
+    },
+  })
 
   rescale()
   return scale
@@ -261,7 +271,7 @@ function logp(base: number) {
 
 function powp(base: number) {
   return base === 10
-    ? (x: number) => (isFinite(x) ? +('1e' + x) : x < 0 ? 0 : x)
+    ? (x: number) => (isFinite(x) ? +`1e${x}` : Math.max(x, 0))
     : base === Math.E
       ? Math.exp
       : (x: number) => Math.pow(base, x)
@@ -278,7 +288,7 @@ export function scaleLog(): LogScale {
   function rescaleLog() {
     logs = logp(base)
     pows = powp(base)
-    const d = inner.domain() as number[]
+    const d = inner.domain()
     const xform =
       d[0]! < 0
         ? (x: number) => -Math.log(-x)
@@ -293,93 +303,90 @@ export function scaleLog(): LogScale {
     return scale
   }
 
-  const scale = Object.assign(
-    (x: number) => inner(x),
-    {
-      base(b?: number): any {
-        if (b === undefined) {
-          return base
-        }
-        base = +b
-        return rescaleLog()
-      },
+  const scale = Object.assign((x: number) => inner(x), {
+    base(b?: number): any {
+      if (b === undefined) {
+        return base
+      }
+      base = +b
+      return rescaleLog()
+    },
 
-      domain(d?: number[]): any {
-        if (!d) {
-          return inner.domain()
-        }
-        inner.domain(d)
-        return rescaleLog()
-      },
+    domain(d?: number[]): any {
+      if (!d) {
+        return inner.domain()
+      }
+      inner.domain(d)
+      return rescaleLog()
+    },
 
-      range(r?: number[]): any {
-        if (!r) {
-          return inner.range()
-        }
-        inner.range(r)
-        return scale
-      },
+    range(r?: number[]): any {
+      if (!r) {
+        return inner.range()
+      }
+      inner.range(r)
+      return scale
+    },
 
-      nice(): any {
-        const d = inner.domain() as number[]
-        d[0] = pows(Math.floor(logs(d[0]!)))
-        d[d.length - 1] = pows(Math.ceil(logs(d[d.length - 1]!)))
-        inner.domain(d)
-        return rescaleLog()
-      },
+    nice(): any {
+      const d = inner.domain()
+      d[0] = pows(Math.floor(logs(d[0]!)))
+      d[d.length - 1] = pows(Math.ceil(logs(d[d.length - 1]!)))
+      inner.domain(d)
+      return rescaleLog()
+    },
 
-      ticks(count = 10): number[] {
-        const d = inner.domain() as number[]
-        let u = d[0]!,
-          v = d[d.length - 1]!
-        const r = v < u
-        if (r) {
-          ;[u, v] = [v, u]
-        }
-        let i = logs(u),
-          j = logs(v)
-        const n = count
-        const z: number[] = []
-        if (!(base % 1) && j - i < n) {
-          i = Math.floor(i)
-          j = Math.ceil(j)
-          if (u > 0) {
-            for (; i <= j; ++i) {
-              for (let k = 1; k < base; ++k) {
-                const t = i < 0 ? k / pows(-i) : k * pows(i)
-                if (t < u) {
-                  continue
-                }
-                if (t > v) {
-                  break
-                }
-                z.push(t)
+    ticks(count = 10): number[] {
+      const d = inner.domain()
+      let u = d[0]!
+      let v = d[d.length - 1]!
+      const r = v < u
+      if (r) {
+        ;[u, v] = [v, u]
+      }
+      let i = logs(u)
+      let j = logs(v)
+      const n = count
+      const z: number[] = []
+      if (!(base % 1) && j - i < n) {
+        i = Math.floor(i)
+        j = Math.ceil(j)
+        if (u > 0) {
+          for (; i <= j; ++i) {
+            for (let k = 1; k < base; ++k) {
+              const t = i < 0 ? k / pows(-i) : k * pows(i)
+              if (t < u) {
+                continue
               }
-            }
-          } else {
-            for (; i <= j; ++i) {
-              for (let k = base - 1; k >= 1; --k) {
-                const t = i > 0 ? k / pows(-i) : k * pows(i)
-                if (t < u) {
-                  continue
-                }
-                if (t > v) {
-                  break
-                }
-                z.push(t)
+              if (t > v) {
+                break
               }
+              z.push(t)
             }
-          }
-          if (z.length * 2 < n) {
-            return d3ticks(u, v, n)
           }
         } else {
-          z.push(...d3ticks(i, j, Math.min(j - i, n)).map(pows))
+          for (; i <= j; ++i) {
+            for (let k = base - 1; k >= 1; --k) {
+              const t = i > 0 ? k / pows(-i) : k * pows(i)
+              if (t < u) {
+                continue
+              }
+              if (t > v) {
+                break
+              }
+              z.push(t)
+            }
+          }
         }
-        return r ? z.reverse() : z
-      },
+        if (z.length * 2 < n) {
+          return d3ticks(u, v, n)
+        }
+      } else {
+        z.push(...d3ticks(i, j, Math.min(j - i, n)).map(pows))
+      }
+      return r ? z.reverse() : z
     },
-  ) as LogScale
+  })
 
   scale.domain([1, 10])
   return scale
@@ -388,11 +395,11 @@ export function scaleLog(): LogScale {
 // ── scaleQuantize ─────────────────────────────────────────────────────────────
 
 export function scaleQuantize(): Scale {
-  let x0 = 0,
-    x1 = 1,
-    n = 1,
-    thresholds = [0.5],
-    range = [0, 1]
+  let x0 = 0
+  let x1 = 1
+  let n = 1
+  let thresholds = [0.5]
+  let range = [0, 1]
 
   function rescale() {
     thresholds = new Array(n)
@@ -438,7 +445,7 @@ export function scaleQuantize(): Scale {
         return d3ticks(x0, x1, count)
       },
     },
-  ) as Scale
+  )
 
   rescale()
   return scale

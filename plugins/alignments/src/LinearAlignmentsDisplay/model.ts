@@ -606,6 +606,15 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        get hasPairedReads() {
+          return [...self.rpcDataMap.values()].some(
+            d => d.insertSizeStats !== undefined,
+          )
+        },
+
+        /**
+         * #getter
+         */
         get colorBy() {
           return self.getConfWithOverride<ColorBy>('colorBy')
         },

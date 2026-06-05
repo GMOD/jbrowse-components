@@ -5,7 +5,7 @@ export function mockDisplayConfig(
 ): DisplayConfig {
   return {
     featureHeight: 10,
-    displayMode: 'normal',
+    suppressLabels: false,
     subfeatureLabels: 'none',
     transcriptTypes: ['mRNA'],
     containerTypes: [],

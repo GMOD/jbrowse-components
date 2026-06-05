@@ -1,5 +1,4 @@
 import { toLocale } from '@jbrowse/core/util'
-
 import { getNiceScale } from '@jbrowse/wiggle-core'
 
 import {

@@ -48,7 +48,10 @@ import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
-import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type {
+  DisplayConfig,
+  DisplayMode,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
   FeatureItemEntry,
@@ -261,6 +264,13 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        get displayMode() {
+          return self.getConfWithOverride<DisplayMode>('displayMode')
+        },
+
+        /**
+         * #getter
+         */
         get showLabelsMode() {
           return self.getConfWithOverride<ShowLabelsMode>('showLabels')
         },
@@ -431,16 +441,24 @@ export default function baseStateModelFactory(
         rpcProps() {
           // showLabels/showDescriptions are display-only — exclude them so
           // toggling label visibility doesn't invalidate the RPC cache.
+          // displayMode is also excluded: compact/superCompact scaling is
+          // applied on the main thread (layout.ts) after the worker returns,
+          // so switching compact modes skips an RPC round-trip. Only collapse's
+          // label-suppression effect is communicated via suppressLabels.
           const {
             showLabels: _l,
             showDescriptions: _d,
+            displayMode: _dm,
             ...rest
           } = {
             ...getConfSnapshot(self.configuration),
             ...self.configOverrides,
           }
           return {
-            displayConfig: rest as DisplayConfig,
+            displayConfig: {
+              ...rest,
+              suppressLabels: self.displayMode === 'collapse',
+            } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
             // Serializable ThemeOptions so worker-side coloring (CDS frames,
@@ -532,6 +550,7 @@ export default function baseStateModelFactory(
             showLabels: self.showLabels,
             showDescriptions: self.effectiveShowDescriptions,
             reversedRegions: self.reversedRegions,
+            displayMode: self.displayMode,
           })
         },
       }))

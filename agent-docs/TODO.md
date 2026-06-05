@@ -11,3 +11,6 @@
 - does yeast demo really need remote
 - no max height react-app
 - persistent no-close cascading submenu for subselectingmultiple items
+- A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+- decimate labels for collapsed
+ -we can remove base quality. mapping quality is likely a reasonable proxy. we should show a legend when this option is chosen if possible. same with for insert size
