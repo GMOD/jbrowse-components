@@ -42,6 +42,7 @@ test('color by stranded rna-seq', async () => {
   )
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Color by...'))
+  await user.click(await screen.findByText('Paired end'))
   await user.click(await screen.findByText('First of pair strand'))
   const display = await screen.findByTestId('pileup-display-done', ...opts)
   expectCanvasMatch(findCanvasIn(display), 0.1)

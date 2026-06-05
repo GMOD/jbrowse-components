@@ -1896,8 +1896,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       '@electron/packager':
-        specifier: ^20.0.0
-        version: 20.0.0
+        specifier: ^20.0.1
+        version: 20.0.1
       '@types/selenium-webdriver':
         specifier: ^4.35.6
         version: 4.35.6
@@ -3265,6 +3265,10 @@ packages:
     resolution: {integrity: sha512-Xc3VhU02wqZ1HvHRJUwL09HkZSTvidqY5Ya0NXBSYOxAp+Ln9dcJr9fySI+CkONzP3PekQo9WdzCv0PGER/mOA==}
     engines: {node: '>=14.17.0'}
 
+  '@electron-internal/extract-zip@1.0.2':
+    resolution: {integrity: sha512-VJuNETNPEhrmQEZezeTZO5TZMV+dobBRyJ7zHjGJWIhMS7m7W1UeClt69u4hkUxv9ZZVxuli/E9Yvc4gDNHGsg==}
+    engines: {node: '>=22.12.0'}
+
   '@electron/asar@4.2.0':
     resolution: {integrity: sha512-npW1NW5yy8EB9XY/vEw9sUdgmq0sJEhmSBb6bqyFOAw1CSkrhvAvO6QWlW8CdIMo8VN1lkdF345l/MeW0LrY0Q==}
     engines: {node: '>=22.12.0'}
@@ -3287,8 +3291,8 @@ packages:
     engines: {node: '>=22.12.0'}
     hasBin: true
 
-  '@electron/packager@20.0.0':
-    resolution: {integrity: sha512-kl4c4LcsrQflg0wAi3mqpmmZFRdTYoZFLZPBP9YeEIvWwQR1NmkZphwT7558UeLOdhr6Ac5l83r8W69KaJBedg==}
+  '@electron/packager@20.0.1':
+    resolution: {integrity: sha512-Fz45favukZRRPCXU49hbi/15GFFlxYWtlbH7AXLY1A9tQw15c8hKhs26d431sbUvKrFicuKLpYnKaOGNPoOfjw==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -5819,10 +5823,6 @@ packages:
   attr-accept@2.2.5:
     resolution: {integrity: sha512-0bDNnY/u6pPwHDMoF0FieU354oBi0a8rD9FcsLwzcGWbc8KS8KPIi7y+s13OlVY+gMWc/9xEMUgNE6Qm8ZllYQ==}
     engines: {node: '>=4'}
-
-  author-regex@1.0.0:
-    resolution: {integrity: sha512-KbWgR8wOYRAPekEmMXrYYdc7BRyhn2Ftk7KWfMUnQ43hFdojWEFRxhhRUm3/OFEdPa1r0KAvTTg9YQK57xTe0g==}
-    engines: {node: '>=0.8'}
 
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
@@ -8750,10 +8750,6 @@ packages:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
 
-  parse-author@2.0.0:
-    resolution: {integrity: sha512-yx5DfvkN8JsHL2xk2Os9oTia467qnvRgey4ahSm2X8epehBLx/gWLcy5KI+Y36ful5DzGbCS6RazqZGgy1gHNw==}
-    engines: {node: '>=0.10.0'}
-
   parse-json@5.2.0:
     resolution: {integrity: sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg==}
     engines: {node: '>=8'}
@@ -11544,6 +11540,8 @@ snapshots:
 
   '@discoveryjs/json-ext@1.1.0': {}
 
+  '@electron-internal/extract-zip@1.0.2': {}
+
   '@electron/asar@4.2.0':
     dependencies:
       commander: 13.1.0
@@ -11593,8 +11591,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/packager@20.0.0':
+  '@electron/packager@20.0.1':
     dependencies:
+      '@electron-internal/extract-zip': 1.0.2
       '@electron/asar': 4.2.0
       '@electron/get': 5.0.0
       '@electron/notarize': 3.1.1
@@ -11603,12 +11602,10 @@ snapshots:
       '@electron/windows-sign': 2.0.3
       '@malept/cross-spawn-promise': 2.0.0
       debug: 4.4.3
-      extract-zip: 2.0.1
       filenamify: 6.0.0
       galactus: 2.0.2
       graceful-fs: 4.2.11
       junk: 4.0.1
-      parse-author: 2.0.0
       plist: 3.1.1
       resedit: 2.0.3
       semver: 7.8.2
@@ -14234,8 +14231,6 @@ snapshots:
   async-function@1.0.0: {}
 
   attr-accept@2.2.5: {}
-
-  author-regex@1.0.0: {}
 
   available-typed-arrays@1.0.7:
     dependencies:
@@ -17914,10 +17909,6 @@ snapshots:
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
-
-  parse-author@2.0.0:
-    dependencies:
-      author-regex: 1.0.0
 
   parse-json@5.2.0:
     dependencies:
