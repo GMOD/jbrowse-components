@@ -1,4 +1,5 @@
 import { getReadColor } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -25,6 +26,85 @@ interface DrawReadsRegion {
   insertSizeStats?: { upper: number; lower: number }
 }
 
+// Chevron geometry + gating — SYNC(read.slang). The shader draws an 8px
+// arrowhead protruding past the read's leading (fwd) / trailing (rev) edge once
+// the row is tall enough and zoomed in enough. Direction-uninformative reads
+// (normal scheme, mate unmapped, mate on another chromosome) need extra width
+// before the arrow appears, and paired reads whose mates have collapsed on
+// screen drop the arrow entirely. Read-edge clipping that the shader's
+// edgeFlags handle is covered here by the per-block scissor clip: drawing the
+// arrowhead at the true genomic edge means a region-clipped edge falls outside
+// the clip and is suppressed automatically.
+const CHEVRON_PX = 8
+const CHEVRON_DIRLESS_MIN_WIDTH_PX = 30
+const PAIR_MIN_SPAN_PX = 10
+const OUTLINE_STYLE = 'rgba(0,0,0,0.3)'
+const OUTLINE_WIDTH = 0.5
+
+function showChevron(
+  i: number,
+  region: DrawReadsRegion,
+  widthPx: number,
+  pxPerBp: number,
+  chainMode: boolean,
+  colorScheme: number,
+  featureHeight: number,
+) {
+  const baseShow = (chainMode || pxPerBp > 0.1) && featureHeight >= 3
+  const flags = region.readFlags[i]!
+  const mateUnmapped = (flags & 8) !== 0
+  const dirMoot =
+    colorScheme === ColorScheme.normal ||
+    mateUnmapped ||
+    region.readInterchrom[i] !== 0
+  const isPaired = (flags & 1) !== 0
+  const pairTooTight =
+    isPaired && Math.abs(region.readInsertSizes[i]!) * pxPerBp < PAIR_MIN_SPAN_PX
+  return (
+    baseShow &&
+    !pairTooTight &&
+    (!dirMoot || widthPx > CHEVRON_DIRLESS_MIN_WIDTH_PX)
+  )
+}
+
+// Screen x of the arrowhead apex. Fwd reads point toward endBp, rev toward
+// startBp; the sign folds in screen orientation so it stays correct on reversed
+// blocks (apex lands CHEVRON_PX outside whichever edge is the leading one).
+function chevronApexX(strand: number, xStart: number, xEnd: number) {
+  const tipX = strand > 0 ? xEnd : xStart
+  const otherX = strand > 0 ? xStart : xEnd
+  const dirSign = Math.sign(tipX - otherX) || 1
+  return tipX + dirSign * CHEVRON_PX
+}
+
+// "Home plate" pentagon: a [xL,xR] body rect with an arrowhead poking out to
+// apexX (right when apexX > xR, otherwise left).
+function traceReadArrow(
+  ctx: Ctx2D,
+  xL: number,
+  xR: number,
+  y: number,
+  fH: number,
+  apexX: number,
+) {
+  const yMid = y + fH / 2
+  ctx.beginPath()
+  if (apexX > xR) {
+    ctx.moveTo(xL, y)
+    ctx.lineTo(xR, y)
+    ctx.lineTo(apexX, yMid)
+    ctx.lineTo(xR, y + fH)
+    ctx.lineTo(xL, y + fH)
+  } else {
+    ctx.moveTo(xR, y)
+    ctx.lineTo(xL, y)
+    ctx.lineTo(apexX, yMid)
+    ctx.lineTo(xL, y + fH)
+    ctx.lineTo(xR, y + fH)
+  }
+  ctx.closePath()
+}
+
 export function drawReads(
   ctx: Ctx2D,
   region: DrawReadsRegion,
@@ -34,18 +114,35 @@ export function drawReads(
   state: RenderState,
 ) {
   const fH = state.featureHeight
+  const pxPerBp = fullBlockWidth / bpLength
+  const chainMode = state.linkedReads === 'normal'
   const colorOpts = {
     linkedReads: state.linkedReads,
     flipStrandLongReadChains: state.flipStrandLongReadChains,
   }
 
+  // Outline paint state is constant across reads; set it once.
+  ctx.strokeStyle = OUTLINE_STYLE
+  ctx.lineWidth = OUTLINE_WIDTH
+
   for (let i = 0; i < region.readFlags.length; i++) {
-    const startBp = region.readPositions[i * 2]!
-    const endBp = region.readPositions[i * 2 + 1]!
-    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-    const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+    const xStart = bpToScreenX(
+      region.readPositions[i * 2]!,
+      block,
+      bpLength,
+      fullBlockWidth,
+    )
+    const xEnd = bpToScreenX(
+      region.readPositions[i * 2 + 1]!,
+      block,
+      bpLength,
+      fullBlockWidth,
+    )
+    const xL = Math.min(xStart, xEnd)
+    const xR = Math.max(xStart, xEnd)
     const y = pileupRowY(region.readYs[i]!, state)
-    const w = Math.max(1, x2 - x1)
+    const w = Math.max(1, xR - xL)
+    const outline = state.showOutline && w > 2
 
     ctx.fillStyle = getReadColor(
       i,
@@ -54,12 +151,23 @@ export function drawReads(
       state.colors,
       colorOpts,
     )
-    ctx.fillRect(x1, y, w, fH)
 
-    if (state.showOutline && w > 2) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.3)'
-      ctx.lineWidth = 0.5
-      ctx.strokeRect(x1, y, w, fH)
+    const strand = region.readStrands[i]!
+    const hasChev =
+      strand !== 0 &&
+      showChevron(i, region, w, pxPerBp, chainMode, state.colorScheme, fH)
+
+    if (hasChev) {
+      traceReadArrow(ctx, xL, xR, y, fH, chevronApexX(strand, xStart, xEnd))
+      ctx.fill()
+      if (outline) {
+        ctx.stroke()
+      }
+    } else {
+      ctx.fillRect(xL, y, w, fH)
+      if (outline) {
+        ctx.strokeRect(xL, y, w, fH)
+      }
     }
   }
 }
