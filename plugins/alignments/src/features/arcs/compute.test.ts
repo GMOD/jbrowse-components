@@ -28,6 +28,7 @@ function makePileupData(
     readInsertSizes: new Float32Array(n),
     readPairOrientations: new Uint8Array(n),
     readStrands: new Int8Array(n),
+    readInterchrom: new Uint8Array(n),
     readIds: Array.from({ length: n }, (_, i) => `id${i}`),
     readNames: Array.from({ length: n }, (_, i) => `read${i}`),
     readTagColors: new Uint32Array(0),

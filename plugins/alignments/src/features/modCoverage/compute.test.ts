@@ -15,7 +15,7 @@ const coverage = {
 }
 coverage.depths[POS] = 10
 coverage.fwdDepths[POS] = 10
-const regionSequence = `${'N'.repeat(POS)  }C`
+const regionSequence = `${'N'.repeat(POS)}C`
 
 function modEntry(over: Partial<ModificationEntry>): ModificationEntry {
   return {

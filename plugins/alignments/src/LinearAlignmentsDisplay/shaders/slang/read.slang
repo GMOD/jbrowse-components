@@ -23,6 +23,18 @@ static const int CS_IS_GRADIENT   = 10;
 
 static const int CM_LINKED_READ = 1;
 
+// When a read's direction is uninformative (normal color scheme, mate unmapped,
+// or mate on another chromosome), only draw its strand arrow once the read is at
+// least this many CSS px wide — so the arrows fade out when zoomed out far and
+// return only when zoomed in. Direction-relevant reads (strand/orientation
+// schemes) keep the looser base gate.
+static const float CHEVRON_DIRLESS_MIN_WIDTH_PX = 30.0;
+
+// Hide arrows on paired reads whose whole pair (|insert size| on screen) shrinks
+// below this many CSS px — when zoomed out the mates sit on top of each other and
+// the arrows are just clutter. Applies regardless of color scheme.
+static const float PAIR_MIN_SPAN_PX = 10.0;
+
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
@@ -38,6 +50,7 @@ struct Instance {
   uint  tagColor       : ATTR9;   // ABGR u32; 0 = not set
   uint  chainHasSupp   : ATTR10;  // 0=no supp, 1=supp + primary fwd, 2=supp + primary rev
   uint  edgeFlags      : ATTR11;  // bit 0 = is_first, bit 1 = is_last
+  uint  interchrom     : ATTR12;  // 1 = mate on a different chromosome
 };
 
 struct VsOut {
@@ -127,6 +140,12 @@ float3 getReadColor(Instance inst, Uniforms u) {
     return unpackRGBA(u.colorUnmappedMate).xyz;
   }
 
+  // Mate on another chromosome: orientation/insert size are meaningless, so
+  // paint one distinct color instead of an LR/RL/etc hue (mirrors Canvas2D).
+  if (inst.interchrom != 0u && isOrientationScheme(cs)) {
+    return unpackRGBA(u.colorInterchrom).xyz;
+  }
+
   if (cs == CS_NORMAL)        { return unpackRGBA(u.colorPairLR).xyz; }
   if (cs == CS_STRAND)        { return strandColor(inst.strand, u); }
   if (cs == CS_MAPQ)          { return hueRampHalfSat(float(inst.mapq)); }
@@ -161,10 +180,24 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   // 8px-wide chevron when featHeight>=3 and zoom supports it.
   float chevronClip = 8.0 / u.canvasW * 2.0;
-  bool showChev = (u.chainMode == 1 || u.pxPerBp > 0.1) && u.featHeight >= 3.0;
-
   float featWPx = (sx2 - sx1) * u.canvasW * 0.5;
   o.featSize = float2(featWPx, u.featHeight);
+
+  // Base gate: tall rows, and either chain mode (long reads stay wide even when
+  // zoomed out) or >0.1 px/bp. Direction-uninformative reads (normal scheme,
+  // mate unmapped, or mate on another chromosome) additionally require enough
+  // on-screen width, so their arrows disappear when zoomed out far instead of
+  // cluttering the view.
+  bool baseShow = (u.chainMode == 1 || u.pxPerBp > 0.1) && u.featHeight >= 3.0;
+  bool dirMoot = u.colorScheme == CS_NORMAL
+      || (inst.flags & 8u) != 0u
+      || inst.interchrom != 0u;
+  // Paired reads whose mates have collapsed together on screen: arrows are noise.
+  bool isPaired = (inst.flags & 1u) != 0u;
+  bool pairTooTight = isPaired
+      && abs(inst.insertSize) * u.pxPerBp < PAIR_MIN_SPAN_PX;
+  bool showChev = baseShow && !pairTooTight
+      && (!dirMoot || featWPx > CHEVRON_DIRLESS_MIN_WIDTH_PX);
 
   float sx, sy, lx, ly;
   float ef = 0.0;

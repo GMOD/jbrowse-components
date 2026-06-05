@@ -169,7 +169,8 @@ export const colorPairLL = '#4d9a4d'
 /** #color alignments-pair-orientation | RR (← ←, both mates reverse strand) | Abnormal orientation */
 export const colorPairRR = '#5555bb'
 export const colorNostrand = '#c8c8c8'
-export const colorInterchrom = '#aa00aa'
+/** #color alignments-pair-orientation | Inter-chromosomal | Mate maps to a different chromosome; colored distinctly rather than by orientation */
+export const colorInterchrom = '#6e4b3a'
 export const colorLongInsert = '#ff0000'
 export const colorShortInsert = '#ffc0cb'
 export const colorUnmappedMate = '#b05a20'

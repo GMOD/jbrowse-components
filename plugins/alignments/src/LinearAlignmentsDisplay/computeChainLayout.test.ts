@@ -2,6 +2,7 @@ import {
   buildChainConnectingData,
   computeChainLayout,
   computeMultiRegionChainLayout,
+  mergeSpans,
   overlapIntervals,
   readYsFromRowMap,
 } from './computeChainLayout.ts'
@@ -67,6 +68,7 @@ function makeChainData(opts: {
     readInsertSizes: new Float32Array(numReads),
     readPairOrientations: new Uint8Array(numReads),
     readStrands: new Int8Array(numReads),
+    readInterchrom: new Uint8Array(numReads),
     readTagColors: new Uint32Array(0),
     segmentPositions: new Uint32Array(0),
     segmentReadIndices: new Uint32Array(0),
@@ -553,5 +555,48 @@ describe('overlapIntervals', () => {
   test('empty and single-span inputs produce no overlaps', () => {
     expect(overlapIntervals([])).toEqual([])
     expect(overlapIntervals([{ start: 0, end: 100 }])).toEqual([])
+  })
+})
+
+describe('mergeSpans', () => {
+  test('overlapping spans collapse into their union', () => {
+    expect(
+      mergeSpans([
+        { start: 100, end: 200 },
+        { start: 150, end: 300 },
+      ]),
+    ).toEqual([{ start: 100, end: 300 }])
+  })
+
+  test('touching spans merge', () => {
+    expect(
+      mergeSpans([
+        { start: 0, end: 100 },
+        { start: 100, end: 200 },
+      ]),
+    ).toEqual([{ start: 0, end: 200 }])
+  })
+
+  test('disjoint spans are kept separate and sorted', () => {
+    expect(
+      mergeSpans([
+        { start: 300, end: 400 },
+        { start: 0, end: 100 },
+      ]),
+    ).toEqual([
+      { start: 0, end: 100 },
+      { start: 300, end: 400 },
+    ])
+  })
+
+  test('merging the stacked output of overlapIntervals yields one span (no double-blend)', () => {
+    const spans = [
+      { start: 0, end: 200 },
+      { start: 100, end: 300 },
+      { start: 150, end: 400 },
+    ]
+    expect(mergeSpans(overlapIntervals(spans))).toEqual([
+      { start: 100, end: 300 },
+    ])
   })
 })

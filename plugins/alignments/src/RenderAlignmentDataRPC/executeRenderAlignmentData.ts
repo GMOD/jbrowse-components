@@ -15,6 +15,7 @@ import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeS
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
+import { buildReadInterchrom } from '../shared/readInterchrom.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 
 import type { PileupDataResult, RenderAlignmentDataArgs } from './types.ts'
@@ -289,8 +290,17 @@ export async function executeRenderAlignmentData({
     stopTokenCheck,
   })
 
+  // Derived here where both branches' readNextRefs and the region refName are in
+  // scope, rather than threaded through the array builders.
+  const readInterchrom = buildReadInterchrom(
+    chainFields.readNextRefs,
+    region.refName,
+    features.length,
+  )
+
   const result: PileupDataResult = {
     ...readArrays,
+    readInterchrom,
     ...segmentArrays,
     ...gapArrays,
     gapFrequencies: pipeline.gapFrequencies,

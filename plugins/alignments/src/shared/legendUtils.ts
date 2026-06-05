@@ -35,15 +35,27 @@ const orientationItems: LegendItem[] = [
   { color: colorPairRR, label: 'RR - Both mates reverse strand' },
 ]
 
+const interchromItem: LegendItem = {
+  color: colorInterchrom,
+  label: 'Inter-chromosomal',
+}
+
 const insertSizeItems: LegendItem[] = [
   { color: colorLongInsert, label: 'Long insert' },
   { color: colorShortInsert, label: 'Short insert' },
-  { color: colorInterchrom, label: 'Inter-chromosomal' },
+  interchromItem,
 ]
 
 const insertSizeLegendItems: LegendItem[] = [
   { color: colorPairLR, label: 'Normal' },
   ...insertSizeItems,
+  unmappedMateItem,
+  supplementaryItem,
+]
+
+const pairOrientationLegendItems: LegendItem[] = [
+  ...orientationItems,
+  interchromItem,
   unmappedMateItem,
   supplementaryItem,
 ]
@@ -76,6 +88,9 @@ export function getReadDisplayLegendItems(
   }
   if (colorType === 'insertSizeAndOrientation') {
     return insertSizeAndOrientationLegendItems
+  }
+  if (colorType === 'pairOrientation') {
+    return pairOrientationLegendItems
   }
   if (colorType === 'insertSize') {
     return insertSizeLegendItems

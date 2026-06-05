@@ -22,6 +22,7 @@ export function packReadSegments(data: ReadUploadData): ArrayBuffer {
   const tagColors = data.readTagColors
   const hasTagColors = tagColors.length > 0
   const chainHasSupp = data.readChainHasSupp
+  const interchrom = data.readInterchrom
   const readYs = data.readYs
   const readFlags = data.readFlags
   const readMapqs = data.readMapqs
@@ -47,6 +48,7 @@ export function packReadSegments(data: ReadUploadData): ArrayBuffer {
     u32[o + F.tagColor] = hasTagColors ? tagColors[ri]! : 0
     u32[o + F.chainHasSupp] = chainHasSupp ? chainHasSupp[ri]! : 0
     u32[o + F.edgeFlags] = segmentEdgeFlags[j]!
+    u32[o + F.interchrom] = interchrom[ri]!
   }
   return buf
 }

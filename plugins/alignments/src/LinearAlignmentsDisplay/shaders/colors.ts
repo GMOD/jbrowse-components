@@ -30,4 +30,5 @@ export interface ColorPalette {
   colorShortInsert: RGBColor
   colorSupplementary: RGBColor
   colorUnmappedMate: RGBColor
+  colorInterchrom: RGBColor
 }

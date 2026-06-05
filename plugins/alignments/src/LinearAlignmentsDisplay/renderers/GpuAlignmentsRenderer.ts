@@ -250,6 +250,7 @@ function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
   u[U.colorShortInsert] = pack(c.colorShortInsert)
   u[U.colorSupplementary] = pack(c.colorSupplementary)
   u[U.colorUnmappedMate] = pack(c.colorUnmappedMate)
+  u[U.colorInterchrom] = pack(c.colorInterchrom)
   u[U.colorMutedSnpBase] = pack(c.colorMutedSnpBase)
   for (let i = 0; i < arcColorPalette.length; i++) {
     u[USLOTS.arcColor[i]!] = pack(arcColorPalette[i]!)

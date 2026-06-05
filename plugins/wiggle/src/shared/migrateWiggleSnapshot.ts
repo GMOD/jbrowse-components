@@ -55,9 +55,7 @@ function asRecord(v: unknown): Record<string, unknown> | undefined {
     : undefined
 }
 
-function filterDefined(
-  obj: Record<string, unknown>,
-): Record<string, unknown> {
+function filterDefined(obj: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(obj).filter(([, v]) => v !== undefined),
   )
@@ -108,7 +106,8 @@ export function migrateWiggleSnapshot(
     (bicolorPivot === 'numeric' ? asNumber(bicolorPivotValue) : undefined)
 
   const multiWiggle = opts?.multiWiggle ?? false
-  const oldRendering = asString(rendererTypeNameState) ?? asString(selectedRendering)
+  const oldRendering =
+    asString(rendererTypeNameState) ?? asString(selectedRendering)
   const resolvedRendering =
     asString(renderingTypeSetting) ??
     (multiWiggle && oldRendering === 'xyplot' ? 'multixyplot' : oldRendering)
@@ -132,7 +131,11 @@ export function migrateWiggleSnapshot(
     minScore: asNumber(minScoreSetting) ?? asNumber(asRecord(constraints)?.min),
     maxScore: asNumber(maxScoreSetting) ?? asNumber(asRecord(constraints)?.max),
     color: isSentinelColor ? undefined : effectiveColor,
-    useBicolor: isSentinelColor ? true : effectiveColor !== undefined ? false : undefined,
+    useBicolor: isSentinelColor
+      ? true
+      : effectiveColor !== undefined
+        ? false
+        : undefined,
     posColor: posColorSetting ?? posColorGen1,
     negColor: negColorSetting ?? negColorGen1,
     showTree: showTreeSetting ?? showSidebar,

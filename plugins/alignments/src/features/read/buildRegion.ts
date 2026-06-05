@@ -19,6 +19,7 @@ export interface ReadRegionFields {
   readStrands: Int8Array
   readTagColors: Uint32Array
   readChainHasSupp: Uint8Array | undefined
+  readInterchrom: Uint8Array
   insertSizeStats?: { upper: number; lower: number }
 }
 
@@ -35,6 +36,7 @@ export function buildReadFields(data: PileupDataResult): ReadRegionFields {
     readStrands: data.readStrands,
     readTagColors: data.readTagColors,
     readChainHasSupp: data.readChainHasSupp,
+    readInterchrom: data.readInterchrom,
     insertSizeStats: data.insertSizeStats,
   }
 }
@@ -55,6 +57,7 @@ export function emptyReadFields(): ReadRegionFields {
     readStrands: new Int8Array(0),
     readTagColors: new Uint32Array(0),
     readChainHasSupp: undefined,
+    readInterchrom: new Uint8Array(0),
     insertSizeStats: undefined,
   }
 }

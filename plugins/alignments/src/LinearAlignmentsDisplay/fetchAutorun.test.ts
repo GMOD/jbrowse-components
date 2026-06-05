@@ -29,6 +29,7 @@ function makeEmptyPileupData(_regionStart: number): PileupDataResult {
     readInsertSizes: new Float32Array(0),
     readPairOrientations: new Uint8Array(0),
     readStrands: new Int8Array(0),
+    readInterchrom: new Uint8Array(0),
     readIds: [],
     readNames: [],
     segmentPositions: new Uint32Array(0),

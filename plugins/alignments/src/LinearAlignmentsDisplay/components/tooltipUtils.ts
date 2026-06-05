@@ -118,6 +118,11 @@ export function formatChainTooltip(
     lines.push(`Template length: ${Math.abs(insertSize).toLocaleString()}`)
   }
 
+  const orientName = PAIR_ORIENTATION_NAMES[pairOrientation]
+  if (orientName) {
+    lines.push(`Pair orientation: ${orientName}`)
+  }
+
   const nextRef = rpcData.readNextRefs?.[idx] ?? ''
   const pairDesc = getPairTypeDescription(
     flags,

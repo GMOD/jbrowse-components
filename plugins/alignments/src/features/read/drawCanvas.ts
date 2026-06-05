@@ -21,6 +21,7 @@ interface DrawReadsRegion {
   readAvgBaseQualities: Uint8Array
   readInsertSizes: Float32Array
   readChainHasSupp: Uint8Array | undefined
+  readInterchrom: Uint8Array
   insertSizeStats?: { upper: number; lower: number }
 }
 

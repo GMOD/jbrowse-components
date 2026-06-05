@@ -3,6 +3,7 @@ import type React from 'react'
 
 import {
   colorFwdStrand,
+  colorInterchrom,
   colorLongInsert,
   colorNostrand,
   colorPairLL,
@@ -58,6 +59,7 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorShortInsert: toRgb(colorShortInsert),
     colorSupplementary: toRgb(colorSupplementary),
     colorUnmappedMate: toRgb(colorUnmappedMate),
+    colorInterchrom: toRgb(colorInterchrom),
   }
 }
 

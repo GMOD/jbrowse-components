@@ -58,6 +58,7 @@ export interface PileupDataResult {
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
   readChainHasSupp?: Uint8Array // 0=no supp, 1=supp w/ primary fwd, 2=supp w/ primary rev
+  readInterchrom: Uint8Array // 1 = mate on a different chromosome (else 0)
   readIds: string[] // feature IDs for hit testing
   readNames: string[] // read names (QNAME) for tooltip display
   readNextRefs?: string[] // mate reference name for inter-chromosomal tooltip
@@ -227,9 +228,9 @@ export interface PileupDataResult {
   connectingLineYs: Uint16Array // row for each line
 
   // Chain-mode read overlaps: genomic intervals where two reads in the same
-  // chain (and thus the same row) overlap. Drawn as a diagonal hatch overlay so
-  // the overlapped span is visible despite the upper read painting over the
-  // lower one. Absolute genomic uint32 like all worker output; populated by
+  // chain (and thus the same row) overlap. Drawn as a mild semi-transparent
+  // dark tint so the overlapped span is visible despite the upper read painting
+  // over the lower one. Absolute genomic uint32 like all worker output; populated by
   // main-thread layout (overlaps are per-region, so no cross-region pass).
   overlapPositions: Uint32Array // [start, end] absolute genomic uint32 pairs
   overlapYs: Uint16Array // shared chain row for each overlap

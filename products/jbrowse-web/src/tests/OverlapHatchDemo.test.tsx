@@ -62,7 +62,7 @@ async function renderLinkedOverlap(name: string, loc: string, track: string) {
     await findByText('View as pairs / link supplementary alignments'),
   )
 
-  // Bump feature height so the diagonal hatch is clearly visible.
+  // Bump feature height so the overlap tint is clearly visible.
   const display = view.tracks[0].displays[0]
   display.setFeatureHeight(14)
 

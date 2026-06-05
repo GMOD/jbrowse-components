@@ -24,6 +24,7 @@ interface ReadColorData {
   readPairOrientations: Uint8Array
   readTagColors: Uint32Array
   readChainHasSupp?: Uint8Array
+  readInterchrom: Uint8Array
   insertSizeStats?: { upper: number; lower: number }
 }
 
@@ -107,6 +108,12 @@ export function getReadColor(
     (isOrientationScheme || (colorScheme === ColorScheme.normal && isChain))
   ) {
     return rgb255(palette.colorUnmappedMate)
+  }
+
+  // Mate on another chromosome: orientation/insert size are meaningless, so
+  // paint one distinct color instead of an LR/RL/etc hue (mirrors read.slang).
+  if (data.readInterchrom[i] === 1 && isOrientationScheme) {
+    return rgb255(palette.colorInterchrom)
   }
 
   switch (colorScheme) {

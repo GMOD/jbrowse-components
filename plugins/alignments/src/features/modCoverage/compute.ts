@@ -37,7 +37,10 @@ const MOD_TYPE_RANK: Record<string, number> = {
 }
 // Total order (no ties) so it's deterministic for numeric ChEBI codes too, which
 // share the fallback rank and need the lexical modType tiebreak to not swap.
-function compareModEntries(a: ModificationColorEntry, b: ModificationColorEntry) {
+function compareModEntries(
+  a: ModificationColorEntry,
+  b: ModificationColorEntry,
+) {
   const ra = MOD_TYPE_RANK[a.modType] ?? 99
   const rb = MOD_TYPE_RANK[b.modType] ?? 99
   return a.noMod !== b.noMod

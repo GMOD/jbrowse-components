@@ -127,6 +127,25 @@ export function overlapIntervals(spans: Span[]): Span[] {
   return out
 }
 
+// Collapse a set of spans into their disjoint union, merging any that overlap or
+// touch. overlapIntervals can emit several intervals that themselves overlap
+// (3+ reads in one chain), and the tint overlay alpha-blends — without merging,
+// multiply-covered spans would blend twice and render as darker patches. Union
+// gives one uniform tint over "where reads overlap".
+export function mergeSpans(spans: Span[]): Span[] {
+  const sorted = [...spans].sort((a, b) => a.start - b.start)
+  const out: Span[] = []
+  for (const span of sorted) {
+    const last = out[out.length - 1]
+    if (last && span.start <= last.end) {
+      last.end = Math.max(last.end, span.end)
+    } else {
+      out.push({ ...span })
+    }
+  }
+  return out
+}
+
 // Map of chain index → the read indices belonging to that chain in this region.
 function groupReadsByChain(readChainIndices: Uint32Array) {
   const byChain = new Map<number, number[]>()
@@ -144,7 +163,7 @@ function groupReadsByChain(readChainIndices: Uint32Array) {
 
 // Reads in a chain all share one row, so reads whose genomic spans overlap paint
 // on top of each other and the overlap is invisible. For each chain, find the
-// intervals where its reads overlap; the diagonal-hatch overlay (GPU + Canvas2D)
+// intervals where its reads overlap; the tint overlay (GPU + Canvas2D)
 // marks them. Reads are grouped per-region because rendering is per-region; a
 // chain's mates in other regions live in their own PileupDataResult and never
 // visually overlap these.
@@ -162,7 +181,7 @@ function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
       end: readPositions[ri * 2 + 1]!,
     }))
     const y = readYs[reads[0]!]!
-    for (const { start, end } of overlapIntervals(spans)) {
+    for (const { start, end } of mergeSpans(overlapIntervals(spans))) {
       positions.push(start, end)
       ys.push(y)
     }

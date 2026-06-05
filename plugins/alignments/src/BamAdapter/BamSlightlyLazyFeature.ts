@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { decodeSeq } from '../shared/decodeSeq.ts'
+import { getPairOrientation } from '../shared/pairOrientation.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type BamAdapter from './BamAdapter.ts'
@@ -119,17 +120,15 @@ export default class BamSlightlyLazyFeature
     if (!this.isPaired()) {
       return undefined
     }
-    const isRead1 = !!(this.flags & 0x40)
-    const isSelfRev = !!(this.flags & 0x10)
-    const isMateRev = !!(this.flags & 0x20)
-    const selfStrand = isSelfRev ? 'R' : 'F'
-    const mateStrand = isMateRev ? 'R' : 'F'
-    const selfNum = isRead1 ? '1' : '2'
-    const mateNum = isRead1 ? '2' : '1'
-
-    return this.next_refid !== this.ref_id || this.start <= this.next_pos
-      ? selfStrand + selfNum + mateStrand + mateNum
-      : mateStrand + mateNum + selfStrand + selfNum
+    return getPairOrientation({
+      isRead1: !!(this.flags & 0x40),
+      isSelfRev: !!(this.flags & 0x10),
+      isMateRev: !!(this.flags & 0x20),
+      selfRefId: this.ref_id,
+      selfPos: this.start,
+      mateRefId: this.next_refid,
+      matePos: this.next_pos,
+    })
   }
 
   get refName() {

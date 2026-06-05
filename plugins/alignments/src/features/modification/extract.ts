@@ -178,9 +178,19 @@ export function extractMethylation(
 
     const winner =
       hProb > mProb && hProb > noModProb
-        ? { modType: 'h', rgb: METH_5HMC_METHYLATED_RGB, prob: hProb, noMod: false }
+        ? {
+            modType: 'h',
+            rgb: METH_5HMC_METHYLATED_RGB,
+            prob: hProb,
+            noMod: false,
+          }
         : mProb > noModProb
-          ? { modType: 'm', rgb: METH_5MC_METHYLATED_RGB, prob: mProb, noMod: false }
+          ? {
+              modType: 'm',
+              rgb: METH_5MC_METHYLATED_RGB,
+              prob: mProb,
+              noMod: false,
+            }
           : {
               modType: 'm',
               rgb: METH_5MC_UNMETHYLATED_RGB,
