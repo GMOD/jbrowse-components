@@ -121,7 +121,7 @@ describe('migrateWiggleSnapshot', () => {
     expect(result).toEqual({ configOverrides: { showTree: false } })
   })
 
-  test('strips fill and minSize', () => {
+  test('strips fill:true and minSize without changing rendering', () => {
     const result = migrateWiggleSnapshot({
       scale: 'linear',
       fill: true,
@@ -130,6 +130,55 @@ describe('migrateWiggleSnapshot', () => {
     expect(result).toEqual({ configOverrides: { scaleType: 'linear' } })
     expect(result).not.toHaveProperty('fill')
     expect(result).not.toHaveProperty('minSize')
+  })
+
+  test('migrates fill:false on xyplot → scatter', () => {
+    const result = migrateWiggleSnapshot({
+      rendererTypeNameState: 'xyplot',
+      fill: false,
+    })
+    expect(result).toEqual({ configOverrides: { defaultRendering: 'scatter' } })
+  })
+
+  test('migrates fill:false with no rendering (single) → scatter', () => {
+    const result = migrateWiggleSnapshot({ fill: false })
+    expect(result).toEqual({ configOverrides: { defaultRendering: 'scatter' } })
+  })
+
+  test('migrates fill:false with no rendering (multiWiggle) → multirowscatter', () => {
+    const result = migrateWiggleSnapshot({ fill: false }, { multiWiggle: true })
+    expect(result).toEqual({
+      configOverrides: { defaultRendering: 'multirowscatter' },
+    })
+  })
+
+  test('migrates fill:false on multirowxy (multiWiggle) → multirowscatter', () => {
+    const result = migrateWiggleSnapshot(
+      { rendererTypeNameState: 'multirowxy', fill: false },
+      { multiWiggle: true },
+    )
+    expect(result).toEqual({
+      configOverrides: { defaultRendering: 'multirowscatter' },
+    })
+  })
+
+  test('migrates fill:false on xyplot (multiWiggle) → multiscatter', () => {
+    const result = migrateWiggleSnapshot(
+      { rendererTypeNameState: 'xyplot', fill: false },
+      { multiWiggle: true },
+    )
+    expect(result).toEqual({
+      configOverrides: { defaultRendering: 'multiscatter' },
+    })
+  })
+
+  test('fill:false on density/line passes through unchanged', () => {
+    expect(
+      migrateWiggleSnapshot({ rendererTypeNameState: 'density', fill: false }),
+    ).toEqual({ configOverrides: { defaultRendering: 'density' } })
+    expect(
+      migrateWiggleSnapshot({ rendererTypeNameState: 'line', fill: false }),
+    ).toEqual({ configOverrides: { defaultRendering: 'line' } })
   })
 
   test('migrates generation 2: *Setting properties (solid color → useBicolor:false)', () => {

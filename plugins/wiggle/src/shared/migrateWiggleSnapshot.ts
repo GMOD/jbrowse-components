@@ -6,7 +6,7 @@
  * Generation 1 (SharedWiggleMixin):
  *   rendererTypeNameState / selectedRendering, scale, autoscale,
  *   summaryScoreMode, constraints.{min,max}, color, posColor, negColor,
- *   showSidebar, fill, minSize
+ *   showSidebar, fill (false → scatter rendering), minSize
  *
  * Generation 2 (*Setting suffix):
  *   colorSetting, posColorSetting, negColorSetting, scaleTypeSetting,
@@ -22,9 +22,54 @@
  * hydration. mean/z_score/none have no numeric equivalent and fall back to the
  * default.
  */
+
+// fill:false was "no fill / scatter mode" on xyplot-type renderers. Maps to
+// the explicit scatter rendering types added in the current codebase.
+const SCATTER_EQUIVALENT: Partial<Record<string, string>> = {
+  xyplot: 'scatter',
+  multixyplot: 'multiscatter',
+  multirowxy: 'multirowscatter',
+}
+
+// fill:false meant "scatter" for xyplot-family renderers. Resolve against the
+// known rendering, or the family default when no rendering was stored.
+function scatterEquivalent(
+  rendering: string | undefined,
+  multiWiggle: boolean,
+): string | undefined {
+  const base = rendering ?? (multiWiggle ? 'multirowxy' : 'xyplot')
+  return SCATTER_EQUIVALENT[base] ?? rendering
+}
+
+function asString(v: unknown): string | undefined {
+  return typeof v === 'string' ? v : undefined
+}
+
+function asNumber(v: unknown): number | undefined {
+  return typeof v === 'number' ? v : undefined
+}
+
+function asRecord(v: unknown): Record<string, unknown> | undefined {
+  return v !== null && typeof v === 'object' && !Array.isArray(v)
+    ? (v as Record<string, unknown>)
+    : undefined
+}
+
+function filterDefined(
+  obj: Record<string, unknown>,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined),
+  )
+}
+
+export interface WiggleMigrateOpts {
+  multiWiggle?: boolean
+}
+
 export function migrateWiggleSnapshot(
   snap: Record<string, unknown>,
-  opts?: { multiWiggle?: boolean },
+  opts?: WiggleMigrateOpts,
 ) {
   const {
     rendererTypeNameState,
@@ -38,7 +83,7 @@ export function migrateWiggleSnapshot(
     color: colorGen1,
     posColor: posColorGen1,
     negColor: negColorGen1,
-    minSize,
+    minSize: _minSize,
     colorSetting,
     posColorSetting,
     negColorSetting,
@@ -56,26 +101,22 @@ export function migrateWiggleSnapshot(
     ...rest
   } = snap
 
-  const cons = constraints as { min?: number; max?: number } | undefined
-
   // Old renderer: bicolorPivot was an enum; 'numeric' meant "use
   // bicolorPivotValue". New config: bicolorPivot is itself the numeric pivot.
   const bicolorPivotNumeric =
-    typeof bicolorPivot === 'number'
-      ? bicolorPivot
-      : bicolorPivot === 'numeric' && typeof bicolorPivotValue === 'number'
-        ? bicolorPivotValue
-        : undefined
-  const oldRendering =
-    (rendererTypeNameState as string | undefined) ??
-    (selectedRendering as string | undefined)
+    asNumber(bicolorPivot) ??
+    (bicolorPivot === 'numeric' ? asNumber(bicolorPivotValue) : undefined)
+
+  const multiWiggle = opts?.multiWiggle ?? false
+  const oldRendering = asString(rendererTypeNameState) ?? asString(selectedRendering)
+  const resolvedRendering =
+    asString(renderingTypeSetting) ??
+    (multiWiggle && oldRendering === 'xyplot' ? 'multixyplot' : oldRendering)
+
   const defaultRendering =
-    renderingTypeSetting ??
-    (oldRendering !== undefined &&
-    opts?.multiWiggle &&
-    oldRendering === 'xyplot'
-      ? 'multixyplot'
-      : oldRendering)
+    fill === false
+      ? scatterEquivalent(resolvedRendering, multiWiggle)
+      : resolvedRendering
 
   const effectiveColor = colorSetting ?? colorGen1
   // Old sessions used '#f0f'/'#ff00ff' as a sentinel meaning "bicolor mode".
@@ -83,41 +124,28 @@ export function migrateWiggleSnapshot(
   const isSentinelColor =
     effectiveColor === '#f0f' || effectiveColor === '#ff00ff'
 
-  const candidates: Record<string, unknown> = {
+  const overrides = filterDefined({
     defaultRendering,
     scaleType: scaleTypeSetting ?? scale,
     autoscale: autoscaleSetting ?? autoscaleGen1,
     summaryScoreMode: summaryScoreModeSetting ?? summaryScoreModeGen1,
-    minScore: minScoreSetting ?? cons?.min,
-    maxScore: maxScoreSetting ?? cons?.max,
+    minScore: asNumber(minScoreSetting) ?? asNumber(asRecord(constraints)?.min),
+    maxScore: asNumber(maxScoreSetting) ?? asNumber(asRecord(constraints)?.max),
     color: isSentinelColor ? undefined : effectiveColor,
-    useBicolor: isSentinelColor
-      ? true
-      : effectiveColor !== undefined
-        ? false
-        : undefined,
+    useBicolor: isSentinelColor ? true : effectiveColor !== undefined ? false : undefined,
     posColor: posColorSetting ?? posColorGen1,
     negColor: negColorSetting ?? negColorGen1,
     showTree: showTreeSetting ?? showSidebar,
     bicolorPivot: bicolorPivotNumeric,
-  }
+  })
 
-  const overrides: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(candidates)) {
-    if (value !== undefined) {
-      overrides[key] = value
-    }
-  }
-
-  if (Object.keys(overrides).length === 0) {
-    return rest
-  }
-
-  return {
-    ...rest,
-    configOverrides: {
-      ...(rest.configOverrides as Record<string, unknown> | undefined),
-      ...overrides,
-    },
-  }
+  return Object.keys(overrides).length === 0
+    ? rest
+    : {
+        ...rest,
+        configOverrides: {
+          ...asRecord(rest.configOverrides),
+          ...overrides,
+        },
+      }
 }

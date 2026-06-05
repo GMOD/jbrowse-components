@@ -1,6 +1,8 @@
 import { migrateWiggleSnapshot } from './migrateWiggleSnapshot.ts'
 
-export function makeWigglePreProcessSnapshot(opts?: { multiWiggle?: boolean }) {
+import type { WiggleMigrateOpts } from './migrateWiggleSnapshot.ts'
+
+export function makeWigglePreProcessSnapshot(opts?: WiggleMigrateOpts) {
   return (snap: Record<string, unknown> | null | undefined) => {
     if (!snap) {
       return snap
