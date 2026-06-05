@@ -11,5 +11,3 @@
 - does yeast demo really need remote
 - no max height react-app
 - persistent no-close cascading submenu for subselectingmultiple items
-- mouseover highlight read
-- long range arcs should tend to just go vertical...if not in view, just go more towards semicircle style

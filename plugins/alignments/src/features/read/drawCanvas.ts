@@ -41,25 +41,31 @@ const PAIR_MIN_SPAN_PX = 10
 const OUTLINE_STYLE = 'rgba(0,0,0,0.3)'
 const OUTLINE_WIDTH = 0.5
 
-function showChevron(
-  i: number,
-  region: DrawReadsRegion,
+// Frame-level inputs to the chevron gate, constant across reads in one block.
+export interface ChevronFrame {
+  pxPerBp: number
+  chainMode: boolean
+  colorScheme: number
+  featureHeight: number
+}
+
+// Mirror of read.slang `showChev`. Exported so drawCanvas.test.ts can pin it
+// against the shader predicate.
+export function showChevron(
+  f: ChevronFrame,
+  flags: number,
+  interchrom: number,
+  insertSize: number,
   widthPx: number,
-  pxPerBp: number,
-  chainMode: boolean,
-  colorScheme: number,
-  featureHeight: number,
 ) {
-  const baseShow = (chainMode || pxPerBp > 0.1) && featureHeight >= 3
-  const flags = region.readFlags[i]!
-  const mateUnmapped = (flags & 8) !== 0
+  const baseShow = (f.chainMode || f.pxPerBp > 0.1) && f.featureHeight >= 3
   const dirMoot =
-    colorScheme === ColorScheme.normal ||
-    mateUnmapped ||
-    region.readInterchrom[i] !== 0
+    f.colorScheme === ColorScheme.normal ||
+    (flags & 8) !== 0 ||
+    interchrom !== 0
   const isPaired = (flags & 1) !== 0
   const pairTooTight =
-    isPaired && Math.abs(region.readInsertSizes[i]!) * pxPerBp < PAIR_MIN_SPAN_PX
+    isPaired && Math.abs(insertSize) * f.pxPerBp < PAIR_MIN_SPAN_PX
   return (
     baseShow &&
     !pairTooTight &&
@@ -114,11 +120,15 @@ export function drawReads(
   state: RenderState,
 ) {
   const fH = state.featureHeight
-  const pxPerBp = fullBlockWidth / bpLength
-  const chainMode = state.linkedReads === 'normal'
   const colorOpts = {
     linkedReads: state.linkedReads,
     flipStrandLongReadChains: state.flipStrandLongReadChains,
+  }
+  const chevronFrame: ChevronFrame = {
+    pxPerBp: fullBlockWidth / bpLength,
+    chainMode: state.linkedReads === 'normal',
+    colorScheme: state.colorScheme,
+    featureHeight: fH,
   }
 
   // Outline paint state is constant across reads; set it once.
@@ -155,7 +165,13 @@ export function drawReads(
     const strand = region.readStrands[i]!
     const hasChev =
       strand !== 0 &&
-      showChevron(i, region, w, pxPerBp, chainMode, state.colorScheme, fH)
+      showChevron(
+        chevronFrame,
+        region.readFlags[i]!,
+        region.readInterchrom[i]!,
+        region.readInsertSizes[i]!,
+        w,
+      )
 
     if (hasChev) {
       traceReadArrow(ctx, xL, xR, y, fH, chevronApexX(strand, xStart, xEnd))
