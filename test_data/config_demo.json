@@ -103,7 +103,13 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
           }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showOnlyGenes": true
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -130,7 +136,13 @@
             "locationType": "UriLocation"
           }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showOnlyGenes": true
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -570,7 +582,13 @@
             "locationType": "UriLocation"
           }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showOnlyGenes": true
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -590,7 +608,13 @@
             "locationType": "UriLocation"
           }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showOnlyGenes": true
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -598,6 +622,12 @@
       "name": "NCBI RefSeq (NCList)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation", "NCBI RefSeq"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showOnlyGenes": true
+        }
+      ],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
@@ -4062,7 +4092,13 @@
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/genomic.sorted.gff.gz"
       },
-      "assemblyNames": ["hg38"]
+      "assemblyNames": ["hg38"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showOnlyGenes": true
+        }
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -4712,7 +4748,13 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["hs1"]
+      "assemblyNames": ["hs1"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showOnlyGenes": true
+        }
+      ]
     },
     {
       "type": "VariantTrack",
