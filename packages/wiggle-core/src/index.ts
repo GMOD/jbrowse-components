@@ -1,4 +1,4 @@
-export { getNiceDomain, getOrigin, getScale } from './scale.ts'
+export { getNiceDomain, getNiceScale, getOrigin, getScale } from './scale.ts'
 export type { ScaleOpts } from './scale.ts'
 
 export {

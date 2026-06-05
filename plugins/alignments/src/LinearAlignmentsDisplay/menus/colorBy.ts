@@ -25,13 +25,14 @@ interface ColorByModel {
 
 export interface ModificationsModel extends ColorByModel {
   modificationsReady: boolean
+  regionTooLarge: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
 }
 
-// The three modification fields always travel together: an alignments display
-// has all of them, a synteny display has none. The predicate lets the menu
-// accept either kind of model without lying about the fields being required.
+// The modification fields always travel together: an alignments display has all
+// of them, a synteny display has none. The predicate lets the menu accept either
+// kind of model without lying about the fields being required.
 function hasModifications(
   model: ColorByModel & Partial<ModificationsModel>,
 ): model is ModificationsModel {
@@ -99,9 +100,7 @@ function getModificationsSubMenu(model: ModificationsModel) {
   } = model
 
   if (!modificationsReady) {
-    return [
-      { label: 'Loading modifications...', disabled: true, onClick: () => {} },
-    ]
+    return [{ label: 'Loading modifications...', disabled: true, onClick: () => {} }]
   }
 
   const modName = (key: string) => modificationData[key]?.name ?? key
@@ -217,15 +216,19 @@ function getModificationsSubMenu(model: ModificationsModel) {
           },
         ]
       : []),
-    {
-      label: `Adjust threshold (${modificationThreshold}%)`,
-      onClick: () => {
-        getSession(model).queueDialog(handleClose => [
-          SetModificationThresholdDialog,
-          { model, handleClose },
-        ])
-      },
-    },
+    ...(isModType || isMethType
+      ? [
+          {
+            label: `Adjust threshold (${modificationThreshold}%)`,
+            onClick: () => {
+              getSession(model).queueDialog(handleClose => [
+                SetModificationThresholdDialog,
+                { model, handleClose },
+              ])
+            },
+          },
+        ]
+      : []),
   ]
 }
 
@@ -288,10 +291,12 @@ export function getColorByMenuItem(
 
   // MM/ML modes only when the data actually carries modifications (still shown
   // while loading); bisulfite is reference-based so it applies to any alignments
-  // display regardless of MM/ML tags.
+  // display regardless of MM/ML tags. When regionTooLarge and no types have
+  // ever been loaded, skip the submenu entirely — nothing useful to show.
   const modItem =
     hasModifications(model) &&
-    (!model.modificationsReady || model.visibleModificationTypes.length)
+    ((!model.modificationsReady && !model.regionTooLarge) ||
+      model.visibleModificationTypes.length)
       ? [
           {
             label: 'Modifications (MM tag)',

@@ -1,11 +1,12 @@
 import { toLocale } from '@jbrowse/core/util'
 
+import { getNiceScale } from '@jbrowse/wiggle-core'
+
 import {
   DEFAULT_HIC_COLOR_SCHEME,
   type HicColorScheme,
   getLegendSvgStops,
 } from './colorRamp.ts'
-import { getNiceScale } from './niceScale.ts'
 
 export default function HicSVGColorLegend({
   maxScore,
