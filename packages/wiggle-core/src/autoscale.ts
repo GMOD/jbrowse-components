@@ -20,45 +20,86 @@ export interface ScoreStats {
   scoreStdDev: number
 }
 
+/**
+ * #api
+ * Per-feature scalar score array for a summary mode: the min/max summary array
+ * for `'min'`/`'max'`, otherwise the average score.
+ */
+export function getEffectiveScores(
+  data: {
+    featureScores: Float32Array
+    featureMinScores: Float32Array
+    featureMaxScores: Float32Array
+  },
+  summaryScoreMode: string,
+) {
+  return summaryScoreMode === 'min'
+    ? data.featureMinScores
+    : summaryScoreMode === 'max'
+      ? data.featureMaxScores
+      : data.featureScores
+}
+
+// Half-open overlap test between a feature span and the visible window.
+function overlaps(
+  fStart: number,
+  fEnd: number,
+  visStart: number,
+  visEnd: number,
+) {
+  return fEnd > visStart && fStart < visEnd
+}
+
+// Autoscale types whose stats come from every loaded region, not just the
+// visible window.
+function isGlobalAutoscale(autoscaleType: string) {
+  return autoscaleType === 'global' || autoscaleType === 'globalsd'
+}
+
+// Autoscale types that expand the domain by ±numStdDev around the mean.
+function isStdDevAutoscale(autoscaleType: string) {
+  return autoscaleType === 'localsd' || autoscaleType === 'globalsd'
+}
+
 function computeStats(
   summaryScoreMode: string,
   datasets: Dataset[],
   filterVisible: boolean,
 ): ScoreStats | undefined {
   const useWhiskers = summaryScoreMode === 'whiskers'
-  const useMin = summaryScoreMode === 'min'
-  const useMax = summaryScoreMode === 'max'
   let min = Infinity
   let max = -Infinity
   let sum = 0
   let sumSq = 0
   let count = 0
   for (const { data, visStart, visEnd } of datasets) {
-    for (let i = 0; i < data.numFeatures; i++) {
-      if (filterVisible && visStart !== undefined && visEnd !== undefined) {
-        const fStart = data.featurePositions[i * 2]!
-        const fEnd = data.featurePositions[i * 2 + 1]!
-        if (fEnd <= visStart || fStart >= visEnd) {
-          continue
-        }
+    const { featureScores, featurePositions, numFeatures } = data
+    // Whiskers spreads min/max across the two summary arrays; every other mode
+    // draws both bounds from a single per-feature scalar. Selecting the arrays
+    // once per dataset keeps the mode check out of the per-feature loop.
+    const minScores = useWhiskers
+      ? data.featureMinScores
+      : getEffectiveScores(data, summaryScoreMode)
+    const maxScores = useWhiskers
+      ? data.featureMaxScores
+      : getEffectiveScores(data, summaryScoreMode)
+    for (let i = 0; i < numFeatures; i++) {
+      if (
+        filterVisible &&
+        visStart !== undefined &&
+        visEnd !== undefined &&
+        !overlaps(
+          featurePositions[i * 2]!,
+          featurePositions[i * 2 + 1]!,
+          visStart,
+          visEnd,
+        )
+      ) {
+        continue
       }
-      if (useWhiskers) {
-        min = Math.min(min, data.featureMinScores[i]!)
-        max = Math.max(max, data.featureMaxScores[i]!)
-      } else if (useMin) {
-        const s = data.featureMinScores[i]!
-        min = Math.min(min, s)
-        max = Math.max(max, s)
-      } else if (useMax) {
-        const s = data.featureMaxScores[i]!
-        min = Math.min(min, s)
-        max = Math.max(max, s)
-      } else {
-        const s = data.featureScores[i]!
-        min = Math.min(min, s)
-        max = Math.max(max, s)
-      }
-      const avg = data.featureScores[i]!
+      min = Math.min(min, minScores[i]!)
+      max = Math.max(max, maxScores[i]!)
+      const avg = featureScores[i]!
       sum += avg
       sumSq += avg * avg
       count++
@@ -82,8 +123,7 @@ export function domainFromStats(
   autoscaleType: string,
   numStdDev: number,
 ): [number, number] {
-  const isSd = autoscaleType === 'localsd' || autoscaleType === 'globalsd'
-  if (isSd) {
+  if (isStdDevAutoscale(autoscaleType)) {
     const { scoreMean, scoreStdDev, scoreMin } = stats
     return [
       scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
@@ -109,8 +149,7 @@ export function computeAutoscaleDomain(
   }[],
   allEntries: { data: FeatureArrays }[],
 ): [number, number] | undefined {
-  const isGlobal = autoscaleType === 'global' || autoscaleType === 'globalsd'
-  const stats = isGlobal
+  const stats = isGlobalAutoscale(autoscaleType)
     ? computeStats(summaryScoreMode, allEntries, false)
     : computeStats(summaryScoreMode, visibleEntries, true)
   if (!stats) {

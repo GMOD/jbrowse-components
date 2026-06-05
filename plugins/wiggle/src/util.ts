@@ -1,6 +1,7 @@
 export {
   computeAutoscaleDomain,
   domainFromStats,
+  getEffectiveScores,
   getNiceDomain,
   getOrigin,
   getScale,
@@ -197,23 +198,6 @@ export function featuresToRaw(
   }
 
   return { starts, ends, scores, minScores, maxScores, count: n }
-}
-
-export function getEffectiveScores(
-  data: {
-    featureScores: Float32Array
-    featureMinScores: Float32Array
-    featureMaxScores: Float32Array
-  },
-  mode: string,
-) {
-  if (mode === 'min') {
-    return data.featureMinScores
-  }
-  if (mode === 'max') {
-    return data.featureMaxScores
-  }
-  return data.featureScores
 }
 
 // Widen each Canvas2D bar slightly past its true pixel span so adjacent

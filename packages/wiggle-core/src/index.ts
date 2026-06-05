@@ -9,7 +9,11 @@ export {
 } from './normalize.ts'
 export type { WiggleScaleType } from './normalize.ts'
 
-export { computeAutoscaleDomain, domainFromStats } from './autoscale.ts'
+export {
+  computeAutoscaleDomain,
+  domainFromStats,
+  getEffectiveScores,
+} from './autoscale.ts'
 export type { Dataset, FeatureArrays, ScoreStats } from './autoscale.ts'
 
 export const YSCALEBAR_LABEL_OFFSET = 5
