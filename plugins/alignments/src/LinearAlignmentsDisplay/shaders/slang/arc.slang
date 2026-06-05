@@ -85,6 +85,8 @@ ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
     float angle = t * PI;
     float cxNorm = (x1Norm + x2Norm) * 0.5;
     float rNorm = (x2Norm - x1Norm) * 0.5;
+    // Prevent nearly-flat arcs: cap half-width at 10× the arc height.
+    if (destY > 0.0) { rNorm = min(rNorm, 10.0 * destY / u.blockWidth); }
     float xNorm = cxNorm + cos(angle) * rNorm;
     float yPx = (destY > 0.0) ? sin(angle) * destY * yDir : 0.0;
     ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, yPx);

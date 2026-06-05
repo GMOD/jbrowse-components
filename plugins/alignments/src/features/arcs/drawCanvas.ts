@@ -1,4 +1,8 @@
-import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
+import {
+  ARC_SHAPE_FLAT,
+  ARC_SHAPE_FLAT_SPLIT,
+  ARC_SHAPE_SEMICIRCLE,
+} from './compute.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   type DrawBlock,
@@ -76,11 +80,17 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
       ctx.moveTo(sx1, apexY)
       ctx.lineTo(sx2, apexY)
     } else {
-      // Cubic bezier with control points at (x1,apex) and (x2,apex) — matches
-      // arc.slang's `evalArc` so GPU and Canvas2D arcs render identically.
-      // Peak reaches 0.75·arcH (not apexY itself) by bezier math.
-      ctx.moveTo(sx1, anchorY)
-      ctx.bezierCurveTo(sx1, apexY, sx2, apexY, sx2, anchorY)
+      // For semicircle arcs, cap width to 2*arcH so very long arcs never
+      // appear as flat lines. Mirrors the rNorm cap in arc.slang.
+      const midX = (sx1 + sx2) / 2
+      const halfW =
+        shape === ARC_SHAPE_SEMICIRCLE && arcH > 0
+          ? Math.min(Math.abs(sx2 - sx1) / 2, 10 * arcH)
+          : Math.abs(sx2 - sx1) / 2
+      const drawX1 = midX - halfW
+      const drawX2 = midX + halfW
+      ctx.moveTo(drawX1, anchorY)
+      ctx.bezierCurveTo(drawX1, apexY, drawX2, apexY, drawX2, anchorY)
     }
     ctx.stroke()
   }
