@@ -1,5 +1,5 @@
 /**
- * Migrates old wiggle snapshot properties to configOverrides.
+ * Migrates old wiggle snapshot properties to flat config keys.
  *
  * Handles two generations of old property names:
  *
@@ -142,13 +142,5 @@ export function migrateWiggleSnapshot(
     bicolorPivot: bicolorPivotNumeric,
   })
 
-  return Object.keys(overrides).length === 0
-    ? rest
-    : {
-        ...rest,
-        configOverrides: {
-          ...asRecord(rest.configOverrides),
-          ...overrides,
-        },
-      }
+  return { ...rest, ...overrides }
 }

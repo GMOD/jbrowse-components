@@ -161,17 +161,4 @@ describe('applyLabelDimensions', () => {
       expect(layout.totalLayoutHeight).toBe(10)
     })
   })
-
-  describe('collapse mode disables labels', () => {
-    it('skips all label calculation', () => {
-      const layout = createMockLayout(10)
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('NM_001234'),
-        config: mockDisplayConfig({ displayMode: 'collapse' }),
-        isNested: true,
-        isTranscriptChild: true,
-      })
-      expect(layout.totalLayoutHeight).toBe(10)
-    })
-  })
 })

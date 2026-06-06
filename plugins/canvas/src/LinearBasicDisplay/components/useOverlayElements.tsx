@@ -21,6 +21,7 @@ import type {
 interface OverlayModel {
   showLabels: boolean
   effectiveShowDescriptions: boolean
+  displayMode: string
   selectedFeatureId: string | undefined
   selectFeatureById: (
     featureInfo: FlatbushItem,
@@ -88,7 +89,13 @@ export function useFloatingLabels(
   // them to re-trigger would couple correctness to transitive recomputation
   // of laidOutDataMap (which happens to depend on the same flags). Mirrors
   // the destructure-before-useMemo pattern in useHighlightOverlays below.
-  const { showLabels, effectiveShowDescriptions, selectFeatureById } = model
+  const {
+    showLabels,
+    effectiveShowDescriptions,
+    displayMode,
+    selectFeatureById,
+  } = model
+  const decimateLabels = displayMode === 'collapse'
   // Pre-build the four (clickable × isOverlay) className combinations once
   // per style/cx identity; per-label rendering then just picks the right
   // string instead of calling cx() in the hot loop.
@@ -128,63 +135,74 @@ export function useFloatingLabels(
       }
 
       const displayedRegionIndex = vr.displayedRegionIndex
-      forEachRenderedLabel(data, vr, visibility, (featureId, labels) => {
-        if (renderedLabels.has(featureId)) {
-          return
-        }
-        renderedLabels.add(featureId)
+      forEachRenderedLabel(
+        data,
+        vr,
+        visibility,
+        (featureId, labels) => {
+          if (renderedLabels.has(featureId)) {
+            return
+          }
+          renderedLabels.add(featureId)
 
-        const entry = featureItemMap.get(featureId)
-        const item = entry?.kind === 'feature' ? entry.item : undefined
-        // Allocate handler closures once per feature (not per-label); skip
-        // entirely when there's no clickable item.
-        const handleLabelClick = item
-          ? () => {
-              selectFeatureById(item, undefined, displayedRegionIndex)
-            }
-          : undefined
-        const handleLabelContextMenu = item
-          ? (e: React.MouseEvent) => {
-              e.preventDefault()
-              openContextMenu(item, displayedRegionIndex, e.clientX, e.clientY)
-            }
-          : undefined
-        const handleLabelMouseMove =
-          item && onLabelMouseOver
-            ? (e: React.MouseEvent) => {
-                onLabelMouseOver(item, e)
+          const entry = featureItemMap.get(featureId)
+          const item = entry?.kind === 'feature' ? entry.item : undefined
+          // Allocate handler closures once per feature (not per-label); skip
+          // entirely when there's no clickable item.
+          const handleLabelClick = item
+            ? () => {
+                selectFeatureById(item, undefined, displayedRegionIndex)
               }
             : undefined
-
-        for (const { label, labelX, labelY, kind } of labels) {
-          const clickable = kind !== 'desc'
-          const className = clickable
-            ? label.isOverlay
-              ? labelClasses.clickableOverlay
-              : labelClasses.clickable
-            : label.isOverlay
-              ? labelClasses.staticOverlay
-              : labelClasses.static
-          elements.push(
-            <div
-              key={`${displayedRegionIndex}-${featureId}-${kind}`}
-              data-testid={
-                clickable ? `feature-${kind}-${label.text}` : undefined
+          const handleLabelContextMenu = item
+            ? (e: React.MouseEvent) => {
+                e.preventDefault()
+                openContextMenu(
+                  item,
+                  displayedRegionIndex,
+                  e.clientX,
+                  e.clientY,
+                )
               }
-              className={className}
-              onClick={clickable ? handleLabelClick : undefined}
-              onContextMenu={clickable ? handleLabelContextMenu : undefined}
-              onMouseMove={clickable ? handleLabelMouseMove : undefined}
-              style={{
-                transform: `translate(${labelX}px, ${labelY}px)`,
-                color: label.color,
-              }}
-            >
-              {label.text}
-            </div>,
-          )
-        }
-      })
+            : undefined
+          const handleLabelMouseMove =
+            item && onLabelMouseOver
+              ? (e: React.MouseEvent) => {
+                  onLabelMouseOver(item, e)
+                }
+              : undefined
+
+          for (const { label, labelX, labelY, kind } of labels) {
+            const clickable = kind !== 'desc'
+            const className = clickable
+              ? label.isOverlay
+                ? labelClasses.clickableOverlay
+                : labelClasses.clickable
+              : label.isOverlay
+                ? labelClasses.staticOverlay
+                : labelClasses.static
+            elements.push(
+              <div
+                key={`${displayedRegionIndex}-${featureId}-${kind}`}
+                data-testid={
+                  clickable ? `feature-${kind}-${label.text}` : undefined
+                }
+                className={className}
+                onClick={clickable ? handleLabelClick : undefined}
+                onContextMenu={clickable ? handleLabelContextMenu : undefined}
+                onMouseMove={clickable ? handleLabelMouseMove : undefined}
+                style={{
+                  transform: `translate(${labelX}px, ${labelY}px)`,
+                  color: label.color,
+                }}
+              >
+                {label.text}
+              </div>,
+            )
+          }
+        },
+        decimateLabels,
+      )
     }
 
     return elements.length > 0 ? elements : null
@@ -197,6 +215,7 @@ export function useFloatingLabels(
     visibleRegions,
     showLabels,
     effectiveShowDescriptions,
+    decimateLabels,
     selectFeatureById,
     openContextMenu,
     onLabelMouseOver,

@@ -82,7 +82,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
-      ConfigOverrideMixin(),
+      ConfigOverrideMixin(['colorScheme', 'showLegend']),
       types.model({
         type: types.literal('LinearHicDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -142,18 +142,8 @@ export default function stateModelFactory(
       // multiplier (< 1000) or an absolute binsize (>= 1000); neither maps
       // cleanly to the new `resolutionBias` field, so just reset to auto
       // (bias = 0) and let zoom drive the choice.
-      const { resolution: _drop, colorScheme, showLegend, ...rest } = snap
-      if (colorScheme === undefined && showLegend === undefined) {
-        return rest
-      }
-      const overrides = {
-        ...(colorScheme !== undefined && { colorScheme }),
-        ...(showLegend !== undefined && { showLegend }),
-      }
-      return {
-        ...rest,
-        configOverrides: { ...rest.configOverrides, ...overrides },
-      }
+      const { resolution: _drop, ...rest } = snap
+      return rest
     })
     .views(self => ({
       get colorScheme(): HicColorScheme | undefined {

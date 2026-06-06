@@ -1,5 +1,5 @@
 import { LABEL_FONT_SIZE } from './constants.ts'
-import { isLabelAllowed, readConfigValue } from './renderConfig.ts'
+import { readConfigValue } from './renderConfig.ts'
 import { hasVisibleText, truncateLabel } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
@@ -50,10 +50,7 @@ export function applyLabelDimensions(
   const { subfeatureLabels } = config
   const showSubfeatureLabels = subfeatureLabels !== 'none'
 
-  if (
-    isLabelAllowed(config) &&
-    (!isNested || (isTranscriptChild && showSubfeatureLabels))
-  ) {
+  if (!isNested || (isTranscriptChild && showSubfeatureLabels)) {
     const { name: configName, description: configDescription } =
       isTranscriptChild
         ? { name: undefined, description: undefined }

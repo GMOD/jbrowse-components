@@ -28,12 +28,13 @@ hover lookup (resolve `sampleName` via `sourceMap` first), and
 
 ## Settings: classify by invalidation tier
 
-A setting can live in a config slot (`SharedVariantConfigSchema.ts`),
-`configOverrides` (`ConfigOverrideMixin`, via
-`getConfWithOverride`/`setOverride`), a bespoke MST property (`rowHeightMode`,
+A setting can live in a config slot (`SharedVariantConfigSchema.ts`), a
+`ConfigOverrideMixin` key (`getConfWithOverride`/`setOverride` — keys appear
+flat in session snapshots and must be declared in the `ConfigOverrideMixin`
+call's `configKeys` list), a bespoke MST property (`rowHeightMode`,
 `jexlFilters`, `lineZoneHeight`), or a volatile (`showLegend`, `cellData`).
 There's no single rule, and the two display families disagree (`showLegend` is
-volatile here, a `configOverride` in LD). What matters when adding one is the
+volatile here, a config override in LD). What matters when adding one is the
 tier it invalidates:
 
 | Tier             | Change triggers           | Wired in                                      |

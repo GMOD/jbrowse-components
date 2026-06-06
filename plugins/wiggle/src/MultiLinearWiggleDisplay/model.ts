@@ -79,7 +79,12 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      WiggleCommonMixin(),
+      WiggleCommonMixin([
+        'minimalTicks',
+        'showTree',
+        'showBranchLength',
+        'showRowSeparators',
+      ]),
       TreeSidebarMixin<Source>(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),

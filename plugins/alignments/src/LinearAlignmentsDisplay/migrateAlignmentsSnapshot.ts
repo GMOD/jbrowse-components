@@ -16,9 +16,9 @@
  *   - pairedArcs enum → readConnections mode + readConnectionsDown direction
  *   - sashimiArcsDown dropped (direction is the shared readConnectionsDown)
  *   - arcsHeight → readConnectionsHeight
- *   - Individual override properties → configOverrides map
- *   - lineWidth / lineWidthSetting → configOverrides.readConnectionsLineWidth
- *   - sortedBy / sortedBySetting → configOverrides.sortedBy
+ *   - Individual override properties → flat config keys
+ *   - lineWidth / lineWidthSetting → readConnectionsLineWidth
+ *   - sortedBy / sortedBySetting → sortedBy
  *   - Strips removed properties: blockState, showTooltips
  */
 export function migrateAlignmentsSnapshot(
@@ -148,7 +148,6 @@ export function migrateAlignmentsSnapshot(
   // Split the pairedArcs enum into orthogonal mode + direction fields
   result = migrateReadConnections(result)
 
-  // Migrate individual override properties → configOverrides
   return migrateOverrideProperties(result)
 }
 
@@ -265,15 +264,5 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
     overrides.maxHeight = trackMaxHeight
   }
 
-  if (Object.keys(overrides).length === 0) {
-    return rest
-  }
-
-  return {
-    ...rest,
-    configOverrides: {
-      ...(rest.configOverrides as Record<string, unknown> | undefined),
-      ...overrides,
-    },
-  }
+  return { ...rest, ...overrides }
 }

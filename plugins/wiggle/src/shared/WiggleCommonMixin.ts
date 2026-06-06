@@ -19,8 +19,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * extends
  * - [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
  */
-export function WiggleCommonMixin() {
-  return WiggleScoreConfigMixin()
+export function WiggleCommonMixin(extraKeys: string[] = []) {
+  return WiggleScoreConfigMixin(extraKeys)
     .volatile(() => ({
       /**
        * #volatile

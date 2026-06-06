@@ -12,7 +12,6 @@ import {
 import { getFeatureName, readFeatureLabels } from './labelUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 import { aminoAcidsBySegment } from './peptides/aggregateAminoAcids.ts'
-import { isLabelAllowed } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isCDS, isUTR } from './util.ts'
 
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
@@ -370,11 +369,7 @@ function processTranscriptLayout(
   })
 
   const { config } = ctx
-  if (
-    isLabelAllowed(config) &&
-    config.subfeatureLabels !== 'none' &&
-    transcriptName
-  ) {
+  if (config.subfeatureLabels !== 'none' && transcriptName) {
     const result = createTranscriptFloatingLabel({
       displayLabel: transcriptName,
       featureHeight: transcript.height,

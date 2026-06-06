@@ -297,11 +297,28 @@ export default function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        ConfigOverrideMixin(),
+        ConfigOverrideMixin([
+          'scaleType',
+          'autoscale',
+          'minScore',
+          'maxScore',
+          'numStdDev',
+          'colorBy',
+          'filterBy',
+          'featureHeight',
+          'featureSpacing',
+          'maxHeight',
+          'mismatchAlpha',
+          'showLowFreqMismatches',
+          'showLegend',
+          'sortedBy',
+          'readConnectionsLineWidth',
+          'showOutline',
+        ]),
         // Settings split two ways (see CLAUDE.md §"Settings: storage +
         // invalidation tiers"): "display options" (colorBy, filterBy, sortedBy,
-        // showOutline, …) live in `configOverrides` so a config default can be
-        // added later with no code change; the plain MST fields below are the
+        // showOutline, …) are config overrides so a config default can be added
+        // later with no code change; the plain MST fields below are the
         // remaining toggles. Each setting also has a refetch/relayout/render
         // blast radius documented there.
         types.model({
@@ -764,7 +781,10 @@ export default function stateModelFactory(
          * #getter
          */
         get legendItems() {
-          return getReadDisplayLegendItems(this.colorBy, self.visibleModifications)
+          return getReadDisplayLegendItems(
+            this.colorBy,
+            self.visibleModifications,
+          )
         },
 
         /**

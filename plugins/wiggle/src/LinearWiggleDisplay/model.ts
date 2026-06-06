@@ -95,7 +95,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      WiggleCommonMixin(),
+      WiggleCommonMixin(['minimalTicks']),
       types.model({
         /**
          * #property

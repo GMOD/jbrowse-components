@@ -15,10 +15,9 @@ export type DisplayMode =
 
 export interface DisplayConfig {
   [key: string]: unknown
-  // displayMode is NOT sent to the worker — compact/superCompact scaling is
-  // applied on the main thread so switching modes skips an RPC round-trip.
-  // Only collapse's label-suppression effect is communicated via suppressLabels.
-  suppressLabels: boolean
+  // displayMode is NOT sent to the worker — compact/superCompact scaling and
+  // collapse-mode label decimation are applied on the main thread so switching
+  // modes skips an RPC round-trip.
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
   subfeatureLabels: 'none' | 'below' | 'overlay'
   transcriptTypes: string[]
@@ -35,8 +34,4 @@ export interface DisplayConfig {
     name: string
     description: string
   }
-}
-
-export function isLabelAllowed(config: DisplayConfig) {
-  return !config.suppressLabels
 }

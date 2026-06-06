@@ -47,7 +47,7 @@ export type { Region } from '@jbrowse/core/util'
  *       type: 'LinearBasicDisplay',
  *       displayId: 'genes-LinearBasicDisplay',
  *       height: 200,
- *       configOverrides: { displayMode: 'compact' },
+ *       displayMode: 'compact',
  *     },
  *   ],
  * }

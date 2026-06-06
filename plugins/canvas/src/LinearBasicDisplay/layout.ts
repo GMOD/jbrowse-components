@@ -122,12 +122,18 @@ export function computeLaidOutData(
     group.push([displayedRegionIndex, data])
   }
 
+  // In collapse mode, labels are decimated at render time and don't contribute
+  // to feature stacking height, so treat them as absent for layout purposes.
+  const packShowLabels = displayMode === 'collapse' ? false : showLabels
+  const packShowDescriptions =
+    displayMode === 'collapse' ? false : showDescriptions
+
   for (const [, regions] of refGroups) {
     const { layoutMap, layoutHeights } = packRef(
       regions,
       bpPerPx,
-      showLabels,
-      showDescriptions,
+      packShowLabels,
+      packShowDescriptions,
       reversedRegions,
     )
     for (const [, data] of regions) {

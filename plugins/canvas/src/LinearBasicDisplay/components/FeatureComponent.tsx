@@ -55,6 +55,7 @@ export interface LinearBasicDisplayModel {
   flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>
   scrollTop: number
   effectiveShowDescriptions: boolean
+  displayMode: string
   regionTooLarge: boolean
   regionTooLargeReason: string
   featureDensityStats?: { bytes?: number }

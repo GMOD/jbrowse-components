@@ -126,7 +126,22 @@ export default function baseStateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        ConfigOverrideMixin(),
+        ConfigOverrideMixin([
+          'maxHeight',
+          'autoHeight',
+          'displayMode',
+          'showLabels',
+          'maxLabelFeatureDensity',
+          'showDescriptions',
+          'outlineColor',
+          'maxFeatureScreenDensity',
+          'color',
+          'utrColor',
+          'connectorColor',
+          'subfeatureLabels',
+          'geneGlyphMode',
+          'displayDirectionalChevrons',
+        ]),
         types.model({
           /**
            * #property
@@ -441,10 +456,9 @@ export default function baseStateModelFactory(
         rpcProps() {
           // showLabels/showDescriptions are display-only — exclude them so
           // toggling label visibility doesn't invalidate the RPC cache.
-          // displayMode is also excluded: compact/superCompact scaling is
-          // applied on the main thread (layout.ts) after the worker returns,
-          // so switching compact modes skips an RPC round-trip. Only collapse's
-          // label-suppression effect is communicated via suppressLabels.
+          // displayMode is also excluded: compact/superCompact scaling and
+          // collapse-mode label decimation are applied on the main thread so
+          // switching modes skips an RPC round-trip.
           const {
             showLabels: _l,
             showDescriptions: _d,
@@ -455,10 +469,7 @@ export default function baseStateModelFactory(
             ...self.configOverrides,
           }
           return {
-            displayConfig: {
-              ...rest,
-              suppressLabels: self.displayMode === 'collapse',
-            } as DisplayConfig,
+            displayConfig: { ...rest } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
             // Serializable ThemeOptions so worker-side coloring (CDS frames,

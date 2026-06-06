@@ -4,14 +4,14 @@
 
 Adding a track-menu setting? Decide two things.
 
-**Storage:** prefer `configOverrides` (`ConfigOverrideMixin`) for anything
-that's a _display option_. Read with `getConfWithOverride` if it already has a
-config-schema default, or `getOverride` if not — either way, adding a config
-default later is a one-line schema change with no code edits, so the override
-map is the future-proof home. Plain MST fields are the older mechanism and many
-settings still use them (`linkedReads`, `showCoverage`, `pairedArcs`, …); the
-override-vs-field line is genuinely fuzzy, so match the neighbours rather than
-chasing a crisp rule.
+**Storage:** prefer `ConfigOverrideMixin` (`getConfWithOverride`/`setOverride`)
+for anything that's a _display option_. Adding a config default later is a
+one-line schema change with no code edits, and the key appears flat in session
+snapshots. Plain MST fields are the older mechanism and many settings still use
+them (`linkedReads`, `showCoverage`, `pairedArcs`, …); the line is genuinely
+fuzzy, so match the neighbours rather than chasing a crisp rule. New config
+override keys must be added to the `configKeys` list in the
+`ConfigOverrideMixin` call in `model.ts`.
 
 **Blast radius:** which getter reads it decides what it invalidates. Tiers 2–4
 are auto-wired by MobX; **tier 1 is manual** because the worker boundary defeats

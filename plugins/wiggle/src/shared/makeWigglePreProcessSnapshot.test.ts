@@ -16,16 +16,13 @@ describe('makeWigglePreProcessSnapshot', () => {
       showTooltips: false,
       scale: 'log',
     })
-    expect(result).toEqual({
-      type: 'LinearWiggleDisplay',
-      configOverrides: { scaleType: 'log' },
-    })
+    expect(result).toEqual({ type: 'LinearWiggleDisplay', scaleType: 'log' })
   })
 
   test('forwards multiWiggle opt to migration', () => {
     const preProcess = makeWigglePreProcessSnapshot({ multiWiggle: true })
     expect(preProcess({ rendererTypeNameState: 'xyplot' })).toEqual({
-      configOverrides: { defaultRendering: 'multixyplot' },
+      defaultRendering: 'multixyplot',
     })
   })
 })

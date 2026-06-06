@@ -61,7 +61,7 @@ export function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      WiggleScoreConfigMixin(),
+      WiggleScoreConfigMixin(['colorBy', 'minimalTicks']),
       types.model({
         type: types.literal('LinearManhattanDisplay'),
         /**

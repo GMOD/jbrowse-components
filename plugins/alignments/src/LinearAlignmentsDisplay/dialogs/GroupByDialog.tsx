@@ -28,6 +28,7 @@ import {
   posFlags,
 } from '../../shared/util.ts'
 
+import type { FilterBy } from '../../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -54,8 +55,48 @@ interface TrackConf {
   [key: string]: unknown
 }
 
+type DisplayModel = {
+  configOverrides: Record<string, unknown>
+} & IAnyStateTreeNode
+
 function createTrackId(baseId: string, suffix: string) {
   return `${baseId}-${suffix}-${Date.now()}-sessionTrack`
+}
+
+/**
+ * Builds the display config state to copy from the parent display to a
+ * group-by subtrack, replacing only filterBy.
+ *
+ * configOverrides (colorBy, sortedBy, featureHeight, …) are passed as a
+ * nested sub-object so ConfigOverrideMixin.preProcessSnapshot picks them up
+ * correctly. Plain MST fields (showCoverage, showMismatches, …) are spread at
+ * the top level where MST assigns them as model properties.
+ */
+function buildSubtrackDisplayConfig(
+  displayModel: DisplayModel,
+  filterBy: FilterBy,
+): Record<string, unknown> {
+  const snap = getSnapshot(displayModel as IAnyStateTreeNode)
+  // postProcessSnapshot flattens configOverrides keys into the snapshot
+  // top-level; separate them from plain MST fields using the live map.
+  const configOverrideKeySet = new Set(
+    Object.keys(displayModel.configOverrides),
+  )
+  const plainMstState: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(snap as Record<string, unknown>)) {
+    if (
+      k !== 'displayId' &&
+      k !== 'type' &&
+      k !== 'configuration' &&
+      !configOverrideKeySet.has(k)
+    ) {
+      plainMstState[k] = v
+    }
+  }
+  return {
+    ...plainMstState,
+    configOverrides: { ...displayModel.configOverrides, filterBy },
+  }
 }
 
 function createTagBasedTracks({
@@ -64,12 +105,14 @@ function createTagBasedTracks({
   tagSet,
   session,
   view,
+  displayModel,
 }: {
   trackConf: TrackConf
   tag: string
   tagSet: string[]
   session: SessionWithAddTracks
   view: LinearGenomeViewModel
+  displayModel: DisplayModel
 }) {
   const values: (string | undefined)[] = [...tagSet, undefined]
   for (const tagValue of values) {
@@ -83,12 +126,10 @@ function createTagBasedTracks({
         {
           displayId: `${trackId}-LinearAlignmentsDisplay`,
           type: 'LinearAlignmentsDisplay',
-          configOverrides: {
-            filterBy: {
-              ...defaultFilterFlags,
-              tagFilter: { tag, value: tagValue },
-            },
-          },
+          ...buildSubtrackDisplayConfig(displayModel, {
+            ...defaultFilterFlags,
+            tagFilter: { tag, value: tagValue },
+          }),
         },
       ],
     })
@@ -100,10 +141,12 @@ function createStrandBasedTracks({
   trackConf,
   session,
   view,
+  displayModel,
 }: {
   trackConf: TrackConf
   session: SessionWithAddTracks
   view: LinearGenomeViewModel
+  displayModel: DisplayModel
 }) {
   const negTrackId = createTrackId(trackConf.trackId, 'strand:(-)')
   const posTrackId = createTrackId(trackConf.trackId, 'strand:(+)')
@@ -116,7 +159,7 @@ function createStrandBasedTracks({
       {
         displayId: `${negTrackId}-LinearAlignmentsDisplay`,
         type: 'LinearAlignmentsDisplay',
-        configOverrides: { filterBy: negFlags },
+        ...buildSubtrackDisplayConfig(displayModel, negFlags),
       },
     ],
   })
@@ -128,7 +171,7 @@ function createStrandBasedTracks({
       {
         displayId: `${posTrackId}-LinearAlignmentsDisplay`,
         type: 'LinearAlignmentsDisplay',
-        configOverrides: { filterBy: posFlags },
+        ...buildSubtrackDisplayConfig(displayModel, posFlags),
       },
     ],
   })
@@ -140,6 +183,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   model: {
     adapterConfig: AnyConfigurationModel
     configuration: AnyConfigurationModel
+    configOverrides: Record<string, unknown>
   } & IAnyStateTreeNode
   handleClose: () => void
 }) {
@@ -183,9 +227,16 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     const view = getContainingView(model) as LinearGenomeViewModel
 
     if (type === 'tag' && tagSet) {
-      createTagBasedTracks({ trackConf, tag, tagSet, session, view })
+      createTagBasedTracks({
+        trackConf,
+        tag,
+        tagSet,
+        session,
+        view,
+        displayModel: model,
+      })
     } else if (type === 'strand') {
-      createStrandBasedTracks({ trackConf, session, view })
+      createStrandBasedTracks({ trackConf, session, view, displayModel: model })
     }
     handleClose()
   }

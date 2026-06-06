@@ -4,8 +4,7 @@ import { legacyShowLabelsToMode } from './showLabelsMode.ts'
 // The cryptic color1/color2/color3 slots were renamed to the self-describing
 // color/connectorColor/utrColor, and `outline` to `outlineColor` (so every
 // color slot but the primary `color` ends in `Color`). Map the legacy keys onto
-// the new ones; the new name wins if both are present. Used on both the config
-// snapshot and inside an old session's configOverrides map.
+// the new ones; the new name wins if both are present.
 function renameLegacyColorKeys(
   obj: Record<string, unknown>,
 ): Record<string, unknown> {
@@ -60,10 +59,10 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   }
 }
 
-// Migrate legacy snapshot shapes: strip removed FeatureDensityMixin fields and
-// promote the old per-property `track<Setting>` values into the unified
-// configOverrides map. (height/heightPreConfig → heightOverride is handled
-// centrally by TrackHeightMixin's migration, so height passes through here.)
+// Migrate legacy snapshot shapes: strip removed fields and promote old
+// per-property `track<Setting>` values to flat config keys.
+// (height/heightPreConfig → heightOverride is handled centrally by
+// TrackHeightMixin's migration, so height passes through here.)
 export function migrateBasicSnapshot(
   snap: Record<string, unknown> | undefined,
 ) {
@@ -133,30 +132,5 @@ export function migrateBasicSnapshot(
     migrated.displayDirectionalChevrons = trackDisplayDirectionalChevrons
   }
 
-  const existingOverrides =
-    typeof rest.configOverrides === 'object' && rest.configOverrides !== null
-      ? (rest.configOverrides as Record<string, unknown>)
-      : undefined
-
-  // Normalize an old session's override map in place: rename legacy
-  // color1/2/3 keys, and convert a boolean showLabels (schema flipped from
-  // boolean to the auto/on/off enum) so it passes validation on load.
-  const normalizedOverrides = existingOverrides
-    ? (() => {
-        const renamed = renameLegacyColorKeys(existingOverrides)
-        return typeof renamed.showLabels === 'boolean'
-          ? {
-              ...renamed,
-              showLabels: legacyShowLabelsToMode(renamed.showLabels),
-            }
-          : renamed
-      })()
-    : undefined
-
-  return {
-    ...rest,
-    ...((Object.keys(migrated).length > 0 || normalizedOverrides) && {
-      configOverrides: { ...normalizedOverrides, ...migrated },
-    }),
-  }
+  return { ...rest, ...migrated }
 }

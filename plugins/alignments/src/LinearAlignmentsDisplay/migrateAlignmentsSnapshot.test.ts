@@ -47,7 +47,7 @@ describe('migrateAlignmentsSnapshot', () => {
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.type).toBe('LinearAlignmentsDisplay')
     expect(result.displayId).toBe('pileup-1')
-    expect(result.configOverrides).toEqual({ mismatchAlpha: true })
+    expect(result.mismatchAlpha).toBe(true)
   })
 
   test('remaps LinearReadArcsDisplay → LinearAlignmentsDisplay', () => {
@@ -70,8 +70,7 @@ describe('migrateAlignmentsSnapshot', () => {
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.linkedReads).toBe('normal')
     expect(result).not.toHaveProperty('showLinkedReads')
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
+    expect(result.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
     expect(result).not.toHaveProperty('renderingMode')
   })
 
@@ -101,8 +100,7 @@ describe('migrateAlignmentsSnapshot', () => {
       colorBySetting: { type: 'strand' },
     }
     const result = migrateAlignmentsSnapshot(snap)
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.colorBy).toEqual({ type: 'strand' })
+    expect(result.colorBy).toEqual({ type: 'strand' })
   })
 
   test('migrates showReadCloud → linkedReads enum', () => {
@@ -129,9 +127,8 @@ describe('migrateAlignmentsSnapshot', () => {
     }
     const result = migrateAlignmentsSnapshot(snap)
     expect(result.showSoftClipping).toBe(true)
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.colorBy).toEqual({ type: 'strand' })
-    expect(overrides.filterBy).toEqual({ flagInclude: 0 })
+    expect(result.colorBy).toEqual({ type: 'strand' })
+    expect(result.filterBy).toEqual({ flagInclude: 0 })
     expect(result.coverageHeight).toBe(60)
     expect(result).not.toHaveProperty('PileupDisplay')
     expect(result).not.toHaveProperty('SNPCoverageDisplay')
@@ -158,9 +155,8 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result.showCoverage).toBe(true)
     expect(result.coverageHeight).toBe(45)
     expect(result.showMismatches).toBe(true)
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.colorBy).toEqual({ type: 'strand' })
-    expect(overrides.filterBy).toEqual({ flagInclude: 0 })
+    expect(result.colorBy).toEqual({ type: 'strand' })
+    expect(result.filterBy).toEqual({ flagInclude: 0 })
     expect(result).not.toHaveProperty('jexlFilters')
     expect(result).not.toHaveProperty('minArcScore')
     expect(result).not.toHaveProperty('showInterbaseCounts')
@@ -182,15 +178,14 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result.height).toBe(300)
     expect(result.linkedReads).toBe('normal')
     expect(result).not.toHaveProperty('showLinkedReads')
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.mismatchAlpha).toBe(true)
-    expect(overrides.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
+    expect(result.mismatchAlpha).toBe(true)
+    expect(result.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
     expect(result).not.toHaveProperty('blockState')
     expect(result).not.toHaveProperty('showTooltips')
     expect(result).not.toHaveProperty('renderingMode')
   })
 
-  test('migrates individual override properties to configOverrides', () => {
+  test('migrates individual override properties to flat keys', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       featureHeight: 5,
@@ -200,37 +195,33 @@ describe('migrateAlignmentsSnapshot', () => {
       showLegend: true,
     }
     const result = migrateAlignmentsSnapshot(snap)
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.featureHeight).toBe(5)
-    expect(overrides.featureSpacing).toBe(0)
-    expect(overrides.maxHeight).toBe(800)
-    expect(overrides.showOutline).toBe(false)
-    expect(overrides.showLegend).toBe(true)
-    expect(result).not.toHaveProperty('featureHeight')
+    expect(result.featureHeight).toBe(5)
+    expect(result.featureSpacing).toBe(0)
+    expect(result.maxHeight).toBe(800)
+    expect(result.showOutline).toBe(false)
+    expect(result.showLegend).toBe(true)
     expect(result).not.toHaveProperty('noSpacing')
     expect(result).not.toHaveProperty('trackMaxHeight')
   })
 
-  test('migrates lineWidthSetting → configOverrides.readConnectionsLineWidth', () => {
+  test('migrates lineWidthSetting → readConnectionsLineWidth', () => {
     const snap = {
       type: 'LinearAlignmentsDisplay',
       lineWidthSetting: 3,
     }
     const result = migrateAlignmentsSnapshot(snap)
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.readConnectionsLineWidth).toBe(3)
+    expect(result.readConnectionsLineWidth).toBe(3)
     expect(result).not.toHaveProperty('lineWidthSetting')
   })
 
   // Released LinearReadArcsDisplay sessions persisted bare `lineWidth` (no
-  // Setting suffix) — it must reach the new readConnectionsLineWidth override.
-  test('migrates released lineWidth → configOverrides.readConnectionsLineWidth', () => {
+  // Setting suffix) — it must reach the new readConnectionsLineWidth.
+  test('migrates released lineWidth → readConnectionsLineWidth', () => {
     const result = migrateAlignmentsSnapshot({
       type: 'LinearReadArcsDisplay',
       lineWidth: 4,
     })
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.readConnectionsLineWidth).toBe(4)
+    expect(result.readConnectionsLineWidth).toBe(4)
     expect(result).not.toHaveProperty('lineWidth')
   })
 
@@ -358,7 +349,7 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(dropped).not.toHaveProperty('sashimiArcs')
   })
 
-  test('migrates sortedBySetting to configOverrides.sortedBy', () => {
+  test('migrates sortedBySetting → flat sortedBy', () => {
     const sorted = {
       type: 'base',
       pos: 100,
@@ -370,21 +361,18 @@ describe('migrateAlignmentsSnapshot', () => {
       sortedBySetting: sorted,
     }
     const result = migrateAlignmentsSnapshot(snap)
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.sortedBy).toEqual(sorted)
+    expect(result.sortedBy).toEqual(sorted)
     expect(result).not.toHaveProperty('sortedBySetting')
   })
 
   // Released LinearPileupDisplay sessions persisted bare `sortedBy` (no Setting
-  // suffix); it must reach the new sortedBy override so the sort survives.
-  test('migrates released sortedBy (from LinearPileupDisplay) to the override', () => {
+  // suffix); it must reach the new sortedBy field.
+  test('migrates released sortedBy (from LinearPileupDisplay) to flat sortedBy', () => {
     const sorted = { type: 'Start location' }
     const result = migrateAlignmentsSnapshot({
       type: 'LinearPileupDisplay',
       sortedBy: sorted,
     })
-    const overrides = result.configOverrides as Record<string, unknown>
-    expect(overrides.sortedBy).toEqual(sorted)
-    expect(result).not.toHaveProperty('sortedBy')
+    expect(result.sortedBy).toEqual(sorted)
   })
 })

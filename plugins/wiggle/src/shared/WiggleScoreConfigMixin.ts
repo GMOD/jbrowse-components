@@ -22,11 +22,26 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * extends
  * - [ConfigOverrideMixin](../configoverridemixin)
  */
-export function WiggleScoreConfigMixin() {
+const WIGGLE_SCORE_CONFIG_KEYS = [
+  'posColor',
+  'negColor',
+  'bicolorPivot',
+  'scaleType',
+  'autoscale',
+  'numStdDev',
+  'summaryScoreMode',
+  'defaultRendering',
+  'minScore',
+  'maxScore',
+  'color',
+  'useBicolor',
+] as const
+
+export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
   return types
     .compose(
       'WiggleScoreConfigMixin',
-      ConfigOverrideMixin(),
+      ConfigOverrideMixin([...WIGGLE_SCORE_CONFIG_KEYS, ...extraKeys]),
       types.model({
         /**
          * #property

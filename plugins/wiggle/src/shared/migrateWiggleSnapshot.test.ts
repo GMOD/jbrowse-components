@@ -2,29 +2,24 @@ import { migrateWiggleSnapshot } from './migrateWiggleSnapshot.ts'
 
 describe('migrateWiggleSnapshot', () => {
   test('returns snapshot unchanged when no old properties present', () => {
-    const snap = {
-      type: 'LinearWiggleDisplay',
-      configOverrides: { scaleType: 'log', autoscale: 'local' },
-    }
+    const snap = { type: 'LinearWiggleDisplay', scaleType: 'log' }
     const result = migrateWiggleSnapshot(snap)
     expect(result).toEqual(snap)
   })
 
-  test('migrates generation 1: scale → configOverrides.scaleType', () => {
+  test('migrates generation 1: scale → flat scaleType', () => {
     const result = migrateWiggleSnapshot({ scale: 'log' })
-    expect(result).toEqual({ configOverrides: { scaleType: 'log' } })
+    expect(result).toEqual({ scaleType: 'log' })
   })
 
-  test('migrates generation 1: autoscale → configOverrides.autoscale', () => {
+  test('migrates generation 1: autoscale → flat autoscale', () => {
     const result = migrateWiggleSnapshot({ autoscale: 'local' })
-    expect(result).toEqual({ configOverrides: { autoscale: 'local' } })
+    expect(result).toEqual({ autoscale: 'local' })
   })
 
   test('migrates generation 1: summaryScoreMode', () => {
     const result = migrateWiggleSnapshot({ summaryScoreMode: 'whiskers' })
-    expect(result).toEqual({
-      configOverrides: { summaryScoreMode: 'whiskers' },
-    })
+    expect(result).toEqual({ summaryScoreMode: 'whiskers' })
   })
 
   test('migrates generation 1: color properties (solid color → useBicolor:false)', () => {
@@ -34,56 +29,48 @@ describe('migrateWiggleSnapshot', () => {
       negColor: '#00ff00',
     })
     expect(result).toEqual({
-      configOverrides: {
-        color: '#ff0000',
-        useBicolor: false,
-        posColor: '#0000ff',
-        negColor: '#00ff00',
-      },
+      color: '#ff0000',
+      useBicolor: false,
+      posColor: '#0000ff',
+      negColor: '#00ff00',
     })
   })
 
   test('migrates sentinel #f0f color → useBicolor:true, strips color', () => {
     const result = migrateWiggleSnapshot({ color: '#f0f' })
-    expect(result).toEqual({ configOverrides: { useBicolor: true } })
+    expect(result).toEqual({ useBicolor: true })
   })
 
   test('migrates sentinel #ff00ff color → useBicolor:true, strips color', () => {
     const result = migrateWiggleSnapshot({ colorSetting: '#ff00ff' })
-    expect(result).toEqual({ configOverrides: { useBicolor: true } })
+    expect(result).toEqual({ useBicolor: true })
   })
 
   test('migrates generation 1: constraints.{min,max}', () => {
     const result = migrateWiggleSnapshot({
       constraints: { min: -10, max: 100 },
     })
-    expect(result).toEqual({
-      configOverrides: { minScore: -10, maxScore: 100 },
-    })
+    expect(result).toEqual({ minScore: -10, maxScore: 100 })
   })
 
   test('handles constraints with only min', () => {
     const result = migrateWiggleSnapshot({ constraints: { min: 0 } })
-    expect(result).toEqual({ configOverrides: { minScore: 0 } })
+    expect(result).toEqual({ minScore: 0 })
   })
 
   test('handles constraints with only max', () => {
     const result = migrateWiggleSnapshot({ constraints: { max: 50 } })
-    expect(result).toEqual({ configOverrides: { maxScore: 50 } })
+    expect(result).toEqual({ maxScore: 50 })
   })
 
   test('migrates generation 1: rendererTypeNameState', () => {
-    const result = migrateWiggleSnapshot({
-      rendererTypeNameState: 'density',
-    })
-    expect(result).toEqual({
-      configOverrides: { defaultRendering: 'density' },
-    })
+    const result = migrateWiggleSnapshot({ rendererTypeNameState: 'density' })
+    expect(result).toEqual({ defaultRendering: 'density' })
   })
 
   test('migrates generation 1: selectedRendering as fallback', () => {
     const result = migrateWiggleSnapshot({ selectedRendering: 'line' })
-    expect(result).toEqual({ configOverrides: { defaultRendering: 'line' } })
+    expect(result).toEqual({ defaultRendering: 'line' })
   })
 
   test('rendererTypeNameState takes precedence over selectedRendering', () => {
@@ -91,9 +78,7 @@ describe('migrateWiggleSnapshot', () => {
       rendererTypeNameState: 'density',
       selectedRendering: 'xyplot',
     })
-    expect(result).toEqual({
-      configOverrides: { defaultRendering: 'density' },
-    })
+    expect(result).toEqual({ defaultRendering: 'density' })
   })
 
   test('multiWiggle mode remaps xyplot → multixyplot', () => {
@@ -101,9 +86,7 @@ describe('migrateWiggleSnapshot', () => {
       { rendererTypeNameState: 'xyplot' },
       { multiWiggle: true },
     )
-    expect(result).toEqual({
-      configOverrides: { defaultRendering: 'multixyplot' },
-    })
+    expect(result).toEqual({ defaultRendering: 'multixyplot' })
   })
 
   test('multiWiggle mode passes through non-xyplot types unchanged', () => {
@@ -111,14 +94,12 @@ describe('migrateWiggleSnapshot', () => {
       { rendererTypeNameState: 'multirowxy' },
       { multiWiggle: true },
     )
-    expect(result).toEqual({
-      configOverrides: { defaultRendering: 'multirowxy' },
-    })
+    expect(result).toEqual({ defaultRendering: 'multirowxy' })
   })
 
   test('migrates generation 1: showSidebar → showTree', () => {
     const result = migrateWiggleSnapshot({ showSidebar: false })
-    expect(result).toEqual({ configOverrides: { showTree: false } })
+    expect(result).toEqual({ showTree: false })
   })
 
   test('strips fill:true and minSize without changing rendering', () => {
@@ -127,7 +108,7 @@ describe('migrateWiggleSnapshot', () => {
       fill: true,
       minSize: 2,
     })
-    expect(result).toEqual({ configOverrides: { scaleType: 'linear' } })
+    expect(result).toEqual({ scaleType: 'linear' })
     expect(result).not.toHaveProperty('fill')
     expect(result).not.toHaveProperty('minSize')
   })
@@ -137,19 +118,17 @@ describe('migrateWiggleSnapshot', () => {
       rendererTypeNameState: 'xyplot',
       fill: false,
     })
-    expect(result).toEqual({ configOverrides: { defaultRendering: 'scatter' } })
+    expect(result).toEqual({ defaultRendering: 'scatter' })
   })
 
   test('migrates fill:false with no rendering (single) → scatter', () => {
     const result = migrateWiggleSnapshot({ fill: false })
-    expect(result).toEqual({ configOverrides: { defaultRendering: 'scatter' } })
+    expect(result).toEqual({ defaultRendering: 'scatter' })
   })
 
   test('migrates fill:false with no rendering (multiWiggle) → multirowscatter', () => {
     const result = migrateWiggleSnapshot({ fill: false }, { multiWiggle: true })
-    expect(result).toEqual({
-      configOverrides: { defaultRendering: 'multirowscatter' },
-    })
+    expect(result).toEqual({ defaultRendering: 'multirowscatter' })
   })
 
   test('migrates fill:false on multirowxy (multiWiggle) → multirowscatter', () => {
@@ -157,9 +136,7 @@ describe('migrateWiggleSnapshot', () => {
       { rendererTypeNameState: 'multirowxy', fill: false },
       { multiWiggle: true },
     )
-    expect(result).toEqual({
-      configOverrides: { defaultRendering: 'multirowscatter' },
-    })
+    expect(result).toEqual({ defaultRendering: 'multirowscatter' })
   })
 
   test('migrates fill:false on xyplot (multiWiggle) → multiscatter', () => {
@@ -167,18 +144,16 @@ describe('migrateWiggleSnapshot', () => {
       { rendererTypeNameState: 'xyplot', fill: false },
       { multiWiggle: true },
     )
-    expect(result).toEqual({
-      configOverrides: { defaultRendering: 'multiscatter' },
-    })
+    expect(result).toEqual({ defaultRendering: 'multiscatter' })
   })
 
   test('fill:false on density/line passes through unchanged', () => {
     expect(
       migrateWiggleSnapshot({ rendererTypeNameState: 'density', fill: false }),
-    ).toEqual({ configOverrides: { defaultRendering: 'density' } })
+    ).toEqual({ defaultRendering: 'density' })
     expect(
       migrateWiggleSnapshot({ rendererTypeNameState: 'line', fill: false }),
-    ).toEqual({ configOverrides: { defaultRendering: 'line' } })
+    ).toEqual({ defaultRendering: 'line' })
   })
 
   test('migrates generation 2: *Setting properties (solid color → useBicolor:false)', () => {
@@ -188,12 +163,10 @@ describe('migrateWiggleSnapshot', () => {
       autoscaleSetting: 'local',
     })
     expect(result).toEqual({
-      configOverrides: {
-        color: 'red',
-        useBicolor: false,
-        scaleType: 'log',
-        autoscale: 'local',
-      },
+      color: 'red',
+      useBicolor: false,
+      scaleType: 'log',
+      autoscale: 'local',
     })
   })
 
@@ -208,7 +181,7 @@ describe('migrateWiggleSnapshot', () => {
       type: 'LinearWiggleDisplay',
       configuration: 'track-123',
       layout: [],
-      configOverrides: { scaleType: 'log' },
+      scaleType: 'log',
     })
   })
 
@@ -231,15 +204,13 @@ describe('migrateWiggleSnapshot', () => {
       type: 'MultiLinearWiggleDisplay',
       configuration: 'encode-multi',
       layout: [{ name: 'track1' }],
-      configOverrides: {
-        defaultRendering: 'multixyplot',
-        scaleType: 'log',
-        autoscale: 'local',
-        summaryScoreMode: 'whiskers',
-        minScore: 0,
-        maxScore: 200,
-        showTree: true,
-      },
+      defaultRendering: 'multixyplot',
+      scaleType: 'log',
+      autoscale: 'local',
+      summaryScoreMode: 'whiskers',
+      minScore: 0,
+      maxScore: 200,
+      showTree: true,
     })
   })
 
@@ -248,7 +219,7 @@ describe('migrateWiggleSnapshot', () => {
       bicolorPivot: 'numeric',
       bicolorPivotValue: 100,
     })
-    expect(result).toEqual({ configOverrides: { bicolorPivot: 100 } })
+    expect(result).toEqual({ bicolorPivot: 100 })
   })
 
   test('bicolorPivot "mean"/"z_score"/"none" drop to default (no override)', () => {
@@ -259,7 +230,7 @@ describe('migrateWiggleSnapshot', () => {
 
   test('numeric bicolorPivot passes through unchanged', () => {
     const result = migrateWiggleSnapshot({ bicolorPivot: 42 })
-    expect(result).toEqual({ configOverrides: { bicolorPivot: 42 } })
+    expect(result).toEqual({ bicolorPivot: 42 })
   })
 
   test('strips clipColor and bicolorPivotValue', () => {
@@ -268,18 +239,8 @@ describe('migrateWiggleSnapshot', () => {
       clipColor: 'red',
       bicolorPivotValue: 5,
     })
-    expect(result).toEqual({ configOverrides: { scaleType: 'log' } })
+    expect(result).toEqual({ scaleType: 'log' })
     expect(result).not.toHaveProperty('clipColor')
     expect(result).not.toHaveProperty('bicolorPivotValue')
-  })
-
-  test('merges with existing configOverrides', () => {
-    const result = migrateWiggleSnapshot({
-      configOverrides: { color: 'blue' },
-      scaleTypeSetting: 'log',
-    })
-    expect(result).toEqual({
-      configOverrides: { color: 'blue', scaleType: 'log' },
-    })
   })
 })

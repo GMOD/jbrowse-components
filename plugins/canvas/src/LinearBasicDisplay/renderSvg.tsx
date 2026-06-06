@@ -29,6 +29,7 @@ export interface RenderSvgModel {
   laidOutDataMap: Map<number, FeatureDataResult>
   showLabels: boolean
   effectiveShowDescriptions: boolean
+  displayMode: string
 }
 
 // Labels and amino-acid overlays are rendered as DOM/React overlays
@@ -40,23 +41,30 @@ function renderLabels(
   data: FeatureDataResult,
   vr: SvgRegionBounds,
   visibility: { showLabels: boolean; showDescriptions: boolean },
+  decimateLabels: boolean,
 ) {
   ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
-  forEachRenderedLabel(data, vr, visibility, (_, labels) => {
-    for (const { label, labelX, labelY } of labels) {
-      if (label.isOverlay) {
-        ctx.fillStyle = 'rgba(255,255,255,0.8)'
-        ctx.fillRect(
-          labelX - 1,
-          labelY,
-          label.textWidth + 2,
-          LABEL_FONT_SIZE + 1,
-        )
+  forEachRenderedLabel(
+    data,
+    vr,
+    visibility,
+    (_, labels) => {
+      for (const { label, labelX, labelY } of labels) {
+        if (label.isOverlay) {
+          ctx.fillStyle = 'rgba(255,255,255,0.8)'
+          ctx.fillRect(
+            labelX - 1,
+            labelY,
+            label.textWidth + 2,
+            LABEL_FONT_SIZE + 1,
+          )
+        }
+        ctx.fillStyle = label.color
+        ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)
       }
-      ctx.fillStyle = label.color
-      ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)
-    }
-  })
+    },
+    decimateLabels,
+  )
 }
 
 function renderPeptides(
@@ -118,6 +126,7 @@ export async function renderSvg(
     showLabels: model.showLabels,
     showDescriptions: model.effectiveShowDescriptions,
   }
+  const decimateLabels = model.displayMode === 'collapse'
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.
   const textNode = paintLayer(totalWidth, height, undefined, ctx => {
@@ -126,7 +135,7 @@ export async function renderSvg(
       if (!data) {
         continue
       }
-      renderLabels(ctx, data, vr, visibility)
+      renderLabels(ctx, data, vr, visibility, decimateLabels)
       if (renderPeptidesFlag) {
         renderPeptides(ctx, data, vr)
       }

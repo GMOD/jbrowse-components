@@ -4,22 +4,56 @@ import ConfigOverrideMixin, {
   migrateOldSettingSnapshots,
 } from './ConfigOverrideMixin.ts'
 
+// Basic mixin with declared config keys (no outer preProcessSnapshot)
 const TestModel = types.compose(
   'TestDisplay',
-  ConfigOverrideMixin(),
+  ConfigOverrideMixin(['color', 'scaleType', 'minScore']),
   types.model({ name: types.optional(types.string, 'test') }),
 )
 
-describe('ConfigOverrideMixin', () => {
-  it('starts with empty overrides', () => {
-    const model = TestModel.create({})
-    expect(model.configOverrides).toEqual({})
+// Simulates a display that also has its own preProcessSnapshot (e.g. a
+// migration function). Verifies that both preProcessSnapshot hooks compose
+// correctly: the outer one runs first, then ConfigOverrideMixin's inner one.
+const MigratingModel = types
+  .compose(
+    'MigratingDisplay',
+    ConfigOverrideMixin(['color', 'displayMode']),
+    types.model({ name: types.optional(types.string, 'test') }),
+  )
+  .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
+    if (!snap) {
+      return snap
+    }
+    // Simulate a migration function that converts an old key into
+    // configOverrides format (what migrateBasicSnapshot / migrateWiggleSnapshot
+    // do today).
+    const { legacyColor, ...rest } = snap
+    if (legacyColor === undefined) {
+      return snap
+    }
+    return {
+      ...rest,
+      configOverrides: {
+        ...(rest.configOverrides as Record<string, unknown> | undefined),
+        color: legacyColor,
+      },
+    }
   })
 
-  it('setOverride stores a value', () => {
+describe('ConfigOverrideMixin — flat snapshot format', () => {
+  it('starts with empty overrides, snapshot has no extra keys', () => {
+    const model = TestModel.create({})
+    expect(model.configOverrides).toEqual({})
+    expect(getSnapshot(model)).not.toHaveProperty('configOverrides')
+    expect(getSnapshot(model)).not.toHaveProperty('color')
+  })
+
+  it('setOverride stores a value and snapshot is flat (no configOverrides key)', () => {
     const model = TestModel.create({})
     model.setOverride('color', 'red')
-    expect(model.getOverride('color')).toBe('red')
+    const snap = getSnapshot(model)
+    expect(snap).not.toHaveProperty('configOverrides')
+    expect((snap as Record<string, unknown>).color).toBe('red')
   })
 
   it('getOverride returns undefined for missing keys', () => {
@@ -27,43 +61,25 @@ describe('ConfigOverrideMixin', () => {
     expect(model.getOverride('missing')).toBeUndefined()
   })
 
-  it('clearOverride removes a value', () => {
+  it('clearOverride removes a value and snapshot becomes empty', () => {
     const model = TestModel.create({})
     model.setOverride('color', 'red')
     model.clearOverride('color')
-    expect(model.getOverride('color')).toBeUndefined()
-  })
-
-  it('postProcessSnapshot strips empty configOverrides', () => {
-    const model = TestModel.create({})
     const snap = getSnapshot(model)
+    expect(snap).not.toHaveProperty('color')
     expect(snap).not.toHaveProperty('configOverrides')
   })
 
-  it('postProcessSnapshot keeps non-empty configOverrides', () => {
-    const model = TestModel.create({ configOverrides: { color: 'red' } })
-    const snap = getSnapshot(model)
-    expect(snap.configOverrides).toEqual({ color: 'red' })
-  })
-
-  it('hydrates from existing configOverrides snapshot', () => {
-    const model = TestModel.create({
-      configOverrides: { scaleType: 'log', minScore: 0 },
-    })
-    expect(model.getOverride('scaleType')).toBe('log')
-    expect(model.getOverride('minScore')).toBe(0)
-  })
-
-  it('multiple overrides accumulate', () => {
+  it('multiple overrides all appear flat in snapshot', () => {
     const model = TestModel.create({})
     model.setOverride('color', 'red')
     model.setOverride('scaleType', 'log')
     model.setOverride('minScore', 5)
-    expect(model.configOverrides).toEqual({
-      color: 'red',
-      scaleType: 'log',
-      minScore: 5,
-    })
+    const snap = getSnapshot(model) as Record<string, unknown>
+    expect(snap).not.toHaveProperty('configOverrides')
+    expect(snap.color).toBe('red')
+    expect(snap.scaleType).toBe('log')
+    expect(snap.minScore).toBe(5)
   })
 
   it('setOverride replaces existing value', () => {
@@ -74,8 +90,69 @@ describe('ConfigOverrideMixin', () => {
   })
 })
 
+describe('ConfigOverrideMixin — loading snapshots', () => {
+  it('loads flat config keys from a new-format snapshot', () => {
+    const model = TestModel.create({ color: 'red', scaleType: 'log' } as never)
+    expect(model.getOverride('color')).toBe('red')
+    expect(model.getOverride('scaleType')).toBe('log')
+  })
+
+  it('loads old configOverrides sub-key format (backward compat)', () => {
+    const model = TestModel.create({
+      configOverrides: { color: 'red', scaleType: 'log' },
+    })
+    expect(model.getOverride('color')).toBe('red')
+    expect(model.getOverride('scaleType')).toBe('log')
+    // Round-trips as flat
+    const snap = getSnapshot(model) as Record<string, unknown>
+    expect(snap).not.toHaveProperty('configOverrides')
+    expect(snap.color).toBe('red')
+  })
+
+  it('flat keys not in configKeys pass through as-is (model properties)', () => {
+    const model = TestModel.create({ name: 'myTrack' })
+    expect(model.name).toBe('myTrack')
+    expect(model.getOverride('name')).toBeUndefined()
+  })
+})
+
+describe('ConfigOverrideMixin — composition with outer preProcessSnapshot', () => {
+  it('outer migration runs first; migrated configOverrides are preserved', () => {
+    // Snapshot has a legacy key that the outer preProcessSnapshot converts into
+    // configOverrides format. ConfigOverrideMixin's inner preProcessSnapshot
+    // should then pick up that configOverrides map.
+    const model = MigratingModel.create({ legacyColor: 'green' } as never)
+    expect(model.getOverride('color')).toBe('green')
+    const snap = getSnapshot(model) as Record<string, unknown>
+    expect(snap.color).toBe('green')
+    expect(snap).not.toHaveProperty('configOverrides')
+    expect(snap).not.toHaveProperty('legacyColor')
+  })
+
+  it('flat displayMode is collected by ConfigOverrideMixin after migration', () => {
+    // The outer migration doesn't touch displayMode; ConfigOverrideMixin picks
+    // it up from the flat snapshot.
+    const model = MigratingModel.create({ displayMode: 'compact' } as never)
+    expect(model.getOverride('displayMode')).toBe('compact')
+  })
+
+  it('full round-trip: save flat → reload flat', () => {
+    const model1 = MigratingModel.create({})
+    model1.setOverride('color', 'red')
+    model1.setOverride('displayMode', 'compact')
+    const snap = getSnapshot(model1) as Record<string, unknown>
+    expect(snap.color).toBe('red')
+    expect(snap.displayMode).toBe('compact')
+    expect(snap).not.toHaveProperty('configOverrides')
+
+    const model2 = MigratingModel.create(snap)
+    expect(model2.getOverride('color')).toBe('red')
+    expect(model2.getOverride('displayMode')).toBe('compact')
+  })
+})
+
 describe('migrateOldSettingSnapshots', () => {
-  it('strips Setting suffix and moves to configOverrides', () => {
+  it('strips Setting suffix and promotes to flat keys', () => {
     const result = migrateOldSettingSnapshots({
       type: 'TestDisplay',
       colorSetting: 'red',
@@ -83,7 +160,8 @@ describe('migrateOldSettingSnapshots', () => {
     })
     expect(result).toEqual({
       type: 'TestDisplay',
-      configOverrides: { color: 'red', scaleType: 'log' },
+      color: 'red',
+      scaleType: 'log',
     })
   })
 
@@ -93,13 +171,16 @@ describe('migrateOldSettingSnapshots', () => {
     expect(result).toEqual(snap)
   })
 
-  it('merges with existing configOverrides', () => {
+  it('promotes alongside unrelated keys', () => {
     const result = migrateOldSettingSnapshots({
-      configOverrides: { existing: true },
+      type: 'TestDisplay',
+      name: 'myTrack',
       colorSetting: 'blue',
     })
     expect(result).toEqual({
-      configOverrides: { existing: true, color: 'blue' },
+      type: 'TestDisplay',
+      name: 'myTrack',
+      color: 'blue',
     })
   })
 
@@ -108,8 +189,6 @@ describe('migrateOldSettingSnapshots', () => {
       { trackMaxHeight: 800, colorSetting: 'red' },
       { trackMaxHeight: 'maxHeight' },
     )
-    expect(result).toEqual({
-      configOverrides: { maxHeight: 800, color: 'red' },
-    })
+    expect(result).toEqual({ maxHeight: 800, color: 'red' })
   })
 })

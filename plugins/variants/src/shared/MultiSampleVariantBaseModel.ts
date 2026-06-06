@@ -209,17 +209,12 @@ function getGenotypeMapForFeature(
  * ]
  * ```
  *
- * In a display *instance* snapshot (a session / `displaySnapshot`), the
- * configuration is a reference, so the runtime override goes in the
- * `configOverrides` map (via `ConfigOverrideMixin`) — exactly what a saved
- * session serializes. A top-level `renderingMode` here is silently dropped
- * because there is no MST property by that name:
+ * In a display *instance* snapshot (a session / `displaySnapshot`), set it
+ * flat — exactly what a saved session serializes:
  * ```js
  * {
  *   type: 'LinearMultiSampleVariantMatrixDisplay',
- *   configOverrides: {
- *     renderingMode: 'phased',
- *   },
+ *   renderingMode: 'phased',
  * }
  * ```
  */
@@ -242,7 +237,16 @@ export default function MultiSampleVariantBaseModelF(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        ConfigOverrideMixin(),
+        ConfigOverrideMixin([
+          'renderingMode',
+          'fetchSizeLimit',
+          'minorAlleleFrequencyFilter',
+          'showSidebarLabels',
+          'showTree',
+          'showBranchLength',
+          'referenceDrawingMode',
+          'showReferenceAlleles',
+        ]),
         TreeSidebarMixin<Source>(),
         types.model({
           type: types.string,
@@ -1000,7 +1004,7 @@ export default function MultiSampleVariantBaseModelF(
          */
         getPortableSettings() {
           return {
-            configOverrides: self.configOverrides,
+            ...self.configOverrides,
             jexlFilters: self.jexlFilters,
             clusterTree: self.clusterTree,
             treeAreaWidth: self.treeAreaWidth,

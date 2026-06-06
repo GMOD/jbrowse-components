@@ -1,5 +1,4 @@
-import { isLabelAllowed, readConfigValue } from './renderConfig.ts'
-import { mockDisplayConfig } from './testUtils.ts'
+import { readConfigValue } from './renderConfig.ts'
 
 function mockFeature(data: Record<string, unknown> = {}) {
   return {
@@ -40,17 +39,5 @@ describe('readConfigValue', () => {
         anyFeature,
       ),
     ).toBe('myGene')
-  })
-})
-
-describe('isLabelAllowed', () => {
-  it('returns true when suppressLabels is false', () => {
-    expect(isLabelAllowed(mockDisplayConfig())).toBe(true)
-  })
-
-  it('returns false when suppressLabels is true (collapse mode)', () => {
-    expect(isLabelAllowed(mockDisplayConfig({ suppressLabels: true }))).toBe(
-      false,
-    )
   })
 })
