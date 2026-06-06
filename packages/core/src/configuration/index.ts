@@ -12,3 +12,8 @@ export type {
 } from './types.ts'
 
 export * from './util.ts'
+export {
+  isCallbackValue,
+  toCallbackValue,
+  toFixedValue,
+} from './slotValueUtils.ts'

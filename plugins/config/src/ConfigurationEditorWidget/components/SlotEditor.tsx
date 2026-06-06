@@ -1,3 +1,10 @@
+import { useState } from 'react'
+
+import {
+  isCallbackValue,
+  toCallbackValue,
+  toFixedValue,
+} from '@jbrowse/core/configuration'
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
@@ -147,11 +154,18 @@ const SlotEditor = observer(function SlotEditor({
 }) {
   const { classes } = useSlotEditorStyles()
   const { type } = slot
+  // editor mode is UI-only state, derived once from whether the stored value is
+  // a jexl callback. Toggling rewrites the value; typing a "jexl:" prefix into a
+  // value field does not auto-swap the editor, since this state only changes on
+  // the explicit toggle.
+  const [callbackMode, setCallbackMode] = useState(() =>
+    isCallbackValue(slot.value),
+  )
   const TypedComponent = valueComponents[type]
-  if (!slot.editorIsCallback && !TypedComponent) {
+  if (!callbackMode && !TypedComponent) {
     console.warn(`no slot editor defined for ${type}, editing as string`)
   }
-  const ValueComponent: React.ComponentType<any> = slot.editorIsCallback
+  const ValueComponent: React.ComponentType<any> = callbackMode
     ? CallbackEditor
     : (TypedComponent ?? StringEditor)
   return (
@@ -163,18 +177,29 @@ const SlotEditor = observer(function SlotEditor({
         <div className={classes.slotModeSwitch}>
           <Tooltip
             title={
-              slot.editorIsCallback
+              callbackMode
                 ? 'Editing as a callback (Jexl expression). Click to use a fixed value.'
                 : 'Editing as a fixed value. Click to use a callback (Jexl expression).'
             }
           >
             <IconButton
-              color={slot.editorIsCallback ? 'primary' : 'default'}
-              onClick={() =>
-                slot.editorIsCallback
-                  ? slot.convertToValue()
-                  : slot.convertToCallback()
-              }
+              color={callbackMode ? 'primary' : 'default'}
+              onClick={() => {
+                if (callbackMode) {
+                  slot.set(
+                    toFixedValue(
+                      slot.value,
+                      type,
+                      slot.defaultValue,
+                      getEnv(slot).pluginManager.jexl,
+                    ),
+                  )
+                  setCallbackMode(false)
+                } else {
+                  slot.set(toCallbackValue(slot.value))
+                  setCallbackMode(true)
+                }
+              }}
             >
               <CodeIcon />
             </IconButton>

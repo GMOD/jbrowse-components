@@ -28,51 +28,11 @@ const typeModels: Record<string, IAnyType> = {
   frozen: types.frozen(),
 }
 
-// default values we use if the defaultValue is malformed or does not work
-const fallbackDefaults: Record<string, unknown> = {
-  stringArray: [],
-  stringArrayMap: {},
-  numberMap: {},
-  boolean: true,
-  color: 'black',
-  integer: 1,
-  number: 1,
-  string: '',
-  text: '',
-  fileLocation: { uri: '/path/to/resource.txt', locationType: 'UriLocation' },
-  frozen: {},
-}
-
-const literalJSON = (self: { value: unknown }) => ({
-  views: {
-    get valueJSON() {
-      return self.value
-    },
-  },
-})
-
-const objectJSON = (self: { value: unknown }) => ({
-  views: {
-    get valueJSON() {
-      return JSON.stringify(self.value)
-    },
-  },
-})
-
-// custom actions for modifying the value models
+// type-specific mutators used by the collection editors. Other types (string,
+// color, number, boolean, fileLocation, frozen, ...) need no extension — the
+// editor sets the whole value via slot.set().
 const typeModelExtensions: Record<string, (self: any) => any> = {
-  fileLocation: objectJSON,
-  number: literalJSON,
-  integer: literalJSON,
-  boolean: literalJSON,
-  frozen: objectJSON,
-  // special actions for working with stringArray slots
   stringArray: (self: { value: string[] }) => ({
-    views: {
-      get valueJSON() {
-        return JSON.stringify(self.value)
-      },
-    },
     actions: {
       add(val: string) {
         self.value.push(val)
@@ -86,11 +46,6 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
     },
   }),
   stringArrayMap: (self: { value: Map<string, string[]> }) => ({
-    views: {
-      get valueJSON() {
-        return JSON.stringify(self.value)
-      },
-    },
     actions: {
       add(key: string, val: string[]) {
         self.value.set(key, val)
@@ -122,11 +77,6 @@ const typeModelExtensions: Record<string, (self: any) => any> = {
     },
   }),
   numberMap: (self: { value: Map<string, number> }) => ({
-    views: {
-      get valueJSON() {
-        return JSON.stringify(self.value)
-      },
-    },
     actions: {
       add(key: string, val: number) {
         self.value.set(key, val)
@@ -194,22 +144,16 @@ export default function ConfigSlot(
     })
     .volatile(() => ({
       contextVariable,
-      // editor-mode override: 'callback' or 'value' once the user has
-      // explicitly toggled or started typing. undefined means "follow
-      // isCallback" (i.e. derive from the value's prefix on first read).
-      editorModeOverride: undefined as 'callback' | 'value' | undefined,
     }))
     .views(self => ({
       get isCallback() {
         return String(self.value).startsWith('jexl:')
       },
+      get defaultValue() {
+        return defaultValue
+      },
     }))
     .views(self => ({
-      get editorIsCallback() {
-        return self.editorModeOverride === undefined
-          ? self.isCallback
-          : self.editorModeOverride === 'callback'
-      },
       get expr() {
         const code = String(self.value)
         return self.isCallback && code.length > 'jexl:'.length
@@ -217,13 +161,6 @@ export default function ConfigSlot(
           : {
               eval: (_arg?: unknown) => self.value,
             }
-      },
-
-      // JS representation of the value of this slot, suitable
-      // for embedding in either JSON or a JS function string.
-      // many of the data types override this in typeModelExtensions
-      get valueJSON(): string | undefined {
-        return self.isCallback ? undefined : JSON.stringify(self.value)
       },
     }))
     .views(self => ({
@@ -256,50 +193,7 @@ export default function ConfigSlot(
     })
     .actions(self => ({
       set(newVal: unknown) {
-        // pin the editor mode on first user input so that typing a "jexl:"
-        // prefix into a value field doesn't auto-swap to the callback editor
-        self.editorModeOverride ??= self.isCallback ? 'callback' : 'value'
         self.value = newVal
-      },
-      reset() {
-        self.value = defaultValue
-        self.editorModeOverride = undefined
-      },
-      convertToCallback() {
-        self.editorModeOverride = 'callback'
-        if (self.isCallback) {
-          return
-        }
-        // ?? not || so that falsy values like false/0 are preserved
-        self.value = `jexl:${self.valueJSON ?? "''"}`
-      },
-      convertToValue() {
-        self.editorModeOverride = 'value'
-        if (!self.isCallback) {
-          return
-        }
-        // try calling it with no arguments
-        try {
-          const funcResult = self.expr.eval()
-          if (funcResult !== undefined) {
-            self.value = funcResult
-            return
-          }
-        } catch (e) {
-          /* ignore */
-        }
-        self.value = defaultValue
-        // if defaultValue is also a jexl callback, fall back to the
-        // hardcoded type default
-        if (
-          typeof defaultValue === 'string' &&
-          defaultValue.startsWith('jexl:')
-        ) {
-          if (!(type in fallbackDefaults)) {
-            throw new Error(`no fallbackDefault defined for type ${type}`)
-          }
-          self.value = fallbackDefaults[type]
-        }
       },
     }))
 

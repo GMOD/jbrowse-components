@@ -248,6 +248,13 @@ function makeConfigurationSchemaModel<
     completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
   }
 
+  // also stash the slot-metadata table on the instantiated model type (not just
+  // the types.optional wrapper below), so it is reachable from a live node via
+  // getType(node) — the config editor's slot facade reads metadata from here.
+  Object.defineProperty(completeModel, 'jbrowseSchemaDefinition', {
+    value: schemaDefinition,
+  })
+
   return types.optional(completeModel, modelDefault)
 }
 
