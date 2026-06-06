@@ -104,7 +104,7 @@
     "@electron/packager": "^20.0.1",
     "@types/selenium-webdriver": "^4.35.6",
     "cross-env": "^10.1.0",
-    "electron": "42.3.1",
+    "electron": "42.3.3",
     "electron-chromedriver": "^42.3.3",
     "esbuild": "^0.28.0",
     "selenium-webdriver": "^4.44.0"

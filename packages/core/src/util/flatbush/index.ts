@@ -66,6 +66,12 @@ export default class Flatbush {
       throw new Error('byteOffset must be 8-byte aligned.')
     }
 
+    if (!data || data.byteLength === undefined || 'buffer' in data) {
+      throw new Error(
+        'Data must be an instance of ArrayBuffer or SharedArrayBuffer.',
+      )
+    }
+
     // Check for detached ArrayBuffer (happens if buffer was transferred)
     if (data.byteLength === 0) {
       throw new Error(
@@ -110,6 +116,9 @@ export default class Flatbush {
     data?: ArrayBuffer,
     byteOffset = 0,
   ) {
+    if (numItems === undefined) {
+      throw new Error('Missing required argument: numItems.')
+    }
     if (isNaN(numItems) || numItems <= 0) {
       throw new Error(`Unexpected numItems value: ${numItems}.`)
     }
@@ -135,7 +144,7 @@ export default class Flatbush {
     const arrayTypeIndex = ARRAY_TYPES.indexOf(ArrayType)
     const nodesByteSize = numNodes * 4 * ArrayType.BYTES_PER_ELEMENT
 
-    if (arrayTypeIndex === -1) {
+    if (arrayTypeIndex < 0) {
       throw new Error(`Unexpected typed array class: ${ArrayType}.`)
     }
 
@@ -227,21 +236,20 @@ export default class Flatbush {
 
     const width = this.maxX - this.minX || 1
     const height = this.maxY - this.minY || 1
-    const hilbertValues = new Uint32Array(this.numItems)
+    const hilbertValues = new Int32Array(this.numItems)
     const hilbertMax = (1 << 16) - 1
-
-    const scaleX = hilbertMax / width
-    const scaleY = hilbertMax / height
-    const offsetX = this.minX
-    const offsetY = this.minY
 
     for (let i = 0, pos = 0; i < this.numItems; i++) {
       const minX = boxes[pos++]!
       const minY = boxes[pos++]!
       const maxX = boxes[pos++]!
       const maxY = boxes[pos++]!
-      const x = Math.floor(((minX + maxX) * 0.5 - offsetX) * scaleX)
-      const y = Math.floor(((minY + maxY) * 0.5 - offsetY) * scaleY)
+      const x = Math.floor(
+        (hilbertMax * ((minX + maxX) / 2 - this.minX)) / width,
+      )
+      const y = Math.floor(
+        (hilbertMax * ((minY + maxY) / 2 - this.minY)) / height,
+      )
       hilbertValues[i] = hilbert(x, y)
     }
 
@@ -268,22 +276,10 @@ export default class Flatbush {
         let nodeMaxX = boxes[pos++]!
         let nodeMaxY = boxes[pos++]!
         for (let j = 1; j < this.nodeSize && pos < end; j++) {
-          const x0 = boxes[pos++]!
-          const y0 = boxes[pos++]!
-          const x1 = boxes[pos++]!
-          const y1 = boxes[pos++]!
-          if (x0 < nodeMinX) {
-            nodeMinX = x0
-          }
-          if (y0 < nodeMinY) {
-            nodeMinY = y0
-          }
-          if (x1 > nodeMaxX) {
-            nodeMaxX = x1
-          }
-          if (y1 > nodeMaxY) {
-            nodeMaxY = y1
-          }
+          nodeMinX = Math.min(nodeMinX, boxes[pos++]!)
+          nodeMinY = Math.min(nodeMinY, boxes[pos++]!)
+          nodeMaxX = Math.max(nodeMaxX, boxes[pos++]!)
+          nodeMaxY = Math.max(nodeMaxY, boxes[pos++]!)
         }
 
         // add the new node to the tree data
@@ -317,51 +313,102 @@ export default class Flatbush {
     if (this._pos !== this._boxes.length) {
       throw new Error('Data not yet indexed - call index.finish().')
     }
+    const { _boxes: boxes, _levelBounds: levelBounds, _indices: indices, nodeSize } =
+      this
+    const numItems4 = this.numItems * 4
 
-    let nodeIndex: number | undefined = this._boxes.length - 4
-    const queue: number[] = []
+    let nodeIndex: number | undefined = boxes.length - 4
+    let level = levelBounds.length - 1 // start at the root level
+    const q: number[] = []
     const results: number[] = []
 
+    let contained = false // whether the current node's bbox is fully inside the query
+
     while (nodeIndex !== undefined) {
-      // find the end index of the node
-      const end = Math.min(
-        nodeIndex + this.nodeSize * 4,
-        upperBound(nodeIndex, this._levelBounds),
-      )
+      // find the end index of the node, capped at the level boundary
+      const end = Math.min(nodeIndex + nodeSize * 4, levelBounds[level]!)
+      const isNode = nodeIndex >= numItems4
 
-      // search through child nodes
-      for (let pos = nodeIndex; pos < end; pos += 4) {
-        // check if node bbox intersects with query bbox
-        const x0 = this._boxes[pos]!
-        if (maxX < x0) {
-          continue
-        }
-        const y0 = this._boxes[pos + 1]!
-        if (maxY < y0) {
-          continue
-        }
-        const x1 = this._boxes[pos + 2]!
-        if (minX > x1) {
-          continue
-        }
-        const y1 = this._boxes[pos + 3]!
-        if (minY > y1) {
-          continue
-        }
+      if (contained) {
+        this._collectContained(nodeIndex, end, level, isNode, q, results, filterFn)
+      } else {
+        // search through child nodes
+        for (let pos = nodeIndex; pos < end; pos += 4) {
+          // check if node bbox intersects with query bbox
+          const x0 = boxes[pos]!
+          if (maxX < x0) {
+            continue
+          }
+          const y0 = boxes[pos + 1]!
+          if (maxY < y0) {
+            continue
+          }
+          const x1 = boxes[pos + 2]!
+          if (minX > x1) {
+            continue
+          }
+          const y1 = boxes[pos + 3]!
+          if (minY > y1) {
+            continue
+          }
 
-        const index = this._indices[pos >> 2]! | 0
+          const index = indices[pos >> 2]! | 0
 
-        if (nodeIndex >= this.numItems * 4) {
-          queue.push(index) // node; add it to the search queue
-        } else if (filterFn === undefined || filterFn(index, x0, y0, x1, y1)) {
-          results.push(index) // leaf item
+          if (isNode) {
+            // node intersects; flag it as contained if its bbox is fully inside the query
+            const c = +(minX <= x0 && minY <= y0 && maxX >= x1 && maxY >= y1)
+            q.push(index | c, level - 1) // node; add it and its level to the search queue
+          } else if (filterFn === undefined || filterFn(index, x0, y0, x1, y1)) {
+            results.push(index) // leaf item
+          }
         }
       }
 
-      nodeIndex = queue.pop()
+      level = q.pop()!
+      nodeIndex = q.pop()
+      if (nodeIndex !== undefined) {
+        contained = (nodeIndex & 1) === 1
+        nodeIndex &= ~1
+      }
     }
 
     return results
+  }
+
+  private _collectContained(
+    nodeIndex: number,
+    end: number,
+    level: number,
+    isNode: boolean,
+    q: number[],
+    results: number[],
+    filterFn?: (
+      index: number,
+      x0: number,
+      y0: number,
+      x1: number,
+      y1: number,
+    ) => boolean,
+  ) {
+    const boxes = this._boxes
+    const indices = this._indices
+    if (isNode) {
+      // all children are contained too, so enqueue them flagged without intersection tests
+      for (let pos = nodeIndex; pos < end; pos += 4) {
+        q.push(indices[pos >> 2]! | 1, level - 1) // contained node (LSB flag; `| 1` also coerces to int)
+      }
+    } else {
+      // leaf level: every leaf matches, only the filter can exclude it
+      for (let pos = nodeIndex; pos < end; pos += 4) {
+        const index = indices[pos >> 2]! | 0
+        if (
+          filterFn === undefined ||
+          filterFn(index, boxes[pos]!, boxes[pos + 1]!, boxes[pos + 2]!, boxes[pos + 3]!)
+        ) {
+          results.push(index)
+        }
+      }
+    }
   }
 
   /**
@@ -379,26 +426,48 @@ export default class Flatbush {
     if (this._pos !== this._boxes.length) {
       throw new Error('Data not yet indexed - call index.finish().')
     }
-
-    let nodeIndex: number | undefined = this._boxes.length - 4
-    const q = this._queue
+    const {
+      _boxes: boxes,
+      _levelBounds: levelBounds,
+      _indices: indices,
+      _queue: q,
+      nodeSize,
+    } = this
+    const numItems4 = this.numItems * 4
+    const nodeSize4 = nodeSize * 4
     const results: number[] = []
     const maxDistSquared = maxDistance * maxDistance
 
-    outer: while (nodeIndex !== undefined) {
-      // find the end index of the node
-      const end = Math.min(
-        nodeIndex + this.nodeSize * 4,
-        upperBound(nodeIndex, this._levelBounds),
-      )
+    // Tree nodes and leaves share the queue; encode leaves with LSB = 1 so we can tell them
+    // apart with `& 1`. Seed with the root node — any priority works since the queue is empty.
+    q.push((boxes.length - 4) << 1, 0)
 
-      // add child nodes to the queue
+    while (q.length) {
+      const top = q.ids[0]!
+      // if the closest queued entry is a leaf, it's the next result in distance order
+      if (top & 1) {
+        if (q.values[0]! > maxDistSquared) {
+          break
+        }
+        q.pop()
+        results.push(top >> 1)
+        if (results.length === maxResults) {
+          break
+        }
+        continue
+      }
+
+      q.pop()
+      const nodeIndex = top >> 1
+      const isLeafLevel = nodeIndex < numItems4
+      const end = Math.min(nodeIndex + nodeSize4, upperBound(nodeIndex, levelBounds))
+
       for (let pos = nodeIndex; pos < end; pos += 4) {
-        const index = this._indices[pos >> 2]! | 0
-        const minX = this._boxes[pos]!
-        const minY = this._boxes[pos + 1]!
-        const maxX = this._boxes[pos + 2]!
-        const maxY = this._boxes[pos + 3]!
+        const childIndex = indices[pos >> 2]! | 0
+        const minX = boxes[pos]!
+        const minY = boxes[pos + 1]!
+        const maxX = boxes[pos + 2]!
+        const maxY = boxes[pos + 3]!
         const dx = x < minX ? minX - x : x > maxX ? x - maxX : 0
         const dy = y < minY ? minY - y : y > maxY ? y - maxY : 0
         const dist = dx * dx + dy * dy
@@ -406,26 +475,14 @@ export default class Flatbush {
           continue
         }
 
-        if (nodeIndex >= this.numItems * 4) {
-          q.push(index << 1, dist) // node (use even id)
-        } else if (filterFn === undefined || filterFn(index)) {
-          q.push((index << 1) + 1, dist) // leaf item (use odd id)
+        if (isLeafLevel) {
+          if (filterFn === undefined || filterFn(childIndex)) {
+            q.push((childIndex << 1) | 1, dist) // leaf item (odd id)
+          }
+        } else {
+          q.push(childIndex << 1, dist) // node (even id)
         }
       }
-
-      // pop items from the queue
-      while (q.length && q.peek()! & 1) {
-        const dist = q.peekValue()!
-        if (dist > maxDistSquared) {
-          break outer
-        }
-        results.push(q.pop()! >> 1)
-        if (results.length === maxResults) {
-          break outer
-        }
-      }
-
-      nodeIndex = q.length ? q.pop()! >> 1 : undefined
     }
 
     q.clear()
@@ -454,47 +511,34 @@ function upperBound(value: number, arr: number[]): number {
  * Custom quicksort that partially sorts bbox data alongside the hilbert values.
  */
 function sort(
-  values: Uint32Array,
+  values: Int32Array,
   boxes: TypedArray,
   indices: IndexArray,
   left: number,
   right: number,
   nodeSize: number,
 ): void {
-  const stack: number[] = [left, right]
+  const stack = [left, right]
 
-  while (stack.length > 0) {
-    const r = stack.pop()!
-    const l = stack.pop()!
+  while (stack.length) {
+    const r = stack.pop() || 0
+    const l = stack.pop() || 0
 
-    if (Math.floor(l / nodeSize) >= Math.floor(r / nodeSize)) {
+    if (
+      r - l <= nodeSize &&
+      Math.floor(l / nodeSize) >= Math.floor(r / nodeSize)
+    ) {
       continue
     }
 
-    if (r - l < 10) {
-      insertionSort(values, boxes, indices, l, r)
-      continue
-    }
-
-    const start = values[l]!
-    const mid = values[(l + r) >> 1]!
-    const end = values[r]!
-
-    let pivot = end
-
-    const x = Math.max(start, mid)
-    if (end > x) {
-      pivot = x
-    } else if (x === start) {
-      pivot = Math.max(mid, end)
-    } else if (x === mid) {
-      pivot = Math.max(start, end)
-    }
+    const a = values[l]!
+    const b = values[(l + r) >> 1]!
+    const c = values[r]!
+    const pivot = (a > b) !== (a > c) ? a : (b < a) !== (b < c) ? b : c
 
     let i = l - 1
     let j = r + 1
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       do {
         i++
@@ -512,50 +556,11 @@ function sort(
   }
 }
 
-function insertionSort(
-  values: Uint32Array,
-  boxes: TypedArray,
-  indices: IndexArray,
-  left: number,
-  right: number,
-): void {
-  for (let i = left + 1; i <= right; i++) {
-    const tempVal = values[i]!
-    const tempIdx = indices[i]!
-    const k = i * 4
-    const tempA = boxes[k]!
-    const tempB = boxes[k + 1]!
-    const tempC = boxes[k + 2]!
-    const tempD = boxes[k + 3]!
-
-    let j = i - 1
-    while (j >= left && values[j]! > tempVal) {
-      values[j + 1] = values[j]!
-      indices[j + 1] = indices[j]!
-      const src = j * 4
-      const dst = (j + 1) * 4
-      boxes[dst] = boxes[src]!
-      boxes[dst + 1] = boxes[src + 1]!
-      boxes[dst + 2] = boxes[src + 2]!
-      boxes[dst + 3] = boxes[src + 3]!
-      j--
-    }
-
-    values[j + 1] = tempVal
-    indices[j + 1] = tempIdx
-    const dst = (j + 1) * 4
-    boxes[dst] = tempA
-    boxes[dst + 1] = tempB
-    boxes[dst + 2] = tempC
-    boxes[dst + 3] = tempD
-  }
-}
-
 /**
  * Swap two values and two corresponding boxes.
  */
 function swap(
-  values: Uint32Array,
+  values: Int32Array,
   boxes: TypedArray,
   indices: IndexArray,
   i: number,
@@ -598,49 +603,37 @@ function hilbert(x: number, y: number): number {
 
   let A = a | (b >> 1)
   let B = (a >> 1) ^ a
-  let C = (c >> 1) ^ (b & (d >> 1)) ^ c
-  let D = (a & (c >> 1)) ^ (d >> 1) ^ d
+  let C = c ^ ((c >> 1) ^ (b & (d >> 1)))
+  let D = d ^ ((a & (c >> 1)) ^ (d >> 1))
 
-  a = A
-  b = B
-  c = C
-  d = D
-  A = (a & (a >> 2)) ^ (b & (b >> 2))
-  B = (a & (b >> 2)) ^ (b & ((a ^ b) >> 2))
-  C ^= (a & (c >> 2)) ^ (b & (d >> 2))
-  D ^= (b & (c >> 2)) ^ ((a ^ b) & (d >> 2))
+  a = (A & (A >> 2)) ^ (B & (B >> 2))
+  b = (A & (B >> 2)) ^ (B & ((A ^ B) >> 2))
+  c = C ^ ((A & (C >> 2)) ^ (B & (D >> 2)))
+  d = D ^ ((B & (C >> 2)) ^ ((A ^ B) & (D >> 2)))
 
-  a = A
-  b = B
-  c = C
-  d = D
   A = (a & (a >> 4)) ^ (b & (b >> 4))
   B = (a & (b >> 4)) ^ (b & ((a ^ b) >> 4))
-  C ^= (a & (c >> 4)) ^ (b & (d >> 4))
-  D ^= (b & (c >> 4)) ^ ((a ^ b) & (d >> 4))
+  C = c ^ ((a & (c >> 4)) ^ (b & (d >> 4)))
+  D = d ^ ((b & (c >> 4)) ^ ((a ^ b) & (d >> 4)))
 
-  a = A
-  b = B
-  c = C
-  d = D
-  C ^= (a & (c >> 8)) ^ (b & (d >> 8))
-  D ^= (b & (c >> 8)) ^ ((a ^ b) & (d >> 8))
+  c = C ^ ((A & (C >> 8)) ^ (B & (D >> 8)))
+  d = D ^ ((B & (C >> 8)) ^ ((A ^ B) & (D >> 8)))
 
-  a = C ^ (C >> 1)
-  b = D ^ (D >> 1)
+  c ^= c >> 1
+  d ^= d >> 1
+  a = x ^ y
+  b = d | (0xffff ^ (a | c))
 
-  let i0 = x ^ y
-  let i1 = b | (0xffff ^ (i0 | a))
+  a = (a | (a << 8)) & 0x00ff00ff
+  a = (a | (a << 4)) & 0x0f0f0f0f
+  a = (a | (a << 2)) & 0x33333333
+  a = (a | (a << 1)) & 0x55555555
 
-  i0 = (i0 | (i0 << 8)) & 0x00ff00ff
-  i0 = (i0 | (i0 << 4)) & 0x0f0f0f0f
-  i0 = (i0 | (i0 << 2)) & 0x33333333
-  i0 = (i0 | (i0 << 1)) & 0x55555555
+  b = (b | (b << 8)) & 0x00ff00ff
+  b = (b | (b << 4)) & 0x0f0f0f0f
+  b = (b | (b << 2)) & 0x33333333
+  b = (b | (b << 1)) & 0x55555555
 
-  i1 = (i1 | (i1 << 8)) & 0x00ff00ff
-  i1 = (i1 | (i1 << 4)) & 0x0f0f0f0f
-  i1 = (i1 | (i1 << 2)) & 0x33333333
-  i1 = (i1 | (i1 << 1)) & 0x55555555
-
-  return ((i1 << 1) | i0) >>> 0
+  // shift into signed SMI range for performance
+  return (((b << 1) | a) >>> 0) - 0x80000000
 }
