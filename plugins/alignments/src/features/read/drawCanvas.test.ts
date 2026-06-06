@@ -72,7 +72,6 @@ function makeRegion(reads: ReadSpec[]) {
     readPairOrientations: new Uint8Array(n),
     readTagColors: new Uint32Array(n),
     readMapqs: new Uint8Array(n),
-    readAvgBaseQualities: new Uint8Array(n),
     readInsertSizes,
     readChainHasSupp: undefined,
     readInterchrom,

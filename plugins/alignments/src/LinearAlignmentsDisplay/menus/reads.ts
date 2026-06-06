@@ -6,6 +6,8 @@ import { getArcDirectionMenuItem } from './readConnections.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 
 interface ReadsModel {
+  showLegend: boolean
+  setShowLegend: (show: boolean | undefined) => void
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
   showMismatches: boolean
@@ -43,6 +45,9 @@ export function getReadsMenuItem(model: ReadsModel) {
     icon: VisibilityIcon,
     type: 'subMenu' as const,
     subMenu: [
+      checkboxItem('Show legend', model.showLegend, () => {
+        model.setShowLegend(model.showLegend ? false : undefined)
+      }),
       checkboxItem('Show coverage', model.showCoverage, () => {
         model.setShowCoverage(!model.showCoverage)
       }),

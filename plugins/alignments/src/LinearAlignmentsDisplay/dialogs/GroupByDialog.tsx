@@ -73,20 +73,20 @@ function createTagBasedTracks({
 }) {
   const values: (string | undefined)[] = [...tagSet, undefined]
   for (const tagValue of values) {
-    const trackId = createTrackId(trackConf.trackId, `${tag}:${tagValue}`)
+    const label = tagValue ?? 'untagged'
+    const trackId = createTrackId(trackConf.trackId, `${tag}:${label}`)
     session.addTrackConf({
       ...trackConf,
       trackId,
-      name: `${trackConf.name} (${tag}:${tagValue})`,
+      name: `${trackConf.name} (${tag}:${label})`,
       displays: [
         {
           displayId: `${trackId}-LinearAlignmentsDisplay`,
           type: 'LinearAlignmentsDisplay',
-          filterBySetting: {
-            ...defaultFilterFlags,
-            tagFilter: {
-              tag,
-              value: tagValue,
+          configOverrides: {
+            filterBy: {
+              ...defaultFilterFlags,
+              tagFilter: { tag, value: tagValue },
             },
           },
         },
@@ -116,7 +116,7 @@ function createStrandBasedTracks({
       {
         displayId: `${negTrackId}-LinearAlignmentsDisplay`,
         type: 'LinearAlignmentsDisplay',
-        filterBySetting: negFlags,
+        configOverrides: { filterBy: negFlags },
       },
     ],
   })
@@ -128,7 +128,7 @@ function createStrandBasedTracks({
       {
         displayId: `${posTrackId}-LinearAlignmentsDisplay`,
         type: 'LinearAlignmentsDisplay',
-        filterBySetting: posFlags,
+        configOverrides: { filterBy: posFlags },
       },
     ],
   })

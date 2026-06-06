@@ -26,7 +26,6 @@ export function packReadSegments(data: ReadUploadData): ArrayBuffer {
   const readYs = data.readYs
   const readFlags = data.readFlags
   const readMapqs = data.readMapqs
-  const readAvgBaseQualities = data.readAvgBaseQualities
   const readInsertSizes = data.readInsertSizes
   const readPairOrientations = data.readPairOrientations
   const readStrands = data.readStrands
@@ -41,7 +40,6 @@ export function packReadSegments(data: ReadUploadData): ArrayBuffer {
     u32[o + F.y] = readYs[ri]!
     u32[o + F.flags] = readFlags[ri]!
     u32[o + F.mapq] = readMapqs[ri]!
-    u32[o + F.baseQuality] = readAvgBaseQualities[ri]!
     f32[o + F.insertSize] = readInsertSizes[ri]!
     u32[o + F.pairOrient] = readPairOrientations[ri]!
     i32[o + F.strand] = readStrands[ri]!

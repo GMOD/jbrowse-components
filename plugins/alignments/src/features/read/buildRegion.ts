@@ -13,7 +13,6 @@ export interface ReadRegionFields {
   readYs: Uint16Array
   readFlags: Uint16Array
   readMapqs: Uint8Array
-  readAvgBaseQualities: Uint8Array
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
   readStrands: Int8Array
@@ -30,7 +29,6 @@ export function buildReadFields(data: PileupDataResult): ReadRegionFields {
     readYs: data.readYs,
     readFlags: data.readFlags,
     readMapqs: data.readMapqs,
-    readAvgBaseQualities: data.readAvgBaseQualities,
     readInsertSizes: data.readInsertSizes,
     readPairOrientations: data.readPairOrientations,
     readStrands: data.readStrands,
@@ -51,7 +49,6 @@ export function emptyReadFields(): ReadRegionFields {
     readYs: new Uint16Array(0),
     readFlags: new Uint16Array(0),
     readMapqs: new Uint8Array(0),
-    readAvgBaseQualities: new Uint8Array(0),
     readInsertSizes: new Float32Array(0),
     readPairOrientations: new Uint8Array(0),
     readStrands: new Int8Array(0),

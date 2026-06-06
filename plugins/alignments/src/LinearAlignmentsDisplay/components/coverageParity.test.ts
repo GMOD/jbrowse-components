@@ -96,7 +96,6 @@ function makeMinimalReadData() {
     readYs: new Uint16Array([]),
     readFlags: new Uint16Array([]),
     readMapqs: new Uint8Array([]),
-    readAvgBaseQualities: new Uint8Array([]),
     readInsertSizes: new Float32Array([]),
     readPairOrientations: new Uint8Array([]),
     readStrands: new Int8Array([]),

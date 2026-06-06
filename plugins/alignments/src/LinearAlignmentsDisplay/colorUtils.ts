@@ -19,7 +19,6 @@ interface ReadColorData {
   readStrands: Int8Array
   readFlags: Uint16Array
   readMapqs: Uint8Array
-  readAvgBaseQualities: Uint8Array
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
   readTagColors: Uint32Array
@@ -167,10 +166,6 @@ export function getReadColor(
       const packed = data.readTagColors[i]
       return packed ? abgrToCssRgba(packed) : rgb255(palette.colorPairLR)
     }
-
-    // hue = avgBaseQuality degrees (0–255)
-    case ColorScheme.baseQuality:
-      return `hsl(${data.readAvgBaseQualities[i]},50%,50%)`
 
     case ColorScheme.insertSizeGradient: {
       const insertSize = data.readInsertSizes[i]!

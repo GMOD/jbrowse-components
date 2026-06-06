@@ -18,6 +18,16 @@ import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 export type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
+function hslRamp(
+  saturation: number,
+  steps: { hue: number; label: string }[],
+): LegendItem[] {
+  return steps.map(({ hue, label }) => ({
+    color: `hsl(${hue}, ${saturation}%, 50%)`,
+    label,
+  }))
+}
+
 const supplementaryItem: LegendItem = {
   color: colorSupplementary,
   label: 'Supplementary/split',
@@ -49,6 +59,15 @@ const insertSizeItems: LegendItem[] = [
 const insertSizeLegendItems: LegendItem[] = [
   { color: colorPairLR, label: 'Normal' },
   ...insertSizeItems,
+  unmappedMateItem,
+  supplementaryItem,
+]
+
+const insertSizeGradientLegendItems: LegendItem[] = [
+  { color: colorLongInsert, label: 'Long insert' },
+  { color: colorPairLR, label: 'Normal' },
+  { color: colorShortInsert, label: 'Short insert' },
+  interchromItem,
   unmappedMateItem,
   supplementaryItem,
 ]
@@ -96,28 +115,23 @@ export function getReadDisplayLegendItems(
     return insertSizeLegendItems
   }
   if (colorType === 'mappingQuality') {
-    return [
-      { color: 'hsl(0, 50%, 50%)', label: 'MAPQ 0' },
-      { color: 'hsl(30, 50%, 50%)', label: 'MAPQ 30' },
-      { color: 'hsl(60, 50%, 50%)', label: 'MAPQ 60' },
-    ]
+    return hslRamp(50, [
+      { hue: 0, label: 'MAPQ 0' },
+      { hue: 30, label: 'MAPQ 30' },
+      { hue: 60, label: 'MAPQ ≥60' },
+    ])
   }
-  if (colorType === 'baseQuality') {
-    return [
-      { color: 'hsl(0, 50%, 50%)', label: 'BQ 0' },
-      { color: 'hsl(10, 50%, 50%)', label: 'BQ 10' },
-      { color: 'hsl(20, 50%, 50%)', label: 'BQ 20' },
-      { color: 'hsl(30, 50%, 50%)', label: 'BQ 30' },
-    ]
+  if (colorType === 'insertSizeGradient') {
+    return insertSizeGradientLegendItems
   }
   if (colorType === 'perBaseQuality') {
-    return [
-      { color: 'hsl(0, 55%, 50%)', label: 'BQ 0' },
-      { color: 'hsl(15, 55%, 50%)', label: 'BQ 10' },
-      { color: 'hsl(30, 55%, 50%)', label: 'BQ 20' },
-      { color: 'hsl(45, 55%, 50%)', label: 'BQ 30' },
-      { color: 'hsl(60, 55%, 50%)', label: 'BQ 40' },
-    ]
+    return hslRamp(55, [
+      { hue: 0, label: 'BQ 0' },
+      { hue: 15, label: 'BQ 10' },
+      { hue: 30, label: 'BQ 20' },
+      { hue: 45, label: 'BQ 30' },
+      { hue: 60, label: 'BQ 40' },
+    ])
   }
   if (colorType === 'perBaseLetter') {
     // Mirrors theme.palette.bases (augment(green/blue/orange/red/brown)); the

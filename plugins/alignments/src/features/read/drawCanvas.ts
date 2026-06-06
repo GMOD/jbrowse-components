@@ -19,7 +19,6 @@ interface DrawReadsRegion {
   readPairOrientations: Uint8Array
   readTagColors: Uint32Array
   readMapqs: Uint8Array
-  readAvgBaseQualities: Uint8Array
   readInsertSizes: Float32Array
   readChainHasSupp: Uint8Array | undefined
   readInterchrom: Uint8Array

@@ -19,7 +19,6 @@ export function buildBaseReadArrays(
   const readYs = new Uint16Array(n)
   const readFlags = new Uint16Array(n)
   const readMapqs = new Uint8Array(n)
-  const readAvgBaseQualities = new Uint8Array(n)
   const readInsertSizes = new Float32Array(n)
   const readPairOrientations = new Uint8Array(n)
   const readStrands = new Int8Array(n)
@@ -34,7 +33,6 @@ export function buildBaseReadArrays(
     readPositions[i * 2 + 1] = f.end
     readFlags[i] = f.flags
     readMapqs[i] = Math.min(255, f.mapq)
-    readAvgBaseQualities[i] = Math.min(255, f.avgBaseQuality)
     readInsertSizes[i] = f.insertSize
     readPairOrientations[i] = f.pairOrientation
     readStrands[i] = f.strand
@@ -48,7 +46,6 @@ export function buildBaseReadArrays(
       readYs,
       readFlags,
       readMapqs,
-      readAvgBaseQualities,
       readInsertSizes,
       readPairOrientations,
       readStrands,

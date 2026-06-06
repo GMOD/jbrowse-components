@@ -18,8 +18,7 @@ static const int CS_PAIR_ORIENT   = 5;
 static const int CS_IS_AND_ORIENT = 6;
 static const int CS_MODIFICATIONS = 7;
 static const int CS_TAG           = 8;
-static const int CS_BASE_QUALITY  = 9;
-static const int CS_IS_GRADIENT   = 10;
+static const int CS_IS_GRADIENT   = 9;
 
 static const int CM_LINKED_READ = 1;
 
@@ -43,14 +42,13 @@ struct Instance {
   uint  y              : ATTR2;
   uint  flags          : ATTR3;
   uint  mapq           : ATTR4;
-  uint  baseQuality    : ATTR5;
-  float insertSize     : ATTR6;
-  uint  pairOrient     : ATTR7;
-  int   strand         : ATTR8;
-  uint  tagColor       : ATTR9;   // ABGR u32; 0 = not set
-  uint  chainHasSupp   : ATTR10;  // 0=no supp, 1=supp + primary fwd, 2=supp + primary rev
-  uint  edgeFlags      : ATTR11;  // bit 0 = is_first, bit 1 = is_last
-  uint  interchrom     : ATTR12;  // 1 = mate on a different chromosome
+  float insertSize     : ATTR5;
+  uint  pairOrient     : ATTR6;
+  int   strand         : ATTR7;
+  uint  tagColor       : ATTR8;   // ABGR u32; 0 = not set
+  uint  chainHasSupp   : ATTR9;   // 0=no supp, 1=supp + primary fwd, 2=supp + primary rev
+  uint  edgeFlags      : ATTR10;  // bit 0 = is_first, bit 1 = is_last
+  uint  interchrom     : ATTR11;  // 1 = mate on a different chromosome
 };
 
 struct VsOut {
@@ -160,7 +158,6 @@ float3 getReadColor(Instance inst, Uniforms u) {
     }
     return unpackRGBA(u.colorPairLR).xyz;
   }
-  if (cs == CS_BASE_QUALITY) { return hueRampHalfSat(float(inst.baseQuality)); }
   if (cs == CS_IS_GRADIENT)  { return insertSizeGradientColor(inst.insertSize, u); }
   return unpackRGBA(u.colorPairLR).xyz;
 }

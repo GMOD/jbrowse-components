@@ -10,7 +10,6 @@ function feat(id: string, start: number, end: number): FeatureData {
     end,
     flags: 0,
     mapq: 60,
-    avgBaseQuality: 30,
     insertSize: 0,
     pairOrientation: 0,
     strand: 1,

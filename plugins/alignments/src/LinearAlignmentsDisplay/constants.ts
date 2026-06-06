@@ -20,8 +20,7 @@ export const ColorScheme = {
   insertSizeAndOrientation: 6,
   modifications: 7,
   tag: 8,
-  baseQuality: 9,
-  insertSizeGradient: 10,
+  insertSizeGradient: 9,
 } as const
 
 export const ALIGNMENTS_FUDGE_FACTOR = 0.8

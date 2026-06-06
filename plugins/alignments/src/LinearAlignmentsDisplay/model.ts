@@ -206,7 +206,6 @@ const COLOR_BY_TO_SCHEME: Record<string, number> = {
   methylation: ColorScheme.modifications,
   bisulfite: ColorScheme.modifications,
   tag: ColorScheme.tag,
-  baseQuality: ColorScheme.baseQuality,
   perBaseQuality: ColorScheme.normal,
   // Like perBaseQuality, the read body uses the normal shader path; the
   // per-base nucleotide quads paint over it (see showPerBaseLetter).
@@ -692,7 +691,8 @@ export default function stateModelFactory(
          * #getter
          */
         get showLegend() {
-          return self.getOverride<boolean>('showLegend')
+          const override = self.getOverride<boolean>('showLegend')
+          return override !== undefined ? override : this.legendItems.length > 1
         },
 
         /**
@@ -764,7 +764,7 @@ export default function stateModelFactory(
          * #getter
          */
         get legendItems() {
-          return getReadDisplayLegendItems(this.colorBy, undefined)
+          return getReadDisplayLegendItems(this.colorBy, self.visibleModifications)
         },
 
         /**

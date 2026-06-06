@@ -64,7 +64,6 @@ function makeChainData(opts: {
     readYs: new Uint16Array(numReads),
     readFlags: new Uint16Array(numReads),
     readMapqs: new Uint8Array(numReads),
-    readAvgBaseQualities: new Uint8Array(numReads),
     readInsertSizes: new Float32Array(numReads),
     readPairOrientations: new Uint8Array(numReads),
     readStrands: new Int8Array(numReads),

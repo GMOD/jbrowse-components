@@ -11,7 +11,7 @@ describe('ColorScheme', () => {
     expect(ColorScheme.insertSizeAndOrientation).toBe(6)
     expect(ColorScheme.modifications).toBe(7)
     expect(ColorScheme.tag).toBe(8)
-    expect(ColorScheme.baseQuality).toBe(9)
+    expect(ColorScheme.insertSizeGradient).toBe(9)
   })
 
   test('all indices are unique', () => {

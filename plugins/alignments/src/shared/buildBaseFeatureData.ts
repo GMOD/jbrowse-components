@@ -22,18 +22,6 @@ function pairOrientationToNum(pairOrientation: string | undefined) {
 
 export function buildBaseFeatureData(feature: Feature): FeatureData {
   const strand = feature.get('strand')
-  const qualArray = feature.get('NUMERIC_QUAL') as
-    | Uint8Array
-    | number[]
-    | undefined
-  let avgBaseQuality = 0
-  if (qualArray && qualArray.length > 0) {
-    let sum = 0
-    for (const q of qualArray) {
-      sum += q
-    }
-    avgBaseQuality = Math.round(sum / qualArray.length)
-  }
   return {
     id: feature.id(),
     name: feature.get('name') ?? '',
@@ -42,7 +30,6 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     flags: (feature.get('flags') as number | undefined) ?? 0,
     // SAM spec: MAPQ 255 indicates mapping quality is unavailable
     mapq: feature.get('score') ?? 255,
-    avgBaseQuality,
     // SAM spec: TLEN 0 means insert size is unset (e.g. unpaired reads)
     insertSize: Math.abs(
       (feature.get('template_length') as number | undefined) ?? 0,

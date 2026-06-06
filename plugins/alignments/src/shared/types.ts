@@ -38,7 +38,6 @@ export type ColorSchemeType =
   | 'stranded'
   | 'pairOrientation'
   | 'insertSizeAndOrientation'
-  | 'baseQuality'
   | 'perBaseQuality'
   | 'perBaseLetter'
   | 'tag'
