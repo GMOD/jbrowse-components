@@ -15,6 +15,15 @@ function feature(uniqueId: string, start: number, score: number): Feature {
   })
 }
 
+function svFeature(
+  uniqueId: string,
+  start: number,
+  end: number,
+  svtype: string,
+): Feature {
+  return new SimpleFeature({ uniqueId, refName: '1', start, end, score: 5, svtype })
+}
+
 const constColor = (c: number) => () => c
 
 test('flattens features into typed arrays at matching indexes', () => {
@@ -26,6 +35,20 @@ test('flattens features into typed arrays at matching indexes', () => {
   expect(Array.from(r.positions)).toEqual([10, 200, 3000])
   expect(Array.from(r.scores)).toEqual([1.5, 7.25, 4])
   expect(Array.from(r.colors)).toEqual([0xff00ffff, 0xff00ffff, 0xff00ffff])
+})
+
+test('captures end and derives glyph code from svtype (INS → 1)', () => {
+  const r = buildManhattanResult(
+    [
+      svFeature('del', 100, 2600, 'DEL'),
+      svFeature('ins', 300, 301, 'INS'),
+      feature('snp', 500, 3),
+    ],
+    constColor(0),
+  )
+  expect(Array.from(r.ends)).toEqual([2600, 301, 501])
+  // Only insertions get the triangle code; deletions/SNPs stay points (0).
+  expect(Array.from(r.glyphs)).toEqual([0, 1, 0])
 })
 
 test('preserves bp ≥ 2^31 through Uint32Array coercion', () => {

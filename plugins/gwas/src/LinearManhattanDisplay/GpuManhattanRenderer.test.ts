@@ -20,9 +20,13 @@ function mkData(
   positions: number[],
   scores: number[],
   colors: number[],
+  ends: number[] = positions,
+  glyphs: number[] = positions.map(() => 0),
 ): ManhattanRpcResult {
   return {
     positions: new Uint32Array(positions),
+    ends: new Uint32Array(ends),
+    glyphs: new Uint8Array(glyphs),
     scores: new Float32Array(scores),
     colors: new Uint32Array(colors),
     numFeatures: positions.length,
@@ -32,21 +36,25 @@ function mkData(
   }
 }
 
-test('packs absPosition / score / color at the offsets the shader expects', () => {
+test('packs absPosition / absEnd / score / color / glyph at the offsets the shader expects', () => {
   const buf = buildInstanceBuffer(
-    mkData([42, 1337], [0.5, 7.25], [0xff0000ff, 0xff00ff00]),
+    mkData([42, 1337], [0.5, 7.25], [0xff0000ff, 0xff00ff00], [99, 2000], [0, 1]),
   )
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   const stride = shader.INSTANCE_STRIDE_F32
 
   expect(u32[shader.FIELD_OFFSET_F32.absPosition]).toBe(42)
+  expect(u32[shader.FIELD_OFFSET_F32.absEnd]).toBe(99)
   expect(f32[shader.FIELD_OFFSET_F32.score]).toBeCloseTo(0.5)
   expect(u32[shader.FIELD_OFFSET_F32.color]).toBe(0xff0000ff)
+  expect(u32[shader.FIELD_OFFSET_F32.glyph]).toBe(0)
 
   expect(u32[stride + shader.FIELD_OFFSET_F32.absPosition]).toBe(1337)
+  expect(u32[stride + shader.FIELD_OFFSET_F32.absEnd]).toBe(2000)
   expect(f32[stride + shader.FIELD_OFFSET_F32.score]).toBeCloseTo(7.25)
   expect(u32[stride + shader.FIELD_OFFSET_F32.color]).toBe(0xff00ff00)
+  expect(u32[stride + shader.FIELD_OFFSET_F32.glyph]).toBe(1)
 })
 
 test('produces a buffer sized to numFeatures × stride', () => {

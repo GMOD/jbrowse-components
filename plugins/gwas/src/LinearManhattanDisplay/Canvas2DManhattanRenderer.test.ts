@@ -9,17 +9,32 @@ import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 type Call =
   | { kind: 'fillStyle'; value: string }
   | { kind: 'arc'; x: number; y: number }
+  | { kind: 'rect'; x: number; y: number; w: number; h: number }
+  | { kind: 'lineTo'; x: number; y: number }
 
 function mockCtx() {
   const calls: Call[] = []
   let fillStyleStore = ''
+  let clipped = false
   const ctx = {
     save() {},
     restore() {},
     beginPath() {},
-    rect() {},
-    clip() {},
+    rect(x: number, y: number, w: number, h: number) {
+      // The first rect() call is the clip region (before clip()); only record
+      // feature bars drawn after the clip is established.
+      if (clipped) {
+        calls.push({ kind: 'rect', x, y, w, h })
+      }
+    },
+    clip() {
+      clipped = true
+    },
     moveTo() {},
+    closePath() {},
+    lineTo(x: number, y: number) {
+      calls.push({ kind: 'lineTo', x, y })
+    },
     arc(x: number, y: number) {
       calls.push({ kind: 'arc', x, y })
     },
@@ -65,9 +80,13 @@ function data(
   positions: number[],
   scores: number[],
   colors: number[],
+  ends: number[] = positions.map(p => p + 1),
+  glyphs: number[] = positions.map(() => 0),
 ): ManhattanRpcResult {
   return {
     positions: new Uint32Array(positions),
+    ends: new Uint32Array(ends),
+    glyphs: new Uint8Array(glyphs),
     scores: new Float32Array(scores),
     colors: new Uint32Array(colors),
     numFeatures: positions.length,
@@ -96,6 +115,49 @@ test('draws one arc per feature at the expected screen position', () => {
   expect(arcs[1]).toMatchObject({ x: 50, y: 50 })
   // bp=1000 → x=100, score=0 → y=100
   expect(arcs[2]).toMatchObject({ x: 100, y: 100 })
+})
+
+test('draws a ranged SV as a bar spanning start→end, points as discs', () => {
+  const { ctx, calls } = mockCtx()
+  const red = abgr(255, 0, 0)
+  // pos 100→101 = point (disc); 300→600 = 300bp = 30px span (> point) = bar.
+  drawManhattanBlocks(
+    ctx as unknown as CanvasRenderingContext2D,
+    new Map([[0, data([100, 300], [5, 5], [red, red], [101, 600])]]),
+    [block],
+    state,
+  )
+  const arcs = calls.filter(c => c.kind === 'arc')
+  const rects = calls.filter(
+    (c): c is Extract<Call, { kind: 'rect' }> => c.kind === 'rect',
+  )
+  expect(arcs).toHaveLength(1)
+  expect(rects).toHaveLength(1)
+  // bp 300→600 maps to x 30→60 (10bp/px); score=5 → y=50.
+  expect(rects[0]).toMatchObject({ x: 30, w: 30 })
+  expect(rects[0]!.y + rects[0]!.h / 2).toBeCloseTo(50)
+})
+
+test('draws an insertion (glyph 1) as an inverted triangle, not a disc', () => {
+  const { ctx, calls } = mockCtx()
+  const red = abgr(255, 0, 0)
+  // pos 500, point span, glyph=1 (insertion).
+  drawManhattanBlocks(
+    ctx as unknown as CanvasRenderingContext2D,
+    new Map([[0, data([500], [5], [red], [501], [1])]]),
+    [block],
+    state,
+  )
+  const arcs = calls.filter(c => c.kind === 'arc')
+  const lineTos = calls.filter(
+    (c): c is Extract<Call, { kind: 'lineTo' }> => c.kind === 'lineTo',
+  )
+  expect(arcs).toHaveLength(0)
+  // Triangle = two lineTo calls (apex + a corner) after the moveTo.
+  expect(lineTos).toHaveLength(2)
+  // Apex points down: x centered on bp=500 → x=50, below the score y=50.
+  expect(lineTos[1]).toMatchObject({ x: 50 })
+  expect(lineTos[1]!.y).toBeGreaterThan(50)
 })
 
 test('switches fillStyle per unique per-feature color', () => {

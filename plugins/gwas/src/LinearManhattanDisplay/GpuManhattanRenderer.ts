@@ -95,12 +95,14 @@ export function buildInstanceBuffer(data: ManhattanRpcResult): ArrayBuffer {
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   const stride = shader.INSTANCE_STRIDE_F32
-  const { positions, scores, colors } = data
+  const { positions, ends, glyphs, scores, colors } = data
   let off = 0
   for (let i = 0; i < n; i++) {
     u32[off + shader.FIELD_OFFSET_F32.absPosition] = positions[i]!
+    u32[off + shader.FIELD_OFFSET_F32.absEnd] = ends[i]!
     f32[off + shader.FIELD_OFFSET_F32.score] = scores[i]!
     u32[off + shader.FIELD_OFFSET_F32.color] = colors[i]!
+    u32[off + shader.FIELD_OFFSET_F32.glyph] = glyphs[i]!
     off += stride
   }
   return buf

@@ -1,5 +1,7 @@
 import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
 
+import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
+
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
@@ -75,7 +77,7 @@ export function findManhattanHit(
     const candScoreMax =
       mouseY <= HIT_RADIUS_PX ? Infinity : mouseScore + halfScore
 
-    const { positions, scores, r2s } = data
+    const { positions, ends, scores, r2s } = data
     const candidates = flatbush.search(
       candBpMin,
       candScoreMin,
@@ -85,12 +87,13 @@ export function findManhattanHit(
 
     for (const i of candidates) {
       const pos = positions[i]!
+      const endPos = ends[i]!
       const score = scores[i]!
       // NaN r² (SNP absent from LD data) normalizes to undefined here so the
       // tooltip and feature widget can treat "no r²" uniformly.
       const raw = r2s?.[i]
       const r2 = Number.isFinite(raw) ? raw : undefined
-      const ptX = bpToScreenPx(
+      const xStart = bpToScreenPx(
         pos,
         start,
         end,
@@ -98,6 +101,23 @@ export function findManhattanHit(
         screenEndPx,
         reversed,
       )
+      const xEnd = bpToScreenPx(
+        endPos,
+        start,
+        end,
+        screenStartPx,
+        screenEndPx,
+        reversed,
+      )
+      // Distance to the rendered glyph: ranged SVs (drawn as a bar, same
+      // width threshold as the renderer) test against the nearest point along
+      // the span; everything else tests against the disc center at xStart.
+      const lo = Math.min(xStart, xEnd)
+      const hi = Math.max(xStart, xEnd)
+      const ptX =
+        hi - lo > POINT_RADIUS_PX * 2
+          ? Math.max(lo, Math.min(mouseX, hi))
+          : xStart
       const norm = Math.max(0, Math.min(1, (score - domainMin) / range))
       const ptY = (1 - norm) * canvasHeight
       const dx = mouseX - ptX
@@ -108,7 +128,7 @@ export function findManhattanHit(
         best = {
           refName,
           start: pos,
-          end: pos + 1,
+          end: endPos,
           score,
           r2,
           screenX: ptX,

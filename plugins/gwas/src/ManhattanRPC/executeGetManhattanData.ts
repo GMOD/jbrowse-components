@@ -29,6 +29,8 @@ export function buildManhattanResult(
 ): ManhattanRpcResult {
   const n = features.length
   const positions = new Uint32Array(n)
+  const ends = new Uint32Array(n)
+  const glyphs = new Uint8Array(n)
   const scores = new Float32Array(n)
   const colors = new Uint32Array(n)
   const r2s = evalR2 ? new Float32Array(n) : undefined
@@ -41,6 +43,8 @@ export function buildManhattanResult(
     // space); a `| 0` here would silently sign-extend bp ≥ 2^31 — wrong for
     // T2T-scale cumulative coordinates.
     positions[i] = f.get('start')
+    ends[i] = f.get('end')
+    glyphs[i] = f.get('svtype') === 'INS' ? 1 : 0
     const score = Number(f.get('score'))
     scores[i] = score
     if (score < scoreMin) {
@@ -59,9 +63,10 @@ export function buildManhattanResult(
   if (n > 0) {
     const fb = new Flatbush(n, undefined, Float64Array)
     for (let i = 0; i < n; i++) {
-      const p = positions[i]!
       const s = scores[i]!
-      fb.add(p, s, p, s)
+      // bp interval [start,end] so hovering anywhere on a ranged SV's span
+      // (not just its start) returns it; point features collapse to a 1bp box.
+      fb.add(positions[i]!, s, ends[i], s)
     }
     fb.finish()
     flatbushData = fb.data
@@ -69,6 +74,8 @@ export function buildManhattanResult(
 
   return {
     positions,
+    ends,
+    glyphs,
     scores,
     colors,
     r2s,
@@ -136,6 +143,8 @@ export async function executeGetManhattanData({
 
   const transferables: Transferable[] = [
     result.positions.buffer,
+    result.ends.buffer,
+    result.glyphs.buffer,
     result.scores.buffer,
     result.colors.buffer,
   ]

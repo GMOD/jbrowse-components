@@ -45,6 +45,8 @@ function mkData(positions: number[], scores: number[]) {
       0,
       {
         positions: new Uint32Array(positions),
+        ends: new Uint32Array(positions.map(p => p + 1)),
+        glyphs: new Uint8Array(positions.length),
         scores: new Float32Array(scores),
         colors: new Uint32Array(positions.length),
         numFeatures: positions.length,

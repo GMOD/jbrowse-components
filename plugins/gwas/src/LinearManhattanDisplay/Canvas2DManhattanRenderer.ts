@@ -39,14 +39,16 @@ export function drawManhattanBlocks(
       continue
     }
     const { screenStartPx, screenEndPx, reversed, start, end } = block
-    const { positions, scores, colors, numFeatures } = data
+    const { positions, ends, glyphs, scores, colors, numFeatures } = data
 
     ctx.save()
     ctx.beginPath()
     ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
     ctx.clip()
 
-    // Batch by color to amortize fillStyle changes.
+    // Batch by color to amortize fillStyle changes. Point features (SNPs,
+    // insertions) draw as discs; ranged SVs wider than a point draw as a bar
+    // from start→end — both subpaths share the batch's single fill().
     let currentAbgr = colors[0]!
     ctx.fillStyle = abgrToCssRgba(currentAbgr)
     ctx.beginPath()
@@ -58,7 +60,7 @@ export function drawManhattanBlocks(
         ctx.fillStyle = abgrToCssRgba(currentAbgr)
         ctx.beginPath()
       }
-      const x = bpToScreenPx(
+      const xStart = bpToScreenPx(
         positions[i]!,
         start,
         end,
@@ -68,8 +70,28 @@ export function drawManhattanBlocks(
       )
       const norm = (scores[i]! - domainMin) / range
       const y = (1 - Math.max(0, Math.min(1, norm))) * canvasHeight
-      ctx.moveTo(x + POINT_RADIUS_PX, y)
-      ctx.arc(x, y, POINT_RADIUS_PX, 0, TWO_PI)
+      const xEnd = bpToScreenPx(
+        ends[i]!,
+        start,
+        end,
+        screenStartPx,
+        screenEndPx,
+        reversed,
+      )
+      const left = Math.min(xStart, xEnd)
+      const widthPx = Math.abs(xEnd - xStart)
+      if (widthPx > POINT_RADIUS_PX * 2) {
+        ctx.rect(left, y - POINT_RADIUS_PX, widthPx, POINT_RADIUS_PX * 2)
+      } else if (glyphs[i] === 1) {
+        // Insertion: inverted triangle (apex pointing down) at the point.
+        ctx.moveTo(xStart - POINT_RADIUS_PX, y - POINT_RADIUS_PX)
+        ctx.lineTo(xStart + POINT_RADIUS_PX, y - POINT_RADIUS_PX)
+        ctx.lineTo(xStart, y + POINT_RADIUS_PX)
+        ctx.closePath()
+      } else {
+        ctx.moveTo(xStart + POINT_RADIUS_PX, y)
+        ctx.arc(xStart, y, POINT_RADIUS_PX, 0, TWO_PI)
+      }
     }
     ctx.fill()
 

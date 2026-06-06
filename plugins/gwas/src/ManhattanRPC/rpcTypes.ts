@@ -24,6 +24,16 @@ export interface GetManhattanDataArgs {
 // split by sign like wiggle does.
 export interface ManhattanRpcResult {
   positions: Uint32Array
+  // Feature end (absolute genomic uint32). Equals positions+1 for point
+  // features (SNPs, insertions); wider for ranged structural variants
+  // (deletions, duplications), which renderers draw as a span rather than a
+  // disc.
+  ends: Uint32Array
+  // Per-feature glyph class chosen from the SV type: 0 = point (SNP or
+  // non-insertion point → disc), 1 = insertion (inverted triangle). Ranged
+  // SVs draw as a bar based on their pixel width regardless of this code, so
+  // only the point-marker shape is type-driven.
+  glyphs: Uint8Array
   scores: Float32Array
   // Per-feature ABGR colors (uint32). Always populated, even when the user's
   // color config is a literal string — the executor resolves to ABGR
