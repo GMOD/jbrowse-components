@@ -30,7 +30,7 @@ export const COMPACTNESS_PRESETS = {
 export type CompactnessLevel = keyof typeof COMPACTNESS_PRESETS
 
 interface FeatureHeightModel {
-  featureHeightSetting: number
+  featureHeight: number
   featureSpacing: number
   maxHeight: number
   setFeatureHeight: (height?: number) => void
@@ -47,7 +47,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         label: preset.label,
         type: 'radio' as const,
         checked:
-          model.featureHeightSetting === preset.featureHeight &&
+          model.featureHeight === preset.featureHeight &&
           model.featureSpacing === preset.featureSpacing,
         onClick: () => {
           model.setFeatureHeight(preset.featureHeight)

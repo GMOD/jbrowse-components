@@ -2121,9 +2121,9 @@ const multiSampleVariantTracks = [
         // display's default. Swap `type` to
         // 'LinearMultiSampleVariantMatrixDisplay' for the matrix view, and set
         // renderingMode: 'phased' (phased VCFs only) for haplotype rows. To
-        // preset these on a saved session's display *instance* instead, nest
-        // them under `configOverrides` in that display's snapshot — a top-level
-        // renderingMode there is dropped (it's a getter, not a property).
+        // preset these on a saved session's display *instance* instead, put
+        // them as flat keys on that display's snapshot (e.g. renderingMode:
+        // 'phased' directly in the display object).
         colorBy: 'population',
       },
     ],
@@ -2210,9 +2210,9 @@ const tracks = [
         // display's default. Swap \`type\` to
         // 'LinearMultiSampleVariantMatrixDisplay' for the matrix view, and set
         // renderingMode: 'phased' (phased VCFs only) for haplotype rows. To
-        // preset these on a saved session's display *instance* instead, nest
-        // them under \`configOverrides\` in that display's snapshot — a top-level
-        // renderingMode there is dropped (it's a getter, not a property).
+        // preset these on a saved session's display *instance* instead, put
+        // them as flat keys on that display's snapshot (e.g. renderingMode:
+        // 'phased' directly in the display object).
         colorBy: 'population',
       },
     ],

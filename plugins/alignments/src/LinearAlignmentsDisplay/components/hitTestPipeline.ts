@@ -69,7 +69,7 @@ export interface HitTestOptions {
   showInterbaseIndicators: boolean
   coverageHeight: number
   topOffset: number
-  featureHeightSetting: number
+  featureHeight: number
   featureSpacing: number
   scrollTop: number
   isChainMode: boolean
@@ -84,10 +84,10 @@ export interface HitTestOptions {
 function hitTestCigarItem(
   resolved: ResolvedBlock,
   coords: CigarCoords,
-  featureHeightSetting: number,
+  featureHeight: number,
 ): CigarHitResult | undefined {
   const { adjustedY, yWithinRow } = coords
-  if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
+  if (adjustedY < 0 || yWithinRow > featureHeight) {
     return undefined
   }
   return (
@@ -111,7 +111,7 @@ export function performHitTest(
     showInterbaseIndicators,
     coverageHeight,
     topOffset,
-    featureHeightSetting,
+    featureHeight,
     featureSpacing,
     scrollTop,
     isChainMode,
@@ -159,7 +159,7 @@ export function performHitTest(
       canvasY,
       genomicPos,
       bpPerPx,
-      featureHeightSetting,
+      featureHeight,
       featureSpacing,
       topOffset,
       scrollTop,
@@ -172,14 +172,14 @@ export function performHitTest(
       const modificationHit = hitTestModification(
         resolved,
         coords,
-        featureHeightSetting,
+        featureHeight,
       )
-      const cigarHit = hitTestCigarItem(resolved, coords, featureHeightSetting)
+      const cigarHit = hitTestCigarItem(resolved, coords, featureHeight)
       if (modificationHit) {
         return {
           type: 'modification',
           hit: modificationHit,
-          featureHit: hitTestFeature(resolved, coords, featureHeightSetting),
+          featureHit: hitTestFeature(resolved, coords, featureHeight),
           cigarHit,
           resolved,
         }
@@ -188,13 +188,13 @@ export function performHitTest(
         return {
           type: 'cigar',
           hit: cigarHit,
-          featureHit: hitTestFeature(resolved, coords, featureHeightSetting),
+          featureHit: hitTestFeature(resolved, coords, featureHeight),
           resolved,
         }
       }
     } else if (
       coords.adjustedY >= 0 &&
-      coords.yWithinRow <= featureHeightSetting
+      coords.yWithinRow <= featureHeight
     ) {
       // When zoomed out, surface features that are still visually significant.
       // Mirror hitTestCigarItem's adjustedY/yWithinRow guards so inter-row
@@ -211,7 +211,7 @@ export function performHitTest(
 
     const hit = isChainMode
       ? hitTestChain(coords, resolved.rpcData)
-      : hitTestFeature(resolved, coords, featureHeightSetting)
+      : hitTestFeature(resolved, coords, featureHeight)
     if (hit) {
       return { type: 'feature', hit, resolved }
     }

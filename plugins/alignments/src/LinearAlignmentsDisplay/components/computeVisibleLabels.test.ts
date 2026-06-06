@@ -33,7 +33,7 @@ function run(rpcData: PileupDataResult) {
     },
     laidOutPileupMap: { get: () => rpcData },
     height: 1000,
-    featureHeightSetting: 10,
+    featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
     topOffset: 0,

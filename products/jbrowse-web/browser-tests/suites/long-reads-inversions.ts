@@ -290,7 +290,7 @@ const suite: TestSuite = {
                   trackId: 'volvox-simple-inv-paired.bam',
                   displaySnapshot: {
                     readConnections: 'samplot',
-                    configOverrides: { colorBy: { type: 'pairOrientation' } },
+                    colorBy: { type: 'pairOrientation' },
                   },
                 },
               ],

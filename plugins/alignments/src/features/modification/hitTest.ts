@@ -12,13 +12,13 @@ export interface ModificationHitResult {
 export function hitTestModification(
   resolved: ResolvedBlock | undefined,
   coords: CigarCoords | undefined,
-  featureHeightSetting: number,
+  featureHeight: number,
 ): ModificationHitResult | undefined {
   if (!resolved || !coords) {
     return undefined
   }
   const { row, yWithinRow, genomicPos, bpPerPx } = coords
-  if (yWithinRow > featureHeightSetting || !resolved.rpcData.modFlatbush) {
+  if (yWithinRow > featureHeight || !resolved.rpcData.modFlatbush) {
     return undefined
   }
   const hitToleranceBp = Math.max(0.5, bpPerPx * 2)

@@ -35,8 +35,8 @@ function makeRpcData(
 // canvasX=100 → genomicPos=10000.
 // Coverage area: top 50px. Pileup starts at topOffset=50.
 // Row height = featureHeight(10) + spacing(2) = 12px.
-// canvasY=60 → adjustedY=10, row=0, yWithinRow=10 (= featureHeightSetting, still in feature)
-// canvasY=61 → adjustedY=11, row=0, yWithinRow=11 (> featureHeightSetting, in spacing)
+// canvasY=60 → adjustedY=10, row=0, yWithinRow=10 (= featureHeight, still in feature)
+// canvasY=61 → adjustedY=11, row=0, yWithinRow=11 (> featureHeight, in spacing)
 function makeResolved(
   rpcOverrides: Partial<PileupDataResult> = {},
 ): ResolvedBlock {
@@ -55,7 +55,7 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   showInterbaseIndicators: true,
   coverageHeight: 50,
   topOffset: 50,
-  featureHeightSetting: 10,
+  featureHeight: 10,
   featureSpacing: 2,
   scrollTop: 0,
   isChainMode: false,
@@ -139,8 +139,8 @@ describe('gap hit — zoomed-out pileup', () => {
     expect(result.type).toBe('none')
   })
 
-  it('does not return cigar hit when yWithinRow exceeds featureHeightSetting', () => {
-    // canvasY=61 → adjustedY=11, yWithinRow=11 > featureHeightSetting=10
+  it('does not return cigar hit when yWithinRow exceeds featureHeight', () => {
+    // canvasY=61 → adjustedY=11, yWithinRow=11 > featureHeight=10
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9500, 10500]),
       gapYs: new Uint16Array([0]),

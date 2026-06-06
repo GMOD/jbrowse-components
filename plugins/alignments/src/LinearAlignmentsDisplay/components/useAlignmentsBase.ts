@@ -73,7 +73,7 @@ export function useAlignmentsBase(
   )
 
   const {
-    featureHeightSetting,
+    featureHeight,
     featureSpacing,
     showCoverage,
     coverageHeight,
@@ -91,7 +91,7 @@ export function useAlignmentsBase(
         showInterbaseIndicators,
         coverageHeight,
         topOffset,
-        featureHeightSetting,
+        featureHeight,
         featureSpacing,
         scrollTop: model.scrollTop,
         isChainMode,

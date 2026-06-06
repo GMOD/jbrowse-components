@@ -30,7 +30,7 @@ export type { Region } from '@jbrowse/core/util'
  *
  * #example
  * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
- * `tracks`. `configOverrides.displayMode` switches between `normal`, `compact`,
+ * `tracks`. `displayMode` switches between `normal`, `compact`,
  * `superCompact`, `reducedRepresentation`, and `collapse`:
  * ```js
  * {

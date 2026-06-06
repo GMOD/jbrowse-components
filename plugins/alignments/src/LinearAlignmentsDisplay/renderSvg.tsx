@@ -68,7 +68,7 @@ export async function renderSvg(
     view,
     laidOutPileupMap: model.laidOutPileupMap,
     height: displayHeight,
-    featureHeightSetting: model.featureHeightSetting,
+    featureHeight: model.featureHeight,
     featureSpacing: model.featureSpacing,
     showMismatches: model.showMismatches,
     topOffset: model.coverageDisplayHeight,

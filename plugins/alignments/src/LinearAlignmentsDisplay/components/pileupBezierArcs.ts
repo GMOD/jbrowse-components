@@ -20,7 +20,7 @@ export function computePileupBezierArcsFromModel(
         laidOutPileupMap: model.laidOutPileupMap,
         displayedRegions: view.displayedRegions,
         bpToScreenX: makeBpToScreenX(view),
-        featureHeight: model.featureHeightSetting,
+        featureHeight: model.featureHeight,
         featureSpacing: model.featureSpacing,
         pileupTopOffset: model.coverageDisplayHeight,
         scrollTop,

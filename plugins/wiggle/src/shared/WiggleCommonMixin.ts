@@ -75,7 +75,7 @@ export function WiggleCommonMixin(extraKeys: string[] = []) {
         }
         return getNiceDomain({
           domain: range,
-          bounds: [self.minScoreConfig, self.maxScoreConfig],
+          bounds: [self.minScoreBound, self.maxScoreBound],
           scaleType: self.scaleType,
         })
       },

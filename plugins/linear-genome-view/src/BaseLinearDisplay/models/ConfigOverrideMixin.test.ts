@@ -11,9 +11,9 @@ const TestModel = types.compose(
   types.model({ name: types.optional(types.string, 'test') }),
 )
 
-// Simulates a display that also has its own preProcessSnapshot (e.g. a
-// migration function). Verifies that both preProcessSnapshot hooks compose
-// correctly: the outer one runs first, then ConfigOverrideMixin's inner one.
+// Simulates a display that also has its own preProcessSnapshot (migration).
+// The outer hook runs first (MST composition order), then ConfigOverrideMixin's
+// inner hook collects the flat keys it produced.
 const MigratingModel = types
   .compose(
     'MigratingDisplay',
@@ -24,20 +24,12 @@ const MigratingModel = types
     if (!snap) {
       return snap
     }
-    // Simulate a migration function that converts an old key into
-    // configOverrides format (what migrateBasicSnapshot / migrateWiggleSnapshot
-    // do today).
+    // Rename legacyColor → color (flat output, as real migration functions do).
     const { legacyColor, ...rest } = snap
     if (legacyColor === undefined) {
       return snap
     }
-    return {
-      ...rest,
-      configOverrides: {
-        ...(rest.configOverrides as Record<string, unknown> | undefined),
-        color: legacyColor,
-      },
-    }
+    return { ...rest, color: legacyColor }
   })
 
 describe('ConfigOverrideMixin — flat snapshot format', () => {
@@ -70,6 +62,16 @@ describe('ConfigOverrideMixin — flat snapshot format', () => {
     expect(snap).not.toHaveProperty('configOverrides')
   })
 
+  it('setOverride with undefined clears the key (same as clearOverride)', () => {
+    const model = TestModel.create({})
+    model.setOverride('color', 'red')
+    model.setOverride('color', undefined)
+    const snap = getSnapshot(model) as Record<string, unknown>
+    expect(snap).not.toHaveProperty('color')
+    expect(snap).not.toHaveProperty('configOverrides')
+    expect(model.getOverride('color')).toBeUndefined()
+  })
+
   it('multiple overrides all appear flat in snapshot', () => {
     const model = TestModel.create({})
     model.setOverride('color', 'red')
@@ -91,36 +93,46 @@ describe('ConfigOverrideMixin — flat snapshot format', () => {
 })
 
 describe('ConfigOverrideMixin — loading snapshots', () => {
-  it('loads flat config keys from a new-format snapshot', () => {
+  it('loads flat config keys from a snapshot', () => {
     const model = TestModel.create({ color: 'red', scaleType: 'log' } as never)
     expect(model.getOverride('color')).toBe('red')
     expect(model.getOverride('scaleType')).toBe('log')
   })
 
-  it('loads old configOverrides sub-key format (backward compat)', () => {
-    const model = TestModel.create({
-      configOverrides: { color: 'red', scaleType: 'log' },
-    })
-    expect(model.getOverride('color')).toBe('red')
-    expect(model.getOverride('scaleType')).toBe('log')
-    // Round-trips as flat
-    const snap = getSnapshot(model) as Record<string, unknown>
-    expect(snap).not.toHaveProperty('configOverrides')
-    expect(snap.color).toBe('red')
-  })
-
-  it('flat keys not in configKeys pass through as-is (model properties)', () => {
+  it('flat keys not in configKeys pass through as plain model properties', () => {
     const model = TestModel.create({ name: 'myTrack' })
     expect(model.name).toBe('myTrack')
     expect(model.getOverride('name')).toBeUndefined()
   })
+
+  it('stale configOverrides sub-key is stripped (not supported input format)', () => {
+    // Any `configOverrides` key in the snapshot is ignored — only flat keys
+    // declared in configKeys are collected.
+    const model = TestModel.create({
+      configOverrides: { color: 'red', scaleType: 'log' },
+    })
+    expect(model.getOverride('color')).toBeUndefined()
+    expect(model.getOverride('scaleType')).toBeUndefined()
+    expect(model.configOverrides).toEqual({})
+  })
+
+  it('full round-trip: save flat → reload flat', () => {
+    const model1 = TestModel.create({})
+    model1.setOverride('color', 'red')
+    model1.setOverride('scaleType', 'log')
+    const snap = getSnapshot(model1) as Record<string, unknown>
+    expect(snap.color).toBe('red')
+    expect(snap.scaleType).toBe('log')
+    expect(snap).not.toHaveProperty('configOverrides')
+
+    const model2 = TestModel.create(snap)
+    expect(model2.getOverride('color')).toBe('red')
+    expect(model2.getOverride('scaleType')).toBe('log')
+  })
 })
 
 describe('ConfigOverrideMixin — composition with outer preProcessSnapshot', () => {
-  it('outer migration runs first; migrated configOverrides are preserved', () => {
-    // Snapshot has a legacy key that the outer preProcessSnapshot converts into
-    // configOverrides format. ConfigOverrideMixin's inner preProcessSnapshot
-    // should then pick up that configOverrides map.
+  it('outer migration runs first; its flat output is collected as an override', () => {
     const model = MigratingModel.create({ legacyColor: 'green' } as never)
     expect(model.getOverride('color')).toBe('green')
     const snap = getSnapshot(model) as Record<string, unknown>
@@ -130,8 +142,6 @@ describe('ConfigOverrideMixin — composition with outer preProcessSnapshot', ()
   })
 
   it('flat displayMode is collected by ConfigOverrideMixin after migration', () => {
-    // The outer migration doesn't touch displayMode; ConfigOverrideMixin picks
-    // it up from the flat snapshot.
     const model = MigratingModel.create({ displayMode: 'compact' } as never)
     expect(model.getOverride('displayMode')).toBe('compact')
   })

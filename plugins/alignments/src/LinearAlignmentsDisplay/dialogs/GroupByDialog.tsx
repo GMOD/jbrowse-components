@@ -55,48 +55,27 @@ interface TrackConf {
   [key: string]: unknown
 }
 
-type DisplayModel = {
-  configOverrides: Record<string, unknown>
-} & IAnyStateTreeNode
+type DisplayModel = IAnyStateTreeNode
 
 function createTrackId(baseId: string, suffix: string) {
   return `${baseId}-${suffix}-${Date.now()}-sessionTrack`
 }
 
-/**
- * Builds the display config state to copy from the parent display to a
- * group-by subtrack, replacing only filterBy.
- *
- * configOverrides (colorBy, sortedBy, featureHeight, …) are passed as a
- * nested sub-object so ConfigOverrideMixin.preProcessSnapshot picks them up
- * correctly. Plain MST fields (showCoverage, showMismatches, …) are spread at
- * the top level where MST assigns them as model properties.
- */
+// Builds the display state to copy from the parent display to a group-by
+// subtrack, replacing only filterBy. All flat keys (both plain MST fields and
+// config overrides) are preserved; preProcessSnapshot on the new display routes
+// them correctly.
 function buildSubtrackDisplayConfig(
   displayModel: DisplayModel,
   filterBy: FilterBy,
 ): Record<string, unknown> {
-  const snap = getSnapshot(displayModel as IAnyStateTreeNode)
-  // postProcessSnapshot flattens configOverrides keys into the snapshot
-  // top-level; separate them from plain MST fields using the live map.
-  const configOverrideKeySet = new Set(
-    Object.keys(displayModel.configOverrides),
-  )
-  const plainMstState: Record<string, unknown> = {}
-  for (const [k, v] of Object.entries(snap as Record<string, unknown>)) {
-    if (
-      k !== 'displayId' &&
-      k !== 'type' &&
-      k !== 'configuration' &&
-      !configOverrideKeySet.has(k)
-    ) {
-      plainMstState[k] = v
-    }
-  }
-  return {
-    ...plainMstState,
-    configOverrides: { ...displayModel.configOverrides, filterBy },
-  }
+  const {
+    displayId: _id,
+    type: _type,
+    configuration: _conf,
+    ...rest
+  } = getSnapshot(displayModel as IAnyStateTreeNode) as Record<string, unknown>
+  return { ...rest, filterBy }
 }
 
 function createTagBasedTracks({
@@ -183,7 +162,6 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   model: {
     adapterConfig: AnyConfigurationModel
     configuration: AnyConfigurationModel
-    configOverrides: Record<string, unknown>
   } & IAnyStateTreeNode
   handleClose: () => void
 }) {

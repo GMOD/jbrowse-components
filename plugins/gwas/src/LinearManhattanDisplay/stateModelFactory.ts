@@ -122,7 +122,7 @@ export function stateModelFactory(
         }
         return getNiceDomain({
           domain: [scoreMin, scoreMax],
-          bounds: [self.minScoreConfig, self.maxScoreConfig],
+          bounds: [self.minScoreBound, self.maxScoreBound],
           scaleType: 'linear',
         })
       },

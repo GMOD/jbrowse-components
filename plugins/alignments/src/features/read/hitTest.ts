@@ -3,10 +3,10 @@ import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 export function hitTestFeature(
   resolved: ResolvedBlock,
   coords: CigarCoords,
-  featureHeightSetting: number,
+  featureHeight: number,
 ): { id: string; index: number } | undefined {
   const { adjustedY, yWithinRow, genomicPos, row } = coords
-  if (adjustedY >= 0 && yWithinRow <= featureHeightSetting) {
+  if (adjustedY >= 0 && yWithinRow <= featureHeight) {
     const { readPositions, readYs, readIds } = resolved.rpcData
     const numReads = readIds.length
     for (let i = 0; i < numReads; i++) {

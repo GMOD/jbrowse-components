@@ -20,7 +20,7 @@ interface ReadsModel {
   toggleMismatchAlpha: () => void
   showLowFreqMismatches: boolean
   toggleShowLowFreqMismatches: () => void
-  showOutlineSetting: boolean
+  showOutline: boolean
   setShowOutline: (v: boolean | undefined) => void
   flipStrandLongReadChains: boolean
   setFlipStrandLongReadChains: (flag: boolean) => void
@@ -78,8 +78,8 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.toggleShowLowFreqMismatches()
         },
       ),
-      checkboxItem('Show outlines', model.showOutlineSetting, () => {
-        model.setShowOutline(!model.showOutlineSetting)
+      checkboxItem('Show outlines', model.showOutline, () => {
+        model.setShowOutline(!model.showOutline)
       }),
       checkboxItem(
         'Color supplementary alignments by primary strand',

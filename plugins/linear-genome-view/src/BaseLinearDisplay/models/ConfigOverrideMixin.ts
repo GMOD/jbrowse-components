@@ -1,5 +1,17 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+interface ConfigSlot<T> {
+  getValue: () => T
+}
+
+function isConfigSlot<T>(slot: unknown): slot is ConfigSlot<T> {
+  return (
+    slot !== null &&
+    slot !== undefined &&
+    typeof (slot as ConfigSlot<T>).getValue === 'function'
+  )
+}
+
 /**
  * Migrate old `*Setting` snapshot properties to flat config override keys.
  * Automatically strips the `Setting` suffix to derive the config key.
@@ -60,10 +72,9 @@ export default function ConfigOverrideMixin(
       if (!snap) {
         return snap
       }
-      const s = snap as Record<string, unknown>
-      // Collect declared flat config keys into the internal override map.
-      // Any `configOverrides` sub-key already in the snapshot (e.g. from an
-      // older saved session) is left in `rest` for MST to hydrate directly.
+      // Strip any stale `configOverrides` sub-key (not a supported input
+      // format), then collect declared flat config keys into the internal map.
+      const { configOverrides: _, ...s } = snap as Record<string, unknown>
       const fromFlat: Record<string, unknown> = {}
       const rest: Record<string, unknown> = {}
       for (const [k, v] of Object.entries(s)) {
@@ -103,12 +114,8 @@ export default function ConfigOverrideMixin(
           self as unknown as { configuration: Record<string, unknown> }
         ).configuration
         const slot = conf[key]
-        if (
-          slot !== null &&
-          slot !== undefined &&
-          typeof (slot as { getValue?: unknown }).getValue === 'function'
-        ) {
-          return (slot as { getValue: () => T }).getValue()
+        if (isConfigSlot<T>(slot)) {
+          return slot.getValue()
         }
         return slot as T
       },
@@ -118,7 +125,12 @@ export default function ConfigOverrideMixin(
        * #action
        */
       setOverride(key: string, value: unknown) {
-        self.configOverrides = { ...self.configOverrides, [key]: value }
+        if (value === undefined) {
+          const { [key]: _, ...rest } = self.configOverrides
+          self.configOverrides = rest
+        } else {
+          self.configOverrides = { ...self.configOverrides, [key]: value }
+        }
       },
       /**
        * #action

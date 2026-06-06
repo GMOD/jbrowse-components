@@ -565,14 +565,14 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get minScoreConfig() {
+        get minScoreBound() {
           const v = self.getConfWithOverride<number>('minScore')
           return v !== Number.MIN_VALUE ? v : undefined
         },
         /**
          * #getter
          */
-        get maxScoreConfig() {
+        get maxScoreBound() {
           const v = self.getConfWithOverride<number>('maxScore')
           return v !== Number.MAX_VALUE ? v : undefined
         },
@@ -645,7 +645,7 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get featureHeightSetting() {
+        get featureHeight() {
           return self.getConfWithOverride<number>('featureHeight')
         },
 
@@ -758,7 +758,7 @@ export default function stateModelFactory(
                   self.autoscaleType,
                   self.numStdDev,
                 ),
-                bounds: [self.minScoreConfig, self.maxScoreConfig],
+                bounds: [self.minScoreBound, self.maxScoreBound],
                 scaleType: self.scaleType,
               })
             : undefined
@@ -939,7 +939,7 @@ export default function stateModelFactory(
          * #getter
          */
         get totalPileupHeight() {
-          return self.maxY * (self.featureHeightSetting + self.featureSpacing)
+          return self.maxY * (self.featureHeight + self.featureSpacing)
         },
 
         /**
@@ -1069,7 +1069,7 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get showOutlineSetting() {
+        get showOutline() {
           return self.getOverride<boolean>('showOutline') ?? self.isChainMode
         },
 
@@ -1085,7 +1085,7 @@ export default function stateModelFactory(
             view,
             laidOutPileupMap: self.laidOutPileupMap,
             height: self.height,
-            featureHeightSetting: self.featureHeightSetting,
+            featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
             topOffset: self.coverageDisplayHeight,
@@ -1117,7 +1117,7 @@ export default function stateModelFactory(
                 readIdIndexMap: self.readIdIndexMap,
                 ids,
                 height: self.height,
-                featureHeightSetting: self.featureHeightSetting,
+                featureHeight: self.featureHeight,
                 featureSpacing: self.featureSpacing,
                 topOffset: self.coverageDisplayHeight,
                 scrollTop: self.scrollTop,
@@ -1140,9 +1140,9 @@ export default function stateModelFactory(
           if (yRow === undefined) {
             return undefined
           }
-          const rowHeight = self.featureHeightSetting + self.featureSpacing
+          const rowHeight = self.featureHeight + self.featureSpacing
           const top = yRow * rowHeight
-          return [start, top, end, top + self.featureHeightSetting]
+          return [start, top, end, top + self.featureHeight]
         },
 
         /**
@@ -1225,7 +1225,7 @@ export default function stateModelFactory(
           return {
             scrollTop: self.scrollTop,
             colorScheme: self.colorSchemeIndex,
-            featureHeight: self.featureHeightSetting,
+            featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showCoverage: self.showCoverage,
             coverageHeight: self.coverageHeight,
@@ -1239,7 +1239,7 @@ export default function stateModelFactory(
             showModifications: self.showModifications,
             showPerBaseQuality: self.showPerBaseQuality,
             showPerBaseLetter: self.showPerBaseLetter,
-            showOutline: self.showOutlineSetting,
+            showOutline: self.showOutline,
             readConnections: self.readConnections,
             readConnectionsDown: self.readConnectionsDown,
             readConnectionsHeight: self.readConnectionsHeight,

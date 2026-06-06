@@ -37,7 +37,7 @@ interface ComputeVisibleLabelsParams {
   view: LabelView
   laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
   height: number
-  featureHeightSetting: number
+  featureHeight: number
   featureSpacing: number
   showMismatches: boolean
   topOffset: number
@@ -51,7 +51,7 @@ export function computeVisibleLabels(
     view,
     laidOutPileupMap,
     height,
-    featureHeightSetting,
+    featureHeight,
     featureSpacing,
     showMismatches,
     topOffset,
@@ -64,14 +64,14 @@ export function computeVisibleLabels(
     return labels
   }
 
-  const rowHeight = featureHeightSetting + featureSpacing
-  const fontSize = computeLabelFontSize(featureHeightSetting)
+  const rowHeight = featureHeight + featureSpacing
+  const fontSize = computeLabelFontSize(featureHeight)
   const { bpPerPx } = view
   const pxPerBp = 1 / bpPerPx
-  const tallEnoughForText = featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
+  const tallEnoughForText = featureHeight >= MIN_HEIGHT_FOR_TEXT
   const canRenderText = pxPerBp >= 6.5 && tallEnoughForText
   const rowYPx = (y: number) =>
-    y * rowHeight + featureHeightSetting / 2 - scrollTop + topOffset
+    y * rowHeight + featureHeight / 2 - scrollTop + topOffset
   const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= height
   const clipPrefix: Record<number, string | undefined> = {
     [INTERBASE_SOFTCLIP]: 'S',

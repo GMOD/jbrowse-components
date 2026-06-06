@@ -24,7 +24,7 @@ interface ComputeHighlightBoxesParams {
   readIdIndexMap: Map<string, { displayedRegionIndex: number; idx: number }>
   ids: string[]
   height: number
-  featureHeightSetting: number
+  featureHeight: number
   featureSpacing: number
   topOffset: number
   scrollTop: number
@@ -49,7 +49,7 @@ export function computeHighlightBoxes(
     readIdIndexMap,
     ids,
     height,
-    featureHeightSetting,
+    featureHeight,
     featureSpacing,
     topOffset,
     scrollTop,
@@ -82,7 +82,7 @@ export function computeHighlightBoxes(
     }
   }
 
-  const rowHeight = featureHeightSetting + featureSpacing
+  const rowHeight = featureHeight + featureSpacing
   const { bpPerPx } = view
   const boxes: HighlightBox[] = []
   for (const vr of view.visibleRegions) {
@@ -95,12 +95,12 @@ export function computeHighlightBoxes(
       const x1 = bpToPx(bounds.startBp)
       const x2 = bpToPx(bounds.endBp)
       const top = bounds.yRow * rowHeight - scrollTop + topOffset
-      if (top + featureHeightSetting >= topOffset && top <= height) {
+      if (top + featureHeight >= topOffset && top <= height) {
         boxes.push({
           left: Math.min(x1, x2),
           top,
           width: Math.abs(x2 - x1),
-          height: featureHeightSetting,
+          height: featureHeight,
         })
       }
     }

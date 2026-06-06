@@ -8,14 +8,14 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   model: {
     setFeatureHeight: (arg?: number) => void
     setFeatureSpacing: (arg?: number) => void
-    featureHeightSetting: number
+    featureHeight: number
     featureSpacing: number
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
   const [height, setHeight] = useState<number | undefined>(
-    model.featureHeightSetting,
+    model.featureHeight,
   )
   const [spacing, setSpacing] = useState<number | undefined>(
     model.featureSpacing,
@@ -39,7 +39,7 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
         feature height to 1 and spacing to 0 makes the display very compact.
       </Typography>
       <NumberTextField
-        defaultValue={model.featureHeightSetting}
+        defaultValue={model.featureHeight}
         onValueChange={setHeight}
         label="Feature height (px)"
         autoFocus

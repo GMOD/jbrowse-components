@@ -134,14 +134,14 @@ export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
       /**
        * #getter
        */
-      get minScoreConfig() {
+      get minScoreBound() {
         const val = self.getConfWithOverride<number>('minScore')
         return val === Number.MIN_VALUE ? undefined : val
       },
       /**
        * #getter
        */
-      get maxScoreConfig() {
+      get maxScoreBound() {
         const val = self.getConfWithOverride<number>('maxScore')
         return val === Number.MAX_VALUE ? undefined : val
       },
