@@ -15,3 +15,4 @@
 - gccontent track config_demo
 - re-review configoverrides refactor
 - copy and edit track settings
+- get rid of 'heightPreConfig' in snapshots

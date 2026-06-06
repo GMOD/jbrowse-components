@@ -74,7 +74,7 @@ function buildSubtrackDisplayConfig(
     type: _type,
     configuration: _conf,
     ...rest
-  } = getSnapshot(displayModel as IAnyStateTreeNode) as Record<string, unknown>
+  } = getSnapshot(displayModel)
   return { ...rest, filterBy }
 }
 

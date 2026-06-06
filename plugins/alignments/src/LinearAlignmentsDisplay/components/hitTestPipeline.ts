@@ -192,10 +192,7 @@ export function performHitTest(
           resolved,
         }
       }
-    } else if (
-      coords.adjustedY >= 0 &&
-      coords.yWithinRow <= featureHeight
-    ) {
+    } else if (coords.adjustedY >= 0 && coords.yWithinRow <= featureHeight) {
       // When zoomed out, surface features that are still visually significant.
       // Mirror hitTestCigarItem's adjustedY/yWithinRow guards so inter-row
       // spacing doesn't produce false hits.

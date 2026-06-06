@@ -21,7 +21,9 @@ test('string slot value <-> callback round trip', () => {
   instance.set(toCallbackValue(instance.value))
   expect(instance.value).toBe('jexl:"foo"')
   expect(instance.expr.eval()).toBe('foo')
-  instance.set(toFixedValue(instance.value, 'string', instance.defaultValue, jexl))
+  instance.set(
+    toFixedValue(instance.value, 'string', instance.defaultValue, jexl),
+  )
   expect(instance.value).toBe('foo')
   expect(instance.expr.eval()).toBe('foo')
 })
@@ -56,7 +58,9 @@ test('converting a default-function slot to a value yields the type fallback', (
   const instance = model.create(undefined, { pluginManager })
   expect(instance.value).toBe('jexl:get(feature,"foo")')
   expect(() => instance.expr.eval()).toThrow()
-  instance.set(toFixedValue(instance.value, 'string', instance.defaultValue, jexl))
+  instance.set(
+    toFixedValue(instance.value, 'string', instance.defaultValue, jexl),
+  )
   expect(instance.value).not.toContain('jexl:')
   expect(instance.value).toBe('')
 })
@@ -113,6 +117,8 @@ test('toFixedValue uses defaultValue when eval returns undefined, not type fallb
   })
   const instance = model.create(undefined, { pluginManager })
   // 'jexl:undeclaredVar' evaluates to undefined with no context args
-  instance.set(toFixedValue('jexl:undeclaredVar', 'string', instance.defaultValue, jexl))
+  instance.set(
+    toFixedValue('jexl:undeclaredVar', 'string', instance.defaultValue, jexl),
+  )
   expect(instance.value).toBe('myDefault') // not '' (the string type fallback)
 })

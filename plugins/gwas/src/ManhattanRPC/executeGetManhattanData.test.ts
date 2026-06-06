@@ -21,7 +21,14 @@ function svFeature(
   end: number,
   svtype: string,
 ): Feature {
-  return new SimpleFeature({ uniqueId, refName: '1', start, end, score: 5, svtype })
+  return new SimpleFeature({
+    uniqueId,
+    refName: '1',
+    start,
+    end,
+    score: 5,
+    svtype,
+  })
 }
 
 const constColor = (c: number) => () => c

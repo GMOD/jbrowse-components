@@ -1,5 +1,9 @@
 import PluginManager from '../PluginManager.ts'
-import { isCallbackValue, toCallbackValue, toFixedValue } from './slotValueUtils.ts'
+import {
+  isCallbackValue,
+  toCallbackValue,
+  toFixedValue,
+} from './slotValueUtils.ts'
 
 const pm = new PluginManager([]).createPluggableElements()
 pm.configure()
@@ -45,9 +49,9 @@ describe('toFixedValue', () => {
   })
 
   test('falls back to defaultValue when eval yields undefined', () => {
-    expect(toFixedValue('jexl:undeclaredVar', 'string', 'myDefault', jexl)).toBe(
-      'myDefault',
-    )
+    expect(
+      toFixedValue('jexl:undeclaredVar', 'string', 'myDefault', jexl),
+    ).toBe('myDefault')
   })
 
   test('falls back to type default when defaultValue is itself a callback', () => {

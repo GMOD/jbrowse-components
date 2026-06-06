@@ -38,7 +38,13 @@ function mkData(
 
 test('packs absPosition / absEnd / score / color / glyph at the offsets the shader expects', () => {
   const buf = buildInstanceBuffer(
-    mkData([42, 1337], [0.5, 7.25], [0xff0000ff, 0xff00ff00], [99, 2000], [0, 1]),
+    mkData(
+      [42, 1337],
+      [0.5, 7.25],
+      [0xff0000ff, 0xff00ff00],
+      [99, 2000],
+      [0, 1],
+    ),
   )
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)

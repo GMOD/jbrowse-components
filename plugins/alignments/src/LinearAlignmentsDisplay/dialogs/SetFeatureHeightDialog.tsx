@@ -14,9 +14,7 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const [height, setHeight] = useState<number | undefined>(
-    model.featureHeight,
-  )
+  const [height, setHeight] = useState<number | undefined>(model.featureHeight)
   const [spacing, setSpacing] = useState<number | undefined>(
     model.featureSpacing,
   )
