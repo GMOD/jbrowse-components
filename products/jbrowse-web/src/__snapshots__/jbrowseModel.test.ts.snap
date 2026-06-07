@@ -4,7 +4,6 @@ exports[`JBrowse model creates with empty snapshot 1`] = `
 {
   "aggregateTextSearchAdapters": [],
   "assemblies": [],
-  "configuration": {},
   "connections": [],
   "defaultSession": {
     "name": "New Session",
@@ -90,10 +89,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "sequence": {
         "adapter": {
-          "chromSizesLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": {
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
@@ -126,10 +121,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox2",
       "sequence": {
         "adapter": {
-          "chromSizesLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": {
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
@@ -185,10 +176,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox404",
       "sequence": {
         "adapter": {
-          "chromSizesLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": {
             "locationType": "UriLocation",
             "uri": "volvox.2bit_404",
@@ -221,10 +208,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "misc.fa",
           },
-          "metadataLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
-          },
           "type": "IndexedFastaAdapter",
         },
         "displays": [
@@ -252,10 +235,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "fastaLocation": {
             "locationType": "UriLocation",
             "uri": "volvox_del.fa",
-          },
-          "metadataLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
           },
           "type": "IndexedFastaAdapter",
         },
@@ -285,10 +264,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox_ins.fa",
           },
-          "metadataLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
-          },
           "type": "IndexedFastaAdapter",
         },
         "displays": [
@@ -316,10 +291,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "fastaLocation": {
             "locationType": "UriLocation",
             "uri": "volvox-rev-del.fa",
-          },
-          "metadataLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
           },
           "type": "IndexedFastaAdapter",
         },
@@ -349,10 +320,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "locationType": "UriLocation",
             "uri": "volvox-simple-inv.fa",
           },
-          "metadataLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
-          },
           "type": "IndexedFastaAdapter",
         },
         "displays": [
@@ -380,10 +347,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "fastaLocation": {
             "locationType": "UriLocation",
             "uri": "output_prefix3.simseq.genome.fa",
-          },
-          "metadataLocation": {
-            "locationType": "UriLocation",
-            "uri": "/path/to/fa.metadata.yaml",
           },
           "type": "IndexedFastaAdapter",
         },
@@ -435,10 +398,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "defaultFolderCategories": [
         "Integration test,Wiggle,Wiggle Rendering Styles",
       ],
-    },
-    "logoPath": {
-      "locationType": "UriLocation",
-      "uri": "",
     },
   },
   "connections": [],

@@ -1,19 +1,14 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { getEnv } from '../util/index.ts'
-import { stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 
-import type {
-  IAnyComplexType,
-  IAnyModelType,
-  IAnyType,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 function isValidColorString(_str: string) {
   // placeholder — all strings accepted; real CSS validation can be added later
   return true
 }
+
 const typeModels: Record<string, IAnyType> = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
@@ -28,74 +23,15 @@ const typeModels: Record<string, IAnyType> = {
   frozen: types.frozen(),
 }
 
-// type-specific mutators used by the collection editors. Other types (string,
-// color, number, boolean, fileLocation, frozen, ...) need no extension — the
-// editor sets the whole value via slot.set().
-const typeModelExtensions: Record<string, (self: any) => any> = {
-  stringArray: (self: { value: string[] }) => ({
-    actions: {
-      add(val: string) {
-        self.value.push(val)
-      },
-      removeAtIndex(idx: number) {
-        self.value.splice(idx, 1)
-      },
-      setAtIndex(idx: number, val: string) {
-        self.value[idx] = val
-      },
-    },
-  }),
-  stringArrayMap: (self: { value: Map<string, string[]> }) => ({
-    actions: {
-      add(key: string, val: string[]) {
-        self.value.set(key, val)
-      },
-      remove(key: string) {
-        self.value.delete(key)
-      },
-      addToKey(key: string, val: string) {
-        const ar = self.value.get(key)
-        if (!ar) {
-          throw new Error(`${key} not found`)
-        }
-        ar.push(val)
-      },
-      removeAtKeyIndex(key: string, idx: number) {
-        const ar = self.value.get(key)
-        if (!ar) {
-          throw new Error(`${key} not found`)
-        }
-        ar.splice(idx, 1)
-      },
-      setAtKeyIndex(key: string, idx: number, val: string) {
-        const ar = self.value.get(key)
-        if (!ar) {
-          throw new Error(`${key} not found`)
-        }
-        ar[idx] = val
-      },
-    },
-  }),
-  numberMap: (self: { value: Map<string, number> }) => ({
-    actions: {
-      add(key: string, val: number) {
-        self.value.set(key, val)
-      },
-      remove(key: string) {
-        self.value.delete(key)
-      },
-    },
-  }),
-}
-
 const JexlStringType = types.refinement('JexlString', types.string, str =>
   str.startsWith('jexl:'),
 )
+
 export interface ConfigSlotDefinition {
   /** human-readable description of the slot's meaning */
   description?: string
   /** custom base MST model for the slot's value */
-  model?: IAnyModelType | IAnyComplexType
+  model?: IAnyType
   /** name of the type of slot, e.g. "string", "number", "stringArray" */
   type: string
   /** default value of the slot */
@@ -105,112 +41,35 @@ export interface ConfigSlotDefinition {
 }
 
 /**
- * builds a MST model for a configuration slot
- *
- * @param slotName -
- * @param  definition -
+ * A configuration slot is a plain value-union MST property: the slot's value
+ * type, OR a `jexl:...` callback string. The value lives directly on the parent
+ * configuration model — there is no per-slot sub-model. `types.stripDefault`
+ * omits the property from the parent snapshot when it equals the default, so
+ * saved sessions stay minimal. Per-slot metadata
+ * (type/description/defaultValue/contextVariable) lives in the schema-type's
+ * `jbrowseSchemaDefinition` table; jexl callbacks are evaluated on read by
+ * `readConfObject`. See agent-docs/CONFIG_SLOT_COLLAPSE_PLAN.md.
  */
-export default function ConfigSlot(
-  slotName: string,
-  {
-    description = '',
-    model,
-    type,
-    defaultValue,
-    contextVariable = [],
-  }: ConfigSlotDefinition,
-) {
+export default function ConfigSlot({
+  model,
+  type,
+  defaultValue,
+}: ConfigSlotDefinition) {
   if (!type) {
     throw new Error('type name required')
   }
-  model ??= typeModels[type]
-  if (!model) {
+  const valueModel = model ?? typeModels[type]
+  if (!valueModel) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
   }
-
   if (defaultValue === undefined) {
     throw new Error("no 'defaultValue' provided")
   }
 
-  const configSlotModelName = `${slotName.charAt(0).toUpperCase()}${slotName.slice(1)}ConfigSlot`
-  let slot = types
-    .model(configSlotModelName, {
-      name: types.literal(slotName),
-      description: types.literal(description),
-      type: types.literal(type),
-      value: types.optional(types.union(JexlStringType, model), defaultValue),
-    })
-    .volatile(() => ({
-      contextVariable,
-    }))
-    .views(self => ({
-      get isCallback() {
-        return String(self.value).startsWith('jexl:')
-      },
-      get defaultValue() {
-        return defaultValue
-      },
-    }))
-    .views(self => ({
-      get expr() {
-        const code = String(self.value)
-        return self.isCallback && code.length > 'jexl:'.length
-          ? stringToJexlExpression(code, getEnv(self).pluginManager.jexl)
-          : {
-              eval: (_arg?: unknown) => self.value,
-            }
-      },
-    }))
-    .views(self => ({
-      getValue(args: Record<string, unknown> = {}) {
-        return self.isCallback ? self.expr.eval(args) : self.value
-      },
-    }))
-    .preProcessSnapshot((val: unknown) =>
-      // already the full slot shape (e.g. loaded from saved session)
-      typeof val === 'object' &&
-      val !== null &&
-      (val as { name?: unknown }).name === slotName
-        ? val
-        : {
-            name: slotName,
-            description,
-            type,
-            value: val,
-          },
-    )
-    .postProcessSnapshot(snap => {
-      // omit the value when it equals the default so snapshots stay minimal;
-      // JSON.stringify comparison handles object/array defaults
-      if (typeof snap.value === 'object') {
-        return JSON.stringify(snap.value) !== JSON.stringify(defaultValue)
-          ? snap.value
-          : undefined
-      }
-      return snap.value !== defaultValue ? snap.value : undefined
-    })
-    .actions(self => ({
-      set(newVal: unknown) {
-        self.value = newVal
-      },
-    }))
-
-  // if there are any type-specific extensions (views or actions)
-  //  to the slot, add those in
-  if (typeModelExtensions[type]) {
-    slot = slot.extend(typeModelExtensions[type])
-  }
-
-  const completeModel = types.optional(slot, {
-    name: slotName,
-    type,
-    description,
-    value: defaultValue,
-  })
-  Object.defineProperty(completeModel, 'isJBrowseConfigurationSlot', {
-    value: true,
-  })
-  return completeModel
+  return types.stripDefault(
+    types.union(JexlStringType, valueModel),
+    defaultValue,
+  )
 }

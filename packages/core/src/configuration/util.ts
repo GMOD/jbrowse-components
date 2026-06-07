@@ -1,4 +1,5 @@
 import {
+  getEnv,
   getSnapshot,
   getType,
   isArrayType,
@@ -11,7 +12,7 @@ import {
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
 
-import { stringToJexlExpression } from '../util/jexlStrings.ts'
+import { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 import {
   getDefaultValue,
   getSubType,
@@ -26,20 +27,21 @@ import type {
   ConfigurationSlotName,
 } from './types.ts'
 import type { Feature } from '../util/index.ts'
+import type { JexlInstance } from '../util/jexlStrings.ts'
 
-interface ConfigSlot {
-  isCallback: boolean
-  value: unknown
-  getValue: (args?: Record<string, unknown>) => unknown
-}
-
-// confObject[slotPath] can return:
-// - a config slot model (has getValue method)
-// - a sub-configuration object (nested config schema)
-// - a primitive value (string, number, etc.)
-// - undefined/null
-function isConfigSlot(slot: unknown): slot is ConfigSlot {
-  return typeof (slot as ConfigSlot | undefined)?.getValue === 'function'
+// Evaluate a slot's `jexl:...` callback string. The pluginManager's jexl
+// instance (carrying plugin-registered functions) comes from the config node's
+// env; a plain-object config falls back to the default jexl instance.
+function evalConfigCallback(
+  expr: string,
+  args: Record<string, unknown>,
+  confObject: unknown,
+) {
+  const jexl = isStateTreeNode(confObject)
+    ? getEnv<{ pluginManager?: { jexl?: JexlInstance } }>(confObject)
+        .pluginManager?.jexl
+    : undefined
+  return evaluateJexl(expr, args, jexl)
 }
 
 /**
@@ -66,19 +68,22 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
       ? structuredClone(getSnapshot(confObject))
       : structuredClone(confObject)
   } else if (typeof slotPath === 'string') {
-    // slot can be a config slot model, sub-configuration, primitive, or undefined
-    let slot: unknown = confObject[slotPath]
-    // check for the subconf being a map if we don't find it immediately
-    // (only do expensive type check if slot is falsy)
-    if (!slot) {
+    // slot value, sub-configuration node, primitive, or undefined. Use a strict
+    // undefined check, not truthiness — a slot value can legitimately be falsy
+    // (0, '', false, null).
+    let value: unknown = confObject[slotPath]
+    if (value === undefined) {
+      // check for the subconf being a map if we don't find it immediately
       if (isStateTreeNode(confObject) && isMapType(getType(confObject))) {
-        slot = confObject.get(slotPath)
+        value = confObject.get(slotPath)
       }
-      if (!slot) {
+      if (value === undefined) {
         return undefined
       }
     }
-    const val = isConfigSlot(slot) ? slot.getValue(args) : slot
+    const val = isCallbackValue(value)
+      ? evalConfigCallback(value, args, confObject)
+      : value
     // Fast path for primitives (most common case)
     if (val === null || typeof val !== 'object') {
       return val
@@ -124,17 +129,25 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
  */
 export function getConfSnapshot(confObject: AnyConfigurationModel) {
   const result: Record<string, unknown> = {}
-  for (const key of Object.keys(confObject)) {
-    const slot = confObject[key]
-    if (isConfigSlot(slot)) {
-      result[key] = slot.isCallback ? String(slot.value) : slot.getValue()
-    } else if (
-      slot &&
-      typeof slot === 'object' &&
-      isStateTreeNode(slot) &&
-      isConfigurationModel(slot)
-    ) {
-      result[key] = getConfSnapshot(slot)
+  const table = (
+    getType(confObject) as {
+      jbrowseSchemaDefinition?: Record<string, unknown>
+    }
+  ).jbrowseSchemaDefinition
+  for (const [key, def] of Object.entries(table ?? {})) {
+    // skip constants (string/number entries in the schema definition)
+    if (typeof def !== 'object' || def === null) {
+      continue
+    }
+    const v = confObject[key]
+    if (isConfigurationModel(v)) {
+      result[key] = getConfSnapshot(v)
+    } else if (!isType(def)) {
+      // a slot (def is a ConfigSlotDefinition plain object). jexl callback
+      // strings pass through raw for per-feature evaluation in the worker.
+      // arrays/maps of sub-schemas (def is an MST type) are intentionally
+      // dropped — no current caller needs them.
+      result[key] = isStateTreeNode(v) ? getSnapshot(v) : v
     }
   }
   return result
@@ -261,14 +274,6 @@ export function isConfigurationModel(
   return cached
 }
 
-export function isConfigurationSlotType(thing: unknown) {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'isJBrowseConfigurationSlot' in thing
-  )
-}
-
 function resolveConfigValue(
   config: Record<string, unknown>,
   key: string | string[],
@@ -294,8 +299,5 @@ export function readConfigValue<T>(
   feature: Feature,
 ) {
   const raw = resolveConfigValue(config, key)
-  if (typeof raw === 'string' && raw.startsWith('jexl:')) {
-    return stringToJexlExpression(raw).eval({ feature }) as T
-  }
-  return raw as T
+  return (isCallbackValue(raw) ? evaluateJexl(raw, { feature }) : raw) as T
 }

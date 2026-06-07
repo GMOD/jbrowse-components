@@ -6,9 +6,6 @@ import {
   toFixedValue,
 } from '@jbrowse/core/configuration'
 import { FileSelector } from '@jbrowse/core/ui'
-import { getEnv } from '@jbrowse/core/util'
-import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
-import { getPropertyMembers } from '@jbrowse/mobx-state-tree'
 import CodeIcon from '@mui/icons-material/Code'
 import { IconButton, MenuItem, Paper, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -25,13 +22,9 @@ import StringArrayEditor from './StringArrayEditor.tsx'
 import StringArrayMapEditor from './StringArrayMapEditor.tsx'
 import { useSlotEditorStyles } from './useSlotEditorStyles.ts'
 
-import type {
-  AnyConfigurationSlot,
-  AnyConfigurationSlotType,
-} from '@jbrowse/core/configuration'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SlotFacade } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
-import type { ILiteralType } from '@jbrowse/core/util/mst-reflection'
-import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 interface StringSlot {
   name: string
@@ -77,16 +70,15 @@ const TextEditor = observer(function TextEditor({
 
 const StringEnumEditor = observer(function StringEnumEditor({
   slot,
-  slotSchema,
 }: {
-  slot: AnyConfigurationSlot
-  slotSchema: AnyConfigurationSlotType
+  slot: {
+    name: string
+    value: string
+    description: string
+    choices?: string[]
+    set: (arg: string) => void
+  }
 }) {
-  const p = getPropertyMembers(getSubType(slotSchema))
-  const choices = getUnionSubTypes(
-    getUnionSubTypes(getSubType(p.properties.value!))[1]!,
-  ).map(t => (t as ILiteralType<string>).value)
-
   return (
     <ConfigurationTextField
       value={slot.value}
@@ -97,7 +89,7 @@ const StringEnumEditor = observer(function StringEnumEditor({
         slot.set(evt.target.value)
       }}
     >
-      {choices.map(str => (
+      {(slot.choices ?? []).map(str => (
         <MenuItem key={str} value={str}>
           {str}
         </MenuItem>
@@ -114,6 +106,7 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
     value: FileLocation
     set: (arg: FileLocation) => void
     description: string
+    pluginManager: PluginManager
   }
 }) {
   return (
@@ -124,7 +117,7 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
       }}
       name={slot.name}
       description={slot.description}
-      rootModel={getEnv(slot).pluginManager.rootModel}
+      rootModel={slot.pluginManager.rootModel}
     />
   )
 })
@@ -145,13 +138,7 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   configRelationships: JsonEditor,
 }
 
-const SlotEditor = observer(function SlotEditor({
-  slot,
-  slotSchema,
-}: {
-  slot: any
-  slotSchema: IAnyType
-}) {
+const SlotEditor = observer(function SlotEditor({ slot }: { slot: SlotFacade }) {
   const { classes } = useSlotEditorStyles()
   const { type } = slot
   // editor mode is UI-only state, derived once from whether the stored value is
@@ -171,7 +158,7 @@ const SlotEditor = observer(function SlotEditor({
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
-        <ValueComponent slot={slot} slotSchema={slotSchema} />
+        <ValueComponent slot={slot} />
       </div>
       {slot.contextVariable.length ? (
         <div className={classes.slotModeSwitch}>
@@ -191,7 +178,7 @@ const SlotEditor = observer(function SlotEditor({
                       slot.value,
                       type,
                       slot.defaultValue,
-                      getEnv(slot).pluginManager.jexl,
+                      slot.pluginManager.jexl,
                     ),
                   )
                   setCallbackMode(false)

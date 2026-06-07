@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
 import {
+  getSlotDefinition,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
-  isConfigurationSlotType,
+  isConfigurationSlot,
+  makeSlotFacade,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
@@ -49,22 +51,21 @@ const useStyles = makeStyles()(theme => ({
 // matches a slot or sub-schema against a lowercased filter string, recursing
 // into sub-schemas so a nested slot name keeps its ancestors visible
 function memberMatches(
+  schema: AnyConfigurationModel,
   slotName: string,
   slotSchema: IAnyType,
-  slot: AnyConfigurationModel | AnyConfigurationModel[],
   query: string,
 ): boolean {
-  if (isConfigurationSlotType(slotSchema)) {
-    const { name, description } = slot as unknown as {
-      name?: string
-      description?: string
-    }
+  if (isConfigurationSlot(schema, slotName)) {
+    const { description } = getSlotDefinition(schema, slotName)
     return (
       slotName.toLowerCase().includes(query) ||
-      !!name?.toLowerCase().includes(query) ||
       !!description?.toLowerCase().includes(query)
     )
   } else if (isConfigurationSchemaType(slotSchema)) {
+    const slot = schema[slotName] as
+      | AnyConfigurationModel
+      | AnyConfigurationModel[]
     return (
       slotName.toLowerCase().includes(query) ||
       (Array.isArray(slot)
@@ -79,7 +80,7 @@ function memberMatches(
 function schemaMatches(schema: AnyConfigurationModel, query: string): boolean {
   const { properties } = getMembers(schema)
   return Object.entries(properties).some(([slotName, slotSchema]) =>
-    memberMatches(slotName, slotSchema, schema[slotName], query),
+    memberMatches(schema, slotName, slotSchema, query),
   )
 }
 
@@ -149,8 +150,10 @@ const Member = observer(function Member(props: {
         </AccordionDetails>
       </Accordion>
     )
-  } else if (isConfigurationSlotType(slotSchema)) {
-    return <SlotEditor key={slotName} slot={slot} slotSchema={slotSchema} />
+  } else if (isConfigurationSlot(schema, slotName)) {
+    return (
+      <SlotEditor key={slotName} slot={makeSlotFacade(schema, slotName)} />
+    )
   } else {
     return null
   }
@@ -172,8 +175,7 @@ const Schema = observer(function Schema({
       {Object.entries(properties)
         .filter(
           ([slotName, slotSchema]) =>
-            !query ||
-            memberMatches(slotName, slotSchema, schema[slotName], query),
+            !query || memberMatches(schema, slotName, slotSchema, query),
         )
         .map(([slotName, slotSchema]) => (
           <Member

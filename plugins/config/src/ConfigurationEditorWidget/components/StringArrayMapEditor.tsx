@@ -10,23 +10,22 @@ const StringArrayMapEditor = observer(function StringArrayMapEditor({
   slot: {
     name: string
     value: Map<string, string[]>
-    remove: (key: string) => void
-    add: (key: string, val: string[]) => void
+    set: (val: Record<string, string[]>) => void
     description: string
-    setAtKeyIndex: (key: string, idx: number, val: string) => void
-    removeAtKeyIndex: (key: string, idx: number) => void
-    addToKey: (key: string, val: string) => void
   }
 }) {
+  // plain deep copy so edits never reuse the live MST array nodes
+  const obj = Object.fromEntries([...slot.value].map(([k, v]) => [k, [...v]]))
   return (
     <>
       <InputLabel>{slot.name}</InputLabel>
-      {[...slot.value].map(([key, val]) => (
+      {Object.entries(obj).map(([key, val]) => (
         <MapEntryCard
           key={key}
           title={key}
           onDelete={() => {
-            slot.remove(key)
+            const { [key]: _omit, ...rest } = obj
+            slot.set(rest)
           }}
         >
           <StringArrayEditor
@@ -34,14 +33,8 @@ const StringArrayMapEditor = observer(function StringArrayMapEditor({
               name: slot.name,
               value: val,
               description: `Values associated with entry ${key}`,
-              setAtIndex: (idx, val) => {
-                slot.setAtKeyIndex(key, idx, val)
-              },
-              removeAtIndex: idx => {
-                slot.removeAtKeyIndex(key, idx)
-              },
-              add: val => {
-                slot.addToKey(key, val)
+              set: newVal => {
+                slot.set({ ...obj, [key]: newVal })
               },
             }}
           />
@@ -49,7 +42,7 @@ const StringArrayMapEditor = observer(function StringArrayMapEditor({
       ))}
       <MapAddCard
         onAdd={key => {
-          slot.add(key, [])
+          slot.set({ ...obj, [key]: [] })
         }}
       />
       <FormHelperText>{slot.description}</FormHelperText>

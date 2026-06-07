@@ -1,8 +1,9 @@
 import {
   getEnv,
   getRoot,
-  getSnapshot,
+  isArrayType,
   isLateType,
+  isMapType,
   isStateTreeNode,
   isType,
   resolveIdentifier,
@@ -16,7 +17,7 @@ import { ElementId } from '../util/types/mst.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
-import type { IAnyType, SnapshotOut } from '@jbrowse/mobx-state-tree'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 export type {
   AnyConfigurationModel,
@@ -24,19 +25,6 @@ export type {
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
 } from './types.ts'
-
-function isEmptyObject(thing: unknown) {
-  return (
-    typeof thing === 'object' &&
-    !Array.isArray(thing) &&
-    thing !== null &&
-    Object.keys(thing).length === 0
-  )
-}
-
-function isEmptyArray(thing: unknown) {
-  return Array.isArray(thing) && thing.length === 0
-}
 
 export interface ConfigurationSchemaDefinition {
   [n: string]:
@@ -129,17 +117,25 @@ function makeConfigurationSchemaModel<
   }
 
   // String/number entries in the schema definition become volatile instance
-  // constants (read via `model.someName`). The schema type itself carries the
-  // jbrowse metadata flags — see line 281 — so we don't duplicate them here.
+  // constants (read via `model.someName`). Per-slot metadata lives in the
+  // jbrowseSchemaDefinition table on the schema type, not on the instance.
   const volatileConstants: Record<string, unknown> = {}
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (
       (isType(slotDefinition) && isLateType(slotDefinition)) ||
       isConfigurationSchemaType(slotDefinition)
     ) {
-      // this is either an MST late() type (which we assume to be a sub-configuration),
-      // or an actual sub-configuration
-      modelDefinition[slotName] = slotDefinition
+      // an MST late() type (assumed to be a sub-configuration), or an actual
+      // sub-configuration. A bare sub-schema is already stripDefault-wrapped (so
+      // it strips when all-default); an array/map of sub-schemas gets wrapped so
+      // an empty/default collection is likewise omitted from the snapshot.
+      if (isArrayType(slotDefinition)) {
+        modelDefinition[slotName] = types.stripDefault(slotDefinition, [])
+      } else if (isMapType(slotDefinition)) {
+        modelDefinition[slotName] = types.stripDefault(slotDefinition, {})
+      } else {
+        modelDefinition[slotName] = slotDefinition
+      }
     } else if (
       typeof slotDefinition === 'string' ||
       typeof slotDefinition === 'number'
@@ -152,7 +148,6 @@ function makeConfigurationSchemaModel<
       }
       try {
         modelDefinition[slotName] = ConfigSlot(
-          slotName,
           slotDefinition as ConfigSlotDefinition,
         )
       } catch (e) {
@@ -169,8 +164,8 @@ function makeConfigurationSchemaModel<
   }
 
   // isConfigurationSchemaType walks union/optional/array/map types recursively;
-  // computing once at schema construction means setSubschema and the per-key
-  // postProcessSnapshot filter both become Set.has lookups.
+  // computing the sub-schema key set once at schema construction makes
+  // setSubschema's membership check a Set.has lookup.
   const subSchemaKeys = new Set(
     Object.keys(modelDefinition).filter(k =>
       isConfigurationSchemaType(modelDefinition[k]),
@@ -189,6 +184,11 @@ function makeConfigurationSchemaModel<
           : modelDefinition[slotName].create(data)
         self[slotName] = newSchema
         return newSchema
+      },
+      // generic slot setter the config editor's slot facade routes through. A
+      // slot is a bare value-union property, so this is a plain assignment.
+      setSlot(slotName: string, value: unknown) {
+        self[slotName] = value
       },
     }))
 
@@ -210,52 +210,21 @@ function makeConfigurationSchemaModel<
     ? { type: modelName, ...identifierDefault }
     : identifierDefault
 
-  const defaultSnap = getSnapshot(completeModel.create(modelDefault))
-  completeModel = completeModel.postProcessSnapshot(snap => {
-    const newSnap: SnapshotOut<typeof completeModel> = {}
-    let matchesDefault = true
-    for (const [key, value] of Object.entries(snap)) {
-      if (matchesDefault) {
-        if (typeof defaultSnap[key] === 'object' && typeof value === 'object') {
-          if (JSON.stringify(defaultSnap[key]) !== JSON.stringify(value)) {
-            matchesDefault = false
-          }
-        } else if (defaultSnap[key] !== value) {
-          matchesDefault = false
-        }
-      }
-      // Omit undefined values and volatile constants.
-      // Only skip empty objects/arrays for sub-schema keys — slot values of []
-      // or {} must be preserved even when empty, since they may differ from a
-      // non-empty default (isEmptyArray/isEmptyObject on a slot value would
-      // cause it to silently revert to the default on next load).
-      const isSubSchema = subSchemaKeys.has(key)
-      if (
-        value !== undefined &&
-        volatileConstants[key] === undefined &&
-        !(isSubSchema && (isEmptyObject(value) || isEmptyArray(value)))
-      ) {
-        newSnap[key] = value
-      }
-    }
-    if (matchesDefault) {
-      return {}
-    }
-    return newSnap
-  })
-
   if (options.preProcessSnapshot) {
     completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
   }
 
   // also stash the slot-metadata table on the instantiated model type (not just
-  // the types.optional wrapper below), so it is reachable from a live node via
+  // the stripDefault wrapper below), so it is reachable from a live node via
   // getType(node) — the config editor's slot facade reads metadata from here.
   Object.defineProperty(completeModel, 'jbrowseSchemaDefinition', {
     value: schemaDefinition,
   })
 
-  return types.optional(completeModel, modelDefault)
+  // stripDefault (not optional) so a nested all-default sub-schema is omitted
+  // from its parent's snapshot: the slot props strip themselves, the sub-schema
+  // collapses to its default, and the parent's stripDefault drops the key.
+  return types.stripDefault(completeModel, modelDefault)
 }
 
 export interface ConfigurationSchemaType<

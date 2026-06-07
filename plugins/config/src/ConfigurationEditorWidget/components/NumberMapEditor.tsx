@@ -10,27 +10,29 @@ const NumberMapEditor = observer(function NumberMapEditor({
   slot: {
     name: string
     value: Map<string, number>
-    remove: (key: string) => void
-    add: (key: string, val: number) => void
+    set: (val: Record<string, number>) => void
     description: string
   }
 }) {
+  const entries = [...slot.value]
+  const obj = Object.fromEntries(entries)
   return (
     <>
       <InputLabel>{slot.name}</InputLabel>
-      {[...slot.value].map(([key, val]) => (
+      {entries.map(([key, val]) => (
         <MapEntryCard
           key={key}
           title={key}
           onDelete={() => {
-            slot.remove(key)
+            const { [key]: _omit, ...rest } = obj
+            slot.set(rest)
           }}
         >
           <NumberEditor
             slot={{
               value: val,
               set: val => {
-                slot.add(key, val)
+                slot.set({ ...obj, [key]: val })
               },
             }}
           />
@@ -38,7 +40,7 @@ const NumberMapEditor = observer(function NumberMapEditor({
       ))}
       <MapAddCard
         onAdd={key => {
-          slot.add(key, 0)
+          slot.set({ ...obj, [key]: 0 })
         }}
       />
       <FormHelperText>{slot.description}</FormHelperText>

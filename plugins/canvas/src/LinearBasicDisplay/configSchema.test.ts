@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { isCallbackValue, readConfObject } from '@jbrowse/core/configuration'
 
 import configSchemaFactory from './configSchema.ts'
 
@@ -56,8 +56,7 @@ describe('LinearBasicDisplay configSchema', () => {
       { pluginManager: pm },
     )
     // The raw value is the JEXL string
-    const slot = config.color
-    expect(slot.isCallback).toBe(true)
+    expect(isCallbackValue(config.color)).toBe(true)
   })
 
   it('readConfObject with no path returns serializable snapshot', () => {
@@ -133,8 +132,8 @@ describe('LinearBasicDisplay configSchema', () => {
       { displayId: 'test', type: 'LinearBasicDisplay', color: jexlExpr },
       { pluginManager: pm },
     )
-    expect(config.color.isCallback).toBe(true)
-    expect(String(config.color.value)).toBe(jexlExpr)
+    expect(isCallbackValue(config.color)).toBe(true)
+    expect(config.color).toBe(jexlExpr)
   })
 
   // Compat: old configs stored colour/label settings under a renderer
@@ -169,8 +168,8 @@ describe('LinearBasicDisplay configSchema', () => {
         { pluginManager: pm },
       )
       // Check raw slot value to avoid evaluating JEXL without a feature context
-      expect(String(config.labels.description.value)).toBe(expr)
-      expect(config.labels.description.isCallback).toBe(true)
+      expect(config.labels.description).toBe(expr)
+      expect(isCallbackValue(config.labels.description)).toBe(true)
     })
 
     it('display-level props take precedence over renderer props', () => {
@@ -287,8 +286,8 @@ describe('LinearBasicDisplay configSchema', () => {
         { displayId: 'test', type: 'LinearBasicDisplay', color1: expr },
         { pluginManager: pm },
       )
-      expect(String(config.color.value)).toBe(expr)
-      expect(config.color.isCallback).toBe(true)
+      expect(config.color).toBe(expr)
+      expect(isCallbackValue(config.color)).toBe(true)
     })
 
     it('the new color name wins over a legacy color1', () => {

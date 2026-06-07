@@ -1,7 +1,149 @@
 # Plan: collapse config slots to plain MST properties
 
-Status: **proposed** — not yet started. This is the "dramatic simplification" of
-`packages/core/src/configuration`.
+Status: **DONE (2026-06-06).** All phases landed; full suite green (4695 passed),
+tsgo + eslint clean. A config slot is now a bare `types.optional(union(jexl,
+type))` property on the parent — the per-slot MST sub-model is gone. The public
+API (`ConfigurationSchema`/`readConfObject`/`getConf`/`ConfigurationReference`)
+is unchanged, so the 500+ call sites never moved. See the per-phase notes below
+for the landed implementation.
+
+## Future direction: toward native MST (analysis, not yet started)
+
+Vision: delete most of the config system and just use native MST; configs are
+plain `types.model`s, read via `node.x`. The slot collapse already gets ~80%
+there — a slot **is** now a native `types.optional(union(jexl, type))` property.
+What the config layer still adds on top of native MST, and how each could move:
+
+- **jexl on read — SMALL, already centralized.** Only ~25 of ~357 slots are
+  callback-capable, and per-feature eval is concentrated in renderers, which
+  already eval explicitly via `readConfigValue` on plain snapshots in the worker.
+  There is now ONE jexl primitive, `evaluateJexl(value, args, jexl?)`
+  (`slotValueUtils.ts`), used by both `readConfObject` and `readConfigValue`.
+  Native-MST configs would keep the `union(jexl, type)` pattern for those ~25
+  slots and call `evaluateJexl(node.color, {feature})` at the read sites. jexl is
+  the *least* of the blockers.
+- **Default-stripping — the real blocker, but we own the fork. FORK SIDE DONE
+  (2026-06-06); jbrowse integration not yet wired.** Native `types.optional`
+  keeps defaults in snapshots; jbrowse needs minimal (URL-shared) sessions.
+  Implemented the narrow option from this bullet — a `types.stripDefault(type,
+  default)` wrapper in `@jbrowse/mobx-state-tree` (NOT a change to `optional`'s
+  semantics, so blast radius is opt-in). See "Default-stripping in the fork"
+  below for the landed fork change and the remaining jbrowse-side flip that
+  deletes the per-schema `postProcessSnapshot`.
+- **Editor metadata — the genuine loss.** The config editor can introspect
+  native MST for almost everything (color = `refinement('Color', string)`, enum =
+  union of literals, number/boolean/array/map = the type). The only things native
+  MST doesn't carry are `description` and `contextVariable`. Going fully native
+  means dropping per-slot descriptions or keeping a tiny metadata sidecar.
+- **Authoring + call sites — the cost.** 147 schemas authored as
+  `ConfigurationSchema({...})` and 500+ `getConf`/`readConfObject` sites. Native
+  means `types.model` + `types.compose` (for `baseConfiguration`) and `node.x`
+  access. Mechanical but massive.
+- **Keep as-is:** `ConfigurationReference`/frozen-track hydration — orthogonal,
+  already native-MST references, load-bearing for 10k-track perf.
+
+Recommended path (pragmatic, not big-bang): (1) land default-stripping in the
+fork; (2) keep `ConfigurationSchema` as thin authoring sugar that builds the
+`union(jexl, type)` slots + stashes the editor metadata table (it already nearly
+is this); (3) treat `readConfObject` as "native read + jexl + clone" and let new
+code use native `node.x` for static slots, reserving the reader for
+callback-capable / per-feature reads; (4) migrate hot paths opportunistically.
+This yields "it's just MST" for ~90% of access without a risky rewrite or losing
+default-stripping/descriptions.
+
+## Default-stripping in the fork (`types.stripDefault`)
+
+**Goal:** delete jbrowse's per-schema `postProcessSnapshot` (the per-key
+default-compare in `configurationSchema.ts:219`) by making "omit a property from
+the snapshot when it equals its default" a native MST property behavior.
+
+### Fork side — DONE (2026-06-06), full fork suite green (1065 passed), builds clean
+
+Checkout: `/home/cdiesh/src/mobx-state-tree` (v5.10.8, matches the version the
+monorepo resolves). `types.stripDefault` lives alongside the other fork-specific
+additions (`resilient`, `lazy`), so it's a consistent extension, not a core
+semantics change.
+
+- **`src/types/utility-types/optional.ts`** — `class StripDefaultValue extends
+  OptionalValue` + factory `stripDefault(type, default)` + predicate
+  `shouldStripChildFromSnapshot(type, snapshot)`. `StripDefaultValue` lazily
+  instantiates its subtype with the default (detached, `instantiate(null, …)`)
+  and caches the resulting *node snapshot* — so the compare is against the
+  **normalized/snapshotted** default (fills model defaults, runs the subtype's
+  own postProcess), matching jbrowse's current "compare against `defaultSnap`"
+  behavior, incl. the fileLocation `locationType` fill-in. Compare helper mirrors
+  the old logic: `===` for primitives, `JSON.stringify` for objects.
+- **`src/types/complex-types/model.ts`** — `getSnapshot` now skips a property
+  when `shouldStripChildFromSnapshot(propType, childSnapshot)` is true. One-line
+  hook in the `forAllProps` loop; everything else unchanged.
+- **`src/types/index.ts`** — `stripDefault` added to the `types` object.
+- Tests: new `__tests__/core/strip-default.test.ts` (omit default, keep
+  non-strip siblings like the `type` discriminator, falsy defaults, normalized
+  sub-model default, nested all-default collapse, reload round-trip);
+  `api.test.ts` TYPES list + docs-missing list updated (note: that test's
+  `TYPES.sort()` mutates the shared const, so the docs-missing list must be in
+  **alphabetical** order — `lazy, resilient, stripDefault`).
+
+**Why this replicates jbrowse's stripping exactly (expected: zero new snapshot
+churn beyond what's already on this branch):**
+- `type` discriminator stays `types.optional(literal)` (NOT stripDefault) → never
+  stripped. Identifier is `types.identifier`/`ElementId` (required) → never
+  stripped. So the old `exemptKeys` logic is automatic.
+- All-default leaf → every slot strips → `{}` (matches the old `allDefault ? {}`).
+- Nested all-default sub-schema → its own `getSnapshot` returns `{}`, and the
+  parent's stripDefault on that sub-schema property compares `{}` vs the
+  sub-schema's default snapshot `{}` → key omitted (matches old behavior).
+
+### jbrowse side — DONE + published (2026-06-07), full suite green
+
+Landed: published the fork as `@jbrowse/mobx-state-tree@5.11.0` (via `pnpm
+version minor`) and wired it in. `ConfigSlot` →
+`types.stripDefault(union(jexl,model), default)`; `makeConfigurationSchemaModel`
+returns `types.stripDefault(completeModel, modelDefault)`; deleted the per-schema
+`postProcessSnapshot`/`defaultSnap`/`exemptKeys` block. **Added array/map
+wrapping** (`types.array`/`types.map` of sub-schemas aren't themselves
+stripDefault, so wrap with `stripDefault(t, [])`/`stripDefault(t, {})` to strip
+empty/default collections). **Found+fixed a fork bug:** the strip hook must also
+live in `processInitialSnapshot` (lazy array/map-child serialization path), not
+only `ModelType.getSnapshot`. **Kept the more-minimal behavior** an all-default
+schema is omitted from its parent (not `{}`); only churn was jbrowseModel's
+empty-snapshot dropping `configuration: {}`. All 44 jbrowse `package.json` bumped
+`^5.10.8`→`^5.11.0`. Validation: core/config/canvas/jbrowse-web/ConfigHydration/
+react-app/fetchAutorun all green, tsgo 0 errors, lint clean.
+
+The flip (for reference):
+
+1. **Build + link the local fork into the monorepo.** The monorepo resolves
+   `@jbrowse/mobx-state-tree@^5.10.8` from the pnpm store, not a workspace link.
+   `pnpm build` in the fork is done (dist has `stripDefault`). To validate
+   jbrowse against it, add a `pnpm.overrides`/`link:` to
+   `/home/cdiesh/src/mobx-state-tree` (or `pnpm link`), `pnpm install`, then run
+   `pnpm test packages/core/src/configuration`. **Do NOT publish/bump the
+   monorepo dependency without confirming with the user** — that's the only
+   irreversible, outward-facing step.
+2. **`configurationSlot.ts`** — `ConfigSlot(def)` returns
+   `types.stripDefault(union(JexlString, model), defaultValue)` (was
+   `types.optional`).
+3. **`configurationSchema.ts`** — `makeConfigurationSchemaModel` returns
+   `types.stripDefault(completeModel, modelDefault)` (was `types.optional`), so a
+   nested all-default sub-schema strips at its parent. **Delete the
+   `defaultSnap` + `postProcessSnapshot` block** (lines ~206–242) and the
+   `exemptKeys`/`volatileConstants`-skip logic it carries (now native).
+4. **Validate:** `pnpm test packages/core`, `plugins/config`, `plugins/canvas`
+   configSchema, then the snapshot products (`jbrowse-web`, `jbrowse-react-app`
+   rootModel/jbrowseModel snapshots). Expect no new churn; if churn appears,
+   it's a real behavior diff to investigate (likely a late-typed sub-schema —
+   see risk below), not a snapshot to blindly `-u`.
+5. `npx tsgo` + `pnpm lint --cache --fix`.
+
+**Known residual risk — `types.late` sub-schemas.** A sub-schema passed as
+`types.late(() => Schema)` (the `isLateType` branch in
+`configurationSchema.ts`) is stored as a `Late` property, not a
+`StripDefaultValue`, so `shouldStripChildFromSnapshot` won't fire and an
+all-default late sub-schema would serialize as `{}` instead of being omitted.
+Grep found **zero** late-typed config sub-schemas in the tree, so this is
+believed dead — but confirm during step 4. If one surfaces, either unwrap `Late`
+in `shouldStripChildFromSnapshot` or have the late thunk return `stripDefault(...)`.
 
 ## The idea
 
@@ -182,15 +324,81 @@ unchanged** — see `packages/core/src/configuration/CLAUDE.md`.
   collection mutators. All 103 tests across `plugins/config`, `plugins/canvas`
   configSchema, and `packages/core` configuration pass; tsgo + eslint clean.
 
-  Still to do in Phase 1: register metadata for editor dispatch (so the editor
-  reads `type` from the table, not `slot.type`) and the `makeSlotFacade` seam —
-  then the representation flip (Phases 2–3).
-- **Phase 2 — migrate consumers.** Convert the ~30 editor/`.add`/`convertTo*`
-  sites to the free-function / generic-action forms, plus the ~42 `slot.value`
-  editor reads and `getConfigOverrides.ts`. Remove the shims.
-- **Phase 3 — delete.** Drop the per-slot MST model from `configurationSlot.ts`
-  (it shrinks to the value-union + metadata builder), the full-shape
-  `preProcessSnapshot` branch, and the per-slot `name/description/type` literals.
+  *Step 3 — the `makeSlotFacade` seam + metadata-driven editor (DONE 2026-06-06).*
+  `slotFacade.ts`: `makeSlotFacade(node, slotName)` returns the duck-typed object
+  the leaf editors already consume (`{name, description, type, contextVariable,
+  defaultValue, choices?, pluginManager, value (live getter), set, + collection
+  mutators}`), built from the `jbrowseSchemaDefinition` metadata table
+  (`getSlotDefinition`) — including slots inherited via `baseConfiguration`. The
+  editor now reads slot `type`, `description`, `choices`, and env from the
+  facade, **never from the slot sub-model**:
+  - `ConfigurationEditor.Member` passes `slot={makeSlotFacade(schema, slotName)}`
+    to `SlotEditor` instead of the raw sub-model.
+  - `SlotEditor` dropped its `slotSchema` prop; component dispatch is now
+    `valueComponents[facade.type]`.
+  - `StringEnumEditor` reads `facade.choices` (derived via `getEnumerationValues`
+    on the metadata `model`) instead of introspecting the slot MST type.
+  - `getEnv(slot)` is gone from `SlotEditor`/`CallbackEditor`/`FileSelector`
+    wrapper — they use `facade.pluginManager` (resolved once via `getEnv(node)`),
+    so the editor no longer requires the slot to be an MST node.
+  - New parent action `setSlot(slotName, value)` is the single mutation choke
+    point the facade routes through (today `self[slotName].set(value)`; after the
+    flip a bare `self[slotName] = value`).
+
+  This is behavior-preserving (the `ConfigurationEditor.test.tsx` snapshots pass
+  unchanged) and is the seam the flip needs: Phase 2/3 only rewrite the facade
+  internals + `setSlot`, not any leaf editor. Pinned by `slotFacade.test.ts`
+  (metadata exposure, live value getter via `set`, stringEnum choices, inherited
+  slots, collection mutators).
+
+  Still to do before the flip: collection mutators currently delegate to the slot
+  sub-model's actions (`node[slotName].setAtIndex` etc.) — Phase 2 rewrites them
+  as plain MST array/map ops over the bare parent property. Then the
+  representation flip itself (`ConfigSlot` returns a bare value-union;
+  `readConfObject`/`getConfSnapshot`/`getConfigOverrides.ts` discriminate slots
+  via the metadata table).
+- **Phases 2 & 3 — the flip + delete. DONE (2026-06-06).** Done as one atomic
+  change (the read path can't be migrated incrementally: until slots are bare
+  values, `readConfObject` must still call `slot.getValue`). Full suite green
+  (4695 passed), tsgo + eslint clean.
+
+  - **`configurationSlot.ts` is now ~10 lines:** `ConfigSlot(def)` returns
+    `types.optional(types.union(JexlStringType, model), defaultValue)`. Deleted:
+    the per-slot sub-model, `name`/`description`/`type` literals,
+    `isCallback`/`expr`/`getValue`/`defaultValue` views, `set`, the per-slot
+    pre/postProcessSnapshot, and `typeModelExtensions` (the collection mutators).
+  - **Read path (`util.ts`):** `readConfObject` reads the bare value and, if it's
+    a `jexl:` string, evaluates it via `evalConfigCallback` (pluginManager jexl
+    from the node's env; empty-body `jexl:` returns literally — preserves #4181).
+    Guard changed from `if (!slot)` to `if (value === undefined)` so falsy slot
+    values (0/''/false/null) read correctly. `getConfSnapshot` walks the metadata
+    table. The duck-typed `isConfigSlot` helpers are gone (here **and** the
+    duplicate in `getConfigOverrides.ts` **and** the one in `ConfigOverrideMixin`).
+  - **Default stripping moved to the parent `postProcessSnapshot`:** per-key
+    compare against `defaultSnap`, keeping the identifier + `type` discriminator,
+    collapsing all-default to `{}`. This is **more correct** than the old per-slot
+    stripping — it compares against the *snapshotted* default, so default
+    `fileLocation`s (which gained `locationType`/`internetAccountId` fields the
+    raw `defaultValue` lacked) now strip correctly. Only snapshot churn: a few
+    default file-locations dropped from `rootModel`/`jbrowseModel` snapshots.
+  - **Single mutation point:** `setSlot(slotName, value)` → `self[slotName] = value`.
+    The editor's collection editors (StringArray/NumberMap/StringArrayMap) now do
+    **immutable `set`** (build a new array/map, assign) — no collection-mutator API.
+  - **`getConfigOverrides.ts` simplified:** merges the display's `configOverrides`
+    map onto the matching display config (skip jexl, keep only values differing
+    from the config) — no metadata-table walk, no `getOverride` plumbing.
+  - **One source of truth for slot-ness:** dropped the `isJBrowseConfigurationSlot`
+    type marker and `isConfigurationSlotType`. The editor dispatches via
+    `isConfigurationSlot(node, slotName)` over the metadata table. This also fixed
+    a latent regression where the editor's filter searched `slot.name`/
+    `slot.description` on what had become a bare value (description search was
+    silently dead).
+  - **Referential-stability fix (`ConfigOverrideMixin.getConfWithOverride`):**
+    returns the *live* config value (only routing through `readConfObject` for
+    actual jexl callbacks). Using `readConfObject` unconditionally `structuredClone`d
+    object configs into a fresh reference each read, making `colorBy`/`filterBy`
+    computeds "change" on any unrelated `configOverrides` write and spuriously
+    invalidating the alignments RPC cache (caught by `fetchAutorun.test.ts`).
 
 ## Confirmed dead/redundant surface (delete, don't migrate)
 

@@ -126,6 +126,36 @@ test('filters slots by name', () => {
   expect(queryByLabelText('barName')).toBeNull()
 })
 
+test('filters slots by description (not just name)', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    fooColor: {
+      description: 'a color slot',
+      type: 'color',
+      defaultValue: '#396494',
+    },
+    barName: {
+      description: 'a string slot',
+      type: 'string',
+      defaultValue: 'hello',
+    },
+  })
+
+  const { getByLabelText, queryByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor
+        model={{ target: TestSchema.create(undefined, { pluginManager }) }}
+      />
+    </ThemeProvider>,
+  )
+
+  // 'string' appears only in barName's description, not in either slot name
+  fireEvent.change(getByLabelText('Filter options'), {
+    target: { value: 'string' },
+  })
+  expect(queryByLabelText('barName')).toBeTruthy()
+  expect(queryByLabelText('fooColor')).toBeNull()
+})
+
 // Removed: PileupTrack schema test — Alignments plugin no longer registers
 // renderers (moved to GPU pipeline), so baseLinearDisplayConfigSchema
 // with only Alignments produces an empty renderer union.

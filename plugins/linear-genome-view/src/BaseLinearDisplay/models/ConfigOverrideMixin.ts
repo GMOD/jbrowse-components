@@ -1,16 +1,7 @@
+import { isCallbackValue, readConfObject } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-interface ConfigSlot<T> {
-  getValue: () => T
-}
-
-function isConfigSlot<T>(slot: unknown): slot is ConfigSlot<T> {
-  return (
-    slot !== null &&
-    slot !== undefined &&
-    typeof (slot as ConfigSlot<T>).getValue === 'function'
-  )
-}
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
  * Migrate old `*Setting` snapshot properties to flat config override keys.
@@ -110,14 +101,15 @@ export default function ConfigOverrideMixin(
         // ConfigOverrideMixin is always composed with models that provide
         // 'configuration'. Access it via plain-object cast to avoid propagating
         // MST internal symbol types ($stateTreeNodeType) into declaration files.
-        const conf = (
-          self as unknown as { configuration: Record<string, unknown> }
-        ).configuration
-        const slot = conf[key]
-        if (isConfigSlot<T>(slot)) {
-          return slot.getValue()
-        }
-        return slot as T
+        const conf = (self as unknown as { configuration: AnyConfigurationModel })
+          .configuration
+        // Return the live config value (referentially stable across reads) so
+        // computed getters reading this don't spuriously invalidate when an
+        // unrelated override changes. Only jexl callbacks need readConfObject's
+        // evaluation; readConfObject would otherwise clone object values into a
+        // fresh reference each call.
+        const raw = (conf as unknown as Record<string, unknown>)[key]
+        return (isCallbackValue(raw) ? readConfObject(conf, key) : raw) as T
       },
     }))
     .actions(self => ({

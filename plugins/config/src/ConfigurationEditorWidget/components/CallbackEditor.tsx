@@ -2,12 +2,13 @@ import { useState, useTransition } from 'react'
 
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getEnv } from '@jbrowse/mobx-state-tree'
 import HelpIcon from '@mui/icons-material/Help'
 import { IconButton, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { monospaceFontFamily as fontFamily } from './useSlotEditorStyles.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()(theme => ({
   callbackEditor: {
@@ -32,7 +33,7 @@ const useStyles = makeStyles()(theme => ({
 
 function validateAndSetCode(
   code: string,
-  slot: { set: (arg: string) => void },
+  slot: { set: (arg: string) => void; pluginManager: PluginManager },
   setCodeError: (e: unknown) => void,
 ) {
   // empty buffer is "in progress", not invalid — don't commit and don't warn
@@ -43,7 +44,7 @@ function validateAndSetCode(
   }
   try {
     const jexlCode = code.startsWith('jexl:') ? code : `jexl:${code}`
-    stringToJexlExpression(jexlCode, getEnv(slot).pluginManager?.jexl)
+    stringToJexlExpression(jexlCode, slot.pluginManager.jexl)
     slot.set(jexlCode)
     setCodeError(undefined)
   } catch (e) {
@@ -60,7 +61,8 @@ const CallbackEditor = observer(function CallbackEditor({
     description: string
     name: string
     value: string
-    contextVariable: string
+    contextVariable: string[]
+    pluginManager: PluginManager
   }
 }) {
   const { classes } = useStyles()

@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 
 import type {
-  IAnyComplexType,
   IAnyType,
   IModelReflectionPropertiesData,
   IOptionalIType,
@@ -78,7 +77,7 @@ export type IEnumerationType<T extends string> = ISimpleType<
 >
 
 /** get the string values of an MST enumeration type */
-export function getEnumerationValues(type: IAnyComplexType) {
+export function getEnumerationValues(type: IAnyType) {
   const subtypes = getUnionSubtypes(type) as ILiteralType<string>[]
   // the subtypes should all be literals with a value member
   return subtypes.map(t => t.value)

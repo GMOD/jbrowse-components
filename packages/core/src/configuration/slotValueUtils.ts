@@ -16,6 +16,24 @@ export function isCallbackValue(value: unknown): value is string {
   return typeof value === 'string' && value.startsWith('jexl:')
 }
 
+/**
+ * The single jexl-evaluation boundary for config values. Both the MST read path
+ * (`readConfObject`) and the plain-object/worker read path (`readConfigValue`)
+ * route through here, so the empty-body guard and compilation are defined once.
+ *
+ * An empty body (`'jexl:'`, e.g. mid-typing in the editor) has no compilable
+ * code — return it literally instead of throwing (#4181).
+ */
+export function evaluateJexl(
+  value: string,
+  args: Record<string, unknown>,
+  jexl?: JexlInstance,
+) {
+  return value.length > 'jexl:'.length
+    ? stringToJexlExpression(value, jexl).eval(args)
+    : value
+}
+
 const fallbackDefaults: Record<string, unknown> = {
   stringArray: [],
   stringArrayMap: {},

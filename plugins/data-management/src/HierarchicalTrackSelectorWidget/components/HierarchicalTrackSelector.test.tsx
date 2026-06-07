@@ -83,8 +83,8 @@ test('sm categorized tracks', async () => {
   })
   firstView.showTrack(session.sessionTracks[0].trackId)
   firstView.showTrack(session.sessionTracks[1].trackId)
-  firstView.tracks[0].configuration.category.set(['Foo Category'])
-  firstView.tracks[1].configuration.category.set([
+  firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
+  firstView.tracks[1].configuration.setSlot('category', [
     'Foo Category',
     'Bar Category',
   ])
@@ -118,8 +118,8 @@ test('localstorage preference - collapse categorized tracks', async () => {
   })
   firstView.showTrack(session.sessionTracks[0].trackId)
   firstView.showTrack(session.sessionTracks[1].trackId)
-  firstView.tracks[0].configuration.category.set(['Foo Category'])
-  firstView.tracks[1].configuration.category.set([
+  firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
+  firstView.tracks[1].configuration.setSlot('category', [
     'Foo Category',
     'Bar Category',
   ])
@@ -161,8 +161,8 @@ test('configuration preference - collapse categorized tracks', async () => {
   })
   firstView.showTrack(session.sessionTracks[0].trackId)
   firstView.showTrack(session.sessionTracks[1].trackId)
-  firstView.tracks[0].configuration.category.set(['Foo Category'])
-  firstView.tracks[1].configuration.category.set([
+  firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
+  firstView.tracks[1].configuration.setSlot('category', [
     'Foo Category',
     'Bar Category',
   ])

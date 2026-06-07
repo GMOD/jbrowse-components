@@ -1,198 +1,176 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
+import PluginManager from '../PluginManager.ts'
 import { getEffectiveTrackConfig } from './getConfigOverrides.ts'
+import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 
-// Minimal mock of a config slot with getValue
-function mockSlot(value: unknown) {
-  return {
-    getValue: () => value,
-    name: 'slot',
-    description: '',
-    type: 'string',
-    value,
-  }
-}
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
-// Minimal mock of a display config model (acts like an MST config node)
-function mockDisplayConf(
-  slots: Record<string, unknown>,
-  type = 'LinearWiggleDisplay',
-) {
-  const conf: Record<string, unknown> = { type }
-  for (const [key, value] of Object.entries(slots)) {
-    conf[key] = mockSlot(value)
-  }
-  return conf
-}
+const WiggleDisplay = ConfigurationSchema(
+  'LinearWiggleDisplay',
+  {
+    color: { type: 'color', defaultValue: '#f0f' },
+    scaleType: { type: 'string', defaultValue: 'linear' },
+    minScore: { type: 'number', defaultValue: 0 },
+    maxScore: { type: 'number', defaultValue: 100 },
+    showLabels: { type: 'boolean', defaultValue: true },
+  },
+  { explicitlyTyped: true, explicitIdentifier: 'displayId' },
+)
 
-// Build a track config mock where .displays contains live config models.
-// getSnapshot(trackConfig) returns top-level fields with displays: [{}]
-// (simulating MST's postProcessSnapshot stripping defaults).
-function mockTrackConfig(
+const BasicDisplay = ConfigurationSchema(
+  'LinearBasicDisplay',
+  { color: { type: 'color', defaultValue: '#000' } },
+  { explicitlyTyped: true, explicitIdentifier: 'displayId' },
+)
+
+const TrackConfig = ConfigurationSchema(
+  'FeatureTrack',
+  {
+    name: { type: 'string', defaultValue: '' },
+    adapter: { type: 'frozen', defaultValue: {} },
+    displays: types.array(types.union(WiggleDisplay, BasicDisplay)),
+  },
+  { explicitIdentifier: 'trackId' },
+)
+
+function makeTrack(
   fields: Record<string, unknown>,
-  displayConfs: Record<string, unknown>[],
+  displays: Record<string, unknown>[],
 ) {
-  return {
-    ...fields,
-    displays: displayConfs,
-    __snapshot: { ...fields, displays: displayConfs.map(() => ({})) },
-  }
+  return TrackConfig.create(
+    { trackId: 'track-1', ...fields, displays },
+    { pluginManager },
+  )
 }
 
-// Mock display model: getSnapshot returns { configuration: displayId } and
-// getOverride reads the runtime override map (matching ConfigOverrideMixin).
-function mockDisplay(
-  displayConf: Record<string, unknown>,
-  displayId: string,
-  overrides: Record<string, unknown> = {},
+// the active display: getEffectiveTrackConfig reads `.configuration` (the live
+// display config node) and `.configOverrides` (the ConfigOverrideMixin map)
+function makeDisplay(
+  configuration: unknown,
+  configOverrides?: Record<string, unknown>,
 ) {
-  return {
-    configuration: displayConf,
-    __snapshot: { configuration: displayId },
-    getOverride: (key: string) => overrides[key],
-  }
+  return configOverrides
+    ? { configuration, configOverrides }
+    : { configuration }
 }
-
-jest.mock('@jbrowse/mobx-state-tree', () => ({
-  getSnapshot: (obj: unknown) =>
-    (obj as Record<string, unknown>).__snapshot ?? obj,
-}))
-jest.mock('mobx', () => ({
-  toJS: (obj: unknown) => obj,
-}))
 
 describe('getEffectiveTrackConfig', () => {
-  test('returns track config with full display entry when no overrides', () => {
-    const dc = mockDisplayConf({ color: '#f0f' })
-    const trackConfig = mockTrackConfig(
-      { trackId: 'track-1', type: 'FeatureTrack' },
-      [dc],
-    )
-    const display = mockDisplay(dc, 'track-1-display', { color: '#f0f' })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+  test('full display entry when overrides match defaults', () => {
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'track-1-display' },
+    ])
+    const display = makeDisplay(track.displays[0], { color: '#f0f' })
+    const result = getEffectiveTrackConfig(track, display)
     expect(result.displays).toEqual([
       { type: 'LinearWiggleDisplay', displayId: 'track-1-display' },
     ])
   })
 
   test('merges display overrides into matching display config', () => {
-    const dc = mockDisplayConf({ color: '#f0f' })
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = mockDisplay(dc, 'd1', { color: '#ff0000' })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0], { color: '#ff0000' })
+    const result = getEffectiveTrackConfig(track, display)
     expect((result.displays as any)[0].color).toBe('#ff0000')
   })
 
   test('preserves non-display track config properties', () => {
-    const dc = mockDisplayConf({})
-    const trackConfig = mockTrackConfig(
-      {
-        trackId: 'track-1',
-        name: 'My Track',
-        adapter: { type: 'BigWigAdapter' },
-      },
-      [dc],
+    const track = makeTrack(
+      { name: 'My Track', adapter: { type: 'BigWigAdapter' } },
+      [{ type: 'LinearWiggleDisplay', displayId: 'd1' }],
     )
-    const display = mockDisplay(dc, 'd1')
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+    const display = makeDisplay(track.displays[0])
+    const result = getEffectiveTrackConfig(track, display)
     expect(result.trackId).toBe('track-1')
     expect(result.name).toBe('My Track')
     expect(result.adapter).toEqual({ type: 'BigWigAdapter' })
   })
 
   test('only modifies matching display config entry', () => {
-    const dc1 = mockDisplayConf({ color: '#f0f' }, 'LinearWiggleDisplay')
-    const dc2 = mockDisplayConf({ color: '#000' }, 'LinearBasicDisplay')
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc1, dc2])
-    const display = mockDisplay(dc1, 'd1', { color: '#ff0000' })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+      { type: 'LinearBasicDisplay', displayId: 'd2' },
+    ])
+    const display = makeDisplay(track.displays[0], { color: '#ff0000' })
+    const result = getEffectiveTrackConfig(track, display)
     const displays = result.displays as any[]
     expect(displays[0].color).toBe('#ff0000')
     expect(displays[1].color).toBeUndefined()
   })
 
   test('handles multiple overridden slots', () => {
-    const dc = mockDisplayConf({
-      color: '#f0f',
-      scaleType: 'linear',
-      minScore: 0,
-    })
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = mockDisplay(dc, 'd1', {
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0], {
       color: '#ff0000',
       scaleType: 'log',
       minScore: 0,
     })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+    const result = getEffectiveTrackConfig(track, display)
     const d = (result.displays as any)[0]
     expect(d.color).toBe('#ff0000')
     expect(d.scaleType).toBe('log')
     expect(d.minScore).toBeUndefined()
   })
 
-  test('does not include undefined display values as overrides', () => {
-    const dc = mockDisplayConf({ color: '#f0f' })
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = mockDisplay(dc, 'd1', { color: undefined })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+  test('does not include undefined override values', () => {
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0], { color: undefined })
+    const result = getEffectiveTrackConfig(track, display)
     expect((result.displays as any)[0].color).toBeUndefined()
   })
 
   test('returns config as-is when no displays array', () => {
-    const dc = mockDisplayConf({})
-    const trackConfig = {
-      trackId: 'track-1',
-      __snapshot: { trackId: 'track-1' },
-    }
-    const display = mockDisplay(dc, 'd1')
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+    const NoDisplays = ConfigurationSchema(
+      'NoDisplaysTrack',
+      { name: { type: 'string', defaultValue: '' } },
+      { explicitIdentifier: 'trackId' },
+    )
+    const track = NoDisplays.create({ trackId: 'track-1' }, { pluginManager })
+    const result = getEffectiveTrackConfig(track, makeDisplay(undefined))
     expect(result.trackId).toBe('track-1')
     expect(result.displays).toBeUndefined()
   })
 
   test('does not mutate the original track config', () => {
-    const dc = mockDisplayConf({ color: '#f0f' })
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const originalSnapshot = { ...trackConfig.__snapshot }
-    const display = mockDisplay(dc, 'd1', { color: '#ff0000' })
-
-    getEffectiveTrackConfig(trackConfig, display)
-    expect(trackConfig.__snapshot).toEqual(originalSnapshot)
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const before = JSON.stringify(track)
+    getEffectiveTrackConfig(track, makeDisplay(track.displays[0], { color: '#f00' }))
+    expect(JSON.stringify(track)).toBe(before)
   })
 
-  test('skips jexl callback slots', () => {
-    const jexlSlot = {
-      value: "jexl:get(feature, 'type') == 'gene' ? 'blue' : 'black'",
-      isCallback: true,
-      name: 'color',
-      description: '',
-      type: 'color',
-      getValue: () => "jexl:get(feature, 'type') == 'gene' ? 'blue' : 'black'",
-    }
-    const dc: Record<string, unknown> = { color: jexlSlot }
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = mockDisplay(dc, 'd1', { color: '#ff0000' })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+  test('skips jexl callback config slots', () => {
+    const track = makeTrack({}, [
+      {
+        type: 'LinearWiggleDisplay',
+        displayId: 'd1',
+        color: "jexl:get(feature,'type')=='gene'?'blue':'black'",
+      },
+    ])
+    const display = makeDisplay(track.displays[0], { color: '#ff0000' })
+    const result = getEffectiveTrackConfig(track, display)
     const d = (result.displays as any)[0]
     expect(d.color).toBeUndefined()
     expect(d.displayId).toBe('d1')
   })
 
-  test('includes displayId and type even when all slots match defaults', () => {
-    const dc = mockDisplayConf({ color: '#f0f', scaleType: 'linear' })
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = mockDisplay(dc, 'd1', {
+  test('includes displayId and type even when overrides match defaults', () => {
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0], {
       color: '#f0f',
       scaleType: 'linear',
     })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+    const result = getEffectiveTrackConfig(track, display)
     const d = (result.displays as any)[0]
     expect(d.displayId).toBe('d1')
     expect(d.type).toBe('LinearWiggleDisplay')
@@ -201,46 +179,46 @@ describe('getEffectiveTrackConfig', () => {
   })
 
   test('detects boolean override (e.g. showLabels toggled to false)', () => {
-    const dc = mockDisplayConf({ showLabels: true })
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = mockDisplay(dc, 'd1', { showLabels: false })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0], { showLabels: false })
+    const result = getEffectiveTrackConfig(track, display)
     expect((result.displays as any)[0].showLabels).toBe(false)
   })
 
   test('detects numeric override when value changes from default', () => {
-    const dc = mockDisplayConf({ minScore: 0, maxScore: 100 })
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = mockDisplay(dc, 'd1', { minScore: 5, maxScore: 100 })
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0], {
+      minScore: 5,
+      maxScore: 100,
+    })
+    const result = getEffectiveTrackConfig(track, display)
     const d = (result.displays as any)[0]
     expect(d.minScore).toBe(5)
     expect(d.maxScore).toBeUndefined()
   })
 
-  test('display without getOverride emits no overrides (mixin not composed)', () => {
-    const dc = mockDisplayConf({ color: '#f0f' })
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = {
-      configuration: dc,
-      __snapshot: { configuration: 'd1' },
-    }
-
-    const result = getEffectiveTrackConfig(trackConfig, display)
+  test('display without configOverrides emits no overrides (mixin not composed)', () => {
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0])
+    const result = getEffectiveTrackConfig(track, display)
     const d = (result.displays as any)[0]
     expect(d.displayId).toBe('d1')
     expect(d.color).toBeUndefined()
   })
 
   test('non-matching display gets type but no slot values', () => {
-    const dc1 = mockDisplayConf({ color: '#f0f' }, 'LinearWiggleDisplay')
-    const dc2 = mockDisplayConf({ color: '#000' }, 'LinearBasicDisplay')
-    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc1, dc2])
-    const display = mockDisplay(dc1, 'd1', { color: '#ff0000' })
-    const result = getEffectiveTrackConfig(trackConfig, display)
-    const displays = result.displays as any[]
-    expect(displays[1]).toEqual({ type: 'LinearBasicDisplay' })
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+      { type: 'LinearBasicDisplay', displayId: 'd2' },
+    ])
+    const display = makeDisplay(track.displays[0], { color: '#ff0000' })
+    const result = getEffectiveTrackConfig(track, display)
+    expect((result.displays as any[])[1]).toEqual({ type: 'LinearBasicDisplay' })
   })
 })

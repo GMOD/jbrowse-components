@@ -34,15 +34,15 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'backgroundColor')).toBe('#eee')
     expect(getConf(model, 'someInteger')).toBe(12)
 
-    model.configuration.backgroundColor.set(`jexl:'#'+a`)
+    model.configuration.setSlot('backgroundColor', `jexl:'#'+a`)
     expect(getConf(model, 'backgroundColor', { a: 'zonk' })).toBe('#zonk')
     expect(getConf(model, 'backgroundColor', { a: 'bar' })).toBe('#bar')
-    model.configuration.backgroundColor.set('hoog')
+    model.configuration.setSlot('backgroundColor', 'hoog')
     expect(getConf(model, 'backgroundColor', { a: 'zonk' })).toBe('hoog')
 
-    model.configuration.someInteger.set('jexl:5+a')
+    model.configuration.setSlot('someInteger', 'jexl:5+a')
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(10)
-    model.configuration.someInteger.set(42)
+    model.configuration.setSlot('someInteger', 42)
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(42)
 
     // type "tests"
@@ -162,8 +162,10 @@ describe('configuration schemas', () => {
     expect(getSnapshot(model)).toEqual({ configuration: { someInteger: 42 } })
     expect(getConf(model, 'someInteger')).toEqual(42)
 
+    // an all-default config schema is stripped entirely from the parent
+    // snapshot (it reloads to its defaults), so `configuration` is omitted
     const model2 = container.create({ configuration: {} }, { pluginManager })
-    expect(getSnapshot(model2)).toEqual({ configuration: {} })
+    expect(getSnapshot(model2)).toEqual({})
     expect(getConf(model2, 'someInteger')).toEqual(12)
   })
   test('can snapshot a nested schema 1', () => {
@@ -288,8 +290,8 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create(undefined, { pluginManager })
-    model.configuration.frozenSlot.set({})
-    model.configuration.listSlot.set([])
+    model.configuration.setSlot('frozenSlot', {})
+    model.configuration.setSlot('listSlot', [])
 
     const snap = getSnapshot(model)
     expect(snap).toEqual({ configuration: { frozenSlot: {}, listSlot: [] } })

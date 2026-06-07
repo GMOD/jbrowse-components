@@ -1,45 +1,18 @@
 import { type IAnyStateTreeNode, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { toJS } from 'mobx'
 
-interface ConfigSlot {
-  value: unknown
-  isCallback?: boolean
-  getValue: (args?: Record<string, unknown>) => unknown
-}
-
-function isConfigSlot(slot: unknown): slot is ConfigSlot {
-  return (
-    !!slot &&
-    typeof slot === 'object' &&
-    'getValue' in slot &&
-    typeof (slot as ConfigSlot).getValue === 'function'
-  )
-}
-
-// For non-callback slots, getValue() resolves the value (same as
-// readConfObject internally). For callback slots we return the raw
-// jexl expression string since it can't be evaluated without a feature.
-function readSlotValue(slot: ConfigSlot) {
-  return slot.isCallback ? slot.value : slot.getValue()
-}
+import { isCallbackValue } from '../configuration/slotValueUtils.ts'
 
 /**
- * Produces a track config snapshot suitable for "Copy config". For each
- * non-callback config slot on the active display, compares the config default
- * against the display model's current value. Only values that differ from
- * defaults are included (matching readConfObject's behavior).
+ * Produces a track config snapshot suitable for "Copy config". Merges the active
+ * display's runtime overrides (ConfigOverrideMixin's `configOverrides` map) onto
+ * the matching display's config, keeping only overrides that differ from the
+ * config value. jexl-callback config slots are skipped (the override would be
+ * compared against an unevaluated string).
  *
- * Key design decisions:
- * - We read live display config models (trackConfig.displays) rather than
- *   getSnapshot(trackConfig).displays because we need each slot's resolved
- *   getValue() and the display model's getOverride() to compare overrides
- *   against config defaults — neither is available from a plain snapshot
- *   (which stores only raw values, with defaults stripped out).
- * - displayId is read from the display model's `configuration` reference
- *   (getSnapshot(display).configuration is the displayId as a plain string).
- * - Matching is by display type string since the live config model accessed
- *   via trackConfig.displays is a different MST proxy than
- *   display.configuration (identity check fails).
+ * Matching is by display type string: the live config node reached via
+ * `trackConfig.displays` is a different MST proxy than `display.configuration`,
+ * so identity comparison fails.
  */
 export function getEffectiveTrackConfig(
   trackConfig: IAnyStateTreeNode,
@@ -47,62 +20,52 @@ export function getEffectiveTrackConfig(
 ): Record<string, unknown> {
   const conf: Record<string, unknown> = getSnapshot(trackConfig)
 
-  const trackDisplays = trackConfig.displays as
-    | Record<string, unknown>[]
+  const trackDisplays = (trackConfig as { displays?: unknown }).displays as
+    | ({ type?: string } & Record<string, unknown>)[]
     | undefined
   if (!Array.isArray(trackDisplays)) {
     return conf
   }
 
-  const displaySnap: Record<string, unknown> = getSnapshot(display)
-  const displayConfId = displaySnap.configuration as string | undefined
-  const displayType = display.configuration.type as string | undefined
-  // Read overrides from the display's configOverrides map (ConfigOverrideMixin)
-  // rather than resolved model getters: a getter may share a config slot's name
-  // but return a different shape (e.g. showLabels enum vs resolved boolean) and
-  // may depend on view state that throws when the view is not initialized.
-  const getOverride =
-    typeof display.getOverride === 'function'
-      ? (key: string) => display.getOverride(key)
-      : () => undefined
+  const activeConf = (
+    display as { configuration?: { type?: string; displayId?: string } }
+  ).configuration
+  const displayType = activeConf?.type
+  const displayId = activeConf?.displayId
+  const overrides =
+    (display as { configOverrides?: Record<string, unknown> }).configOverrides ??
+    {}
 
   return {
     ...conf,
-    displays: trackDisplays.map(d => {
-      const dConf = d
-      if (dConf.type === displayType) {
-        return buildDisplayEntry(displayConfId, dConf, getOverride)
-      }
-      return buildDisplayEntry(undefined, dConf, () => undefined)
-    }),
+    displays: trackDisplays.map(d =>
+      d.type === displayType
+        ? buildDisplayEntry(displayId, d, overrides)
+        : buildDisplayEntry(undefined, d, {}),
+    ),
   }
 }
 
 function buildDisplayEntry(
   displayId: string | undefined,
-  displayConf: Record<string, unknown>,
-  getOverride: (key: string) => unknown,
+  displayConf: { type?: string } & Record<string, unknown>,
+  overrides: Record<string, unknown>,
 ) {
   const entry: Record<string, unknown> = {}
   if (displayId) {
     entry.displayId = displayId
   }
-  for (const key of Object.keys(displayConf)) {
-    const slot = displayConf[key]
-    if (!isConfigSlot(slot)) {
-      // Include plain properties like type
-      if (typeof slot === 'string' || typeof slot === 'number') {
-        entry[key] = slot
-      }
-      continue
-    }
-    // Skip jexl callback slots — they require runtime context (e.g. feature)
-    if (slot.isCallback) {
-      continue
-    }
-    const configValue = readSlotValue(slot)
-    const overrideValue = toJS(getOverride(key))
-    if (overrideValue !== undefined && overrideValue !== configValue) {
+  if (typeof displayConf.type === 'string') {
+    entry.type = displayConf.type
+  }
+  for (const [key, value] of Object.entries(overrides)) {
+    const overrideValue = toJS(value)
+    const configValue = displayConf[key]
+    if (
+      overrideValue !== undefined &&
+      overrideValue !== configValue &&
+      !isCallbackValue(configValue)
+    ) {
       entry[key] = overrideValue
     }
   }

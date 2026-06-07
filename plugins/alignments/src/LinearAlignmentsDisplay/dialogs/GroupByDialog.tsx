@@ -69,12 +69,14 @@ function buildSubtrackDisplayConfig(
   displayModel: DisplayModel,
   filterBy: FilterBy,
 ): Record<string, unknown> {
+  // getSnapshot on a fully-generic IAnyStateTreeNode can't recover its snapshot
+  // type; a model node's snapshot is structurally a record of its fields
   const {
     displayId: _id,
     type: _type,
     configuration: _conf,
     ...rest
-  } = getSnapshot(displayModel)
+  } = getSnapshot<Record<string, unknown>>(displayModel)
   return { ...rest, filterBy }
 }
 
