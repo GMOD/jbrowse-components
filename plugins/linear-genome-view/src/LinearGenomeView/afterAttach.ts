@@ -201,7 +201,7 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
 /**
  * Autorun that updates coarse dynamic blocks with a delay
  */
-export function setupCoarseDynamicBlocksAutorun(self: LinearGenomeViewModel) {
+function setupCoarseDynamicBlocksAutorun(self: LinearGenomeViewModel) {
   addDisposer(
     self,
     autorun(
@@ -218,7 +218,7 @@ export function setupCoarseDynamicBlocksAutorun(self: LinearGenomeViewModel) {
 /**
  * Autorun that syncs view settings to localStorage
  */
-export function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
+function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
   addDisposer(
     self,
     autorun(

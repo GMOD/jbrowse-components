@@ -1,5 +1,6 @@
 import { getType, isType } from '@jbrowse/mobx-state-tree'
 
+import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { getEnv } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 
@@ -8,9 +9,7 @@ import type { AnyConfigurationModel } from './types.ts'
 import type PluginManager from '../PluginManager.ts'
 
 function slotTable(node: AnyConfigurationModel) {
-  return (
-    getType(node) as { jbrowseSchemaDefinition?: Record<string, unknown> }
-  ).jbrowseSchemaDefinition
+  return getConfigurationSchemaMetadata(getType(node))?.definition
 }
 
 /**
@@ -24,9 +23,7 @@ export function isConfigurationSlot(
   slotName: string,
 ): boolean {
   const def = slotTable(node)?.[slotName]
-  return (
-    !!def && typeof def === 'object' && !isType(def) && 'type' in def
-  )
+  return !!def && typeof def === 'object' && !isType(def) && 'type' in def
 }
 
 /**
@@ -83,7 +80,8 @@ export function makeSlotFacade(
     type,
     contextVariable,
     defaultValue,
-    choices: type === 'stringEnum' && model ? getEnumerationValues(model) : undefined,
+    choices:
+      type === 'stringEnum' && model ? getEnumerationValues(model) : undefined,
     pluginManager: getEnv(node).pluginManager,
     get value() {
       return node[slotName]

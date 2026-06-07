@@ -11,6 +11,10 @@ import {
 } from '@jbrowse/mobx-state-tree'
 
 import ConfigSlot from './configurationSlot.ts'
+import {
+  getConfigurationSchemaMetadata,
+  registerConfigurationSchema,
+} from './schemaRegistry.ts'
 import { isConfigurationSchemaType } from './util.ts'
 import { getContainingTrack, getSession } from '../util/index.ts'
 import { ElementId } from '../util/types/mst.ts'
@@ -67,13 +71,16 @@ function preprocessConfigurationSchemaArguments(
   // extending, grab the slot definitions from that
   let schemaDefinition = inputSchemaDefinition
   let options = inputOptions
-  if (inputOptions.baseConfiguration?.jbrowseSchemaDefinition) {
+  const baseMeta = inputOptions.baseConfiguration
+    ? getConfigurationSchemaMetadata(inputOptions.baseConfiguration)
+    : undefined
+  if (baseMeta) {
     schemaDefinition = {
-      ...inputOptions.baseConfiguration.jbrowseSchemaDefinition,
+      ...baseMeta.definition,
       ...schemaDefinition,
     }
     options = {
-      ...inputOptions.baseConfiguration.jbrowseSchemaOptions,
+      ...baseMeta.options,
       ...inputOptions,
       baseConfiguration: undefined,
     }
@@ -214,11 +221,12 @@ function makeConfigurationSchemaModel<
     completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
   }
 
-  // also stash the slot-metadata table on the instantiated model type (not just
-  // the stripDefault wrapper below), so it is reachable from a live node via
-  // getType(node) — the config editor's slot facade reads metadata from here.
-  Object.defineProperty(completeModel, 'jbrowseSchemaDefinition', {
-    value: schemaDefinition,
+  // register the inner model type (not just the stripDefault wrapper below) so
+  // metadata is reachable from a live node via getType(node) — the config
+  // editor's slot facade looks it up from there.
+  registerConfigurationSchema(completeModel, {
+    definition: schemaDefinition,
+    options,
   })
 
   // stripDefault (not optional) so a nested all-default sub-schema is omitted
@@ -231,9 +239,6 @@ export interface ConfigurationSchemaType<
   DEFINITION extends ConfigurationSchemaDefinition,
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
 > extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
-  isJBrowseConfigurationSchema: boolean
-  jbrowseSchemaDefinition: DEFINITION
-  jbrowseSchemaOptions: OPTIONS
   type: string
   [key: string]: unknown
 }
@@ -258,10 +263,10 @@ export function ConfigurationSchema<
     schemaDefinition,
     options,
   ) as AnyConfigurationSchemaType
-  // saving a couple of jbrowse-specific things in the type object. hope nobody gets mad.
-  schemaType.isJBrowseConfigurationSchema = true
-  schemaType.jbrowseSchemaDefinition = schemaDefinition
-  schemaType.jbrowseSchemaOptions = options
+  registerConfigurationSchema(schemaType, {
+    definition: schemaDefinition,
+    options,
+  })
   return schemaType
 }
 
@@ -412,7 +417,8 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
 >(schemaType: SCHEMATYPE) {
-  const id = schemaType.jbrowseSchemaOptions?.explicitIdentifier
+  const id =
+    getConfigurationSchemaMetadata(schemaType)?.options.explicitIdentifier
   if (id === 'trackId') {
     return TrackConfigurationReference(schemaType)
   }

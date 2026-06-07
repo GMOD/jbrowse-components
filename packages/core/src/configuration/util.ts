@@ -12,6 +12,10 @@ import {
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
 
+import {
+  getConfigurationSchemaMetadata,
+  isRegisteredConfigurationSchema,
+} from './schemaRegistry.ts'
 import { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 import {
   getDefaultValue,
@@ -44,6 +48,19 @@ function evalConfigCallback(
   return evaluateJexl(expr, args, jexl)
 }
 
+// Read a slot's raw stored value. Top-level configs can themselves be a
+// types.map (e.g. an assembly's per-key configs), where stored entries are
+// reachable via `.get()` rather than property access — fall back to that when
+// plain indexing misses.
+function rawSlotValue(confObject: AnyConfigurationModel, slotName: string) {
+  const value = confObject[slotName]
+  return value === undefined &&
+    isStateTreeNode(confObject) &&
+    isMapType(getType(confObject))
+    ? confObject.get(slotName)
+    : value
+}
+
 /**
  * #api core/configuration
  * Given a configuration model (an instance of a ConfigurationSchema), read the
@@ -63,23 +80,16 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
   args: Record<string, unknown> = {},
 ): any {
   if (!slotPath) {
-    // Handle both MST nodes and plain objects
-    return isStateTreeNode(confObject)
-      ? structuredClone(getSnapshot(confObject))
-      : structuredClone(confObject)
+    // the whole config as a plain object: the live, referentially-stable
+    // snapshot (frozen in dev), not a fresh clone — treat as read-only
+    return isStateTreeNode(confObject) ? getSnapshot(confObject) : confObject
   } else if (typeof slotPath === 'string') {
     // slot value, sub-configuration node, primitive, or undefined. Use a strict
     // undefined check, not truthiness — a slot value can legitimately be falsy
     // (0, '', false, null).
-    let value: unknown = confObject[slotPath]
+    const value = rawSlotValue(confObject, slotPath)
     if (value === undefined) {
-      // check for the subconf being a map if we don't find it immediately
-      if (isStateTreeNode(confObject) && isMapType(getType(confObject))) {
-        value = confObject.get(slotPath)
-      }
-      if (value === undefined) {
-        return undefined
-      }
+      return undefined
     }
     const val = isCallbackValue(value)
       ? evalConfigCallback(value, args, confObject)
@@ -88,22 +98,18 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     if (val === null || typeof val !== 'object') {
       return val
     }
-    // Clone to prevent mutation of config state
-    return structuredClone(isStateTreeNode(val) ? getSnapshot(val) : val)
+    // Return the live, referentially-stable snapshot (frozen in dev) rather than
+    // a per-read clone: stable identity lets downstream computeds memoize, and
+    // the old structuredClone was both a hot-path allocation and a source of
+    // spurious recomputation. Treat as read-only.
+    return isStateTreeNode(val) ? getSnapshot(val) : val
   } else if (Array.isArray(slotPath)) {
     const slotName = slotPath[0]!
     if (slotPath.length > 1) {
-      const newPath = slotPath.slice(1)
-      let subConf = confObject[slotName]
-      // check for the subconf being a map if we don't find it immediately
-      if (
-        !subConf &&
-        isStateTreeNode(confObject) &&
-        isMapType(getType(confObject))
-      ) {
-        subConf = confObject.get(slotName)
-      }
-      return subConf ? readConfObject(subConf, newPath, args) : undefined
+      const subConf = rawSlotValue(confObject, slotName)
+      return subConf === undefined
+        ? undefined
+        : readConfObject(subConf, slotPath.slice(1), args)
     }
     return readConfObject(
       confObject,
@@ -129,14 +135,10 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
  */
 export function getConfSnapshot(confObject: AnyConfigurationModel) {
   const result: Record<string, unknown> = {}
-  const table = (
-    getType(confObject) as {
-      jbrowseSchemaDefinition?: Record<string, unknown>
-    }
-  ).jbrowseSchemaDefinition
+  const table = getConfigurationSchemaMetadata(getType(confObject))?.definition
   for (const [key, def] of Object.entries(table ?? {})) {
     // skip constants (string/number entries in the schema definition)
-    if (typeof def !== 'object' || def === null) {
+    if (typeof def !== 'object') {
       continue
     }
     const v = confObject[key]
@@ -186,16 +188,17 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
       const typeNames: string[] = []
       for (const subType of getUnionSubTypes(resolved)) {
         const resolvedSub = resolveLateType(subType)
-        let typeName = getTypeNamesFromExplicitlyTypedUnion(resolvedSub)
-        if (!typeName.length) {
-          const def = getDefaultValue(resolvedSub)
-          typeName = [def.type]
-        }
-        if (!typeName[0]) {
-          throw new Error(`invalid config schema type ${resolvedSub}`)
-        }
-        for (const name of typeName) {
-          typeNames.push(name)
+        // a nested union contributes its own names; otherwise the subtype is a
+        // single explicitly-typed schema whose name is its default's `type`
+        const nested = getTypeNamesFromExplicitlyTypedUnion(resolvedSub)
+        if (nested.length) {
+          typeNames.push(...nested)
+        } else {
+          const typeName = getDefaultValue(resolvedSub).type
+          if (!typeName) {
+            throw new Error(`invalid config schema type ${resolvedSub}`)
+          }
+          typeNames.push(typeName)
         }
       }
       return typeNames
@@ -208,11 +211,7 @@ export function isBareConfigurationSchemaType(
   thing: unknown,
 ): thing is AnyConfigurationSchemaType {
   if (isType(thing)) {
-    if (
-      isModelType(thing) &&
-      ('isJBrowseConfigurationSchema' in thing ||
-        thing.name.includes('ConfigurationSchema'))
-    ) {
+    if (isModelType(thing) && isRegisteredConfigurationSchema(thing)) {
       return true
     }
     // if it's a late type, assume its a config schema

@@ -47,10 +47,6 @@ export async function resolveConfigPath(target?: string, out?: string) {
   return stat.isDirectory() ? path.join(output, 'config.json') : output
 }
 
-export async function readFile(location: string) {
-  return fsPromises.readFile(location, { encoding: 'utf8' })
-}
-
 export async function readJsonFile<T>(location: string): Promise<T> {
   const contents = await fsPromises.readFile(location, { encoding: 'utf8' })
   return JSON.parse(contents)
@@ -85,7 +81,7 @@ export async function fetchGithubVersions() {
   return versions
 }
 
-export async function getLatest() {
+async function getLatest() {
   for await (const versions of fetchVersions()) {
     // if a release was just uploaded, or an erroneous build was made then it
     // might have no build asset
@@ -105,7 +101,7 @@ export async function getLatest() {
   throw new Error('no version tags found')
 }
 
-export async function* fetchVersions() {
+async function* fetchVersions() {
   let page = 1
   let result: GithubRelease[] | undefined
 
@@ -123,7 +119,7 @@ export async function* fetchVersions() {
   } while (result.length)
 }
 
-export async function getTag(tag: string) {
+async function getTag(tag: string) {
   const response = await fetch(
     `https://api.github.com/repos/GMOD/jbrowse-components/releases/tags/${tag}`,
   )
@@ -143,7 +139,7 @@ export async function getTag(tag: string) {
   throw new Error(`Could not find version: ${response.statusText}`)
 }
 
-export async function getBranch(branch: string) {
+async function getBranch(branch: string) {
   return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
 }
 

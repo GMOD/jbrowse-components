@@ -33,8 +33,8 @@ export function getEffectiveTrackConfig(
   const displayType = activeConf?.type
   const displayId = activeConf?.displayId
   const overrides =
-    (display as { configOverrides?: Record<string, unknown> }).configOverrides ??
-    {}
+    (display as { configOverrides?: Record<string, unknown> })
+      .configOverrides ?? {}
 
   return {
     ...conf,

@@ -101,8 +101,9 @@ export default function ConfigOverrideMixin(
         // ConfigOverrideMixin is always composed with models that provide
         // 'configuration'. Access it via plain-object cast to avoid propagating
         // MST internal symbol types ($stateTreeNodeType) into declaration files.
-        const conf = (self as unknown as { configuration: AnyConfigurationModel })
-          .configuration
+        const conf = (
+          self as unknown as { configuration: AnyConfigurationModel }
+        ).configuration
         // Return the live config value (referentially stable across reads) so
         // computed getters reading this don't spuriously invalidate when an
         // unrelated override changes. Only jexl callbacks need readConfObject's

@@ -102,12 +102,12 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     args: object,
     rpcDriverClassName: string,
   ): Promise<Record<string, unknown>> {
-    await this.augmentLocationObjects(
+    const augmented = await this.augmentLocationObjects(
       args as Record<string, unknown>,
       rpcDriverClassName,
     )
     return {
-      ...args,
+      ...augmented,
       blobMap: getBlobMap(),
     }
   }
@@ -211,10 +211,15 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
 
     // Skip renderingProps — it may contain circular references and never has
-    // FileHandleLocations or UriLocations inside.
-    const uris: UriLocation[] = []
+    // FileHandleLocations or UriLocations inside. Own the rest of the tree via
+    // structuredClone (location objects are plain data) so blob conversion and
+    // auth augmentation mutate owned data, never the read-only config snapshots
+    // that flow in through readConfObject.
     const { renderingProps, ...rest } = thing
-    walkLocationObjects(rest, {
+    const owned = structuredClone(rest)
+
+    const uris: UriLocation[] = []
+    walkLocationObjects(owned, {
       blobMap: needsFileHandles ? getBlobMap() : undefined,
       uris: needsUris ? uris : undefined,
     })
@@ -222,6 +227,10 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     for (const uri of uris) {
       await this.serializeNewAuthArguments(uri, rpcDriverClassName)
     }
-    return thing
+
+    if ('renderingProps' in thing) {
+      owned.renderingProps = renderingProps
+    }
+    return owned
   }
 }

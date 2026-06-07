@@ -36,7 +36,9 @@ const StringArrayEditor = observer(function StringArrayEditor({
               fullWidth
               value={val}
               onChange={evt => {
-                slot.set(value.map((v, i) => (i === idx ? evt.target.value : v)))
+                slot.set(
+                  value.map((v, i) => (i === idx ? evt.target.value : v)),
+                )
               }}
               slotProps={{
                 input: {

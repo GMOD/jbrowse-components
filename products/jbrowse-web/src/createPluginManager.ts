@@ -57,13 +57,11 @@ export function createPluginManager(
     ...(model.sessionPlugins ?? []).map(asPluginRecord),
   ]).createPluggableElements()
 
-  const RootModel = JBrowseRootModelFactory({
+  const rootModel = JBrowseRootModelFactory({
     pluginManager,
     sessionModelFactory,
     adminMode: !!model.adminKey,
-  })
-
-  const rootModel = RootModel.create(
+  }).create(
     {
       jbrowse: model.configSnapshot,
       configPath: model.configPath,
@@ -73,14 +71,15 @@ export function createPluginManager(
 
   rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
-  const configuredRpc = (
-    model.configSnapshot as {
-      configuration?: { rpc?: { defaultDriver?: unknown } }
-    }
-  ).configuration?.rpc?.defaultDriver
-  if (!configuredRpc) {
-    rootModel.jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
-  }
+  // const configuredRpc = (
+  //   model.configSnapshot as {
+  //     configuration?: { rpc?: { defaultDriver?: unknown } }
+  //   }
+  // ).configuration?.rpc?.defaultDriver
+  // if (!configuredRpc) {
+  //   console.log('wtf', rootModel.jbrowse.configuration.rpc.defaultDriver)
+  //   rootModel.jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
+  // }
 
   const { sessionError, sessionSpec, sessionSnapshot, hubSpec, sessionName } =
     model

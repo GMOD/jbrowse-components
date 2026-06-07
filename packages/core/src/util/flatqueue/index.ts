@@ -1,49 +1,19 @@
-type TypedArrayConstructor =
-  | Int8ArrayConstructor
-  | Uint8ArrayConstructor
-  | Uint8ClampedArrayConstructor
-  | Int16ArrayConstructor
-  | Uint16ArrayConstructor
-  | Int32ArrayConstructor
-  | Uint32ArrayConstructor
-  | Float32ArrayConstructor
-  | Float64ArrayConstructor
-
-export default class FlatQueue<T = number> {
-  ids: T[]
-  values: number[]
-  capacity: number
+export default class FlatQueue<T> {
+  ids: T[] = []
+  values: number[] = []
   length = 0
-
-  constructor(
-    capacity = Infinity,
-    ValuesArray: TypedArrayConstructor = Float64Array,
-    IdsArray: TypedArrayConstructor = Uint32Array,
-  ) {
-    const fixed = capacity !== Infinity
-    this.ids = fixed
-      ? (new IdsArray(capacity) as unknown as T[])
-      : ([] as unknown as T[])
-    this.values = fixed
-      ? (new ValuesArray(capacity) as unknown as number[])
-      : ([] as unknown as number[])
-    this.capacity = capacity
-  }
 
   clear() {
     this.length = 0
   }
 
-  push(id: T, value: number) {
-    if (this.length === this.capacity) {
-      throw new RangeError('Queue is at capacity.')
-    }
+  push(item: T, priority: number) {
     let pos = this.length++
 
     while (pos > 0) {
       const parent = (pos - 1) >> 1
       const parentValue = this.values[parent]!
-      if (value >= parentValue) {
+      if (priority >= parentValue) {
         break
       }
       this.ids[pos] = this.ids[parent]!
@@ -51,8 +21,8 @@ export default class FlatQueue<T = number> {
       pos = parent
     }
 
-    this.ids[pos] = id
-    this.values[pos] = value
+    this.ids[pos] = item
+    this.values[pos] = priority
   }
 
   pop() {
@@ -89,5 +59,17 @@ export default class FlatQueue<T = number> {
     }
 
     return top
+  }
+
+  peek() {
+    return this.length > 0 ? this.ids[0] : undefined
+  }
+
+  peekValue() {
+    return this.length > 0 ? this.values[0] : undefined
+  }
+
+  shrink() {
+    this.ids.length = this.values.length = this.length
   }
 }

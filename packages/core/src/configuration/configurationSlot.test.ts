@@ -15,10 +15,9 @@ pluginManager.configure()
 
 function makeConfig(def: Parameters<typeof ConfigSlot>[0], value?: unknown) {
   const schema = ConfigurationSchema('Test', { slot: def })
-  return schema.create(
-    value === undefined ? undefined : { slot: value },
-    { pluginManager },
-  )
+  return schema.create(value === undefined ? undefined : { slot: value }, {
+    pluginManager,
+  })
 }
 
 test('ConfigSlot builds a value-union property with a default', () => {
@@ -39,7 +38,10 @@ test('ConfigSlot requires a defaultValue', () => {
 })
 
 test('a jexl callback is evaluated on read with args', () => {
-  const config = makeConfig({ type: 'color', defaultValue: 'red' }, "jexl:'#'+a")
+  const config = makeConfig(
+    { type: 'color', defaultValue: 'red' },
+    "jexl:'#'+a",
+  )
   expect(readConfObject(config, 'slot', { a: 'zonk' })).toBe('#zonk')
 })
 

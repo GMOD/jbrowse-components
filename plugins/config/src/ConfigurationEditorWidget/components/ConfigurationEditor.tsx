@@ -151,9 +151,7 @@ const Member = observer(function Member(props: {
       </Accordion>
     )
   } else if (isConfigurationSlot(schema, slotName)) {
-    return (
-      <SlotEditor key={slotName} slot={makeSlotFacade(schema, slotName)} />
-    )
+    return <SlotEditor key={slotName} slot={makeSlotFacade(schema, slotName)} />
   } else {
     return null
   }

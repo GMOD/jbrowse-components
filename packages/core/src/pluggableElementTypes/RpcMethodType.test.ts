@@ -106,7 +106,17 @@ test('augmentLocationObject still walks when only file handles are present', asy
         },
       },
     }
-    await mockRpc.serializeArguments(args, '')
+    const result = await mockRpc.serializeArguments(args, '')
+    // serialization owns its output (config snapshots that flow in are
+    // read-only) — the conversion lands on the returned args, not the input
+    expect(
+      (
+        (result.adapter as Record<string, unknown>).location as Record<
+          string,
+          unknown
+        >
+      ).locationType,
+    ).toBe('BlobLocation')
     expect(
       (
         (args.adapter as Record<string, unknown>).location as Record<
@@ -114,7 +124,7 @@ test('augmentLocationObject still walks when only file handles are present', asy
           unknown
         >
       ).locationType,
-    ).toBe('BlobLocation')
+    ).toBe('FileHandleLocation')
     expect(mockRpc.serializeNewAuthArguments).not.toHaveBeenCalled()
   } finally {
     clearFileFromCache('augment-walk-test')

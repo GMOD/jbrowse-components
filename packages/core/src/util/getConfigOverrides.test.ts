@@ -143,7 +143,10 @@ describe('getEffectiveTrackConfig', () => {
       { type: 'LinearWiggleDisplay', displayId: 'd1' },
     ])
     const before = JSON.stringify(track)
-    getEffectiveTrackConfig(track, makeDisplay(track.displays[0], { color: '#f00' }))
+    getEffectiveTrackConfig(
+      track,
+      makeDisplay(track.displays[0], { color: '#f00' }),
+    )
     expect(JSON.stringify(track)).toBe(before)
   })
 
@@ -219,6 +222,8 @@ describe('getEffectiveTrackConfig', () => {
     ])
     const display = makeDisplay(track.displays[0], { color: '#ff0000' })
     const result = getEffectiveTrackConfig(track, display)
-    expect((result.displays as any[])[1]).toEqual({ type: 'LinearBasicDisplay' })
+    expect((result.displays as any[])[1]).toEqual({
+      type: 'LinearBasicDisplay',
+    })
   })
 })

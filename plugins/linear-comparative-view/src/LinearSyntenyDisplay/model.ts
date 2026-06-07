@@ -60,10 +60,7 @@ export interface FeatPos {
   identity?: number
 }
 
-export function getFeatureAtIndex(
-  data: SyntenyFeatureData,
-  i: number,
-): FeatPos {
+function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
   const identity = data.identities[i]!
   return {
     id: data.featureIds[i]!,

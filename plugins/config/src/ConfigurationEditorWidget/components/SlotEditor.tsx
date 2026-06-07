@@ -138,7 +138,11 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   configRelationships: JsonEditor,
 }
 
-const SlotEditor = observer(function SlotEditor({ slot }: { slot: SlotFacade }) {
+const SlotEditor = observer(function SlotEditor({
+  slot,
+}: {
+  slot: SlotFacade
+}) {
   const { classes } = useSlotEditorStyles()
   const { type } = slot
   // editor mode is UI-only state, derived once from whether the stored value is
