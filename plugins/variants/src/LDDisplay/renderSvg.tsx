@@ -4,7 +4,7 @@ import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
-import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
+import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
 import Wrapper from './components/Wrapper.tsx'

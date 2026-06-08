@@ -30,3 +30,5 @@
 - when zoomed out insertion should be a line
 - fix fallow recommendations
 - choose renderer backend via preferences
+- sort by genotype hom/het/ref
+- mouseover rect not quite right for multisample variants

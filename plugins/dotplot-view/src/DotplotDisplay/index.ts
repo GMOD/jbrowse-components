@@ -1,9 +1,10 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
+import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './stateModelFactory.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
 
 export default function DotplotDisplayF(pm: PluginManager) {
   pm.addDisplayType(() => {
@@ -18,21 +19,4 @@ export default function DotplotDisplayF(pm: PluginManager) {
       ReactComponent: () => null,
     })
   })
-}
-
-/**
- * #config DotplotDisplay
- */
-export function configSchemaFactory() {
-  return ConfigurationSchema(
-    'DotplotDisplay',
-    {},
-    {
-      /**
-       * #identifier
-       */
-      explicitIdentifier: 'displayId',
-      explicitlyTyped: true,
-    },
-  )
 }

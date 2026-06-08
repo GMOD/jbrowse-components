@@ -1,6 +1,6 @@
 export type TrackItem = string | Record<string, unknown>
 
-export function lineSplit(val: string) {
+function lineSplit(val: string) {
   return val
     .split(/[\r\n]+/)
     .map(f => f.trim())

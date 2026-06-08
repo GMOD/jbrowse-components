@@ -193,7 +193,9 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
           applyingInit = false
         }
       },
-      { name: 'LGVInit' },
+      {
+        name: 'LGVInit',
+      },
     ),
   )
 }
@@ -210,7 +212,10 @@ function setupCoarseDynamicBlocksAutorun(self: LinearGenomeViewModel) {
           self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
         }
       },
-      { delay: 500, name: 'LGVCoarseDynamicBlocks' },
+      {
+        delay: 500,
+        name: 'LGVCoarseDynamicBlocks',
+      },
     ),
   )
 }
@@ -243,7 +248,9 @@ function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
         }
         localStorageSetItem('lgv-scrollZoom', s(scrollZoom))
       },
-      { name: 'LGVLocalStorage' },
+      {
+        name: 'LGVLocalStorage',
+      },
     ),
   )
 }

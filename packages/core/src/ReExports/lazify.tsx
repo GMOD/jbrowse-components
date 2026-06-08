@@ -1,7 +1,7 @@
 import type React from 'react'
 import { Suspense } from 'react'
 
-export function lazyifyComponent(
+function lazyifyComponent(
   key: string,
   ReactComponent: React.ComponentType<any>,
 ) {
