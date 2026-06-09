@@ -1,4 +1,5 @@
 import type { ViewMode } from './readData.ts'
+import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
 export interface OptionDef {
   name: string
@@ -140,7 +141,10 @@ export function getNumber(
 
 export function getTrackLabels(rest: Record<string, unknown>) {
   const v = getString(rest, 'trackLabels')
-  return ['offset', 'overlay', 'left', 'none'].includes(v) ? v : undefined
+  const modes = ['offset', 'overlay', 'left', 'none']
+  return v !== undefined && modes.includes(v)
+    ? (v as TrackLabelMode)
+    : undefined
 }
 
 export const knownOptions = new Set([

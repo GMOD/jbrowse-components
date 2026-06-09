@@ -59,7 +59,7 @@ export function migrateAlignmentsSnapshot(
       'LinearPileupDisplay',
       'LinearReadArcsDisplay',
       'LinearReadCloudDisplay',
-    ].includes(result.type)
+    ].includes(result.type as string)
   ) {
     result = { ...result, type: 'LinearAlignmentsDisplay' }
   }

@@ -97,12 +97,14 @@ export function getReadColor(
   // unmapped mate (flag 8) — brown for orientation-aware schemes (tlen=0 would
   // miscolor as "short insert" pink), or normal scheme in linked-read mode
   const mateUnmapped = (flags & 8) !== 0
-  const isOrientationScheme = [
-    ColorScheme.insertSize,
-    ColorScheme.pairOrientation,
-    ColorScheme.insertSizeAndOrientation,
-    ColorScheme.insertSizeGradient,
-  ].includes(colorScheme)
+  const isOrientationScheme = (
+    [
+      ColorScheme.insertSize,
+      ColorScheme.pairOrientation,
+      ColorScheme.insertSizeAndOrientation,
+      ColorScheme.insertSizeGradient,
+    ] as number[]
+  ).includes(colorScheme)
   if (
     mateUnmapped &&
     (isOrientationScheme || (colorScheme === ColorScheme.normal && isChain))

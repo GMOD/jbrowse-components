@@ -29,6 +29,7 @@ import type {
   AnyConfigurationSchemaType,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
+  ConfigurationSlotValue,
 } from './types.ts'
 import type { Feature } from '../util/index.ts'
 import type { JexlInstance } from '../util/jexlStrings.ts'
@@ -72,11 +73,24 @@ function rawSlotValue(confObject: AnyConfigurationModel, slotName: string) {
  * @param args - extra arguments e.g. for a feature callback,
  *  will be sent to each of the slotNames
  */
-export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
-  confObject: CONFMODEL,
-  slotPath?:
+export function readConfObject<
+  CONFMODEL extends AnyConfigurationModel,
+  SLOT extends
     | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
-    | string[],
+    | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(
+  confObject: CONFMODEL,
+  slotPath?: SLOT,
+  args?: Record<string, unknown>,
+): SLOT extends string
+  ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
+  : any
+// loose implementation signature: the body returns values that are `any` by
+// nature (raw slot values, snapshots); the typed overload above is what callers
+// see.
+export function readConfObject(
+  confObject: AnyConfigurationModel,
+  slotPath?: string | string[],
   args: Record<string, unknown> = {},
 ): any {
   if (!slotPath) {
@@ -111,11 +125,7 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
         ? undefined
         : readConfObject(subConf, slotPath.slice(1), args)
     }
-    return readConfObject(
-      confObject,
-      slotName as ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
-      args,
-    )
+    return readConfObject(confObject, slotName, args)
   }
   throw new TypeError('slotPath must be a string or array')
 }
@@ -166,11 +176,18 @@ export function getConfSnapshot(confObject: AnyConfigurationModel) {
  * @param args - extra arguments e.g. for a feature callback,
  *   will be sent to each of the slotNames
  */
-export function getConf<CONFMODEL extends AnyConfigurationModel>(
+export function getConf<
+  CONFMODEL extends AnyConfigurationModel,
+  SLOT extends
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(
   model: { configuration: CONFMODEL },
-  slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
-  args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
-) {
+  slotPath?: SLOT,
+  args: Record<string, unknown> = {},
+): SLOT extends string
+  ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
+  : any {
   return readConfObject(model.configuration, slotPath, args)
 }
 

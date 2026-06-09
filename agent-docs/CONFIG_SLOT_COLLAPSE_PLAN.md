@@ -22,14 +22,15 @@ What the config layer still adds on top of native MST, and how each could move:
   Native-MST configs would keep the `union(jexl, type)` pattern for those ~25
   slots and call `evaluateJexl(node.color, {feature})` at the read sites. jexl is
   the *least* of the blockers.
-- **Default-stripping — the real blocker, but we own the fork. FORK SIDE DONE
-  (2026-06-06); jbrowse integration not yet wired.** Native `types.optional`
-  keeps defaults in snapshots; jbrowse needs minimal (URL-shared) sessions.
-  Implemented the narrow option from this bullet — a `types.stripDefault(type,
-  default)` wrapper in `@jbrowse/mobx-state-tree` (NOT a change to `optional`'s
-  semantics, so blast radius is opt-in). See "Default-stripping in the fork"
-  below for the landed fork change and the remaining jbrowse-side flip that
-  deletes the per-schema `postProcessSnapshot`.
+- **Default-stripping — the real blocker, but we own the fork. DONE
+  (fork 2026-06-06, jbrowse wired + published 2026-06-07).** Native
+  `types.optional` keeps defaults in snapshots; jbrowse needs minimal
+  (URL-shared) sessions. Implemented the narrow option from this bullet — a
+  `types.stripDefault(type, default)` wrapper in `@jbrowse/mobx-state-tree` (NOT
+  a change to `optional`'s semantics, so blast radius is opt-in), published as
+  `@jbrowse/mobx-state-tree@5.11.0` and wired into every config slot/schema (the
+  per-schema `postProcessSnapshot` is deleted). See "Default-stripping in the
+  fork" below for the landed change.
 - **Editor metadata — the genuine loss.** The config editor can introspect
   native MST for almost everything (color = `refinement('Color', string)`, enum =
   union of literals, number/boolean/array/map = the type). The only things native
@@ -50,6 +51,68 @@ code use native `node.x` for static slots, reserving the reader for
 callback-capable / per-feature reads; (4) migrate hot paths opportunistically.
 This yields "it's just MST" for ~90% of access without a risky rewrite or losing
 default-stripping/descriptions.
+
+## Typed reads + AnyConfigurationModel (2026-06-09)
+
+Two follow-on questions explored after the collapse landed. The collapse already
+removed `readConfObject`'s **perf** cost (per the Phase-0 benchmark, 5–8×); these
+are about the remaining **cognitive/ergonomic** cost.
+
+### Typed reader returns — DONE (2026-06-09)
+
+`readConfObject`/`getConf` returned `any`, so every config read across ~3000
+sites was untyped. They now infer the slot's value type. **Source is
+`defaultValue`, not `type`:** under generic inference the slot's `type` string
+widens to `string` (useless), but `defaultValue` survives as its widened type
+(`'black'`→`string`, `100`→`number`, `true`→`boolean`), which *is* the value
+type. `ConfigurationSlotValue<SCHEMA, K>` (`types.ts`) maps name→value via the
+existing `ConfigurationSlotName` machinery (walks `baseConfiguration` too).
+
+**Scalars only, by design:** only string/number/boolean slots are typed
+precisely; arrays/maps/sub-schemas/`frozen` degrade to `any` (the `defaultValue`
+of an unannotated `stringArray` infers `never[]`, and object-valued reads return
+a snapshot, so precise typing there would be wrong or noisy). `readConfObject`
+became a typed public overload + a loose `any`-bodied implementation signature.
+Measured blast radius: **zero new errors across the whole monorepo** (verified by
+diffing tsgo against a clean HEAD baseline). The win is forward-looking type
+safety + autocomplete + refactor-safety (renaming/retyping a slot now surfaces at
+read sites), not catching current bugs.
+
+### "Usages declare the config they expect" — enabled by the typed reader
+
+The real ask: a usage (renderer/component/util) should declare *which* config it
+consumes and get typed reads, instead of taking an opaque `AnyConfigurationModel`
+that reads as `any`. **This works today**, via the *schema type* — not a
+structural/instance duck shape. Two load-bearing facts:
+
+- **Config instances carry no typed slot properties.** `Instance<schema>` erases
+  to `ModelInstanceTypeProps<Record<string,any>>` (effectively propertyless +
+  `setSlot`/`IStateTreeNode`), so `AnyConfigurationModel` is NOT assignable to a
+  duck shape `{ color: string }` (probe: "missing properties color"), and direct
+  `conf.color` access isn't the path. The only typed access is `readConfObject`,
+  which types off the **schema metadata** (`ConfigurationSlotValue`), not instance
+  props.
+- **So the usage declares the concrete schema, not a structural shape.** Typing a
+  param `conf: Instance<typeof someConfigSchema>` makes `readConfObject(conf,
+  'slot')` return the typed value AND validates the slot name (verified against
+  the real `LinearWiggleDisplay` schema: `readConfObject(conf, 'defaultRendering')`
+  is `string`, a bogus slot name errors). `AnyConfigurationModel` params stay
+  `any` because the schema is erased to `<any,any>`.
+
+**Status:** the plumbing is done (the typed reader above). The remaining win is a
+per-usage migration — ~1883 sites type config params as `AnyConfigurationModel`;
+switching each to `Instance<typeof concreteSchema>` unlocks typed+validated reads.
+Opportunistic, no big-bang; each switch is a local, zero-risk win. A *truly*
+structural duck type (`ConfigWith<{color: string}>` via an optional phantom
+`__slots` brand so any config is assignable) is possible but duplicates the slot
+types at each usage and needs extra reader machinery — referencing the concrete
+schema is cleaner, so prefer it.
+
+(Cast aside: the ~90 `as AnyConfigurationModel` casts are mostly orthogonal to
+this — ~85 are legitimate `any → typed` output annotations / MST volatile-init
+annotations that no duck-typing removes; only ~5 are brand-related, 4 in tests.
+Loosening the `AnyConfigurationModel` definition for those fails the
+complexity/benefit bar.)
 
 ## Default-stripping in the fork (`types.stripDefault`)
 
