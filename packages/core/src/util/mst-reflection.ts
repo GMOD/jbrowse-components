@@ -23,18 +23,18 @@ export interface ILiteralType<T> extends ISimpleType<T> {
 // MST's getSubTypes() returns this sentinel string when a type can't report a
 // single subtype. It isn't exported by name, so we detect it structurally: a
 // real subtype is an IAnyType object, never a string or null.
-function isSubType(t: unknown): t is IAnyType {
+function isSubtype(t: unknown): t is IAnyType {
   return typeof t === 'object' && t !== null
 }
 
 /**
  * get the inner type of an MST optional, refinement, array, map, or late type
  */
-export function getSubType(type: IAnyType): IAnyType {
+export function getSubtype(type: IAnyType): IAnyType {
   // optional/refinement/late report their wrapped type here; union returns an
   // array (handled by getUnionSubTypes) and array/map return null
   const sub = type.getSubTypes()
-  if (isSubType(sub)) {
+  if (isSubtype(sub)) {
     return sub
   }
   if (isArrayType(type) || isMapType(type)) {
@@ -92,14 +92,14 @@ export function resolveLateType(maybeLate: IAnyType) {
     // the negated identity guards above narrow `maybeLate` to `never`, so route
     // it through a function arg (never is assignable to IAnyType) to read the
     // late type's resolved inner type via getSubTypes()
-    return lateSubType(maybeLate) ?? maybeLate
+    return lateSubtype(maybeLate) ?? maybeLate
   }
   return maybeLate
 }
 
-function lateSubType(type: IAnyType) {
+function lateSubtype(type: IAnyType) {
   const sub = type.getSubTypes()
-  return isSubType(sub) ? sub : undefined
+  return isSubtype(sub) ? sub : undefined
 }
 
 export { getUnionSubtypes as getUnionSubTypes } from '@jbrowse/mobx-state-tree'

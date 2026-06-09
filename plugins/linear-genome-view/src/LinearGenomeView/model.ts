@@ -904,7 +904,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       updateHighlight(old: HighlightType, updates: Partial<HighlightType>) {
         const idx = self.highlight.indexOf(old)
         if (idx !== -1) {
-          self.highlight.splice(idx, 1, { ...old, ...updates })
+          self.highlight[idx] = { ...old, ...updates }
         }
       },
       /**

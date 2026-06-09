@@ -197,11 +197,11 @@ export function createBaseTrackModel(
         }
         const displays = self.configuration.displays as DisplayConf[]
         const displayConf = getDisplayConf(displays, newDisplayId)
-        self.displays.splice(idx, 1, {
+        self.displays[idx] = {
           ...initialSnapshot,
           type: displayConf.type,
           configuration: newDisplayId,
-        })
+        }
       },
     }))
     .views(() => ({

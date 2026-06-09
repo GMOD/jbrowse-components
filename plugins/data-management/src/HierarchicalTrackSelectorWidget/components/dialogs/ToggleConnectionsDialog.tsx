@@ -37,14 +37,14 @@ const ConnectionRow = observer(function ConnectionRow({
   const { connectionInstances: instances = [] } = session
   const name = readConfObject(conf, 'name')
   const assemblyNames = readConfObject(conf, 'assemblyNames')
-  const found = instances.find(conn => name === conn.name)
+  const hasConnection = instances.some(conn => name === conn.name)
   return (
     <FormControlLabel
       control={
         <Checkbox
-          checked={!!found}
+          checked={hasConnection}
           onChange={() => {
-            if (found) {
+            if (hasConnection) {
               breakConnection(conf)
             } else {
               session.makeConnection?.(conf)

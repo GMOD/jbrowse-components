@@ -166,10 +166,10 @@ export default class RpcManager {
     if (isAppRootModel(rootModel)) {
       try {
         const internetAccountId = `HTTPBasicInternetAccount-${new URL(url).origin}`
-        const existing = rootModel.internetAccounts.find(
+        const hasExisting = rootModel.internetAccounts.some(
           account => account.internetAccountId === internetAccountId,
         )
-        if (!existing) {
+        if (!hasExisting) {
           rootModel.createEphemeralInternetAccount(internetAccountId, {}, url)
         }
         ready = true

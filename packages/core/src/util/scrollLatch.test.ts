@@ -1,11 +1,11 @@
 import { createScrollLatch, normalizeWheelDeltaY } from './scrollLatch.ts'
 
-// minimal stand-in for a WheelEvent: scroll() only reads timeStamp and calls
+// minimal stand-in for a WheelEvent: scroll() only reads timestamp and calls
 // preventDefault, so a tracked spy is enough
-function wheelEvent(timeStamp: number) {
+function wheelEvent(timestamp: number) {
   let prevented = false
   return {
-    timeStamp,
+    timeStamp: timestamp,
     preventDefault() {
       prevented = true
     },
