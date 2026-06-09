@@ -133,7 +133,6 @@ test('SVInspector filtering updates circular view accordingly', async () => {
 
     const allRows = spreadsheet.rows!
     const visibilityMap: Record<number, boolean> = {}
-    // eslint-disable-next-line unicorn/no-array-for-each
     allRows.forEach((row: any, index: number) => {
       visibilityMap[index] = row.CHROM === 'B'
     })

@@ -9,5 +9,4 @@ export type { ViewModel } from './createModel/createModel.ts'
 
 export * from 'react-dom/client'
 
-// eslint-disable-next-line unicorn/prefer-export-from
 export { React }

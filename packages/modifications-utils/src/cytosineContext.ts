@@ -20,8 +20,7 @@ function baseMatches(expected: string, actual: string | undefined) {
   return actual === undefined
     ? false
     : expected === 'H'
-      ? // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
-        actual === 'a' || actual === 'c' || actual === 't'
+      ? actual === 'a' || actual === 'c' || actual === 't'
       : actual === expected.toLowerCase()
 }
 

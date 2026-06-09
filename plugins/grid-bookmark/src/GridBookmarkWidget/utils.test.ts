@@ -24,7 +24,6 @@ function readBlob(blob: Blob): Promise<string> {
     reader.onerror = () => {
       reject(reader.error ?? new Error('FileReader error'))
     }
-    // eslint-disable-next-line unicorn/prefer-blob-reading-methods
     reader.readAsText(blob)
   })
 }

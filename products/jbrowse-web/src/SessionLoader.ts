@@ -540,7 +540,6 @@ const SessionLoader = types
      * #action
      */
     async loadConfig() {
-      // eslint-disable-next-line unicorn/prefer-ternary
       if (self.configSnapshot) {
         // HMR / reload: snapshot already URI-stamped, just load plugins
         await self.fetchPlugins(

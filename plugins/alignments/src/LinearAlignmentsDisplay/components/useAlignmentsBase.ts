@@ -31,7 +31,6 @@ import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// eslint-disable-next-line unicorn/prefer-export-from -- also used locally in function signatures
 export type { LinearAlignmentsDisplayModel }
 
 export interface FeatureHit {

@@ -35,7 +35,6 @@ export function extractPerBaseQuality(
         soffset += len
       } else if (opIdx === CIGAR_D || opIdx === CIGAR_N) {
         roffset += len
-      // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
       } else if (opIdx === CIGAR_M || opIdx === CIGAR_X || opIdx === CIGAR_EQ) {
         const opStart = start + roffset
         if (opStart >= regionEnd) {

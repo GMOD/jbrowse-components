@@ -15,7 +15,7 @@ test('removes self-closing tags', () => {
 })
 
 test('removes tags with attributes', () => {
-  expect(coarseStripHTML('<a href="http://example.com">Link</a>')).toBe('Link')
+  expect(coarseStripHTML('<a href="https://example.com">Link</a>')).toBe('Link')
 })
 
 test('removes tags with multiple attributes', () => {

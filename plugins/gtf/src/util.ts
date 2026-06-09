@@ -68,7 +68,6 @@ export function featureData(
 }
 
 function toStrand(s: string | undefined): Strand {
-  // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
   return s === '+' || s === '-' || s === '?' ? s : '.'
 }
 

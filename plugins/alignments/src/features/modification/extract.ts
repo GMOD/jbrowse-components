@@ -97,7 +97,6 @@ export function extractModifications(
   const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
   const hidden = colorBy?.modifications?.hiddenModifications ?? []
   const twoColor = colorBy?.modifications?.twoColor ?? false
-  // eslint-disable-next-line unicorn/no-array-for-each
   mods.forEach(({ prob, type, base }, refPos) => {
     // detectedModifications must list every type seen so the menu can offer all
     // of them — isolation filters what is *rendered*, not what is detected.
@@ -260,7 +259,6 @@ export function extractBisulfite(
       readPos += len
     } else if (op === CIGAR_D || op === CIGAR_N) {
       refPos += len
-    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
       for (let j = 0; j < len; j++) {
         const genomicPos = featureStart + refPos + j

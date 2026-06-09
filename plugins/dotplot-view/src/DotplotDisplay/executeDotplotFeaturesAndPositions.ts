@@ -142,7 +142,6 @@ export async function executeDotplotFeaturesAndPositions({
     const p12 = bpToCumBp(hIndex, refName, f1e)
     const p21 = bpToCumBp(vIndex, mateRefName, mate.start)
     const p22 = bpToCumBp(vIndex, mateRefName, mate.end)
-    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     if (p11 === undefined || p12 === undefined || p21 === undefined || p22 === undefined) {
       skippedFeatureCount++
       continue

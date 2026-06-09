@@ -25,13 +25,10 @@ function isLocalPathLocation(
 }
 
 export async function fetchJb1(
-  // eslint-disable-next-line unicorn/no-object-as-default-parameter
   dataRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
-  // eslint-disable-next-line unicorn/no-object-as-default-parameter
   baseConfig: Config = {
     include: ['{dataRoot}/trackList.json', '{dataRoot}/tracks.conf'],
   },
-  // eslint-disable-next-line unicorn/no-object-as-default-parameter
   baseConfigRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
 ): Promise<Config> {
   let dataRootLocation = isUriLocation(dataRoot)

@@ -70,7 +70,6 @@ export default function JexlF(/* config?: any*/) {
     s.slice(start, end),
   )
   j.addFunction('substring', (s: string, start: number, end?: number) =>
-    // eslint-disable-next-line unicorn/prefer-string-slice
     s.substring(start, end),
   )
   j.addFunction('toLowerCase', (s: string) => s.toLowerCase())

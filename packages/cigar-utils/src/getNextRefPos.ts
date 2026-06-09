@@ -34,7 +34,7 @@ export function getNextRefPos(
     const packed = cigarOps[i]!
     const len = packed >> 4
     const op = packed & 0xf
-    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
+
     if (op === CIGAR_S || op === CIGAR_I) {
       for (let j = 0; j < len && currPos < l2; j++) {
         if (positions[currPos] === readPos + j) {
@@ -42,10 +42,8 @@ export function getNextRefPos(
         }
       }
       readPos += len
-      // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     } else if (op === CIGAR_D || op === CIGAR_N) {
       refPos += len
-      // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
       for (let j = 0; j < len && currPos < l2; j++) {
         if (positions[currPos] === readPos + j) {

@@ -42,7 +42,6 @@ function readBlobAsText(blob: Blob): Promise<string> {
       resolve(reader.result as string)
     }
     reader.onerror = reject
-    // eslint-disable-next-line unicorn/prefer-blob-reading-methods
     reader.readAsText(blob)
   })
 }

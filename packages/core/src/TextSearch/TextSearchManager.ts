@@ -121,7 +121,6 @@ export default class TextSearchManager {
     const needle = args.queryString
 
     // false positive, this is not Array.prototype.filter
-    // eslint-disable-next-line unicorn/no-array-method-this-argument
     const idxs = uf.filter(haystack, needle)
     const res: BaseResult[] = []
 

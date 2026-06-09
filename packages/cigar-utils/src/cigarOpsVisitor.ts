@@ -12,7 +12,6 @@ function isDigit(ch: string) {
 }
 
 function isCsOpChar(ch: string | undefined) {
-  // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
   return ch === ':' || ch === '*' || ch === '+' || ch === '-'
 }
 
@@ -96,18 +95,15 @@ export function visitCigarRenderedSegments(
       segBp2Start = bp2
     }
 
-    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
       bp1 += len * rev1
       bp2 += len * rev2
-      // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     } else if (op === CIGAR_D || op === CIGAR_N) {
       bp1 += len * rev1
     } else if (op === CIGAR_I) {
       bp2 += len * rev2
     }
 
-    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
       const relevantBpPerPx = op === CIGAR_I ? bpPerPx1 : bpPerPx0
       if (len < relevantBpPerPx * MIN_INDEL_PX) {
