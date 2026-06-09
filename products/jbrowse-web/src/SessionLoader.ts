@@ -493,13 +493,18 @@ const SessionLoader = types
     async loadSessionByType() {
       try {
         if (self.sessionSnapshot) {
-          // HMR / reload path: snapshot pre-set, just load plugins if needed
+          // HMR / reload path: snapshot pre-set from the user's own live
+          // session, whose plugins were already accepted when added in-session.
+          // Pass userAcceptedConfirmation so an untrusted (non-store) plugin
+          // URL doesn't bounce the user back through triage on reload. Incoming
+          // URL sessions never reach here — they vet via fetchSharedSession etc.
           if (!self.sessionPlugins) {
             await self.loadSession(
               self.sessionSnapshot as {
                 sessionPlugins?: PluginDefinition[]
                 id: string
               },
+              true,
             )
           }
         } else if (self.isSharedSession) {

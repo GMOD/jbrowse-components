@@ -30,6 +30,12 @@ jest.mock('idb', () => ({
   openDB: jest.fn(),
 }))
 
+// keep the rest of the helpers real; only stub the network plugin fetch
+jest.mock('./sessionLoaderHelpers', () => ({
+  ...jest.requireActual('./sessionLoaderHelpers'),
+  loadPluginRecords: jest.fn().mockResolvedValue([]),
+}))
+
 jest.mock('./createPluginManager', () => ({
   createPluginManager: jest.fn(),
 }))
@@ -411,6 +417,34 @@ describe('SessionLoader', () => {
       })
       await when(() => loader.ready, { timeout: 5000 })
       expect(loader.sessionSnapshot).toMatchObject({ name: 'Restored' })
+      expect(loader.sessionPlugins).toBeDefined()
+    })
+
+    // The plugin-reload/HMR path pre-sets sessionSnapshot from the user's own
+    // live session. Its plugins were already accepted when added in-session, so
+    // restoring must not bounce the user back through triage even if a plugin
+    // is from an untrusted (non-store) URL.
+    it('reload path restores own session with an untrusted plugin without re-triaging', async () => {
+      const { checkPlugins } = jest.requireMock('./util')
+      checkPlugins.mockResolvedValueOnce(false)
+      const loader = SessionLoader.create({
+        configSnapshot: {},
+        sessionSnapshot: {
+          id: 'restored-id',
+          name: 'Restored',
+          sessionPlugins: [
+            { name: 'Custom', url: 'https://example.com/custom.js' },
+          ],
+        },
+        initialTimestamp: Date.now(),
+      })
+      await when(
+        () =>
+          loader.sessionPlugins !== undefined ||
+          loader.sessionTriaged !== undefined,
+        { timeout: 5000 },
+      )
+      expect(loader.sessionTriaged).toBeUndefined()
       expect(loader.sessionPlugins).toBeDefined()
     })
 
