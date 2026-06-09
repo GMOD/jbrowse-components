@@ -353,10 +353,10 @@ any of the display's own settings. This opens an alignments track colored by
 pair orientation, with soft-clipped bases shown and an enlarged height:
 
 ```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBySetting":{"type":"pairOrientation"}}}]}]}
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBy":{"type":"pairOrientation"}}}]}]}
 ```
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBySetting":{"type":"pairOrientation"}}}]}]})
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBy":{"type":"pairOrientation"}}}]}]})
 
 Expanded JSON:
 
@@ -373,7 +373,7 @@ Expanded JSON:
           "displaySnapshot": {
             "height": 250,
             "showSoftClipping": true,
-            "colorBySetting": { "type": "pairOrientation" }
+            "colorBy": { "type": "pairOrientation" }
           }
         }
       ]

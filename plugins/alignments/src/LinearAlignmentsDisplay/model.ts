@@ -260,7 +260,7 @@ const COLOR_BY_TO_SCHEME: Record<string, number> = {
  *     {
  *       type: 'LinearAlignmentsDisplay',
  *       displayId: 'methylation-LinearAlignmentsDisplay',
- *       colorBySetting: { type: 'methylation' },
+ *       colorBy: { type: 'methylation' },
  *     },
  *   ],
  * }

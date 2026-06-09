@@ -10,7 +10,7 @@ import type { TestSuite } from '../types.ts'
 
 function alignmentsSpec(
   loc: string,
-  colorBySetting: Record<string, unknown>,
+  colorBy: Record<string, unknown>,
   trackId = 'volvox_alignments',
 ) {
   return {
@@ -22,7 +22,7 @@ function alignmentsSpec(
         tracks: [
           {
             trackId,
-            displaySnapshot: { colorBySetting },
+            displaySnapshot: { colorBy },
           },
         ],
       },

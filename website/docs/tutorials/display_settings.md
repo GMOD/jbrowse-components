@@ -32,7 +32,7 @@ settings. Two ways to discover them:
   [LinearPileupDisplay](/docs/config/linearpileupdisplay)).
 
 Common keys include `type` (the display type), `height`, `minScore` /
-`maxScore`, `defaultRendering`, `showSoftClipping`, and `colorBySetting`.
+`maxScore`, `defaultRendering`, `showSoftClipping`, and `colorBy`.
 
 ## In config.json (persistent defaults)
 
@@ -79,7 +79,7 @@ object carrying a snapshot:
           "displaySnapshot": {
             "height": 250,
             "showSoftClipping": true,
-            "colorBySetting": { "type": "pairOrientation" }
+            "colorBy": { "type": "pairOrientation" }
           }
         }
       ]
@@ -91,7 +91,7 @@ object carrying a snapshot:
 URL-encoded onto the end of a JBrowse link:
 
 ```
-?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBySetting":{"type":"pairOrientation"}}}]}]}
+?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBy":{"type":"pairOrientation"}}}]}]}
 ```
 
 See [URL parameters](/docs/urlparams) for the full session-spec format,
