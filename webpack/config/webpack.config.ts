@@ -76,6 +76,13 @@ export default function webpackBuilder(): webpack.Configuration {
     module: {
       strictExportPresence: true,
       rules: [
+        {
+          // MUI v9 and other ESM deps ship .mjs files with extensionless
+          // subpath imports (e.g. react-transition-group/TransitionGroupContext);
+          // webpack 5 treats .mjs as fully specified and rejects them otherwise
+          test: /\.m?js$/,
+          resolve: { fullySpecified: false },
+        },
         ...(shouldUseSourceMap && isEnvProduction
           ? [
               {
