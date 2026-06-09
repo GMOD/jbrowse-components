@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { transaction } from 'mobx'
 
-import type { BreakpointViewModel } from '../model.ts'
+import type { MultiLevelRubberbandModel } from './types.ts'
 
 interface AnchorPosition {
   offsetX: number
@@ -14,7 +14,7 @@ interface AnchorPosition {
 
 export function useRangeSelect(
   ref: React.RefObject<HTMLDivElement | null>,
-  model: BreakpointViewModel,
+  model: MultiLevelRubberbandModel,
 ) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState(0)

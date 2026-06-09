@@ -3,11 +3,12 @@ import { lazy } from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
+
 
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay.tsx'
 import Header from './Header.tsx'
-import Rubberband from './Rubberband.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
 
@@ -91,7 +92,7 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
       {model.initialized ? (
         <>
           {model.showHeader ? <Header model={model} /> : null}
-          <Rubberband
+          <MultiLevelRubberband
             model={model}
             ControlComponent={<div className={classes.rubberbandDiv} />}
           />

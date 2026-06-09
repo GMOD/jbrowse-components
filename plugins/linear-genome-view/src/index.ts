@@ -130,6 +130,10 @@ export {
   SearchBox,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
+export {
+  MultiLevelRubberband,
+  type MultiLevelRubberbandModel,
+} from './MultiLevelRubberband/index.ts'
 export { fetchResults } from './searchUtils.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {

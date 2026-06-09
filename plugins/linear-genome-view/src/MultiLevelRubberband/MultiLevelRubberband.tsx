@@ -8,9 +8,7 @@ import RubberbandSpan from './RubberbandSpan.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
 
-import type { LinearComparativeViewModel } from '../model.ts'
-
-type LCV = LinearComparativeViewModel
+import type { MultiLevelRubberbandModel } from './types.ts'
 
 const useStyles = makeStyles()({
   rubberbandControl: {
@@ -22,11 +20,11 @@ const useStyles = makeStyles()({
   },
 })
 
-const Rubberband = observer(function Rubberband({
+const MultiLevelRubberband = observer(function MultiLevelRubberband({
   model,
   ControlComponent = <div />,
 }: {
-  model: LCV
+  model: MultiLevelRubberbandModel
   ControlComponent?: React.ReactElement
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -89,4 +87,4 @@ const Rubberband = observer(function Rubberband({
   )
 })
 
-export default Rubberband
+export default MultiLevelRubberband

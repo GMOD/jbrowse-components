@@ -4,9 +4,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import { useRangeSelect } from './useRangeSelect.ts'
 
-import type { BreakpointViewModel } from '../model.ts'
+import type { MultiLevelRubberbandModel } from './types.ts'
 
-function TestRubberband({ model }: { model: BreakpointViewModel }) {
+function TestRubberband({ model }: { model: MultiLevelRubberbandModel }) {
   const ref = useRef<HTMLDivElement>(null)
   const { mouseDown, mouseMove, mouseOut } = useRangeSelect(ref, model)
   return (
@@ -28,13 +28,13 @@ function makeView(setOffsets = jest.fn()) {
   }
 }
 
-describe('useRangeSelect (Breakpoint)', () => {
+describe('useRangeSelect (MultiLevelRubberband)', () => {
   it('commits selection for all views on window mouseup after drag', () => {
     const setOffsets0 = jest.fn()
     const setOffsets1 = jest.fn()
     const model = {
       views: [makeView(setOffsets0), makeView(setOffsets1)],
-    } as unknown as BreakpointViewModel
+    } as unknown as MultiLevelRubberbandModel
 
     render(<TestRubberband model={model} />)
     const el = screen.getByTestId('rubberband')
@@ -46,6 +46,7 @@ describe('useRangeSelect (Breakpoint)', () => {
       )
     })
 
+    // left=100, right=250 (jsdom getBoundingClientRect returns left=0)
     expect(setOffsets0).toHaveBeenCalledWith(
       expect.objectContaining({ offset: 100 }),
       expect.objectContaining({ offset: 250 }),
@@ -60,7 +61,7 @@ describe('useRangeSelect (Breakpoint)', () => {
     const setOffsets = jest.fn()
     const model = {
       views: [makeView(setOffsets)],
-    } as unknown as BreakpointViewModel
+    } as unknown as MultiLevelRubberbandModel
 
     render(<TestRubberband model={model} />)
     const el = screen.getByTestId('rubberband')
@@ -79,7 +80,7 @@ describe('useRangeSelect (Breakpoint)', () => {
     const setOffsets = jest.fn()
     const model = {
       views: [makeView(setOffsets)],
-    } as unknown as BreakpointViewModel
+    } as unknown as MultiLevelRubberbandModel
 
     render(<TestRubberband model={model} />)
     const el = screen.getByTestId('rubberband')
@@ -103,11 +104,12 @@ describe('useRangeSelect (Breakpoint)', () => {
     const setOffsets = jest.fn()
     const model = {
       views: [makeView(setOffsets)],
-    } as unknown as BreakpointViewModel
+    } as unknown as MultiLevelRubberbandModel
 
     render(<TestRubberband model={model} />)
     const el = screen.getByTestId('rubberband')
 
+    // drag right-to-left: mousedown at 250, mouseup at 100
     fireEvent.mouseDown(el, { clientX: 250, clientY: 0 })
     act(() => {
       window.dispatchEvent(

@@ -3,7 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { BreakpointViewModel } from '../model.ts'
+import type { MultiLevelRubberbandModel } from './types.ts'
 
 const useStyles = makeStyles()({
   guide: {
@@ -20,7 +20,7 @@ const VerticalGuide = observer(function VerticalGuide({
   model,
   coordX,
 }: {
-  model: BreakpointViewModel
+  model: MultiLevelRubberbandModel
   coordX: number
 }) {
   const { classes } = useStyles()
@@ -33,12 +33,7 @@ const VerticalGuide = observer(function VerticalGuide({
       ))}
       arrow
     >
-      <div
-        className={classes.guide}
-        style={{
-          left: coordX,
-        }}
-      />
+      <div className={classes.guide} style={{ left: coordX }} />
     </Tooltip>
   )
 })
