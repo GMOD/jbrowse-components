@@ -1,12 +1,13 @@
 import { dialog } from 'electron'
 
+import { logError } from './util.ts'
+
 import type { AppUpdater } from 'electron-updater'
 
 function sendStatusToWindow(
   mainWindow: Electron.BrowserWindow | null,
   text: string,
 ) {
-  // eslint-disable-next-line no-console
   console.log(text)
   if (mainWindow) {
     mainWindow.webContents.send('message', text)
@@ -42,9 +43,7 @@ export function setupAutoUpdater(
     })
 
     if (result.response === 0) {
-      autoUpdater.downloadUpdate().catch((e: unknown) => {
-        console.error(e)
-      })
+      autoUpdater.downloadUpdate().catch(logError)
     }
   })
 

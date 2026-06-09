@@ -14,7 +14,6 @@ export default defineConfig(
   {
     ignores: [
       // Build outputs
-      'products/jbrowse-desktop/electron/',
       '**/build',
       '**/dist*',
       '**/esm',
@@ -261,6 +260,26 @@ export default defineConfig(
       '@typescript-eslint/use-unknown-in-catch-callback-variable': 'off',
       'no-console': 'off',
       'no-undef': 'off',
+    },
+  },
+  {
+    // Electron main process: separate tsconfig, runs in node, uses console.log
+    // for auto-updater status messages.
+    files: ['products/jbrowse-desktop/electron/**/*.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      parserOptions: {
+        project: ['./products/jbrowse-desktop/electron/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+      // IpcChannels descriptors use `return: void` to mean "resolves to
+      // nothing"; switching to `undefined` breaks handler assignability.
+      '@typescript-eslint/no-invalid-void-type': 'off',
     },
   },
   {

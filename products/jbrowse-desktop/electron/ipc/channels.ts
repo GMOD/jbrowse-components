@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 
+import type { AuthWindowParams } from '../window.ts'
 import type { IpcMainInvokeEvent } from 'electron'
 
 export interface RecentSession {
@@ -9,7 +10,7 @@ export interface RecentSession {
 }
 
 export interface SessionSnap {
-  defaultSession?: { name: string }
+  defaultSession?: { name?: string }
   [key: string]: unknown
 }
 
@@ -43,14 +44,8 @@ export interface IpcChannels {
   deleteQuickstart: { args: [name: string]; return: void }
   renameQuickstart: { args: [oldName: string, newName: string]; return: void }
   openAuthWindow: {
-    args: [
-      params: {
-        internetAccountId: string
-        data: { redirect_uri: string }
-        url: string
-      },
-    ]
-    return: unknown
+    args: [params: AuthWindowParams]
+    return: string | undefined
   }
 }
 

@@ -2,12 +2,11 @@ import fs from 'fs'
 import path from 'path'
 
 import { getThumbnailPath, stringify } from '../paths.ts'
+import { logError } from '../util.ts'
 import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
 import type { RecentSession, SessionSnap } from './channels.ts'
-
-export type { RecentSession, SessionSnap }
 
 const { unlink, readFile, writeFile } = fs.promises
 const ENCODING = 'utf8'
@@ -26,9 +25,7 @@ async function readRecentSessions(
   }
 }
 
-async function readSession(
-  sessionPath: string,
-): Promise<{ assemblies?: unknown[] }> {
+async function readSession(sessionPath: string): Promise<SessionSnap> {
   try {
     return JSON.parse(await readFile(sessionPath, ENCODING))
   } catch (e) {
@@ -68,10 +65,11 @@ export function registerSessionHandlers(
 
   ipcHandle('createInitialAutosaveFile', async (_, snap) => {
     const rows = await readRecentSessions(paths.recentSessionsPath)
-    const autosavePath = path.join(paths.autosaveDir, `${Date.now()}.json`)
+    const now = Date.now()
+    const autosavePath = path.join(paths.autosaveDir, `${now}.json`)
     const entry: RecentSession = {
       path: autosavePath,
-      updated: Date.now(),
+      updated: now,
       name: snap.defaultSession?.name,
     }
 
@@ -115,19 +113,17 @@ export function registerSessionHandlers(
     await Promise.all([
       writeFile(paths.recentSessionsPath, stringify(remaining)),
       ...sessionPaths.flatMap(sessionPath => [
-        unlink(getThumbnailPath(paths, sessionPath)).catch((e: unknown) => {
-          console.error(e)
-        }),
-        unlink(sessionPath).catch((e: unknown) => {
-          console.error(e)
-        }),
+        unlink(getThumbnailPath(paths, sessionPath)).catch(logError),
+        unlink(sessionPath).catch(logError),
       ]),
     ])
   })
 
   ipcHandle('renameSession', async (_, sessionPath, newName) => {
-    const sessions = await readRecentSessions(paths.recentSessionsPath)
-    const session = JSON.parse(await readFile(sessionPath, ENCODING))
+    const [sessions, session] = await Promise.all([
+      readRecentSessions(paths.recentSessionsPath),
+      readSession(sessionPath),
+    ])
     const idx = sessions.findIndex(row => row.path === sessionPath)
 
     if (idx === -1) {
@@ -157,8 +153,8 @@ export function registerSessionHandlers(
 
   ipcHandle('reset', async () => {
     const [autosaveFiles, thumbnailFiles] = await Promise.all([
-      fs.promises.readdir(paths.autosaveDir).catch(() => [] as string[]),
-      fs.promises.readdir(paths.thumbnailDir).catch(() => [] as string[]),
+      fs.promises.readdir(paths.autosaveDir).catch(() => []),
+      fs.promises.readdir(paths.thumbnailDir).catch(() => []),
     ])
     const filesToDelete = [
       ...autosaveFiles.map(f => path.join(paths.autosaveDir, f)),
@@ -166,11 +162,7 @@ export function registerSessionHandlers(
     ]
     await Promise.all([
       writeFile(paths.recentSessionsPath, stringify([])),
-      ...filesToDelete.map(f =>
-        unlink(f).catch((e: unknown) => {
-          console.error(e)
-        }),
-      ),
+      ...filesToDelete.map(f => unlink(f).catch(logError)),
     ])
   })
 }

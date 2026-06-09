@@ -4,7 +4,7 @@ import path from 'path'
 import { generateFastaIndex } from '@gmod/faidx'
 import { app, dialog } from 'electron'
 
-import { getFileStream } from '../generateFastaIndex.ts'
+import { getFileStream } from '../fileStream.ts'
 import { getFaiPath } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
 
@@ -26,9 +26,10 @@ export function registerFileHandlers(paths: AppPaths) {
 
   ipcHandle('indexFasta', async (_, location) => {
     const filename = 'localPath' in location ? location.localPath : location.uri
+    // getFaiPath appends the .fai extension
     const faiPath = getFaiPath(
       paths,
-      `${path.basename(filename)}${Date.now()}.fai`,
+      `${path.basename(filename)}-${Date.now()}`,
     )
     const stream = await getFileStream(location)
     const write = fs.createWriteStream(faiPath)

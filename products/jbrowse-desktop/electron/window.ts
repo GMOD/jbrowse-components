@@ -3,6 +3,7 @@ import { pathToFileURL } from 'url'
 
 import { BrowserWindow, Menu, app, shell } from 'electron'
 
+import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
 import type { AppUpdater } from 'electron-updater'
@@ -44,17 +45,13 @@ function createMenu(autoUpdater: AppUpdater) {
         {
           label: 'Visit jbrowse.org',
           click: () => {
-            shell.openExternal('https://jbrowse.org').catch((e: unknown) => {
-              console.error(e)
-            })
+            shell.openExternal('https://jbrowse.org').catch(logError)
           },
         },
         {
           label: 'Check for updates...',
           click: () => {
-            autoUpdater.checkForUpdates().catch((e: unknown) => {
-              console.error(e)
-            })
+            autoUpdater.checkForUpdates().catch(logError)
           },
         },
       ],
@@ -93,18 +90,14 @@ export async function createMainWindow(
   // Skip auto-update check in CI environments to avoid blocking dialogs
   if (!process.env.CI) {
     mainWindow.once('ready-to-show', () => {
-      autoUpdater.checkForUpdatesAndNotify().catch((e: unknown) => {
-        console.error(e)
-      })
+      autoUpdater.checkForUpdatesAndNotify().catch(logError)
     })
   }
 
   await mainWindow.loadURL(buildAppUrl(devServerUrl, initialSessionPath).href)
 
   mainWindow.webContents.setWindowOpenHandler(edata => {
-    shell.openExternal(edata.url).catch((e: unknown) => {
-      console.error(e)
-    })
+    shell.openExternal(edata.url).catch(logError)
     return { action: 'deny' }
   })
 
@@ -131,9 +124,7 @@ export function createAuthWindow(
 
   win.title = `JBrowseAuthWindow-${params.internetAccountId}`
 
-  win.loadURL(params.url).catch((e: unknown) => {
-    console.error(e)
-  })
+  win.loadURL(params.url).catch(logError)
 
   return new Promise(resolve => {
     win.webContents.on('will-redirect', details => {

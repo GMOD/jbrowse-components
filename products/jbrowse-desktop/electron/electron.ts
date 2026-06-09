@@ -12,6 +12,7 @@ import { registerFileHandlers } from './ipc/fileHandlers.ts'
 import { registerQuickstartHandlers } from './ipc/quickstartHandlers.ts'
 import { registerSessionHandlers } from './ipc/sessionHandlers.ts'
 import { initializePaths } from './paths.ts'
+import { logError } from './util.ts'
 import { buildAppUrl, createMainWindow } from './window.ts'
 
 import type { BrowserWindow } from 'electron'
@@ -46,7 +47,7 @@ function getInitialSession(): Promise<string | undefined> {
       resolve(filePath)
     }
     app.once('open-file', onOpenFile)
-    app.whenReady().then(() => {
+    void app.whenReady().then(() => {
       app.off('open-file', onOpenFile)
       resolve(findSessionPathArg(process.argv, process.cwd()))
     })
@@ -54,11 +55,7 @@ function getInitialSession(): Promise<string | undefined> {
 }
 
 function loadSession(win: BrowserWindow, sessionPath: string) {
-  win
-    .loadURL(buildAppUrl(DEV_SERVER_URL, sessionPath).href)
-    .catch((e: unknown) => {
-      console.error(e)
-    })
+  win.loadURL(buildAppUrl(DEV_SERVER_URL, sessionPath).href).catch(logError)
 }
 
 // Tracks the single main window. Concurrent ensureWindow calls during creation
@@ -118,7 +115,7 @@ function runApp() {
     }
   })
 
-  app.whenReady().then(async () => {
+  void app.whenReady().then(async () => {
     try {
       // app.getPath() is only reliable after 'ready'
       const paths = initializePaths()
@@ -132,21 +129,15 @@ function runApp() {
 
       app.on('second-instance', (_event, argv, workingDirectory) => {
         wm.ensureWindow(findSessionPathArg(argv, workingDirectory)).catch(
-          (e: unknown) => {
-            console.error(e)
-          },
+          logError,
         )
       })
       app.on('open-file', (event, filePath) => {
         event.preventDefault()
-        wm.ensureWindow(filePath).catch((e: unknown) => {
-          console.error(e)
-        })
+        wm.ensureWindow(filePath).catch(logError)
       })
       app.on('activate', () => {
-        wm.ensureWindow().catch((e: unknown) => {
-          console.error(e)
-        })
+        wm.ensureWindow().catch(logError)
       })
 
       await wm.ensureWindow(await initialSession)

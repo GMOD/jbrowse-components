@@ -27,51 +27,38 @@ export async function ensureDirectoriesExist(paths: AppPaths) {
  * Initializes the recent sessions file if it doesn't exist
  */
 export async function initializeRecentSessionsFile(paths: AppPaths) {
-  await fs.promises
-    .writeFile(paths.recentSessionsPath, stringify([]), {
-      flag: 'wx',
-      encoding: ENCODING,
-    })
-    .catch((e: NodeJS.ErrnoException) => {
-      if (e.code !== 'EEXIST') {
-        throw e
-      }
-    })
+  if (!fs.existsSync(paths.recentSessionsPath)) {
+    await fs.promises.writeFile(
+      paths.recentSessionsPath,
+      stringify([]),
+      ENCODING,
+    )
+  }
 }
 
 /**
  * Deletes legacy quickstarts on first startup
  */
 export async function cleanupLegacyQuickstarts(paths: AppPaths) {
-  const cleanupPromises = LEGACY_QUICKSTARTS.map(async name => {
-    const quickstartPath = getQuickstartPath(paths, name)
-    const deletedMarkerPath = getDeletedMarkerPath(paths, name)
-
-    try {
-      // Check if both files exist
-      const [quickstartExists, markerExists] = await Promise.all([
-        fs.promises
-          .access(quickstartPath)
-          .then(() => true)
-          .catch(() => false),
-        fs.promises
-          .access(deletedMarkerPath)
-          .then(() => true)
-          .catch(() => false),
-      ])
-
-      // Only delete if quickstart exists and hasn't been marked as deleted before
-      if (quickstartExists && !markerExists) {
-        await fs.promises.unlink(quickstartPath)
-        // Create gravestone file to prevent recreation
-        await fs.promises.writeFile(deletedMarkerPath, '', ENCODING)
+  await Promise.all(
+    LEGACY_QUICKSTARTS.map(async name => {
+      const quickstartPath = getQuickstartPath(paths, name)
+      const deletedMarkerPath = getDeletedMarkerPath(paths, name)
+      try {
+        // Delete once, then leave a gravestone so a user-recreated quickstart
+        // is never auto-deleted again
+        if (
+          fs.existsSync(quickstartPath) &&
+          !fs.existsSync(deletedMarkerPath)
+        ) {
+          await fs.promises.unlink(quickstartPath)
+          await fs.promises.writeFile(deletedMarkerPath, '', ENCODING)
+        }
+      } catch (e) {
+        console.error(`Failed to delete legacy quickstart ${name}:`, e)
       }
-    } catch (e) {
-      console.error(`Failed to delete legacy quickstart ${name}:`, e)
-    }
-  })
-
-  await Promise.all(cleanupPromises)
+    }),
+  )
 }
 
 /**

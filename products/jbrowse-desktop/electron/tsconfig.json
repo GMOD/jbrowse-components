@@ -1,8 +1,10 @@
 {
   "extends": "../../../tsconfig.json",
   "include": ["."],
+  "exclude": [],
   "compilerOptions": {
     "lib": ["esnext"],
+    "types": ["node"],
     "noEmit": true
   }
 }
