@@ -14,6 +14,17 @@ export type RpcDriverFactory = (
   pluginManager: PluginManager,
 ) => BaseRpcDriver
 
+// `call` accepts any string method name: a registered one resolves to its typed
+// args/return (the `& RpcMethodName` re-narrows M inside the conditional, which
+// TS won't do on its own), and an unknown one (e.g. a plugin-defined method not
+// in the registry) falls back to the loose shapes.
+type RpcCallArgs<M extends string> = M extends RpcMethodName
+  ? RpcArgs<M & RpcMethodName>
+  : Record<string, unknown>
+type RpcCallReturn<M extends string> = M extends RpcMethodName
+  ? RpcReturn<M & RpcMethodName>
+  : unknown
+
 export interface RpcManagerOptions {
   // factory that creates a web worker; required to use the WebWorkerRpcDriver
   makeWorkerInstance?: () => Worker
@@ -86,7 +97,7 @@ export default class RpcManager {
     return newDriver
   }
 
-  getDriverForCall(
+  private getDriverForCall(
     args: { rpcDriverName?: string },
     opts?: { rpcDriverName?: string },
   ) {
@@ -102,11 +113,9 @@ export default class RpcManager {
   async call<M extends string>(
     sessionId: string,
     functionName: M,
-    args: M extends RpcMethodName
-      ? RpcArgs<M & RpcMethodName>
-      : Record<string, unknown>,
+    args: RpcCallArgs<M>,
     opts?: { rpcDriverName?: string } & Record<string, unknown>,
-  ): Promise<M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown> {
+  ): Promise<RpcCallReturn<M>> {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
@@ -118,14 +127,8 @@ export default class RpcManager {
     const driverForCall = this.getDriverForCall(a, opts)
     try {
       return (await this.withAuthRetry(() =>
-        driverForCall.call(
-          this.pluginManager,
-          sessionId,
-          functionName,
-          a,
-          opts ?? {},
-        ),
-      )) as M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown
+        driverForCall.call(this.pluginManager, sessionId, functionName, a, opts),
+      )) as RpcCallReturn<M>
     } finally {
       if (functionName === 'CoreFreeResources') {
         this.freeSessionOnAllDrivers(sessionId)
