@@ -36,9 +36,9 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.11.0",
     "@jbrowse/product-core": "workspace:^",
-    "@mui/material": "^9.0.1",
+    "@mui/material": "^9.1.0",
     "dockview-core": "^6.6.1",
-    "mobx": "^6.16.0"
+    "mobx": "^6.16.1"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

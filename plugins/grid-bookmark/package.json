@@ -34,10 +34,10 @@
     "@jbrowse/mobx-state-tree": "^5.11.0",
     "@jbrowse/plugin-dotplot-view": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@mui/icons-material": "^9.0.1",
-    "@mui/material": "^9.0.1",
+    "@mui/icons-material": "^9.1.0",
+    "@mui/material": "^9.1.0",
     "@mui/x-data-grid": "^9.4.0",
-    "mobx": "^6.16.0",
+    "mobx": "^6.16.1",
     "mobx-react": "^9.2.2"
   },
   "peerDependencies": {

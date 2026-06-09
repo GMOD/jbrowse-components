@@ -35,9 +35,9 @@
     "@jbrowse/mobx-state-tree": "^5.11.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
-    "@mui/icons-material": "^9.0.1",
-    "@mui/material": "^9.0.1",
-    "mobx": "^6.16.0",
+    "@mui/icons-material": "^9.1.0",
+    "@mui/material": "^9.1.0",
+    "mobx": "^6.16.1",
     "mobx-react": "^9.2.2"
   },
   "peerDependencies": {

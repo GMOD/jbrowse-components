@@ -32,9 +32,9 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.11.0",
-    "@mui/material": "^9.0.1",
+    "@mui/material": "^9.1.0",
     "generic-filehandle2": "^2.1.10",
-    "mobx": "^6.16.0"
+    "mobx": "^6.16.1"
   },
   "peerDependencies": {
     "react": ">=19.0.0",
