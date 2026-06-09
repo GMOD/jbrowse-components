@@ -120,11 +120,7 @@ function sortOverlappingByIndex(
       }
     }
     sortByMapWithUnknownsLast(overlapping, baseAtPos, false)
-  } else if (
-    type === 'insertion' ||
-    type === 'softclip' ||
-    type === 'hardclip'
-  ) {
+  } else if (['insertion', 'softclip', 'hardclip'].includes(type)) {
     const targetType =
       type === 'insertion'
         ? INTERBASE_INSERTION

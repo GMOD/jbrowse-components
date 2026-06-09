@@ -116,7 +116,7 @@ export default abstract class BaseRpcDriver {
       return thing
     }
     const type = typeof thing
-    if (type === 'string' || type === 'number' || type === 'boolean') {
+    if (['string', 'number', 'boolean'].includes(type)) {
       return thing
     }
     if (type !== 'object') {

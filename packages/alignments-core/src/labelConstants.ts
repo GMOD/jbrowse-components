@@ -157,7 +157,7 @@ export function isDigit(ch: string) {
 }
 
 export function isCsOpChar(ch: string | undefined) {
-  return ch === ':' || ch === '*' || ch === '+' || ch === '-'
+  return ':*+-'.includes(ch)
 }
 
 function parseCsSeqLen(cs: string, start: number) {

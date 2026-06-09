@@ -153,11 +153,7 @@ export function useAlignmentsBase(
     }
 
     const { resolved, result } = runHitTest(coords.canvasX, coords.canvasY)
-    if (
-      result.type === 'cigar' ||
-      result.type === 'indicator' ||
-      result.type === 'feature'
-    ) {
+    if (['cigar', 'indicator', 'feature'].includes(result.type)) {
       e.preventDefault()
       model.clearMouseoverState()
       model.setContextMenuCoord([e.clientX, e.clientY])

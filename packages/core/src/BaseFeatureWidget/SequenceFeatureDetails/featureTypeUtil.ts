@@ -38,9 +38,6 @@ export function getDefaultMode(
 // types (not collapsed-intron or spliced views)
 export function showGenomicCoordsOption(mode: SequenceDisplayMode) {
   return (
-    mode === 'gene' ||
-    mode === 'gene_updownstream' ||
-    mode === 'genomic' ||
-    mode === 'genomic_sequence_updownstream'
+    ['gene', 'gene_updownstream', 'genomic', 'genomic_sequence_updownstream'].includes(mode)
   )
 }

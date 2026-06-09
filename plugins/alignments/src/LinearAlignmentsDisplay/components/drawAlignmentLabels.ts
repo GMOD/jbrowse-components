@@ -18,9 +18,7 @@ export function drawAlignmentLabels(
   ctx.textBaseline = 'middle'
   for (const label of labels) {
     const isSmallInterbase =
-      (label.type === 'insertion' ||
-        label.type === 'softclip' ||
-        label.type === 'hardclip') &&
+      ['insertion', 'softclip', 'hardclip'].includes(label.type) &&
       label.text.startsWith('(')
 
     let fillColor: string

@@ -97,11 +97,12 @@ export function getReadColor(
   // unmapped mate (flag 8) — brown for orientation-aware schemes (tlen=0 would
   // miscolor as "short insert" pink), or normal scheme in linked-read mode
   const mateUnmapped = (flags & 8) !== 0
-  const isOrientationScheme =
-    colorScheme === ColorScheme.insertSize ||
-    colorScheme === ColorScheme.pairOrientation ||
-    colorScheme === ColorScheme.insertSizeAndOrientation ||
-    colorScheme === ColorScheme.insertSizeGradient
+  const isOrientationScheme = [
+    ColorScheme.insertSize,
+    ColorScheme.pairOrientation,
+    ColorScheme.insertSizeAndOrientation,
+    ColorScheme.insertSizeGradient,
+  ].includes(colorScheme)
   if (
     mateUnmapped &&
     (isOrientationScheme || (colorScheme === ColorScheme.normal && isChain))
@@ -145,7 +146,7 @@ export function getReadColor(
     // Non-LR orientation wins; otherwise fall back to insert-size threshold
     case ColorScheme.insertSizeAndOrientation: {
       const po = data.readPairOrientations[i]!
-      if (po === 2 || po === 3 || po === 4) {
+      if ([2, 3, 4].includes(po)) {
         return pairOrientationColor(po, palette)
       }
       return insertSizeColor(

@@ -11,12 +11,18 @@ import type { ArcColorByType } from '../../shared/types.ts'
 
 // Arc shape enum. Values are shared with arc.slang (which checks them via
 // `> 0.5` / `> 1.5` thresholds); keep in lockstep.
-export const ARC_SHAPE_BEZIER = 0
-export const ARC_SHAPE_SEMICIRCLE = 1
-export const ARC_SHAPE_FLAT = 2
-// Split-read flat line (SA tag arcs) — same geometry as FLAT but rendered
-// dashed (matching samplot.py's plot_split_plan dotted-line style).
-export const ARC_SHAPE_FLAT_SPLIT = 3
+//
+// There is a single curved paired-read shape (ARC). Its on-screen form is
+// chosen by the *renderer* from how wide the pair is, not by a bp threshold
+// here: a rounded dome when both mates fit on screen, collapsing to
+// near-vertical lines rising from each real endpoint once the pair spans more
+// than a couple screen widths (the circle gets so big the band clips its apex).
+// The endpoints always sit at the true genomic coordinates. See arc.slang.
+export const ARC_SHAPE_ARC = 0
+// samplot read-cloud flat line at Y=|tlen|; the split variant is drawn dashed
+// (matching samplot.py's plot_split_plan dotted-line style).
+export const ARC_SHAPE_FLAT = 1
+export const ARC_SHAPE_FLAT_SPLIT = 2
 
 // Matches samplot.py --jitter const default (0.08). Applied multiplicatively
 // to |tlen| so lines at the same insert size are visually separated.
@@ -60,8 +66,9 @@ interface ArcSettings {
   drawLongRange: boolean
 }
 
-const ARC_VS_BEZIER_THRESHOLD = 10_000
-const VERTICAL_LINE_THRESHOLD = 100_000
+// Pairs at least this far apart paint with the dedicated long-insert color
+// (purely a coloring threshold — it has no effect on the arc's geometry).
+const LARGE_INSERT_THRESHOLD = 10_000
 const LONG_RANGE_STDDEV_THRESHOLD = 3
 
 // pairOrientationToNum (see shared/buildBaseFeatureData.ts) encodes:
@@ -116,7 +123,7 @@ function getArcColorType(args: {
   colorByType: ArcColorByType
   hasPaired: boolean
   longRange: boolean
-  drawArcInsteadOfBezier: boolean
+  largeInsert: boolean
   pairOrientationNum: number | undefined
   tlen: number | undefined
   p1Ref: string
@@ -129,7 +136,7 @@ function getArcColorType(args: {
     colorByType,
     hasPaired,
     longRange,
-    drawArcInsteadOfBezier,
+    largeInsert,
     pairOrientationNum,
     tlen,
     p1Ref,
@@ -139,10 +146,10 @@ function getArcColorType(args: {
     stats,
   } = args
 
-  // Long-range arcs (drawn as semicircles) always paint as long-insert.
-  // Read cloud (samplot) shares this classifier so its flat lines color the
-  // same as arcs — red/green/teal/navy by insert size + orientation.
-  if (longRange && drawArcInsteadOfBezier) {
+  // Long-range, large-insert pairs always paint as long-insert. Read cloud
+  // (samplot) shares this classifier so its flat lines color the same as arcs —
+  // red/green/teal/navy by insert size + orientation.
+  if (longRange && largeInsert) {
     return COLOR_LONG_INSERT
   }
 
@@ -259,7 +266,7 @@ function parseSATag(sa: string): SAAlignment[] {
     while ((m = re.exec(cigar)) !== null) {
       const len = +m[1]!
       const op = m[2]!
-      if (op === 'M' || op === 'D' || op === 'N' || op === '=' || op === 'X') {
+      if ('MDN=X'.includes(op)) {
         lengthOnRef += len
       }
     }
@@ -279,13 +286,11 @@ function pairJitter01(p1Bp: number, p2Bp: number) {
 
 // Pick the shape constant and target Y (in genomic bp) for a single arc.
 // Samplot: flat line at Y=|tlen| with ±8% multiplicative jitter so coincident
-// reads separate visually. Arc mode: semicircle when the span exceeds the
-// bezier threshold, otherwise bezier — Y is the genomic radius |x2-x1|/2.
+// reads separate visually. Otherwise it's the single curved ARC shape (the
+// renderer chooses dome vs vertical-lines by zoom); Y is the genomic radius.
 function computeArcShape({
   samplot,
   isSplit,
-  longRange,
-  drawArcInsteadOfBezier,
   absrad,
   tlen,
   p1Bp,
@@ -293,8 +298,6 @@ function computeArcShape({
 }: {
   samplot: boolean
   isSplit: boolean
-  longRange: boolean
-  drawArcInsteadOfBezier: boolean
   absrad: number
   tlen: number | undefined
   p1Bp: number
@@ -309,11 +312,7 @@ function computeArcShape({
       yBp: Math.round(baseY * jitter),
     }
   }
-  const shapeType =
-    longRange && drawArcInsteadOfBezier
-      ? ARC_SHAPE_SEMICIRCLE
-      : ARC_SHAPE_BEZIER
-  return { shapeType, yBp: absrad }
+  return { shapeType: ARC_SHAPE_ARC, yBp: absrad }
 }
 
 function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
@@ -471,7 +470,7 @@ export function computeArcsFromPileupData(
         // path (which passes tlen/orientation undefined for the same reason).
         const isSplit = !!((f1 | f2) & SAM_FLAG_SUPPLEMENTARY)
         // Unpaired: end1→start2 = genomic gap, giving narrow inversion bp arcs.
-        const p1 = hasPaired ? (s1 === -1 ? start1 : end1) : end1
+        const p1 = hasPaired && s1 === -1 ? start1 : end1
         const p2 = hasPaired ? (s2 === -1 ? start2 : end2) : start2
         pendingArcs.push({
           p1Ref: e1.refName,
@@ -524,26 +523,19 @@ export function computeArcsFromPileupData(
 
     const absrad = Math.abs((p2Bp - p1Bp) / 2)
     const longRange = absrad >= longRangeThreshold
-    const drawArcInsteadOfBezier = absrad > ARC_VS_BEZIER_THRESHOLD
+    const largeInsert = absrad > LARGE_INSERT_THRESHOLD
 
-    // Arc-mode very long-range pairs render as vertical lines rather than
-    // tiny bumps. Samplot has no equivalent cap — its flat lines look fine
-    // off-band — so the gate is arc-mode-only.
-    if (!samplot && longRange && absrad > VERTICAL_LINE_THRESHOLD) {
-      if (drawLongRange) {
-        lines.push(
-          { x: { refName: p1Ref, bp: p1Bp }, colorType: 1 },
-          { x: { refName: p1Ref, bp: p2Bp }, colorType: 1 },
-        )
-      }
-      continue
-    }
-
+    // No bp distance ever hides or reshapes a both-mates-visible pair: every
+    // pair renders as an arc. "Long range" is purely the *visual* result of
+    // zoom — a far-apart arc collapses to near-vertical lines at its real
+    // endpoints (arc.slang), and zooming out to show the whole span restores
+    // the rounded arc. (drawLongRange only gates connections to mates that
+    // aren't loaded in the current view; see the single-entry branch above.)
     const colorType = getArcColorType({
       colorByType,
       hasPaired,
       longRange,
-      drawArcInsteadOfBezier,
+      largeInsert,
       pairOrientationNum,
       tlen,
       p1Ref,
@@ -555,8 +547,6 @@ export function computeArcsFromPileupData(
     const { shapeType, yBp } = computeArcShape({
       samplot,
       isSplit,
-      longRange,
-      drawArcInsteadOfBezier,
       absrad,
       tlen,
       p1Bp,

@@ -94,11 +94,7 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         break
       }
       case 'featureHeight': {
-        if (
-          val1 === 'normal' ||
-          val1 === 'compact' ||
-          val1 === 'super-compact'
-        ) {
+        if (['normal', 'compact', 'super-compact'].includes(val1)) {
           // setCompactness is the authoritative cross-display API (alignments,
           // basic features, comparative views all implement it)
           display.setCompactness?.(val1)

@@ -36,6 +36,7 @@ export function findPosInCigar(cigar: number[], startX: number) {
       mateX += len
     } else if (opIdx === CIGAR_D) {
       featX += min
+    // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
     } else if (opIdx === CIGAR_M || opIdx === CIGAR_EQ || opIdx === CIGAR_X) {
       mateX += min
       featX += min

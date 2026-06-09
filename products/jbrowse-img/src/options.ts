@@ -140,9 +140,7 @@ export function getNumber(
 
 export function getTrackLabels(rest: Record<string, unknown>) {
   const v = getString(rest, 'trackLabels')
-  return v === 'offset' || v === 'overlay' || v === 'left' || v === 'none'
-    ? v
-    : undefined
+  return ['offset', 'overlay', 'left', 'none'].includes(v) ? v : undefined
 }
 
 export const knownOptions = new Set([

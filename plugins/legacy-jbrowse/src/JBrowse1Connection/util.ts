@@ -16,11 +16,7 @@ type Obj = Record<string, any>
 
 export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
-    if (
-      prop === '__proto__' ||
-      prop === 'constructor' ||
-      prop === 'prototype'
-    ) {
+    if (['__proto__', 'constructor', 'prototype'].includes(prop)) {
       continue
     }
     if (

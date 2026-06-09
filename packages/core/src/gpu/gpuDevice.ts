@@ -88,9 +88,7 @@ export function resetGpuDeviceForTests() {
 export function getGpuDevice() {
   const override = getGpuOverride()
   if (
-    override === 'webgl' ||
-    override === 'canvas2d' ||
-    override === 'canvas'
+    ['webgl', 'canvas2d', 'canvas'].includes(override)
   ) {
     return Promise.resolve(null)
   }

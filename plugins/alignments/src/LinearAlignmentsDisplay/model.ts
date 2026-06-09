@@ -917,7 +917,7 @@ export default function stateModelFactory(
         get showModifications() {
           const t = self.colorBy.type
           return (
-            t === 'modifications' || t === 'methylation' || t === 'bisulfite'
+            ['modifications', 'methylation', 'bisulfite'].includes(t)
           )
         },
 
@@ -1015,9 +1015,13 @@ export default function stateModelFactory(
          * `bottom` is where the pileup begins (== coverageDisplayHeight).
          */
         get belowCoverageBands() {
+          const arcsOn = self.readConnections !== 'off'
           const coverageBand = self.showCoverage ? self.coverageHeight : 0
+          // Arcs reserve their own band whenever they aren't overlaying the
+          // coverage histogram: down mode always, and up mode when coverage is
+          // hidden (nothing to overlay). The pileup then starts below them.
           const hasArcsBand =
-            self.readConnections !== 'off' && self.readConnectionsDown
+            arcsOn && (self.readConnectionsDown || !self.showCoverage)
           const hasSashimiBand =
             self.showSashimiArcs &&
             self.readConnectionsDown &&
@@ -1291,8 +1295,9 @@ export default function stateModelFactory(
             return undefined
           }
           // arcsYDomainBp is only set in samplot mode, so this runs only then.
-          // Up: overlay the coverage band, anchored at its top. Down: open an
-          // readConnectionsHeight band below coverage, anchored below it.
+          // Up: overlay the coverage band when shown, else its own band, anchored
+          // at the bottom. Down: open a readConnectionsHeight band below coverage,
+          // anchored below it.
           const covH = self.showCoverage ? self.coverageHeight : 0
           return computeInsertSizeTicks(
             self.readConnectionsDown
@@ -1304,7 +1309,8 @@ export default function stateModelFactory(
                 }
               : {
                   arcsYDomainBp: domain,
-                  readConnectionsHeight: covH,
+                  readConnectionsHeight:
+                    covH > 0 ? covH : self.readConnectionsHeight,
                   pairedArcsDown: false,
                   arcsTop: 0,
                 },
@@ -2125,9 +2131,7 @@ export default function stateModelFactory(
           if (cigarHit) {
             const typeLabel = CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
             const isInterbase =
-              cigarHit.type === 'insertion' ||
-              cigarHit.type === 'softclip' ||
-              cigarHit.type === 'hardclip'
+              ['insertion', 'softclip', 'hardclip'].includes(cigarHit.type)
             const sortType = isInterbase ? cigarHit.type : 'basePair'
             const sortLabel = isInterbase
               ? `Sort by ${typeLabel.toLowerCase()} at position`

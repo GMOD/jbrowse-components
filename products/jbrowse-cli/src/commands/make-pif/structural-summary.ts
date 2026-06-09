@@ -61,14 +61,14 @@ export function splitCigarOnLargeGaps({
       len = len * 10 + cigar.charCodeAt(i++) - 48
     }
     const op = cigar[i++]!
-    if (op === 'M' || op === '=' || op === 'X') {
+    if ('M=X'.includes(op)) {
       tCursor += len
       qCursor += len * qStep
       segBlockLen += len
       if (op !== 'X') {
         segMatches += len
       }
-    } else if (op === 'D' || op === 'I' || op === 'N') {
+    } else if ('DIN'.includes(op)) {
       const isLarge = splitGap !== undefined && splitGap > 0 && len >= splitGap
       if (isLarge) {
         emit()
