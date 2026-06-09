@@ -1,8 +1,4 @@
-import {
-  ARC_SHAPE_FLAT,
-  ARC_SHAPE_FLAT_SPLIT,
-  ARC_SHAPE_SEMICIRCLE,
-} from './compute.ts'
+import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   type DrawBlock,
@@ -31,6 +27,43 @@ interface DrawArcsOpts {
   pairedArcsDown: boolean
   lineWidth: number
   palette: RGBColor[]
+  // Visible width in px (mirrors arc.slang's `canvasW`); sets the far-pair
+  // threshold below.
+  screenWidthPx: number
+}
+
+// Once a pair spans more than this many screen widths — i.e. its endpoints no
+// longer both fit on screen — a paired arc switches from a band-capped rounded
+// dome to a full-size circle (the band clip then leaves near-vertical lines at
+// each endpoint). Mirrors ARC_FAR_SCREEN_WIDTHS in arc.slang.
+const ARC_FAR_SCREEN_WIDTHS = 1
+
+// Strokes one non-flat paired-read arc between screen-x sx1 and sx2. Caller
+// sets strokeStyle and clips to the band. `far` picks the shape:
+//  - near: a rounded dome (cubic bezier, control points at the apex) — matches
+//    arc.slang; the bezier peak reaches 0.75·(apexY-anchorY).
+//  - far: a full-size circle whose radius is the real half-width. It's so big
+//    the band clip leaves only the near-vertical sides at each real endpoint.
+function strokeArc(
+  ctx: Ctx2D,
+  sx1: number,
+  sx2: number,
+  anchorY: number,
+  apexY: number,
+  pairedArcsDown: boolean,
+  far: boolean,
+) {
+  ctx.beginPath()
+  if (far) {
+    const midX = (sx1 + sx2) / 2
+    const r = Math.abs(sx2 - sx1) / 2
+    const [start, end] = pairedArcsDown ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
+    ctx.arc(midX, anchorY, r, start, end)
+  } else {
+    ctx.moveTo(sx1, anchorY)
+    ctx.bezierCurveTo(sx1, apexY, sx2, apexY, sx2, anchorY)
+  }
+  ctx.stroke()
 }
 
 // Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
@@ -44,6 +77,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     pairedArcsDown,
     lineWidth,
     palette,
+    screenWidthPx,
   } = opts
   // Pre-stringify the palette once per draw — saves N Math.round + string
   // allocations per frame (N = numArcs, often thousands). Faded variant is
@@ -75,24 +109,16 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     const paletteForShape = isFlat ? cssPaletteFaded : cssPalette
     ctx.strokeStyle = paletteForShape[colorIdx % paletteLen]!
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
-    ctx.beginPath()
     if (isFlat) {
+      ctx.beginPath()
       ctx.moveTo(sx1, apexY)
       ctx.lineTo(sx2, apexY)
+      ctx.stroke()
     } else {
-      // For semicircle arcs, cap width to 2*arcH so very long arcs never
-      // appear as flat lines. Mirrors the rNorm cap in arc.slang.
-      const midX = (sx1 + sx2) / 2
-      const halfW =
-        shape === ARC_SHAPE_SEMICIRCLE && arcH > 0
-          ? Math.min(Math.abs(sx2 - sx1) / 2, 10 * arcH)
-          : Math.abs(sx2 - sx1) / 2
-      const drawX1 = midX - halfW
-      const drawX2 = midX + halfW
-      ctx.moveTo(drawX1, anchorY)
-      ctx.bezierCurveTo(drawX1, apexY, drawX2, apexY, drawX2, anchorY)
+      // far is purely a function of on-screen span — no bp limit.
+      const far = Math.abs(sx2 - sx1) > ARC_FAR_SCREEN_WIDTHS * screenWidthPx
+      strokeArc(ctx, sx1, sx2, anchorY, apexY, pairedArcsDown, far)
     }
-    ctx.stroke()
   }
   ctx.setLineDash([])
 }
@@ -110,6 +136,7 @@ export function drawArcs(
   arcsTop: number,
   arcsH: number,
   pairedArcsDown: boolean,
+  screenWidthPx: number,
 ) {
   // Samplot autoscales via state.arcsYDomainBp; arc mode falls back to the
   // bp-span that fits availH at the current zoom. availH must match the value
@@ -126,6 +153,7 @@ export function drawArcs(
     pairedArcsDown,
     lineWidth: state.readConnectionsLineWidth ?? 1,
     palette: arcColorPalette,
+    screenWidthPx,
   })
 
   for (let i = 0; i < region.numArcLines; i++) {

@@ -104,12 +104,15 @@ export function getReadsMenuItem(model: ReadsModel) {
         type: 'subMenu' as const,
         subMenu: [
           checkboxItem(
-            'Show long-range pairs',
+            'Show off-screen mate connections',
             model.drawLongRange,
             () => {
               model.setDrawLongRange(!model.drawLongRange)
             },
-            { helpText: 'reads >100 kb apart or with off-screen mates' },
+            {
+              helpText:
+                'draw an arc to a read whose mate is not loaded in the current view (off-screen or on another chromosome); the arc renders as vertical lines at this zoom',
+            },
           ),
           checkboxItem(
             'Show inter-chromosomal pairs',

@@ -3,14 +3,16 @@
 // fragment shader smooths the edge into AA.
 //
 // shapeType encodes the curve form:
-//   0 = cubic bezier (close-range pair)
-//   1 = semicircle (long-range pair; drawn as half-circle arc)
-//   2 = flat horizontal line at Y = destY (samplot paired, solid, alpha 0.25)
-//   3 = flat horizontal line at Y = destY (samplot split read, dashed, alpha 0.25)
+//   0 = paired arc. A rounded dome while both endpoints fit on screen; once the
+//       pair spans more than ARC_FAR_SCREEN_WIDTHS the radius grows so large the
+//       band clips the apex away, leaving near-vertical lines rising from each
+//       real endpoint. Endpoints always sit at the true bp coordinates.
+//   1 = flat horizontal line at Y = destY (samplot paired, solid, alpha 0.25)
+//   2 = flat horizontal line at Y = destY (samplot split read, dashed, alpha 0.25)
 //
-// yBp is the target Y position in genomic bp — for arc/bezier this is the
-// apex height; for flat it is the line's Y. Samplot sets yBp = |tlen|; arc
-// mode sets yBp = |x2-x1|/2 (reproducing the original radius-based height).
+// yBp is the target Y position in genomic bp — for the arc this is the apex
+// height; for flat it is the line's Y. Samplot sets yBp = |tlen|; arc mode sets
+// yBp = |x2-x1|/2 (the genomic radius).
 //! targets: wgsl, glsl
 
 import alignmentsUniforms;
@@ -21,11 +23,16 @@ import colorPack;
 // *along* the stroke where the cross-stroke fwidth AA can't smooth them. Near
 // the apex the facets are near-horizontal, so kinks read as flat spots — the
 // most visible faceting. Higher tessellation is the only lever (uniform t is
-// already equal-arc-length on the semicircle), and arcs are a low-instance pass.
+// already equal-arc-length on the circle), and arcs are a low-instance pass.
 public static const uint ARC_CURVE_SEGMENTS = 128u;
 public static const uint VERTS_PER_INSTANCE = (ARC_CURVE_SEGMENTS + 1u) * 2u;
 static const float ARC_HEIGHT_MARGIN = 8.0;
 static const float PI = 3.14159265359;
+// Once a pair spans more than this many screen widths — i.e. its endpoints no
+// longer both fit on screen — a paired arc switches from a band-capped rounded
+// dome to a full-size circle (so the band clips it down to near-vertical lines
+// at each endpoint). Mirrored in drawCanvas.ts.
+static const float ARC_FAR_SCREEN_WIDTHS = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -76,31 +83,36 @@ ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
   float destY = min(availH, (float(inst.yBp) / u.arcsYDomainBp) * availH);
 
   ArcPoint ap;
-  if (inst.shapeType > 1.5) {
-    // Flat line: x interpolates from x1 to x2, y is constant at destY.
+  if (inst.shapeType > 0.5) {
+    // Flat line (samplot): x interpolates from x1 to x2, y is constant at destY.
     float xNorm = x1Norm + t * (x2Norm - x1Norm);
     ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, destY * yDir);
     ap.tang = float2((x2Norm - x1Norm) * u.blockWidth, 0.0);
-  } else if (inst.shapeType > 0.5) {
-    float angle = t * PI;
+  } else {
+    // Paired arc. `far` is purely a function of on-screen span — no bp limit.
     float cxNorm = (x1Norm + x2Norm) * 0.5;
     float rNorm = (x2Norm - x1Norm) * 0.5;
-    // Prevent nearly-flat arcs: cap half-width at 10× the arc height.
-    if (destY > 0.0) { rNorm = min(rNorm, 10.0 * destY / u.blockWidth); }
-    float xNorm = cxNorm + cos(angle) * rNorm;
-    float yPx = (destY > 0.0) ? sin(angle) * destY * yDir : 0.0;
-    ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, yPx);
-    float dydt = (destY > 0.0) ? PI * cos(angle) * destY * yDir : 0.0;
-    ap.tang = float2(-PI * sin(angle) * rNorm * u.blockWidth, dydt);
-  } else {
-    // Cubic Bezier with control points at x1,x1,x2,x2: x = smoothstep(x1,x2,t),
-    // y = 3(1-t)t·destY peaks at t=0.5. Derivatives: 6(x2-x1)(1-t)t and 3·destY·(1-2t).
-    float mt = 1.0 - t;
-    float xNorm = lerp(x1Norm, x2Norm, t*t*(3.0 - 2.0*t));
-    float yPx = 3.0 * mt * t * destY * yDir;
-    ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, yPx);
-    ap.tang = float2(6.0*(x2Norm-x1Norm)*mt*t * u.blockWidth,
-                     3.0*destY*yDir*(1.0 - 2.0*t));
+    float halfWidthPx = abs(rNorm) * u.blockWidth;
+    bool far = 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * u.canvasW;
+    if (far) {
+      // True circle (radius == real half-width): so big the band clips the apex
+      // and only the near-vertical sides rising from each real endpoint remain.
+      float angle = t * PI;
+      float xNorm = cxNorm + cos(angle) * rNorm;
+      float yPx = sin(angle) * halfWidthPx * yDir;
+      ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, yPx);
+      ap.tang = float2(-PI * sin(angle) * rNorm * u.blockWidth,
+                       PI * cos(angle) * halfWidthPx * yDir);
+    } else {
+      // Rounded dome: cubic bezier, control points at x1,x1,x2,x2. x =
+      // smoothstep(x1,x2,t), y = 3(1-t)t·destY peaks at t=0.5.
+      float mt = 1.0 - t;
+      float xNorm = lerp(x1Norm, x2Norm, t*t*(3.0 - 2.0*t));
+      float yPx = 3.0 * mt * t * destY * yDir;
+      ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, yPx);
+      ap.tang = float2(6.0*(x2Norm-x1Norm)*mt*t * u.blockWidth,
+                       3.0*destY*yDir*(1.0 - 2.0*t));
+    }
   }
   return ap;
 }
@@ -132,10 +144,11 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float clipY = 1.0 - ((off.y + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
   o.dist = side * hw;
-  // Samplot flat arcs (shape >= 2): alpha 0.25 matches samplot.py's alpha=0.25.
-  float arcAlpha = (inst.shapeType > 1.5) ? 0.25 : 1.0;
+  // Samplot flat shapes (1, 2): alpha 0.25 matches samplot.py's alpha=0.25.
+  float arcAlpha = (inst.shapeType > 0.5) ? 0.25 : 1.0;
   o.color = float4(arcColor(inst.colorType, u), arcAlpha);
-  o.dashed = (inst.shapeType > 2.5) ? 1.0 : 0.0;
+  // Split-read flat shape (2) renders dashed.
+  o.dashed = (inst.shapeType > 1.5) ? 1.0 : 0.0;
   return o;
 }
 

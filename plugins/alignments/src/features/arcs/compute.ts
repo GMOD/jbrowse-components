@@ -14,10 +14,10 @@ import type { ArcColorByType } from '../../shared/types.ts'
 //
 // There is a single curved paired-read shape (ARC). Its on-screen form is
 // chosen by the *renderer* from how wide the pair is, not by a bp threshold
-// here: a rounded dome when both mates fit on screen, collapsing to
-// near-vertical lines rising from each real endpoint once the pair spans more
-// than a couple screen widths (the circle gets so big the band clips its apex).
-// The endpoints always sit at the true genomic coordinates. See arc.slang.
+// here: a rounded dome while both mates fit on screen, collapsing to
+// near-vertical lines rising from each real endpoint once the pair spans wider
+// than the screen (the circle gets so big the band clips its apex). The
+// endpoints always sit at the true genomic coordinates. See arc.slang.
 export const ARC_SHAPE_ARC = 0
 // samplot read-cloud flat line at Y=|tlen|; the split variant is drawn dashed
 // (matching samplot.py's plot_split_plan dotted-line style).

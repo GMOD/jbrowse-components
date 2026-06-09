@@ -5,6 +5,8 @@ import {
 } from '@jbrowse/alignments-core'
 
 import {
+  ARC_SHAPE_ARC,
+  ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
   arcsToRegionResult,
   computeArcsFromPileupData,
@@ -425,7 +427,7 @@ describe('computeArcsFromPileupData', () => {
     expect(result.arcs[0]!.colorType).toBe(1)
   })
 
-  test('very long range arcs produce vertical lines when drawLongRange=true', () => {
+  test('very-long-range pairs are plain arcs (no bp-based line conversion)', () => {
     const data = makePileupData({
       regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
@@ -448,9 +450,12 @@ describe('computeArcsFromPileupData', () => {
       drawLongRange: true,
     })
 
-    expect(result.arcs).toEqual([])
-    expect(result.lines.length).toBe(2)
-    expect(result.lines[0]!.colorType).toBe(1)
+    // No bp threshold reshapes far pairs: still a single arc (the renderer draws
+    // it as near-vertical lines at this zoom), colored as a long insert.
+    expect(result.lines).toEqual([])
+    expect(result.arcs.length).toBe(1)
+    expect(result.arcs[0]!.shapeType).toBe(ARC_SHAPE_ARC)
+    expect(result.arcs[0]!.colorType).toBe(1)
   })
 
   test('read cloud colors by orientation like arcs (insertSizeAndOrientation)', () => {
@@ -483,7 +488,7 @@ describe('computeArcsFromPileupData', () => {
     expect(lr.arcs).toHaveLength(1)
     expect(lr.arcs[0]!.colorType).toBe(0)
     // Flat shape + Y ≈ |tlen| (samplot applies ±8% jitter)
-    expect(lr.arcs[0]!.shapeType).toBe(2)
+    expect(lr.arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT)
     expect(lr.arcs[0]!.yBp).toBeGreaterThanOrEqual(460)
     expect(lr.arcs[0]!.yBp).toBeLessThanOrEqual(540)
 
