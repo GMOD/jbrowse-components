@@ -19,7 +19,7 @@ import {
 import { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 import {
   getDefaultValue,
-  getSubtype,
+  getSubType,
   getUnionSubTypes,
   resolveLateType,
 } from '../util/mst-reflection.ts'
@@ -186,8 +186,8 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
     const resolved = resolveLateType(maybeUnionType)
     if (isUnionType(resolved)) {
       const typeNames: string[] = []
-      for (const subtype of getUnionSubTypes(resolved)) {
-        const resolvedSub = resolveLateType(subtype)
+      for (const subType of getUnionSubTypes(resolved)) {
+        const resolvedSub = resolveLateType(subType)
         // a nested union contributes its own names; otherwise the subtype is a
         // single explicitly-typed schema whose name is its default's `type`
         const nested = getTypeNamesFromExplicitlyTypedUnion(resolvedSub)

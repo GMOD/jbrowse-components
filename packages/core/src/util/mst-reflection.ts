@@ -30,7 +30,7 @@ function isSubtype(t: unknown): t is IAnyType {
 /**
  * get the inner type of an MST optional, refinement, array, map, or late type
  */
-export function getSubtype(type: IAnyType): IAnyType {
+export function getSubType(type: IAnyType): IAnyType {
   // optional/refinement/late report their wrapped type here; union returns an
   // array (handled by getUnionSubTypes) and array/map return null
   const sub = type.getSubTypes()
