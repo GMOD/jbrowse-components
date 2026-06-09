@@ -108,7 +108,6 @@ export function computeVariantCells({
 
   function addCell(
     genomicStart: number,
-    genomicEnd: number,
     renderEnd: number,
     rowIndex: number,
     colorAbgr: number,
@@ -128,8 +127,13 @@ export function computeVariantCells({
     if (isReference) {
       numRefCells++
     }
+    // Hit-test/highlight bounds must match the *rendered* glyph extent, not the
+    // true VCF end: an insertion's down-triangle is drawn across
+    // [start, renderEnd] (centered), so bounding by `end` (~start for a point
+    // insertion) leaves the whole triangle unhoverable. renderEnd === end for
+    // every non-insertion shape.
     fbGenomicStarts[ci] = genomicStart
-    fbGenomicEnds[ci] = genomicEnd
+    fbGenomicEnds[ci] = renderEnd
     fbFeatureIndices[ci] = featureIdx
     cellCount++
   }
@@ -220,7 +224,6 @@ export function computeVariantCells({
             if (c) {
               addCell(
                 start,
-                end,
                 renderEnd,
                 j,
                 getCachedABGR(c),
@@ -233,7 +236,6 @@ export function computeVariantCells({
           } else {
             addCell(
               start,
-              end,
               renderEnd,
               j,
               BLACK_ABGR,
@@ -272,7 +274,6 @@ export function computeVariantCells({
             if (c) {
               addCell(
                 start,
-                end,
                 renderEnd,
                 j,
                 getCachedABGR(c),
@@ -285,7 +286,6 @@ export function computeVariantCells({
           } else {
             addCell(
               start,
-              end,
               renderEnd,
               j,
               BLACK_ABGR,
@@ -354,7 +354,6 @@ export function computeVariantCells({
           if (c) {
             addCell(
               start,
-              end,
               renderEnd,
               j,
               getCachedABGR(c),
@@ -390,7 +389,6 @@ export function computeVariantCells({
             if (c) {
               addCell(
                 start,
-                end,
                 renderEnd,
                 j,
                 getCachedABGR(c),

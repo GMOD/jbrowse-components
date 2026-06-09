@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -70,16 +71,17 @@ function getFeatureUnderMouse(
   const genomicPos = region.reversed
     ? region.end - frac * regionLengthBp
     : region.start + frac * regionLengthBp
+  // mouseY maps to exactly one sample row, so query that row as a Y-point —
+  // padding the row axis would let a genomically-closer cell in an adjacent
+  // sample win and show the wrong sample's genotype.
   const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
 
-  const pxPadding = 5
-  const bpPadding = pxPadding * bpPerPx
-  const rowPadding = Math.max(0.5, pxPadding / model.rowHeight)
+  const bpPadding = 5 * bpPerPx
   const hits = flatbushIndex.search(
     genomicPos - bpPadding,
-    rowFrac - rowPadding,
+    rowFrac,
     genomicPos + bpPadding,
-    rowFrac + rowPadding,
+    rowFrac,
   )
 
   let bestIdx = -1
@@ -155,17 +157,9 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   if (!region) {
     return null
   }
-  const blockWidth = region.screenEndPx - region.screenStartPx
-  const regionLengthBp = region.end - region.start
-  const reversed = region.reversed
-  const frac1 = (cell.genomicStart - region.start) / regionLengthBp
-  const frac2 = (cell.genomicEnd - region.start) / regionLengthBp
-  const px1 = reversed
-    ? region.screenEndPx - frac1 * blockWidth
-    : region.screenStartPx + frac1 * blockWidth
-  const px2 = reversed
-    ? region.screenEndPx - frac2 * blockWidth
-    : region.screenStartPx + frac2 * blockWidth
+  const toX = makeBpMapper(region)
+  const px1 = toX(cell.genomicStart)
+  const px2 = toX(cell.genomicEnd)
   const left = Math.min(px1, px2)
   const right = Math.max(px1, px2)
   const top = cell.rowIndex * model.rowHeight - model.scrollTop

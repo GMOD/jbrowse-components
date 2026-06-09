@@ -57,3 +57,55 @@ describe('computeVariantCells phased raw callGenotype path', () => {
     expect(genotypes['S2 HP1']).toBeUndefined()
   })
 })
+
+describe('computeVariantCells insertion hit bounds', () => {
+  const sources: ProcessedSource[] = [{ name: 'S1', sampleName: 'S1', HP: 0 }]
+
+  // An insertion's drawn down-triangle spans [start, renderEnd]; the flatbush
+  // hit/highlight bounds must match that rendered extent (not the ~1bp VCF end)
+  // so the whole triangle is mouse-overable.
+  test('flatbush end spans the alt-allele width', () => {
+    const feature = makeFeature({
+      genotypes: { S1: '1' },
+      ALT: ['ACGTACGTAC'], // 10bp insertion
+      REF: 'A',
+      name: 'ins1',
+      description: '',
+      type: 'insertion',
+      start: 100,
+      end: 101,
+    })
+    const result = computeVariantCells({
+      mafs: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'allele',
+      referenceDrawingMode: 'skip',
+      genotypesCache: new Map(),
+    })
+    expect(result.flatbushGenomicStarts[0]).toBe(100)
+    expect(result.flatbushGenomicEnds[0]).toBe(110)
+  })
+
+  test('flatbush end spans SVLEN for symbolic insertions', () => {
+    const feature = makeFeature({
+      genotypes: { S1: '1' },
+      ALT: ['<INS>'],
+      REF: 'A',
+      INFO: { SVLEN: [250] },
+      name: 'ins2',
+      description: '',
+      type: 'insertion',
+      start: 100,
+      end: 101,
+    })
+    const result = computeVariantCells({
+      mafs: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'allele',
+      referenceDrawingMode: 'skip',
+      genotypesCache: new Map(),
+    })
+    expect(result.flatbushGenomicStarts[0]).toBe(100)
+    expect(result.flatbushGenomicEnds[0]).toBe(350)
+  })
+})
