@@ -101,8 +101,10 @@ export function mdToMismatches2(
         const len = packed >> 4
         const op = packed & 0xf
 
+        // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
         if (op === CIGAR_S || op === CIGAR_I) {
           templateOffset += len
+          // eslint-disable-next-line unicorn/prefer-includes-over-repeated-comparisons
         } else if (op === CIGAR_D || op === CIGAR_P || op === CIGAR_N) {
           refOffset += len
         } else if (op !== CIGAR_H) {

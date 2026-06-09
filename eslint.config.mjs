@@ -172,6 +172,7 @@ export default defineConfig(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
+      'unicorn/no-this-outside-of-class': 'off',
       'unicorn/no-for-loop': 'off',
       'unicorn/prefer-response-static-json': 'off',
       'unicorn/text-encoding-identifier-case': 'off',
@@ -221,6 +222,7 @@ export default defineConfig(
       'unicorn/no-array-reduce': 'off',
       'unicorn/expiring-todo-comments': 'off',
       'unicorn/no-array-sort': 'off',
+      'unicorn/consistent-compound-words': 'off',
 
       'import-x/no-unresolved': 'off',
       'import-x/order': [
