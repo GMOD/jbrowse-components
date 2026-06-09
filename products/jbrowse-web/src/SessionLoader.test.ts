@@ -448,6 +448,39 @@ describe('SessionLoader', () => {
       expect(loader.sessionPlugins).toBeDefined()
     })
 
+    // Guards the vetting boundary the reload fix must NOT erode: an incoming
+    // shared-session URL is not the user's own session, so an untrusted plugin
+    // still routes to triage (no pre-set sessionSnapshot → fetchSharedSession
+    // path, which vets via checkPlugins without userAcceptedConfirmation).
+    it('shared session with an untrusted plugin still triages on initial load', async () => {
+      const { readSessionFromDynamo } = jest.requireMock('./sessionSharing')
+      const { fromUrlSafeB64, checkPlugins } = jest.requireMock('./util')
+      readSessionFromDynamo.mockResolvedValueOnce('encrypted-blob')
+      fromUrlSafeB64.mockResolvedValueOnce(
+        JSON.stringify({
+          id: 'shared',
+          name: 'Shared',
+          sessionPlugins: [
+            { name: 'Custom', url: 'https://example.com/custom.js' },
+          ],
+        }),
+      )
+      checkPlugins.mockResolvedValueOnce(false)
+      const loader = SessionLoader.create({
+        sessionQuery: 'share-abc',
+        configSnapshot: {},
+        initialTimestamp: Date.now(),
+      })
+      await when(
+        () =>
+          loader.sessionTriaged !== undefined ||
+          loader.sessionSnapshot !== undefined,
+        { timeout: 5000 },
+      )
+      expect(loader.sessionTriaged).toMatchObject({ origin: 'session' })
+      expect(loader.sessionSnapshot).toBeUndefined()
+    })
+
     it('sets configError and skips session loading when config fetch fails', async () => {
       const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
       openLocation.mockReturnValueOnce({
