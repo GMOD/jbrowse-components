@@ -10,7 +10,10 @@ import type {
   WiggleTooltipRow,
 } from '../../util.ts'
 
-interface VisibleSource { name: string; color?: string }
+interface VisibleSource {
+  name: string
+  color?: string
+}
 
 // Overlay mode: every visible source's score at the cursor bp becomes a row.
 // The header coord is the cursor bp itself — picking one source's feature

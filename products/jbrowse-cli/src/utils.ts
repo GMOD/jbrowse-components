@@ -300,7 +300,7 @@ export function printHelp({
   for (const [name, option] of Object.entries(options)) {
     const opt = option as Record<string, unknown>
     const shortFlag = opt.short
-    const prefix = shortFlag ? `  -${shortFlag}, ` : '      '
+    const prefix = shortFlag ? `  -${shortFlag}, ` : ' '.repeat(6)
     const namePadded = `--${name}`.padEnd(22, ' ')
     const indent = ' '.repeat(prefix.length + namePadded.length + 1)
     const descWidth = termWidth - indent.length

@@ -14,7 +14,7 @@ const JB2TrackHubConnection = ConfigurationSchema(
     configJsonLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http://mysite.com/path/to/config.json',
+        uri: 'https://mysite.com/path/to/config.json',
         locationType: 'UriLocation',
       },
       description:
@@ -45,7 +45,7 @@ const JB2TrackHubConnection = ConfigurationSchema(
      * ```json
      * {
      *   "type": "JB2TrackHubConnection",
-     *   "uri": "http://mysite.com/path/to/config.json"
+     *   "uri": "https://mysite.com/path/to/config.json"
      * }
      * ```
      */

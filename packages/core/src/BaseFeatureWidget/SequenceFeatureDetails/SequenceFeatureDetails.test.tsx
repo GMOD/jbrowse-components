@@ -57,7 +57,7 @@ test('test using the sequence feature panel', () => {
 
   const element = getByTestId('sequence_panel')
 
-  // http://m.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000116544;r=1:34865436-34929650
+  // https://m.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000116544;r=1:34865436-34929650
   // with stop codon on the end
   expect(
     element.textContent
@@ -206,7 +206,7 @@ test('reverse strand genomic coords count down across rows', () => {
     .slice(1)
     .map(s => s.trim())
     .filter(Boolean)
-    .map(s => +s.split(/\s+/)[0]!)
+    .map(s => +s.split(/\s+/, 1)[0]!)
 
   // reverse strand genomic coordinates must decrement, not increment
   expect(rowStarts).toEqual([300, 200, 100])

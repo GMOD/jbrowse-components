@@ -208,7 +208,9 @@ export function wiggleFeatureWidgetData(
     refName: feat.refName,
     start: feat.start,
     end: feat.end,
-    sources: Object.fromEntries(feat.rows.map(r => [r.source ?? 'score', r.score])),
+    sources: Object.fromEntries(
+      feat.rows.map(r => [r.source ?? 'score', r.score]),
+    ),
   }
 }
 

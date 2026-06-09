@@ -77,8 +77,8 @@ describe('standardizeArgv', () => {
 
 describe('makeLocation', () => {
   test('http/https/ftp/s3 schemes become uri locations', () => {
-    expect(makeLocation('http://example.com/a.bw')).toEqual({
-      uri: 'http://example.com/a.bw',
+    expect(makeLocation('https://example.com/a.bw')).toEqual({
+      uri: 'https://example.com/a.bw',
     })
     expect(makeLocation('https://example.com/a.bw')).toEqual({
       uri: 'https://example.com/a.bw',

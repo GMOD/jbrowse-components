@@ -587,7 +587,7 @@ function swap(
 }
 
 /**
- * Fast Hilbert curve algorithm by http://threadlocalmutex.com/
+ * Fast Hilbert curve algorithm by https://threadlocalmutex.com/
  * Ported from C++ https://github.com/rawrunprotected/hilbert_curves (public domain)
  */
 function hilbert(x: number, y: number): number {

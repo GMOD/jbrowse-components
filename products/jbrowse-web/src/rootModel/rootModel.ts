@@ -125,10 +125,14 @@ export default function RootModel({
       /**
        * #volatile
        */
-      rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
-        makeWorkerInstance,
-        defaultDriverName: 'WebWorkerRpcDriver',
-      }),
+      rpcManager: new RpcManager(
+        pluginManager,
+        self.jbrowse.configuration.rpc,
+        {
+          makeWorkerInstance,
+          defaultDriverName: 'WebWorkerRpcDriver',
+        },
+      ),
       /**
        * #volatile
        */

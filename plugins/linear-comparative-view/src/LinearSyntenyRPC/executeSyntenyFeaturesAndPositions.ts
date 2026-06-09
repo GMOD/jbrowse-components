@@ -166,7 +166,12 @@ export async function executeSyntenyFeaturesAndPositions({
     const p21 = bpToCumBp(v2Index, mate.refName, mate.start)
     const p22 = bpToCumBp(v2Index, mate.refName, mate.end)
 
-    if (p11 === undefined || p12 === undefined || p21 === undefined || p22 === undefined) {
+    if (
+      p11 === undefined ||
+      p12 === undefined ||
+      p21 === undefined ||
+      p22 === undefined
+    ) {
       continue
     }
 

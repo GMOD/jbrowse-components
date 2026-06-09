@@ -88,11 +88,11 @@ export async function run(args?: string[]) {
   const description = 'Add a connection to a JBrowse 2 configuration'
 
   const examples = [
-    '$ jbrowse add-connection http://mysite.com/jbrowse/data/ -a hg19',
-    '$ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38',
-    '$ jbrowse add-connection http://mysite.com/path/to/hub.txt',
-    '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
-    `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19`,
+    '$ jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19',
+    '$ jbrowse add-connection https://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38',
+    '$ jbrowse add-connection https://mysite.com/path/to/hub.txt',
+    '$ jbrowse add-connection https://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
+    `$ jbrowse add-connection https://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19`,
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
 

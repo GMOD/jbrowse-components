@@ -134,7 +134,7 @@ export function getColumnDefinitions({
         header: 'Release Date',
         cell: row =>
           row.seqReleaseDate
-            ? new Date(row.seqReleaseDate).toISOString().split('T')[0]
+            ? new Date(row.seqReleaseDate).toISOString().split('T', 1)[0]
             : '',
       },
       { id: 'scientificName', header: 'Scientific Name' },

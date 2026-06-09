@@ -90,9 +90,13 @@ export default function RootModel({
       /**
        * #volatile
        */
-      rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
-        makeWorkerInstance,
-      }),
+      rpcManager: new RpcManager(
+        pluginManager,
+        self.jbrowse.configuration.rpc,
+        {
+          makeWorkerInstance,
+        },
+      ),
     }))
     .actions(self => {
       return {

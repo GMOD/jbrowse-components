@@ -188,7 +188,7 @@ describe('GFF3 export', () => {
     })
     const result = stringifyGFF3({ features: [f] })
     // Score of 0 should be output, not replaced with '.'
-    const fields = result.split('\n')[1]!.split('\t')
+    const fields = result.split('\n', 2)[1]!.split('\t')
     expect(fields[5]).toBe('0')
   })
 

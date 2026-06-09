@@ -27,18 +27,18 @@ export function drawVariantMatrixBlocks(
     return
   }
   const cellWidth = canvasWidth / data.numFeatures
+  // Draw at float coordinates with a small overdraw (f2) so sub-pixel columns
+  // antialias and blend, matching the smoother canvas2d-only rendering. Do NOT
+  // pixel-snap or force a 1px minimum here (that decimates sub-pixel columns).
+  const f2 = 0.3
   for (let i = 0; i < data.numCells; i++) {
     const y = data.cellRowIndices[i]! * rowHeight - scrollTop
     if (y + rowHeight < 0 || y > canvasHeight) {
       continue
     }
-    // Match shader pixel-snap: round each edge to the nearest pixel and
-    // enforce a 1px minimum width (variantMatrix.slang:42-43).
-    const featureIndex = data.cellFeatureIndices[i]!
-    const cx1 = Math.round(featureIndex * cellWidth)
-    const cx2 = Math.max(Math.round((featureIndex + 1) * cellWidth), cx1 + 1)
+    const x = data.cellFeatureIndices[i]! * cellWidth
     ctx.fillStyle = abgrToCssRgba(data.cellColors[i]!)
-    ctx.fillRect(cx1, y, cx2 - cx1, rowHeight)
+    ctx.fillRect(x - f2, y - f2, cellWidth + f2, rowHeight + f2)
   }
 }
 

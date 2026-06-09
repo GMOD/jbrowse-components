@@ -7,7 +7,7 @@ const seq =
 
 // examples come from
 // https://github.com/vsbuffalo/devnotes/wiki/The-MD-Tag-in-BAM-Files and
-// http://seqanswers.com/forums/showthread.php?t=8978
+// https://seqanswers.com/forums/showthread.php?t=8978
 
 test('cigar to mismatches', () => {
   expect(cigarToMismatches2(parseCigar2('56M1D45M'), seq)).toEqual([
@@ -75,7 +75,7 @@ test('deletion and a SNP', () => {
 test('0-length MD entries', () => {
   // 0-length MD entries, which indicates two SNPs right next to each other
   // "They generally occur between SNPs, or between a deletion then a SNP."
-  // http://seqanswers.com/forums/showthread.php?t=8978
+  // https://seqanswers.com/forums/showthread.php?t=8978
   //
   // read GGGGGCATTTTT
   //      |||||  |||||

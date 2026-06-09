@@ -35,7 +35,10 @@ export default class RpcManager {
   constructor(
     pluginManager: PluginManager,
     mainConfiguration: AnyConfigurationModel,
-    { makeWorkerInstance, defaultDriverName = 'MainThreadRpcDriver' }: RpcManagerOptions = {},
+    {
+      makeWorkerInstance,
+      defaultDriverName = 'MainThreadRpcDriver',
+    }: RpcManagerOptions = {},
   ) {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration

@@ -20,7 +20,7 @@ export async function doConnect(self: {
     ) as UriLocation
 
     const configJson = JSON.parse(
-      await openLocation(configJsonLocation).readFile('utf8'),
+      await openLocation(configJsonLocation).readFile('utf8', 'utf8'),
     )
     const configUri = resolve(
       configJsonLocation.uri,

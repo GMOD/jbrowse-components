@@ -7,15 +7,15 @@ function uri(s: string): FileLocation {
 }
 
 test('parses one url per line into uri locations', () => {
-  expect(parseUrlList('http://a.com/x.bam\nhttp://a.com/x.bam.bai')).toEqual([
-    { uri: 'http://a.com/x.bam', locationType: 'UriLocation' },
-    { uri: 'http://a.com/x.bam.bai', locationType: 'UriLocation' },
+  expect(parseUrlList('https://a.com/x.bam\nhttp://a.com/x.bam.bai')).toEqual([
+    { uri: 'https://a.com/x.bam', locationType: 'UriLocation' },
+    { uri: 'https://a.com/x.bam.bai', locationType: 'UriLocation' },
   ])
 })
 
 test('ignores blank lines and surrounding whitespace', () => {
-  expect(parseUrlList('  http://a.com/x.bw  \n\n   \n')).toEqual([
-    { uri: 'http://a.com/x.bw', locationType: 'UriLocation' },
+  expect(parseUrlList('  https://a.com/x.bw  \n\n   \n')).toEqual([
+    { uri: 'https://a.com/x.bw', locationType: 'UriLocation' },
   ])
 })
 

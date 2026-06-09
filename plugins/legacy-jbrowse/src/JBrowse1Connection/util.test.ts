@@ -18,7 +18,7 @@ describe('isTrack', () => {
 
 describe('isSource', () => {
   it('returns true for objects with a string url', () => {
-    expect(isSource({ url: 'http://example.com' })).toBe(true)
+    expect(isSource({ url: 'https://example.com' })).toBe(true)
   })
   it('returns false for missing url', () => {
     expect(isSource({ name: 'x' })).toBe(false)

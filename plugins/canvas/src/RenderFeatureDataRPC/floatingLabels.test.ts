@@ -21,8 +21,8 @@ describe('floatingLabels', () => {
 
     it('returns no labels when name and description are whitespace-only', () => {
       const result = createFeatureFloatingLabels({
-        name: '   ',
-        description: '   ',
+        name: ' '.repeat(3),
+        description: ' '.repeat(3),
       })
       expect(result.nameLabel).toBeUndefined()
       expect(result.descriptionLabel).toBeUndefined()

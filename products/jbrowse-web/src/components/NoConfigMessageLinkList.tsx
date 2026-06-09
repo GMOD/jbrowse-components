@@ -38,7 +38,7 @@ export default function NoConfigMessageLinkList({
 
         const buildBadgeHref = (r: string) => {
           if (href) {
-            const params = new URLSearchParams(href.split('?')[1] ?? '')
+            const params = new URLSearchParams(href.split('?', 2)[1] ?? '')
             params.set('renderer', r)
             return `?${params}`
           }

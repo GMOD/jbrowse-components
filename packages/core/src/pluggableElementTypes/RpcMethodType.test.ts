@@ -14,10 +14,9 @@ function withMockRootModel(internetAccountsCount: number) {
   const original = pluginManager.rootModel
   ;(pluginManager as { rootModel: unknown }).rootModel = {
     findAppropriateInternetAccount: () => undefined,
-    internetAccounts: Array.from(
-      { length: internetAccountsCount },
-      () => ({ internetAccountId: 'mock' }),
-    ),
+    internetAccounts: Array.from({ length: internetAccountsCount }, () => ({
+      internetAccountId: 'mock',
+    })),
   }
   return () => {
     ;(pluginManager as { rootModel: unknown }).rootModel = original

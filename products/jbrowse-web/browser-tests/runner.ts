@@ -21,7 +21,7 @@ const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
 const args = process.argv.slice(2)
 const headed = args.includes('--headed')
 const slowMoArg = args.find(a => a.startsWith('--slow-mo='))
-const slowMo = slowMoArg ? parseInt(slowMoArg.split('=')[1]!, 10) : 0
+const slowMo = slowMoArg ? parseInt(slowMoArg.split('=', 2)[1]!, 10) : 0
 const updateSnapshots =
   args.includes('--update-snapshots') || args.includes('-u')
 const runAuthTests = args.includes('--auth')
@@ -30,12 +30,12 @@ const runAuthTests = args.includes('--auth')
 // Matching is case-insensitive substring against suite name.
 const filters = args
   .filter(a => a.startsWith('--filter='))
-  .flatMap(a => a.split('=')[1]!.toLowerCase().split(','))
+  .flatMap(a => a.split('=', 2)[1]!.toLowerCase().split(','))
   .filter(Boolean)
 // --test= filters individual test cases within matched suites (substring match).
 const testFilterArg = args.find(a => a.startsWith('--test='))
 const testFilter = testFilterArg
-  ? testFilterArg.split('=')[1]!.toLowerCase()
+  ? testFilterArg.split('=', 2)[1]!.toLowerCase()
   : ''
 // --smoke is the full local smoke test: runs every suite, including the
 // requiresRemote ones (grape/peach + hs1/mm39 synteny).
@@ -46,13 +46,13 @@ const smoke = args.includes('--smoke')
 const includeRemote =
   args.includes('--include-remote') || smoke || filters.length > 0
 const backendArg = args.find(a => a.startsWith('--backend='))
-const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
+const backendValue = backendArg ? backendArg.split('=', 2)[1]! : undefined
 const skipWebGPU = args.includes('--skip-webgpu')
 const quiet = args.includes('--quiet')
 const debug = args.includes('--debug')
 const useFirefoxArg = args.find(a => a.startsWith('--firefox='))
 const firefoxPath = useFirefoxArg
-  ? useFirefoxArg.split('=')[1]!
+  ? useFirefoxArg.split('=', 2)[1]!
   : args.includes('--firefox')
     ? (process.env.FIREFOX_NIGHTLY_PATH ?? '/usr/bin/firefox-nightly')
     : undefined

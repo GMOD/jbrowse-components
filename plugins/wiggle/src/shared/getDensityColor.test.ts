@@ -4,7 +4,7 @@ describe('makeDensityRgbStringFn', () => {
   it('interpolates toward white for scores near zero', () => {
     // red; G channel goes from 255 (white) down to 0 (full red)
     const colorFn = makeDensityRgbStringFn(0, 1, false, 255, 0, 0)
-    const parseG = (s: string) => parseInt(s.split(',')[1]!, 10)
+    const parseG = (s: string) => parseInt(s.split(',', 2)[1]!, 10)
     expect(parseG(colorFn(0.01))).toBeGreaterThan(parseG(colorFn(1)))
   })
 

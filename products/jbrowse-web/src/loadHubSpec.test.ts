@@ -55,10 +55,10 @@ describe('loadHubSpec', () => {
     // a pending fetch never resolves, so only the synchronous portion runs
     jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
 
-    void loadHubSpec({ hubURL: ['http://example.com/hub.txt'] }, pluginManager)
+    void loadHubSpec({ hubURL: ['https://example.com/hub.txt'] }, pluginManager)
 
     expect(rootModel.session).toBeTruthy()
-    expect(rootModel.session?.name).toBe('http://example.com/hub.txt')
+    expect(rootModel.session?.name).toBe('https://example.com/hub.txt')
   })
 
   it('uses an explicit sessionName for the initial name', () => {
@@ -66,7 +66,7 @@ describe('loadHubSpec', () => {
     jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
 
     void loadHubSpec(
-      { hubURL: ['http://example.com/hub.txt'], sessionName: 'My Session' },
+      { hubURL: ['https://example.com/hub.txt'], sessionName: 'My Session' },
       pluginManager,
     )
 
@@ -85,7 +85,10 @@ describe('loadHubSpec', () => {
 
     void loadHubSpec(
       {
-        hubURL: ['http://example.com/hub1.txt', 'http://example.com/hub2.txt'],
+        hubURL: [
+          'https://example.com/hub1.txt',
+          'https://example.com/hub2.txt',
+        ],
       },
       pluginManager,
     )

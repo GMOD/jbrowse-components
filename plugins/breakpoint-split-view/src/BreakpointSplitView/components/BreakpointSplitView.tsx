@@ -6,7 +6,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay.tsx'
 import Header from './Header.tsx'
 

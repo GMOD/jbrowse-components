@@ -31,7 +31,7 @@ export function springAnimate(
     if (time > lastTime + 64) {
       lastTime = time
     }
-    // http://gafferongames.com/game-physics/fix-your-timestep/
+    // https://gafferongames.com/game-physics/fix-your-timestep/
     const numSteps = Math.floor(time - lastTime)
     for (let i = 0; i < numSteps; ++i) {
       const force = -tension * (position - toValue)

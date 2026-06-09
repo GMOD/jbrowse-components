@@ -2,7 +2,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-
 import Header from './Header.tsx'
 import LinearComparativeRenderArea from './LinearComparativeRenderArea.tsx'
 

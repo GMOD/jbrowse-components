@@ -36,7 +36,7 @@ async function fetchPrimaryAlignment(
     return preFeature
   }
   const SA = (getTag(preFeature, 'SA') as string | undefined) ?? ''
-  const primaryAln = SA.split(';')[0]!
+  const primaryAln = SA.split(';', 1)[0]!
   const [saRef, saStart] = primaryAln.split(',')
   const { rpcManager } = getSession(track)
   const adapterConfig = getConf(track, 'adapter')

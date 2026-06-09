@@ -11,7 +11,7 @@ import {
   type RenderBlock,
   type RenderState,
   bpToScreenX,
-  computeBlockHeights,
+  computeArcBand,
   interbaseRangeEnds,
   pileupRowY,
 } from './rendererTypes.ts'
@@ -297,9 +297,8 @@ export function drawAlignmentBlocks(
     return false
   }
 
-  const { effectiveArcsHeight, covH, arcCovH } = computeBlockHeights(state)
+  const arcBand = computeArcBand(state)
   const pileupTop = state.pileupTopOffset
-  const arcsDown = !!state.readConnectionsDown
 
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)
@@ -319,8 +318,6 @@ export function drawAlignmentBlocks(
     ctx.rect(scissorX, 0, scissorW, canvasHeight)
     ctx.clip()
 
-    // Coverage paints before the up-mode arcs so arcs sit in front of the
-    // histogram, matching the on-screen GPU pass order (GpuAlignmentsRenderer).
     const domainMax = state.coverageMaxDepth
     if (state.showCoverage && domainMax) {
       drawCoverage(
@@ -332,25 +329,6 @@ export function drawAlignmentBlocks(
         state,
         domainMax,
       )
-    }
-
-    if (effectiveArcsHeight > 0 && !arcsDown && covH > 0) {
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(scissorX, 0, scissorW, covH)
-      ctx.clip()
-      drawArcs(
-        ctx,
-        region,
-        block,
-        bpLength,
-        fullBlockWidth,
-        state,
-        0,
-        arcCovH,
-        false,
-      )
-      ctx.restore()
     }
 
     // Clip pileup area
@@ -401,10 +379,13 @@ export function drawAlignmentBlocks(
 
     ctx.restore() // pileup clip
 
-    if (effectiveArcsHeight > 0 && arcsDown) {
+    // Up- and down-mode arcs both draw here, after the pileup. The band never
+    // overlaps the pileup region, and up-mode arcs still land in front of the
+    // coverage histogram (drawn earlier), matching the GPU pass order.
+    if (arcBand) {
       ctx.save()
       ctx.beginPath()
-      ctx.rect(scissorX, covH, scissorW, effectiveArcsHeight)
+      ctx.rect(scissorX, arcBand.top, scissorW, arcBand.height)
       ctx.clip()
       drawArcs(
         ctx,
@@ -413,9 +394,10 @@ export function drawAlignmentBlocks(
         bpLength,
         fullBlockWidth,
         state,
-        covH,
-        effectiveArcsHeight,
-        arcsDown,
+        arcBand.top,
+        arcBand.height,
+        arcBand.down,
+        scissorW,
       )
       ctx.restore()
     }

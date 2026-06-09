@@ -37,7 +37,10 @@ export function getDefaultMode(
 // genomic coordinates only make sense for continuous genome-based sequence
 // types (not collapsed-intron or spliced views)
 export function showGenomicCoordsOption(mode: SequenceDisplayMode) {
-  return (
-    ['gene', 'gene_updownstream', 'genomic', 'genomic_sequence_updownstream'].includes(mode)
-  )
+  return [
+    'gene',
+    'gene_updownstream',
+    'genomic',
+    'genomic_sequence_updownstream',
+  ].includes(mode)
 }

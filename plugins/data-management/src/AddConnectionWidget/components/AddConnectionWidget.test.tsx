@@ -99,8 +99,8 @@ type bigWig
     'Test UCSC connection name',
   )
   await user.type(
-    await findByDisplayValue('http://mysite.com/path/to/hub.txt'),
-    'http://test.com/hub.txt',
+    await findByDisplayValue('https://mysite.com/path/to/hub.txt'),
+    'https://test.com/hub.txt',
   )
   await user.click(await findByText('Connect'))
   expect(session.sessionConnections.length).toBe(1)
@@ -135,8 +135,8 @@ test('can handle a custom JBrowse 1 data directory URL', async () => {
   await user.click(await findByText('Next'))
   await user.type(await findByDisplayValue('nameOfConnection'), 'testing')
   await user.type(
-    await findByDisplayValue('http://mysite.com/jbrowse/data/'),
-    'http://test.com/jbrowse/data/',
+    await findByDisplayValue('https://mysite.com/jbrowse/data/'),
+    'https://test.com/jbrowse/data/',
   )
   await user.type(await findByPlaceholderText('add new'), 'volMyt1')
   await user.click(await findByTestId('stringArrayAdd-assemblyNames'))

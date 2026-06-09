@@ -5,7 +5,7 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   buildReadIdToIndex,
-  computeBlockHeights,
+  computeArcBand,
   ensureRegion,
 } from './rendererTypes.ts'
 import {
@@ -100,6 +100,7 @@ import * as readShader from '../shaders/slang/read.generated.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
+  ArcBand,
   ColorPalette,
   CoverageUploadData,
   RGBColor,
@@ -528,8 +529,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
       this.writeUniforms(state, frame)
 
-      const arcsDown = !!state.readConnectionsDown
-      const { effectiveArcsHeight, covH, arcCovH } = computeBlockHeights(state)
+      const arcBand = computeArcBand(state)
       const pileupTop = Math.round(state.pileupTopOffset * dpr)
       const pileupH = Math.max(0, bufH - pileupTop)
 
@@ -544,20 +544,6 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         this.hal.drawPass(PASS_MOD_COV, block.displayedRegionIndex)
         this.hal.drawPass(PASS_INTERBASE, block.displayedRegionIndex)
         this.hal.drawPass(PASS_INDICATOR, block.displayedRegionIndex)
-      }
-
-      if (effectiveArcsHeight > 0 && !arcsDown && covH > 0) {
-        this.drawArcsPass(
-          block,
-          region,
-          state,
-          scissorX,
-          scissorW,
-          0,
-          dpr,
-          bufH,
-          arcCovH,
-        )
       }
 
       if (pileupH > 0) {
@@ -610,17 +596,19 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         dpr,
       )
 
-      if (effectiveArcsHeight > 0 && arcsDown) {
+      // Up- and down-mode arcs both draw here, after the pileup: the arc band
+      // never overlaps the pileup region, so a single pass suffices and up-mode
+      // arcs still land in front of the coverage histogram (drawn earlier).
+      if (arcBand) {
         this.drawArcsPass(
           block,
           region,
           state,
           scissorX,
           scissorW,
-          covH,
+          arcBand,
           dpr,
           bufH,
-          effectiveArcsHeight,
         )
       }
 
@@ -645,14 +633,13 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     state: RenderState,
     scissorX: number,
     scissorW: number,
-    arcTop: number,
+    band: ArcBand,
     dpr: number,
     bufH: number,
-    effectiveArcsHeight: number,
   ) {
-    const arcViewportTop = Math.round(arcTop * dpr)
+    const arcViewportTop = Math.round(band.top * dpr)
     const arcViewportH = Math.min(
-      Math.round(effectiveArcsHeight * dpr),
+      Math.round(band.height * dpr),
       Math.max(0, bufH - arcViewportTop),
     )
     if (arcViewportH <= 0) {
@@ -667,7 +654,9 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       scissorW,
       arcViewportH,
       dpr,
-      covOffset: arcTop === 0 ? effectiveArcsHeight : 0,
+      // Up mode anchors at the band bottom (offset down by its full height);
+      // down mode anchors at the top (no offset).
+      covOffset: band.down ? 0 : arcViewportH / dpr,
     })
     this.hal.writeUniforms(this.uData)
 

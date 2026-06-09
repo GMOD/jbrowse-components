@@ -18,8 +18,8 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const adapter = new MultiWiggleAdapter(
       configSchema.create({
         bigWigs: [
-          'http://example.com/path/sample.bw',
-          'http://example.com/path/track.bigwig',
+          'https://example.com/path/sample.bw',
+          'https://example.com/path/track.bigwig',
         ],
       }),
       mockGetSubAdapter,
@@ -36,7 +36,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
         dataAdapter: { id: conf.source ?? 'mock' },
       }))
     const adapter = new MultiWiggleAdapter(
-      configSchema.create({ bigWigs: ['http://example.com/data/noext'] }),
+      configSchema.create({ bigWigs: ['https://example.com/data/noext'] }),
       mockGetSubAdapter,
     )
     const adapters = await adapter.getAdapters()
@@ -51,7 +51,7 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
       }))
     const adapter = new MultiWiggleAdapter(
       configSchema.create({
-        bigWigs: ['http://example.com/data/sample.data.bw'],
+        bigWigs: ['https://example.com/data/sample.data.bw'],
       }),
       mockGetSubAdapter,
     )
@@ -72,14 +72,14 @@ describe('MultiWiggleAdapter.getSources', () => {
               type: 'BigWigAdapter',
               name: 'test-data-1',
               bigWigLocation: {
-                uri: 'http://example.com/data/sample1.bw',
+                uri: 'https://example.com/data/sample1.bw',
               },
             },
             {
               type: 'BigWigAdapter',
               name: 'test-data-2',
               bigWigLocation: {
-                uri: 'http://example.com/data/sample2.bw',
+                uri: 'https://example.com/data/sample2.bw',
               },
             },
           ],
@@ -92,7 +92,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'source-1',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/sample1.bw',
+            uri: 'https://example.com/data/sample1.bw',
           },
           dataAdapter: stubDataAdapter,
         },
@@ -100,7 +100,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'source-2',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/sample2.bw',
+            uri: 'https://example.com/data/sample2.bw',
           },
           dataAdapter: stubDataAdapter,
         },
@@ -214,7 +214,7 @@ describe('MultiWiggleAdapter.getSources', () => {
               type: 'BigWigAdapter',
               name: 'provided-name',
               bigWigLocation: {
-                uri: 'http://example.com/data/sample.bw',
+                uri: 'https://example.com/data/sample.bw',
               },
             },
           ],
@@ -227,7 +227,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           name: 'provided-name',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/sample.bw',
+            uri: 'https://example.com/data/sample.bw',
           },
           dataAdapter: stubDataAdapter,
         },
@@ -293,7 +293,7 @@ describe('MultiWiggleAdapter.getSources', () => {
             {
               type: 'BigWigAdapter',
               bigWigLocation: {
-                uri: 'http://example.com/data/test.bw',
+                uri: 'https://example.com/data/test.bw',
               },
               customProp: 'custom-value',
               anotherProp: 42,
@@ -307,7 +307,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'test-source',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/test.bw',
+            uri: 'https://example.com/data/test.bw',
           },
           customProp: 'custom-value',
           anotherProp: 42,
@@ -343,7 +343,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'test1',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/path/to/deep/nested/sample.bw',
+            uri: 'https://example.com/path/to/deep/nested/sample.bw',
           },
           dataAdapter: stubDataAdapter,
         },
@@ -393,7 +393,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'test-source',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/test.bw',
+            uri: 'https://example.com/data/test.bw',
           },
           dataAdapter: stubDataAdapter,
         },

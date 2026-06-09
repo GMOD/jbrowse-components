@@ -1,7 +1,7 @@
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   buildReadIdToIndex,
-  computeBlockHeights,
+  computeArcBand,
   ensureRegion,
   interbaseRangeEnds,
 } from '../renderers/rendererTypes.ts'
@@ -160,31 +160,68 @@ describe('ensureRegion', () => {
   })
 })
 
-describe('computeBlockHeights', () => {
-  it('returns zeros when both flags off', () => {
-    const { effectiveArcsHeight, covH } = computeBlockHeights(makeState())
-    expect(effectiveArcsHeight).toBe(0)
-    expect(covH).toBe(0)
+describe('computeArcBand', () => {
+  it('is undefined when readConnections is off', () => {
+    expect(computeArcBand(makeState())).toBeUndefined()
   })
 
-  it('returns coverageHeight when showCoverage is on', () => {
-    const { covH } = computeBlockHeights(
-      makeState({ showCoverage: true, coverageHeight: 80 }),
-    )
-    expect(covH).toBe(80)
+  it('is undefined when readConnectionsHeight is 0', () => {
+    expect(
+      computeArcBand(
+        makeState({ readConnections: 'arc', readConnectionsHeight: 0 }),
+      ),
+    ).toBeUndefined()
   })
 
-  it('returns readConnectionsHeight when readConnections is on and readConnectionsHeight is set', () => {
-    const { effectiveArcsHeight } = computeBlockHeights(
-      makeState({ readConnections: 'arc', readConnectionsHeight: 60 }),
-    )
-    expect(effectiveArcsHeight).toBe(60)
+  it('up mode overlays the coverage band when coverage is shown', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          showCoverage: true,
+          coverageHeight: 80,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 80, down: false })
   })
 
-  it('returns 0 for arcs when readConnections is on but readConnectionsHeight is 0', () => {
-    const { effectiveArcsHeight } = computeBlockHeights(
-      makeState({ readConnections: 'arc', readConnectionsHeight: 0 }),
-    )
-    expect(effectiveArcsHeight).toBe(0)
+  it('up mode takes its own band when coverage is hidden (decoupled)', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          showCoverage: false,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 60, down: false })
+  })
+
+  it('down mode sits below the coverage band', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          readConnectionsDown: true,
+          showCoverage: true,
+          coverageHeight: 80,
+        }),
+      ),
+    ).toEqual({ top: 80, height: 60, down: true })
+  })
+
+  it('down mode renders at the top when coverage is hidden (decoupled)', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          readConnectionsDown: true,
+          showCoverage: false,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 60, down: true })
   })
 })

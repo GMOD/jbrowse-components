@@ -15,14 +15,14 @@ describe('parseItems', () => {
   })
 
   it('falls back to line-split for non-JSON input', () => {
-    expect(parseItems('http://a.bw\nhttp://b.bw')).toEqual([
-      'http://a.bw',
-      'http://b.bw',
+    expect(parseItems('https://a.bw\nhttp://b.bw')).toEqual([
+      'https://a.bw',
+      'https://b.bw',
     ])
   })
 
   it('falls back to line-split when JSON parses to a non-array', () => {
-    expect(parseItems('"http://a.bw"')).toEqual(['"http://a.bw"'])
+    expect(parseItems('"https://a.bw"')).toEqual(['"https://a.bw"'])
     expect(parseItems('{"foo":1}')).toEqual(['{"foo":1}'])
   })
 
@@ -33,8 +33,8 @@ describe('parseItems', () => {
 
 describe('itemToName', () => {
   it('uses the string itself for URL items', () => {
-    expect(itemToName('http://example.com/x.bw')).toBe(
-      'http://example.com/x.bw',
+    expect(itemToName('https://example.com/x.bw')).toBe(
+      'https://example.com/x.bw',
     )
   })
 
@@ -69,7 +69,9 @@ describe('canSubmit', () => {
   })
 
   it('requires a non-blank track name', () => {
-    expect(canSubmit({ tracks, trackName: '   ', assembly: 'a' })).toBe(false)
+    expect(canSubmit({ tracks, trackName: ' '.repeat(3), assembly: 'a' })).toBe(
+      false,
+    )
   })
 
   it('requires an assembly', () => {
@@ -85,8 +87,8 @@ describe('canSubmit', () => {
 
 describe('buildAdapterPayload', () => {
   it('uses bigWigs shortcut when all items are URL strings', () => {
-    expect(buildAdapterPayload(['http://a.bw', 'http://b.bw'])).toEqual({
-      bigWigs: ['http://a.bw', 'http://b.bw'],
+    expect(buildAdapterPayload(['https://a.bw', 'https://b.bw'])).toEqual({
+      bigWigs: ['https://a.bw', 'https://b.bw'],
     })
   })
 
@@ -100,20 +102,20 @@ describe('buildAdapterPayload', () => {
 
   it('normalizes URL strings into BigWigAdapter objects when items are mixed', () => {
     const obj = { type: 'BigWigAdapter', source: 'b' }
-    expect(buildAdapterPayload(['http://a.bw', obj])).toEqual({
-      subadapters: [urlToSubadapter('http://a.bw'), obj],
+    expect(buildAdapterPayload(['https://a.bw', obj])).toEqual({
+      subadapters: [urlToSubadapter('https://a.bw'), obj],
     })
   })
 })
 
 describe('applyName', () => {
   it('keeps an unchanged URL string bare to preserve the bigWigs form', () => {
-    expect(applyName('http://a.bw', 'http://a.bw')).toBe('http://a.bw')
+    expect(applyName('https://a.bw', 'https://a.bw')).toBe('https://a.bw')
   })
 
   it('promotes a renamed URL string into a BigWigAdapter with the new source', () => {
-    expect(applyName('http://a.bw', 'My sample')).toEqual(
-      urlToSubadapter('http://a.bw', 'My sample'),
+    expect(applyName('https://a.bw', 'My sample')).toEqual(
+      urlToSubadapter('https://a.bw', 'My sample'),
     )
   })
 
@@ -126,13 +128,13 @@ describe('applyName', () => {
 
   it('renamed items flow through buildAdapterPayload as subadapters', () => {
     const items = [
-      applyName('http://a.bw', 'Sample A'),
-      applyName('http://b.bw', 'http://b.bw'),
+      applyName('https://a.bw', 'Sample A'),
+      applyName('https://b.bw', 'https://b.bw'),
     ]
     expect(buildAdapterPayload(items)).toEqual({
       subadapters: [
-        urlToSubadapter('http://a.bw', 'Sample A'),
-        urlToSubadapter('http://b.bw'),
+        urlToSubadapter('https://a.bw', 'Sample A'),
+        urlToSubadapter('https://b.bw'),
       ],
     })
   })

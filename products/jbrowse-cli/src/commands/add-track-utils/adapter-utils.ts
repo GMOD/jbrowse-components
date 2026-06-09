@@ -196,9 +196,7 @@ type LocFieldSpec = Extract<AdapterSpec, { locField: string }>
 
 const adapterTypeToSpec: Record<string, LocFieldSpec> = {}
 for (const { spec } of formats) {
-  if (
-    ['single', 'tabix', 'anchors'].includes(spec.kind)
-  ) {
+  if (['single', 'tabix', 'anchors'].includes(spec.kind)) {
     adapterTypeToSpec[spec.adapterType] = spec
   }
 }

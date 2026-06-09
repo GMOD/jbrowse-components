@@ -1,8 +1,8 @@
 import { linkify } from './linkify.ts'
 
 test('converts http URL to anchor tag', () => {
-  expect(linkify('Visit http://example.com today')).toBe(
-    'Visit <a href=\'http://example.com\' target="_blank">http://example.com</a> today',
+  expect(linkify('Visit https://example.com today')).toBe(
+    'Visit <a href=\'https://example.com\' target="_blank">https://example.com</a> today',
   )
 })
 

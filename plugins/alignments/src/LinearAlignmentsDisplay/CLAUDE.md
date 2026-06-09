@@ -92,15 +92,18 @@ share the builder. Coverage, indicators, paired arcs, pileup reads, mismatches,
 soft/hard clips, modifications, and connecting lines all flow through the
 unified pass — do not reintroduce parallel SVG-only draw functions.
 
-### Coverage paints before up-mode arcs (z-order must match the GPU)
+### Arc band placement (`computeArcBand`) and z-order
 
-In `drawAlignmentBlocks` the up-mode (`!arcsDown`) paired-end arcs paint
-**after** coverage so arcs sit in front of the histogram. This mirrors the
-on-screen `GpuAlignmentsRenderer` pass order (coverage passes, then
-`PASS_ARCS`). The two renderers' draw order must stay in sync; swapping them
-puts arcs behind coverage in SVG export only — a path-specific regression that's
-invisible on screen. Down-mode arcs draw in their own band below coverage and
-are unaffected.
+`computeArcBand(state)` in `rendererTypes.ts` is the single source of truth for
+where the paired-end arc band lives — `{ top, height, down }` — and is
+**decoupled from `showCoverage`**: up-mode arcs overlay the coverage band when
+it's shown, else take their own `readConnectionsHeight` band; down-mode arcs
+always sit in their own band below coverage. Both renderers and SVG draw the
+band in a **single pass after the pileup** (the band never overlaps the pileup
+region, so up-mode arcs still land in front of the coverage histogram, which
+paints earlier). Don't reintroduce a `covH > 0` gate or a separate up/down draw
+block — that re-couples arcs to coverage and resurrects the `arcTop === 0`
+anchor heuristic that mis-anchored down-mode arcs when coverage was hidden.
 
 ### Two distinct "arc" concepts — keep them apart
 

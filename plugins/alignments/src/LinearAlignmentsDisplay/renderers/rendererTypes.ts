@@ -91,19 +91,32 @@ export function ensureRegion<T>(
   return r
 }
 
-export function computeBlockHeights(state: RenderState) {
+// Vertical placement of the read-connections arc band, computed once so the
+// GPU, Canvas2D, and SVG paths can't drift. Arcs anchor at insert-size 0: the
+// band bottom in up mode (`down: false`), the band top in down mode.
+export interface ArcBand {
+  top: number
+  height: number
+  down: boolean
+}
+
+// Decoupled from `showCoverage`: up-mode arcs overlay the coverage band when
+// it's shown, otherwise they take their own `readConnectionsHeight` band.
+// Down-mode arcs always sit in their own band below coverage. Returns undefined
+// when there are no arcs to draw.
+export function computeArcBand(state: RenderState): ArcBand | undefined {
   const covH = state.showCoverage ? state.coverageHeight : 0
-  return {
-    effectiveArcsHeight:
-      state.readConnections !== 'off' && state.readConnectionsHeight
-        ? state.readConnectionsHeight
-        : 0,
-    covH,
-    // Up-mode arcs share the coverage band: their insert-size-0 anchor must
-    // sit on the coverage baseline (covH - coverageYOffset), not at covH.
-    // Single source of truth so the GPU and Canvas2D/SVG paths can't drift.
-    arcCovH: covH > 0 ? covH - state.coverageYOffset : 0,
+  const h = state.readConnectionsHeight ?? 0
+  if (state.readConnections === 'off' || h === 0) {
+    return undefined
   }
+  if (state.readConnectionsDown) {
+    return { top: covH, height: h, down: true }
+  }
+  // Up mode: the anchor sits coverageYOffset above the band bottom (the
+  // coverage baseline / scalebar-label padding).
+  const bandH = covH > 0 ? covH : h
+  return { top: 0, height: bandH - state.coverageYOffset, down: false }
 }
 
 // Sub-pixel alpha blend: lerp between `base` (full-row coverage) and 1 using

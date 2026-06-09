@@ -54,7 +54,13 @@ export function migrateAlignmentsSnapshot(
   }
 
   // Remap old display types to LinearAlignmentsDisplay
-  if (['LinearPileupDisplay', 'LinearReadArcsDisplay', 'LinearReadCloudDisplay'].includes(result.type)) {
+  if (
+    [
+      'LinearPileupDisplay',
+      'LinearReadArcsDisplay',
+      'LinearReadCloudDisplay',
+    ].includes(result.type)
+  ) {
     result = { ...result, type: 'LinearAlignmentsDisplay' }
   }
 

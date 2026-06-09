@@ -34,7 +34,7 @@ export function generateTracks({
         do {
           currentTrackName = trackDb.data[currentTrackName]?.data.parent || ''
           if (currentTrackName) {
-            currentTrackName = currentTrackName.split(' ')[0]!
+            currentTrackName = currentTrackName.split(' ', 1)[0]!
             parentTracks.push(trackDb.data[currentTrackName])
           }
         } while (currentTrackName)
@@ -90,7 +90,7 @@ function makeTrackConfig({
     (data.shortLabel || '') + (bigDataUrl.includes('xeno') ? ' (xeno)' : '')
 
   const isUri = isUriLocation(trackDbLoc)
-  let baseTrackType = trackType.split(' ')[0] || ''
+  let baseTrackType = trackType.split(' ', 1)[0] || ''
   if (baseTrackType === 'bam' && bigDataUrl.toLowerCase().endsWith('cram')) {
     baseTrackType = 'cram'
   }

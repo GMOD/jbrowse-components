@@ -60,14 +60,14 @@ test('get bucket contents', async () => {
 })
 
 test('url always has trailing slash', () => {
-  const withSlash = new HttpMap({ url: 'http://example.com/names/' })
-  const withoutSlash = new HttpMap({ url: 'http://example.com/names' })
-  expect(withSlash.url).toBe('http://example.com/names/')
-  expect(withoutSlash.url).toBe('http://example.com/names/')
+  const withSlash = new HttpMap({ url: 'https://example.com/names/' })
+  const withoutSlash = new HttpMap({ url: 'https://example.com/names' })
+  expect(withSlash.url).toBe('https://example.com/names/')
+  expect(withoutSlash.url).toBe('https://example.com/names/')
 })
 
 test('hash returns lowercase hex with no hyphens', () => {
-  const map = new HttpMap({ url: 'http://example.com/' })
+  const map = new HttpMap({ url: 'https://example.com/' })
   const h = map.hash('test')
   expect(h).toMatch(/^[0-9a-f]+$/)
 })

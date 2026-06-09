@@ -916,9 +916,7 @@ export default function stateModelFactory(
          */
         get showModifications() {
           const t = self.colorBy.type
-          return (
-            ['modifications', 'methylation', 'bisulfite'].includes(t)
-          )
+          return ['modifications', 'methylation', 'bisulfite'].includes(t)
         },
 
         /**
@@ -2130,8 +2128,9 @@ export default function stateModelFactory(
 
           if (cigarHit) {
             const typeLabel = CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
-            const isInterbase =
-              ['insertion', 'softclip', 'hardclip'].includes(cigarHit.type)
+            const isInterbase = ['insertion', 'softclip', 'hardclip'].includes(
+              cigarHit.type,
+            )
             const sortType = isInterbase ? cigarHit.type : 'basePair'
             const sortLabel = isInterbase
               ? `Sort by ${typeLabel.toLowerCase()} at position`

@@ -161,7 +161,9 @@ export function openCigarWidget(
     if (cigarHit.sequence) {
       featureData.sequence = cigarHit.sequence
     }
-  } else if (['deletion', 'skip', 'softclip', 'hardclip'].includes(cigarHit.type)) {
+  } else if (
+    ['deletion', 'skip', 'softclip', 'hardclip'].includes(cigarHit.type)
+  ) {
     featureData.length = cigarHit.length
   }
 

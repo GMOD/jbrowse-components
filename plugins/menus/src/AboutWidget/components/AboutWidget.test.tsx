@@ -31,7 +31,7 @@ describe('<AboutWidget />', () => {
               {
                 name: 'HelloPlugin',
                 version: '1.0.0',
-                url: 'http://google.com',
+                url: 'https://google.com',
               },
             ],
           },

@@ -98,7 +98,7 @@ test('adds full URL (BAM)', () => {
   const session = standardInitializer()
   const { widget } = session
   widget.setTrackData({
-    uri: 'http://google.com/volvox-sorted.bam',
+    uri: 'https://google.com/volvox-sorted.bam',
     locationType: 'UriLocation',
   })
   expect(widget.trackName).toBe('volvox-sorted.bam')
@@ -110,10 +110,10 @@ xtest('test wrongProtocol returning false', () => {
   const session = standardInitializer()
   const { widget } = session
   widget.setTrackData({
-    uri: 'http://google.com/volvox-sorted.bam',
+    uri: 'https://google.com/volvox-sorted.bam',
     locationType: 'UriLocation',
   })
-  setWindowLoc('http://google.com')
+  setWindowLoc('https://google.com')
 
   expect(widget.wrongProtocol).toBe(false)
   // @ts-expect-error
@@ -125,7 +125,7 @@ xtest('test wrongProtocol returning true', () => {
   const session = standardInitializer()
   const { widget } = session
   widget.setTrackData({
-    uri: 'http://google.com/volvox-sorted.bam',
+    uri: 'https://google.com/volvox-sorted.bam',
     locationType: 'UriLocation',
   })
   setWindowLoc('https://google.com')

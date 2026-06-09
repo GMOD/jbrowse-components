@@ -44,7 +44,7 @@ function createMockFetch() {
 }
 
 function makeFile(mockFetch: typeof globalThis.fetch) {
-  return new RemoteFileWithRangeCache('http://example.com/data.bin', {
+  return new RemoteFileWithRangeCache('https://example.com/data.bin', {
     fetch: mockFetch,
   })
 }
@@ -54,7 +54,7 @@ async function fetchRange(
   start: number,
   end: number,
 ) {
-  const res = await file.fetch('http://example.com/data.bin', {
+  const res = await file.fetch('https://example.com/data.bin', {
     headers: { range: `bytes=${start}-${end}` },
   })
   return new Uint8Array(await res.arrayBuffer())
@@ -141,7 +141,7 @@ describe('RemoteFileWithRangeCache', () => {
   test('non-range request passes through without caching', async () => {
     const { mockFetch } = createMockFetch()
     const file = makeFile(mockFetch)
-    const res = await file.fetch('http://example.com/data.bin')
+    const res = await file.fetch('https://example.com/data.bin')
     expect(res.status).toBe(200)
   })
 
@@ -243,15 +243,15 @@ describe('RemoteFileWithRangeCache', () => {
       return new Response('', { status: 200 })
     }
 
-    const file = new RemoteFileWithRangeCache('http://example.com/small.bin', {
+    const file = new RemoteFileWithRangeCache('https://example.com/small.bin', {
       fetch: mockFetch,
     })
 
     // Prime chunk 0 (full) and chunk 1 (short — server clips to smallFileSize)
-    await file.fetch('http://example.com/small.bin', {
+    await file.fetch('https://example.com/small.bin', {
       headers: { range: `bytes=0-${CHUNK - 1}` },
     })
-    await file.fetch('http://example.com/small.bin', {
+    await file.fetch('https://example.com/small.bin', {
       headers: { range: `bytes=${CHUNK}-${2 * CHUNK - 1}` },
     })
     expect(calls).toHaveLength(2)
@@ -263,7 +263,7 @@ describe('RemoteFileWithRangeCache', () => {
     const overreadEnd = overreadStart + 65_535 // 527 679 — lands in chunk 2
     expect(Math.floor(overreadEnd / CHUNK)).toBe(2) // confirm chunk 2 is involved
 
-    const res = await file.fetch('http://example.com/small.bin', {
+    const res = await file.fetch('https://example.com/small.bin', {
       headers: { range: `bytes=${overreadStart}-${overreadEnd}` },
     })
     const result = new Uint8Array(await res.arrayBuffer())
@@ -299,7 +299,7 @@ describe('RemoteFileWithRangeCache', () => {
       }
       return new Response('', { status: 200 })
     }
-    const file = new RemoteFileWithRangeCache('http://example.com/data.bin', {
+    const file = new RemoteFileWithRangeCache('https://example.com/data.bin', {
       fetch: mockFetch,
     })
     const stat = await file.stat()
@@ -387,7 +387,7 @@ describe('RemoteFileWithRangeCache', () => {
       return new Response('', { status: 200 })
     }
 
-    const file = new RemoteFileWithRangeCache('http://example.com/small.bin', {
+    const file = new RemoteFileWithRangeCache('https://example.com/small.bin', {
       fetch: mockFetch,
     })
 
@@ -395,7 +395,7 @@ describe('RemoteFileWithRangeCache', () => {
     // Chunk 1 has data, chunk 2 is past EOF.
     const overreadStart = CHUNK + 200_000
     const overreadEnd = overreadStart + 65_535
-    const res = await file.fetch('http://example.com/small.bin', {
+    const res = await file.fetch('https://example.com/small.bin', {
       headers: { range: `bytes=${overreadStart}-${overreadEnd}` },
     })
     const result = new Uint8Array(await res.arrayBuffer())
@@ -416,7 +416,7 @@ describe('RemoteFileWithRangeCache', () => {
     expect(calls).toHaveLength(1)
 
     // Same range but different URL should trigger a new fetch
-    const res = await file.fetch('http://example.com/other.bin', {
+    const res = await file.fetch('https://example.com/other.bin', {
       headers: { range: 'bytes=0-99' },
     })
     const result = new Uint8Array(await res.arrayBuffer())
