@@ -8,6 +8,7 @@ import { loadSessionSpec } from './loadSessionSpec.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
+import type { WebRootModel } from './rootModel/rootModel.ts'
 import type { PluginRecord } from '@jbrowse/core/PluginLoader'
 
 // Structural read-only view of SessionLoader. Kept narrow so it can be
@@ -68,18 +69,27 @@ export function createPluginManager(
     },
     { pluginManager },
   )
-
   rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
+  // configure() before initSession so hub/spec sessions see registered
+  // views/tracks/extension-points; safe because configure() doesn't read
+  // session state
+  pluginManager.setRootModel(rootModel).configure()
+  doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
+  initSession(rootModel, pluginManager, model)
+  return pluginManager
+}
+
+// Bootstraps the session from whichever source the loader resolved. Any
+// failure (a pre-resolved sessionError, or a thrown snapshot) falls back to the
+// default session with a user-facing notification.
+function initSession(
+  rootModel: WebRootModel,
+  pluginManager: PluginManager,
+  model: PluginManagerSource,
+) {
   const { sessionError, sessionSpec, sessionSnapshot, hubSpec, sessionName } =
     model
-
-  // hub/spec sessions need a configured pluginManager (views/tracks registered)
-  // so they are deferred until after pluginManager.configure() below
-  let initAfterConfigure: (() => unknown) | undefined
-
-  // in order: saves the previous autosave for recovery, tries to load the
-  // local session if session in query, or loads the default session
   try {
     if (sessionError) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
@@ -87,15 +97,13 @@ export function createPluginManager(
     } else if (sessionSnapshot) {
       rootModel.setSession(sessionSnapshot)
     } else if (hubSpec) {
-      initAfterConfigure = () =>
-        // @ts-expect-error hubSpec is dynamic JSON (Record<string,unknown>); the
-        // required shape is validated at runtime inside loadHubSpec
-        loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
+      // @ts-expect-error hubSpec is dynamic JSON (Record<string,unknown>); the
+      // required shape is validated at runtime inside loadHubSpec
+      void loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
     } else if (sessionSpec) {
-      initAfterConfigure = () =>
-        // @ts-expect-error sessionSpec is dynamic JSON (Record<string,unknown>);
-        // the required shape is validated at runtime inside loadSessionSpec
-        loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
+      // @ts-expect-error sessionSpec is dynamic JSON (Record<string,unknown>);
+      // the required shape is validated at runtime inside loadSessionSpec
+      void loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
     } else {
       rootModel.setDefaultSession()
       if (sessionName) {
@@ -111,10 +119,4 @@ export function createPluginManager(
     )
     console.error(e)
   }
-
-  doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
-  pluginManager.setRootModel(rootModel)
-  pluginManager.configure()
-  initAfterConfigure?.()
-  return pluginManager
 }
