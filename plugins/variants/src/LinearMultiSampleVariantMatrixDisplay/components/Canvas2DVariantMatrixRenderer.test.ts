@@ -88,12 +88,14 @@ describe('Canvas2DVariantMatrixRenderer', () => {
       { ...STATE, canvasHeight: 600, rowHeight: 20 },
     )
 
+    // featureIndex 2 of 4 across width 400 => cellWidth 100, x = 200; the 0.3px
+    // overdraw (f2) shifts each edge so sub-pixel columns antialias and blend.
     expect(fillRectCalls.length).toBe(1)
     const [x, y, w, h] = fillRectCalls[0]!
-    expect(x).toBeCloseTo(200)
-    expect(y).toBeCloseTo(60)
-    expect(w).toBeCloseTo(100)
-    expect(h).toBe(20)
+    expect(x).toBeCloseTo(199.7)
+    expect(y).toBeCloseTo(59.7)
+    expect(w).toBeCloseTo(100.3)
+    expect(h).toBeCloseTo(20.3)
   })
 
   test('skips cells above viewport', () => {

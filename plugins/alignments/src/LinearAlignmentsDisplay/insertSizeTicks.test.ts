@@ -1,22 +1,19 @@
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
+import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
 
 describe('computeInsertSizeTicks', () => {
-  it('returns undefined when availableHeight is invalid', () => {
+  it('returns undefined when available height is invalid', () => {
     expect(
       computeInsertSizeTicks({
         arcsYDomainBp: 100,
-        readConnectionsHeight: 0,
-        pairedArcsDown: true,
-        arcsTop: 0,
+        band: { top: 0, height: ARC_HEIGHT_MARGIN, down: true },
       }),
     ).toBeUndefined()
 
     expect(
       computeInsertSizeTicks({
         arcsYDomainBp: 100,
-        readConnectionsHeight: -10,
-        pairedArcsDown: true,
-        arcsTop: 0,
+        band: { top: 0, height: 0, down: true },
       }),
     ).toBeUndefined()
   })
@@ -24,30 +21,37 @@ describe('computeInsertSizeTicks', () => {
   it('returns valid ticks when inputs are valid', () => {
     const result = computeInsertSizeTicks({
       arcsYDomainBp: 500,
-      readConnectionsHeight: 40,
-      pairedArcsDown: true,
-      arcsTop: 0,
+      band: { top: 0, height: 40, down: true },
     })
 
     expect(result).toBeDefined()
     expect(result?.items.length).toBeGreaterThan(0)
-    expect(result?.yTop).toBeDefined()
-    expect(result?.yBottom).toBeDefined()
-    // All y values should be finite
     expect(result?.items.every(t => Number.isFinite(t.y))).toBe(true)
   })
 
-  it('generates ticks with finite y coordinates', () => {
-    const result = computeInsertSizeTicks({
-      arcsYDomainBp: 1000,
-      readConnectionsHeight: 50,
-      pairedArcsDown: false,
-      arcsTop: 10,
-    })
+  // The zero tick sits at the arc anchor and the full-domain tick sits at the
+  // apex (anchor ∓ availH), matching features/arcs/drawCanvas.ts exactly.
+  it('anchors the zero tick at the band edge the arcs anchor to', () => {
+    const arcsYDomainBp = 1000
+    const down = computeInsertSizeTicks({
+      arcsYDomainBp,
+      band: { top: 45, height: 40, down: true },
+    })!
+    const availH = 40 - ARC_HEIGHT_MARGIN
+    // down mode: anchor at band top (45), apex below it
+    expect(down.items[0]!.value).toBe(0)
+    expect(down.items[0]!.y).toBe(45)
+    expect(down.yTop).toBe(45)
+    expect(down.yBottom).toBe(45 + availH)
 
-    expect(result).toBeDefined()
-    expect(result?.items.every(t => Number.isFinite(t.y))).toBe(true)
-    expect(Number.isFinite(result?.yTop)).toBe(true)
-    expect(Number.isFinite(result?.yBottom)).toBe(true)
+    const up = computeInsertSizeTicks({
+      arcsYDomainBp,
+      band: { top: 0, height: 45, down: false },
+    })!
+    const upAvailH = 45 - ARC_HEIGHT_MARGIN
+    // up mode: anchor at band bottom (top + height = 45), apex above it
+    expect(up.items[0]!.y).toBe(45)
+    expect(up.yBottom).toBe(45)
+    expect(up.yTop).toBe(45 - upAvailH)
   })
 })

@@ -65,8 +65,9 @@ export interface FeatureDataResult {
   rectPositions: Uint32Array
   rectYs: Float32Array
   rectHeights: Float32Array
-  // RGBA packed as a single u32 per rect (R=byte0 … A=byte3). Consumed
-  // directly by interleaveRects — the rect shader unpacks with bit shifts.
+  // RGBA packed as a single u32 per rect (R=byte0 … A=byte3). Packed straight
+  // into the instance buffer by the rect shader's packInstances — the shader
+  // unpacks with bit shifts.
   rectColors: Uint32Array
 
   // Connecting lines (introns) with strand info for dynamic chevron generation

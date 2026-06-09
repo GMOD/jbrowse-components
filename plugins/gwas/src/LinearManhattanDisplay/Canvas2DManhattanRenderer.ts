@@ -1,7 +1,6 @@
 import {
   bpToScreenPx,
   clipBlockForCanvas,
-  prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
@@ -103,12 +102,11 @@ export class Canvas2DManhattanRenderer extends Canvas2DPerRegionRenderingBackend
   ManhattanRpcResult,
   ManhattanRenderState
 > {
-  renderBlocks(
+  protected draw(
     blocks: RenderBlock[],
     regions: ReadonlyMap<number, ManhattanRpcResult>,
     state: ManhattanRenderState,
   ) {
-    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     drawManhattanBlocks(this.ctx, regions, blocks, state)
   }
 }

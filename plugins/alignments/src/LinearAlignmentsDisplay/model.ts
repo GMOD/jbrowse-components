@@ -61,6 +61,7 @@ import {
   getReadsMenuItem,
   getSortByMenuItem,
 } from './menus/index.ts'
+import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from './constants.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
@@ -1293,26 +1294,20 @@ export default function stateModelFactory(
             return undefined
           }
           // arcsYDomainBp is only set in samplot mode, so this runs only then.
-          // Up: overlay the coverage band when shown, else its own band, anchored
-          // at the bottom. Down: open a readConnectionsHeight band below coverage,
-          // anchored below it.
-          const covH = self.showCoverage ? self.coverageHeight : 0
-          return computeInsertSizeTicks(
-            self.readConnectionsDown
-              ? {
-                  arcsYDomainBp: domain,
-                  readConnectionsHeight: self.readConnectionsHeight,
-                  pairedArcsDown: true,
-                  arcsTop: covH,
-                }
-              : {
-                  arcsYDomainBp: domain,
-                  readConnectionsHeight:
-                    covH > 0 ? covH : self.readConnectionsHeight,
-                  pairedArcsDown: false,
-                  arcsTop: 0,
-                },
-          )
+          // The ruler reuses the arcs' own band geometry so ticks land on the
+          // arc apexes (see insertSizeTicks.ts / features/arcs/drawCanvas.ts).
+          const band = computeArcBand({
+            showCoverage: self.showCoverage,
+            coverageHeight: self.coverageHeight,
+            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+            readConnections: self.readConnections,
+            readConnectionsDown: self.readConnectionsDown,
+            readConnectionsHeight: self.readConnectionsHeight,
+          })
+          if (!band) {
+            return undefined
+          }
+          return computeInsertSizeTicks({ band, arcsYDomainBp: domain })
         },
       }))
       .views(self => ({

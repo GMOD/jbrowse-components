@@ -6,7 +6,7 @@
 
 import hpmath;
 import colorPack;
-import canvasUniforms;
+import featureGlyphUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 9u;
@@ -21,7 +21,7 @@ struct ArrowInstance {
   uint  color     : ATTR3;
 };
 
-[[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
 
 struct VsOut {
   float4 position : SV_Position;

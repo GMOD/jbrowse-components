@@ -282,3 +282,30 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_gapType', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_frequency', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
+
+export interface InstanceArrays {
+  startOff: ArrayLike<number>
+  endOff: ArrayLike<number>
+  y: ArrayLike<number>
+  gapType: ArrayLike<number>
+  frequency: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { startOff, endOff, y, gapType, frequency } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = startOff[i]!
+    u32[o + 1] = endOff[i]!
+    u32[o + 2] = y[i]!
+    u32[o + 3] = gapType[i]!
+    f32[o + 4] = frequency[i]!
+  }
+  return buf
+}

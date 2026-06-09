@@ -86,7 +86,10 @@ const AllLines = observer(function AllLines({
   }, [assembly, n, snps, blockWidth, viewScale, viewOffsetX, view])
 
   const pathD = useMemo(
-    () => lineCoords.map(({ mx, gx }) => `M${mx} ${lineZoneHeight}L${gx} 0`).join(''),
+    () =>
+      lineCoords
+        .map(({ mx, gx }) => `M${mx} ${lineZoneHeight}L${gx} 0`)
+        .join(''),
     [lineCoords, lineZoneHeight],
   )
 
@@ -100,13 +103,24 @@ const AllLines = observer(function AllLines({
       let minDist = 10
       let found: (typeof lineCoords)[0] | undefined
       for (const coord of lineCoords) {
-        const dist = pointToSegmentDist(pt.x, pt.y, coord.mx, lineZoneHeight, coord.gx, 0)
+        const dist = pointToSegmentDist(
+          pt.x,
+          pt.y,
+          coord.mx,
+          lineZoneHeight,
+          coord.gx,
+          0,
+        )
         if (dist < minDist) {
           minDist = dist
           found = coord
         }
       }
-      onHover(found ? { snp: found.snp, idx: found.idx, genomicX: found.gx } : undefined)
+      onHover(
+        found
+          ? { snp: found.snp, idx: found.idx, genomicX: found.gx }
+          : undefined,
+      )
     },
     [lineCoords, lineZoneHeight, onHover],
   )

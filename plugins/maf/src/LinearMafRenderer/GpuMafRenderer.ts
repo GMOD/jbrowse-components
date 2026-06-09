@@ -1,5 +1,4 @@
-import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
-import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
+import { bpRangeXTuple } from '@jbrowse/core/gpu/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
@@ -15,6 +14,7 @@ import type {
   MafRenderBlock,
   MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
+import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_RECT = 'rect'
@@ -54,45 +54,23 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
     }
   }
 
-  renderBlocks(
-    blocks: MafRenderBlock[],
-    regions: ReadonlyMap<number, MafRegionData>,
+  protected drawRegion(
+    block: MafRenderBlock,
+    clip: BlockClipResult,
+    _region: MafRegionData,
     state: MafGPURenderState,
   ) {
-    const { canvasWidth, canvasHeight, rowHeight, rowProportion } = state
-    const dpr = getDpr()
+    const [bpHi, bpLo, bpLen] = bpRangeXTuple(clip, block.reversed)
+    this.uniformF32[U.bpRangeX + 0] = bpHi
+    this.uniformF32[U.bpRangeX + 1] = bpLo
+    this.uniformF32[U.bpRangeX + 2] = bpLen
+    this.uniformF32[U.canvasHeight] = state.canvasHeight
+    this.uniformF32[U.viewportWidth] = clip.pxW
+    this.uniformF32[U.zero] = 0
+    this.uniformF32[U.rowHeight] = state.rowHeight
+    this.uniformF32[U.rowProportion] = state.rowProportion
 
-    this.hal.resize(canvasWidth, canvasHeight)
-    this.hal.beginFrame(0, 0, 0, 0)
-
-    for (const block of blocks) {
-      if (!regions.has(block.displayedRegionIndex)) {
-        continue
-      }
-      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
-      if (!clip) {
-        continue
-      }
-
-      this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
-      this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
-
-      const [bpHi, bpLo, bpLen] = bpRangeXTuple(clip, block.reversed)
-      this.uniformF32[U.bpRangeX + 0] = bpHi
-      this.uniformF32[U.bpRangeX + 1] = bpLo
-      this.uniformF32[U.bpRangeX + 2] = bpLen
-      this.uniformF32[U.canvasHeight] = canvasHeight
-      this.uniformF32[U.viewportWidth] = clip.pxW
-      this.uniformF32[U.zero] = 0
-      this.uniformF32[U.rowHeight] = rowHeight
-      this.uniformF32[U.rowProportion] = rowProportion
-
-      this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
-    }
-
-    this.hal.clearScissor()
-    this.hal.clearViewport()
-    this.hal.endFrame()
+    this.hal.writeUniforms(this.uniformData)
+    this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
   }
 }

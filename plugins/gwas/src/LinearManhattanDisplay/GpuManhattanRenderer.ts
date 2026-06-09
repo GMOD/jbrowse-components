@@ -1,8 +1,4 @@
-import {
-  clipBlock,
-  writeBpRangeUniforms,
-} from '@jbrowse/core/gpu/blockClipUtils'
-import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
+import { writeBpRangeUniforms } from '@jbrowse/core/gpu/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
@@ -11,6 +7,7 @@ import * as shader from './shaders/manhattan.generated.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 
@@ -45,65 +42,38 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
     )
   }
 
-  renderBlocks(
-    blocks: RenderBlock[],
-    regions: ReadonlyMap<number, ManhattanRpcResult>,
+  protected drawRegion(
+    block: RenderBlock,
+    clip: BlockClipResult,
+    _region: ManhattanRpcResult,
     state: ManhattanRenderState,
   ) {
-    const { canvasWidth, canvasHeight, domainY } = state
-    const dpr = getDpr()
-    this.hal.resize(canvasWidth, canvasHeight)
-    this.hal.beginFrame(0, 0, 0, 0)
+    writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
+    this.uniformF32[U.canvasHeight] = state.canvasHeight
+    this.uniformF32[U.domainYMin] = state.domainY[0]
+    this.uniformF32[U.domainYMax] = state.domainY[1]
+    this.uniformF32[U.zero] = 0
+    // viewportWidth + pointRadius stay in CSS units to match canvasHeight
+    // (per CLAUDE.md GPU conventions). Mixing DPR-scaled radius with
+    // CSS-scaled canvasHeight produces vertically-stretched ellipses on
+    // hi-DPI displays.
+    this.uniformF32[U.viewportWidth] = clip.scissorW
+    this.uniformF32[U.pointRadius] = POINT_RADIUS_PX
 
-    for (const block of blocks) {
-      if (!regions.has(block.displayedRegionIndex)) {
-        continue
-      }
-      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
-      if (!clip) {
-        continue
-      }
-
-      this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
-      this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
-
-      writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
-      this.uniformF32[U.canvasHeight] = canvasHeight
-      this.uniformF32[U.domainYMin] = domainY[0]
-      this.uniformF32[U.domainYMax] = domainY[1]
-      this.uniformF32[U.zero] = 0
-      // viewportWidth + pointRadius stay in CSS units to match canvasHeight
-      // (per CLAUDE.md GPU conventions). Mixing DPR-scaled radius with
-      // CSS-scaled canvasHeight produces vertically-stretched ellipses on
-      // hi-DPI displays.
-      this.uniformF32[U.viewportWidth] = clip.scissorW
-      this.uniformF32[U.pointRadius] = POINT_RADIUS_PX
-
-      this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(PASS, block.displayedRegionIndex)
-    }
-
-    this.hal.clearScissor()
-    this.hal.clearViewport()
-    this.hal.endFrame()
+    this.hal.writeUniforms(this.uniformData)
+    this.hal.drawPass(PASS, block.displayedRegionIndex)
   }
 }
 
 export function buildInstanceBuffer(data: ManhattanRpcResult): ArrayBuffer {
-  const n = data.numFeatures
-  const buf = new ArrayBuffer(n * shader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const stride = shader.INSTANCE_STRIDE_F32
-  const { positions, ends, glyphs, scores, colors } = data
-  let off = 0
-  for (let i = 0; i < n; i++) {
-    u32[off + shader.FIELD_OFFSET_F32.absPosition] = positions[i]!
-    u32[off + shader.FIELD_OFFSET_F32.absEnd] = ends[i]!
-    f32[off + shader.FIELD_OFFSET_F32.score] = scores[i]!
-    u32[off + shader.FIELD_OFFSET_F32.color] = colors[i]!
-    u32[off + shader.FIELD_OFFSET_F32.glyph] = glyphs[i]!
-    off += stride
-  }
-  return buf
+  return shader.packInstances(
+    {
+      absPosition: data.positions,
+      absEnd: data.ends,
+      score: data.scores,
+      color: data.colors,
+      glyph: data.glyphs,
+    },
+    data.numFeatures,
+  )
 }

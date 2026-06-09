@@ -282,3 +282,30 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_colorType', components: 1, type: 'float', offsetBytes: 12, integer: false },
   { name: 'a_relDepth', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
+
+export interface InstanceArrays {
+  position: ArrayLike<number>
+  yOffset: ArrayLike<number>
+  segHeight: ArrayLike<number>
+  colorType: ArrayLike<number>
+  relDepth: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { position, yOffset, segHeight, colorType, relDepth } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = position[i]!
+    f32[o + 1] = yOffset[i]!
+    f32[o + 2] = segHeight[i]!
+    f32[o + 3] = colorType[i]!
+    f32[o + 4] = relDepth[i]!
+  }
+  return buf
+}

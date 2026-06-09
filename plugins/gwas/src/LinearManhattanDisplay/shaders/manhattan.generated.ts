@@ -66,3 +66,30 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_glyph', components: 1, type: 'uint', offsetBytes: 16, integer: true },
 ]
+
+export interface InstanceArrays {
+  absPosition: ArrayLike<number>
+  absEnd: ArrayLike<number>
+  score: ArrayLike<number>
+  color: ArrayLike<number>
+  glyph: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { absPosition, absEnd, score, color, glyph } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = absPosition[i]!
+    u32[o + 1] = absEnd[i]!
+    f32[o + 2] = score[i]!
+    u32[o + 3] = color[i]!
+    u32[o + 4] = glyph[i]!
+  }
+  return buf
+}

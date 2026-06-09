@@ -276,3 +276,24 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_position', components: 1, type: 'uint', offsetBytes: 0, integer: true },
   { name: 'a_depth', components: 1, type: 'float', offsetBytes: 4, integer: false },
 ]
+
+export interface InstanceArrays {
+  position: ArrayLike<number>
+  depth: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { position, depth } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = position[i]!
+    f32[o + 1] = depth[i]!
+  }
+  return buf
+}

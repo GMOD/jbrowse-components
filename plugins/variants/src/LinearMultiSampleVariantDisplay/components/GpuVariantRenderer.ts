@@ -1,8 +1,4 @@
-import {
-  clipBlock,
-  writeBpRangeUniforms,
-} from '@jbrowse/core/gpu/blockClipUtils'
-import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
+import { writeBpRangeUniforms } from '@jbrowse/core/gpu/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
@@ -14,6 +10,7 @@ import type {
   VariantRenderState,
   VariantUploadData,
 } from './variantRenderingBackendTypes.ts'
+import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 
 const PASS_MAIN = 'main'
@@ -50,43 +47,20 @@ export class GpuVariantRenderer extends GpuPerRegionRenderingBackend<
     this.hal.uploadBuffer(displayedRegionIndex, PASS_MAIN, buf, data.numCells)
   }
 
-  renderBlocks(
-    blocks: VariantRenderBlock[],
-    regions: ReadonlyMap<number, VariantUploadData>,
+  protected drawRegion(
+    block: VariantRenderBlock,
+    clip: BlockClipResult,
+    _region: VariantUploadData,
     state: VariantRenderState,
   ) {
-    const { canvasWidth, canvasHeight } = state
-    const dpr = getDpr()
+    writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
+    this.uniformF32[U.canvasHeight] = state.canvasHeight
+    this.uniformF32[U.canvasWidth] = clip.scissorW
+    this.uniformF32[U.rowHeight] = state.rowHeight
+    this.uniformF32[U.scrollTop] = state.scrollTop
+    // uniformF32[U.zero] = 0 — already 0.0 from ArrayBuffer initialization
 
-    this.hal.resize(canvasWidth, canvasHeight)
-    this.hal.beginFrame(0, 0, 0, 0)
-
-    for (const block of blocks) {
-      const region = regions.get(block.displayedRegionIndex)
-      if (!region || region.numCells === 0) {
-        continue
-      }
-      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
-      if (!clip) {
-        continue
-      }
-
-      this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
-      this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
-
-      writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
-      this.uniformF32[U.canvasHeight] = canvasHeight
-      this.uniformF32[U.canvasWidth] = clip.scissorW
-      this.uniformF32[U.rowHeight] = state.rowHeight
-      this.uniformF32[U.scrollTop] = state.scrollTop
-      // uniformF32[U.zero] = 0 — already 0.0 from ArrayBuffer initialization
-
-      this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(PASS_MAIN, block.displayedRegionIndex)
-    }
-
-    this.hal.clearScissor()
-    this.hal.clearViewport()
-    this.hal.endFrame()
+    this.hal.writeUniforms(this.uniformData)
+    this.hal.drawPass(PASS_MAIN, block.displayedRegionIndex)
   }
 }

@@ -110,3 +110,44 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_alignmentLength', components: 1, type: 'float', offsetBytes: 40, integer: false },
   { name: 'a_kind', components: 1, type: 'float', offsetBytes: 44, integer: false },
 ]
+
+export interface InstanceArrays {
+  bp1Hi: ArrayLike<number>
+  bp1Lo: ArrayLike<number>
+  bp2Hi: ArrayLike<number>
+  bp2Lo: ArrayLike<number>
+  bp3Hi: ArrayLike<number>
+  bp3Lo: ArrayLike<number>
+  bp4Hi: ArrayLike<number>
+  bp4Lo: ArrayLike<number>
+  color: ArrayLike<number>
+  featureId: ArrayLike<number>
+  alignmentLength: ArrayLike<number>
+  kind: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { bp1Hi, bp1Lo, bp2Hi, bp2Lo, bp3Hi, bp3Lo, bp4Hi, bp4Lo, color, featureId, alignmentLength, kind } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    f32[o + 0] = bp1Hi[i]!
+    f32[o + 1] = bp1Lo[i]!
+    f32[o + 2] = bp2Hi[i]!
+    f32[o + 3] = bp2Lo[i]!
+    f32[o + 4] = bp3Hi[i]!
+    f32[o + 5] = bp3Lo[i]!
+    f32[o + 6] = bp4Hi[i]!
+    f32[o + 7] = bp4Lo[i]!
+    u32[o + 8] = color[i]!
+    f32[o + 9] = featureId[i]!
+    f32[o + 10] = alignmentLength[i]!
+    f32[o + 11] = kind[i]!
+  }
+  return buf
+}

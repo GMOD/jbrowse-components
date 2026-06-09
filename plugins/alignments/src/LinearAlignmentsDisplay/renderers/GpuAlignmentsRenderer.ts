@@ -7,6 +7,7 @@ import {
   buildReadIdToIndex,
   computeArcBand,
   ensureRegion,
+  shouldDrawOverlaps,
 } from './rendererTypes.ts'
 import {
   ARC_LINE_PASS,
@@ -557,7 +558,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         this.hal.drawPass(PASS_LINKED_READ_LINE, block.displayedRegionIndex)
       }
       this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
-      if (state.linkedReads !== 'off' && state.featureHeight >= 3) {
+      if (shouldDrawOverlaps(state)) {
         this.hal.drawPass(PASS_OVERLAP, block.displayedRegionIndex)
       }
 

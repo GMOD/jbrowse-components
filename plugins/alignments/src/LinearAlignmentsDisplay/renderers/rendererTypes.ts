@@ -100,11 +100,23 @@ export interface ArcBand {
   down: boolean
 }
 
+// The fields `computeArcBand` reads. Narrower than `RenderState` so the model's
+// `insertSizeTicks` getter can build the band from raw fields without depending
+// on the full render state (which also needs the color palette to exist).
+export interface ArcBandInput {
+  showCoverage: boolean
+  coverageHeight: number
+  coverageYOffset: number
+  readConnections: ReadConnectionsMode
+  readConnectionsDown?: boolean
+  readConnectionsHeight?: number
+}
+
 // Decoupled from `showCoverage`: up-mode arcs overlay the coverage band when
 // it's shown, otherwise they take their own `readConnectionsHeight` band.
 // Down-mode arcs always sit in their own band below coverage. Returns undefined
 // when there are no arcs to draw.
-export function computeArcBand(state: RenderState): ArcBand | undefined {
+export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
   const covH = state.showCoverage ? state.coverageHeight : 0
   const h = state.readConnectionsHeight ?? 0
   if (state.readConnections === 'off' || h === 0) {
@@ -117,6 +129,13 @@ export function computeArcBand(state: RenderState): ArcBand | undefined {
   // coverage baseline / scalebar-label padding).
   const bandH = covH > 0 ? covH : h
   return { top: 0, height: bandH - state.coverageYOffset, down: false }
+}
+
+// Whether to draw the mate-overlap hatching pass. Shared by both renderers so
+// the gate can't drift between them. Only meaningful in a linked-reads layout,
+// and suppressed below 3px row height where the hatching is sub-pixel noise.
+export function shouldDrawOverlaps(state: RenderState) {
+  return state.linkedReads !== 'off' && state.featureHeight >= 3
 }
 
 // Sub-pixel alpha blend: lerp between `base` (full-row coverage) and 1 using

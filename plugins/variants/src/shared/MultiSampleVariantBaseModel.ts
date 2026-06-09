@@ -123,13 +123,40 @@ export function sortSourcesByGenotype(
   })
 }
 
+// Regions to fetch + render, by mode. Regular mode draws each variant at its
+// genomic position, so off-screen buffered features simply clip — use the
+// half-screen-buffered regions for smooth scrolling. Matrix mode lays columns
+// out by feature index across the *visible* width, so including buffered
+// features would cram off-screen variants into the viewport and draw connector
+// lines to off-screen genomic positions — use the visible regions only.
+function fetchRegionsForMode(
+  view: LinearGenomeViewModel,
+  mode: 'regular' | 'matrix',
+): { region: Region; displayedRegionIndex: number }[] {
+  if (mode === 'matrix') {
+    return view.visibleRegions.map(vr => ({
+      region: {
+        refName: vr.refName,
+        start: Math.floor(vr.start),
+        end: Math.ceil(vr.end),
+        assemblyName: vr.assemblyName,
+      },
+      displayedRegionIndex: vr.displayedRegionIndex,
+    }))
+  }
+  return view.bufferedVisibleRegions
+}
+
 // Module-local helper for the variant cell data RPC call. Takes the resolved
 // rpcProps object (rather than `self`) so TS infers the payload shape from
 // the model's rpcProps view without a structural cast. `mode` comes from the
-// per-subclass cellDataMode that's bound at factory call time.
+// per-subclass cellDataMode that's bound at factory call time. `regions` is the
+// already-resolved fetch set so the RPC fetches exactly what fetchNeeded marked
+// as loaded (no second view read across the async boundary).
 async function callMultiSampleVariantCellData(args: {
   node: IAnyStateTreeNode
   adapterConfig: AnyConfigurationModel
+  regions: { region: Region; displayedRegionIndex: number }[]
   rpcProps: {
     sources: ProcessedSource[]
     minorAlleleFrequencyFilter: number
@@ -141,16 +168,22 @@ async function callMultiSampleVariantCellData(args: {
   setStatusMessage: (msg?: string) => void
   ctx: FetchContext
 }) {
-  const { node, adapterConfig, rpcProps, mode, setStatusMessage, ctx } = args
-  const view = getContainingView(node) as LinearGenomeViewModel
-  const allBuffered = view.bufferedVisibleRegions
+  const {
+    node,
+    adapterConfig,
+    regions,
+    rpcProps,
+    mode,
+    setStatusMessage,
+    ctx,
+  } = args
   const sessionId = getRpcSessionId(node)
   return getSession(node).rpcManager.call(
     sessionId,
     'MultiSampleVariantGetCellData',
     {
-      regions: allBuffered.map(r => r.region),
-      displayedRegionIndices: allBuffered.map(r => r.displayedRegionIndex),
+      regions: regions.map(r => r.region),
+      displayedRegionIndices: regions.map(r => r.displayedRegionIndex),
       ...rpcProps,
       mode,
       sessionId,
@@ -313,7 +346,7 @@ export default function MultiSampleVariantBaseModelF(
         cellData: undefined as CellDataResult | undefined,
         // bpPerPx the current cellData was fetched at. Matrix mode lays columns
         // out by feature index across the full width, so the displayed feature
-        // set is the buffered region for *this* zoom; a zoom change invalidates
+        // set is the visible region at *this* zoom; a zoom change invalidates
         // the cache even when the viewport is still spatially covered. See the
         // isCacheValid override below.
         loadedBpPerPx: undefined as number | undefined,
@@ -1051,7 +1084,7 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         // Matrix mode draws columns by feature index across the full width, so
-        // the set of features belongs to the buffered region at the *current*
+        // the set of features belongs to the visible region at the *current*
         // zoom — zooming in/out changes which features show even when the
         // viewport stays spatially inside loaded data, so cached cells at a
         // different bpPerPx are stale (wiggle uses the same strict-zoom rule,
@@ -1090,17 +1123,18 @@ export default function MultiSampleVariantBaseModelF(
             return
           }
           const view = getContainingView(self) as LinearGenomeViewModel
-          const allBuffered = view.bufferedVisibleRegions
-          if (allBuffered.length === 0) {
+          const regions = fetchRegionsForMode(view, cellDataMode)
+          if (regions.length === 0) {
             return
           }
           const bpPerPx = view.bpPerPx
           const sources = self.sourcesBase
           const rpcProps = { ...self.rpcProps(), sources }
-          await self.fetchRegions(allBuffered, async (ctx: FetchContext) => {
+          await self.fetchRegions(regions, async (ctx: FetchContext) => {
             const result = await callMultiSampleVariantCellData({
               node: self,
               adapterConfig: self.adapterConfig,
+              regions,
               rpcProps,
               mode: cellDataMode,
               setStatusMessage: self.setStatusMessage,

@@ -61,6 +61,27 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_count', components: 1, type: 'float', offsetBytes: 8, integer: false },
 ]
 
+export interface InstanceArrays {
+  position: ArrayLike<number>
+  count: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const { position, count } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    f32[o + 0] = position[i * 2 + 0]!
+    f32[o + 1] = position[i * 2 + 1]!
+    f32[o + 2] = count[i]!
+  }
+  return buf
+}
+
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [
   { textureBinding: 2, samplerBinding: 3, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },

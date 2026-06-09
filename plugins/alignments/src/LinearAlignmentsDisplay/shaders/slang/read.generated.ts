@@ -296,3 +296,45 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_edgeFlags', components: 1, type: 'uint', offsetBytes: 40, integer: true },
   { name: 'a_interchrom', components: 1, type: 'uint', offsetBytes: 44, integer: true },
 ]
+
+export interface InstanceArrays {
+  startOff: ArrayLike<number>
+  endOff: ArrayLike<number>
+  y: ArrayLike<number>
+  flags: ArrayLike<number>
+  mapq: ArrayLike<number>
+  insertSize: ArrayLike<number>
+  pairOrient: ArrayLike<number>
+  strand: ArrayLike<number>
+  tagColor: ArrayLike<number>
+  chainHasSupp: ArrayLike<number>
+  edgeFlags: ArrayLike<number>
+  interchrom: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const i32 = new Int32Array(buf)
+  const { startOff, endOff, y, flags, mapq, insertSize, pairOrient, strand, tagColor, chainHasSupp, edgeFlags, interchrom } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = startOff[i]!
+    u32[o + 1] = endOff[i]!
+    u32[o + 2] = y[i]!
+    u32[o + 3] = flags[i]!
+    u32[o + 4] = mapq[i]!
+    f32[o + 5] = insertSize[i]!
+    u32[o + 6] = pairOrient[i]!
+    i32[o + 7] = strand[i]!
+    u32[o + 8] = tagColor[i]!
+    u32[o + 9] = chainHasSupp[i]!
+    u32[o + 10] = edgeFlags[i]!
+    u32[o + 11] = interchrom[i]!
+  }
+  return buf
+}

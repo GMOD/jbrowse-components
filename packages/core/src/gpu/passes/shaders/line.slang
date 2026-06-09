@@ -5,11 +5,11 @@
 import hpmath;
 import colorPack;
 import lineInstance;
-import canvasUniforms;
+import featureGlyphUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
-[[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
 
 struct VsOut {
   float4 position : SV_Position;

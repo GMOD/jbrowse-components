@@ -127,7 +127,13 @@ export default class RpcManager {
     const driverForCall = this.getDriverForCall(a, opts)
     try {
       return (await this.withAuthRetry(() =>
-        driverForCall.call(this.pluginManager, sessionId, functionName, a, opts),
+        driverForCall.call(
+          this.pluginManager,
+          sessionId,
+          functionName,
+          a,
+          opts,
+        ),
       )) as RpcCallReturn<M>
     } finally {
       if (functionName === 'CoreFreeResources') {

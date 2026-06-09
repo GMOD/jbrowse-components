@@ -1,5 +1,18 @@
+import { clipBlock } from './blockClipUtils.ts'
+import { getDpr, prepareCanvas } from './canvas2dUtils.ts'
+
+import type { BlockClipResult } from './blockClipUtils.ts'
 import type { GpuHal } from './hal/types.ts'
 import type { RenderBlock } from './renderBlock.ts'
+
+/**
+ * Minimum render-state shape the GPU frame scaffold needs: the CSS-pixel
+ * canvas dimensions used to size the backing store and clip each block.
+ */
+export interface FrameDimensions {
+  canvasWidth: number
+  canvasHeight: number
+}
 
 /**
  * Shared contract for per-region streamed GPU backends.
@@ -38,14 +51,20 @@ export interface PerRegionRenderingBackend<
 /**
  * Canvas2D-side base for `PerRegionRenderingBackend` implementations. Owns the
  * `canvas` + 2D context; stubs the upload/prune/dispose hooks the backend
- * shape requires but Canvas2D doesn't need (everything comes through
- * `renderBlocks` from the model's data map). Subclasses implement
- * `renderBlocks` and nothing else.
+ * shape requires but Canvas2D doesn't need (everything comes through `draw`
+ * from the model's data map).
+ *
+ * `renderBlocks` is concrete: it runs `prepareCanvas` (DPR-aware backing-store
+ * sizing — symmetric to the GPU base owning `resize`/scissor) and then calls
+ * the abstract `draw`. Subclasses implement only `draw`, which delegates to the
+ * plugin's pure `drawXxxBlocks` function (also shared with SVG export). Keeping
+ * `prepareCanvas` in the base means a renderer can't forget it and render
+ * blurry on hi-DPI.
  */
 export abstract class Canvas2DPerRegionRenderingBackend<
   UploadData,
-  RenderState,
-  Block = RenderBlock,
+  RenderState extends FrameDimensions,
+  Block extends RenderBlock = RenderBlock,
   RenderData = UploadData,
 > implements PerRegionRenderingBackend<
   UploadData,
@@ -69,7 +88,20 @@ export abstract class Canvas2DPerRegionRenderingBackend<
   pruneRegions(): void {}
   dispose(): void {}
 
-  abstract renderBlocks(
+  renderBlocks(
+    blocks: Block[],
+    regions: ReadonlyMap<number, RenderData>,
+    state: RenderState,
+  ): void {
+    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
+    this.draw(blocks, regions, state)
+  }
+
+  /**
+   * Paint the visible blocks into `this.ctx` (already DPR-prepared). Delegates
+   * to the plugin's pure `drawXxxBlocks(ctx, regions, blocks, state)` function.
+   */
+  protected abstract draw(
     blocks: Block[],
     regions: ReadonlyMap<number, RenderData>,
     state: RenderState,
@@ -80,13 +112,20 @@ export abstract class Canvas2DPerRegionRenderingBackend<
  * GPU-side base for `PerRegionRenderingBackend` implementations. Owns the `hal`
  * reference and a pre-allocated uniform scratch `ArrayBuffer` reused across
  * frames. Provides the shared `pruneRegions` (delegates to HAL) and
- * `dispose` (also delegates) so subclasses implement only `uploadRegion`
- * and `renderBlocks`.
+ * `dispose` (also delegates).
+ *
+ * `renderBlocks` is a concrete frame scaffold shared by every per-region GPU
+ * renderer: resize the backing store, `beginFrame`/`endFrame`, and per block
+ * compute the scissor clip + set scissor/viewport. The scaffold's invariants
+ * (paired begin/end, cleared scissor/viewport, the skip-absent-region and
+ * skip-offscreen guards) are owned here so a subclass can't forget them.
+ * Subclasses implement only `uploadRegion` and `drawRegion` — the latter writes
+ * uniforms and issues draw passes for one already-clipped block.
  */
 export abstract class GpuPerRegionRenderingBackend<
   UploadData,
-  RenderState,
-  Block = RenderBlock,
+  RenderState extends FrameDimensions,
+  Block extends RenderBlock = RenderBlock,
   RenderData = UploadData,
 > implements PerRegionRenderingBackend<
   UploadData,
@@ -112,9 +151,44 @@ export abstract class GpuPerRegionRenderingBackend<
 
   abstract uploadRegion(displayedRegionIndex: number, data: UploadData): void
 
-  abstract renderBlocks(
+  renderBlocks(
     blocks: Block[],
     regions: ReadonlyMap<number, RenderData>,
+    state: RenderState,
+  ): void {
+    const { canvasWidth, canvasHeight } = state
+    const dpr = getDpr()
+    this.hal.resize(canvasWidth, canvasHeight)
+    // Always pair beginFrame/endFrame so the canvas clears to transparent even
+    // when every block is skipped (e.g. all regions pruned by a density gate).
+    this.hal.beginFrame(0, 0, 0, 0)
+    for (const block of blocks) {
+      const region = regions.get(block.displayedRegionIndex)
+      if (region !== undefined) {
+        const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
+        if (clip) {
+          this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
+          this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
+          this.drawRegion(block, clip, region, state)
+        }
+      }
+    }
+    this.hal.clearScissor()
+    this.hal.clearViewport()
+    this.hal.endFrame()
+  }
+
+  /**
+   * Write uniforms and issue draw passes for one block whose scissor/viewport
+   * are already set to its clipped span. `clip` carries the HP-split bp range
+   * and pixel dimensions; `region` is the model's per-region data (used by
+   * renderers that read per-region uniforms like an outline color, ignored by
+   * those whose draw state is fully in the uploaded buffer).
+   */
+  protected abstract drawRegion(
+    block: Block,
+    clip: BlockClipResult,
+    region: RenderData,
     state: RenderState,
   ): void
 }

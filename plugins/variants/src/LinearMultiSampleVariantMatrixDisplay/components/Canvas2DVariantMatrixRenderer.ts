@@ -2,6 +2,8 @@ import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
+import { f2 } from '../../shared/constants.ts'
+
 import type {
   MatrixRenderState,
   VariantMatrixUploadData,
@@ -30,7 +32,6 @@ export function drawVariantMatrixBlocks(
   // Draw at float coordinates with a small overdraw (f2) so sub-pixel columns
   // antialias and blend, matching the smoother canvas2d-only rendering. Do NOT
   // pixel-snap or force a 1px minimum here (that decimates sub-pixel columns).
-  const f2 = 0.3
   for (let i = 0; i < data.numCells; i++) {
     const y = data.cellRowIndices[i]! * rowHeight - scrollTop
     if (y + rowHeight < 0 || y > canvasHeight) {

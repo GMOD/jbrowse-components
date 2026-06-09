@@ -291,6 +291,29 @@ export function XxxRenderer(canvas: HTMLCanvasElement) {
 `createRenderingBackend` calls `createGpuHal`; if a HAL is returned, the GPU backend
 is constructed, otherwise Canvas 2D.
 
+### Canvas2D is the floor; GPU is the optional accelerator
+
+Every display **must** ship a Canvas2D draw function regardless — SVG export
+goes through it (see "SVG export pipeline"). The GPU shader path is an *optional
+accelerator* layered on top for displays whose feature counts demand it
+(≳100K features/frame — RFC-001 §3a). So a display whose data is always
+gene-scale / low-density / text can be **Canvas2D-only**: it writes no `.slang`,
+no `GpuXxxRenderer`, and no pass list. Its factory skips the HAL ladder and
+returns the Canvas2D backend directly via `createCanvas2DBackend`:
+
+```ts
+export function XxxRenderer(canvas: HTMLCanvasElement) {
+  return createCanvas2DBackend(canvas, c => new Canvas2DXxxRenderer(c))
+}
+```
+
+The backend plugs into the same `RenderLifecycleMixin` / `DisplayChrome`
+machinery as a GPU display — the lifecycle is backend-agnostic, so nothing
+downstream knows there's no HAL. Reference: `plugins/sequence`'s
+`SequenceRenderer`. Start here for any new display; promote to the dual-path
+`createRenderingBackend` only when a profile shows Canvas2D can't hold 60fps at
+the display's real feature counts.
+
 ### Shared per-region streamed contract
 
 Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle)
@@ -782,7 +805,10 @@ Codegen emits `<name>.generated.ts`.
 `GLSL_VERTEX`, `GLSL_FRAGMENT`), per-field byte offsets (`FIELD_OFFSET_BYTES`,
 `FIELD_OFFSET_F32`), strides (`INSTANCE_STRIDE_BYTES`, `INSTANCE_STRIDE_F32`),
 `UNIFORMS_SIZE_BYTES` + `UniformOffsets`, typed TS interfaces for instance and
-uniform structs, a typed `writeInstance()` packer, and the
+uniform structs, a typed `writeUniforms()` uniform packer, a typed
+`packInstances()` struct-of-arrays instance packer (one input array per field;
+the u32/i32/f32 destination view per field is derived from the shader struct,
+so a field-type change can't desync the packer), and the
 `GL_ATTRIBUTES: GlAttributeLayout[]` array consumed by `PassDescriptor`. TS
 code imports these constants by name from the generated module — stride and
 field-offset drift between the TS packer and the shader struct is impossible

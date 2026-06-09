@@ -10,7 +10,7 @@
 
 import hpmath;
 import colorPack;
-import canvasUniforms;
+import featureGlyphUniforms;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -26,7 +26,7 @@ struct RectInstance {
 // Binding 1 is the uniform across both the standard (storage+uniform) and
 // uniform-only bind group layouts, so this binding annotation works under
 // either HAL path. Binding 0 is left unused for vertex-buffer passes.
-[[vk::binding(1, 0)]] ConstantBuffer<CanvasUniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
 
 struct VsOut {
   float4 position : SV_Position;

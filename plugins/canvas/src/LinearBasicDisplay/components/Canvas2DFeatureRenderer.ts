@@ -1,7 +1,6 @@
 import {
   clipBlockForCanvas,
   makeBpMapper,
-  prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
@@ -192,12 +191,11 @@ export class Canvas2DFeatureRenderer extends Canvas2DPerRegionRenderingBackend<
   RegionRenderData,
   RenderState
 > {
-  renderBlocks(
+  protected draw(
     blocks: FeatureRenderBlock[],
     regions: ReadonlyMap<number, RegionRenderData>,
     state: RenderState,
   ) {
-    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     drawFeatureBlocks(this.ctx, regions, blocks, state)
   }
 }

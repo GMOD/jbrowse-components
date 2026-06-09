@@ -14,6 +14,7 @@ import {
   computeArcBand,
   interbaseRangeEnds,
   pileupRowY,
+  shouldDrawOverlaps,
 } from './rendererTypes.ts'
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
@@ -318,17 +319,8 @@ export function drawAlignmentBlocks(
     ctx.rect(scissorX, 0, scissorW, canvasHeight)
     ctx.clip()
 
-    const domainMax = state.coverageMaxDepth
-    if (state.showCoverage && domainMax) {
-      drawCoverage(
-        ctx,
-        region,
-        block,
-        bpLength,
-        fullBlockWidth,
-        state,
-        domainMax,
-      )
+    if (state.showCoverage) {
+      drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
     // Clip pileup area
@@ -346,7 +338,7 @@ export function drawAlignmentBlocks(
 
     drawReads(ctx, region, block, bpLength, fullBlockWidth, state)
 
-    if (state.linkedReads !== 'off') {
+    if (shouldDrawOverlaps(state)) {
       drawOverlaps(ctx, region, block, bpLength, fullBlockWidth, state)
     }
 
@@ -414,13 +406,20 @@ function drawCoverage(
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,
-  domainMax: number,
 ) {
   const bpToX = (bp: number) => bpToScreenX(bp, block, bpLength, fullBlockWidth)
   const viewWidth = fullBlockWidth + block.screenStartPx
-  drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
-  drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
-  drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+  // Depth-scaled layers need the autoscaled domain max; until coverage stats
+  // are computed (coarseDynamicBlocks is 500ms-debounced) it's undefined and
+  // these are skipped. Interbase/indicator marks are anchored to the band top,
+  // not the depth scale, so they draw whenever coverage is shown (matching the
+  // GPU pass order).
+  const domainMax = state.coverageMaxDepth
+  if (domainMax !== undefined) {
+    drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
+    drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+    drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+  }
   drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state)
   drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
 }

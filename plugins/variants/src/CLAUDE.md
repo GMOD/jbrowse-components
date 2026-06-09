@@ -52,16 +52,22 @@ that's why it reads `sourcesBase`, not `sources`.
 ### Matrix mode is zoom-cache-strict (`isCacheValid`)
 
 The **matrix** display (`cellDataMode === 'matrix'`) lays columns out by feature
-index across the full width, so the displayed feature set is the buffered region
-for the _current_ zoom. Zooming in/out changes which features show even when the
-viewport stays spatially inside loaded data, so `MultiSampleVariantBaseModel`
-overrides `isCacheValid` to require `view.bpPerPx === loadedBpPerPx` (recorded
-in `fetchNeeded`, cleared in `clearDisplaySpecificData`) — the same strict-zoom
-rule wiggle uses (adr-008). Without it, zoom-**in** within the buffer never
-refetches and the matrix stays stale. **Regular** mode draws each variant at its
-genomic position, so spatial `isBlockCovered` coverage alone is correct — don't
-extend the strict-zoom check to it (needless refetches). The connector lines,
-GPU/Canvas render, hit-test, and SVG export all key off
+index across the full width, so the displayed feature set is the **visible**
+region for the _current_ zoom — it fetches `view.visibleRegions` (not the
+half-screen-buffered set regular mode uses), since off-screen buffered features
+would otherwise cram extra columns into the viewport and draw connector lines to
+off-screen genomic positions (see `fetchRegionsForMode`). Zooming in/out changes
+which features show even when the viewport stays spatially inside loaded data,
+so `MultiSampleVariantBaseModel` overrides `isCacheValid` to require
+`view.bpPerPx === loadedBpPerPx` (recorded in `fetchNeeded`, cleared in
+`clearDisplaySpecificData`) — the same strict-zoom rule wiggle uses (adr-008).
+Without it, zoom-**in** never refetches and the matrix stays stale. Because
+matrix records the visible (un-buffered) region as loaded, panning also moves
+the visible block out of the loaded bounds and correctly refetches. **Regular**
+mode draws each variant at its genomic position, so spatial `isBlockCovered`
+coverage alone is correct and it keeps the buffered fetch — don't extend the
+strict-zoom check or the visible-only fetch to it (needless refetches). The
+connector lines, GPU/Canvas render, hit-test, and SVG export all key off
 `view.totalWidthPxWithoutBorders` (the rounded width) so columns/lines/clicks
 stay pixel-aligned.
 

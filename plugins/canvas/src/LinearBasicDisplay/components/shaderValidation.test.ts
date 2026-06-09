@@ -3,10 +3,17 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { WGSL_SOURCE as ARROW_SHADER } from './shaders/arrow.generated.ts'
-import { WGSL_SOURCE as CHEVRON_SHADER } from './shaders/chevron.generated.ts'
-import { WGSL_SOURCE as LINE_SHADER } from './shaders/line.generated.ts'
-import { WGSL_SOURCE as RECT_SHADER } from './shaders/rect.generated.ts'
+import {
+  arrowShader,
+  chevronShader,
+  lineShader,
+  rectShader,
+} from '@jbrowse/core/gpu/passes'
+
+const ARROW_SHADER = arrowShader.WGSL_SOURCE
+const CHEVRON_SHADER = chevronShader.WGSL_SOURCE
+const LINE_SHADER = lineShader.WGSL_SOURCE
+const RECT_SHADER = rectShader.WGSL_SOURCE
 
 let tmpDir: string
 

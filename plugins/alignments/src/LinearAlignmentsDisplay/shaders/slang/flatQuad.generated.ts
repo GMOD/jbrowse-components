@@ -282,3 +282,32 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_syBot', components: 1, type: 'float', offsetBytes: 12, integer: false },
   { name: 'a_rgba', components: 4, type: 'float', offsetBytes: 16, integer: false },
 ]
+
+export interface InstanceArrays {
+  sx1: ArrayLike<number>
+  syTop: ArrayLike<number>
+  sx2: ArrayLike<number>
+  syBot: ArrayLike<number>
+  rgba: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const { sx1, syTop, sx2, syBot, rgba } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    f32[o + 0] = sx1[i]!
+    f32[o + 1] = syTop[i]!
+    f32[o + 2] = sx2[i]!
+    f32[o + 3] = syBot[i]!
+    f32[o + 4] = rgba[i * 4 + 0]!
+    f32[o + 5] = rgba[i * 4 + 1]!
+    f32[o + 6] = rgba[i * 4 + 2]!
+    f32[o + 7] = rgba[i * 4 + 3]!
+  }
+  return buf
+}

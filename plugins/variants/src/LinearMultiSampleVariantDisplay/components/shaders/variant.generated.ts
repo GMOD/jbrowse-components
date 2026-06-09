@@ -61,3 +61,28 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_shapeType', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
 ]
+
+export interface InstanceArrays {
+  startEnd: ArrayLike<number>
+  rowIndex: ArrayLike<number>
+  shapeType: ArrayLike<number>
+  color: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const u32 = new Uint32Array(buf)
+  const { startEnd, rowIndex, shapeType, color } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = startEnd[i * 2 + 0]!
+    u32[o + 1] = startEnd[i * 2 + 1]!
+    u32[o + 2] = rowIndex[i]!
+    u32[o + 3] = shapeType[i]!
+    u32[o + 4] = color[i]!
+  }
+  return buf
+}

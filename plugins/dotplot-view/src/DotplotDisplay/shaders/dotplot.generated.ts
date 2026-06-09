@@ -79,3 +79,38 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_y2Lo', components: 1, type: 'float', offsetBytes: 28, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 32, integer: true },
 ]
+
+export interface InstanceArrays {
+  x1Hi: ArrayLike<number>
+  x1Lo: ArrayLike<number>
+  y1Hi: ArrayLike<number>
+  y1Lo: ArrayLike<number>
+  x2Hi: ArrayLike<number>
+  x2Lo: ArrayLike<number>
+  y2Hi: ArrayLike<number>
+  y2Lo: ArrayLike<number>
+  color: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { x1Hi, x1Lo, y1Hi, y1Lo, x2Hi, x2Lo, y2Hi, y2Lo, color } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    f32[o + 0] = x1Hi[i]!
+    f32[o + 1] = x1Lo[i]!
+    f32[o + 2] = y1Hi[i]!
+    f32[o + 3] = y1Lo[i]!
+    f32[o + 4] = x2Hi[i]!
+    f32[o + 5] = x2Lo[i]!
+    f32[o + 6] = y2Hi[i]!
+    f32[o + 7] = y2Lo[i]!
+    u32[o + 8] = color[i]!
+  }
+  return buf
+}

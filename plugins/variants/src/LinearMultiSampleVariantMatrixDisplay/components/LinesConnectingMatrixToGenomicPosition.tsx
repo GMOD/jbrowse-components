@@ -110,7 +110,10 @@ const AllLines = observer(function AllLines({
   }, [assembly, featuresVolatile, n, b0, view, offsetAdj])
 
   const pathD = useMemo(
-    () => lineCoords.map(({ mx, gx }) => `M${mx} ${lineZoneHeight}L${gx} 0`).join(''),
+    () =>
+      lineCoords
+        .map(({ mx, gx }) => `M${mx} ${lineZoneHeight}L${gx} 0`)
+        .join(''),
     [lineCoords, lineZoneHeight],
   )
 
@@ -124,7 +127,14 @@ const AllLines = observer(function AllLines({
       let minDist = 10
       let found: (typeof lineCoords)[0] | undefined
       for (const coord of lineCoords) {
-        const dist = pointToSegmentDist(pt.x, pt.y, coord.mx, lineZoneHeight, coord.gx, 0)
+        const dist = pointToSegmentDist(
+          pt.x,
+          pt.y,
+          coord.mx,
+          lineZoneHeight,
+          coord.gx,
+          0,
+        )
         if (dist < minDist) {
           minDist = dist
           found = coord

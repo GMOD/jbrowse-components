@@ -51,6 +51,7 @@
     "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
     "./gpu/installPerRegionLifecycle": "./src/gpu/installPerRegionLifecycle.ts",
+    "./gpu/passes": "./src/gpu/passes/index.ts",
     "./gpu/perRegionRenderingBackend": "./src/gpu/perRegionRenderingBackend.ts",
     "./gpu/regionUploadSync": "./src/gpu/regionUploadSync.ts",
     "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
@@ -70,7 +71,6 @@
     "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
     "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
     "./pluggableElementTypes/renderers/CircularChordRendererType": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx",
-    "./pluggableElementTypes/renderers/FeatureRendererType": "./src/pluggableElementTypes/renderers/FeatureRendererType.ts",
     "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
@@ -134,7 +134,6 @@
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
     "./util/layouts/placeRect": "./src/util/layouts/placeRect.ts",
     "./util/librpc": "./src/util/librpc.ts",
-    "./util/mst-reflection": "./src/util/mst-reflection.ts",
     "./util/nanoid": "./src/util/nanoid.ts",
     "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
@@ -221,6 +220,10 @@
       "./BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": {
         "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.d.ts",
         "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.js"
+      },
+      "./BaseFeatureWidget/BaseFeatureDetail/Formatter": {
+        "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/Formatter.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/Formatter.js"
       },
       "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": {
         "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.d.ts",
@@ -322,6 +325,10 @@
         "types": "./esm/gpu/installPerRegionLifecycle.d.ts",
         "import": "./esm/gpu/installPerRegionLifecycle.js"
       },
+      "./gpu/passes": {
+        "types": "./esm/gpu/passes/index.d.ts",
+        "import": "./esm/gpu/passes/index.js"
+      },
       "./gpu/perRegionRenderingBackend": {
         "types": "./esm/gpu/perRegionRenderingBackend.d.ts",
         "import": "./esm/gpu/perRegionRenderingBackend.js"
@@ -397,10 +404,6 @@
       "./pluggableElementTypes/renderers/CircularChordRendererType": {
         "types": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts",
         "import": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js"
-      },
-      "./pluggableElementTypes/renderers/FeatureRendererType": {
-        "types": "./esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js"
       },
       "./pluggableElementTypes/renderers/RendererType": {
         "types": "./esm/pluggableElementTypes/renderers/RendererType.d.ts",
@@ -602,6 +605,10 @@
         "types": "./esm/util/convertCodingSequenceToPeptides.d.ts",
         "import": "./esm/util/convertCodingSequenceToPeptides.js"
       },
+      "./util/copyToClipboard": {
+        "types": "./esm/util/copyToClipboard.d.ts",
+        "import": "./esm/util/copyToClipboard.js"
+      },
       "./util/diagonalizeRegions": {
         "types": "./esm/util/diagonalizeRegions.d.ts",
         "import": "./esm/util/diagonalizeRegions.js"
@@ -649,10 +656,6 @@
       "./util/librpc": {
         "types": "./esm/util/librpc.d.ts",
         "import": "./esm/util/librpc.js"
-      },
-      "./util/mst-reflection": {
-        "types": "./esm/util/mst-reflection.d.ts",
-        "import": "./esm/util/mst-reflection.js"
       },
       "./util/nanoid": {
         "types": "./esm/util/nanoid.d.ts",
@@ -740,6 +743,9 @@
         "BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": [
           "esm/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.d.ts"
         ],
+        "BaseFeatureWidget/BaseFeatureDetail/Formatter": [
+          "esm/BaseFeatureWidget/BaseFeatureDetail/Formatter.d.ts"
+        ],
         "BaseFeatureWidget/BaseFeatureDetail/SimpleField": [
           "esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.d.ts"
         ],
@@ -815,6 +821,9 @@
         "gpu/installPerRegionLifecycle": [
           "esm/gpu/installPerRegionLifecycle.d.ts"
         ],
+        "gpu/passes": [
+          "esm/gpu/passes/index.d.ts"
+        ],
         "gpu/perRegionRenderingBackend": [
           "esm/gpu/perRegionRenderingBackend.d.ts"
         ],
@@ -871,9 +880,6 @@
         ],
         "pluggableElementTypes/renderers/CircularChordRendererType": [
           "esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts"
-        ],
-        "pluggableElementTypes/renderers/FeatureRendererType": [
-          "esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts"
         ],
         "pluggableElementTypes/renderers/RendererType": [
           "esm/pluggableElementTypes/renderers/RendererType.d.ts"
@@ -1025,6 +1031,9 @@
         "util/convertCodingSequenceToPeptides": [
           "esm/util/convertCodingSequenceToPeptides.d.ts"
         ],
+        "util/copyToClipboard": [
+          "esm/util/copyToClipboard.d.ts"
+        ],
         "util/diagonalizeRegions": [
           "esm/util/diagonalizeRegions.d.ts"
         ],
@@ -1060,9 +1069,6 @@
         ],
         "util/librpc": [
           "esm/util/librpc.d.ts"
-        ],
-        "util/mst-reflection": [
-          "esm/util/mst-reflection.d.ts"
         ],
         "util/nanoid": [
           "esm/util/nanoid.d.ts"

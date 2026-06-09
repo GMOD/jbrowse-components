@@ -278,3 +278,25 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_y', components: 1, type: 'uint', offsetBytes: 4, integer: true },
   { name: 'a_packedColor', components: 1, type: 'uint', offsetBytes: 8, integer: true },
 ]
+
+export interface InstanceArrays {
+  position: ArrayLike<number>
+  y: ArrayLike<number>
+  packedColor: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const u32 = new Uint32Array(buf)
+  const { position, y, packedColor } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = position[i]!
+    u32[o + 1] = y[i]!
+    u32[o + 2] = packedColor[i]!
+  }
+  return buf
+}

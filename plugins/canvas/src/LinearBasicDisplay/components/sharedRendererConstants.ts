@@ -12,16 +12,15 @@ export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 // because the indicator's tooltip is itself MUI-managed.
 export const OVERFLOW_INDICATOR_Z_INDEX = 999
 
-// Drawing dimensions (in pixels)
-export { MIN_RECT_WIDTH_PX } from './shaders/rect.generated.ts'
+// Drawing dimensions (in pixels) — authored in the shared pass-library shaders,
+// re-exported here so display-side modules import them from one place.
 export {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
   CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
-} from './shaders/chevron.generated.ts'
-export {
   HEAD_HALF_H_PX,
+  MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
-} from './shaders/arrow.generated.ts'
+} from '@jbrowse/core/gpu/passes'

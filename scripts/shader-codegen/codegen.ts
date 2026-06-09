@@ -6,13 +6,15 @@
 //   - Per-instance vertex buffer layout (field offsets, stride)
 //   - GL_ATTRIBUTES descriptors (for PassDescriptor)
 //   - Uniforms TS interface + writeUniforms() packer
+//   - InstanceArrays TS interface + packInstances() struct-of-arrays packer
 //
-// Per-instance writes use the FIELD_OFFSET_F32 / FIELD_OFFSET_U32 constants
-// directly against pre-allocated Float32Array / Uint32Array views over the
-// buffer — see plugins/wiggle/src/shared/wiggleInstanceBuffer.ts for the
-// canonical pattern. Renaming or reordering fields in the .slang source
-// either propagates cleanly (if fields keep the same name) or raises a
-// tsgo error at the offset lookup site.
+// `packInstances` takes one input array per instance field (vecN fields read N
+// consecutive values per instance) and interleaves them into the vertex
+// buffer. Crucially, the destination view (u32 / i32 / f32) for each field is
+// derived from the shader struct, so a field-type change in .slang updates the
+// packing automatically. The FIELD_OFFSET_F32 constants remain exported for
+// callers that pack multiple sources into one buffer (wiggle, synteny) and so
+// can't use the single-array-per-field shape.
 
 import { readFileSync, writeFileSync } from 'node:fs'
 
@@ -375,6 +377,61 @@ export function emit(inputs: CodegenInputs) {
       )
     }
     lines.push(']', '')
+
+    // Struct-of-arrays instance packer. Takes one input array per field (vecN
+    // fields read N consecutive values per instance) and interleaves them into
+    // the vertex buffer. The destination view (u32 / i32 / f32) for each field
+    // is derived from the shader struct here, so changing a field's type in
+    // the .slang source updates the packing automatically — the hand-written
+    // interleave functions this replaces chose the view by hand and could
+    // silently drift from the shader.
+    lines.push('export interface InstanceArrays {')
+    for (const a of attrs) {
+      lines.push(`  ${a.name}: ArrayLike<number>`)
+    }
+    lines.push('}', '')
+
+    const hasF32 = attrs.some(a => componentType(a.type) === 'float')
+    const hasU32 = attrs.some(a => componentType(a.type) === 'uint')
+    const hasI32 = attrs.some(a => componentType(a.type) === 'int')
+    // `numInstances` (not `count`) avoids colliding with an instance field
+    // literally named `count` — the destructure below binds field names as
+    // locals, so the loop bound must not share a name with any field.
+    lines.push(
+      'export function packInstances(',
+      '  arrays: InstanceArrays,',
+      '  numInstances: number,',
+      '  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),',
+      ') {',
+    )
+    if (hasF32) {
+      lines.push('  const f32 = new Float32Array(buf)')
+    }
+    if (hasU32) {
+      lines.push('  const u32 = new Uint32Array(buf)')
+    }
+    if (hasI32) {
+      lines.push('  const i32 = new Int32Array(buf)')
+    }
+    lines.push(`  const { ${attrs.map(a => a.name).join(', ')} } = arrays`)
+    lines.push('  for (let i = 0; i < numInstances; i++) {')
+    lines.push('    const o = i * INSTANCE_STRIDE_F32')
+    for (const a of attrs) {
+      const ct = componentType(a.type)
+      const view = ct === 'uint' ? 'u32' : ct === 'int' ? 'i32' : 'f32'
+      const word = a.offsetBytes / 4
+      const comps = a.type.kind === 'scalar' ? 1 : a.type.elementCount
+      if (comps === 1) {
+        lines.push(`    ${view}[o + ${word}] = ${a.name}[i]!`)
+      } else {
+        for (let c = 0; c < comps; c++) {
+          lines.push(
+            `    ${view}[o + ${word + c}] = ${a.name}[i * ${comps} + ${c}]!`,
+          )
+        }
+      }
+    }
+    lines.push('  }', '  return buf', '}', '')
   }
 
   if (textures && textures.length > 0) {

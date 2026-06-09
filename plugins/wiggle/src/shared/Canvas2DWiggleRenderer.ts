@@ -1,7 +1,4 @@
-import {
-  clipBlockForCanvas,
-  prepareCanvas,
-} from '@jbrowse/core/gpu/canvas2dUtils'
+import { clipBlockForCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 
 import {
@@ -139,12 +136,11 @@ export class Canvas2DWiggleRenderer
   >
   implements WiggleRenderingBackend
 {
-  renderBlocks(
+  protected draw(
     blocks: RenderBlock[],
     regions: ReadonlyMap<number, SourceRenderData[]>,
     state: WiggleGPURenderState,
   ) {
-    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     drawWiggleBlocks(this.ctx, regions, blocks, state)
   }
 }

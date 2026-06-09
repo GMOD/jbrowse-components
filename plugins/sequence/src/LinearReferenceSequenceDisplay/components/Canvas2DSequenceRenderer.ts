@@ -1,4 +1,4 @@
-import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
+import { createCanvas2DBackend } from '@jbrowse/core/gpu/createRenderingBackend'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 
 import { drawSequenceBlocks } from './drawSequence.ts'
@@ -11,17 +11,17 @@ import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 // (no `createRenderingBackend` HAL ladder). It plugs into the shared
 // RenderLifecycle/DisplayChrome machinery like every other display: the model
 // owns `sequenceData` and `renderState`, this backend just paints the visible
-// blocks each frame.
+// blocks each frame. The base `renderBlocks` runs `prepareCanvas`; this `draw`
+// adds the opaque white background that sequence text needs before painting.
 export class Canvas2DSequenceRenderer extends Canvas2DPerRegionRenderingBackend<
   SequenceRegionData,
   DrawSequenceState
 > {
-  renderBlocks(
+  protected draw(
     blocks: RenderBlock[],
     regions: ReadonlyMap<number, SequenceRegionData>,
     state: DrawSequenceState,
   ) {
-    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     this.ctx.fillStyle = '#fff'
     this.ctx.fillRect(0, 0, state.canvasWidth, state.canvasHeight)
     drawSequenceBlocks(this.ctx, regions, blocks, state)
@@ -29,5 +29,5 @@ export class Canvas2DSequenceRenderer extends Canvas2DPerRegionRenderingBackend<
 }
 
 export function SequenceRenderer(canvas: HTMLCanvasElement) {
-  return Promise.resolve(new Canvas2DSequenceRenderer(canvas))
+  return createCanvas2DBackend(canvas, c => new Canvas2DSequenceRenderer(c))
 }

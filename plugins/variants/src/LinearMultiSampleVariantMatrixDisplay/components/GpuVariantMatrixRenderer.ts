@@ -57,6 +57,8 @@ export class GpuVariantMatrixRenderer extends GpuGlobalRenderingBackend<
       this.uniformF32[U.canvasHeight] = canvasHeight
       this.uniformF32[U.rowHeight] = state.rowHeight
       this.uniformF32[U.scrollTop] = state.scrollTop
+      this.uniformF32[U.devicePixelRatio] =
+        typeof devicePixelRatio === 'undefined' ? 1 : devicePixelRatio
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(PASS_MAIN, REGION_KEY)

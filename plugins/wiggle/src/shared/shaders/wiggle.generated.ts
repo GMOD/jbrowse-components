@@ -75,3 +75,33 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 20, integer: true },
   { name: 'a_rowIndex', components: 1, type: 'float', offsetBytes: 24, integer: false },
 ]
+
+export interface InstanceArrays {
+  startEnd: ArrayLike<number>
+  score: ArrayLike<number>
+  prevScore: ArrayLike<number>
+  nextScore: ArrayLike<number>
+  color: ArrayLike<number>
+  rowIndex: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { startEnd, score, prevScore, nextScore, color, rowIndex } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = startEnd[i * 2 + 0]!
+    u32[o + 1] = startEnd[i * 2 + 1]!
+    f32[o + 2] = score[i]!
+    f32[o + 3] = prevScore[i]!
+    f32[o + 4] = nextScore[i]!
+    u32[o + 5] = color[i]!
+    f32[o + 6] = rowIndex[i]!
+  }
+  return buf
+}

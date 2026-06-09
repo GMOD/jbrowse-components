@@ -1,5 +1,4 @@
-import { bpRangeXTuple, clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
-import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
+import { bpRangeXTuple } from '@jbrowse/core/gpu/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
 
@@ -7,6 +6,7 @@ import * as wiggleShader from './shaders/wiggle.generated.ts'
 import { RENDERING_TYPE_LINE } from './wiggleComponentUtils.ts'
 import { interleaveInstances } from './wiggleInstanceBuffer.ts'
 
+import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
 import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type {
@@ -63,57 +63,34 @@ export class GpuWiggleRenderer
     this.hal.uploadBuffer(displayedRegionIndex, PASS_FILL, buf, totalFeatures)
   }
 
-  renderBlocks(
-    blocks: RenderBlock[],
-    regions: ReadonlyMap<number, SourceRenderData[]>,
+  protected drawRegion(
+    block: RenderBlock,
+    clip: BlockClipResult,
+    _sources: SourceRenderData[],
     state: WiggleGPURenderState,
   ) {
-    const { canvasWidth, canvasHeight } = state
-    const dpr = getDpr()
-
-    this.hal.resize(canvasWidth, canvasHeight)
-    this.hal.beginFrame(0, 0, 0, 0)
-
     const passId =
       state.renderingType === RENDERING_TYPE_LINE ? PASS_LINE : PASS_FILL
 
-    for (const block of blocks) {
-      const sources = regions.get(block.displayedRegionIndex)
-      if (!sources) {
-        continue
-      }
-      const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
-      if (!clip) {
-        continue
-      }
+    const [bpHi, bpLo, bpLen] = bpRangeXTuple(clip, block.reversed)
+    this.uniformF32[U.bpRangeX] = bpHi
+    this.uniformF32[U.bpRangeX + 1] = bpLo
+    this.uniformF32[U.bpRangeX + 2] = bpLen
+    this.uniformF32[U.canvasHeight] = state.canvasHeight
+    this.uniformI32[U.scaleType] = state.scaleType
+    this.uniformI32[U.renderingType] = state.renderingType
+    this.uniformF32[U.numRows] = state.numRows
+    this.uniformF32[U.domainYMin] = state.domainY[0]
+    this.uniformF32[U.domainYMax] = state.domainY[1]
+    // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
+    this.uniformF32[U.zero] = 0
+    // viewportWidth stays in CSS units to match canvasHeight (per CLAUDE.md
+    // GPU conventions). The shader's `minClipW = 3 / viewportWidth` therefore
+    // resolves to a stable 1.5 CSS px floor across DPRs, matching
+    // WIGGLE_MIN_PX in the Canvas2D path.
+    this.uniformF32[U.viewportWidth] = clip.scissorW
 
-      this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
-      this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
-
-      const [bpHi, bpLo, bpLen] = bpRangeXTuple(clip, block.reversed)
-      this.uniformF32[U.bpRangeX] = bpHi
-      this.uniformF32[U.bpRangeX + 1] = bpLo
-      this.uniformF32[U.bpRangeX + 2] = bpLen
-      this.uniformF32[U.canvasHeight] = canvasHeight
-      this.uniformI32[U.scaleType] = state.scaleType
-      this.uniformI32[U.renderingType] = state.renderingType
-      this.uniformF32[U.numRows] = state.numRows
-      this.uniformF32[U.domainYMin] = state.domainY[0]
-      this.uniformF32[U.domainYMax] = state.domainY[1]
-      // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
-      this.uniformF32[U.zero] = 0
-      // viewportWidth stays in CSS units to match canvasHeight (per CLAUDE.md
-      // GPU conventions). The shader's `minClipW = 3 / viewportWidth` therefore
-      // resolves to a stable 1.5 CSS px floor across DPRs, matching
-      // WIGGLE_MIN_PX in the Canvas2D path.
-      this.uniformF32[U.viewportWidth] = clip.scissorW
-
-      this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(passId, block.displayedRegionIndex, PASS_FILL)
-    }
-
-    this.hal.clearScissor()
-    this.hal.clearViewport()
-    this.hal.endFrame()
+    this.hal.writeUniforms(this.uniformData)
+    this.hal.drawPass(passId, block.displayedRegionIndex, PASS_FILL)
   }
 }

@@ -1,7 +1,6 @@
 import {
   clipBlockForCanvas,
   makeBpMapper,
-  prepareCanvas,
 } from '@jbrowse/core/gpu/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
@@ -71,7 +70,15 @@ export function drawVariantBlocks(
         ctx.fillStyle = abgrToCssRgba(color)
         prevColor = color
       }
-      drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, rowHeight, spanPx)
+      drawVariantShape(
+        ctx,
+        region.cellShapeTypes[i]!,
+        x1,
+        y,
+        w,
+        rowHeight,
+        spanPx,
+      )
     }
 
     ctx.restore()
@@ -82,12 +89,11 @@ export class Canvas2DVariantRenderer extends Canvas2DPerRegionRenderingBackend<
   VariantUploadData,
   VariantRenderState
 > {
-  renderBlocks(
+  protected draw(
     blocks: VariantRenderBlock[],
     regions: ReadonlyMap<number, VariantUploadData>,
     state: VariantRenderState,
   ) {
-    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     drawVariantBlocks(this.ctx, regions, blocks, state)
   }
 }

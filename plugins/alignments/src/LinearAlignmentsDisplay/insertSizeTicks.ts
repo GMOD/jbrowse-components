@@ -1,5 +1,8 @@
-import { YSCALEBAR_LABEL_OFFSET, niceStep } from '@jbrowse/alignments-core'
+import { niceStep } from '@jbrowse/alignments-core'
 
+import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
+
+import type { ArcBand } from './renderers/rendererTypes.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 // Format bp values with a compact unit (matches the X-axis ruler style).
@@ -18,37 +21,35 @@ function formatBp(v: number) {
   return `${v}bp`
 }
 
-// Y=0 (insert size 0) at the arc anchors; max at apex.
-// pairedArcsDown: anchor at top, ticks descend. !pairedArcsDown: anchor at bottom, ticks ascend.
+// Ruler for the samplot insert-size arcs. Geometry is derived from the same
+// `ArcBand` + `ARC_HEIGHT_MARGIN` the arcs themselves use (see
+// features/arcs/drawCanvas.ts), so a tick at insert size `v` lands exactly on
+// the apex of the arc plotting that value — the two paths can't drift.
+// Anchor (insert size 0): band top in down mode (ticks descend), band bottom in
+// up mode (ticks ascend).
 export function computeInsertSizeTicks({
+  band,
   arcsYDomainBp,
-  readConnectionsHeight,
-  pairedArcsDown,
-  arcsTop,
 }: {
+  band: ArcBand
   arcsYDomainBp: number
-  readConnectionsHeight: number
-  pairedArcsDown: boolean
-  arcsTop: number
 }): YScaleTicks | undefined {
-  const availH = readConnectionsHeight - 2 * YSCALEBAR_LABEL_OFFSET
+  const availH = band.height - ARC_HEIGHT_MARGIN
   if (availH <= 0 || arcsYDomainBp <= 0) {
     return undefined
   }
+  const anchor = band.down ? band.top : band.top + band.height
   const yScale = availH / arcsYDomainBp
   const step = niceStep(arcsYDomainBp)
-  const anchor = pairedArcsDown
-    ? arcsTop + YSCALEBAR_LABEL_OFFSET
-    : arcsTop + readConnectionsHeight - YSCALEBAR_LABEL_OFFSET
 
   const items: YScaleTicks['items'] = []
   for (let v = 0; v <= arcsYDomainBp; v += step) {
     const offset = Math.min(v * yScale, availH)
-    const y = pairedArcsDown ? anchor + offset : anchor - offset
+    const y = band.down ? anchor + offset : anchor - offset
     items.push({ value: v, y, label: formatBp(v) })
   }
 
-  const yTop = pairedArcsDown ? anchor : anchor - availH
-  const yBottom = pairedArcsDown ? anchor + availH : anchor
+  const yTop = band.down ? anchor : anchor - availH
+  const yBottom = band.down ? anchor + availH : anchor
   return { items, yTop, yBottom }
 }

@@ -280,3 +280,28 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_frequency', components: 1, type: 'float', offsetBytes: 8, integer: false },
   { name: 'a_kind', components: 1, type: 'uint', offsetBytes: 12, integer: true },
 ]
+
+export interface InstanceArrays {
+  position: ArrayLike<number>
+  y: ArrayLike<number>
+  frequency: ArrayLike<number>
+  kind: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { position, y, frequency, kind } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_F32
+    u32[o + 0] = position[i]!
+    u32[o + 1] = y[i]!
+    f32[o + 2] = frequency[i]!
+    u32[o + 3] = kind[i]!
+  }
+  return buf
+}
