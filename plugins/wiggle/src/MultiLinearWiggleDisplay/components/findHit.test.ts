@@ -62,9 +62,7 @@ describe('findOverlayHit', () => {
       refName: 'chr1',
       start: 50,
       end: 50,
-      score: 0,
-      source: '',
-      allSources: [
+      rows: [
         { source: 's1', score: 5 },
         { source: 's2', score: 10 },
         { source: 's3', score: 15 },
@@ -80,8 +78,8 @@ describe('findOverlayHit', () => {
       ],
     }
     const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'avg')
-    expect(result?.allSources).toHaveLength(1)
-    expect(result?.allSources?.[0]?.source).toBe('s1')
+    expect(result?.rows).toHaveLength(1)
+    expect(result?.rows[0]?.source).toBe('s1')
   })
 
   test('skips sources with no feature at bp', () => {
@@ -98,8 +96,8 @@ describe('findOverlayHit', () => {
       'chr1',
       'avg',
     )
-    expect(result?.allSources).toHaveLength(1)
-    expect(result?.allSources?.[0]?.source).toBe('s1')
+    expect(result?.rows).toHaveLength(1)
+    expect(result?.rows[0]?.source).toBe('s1')
   })
 
   test('returns undefined when no visible source has a feature at bp', () => {
@@ -123,7 +121,7 @@ describe('findOverlayHit', () => {
       'chr1',
       'whiskers',
     )
-    expect(result?.allSources?.[0]).toEqual({
+    expect(result?.rows[0]).toEqual({
       source: 's1',
       score: 5,
       summary: true,
@@ -139,7 +137,7 @@ describe('findOverlayHit', () => {
       ],
     }
     const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'avg')
-    expect(result?.allSources?.[0]).toEqual({ source: 's1', score: 5 })
+    expect(result?.rows[0]).toEqual({ source: 's1', score: 5 })
   })
 
   test('omits summary fields when min/max equal score (not a real summary)', () => {
@@ -155,7 +153,7 @@ describe('findOverlayHit', () => {
       'chr1',
       'whiskers',
     )
-    expect(result?.allSources?.[0]).toEqual({ source: 's1', score: 5 })
+    expect(result?.rows[0]).toEqual({ source: 's1', score: 5 })
   })
 })
 
@@ -176,8 +174,7 @@ describe('findRowHit', () => {
       refName: 'chr1',
       start: 0,
       end: 100,
-      score: 10,
-      source: 's2',
+      rows: [{ source: 's2', score: 10 }],
     })
   })
 
@@ -225,7 +222,7 @@ describe('findRowHit', () => {
       ],
     }
     const result = findRowHit(data, [{ name: 's1' }], 50, 5, 20, 'chr1', 'min')
-    expect(result).toMatchObject({
+    expect(result?.rows[0]).toMatchObject({
       summary: true,
       minScore: 1,
       maxScore: 9,

@@ -1,100 +1,55 @@
 import {
   findFeatureAtBp,
-  summaryFields,
+  findSourceHit,
+  makeTooltipRow,
 } from '../../shared/wiggleComponentUtils.ts'
 
-import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
-import type { WiggleDataResult, WiggleSourceData } from '../../util.ts'
+import type {
+  WiggleDataResult,
+  WiggleFeatureUnderMouse,
+  WiggleTooltipRow,
+} from '../../util.ts'
 
-type FeatureUnderMouse = NonNullable<
-  MultiWiggleDisplayModel['featureUnderMouse']
->
+interface VisibleSource { name: string; color?: string }
 
-// Overlay mode: every visible source's score at the cursor bp is collected
-// and returned as `allSources`. Tooltip header coord is the cursor bp itself
-// — picking one source's feature interval would be arbitrary across sources
-// with different bin widths.
+// Overlay mode: every visible source's score at the cursor bp becomes a row.
+// The header coord is the cursor bp itself — picking one source's feature
+// interval would be arbitrary across sources with different bin widths. Rows
+// follow visibleSources order (the on-screen legend order).
 export function findOverlayHit(
   data: WiggleDataResult,
-  visibleSources: { name: string }[],
+  visibleSources: VisibleSource[],
   bp: number,
   refName: string,
   summaryScoreMode: string,
-): FeatureUnderMouse | undefined {
-  const visible = new Set(visibleSources.map(s => s.name))
-  const allSources: NonNullable<FeatureUnderMouse['allSources']> = []
-  for (const src of data.sources) {
-    if (visible.has(src.name)) {
-      const i = findFeatureAtBp(src.featurePositions, src.numFeatures, bp)
+): WiggleFeatureUnderMouse | undefined {
+  const dataByName = new Map(data.sources.map(s => [s.name, s]))
+  const rows: WiggleTooltipRow[] = []
+  for (const src of visibleSources) {
+    const ds = dataByName.get(src.name)
+    if (ds) {
+      const i = findFeatureAtBp(ds.featurePositions, ds.numFeatures, bp)
       if (i !== -1) {
-        const score = src.featureScores[i]!
-        allSources.push({
-          source: src.name,
-          score,
-          ...summaryFields(
-            score,
-            src.featureMinScores[i],
-            src.featureMaxScores[i],
-            summaryScoreMode,
-          ),
-        })
+        rows.push(makeTooltipRow(ds, i, summaryScoreMode, src.name, src.color))
       }
     }
   }
-  if (allSources.length === 0) {
-    return undefined
-  }
-  return {
-    refName,
-    start: bp,
-    end: bp,
-    score: 0,
-    source: '',
-    allSources,
-  }
+  return rows.length === 0 ? undefined : { refName, start: bp, end: bp, rows }
 }
 
 // Row mode: cursor Y picks one row → one source. Returns its feature interval.
 export function findRowHit(
   data: WiggleDataResult,
-  visibleSources: { name: string }[],
+  visibleSources: VisibleSource[],
   bp: number,
   offsetY: number,
   rowHeight: number,
   refName: string,
   summaryScoreMode: string,
-): FeatureUnderMouse | undefined {
-  const rowIdx = Math.floor(offsetY / rowHeight)
-  if (rowIdx < 0 || rowIdx >= visibleSources.length) {
-    return undefined
-  }
-  const sourceName = visibleSources[rowIdx]!.name
-  const rpcSource: WiggleSourceData | undefined = data.sources.find(
-    s => s.name === sourceName,
-  )
-  if (!rpcSource) {
-    return undefined
-  }
-  const foundIdx = findFeatureAtBp(
-    rpcSource.featurePositions,
-    rpcSource.numFeatures,
-    bp,
-  )
-  if (foundIdx === -1) {
-    return undefined
-  }
-  const score = rpcSource.featureScores[foundIdx]!
-  return {
-    refName,
-    start: rpcSource.featurePositions[foundIdx * 2]!,
-    end: rpcSource.featurePositions[foundIdx * 2 + 1]!,
-    score,
-    source: sourceName,
-    ...summaryFields(
-      score,
-      rpcSource.featureMinScores[foundIdx],
-      rpcSource.featureMaxScores[foundIdx],
-      summaryScoreMode,
-    ),
-  }
+): WiggleFeatureUnderMouse | undefined {
+  const src = visibleSources[Math.floor(offsetY / rowHeight)]
+  const ds = src ? data.sources.find(s => s.name === src.name) : undefined
+  return src && ds
+    ? findSourceHit(ds, bp, refName, summaryScoreMode, src.name, src.color)
+    : undefined
 }

@@ -6,11 +6,11 @@ import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import MultiWiggleTooltip from './Tooltip.tsx'
 import { findOverlayHit, findRowHit } from './findHit.ts'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
+import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { getRowTop, hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
 
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
@@ -88,12 +88,12 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     model.setFeatureUnderMouse(undefined)
   }, [model])
 
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     const feat = model.featureUnderMouse
     if (feat) {
       model.selectFeature(feat)
     }
-  }, [model])
+  }
 
   return (
     <DisplayChrome
@@ -274,7 +274,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
 
       <TreeSidebar model={model} />
 
-      <MultiWiggleTooltip
+      <WiggleTooltip
         model={model}
         height={height}
         clientMouseCoord={clientMouseCoord}

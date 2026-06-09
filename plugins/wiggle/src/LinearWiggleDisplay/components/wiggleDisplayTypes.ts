@@ -8,4 +8,5 @@ export interface WiggleDisplayModel
   scaleType: string
   featureUnderMouse?: WiggleFeatureUnderMouse
   setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse) => void
+  selectFeature: (feat: WiggleFeatureUnderMouse) => void
 }

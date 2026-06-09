@@ -9,11 +9,13 @@ import {
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import WiggleTooltip from './WiggleTooltip.tsx'
-import { findHit } from './findHit.ts'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
-import { hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
+import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
+import {
+  findSourceHit,
+  hitTestMouse,
+} from '../../shared/wiggleComponentUtils.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -50,13 +52,9 @@ const WiggleComponent = observer(function WiggleComponent({
 
         const { rpcDataMap, summaryScoreMode } = model
         const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
-        const result = hit?.data.sources[0]
-          ? findHit(
-              hit.data.sources[0],
-              hit.bp,
-              hit.region.refName,
-              summaryScoreMode,
-            )
+        const source = hit?.data.sources[0]
+        const result = source
+          ? findSourceHit(source, hit.bp, hit.region.refName, summaryScoreMode)
           : undefined
         model.setFeatureUnderMouse(result)
       }
@@ -68,6 +66,13 @@ const WiggleComponent = observer(function WiggleComponent({
     model.setFeatureUnderMouse(undefined)
   }, [model])
 
+  const handleClick = () => {
+    const feat = model.featureUnderMouse
+    if (feat) {
+      model.selectFeature(feat)
+    }
+  }
+
   return (
     <DisplayChrome
       model={model}
@@ -77,6 +82,7 @@ const WiggleComponent = observer(function WiggleComponent({
       style={{ position: 'relative', width, height }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
     >
       {({ canvasRef }) => (
         <WiggleBody

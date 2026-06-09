@@ -37,6 +37,7 @@ import {
   getRowHeight,
   isOverlayMode,
   makeRenderState,
+  wiggleFeatureWidgetData,
 } from '../shared/wiggleComponentUtils.ts'
 import {
   makeRenderingTypeSubMenu,
@@ -45,10 +46,10 @@ import {
 import { MULTI_WIGGLE_RENDERINGS } from '../util.ts'
 
 import type {
-  MultiWiggleFeatureUnderMouse,
   Source,
   SourceInfo,
   WiggleDataResult,
+  WiggleFeatureUnderMouse,
 } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -94,7 +95,7 @@ export default function stateModelFactory(
     .preProcessSnapshot(makeWigglePreProcessSnapshot({ multiWiggle: true }))
     .volatile(() => ({
       sourcesVolatile: [] as SourceInfo[],
-      featureUnderMouse: undefined as MultiWiggleFeatureUnderMouse | undefined,
+      featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -292,16 +293,7 @@ export default function stateModelFactory(
         },
 
         selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
-          const sources = feat.allSources
-            ? Object.fromEntries(feat.allSources.map(s => [s.source, s.score]))
-            : { [feat.source]: feat.score }
-          openFeatureWidget(self, {
-            uniqueId: `wiggle-${feat.refName}-${feat.start}-${feat.end}`,
-            refName: feat.refName,
-            start: feat.start,
-            end: feat.end,
-            sources,
-          })
+          openFeatureWidget(self, wiggleFeatureWidgetData(feat))
         },
       }
     })

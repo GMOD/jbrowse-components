@@ -1,6 +1,12 @@
 import { scaleTypeFromString } from '@jbrowse/wiggle-core'
 
-import type { FeatureArrays } from '../util.ts'
+import type {
+  FeatureArrays,
+  WiggleFeatureUnderMouse,
+  WiggleSourceData,
+  WiggleTooltipRow,
+} from '../util.ts'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type {
   SourceRenderData,
   WiggleGPURenderState,
@@ -166,6 +172,67 @@ export function summaryFields(
     isSummaryFeature(score, minScore, maxScore)
     ? { summary: true as const, minScore, maxScore }
     : {}
+}
+
+// Build a tooltip row from a source's typed arrays at index `i`. `name`/`color`
+// are set for multi-wiggle and omitted for single-wiggle.
+export function makeTooltipRow(
+  source: WiggleSourceData,
+  i: number,
+  summaryScoreMode: string,
+  name?: string,
+  color?: string,
+): WiggleTooltipRow {
+  const score = source.featureScores[i]!
+  return {
+    source: name,
+    color,
+    score,
+    ...summaryFields(
+      score,
+      source.featureMinScores[i],
+      source.featureMaxScores[i],
+      summaryScoreMode,
+    ),
+  }
+}
+
+// Feature-widget payload for a clicked wiggle hit, shared by single- and
+// multi-wiggle. Single-wiggle has one unnamed row keyed as `score`; multi has
+// one entry per source name.
+export function wiggleFeatureWidgetData(
+  feat: WiggleFeatureUnderMouse,
+): SimpleFeatureSerialized {
+  return {
+    uniqueId: `wiggle-${feat.refName}-${feat.start}-${feat.end}`,
+    refName: feat.refName,
+    start: feat.start,
+    end: feat.end,
+    sources: Object.fromEntries(feat.rows.map(r => [r.source ?? 'score', r.score])),
+  }
+}
+
+// Single-row hit: the feature interval at `bp` in one source plus its one row.
+// Used by single-wiggle and multi-wiggle row mode (overlay mode collects many
+// rows and uses the cursor bp instead, so it builds its result directly).
+export function findSourceHit(
+  source: WiggleSourceData,
+  bp: number,
+  refName: string,
+  summaryScoreMode: string,
+  name?: string,
+  color?: string,
+): WiggleFeatureUnderMouse | undefined {
+  const { featurePositions, numFeatures } = source
+  const i = findFeatureAtBp(featurePositions, numFeatures, bp)
+  return i === -1
+    ? undefined
+    : {
+        refName,
+        start: featurePositions[i * 2]!,
+        end: featurePositions[i * 2 + 1]!,
+        rows: [makeTooltipRow(source, i, summaryScoreMode, name, color)],
+      }
 }
 
 interface MouseRegion {

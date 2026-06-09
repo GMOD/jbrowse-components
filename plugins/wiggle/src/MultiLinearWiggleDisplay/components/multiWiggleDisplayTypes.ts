@@ -1,5 +1,5 @@
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
-import type { WiggleDataResult } from '../../util.ts'
+import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../../util.ts'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
@@ -24,32 +24,12 @@ export interface MultiWiggleDisplayModel
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement | null
   mouseoverCanvas?: HTMLCanvasElement | null
-  featureUnderMouse?: {
-    refName: string
-    start: number
-    end: number
-    score: number
-    minScore?: number
-    maxScore?: number
-    source: string
-    summary?: boolean
-    allSources?: {
-      source: string
-      score: number
-      minScore?: number
-      maxScore?: number
-      summary?: boolean
-    }[]
-  }
+  featureUnderMouse?: WiggleFeatureUnderMouse
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
-  setFeatureUnderMouse: (
-    feat?: MultiWiggleDisplayModel['featureUnderMouse'],
-  ) => void
-  selectFeature: (
-    feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>,
-  ) => void
+  setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse) => void
+  selectFeature: (feat: WiggleFeatureUnderMouse) => void
 }

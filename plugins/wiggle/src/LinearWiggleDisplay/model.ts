@@ -3,7 +3,11 @@ import { lazy } from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  openFeatureWidget,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -21,7 +25,10 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
-import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
+import {
+  makeRenderState,
+  wiggleFeatureWidgetData,
+} from '../shared/wiggleComponentUtils.ts'
 import {
   makeRenderingTypeSubMenu,
   makeResolutionAndSummarySubMenus,
@@ -249,6 +256,13 @@ export default function stateModelFactory(
        */
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
         self.featureUnderMouse = feat
+      },
+
+      /**
+       * #action
+       */
+      selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
+        openFeatureWidget(self, wiggleFeatureWidgetData(feat))
       },
     }))
     .actions(self => ({

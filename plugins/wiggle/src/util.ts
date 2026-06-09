@@ -66,28 +66,27 @@ export interface Source {
 
 export interface EditableSource extends Source, SourceInfo {}
 
-// Feature hovered under the mouse. Single-wiggle uses the base shape; multi
-// adds `source` (which row/source the hit belongs to) and `allSources` (every
-// visible source's score at the cursor, for overlay-mode tooltips).
-export interface WiggleFeatureUnderMouse {
-  refName: string
-  start: number
-  end: number
+// One score entry shown in a wiggle tooltip. `source`/`color` are populated
+// only for multi-wiggle (single-wiggle has no per-source identity).
+export interface WiggleTooltipRow {
+  source?: string
+  color?: string
   score: number
   minScore?: number
   maxScore?: number
   summary?: boolean
 }
 
-export interface MultiWiggleFeatureUnderMouse extends WiggleFeatureUnderMouse {
-  source: string
-  allSources?: {
-    source: string
-    score: number
-    minScore?: number
-    maxScore?: number
-    summary?: boolean
-  }[]
+// Feature(s) hovered under the mouse, shared by single- and multi-wiggle.
+// `start`/`end` is the feature interval for single-wiggle and multi-wiggle row
+// mode; in overlay mode it collapses to the cursor bp, since sources with
+// differing bin widths share no single interval. `rows` holds one entry for
+// single/row mode and one-per-source in overlay mode.
+export interface WiggleFeatureUnderMouse {
+  refName: string
+  start: number
+  end: number
+  rows: WiggleTooltipRow[]
 }
 
 export function toP(s = 0) {
