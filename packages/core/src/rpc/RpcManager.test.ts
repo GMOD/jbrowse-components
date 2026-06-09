@@ -62,16 +62,9 @@ function makeManager() {
   const pluginManager = new PluginManager([]).createPluggableElements()
   const mainConfig = RpcManager.configSchema.create({
     defaultDriver: 'StubDriver',
-    drivers: {
-      StubDriver: { type: 'WebWorkerRpcDriver' },
-    },
   })
-  const manager = new RpcManager(pluginManager, mainConfig, {
-    StubDriver: {},
-  })
-  const driver = new StubDriver({
-    config: mainConfig.drivers.get('StubDriver')!,
-  })
+  const manager = new RpcManager(pluginManager, mainConfig)
+  const driver = new StubDriver({ config: mainConfig })
   manager.registerDriverFactory('StubDriver', () => driver)
   return { manager, driver }
 }
@@ -180,9 +173,7 @@ describe('RpcManager.destroy', () => {
     let built = 0
     manager.registerDriverFactory('StubDriver', () => {
       built++
-      return new StubDriver({
-        config: manager.mainConfiguration.drivers.get('StubDriver')!,
-      })
+      return new StubDriver({ config: manager.mainConfiguration })
     })
 
     const driver = manager.getDriver('StubDriver') as StubDriver

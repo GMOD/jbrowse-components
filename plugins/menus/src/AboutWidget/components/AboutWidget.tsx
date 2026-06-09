@@ -48,10 +48,10 @@ const AboutWidget = observer(function AboutWidget({
   const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager as PluginManager
   const graphicsCapabilities = useGraphicsCapabilities()
-  const defaultRpcDriver = readConfObject(
-    session.rpcManager.mainConfiguration,
-    'defaultDriver',
-  ) as string
+  const { mainConfiguration, defaultDriverName } = session.rpcManager
+  const defaultRpcDriver =
+    (readConfObject(mainConfiguration, 'defaultDriver') as string) ||
+    defaultDriverName
   const corePlugins = new Set(
     plugins
       .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
@@ -67,7 +67,7 @@ const AboutWidget = observer(function AboutWidget({
         {version}
       </Typography>
       <Typography align="center">
-        JBrowse is a <ExternalLink href="http://gmod.org/">GMOD</ExternalLink>{' '}
+        JBrowse is a <ExternalLink href="https://gmod.org/">GMOD</ExternalLink>{' '}
         project
       </Typography>
       <br />

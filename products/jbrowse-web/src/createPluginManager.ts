@@ -71,16 +71,6 @@ export function createPluginManager(
 
   rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
-  // const configuredRpc = (
-  //   model.configSnapshot as {
-  //     configuration?: { rpc?: { defaultDriver?: unknown } }
-  //   }
-  // ).configuration?.rpc?.defaultDriver
-  // if (!configuredRpc) {
-  //   console.log('wtf', rootModel.jbrowse.configuration.rpc.defaultDriver)
-  //   rootModel.jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
-  // }
-
   const { sessionError, sessionSpec, sessionSnapshot, hubSpec, sessionName } =
     model
 

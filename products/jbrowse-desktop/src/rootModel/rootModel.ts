@@ -113,10 +113,7 @@ export default function rootModelFactory({
         rpcManager: new RpcManager(
           pluginManager,
           self.jbrowse.configuration.rpc,
-          {
-            WebWorkerRpcDriver: { makeWorkerInstance },
-            MainThreadRpcDriver: {},
-          },
+          { makeWorkerInstance, defaultDriverName: 'WebWorkerRpcDriver' },
         ),
         openNewSessionCallback: async (_path: string) => {
           console.error('openNewSessionCallback unimplemented')

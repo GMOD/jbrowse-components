@@ -72,10 +72,7 @@ export default function createModel(
        * #volatile
        */
       rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
-        WebWorkerRpcDriver: {
-          makeWorkerInstance,
-        },
-        MainThreadRpcDriver: {},
+        makeWorkerInstance,
       }),
 
       /**

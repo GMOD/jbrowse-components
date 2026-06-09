@@ -58,13 +58,7 @@ export function BaseRootModelFactory({
       /**
        * #volatile
        */
-      rpcManager: new RpcManager(
-        pluginManager,
-        self.jbrowse.configuration.rpc,
-        {
-          MainThreadRpcDriver: {},
-        },
-      ),
+      rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc),
 
       /**
        * #volatile

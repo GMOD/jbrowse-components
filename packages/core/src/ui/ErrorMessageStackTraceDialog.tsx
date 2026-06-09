@@ -25,7 +25,10 @@ import type { AnyConfigurationModel } from '../configuration/index.ts'
 
 interface SessionGlobal {
   version?: string
-  rpcManager: { mainConfiguration: AnyConfigurationModel }
+  rpcManager: {
+    mainConfiguration: AnyConfigurationModel
+    defaultDriverName: string
+  }
 }
 
 async function myfetchtext(uri: string) {
@@ -130,9 +133,9 @@ export default function ErrorMessageStackTraceDialog({
   const session = (window as unknown as { JBrowseSession?: SessionGlobal })
     .JBrowseSession
   const version = session?.version
-  const rpcConfig = session?.rpcManager.mainConfiguration
-  const rpcInfo = rpcConfig
-    ? `RPC: ${readConfObject(rpcConfig, 'defaultDriver')}`
+  const rpcManager = session?.rpcManager
+  const rpcInfo = rpcManager
+    ? `RPC: ${readConfObject(rpcManager.mainConfiguration, 'defaultDriver') || rpcManager.defaultDriverName}`
     : ''
   const errorBoxText = [
     secondaryError

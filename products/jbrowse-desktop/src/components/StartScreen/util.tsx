@@ -109,8 +109,6 @@ export async function createPluginManager(
 
   const rootModel = JBrowseRootModel.create({ jbrowse }, { pluginManager })
   const config = rootModel.jbrowse.configuration
-  const { rpc } = config
-  rpc.defaultDriver.set('WebWorkerRpcDriver')
 
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()

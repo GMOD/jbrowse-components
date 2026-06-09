@@ -1,13 +1,10 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
-import BaseRpcDriverConfigSchema from './baseRpcConfig.ts'
+import rpcConfigSchema from './configSchema.ts'
 
 import type { WorkerHandle } from './BaseRpcDriver.ts'
 
 function makeConfig(overrides: { workerCount?: number } = {}) {
-  return BaseRpcDriverConfigSchema.create({
-    type: 'BaseRpcDriver',
-    ...overrides,
-  })
+  return rpcConfigSchema.create(overrides)
 }
 
 class FakeWorker implements WorkerHandle {

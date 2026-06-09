@@ -9,66 +9,58 @@ import type PluginManager from '../PluginManager.ts'
 import type { RpcArgs, RpcMethodName, RpcReturn } from './RpcRegistry.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 
-type DriverClass = BaseRpcDriver
-
-interface RenderingBackendConfigurations {
-  WebWorkerRpcDriver?: Omit<
-    ConstructorParameters<typeof WebWorkerRpcDriver>[0],
-    'config'
-  >
-  MainThreadRpcDriver?: Omit<
-    ConstructorParameters<typeof MainThreadRpcDriver>[0],
-    'config'
-  >
-  [key: string]: unknown
-}
-
 export type RpcDriverFactory = (
   config: AnyConfigurationModel,
-  backendConfig: unknown,
   pluginManager: PluginManager,
 ) => BaseRpcDriver
 
-const makeMainThreadDriver: RpcDriverFactory = (config, backendConfig) =>
-  new MainThreadRpcDriver({
-    ...(backendConfig as ConstructorParameters<typeof MainThreadRpcDriver>[0]),
-    config,
-  })
-
-const makeWebWorkerDriver: RpcDriverFactory = (config, backendConfig, pm) =>
-  new WebWorkerRpcDriver(
-    {
-      ...(backendConfig as ConstructorParameters<typeof WebWorkerRpcDriver>[0]),
-      config,
-    },
-    {
-      plugins: pm.runtimePluginDefinitions,
-      windowHref: typeof window !== 'undefined' ? window.location.href : '',
-    },
-  )
+export interface RpcManagerOptions {
+  // factory that creates a web worker; required to use the WebWorkerRpcDriver
+  makeWorkerInstance?: () => Worker
+  // host-application default driver, used when neither the call nor the config
+  // names one. web/desktop pass 'WebWorkerRpcDriver'; embedded/headless leave
+  // it as the main thread.
+  defaultDriverName?: string
+}
 
 export default class RpcManager {
   static configSchema = rpcConfigSchema
 
   pluginManager: PluginManager
   mainConfiguration: AnyConfigurationModel
-  backendConfigurations: RenderingBackendConfigurations
-  driverObjects: Map<string, DriverClass>
-  driverFactories: Map<string, RpcDriverFactory>
+  defaultDriverName: string
+  driverObjects = new Map<string, BaseRpcDriver>()
+  driverFactories = new Map<string, RpcDriverFactory>()
 
   constructor(
     pluginManager: PluginManager,
     mainConfiguration: AnyConfigurationModel,
-    backendConfigurations: RenderingBackendConfigurations,
+    { makeWorkerInstance, defaultDriverName = 'MainThreadRpcDriver' }: RpcManagerOptions = {},
   ) {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
-    this.backendConfigurations = backendConfigurations
-    this.driverObjects = new Map()
-    this.driverFactories = new Map()
+    this.defaultDriverName = defaultDriverName
 
-    this.registerDriverFactory('MainThreadRpcDriver', makeMainThreadDriver)
-    this.registerDriverFactory('WebWorkerRpcDriver', makeWebWorkerDriver)
+    // built-in driver factories close over the host's makeWorkerInstance; every
+    // driver reads its config (just workerCount) from the single rpc config
+    this.registerDriverFactory(
+      'MainThreadRpcDriver',
+      config => new MainThreadRpcDriver({ config }),
+    )
+    this.registerDriverFactory('WebWorkerRpcDriver', (config, pm) => {
+      if (!makeWorkerInstance) {
+        throw new Error(
+          'WebWorkerRpcDriver requested but no makeWorkerInstance was provided',
+        )
+      }
+      return new WebWorkerRpcDriver(
+        { config, makeWorkerInstance },
+        {
+          plugins: pm.runtimePluginDefinitions,
+          windowHref: typeof window !== 'undefined' ? window.location.href : '',
+        },
+      )
+    })
   }
 
   registerDriverFactory(name: string, factory: RpcDriverFactory) {
@@ -86,17 +78,7 @@ export default class RpcManager {
       throw new Error(`RPC driver "${backendName}" is not registered`)
     }
 
-    const backendConfig = this.backendConfigurations[backendName]
-    if (!backendConfig) {
-      throw new Error(`RPC driver "${backendName}" is missing configuration`)
-    }
-
-    // plugin-registered custom drivers have no config entry of their own, so
-    // fall back to the WebWorkerRpcDriver config for them (xref c0de7e44)
-    const config =
-      this.mainConfiguration.drivers.get(backendName) ??
-      this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
-    const newDriver = factory(config, backendConfig, this.pluginManager)
+    const newDriver = factory(this.mainConfiguration, this.pluginManager)
     this.driverObjects.set(backendName, newDriver)
     return newDriver
   }
@@ -108,7 +90,8 @@ export default class RpcManager {
     const backendName =
       args.rpcDriverName ||
       opts?.rpcDriverName ||
-      readConfObject(this.mainConfiguration, 'defaultDriver')
+      readConfObject(this.mainConfiguration, 'defaultDriver') ||
+      this.defaultDriverName
 
     return this.getDriver(backendName)
   }
