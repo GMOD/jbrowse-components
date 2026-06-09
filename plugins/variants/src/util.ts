@@ -1,3 +1,14 @@
+import type React from 'react'
+
+export function svgMousePoint(event: React.MouseEvent<SVGElement>) {
+  const svg = event.currentTarget.ownerSVGElement
+  if (!svg) {
+    return undefined
+  }
+  const rect = svg.getBoundingClientRect()
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top }
+}
+
 export function pointToSegmentDist(
   px: number,
   py: number,

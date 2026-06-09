@@ -11,7 +11,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { pointToSegmentDist } from '../../util.ts'
+import { pointToSegmentDist, svgMousePoint } from '../../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -96,77 +96,47 @@ const AllLines = observer(function AllLines({
   const n = featuresVolatile?.length ?? 0
   const offsetAdj = Math.max(offsetPx, 0)
 
-  const pathD = useMemo(() => {
-    if (!assembly || n === 0 || !featuresVolatile) {
-      return ''
+  const lineCoords = useMemo(() => {
+    if (!assembly || !featuresVolatile || n === 0) {
+      return []
     }
     const w = b0 / n
-    const tickHeight = 6
-    const parts: string[] = []
-    for (let i = 0; i < n; i++) {
-      const gx = getGenomicX(view, assembly, featuresVolatile[i]!, offsetAdj)
-      const mx = i * w + w / 2
-      parts.push(
-        `M${mx} ${lineZoneHeight}L${gx} ${tickHeight}`,
-        `M${gx} 0L${gx} ${tickHeight}`,
-      )
-    }
-    return parts.join('')
-  }, [assembly, n, featuresVolatile, view, offsetAdj, b0, lineZoneHeight])
+    return featuresVolatile.map((feature, i) => ({
+      feature,
+      idx: i,
+      mx: i * w + w / 2,
+      gx: getGenomicX(view, assembly, feature, offsetAdj),
+    }))
+  }, [assembly, featuresVolatile, n, b0, view, offsetAdj])
+
+  const pathD = useMemo(
+    () => lineCoords.map(({ mx, gx }) => `M${mx} ${lineZoneHeight}L${gx} 0`).join(''),
+    [lineCoords, lineZoneHeight],
+  )
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<SVGElement>) => {
-      if (!assembly || n === 0 || !featuresVolatile) {
+      const pt = svgMousePoint(event)
+      if (!pt) {
         onHover(undefined)
         return
       }
-      const svg = event.currentTarget.ownerSVGElement
-      if (!svg) {
-        return
-      }
-      const rect = svg.getBoundingClientRect()
-      const px = event.clientX - rect.left
-      const py = event.clientY - rect.top
-      const w = b0 / n
       let minDist = 10
-      let found = -1
-      let foundGx = 0
-      const tickHeight = 6
-      for (let i = 0; i < n; i++) {
-        const gx = getGenomicX(view, assembly, featuresVolatile[i]!, offsetAdj)
-        const mx = i * w + w / 2
-        const d1 = pointToSegmentDist(
-          px,
-          py,
-          mx,
-          lineZoneHeight,
-          gx,
-          tickHeight,
-        )
-        const d2 = pointToSegmentDist(px, py, gx, 0, gx, tickHeight)
-        const dist = Math.min(d1, d2)
+      let found: (typeof lineCoords)[0] | undefined
+      for (const coord of lineCoords) {
+        const dist = pointToSegmentDist(pt.x, pt.y, coord.mx, lineZoneHeight, coord.gx, 0)
         if (dist < minDist) {
           minDist = dist
-          found = i
-          foundGx = gx
+          found = coord
         }
       }
       onHover(
-        found >= 0
-          ? { feature: featuresVolatile[found]!, idx: found, genomicX: foundGx }
+        found
+          ? { feature: found.feature, idx: found.idx, genomicX: found.gx }
           : undefined,
       )
     },
-    [
-      assembly,
-      n,
-      featuresVolatile,
-      view,
-      offsetAdj,
-      b0,
-      lineZoneHeight,
-      onHover,
-    ],
+    [lineCoords, lineZoneHeight, onHover],
   )
 
   if (!assembly || n === 0) {
@@ -230,26 +200,15 @@ const HighlightedLine = observer(function HighlightedLine({
   const mx = idx * w + w / 2
 
   return (
-    <>
-      <line
-        stroke="#f00c"
-        strokeWidth={2}
-        style={{ pointerEvents: 'none' }}
-        x1={mx}
-        x2={gx}
-        y1={lineZoneHeight}
-        y2={6}
-      />
-      <line
-        stroke="#f00c"
-        strokeWidth={2}
-        style={{ pointerEvents: 'none' }}
-        x1={gx}
-        x2={gx}
-        y1={0}
-        y2={6}
-      />
-    </>
+    <line
+      stroke="#f00c"
+      strokeWidth={2}
+      style={{ pointerEvents: 'none' }}
+      x1={mx}
+      x2={gx}
+      y1={lineZoneHeight}
+      y2={0}
+    />
   )
 })
 
@@ -290,16 +249,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 x1={hMx}
                 x2={hovered.genomicX}
                 y1={lineZoneHeight}
-                y2={6}
-              />
-              <line
-                stroke="#f00c"
-                strokeWidth={2}
-                style={{ pointerEvents: 'none' }}
-                x1={hovered.genomicX}
-                x2={hovered.genomicX}
-                y1={0}
-                y2={6}
+                y2={0}
               />
               {hovered.feature.get('name') ? (
                 <BaseTooltip>{hovered.feature.get('name')}</BaseTooltip>

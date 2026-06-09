@@ -13,7 +13,7 @@ import { observer } from 'mobx-react'
 
 import VariantLabels from './VariantLabels.tsx'
 import Wrapper from './Wrapper.tsx'
-import { pointToSegmentDist } from '../../util.ts'
+import { pointToSegmentDist, svgMousePoint } from '../../util.ts'
 
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -66,92 +66,49 @@ const AllLines = observer(function AllLines({
   const theme = useTheme()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, snps, tickHeight } = model
+  const { lineZoneHeight, snps } = model
   const { assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const blockWidth = dynamicBlocks.totalWidthPxWithoutBorders
   const n = snps.length
   const { scale: viewScale, viewOffsetX } = model.renderTransform
 
-  const pathD = useMemo(() => {
+  const lineCoords = useMemo(() => {
     if (!assembly || n === 0) {
-      return ''
+      return []
     }
-    const parts: string[] = []
-    for (let i = 0; i < n; i++) {
-      const gx = getGenomicX(view, assembly, snps[i]!)
-      const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)
-      parts.push(
-        `M${mx} ${lineZoneHeight}L${gx} ${tickHeight}`,
-        `M${gx} 0L${gx} ${tickHeight}`,
-      )
-    }
-    return parts.join('')
-  }, [
-    assembly,
-    n,
-    snps,
-    view,
-    blockWidth,
-    lineZoneHeight,
-    tickHeight,
-    viewScale,
-    viewOffsetX,
-  ])
+    return snps.map((snp, i) => ({
+      snp,
+      idx: i,
+      mx: getMatrixX(i, blockWidth, n, viewScale, viewOffsetX),
+      gx: getGenomicX(view, assembly, snp),
+    }))
+  }, [assembly, n, snps, blockWidth, viewScale, viewOffsetX, view])
+
+  const pathD = useMemo(
+    () => lineCoords.map(({ mx, gx }) => `M${mx} ${lineZoneHeight}L${gx} 0`).join(''),
+    [lineCoords, lineZoneHeight],
+  )
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<SVGElement>) => {
-      if (!assembly || n === 0) {
+      const pt = svgMousePoint(event)
+      if (!pt) {
         onHover(undefined)
         return
       }
-      const svg = event.currentTarget.ownerSVGElement
-      if (!svg) {
-        return
-      }
-      const rect = svg.getBoundingClientRect()
-      const px = event.clientX - rect.left
-      const py = event.clientY - rect.top
       let minDist = 10
-      let found = -1
-      let foundGx = 0
-      for (let i = 0; i < n; i++) {
-        const gx = getGenomicX(view, assembly, snps[i]!)
-        const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)
-        const d1 = pointToSegmentDist(
-          px,
-          py,
-          mx,
-          lineZoneHeight,
-          gx,
-          tickHeight,
-        )
-        const d2 = pointToSegmentDist(px, py, gx, 0, gx, tickHeight)
-        const dist = Math.min(d1, d2)
+      let found: (typeof lineCoords)[0] | undefined
+      for (const coord of lineCoords) {
+        const dist = pointToSegmentDist(pt.x, pt.y, coord.mx, lineZoneHeight, coord.gx, 0)
         if (dist < minDist) {
           minDist = dist
-          found = i
-          foundGx = gx
+          found = coord
         }
       }
-      onHover(
-        found >= 0
-          ? { snp: snps[found]!, idx: found, genomicX: foundGx }
-          : undefined,
-      )
+      onHover(found ? { snp: found.snp, idx: found.idx, genomicX: found.gx } : undefined)
     },
-    [
-      assembly,
-      n,
-      snps,
-      view,
-      blockWidth,
-      viewScale,
-      viewOffsetX,
-      lineZoneHeight,
-      tickHeight,
-      onHover,
-    ],
+    [lineCoords, lineZoneHeight, onHover],
   )
 
   if (!assembly || n === 0) {
@@ -196,7 +153,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const { classes } = useStyles()
     const view = getContainingView(model) as LinearGenomeViewModel
     const [hovered, setHovered] = useState<HoveredLine>()
-    const { lineZoneHeight, snps, tickHeight } = model
+    const { lineZoneHeight, snps } = model
     const blockWidth = view.dynamicBlocks.totalWidthPxWithoutBorders
     const n = snps.length
 
@@ -222,16 +179,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 x1={hMx}
                 x2={hovered.genomicX}
                 y1={lineZoneHeight}
-                y2={tickHeight}
-              />
-              <line
-                stroke="#f00c"
-                strokeWidth={2}
-                style={{ pointerEvents: 'none' }}
-                x1={hovered.genomicX}
-                x2={hovered.genomicX}
-                y1={0}
-                y2={tickHeight}
+                y2={0}
               />
               {hovered.snp.id ? (
                 <BaseTooltip>{hovered.snp.id}</BaseTooltip>
