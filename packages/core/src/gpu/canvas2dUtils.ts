@@ -1,8 +1,11 @@
-export interface Canvas2DRenderBlock {
-  screenStartPx: number
-  screenEndPx: number
+// A region's genomic span paired with its on-screen pixel span. Shared by the
+// Canvas2D clip path (`clipBlockForCanvas`), the bp→px mapper (`makeBpMapper`),
+// and canvas SVG/label/peptide positioning.
+export interface BpRegionBounds {
   start: number
   end: number
+  screenStartPx: number
+  screenEndPx: number
   reversed?: boolean
 }
 
@@ -95,7 +98,7 @@ export function clampBlockScissor(
 }
 
 export function clipBlockForCanvas(
-  block: Canvas2DRenderBlock,
+  block: BpRegionBounds,
   canvasWidth: number,
 ): BlockClip | null {
   const clamp = clampBlockScissor(
@@ -121,11 +124,6 @@ export function lookupColorRamp(ramp: Uint8Array, t: number) {
     b: ramp[idx + 2]!,
     a: ramp[idx + 3]! / 255,
   }
-}
-
-export function lookupColorRampCSS(ramp: Uint8Array, t: number) {
-  const { r, g, b, a } = lookupColorRamp(ramp, t)
-  return `rgba(${r},${g},${b},${a.toFixed(3)})`
 }
 
 // 256-entry LUT factory for per-cell `rgba(...)` fillStyle strings, keyed by
@@ -161,18 +159,10 @@ export function bpToScreenPx(
   return reversed ? screenEndPx - frac * w : screenStartPx + frac * w
 }
 
-export interface BpRegionBounds {
-  start: number
-  end: number
-  screenStartPx: number
-  screenEndPx: number
-  reversed?: boolean
-}
-
 // Closure-style bp→screen-px mapper bound to one region. Consumers that walk
 // many bp positions inside one block (label/peptide overlays, rect/line draws)
 // want a 1-arg call instead of repeating 6 args at every site.
-export function makeBpMapper(bounds: BpRegionBounds | Canvas2DRenderBlock) {
+export function makeBpMapper(bounds: BpRegionBounds) {
   const { start, end, screenStartPx, screenEndPx, reversed } = bounds
   const span = end - start
   const w = screenEndPx - screenStartPx

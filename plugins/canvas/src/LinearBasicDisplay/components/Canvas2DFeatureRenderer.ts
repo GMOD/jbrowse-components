@@ -21,7 +21,7 @@ import type {
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { Canvas2DRenderBlock } from '@jbrowse/core/gpu/canvas2dUtils'
+import type { BpRegionBounds } from '@jbrowse/core/gpu/canvas2dUtils'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
@@ -32,7 +32,7 @@ type BpToScreen = (bp: number) => number
 function drawLines(
   ctx: Ctx2D,
   region: RegionRenderData,
-  block: Canvas2DRenderBlock,
+  block: BpRegionBounds,
   toX: BpToScreen,
   scrollY: number,
 ) {
@@ -114,7 +114,7 @@ function drawRects(
 function drawArrows(
   ctx: Ctx2D,
   region: RegionRenderData,
-  block: Canvas2DRenderBlock,
+  block: BpRegionBounds,
   toX: BpToScreen,
   scrollY: number,
 ) {
