@@ -49,6 +49,21 @@ special-cased setter). Invariant: **`rpcProps()` must not read fetch-derived
 state** (`sampleInfo`, `cellData`, `sources`) or it loops via `setCellData`;
 that's why it reads `sourcesBase`, not `sources`.
 
+### Matrix mode is zoom-cache-strict (`isCacheValid`)
+
+The **matrix** display (`cellDataMode === 'matrix'`) lays columns out by feature
+index across the full width, so the displayed feature set is the buffered region
+for the _current_ zoom. Zooming in/out changes which features show even when the
+viewport stays spatially inside loaded data, so `MultiSampleVariantBaseModel`
+overrides `isCacheValid` to require `view.bpPerPx === loadedBpPerPx` (recorded in
+`fetchNeeded`, cleared in `clearDisplaySpecificData`) — the same strict-zoom rule
+wiggle uses (adr-008). Without it, zoom-**in** within the buffer never refetches
+and the matrix stays stale. **Regular** mode draws each variant at its genomic
+position, so spatial `isBlockCovered` coverage alone is correct — don't extend
+the strict-zoom check to it (needless refetches). The connector lines, GPU/Canvas
+render, hit-test, and SVG export all key off `view.totalWidthPxWithoutBorders`
+(the rounded width) so columns/lines/clicks stay pixel-aligned.
+
 ## Allele counting: three implementations on purpose, count inline
 
 `shared/alleleCounts.ts` keeps three counters that look like duplication but are

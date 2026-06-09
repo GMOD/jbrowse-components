@@ -311,6 +311,12 @@ export default function MultiSampleVariantBaseModelF(
          * — fetchNeeded only needs to call setCellData(result).
          */
         cellData: undefined as CellDataResult | undefined,
+        // bpPerPx the current cellData was fetched at. Matrix mode lays columns
+        // out by feature index across the full width, so the displayed feature
+        // set is the buffered region for *this* zoom; a zoom change invalidates
+        // the cache even when the viewport is still spatially covered. See the
+        // isCacheValid override below.
+        loadedBpPerPx: undefined as number | undefined,
         // Bumped by reload() to retrigger the sources autorun. Sources is a
         // one-shot fetch (per adapter, not per viewport), so it doesn't go
         // through FetchMixin and can't watch fetchGeneration — that would
@@ -329,6 +335,9 @@ export default function MultiSampleVariantBaseModelF(
         },
         setContextMenuFeature(feature?: Feature) {
           self.contextMenuFeature = feature
+        },
+        setLoadedBpPerPx(bpPerPx: number | undefined) {
+          self.loadedBpPerPx = bpPerPx
         },
       }))
       .views(self => ({
@@ -1038,6 +1047,22 @@ export default function MultiSampleVariantBaseModelF(
           // hasPhased / sampleInfo / featuresVolatile are derived from cellData
           // via getters, so clearing cellData clears all of them.
           self.cellData = undefined
+          self.loadedBpPerPx = undefined
+        },
+
+        // Matrix mode draws columns by feature index across the full width, so
+        // the set of features belongs to the buffered region at the *current*
+        // zoom — zooming in/out changes which features show even when the
+        // viewport stays spatially inside loaded data, so cached cells at a
+        // different bpPerPx are stale (wiggle uses the same strict-zoom rule,
+        // adr-008). Regular mode draws each variant at its genomic position, so
+        // spatial coverage alone suffices and the default (always valid) holds.
+        isCacheValid(_displayedRegionIndex: number) {
+          if (cellDataMode !== 'matrix' || self.loadedBpPerPx === undefined) {
+            return true
+          }
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return view.bpPerPx === self.loadedBpPerPx
         },
 
         getByteEstimateConfig(): ByteEstimateConfig | null {
@@ -1064,11 +1089,12 @@ export default function MultiSampleVariantBaseModelF(
           if (self.isMinimized || !self.sourcesBase) {
             return
           }
-          const allBuffered = (getContainingView(self) as LinearGenomeViewModel)
-            .bufferedVisibleRegions
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const allBuffered = view.bufferedVisibleRegions
           if (allBuffered.length === 0) {
             return
           }
+          const bpPerPx = view.bpPerPx
           const sources = self.sourcesBase
           const rpcProps = { ...self.rpcProps(), sources }
           await self.fetchRegions(allBuffered, async (ctx: FetchContext) => {
@@ -1082,6 +1108,7 @@ export default function MultiSampleVariantBaseModelF(
             })
             if (!ctx.isStale() && isAlive(self)) {
               self.setCellData(result)
+              self.setLoadedBpPerPx(bpPerPx)
             }
           })
         },

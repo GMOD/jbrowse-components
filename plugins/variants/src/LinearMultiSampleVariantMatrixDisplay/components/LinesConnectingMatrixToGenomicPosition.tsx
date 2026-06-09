@@ -90,9 +90,9 @@ const AllLines = observer(function AllLines({
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { lineZoneHeight, featuresVolatile } = model
-  const { offsetPx, assemblyNames, dynamicBlocks } = view
+  const { offsetPx, assemblyNames } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
-  const b0 = dynamicBlocks.totalWidthPxWithoutBorders
+  const b0 = view.totalWidthPxWithoutBorders
   const n = featuresVolatile?.length ?? 0
   const offsetAdj = Math.max(offsetPx, 0)
 
@@ -207,9 +207,9 @@ const HighlightedLine = observer(function HighlightedLine({
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { lineZoneHeight, featuresVolatile } = model
-  const { offsetPx, assemblyNames, dynamicBlocks } = view
+  const { offsetPx, assemblyNames } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
-  const b0 = dynamicBlocks.totalWidthPxWithoutBorders
+  const b0 = view.totalWidthPxWithoutBorders
   const n = featuresVolatile?.length ?? 0
 
   if (!assembly || !featuresVolatile || n === 0) {
@@ -266,7 +266,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const { classes } = useStyles()
     const { lineZoneHeight, featuresVolatile } = model
     const [hovered, setHovered] = useState<HoveredLine>()
-    const b0 = (getContainingView(model) as LinearGenomeViewModel).dynamicBlocks
+    const b0 = (getContainingView(model) as LinearGenomeViewModel)
       .totalWidthPxWithoutBorders
     const n = featuresVolatile?.length ?? 0
 

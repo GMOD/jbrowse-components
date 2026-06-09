@@ -51,9 +51,9 @@ export default function stateModelFactory(
             return undefined
           }
           return {
-            canvasWidth: Math.round(
-              view.dynamicBlocks.totalWidthPxWithoutBorders,
-            ),
+            // Same rounded width the canvas, hit-test, and connector lines use,
+            // so cells/lines/clicks stay pixel-aligned.
+            canvasWidth: view.totalWidthPxWithoutBorders,
             canvasHeight: self.availableHeight,
             rowHeight: self.rowHeight,
             scrollTop: self.scrollTop,
