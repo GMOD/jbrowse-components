@@ -9,6 +9,14 @@ import colorPack;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
+// Insertion glyph triangle↔line fade. These MIRROR `insertionGlyph` in
+// ../variantShape.ts (the canonical definition) — edit both together. span ≤
+// INS_LINE_SPAN_PX px collapses to a line; ≥ INS_TRI_SPAN_PX px is a full
+// triangle; INS_LINE_WIDTH_PX is the collapsed line thickness / min width.
+static const float INS_LINE_SPAN_PX = 2.0;
+static const float INS_TRI_SPAN_PX = 10.0;
+static const float INS_LINE_WIDTH_PX = 2.0;
+
 struct CellInstance {
   uint2 startEnd  : ATTR0;
   uint  rowIndex  : ATTR1;
@@ -40,6 +48,8 @@ struct VsOut {
   // hypRight = sqrt(h*h*0.25 + w*w), hypDown = sqrt(h*h + w*w*0.25)
   nointerpolation float  hypRight  : COLOR4;
   nointerpolation float  hypDown   : COLOR5;
+  // Insertion morph: 0 = collapsed line, 1 = full down-triangle.
+  nointerpolation float  triBlend  : COLOR6;
 };
 
 [shader("vertex")]
@@ -63,18 +73,21 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float lx = q.x, ly = q.y;
 
-  float naturalWPx = (cx2 - cx1) * u.canvasWidth * 0.5;
-  uint effectiveShape = inst.shapeType;
-  if (inst.shapeType == 3u && naturalWPx < 1.0) {
-    effectiveShape = 0u;
-  }
-
+  // Insertion glyph (shapeType 3): morph a down-triangle into a thin vertical
+  // line as its alt-allele span narrows on screen. Mirrors insertionGlyph() in
+  // ../variantShape.ts — the quad here carries the morphed top width; the
+  // fragment shader blends the triangle/box SDFs by triBlend.
   float xLeft = cx1;
   float xRight = cx2;
-  if (effectiveShape == 3u) {
-    float widthExtend = 6.0 / u.canvasWidth;
-    xLeft -= widthExtend;
-    xRight += widthExtend;
+  float triBlend = 1.0;
+  if (inst.shapeType == 3u) {
+    float spanPx = (clipX2 - clipX1) * u.canvasWidth * 0.5;
+    triBlend = smoothstep(INS_LINE_SPAN_PX, INS_TRI_SPAN_PX, spanPx);
+    float topWidthPx = lerp(INS_LINE_WIDTH_PX, max(spanPx, INS_LINE_WIDTH_PX), triBlend);
+    float halfClip = topWidthPx / u.canvasWidth;
+    float center = (cx1 + cx2) * 0.5;
+    xLeft = center - halfClip;
+    xRight = center + halfClip;
   }
 
   float wPx = (xRight - xLeft) * u.canvasWidth * 0.5;
@@ -85,7 +98,8 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   o.color = unpackRGBA(inst.color);
   o.localPx = float2(lx * wPx, (1.0 - ly) * hPx);
   o.sizePx = float2(wPx, hPx);
-  o.shapeType = effectiveShape;
+  o.shapeType = inst.shapeType;
+  o.triBlend = triBlend;
   o.hypRight = sqrt(hPx * hPx * 0.25 + wPx * wPx);
   o.hypDown  = sqrt(hPx * hPx + wPx * wPx * 0.25);
   return o;
@@ -119,11 +133,20 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     } else if (fragIn.shapeType == 2u) {
       d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h, fragIn.hypRight);
     } else {
-      d = triSdfDown(fragIn.localPx, w, h, fragIn.hypDown);
+      // Insertion: blend the down-triangle SDF toward a full box SDF (the
+      // collapsed line) as triBlend → 0. Matches the trapezoid drawn by
+      // insertionGlyph() on the Canvas2D/SVG path.
+      float dTri = triSdfDown(fragIn.localPx, w, h, fragIn.hypDown);
+      float dBox = min(min(fragIn.localPx.x, w - fragIn.localPx.x),
+                       min(fragIn.localPx.y, h - fragIn.localPx.y));
+      d = lerp(dBox, dTri, fragIn.triBlend);
     }
 
     alpha *= smoothstep(-0.5, 0.5, d);
-    alpha *= smoothstep(0.0, 3.0, min(w, h));
+    // The collapsed insertion line is intentionally thin; gate its min-size
+    // fade on height alone so it stays opaque rather than fading on width.
+    float minSide = fragIn.shapeType == 3u ? h : min(w, h);
+    alpha *= smoothstep(0.0, 3.0, minSide);
   }
 
   return float4(fragIn.color.rgb * alpha, alpha);

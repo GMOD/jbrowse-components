@@ -63,14 +63,15 @@ export function drawVariantBlocks(
       const x1_raw = toX(startBp)
       const x2_raw = toX(endBp)
       const x1 = Math.min(x1_raw, x2_raw)
-      const w = Math.max(2, Math.abs(x2_raw - x1_raw))
+      const spanPx = Math.abs(x2_raw - x1_raw)
+      const w = Math.max(2, spanPx)
 
       const color = region.cellColors[i]!
       if (color !== prevColor) {
         ctx.fillStyle = abgrToCssRgba(color)
         prevColor = color
       }
-      drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, rowHeight)
+      drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, rowHeight, spanPx)
     }
 
     ctx.restore()

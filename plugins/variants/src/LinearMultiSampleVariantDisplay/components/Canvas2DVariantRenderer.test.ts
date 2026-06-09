@@ -251,7 +251,7 @@ describe('Canvas2DVariantRenderer', () => {
       expect(pathOps).toContain('fill')
     })
 
-    test('shape 3 draws down triangle via path', () => {
+    test('shape 3 zoomed in draws a full down triangle', () => {
       const { canvas, pathOps } = createMockCanvas()
       const renderer = new Canvas2DVariantRenderer(canvas)
       const regions = new Map([
@@ -269,12 +269,44 @@ describe('Canvas2DVariantRenderer', () => {
 
       renderer.renderBlocks([makeBlock()], regions, DEFAULT_STATE)
 
-      // Insertion (TRI_DOWN) glyph is extended by 3px on each side to match
-      // the shader's widthExtend; cell spans px 0..80 → drawn 0-3..80+3.
+      // span = 80px ≥ INS_TRI_SPAN_PX so triBlend = 1: a triangle whose base
+      // is the full span (0..80) collapsing to an apex (bottom width 0) at the
+      // span center (px 40). Bottom edge is two coincident apex points.
       const moveOp = pathOps.find(op => op.startsWith('moveTo'))
-      expect(moveOp).toBe('moveTo(-3,0)')
-      expect(pathOps).toContain('lineTo(83,0)')
+      expect(moveOp).toBe('moveTo(0,0)')
+      expect(pathOps).toContain('lineTo(80,0)')
       expect(pathOps).toContain('lineTo(40,10)')
+      expect(pathOps).toContain('fill')
+    })
+
+    test('shape 3 zoomed out collapses to a thin vertical line', () => {
+      const { canvas, pathOps } = createMockCanvas()
+      const renderer = new Canvas2DVariantRenderer(canvas)
+      const regions = new Map([
+        [
+          0,
+          // 1bp span; the 800bp/800px block below is 1px/bp, so the span is 1px
+          // on screen — below INS_LINE_SPAN_PX, so the glyph is a full-height
+          // 2px-wide box rather than a triangle.
+          makeRegionData({
+            numCells: 1,
+            cellPositions: [500, 501],
+            cellRowIndices: [0],
+            cellColors: [0xff0000ff],
+            cellShapeTypes: [3],
+          }),
+        ],
+      ])
+
+      renderer.renderBlocks([makeBlock({ end: 800 })], regions, DEFAULT_STATE)
+
+      // center = px 500.5; topWidth == bottomWidth == 2 (a rectangle, not a
+      // triangle): top and bottom edges are equal width.
+      const moveOp = pathOps.find(op => op.startsWith('moveTo'))
+      expect(moveOp).toBe('moveTo(499.5,0)')
+      expect(pathOps).toContain('lineTo(501.5,0)')
+      expect(pathOps).toContain('lineTo(501.5,10)')
+      expect(pathOps).toContain('lineTo(499.5,10)')
       expect(pathOps).toContain('fill')
     })
   })
