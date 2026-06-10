@@ -3,8 +3,8 @@ id: linearpairedarcdisplay
 title: LinearPairedArcDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -33,7 +33,8 @@ color: {
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained.
 
 ### Inherited from [BaseLinearDisplay](../baselineardisplay)
 
@@ -82,8 +83,8 @@ mouseover: {
 
 #### slot: jexlFilters
 
-config jexlFilters are deferred evaluated so they are prepended with
-jexl at runtime rather than being stored with jexl in the config
+config jexlFilters are deferred evaluated so they are prepended with jexl at
+runtime rather than being stored with jexl in the config
 
 ```js
 jexlFilters: {

@@ -3,8 +3,8 @@ id: linearwiggledisplay
 title: LinearWiggleDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,7 +18,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-configuration for the wiggle (quantitative/numeric) display showing XY plot, density, line, or scatter renderings
+configuration for the wiggle (quantitative/numeric) display showing XY plot,
+density, line, or scatter renderings
 
 These are display-level slots: set them inside a track's `displays` array to
 change its defaults (setting them at the track top level has no effect).
@@ -63,6 +64,7 @@ defaultRendering: {
   "defaultRendering": "density"
 }
 ```
+
 #### slot: height
 
 ```js
@@ -72,6 +74,7 @@ height: {
       description: 'Default height of the track',
     }
 ```
+
 #### slot: useBicolor
 
 ```js
@@ -82,6 +85,7 @@ useBicolor: {
         'Use separate positive/negative colors instead of a single color',
     }
 ```
+
 #### slot: color
 
 ```js
@@ -91,6 +95,7 @@ color: {
       description: 'Color for the wiggle bars (when not using bicolor mode)',
     }
 ```
+
 #### slot: summaryScoreMode
 
 ```js

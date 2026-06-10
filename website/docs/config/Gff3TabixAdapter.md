@@ -3,8 +3,8 @@ id: gff3tabixadapter
 title: Gff3TabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,8 +18,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
-`.csi` index instead:
+The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
+index instead:
+
 ```js
 {
   type: 'Gff3TabixAdapter',
@@ -33,13 +34,10 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed GFF3 files
 
-
 ### Gff3TabixAdapter - Pre-processor / simplified config
 
-
-
-preprocessor to allow minimal config, assumes tbi index at
-yourfile.gff3.gz.tbi (or .csi if csi:true):
+preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
+(or .csi if csi:true):
 
 ```json
 {
@@ -62,6 +60,7 @@ gffGzLocation: {
       },
     }
 ```
+
 #### slot: index.indexType
 
 ```js
@@ -71,6 +70,7 @@ indexType: {
         defaultValue: 'TBI',
       }
 ```
+
 #### slot: index.indexType
 
 ```js
@@ -82,12 +82,12 @@ location: {
         },
       }
 ```
+
 #### slot: dontRedispatch
 
-the Gff3TabixAdapter has to "redispatch" if it fetches a region and
-features it finds inside that region extend outside the region we requested.
-you can disable this for certain feature types to avoid fetching e.g. the
-entire chromosome
+the Gff3TabixAdapter has to "redispatch" if it fetches a region and features it
+finds inside that region extend outside the region we requested. you can disable
+this for certain feature types to avoid fetching e.g. the entire chromosome
 
 ```js
 dontRedispatch: {

@@ -4,14 +4,14 @@ title: sv-core
 ---
 
 Note: this document is automatically generated from exported functions marked
-with an `#api` JSDoc tag in our source code. See [Plugin dependencies and
-re-exports](/docs/developer_guides/imports_and_reexports) for how to import
-these from a plugin.
+with an `#api` JSDoc tag in our source code. See
+[Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+for how to import these from a plugin.
 
 ### breakpointBpPerPx
 
-bpPerPx that fits `windowSize` bp on each side of a breakpoint across the
-view width. Falls back to a zoomed-in default when no window is requested.
+bpPerPx that fits `windowSize` bp on each side of a breakpoint across the view
+width. Falls back to a zoomed-in default when no window is requested.
 
 ```js
 // type signature
@@ -23,8 +23,8 @@ view width. Falls back to a zoomed-in default when no window is requested.
 ### getBreakendAssemblyRegions
 
 Loads the assembly for a breakend feature and resolves the two regions its
-endpoints span. Throws if the assembly, its regions, or either endpoint's
-region cannot be found.
+endpoints span. Throws if the assembly, its regions, or either endpoint's region
+cannot be found.
 
 ```js
 // type signature
@@ -58,8 +58,8 @@ Returns undefined when no mate coordinate info is found.
 
 ### splitRegionAtPosition
 
-Splits a region at `pos` into two halves that both include `pos`, so a
-breakend there stays visible in each.
+Splits a region at `pos` into two halves that both include `pos`, so a breakend
+there stays visible in each.
 
 ```js
 // type signature

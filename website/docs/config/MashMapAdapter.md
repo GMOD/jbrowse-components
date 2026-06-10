@@ -3,8 +3,8 @@ id: mashmapadapter
 title: MashMapAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -20,15 +20,14 @@ reference the markdown files in our repo of the checked out git tag
 
 ### MashMapAdapter - Pre-processor / simplified config
 
-
-
 preprocessor to allow minimal config:
+
 ```json
 {
   "type": "MashMapAdapter",
   "uri": "file.out",
-  "queryAssembly":"hg19",
-  "targetAssembly":"hg38"
+  "queryAssembly": "hg19",
+  "targetAssembly": "hg38"
 }
 ```
 
@@ -44,6 +43,7 @@ assemblyNames: {
         'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
     }
 ```
+
 #### slot: targetAssembly
 
 ```js
@@ -53,6 +53,7 @@ targetAssembly: {
       description: 'Alternative to assemblyNames array: the target assembly',
     }
 ```
+
 #### slot: queryAssembly
 
 ```js
@@ -62,6 +63,7 @@ queryAssembly: {
       description: 'Alternative to assemblyNames array: the query assembly',
     }
 ```
+
 #### slot: outLocation
 
 ```js

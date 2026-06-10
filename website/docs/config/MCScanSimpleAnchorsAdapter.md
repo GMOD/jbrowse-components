@@ -3,8 +3,8 @@ id: mcscansimpleanchorsadapter
 title: MCScanSimpleAnchorsAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -20,16 +20,15 @@ reference the markdown files in our repo of the checked out git tag
 
 ### MCScanSimpleAnchorsAdapter - Pre-processor / simplified config
 
-
-
 preprocessor to allow minimal config:
+
 ```json
 {
   "type": "MCScanSimpleAnchorsAdapter",
   "uri": "file.anchors",
   "bed1": "bed1.bed",
   "bed2": "bed2.bed",
-  "assemblyNames": ["hg19", "hg38"],
+  "assemblyNames": ["hg19", "hg38"]
 }
 ```
 
@@ -46,6 +45,7 @@ mcscanSimpleAnchorsLocation: {
       },
     }
 ```
+
 #### slot: bed1Location
 
 ```js
@@ -57,6 +57,7 @@ bed1Location: {
       },
     }
 ```
+
 #### slot: bed2Location
 
 ```js
@@ -68,6 +69,7 @@ bed2Location: {
       },
     }
 ```
+
 #### slot: assemblyNames
 
 ```js

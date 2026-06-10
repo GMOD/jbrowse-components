@@ -3,8 +3,8 @@ id: bedadapter
 title: BedAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -20,9 +20,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BedAdapter - Pre-processor / simplified config
 
-
-
 preprocessor to allow minimal config:
+
 ```json
 {
   "type": "BedAdapter",
@@ -44,6 +43,7 @@ bedLocation: {
       },
     }
 ```
+
 #### slot: columnNames
 
 ```js
@@ -53,6 +53,7 @@ columnNames: {
       defaultValue: [],
     }
 ```
+
 #### slot: scoreColumn
 
 ```js
@@ -62,6 +63,7 @@ scoreColumn: {
       defaultValue: '',
     }
 ```
+
 #### slot: autoSql
 
 ```js
@@ -71,6 +73,7 @@ autoSql: {
       defaultValue: '',
     }
 ```
+
 #### slot: colRef
 
 ```js
@@ -80,6 +83,7 @@ colRef: {
       defaultValue: 0,
     }
 ```
+
 #### slot: colStart
 
 ```js
@@ -89,6 +93,7 @@ colStart: {
       defaultValue: 1,
     }
 ```
+
 #### slot: colEnd
 
 ```js
@@ -98,6 +103,7 @@ colEnd: {
       defaultValue: 2,
     }
 ```
+
 #### slot: disableGeneHeuristic
 
 ```js

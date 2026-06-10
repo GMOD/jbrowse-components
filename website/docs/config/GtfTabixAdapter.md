@@ -3,8 +3,8 @@ id: gtftabixadapter
 title: GtfTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -19,6 +19,7 @@ reference the markdown files in our repo of the checked out git tag
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index:
+
 ```js
 {
   type: 'GtfTabixAdapter',
@@ -32,13 +33,9 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed GTF files
 
-
 ### GtfTabixAdapter - Pre-processor / simplified config
 
-
-
-preprocessor to allow minimal config, assumes tbi index at
-yourfile.gtf.gz.tbi:
+preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
 
 ```json
 {
@@ -60,6 +57,7 @@ gtfGzLocation: {
       },
     }
 ```
+
 #### slot: index.indexType
 
 ```js
@@ -69,6 +67,7 @@ indexType: {
         defaultValue: 'TBI',
       }
 ```
+
 #### slot: index.location
 
 ```js
@@ -80,12 +79,12 @@ location: {
         },
       }
 ```
+
 #### slot: dontRedispatch
 
-the GtfTabixAdapter has to "redispatch" if it fetches a region and
-features it finds inside that region extend outside the region we
-requested. you can disable this for certain feature types to avoid
-fetching e.g. the entire chromosome
+the GtfTabixAdapter has to "redispatch" if it fetches a region and features it
+finds inside that region extend outside the region we requested. you can disable
+this for certain feature types to avoid fetching e.g. the entire chromosome
 
 ```js
 dontRedispatch: {
@@ -93,6 +92,7 @@ dontRedispatch: {
       defaultValue: ['chromosome', 'region', 'contig'],
     }
 ```
+
 #### slot: aggregateField
 
 ```js

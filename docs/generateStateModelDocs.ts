@@ -121,7 +121,9 @@ function collectAncestors(
   for (const ref of model.header.composedOf) {
     const parent =
       (ref.declId ? index.byDeclId.get(ref.declId) : undefined) ??
-      (ref.name ? index.bySlug.get(slugify(ref.name, { lower: true })) : undefined)
+      (ref.name
+        ? index.bySlug.get(slugify(ref.name, { lower: true }))
+        : undefined)
     if (parent && !seen.has(parent.header.id)) {
       seen.add(parent.header.id)
       out.push({ model: parent })

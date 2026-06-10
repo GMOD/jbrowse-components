@@ -4,14 +4,14 @@ title: wiggle-core
 ---
 
 Note: this document is automatically generated from exported functions marked
-with an `#api` JSDoc tag in our source code. See [Plugin dependencies and
-re-exports](/docs/developer_guides/imports_and_reexports) for how to import
-these from a plugin.
+with an `#api` JSDoc tag in our source code. See
+[Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+for how to import these from a plugin.
 
 ### computeAutoscaleDomain
 
-Computes a score domain from feature arrays, scoping to visible or all
-entries per the global/local autoscale type.
+Computes a score domain from feature arrays, scoping to visible or all entries
+per the global/local autoscale type.
 
 ```js
 // type signature
@@ -22,8 +22,8 @@ entries per the global/local autoscale type.
 
 ### domainFromStats
 
-Converts score stats into a `[min, max]` domain, applying std-dev
-expansion for `localsd`/`globalsd` autoscale types.
+Converts score stats into a `[min, max]` domain, applying std-dev expansion for
+`localsd`/`globalsd` autoscale types.
 
 ```js
 // type signature
@@ -34,8 +34,8 @@ expansion for `localsd`/`globalsd` autoscale types.
 
 ### getEffectiveScores
 
-Per-feature scalar score array for a summary mode: the min/max summary array
-for `'min'`/`'max'`, otherwise the average score.
+Per-feature scalar score array for a summary mode: the min/max summary array for
+`'min'`/`'max'`, otherwise the average score.
 
 ```js
 // type signature
@@ -46,8 +46,8 @@ for `'min'`/`'max'`, otherwise the average score.
 
 ### getNiceDomain
 
-Rounds a domain to "nice" endpoints, clamped to the origin and
-overridden by any explicit `bounds`.
+Rounds a domain to "nice" endpoints, clamped to the origin and overridden by any
+explicit `bounds`.
 
 ```js
 // type signature
@@ -58,8 +58,8 @@ overridden by any explicit `bounds`.
 
 ### getNiceScale
 
-Returns a niced `{min, max}` domain for a maximum score value.
-Uses log base-2 when `useLogScale` is true (domain is clamped to [1, max]).
+Returns a niced `{min, max}` domain for a maximum score value. Uses log base-2
+when `useLogScale` is true (domain is clamped to [1, max]).
 
 ```js
 // type signature

@@ -3,8 +3,8 @@ id: bedtabixadapter
 title: BedTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,8 +18,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
-`.csi` index instead:
+The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
+index instead:
+
 ```js
 {
   type: 'BedTabixAdapter',
@@ -33,9 +34,8 @@ _See the **Slots** section below for all available configuration fields._
 
 ### BedTabixAdapter - Pre-processor / simplified config
 
-
-
 preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
+
 ```json
 {
   "type": "BedTabixAdapter",
@@ -56,6 +56,7 @@ bedGzLocation: {
       },
     }
 ```
+
 #### slot: index.indexType
 
 ```js
@@ -65,6 +66,7 @@ indexType: {
         defaultValue: 'TBI',
       }
 ```
+
 #### slot: index.location
 
 ```js
@@ -76,6 +78,7 @@ location: {
         },
       }
 ```
+
 #### slot: columnNames
 
 ```js
@@ -85,6 +88,7 @@ columnNames: {
       defaultValue: [],
     }
 ```
+
 #### slot: scoreColumn
 
 ```js
@@ -94,6 +98,7 @@ scoreColumn: {
       defaultValue: '',
     }
 ```
+
 #### slot: autoSql
 
 ```js
@@ -103,6 +108,7 @@ autoSql: {
       defaultValue: '',
     }
 ```
+
 #### slot: disableGeneHeuristic
 
 ```js

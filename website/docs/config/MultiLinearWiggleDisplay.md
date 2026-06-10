@@ -3,8 +3,8 @@ id: multilinearwiggledisplay
 title: MultiLinearWiggleDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -52,6 +52,7 @@ height: {
       description: 'Default height of the track',
     }
 ```
+
 #### slot: summaryScoreMode
 
 ```js
@@ -63,6 +64,7 @@ summaryScoreMode: {
       defaultValue: 'avg',
     }
 ```
+
 #### slot: defaultRendering
 
 Default rendering type. Multi-row modes (`multirowxy`, `multirowdensity`,

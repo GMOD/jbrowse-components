@@ -3,8 +3,8 @@ id: oauthinternetaccount
 title: OAuthInternetAccount
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -29,6 +29,7 @@ tokenType: {
       defaultValue: 'Bearer',
     }
 ```
+
 #### slot: authEndpoint
 
 ```js
@@ -38,6 +39,7 @@ authEndpoint: {
       defaultValue: '',
     }
 ```
+
 #### slot: tokenEndpoint
 
 ```js
@@ -47,6 +49,7 @@ tokenEndpoint: {
       defaultValue: '',
     }
 ```
+
 #### slot: needsPKCE
 
 ```js
@@ -56,6 +59,7 @@ needsPKCE: {
       defaultValue: false,
     }
 ```
+
 #### slot: clientId
 
 ```js
@@ -65,6 +69,7 @@ clientId: {
       defaultValue: '',
     }
 ```
+
 #### slot: scopes
 
 ```js
@@ -74,6 +79,7 @@ scopes: {
       defaultValue: '',
     }
 ```
+
 #### slot: state
 
 ```js
@@ -83,6 +89,7 @@ state: {
       defaultValue: '',
     }
 ```
+
 #### slot: responseType
 
 ```js
@@ -96,7 +103,8 @@ responseType: {
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained.
 
 ### Inherited from [BaseInternetAccount](../baseinternetaccount)
 

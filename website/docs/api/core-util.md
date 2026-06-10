@@ -4,9 +4,9 @@ title: core/util
 ---
 
 Note: this document is automatically generated from exported functions marked
-with an `#api` JSDoc tag in our source code. See [Plugin dependencies and
-re-exports](/docs/developer_guides/imports_and_reexports) for how to import
-these from a plugin.
+with an `#api` JSDoc tag in our source code. See
+[Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+for how to import these from a plugin.
 
 ### getContainingDisplay
 
@@ -22,8 +22,8 @@ no containing display.
 
 ### getContainingTrack
 
-Returns the track model that contains the given node. Throws if the node has
-no containing track.
+Returns the track model that contains the given node. Throws if the node has no
+containing track.
 
 ```js
 // type signature
@@ -57,8 +57,8 @@ Returns the MST environment for a node, which carries the `pluginManager`.
 
 ### getSession
 
-Returns the JBrowse session model for any node in the state tree. Throws if
-the node has no session ancestor.
+Returns the JBrowse session model for any node in the state tree. Throws if the
+node has no session ancestor.
 
 ```js
 // type signature

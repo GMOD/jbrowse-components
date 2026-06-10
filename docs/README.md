@@ -92,12 +92,12 @@ every member reachable through composition, grouped by the model that defines
 it. The composition graph is **derived from code**, not authored — the generator
 resolves the models passed to the factory's `types.compose(...)` call, and the
 base of a `return BaseFactory(args).views(...)` extension chain, through the
-TypeScript checker (alias-followed, and following `const X = factory()` exports),
-so no `extends`/`composed of` comment needs to be written or kept in sync. The
-only requirement is that the `#stateModel` JSDoc sit on the model's factory (or
-its `types.compose`), not an unrelated preceding declaration. Any leftover
-hand-authored `extends`/`composed of` block is stripped from the rendered prose
-so it cannot drift from the derived list.
+TypeScript checker (alias-followed, and following `const X = factory()`
+exports), so no `extends`/`composed of` comment needs to be written or kept in
+sync. The only requirement is that the `#stateModel` JSDoc sit on the model's
+factory (or its `types.compose`), not an unrelated preceding declaration. Any
+leftover hand-authored `extends`/`composed of` block is stripped from the
+rendered prose so it cannot drift from the derived list.
 
 This mirrors how `#baseConfiguration` derives config inheritance (below).
 

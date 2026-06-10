@@ -3,8 +3,8 @@ id: basetrack
 title: BaseTrack
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -33,6 +33,7 @@ name: {
         defaultValue: 'Track',
       }
 ```
+
 #### slot: assemblyNames
 
 ```js
@@ -42,6 +43,7 @@ assemblyNames: {
         defaultValue: ['assemblyName'],
       }
 ```
+
 #### slot: description
 
 ```js
@@ -51,6 +53,7 @@ description: {
         defaultValue: '',
       }
 ```
+
 #### slot: category
 
 ```js
@@ -60,6 +63,7 @@ category: {
         defaultValue: [],
       }
 ```
+
 #### slot: metadata
 
 ```js
@@ -69,6 +73,7 @@ metadata: {
         defaultValue: {},
       }
 ```
+
 #### slot: rpcDriverName
 
 ```js
@@ -79,11 +84,13 @@ rpcDriverName: {
         defaultValue: '',
       }
 ```
+
 #### slot: adapter
 
 ```js
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
+
 #### slot: textSearching.indexedAttributes
 
 ```js
@@ -94,6 +101,7 @@ indexingAttributes: {
           defaultValue: ['Name', 'ID'],
         }
 ```
+
 #### slot: textSearching.indexingFeatureTypesToExclude
 
 ```js
@@ -103,18 +111,21 @@ indexingFeatureTypesToExclude: {
           defaultValue: ['CDS', 'exon'],
         }
 ```
+
 #### slot: textSearching.textSearchAdapter
 
 ```js
 textSearchAdapter: pluginManager.pluggableConfigSchemaType(
-          'text search adapter',
-        )
+  'text search adapter',
+)
 ```
+
 #### slot: displays
 
 ```js
 displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
+
 #### slot: formatDetails.feature
 
 ```js
@@ -125,6 +136,7 @@ feature: {
           contextVariable: ['feature'],
         }
 ```
+
 #### slot: formatDetails.subfeatures
 
 ```js
@@ -135,6 +147,7 @@ subfeatures: {
           contextVariable: ['feature'],
         }
 ```
+
 #### slot: formatDetails.depth
 
 ```js
@@ -145,6 +158,7 @@ depth: {
             'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
         }
 ```
+
 #### slot: formatDetails.maxDepth
 
 ```js
@@ -154,6 +168,7 @@ maxDepth: {
           description: 'Maximum depth to render subfeatures',
         }
 ```
+
 #### slot: formatAbout.config
 
 ```js
@@ -164,6 +179,7 @@ config: {
           contextVariable: ['config'],
         }
 ```
+
 #### slot: formatAbout.hideUris
 
 ```js

@@ -3,8 +3,8 @@ id: formatdetails
 title: FormatDetails
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -33,6 +33,7 @@ feature: {
       contextVariable: ['feature'],
     }
 ```
+
 #### slot: configuration.formatDetails.subfeatures
 
 ```js
@@ -43,6 +44,7 @@ subfeatures: {
       contextVariable: ['feature'],
     }
 ```
+
 #### slot: configuration.formatDetails.depth
 
 ```js
@@ -53,6 +55,7 @@ depth: {
         'depth to iterate the formatDetails->subfeatures callback on subfeatures (used for example to only apply the callback to the first layer of subfeatures)',
     }
 ```
+
 #### slot: configuration.formatDetails.maxDepth
 
 ```js

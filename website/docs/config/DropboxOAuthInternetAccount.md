@@ -3,8 +3,8 @@ id: dropboxoauthinternetaccount
 title: DropboxOAuthInternetAccount
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -29,6 +29,7 @@ authEndpoint: {
       defaultValue: 'https://www.dropbox.com/oauth2/authorize',
     }
 ```
+
 #### slot: tokenEndpoint
 
 ```js
@@ -38,6 +39,7 @@ tokenEndpoint: {
       defaultValue: 'https://api.dropbox.com/oauth2/token',
     }
 ```
+
 #### slot: needsPKCE
 
 ```js
@@ -47,6 +49,7 @@ needsPKCE: {
       defaultValue: true,
     }
 ```
+
 #### slot: domains
 
 ```js
@@ -68,7 +71,8 @@ domains: {
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained.
 
 ### Inherited from [OAuthInternetAccount](../oauthinternetaccount)
 

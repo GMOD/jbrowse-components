@@ -524,7 +524,9 @@ export function stripComposedBlock(docs: string) {
       i++
       while (
         i < lines.length &&
-        (/^\s*$/.test(lines[i]!) || /^\s*-\s/.test(lines[i]!) || /^\s+\S/.test(lines[i]!))
+        (/^\s*$/.test(lines[i]!) ||
+          /^\s*-\s/.test(lines[i]!) ||
+          /^\s+\S/.test(lines[i]!))
       ) {
         i++
       }
