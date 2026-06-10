@@ -4,8 +4,6 @@ import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-vie
 
 /**
  * #config SharedLDDisplay
- * extends
- * - [BaseLinearDisplay](../baselineardisplay)
  */
 export default function sharedLDConfigFactory() {
   return ConfigurationSchema(

@@ -5,8 +5,6 @@ import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
 
 /**
  * #config LinearMultiSampleVariantDisplay
- * extends
- * - [SharedVariantDisplay](../sharedvariantdisplay)
  */
 
 export default function configSchemaFactory() {

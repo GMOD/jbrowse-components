@@ -36,8 +36,6 @@ export const sharedVariantConfigSlots = {
 
 /**
  * #config SharedVariantDisplay
- * extends
- * - [BaseLinearDisplay](../baselineardisplay)
  */
 export default function sharedVariantConfigFactory() {
   return ConfigurationSchema(

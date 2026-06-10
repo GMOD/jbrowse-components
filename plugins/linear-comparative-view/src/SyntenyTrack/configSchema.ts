@@ -5,8 +5,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config SyntenyTrack
- * extends
- * - [BaseTrack](../basetrack)
  */
 
 const configSchema = (pluginManager: PluginManager) =>

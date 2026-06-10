@@ -7,8 +7,6 @@ import type { Feature } from '@jbrowse/core/util'
 
 /**
  * #config LGVSyntenyDisplay
- * extends config
- * - [LinearAlignmentsDisplay](../linearalignmentsdisplay)
  */
 function configSchemaF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('lgvSyntenyTooltip', (f: Feature) => {
