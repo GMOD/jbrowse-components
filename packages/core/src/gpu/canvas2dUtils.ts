@@ -1,13 +1,4 @@
-// A region's genomic span paired with its on-screen pixel span. Shared by the
-// Canvas2D clip path (`clipBlockForCanvas`), the bp→px mapper (`makeBpMapper`),
-// and canvas SVG/label/peptide positioning.
-export interface BpRegionBounds {
-  start: number
-  end: number
-  screenStartPx: number
-  screenEndPx: number
-  reversed?: boolean
-}
+import type { BpRegionBounds } from './renderBlock.ts'
 
 export interface BlockClip {
   scissorX: number

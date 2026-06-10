@@ -5,7 +5,7 @@ import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BpRegionBounds } from '@jbrowse/core/gpu/canvas2dUtils'
+import type { BpRegionBounds } from '@jbrowse/core/gpu/renderBlock'
 
 function makeItem(
   overrides: Partial<AminoAcidOverlayItem> = {},

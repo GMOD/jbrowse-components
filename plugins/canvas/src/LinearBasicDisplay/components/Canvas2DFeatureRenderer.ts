@@ -21,7 +21,7 @@ import type {
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BpRegionBounds } from '@jbrowse/core/gpu/canvas2dUtils'
+import type { BpRegionBounds } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5

@@ -5,7 +5,7 @@ import type {
   FeatureLabelData,
   LabelItem,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BpRegionBounds } from '@jbrowse/core/gpu/canvas2dUtils'
+import type { BpRegionBounds } from '@jbrowse/core/gpu/renderBlock'
 
 export interface FeatureBoundsPx {
   featureLeftPx: number

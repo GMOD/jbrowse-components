@@ -11,7 +11,7 @@ import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BpRegionBounds } from '@jbrowse/core/gpu/canvas2dUtils'
+import type { BpRegionBounds } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
