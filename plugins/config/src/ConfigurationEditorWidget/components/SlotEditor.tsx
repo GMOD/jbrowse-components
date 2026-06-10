@@ -122,6 +122,11 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
   )
 })
 
+// dynamic dispatch from a runtime slot `type` string to a typed editor. The
+// `any` is irreducible here: each editor declares a narrow `slot.value` type
+// (number, boolean, FileLocation, string[], ...) but makeSlotFacade can only
+// type value as `unknown`, so no single registry prop type satisfies them all.
+// The editors stay fully typed internally; only this lookup is untyped.
 const valueComponents: Record<string, React.ComponentType<any>> = {
   string: StringEditor,
   text: TextEditor,
