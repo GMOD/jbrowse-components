@@ -2,11 +2,9 @@ import { getFillProps } from '@jbrowse/core/util'
 import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'
 
-// core
-import { getCytobands } from './util.ts'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { Cytoband } from './util.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
@@ -63,14 +61,13 @@ const colorMap: Record<string, string> = {
 const Cytobands = observer(function Cytobands({
   overview,
   block,
-  assembly,
+  cytobands,
 }: {
   overview: ViewLayout
-  assembly?: Assembly
+  cytobands: Cytoband[]
   block: ContentBlock
 }) {
   const { offsetPx, reversed } = block
-  const cytobands = getCytobands(assembly, block.refName)
   const lcap = reversed ? cytobands.length - 1 : 0
   const rcap = reversed ? 0 : cytobands.length - 1
   const h = HEADER_OVERVIEW_HEIGHT

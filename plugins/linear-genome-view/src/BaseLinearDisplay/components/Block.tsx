@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -43,14 +45,18 @@ const ContentBlock = observer(function ContentBlock({
   )
 })
 
-function ElidedBlock({ width }: { width: number }) {
+const ElidedBlock = memo(function ElidedBlock({ width }: { width: number }) {
   const { classes } = useStyles()
   return <div className={classes.elidedBlock} style={{ width }} />
-}
+})
 
-function InterRegionPaddingBlock({ width }: { width: number }) {
+const InterRegionPaddingBlock = memo(function InterRegionPaddingBlock({
+  width,
+}: {
+  width: number
+}) {
   const { classes } = useStyles()
   return <div style={{ width }} className={classes.boundaryPaddingBlock} />
-}
+})
 
 export { ContentBlock, ElidedBlock, InterRegionPaddingBlock }

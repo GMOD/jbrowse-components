@@ -20,6 +20,8 @@ export const elidedBlockStyles = {
     'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
 } as const
 
+export type Cytoband = ReturnType<typeof getCytobands>[number]
+
 export function getCytobands(assembly: Assembly | undefined, refName: string) {
   return (
     assembly?.cytobands

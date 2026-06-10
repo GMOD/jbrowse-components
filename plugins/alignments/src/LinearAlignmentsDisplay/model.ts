@@ -710,7 +710,9 @@ export default function stateModelFactory(
          */
         get showLegend() {
           const override = self.getOverride<boolean>('showLegend')
-          return override !== undefined ? override : this.legendItems.length > 1
+          return override !== undefined
+            ? override
+            : this.legendItems().length > 1
         },
 
         /**
@@ -779,9 +781,9 @@ export default function stateModelFactory(
         },
 
         /**
-         * #getter
+         * #method
          */
-        get legendItems() {
+        legendItems() {
           return getReadDisplayLegendItems(
             this.colorBy,
             self.visibleModifications,

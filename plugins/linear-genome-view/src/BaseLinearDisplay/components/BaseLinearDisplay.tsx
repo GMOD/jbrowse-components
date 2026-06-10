@@ -1,7 +1,6 @@
 import { Suspense, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import FloatingLegend from './FloatingLegend.tsx'
@@ -39,11 +38,7 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
     showLegend,
     showTooltipsEnabled,
   } = model
-  const theme = useTheme()
-  const legendItems =
-    'legendItems' in model && typeof model.legendItems === 'function'
-      ? model.legendItems(theme)
-      : []
+  const legendItems = showLegend ? model.legendItems() : []
   return (
     <div
       ref={ref}
@@ -88,9 +83,7 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
       )}
       {children}
 
-      {showLegend && legendItems.length > 0 ? (
-        <FloatingLegend items={legendItems} />
-      ) : null}
+      {legendItems.length > 0 ? <FloatingLegend items={legendItems} /> : null}
 
       {showTooltipsEnabled ? (
         <Suspense fallback={null}>

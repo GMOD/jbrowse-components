@@ -10,6 +10,7 @@ import SVGRuler from './SVGRuler.tsx'
 import SVGScalebar from './SVGScalebar.tsx'
 import Cytobands from '../components/Cytobands.tsx'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
+import { getCytobands } from '../components/util.ts'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -66,7 +67,11 @@ export default function SVGHeader({
 
       {showCytobands && span ? (
         <g transform={`translate(0 ${rulerHeight})`}>
-          <Cytobands overview={overview} assembly={assembly} block={block} />
+          <Cytobands
+            overview={overview}
+            cytobands={getCytobands(assembly, block.refName)}
+            block={block}
+          />
           <rect
             stroke="red"
             fill="rgb(255,0,0)"

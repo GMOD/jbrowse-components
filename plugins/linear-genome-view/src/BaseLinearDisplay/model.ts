@@ -36,7 +36,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { Theme } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
@@ -154,9 +153,8 @@ function stateModelFactory() {
         /**
          * #method
          * Override in subclasses to provide legend items for the display
-         * @param _theme - MUI theme for accessing palette colors
          */
-        legendItems(_theme?: Theme): LegendItem[] {
+        legendItems(): LegendItem[] {
           return []
         },
 
@@ -164,11 +162,10 @@ function stateModelFactory() {
          * #method
          * Returns the width needed for the SVG legend if showLegend is enabled.
          * Used by SVG export to add extra width for the legend area.
-         * @param theme - MUI theme for accessing palette colors
          */
-        svgLegendWidth(theme?: Theme): number {
+        svgLegendWidth(): number {
           return self.showLegend
-            ? calculateSvgLegendWidth(this.legendItems(theme))
+            ? calculateSvgLegendWidth(this.legendItems())
             : 0
         },
 

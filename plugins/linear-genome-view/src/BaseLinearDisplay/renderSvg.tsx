@@ -1,4 +1,3 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ReactRendering, getContainingView } from '@jbrowse/core/util'
 import { blockToRegion } from '@jbrowse/core/util/blockTypes'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
@@ -95,8 +94,7 @@ export async function renderBaseLinearDisplaySvg(
     }),
   )
 
-  const theme = createJBrowseTheme(opts.theme)
-  const legendItems = self.showLegend ? self.legendItems(theme) : []
+  const legendItems = self.showLegend ? self.legendItems() : []
 
   const blockHeight = overrideHeight ?? height
   return (

@@ -56,7 +56,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 
   const legendWidth = max(
     visibleTracks.map(
-      track => track.displays[0]!.svgLegendWidth?.(jbrowseTheme) ?? 0,
+      track => track.displays[0]!.svgLegendWidth?.() ?? 0,
     ),
     0,
   )

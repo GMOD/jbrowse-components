@@ -107,8 +107,8 @@ const OverviewBox = observer(function OverviewBox({
   const assembly = assemblyManager.get(assemblyName)
   const refNameColor = assembly?.getRefNameColor(refName)
 
-  const canDisplayCytobands =
-    showCytobands && getCytobands(assembly, block.refName).length > 0
+  const cytobands = getCytobands(assembly, block.refName)
+  const canDisplayCytobands = showCytobands && cytobands.length > 0
 
   if (canDisplayCytobands) {
     return (
@@ -130,7 +130,7 @@ const OverviewBox = observer(function OverviewBox({
           }}
         >
           <svg className={classes.cytoSvg}>
-            <Cytobands overview={overview} assembly={assembly} block={block} />
+            <Cytobands overview={overview} cytobands={cytobands} block={block} />
           </svg>
         </div>
       </>
