@@ -13,7 +13,7 @@ import {
 } from '../../shared/drawAlleleCount.ts'
 import { getPhasedColor } from '../../shared/getPhasedColor.ts'
 import {
-  buildSampleIndexMap,
+  buildSampleIndices,
   genotypeStringFromRaw,
   getPhasedColorFromRaw,
   getRawCallGenotype,
@@ -138,20 +138,7 @@ export function computeVariantCells({
     cellCount++
   }
 
-  const firstRaw = mafs[0] ? getRawCallGenotype(mafs[0].feature) : undefined
-  const sampleIndexMap = firstRaw
-    ? buildSampleIndexMap(mafs[0]!.feature.get('sampleNames') as string[])
-    : undefined
-  let sampleIndices: Int32Array | undefined
-  if (sampleIndexMap) {
-    sampleIndices = new Int32Array(numSources).fill(-1)
-    for (let j = 0; j < numSources; j++) {
-      const si = sampleIndexMap.get(sources[j]!.sampleName)
-      if (si !== undefined) {
-        sampleIndices[j] = si
-      }
-    }
-  }
+  const sampleIndices = buildSampleIndices(mafs[0]?.feature, sources)
 
   let featureIdx = 0
   for (const { feature, mostFrequentAlt } of mafs) {
@@ -234,15 +221,7 @@ export function computeVariantCells({
               renderedGenotypes[sampleName] = genotype
             }
           } else {
-            addCell(
-              start,
-              renderEnd,
-              j,
-              BLACK_ABGR,
-              shape,
-              false,
-              featureIdx,
-            )
+            addCell(start, renderEnd, j, BLACK_ABGR, shape, false, featureIdx)
             renderedGenotypes[sampleName] = genotype
           }
         }
@@ -284,15 +263,7 @@ export function computeVariantCells({
               renderedGenotypes[sampleName] = gtStr
             }
           } else {
-            addCell(
-              start,
-              renderEnd,
-              j,
-              BLACK_ABGR,
-              shape,
-              false,
-              featureIdx,
-            )
+            addCell(start, renderEnd, j, BLACK_ABGR, shape, false, featureIdx)
             renderedGenotypes[sampleName] = gtStr
           }
         }

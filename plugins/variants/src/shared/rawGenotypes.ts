@@ -25,6 +25,32 @@ export function buildSampleIndexMap(sampleNames: string[]) {
   return map
 }
 
+// Maps each rendered source row (index j) to its column in the packed
+// callGenotype Int8Array, or -1 when the sample isn't present. Returns
+// undefined when the data isn't in raw (callGenotype) mode, signalling callers
+// to fall back to the string-genotypes path. Built once per cell computation
+// from the first feature's sampleNames (VCF sample columns are fixed across
+// rows), so it's not subject to the per-cell indexed-loop rule.
+export function buildSampleIndices(
+  firstFeature: Feature | undefined,
+  sources: { sampleName: string }[],
+) {
+  if (!firstFeature || !getRawCallGenotype(firstFeature)) {
+    return undefined
+  }
+  const sampleIndexMap = buildSampleIndexMap(
+    firstFeature.get('sampleNames') as string[],
+  )
+  const sampleIndices = new Int32Array(sources.length).fill(-1)
+  for (let j = 0; j < sources.length; j++) {
+    const si = sampleIndexMap.get(sources[j]!.sampleName)
+    if (si !== undefined) {
+      sampleIndices[j] = si
+    }
+  }
+  return sampleIndices
+}
+
 export function detectRawMode(features: { feature: Feature }[]) {
   const first = features[0]?.feature
   if (!first) {

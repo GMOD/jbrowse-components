@@ -638,13 +638,12 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         get referenceDrawingMode(): string {
-          const override = self.getOverride<string>('referenceDrawingMode')
-          if (override !== undefined) {
-            return override
-          }
-          return self.getConfWithOverride<boolean>('showReferenceAlleles')
-            ? 'draw'
-            : 'skip'
+          return (
+            self.getOverride<string>('referenceDrawingMode') ??
+            (self.getConfWithOverride<boolean>('showReferenceAlleles')
+              ? 'draw'
+              : 'skip')
+          )
         },
 
         // Four views on the source list, each with a different consumer:
