@@ -31,7 +31,8 @@ console.warn = (...args) => {
     r.includes('[GPU] WebGPU initialization failed') ||
     r.includes('[GPU] WebGL2 unavailable, falling back to Canvas2D') ||
     r.includes('[GPU] WebGPU not supported in this browser') ||
-    r.includes('] init (live=')
+    r.includes('] init (live=') ||
+    r.includes('LD coloring: index SNP')
   ) {
     return undefined
   }
