@@ -62,7 +62,7 @@ export default function OpenSequencePanel({
                 tracks: [],
                 internetAccounts: [],
                 defaultSession: {
-                  name: `New Session ${new Date().toLocaleString('en-US')}`,
+                  name: `New session ${new Date().toLocaleString('en-US')}`,
                 },
               })
             }

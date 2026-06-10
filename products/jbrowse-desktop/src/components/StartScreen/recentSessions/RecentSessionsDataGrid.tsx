@@ -5,10 +5,10 @@ import { measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { formatDistanceToNow } from 'date-fns'
 
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
 import SessionNameCell from './SessionNameCell.tsx'
+import { formatLastModified } from './formatLastModified.ts'
 import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
@@ -24,8 +24,6 @@ const useStyles = makeStyles()({
     textOverflow: 'ellipsis',
   },
 })
-
-const oneDayMs = 24 * 60 * 60 * 1000
 
 function RecentSessionsDataGrid({
   launch,
@@ -49,16 +47,8 @@ function RecentSessionsDataGrid({
   const [now] = useState(() => Date.now())
 
   const rows = sessions.map(session => {
-    const { updated } = session
-    const date = updated !== undefined ? new Date(updated) : null
-    const showDateTooltip = date !== null && now - date.getTime() < oneDayMs
-    const lastModified =
-      date === null
-        ? 'Unknown'
-        : showDateTooltip
-          ? formatDistanceToNow(date, { addSuffix: true })
-          : date.toLocaleString('en-US')
-    return { ...session, showDateTooltip, lastModified }
+    const { label, tooltip } = formatLastModified(session.updated, now)
+    return { ...session, lastModified: label, lastModifiedTooltip: tooltip }
   })
 
   const nameWidth =

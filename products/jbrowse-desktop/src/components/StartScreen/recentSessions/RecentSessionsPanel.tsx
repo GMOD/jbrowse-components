@@ -17,6 +17,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { mutate } from 'swr'
 
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
@@ -142,6 +143,9 @@ export default function RecentSessionPanel({
       await Promise.all(
         arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
       )
+      // Revalidate the QuickstartPanel's shared SWR cache key now that the
+      // list has changed on disk.
+      await mutate('listQuickstarts')
     } catch (e) {
       console.error(e)
       setError(e)
@@ -202,26 +206,28 @@ export default function RecentSessionPanel({
             </ToggleButtonWithTooltip>
           </ToggleButtonGroup>
         </FormControl>
-        <div style={{ display: 'flex' }}>
-          <IconButtonWithTooltip
-            title="Delete sessions"
-            disabled={!selectedSessions.length}
-            onClick={() => {
-              setSessionsToDelete(selectedSessions)
-            }}
-          >
-            <DeleteIcon />
-          </IconButtonWithTooltip>
-          <IconButtonWithTooltip
-            title="Add sessions to quickstart list"
-            disabled={!selectedSessions.length}
-            onClick={async () => {
-              await addToQuickstartList(selectedSessions)
-            }}
-          >
-            <PlaylistAddIcon />
-          </IconButtonWithTooltip>
-        </div>
+        {displayMode === 'list' ? (
+          <div style={{ display: 'flex' }}>
+            <IconButtonWithTooltip
+              title="Delete sessions"
+              disabled={!selectedSessions.length}
+              onClick={() => {
+                setSessionsToDelete(selectedSessions)
+              }}
+            >
+              <DeleteIcon />
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip
+              title="Add sessions to quickstart list"
+              disabled={!selectedSessions.length}
+              onClick={async () => {
+                await addToQuickstartList(selectedSessions)
+              }}
+            >
+              <PlaylistAddIcon />
+            </IconButtonWithTooltip>
+          </div>
+        ) : null}
         <FormControlLabel
           label="Show autosaves"
           control={
@@ -267,8 +273,12 @@ export default function RecentSessionPanel({
         </div>
       </div>
 
-      {!sortedSessions.length ? (
-        <Typography>No sessions available</Typography>
+      {!filteredSessions.length ? (
+        <Typography>
+          {showFavoritesOnly && sortedSessions.length
+            ? 'No favorite sessions'
+            : 'No sessions available'}
+        </Typography>
       ) : displayMode === 'grid' ? (
         <RecentSessionsCards
           launch={launch}

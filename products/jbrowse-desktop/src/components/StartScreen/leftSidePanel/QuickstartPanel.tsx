@@ -20,6 +20,9 @@ export default function QuickstartPanel({
   const [renameDialogOpen, setRenameDialogOpen] = useState<string>()
   const { height: innerHeight } = useInnerDims()
 
+  // Additions from the RecentSessions panel invalidate this same SWR key
+  // ('listQuickstarts') via a global mutate, so no polling is needed. Local
+  // dialog close handlers call refetchQuickstarts() directly.
   const {
     data: quickstarts,
     error: listError,
@@ -27,10 +30,6 @@ export default function QuickstartPanel({
   } = useFetch(
     'listQuickstarts',
     () => ipcRenderer.invoke('listQuickstarts') as Promise<string[]>,
-    // Poll so additions from the RecentSessions panel (addToQuickstartList
-    // writes via IPC directly without notifying this component) are reflected
-    // promptly. Dialog close handlers call mutate() for immediate updates.
-    { refreshInterval: 500 },
   )
 
   return (

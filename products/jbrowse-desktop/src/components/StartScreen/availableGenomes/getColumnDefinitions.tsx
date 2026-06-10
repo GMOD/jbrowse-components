@@ -91,7 +91,7 @@ export function getColumnDefinitions({
           />
         ),
       },
-      { id: 'scientificName', header: 'Scientific Name' },
+      { id: 'scientificName', header: 'Scientific name' },
       { id: 'organism', header: 'Organism' },
       { id: 'description', header: 'Description' },
     ]
@@ -100,7 +100,7 @@ export function getColumnDefinitions({
       favoriteColumn,
       {
         id: 'commonName',
-        header: 'Common Name',
+        header: 'Common name',
         cell: row => (
           <GenomeNameCell
             displayName={row.commonName}
@@ -128,17 +128,17 @@ export function getColumnDefinitions({
           </GenomeNameCell>
         ),
       },
-      { id: 'assemblyStatus', header: 'Assembly Status' },
+      { id: 'assemblyStatus', header: 'Assembly status' },
       {
         id: 'seqReleaseDate',
-        header: 'Release Date',
+        header: 'Release date',
         cell: row =>
           row.seqReleaseDate
             ? new Date(row.seqReleaseDate).toISOString().split('T', 1)[0]
             : '',
       },
-      { id: 'scientificName', header: 'Scientific Name' },
-      { id: 'ncbiAssemblyName', header: 'NCBI Assembly Name' },
+      { id: 'scientificName', header: 'Scientific name' },
+      { id: 'ncbiAssemblyName', header: 'NCBI assembly name' },
     ]
 
     const extraColumns: GenomeColumn[] = [
