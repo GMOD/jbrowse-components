@@ -15,7 +15,7 @@ import type assemblyManager from '../../assemblyManager/index.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
-import type { MenuItem } from '../../ui/index.ts'
+import type { MenuItem, SerializableThemeArgs } from '../../ui/index.ts'
 import type { Feature } from '../simpleFeature.ts'
 import type {
   IAnyStateTreeNode,
@@ -92,6 +92,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   focusedViewId?: string
   themeName?: string
   theme?: ThemeOptions
+  themeOptions?: SerializableThemeArgs
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void

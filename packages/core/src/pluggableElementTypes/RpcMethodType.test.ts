@@ -131,6 +131,82 @@ test('augmentLocationObject still walks when only file handles are present', asy
   }
 })
 
+// Regression: rpcProps can carry non-cloneable values (e.g. the created MUI
+// theme's breakpoints.up function). Owning the arg tree must not throw on them
+// (a strict structuredClone did) — they pass through for the driver's
+// filterArgs to strip before the worker boundary.
+test('augmentLocationObject tolerates non-cloneable args (functions) while owning the tree', async () => {
+  const mockFile = new File(['x'], 'a.bam')
+  setFileInCache('augment-fn-test', mockFile)
+  try {
+    const mockRpc = new MockRpcMethodType(pluginManager)
+    const themeFn = (key: string) => `@media (min-width:${key})`
+    const args: Record<string, unknown> = {
+      adapter: {
+        location: {
+          locationType: 'FileHandleLocation',
+          handleId: 'augment-fn-test',
+          name: 'a.bam',
+        },
+      },
+      theme: { breakpoints: { up: themeFn } },
+    }
+
+    const result = await mockRpc.serializeArguments(args, '')
+
+    // file handle still converted on the owned output
+    expect(
+      (
+        (result.adapter as Record<string, unknown>).location as Record<
+          string,
+          unknown
+        >
+      ).locationType,
+    ).toBe('BlobLocation')
+    // function passed through by reference (filterArgs strips it later)
+    const theme = result.theme as { breakpoints: { up: unknown } }
+    expect(theme.breakpoints.up).toBe(themeFn)
+    // input args untouched (config snapshots are read-only)
+    expect(
+      (
+        (args.adapter as Record<string, unknown>).location as Record<
+          string,
+          unknown
+        >
+      ).locationType,
+    ).toBe('FileHandleLocation')
+  } finally {
+    clearFileFromCache('augment-fn-test')
+  }
+})
+
+// Structured-clone natives (typed arrays, the stop-token SharedArrayBuffer...)
+// must survive owning by reference, not collapse to {} (Object.entries yields []).
+test('augmentLocationObject passes structured-clone-native values through by reference', async () => {
+  const mockFile = new File(['x'], 'a.bam')
+  setFileInCache('augment-sab-test', mockFile)
+  try {
+    const mockRpc = new MockRpcMethodType(pluginManager)
+    const bytes = new Uint8Array([1, 2, 3])
+    const args: Record<string, unknown> = {
+      adapter: {
+        location: {
+          locationType: 'FileHandleLocation',
+          handleId: 'augment-sab-test',
+          name: 'a.bam',
+        },
+      },
+      bytes,
+    }
+
+    const result = await mockRpc.serializeArguments(args, '')
+
+    expect(result.bytes).toBe(bytes)
+  } finally {
+    clearFileFromCache('augment-sab-test')
+  }
+})
+
 describe('convertFileHandleLocations', () => {
   afterEach(() => {
     clearFileFromCache('test-handle-1')

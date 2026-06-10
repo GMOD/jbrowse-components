@@ -1,7 +1,7 @@
 import type { DisplayConfig } from './renderConfig.ts'
+import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { ThemeOptions } from '@mui/material'
 
 export interface LabelItem {
   text: string
@@ -30,7 +30,7 @@ export interface RenderFeatureDataArgs {
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
   maxFeatureDensity?: number
-  theme?: ThemeOptions
+  theme?: SerializableThemeArgs
   stopToken?: StopToken
   statusCallback?: (msg: string) => void
 }

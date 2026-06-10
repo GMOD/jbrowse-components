@@ -1,6 +1,10 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
-import { isRpcResult } from '../util/rpc.ts'
+import {
+  isCloneable,
+  isRpcResult,
+  isStructuredClonePassthrough,
+} from '../util/rpc.ts'
 import {
   getBlobMap,
   getFileFromCache,
@@ -79,6 +83,40 @@ function walkLocationObjects(
       })
     }
   }
+}
+
+// Deep-clone the object/array spine of the RPC args so blob conversion and auth
+// augmentation mutate owned data, never the read-only config snapshots that flow
+// in via readConfObject. A plain structuredClone can't be used: the args always
+// carry a `statusCallback` function (and may carry others, e.g. theme methods),
+// which structuredClone rejects. Non-cloneable leaves (functions, Errors) and
+// structured-clone natives (typed arrays, Blobs...) pass through by reference;
+// the driver's filterArgs strips or keeps them downstream.
+function ownArgs(thing: unknown, seen = new WeakMap<object, unknown>()): unknown {
+  if (!thing || typeof thing !== 'object') {
+    return thing
+  }
+  if (isStructuredClonePassthrough(thing) || !isCloneable(thing)) {
+    return thing
+  }
+  const existing = seen.get(thing)
+  if (existing) {
+    return existing
+  }
+  if (Array.isArray(thing)) {
+    const clone: unknown[] = []
+    seen.set(thing, clone)
+    for (const item of thing) {
+      clone.push(ownArgs(item, seen))
+    }
+    return clone
+  }
+  const clone: Record<string, unknown> = {}
+  seen.set(thing, clone)
+  for (const [key, value] of Object.entries(thing)) {
+    clone[key] = ownArgs(value, seen)
+  }
+  return clone
 }
 
 // Back-compat wrapper around the combined walker; some tests and external
@@ -211,12 +249,11 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
 
     // Skip renderingProps — it may contain circular references and never has
-    // FileHandleLocations or UriLocations inside. Own the rest of the tree via
-    // structuredClone (location objects are plain data) so blob conversion and
-    // auth augmentation mutate owned data, never the read-only config snapshots
-    // that flow in through readConfObject.
+    // FileHandleLocations or UriLocations inside. Own the rest of the tree (see
+    // ownArgs) so blob conversion and auth augmentation mutate owned data, never
+    // the read-only config snapshots that flow in through readConfObject.
     const { renderingProps, ...rest } = thing
-    const owned = structuredClone(rest)
+    const owned = ownArgs(rest) as Record<string, unknown>
 
     const uris: UriLocation[] = []
     walkLocationObjects(owned, {

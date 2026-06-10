@@ -469,6 +469,33 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
 // standard MUI ThemeOptions
 export type ThemeMap = Record<string, ThemeOptions & { name?: string }>
 
+/**
+ * The structurally-serializable inputs that fully describe a session's active
+ * theme. A created MUI `Theme` carries functions (e.g. `breakpoints.up`) and
+ * can't cross the RPC worker boundary; these args can, and
+ * {@link createJBrowseThemeFromArgs} rebuilds the identical theme on the other
+ * side. `extraThemes` covers config-defined custom themes; `defaultThemes` is
+ * already available wherever this runs, so it is not shipped.
+ */
+export interface SerializableThemeArgs {
+  configTheme?: ThemeOptions
+  themeName?: string
+  extraThemes?: ThemeMap
+}
+
+/**
+ * Rebuild a JBrowse theme from {@link SerializableThemeArgs} — the inverse of
+ * passing those args across RPC. Mirrors a session's `theme` getter so the main
+ * thread and worker resolve to the same colors.
+ */
+export function createJBrowseThemeFromArgs(args: SerializableThemeArgs = {}) {
+  return createJBrowseTheme(
+    args.configTheme,
+    { ...defaultThemes, ...args.extraThemes },
+    args.themeName,
+  )
+}
+
 const themeCache = new Map<string, Theme>()
 
 function getThemeCacheKey(

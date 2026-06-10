@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
@@ -47,10 +47,10 @@ export async function executeRenderFeatureData({
   } = args
 
   // Build a full JBrowse theme worker-side from the structurally serializable
-  // ThemeOptions the display passes via rpcProps (same pattern as SVG export /
-  // ServerSideRendererType). When absent (e.g. a session without theming),
-  // createJBrowseTheme returns the default theme.
-  const theme = createJBrowseTheme(themeOptions)
+  // args the display passes via rpcProps — the created theme carries functions
+  // and can't cross the worker boundary. When absent (e.g. a session without
+  // theming), this returns the default theme.
+  const theme = createJBrowseThemeFromArgs(themeOptions)
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 

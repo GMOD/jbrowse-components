@@ -2,6 +2,7 @@ import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { readConfObject } from '../configuration/index.ts'
 import { clamp } from '../util/index.ts'
+import { isCloneable, isStructuredClonePassthrough } from '../util/rpc.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -29,30 +30,6 @@ declare module '@jbrowse/core/PluginManager' {
 
 export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
-}
-
-function isCloneable(thing: unknown) {
-  return !(typeof thing === 'function') && !(thing instanceof Error)
-}
-
-// values that structured-clone handles natively; filterArgs must pass these
-// through unchanged, since Object.entries on them yields [] and would collapse
-// them to plain {}
-function isStructuredClonePassthrough(thing: object): boolean {
-  return (
-    thing instanceof File ||
-    thing instanceof Blob ||
-    thing instanceof ArrayBuffer ||
-    // SharedArrayBuffer is not an ArrayBuffer subclass; without this it
-    // collapses to {} and SAB-based stop tokens silently stop working
-    (typeof SharedArrayBuffer !== 'undefined' &&
-      thing instanceof SharedArrayBuffer) ||
-    ArrayBuffer.isView(thing) ||
-    thing instanceof Date ||
-    thing instanceof Map ||
-    thing instanceof Set ||
-    thing instanceof RegExp
-  )
 }
 
 function detectHardwareConcurrency() {

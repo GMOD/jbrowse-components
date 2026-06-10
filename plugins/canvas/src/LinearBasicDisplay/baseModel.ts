@@ -468,13 +468,13 @@ export default function baseStateModelFactory(
             displayConfig: { ...rest } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
-            // Serializable ThemeOptions so worker-side coloring (CDS frames,
-            // stroke fallback) matches the user's active theme. The RPC layer
-            // strips the created theme's functions via filterArgs; the worker
-            // rebuilds it with createJBrowseTheme. Tracked here (not added at
-            // the call site) so switching themes invalidates the RPC cache and
-            // refetches with the new colors.
-            theme: getSession(self).theme,
+            // Structurally-serializable theme description so worker-side coloring
+            // (CDS frames, stroke fallback) matches the user's active theme; the
+            // worker rebuilds the full theme via createJBrowseThemeFromArgs. The
+            // created theme itself carries functions and can't cross the worker
+            // boundary. Tracked here (not added at the call site) so switching
+            // themes invalidates the RPC cache and refetches with new colors.
+            theme: getSession(self).themeOptions,
           }
         },
       }))

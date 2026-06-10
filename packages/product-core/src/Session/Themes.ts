@@ -1,5 +1,8 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
+import {
+  createJBrowseThemeFromArgs,
+  defaultThemes,
+} from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -8,7 +11,7 @@ import { isBaseSession } from './BaseSession.ts'
 
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { ThemeMap } from '@jbrowse/core/ui'
+import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -40,11 +43,22 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get theme() {
+      // Structurally-serializable description of the active theme, safe to send
+      // across the RPC worker boundary (the created `theme` carries functions
+      // and cannot be cloned). The worker rebuilds via createJBrowseThemeFromArgs.
+      get themeOptions(): SerializableThemeArgs {
         const self = s as typeof s & BaseSession
-        const configTheme = getConf(self.jbrowse, 'theme')
-        const all = this.allThemes()
-        return createJBrowseTheme(configTheme, all, this.themeName)
+        return {
+          configTheme: getConf(self.jbrowse, 'theme'),
+          extraThemes: getConf(self.jbrowse, 'extraThemes'),
+          themeName: this.themeName,
+        }
+      },
+      /**
+       * #getter
+       */
+      get theme() {
+        return createJBrowseThemeFromArgs(this.themeOptions)
       },
     }))
     .actions(self => ({
