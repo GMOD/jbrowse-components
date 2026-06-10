@@ -108,6 +108,39 @@ payload covering all visible regions, so variants' `fetchNeeded` expands
 `needed` to all `bufferedVisibleRegions` and marks them all loaded together
 when the work callback returns.
 
+### Terminal states unmount the canvas — they don't wrap it
+
+`DisplayChrome` renders the `regionTooLarge` / render-error banners by
+**early-returning** the banner component, replacing the entire display subtree —
+*not* by keeping its container `<div>` mounted and swapping the canvas for a
+message. This looks like a leak (the caller's `className` / `ref` / mouse
+handlers are absent in those two states) but it is **load-bearing** for the
+**imperative** `regionTooLarge` (wiggle, alignments, hic), where the flag is a
+volatile set as a *side effect of fetching*:
+
+- `FetchVisibleRegions` both **sets** `regionTooLarge` (inside `fetchRegions`)
+  and **gates** on it, and it reads the flag **tracked** (line `self.error ||
+  self.regionTooLarge` near the top) — so every flip re-runs the autorun.
+- `ClearBlockingStateOnViewportChange` **clears** the flag whenever
+  viewport-derived state changes.
+
+So "am I rendering?" and "am I too large?" are coupled: rendering drives the
+fetch that sets the flag; the flag hides the canvas; a clear/refetch reopens the
+gate. If the canvas is merely *hidden* inside a still-mounted container, the
+mount → fetch → too-large → unmount → clear → remount churn perturbs those
+autoruns enough to reopen the gate, and `regionTooLarge` **oscillates
+true/false forever** (`DisplayChrome` re-renders alternating — caught by
+`StatsEstimation.test`, which times out waiting for the banner). Replacing the
+whole subtree keeps the canvas out of the React tree across the *entire*
+too-large state, so nothing drives the fetch and the flag holds steady. This is
+the ADR-025 dispose/re-init contract; the comment block in `DisplayChrome.tsx`
+spells it out so a future pass doesn't "fix" the apparent leak.
+
+The **derived** canvas `regionTooLarge` (above) is a pure function of cached
+stats with no render→fetch feedback, which is the deeper reason it doesn't
+flicker. The early-return is what gives the imperative variant the same
+stability.
+
 ### `rpcProps()` loop trap and how to break it
 
 Including any fetch-result derivative in `rpcProps()` creates an infinite loop:
