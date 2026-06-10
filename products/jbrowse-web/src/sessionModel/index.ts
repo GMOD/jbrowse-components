@@ -7,7 +7,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseWebSessionModel
- * extends [BaseWebSession](../basewebsession)
  */
 export default function sessionModelFactory({
   pluginManager,

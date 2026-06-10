@@ -85,7 +85,6 @@ const DEFAULTS = {
 
 /**
  * #stateModel LinearMafDisplay
- * extends BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin + TreeSidebarMixin
  *
  * #example
  * A complete `MafTrack` config to paste into `tracks`. `samples` lists the

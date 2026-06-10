@@ -20,11 +20,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * this is a non-block-based track type, and can connect arcs across multiple
  * displayedRegions
  *
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
- * - [FeatureDensityMixin](../featuredensitymixin)
- *
  * #example
  * Selected on a `VariantTrack` of structural variants — arcs connect each
  * breakend to its mate, even across displayed regions:

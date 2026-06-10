@@ -8,7 +8,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #stateModel JB2TrackHubConnection
- * extends BaseConnectionModel
  */
 export default function JB2TrackHubConnection(pluginManager: PluginManager) {
   return types

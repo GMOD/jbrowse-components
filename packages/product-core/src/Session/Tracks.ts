@@ -12,9 +12,6 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel TracksManagerSessionMixin
- * composed of
- * - BaseSessionModel
- * - ReferenceManagementSessionMixin
  */
 export function TracksManagerSessionMixin(pluginManager: PluginManager) {
   return types

@@ -52,12 +52,6 @@ function upperBoundFloat32(arr: Float32Array, val: number) {
 /**
  * #stateModel SharedLDModel
  * Shared state model for LD displays
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
- * - [GlobalDataDisplayMixin](../globaldatadisplaymixin)
- * - [StaleViewportRescaleMixin](../staleviewportrescalemixin)
- * - [ConfigOverrideMixin](../configoverridemixin)
  */
 export default function sharedModelFactory(
   configSchema: AnyConfigurationSchemaType,

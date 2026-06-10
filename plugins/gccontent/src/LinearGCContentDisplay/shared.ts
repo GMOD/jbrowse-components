@@ -17,8 +17,6 @@ const EditGCContentParamsDialog = lazy(
 /**
  * #stateModel SharedGCContentModel
  * #category display
- * extends
- * - [LinearWiggleDisplay](../linearwiggledisplay)
  */
 export default function SharedModelF(
   pluginManager: PluginManager,

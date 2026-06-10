@@ -221,12 +221,6 @@ const COLOR_BY_TO_SCHEME: Record<string, number> = {
  * #category display
  * State model factory for LinearAlignmentsDisplay
  *
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
- * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
- * - [ConfigOverrideMixin](../configoverridemixin)
- *
  * #example
  * The display goes in a track's `displays` array; here are three complete
  * `AlignmentsTrack` configs to paste into `tracks`.

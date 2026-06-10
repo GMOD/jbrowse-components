@@ -15,13 +15,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewSessionModel
- * composed of
- * - [BaseSessionModel](../basesessionmodel)
- * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
- * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
- * - [TracksManagerSessionMixin](../tracksmanagersessionmixin)
- * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [TrackMenuSessionMixin](../trackmenusessionmixin)
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types

@@ -45,10 +45,6 @@ export type HicRenderMode = 'triangular' | 'adjust'
  * #stateModel LinearHicDisplay
  * #category display
  * Hi-C display that renders contact matrix using WebGL
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
- * - [GlobalDataDisplayMixin](../globaldatadisplaymixin)
  *
  * #example
  * A complete `HicTrack` config to paste into `tracks`. `resolutionBias` nudges

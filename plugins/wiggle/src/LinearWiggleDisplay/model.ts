@@ -64,12 +64,6 @@ const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
  *
  * State model factory for the single-source wiggle display.
  *
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
- * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
- * - [WiggleCommonMixin](../wigglecommonmixin)
- *
  * #example
  * A complete `QuantitativeTrack` config to paste into `tracks`. `height` is the
  * common display-level override; score-range and rendering options (autoscale,

@@ -51,8 +51,6 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
 /**
  * #stateModel BreakpointSplitView
- * extends
- * - [BaseViewModel](../baseviewmodel)
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400

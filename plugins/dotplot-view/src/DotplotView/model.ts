@@ -79,8 +79,6 @@ export interface ExportSvgOptions {
 /**
  * #stateModel DotplotView
  * #category view
- * extends
- * - [BaseViewModel](../baseviewmodel)
  *
  * #example
  * Hand-authored under `defaultSession.views`. `init.views` lists the two

@@ -53,11 +53,6 @@ type LGV = LinearGenomeViewModel
  * newer GPU stack uses a separate base, `LinearCanvasBaseDisplay`
  * (plugins/canvas) — `LinearBasicDisplay` extends that, not this. See
  * agent-docs/TRACK_DISPLAY_CONCEPTS.md.
- *
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
- * - [FeatureDensityMixin](../featuredensitymixin)
  */
 function stateModelFactory() {
   return (

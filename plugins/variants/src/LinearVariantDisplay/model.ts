@@ -7,9 +7,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #stateModel LinearVariantDisplay
  * GPU-accelerated variant display with custom feature widget on click.
- * extends
- *
- * - [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
  *
  * #example
  * A complete `VariantTrack` config to paste into `tracks`:

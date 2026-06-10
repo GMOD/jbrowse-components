@@ -15,9 +15,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * reset. Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays
  * that own a different rpcDataMap type should compose WiggleScoreConfigMixin
  * directly instead.
- *
- * extends
- * - [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
  */
 export function WiggleCommonMixin(extraKeys: string[] = []) {
   return WiggleScoreConfigMixin(extraKeys)

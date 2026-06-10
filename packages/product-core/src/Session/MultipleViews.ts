@@ -14,9 +14,6 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel MultipleViewsSessionMixin
- * composed of
- * - [BaseSessionModel](../basesessionmodel)
- * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
  */
 export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
   return types

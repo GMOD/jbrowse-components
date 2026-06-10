@@ -12,9 +12,6 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
  * used on GCContentTrack, separately from the display type on the
  * ReferenceSequenceTrack
  *
- * extends
- * - [SharedGCContentModel](../sharedgccontentmodel)
- *
  * #example
  * A standalone `GCContentTrack` whose `GCContentAdapter` wraps a sequence
  * adapter (use this instead of the `ReferenceSequenceTrack` display when you

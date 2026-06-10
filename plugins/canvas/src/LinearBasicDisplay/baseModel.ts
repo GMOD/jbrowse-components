@@ -109,12 +109,6 @@ const UTR_COLOR_DEFAULT = '#357089'
  * and menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
  * super-extension pattern, and extend rpcProps() via the standard
  * super-capture pattern.
- *
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
- * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
- * - [ConfigOverrideMixin](../configoverridemixin)
  */
 export default function baseStateModelFactory(
   configSchema: AnyConfigurationSchemaType,

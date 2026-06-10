@@ -44,8 +44,6 @@ export interface ExportSvgOptions {
 
 /**
  * #stateModel CircularView
- * extends
- * - [BaseViewModel](../baseviewmodel)
  *
  * #example
  * Hand-authored under `defaultSession.views`. The `init` shorthand takes a

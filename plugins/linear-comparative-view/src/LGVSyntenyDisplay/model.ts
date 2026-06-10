@@ -33,9 +33,6 @@ const LaunchSyntenyViewDialog = lazy(
  * displays location of "synteny" feature in a plain LGV, allowing linking out
  * to external synteny views
  *
- * extends
- * - [LinearAlignmentsDisplay](../linearalignmentsdisplay)
- *
  * #example
  * Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
  * two-row synteny view). Same track config as a synteny track — just pick this

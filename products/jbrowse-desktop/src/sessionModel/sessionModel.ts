@@ -21,17 +21,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
- * composed of
- * - ReferenceManagementSessionMixin
- * - ConnectionManagementSessionMixin
- * - ThemeManagerSessionMixin
- * - TracksManagerSessionMixin
- * - MultipleViewsSessionMixin
- * - AssembliesMixin
- * - AppSessionMixin
- * - DesktopSessionTrackMenuMixin
- * - DockviewLayoutMixin
- *
  */
 export default function sessionModelFactory({
   pluginManager,

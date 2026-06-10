@@ -39,11 +39,6 @@ type SessionModelFactory = (args: {
 /**
  * #stateModel JBrowseReactAppRootModel
  *
- * composed of
- * - [BaseRootModel](../baserootmodel)
- * - [InternetAccountsMixin](../internetaccountsmixin)
- * - [RootAppMenuMixin](../rootappmenumixin)
- *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
  * the root model (via e.g. getRoot) in plugin code

@@ -49,14 +49,6 @@ import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 /**
  * #stateModel BaseWebSession
  * used for "web based" products, including jbrowse-web and react-app
- * composed of
- * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [ThemeManagerSessionMixin](../thememanagersessionmixin)
- * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
- * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
- * - [AssembliesMixin](../assembliesmixin)
- * - [AppSessionMixin](../appsessionmixin)
- * - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
  */
 export function BaseWebSession({
   pluginManager,

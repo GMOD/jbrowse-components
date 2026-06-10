@@ -23,11 +23,6 @@ export type { FetchContext } from './FetchMixin.ts'
  *
  * #stateModel GlobalDataDisplayMixin
  * #category display
- *
- * extends
- * - [RegionTooLargeMixin](../regiontoolargemixin)
- * - [RenderLifecycleMixin](../renderlifecyclemixin)
- * - [FetchMixin](../fetchmixin)
  */
 export default function GlobalDataDisplayMixin() {
   return types

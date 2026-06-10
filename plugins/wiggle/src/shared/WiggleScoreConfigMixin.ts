@@ -33,9 +33,6 @@ const WIGGLE_SCORE_CONFIG_KEYS = [
  * NOT include rpcDataMap or autoscale domain computation — those live in
  * WiggleCommonMixin, which composes this. Displays that own their own
  * rpcDataMap type (e.g. LinearManhattanDisplay) should compose this instead.
- *
- * extends
- * - [ConfigOverrideMixin](../configoverridemixin)
  */
 export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
   return types

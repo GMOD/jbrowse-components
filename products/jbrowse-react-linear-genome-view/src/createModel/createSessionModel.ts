@@ -16,13 +16,6 @@ import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-v
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
- * composed of
- * - [BaseSessionModel](../basesessionmodel)
- * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
- * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
- * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
- * - [TrackMenuSessionMixin](../trackmenusessionmixin)
  */
 
 export default function sessionModelFactory(pluginManager: PluginManager) {

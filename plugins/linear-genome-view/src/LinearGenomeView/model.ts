@@ -117,9 +117,6 @@ export const AUTO_FORCE_LOAD_BP = 20_000
  * #stateModel LinearGenomeView
  * #category view
  *
- * extends
- * - [BaseViewModel](../baseviewmodel)
- *
  * #example
  * A `LinearGenomeView` is what you hand-author under `defaultSession.views`. The
  * `init` shorthand fills in `displayedRegions`/`bpPerPx`/`offsetPx` for you:

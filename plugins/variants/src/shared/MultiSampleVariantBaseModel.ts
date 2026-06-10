@@ -219,9 +219,6 @@ function getGenotypeMapForFeature(
 
 /**
  * #stateModel MultiSampleVariantBaseModel
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
  *
  * #example
  * `renderingMode`, `colorBy`, and `minorAlleleFrequencyFilter` are config slots

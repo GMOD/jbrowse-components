@@ -33,8 +33,6 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
 
 /**
  * #stateModel LinearSyntenyView
- * extends
- * - [LinearComparativeView](../linearcomparativeview)
  *
  * #example
  * Hand-authored under `defaultSession.views`. `init.views` declares the two

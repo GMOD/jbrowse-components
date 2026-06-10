@@ -27,8 +27,6 @@ import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel ChordVariantDisplay
- * extends
- * - [BaseDisplay](../basedisplay)
  *
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;

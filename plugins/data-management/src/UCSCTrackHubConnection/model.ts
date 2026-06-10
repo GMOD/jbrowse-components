@@ -8,7 +8,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #stateModel UCSCTrackHubConnection
- * extends BaseConnectionModel
  */
 export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
   return types

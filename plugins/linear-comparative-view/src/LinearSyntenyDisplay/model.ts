@@ -82,8 +82,6 @@ function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
 
 /**
  * #stateModel LinearSyntenyDisplay
- * extends
- * - [BaseDisplay](../basedisplay)
  *
  * Pure-data model. The containing LinearSyntenyView owns the shared GPU
  * backend, the upload autorun (which watches every display's `instanceData`

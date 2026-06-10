@@ -18,10 +18,6 @@ type DoneCallback = (
  *
  * base session shared by all JBrowse products. Be careful what you include
  * here, everything will use it.
- *
- * composed of
- * - [SnackbarModel](../snackbarmodel) — so `notify`/`notifyError` are available
- *   to every session and the mixins beneath it (e.g. track add/open paths)
  */
 export function BaseSessionModel<
   ROOT_MODEL_TYPE extends BaseRootModelType,

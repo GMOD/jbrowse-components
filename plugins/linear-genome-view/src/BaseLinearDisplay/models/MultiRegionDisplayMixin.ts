@@ -51,11 +51,6 @@ export function isBlockCovered(
  * in `afterAttach` and exposes overridable hooks (`fetchNeeded`, `rpcProps`,
  * `isCacheValid`, `getByteEstimateConfig`, `clearDisplaySpecificData`) plus the
  * `fetchRegions` / `loadedRegions` machinery.
- *
- * extends
- * - [RegionTooLargeMixin](../regiontoolargemixin)
- * - [RenderLifecycleMixin](../renderlifecyclemixin)
- * - [FetchMixin](../fetchmixin)
  */
 export default function MultiRegionDisplayMixin() {
   return types
