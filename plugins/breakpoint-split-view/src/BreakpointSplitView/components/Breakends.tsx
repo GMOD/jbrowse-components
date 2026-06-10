@@ -19,9 +19,6 @@ export default function Breakends(props: OverlayProps) {
           ({ f1, f2, level1, level2, x1, y1, x2, y2 }) => {
             const relevantAlt = findMatchingAlt(f1, f2)
             if (!relevantAlt) {
-              console.warn(
-                'the relevant ALT allele was not found, cannot render',
-              )
               return []
             }
             const reversed1 = views[level1]!.pxToBp(x1).reversed
