@@ -10,6 +10,7 @@ export default function MafAddTrackWorkflowF(pluginManager: PluginManager) {
     () =>
       new AddTrackWorkflowType({
         name: 'MAF track',
+        displayName: 'Add multiple alignment (MAF) track',
         ReactComponent: MultiMAFWidget,
         stateModel: types.model({}),
       }),

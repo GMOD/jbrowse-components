@@ -10,6 +10,7 @@ export default function GWASAddTrackWorkflowF(pm: PluginManager) {
     () =>
       new AddTrackWorkflowType({
         name: 'GWAS / Manhattan track',
+        displayName: 'Add GWAS track',
         ReactComponent: lazy(() => import('./AddTrackWorkflow.tsx')),
         stateModel: types.model({}),
       }),

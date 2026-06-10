@@ -15,6 +15,12 @@ type WorkflowComponent = React.FC<{
   switchWorkflow: (name: string) => void
 }>
 
+interface WorkflowEntry {
+  name: string
+  displayName: string
+  Component: WorkflowComponent
+}
+
 const AddTrackSelector = observer(function AddTrackSelector({
   model,
 }: {
@@ -22,36 +28,46 @@ const AddTrackSelector = observer(function AddTrackSelector({
 }) {
   const [val, setVal] = useState(DEFAULT_WORKFLOW)
   const { pluginManager } = getEnv(model)
-  const componentMap = useMemo(() => {
-    const map = new Map<string, WorkflowComponent>([
-      [DEFAULT_WORKFLOW, DefaultAddTrackWorkflow],
-      [PASTE_JSON_WORKFLOW, PasteConfigWorkflow],
-    ])
-    for (const w of pluginManager.getAddTrackWorkflowElements()) {
-      map.set(w.name, w.ReactComponent as WorkflowComponent)
-    }
-    return map
-  }, [pluginManager])
+  const workflows = useMemo<WorkflowEntry[]>(
+    () => [
+      {
+        name: DEFAULT_WORKFLOW,
+        displayName: 'Add a track from file or URL',
+        Component: DefaultAddTrackWorkflow,
+      },
+      {
+        name: PASTE_JSON_WORKFLOW,
+        displayName: 'Add track from pasted JSON',
+        Component: PasteConfigWorkflow,
+      },
+      ...pluginManager.getAddTrackWorkflowElements().map(w => ({
+        name: w.name,
+        displayName: w.displayName,
+        Component: w.ReactComponent as WorkflowComponent,
+      })),
+    ],
+    [pluginManager],
+  )
 
-  // make sure the selected value is in the list
-  const val2 = componentMap.has(val) ? val : DEFAULT_WORKFLOW
-  const Component = componentMap.get(val2)!
+  // fall back to the default if the selected workflow's plugin is unavailable
+  const selected = workflows.find(w => w.name === val) ?? workflows[0]!
+  const { Component } = selected
   return (
     <>
       <FormControl>
         <Select
-          value={val2}
+          value={selected.name}
           onChange={event => {
             setVal(event.target.value)
           }}
         >
-          {[...componentMap.keys()].map(e => (
-            <MenuItem key={e} value={e}>
-              {e}
+          {workflows.map(w => (
+            <MenuItem key={w.name} value={w.name}>
+              {w.displayName}
             </MenuItem>
           ))}
         </Select>
-        <FormHelperText>Type of add track workflow</FormHelperText>
+        <FormHelperText>Choose how to add a track</FormHelperText>
       </FormControl>
 
       <Suspense fallback={null}>

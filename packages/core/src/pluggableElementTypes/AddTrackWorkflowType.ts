@@ -18,6 +18,7 @@ export default class AddTrackWorkflow extends PluggableElementBase {
 
   constructor(stuff: {
     name: string
+    displayName?: string
     ReactComponent: AddTrackWorkflowComponentType
     stateModel: IAnyModelType
   }) {
