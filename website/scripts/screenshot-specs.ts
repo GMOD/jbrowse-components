@@ -2212,11 +2212,11 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Open track...' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open track...' },
-      { type: 'waitForText', text: 'Type of add track workflow' },
+      { type: 'waitForText', text: 'Enter track data' },
       { type: 'delay', ms: 500 },
       // open the workflow selector dropdown (shows its current value as text)
-      { type: 'click', text: 'Default add track workflow' },
-      { type: 'waitForText', text: 'Multi-wiggle track' },
+      { type: 'click', text: 'Add a track from file or URL' },
+      { type: 'waitForText', text: 'Add multi-wiggle track' },
       { type: 'delay', ms: 800 },
     ],
     annotations: [
