@@ -836,8 +836,12 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
-  // Sort by base pair at the center line. Migrated from a hand-captured shot —
-  // sortedBy is the same override the "Sort by → Base pair" menu item writes.
+  // Sort by base at a SNP, showing the right-click workflow (reviewer wanted the
+  // menu over the SNP captured, not just the declarative result). The view is
+  // centered on the ctgA:14481 SNP (a green-A mismatch column) with the reads
+  // already sorted by that base, so the variant reads cluster at the top — a
+  // right-click there reliably lands on a mismatch and opens the read context
+  // menu's "SNP/Mismatch → Sort by base at position" submenu, boxed here.
   {
     mode: 'url',
     name: 'alignments_sort_by_base',
@@ -866,7 +870,17 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
+    settleMs: 5000,
+    hideTooltip: true,
+    actions: [
+      { type: 'rightclick', from: { x: 758, y: 272 } },
+      { type: 'waitForText', text: 'SNP/Mismatch' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'SNP/Mismatch' },
+      { type: 'waitForText', text: 'Sort by base at position' },
+      { type: 'delay', ms: 500 },
+    ],
+    annotations: [{ type: 'box', anchor: { text: 'Sort by base at position' } }],
   },
 
   {
