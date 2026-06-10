@@ -105,22 +105,17 @@ function makeConfigurationSchemaModel<
       `Cannot have both explicit and implicit identifiers in ${modelName}`,
     )
   }
-  if (options.explicitIdentifier) {
-    if (typeof options.explicitIdentifier === 'string') {
-      modelDefinition[options.explicitIdentifier] = types.identifier
-      identifier = options.explicitIdentifier
-    } else {
-      modelDefinition.id = types.identifier
-      identifier = 'id'
-    }
-  } else if (options.implicitIdentifier) {
-    if (typeof options.implicitIdentifier === 'string') {
-      modelDefinition[options.implicitIdentifier] = ElementId
-      identifier = options.implicitIdentifier
-    } else {
-      modelDefinition.id = ElementId
-      identifier = 'id'
-    }
+  // explicit identifiers are plain MST identifiers (caller-supplied id);
+  // implicit identifiers auto-generate via ElementId. Both name the field after
+  // the option string, or default to `id` when the option is just `true`.
+  const idSpec = options.explicitIdentifier
+    ? { name: options.explicitIdentifier, idType: types.identifier }
+    : options.implicitIdentifier
+      ? { name: options.implicitIdentifier, idType: ElementId }
+      : undefined
+  if (idSpec) {
+    identifier = typeof idSpec.name === 'string' ? idSpec.name : 'id'
+    modelDefinition[identifier] = idSpec.idType
   }
 
   // String/number entries in the schema definition become volatile instance

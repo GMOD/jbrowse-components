@@ -12,13 +12,6 @@ import type {
 export type GetOptions<SCHEMA> =
   SCHEMA extends ConfigurationSchemaType<any, infer OPTIONS> ? OPTIONS : never
 
-// type GetDefinition<SCHEMA> = SCHEMA extends ConfigurationSchemaType<
-//   infer D,
-//   any
-// >
-//   ? D
-//   : never
-
 export type GetBase<SCHEMA> = SCHEMA extends undefined
   ? never
   : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<undefined, any>
