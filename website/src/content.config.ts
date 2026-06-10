@@ -8,7 +8,6 @@ const docsBase = new URL('../docs', import.meta.url).pathname
 const docsSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
-  draft: z.boolean().default(false),
   sidebar_label: z.string().optional(),
   // introduction.md uses `slug: /` so the glob loader keys it at the docs root
   slug: z.string().optional(),

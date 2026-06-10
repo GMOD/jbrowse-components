@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content'
 import { baseUrl } from '../lib/base-url'
-import BaseLayout from './BaseLayout.astro'
+import SidebarLayout from './SidebarLayout.astro'
 import SidebarItem from '../components/SidebarItem.astro'
 import { buildSidebar } from '../lib/docs-sidebar'
 
@@ -17,150 +17,22 @@ const allDocs = await getCollection('docs')
 const sidebar = buildSidebar(allDocs, baseUrl)
 ---
 
-<BaseLayout title={`${title} | JBrowse Docs`} description={description}>
-  <div class="docs-layout">
-    <button
-      class="sidebar-toggle"
-      id="sidebar-toggle"
-      aria-expanded="false"
-      aria-controls="docs-sidebar-nav"
-    >
-      ☰ Contents
-    </button>
-    <nav
-      class="docs-sidebar"
-      id="docs-sidebar-nav"
-      aria-label="Documentation navigation"
-    >
-      <ul>
-        {
-          sidebar.map(item => (
-            <SidebarItem item={item} currentSlug={currentSlug} />
-          ))
-        }
-      </ul>
-    </nav>
-    <article class="docs-content" data-pagefind-body>
-      <h1>{title}</h1>
-      <slot />
-    </article>
-  </div>
-</BaseLayout>
-
-<script>
-  const sidebar = document.querySelector('.docs-sidebar')
-  const active = sidebar?.querySelector('a[aria-current="page"]')
-  if (active && sidebar) {
-    let el: HTMLElement | null = active.parentElement
-    while (el && el !== sidebar) {
-      if (el.tagName === 'DETAILS') {
-        ;(el as HTMLDetailsElement).open = true
-      }
-      el = el.parentElement
-    }
-    const offset =
-      (active as HTMLElement).getBoundingClientRect().top -
-      sidebar.getBoundingClientRect().top
-    sidebar.scrollTop += offset - sidebar.clientHeight / 2
-  }
-
-  document
-    .getElementById('sidebar-toggle')
-    ?.addEventListener('click', function () {
-      const expanded = this.getAttribute('aria-expanded') === 'true'
-      this.setAttribute('aria-expanded', String(!expanded))
-      sidebar?.classList.toggle('sidebar-open', !expanded)
-    })
-</script>
+<SidebarLayout
+  title={`${title} | JBrowse Docs`}
+  description={description}
+  toggleLabel="Contents"
+  navLabel="Documentation navigation"
+>
+  <ul slot="nav">
+    {sidebar.map(item => <SidebarItem item={item} currentSlug={currentSlug} />)}
+  </ul>
+  <article class="docs-content" data-pagefind-body>
+    <h1>{title}</h1>
+    <slot />
+  </article>
+</SidebarLayout>
 
 <style>
-  .docs-layout {
-    display: flex;
-    min-height: calc(100vh - var(--nav-height));
-  }
-
-  .sidebar-toggle {
-    display: none;
-  }
-
-  .docs-sidebar {
-    width: var(--sidebar-width);
-    flex-shrink: 0;
-    border-right: 1px solid var(--color-border);
-    overflow-y: auto;
-    padding: 1rem 0;
-    position: sticky;
-    top: var(--nav-height);
-    height: calc(100vh - var(--nav-height));
-  }
-
-  .docs-sidebar :global(ul) {
-    list-style: none;
-    margin: 0;
-    padding: 0 0 0 1.5rem;
-  }
-  .docs-sidebar > :global(ul) {
-    padding: 0;
-  }
-
-  .docs-sidebar :global(a) {
-    display: block;
-    padding: var(--sidebar-link-padding);
-    color: var(--color-sidebar-text);
-    text-decoration: none;
-    font-size: 0.9rem;
-    border-radius: 3px;
-    transition: background 0.15s;
-  }
-  .docs-sidebar :global(a:hover) {
-    background: var(--color-sidebar-hover-bg);
-    color: var(--color-navy);
-  }
-  .docs-sidebar :global(a.active) {
-    background: var(--color-sidebar-active-bg);
-    color: var(--color-sidebar-active-text);
-    font-weight: 600;
-    border-left: 3px solid var(--color-accent);
-    padding-left: calc(12px - 3px);
-  }
-
-  .docs-sidebar :global(details > summary) {
-    cursor: pointer;
-    padding: var(--sidebar-link-padding);
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-sidebar-text);
-    list-style: none;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    border-radius: 3px;
-    transition: background 0.15s;
-  }
-  .docs-sidebar :global(details > summary:hover) {
-    background: var(--color-sidebar-hover-bg);
-    color: var(--color-navy);
-  }
-  .docs-sidebar :global(details > summary::-webkit-details-marker) {
-    display: none;
-  }
-  .docs-sidebar :global(details > summary::before) {
-    content: '';
-    display: inline-block;
-    flex-shrink: 0;
-    width: 0.4em;
-    height: 0.4em;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: rotate(-45deg);
-    transition: transform 0.15s ease;
-    opacity: 0.7;
-  }
-  .docs-sidebar :global(details[open] > summary::before) {
-    transform: rotate(45deg);
-  }
-
   .docs-content {
     flex: 1;
     max-width: min(1060px, 100%);
@@ -334,6 +206,13 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
   .docs-content :global(.admonition-info .admonition-title) {
     color: var(--color-accent);
+  }
+  .docs-content :global(.admonition-tip) {
+    background: #f0fdf4;
+    border-left: 4px solid #16a34a;
+  }
+  .docs-content :global(.admonition-tip .admonition-title) {
+    color: #16a34a;
   }
   .docs-content :global(.admonition-caution) {
     background: #fffbeb;

@@ -16,7 +16,7 @@ const rehypeTrailingSlash: Plugin<[], Root> = () => {
         typeof href === 'string' &&
         href.startsWith('/') &&
         !href.startsWith('//') &&
-        !HAS_EXTENSION.test((href.split('#')[0] ?? href).split('?')[0] ?? href) &&
+        !HAS_EXTENSION.test(href.split(/[?#]/)[0]!) &&
         !href.endsWith('/')
       ) {
         node.properties.href = href.replace(/([?#].*)?$/, '/$1')

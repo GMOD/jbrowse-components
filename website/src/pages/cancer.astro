@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url'
 import page from '../styles/page.module.css'
 import btn from '../styles/button.module.css'
 ---
@@ -25,8 +26,8 @@ import btn from '../styles/button.module.css'
     <h2>JBrowse 2 plugins for cancer annotation datasets</h2>
     <p>
       This is a hub of plugins that provide JBrowse 2 access to
-      cancer-associated annotation datasets. Visit the <a href="/plugin_store"
-        >Plugin Store</a
+      cancer-associated annotation datasets. Visit the <a
+        href={`${baseUrl}/plugin_store/`}>Plugin Store</a
       > for the full list of available plugins.
     </p>
 
@@ -37,7 +38,7 @@ import btn from '../styles/button.module.css'
         target="_blank"
         rel="noopener noreferrer">Make a request</a
       >
-      for a new plugin, or <a href="/docs/developer_guide"
+      for a new plugin, or <a href={`${baseUrl}/docs/developer_guide/`}
         >design your own plugin</a
       >.
     </p>

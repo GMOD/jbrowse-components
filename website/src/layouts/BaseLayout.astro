@@ -1,5 +1,6 @@
 ---
 import { baseUrl } from '../lib/base-url'
+import { navLinks } from '../lib/nav'
 import styles from './BaseLayout.module.css'
 
 interface Props {
@@ -103,43 +104,16 @@ const navActive = styles.navActive!
 
       <div class={styles.navLinks} id="nav-links">
         <a href="http://genomes.jbrowse.org/">Genomes</a>
-        <a
-          href={`${baseUrl}/docs/`}
-          class:list={[{ [navActive]: isActive(`${baseUrl}/docs/`) }]}>Docs</a
-        >
-        <a
-          href={`${baseUrl}/blog/`}
-          class:list={[{ [navActive]: isActive(`${baseUrl}/blog/`) }]}>Blog</a
-        >
-        <a
-          href={`${baseUrl}/download/`}
-          class:list={[{ [navActive]: isActive(`${baseUrl}/download/`) }]}
-          >Download</a
-        >
-        <a
-          href={`${baseUrl}/plugin_store/`}
-          class:list={[{ [navActive]: isActive(`${baseUrl}/plugin_store/`) }]}
-          >Plugins</a
-        >
-        <a
-          href={`${baseUrl}/features/`}
-          class:list={[{ [navActive]: isActive(`${baseUrl}/features/`) }]}
-          >Features</a
-        >
-        <a
-          href={`${baseUrl}/gallery/`}
-          class:list={[{ [navActive]: isActive(`${baseUrl}/gallery/`) }]}
-          >Gallery</a
-        >
-        <a
-          href={`${baseUrl}/demos/`}
-          class:list={[{ [navActive]: isActive(`${baseUrl}/demos/`) }]}>Demos</a
-        >
-        <a
-          href={`${baseUrl}/contact/`}
-          class:list={[{ [navActive]: isActive(`${baseUrl}/contact/`) }]}
-          >Contact</a
-        >
+        {
+          navLinks.map(({ path, label }) => (
+            <a
+              href={`${baseUrl}/${path}/`}
+              class:list={[{ [navActive]: isActive(`${baseUrl}/${path}/`) }]}
+            >
+              {label}
+            </a>
+          ))
+        }
         <a
           href={`${baseUrl}/search/`}
           class:list={[
@@ -256,15 +230,13 @@ const navActive = styles.navActive!
       </div>
     </footer>
 
-    <script is:inline define:vars={{ baseUrl }}>
-      ;(function () {
-        document
-          .getElementById('nav-toggle')
-          .addEventListener('click', function () {
-            const expanded = this.getAttribute('aria-expanded') === 'true'
-            this.setAttribute('aria-expanded', String(!expanded))
-          })
-      })()
+    <script>
+      document
+        .getElementById('nav-toggle')
+        ?.addEventListener('click', function () {
+          const expanded = this.getAttribute('aria-expanded') === 'true'
+          this.setAttribute('aria-expanded', String(!expanded))
+        })
     </script>
   </body>
 </html>

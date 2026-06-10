@@ -5,37 +5,12 @@ import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
-import { visit } from 'unist-util-visit'
 
 import { baseUrl } from './base-url.ts'
-import { getText } from './hast-utils.ts'
 import rehypeAdmonitions from './rehype-admonitions.ts'
 import rehypeHeadingLinks from './rehype-heading-links.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
 import remarkFigure from './remark-figure.ts'
-
-import type { MarkdownHeading } from 'astro'
-import type { Root } from 'hast'
-
-const headingRe = /^h[1-6]$/
-
-function extractHeadings(tree: Root): MarkdownHeading[] {
-  const headings: MarkdownHeading[] = []
-  visit(tree, 'element', node => {
-    if (!headingRe.test(node.tagName)) {
-      return
-    }
-    const slug = node.properties.id as string | undefined
-    if (slug) {
-      headings.push({
-        depth: parseInt(node.tagName[1]!),
-        slug,
-        text: getText(node),
-      })
-    }
-  })
-  return headings
-}
 
 const processor = unified()
   .use(remarkParse)
@@ -49,12 +24,7 @@ const processor = unified()
   .use(rehypeHeadingLinks)
   .use(rehypeStringify, { allowDangerousHtml: true })
 
-export async function renderMarkdown(
-  body: string,
-): Promise<{ html: string; headings: MarkdownHeading[] }> {
-  const tree = processor.parse(body)
-  const hast = await processor.run(tree)
-  const headings = extractHeadings(hast)
-  const html = String(processor.stringify(hast))
-  return { html, headings }
+export async function renderMarkdown(body: string): Promise<{ html: string }> {
+  const file = await processor.process(body)
+  return { html: String(file) }
 }

@@ -3,22 +3,13 @@ import { getCollection } from 'astro:content'
 import { baseUrl } from '../lib/base-url.ts'
 import { blogPath } from '../lib/blog-path.ts'
 import { entrySlug } from '../lib/docs-sidebar.ts'
+import { navLinks } from '../lib/nav.ts'
 
 import type { APIRoute } from 'astro'
 
-// Standalone routes that aren't part of a content collection.
-const staticRoutes = [
-  '',
-  'blog',
-  'download',
-  'plugin_store',
-  'features',
-  'gallery',
-  'demos',
-  'cancer',
-  'contact',
-  'search',
-]
+// Standalone routes that aren't part of a content collection: the shared nav
+// pages plus home, search, and the footer-only cancer page.
+const staticRoutes = [...navLinks.map(l => l.path), '', 'search', 'cancer']
 
 export const GET: APIRoute = async ({ site }) => {
   // trailingSlash: 'always' — normalize every loc to end with '/'
