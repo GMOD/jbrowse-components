@@ -797,9 +797,8 @@ export default function stateModelFactory(
         self.rpcDataMap.clear()
         self.summaryDataMap.clear()
       },
-      reload() {
-        self.clearAllRpcData()
-      },
+      // reload() not overridden — MultiRegionDisplayMixin's base default
+      // (clearAllRpcData) is exactly maf's behavior; no extra teardown.
       // Override base setHeight: subtract the coverage band, then distribute
       // the remaining rows area across samples. Resize handle and programmatic
       // setHeight both work.
