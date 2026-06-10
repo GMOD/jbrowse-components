@@ -1,10 +1,6 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
-import {
-  isCloneable,
-  isRpcResult,
-  isStructuredClonePassthrough,
-} from '../util/rpc.ts'
+import { isRpcResult } from '../util/rpc.ts'
 import {
   getBlobMap,
   getFileFromCache,
@@ -83,6 +79,35 @@ function walkLocationObjects(
       })
     }
   }
+}
+
+// Whether structuredClone (and the worker postMessage boundary) can carry this
+// value. Functions and Errors cannot; ownArgs passes them through by reference
+// rather than recursing, and a genuine one leaking through surfaces at the
+// worker postMessage boundary in production.
+function isCloneable(thing: unknown) {
+  return !(typeof thing === 'function') && !(thing instanceof Error)
+}
+
+// Values that structuredClone handles natively and that must pass through
+// ownArgs unchanged: `Object.entries` on them yields `[]`, so naive cloning
+// would collapse them to plain `{}` (e.g. a SharedArrayBuffer-backed stop token
+// would silently stop working, a typed array would lose its data).
+function isStructuredClonePassthrough(thing: object): boolean {
+  return (
+    thing instanceof File ||
+    thing instanceof Blob ||
+    thing instanceof ArrayBuffer ||
+    // SharedArrayBuffer is not an ArrayBuffer subclass; without this it
+    // collapses to {} and SAB-based stop tokens silently stop working
+    (typeof SharedArrayBuffer !== 'undefined' &&
+      thing instanceof SharedArrayBuffer) ||
+    ArrayBuffer.isView(thing) ||
+    thing instanceof Date ||
+    thing instanceof Map ||
+    thing instanceof Set ||
+    thing instanceof RegExp
+  )
 }
 
 // Deep-clone the object/array spine of the RPC args so blob conversion and auth
