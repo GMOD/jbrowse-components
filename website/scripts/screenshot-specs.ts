@@ -964,13 +964,69 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
+  // Whole-genome CNV: COLO829 melanoma tumor (red) vs matched normal (blue)
+  // coverage as a single multi-quantitative bigWig track, shown at chromosome
+  // scale (no `loc` → showAllRegionsInAssembly) with localsd ±3sd autoscale so
+  // copy-number gains/losses stand out. Rebuilt from the old server-side share
+  // link as a self-contained sessionSpec/MultiWiggleAdapter over the two COLO829
+  // coverage bigWigs in config_demo.json.
   {
     mode: 'url',
     name: 'cnv',
-    url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'MultiQuantitativeTrack',
+          trackId: 'colo829_cnv_coverage',
+          name: 'COLO829 tumor/normal coverage',
+          assemblyNames: ['hg19'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              {
+                type: 'BigWigAdapter',
+                source: 'COLO829 tumor',
+                color: 'red',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+              {
+                type: 'BigWigAdapter',
+                source: 'COLO829 normal',
+                color: 'blue',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_normal.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+            ],
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          tracks: [
+            {
+              trackId: 'colo829_cnv_coverage',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                autoscale: 'localsd',
+                numStdDev: 3,
+              },
+            },
+          ],
+        },
+      ],
+    }),
     readyText: 'COLO829',
     readyTimeout: 60000,
-    settleMs: 12000,
+    settleMs: 15000,
+    // the two-row track is short; crop off the empty viewport below it
+    crop: { x: 0, y: 0, width: 1500, height: 390 },
   },
 
   // Curated: this shared session rendered correctly at the old 1280px viewport,
@@ -1041,8 +1097,9 @@ export const specs: ScreenshotSpec[] = [
     name: 'breakpoint_split_view',
     url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-ITpNXoz07O&password=Brtps',
     readyText: 'SKBR3',
-    // taller viewport so both panels of the breakpoint split view are visible
-    viewportHeight: 1200,
+    // both panels + connecting curves fit in ~850px; was 1200 which left a tall
+    // band of empty whitespace below the lower panel
+    viewportHeight: 900,
     readyTimeout: 60000,
     settleMs: 12000,
   },
@@ -1253,6 +1310,8 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Show all regions in assembly' },
       { type: 'delay', ms: 2000 },
     ],
+    // the import form is short; crop off the empty viewport below it
+    crop: { x: 0, y: 0, width: 1500, height: 175 },
   },
 
   {
