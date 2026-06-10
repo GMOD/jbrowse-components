@@ -2711,6 +2711,11 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
+  // Compact read drawing mode: featureHeight 3 / spacing 0 packs the full ACTB
+  // read stack into view, with maxHeight raised so the whole pileup renders
+  // instead of clipping at "Max layout height reached" — that full, dense stack
+  // (deep = highly expressed) is the point compact mode makes, and what the
+  // reviewer found unclear at the default maxHeight.
   {
     mode: 'url',
     name: 'rnaseq/compact_stacked',
@@ -2724,7 +2729,13 @@ export const specs: ScreenshotSpec[] = [
             'ncbi_gff_hg19',
             {
               trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-              displaySnapshot: { featureHeight: 3, featureSpacing: 0 },
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                featureHeight: 3,
+                featureSpacing: 0,
+                maxHeight: 2000,
+                height: 700,
+              },
             },
           ],
         },
@@ -2733,6 +2744,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
+    viewportHeight: 1000,
   },
 
   // Long-read IsoSeq RNA-seq at ACTB.
@@ -3191,6 +3203,34 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 1000 },
     ],
+  },
+
+  // Live protein3d/msaview demo sessions hosted on jbrowse.org (BRAF). These
+  // load external plugins + query AlphaFold/UniProt, so they target the full
+  // hosted URL and get a long settle for the structure/alignment to render.
+  {
+    mode: 'url',
+    name: 'protein/probe1',
+    url: 'https://jbrowse.org/code/jb2/main/?config=%2Fucsc%2Fhg38%2Fconfig.json&session=share-oZc6gP5zSQ&password=zFvQi',
+    readySelector: '[data-testid^="view-container-"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+  {
+    mode: 'url',
+    name: 'protein/probe2',
+    url: 'https://jbrowse.org/code/jb2/main/?config=%2Fucsc%2Fhg38%2Fconfig.json&session=share-xgw4Y7Xoby&password=SMk7u',
+    readySelector: '[data-testid^="view-container-"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+  {
+    mode: 'url',
+    name: 'protein/probe3',
+    url: 'https://jbrowse.org/code/jb2/main/?config=%2Fucsc%2Fhg38%2Fconfig.json&session=share-muppi_-WsU&password=tvhMa',
+    readySelector: '[data-testid^="view-container-"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
   },
 ]
 
