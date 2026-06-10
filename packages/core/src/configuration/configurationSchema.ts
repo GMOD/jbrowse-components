@@ -120,7 +120,8 @@ function makeConfigurationSchemaModel<
 
   // String/number entries in the schema definition become volatile instance
   // constants (read via `model.someName`). Per-slot metadata lives in the
-  // jbrowseSchemaDefinition table on the schema type, not on the instance.
+  // schema registry (a WeakMap keyed by the MST type, see schemaRegistry.ts),
+  // not on the instance.
   const volatileConstants: Record<string, unknown> = {}
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (

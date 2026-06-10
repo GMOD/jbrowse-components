@@ -46,9 +46,9 @@ export interface ConfigSlotDefinition {
  * configuration model — there is no per-slot sub-model. `types.stripDefault`
  * omits the property from the parent snapshot when it equals the default, so
  * saved sessions stay minimal. Per-slot metadata
- * (type/description/defaultValue/contextVariable) lives in the schema-type's
- * `jbrowseSchemaDefinition` table; jexl callbacks are evaluated on read by
- * `readConfObject`. See agent-docs/CONFIG_SLOT_COLLAPSE_PLAN.md.
+ * (type/description/defaultValue/contextVariable) lives in the schema registry
+ * (a WeakMap keyed by the MST type, see schemaRegistry.ts); jexl callbacks are
+ * evaluated on read by `readConfObject`. See agent-docs/CONFIG_SLOT_COLLAPSE_PLAN.md.
  */
 export default function ConfigSlot({
   model,
