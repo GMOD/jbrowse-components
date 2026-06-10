@@ -590,6 +590,26 @@ export function showTrackGeneric(
   }
 }
 
+interface DisplaySnapshot {
+  id: string
+  [key: string]: unknown
+}
+interface TrackSnapshot {
+  id: string
+  displays: DisplaySnapshot[]
+  [key: string]: unknown
+}
+
+// Strip a track's identifier and its nested display identifiers (both are
+// types.identifier) so a duplicated/copied snapshot doesn't collide with the
+// source's ids when added back into the same session tree.
+export function stripTrackIds(tracks: TrackSnapshot[]) {
+  return tracks.map(({ id, displays, ...rest }) => ({
+    ...rest,
+    displays: displays.map(({ id, ...d }) => d),
+  }))
+}
+
 export function hideTrackGeneric(self: GenericView, trackId: string) {
   const t = self.tracks.find(t => t.configuration.trackId === trackId)
   if (t) {

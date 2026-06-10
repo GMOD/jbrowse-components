@@ -1,7 +1,6 @@
 import { parseBreakend } from '@gmod/vcf'
 import { getEnv, getSession } from '@jbrowse/core/util'
 
-import type { Track } from './types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -147,13 +146,6 @@ export async function getBreakendAssemblyRegions({
     )
   }
   return { coverage, region, mateRegion }
-}
-
-export function stripIds(arr: Track[]) {
-  return arr.map(({ id, displays, ...rest }) => ({
-    ...rest,
-    displays: displays.map(({ id, ...rest }) => rest),
-  }))
 }
 
 export function makeTitle(f: Feature) {

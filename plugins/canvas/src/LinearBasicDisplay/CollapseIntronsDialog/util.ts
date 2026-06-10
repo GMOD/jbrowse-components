@@ -1,4 +1,4 @@
-import { getSession, mergeIntervals } from '@jbrowse/core/util'
+import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
@@ -155,15 +155,10 @@ export async function collapseIntrons({
   }
   const snapshot = getSnapshot(view)
   const { id, ...rest } = snapshot
-  // Compute bpPerPx/offsetPx upfront to avoid layout thrashing on the new view.
-  // Strip the track AND nested display identifiers (both are types.identifier)
-  // so they don't collide with the source view's in the session tree.
+  // Compute bpPerPx/offsetPx upfront to avoid layout thrashing on the new view
   const newView = getSession(view).addView('LinearGenomeView', {
     ...rest,
-    tracks: rest.tracks.map(({ id, displays, ...r }) => ({
-      ...r,
-      displays: displays.map(({ id, ...d }) => d),
-    })),
+    tracks: stripTrackIds(rest.tracks),
     displayedRegions: args.mergedRegions,
     bpPerPx: args.initialState.bpPerPx,
     offsetPx: args.initialState.offsetPx,

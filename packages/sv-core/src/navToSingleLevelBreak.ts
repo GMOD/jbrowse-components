@@ -1,10 +1,14 @@
-import { gatherOverlaps, getSession, when } from '@jbrowse/core/util'
+import {
+  gatherOverlaps,
+  getSession,
+  stripTrackIds,
+  when,
+} from '@jbrowse/core/util'
 
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
   makeTitle,
-  stripIds,
 } from './util.ts'
 
 import type { BreakpointSplitView, Track } from './types.ts'
@@ -119,7 +123,7 @@ export async function navToSingleLevelBreak({
       views: [
         {
           ...snap.views[0],
-          tracks: tracks ? stripIds(tracks) : [],
+          tracks: tracks ? stripTrackIds(tracks) : [],
         },
       ],
     }) as unknown as BreakpointSplitView

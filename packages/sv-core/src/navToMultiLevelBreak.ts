@@ -1,11 +1,10 @@
-import { when } from '@jbrowse/core/util'
+import { stripTrackIds, when } from '@jbrowse/core/util'
 
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
   makeTitle,
   splitRegionAtPosition,
-  stripIds,
 } from './util.ts'
 
 import type { BreakpointSplitView, Track } from './types.ts'
@@ -51,12 +50,12 @@ export async function navToMultiLevelBreak({
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          tracks: stripIds(viewTracks),
+          tracks: stripTrackIds(viewTracks),
         },
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          tracks: stripIds(mirror ? [...viewTracks].reverse() : viewTracks),
+          tracks: stripTrackIds(mirror ? [...viewTracks].reverse() : viewTracks),
         },
       ],
     }) as unknown as BreakpointSplitView
