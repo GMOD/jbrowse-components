@@ -71,9 +71,16 @@ export function stateModelFactory(
         /**
          * #property
          * Index/lead SNP for LD coloring — a SNP id or `chr:bp` (1-based)
-         * string. When unset in LD mode it auto-picks the highest-scoring SNP.
+         * string. Auto-tracks the highest-scoring loaded SNP unless the user
+         * pins one (see `indexSnpPinned`).
          */
         indexSnp: types.maybe(types.string),
+        /**
+         * #property
+         * True once the user pins a specific index SNP (right-clicking a point).
+         * While false, the index auto-tracks the top hit as data loads.
+         */
+        indexSnpPinned: types.optional(types.boolean, false),
       }),
     )
     .volatile(() => ({
@@ -241,13 +248,21 @@ export function stateModelFactory(
       setIndexSnp(snp?: string) {
         self.indexSnp = snp
       },
-      // Right-click "Color by LD to this SNP": switch into LD mode and anchor
-      // the index on the clicked point. Keyed by chr:bp (1-based) to match the
-      // worker's posKey. Both mutations happen in one action so rpcProps
-      // settles once and only a single recolor fetch fires.
+      // Right-click "Color by LD to this SNP": switch into LD mode and pin the
+      // index on the clicked point, so the auto-pick stops tracking the top
+      // hit. Keyed by chr:bp (1-based) to match the worker's posKey. All
+      // mutations happen in one action so rpcProps settles once and only a
+      // single recolor fetch fires.
       colorByLdToHit(hit: ManhattanHit) {
         self.setOverride('colorBy', 'ld')
         self.indexSnp = `${hit.refName}:${hit.start + 1}`
+        self.indexSnpPinned = true
+      },
+      // Release a pinned index back to auto-tracking, seeded at the current top
+      // hit (the auto-pick autorun then keeps it on the top hit as data loads).
+      useTopHitAsIndex() {
+        self.indexSnpPinned = false
+        self.indexSnp = self.topSnp
       },
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
@@ -274,9 +289,10 @@ export function stateModelFactory(
           },
           {
             label: 'Set index SNP to top hit',
-            disabled: self.colorBy !== 'ld' || !self.topSnp,
+            disabled:
+              self.colorBy !== 'ld' || !self.topSnp || !self.indexSnpPinned,
             onClick: () => {
-              self.setIndexSnp(self.topSnp)
+              self.useTopHitAsIndex()
             },
           },
         ]
@@ -351,13 +367,21 @@ export function stateModelFactory(
       return {
         afterAttach() {
           superAfterAttach()
-          // LocusZoom-style default: in LD mode with no explicit index SNP,
-          // adopt the highest-scoring loaded SNP. Setting indexSnp triggers a
-          // single recoloring fetch; topSnp is then stable so it converges.
+          // LocusZoom-style default: while no index SNP is pinned, keep the
+          // index anchored on the highest-scoring loaded SNP, re-tracking it as
+          // higher-scoring data streams in. Setting indexSnp triggers one
+          // recoloring fetch; topSnp is a fixpoint under recoloring (it depends
+          // only on positions/scores, which recoloring leaves unchanged), so
+          // this converges rather than looping.
           addDisposer(
             self,
             autorun(() => {
-              if (self.colorBy === 'ld' && !self.indexSnp && self.topSnp) {
+              if (
+                self.colorBy === 'ld' &&
+                !self.indexSnpPinned &&
+                self.topSnp &&
+                self.topSnp !== self.indexSnp
+              ) {
                 self.setIndexSnp(self.topSnp)
               }
             }),

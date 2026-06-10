@@ -2353,10 +2353,9 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // LocusZoom-style LD r² coloring at the STAT4 locus on hg19 (SLE summary
-  // stats). The bundled SLE.ld is keyed to the lead SNP rs4274624, so we anchor
-  // the index on the top hit; points then shade red→blue by r² to it. hg19
-  // canonical refNames are chr-prefixed while the data uses bare numbers, which
-  // is exactly the alias path the GetManhattanData index-rename handles.
+  // stats). The index SNP auto-tracks the top hit (the lead rs4274624 the
+  // bundled SLE.ld is keyed to), so points shade red→blue by r² to it on load
+  // with no interaction.
   {
     mode: 'url',
     name: 'gwas/locuszoom_ld',
@@ -2378,15 +2377,8 @@ export const specs: ScreenshotSpec[] = [
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 60000,
     viewportHeight: 480,
-    settleMs: 6000,
-    hideTooltip: true,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Set index SNP to top hit' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Set index SNP to top hit' },
-      { type: 'delay', ms: 6000 },
-    ],
+    // settle past the index auto-pick + recolor fetch that follows first paint
+    settleMs: 12000,
   },
 
   // ────────────────────────────────────────────────────────────────────────
