@@ -250,7 +250,10 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSamples() {
-    return getSamplesFromConfig(key => this.getConf(key))
+    return getSamplesFromConfig(
+      this.getConf('nhLocation'),
+      this.getConf('samples'),
+    )
   }
 
   // Byte budget from the .tai index alone: the compressed span between the

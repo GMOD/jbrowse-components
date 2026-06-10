@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config MafTabixAdapter
  */
@@ -109,5 +111,7 @@ const configSchema = ConfigurationSchema(
     },
   },
 )
+
+export type MafTabixAdapterConfig = Instance<typeof configSchema>
 
 export default configSchema

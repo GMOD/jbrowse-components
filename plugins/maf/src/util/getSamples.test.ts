@@ -8,20 +8,18 @@ import {
 } from './getSamples.ts'
 
 describe('getSamplesFromConfig sample-set resolution', () => {
-  const noTree = { uri: '/path/to/my.nh' }
+  const noTree = {
+    uri: '/path/to/my.nh',
+    locationType: 'UriLocation' as const,
+  }
 
   test('no tree → samples config is the set, in listed order', async () => {
-    const conf: Record<string, unknown> = {
-      nhLocation: noTree,
-      samples: ['b', 'a'],
-    }
-    const { samples } = await getSamplesFromConfig(k => conf[k])
+    const { samples } = await getSamplesFromConfig(noTree, ['b', 'a'])
     expect(samples.map(s => s.id)).toEqual(['b', 'a'])
   })
 
   test('no tree, no samples → empty (caller discovers from data)', async () => {
-    const conf: Record<string, unknown> = { nhLocation: noTree, samples: [] }
-    const { samples } = await getSamplesFromConfig(k => conf[k])
+    const { samples } = await getSamplesFromConfig(noTree, [])
     expect(samples).toEqual([])
   })
 })

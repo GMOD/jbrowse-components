@@ -157,10 +157,19 @@ read-density / bug-finding potential, not a mandate to do all at once.
   `gcMode` `'content'|'skew'` now typed). Factory-pattern schema uses
   `Instance<ReturnType<typeof GCContentAdapterF>>`.
 
+- **Done:** `maf` — `MafTabixAdapter` (`refAssemblyName` now typed `string`).
+  The `getSamplesFromConfig(key => this.getConf(key))` blocker was removed by
+  refactoring `getSamplesFromConfig(nhLocation, samplesConfig)` to take the two
+  resolved values directly (typed `FileLocation` + `SampleConfig`, dropping two
+  internal casts) instead of a dynamic-string getter; call sites pass
+  `this.getConf('nhLocation')`/`this.getConf('samples')` (literal slot names,
+  constraint-safe). `BigMafAdapter`/`BgzipTaffyAdapter` left untyped on purpose
+  — both have **zero scalar slots** (only frozen/fileLocation), so opting the
+  class in is pure churn; their call sites use the new signature regardless.
+
 **Remaining (low priority / blockers noted):**
 - `PAFAdapter`/`ChainAdapter`/`DeltaAdapter`/`MashMapAdapter` — inheritance
   chain, zero scalar casts to drop in any of them. Deferred.
-- `MafTabixAdapter`/`BigMafAdapter`/`BgzipTaffyAdapter` — `getSamplesFromConfig(key => this.getConf(key))` dynamic-string reads would fail the slot-name constraint after typing. Needs either a cast or refactor to `readConfObject`.
 - `NCListAdapter`/`HicAdapter`/`Gff3Adapter`/`SplitVcfTabixAdapter`/`MultiWiggleAdapter`/`SPARQLAdapter` — fileLocation/frozen/stringArray only, or already typed via constructor-param pattern (SPARQL). Deferred until touched for other reasons.
 - `IndexedFastaAdapter` / `BgzipFastaAdapter` — same subclass conflict as
   BamAdapter/HtsgetBamAdapter; `IndexedFastaAdapterConfig` alias exported but

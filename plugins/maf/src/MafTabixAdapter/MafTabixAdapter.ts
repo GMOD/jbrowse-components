@@ -11,6 +11,7 @@ import {
   selectReferenceSequenceString,
 } from '../util/parseAssemblyName.ts'
 
+import type { MafTabixAdapterConfig } from './configSchema.ts'
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
 import type {
   BaseFeatureDataAdapter as BaseAdapter,
@@ -23,7 +24,7 @@ type TabixByteAdapter = BaseAdapter & {
   getRegionByteSize: (regions: Region[], opts?: BaseOptions) => Promise<number>
 }
 
-export default class MafTabixAdapter extends BaseFeatureDataAdapter {
+export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdapterConfig> {
   public setupP?: Promise<{ adapter: TabixByteAdapter }>
 
   async setupPre(opts?: BaseOptions): Promise<{ adapter: TabixByteAdapter }> {
@@ -106,7 +107,10 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSamples() {
-    return getSamplesFromConfig(key => this.getConf(key))
+    return getSamplesFromConfig(
+      this.getConf('nhLocation'),
+      this.getConf('samples'),
+    )
   }
 
   // Byte budget for the fetch gate comes straight from the tabix index (the

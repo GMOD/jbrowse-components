@@ -73,7 +73,10 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSamples() {
-    return getSamplesFromConfig(key => this.getConf(key))
+    return getSamplesFromConfig(
+      this.getConf('nhLocation'),
+      this.getConf('samples'),
+    )
   }
 
   // The bigMafSummary.bb is a plain bed3+4 BigBed; we read it through whatever

@@ -2,6 +2,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseNewick } from '@jbrowse/tree-sidebar'
 
 import type { MafAdapterOptions, Sample } from '../types.ts'
+import type { FileLocation } from '@jbrowse/core/util'
 import type { NewickNode } from '@jbrowse/tree-sidebar'
 
 /** Sample-id set shared by all three adapters to resolve tokens — see `matchSampleId`. */
@@ -69,21 +70,18 @@ export function resolveSamplesFromTree(
  * Tree/config names carry the haplotype suffix (`Species1.1`) that
  * `matchSampleId` resolves exactly.
  */
-export async function getSamplesFromConfig(getConf: (key: string) => unknown) {
-  const nhLoc = getConf('nhLocation')
+export async function getSamplesFromConfig(
+  nhLocation: FileLocation,
+  samplesConfig: SampleConfig,
+) {
   const isDefaultPath =
-    nhLoc &&
-    typeof nhLoc === 'object' &&
-    'uri' in nhLoc &&
-    nhLoc.uri === '/path/to/my.nh'
+    'uri' in nhLocation && nhLocation.uri === '/path/to/my.nh'
 
   const treeNewick = isDefaultPath
     ? undefined
-    : await openLocation(nhLoc as Parameters<typeof openLocation>[0]).readFile(
-        'utf8',
-      )
+    : await openLocation(nhLocation).readFile('utf8')
 
-  const configSamples = normalizeSamples(getConf('samples') as SampleConfig)
+  const configSamples = normalizeSamples(samplesConfig)
   const samples = treeNewick
     ? resolveSamplesFromTree(treeNewick, configSamples)
     : configSamples
