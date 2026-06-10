@@ -99,6 +99,10 @@ function computeStats(
       }
       min = Math.min(min, minScores[i]!)
       max = Math.max(max, maxScores[i]!)
+      // Mean/stddev always use featureScores (the average) regardless of
+      // summaryScoreMode; min/max for the domain bounds come from the mode-
+      // selected arrays above. Intentional: sd-based autoscale centers on the
+      // average-value distribution even in whiskers/min/max summary modes.
       const avg = featureScores[i]!
       sum += avg
       sumSq += avg * avg
