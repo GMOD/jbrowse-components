@@ -120,6 +120,8 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
   },
 )
 
-export type PairwiseIndexedPAFAdapterConfig = Instance<typeof PairwiseIndexedPAFAdapter>
+export type PairwiseIndexedPAFAdapterConfig = Instance<
+  typeof PairwiseIndexedPAFAdapter
+>
 
 export default PairwiseIndexedPAFAdapter

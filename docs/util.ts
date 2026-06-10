@@ -194,7 +194,7 @@ function getOwnJSDocText(node: ts.Node): string {
     .map(jd =>
       typeof jd.comment === 'string'
         ? jd.comment
-        : jd.comment?.map(p => p.text).join('') ?? '',
+        : (jd.comment?.map(p => p.text).join('') ?? ''),
     )
     .join('\n')
 }
@@ -326,7 +326,9 @@ export function exampleSection(
     return ''
   }
   const levelMatch = /^(#+)/.exec(heading)
-  const subPrefix = levelMatch ? '#'.repeat(levelMatch[1].length + 1) : undefined
+  const subPrefix = levelMatch
+    ? '#'.repeat(levelMatch[1].length + 1)
+    : undefined
   const labelHeading = (label: string) =>
     label ? (subPrefix ? `${subPrefix} Example: ${label}` : `_${label}_`) : ''
   const bodies = examples.map(ex => section(labelHeading(ex.label), ex.content))

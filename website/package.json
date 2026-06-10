@@ -6,6 +6,7 @@
     "build": "astro build && pagefind --site dist",
     "index": "astro build && pagefind --site dist --output-path static/pagefind",
     "preview": "astro preview",
+    "typecheck": "astro check",
     "lint-docs": "node --experimental-strip-types scripts/generate-guide-indexes.ts",
     "lint-docs-check": "node --experimental-strip-types scripts/generate-guide-indexes.ts --check",
     "generate-screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
@@ -31,9 +32,13 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.0",
     "@iconify-json/mdi": "^1.2.3",
+    "@types/hast": "^3.0.0",
+    "@types/mdast": "^4.0.0",
     "pagefind": "^1.5.2",
     "prettier-plugin-astro": "^0.14.1",
-    "rimraf": "^6.1.3"
+    "rimraf": "^6.1.3",
+    "typescript": "^5.8.0"
   }
 }

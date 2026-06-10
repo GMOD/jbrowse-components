@@ -32,7 +32,11 @@ function makeSampleGridRow(
   const row: VariantSampleGridRow = {
     sample,
     id: sample,
-    GT: gtStr ? (useCounts ? countAlleles(gtStr, allele => allele) : gtStr) : '',
+    GT: gtStr
+      ? useCounts
+        ? countAlleles(gtStr, allele => allele)
+        : gtStr
+      : '',
     genotype: gtStr
       ? useCounts
         ? countAlleles(gtStr, allele => resolveAllele(allele, REF, ALT))

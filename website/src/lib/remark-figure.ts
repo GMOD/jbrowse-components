@@ -22,7 +22,7 @@ function parseAttrs(str: string): Record<string, string> {
   attrRe.lastIndex = 0
   let m: RegExpExecArray | null
   while ((m = attrRe.exec(str)) !== null) {
-    attrs[m[1]] = m[2] ?? m[3]
+    attrs[m[1]!] = m[2] ?? m[3] ?? ''
   }
   return attrs
 }
@@ -31,12 +31,16 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   const base = options.base?.replace(/\/$/, '') ?? ''
   return tree => {
     visit(tree, 'paragraph', (node: Paragraph, index, parent) => {
+      const firstChild = node.children[0]
       if (
         node.children.length === 1 &&
-        node.children[0].type === 'text' &&
-        node.children[0].value.startsWith('import ')
+        firstChild?.type === 'text' &&
+        firstChild.value.startsWith('import ')
       ) {
-        parent!.children.splice(index, 1)
+        if (index === undefined || !parent) {
+          return
+        }
+        parent.children.splice(index, 1)
         return [SKIP, index]
       }
     })
@@ -54,7 +58,7 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       if (!match) {
         return
       }
-      const attrs = parseAttrs(match[1])
+      const attrs = parseAttrs(match[1]!)
       const rawSrc = attrs.src ?? ''
       const src = base && rawSrc.startsWith('/') ? `${base}${rawSrc}` : rawSrc
       const caption = attrs.caption ?? ''

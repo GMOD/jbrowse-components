@@ -130,7 +130,11 @@ const OverviewBox = observer(function OverviewBox({
           }}
         >
           <svg className={classes.cytoSvg}>
-            <Cytobands overview={overview} cytobands={cytobands} block={block} />
+            <Cytobands
+              overview={overview}
+              cytobands={cytobands}
+              block={block}
+            />
           </svg>
         </div>
       </>

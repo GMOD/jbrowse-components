@@ -22,7 +22,7 @@ exports[`<AboutWidget /> renders 1`] = `
       JBrowse is a 
       <a
         class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-366eis-MuiTypography-root-MuiLink-root"
-        href="http://gmod.org/"
+        href="https://gmod.org/"
         rel="noopener noreferrer"
         target="_blank"
       >
@@ -188,7 +188,7 @@ exports[`<AboutWidget /> renders 1`] = `
                     <li>
                       <a
                         class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-366eis-MuiTypography-root-MuiLink-root"
-                        href="http://google.com"
+                        href="https://google.com"
                         rel="noopener noreferrer"
                         target="_blank"
                       >

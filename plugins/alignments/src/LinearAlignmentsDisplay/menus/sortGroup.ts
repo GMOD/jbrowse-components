@@ -1,11 +1,17 @@
 import { lazy } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionWithDeleteTrackConf,
+} from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import type { SortedBy } from '../../shared/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
 const GroupByDialog = lazy(() => import('../dialogs/GroupByDialog.tsx'))
@@ -85,15 +91,51 @@ export function getSortByMenuItem(model: SortByModel) {
   }
 }
 
+// Group-by creates session tracks named `${parentId}-<label>-sessionTrack`
+// (see GroupByDialog.createTrackId); this finds them again to support removal.
+function getGroupChildTrackConfs(model: IAnyStateTreeNode) {
+  const parentId = getContainingTrack(model).configuration.trackId
+  const prefix = `${parentId}-`
+  return (getSession(model).sessionTracks ?? []).filter(
+    t =>
+      t.trackId !== parentId &&
+      t.trackId.startsWith(prefix) &&
+      t.trackId.endsWith('-sessionTrack'),
+  )
+}
+
+function removeGroupTracks(model: IAnyStateTreeNode) {
+  const session = getSession(model)
+  const view = getContainingView(model) as LinearGenomeViewModel
+  if (isSessionWithDeleteTrackConf(session)) {
+    for (const conf of getGroupChildTrackConfs(model)) {
+      view.hideTrack(conf.trackId)
+      session.deleteTrackConf(conf)
+    }
+  }
+}
+
 export function getGroupByMenuItem(model: IAnyStateTreeNode) {
   return {
     label: 'Group by...',
     icon: WorkspacesIcon,
-    onClick: () => {
-      getSession(model).queueDialog(handleClose => [
-        GroupByDialog,
-        { model, handleClose },
-      ])
-    },
+    subMenu: [
+      {
+        label: 'Group by tag or strand...',
+        onClick: () => {
+          getSession(model).queueDialog(handleClose => [
+            GroupByDialog,
+            { model, handleClose },
+          ])
+        },
+      },
+      {
+        label: 'Remove grouped tracks',
+        disabled: getGroupChildTrackConfs(model).length === 0,
+        onClick: () => {
+          removeGroupTracks(model)
+        },
+      },
+    ],
   }
 }

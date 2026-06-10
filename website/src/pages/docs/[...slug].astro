@@ -14,13 +14,13 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props
 const currentSlug = Astro.params.slug ?? ''
-const { html, headings } = await renderMarkdown(entry.body)
+const { html } = await renderMarkdown(entry.body ?? '')
 ---
 
 <DocsLayout
   title={entry.data.title}
   currentSlug={currentSlug}
-  headings={headings}
+  description={entry.data.description}
 >
   <Fragment set:html={html} />
 </DocsLayout>

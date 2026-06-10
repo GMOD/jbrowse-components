@@ -86,7 +86,9 @@ function startServer(port: number, proxyPort?: number): Promise<http.Server> {
       }
     })
     server.on('error', reject)
-    server.listen(port, () => { resolve(server) })
+    server.listen(port, () => {
+      resolve(server)
+    })
   })
 }
 
@@ -292,7 +294,9 @@ async function debugDump(page: Page, name: string) {
   const debugPath = path.join(outDir, `debug_${name.replace(/\//g, '_')}.png`)
   await page
     .screenshot()
-    .then(png => { fs.writeFileSync(debugPath, png) })
+    .then(png => {
+      fs.writeFileSync(debugPath, png)
+    })
     .catch(() => {})
   console.error(`    debug screenshot: ${debugPath}`)
 }
@@ -380,7 +384,9 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
           let bestArea = Number.POSITIVE_INFINITY
           for (const el of document.querySelectorAll('body *')) {
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            const txt = (el.textContent !== null ? el.textContent : '').trim().toLowerCase()
+            const txt = (el.textContent !== null ? el.textContent : '')
+              .trim()
+              .toLowerCase()
             const matches =
               txt === want || (el.childElementCount === 0 && txt.includes(want))
             const rect = el.getBoundingClientRect()
@@ -544,7 +550,12 @@ async function shoot(
     await clearAnnotations(page)
   }
   await page.evaluate(
-    () => new Promise<void>(resolve => requestAnimationFrame(() => { resolve() })),
+    () =>
+      new Promise<void>(resolve =>
+        requestAnimationFrame(() => {
+          resolve()
+        }),
+      ),
   )
   const clip = spec.crop
   await page.screenshot(clip ? { path: file, clip } : { path: file })

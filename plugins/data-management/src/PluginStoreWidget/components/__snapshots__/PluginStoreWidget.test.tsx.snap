@@ -1221,12 +1221,12 @@ exports[`renders with the available plugins 1`] = `
                   class="MuiCardActions-root MuiCardActions-spacing css-1q4nm6f-MuiCardActions-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-5v1x9z-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
                     <span
-                      class="MuiButton-icon MuiButton-startIcon css-h0vgxp-MuiButton-startIcon"
+                      class="MuiButton-icon MuiButton-startIcon css-1ko2l2g-MuiButton-startIcon"
                     >
                       <svg
                         aria-hidden="true"

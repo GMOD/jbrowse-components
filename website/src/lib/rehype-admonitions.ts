@@ -1,6 +1,6 @@
 import { getText } from './hast-utils.ts'
 
-import type { Element, Root, RootContent } from 'hast'
+import type { Element, ElementContent, Root } from 'hast'
 import type { Plugin } from 'unified'
 
 function capitalize(str: string) {
@@ -9,29 +9,29 @@ function capitalize(str: string) {
 
 const rehypeAdmonitions: Plugin<[], Root> = () => {
   return tree => {
-    const children = tree.children as Element[]
+    const children = tree.children
     let i = 0
     while (i < children.length) {
-      const node = children[i]
+      const node = children[i]!
       if (node.type === 'element' && node.tagName === 'p') {
-        const text = getText(node as RootContent).trim()
+        const text = getText(node).trim()
         const openMatch = /^:{3,}(\w+)(?:\s+(.+))?$/.exec(text)
         if (openMatch) {
-          const type = openMatch[1].toLowerCase()
+          const type = openMatch[1]!.toLowerCase()
           const title = openMatch[2] ?? capitalize(type)
 
           let j = i + 1
           while (j < children.length) {
-            const cn = children[j]
+            const cn = children[j]!
             if (cn.type === 'element' && cn.tagName === 'p') {
-              if (/^:{3,}\s*$/.test(getText(cn as RootContent).trim())) {
+              if (/^:{3,}\s*$/.test(getText(cn).trim())) {
                 break
               }
             }
             j++
           }
 
-          const inner = children.slice(i + 1, j)
+          const inner = children.slice(i + 1, j) as ElementContent[]
           const wrapper: Element = {
             type: 'element',
             tagName: 'div',

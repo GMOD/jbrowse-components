@@ -188,7 +188,11 @@ function renderModel(
   )
 
   const exSection = exampleSection(header.examples)
-  const docsSection = overviewSection(header.docs, inheritedSection(ancestors), sections)
+  const docsSection = overviewSection(
+    header.docs,
+    inheritedSection(ancestors),
+    sections,
+  )
 
   return `---
 id: ${header.id}

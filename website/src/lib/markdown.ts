@@ -15,7 +15,7 @@ import rehypeTrailingSlash from './rehype-trailing-slash.ts'
 import remarkFigure from './remark-figure.ts'
 
 import type { MarkdownHeading } from 'astro'
-import type { Root, RootContent } from 'hast'
+import type { Root } from 'hast'
 
 const headingRe = /^h[1-6]$/
 
@@ -25,12 +25,12 @@ function extractHeadings(tree: Root): MarkdownHeading[] {
     if (!headingRe.test(node.tagName)) {
       return
     }
-    const slug = node.properties?.id as string | undefined
+    const slug = node.properties.id as string | undefined
     if (slug) {
       headings.push({
-        depth: parseInt(node.tagName[1]),
+        depth: parseInt(node.tagName[1]!),
         slug,
-        text: getText(node as RootContent),
+        text: getText(node),
       })
     }
   })
@@ -54,7 +54,7 @@ export async function renderMarkdown(
 ): Promise<{ html: string; headings: MarkdownHeading[] }> {
   const tree = processor.parse(body)
   const hast = await processor.run(tree)
-  const headings = extractHeadings(hast as Root)
-  const html = processor.stringify(hast as Root) as string
+  const headings = extractHeadings(hast)
+  const html = String(processor.stringify(hast))
   return { html, headings }
 }

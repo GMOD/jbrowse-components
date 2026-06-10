@@ -11,7 +11,7 @@ const rehypeHeadingLinks: Plugin<[], Root> = () => {
       if (!HEADING_TAGS.has(node.tagName)) {
         return
       }
-      const id = node.properties?.id as string | undefined
+      const id = node.properties.id as string | undefined
       if (!id) {
         return
       }

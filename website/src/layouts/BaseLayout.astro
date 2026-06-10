@@ -15,6 +15,8 @@ function isActive(href: string) {
     pathname === href || (href !== `${baseUrl}/` && pathname.startsWith(href))
   )
 }
+// CSS module access is always defined; ! silences noUncheckedIndexedAccess
+const navActive = styles.navActive!
 ---
 
 <!doctype html>
@@ -103,52 +105,46 @@ function isActive(href: string) {
         <a href="http://genomes.jbrowse.org/">Genomes</a>
         <a
           href={`${baseUrl}/docs/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/docs/`) }]}
-          >Docs</a
+          class:list={[{ [navActive]: isActive(`${baseUrl}/docs/`) }]}>Docs</a
         >
         <a
           href={`${baseUrl}/blog/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/blog/`) }]}
-          >Blog</a
+          class:list={[{ [navActive]: isActive(`${baseUrl}/blog/`) }]}>Blog</a
         >
         <a
           href={`${baseUrl}/download/`}
-          class:list={[
-            { [styles.navActive]: isActive(`${baseUrl}/download/`) },
-          ]}>Download</a
+          class:list={[{ [navActive]: isActive(`${baseUrl}/download/`) }]}
+          >Download</a
         >
         <a
           href={`${baseUrl}/plugin_store/`}
-          class:list={[
-            { [styles.navActive]: isActive(`${baseUrl}/plugin_store/`) },
-          ]}>Plugins</a
+          class:list={[{ [navActive]: isActive(`${baseUrl}/plugin_store/`) }]}
+          >Plugins</a
         >
         <a
           href={`${baseUrl}/features/`}
-          class:list={[
-            { [styles.navActive]: isActive(`${baseUrl}/features/`) },
-          ]}>Features</a
+          class:list={[{ [navActive]: isActive(`${baseUrl}/features/`) }]}
+          >Features</a
         >
         <a
           href={`${baseUrl}/gallery/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/gallery/`) }]}
+          class:list={[{ [navActive]: isActive(`${baseUrl}/gallery/`) }]}
           >Gallery</a
         >
         <a
           href={`${baseUrl}/demos/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/demos/`) }]}
-          >Demos</a
+          class:list={[{ [navActive]: isActive(`${baseUrl}/demos/`) }]}>Demos</a
         >
         <a
           href={`${baseUrl}/contact/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/contact/`) }]}
+          class:list={[{ [navActive]: isActive(`${baseUrl}/contact/`) }]}
           >Contact</a
         >
         <a
           href={`${baseUrl}/search/`}
           class:list={[
             styles.navSearchLink,
-            { [styles.navActive]: isActive(`${baseUrl}/search/`) },
+            { [navActive]: isActive(`${baseUrl}/search/`) },
           ]}
         >
           <svg

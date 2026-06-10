@@ -159,13 +159,13 @@ const server = http.createServer((req, res) => {
     } else if (url === '/api/specs') {
       sendJson(res, 200, buildSpecPayload())
     } else if (url === '/api/verdict' && req.method === 'POST') {
-      handleVerdict(req, res).catch((err: unknown) =>
-        { sendJson(res, 500, { error: `${err}` }) },
-      )
+      handleVerdict(req, res).catch((err: unknown) => {
+        sendJson(res, 500, { error: `${err}` })
+      })
     } else if (url === '/api/verdict/clear' && req.method === 'POST') {
-      handleClearVerdict(req, res).catch((err: unknown) =>
-        { sendJson(res, 500, { error: `${err}` }) },
-      )
+      handleClearVerdict(req, res).catch((err: unknown) => {
+        sendJson(res, 500, { error: `${err}` })
+      })
     } else if (url.startsWith('/img-main/')) {
       serveMainImage(res, url.split('?')[0]!)
     } else if (url.startsWith('/img/')) {

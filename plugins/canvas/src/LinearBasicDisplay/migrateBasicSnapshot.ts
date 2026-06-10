@@ -4,12 +4,17 @@ import { legacyShowLabelsToMode } from './showLabelsMode.ts'
 // Lift renderer-nested props onto the snap and drop the renderer sub-config.
 // Used by migrateBasicConfigSnapshot to handle the pre-GPU-rewrite format
 // where style slots lived under an `ArcRenderer`/`SvgFeatureRenderer` key.
-function liftRendererProps(snap: Record<string, unknown>): Record<string, unknown> {
+function liftRendererProps(
+  snap: Record<string, unknown>,
+): Record<string, unknown> {
   const { renderer, ...rest } = snap
   if (!renderer || typeof renderer !== 'object') {
     return snap
   }
-  const { type: _rendererType, ...rendererProps } = renderer as Record<string, unknown>
+  const { type: _rendererType, ...rendererProps } = renderer as Record<
+    string,
+    unknown
+  >
   // snap props take priority: spread renderer first, then rest on top.
   return { ...rendererProps, ...rest }
 }

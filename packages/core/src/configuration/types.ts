@@ -73,16 +73,14 @@ type SlotValueFromDef<DEF> = DEF extends { defaultValue: infer V }
         : any
   : any
 
-export type ConfigurationSlotValue<
-  SCHEMA,
-  K extends string,
-> = SCHEMA extends ConfigurationSchemaType<infer D, any>
-  ? K extends keyof D
-    ? SlotValueFromDef<D[K]>
-    : GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-      ? ConfigurationSlotValue<GetBase<SCHEMA>, K>
-      : any
-  : any
+export type ConfigurationSlotValue<SCHEMA, K extends string> =
+  SCHEMA extends ConfigurationSchemaType<infer D, any>
+    ? K extends keyof D
+      ? SlotValueFromDef<D[K]>
+      : GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+        ? ConfigurationSlotValue<GetBase<SCHEMA>, K>
+        : any
+    : any
 
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>

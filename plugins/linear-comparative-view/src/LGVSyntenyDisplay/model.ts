@@ -63,118 +63,120 @@ const LaunchSyntenyViewDialog = lazy(
  */
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   const baseModel = linearAlignmentsDisplayStateModelFactory(schema)
-  return types
-    .compose(
-      'LGVSyntenyDisplay',
-      baseModel,
-      types.model({
+  return (
+    types
+      .compose(
+        'LGVSyntenyDisplay',
+        baseModel,
+        types.model({
+          /**
+           * #property
+           */
+          type: types.literal('LGVSyntenyDisplay'),
+          /**
+           * #property
+           */
+          configuration: ConfigurationReference(schema),
+        }),
+      )
+      // The composed LinearAlignmentsDisplay defaults showCoverage to true; synteny
+      // display hides coverage by default. MST composition doesn't allow overriding
+      // a parent model's property default, so the preProcessSnapshot injection is
+      // the correct mechanism — the snapshot wins over the default.
+      .preProcessSnapshot((snap: Record<string, unknown> | undefined) => ({
+        showCoverage: false,
+        ...snap,
+      }))
+      .views(() => ({
+        get featureWidgetType() {
+          return {
+            type: 'SyntenyFeatureWidget',
+            id: 'syntenyFeature',
+          }
+        },
+      }))
+      .actions(self => ({
         /**
-         * #property
+         * #action
          */
-        type: types.literal('LGVSyntenyDisplay'),
+        selectFeature(feature: Feature) {
+          openFeatureWidget(self, feature.toJSON(), {
+            widget: self.featureWidgetType,
+          })
+        },
+        afterCreate() {
+          const alignSelf = self as unknown as LinearAlignmentsDisplayModel
+          if (!alignSelf.getOverride('colorBy')) {
+            alignSelf.setColorScheme({ type: 'strand' })
+          }
+        },
+      }))
+      .views(self => ({
         /**
-         * #property
+         * #method
          */
-        configuration: ConfigurationReference(schema),
-      }),
-    )
-    // The composed LinearAlignmentsDisplay defaults showCoverage to true; synteny
-    // display hides coverage by default. MST composition doesn't allow overriding
-    // a parent model's property default, so the preProcessSnapshot injection is
-    // the correct mechanism — the snapshot wins over the default.
-    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => ({
-      showCoverage: false,
-      ...snap,
-    }))
-    .views(() => ({
-      get featureWidgetType() {
-        return {
-          type: 'SyntenyFeatureWidget',
-          id: 'syntenyFeature',
-        }
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      selectFeature(feature: Feature) {
-        openFeatureWidget(self, feature.toJSON(), {
-          widget: self.featureWidgetType,
-        })
-      },
-      afterCreate() {
-        const alignSelf = self as unknown as LinearAlignmentsDisplayModel
-        if (!alignSelf.getOverride('colorBy')) {
-          alignSelf.setColorScheme({ type: 'strand' })
-        }
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      contextMenuItems() {
-        const feature = self.contextMenuFeature
-        return feature
-          ? [
-              {
-                label: 'Open feature details',
-                icon: MenuOpenIcon,
-                onClick: () => {
-                  self.selectFeature(feature)
+        contextMenuItems() {
+          const feature = self.contextMenuFeature
+          return feature
+            ? [
+                {
+                  label: 'Open feature details',
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    self.selectFeature(feature)
+                  },
                 },
-              },
-              {
-                label: 'Launch synteny view for this position',
-                onClick: () => {
-                  getSession(self).queueDialog(handleClose => [
-                    LaunchSyntenyViewDialog,
-                    {
-                      visibleRegion: findVisibleBlockForFeature(
-                        getContainingView(self) as LinearGenomeViewModel,
+                {
+                  label: 'Launch synteny view for this position',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      LaunchSyntenyViewDialog,
+                      {
+                        visibleRegion: findVisibleBlockForFeature(
+                          getContainingView(self) as LinearGenomeViewModel,
+                          feature,
+                        ),
+                        trackId: getConf(getContainingTrack(self), 'trackId'),
+                        handleClose,
+                        session: getSession(self),
                         feature,
-                      ),
-                      trackId: getConf(getContainingTrack(self), 'trackId'),
-                      handleClose,
-                      session: getSession(self),
-                      feature,
-                    },
-                  ])
+                      },
+                    ])
+                  },
                 },
-              },
-              {
-                label: 'Copy info to clipboard',
-                icon: ContentCopyIcon,
-                onClick: async () => {
-                  const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
-                  const session = getSession(self)
-                  const { default: copy } =
-                    await import('@jbrowse/core/util/copyToClipboard')
-                  copy(JSON.stringify(rest, null, 4))
-                  session.notify('Copied to clipboard', 'success')
+                {
+                  label: 'Copy info to clipboard',
+                  icon: ContentCopyIcon,
+                  onClick: async () => {
+                    const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
+                    const session = getSession(self)
+                    const { default: copy } =
+                      await import('@jbrowse/core/util/copyToClipboard')
+                    copy(JSON.stringify(rest, null, 4))
+                    session.notify('Copied to clipboard', 'success')
+                  },
                 },
-              },
-            ]
-          : []
-      },
-      /**
-       * #method
-       */
-      trackMenuItems() {
-        return [
-          getFeatureHeightMenuItem(self),
-          getColorByMenuItem(self, {
-            colorOptions: [
-              { label: 'Normal', type: 'normal' },
-              { label: 'Strand', type: 'strand' },
-              { label: 'Mapping quality', type: 'mappingQuality' },
-            ],
-          }),
-          getFiltersMenuItem(self),
-        ]
-      },
-    }))
+              ]
+            : []
+        },
+        /**
+         * #method
+         */
+        trackMenuItems() {
+          return [
+            getFeatureHeightMenuItem(self),
+            getColorByMenuItem(self, {
+              colorOptions: [
+                { label: 'Normal', type: 'normal' },
+                { label: 'Strand', type: 'strand' },
+                { label: 'Mapping quality', type: 'mappingQuality' },
+              ],
+            }),
+            getFiltersMenuItem(self),
+          ]
+        },
+      }))
+  )
 }
 
 export default stateModelFactory

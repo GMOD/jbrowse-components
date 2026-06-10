@@ -21,12 +21,7 @@ import {
 import { observer } from 'mobx-react'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
-import {
-  TAG_REGEX,
-  defaultFilterFlags,
-  negFlags,
-  posFlags,
-} from '../../shared/util.ts'
+import { TAG_REGEX, negFlags, posFlags } from '../../shared/util.ts'
 
 import type { FilterBy } from '../../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -52,13 +47,17 @@ function TagResults({ tag, tagSet }: { tag: string; tagSet: string[] }) {
 interface TrackConf {
   trackId: string
   name: string
+  category?: string[]
   [key: string]: unknown
 }
 
 type DisplayModel = IAnyStateTreeNode
 
+// Deterministic so re-grouping by the same key replaces (addTrackConf dedupes by
+// trackId) rather than spawning duplicates, and so the "-sessionTrack" suffix +
+// parent prefix let the track menu find and remove these groups again.
 function createTrackId(baseId: string, suffix: string) {
-  return `${baseId}-${suffix}-${Date.now()}-sessionTrack`
+  return `${baseId}-${suffix}-sessionTrack`
 }
 
 // Builds the display state to copy from the parent display to a group-by
@@ -80,37 +79,58 @@ function buildSubtrackDisplayConfig(
   return { ...rest, filterBy }
 }
 
-function createTagBasedTracks({
+interface Group {
+  label: string
+  filterBy: FilterBy
+}
+
+// Each group composes with the parent's active filterBy: tag grouping keeps the
+// parent flags/readName and only sets tagFilter; strand grouping keeps the
+// parent tagFilter/readName and only swaps the strand flags. '*' is the untagged
+// sentinel that filterTagValue understands.
+function groupsForTag(tag: string, tagSet: string[], base: FilterBy): Group[] {
+  return [...[...tagSet].sort(), undefined].map(value => ({
+    label: `${tag}:${value ?? 'untagged'}`,
+    filterBy: { ...base, tagFilter: { tag, value: value ?? '*' } },
+  }))
+}
+
+function groupsForStrand(base: FilterBy): Group[] {
+  return [
+    { label: '(-)', filterBy: { ...base, ...negFlags } },
+    { label: '(+)', filterBy: { ...base, ...posFlags } },
+  ]
+}
+
+function createGroupTracks({
+  groups,
   trackConf,
-  tag,
-  tagSet,
   session,
   view,
   displayModel,
 }: {
+  groups: Group[]
   trackConf: TrackConf
-  tag: string
-  tagSet: string[]
   session: SessionWithAddTracks
   view: LinearGenomeViewModel
   displayModel: DisplayModel
 }) {
-  const values: (string | undefined)[] = [...tagSet, undefined]
-  for (const tagValue of values) {
-    const label = tagValue ?? 'untagged'
-    const trackId = createTrackId(trackConf.trackId, `${tag}:${label}`)
+  const category = [
+    ...(trackConf.category ?? []),
+    `${trackConf.name} (grouped)`,
+  ]
+  for (const { label, filterBy } of groups) {
+    const trackId = createTrackId(trackConf.trackId, label)
     session.addTrackConf({
       ...trackConf,
       trackId,
-      name: `${trackConf.name} (${tag}:${label})`,
+      name: `${trackConf.name} (${label})`,
+      category,
       displays: [
         {
           displayId: `${trackId}-LinearAlignmentsDisplay`,
           type: 'LinearAlignmentsDisplay',
-          ...buildSubtrackDisplayConfig(displayModel, {
-            ...defaultFilterFlags,
-            tagFilter: { tag, value: tagValue },
-          }),
+          ...buildSubtrackDisplayConfig(displayModel, filterBy),
         },
       ],
     })
@@ -118,52 +138,11 @@ function createTagBasedTracks({
   }
 }
 
-function createStrandBasedTracks({
-  trackConf,
-  session,
-  view,
-  displayModel,
-}: {
-  trackConf: TrackConf
-  session: SessionWithAddTracks
-  view: LinearGenomeViewModel
-  displayModel: DisplayModel
-}) {
-  const negTrackId = createTrackId(trackConf.trackId, 'strand:(-)')
-  const posTrackId = createTrackId(trackConf.trackId, 'strand:(+)')
-
-  session.addTrackConf({
-    ...trackConf,
-    trackId: negTrackId,
-    name: `${trackConf.name} (-)`,
-    displays: [
-      {
-        displayId: `${negTrackId}-LinearAlignmentsDisplay`,
-        type: 'LinearAlignmentsDisplay',
-        ...buildSubtrackDisplayConfig(displayModel, negFlags),
-      },
-    ],
-  })
-  session.addTrackConf({
-    ...trackConf,
-    trackId: posTrackId,
-    name: `${trackConf.name} (+)`,
-    displays: [
-      {
-        displayId: `${posTrackId}-LinearAlignmentsDisplay`,
-        type: 'LinearAlignmentsDisplay',
-        ...buildSubtrackDisplayConfig(displayModel, posFlags),
-      },
-    ],
-  })
-  view.showTrack(negTrackId)
-  view.showTrack(posTrackId)
-}
-
 const GroupByDialog = observer(function GroupByDialog(props: {
   model: {
     adapterConfig: AnyConfigurationModel
     configuration: AnyConfigurationModel
+    filterBy: FilterBy
   } & IAnyStateTreeNode
   handleClose: () => void
 }) {
@@ -205,18 +184,22 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     ) as TrackConf
     const session = getSession(model) as SessionWithAddTracks
     const view = getContainingView(model) as LinearGenomeViewModel
+    const base = model.filterBy
 
+    const groups: Group[] = []
     if (type === 'tag' && tagSet) {
-      createTagBasedTracks({
+      groups.push(...groupsForTag(tag, tagSet, base))
+    } else if (type === 'strand') {
+      groups.push(...groupsForStrand(base))
+    }
+    if (groups.length) {
+      createGroupTracks({
+        groups,
         trackConf,
-        tag,
-        tagSet,
         session,
         view,
         displayModel: model,
       })
-    } else if (type === 'strand') {
-      createStrandBasedTracks({ trackConf, session, view, displayModel: model })
     }
     handleClose()
   }
@@ -225,8 +208,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     <Dialog open onClose={handleClose} title="Group by">
       <DialogContent>
         <Typography>
-          NOTE: this will create new session tracks with the "filter by" set to
-          the values chosen here rather than affecting the current track state
+          NOTE: this creates one new session track per group (with "filter by"
+          set to that group) rather than changing the current track. Remove them
+          later with "Group by... → Remove grouped tracks".
         </Typography>
         <TextField
           fullWidth

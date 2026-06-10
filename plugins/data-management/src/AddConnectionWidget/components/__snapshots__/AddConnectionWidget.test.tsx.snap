@@ -12,10 +12,10 @@ exports[`renders 1`] = `
         class="MuiStep-root MuiStep-vertical css-enonti-MuiStep-root"
       >
         <span
-          class="MuiStepLabel-root MuiStepLabel-vertical css-122jq7f-MuiStepLabel-root"
+          class="MuiStepLabel-root MuiStepLabel-vertical css-6e1194-MuiStepLabel-root"
         >
           <span
-            class="MuiStepLabel-iconContainer Mui-active css-1b2ju2j-MuiStepLabel-iconContainer"
+            class="MuiStepLabel-iconContainer Mui-active css-f2ct5c-MuiStepLabel-iconContainer"
           >
             <svg
               aria-hidden="true"
@@ -40,10 +40,10 @@ exports[`renders 1`] = `
             </svg>
           </span>
           <span
-            class="MuiStepLabel-labelContainer css-p8xe3-MuiStepLabel-labelContainer"
+            class="MuiStepLabel-labelContainer css-1xr18l4-MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiStepLabel-label Mui-active css-1yi5sow-MuiStepLabel-label"
+              class="MuiStepLabel-label Mui-active css-142jow5-MuiStepLabel-label"
             >
               Select a Connection Type
             </span>
@@ -174,21 +174,21 @@ exports[`renders 1`] = `
           </div>
         </div>
       </li>
-      <div
-        class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled css-1afu6qk-MuiStepConnector-root"
-      >
-        <span
-          class="MuiStepConnector-line css-1deaddp-MuiStepConnector-line"
-        />
-      </div>
       <li
         class="MuiStep-root MuiStep-vertical css-enonti-MuiStep-root"
       >
-        <span
-          class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled css-122jq7f-MuiStepLabel-root"
+        <div
+          class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled css-1afu6qk-MuiStepConnector-root"
         >
           <span
-            class="MuiStepLabel-iconContainer Mui-disabled css-1b2ju2j-MuiStepLabel-iconContainer"
+            class="MuiStepConnector-line css-1deaddp-MuiStepConnector-line"
+          />
+        </div>
+        <span
+          class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled css-6e1194-MuiStepLabel-root"
+        >
+          <span
+            class="MuiStepLabel-iconContainer Mui-disabled css-f2ct5c-MuiStepLabel-iconContainer"
           >
             <svg
               aria-hidden="true"
@@ -213,10 +213,10 @@ exports[`renders 1`] = `
             </svg>
           </span>
           <span
-            class="MuiStepLabel-labelContainer css-p8xe3-MuiStepLabel-labelContainer"
+            class="MuiStepLabel-labelContainer css-1xr18l4-MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiStepLabel-label Mui-disabled css-1yi5sow-MuiStepLabel-label"
+              class="MuiStepLabel-label Mui-disabled css-142jow5-MuiStepLabel-label"
             >
               Configure Connection
             </span>

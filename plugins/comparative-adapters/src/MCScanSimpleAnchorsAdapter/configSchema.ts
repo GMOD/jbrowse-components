@@ -88,6 +88,8 @@ const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
-export type MCScanSimpleAnchorsAdapterConfig = Instance<typeof MCScanSimpleAnchorsAdapter>
+export type MCScanSimpleAnchorsAdapterConfig = Instance<
+  typeof MCScanSimpleAnchorsAdapter
+>
 
 export default MCScanSimpleAnchorsAdapter
