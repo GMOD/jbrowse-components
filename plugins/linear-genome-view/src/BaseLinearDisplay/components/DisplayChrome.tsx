@@ -10,9 +10,12 @@ import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 
+// `renderError`/`setRenderError` are NOT here — they live on
+// `RenderLifecycleModel`, which the chrome's model is always intersected with.
+// These are the fetch/region/status fields DisplayChrome reads itself or hands
+// to its sub-overlays.
 export interface ChromeModel {
   error: unknown
-  renderError: unknown
   reload: () => void
   forceLoad: () => void
   loadingOverlayVisible: boolean
