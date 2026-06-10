@@ -34,6 +34,14 @@ export default ConfigurationSchema(
   {
     /**
      * #slot
+     * Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
+     * #example
+     * ```json
+     * {
+     *   "type": "LinearWiggleDisplay",
+     *   "defaultRendering": "density"
+     * }
+     * ```
      */
     defaultRendering: {
       type: 'stringEnum',

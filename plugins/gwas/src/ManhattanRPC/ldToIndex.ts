@@ -75,5 +75,15 @@ export async function buildLdToIndex({
       r2ByKey.set(`${r.chrA}:${r.bpA}`, r.r2)
     }
   }
+  if (!indexFound && records.length > 0) {
+    const r = records[0]!
+    console.warn(
+      `LD coloring: index SNP "${indexSnp}" matched none of ${records.length} ` +
+        `LD records in ${region.refName}:${region.start}-${region.end} ` +
+        `(e.g. SNP_A "${r.snpA}" at ${r.chrA}:${r.bpA}) — every point will be ` +
+        `grey. Check that the index id's reference name matches the LD file ` +
+        `(reference-name aliasing).`,
+    )
+  }
   return { r2ByKey, indexFound }
 }

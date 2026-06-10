@@ -87,7 +87,7 @@ const LinearManhattanDisplayComponent = observer(
       <DisplayChrome
         model={model}
         factory={ManhattanRenderer}
-        testid="manhattan-gpu"
+        testid="manhattan-display"
         style={{ position: 'relative', width, height }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

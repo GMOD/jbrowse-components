@@ -2272,6 +2272,123 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
+  // Rendered multi-row XY output (the default mode): one XY plot per subtrack,
+  // stacked, each keeping its configured color. Pairs with multiwig/overlapping
+  // for the doc's "two families" contrast.
+  {
+    mode: 'url',
+    name: 'multiwig/multirow_xy',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox_microarray_multi'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    viewportHeight: 600,
+    settleMs: 4000,
+  },
+
+  // Rendered overlapping output: all subtracks drawn together in one plot with
+  // auto-assigned palette colors. defaultRendering override drives the same
+  // switch the track menu's "Rendering type" submenu writes.
+  {
+    mode: 'url',
+    name: 'multiwig/overlapping',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: [
+            {
+              trackId: 'volvox_microarray_multi',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                // override keys serialize flat on the snapshot (see
+                // ConfigOverrideMixin), not nested under configOverrides
+                defaultRendering: 'multixyplot',
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    viewportHeight: 600,
+    settleMs: 4000,
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // GWAS / Manhattan plot
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Manhattan plot rendered from the local volvox GWAS track (-log10 p on Y,
+  // genomic position on X). Local data, so fast + deterministic. Waits on the
+  // per-display canvasDrawn testid like the browser-tests gwas suite.
+  {
+    mode: 'url',
+    name: 'gwas/manhattan',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox_gwas'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    readySelector: '[data-testid="manhattan-display-done"]',
+    viewportHeight: 500,
+    settleMs: 4000,
+  },
+
+  // LocusZoom-style LD r² coloring at the STAT4 locus on hg19 (SLE summary
+  // stats). The bundled SLE.ld is keyed to the lead SNP rs4274624, so we anchor
+  // the index on the top hit; points then shade red→blue by r² to it. hg19
+  // canonical refNames are chr-prefixed while the data uses bare numbers, which
+  // is exactly the alias path the GetManhattanData index-rename handles.
+  {
+    mode: 'url',
+    name: 'gwas/locuszoom_ld',
+    url: sessionSpec('test_data/config_gwas.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '2:191,790,000-192,120,000',
+          tracks: [
+            {
+              trackId: 'sle_gwas_ld',
+              displaySnapshot: { type: 'LinearManhattanDisplay', height: 380 },
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="manhattan-display-done"]',
+    readyTimeout: 60000,
+    viewportHeight: 480,
+    settleMs: 6000,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Set index SNP to top hit' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Set index SNP to top hit' },
+      { type: 'delay', ms: 6000 },
+    ],
+  },
+
   // ────────────────────────────────────────────────────────────────────────
   // Plugin store
   // ────────────────────────────────────────────────────────────────────────

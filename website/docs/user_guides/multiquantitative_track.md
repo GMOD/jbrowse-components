@@ -13,6 +13,12 @@ from the track menu, in two families:
 - **Overlapping** (`Overlapping XY plot`, `Overlapping lines`,
   `Overlapping scatter`) — all subtracks drawn together
 
+<Figure caption="Multi-row XY plot (the default): each subtrack gets its own stacked plot, keeping its configured color." src="/img/multiwig/multirow_xy.png" />
+
+<Figure caption="Overlapping XY plot: every subtrack is drawn together in one shared plot, with palette-assigned colors — good for directly comparing signal levels across samples." src="/img/multiwig/overlapping.png" />
+
+Switch between them from the track menu's renderer-type submenu.
+
 <Figure caption="The track menu lists the available renderer types." src="/img/multiwig/multi_renderer_types.png" />
 
 In the multi-row modes the subtracks keep their configured colors. In the

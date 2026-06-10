@@ -10,6 +10,8 @@ The GWAS track renders GWAS results as a Manhattan plot — -log₁₀(p-value) 
 Y axis, genomic position on the X axis. Points support LocusZoom-style r² LD
 coloring to show linkage to an index SNP.
 
+<Figure caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background." src="/img/gwas/manhattan.png" />
+
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_gwas.json)
 
 ## Example files
@@ -44,6 +46,13 @@ pipeline.
 | [Open GWAS](https://gwas.mrcieu.ac.uk)                                  | VCF format; not directly compatible                                    |
 
 ## LD data
+
+With an LD file loaded, points are colored by r² to an index SNP — the
+LocusZoom-style view that reveals which nearby variants are in linkage with the
+lead signal. JBrowse auto-picks the highest-scoring loaded SNP as the index;
+right-click any point to re-anchor the coloring to that SNP.
+
+<Figure caption="LocusZoom-style LD coloring at the STAT4 locus: the lead SNP (purple) tops the plot, and surrounding points shade from red (high r²) down through green to blue (low r²) by their linkage to it — so the association signal and its linked variants stand out from the background." src="/img/gwas/locuszoom_ld.png" />
 
 LD data must be in PLINK `--r2` output format. Generate it from:
 

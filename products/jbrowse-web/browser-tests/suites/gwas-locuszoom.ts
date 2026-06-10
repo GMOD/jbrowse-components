@@ -30,7 +30,7 @@ async function gotoStat4(page: Page) {
     `http://localhost:${PORT}/?config=test_data/config_gwas.json&session=spec-${specParam}&sessionName=GWAS%20LocusZoom`,
     { waitUntil: 'networkidle0', timeout: 60000 },
   )
-  await findByTestId(page, 'manhattan-gpu-done', 60000)
+  await findByTestId(page, 'manhattan-display-done', 60000)
   await waitForDataLoaded(page)
 }
 
@@ -49,7 +49,7 @@ const suite: TestSuite = {
         await dualSnapshot(
           page,
           'gwas-locuszoom-stat4-canvas',
-          '[data-testid="manhattan-gpu-done"] canvas',
+          '[data-testid="manhattan-display-done"] canvas',
         )
       },
     },
@@ -64,7 +64,7 @@ const suite: TestSuite = {
         // depends on the niced domain, so scan a few offsets until the
         // point-hit context menu (rather than the native one) appears.
         const canvas = await page.waitForSelector(
-          '[data-testid="manhattan-gpu-done"] canvas',
+          '[data-testid="manhattan-display-done"] canvas',
           { timeout: 60000 },
         )
         const box = (await canvas!.boundingBox())!
@@ -92,12 +92,12 @@ const suite: TestSuite = {
 
         // recolor refetch completes; snapshot the re-anchored canvas
         await delay(1000)
-        await findByTestId(page, 'manhattan-gpu-done', 60000)
+        await findByTestId(page, 'manhattan-display-done', 60000)
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,
           'gwas-locuszoom-reanchored-canvas',
-          '[data-testid="manhattan-gpu-done"] canvas',
+          '[data-testid="manhattan-display-done"] canvas',
         )
       },
     },

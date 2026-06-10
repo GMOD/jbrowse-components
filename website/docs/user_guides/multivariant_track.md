@@ -31,6 +31,8 @@ Sparse small variants that would be only 1–2px wide at their true positions ea
 get a full readable column instead. Patterns like shared haplotypes, runs of
 homozygosity, and population structure become visible at a glance.
 
+<Figure caption="A phased trio as a matrix display: one column per variant, one row per haplotype (two per sample), each cell shaded reference vs alt allele. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
+
 ## Coloring and grouping by sample metadata
 
 Samples can be grouped and colored by metadata — population, phenotype, sex, or
