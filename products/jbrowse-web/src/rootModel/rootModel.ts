@@ -29,6 +29,7 @@ import PublishIcon from '@mui/icons-material/Publish'
 import StarIcon from '@mui/icons-material/Star'
 
 import packageJSON from '../../package.json' with { type: 'json' }
+import { gitCommit } from '../buildInfo.ts'
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 import { setupSessionDB, setupSessionStorageAutosave } from './persistence.ts'
@@ -114,7 +115,11 @@ export default function RootModel({
       /**
        * #volatile
        */
-      version: `${packageJSON.version} (${process.env.BUILD_GIT_HASH ?? 'dev'})`,
+      version: packageJSON.version,
+      /**
+       * #volatile
+       */
+      gitCommit,
       /**
        * #volatile
        */

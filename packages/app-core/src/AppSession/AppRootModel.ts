@@ -12,6 +12,7 @@ import type { AssemblyManager } from '@jbrowse/core/util/types'
  */
 export interface AppRootModel {
   readonly version: string
+  readonly gitCommit?: string
   readonly assemblyManager: AssemblyManager
   /**
    * Undo/redo time-traveller. Optional: full app shells (desktop, jbrowse-web)

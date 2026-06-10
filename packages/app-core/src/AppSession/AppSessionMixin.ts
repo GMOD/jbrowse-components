@@ -48,6 +48,12 @@ export function AppSessionMixin(_pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get gitCommit() {
+        return self.root.gitCommit
+      },
+      /**
+       * #getter
+       */
       get history() {
         return self.root.history
       },

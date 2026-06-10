@@ -44,7 +44,7 @@ const AboutWidget = observer(function AboutWidget({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const { version } = session
+  const { version, gitCommit } = session
   const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager as PluginManager
   const graphicsCapabilities = useGraphicsCapabilities()
@@ -66,6 +66,11 @@ const AboutWidget = observer(function AboutWidget({
       <Typography variant="h6" align="center" className={classes.subtitle}>
         {version}
       </Typography>
+      {gitCommit ? (
+        <Typography variant="body2" align="center">
+          Commit: {gitCommit}
+        </Typography>
+      ) : null}
       <Typography align="center">
         JBrowse is a <ExternalLink href="https://gmod.org/">GMOD</ExternalLink>{' '}
         project

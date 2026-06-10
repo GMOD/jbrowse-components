@@ -113,6 +113,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ) => void
   assemblyManager: AssemblyManager
   version: string
+  gitCommit?: string
   getTrackActionMenuItems?: (
     config: AnyConfigurationModel,
     extraTrackActions: MenuItem[] | undefined,
