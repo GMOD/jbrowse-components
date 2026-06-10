@@ -313,13 +313,36 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
+  // Whole-genome coverage profile from a single BigWig (COLO829 tumor MinION
+  // coverage), each chromosome a separate region (no `loc` →
+  // showAllRegionsInAssembly), localsd ±3sd autoscale so copy-number gains/losses
+  // read as elevated/depressed signal. Rebuilt from the old server-side share
+  // link as a self-contained sessionSpec; cropped to the single short track.
   {
     mode: 'url',
     name: 'bigwig/whole_genome_coverage',
-    url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-NTYME90lkA&password=G6Hkw',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          tracks: [
+            {
+              trackId: 'colo_tumor',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                autoscale: 'localsd',
+                numStdDev: 3,
+              },
+            },
+          ],
+        },
+      ],
+    }),
     readyText: 'COLO829',
     readyTimeout: 60000,
-    settleMs: 12000,
+    settleMs: 15000,
+    crop: { x: 0, y: 0, width: 1500, height: 320 },
   },
 
   {
