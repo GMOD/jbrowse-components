@@ -9,7 +9,7 @@ function uri(s: string): FileLocation {
 test('parses one url per line into uri locations', () => {
   expect(parseUrlList('https://a.com/x.bam\nhttp://a.com/x.bam.bai')).toEqual([
     { uri: 'https://a.com/x.bam', locationType: 'UriLocation' },
-    { uri: 'https://a.com/x.bam.bai', locationType: 'UriLocation' },
+    { uri: 'http://a.com/x.bam.bai', locationType: 'UriLocation' },
   ])
 })
 

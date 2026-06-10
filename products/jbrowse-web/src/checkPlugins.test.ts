@@ -146,7 +146,7 @@ describe('checkPluginsAgainstStore', () => {
       const plugins: PluginDefinition[] = [
         {
           name: 'InsecurePlugin',
-          umdUrl: 'https://jbrowse.org/plugins/MyPlugin/dist/plugin.umd.js',
+          umdUrl: 'http://jbrowse.org/plugins/MyPlugin/dist/plugin.umd.js',
         },
       ]
       expect(checkPluginsAgainstStore(plugins, { plugins: [] })).toBe(false)
