@@ -51,8 +51,12 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
   // The input (textarea lines or dropped files) is the single source of truth;
   // removing a row deletes its location(s) from that input rather than tracking
-  // a separate "removed" overlay.
-  const locations = mode === 'remote' ? parseUrlList(text) : localLocations
+  // a separate "removed" overlay. Dedupe by location id so a URL pasted twice
+  // collapses to one row and the orphan-index count below stays accurate.
+  const rawLocations = mode === 'remote' ? parseUrlList(text) : localLocations
+  const locations = [
+    ...new Map(rawLocations.map(loc => [locationId(loc), loc])).values(),
+  ]
   const pairs = pairLocations(locations)
   const rows = buildTrackConfigs({
     pairs,
