@@ -35,6 +35,7 @@ export default class DataManagementPlugin extends Plugin {
         new AddTrackWorkflowType({
           name: BULK_WORKFLOW,
           displayName: 'Add multiple tracks at once',
+          category: 'general',
           ReactComponent: lazy(
             () => import('./BulkAddTracksWorkflow/index.ts'),
           ),

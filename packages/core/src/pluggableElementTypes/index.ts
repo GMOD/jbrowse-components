@@ -39,4 +39,5 @@ export { default as GlyphType } from './GlyphType.ts'
 
 export { default as RpcMethodType } from './RpcMethodType.ts'
 export { default as AddTrackWorkflowType } from './AddTrackWorkflowType.ts'
+export type { AddTrackWorkflowCategory } from './AddTrackWorkflowType.ts'
 export { default as TextSearchAdapterType } from './TextSearchAdapterType.ts'
