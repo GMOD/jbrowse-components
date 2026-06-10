@@ -34,10 +34,8 @@ const { ipcRenderer } = window.require('electron')
 const useStyles = makeStyles()({
   flex: {
     display: 'flex',
+    alignItems: 'center',
     gap: 10,
-  },
-  verticalCenter: {
-    margin: 'auto 0',
   },
 })
 
@@ -251,26 +249,20 @@ export default function RecentSessionPanel({
           }
         />
 
-        <div className={classes.verticalCenter}>
-          <Button
-            variant="contained"
-            component="label"
-            disabled={sessionLoading}
-          >
-            Open saved session (.jbrowse) file
-            <input
-              type="file"
-              hidden
-              onChange={async event => {
-                const file = event.target.files?.[0]
-                if (file) {
-                  const { webUtils } = window.require('electron')
-                  await launch(webUtils.getPathForFile(file))
-                }
-              }}
-            />
-          </Button>
-        </div>
+        <Button variant="contained" component="label" disabled={sessionLoading}>
+          Open saved session (.jbrowse) file
+          <input
+            type="file"
+            hidden
+            onChange={async event => {
+              const file = event.target.files?.[0]
+              if (file) {
+                const { webUtils } = window.require('electron')
+                await launch(webUtils.getPathForFile(file))
+              }
+            }}
+          />
+        </Button>
       </div>
 
       {!filteredSessions.length ? (
