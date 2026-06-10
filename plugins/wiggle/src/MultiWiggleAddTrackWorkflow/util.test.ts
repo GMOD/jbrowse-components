@@ -17,7 +17,7 @@ describe('parseItems', () => {
   it('falls back to line-split for non-JSON input', () => {
     expect(parseItems('https://a.bw\nhttp://b.bw')).toEqual([
       'https://a.bw',
-      'https://b.bw',
+      'http://b.bw',
     ])
   })
 
