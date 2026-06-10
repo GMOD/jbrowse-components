@@ -2,7 +2,9 @@ import type { RpcResult } from './librpc.ts'
 
 /**
  * Whether structuredClone (and the worker postMessage boundary) can carry this
- * value. Functions and Errors cannot, so they must be stripped before sending.
+ * value. Functions and Errors cannot; ownArgs passes them through by reference
+ * rather than recursing, and a genuine one leaking through surfaces at the
+ * worker postMessage boundary in production.
  */
 export function isCloneable(thing: unknown) {
   return !(typeof thing === 'function') && !(thing instanceof Error)
