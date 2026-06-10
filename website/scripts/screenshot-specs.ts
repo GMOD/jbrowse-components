@@ -364,18 +364,29 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
+  // Realistic arc display: SKBR3 breast-cancer cell line at a chr1→chr14
+  // translocation breakpoint (sniffles call 596_2, ~chr1:9,121,448). The PacBio
+  // sniffles SV calls sit on top; the Illumina paired-end reads below, drawn with
+  // readConnections:'arc', arc to their mates — concordant pairs make small grey
+  // arcs while the discordant pairs spanning the translocation draw the prominent
+  // red arcs that make the figure meaningful. (The reviewer's suggested chr1:72Mb
+  // locus only carries small indels, so this nearby real translocation is used
+  // instead.) Window kept under AUTO_FORCE_LOAD_BP (20kb) so the high-coverage
+  // CRAM loads without a force-load click. Remote DEMO_CONFIG data, slow to load.
   {
     mode: 'url',
     name: 'alignments/arc_display',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
+          assembly: 'hg19',
+          loc: 'chr1:9,113,000-9,130,000',
           tracks: [
+            'breast_cancer_sniffles_hg19',
             {
-              trackId: 'volvox_sv_cram',
+              trackId:
+                'SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'arc',
@@ -385,8 +396,9 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 4000,
+    readyText: 'SKBR3',
+    readyTimeout: 60000,
+    settleMs: 15000,
   },
 
   // Read cloud (samplot-style) display on the volvox synthetic-SV CRAM: mates are
@@ -842,12 +854,15 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: 'chr7:5,562,000-5,575,000',
+          // GAPDH (minus strand, chr12) — a single-strand, highly-expressed,
+          // isolated gene so the RNA-seq sashimi arcs are all one strand color,
+          // not the overlapping fwd/rev arcs the previous ACTB locus showed.
+          loc: 'chr12:6,643,000-6,648,000',
           tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
         },
       ],
     }),
-    readyText: 'ACTB',
+    readyText: 'GAPDH',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -1913,23 +1928,37 @@ export const specs: ScreenshotSpec[] = [
   // Alignments track interactions
   // ────────────────────────────────────────────────────────────────────────
 
-  // Track menu open on the "Set feature height..." submenu, showing the Compact
-  // option (the menu path the doc describes, left visible rather than clicked).
+  // Compact read drawing on real human data: HG002 Illumina hs37d5 2x250 (high
+  // coverage, so the difference compact mode makes is obvious). The display is
+  // preset to the compact preset (featureHeight 3 / spacing 0) so the pileup is
+  // already drawn compact; the track menu is opened to the "Set feature height..."
+  // submenu with the now-active Compact option boxed — i.e. the toggled state and
+  // the menu path that sets it, in one figure. Remote DEMO_CONFIG data.
   {
     mode: 'url',
     name: 'alignments/compact',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1000-8000',
-          tracks: ['volvox_alignments'],
+          assembly: 'hg19',
+          loc: '1:55,704,500-55,707,500',
+          tracks: [
+            {
+              trackId: 'illumina_hg002',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                featureHeight: 3,
+                featureSpacing: 0,
+              },
+            },
+          ],
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 5000,
+    readyText: 'HG002',
+    readyTimeout: 60000,
+    settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'waitForText', text: 'Set feature height...' },
@@ -1938,6 +1967,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Compact' },
       { type: 'delay', ms: 800 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'Compact' } }],
   },
 
   // Read connections (arc display): two-stage figure on the volvox-sv CRAM (whose
@@ -2021,13 +2051,13 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Color by...' },
       { type: 'delay', ms: 300 },
       { type: 'hover', text: 'Color by...' },
-      { type: 'waitForText', text: 'Modifications...' },
+      { type: 'waitForText', text: 'Base modifications (MM tag)' },
       { type: 'delay', ms: 500 },
-      { type: 'hover', text: 'Modifications...' },
-      { type: 'waitForText', text: 'All modification types' },
+      { type: 'hover', text: 'Base modifications (MM tag)' },
+      { type: 'waitForText', text: 'By modification type' },
       { type: 'delay', ms: 800 },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'All modification types' } }],
+    annotations: [{ type: 'box', anchor: { text: 'By modification type' } }],
   },
 
   // ────────────────────────────────────────────────────────────────────────
