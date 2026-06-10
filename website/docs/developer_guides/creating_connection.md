@@ -35,7 +35,7 @@ pluginManager.addConnectionType(
 - `name`: the name JBrowse uses internally and in configuration files to refer
   to this type of connection
 - `configSchema`: a
-  [configuration schema](/jb2/docs/developer_guides/configuration_schema/) for
+  [configuration schema](/docs/developer_guides/configuration_schema) for
   the connection. It defines the options a user can configure when adding the
   connection, and must at least have a `name` slot.
 - `stateModel`: the `@jbrowse/mobx-state-tree` model that does the queries and
