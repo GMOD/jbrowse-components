@@ -1,8 +1,9 @@
 import { Suspense, lazy } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import ConfigurationTextField from './ConfigurationTextField.tsx'
 
 const PopoverPicker = lazy(() => import('@jbrowse/core/ui/PopoverPicker'))
 
@@ -30,7 +31,7 @@ const ColorEditor = observer(function ColorEditor(props: {
   const { classes } = useStyles()
   return (
     <div className={classes.root}>
-      <TextField
+      <ConfigurationTextField
         value={slot.value}
         label={slot.name}
         helperText={slot.description}

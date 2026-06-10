@@ -13,6 +13,12 @@ export default function AddNewField({
   testid?: string
 }) {
   const [value, setValue] = useState('')
+  function commit() {
+    if (value !== '') {
+      onAdd(value)
+      setValue('')
+    }
+  }
   return (
     <TextField
       fullWidth
@@ -20,6 +26,11 @@ export default function AddNewField({
       placeholder="add new"
       onChange={event => {
         setValue(event.target.value)
+      }}
+      onKeyDown={event => {
+        if (event.key === 'Enter') {
+          commit()
+        }
       }}
       slotProps={{
         input: {
@@ -29,8 +40,7 @@ export default function AddNewField({
                 data-testid={testid}
                 disabled={value === ''}
                 onClick={() => {
-                  onAdd(value)
-                  setValue('')
+                  commit()
                 }}
               >
                 <AddIcon />
