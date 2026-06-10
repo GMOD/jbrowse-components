@@ -82,6 +82,7 @@ own via pull request.
 
 - [Creating custom adapters](/docs/developer_guides/creating_adapter) - Read data from custom file formats with feature, regions, or sequence adapters
 - [Creating custom add-track workflows](/docs/developer_guides/creating_addtrack_workflow) - Custom UI in the Add track dialog for non-standard track types
+- [Creating custom connections](/docs/developer_guides/creating_connection) - Add many tracks at once, or dynamically query a remote resource, with a connection type
 - [Creating custom display types](/docs/developer_guides/creating_display) - Control how a track renders in a given view type
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display) - Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
 - [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter) - Implement a custom backend for the search box
