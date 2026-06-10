@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BigBedAdapter
  *
@@ -84,5 +86,7 @@ const BigBedAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type BigBedAdapterConfig = Instance<typeof BigBedAdapter>
 
 export default BigBedAdapter

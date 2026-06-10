@@ -8,6 +8,7 @@ import {
   intervalTreeFeatures,
 } from '../adapterUtil.ts'
 
+import type { StarFusionAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, IntervalTree, Region } from '@jbrowse/core/util'
 
@@ -21,7 +22,7 @@ function parseBreakpoint(str: string) {
   }
 }
 
-export default class StarFusionAdapter extends BaseFeatureDataAdapter {
+export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusionAdapterConfig> {
   protected fileData?: Promise<{
     columnNames: string[]
     feats1: Record<string, string[]>

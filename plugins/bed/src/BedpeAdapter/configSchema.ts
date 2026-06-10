@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
@@ -60,4 +62,6 @@ const BedpeAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+export type BedpeAdapterConfig = Instance<typeof BedpeAdapter>
+
 export default BedpeAdapter

@@ -6,10 +6,11 @@ import { intervalTreeFeatures } from '../adapterUtil.ts'
 import { makeBedGraphFeature } from '../bedGraphUtil.ts'
 import { bucketBedLines, parseNamesFromHeader } from '../util.ts'
 
+import type { BedGraphAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class BedGraphAdapter extends BaseFeatureDataAdapter {
+export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdapterConfig> {
   protected bedFeatures?: Promise<{
     header: string
     features: Record<string, string[]>

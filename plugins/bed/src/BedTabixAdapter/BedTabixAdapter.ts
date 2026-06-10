@@ -12,13 +12,13 @@ import {
 
 import { featureData, parseNamesFromHeader } from '../util.ts'
 
+import type { BedTabixAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
-export default class BedTabixAdapter extends BaseFeatureDataAdapter {
+export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdapterConfig> {
   private parser: BED
 
   private readonly bedGzLoc: FileLocation
@@ -30,7 +30,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
 
   public constructor(
-    config: AnyConfigurationModel,
+    config: BedTabixAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
@@ -119,8 +119,8 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       const colEnd = columnNumbers.end - 1
       const oneBased = coordinateType === '1-based-closed'
       const names = await this.getNames()
-      const scoreColumn: string = this.getConf('scoreColumn')
-      const disableGeneHeuristic: boolean = this.getConf('disableGeneHeuristic')
+      const scoreColumn = this.getConf('scoreColumn')
+      const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
       const stopTokenCheck = createStopTokenChecker(stopToken)
       checkStopToken(stopToken)
       await updateStatus('Downloading features', statusCallback, () =>

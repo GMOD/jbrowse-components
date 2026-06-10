@@ -15,12 +15,13 @@ import { firstValueFrom, toArray } from 'rxjs'
 import { featureData } from '../util.ts'
 
 import type { FeatureData } from '../util.ts'
+import type { BigBedAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
-export default class BigBedAdapter extends BaseFeatureDataAdapter {
+export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterConfig> {
   private cachedP?: Promise<{
     bigbed: BigBed
     header: Awaited<ReturnType<BigBed['getHeader']>>

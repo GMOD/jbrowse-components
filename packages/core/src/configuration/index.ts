@@ -9,6 +9,9 @@ export type {
   AnyConfigurationSchemaType,
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotName,
+  ConfigurationSlotValue,
 } from './types.ts'
 
 export * from './util.ts'

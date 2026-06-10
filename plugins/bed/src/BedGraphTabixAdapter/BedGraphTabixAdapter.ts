@@ -6,10 +6,11 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { makeBedGraphFeature } from '../bedGraphUtil.ts'
 import { parseNamesFromHeader } from '../util.ts'
 
+import type { BedGraphTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
+export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGraphTabixAdapterConfig> {
   private configured?: Promise<{
     bedGraph: TabixIndexedFile
     header: string

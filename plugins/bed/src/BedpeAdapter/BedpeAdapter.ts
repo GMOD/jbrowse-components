@@ -10,10 +10,11 @@ import {
 import { parseNamesFromHeader } from '../util.ts'
 import { featureData } from './util.ts'
 
+import type { BedpeAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, IntervalTree, Region } from '@jbrowse/core/util'
 
-export default class BedpeAdapter extends BaseFeatureDataAdapter {
+export default class BedpeAdapter extends BaseFeatureDataAdapter<BedpeAdapterConfig> {
   protected bedpeFeatures?: Promise<{
     header: string
     feats1: Record<string, string[]>

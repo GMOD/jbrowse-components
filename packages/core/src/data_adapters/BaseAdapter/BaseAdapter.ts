@@ -5,14 +5,21 @@ import {
 } from '../../configuration/index.ts'
 
 import type PluginManager from '../../PluginManager.ts'
-import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type {
+  AnyConfigurationModel,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotName,
+  ConfigurationSlotValue,
+} from '../../configuration/index.ts'
 import type { getSubAdapterType } from '../dataAdapterCache.ts'
 
 const EmptyConfig = ConfigurationSchema('empty', {})
 
-export class BaseAdapter {
+export class BaseAdapter<
+  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+> {
   id: string
-  config: AnyConfigurationModel
+  config: CONF
   getSubAdapter?: getSubAdapterType
   pluginManager?: PluginManager
 
@@ -21,7 +28,7 @@ export class BaseAdapter {
   static capabilities: string[] = []
 
   constructor(
-    config: AnyConfigurationModel = EmptyConfig.create(),
+    config: CONF = EmptyConfig.create() as CONF,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
@@ -46,7 +53,16 @@ export class BaseAdapter {
   }
 
   /** shorthand for `readConfObject(this.config, arg)` */
-  getConf(arg: string | string[]) {
-    return readConfObject(this.config, arg)
+  getConf<
+    SLOT extends
+      | ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>
+      | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>,
+  >(
+    arg: SLOT,
+    args?: Record<string, unknown>,
+  ): SLOT extends string
+    ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
+    : any {
+    return readConfObject(this.config, arg, args)
   }
 }

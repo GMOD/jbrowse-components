@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BedGraphTabixAdapter
  */
@@ -84,4 +86,6 @@ const BedGraphTabixAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+export type BedGraphTabixAdapterConfig = Instance<typeof BedGraphTabixAdapter>
+
 export default BedGraphTabixAdapter

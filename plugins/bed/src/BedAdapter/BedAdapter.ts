@@ -10,10 +10,11 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { intervalTreeFeatures } from '../adapterUtil.ts'
 import { bucketBedLines, featureData, parseNamesFromHeader } from '../util.ts'
 
+import type { BedAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class BedAdapter extends BaseFeatureDataAdapter {
+export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig> {
   protected bedFeatures?: Promise<{
     header: string
     features: Record<string, string[]>
@@ -75,11 +76,11 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
     const names = await this.getNames()
-    const scoreColumn: string = this.getConf('scoreColumn')
-    const colRef: number = this.getConf('colRef')
-    const colStart: number = this.getConf('colStart')
-    const colEnd: number = this.getConf('colEnd')
-    const disableGeneHeuristic: boolean = this.getConf('disableGeneHeuristic')
+    const scoreColumn = this.getConf('scoreColumn')
+    const colRef = this.getConf('colRef')
+    const colStart = this.getConf('colStart')
+    const colEnd = this.getConf('colEnd')
+    const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
 
     const intervalTree = new IntervalTree<Feature>()
 

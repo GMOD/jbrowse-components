@@ -9,6 +9,7 @@ import {
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 
 import type { BaseOptions } from './types.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { RectifiedQuantitativeStats } from '../../util/stats.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
@@ -17,7 +18,9 @@ import type { AugmentedRegion as Region } from '../../util/types/index.ts'
  * Base class for feature adapters to extend. Defines some methods that
  * subclasses must implement.
  */
-export abstract class BaseFeatureDataAdapter extends BaseAdapter {
+export abstract class BaseFeatureDataAdapter<
+  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+> extends BaseAdapter<CONF> {
   /**
    * Get all reference sequence names used in the data source
    * Example:
