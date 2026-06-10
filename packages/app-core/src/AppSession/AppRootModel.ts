@@ -7,13 +7,19 @@ import type { AssemblyManager } from '@jbrowse/core/util/types'
  * — built from `BaseRootModelFactory` + `HistoryManagementMixin` +
  * `RootAppMenuMixin` — satisfies this structurally.
  *
- * Product-specific root interfaces (e.g. web-core's `WebRootModelInterface`)
+ * Product-specific root contracts (e.g. web-core's `AbstractWebRootModel`)
  * extend this with their extra surface rather than re-declaring these members.
  */
 export interface AppRootModel {
   readonly version: string
   readonly assemblyManager: AssemblyManager
-  readonly history: {
+  /**
+   * Undo/redo time-traveller. Optional: full app shells (desktop, jbrowse-web)
+   * compose `HistoryManagementMixin` and provide it; the embedded react-app root
+   * intentionally omits undo/redo (no global keydown listener / snapshot
+   * tracking), so its root has no `history`.
+   */
+  readonly history?: {
     canUndo: boolean
     canRedo: boolean
     undo(): void

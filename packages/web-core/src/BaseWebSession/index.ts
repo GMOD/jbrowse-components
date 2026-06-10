@@ -32,7 +32,7 @@ import { autorun } from 'mobx'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
-import type { WebRootModelInterface } from '../WebRootModel.ts'
+import type { AbstractWebRootModel } from '../WebRootModel.ts'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -44,20 +44,24 @@ import type {
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
- * #stateModel BaseWebSession
- * used for "web based" products, including jbrowse-web and react-app
+ * #stateModel BaseWebSessionModel
+ *
+ * Composable web session shared by jbrowse-web and react-app, before
+ * {@link finalizeWebSession} (the snapshotProcessor can't be `compose`d).
+ * jbrowse-web composes `WebSessionManagementMixin` onto this; react-app uses it
+ * as-is.
  */
-export function BaseWebSession({
+export function BaseWebSessionModel({
   pluginManager,
   assemblyConfigSchema,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  const sessionModel = types
+  return types
     .compose(
       'WebCoreSessionModel',
       ReferenceManagementSessionMixin(pluginManager),
@@ -97,8 +101,8 @@ export function BaseWebSession({
       /**
        * #getter
        */
-      get root(): WebRootModelInterface {
-        return getParent<WebRootModelInterface>(self)
+      get root(): AbstractWebRootModel {
+        return getParent<AbstractWebRootModel>(self)
       },
       /**
        * #getter
@@ -128,12 +132,6 @@ export function BaseWebSession({
       get textSearchManager(): TextSearchManager {
         return self.root.textSearchManager
       },
-      /**
-       * #getter
-       */
-      get savedSessionMetadata() {
-        return self.root.savedSessionMetadata
-      },
     }))
     .actions(self => ({
       /**
@@ -162,32 +160,6 @@ export function BaseWebSession({
           self.sessionPlugins.filter(p => pluginUrl(p) !== targetUrl),
         )
         self.root.setPluginsUpdated()
-      },
-
-      /**
-       * #action
-       */
-      deleteSavedSession(id: string) {
-        return self.root.deleteSavedSession(id)
-      },
-
-      /**
-       * #action
-       */
-      setSavedSessionFavorite(id: string, favorite: boolean) {
-        return self.root.setSavedSessionFavorite(id, favorite)
-      },
-      /**
-       * #action
-       */
-      renameSavedSession(id: string, name: string) {
-        return self.root.renameSavedSession(id, name)
-      },
-      /**
-       * #action
-       */
-      activateSession(sessionName: string) {
-        return self.root.activateSession(sessionName)
       },
 
       /**
@@ -275,7 +247,6 @@ export function BaseWebSession({
           extraTrackActions,
         )
       },
-
     }))
     .actions(self => ({
       setPendingFileHandleIds(ids: string[]) {
@@ -313,20 +284,25 @@ export function BaseWebSession({
         )
       }),
     }))
+}
 
+/** Apply the `Core-extendSession` extension point + legacy snapshot processor. */
+export function finalizeWebSession<T extends IAnyModelType>(
+  pluginManager: PluginManager,
+  sessionModel: T,
+) {
   const extendedSessionModel = pluginManager.evaluateExtensionPoint(
     'Core-extendSession',
     sessionModel,
-  ) as typeof sessionModel
+  ) as T
 
   return types.snapshotProcessor(extendedSessionModel, {
     preProcessor(
-      snapshot: SnapshotIn<typeof extendedSessionModel> & {
+      snapshot: SnapshotIn<T> & {
         connectionInstances?: unknown
       },
     ) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      const { connectionInstances, ...rest } = snapshot || {}
+      const { connectionInstances, ...rest } = snapshot
 
       // connectionInstances schema changed from object to an array, so any old
       // connectionInstances as object is in snapshot, filter it out
@@ -334,4 +310,17 @@ export function BaseWebSession({
       return !Array.isArray(connectionInstances) ? rest : snapshot
     },
   })
+}
+
+/**
+ * #stateModel BaseWebSession
+ * Finalized web session without the session-database management surface. Used
+ * by the embedded react-app; jbrowse-web composes `WebSessionManagementMixin`
+ * before finalizing.
+ */
+export function BaseWebSession(args: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: BaseAssemblyConfigSchema
+}) {
+  return finalizeWebSession(args.pluginManager, BaseWebSessionModel(args))
 }

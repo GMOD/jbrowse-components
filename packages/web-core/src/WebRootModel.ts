@@ -17,7 +17,7 @@ export interface SessionMetadata {
 }
 
 /** Shape of the jbrowse config model as seen from the session */
-export interface JBrowseModelInterface {
+export interface AbstractJBrowseModel {
   readonly configuration: AnyConfigurationModel
   readonly assemblies: BaseAssemblyConfigModel[]
   readonly connections: BaseConnectionConfigModel[]
@@ -30,20 +30,32 @@ export interface JBrowseModelInterface {
 
 /**
  * What BaseWebSession requires from its parent root model: the shared
- * {@link AppRootModel} surface plus the web-only session-management members.
- * The concrete root model (e.g. jbrowse-web's RootModel) must satisfy this.
+ * {@link AppRootModel} surface plus the web-only members both web roots provide.
+ * Both jbrowse-web's and react-app's roots satisfy this. The saved-session DB
+ * surface (see {@link AbstractWebSessionDbRootModel}) is intentionally NOT here
+ * — only the full-app jbrowse-web root provides it, via the separate
+ * `WebSessionManagementMixin`.
  */
-export interface WebRootModelInterface extends AppRootModel {
-  readonly jbrowse: JBrowseModelInterface
+export interface AbstractWebRootModel extends AppRootModel {
+  readonly jbrowse: AbstractJBrowseModel
   readonly rpcManager: RpcManager
   readonly adminMode: boolean
   readonly textSearchManager: TextSearchManager
-  readonly savedSessionMetadata: SessionMetadata[] | undefined
   setPluginsUpdated(): void
+  setDefaultSession(): void
+  setSession(snapshot: Record<string, unknown>): void
+}
+
+/**
+ * The saved-session-database surface a root must add to host
+ * `WebSessionManagementMixin` (favorites, recent sessions, activate). Only
+ * jbrowse-web's root provides this; react-app's embedded root does not, and its
+ * session correspondingly omits the management mixin.
+ */
+export interface AbstractWebSessionDbRootModel {
+  readonly savedSessionMetadata: SessionMetadata[] | undefined
   deleteSavedSession(id: string): Promise<void>
   setSavedSessionFavorite(id: string, favorite: boolean): Promise<void>
   renameSavedSession(id: string, name: string): Promise<void>
   activateSession(id: string): Promise<void>
-  setDefaultSession(): void
-  setSession(snapshot: Record<string, unknown>): void
 }

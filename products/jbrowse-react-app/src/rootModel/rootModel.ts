@@ -29,6 +29,7 @@ import type {
   IAnyType,
   Instance,
 } from '@jbrowse/mobx-state-tree'
+import type { AbstractWebRootModel } from '@jbrowse/web-core'
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 type SessionModelFactory = (args: {
@@ -205,3 +206,13 @@ export default function RootModel({
 
 export type WebRootModelType = ReturnType<typeof RootModel>
 export type WebRootModel = Instance<WebRootModelType>
+
+// Verify the react-app root satisfies AbstractWebRootModel at compile time.
+// react-app is a reduced web root: it deliberately omits undo/redo history and
+// the saved-session database (AbstractWebSessionDbRootModel), so it satisfies
+// only the narrow contract its session (BaseWebSession, without the management
+// mixin) requires.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _checkReactAppRootModel(m: WebRootModel): AbstractWebRootModel {
+  return m
+}

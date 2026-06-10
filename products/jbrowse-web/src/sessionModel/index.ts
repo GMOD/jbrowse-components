@@ -1,4 +1,9 @@
-import { BaseWebSession } from '@jbrowse/web-core'
+import { types } from '@jbrowse/mobx-state-tree'
+import {
+  BaseWebSessionModel,
+  WebSessionManagementMixin,
+  finalizeWebSession,
+} from '@jbrowse/web-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
@@ -7,6 +12,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseWebSessionModel
+ *
+ * The full-app web session: the shared web session plus the saved-session
+ * database management surface (favorites, recent sessions, activate/delete).
  */
 export default function sessionModelFactory({
   pluginManager,
@@ -15,7 +23,13 @@ export default function sessionModelFactory({
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  return BaseWebSession({ pluginManager, assemblyConfigSchema })
+  return finalizeWebSession(
+    pluginManager,
+    types.compose(
+      BaseWebSessionModel({ pluginManager, assemblyConfigSchema }),
+      WebSessionManagementMixin(pluginManager),
+    ),
+  )
 }
 
 export type WebSessionModelType = ReturnType<typeof sessionModelFactory>
