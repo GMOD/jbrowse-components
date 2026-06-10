@@ -43,6 +43,20 @@ interface CanvasHandle {
 // (the seam alignments drifted through), and there's nothing to forget — the
 // only per-display variance left is the body, which is irreducible.
 //
+// The two terminal states (renderError, regionTooLarge) **early-return** their
+// own component instead of nesting inside the container `<div>` below. This is
+// load-bearing, not stylistic — it looks like a leak (caller className/ref/mouse
+// handlers are absent in those states) but the leak is benign (a too-large
+// region has no canvas to interact with; the ref re-attaches on force-load) and
+// closing it reintroduces a real bug. Nesting (keep the container mounted, swap
+// only its children) makes `regionTooLarge` THRASH: the canvas mounts while
+// false -> the byte-estimate fetch flips it true -> the terminal branch unmounts
+// the canvas -> the fetch system clears it back to false next tick -> the canvas
+// remounts -> repeat forever (caught by StatsEstimation.test: DisplayChrome
+// re-renders alternating true/false). Fully replacing the subtree keeps the
+// canvas out of the tree across the whole too-large state — the ADR-025
+// dispose/re-init contract, and what breaks the loop. Don't wrap these.
+//
 // The body is a function so callers mount the canvas wherever it belongs. It
 // returns a named observer component (every display does) so observable reads
 // scope to the body rather than re-rendering the chrome. An outer hook bound to
