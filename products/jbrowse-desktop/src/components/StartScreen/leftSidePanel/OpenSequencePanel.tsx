@@ -44,7 +44,7 @@ export default function OpenSequencePanel({
         Open new genome
       </Button>
       <Button
-        variant="contained"
+        variant="outlined"
         className={classes.button}
         onClick={() => {
           setShowAll(true)

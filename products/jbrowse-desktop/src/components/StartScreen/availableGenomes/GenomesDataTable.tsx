@@ -40,7 +40,9 @@ const useStyles = makeStyles()({
 function defaultSort(a: Entry, b: Entry, col: GenomeColumn) {
   const aVal = `${a[col.id] ?? ''}`
   const bVal = `${b[col.id] ?? ''}`
-  return col.sortFn ? col.sortFn(a, b) : aVal.localeCompare(bVal)
+  // numeric:true so columns containing numbers (e.g. taxonomy IDs, accessions)
+  // order naturally (2 before 10) rather than lexically (10 before 2)
+  return col.sortFn ? col.sortFn(a, b) : aVal.localeCompare(bVal, undefined, { numeric: true })
 }
 
 function rowToFav(row: Entry): Fav {
