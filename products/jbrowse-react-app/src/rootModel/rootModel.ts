@@ -47,9 +47,7 @@ type SessionModelFactory = (args: {
 export default function RootModel({
   pluginManager,
   sessionModelFactory,
-  makeWorkerInstance = () => {
-    throw new Error('no makeWorkerInstance supplied')
-  },
+  makeWorkerInstance,
 }: {
   pluginManager: PluginManager
   sessionModelFactory: SessionModelFactory
@@ -91,6 +89,11 @@ export default function RootModel({
         self.jbrowse.configuration.rpc,
         {
           makeWorkerInstance,
+          // when a worker factory is supplied, run RPC off the main thread by
+          // default; config `defaultDriver` still overrides this
+          defaultDriverName: makeWorkerInstance
+            ? 'WebWorkerRpcDriver'
+            : 'MainThreadRpcDriver',
         },
       ),
     }))
@@ -126,7 +129,7 @@ export default function RootModel({
           const { defaultSession } = self.jbrowse
           self.setSession({
             ...defaultSession,
-            name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+            name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
           })
         },
       }
