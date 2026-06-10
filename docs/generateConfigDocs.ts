@@ -5,6 +5,7 @@ import slugify from 'slugify'
 import {
   codeBlock,
   exampleSection,
+  overviewSection,
   parseTaggedComment,
   removeComments,
   section,
@@ -198,8 +199,7 @@ function renderConfig(
     '## Example usage',
     slotsNote,
   )
-  const docsBody = section(header.docs, sections)
-  const docsSection = docsBody ? `## Overview\n\n${docsBody}` : ''
+  const docsSection = overviewSection(header.docs, sections)
 
   return `---
 id: ${header.id}

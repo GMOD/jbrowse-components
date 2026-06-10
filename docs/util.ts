@@ -191,13 +191,11 @@ function getOwnJSDocText(node: ts.Node): string {
     return ''
   }
   return jsDoc
-    .map(jd => {
-      const c = jd.comment
-      if (typeof c === 'string') {
-        return c
-      }
-      return c ? c.map(p => p.text).join('') : ''
-    })
+    .map(jd =>
+      typeof jd.comment === 'string'
+        ? jd.comment
+        : jd.comment?.map(p => p.text).join('') ?? '',
+    )
     .join('\n')
 }
 
@@ -302,6 +300,13 @@ export function section(...parts: (string | false | 0 | undefined)[]) {
   return parts.filter(Boolean).join('\n\n')
 }
 
+// Wraps content in an `## Overview` section. Returns empty string when all
+// parts are falsy, so no stray heading appears on sparse pages.
+export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
+  const body = section(...parts)
+  return body ? `## Overview\n\n${body}` : ''
+}
+
 // Renders authored #example blocks under a consistent heading. Empty when none
 // were authored.
 //
@@ -320,20 +325,11 @@ export function exampleSection(
   if (!examples.length) {
     return ''
   }
-  const headingLevelMatch = /^(#+)/.exec(heading)
-  const subHeadingPrefix = headingLevelMatch
-    ? '#'.repeat(headingLevelMatch[1].length + 1)
-    : undefined
-  const bodies = examples.map(ex =>
-    section(
-      ex.label
-        ? subHeadingPrefix
-          ? `${subHeadingPrefix} Example: ${ex.label}`
-          : `_${ex.label}_`
-        : '',
-      ex.content,
-    ),
-  )
+  const levelMatch = /^(#+)/.exec(heading)
+  const subPrefix = levelMatch ? '#'.repeat(levelMatch[1].length + 1) : undefined
+  const labelHeading = (label: string) =>
+    label ? (subPrefix ? `${subPrefix} Example: ${label}` : `_${label}_`) : ''
+  const bodies = examples.map(ex => section(labelHeading(ex.label), ex.content))
   return section(heading, ...bodies, note ? `_${note}_` : '')
 }
 
@@ -354,16 +350,14 @@ export interface ExtendsRef {
 // every relative model link after the marker is an extends ref.
 export function parseExtends(docs: string): ExtendsRef[] {
   const marker = /^\s*(?:extends|composed of)\b/m.exec(docs)
-  const refs: ExtendsRef[] = []
-  if (marker) {
-    const body = docs.slice(marker.index + marker[0].length)
-    const re = /\[([^\]]+)\]\(\.\.\/([^)]+)\)/g
-    let match: RegExpExecArray | null
-    while ((match = re.exec(body)) !== null) {
-      refs.push({ name: match[1]!, slug: match[2]! })
-    }
+  if (!marker) {
+    return []
   }
-  return refs
+  const body = docs.slice(marker.index + marker[0].length)
+  return [...body.matchAll(/\[([^\]]+)\]\(\.\.\/([^)]+)\)/g)].map(m => ({
+    name: m[1]!,
+    slug: m[2]!,
+  }))
 }
 
 export async function getAllFiles() {

@@ -5,6 +5,7 @@ import slugify from 'slugify'
 import {
   codeBlock,
   exampleSection,
+  overviewSection,
   parseExtends,
   parseTaggedComment,
   removeComments,
@@ -187,8 +188,7 @@ function renderModel(
   )
 
   const exSection = exampleSection(header.examples)
-  const docsBody = section(header.docs, inheritedSection(ancestors), sections)
-  const docsSection = docsBody ? `## Overview\n\n${docsBody}` : ''
+  const docsSection = overviewSection(header.docs, inheritedSection(ancestors), sections)
 
   return `---
 id: ${header.id}
