@@ -1,7 +1,7 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './baseConnectionConfig.ts'
-import { ConfigurationReference } from '../../configuration/index.ts'
+import { ConfigurationReference, readConfObject } from '../../configuration/index.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
@@ -17,10 +17,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      name: types.identifier,
-      /**
-       * #property
-       */
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
 
       /**
@@ -28,6 +24,22 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       configuration: ConfigurationReference(configSchema),
     })
+    .views(self => ({
+      /**
+       * #getter
+       * the connection's unique id, resolved from its configuration (the config
+       * is the source of truth; connection names are not guaranteed unique)
+       */
+      get connectionId(): string {
+        return self.configuration.connectionId
+      },
+      /**
+       * #getter
+       */
+      get name(): string {
+        return readConfObject(self.configuration, 'name')
+      },
+    }))
     .actions(() => ({
       /**
        * #action

@@ -17,7 +17,7 @@ const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
     <form autoComplete="off">
       <TextField
         value={connectionType.name}
-        label="connectionType"
+        label="Connection type"
         helperText={
           connectionType.description ? (
             <>

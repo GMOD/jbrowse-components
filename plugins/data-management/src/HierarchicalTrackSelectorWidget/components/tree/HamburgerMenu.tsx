@@ -59,11 +59,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
   const [facetedOpen, setFacetedOpen] = useState(false)
 
-  function breakConnection(
-    connectionConf: AnyConfigurationModel,
-    deletingConnection?: boolean,
-  ) {
-    const name = readConfObject(connectionConf, 'name')
+  function breakConnection(connectionConf: AnyConfigurationModel) {
     const result = session.prepareToBreakConnection?.(connectionConf)
     if (result) {
       const [safelyBreakConnection, dereferenceTypeCount] = result
@@ -72,14 +68,11 @@ const HamburgerMenu = observer(function HamburgerMenu({
           connectionConf,
           safelyBreakConnection,
           dereferenceTypeCount,
-          name,
+          name: readConfObject(connectionConf, 'name'),
         })
       } else {
         safelyBreakConnection()
       }
-    }
-    if (deletingConnection) {
-      setDeleteDialogDetails({ name, connectionConf })
     }
   }
 
@@ -225,7 +218,12 @@ const HamburgerMenu = observer(function HamburgerMenu({
             handleClose={() => {
               setConnectionManagerOpen(false)
             }}
-            breakConnection={breakConnection}
+            onDelete={conf => {
+              setDeleteDialogDetails({
+                name: readConfObject(conf, 'name'),
+                connectionConf: conf,
+              })
+            }}
             session={session}
           />
         ) : null}

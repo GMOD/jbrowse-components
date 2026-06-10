@@ -35,11 +35,11 @@ function DisabledButton() {
 const ManageConnectionsDialog = observer(function ManageConnectionsDialog({
   session,
   handleClose,
-  breakConnection,
+  onDelete,
 }: {
   handleClose: () => void
   session: AbstractSessionModel
-  breakConnection: (conf: AnyConfigurationModel, arg: boolean) => void
+  onDelete: (conf: AnyConfigurationModel) => void
 }) {
   const { classes } = useStyles()
   const { adminMode, connections, sessionConnections } = session
@@ -53,11 +53,11 @@ const ManageConnectionsDialog = observer(function ManageConnectionsDialog({
           {connections.map(conf => {
             const name = readConfObject(conf, 'name')
             return (
-              <Typography key={`conn-${name}`}>
+              <Typography key={conf.connectionId}>
                 {adminMode || sessionConnections?.includes(conf) ? (
                   <IconButton
                     onClick={() => {
-                      breakConnection(conf, true)
+                      onDelete(conf)
                     }}
                   >
                     <CloseIcon color="error" />

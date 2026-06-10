@@ -37,7 +37,9 @@ const ConnectionRow = observer(function ConnectionRow({
   const { connectionInstances: instances = [] } = session
   const name = readConfObject(conf, 'name')
   const assemblyNames = readConfObject(conf, 'assemblyNames')
-  const hasConnection = instances.some(conn => name === conn.name)
+  const hasConnection = instances.some(
+    conn => conn.connectionId === conf.connectionId,
+  )
   return (
     <FormControlLabel
       control={

@@ -5,13 +5,10 @@ import { addRelativeUris } from '@jbrowse/product-core'
 
 import { resolve } from './util.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ConnectionDoConnectArg } from '../lazyConnect.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 
-export async function doConnect(self: {
-  configuration: AnyConfigurationModel
-  addTrackConfs: (arg: Record<string, unknown>[]) => void
-}) {
+export async function doConnect(self: ConnectionDoConnectArg) {
   const session = getSession(self)
   try {
     const configJsonLocation = getConf(

@@ -1,7 +1,7 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './configSchema.ts'
 import { isTrack } from './util.ts'
@@ -47,7 +47,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             assemblyNames: [assemblyName],
           }))
 
-          self.setTrackConfs(jb2Tracks)
+          // the node can be destroyed during the awaits above (e.g. a React
+          // StrictMode double-mount disposes the first rootModel)
+          if (isAlive(self)) {
+            self.setTrackConfs(jb2Tracks)
+          }
         } catch (error) {
           console.error(error)
           session.notifyError(

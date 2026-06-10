@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession.ts'
@@ -19,8 +18,9 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       /**
        * #property
        */
-      connectionInstances: types.array(
-        pluginManager.pluggableMstType('connection', 'stateModel'),
+      connectionInstances: types.stripDefault(
+        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+        [],
       ),
     })
     .views(self => ({
@@ -44,10 +44,8 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         if (!type) {
           throw new Error('connection configuration has no `type` listed')
         }
-        const name = readConfObject(configuration, 'name')
         self.connectionInstances.push({
           ...initialSnapshot,
-          name,
           type,
           configuration,
         })
@@ -64,8 +62,10 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
           Instance<SessionWithReferenceManagementType>
         const callbacksToDeref: (() => void)[] = []
         const derefTypeCount: Record<string, number> = {}
-        const name = readConfObject(configuration, 'name')
-        const connection = self.connectionInstances.find(c => c.name === name)
+        const { connectionId } = configuration
+        const connection = self.connectionInstances.find(
+          c => c.connectionId === connectionId,
+        )
         if (!connection) {
           return undefined
         }
@@ -88,10 +88,12 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       breakConnection(configuration: AnyConfigurationModel) {
-        const name = readConfObject(configuration, 'name')
-        const connection = self.connectionInstances.find(c => c.name === name)
+        const { connectionId } = configuration
+        const connection = self.connectionInstances.find(
+          c => c.connectionId === connectionId,
+        )
         if (!connection) {
-          throw new Error(`no connection found with name ${name}`)
+          throw new Error(`no connection found with id ${connectionId}`)
         }
         self.connectionInstances.remove(connection)
       },
@@ -119,20 +121,6 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         self.connectionInstances.clear()
       },
     }))
-    .postProcessSnapshot(snap => {
-      // mst types wrong, nullish needed
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { connectionInstances, ...rest } = snap
-      return {
-        ...rest,
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(connectionInstances?.length ? { connectionInstances } : {}),
-      } as typeof snap
-    })
 }
 
 /** Session mixin MST type for a session that has connections */
