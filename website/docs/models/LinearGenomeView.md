@@ -49,7 +49,7 @@ view.showTrack('alignments')
 view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 ```
 
-## Docs
+## Overview
 
 extends
 

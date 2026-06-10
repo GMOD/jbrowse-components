@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/HierarchicalConfigSchema.md)
 
-## Docs
+## Overview
 
 generally exists on the config.json or root config as configuration.hierarchical
 

@@ -34,7 +34,7 @@ connecting them with a ribbon:
 }
 ```
 
-## Docs
+## Overview
 
 extends
 

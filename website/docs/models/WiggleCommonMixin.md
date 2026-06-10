@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/WiggleCommonMixin.md)
 
-## Docs
+## Overview
 
 Extends WiggleScoreConfigMixin with rpcDataMap, autoscale domain, and cache
 reset. Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays that

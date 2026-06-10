@@ -32,7 +32,7 @@ first):
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 ### PAFAdapter - Pre-processor / simplified config
 

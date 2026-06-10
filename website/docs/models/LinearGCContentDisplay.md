@@ -46,6 +46,6 @@ track's own sequence adapter, so no extra adapter is needed. `gcMode` is
 }
 ```
 
-## Docs
+## Overview
 
 base model `SharedGCContentModel`

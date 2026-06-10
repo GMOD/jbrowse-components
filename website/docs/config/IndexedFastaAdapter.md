@@ -29,7 +29,7 @@ The `uri` shorthand auto-resolves the `.fai` index:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 ### IndexedFastaAdapter - Pre-processor / simplified config
 

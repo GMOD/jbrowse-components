@@ -33,7 +33,7 @@ Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
 }
 ```
 
-## Docs
+## Overview
 
 extends
 

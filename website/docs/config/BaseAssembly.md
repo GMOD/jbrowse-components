@@ -39,7 +39,7 @@ points at an indexed FASTA — the `uri` shorthand auto-resolves the companion
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 This corresponds to the assemblies section of the config
 

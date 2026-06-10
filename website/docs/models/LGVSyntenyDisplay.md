@@ -45,7 +45,7 @@ display type:
 }
 ```
 
-## Docs
+## Overview
 
 displays location of "synteny" feature in a plain LGV, allowing linking out to
 external synteny views

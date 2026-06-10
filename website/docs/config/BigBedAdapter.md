@@ -27,7 +27,7 @@ reference the markdown files in our repo of the checked out git tag
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 ### BigBedAdapter - Pre-processor / simplified config
 

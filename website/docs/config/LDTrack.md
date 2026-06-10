@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LDTrack.md)
 
-## Docs
+## Overview
 
 Track type for displaying pre-computed linkage disequilibrium data (e.g., from
 PLINK --r2 output)

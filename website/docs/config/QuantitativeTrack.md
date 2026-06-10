@@ -33,7 +33,7 @@ reference the markdown files in our repo of the checked out git tag
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 a numerical signal track (coverage, conservation, etc.), typically backed by a
 BigWig file and drawn as an XY plot or density

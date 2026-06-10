@@ -36,7 +36,7 @@ CRAM:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 has very little config; most config and state logic is on the display
 

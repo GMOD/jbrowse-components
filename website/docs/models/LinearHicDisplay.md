@@ -41,7 +41,7 @@ auto-picked binsize (negative = finer, positive = coarser):
 }
 ```
 
-## Docs
+## Overview
 
 Hi-C display that renders contact matrix using WebGL extends
 

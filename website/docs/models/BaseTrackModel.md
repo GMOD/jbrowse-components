@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseTrackModel.md)
 
-## Docs
+## Overview
 
 these MST models only exist for tracks that are _shown_. they should contain
 only UI state for the track, and have a reference to a track configuration. note

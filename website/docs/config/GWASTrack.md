@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GWASTrack.md)
 
-## Docs
+## Overview
 
 used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display
 

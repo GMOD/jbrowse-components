@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/PlinkLDAdapter.md)
 
-## Docs
+## Overview
 
 Adapter for reading pre-computed LD data from PLINK --r2 output. Loads the
 entire file into memory - suitable for small to medium files.

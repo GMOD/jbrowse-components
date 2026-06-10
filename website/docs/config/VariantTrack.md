@@ -33,7 +33,7 @@ reference the markdown files in our repo of the checked out git tag
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 Mostly similar to feature track, but has `ChordDisplayType` registered to it,
 and custom feature details in `LinearVariantDisplay`

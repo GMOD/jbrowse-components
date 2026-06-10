@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/RefNameAliasAdapter.md)
 
-## Docs
+## Overview
 
 can read "chromAliases" type files from UCSC or any tab separated file of
 refName aliases

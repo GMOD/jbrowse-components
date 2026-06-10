@@ -48,7 +48,7 @@ its own track):
 }
 ```
 
-## Docs
+## Overview
 
 used on GCContentTrack, separately from the display type on the
 ReferenceSequenceTrack

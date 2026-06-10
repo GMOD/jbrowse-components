@@ -45,7 +45,7 @@ species in track order; `rowHeight` sets the per-sample band height:
 }
 ```
 
-## Docs
+## Overview
 
 extends BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin +
 TreeSidebarMixin

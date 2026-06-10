@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/AssembliesMixin.md)
 
-## Docs
+## Overview
 
 Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).

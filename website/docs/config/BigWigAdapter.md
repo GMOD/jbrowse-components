@@ -27,7 +27,7 @@ reference the markdown files in our repo of the checked out git tag
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used to load BigWig or BigBed quantitative signal files
 

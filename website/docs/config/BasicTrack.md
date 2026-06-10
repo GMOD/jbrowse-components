@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BasicTrack.md)
 
-## Docs
+## Overview
 
 Back-compat synonym for [FeatureTrack](../featuretrack): identical config, kept
 so existing `type: 'BasicTrack'` configs (and third-party plugins that reference

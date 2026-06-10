@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/WiggleScoreConfigMixin.md)
 
-## Docs
+## Overview
 
 Score/scale/color config and isCacheValid for wiggle-family displays. Does NOT
 include rpcDataMap or autoscale domain computation — those live in

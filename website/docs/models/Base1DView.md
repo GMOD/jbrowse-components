@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Base1DView.md)
 
-## Docs
+## Overview
 
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this

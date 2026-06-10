@@ -30,7 +30,7 @@ The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used to load bgzip-compressed, tabix-indexed VCF files
 

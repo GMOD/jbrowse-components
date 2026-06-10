@@ -29,7 +29,7 @@ The `uri` shorthand auto-resolves the `.tbi` index:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used to load bgzip-compressed, tabix-indexed GTF files
 

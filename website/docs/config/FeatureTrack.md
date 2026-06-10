@@ -36,7 +36,7 @@ at the data file, and the track opens with a `LinearBasicDisplay`:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used for basic gene and feature tracks, generally used with LinearBasicDisplay
 

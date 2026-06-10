@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/JBrowseRootConfig.md)
 
-## Docs
+## Overview
 
 this is a config model representing a config.json (for jbrowse-web) or
 somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse

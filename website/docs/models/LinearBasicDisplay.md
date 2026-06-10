@@ -45,7 +45,7 @@ A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
 }
 ```
 
-## Docs
+## Overview
 
 GPU-accelerated feature display with gene-specific UI on top of the shared
 canvas base display (`LinearCanvasBaseDisplay`). This is the GPU stack — despite

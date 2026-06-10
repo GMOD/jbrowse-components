@@ -188,7 +188,7 @@ function renderModel(
 
   const exSection = exampleSection(header.examples)
   const docsBody = section(header.docs, inheritedSection(ancestors), sections)
-  const docsSection = docsBody ? `## Docs\n\n${docsBody}` : ''
+  const docsSection = docsBody ? `## Overview\n\n${docsBody}` : ''
 
   return `---
 id: ${header.id}
@@ -258,6 +258,12 @@ export function writeModelDocs(byFile: Record<string, StateModel>) {
     fs.writeFileSync(
       `${dir}/${model.header.name}.md`,
       renderModel(model, ancestors),
+    )
+  }
+  const noExample = withHeader.filter(m => !m.header.examples.length)
+  if (noExample.length) {
+    console.warn(
+      `${noExample.length}/${withHeader.length} models have no #example: ${noExample.map(m => m.header.name).join(', ')}`,
     )
   }
 }

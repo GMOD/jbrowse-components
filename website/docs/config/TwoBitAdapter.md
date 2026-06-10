@@ -30,7 +30,7 @@ scan on genomes with many contigs:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 ### TwoBitAdapter - Pre-processor / simplified config
 

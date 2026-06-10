@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearBasicDisplay.md)
 
-## Docs
+## Overview
 
 configuration for the basic linear feature display (genes, BED, GFF, etc.)
 

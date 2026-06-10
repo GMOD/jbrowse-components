@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearCanvasBaseDisplay.md)
 
-## Docs
+## Overview
 
 Shared GPU-accelerated feature display base for canvas-rendered tracks. Handles
 fetching, layout, the "Show labels" / "Show descriptions" UI, and the

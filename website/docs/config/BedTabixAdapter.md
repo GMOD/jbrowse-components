@@ -30,7 +30,7 @@ index instead:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 ### BedTabixAdapter - Pre-processor / simplified config
 

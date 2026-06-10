@@ -30,7 +30,7 @@ differently-named index, set `index` explicitly with the full slot form:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used to configure BAM adapter
 

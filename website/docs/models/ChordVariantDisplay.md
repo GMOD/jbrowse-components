@@ -44,7 +44,7 @@ controls how far the chords bow toward the center:
 }
 ```
 
-## Docs
+## Overview
 
 extends
 

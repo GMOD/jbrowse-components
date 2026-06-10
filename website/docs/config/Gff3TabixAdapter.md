@@ -30,7 +30,7 @@ index instead:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used to load bgzip-compressed, tabix-indexed GFF3 files
 

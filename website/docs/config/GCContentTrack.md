@@ -16,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GCContentTrack.md)
 
-## Docs
+## Overview
 
 used for having a gc content track outside of the "reference sequence display"
 

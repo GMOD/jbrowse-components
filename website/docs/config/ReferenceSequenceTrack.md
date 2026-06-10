@@ -34,7 +34,7 @@ sequence: {
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used to display base level DNA sequence tracks
 

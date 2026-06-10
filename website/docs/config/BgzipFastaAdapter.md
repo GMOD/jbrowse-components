@@ -29,7 +29,7 @@ The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 ### BgzipFastaAdapter - Pre-processor / simplified config
 

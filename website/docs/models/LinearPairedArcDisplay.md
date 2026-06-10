@@ -42,7 +42,7 @@ to its mate, even across displayed regions:
 }
 ```
 
-## Docs
+## Overview
 
 this is a non-block-based track type, and can connect arcs across multiple
 displayedRegions

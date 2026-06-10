@@ -31,7 +31,7 @@ file locations:
 
 _See the **Slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used to configure CRAM adapter
 

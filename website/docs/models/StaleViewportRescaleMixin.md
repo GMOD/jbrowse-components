@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/StaleViewportRescaleMixin.md)
 
-## Docs
+## Overview
 
 Records the viewport state (`offsetPx`, `bpPerPx`) at which the canvas was last
 fully drawn. Consumers (HiC, LD — single-global-RPC-result displays) build a

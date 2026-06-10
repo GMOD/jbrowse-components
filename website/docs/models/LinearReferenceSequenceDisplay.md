@@ -44,7 +44,7 @@ A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
 }
 ```
 
-## Docs
+## Overview
 
 base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
 

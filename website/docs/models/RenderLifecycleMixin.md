@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/RenderLifecycleMixin.md)
 
-## Docs
+## Overview
 
 Owns the GPU draw lifecycle for any display that paints to a canvas.
 

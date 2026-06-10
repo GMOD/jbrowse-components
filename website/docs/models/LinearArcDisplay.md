@@ -43,7 +43,7 @@ its end. `displayMode` is `arcs` or `semicircles`:
 }
 ```
 
-## Docs
+## Overview
 
 a non-block-based display drawing an arc connecting the start and end of each
 feature, rendered as plain SVG on the main thread

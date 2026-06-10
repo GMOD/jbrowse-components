@@ -199,7 +199,7 @@ function renderConfig(
     slotsNote,
   )
   const docsBody = section(header.docs, sections)
-  const docsSection = docsBody ? `## Docs\n\n${docsBody}` : ''
+  const docsSection = docsBody ? `## Overview\n\n${docsBody}` : ''
 
   return `---
 id: ${header.id}
@@ -259,5 +259,11 @@ export function writeConfigDocs(byFile: Record<string, Config>) {
     const bases = collectBaseConfigs(cfg, byDeclId, byName)
     validateBaseConfig(cfg, bases)
     fs.writeFileSync(`${dir}/${cfg.header.name}.md`, renderConfig(cfg, bases))
+  }
+  const noExample = withHeader.filter(c => !c.header.examples.length)
+  if (noExample.length) {
+    console.warn(
+      `${noExample.length}/${withHeader.length} configs have no #example: ${noExample.map(c => c.header.name).join(', ')}`,
+    )
   }
 }

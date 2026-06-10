@@ -42,7 +42,7 @@ min/max score, renderer) are config slots on the track itself — see the
 }
 ```
 
-## Docs
+## Overview
 
 State model factory for the single-source wiggle display.
 

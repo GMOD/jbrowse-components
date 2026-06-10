@@ -131,6 +131,15 @@ jobs:
           website/scripts/generate-guide-indexes.ts --check
       - name: Check color tables are up to date
         run: node --experimental-strip-types docs/generateColorDocs.ts --check
+      - name: Check config/model/api docs are up to date
+        run: |
+          pnpm gendocs
+          if ! git diff --quiet website/docs/config website/docs/models website/docs/api; then
+            echo "Error: generated docs are out of date!"
+            echo "Run 'pnpm autogen' and commit the changes."
+            git diff --stat website/docs/config website/docs/models website/docs/api
+            exit 1
+          fi
       - name: Lint codebase
         run: pnpm lint
 
@@ -321,6 +330,9 @@ jobs:
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
+        working-directory: website
+      - name: Typecheck website
+        run: pnpm typecheck
         working-directory: website
       - name: Build website
         run: |

@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ConfigOverrideMixin.md)
 
-## Docs
+## Overview
 
 Provides a runtime override map for display config slots. Pass the list of
 config slot names that can be overridden; these are serialized flat on the

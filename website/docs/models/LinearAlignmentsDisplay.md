@@ -83,7 +83,7 @@ Long reads with soft-clipping shown and split/mate reads connected by arcs:
 }
 ```
 
-## Docs
+## Overview
 
 State model factory for LinearAlignmentsDisplay
 

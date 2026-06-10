@@ -18,7 +18,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseFeatureWidget.md)
 
-## Docs
+## Overview
 
 displays data about features, allowing configuration callbacks to modify the
 contents of what is displayed

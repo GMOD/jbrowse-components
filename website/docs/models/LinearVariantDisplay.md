@@ -42,7 +42,7 @@ A complete `VariantTrack` config to paste into `tracks`:
 }
 ```
 
-## Docs
+## Overview
 
 GPU-accelerated variant display with custom feature widget on click. extends
 
