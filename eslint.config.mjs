@@ -30,7 +30,7 @@ export default defineConfig(
       '**/.storybook',
       '**/umd_plugin.js',
 
-      'products/jbrowse-desktop/test/e2e.ts',
+      'products/jbrowse-desktop/test/**',
 
       // Vendored/external code
       'packages/core/src/util/map-obj',

@@ -41,7 +41,10 @@
     "test:e2e:build": "pnpm package:linux:no-installer && pnpm test:e2e",
     "test:e2e:ci": "pnpm package:linux:no-installer && pnpm test:e2e:headless",
     "test:e2e:build:win": "pnpm package:win:no-installer && pnpm test:e2e",
-    "test:e2e:ci:win": "pnpm package:win:no-installer && pnpm test:e2e:headless"
+    "test:e2e:ci:win": "pnpm package:win:no-installer && pnpm test:e2e:headless",
+    "screenshots": "node test/screenshots.ts",
+    "screenshots:headless": "xvfb-run --auto-servernum node test/screenshots.ts --headless",
+    "screenshots:build": "pnpm package:linux:no-installer && pnpm screenshots:headless"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
