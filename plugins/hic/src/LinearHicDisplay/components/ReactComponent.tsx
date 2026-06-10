@@ -79,7 +79,7 @@ const HicCanvas = observer(function HicCanvas({
 }) {
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPx
-  const { height, rpcData, yScalar } = model
+  const { height, yScalar } = model
   const [hover, setHover] = useState<Hover>()
 
   return (
@@ -113,7 +113,7 @@ const HicCanvas = observer(function HicCanvas({
       }}
     >
       <canvas
-        data-testid={`hic_canvas${rpcData ? '_done' : ''}`}
+        data-testid="hic_canvas"
         ref={canvasRef}
         style={{
           width,
@@ -145,7 +145,7 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
   model: LinearHicDisplayModel
 }) {
   return (
-    <DisplayChrome model={model} factory={HicRenderer}>
+    <DisplayChrome model={model} factory={HicRenderer} testid="hic-display">
       {({ canvasRef }) => <HicCanvas model={model} canvasRef={canvasRef} />}
     </DisplayChrome>
   )

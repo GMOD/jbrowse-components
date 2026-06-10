@@ -10,12 +10,29 @@ import { buildColorPalette } from './sequenceGeometry.ts'
 
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
 
+const SequenceBody = observer(function SequenceBody({
+  model,
+  canvasRef,
+}: {
+  model: LinearReferenceSequenceDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+}) {
+  return model.zoomedOut ? (
+    <Alert severity="info">Zoom in to see sequence</Alert>
+  ) : (
+    <canvas
+      ref={canvasRef}
+      style={{ width: '100%', height: '100%', display: 'block' }}
+    />
+  )
+})
+
 const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
   model,
 }: {
   model: LinearReferenceSequenceDisplayModel
 }) {
-  const { height, zoomedOut } = model
+  const { height } = model
   const theme = useTheme()
   const palette = useMemo(() => buildColorPalette(theme), [theme])
   const textColors = useMemo(
@@ -31,18 +48,9 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
       model={model}
       factory={SequenceRenderer}
       testid="sequence-display"
-      style={{ position: 'relative', width: '100%', height }}
+      style={{ width: '100%', height }}
     >
-      {({ canvasRef }) =>
-        zoomedOut ? (
-          <Alert severity="info">Zoom in to see sequence</Alert>
-        ) : (
-          <canvas
-            ref={canvasRef}
-            style={{ width: '100%', height: '100%', display: 'block' }}
-          />
-        )
-      }
+      {({ canvasRef }) => <SequenceBody model={model} canvasRef={canvasRef} />}
     </DisplayChrome>
   )
 })

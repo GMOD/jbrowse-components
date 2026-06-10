@@ -113,11 +113,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   return (
     <>
       <canvas
-        data-testid={
-          model.canvasDrawn
-            ? 'variant_matrix_canvas_done'
-            : 'variant_matrix_canvas'
-        }
+        data-testid="variant_matrix_canvas"
         ref={canvasRef}
         style={{
           width,

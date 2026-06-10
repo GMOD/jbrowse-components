@@ -49,14 +49,17 @@ interface CanvasHandle {
 // `testid` is the *base* first-paint selector; the chrome owns the `-done`
 // convention, appending it once `canvasDrawn` flips, so no consumer hand-writes
 // the ternary and the separator/gating can't drift. Tests wait on
-// `${testid}-done`. (Canvas-pixel selectors like `hic_canvas_done` stay on the
-// inner <canvas> — they target the element `expectCanvasMatch` reads, which the
-// chrome div is not.)
+// `${testid}-done` (the single first-paint signal), then read the canvas inside.
+// Displays whose tests pixel-match or screenshot the canvas itself (hic, ld)
+// give the inner <canvas> a *static* selector (`hic_canvas`) for that lookup —
+// the readiness gate stays here on the chrome div, never duplicated as a
+// `canvasDrawn`/`rpcData` ternary on the canvas.
 function DisplayChromeInner<B extends { dispose(): void }>({
   model,
   factory,
   children,
   testid,
+  style,
   ...divProps
 }: {
   model: ChromeModel & RenderLifecycleModel<B>
@@ -80,6 +83,12 @@ function DisplayChromeInner<B extends { dispose(): void }>({
   return (
     <div
       {...divProps}
+      // DisplayChrome owns the positioning context: the loading scrim and error
+      // bar below are position:absolute children, so the container must be the
+      // containing block. Centralized here so no caller has to remember it (and
+      // so the two that didn't — hic, ld — stop leaking their overlays to an
+      // ancestor). Caller `style` still wins if it overrides `position`.
+      style={{ position: 'relative', ...style }}
       data-testid={
         testid === undefined
           ? undefined

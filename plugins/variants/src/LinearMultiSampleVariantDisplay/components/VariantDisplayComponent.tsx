@@ -32,7 +32,6 @@ const VariantDisplayComponent = observer(
         factory={VariantRenderer}
         ref={ref}
         testid="variant-display"
-        style={{ position: 'relative' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >

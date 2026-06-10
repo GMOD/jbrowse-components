@@ -46,7 +46,8 @@ test('opens a vcf track and clusters genotypes', async () => {
     expect(view.tracks[0].displays[0].hierarchy).toBeTruthy()
   }, delay)
 
-  expectCanvasMatch(await findByTestId('variant_matrix_canvas_done', {}, delay))
+  await findByTestId('variant-matrix-display-done', {}, delay)
+  expectCanvasMatch(await findByTestId('variant_matrix_canvas', {}, delay))
 
   // export svg
   await exportAndVerifySvg({

@@ -45,7 +45,7 @@ const VariantMatrixDisplayComponent = observer(
         factory={VariantMatrixRenderer}
         ref={ref}
         testid="variant-matrix-display"
-        style={{ position: 'relative', height }}
+        style={{ height }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >

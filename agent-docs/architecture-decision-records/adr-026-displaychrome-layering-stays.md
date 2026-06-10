@@ -113,17 +113,19 @@ Keep the current layering. Each layer maps to a genuine concern boundary:
 - The chrome stack is treated as near a local optimum for its constraints and
   this codebase's idioms. Future "why is this 5 layers" questions land here.
 - The first-paint `data-testid` `-done` convention was the one residual debt, and
-  the **chrome-div half is now owned by DisplayChrome**: it takes a `testid` base
-  prop and appends `-done` on `canvasDrawn`, so the eight chrome-div consumers no
-  longer hand-write the ternary (emitted strings unchanged → no test churn; the
-  `ChromeModel` contract gained `canvasDrawn`). Two emitters remain *by design*,
-  on a different axis: the **canvas-pixel** selectors (`hic_canvas_done`,
-  `ld_canvas_done`, `variant_canvas_done`, `variant_matrix_canvas_done`,
-  `synteny_canvas_done`, `dotplot_webgl_canvas_done`) stay on the inner `<canvas>`
-  because `expectCanvasMatch` reads that element, not the chrome div; and the
-  generic block-path `display-${id}-done` comes from `BaseLinearDisplay.tsx` (the
-  legacy `LinearBlocks` wrapper, gated `'canvasDrawn' in model`), which never
-  renders DisplayChrome. Three emitters, three distinct roles — not drift. See
+  it is **now fully owned by DisplayChrome**: it takes a `testid` base prop and
+  appends `-done` on `canvasDrawn`, so every LGV GPU consumer (now including hic
+  and LD) gets its readiness gate from one place — no hand-written ternary. The
+  **canvas-pixel** selectors that pixel-match/screenshot the canvas element
+  (`hic_canvas`, `ld_canvas`, `variant_canvas`, `variant_matrix_canvas`) are now
+  **static** query targets, not a second gate: tests wait on the chrome's
+  `${base}-done`, then read the static canvas selector. This retired the old
+  hic/LD `rpcData`-gated `_done` selectors, so the gate is uniformly `canvasDrawn`
+  expressed once. Two unrelated emitters remain by design: the standalone non-LGV
+  `synteny_canvas_done` / `dotplot_webgl_canvas_done` (those views never render
+  DisplayChrome), and the generic block-path `display-${id}-done` from
+  `BaseLinearDisplay.tsx` (the legacy `LinearBlocks` wrapper, gated
+  `'canvasDrawn' in model`). Distinct roles, distinct wrappers — not drift. See
   [DISPLAYCHROME.md](../DISPLAYCHROME.md) follow-up #2.
 - `renderTick` stays: it is a justified workaround for MobX's inability to express
   "re-fire on A's *effect* when A doesn't change my deps' identity," and one

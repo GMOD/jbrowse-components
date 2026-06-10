@@ -336,12 +336,12 @@ const localDemos: TestSuite = {
           'extra_test_data/hic_integration_test.json',
         )
 
-        await findByTestId(page, 'hic_canvas_done', 60000)
+        await findByTestId(page, 'hic-display-done', 60000)
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,
           'demo-hic-canvas',
-          '[data-testid="hic_canvas_done"]',
+          '[data-testid="hic_canvas"]',
         )
       },
     },

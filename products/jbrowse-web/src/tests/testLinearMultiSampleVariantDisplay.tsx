@@ -17,10 +17,12 @@ export async function testLinearMultiSampleVariantDisplay({
     displayType === 'matrix'
       ? 'Multi-sample variant display (matrix)'
       : 'Multi-sample variant display (regular)'
-  const canvasTestId =
+  const doneTestId =
     displayType === 'matrix'
-      ? 'variant_matrix_canvas_done'
-      : 'variant_canvas_done'
+      ? 'variant-matrix-display-done'
+      : 'variant-display-done'
+  const canvasTestId =
+    displayType === 'matrix' ? 'variant_matrix_canvas' : 'variant_canvas'
 
   const { view, findByTestId, findByText } = await createView()
   await view.navToLocString('ctgA')
@@ -36,5 +38,6 @@ export async function testLinearMultiSampleVariantDisplay({
     fireEvent.click(await findByText(/^Phased/, ...opts))
   }
 
+  await findByTestId(doneTestId, ...opts)
   expectCanvasMatch(await findByTestId(canvasTestId, ...opts))
 }

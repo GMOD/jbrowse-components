@@ -83,22 +83,25 @@ jsdom. A next agent with a browser should confirm:
    arc's `BaseDisplayComponent` renders it). Ripping that out means restructuring
    the legacy block-render contract to pass a string + render the message in the
    block component — a separate non-GPU subsystem, not worth bundling here.
-2. **Testid `-done` convention — now owned by DisplayChrome (chrome-div half).**
-   DisplayChrome takes a `testid` *base* prop and appends `-done` once
-   `model.canvasDrawn` flips, so the suffix/gating live in one place instead of a
-   hand-written ternary per consumer. The eight chrome-div consumers (wiggle,
-   multi-wiggle, manhattan, maf, alignments-outer, multi-variant, variant-matrix,
-   sequence) now pass only the base; emitted strings are byte-identical to before
-   (so no test churn), and sequence gained the `-done` signal it lacked.
+2. ~~Testid `-done` convention.~~ **DONE — fully unified.** The first-paint
+   readiness signal lives in exactly one place: DisplayChrome takes a `testid`
+   *base* prop and appends `-done` once `model.canvasDrawn` flips. **Every** LGV
+   GPU display passes a base (hic → `hic-display`, LD → `ld-display`, the rest as
+   before), so the gate is never hand-written per consumer.
 
-   Deliberately **not** unified (a second, legitimately separate axis): the
-   **canvas-pixel** selectors `hic_canvas_done` / `ld_canvas_done` /
-   `variant_canvas_done` / `variant_matrix_canvas_done` (and standalone
-   `synteny_canvas_done` / `dotplot_webgl_canvas_done`) stay on the inner
-   `<canvas>`, because `expectCanvasMatch(findByTestId(...))` reads that element
-   and the chrome div is not a canvas. Those keep `_done` and (hic/LD) `rpcData`
-   gating. The generic `display-${id}-done` for block-path displays still comes
-   from `BaseLinearDisplay.tsx`, a different wrapper — see ADR-026.
+   Displays whose tests pixel-match or screenshot the canvas itself (hic, LD,
+   multi-variant, variant-matrix) give the inner `<canvas>` a **static** selector
+   (`hic_canvas`, `ld_canvas`, `variant_canvas`, `variant_matrix_canvas`) purely
+   as a query target — `expectCanvasMatch`/`dualSnapshot` need the canvas
+   element, which the chrome div is not. Tests wait on `${base}-done` (the gate),
+   then read the static canvas selector. No more `_done` ternary on the canvas,
+   and the old hic/LD `rpcData`-gated selectors are gone — the gate is uniformly
+   `canvasDrawn`, expressed once. Standalone non-LGV displays
+   (`synteny_canvas_done` / `dotplot_webgl_canvas_done`) keep their own
+   self-contained `_done` selectors; they don't use DisplayChrome (see "Not on
+   DisplayChrome" above). The generic `display-${id}-done` for block-path
+   displays still comes from `BaseLinearDisplay.tsx`, a different wrapper — see
+   ADR-026.
 
 ## Gotchas confirmed during the work
 

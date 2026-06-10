@@ -236,9 +236,7 @@ const VariantBody = observer(function VariantBody({
   return (
     <>
       <canvas
-        data-testid={
-          model.canvasDrawn ? 'variant_canvas_done' : 'variant_canvas'
-        }
+        data-testid="variant_canvas"
         ref={canvasRef}
         style={{
           width,

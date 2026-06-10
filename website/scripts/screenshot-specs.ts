@@ -893,7 +893,7 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="hic_canvas_done"]',
+    readySelector: '[data-testid="hic-display-done"]',
     readyTimeout: 60000,
     settleMs: 10000,
   },

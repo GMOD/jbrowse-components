@@ -51,11 +51,16 @@ true (this silently burned full snapshot timeouts).
 - `data-testid="loading-overlay"` **absent** → data finished **fetching**
   (generic; used by `waitForLoadingToComplete` / `waitForDataLoaded` and the
   snapshot waits).
-- `*-done` / `*_done` testid → canvas finished **painting**
-  (`canvasDrawn` / `rpcData`). Per-display and inconsistently named:
-  `wiggle-display-done`, `display-${displayId}-done` (alignments/maf),
-  `hic_canvas_done`, `ld_canvas_done`, `synteny_canvas_done`. `canvasSnapshot`
-  takes the exact selector — canvas captures are the most reliable.
+- `${base}-done` testid → canvas finished **painting** (gated on `canvasDrawn`,
+  owned by `DisplayChrome` via its `testid` base prop). Per-display base, e.g.
+  `wiggle-display-done`, `hic-display-done`, `ld-display-done`,
+  `display-${displayId}-done` (alignments/maf). For tests that pixel-match or
+  screenshot the canvas element, the inner `<canvas>` carries a **static**
+  selector (`hic_canvas`, `ld_canvas`, `variant_canvas`,
+  `variant_matrix_canvas`): wait on `${base}-done`, then read the static canvas
+  selector. Standalone non-LGV displays keep self-contained `_done` selectors
+  (`synteny_canvas_done`, `dotplot_webgl_canvas_done`). `canvasSnapshot` takes the
+  exact selector — canvas captures are the most reliable.
 
 ## Troubleshooting
 

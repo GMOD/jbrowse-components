@@ -105,7 +105,6 @@ const LDCanvas = observer(function LDCanvas({
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPxWithoutBorders
   const {
-    rpcData,
     showLegend,
     ldMetric,
     lineZoneHeight,
@@ -192,7 +191,7 @@ const LDCanvas = observer(function LDCanvas({
       onMouseLeave={onMouseLeave}
     >
       <canvas
-        data-testid={`ld_canvas${rpcData ? '_done' : ''}`}
+        data-testid="ld_canvas"
         ref={canvasRef}
         style={{
           width,
@@ -277,7 +276,7 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
   model: SharedLDModel
 }) {
   return (
-    <DisplayChrome model={model} factory={LDRenderer}>
+    <DisplayChrome model={model} factory={LDRenderer} testid="ld-display">
       {({ canvasRef }) =>
         model.showLDTriangle ? (
           <LDCanvas model={model} canvasRef={canvasRef} />

@@ -102,7 +102,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       ref={containerRef}
       testid="multi-wiggle-display"
       style={{
-        position: 'relative',
         width: totalWidth,
         height,
       }}

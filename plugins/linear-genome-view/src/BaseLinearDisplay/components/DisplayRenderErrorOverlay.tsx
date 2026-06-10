@@ -7,18 +7,16 @@ import { observer } from 'mobx-react'
 const DisplayRenderErrorOverlay = observer(function DisplayRenderErrorOverlay({
   error,
   onRetry,
-  width,
   height,
 }: {
   error: unknown
   onRetry: () => void
-  width?: number
   height: number
 }) {
   return (
     <ErrorOverlay
       error={error}
-      width={width ?? '100%'}
+      width="100%"
       height={height}
       onRetry={() => {
         onRetry()
