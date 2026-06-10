@@ -6,6 +6,8 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { parseBed, readFile } from '../util.ts'
 
+import type { MCScanSimpleAnchorsAdapterConfig } from './configSchema.ts'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
@@ -28,7 +30,7 @@ type Row = [
   number,
 ]
 
-export default class MCScanSimpleAnchorsAdapter extends BaseFeatureDataAdapter {
+export default class MCScanSimpleAnchorsAdapter extends BaseFeatureDataAdapter<MCScanSimpleAnchorsAdapterConfig> {
   private setupP?: Promise<{
     assemblyNames: string[]
     feats: Row[]

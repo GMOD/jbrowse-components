@@ -1,3 +1,5 @@
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
@@ -85,4 +87,5 @@ const configSchema = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+export type CramAdapterConfig = Instance<typeof configSchema>
 export default configSchema

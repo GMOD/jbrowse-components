@@ -7,6 +7,8 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { getAssemblyNamesFromConf } from '../util.ts'
 
+import type { BlastTabularAdapterConfig } from './configSchema.ts'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -201,7 +203,7 @@ function createBlastLineParser(columns: string) {
   }
 }
 
-export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
+export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTabularAdapterConfig> {
   private setupP?: Promise<BlastRecord[]>
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -215,7 +217,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
   }
 
   async setupPre(opts?: BaseOptions): Promise<BlastRecord[]> {
-    const columns = this.getConf('columns') as string
+    const columns = this.getConf('columns')
     const lines: BlastRecord[] = []
     const cb = createBlastLineParser(columns)
     parseLineByLine(

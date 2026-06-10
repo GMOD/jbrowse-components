@@ -8,6 +8,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 import { filterTagValue, parseSamHeader } from '../shared/util.ts'
 
+import type { BamAdapterConfig } from './configSchema.ts'
 import type { FilterBy } from '../shared/types.ts'
 import type { ParsedSamHeader } from '../shared/util.ts'
 import type {
@@ -17,7 +18,7 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-export default class BamAdapter extends BaseFeatureDataAdapter {
+export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig> {
   public samHeader?: ParsedSamHeader
 
   private setupP?: Promise<ParsedSamHeader>

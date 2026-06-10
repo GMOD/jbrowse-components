@@ -5,6 +5,8 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { parseBed, readFile } from '../util.ts'
 
+import type { MCScanAnchorsAdapterConfig } from './configSchema.ts'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -19,7 +21,7 @@ interface BareFeature {
 
 type Row = [BareFeature, BareFeature, number, number]
 
-export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
+export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter<MCScanAnchorsAdapterConfig> {
   private setupP?: Promise<{
     assemblyNames: string[]
     feats: Row[]

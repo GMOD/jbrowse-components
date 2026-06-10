@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import { types } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -97,4 +98,5 @@ const configSchema = ConfigurationSchema(
   },
 )
 
+export type BamAdapterConfig = Instance<typeof configSchema>
 export default configSchema

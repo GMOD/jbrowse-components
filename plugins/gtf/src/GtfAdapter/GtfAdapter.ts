@@ -9,6 +9,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { aggregateGtfFeatures, featureData, parseGtf } from '../util.ts'
 
+import type { GtfAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
@@ -35,7 +36,7 @@ function getRedispatchBounds(
   return { minStart, maxEnd, hasAnyAggregateField }
 }
 
-export default class GtfAdapter extends BaseFeatureDataAdapter {
+export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig> {
   private gtfFeatures?: ReturnType<GtfAdapter['loadDataP']>
 
   private async loadDataP(opts?: BaseOptions) {
@@ -110,7 +111,7 @@ export default class GtfAdapter extends BaseFeatureDataAdapter {
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const aggregateField = this.getConf('aggregateField') as string
+    const aggregateField = this.getConf('aggregateField')
     const { start, end, refName } = query
     const { intervalTreeMap } = await this.loadData(opts)
     const tree = intervalTreeMap[refName]

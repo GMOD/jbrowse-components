@@ -7,8 +7,9 @@ import type {
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { SequenceSearchAdapterConfig } from './configSchema.ts'
 
-export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
+export default class SequenceSearchAdapter extends BaseFeatureDataAdapter<SequenceSearchAdapterConfig> {
   public async configure() {
     const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
     if (!adapter) {
@@ -42,10 +43,10 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
       // shorter than queryEnd-queryStart; reverse-strand coordinates must be
       // anchored on the actual end, not the requested queryEnd
       const seqEnd = queryStart + residues.length
-      const search = this.getConf('search') as string
-      const searchForward = this.getConf('searchForward') as boolean
-      const searchReverse = this.getConf('searchReverse') as boolean
-      const caseInsensitive = this.getConf('caseInsensitive') as boolean
+      const search = this.getConf('search')
+      const searchForward = this.getConf('searchForward')
+      const searchReverse = this.getConf('searchReverse')
+      const caseInsensitive = this.getConf('caseInsensitive')
       const re = new RegExp(search, `g${caseInsensitive ? 'i' : ''}`)
 
       if (search) {

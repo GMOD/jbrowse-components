@@ -14,6 +14,7 @@ import {
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { GtfTabixAdapterConfig } from './configSchema.ts'
 import type { Observer } from 'rxjs'
 
 interface GtfLine {
@@ -23,7 +24,7 @@ interface GtfLine {
   type: string
 }
 
-export default class GtfTabixAdapter extends BaseFeatureDataAdapter {
+export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdapterConfig> {
   private configured?: Promise<{
     gtf: TabixIndexedFile
     dontRedispatchSet: Set<string>
@@ -128,7 +129,7 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    const aggregateField = this.getConf('aggregateField') as string
+    const aggregateField = this.getConf('aggregateField')
     const feats = parseGtf(lines.map(l => l.line).join('\n')).map(
       (f, i) =>
         featureData(

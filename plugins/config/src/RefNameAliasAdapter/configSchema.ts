@@ -1,3 +1,5 @@
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
@@ -70,5 +72,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type RefNameAliasAdapterConfig = Instance<typeof RefNameAliasAdapter>
 
 export default RefNameAliasAdapter

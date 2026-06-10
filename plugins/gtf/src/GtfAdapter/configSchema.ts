@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config GtfAdapter
@@ -60,4 +61,5 @@ const GtfAdapter = ConfigurationSchema(
   },
 )
 
+export type GtfAdapterConfig = Instance<typeof GtfAdapter>
 export default GtfAdapter

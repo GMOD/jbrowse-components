@@ -113,21 +113,48 @@ churn. Convert opportunistically (no big-bang); the ordering below is by
 read-density / bug-finding potential, not a mandate to do all at once.
 
 - **Done:** `bed` plugin (7 adapters).
-- **Next — comparative-adapters** (scalar reads + existing casts to validate):
-  `PairwiseIndexedPAFAdapter` (`coarseBpPerPxThreshold as number`),
-  `BlastTabularAdapter` (`columns as string`), `PAFAdapter`, `DeltaAdapter`,
-  `ChainAdapter`, `MCScan*Anchorsadapter`. Casts on scalar slots should drop;
-  casts on `stringArray`/`fileLocation` stay.
-- **alignments adapters:** `CramAdapter` (`fetchSizeLimit` number),
-  `BamAdapter`, `HtsgetBamAdapter` (`htsgetBase`/`htsgetTrackId` strings),
-  `SNPCoverageAdapter` (wrapper — keep `AnyConfigurationModel` if it forwards an
-  arbitrary subadapter config).
-- **config plugin:** `RefNameAliasAdapter` (`refNameColumn` etc.),
-  `NcbiSequenceReportAliasAdapter` (`useNameOverride` boolean) — these extend
-  `BaseRefNameAliasAdapter`; thread the generic through that base too (same
-  pattern as `BaseFeatureDataAdapter`).
-- **sequence / gff3 / vcf / wiggle adapters:** mostly `fileLocation` reads →
-  `any`, low payoff; convert only when touched for other reasons.
+- **Done:** `comparative-adapters` — `BlastTabularAdapter` (dropped `as string`
+  on `columns`), `PairwiseIndexedPAFAdapter` (dropped `as number` on
+  `coarseBpPerPxThreshold`), `MCScanAnchorsAdapter`, `MCScanSimpleAnchorsAdapter`
+  (convention + `as string[]` on `assemblyNames` stays — stringArray → `any`).
+  **Deferred:** `PAFAdapter`/`ChainAdapter`/`DeltaAdapter`/`MashMapAdapter` —
+  these only read `fileLocation` slots (all `any`) so there are no scalar casts
+  to drop; the inheritance chain (subclasses override `setupPre` and read
+  different slot names from the parent) makes concrete typing non-trivial.
+- **Done:** `alignments` — `CramAdapter` (`fetchSizeLimit` now typed `number`).
+  **Deferred:** `BamAdapter`/`HtsgetBamAdapter` — `HtsgetBamAdapter` extends
+  `BamAdapter` and reads `htsgetBase`/`htsgetTrackId` (slots not in
+  `BamAdapterConfig`); concrete-typing `BamAdapter` breaks the subclass.
+  Resolution options: make `BamAdapter` generic
+  (`class BamAdapter<CONF extends AnyConfigurationModel = BamAdapterConfig>`)
+  — parent body loses self-typed `getConf` returns; OR separate the adapters
+  and add explicit `readConfObject(this.config as unknown as HtsgetBamAdapterConfig, ...)`
+  in HtsgetBamAdapter.
+- **Done:** `config plugin` — `RefNameAliasAdapter` (`refNameColumn` number,
+  `refNameColumnHeaderName` string), `NcbiSequenceReportAliasAdapter`
+  (`useNameOverride` boolean).
+- **Done:** `sequence` — `SequenceSearchAdapter` (dropped 4 scalar casts:
+  `search`, `searchForward`, `searchReverse`, `caseInsensitive`).
+- **Done:** `gtf` — `GtfTabixAdapter` (dropped `as string` on `aggregateField`),
+  `GtfAdapter` (same).
+- **Done:** `wiggle` — `BigWigAdapter` (`source` string, `resolutionMultiplier`
+  number now typed).
+- **Done:** `gff3` — `Gff3TabixAdapter` (convention; `dontRedispatch`
+  stringArray cast stays).
+- **Done:** `variants` — `VcfTabixAdapter`, `VcfAdapter` (convention;
+  fileLocation/frozen stays `any`).
+- **Done:** `alignments` — `BamAdapter` (`fetchSizeLimit` typed number).
+  `HtsgetBamAdapter` extends `BamAdapter`; typed via
+  `readConfObject(this.config as unknown as HtsgetBamAdapterConfig, ...)` since
+  its slots are not in BamAdapterConfig.
+
+**Remaining (low priority / blockers noted):**
+- `SNPCoverageAdapter` — does not exist as a standalone class; remove from list.
+- `PAFAdapter`/`ChainAdapter`/`DeltaAdapter`/`MashMapAdapter` — inheritance
+  chain, zero scalar casts to drop in any of them. Deferred.
+- `MafTabixAdapter`/`BigMafAdapter`/`BgzipTaffyAdapter` — `getSamplesFromConfig(key => this.getConf(key))` dynamic-string reads would fail the slot-name constraint after typing. Needs either a cast or refactor to `readConfObject`.
+- `GCContentAdapter` — factory-pattern configSchema (`const f = (pm) => ConfigurationSchema(...)`) needs `ReturnType<typeof f>` not `typeof schema`; plus only number/stringEnum reads, no casts to drop.
+- `NCListAdapter`/`HicAdapter`/`Gff3Adapter`/`VcfAdapter`/`SplitVcfTabixAdapter`/`MultiWiggleAdapter`/`SPARQLAdapter` — fileLocation/frozen/stringArray only, or already typed via constructor-param pattern (SPARQL). Deferred until touched for other reasons.
 
 Base classes still on the non-generic default that need the `<CONF>` param
 threaded before their subclasses can opt in: `BaseRefNameAliasAdapter`,

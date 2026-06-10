@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BigWigAdapter
@@ -77,5 +78,7 @@ const BigWigAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type BigWigAdapterConfig = Instance<typeof BigWigAdapter>
 
 export default BigWigAdapter

@@ -1,3 +1,5 @@
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
@@ -59,5 +61,9 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type NcbiSequenceReportAliasAdapterConfig = Instance<
+  typeof NcbiSequenceReportAliasAdapterConfigSchema
+>
 
 export default NcbiSequenceReportAliasAdapterConfigSchema

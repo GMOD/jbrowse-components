@@ -1,3 +1,5 @@
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
@@ -46,5 +48,7 @@ const configSchema = ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export type SequenceSearchAdapterConfig = Instance<typeof configSchema>
 
 export default configSchema

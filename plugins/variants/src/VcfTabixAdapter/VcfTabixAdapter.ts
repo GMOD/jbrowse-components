@@ -11,8 +11,9 @@ import { parseSamplesTsv } from '../shared/parseSamplesTsv.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { VcfTabixAdapterConfig } from './configSchema.ts'
 
-export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
+export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
 
   private configured?: Promise<{

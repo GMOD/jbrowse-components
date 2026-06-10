@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -54,5 +55,7 @@ const VcfAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type VcfAdapterConfig = Instance<typeof VcfAdapter>
 
 export default VcfAdapter

@@ -9,6 +9,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
 
+import type { BigWigAdapterConfig } from './configSchema.ts'
 import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -85,7 +86,7 @@ function computeStatsFromView(
   }
 }
 
-export default class BigWigAdapter extends BaseFeatureDataAdapter {
+export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterConfig> {
   private setupP?: Promise<{
     bigwig: BigWig
     header: Awaited<ReturnType<BigWig['getHeader']>>

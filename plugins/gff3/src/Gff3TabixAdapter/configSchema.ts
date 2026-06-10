@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config Gff3TabixAdapter
@@ -103,5 +104,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type Gff3TabixAdapterConfig = Instance<typeof Gff3TabixAdapter>
 
 export default Gff3TabixAdapter

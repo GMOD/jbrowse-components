@@ -1,3 +1,4 @@
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
@@ -86,5 +87,7 @@ const MCScanAnchorsAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type MCScanAnchorsAdapterConfig = Instance<typeof MCScanAnchorsAdapter>
 
 export default MCScanAnchorsAdapter

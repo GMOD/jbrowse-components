@@ -13,6 +13,7 @@ import {
   parseSamHeader,
 } from '../shared/util.ts'
 
+import type { CramAdapterConfig } from './configSchema.ts'
 import type { FilterBy } from '../shared/types.ts'
 import type { ParsedSamHeader } from '../shared/util.ts'
 import type {
@@ -21,7 +22,7 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class CramAdapter extends BaseFeatureDataAdapter {
+export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfig> {
   public samHeader?: ParsedSamHeader
 
   private setupP?: Promise<{

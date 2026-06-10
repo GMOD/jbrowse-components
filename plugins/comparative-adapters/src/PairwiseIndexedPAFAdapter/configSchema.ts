@@ -1,3 +1,4 @@
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -118,5 +119,7 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type PairwiseIndexedPAFAdapterConfig = Instance<typeof PairwiseIndexedPAFAdapter>
 
 export default PairwiseIndexedPAFAdapter

@@ -7,6 +7,8 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { getAssemblyNamesFromConf, pafIdentity, parsePAFLine } from '../util.ts'
 
+import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -49,14 +51,14 @@ export function pickPifPrefix({
   return useCoarse ? fineLetter.toUpperCase() : fineLetter
 }
 
-export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
+export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<PairwiseIndexedPAFAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected pif: TabixIndexedFile
   private coarseTierAvailable?: Promise<boolean>
 
   public constructor(
-    config: AnyConfigurationModel,
+    config: PairwiseIndexedPAFAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
@@ -133,7 +135,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter {
       const letter = pickPifPrefix({
         flip,
         bpPerPx: opts.bpPerPx,
-        threshold: this.getConf('coarseBpPerPxThreshold') as number,
+        threshold: this.getConf('coarseBpPerPxThreshold'),
         hasCoarseTier: await this.hasCoarseTier(opts),
         lodMode: opts.lodMode,
       })
