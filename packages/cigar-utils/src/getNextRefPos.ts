@@ -32,7 +32,7 @@ export function getNextRefPos(
     i++
   ) {
     const packed = cigarOps[i]!
-    const len = packed >> 4
+    const len = packed >>> 4
     const op = packed & 0xf
 
     if (op === CIGAR_S || op === CIGAR_I) {

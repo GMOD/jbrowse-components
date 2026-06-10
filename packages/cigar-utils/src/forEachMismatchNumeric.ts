@@ -45,7 +45,7 @@ export function forEachMismatchNumeric(
     let roffset = 0
     for (let i = 0, l = cigar.length; i < l; i++) {
       const packed = cigar[i]!
-      const len = packed >> 4
+      const len = packed >>> 4
       const op = packed & 0xf
       if ((1 << op) & CIGAR_M_EQ_MASK) {
         roffset += len
@@ -89,7 +89,7 @@ export function forEachMismatchNumeric(
 
   for (let i = 0, l = cigar.length; i < l; i++) {
     const packed = cigar[i]!
-    const len = packed >> 4
+    const len = packed >>> 4
     const op = packed & 0xf
 
     if ((1 << op) & CIGAR_M_EQ_MASK) {

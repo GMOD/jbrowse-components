@@ -8,8 +8,10 @@ import {
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
 
-const startClip = new RegExp(/(\d+)[SH]$/)
-const endClip = new RegExp(/^(\d+)([SH])/)
+// clip at the end of the CIGAR string = start of a reverse-strand read
+const trailingClip = /(\d+)[SH]$/
+// clip at the start of the CIGAR string = start of a forward-strand read
+const leadingClip = /^(\d+)([SH])/
 
 // CIGAR operation char codes to indices (from BAM spec)
 const CIGAR_CODE_TO_INDEX: Record<number, number> = {
@@ -164,8 +166,8 @@ export function getLengthSansClipping(cigar: string) {
 
 export function getClip(cigar: string, strand: number) {
   return strand === -1
-    ? +(startClip.exec(cigar) ?? [])[1]! || 0
-    : +(endClip.exec(cigar) ?? [])[1]! || 0
+    ? +(trailingClip.exec(cigar)?.[1] ?? 0)
+    : +(leadingClip.exec(cigar)?.[1] ?? 0)
 }
 
 // produces a list of "feature-like" object from parsing supplementary
@@ -220,6 +222,3 @@ export function featurizeSA(
       }) ?? []
   )
 }
-
-export { getNextRefPos } from './getNextRefPos.ts'
-export { cigarToMismatches2 } from './cigarToMismatches2.ts'
