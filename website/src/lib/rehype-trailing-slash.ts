@@ -11,12 +11,12 @@ const rehypeTrailingSlash: Plugin<[], Root> = () => {
       if (node.tagName !== 'a') {
         return
       }
-      const href = node.properties?.href
+      const href = node.properties.href
       if (
         typeof href === 'string' &&
         href.startsWith('/') &&
         !href.startsWith('//') &&
-        !HAS_EXTENSION.test(href.split('#')[0].split('?')[0]) &&
+        !HAS_EXTENSION.test((href.split('#')[0] ?? href).split('?')[0] ?? href) &&
         !href.endsWith('/')
       ) {
         node.properties.href = href.replace(/([?#].*)?$/, '/$1')

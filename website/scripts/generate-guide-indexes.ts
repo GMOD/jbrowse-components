@@ -18,7 +18,8 @@ function parseFrontmatter(content: string) {
   }
   const result: Record<string, string> = {}
   let currentKey: string | null = null
-  for (const line of match[1].split('\n')) {
+  const [, body = ''] = match
+  for (const line of body.split('\n')) {
     if (currentKey !== null && /^\s+\S/.test(line)) {
       // continuation of a multi-line block scalar value
       const prev = result[currentKey]
@@ -39,13 +40,13 @@ function collectEntries(dir: string, urlDir: string): Map<string, Entry[]> {
   for (const file of readdirSync(dir).filter(f => f.endsWith('.md'))) {
     const content = readFileSync(join(dir, file), 'utf8')
     const fm = parseFrontmatter(content)
-    if (!fm['guide_category'] || !fm['description']) {
+    if (!fm.guide_category || !fm.description) {
       continue
     }
-    const cat = fm['guide_category']
+    const cat = fm.guide_category
     const entry: Entry = {
-      title: fm['title'] ?? file.replace(/\.md$/, ''),
-      description: fm['description'],
+      title: fm.title ?? file.replace(/\.md$/, ''),
+      description: fm.description,
       slug: file.replace(/\.md$/, ''),
       dir: urlDir,
     }
@@ -66,10 +67,10 @@ function checkMissingFrontmatter(
     const content = readFileSync(join(dir, file), 'utf8')
     const fm = parseFrontmatter(content)
     const missing = []
-    if (!fm['description']) {
+    if (!fm.description) {
       missing.push('description')
     }
-    if (!fm['guide_category']) {
+    if (!fm.guide_category) {
       missing.push('guide_category')
     }
     if (missing.length) {
@@ -229,10 +230,10 @@ function checkOrWrite(path: string, generated: string, label: string) {
       console.error(`${label} is out of date — run: pnpm lint-docs`)
       process.exit(1)
     }
-    console.log(`${label} is up to date`)
+    console.error(`${label} is up to date`)
   } else {
     writeFileSync(path, generated)
-    console.log(`${label} regenerated`)
+    console.error(`${label} regenerated`)
   }
 }
 

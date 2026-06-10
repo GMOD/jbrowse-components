@@ -190,8 +190,8 @@ async function main() {
       console.log(`\n${regen.length} marked bad — regenerate with:`)
       for (const v of regen) {
         console.log(
-          `  node --experimental-strip-types scripts/generate-screenshots.ts --filter=${v.name} --exact` +
-            `${v.note ? `   # ${v.note}` : ''}`,
+          `  node --experimental-strip-types scripts/generate-screenshots.ts --filter=${v.name} --exact${ 
+            v.note ? `   # ${v.note}` : ''}`,
         )
       }
     }
@@ -206,7 +206,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err: unknown) => {
   console.error(err)
   process.exit(1)
 })

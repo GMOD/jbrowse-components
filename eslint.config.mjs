@@ -74,7 +74,11 @@ export default defineConfig(
 
       // Excluded directories
       'webpack',
-      'website',
+      'website/blog',
+      'website/docs',
+      'website/static',
+
+      'website/.astro',
       'docs',
       'benchmarks',
       'auth_test_utils',
@@ -342,6 +346,21 @@ export default defineConfig(
             'Do not mock from the src directory of another package. Use the package public API instead.',
         },
       ],
+    },
+  },
+  // website/src + website/scripts — use website/tsconfig.json (not root)
+  // and have no React components, so React rules are disabled.
+  {
+    files: ['website/src/**/*.ts', 'website/scripts/**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./website/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      'react-compiler/react-compiler': 'off',
+      'react-refresh/only-export-components': 'off',
     },
   },
   // useEffectEvent returns a stale closure inside mobx-react observer()

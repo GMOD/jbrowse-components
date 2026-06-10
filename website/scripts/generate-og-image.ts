@@ -70,5 +70,6 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
   ${wordmark}
 </svg>`
 
+// eslint-disable-next-line baseline-js/use-baseline
 await sharp(new TextEncoder().encode(svg)).png().toFile(outPath)
 console.log(`wrote ${path.relative(websiteRoot, outPath)}`)

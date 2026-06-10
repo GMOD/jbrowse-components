@@ -10,6 +10,7 @@ import { launch } from 'puppeteer'
 import handler from 'serve-handler'
 
 import { specs } from './screenshot-specs.ts'
+
 import type {
   Annotation,
   ScreenshotAction,
@@ -85,7 +86,7 @@ function startServer(port: number, proxyPort?: number): Promise<http.Server> {
       }
     })
     server.on('error', reject)
-    server.listen(port, () => resolve(server))
+    server.listen(port, () => { resolve(server) })
   })
 }
 
@@ -102,7 +103,7 @@ async function waitForLoadingComplete(page: Page, timeout = 30000) {
   // remote source may exceed the timeout, in which case the settle below still
   // applies.
   await page
-    .waitForFunction(() => !/Downloading/.test(document.body.innerText), {
+    .waitForFunction(() => !document.body.innerText.includes('Downloading'), {
       timeout,
     })
     .catch(() => {})
@@ -281,15 +282,17 @@ async function captureLGV(
 
 async function debugDump(page: Page, name: string) {
   const bodyText = await page
-    .evaluate(() => document.body?.innerText?.substring(0, 800))
-    .catch(() => 'eval failed')
-  console.error(
-    `    debug text: ${(bodyText ?? '').replace(/\s+/g, ' ').trim()}`,
-  )
+    .evaluate(() => {
+      const body = document.body
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      return body ? body.innerText.substring(0, 800) : ''
+    })
+    .catch(() => '')
+  console.error(`    debug text: ${bodyText.replace(/\s+/g, ' ').trim()}`)
   const debugPath = path.join(outDir, `debug_${name.replace(/\//g, '_')}.png`)
   await page
     .screenshot()
-    .then(png => fs.writeFileSync(debugPath, png))
+    .then(png => { fs.writeFileSync(debugPath, png) })
     .catch(() => {})
   console.error(`    debug screenshot: ${debugPath}`)
 }
@@ -316,7 +319,7 @@ async function captureUrl(
         visible: true,
         timeout: readyTimeout,
       })
-      .catch(async e => {
+      .catch(async (e: unknown) => {
         await debugDump(page, spec.name)
         throw e
       })
@@ -327,7 +330,7 @@ async function captureUrl(
         visible: true,
         timeout: readyTimeout,
       })
-      .catch(async e => {
+      .catch(async (e: unknown) => {
         await debugDump(page, spec.name)
         throw e
       })
@@ -376,7 +379,8 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
           let best: Element | undefined
           let bestArea = Number.POSITIVE_INFINITY
           for (const el of document.querySelectorAll('body *')) {
-            const txt = (el.textContent ?? '').trim().toLowerCase()
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            const txt = (el.textContent !== null ? el.textContent : '').trim().toLowerCase()
             const matches =
               txt === want || (el.childElementCount === 0 && txt.includes(want))
             const rect = el.getBoundingClientRect()
@@ -439,8 +443,8 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
       svg.appendChild(defs)
       for (const a of resolved) {
         const color = a.color ?? '#e3242b'
-        const cx = a.x ?? 0
-        const cy = a.y ?? 0
+        const cx = a.x
+        const cy = a.y
         if (a.type === 'arrow' && a.from) {
           // anchored arrow: head points at the resolved element center
           const headX = a.anchor ? cx : (a.to?.x ?? 0)
@@ -540,7 +544,7 @@ async function shoot(
     await clearAnnotations(page)
   }
   await page.evaluate(
-    () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())),
+    () => new Promise<void>(resolve => requestAnimationFrame(() => { resolve() })),
   )
   const clip = spec.crop
   await page.screenshot(clip ? { path: file, clip } : { path: file })
@@ -552,7 +556,7 @@ async function runActions(
   actions: ScreenshotAction[] | undefined,
 ) {
   for (const action of actions ?? []) {
-    await runAction(page, action).catch(async e => {
+    await runAction(page, action).catch(async (e: unknown) => {
       await debugDump(page, name)
       throw e
     })
@@ -713,7 +717,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err: unknown) => {
   console.error(err)
   process.exit(1)
 })
