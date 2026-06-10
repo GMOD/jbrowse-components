@@ -126,15 +126,15 @@ export default function stateModelFactory(
       /**
        * #getter
        */
-      get color() {
-        return self.getConfWithOverride<string>('color')
+      get color(): string {
+        return self.getConfWithOverride('color')
       },
 
       /**
        * #getter
        */
-      get useBicolor() {
-        return self.getConfWithOverride<boolean>('useBicolor')
+      get useBicolor(): boolean {
+        return self.getConfWithOverride('useBicolor')
       },
 
       /**
@@ -153,7 +153,7 @@ export default function stateModelFactory(
           height: self.height,
           domain: self.domain,
           scaleType: self.scaleType,
-          minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
+          minimalTicks: self.getOverride<boolean>('minimalTicks') ?? false,
         })
       },
 

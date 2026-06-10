@@ -63,6 +63,7 @@ import {
 } from './menus/index.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
+import type { LinearAlignmentsDisplayConfigModel } from './configSchema.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from './constants.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
@@ -292,7 +293,15 @@ export default function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        ConfigOverrideMixin([
+        ConfigOverrideMixin<
+          LinearAlignmentsDisplayConfigModel,
+          // override-only keys (read via getOverride, no config-slot fallback)
+          | 'mismatchAlpha'
+          | 'showLowFreqMismatches'
+          | 'showLegend'
+          | 'sortedBy'
+          | 'showOutline'
+        >([
           'scaleType',
           'autoscale',
           'minScore',
@@ -537,45 +546,45 @@ export default function stateModelFactory(
          * #getter
          */
         get scaleType() {
-          return self.getConfWithOverride<string>('scaleType')
+          return self.getConfWithOverride('scaleType')
         },
         /**
          * #getter
          */
         get autoscaleType() {
-          return self.getConfWithOverride<string>('autoscale')
+          return self.getConfWithOverride('autoscale')
         },
         /**
          * #getter
          */
         get minScore() {
-          return self.getConfWithOverride<number>('minScore')
+          return self.getConfWithOverride('minScore')
         },
         /**
          * #getter
          */
         get maxScore() {
-          return self.getConfWithOverride<number>('maxScore')
+          return self.getConfWithOverride('maxScore')
         },
         /**
          * #getter
          */
         get minScoreBound() {
-          const v = self.getConfWithOverride<number>('minScore')
+          const v = self.getConfWithOverride('minScore')
           return v !== Number.MIN_VALUE ? v : undefined
         },
         /**
          * #getter
          */
         get maxScoreBound() {
-          const v = self.getConfWithOverride<number>('maxScore')
+          const v = self.getConfWithOverride('maxScore')
           return v !== Number.MAX_VALUE ? v : undefined
         },
         /**
          * #getter
          */
         get numStdDev() {
-          return self.getConfWithOverride<number>('numStdDev')
+          return self.getConfWithOverride('numStdDev')
         },
       }))
       .views(self => ({
@@ -626,36 +635,36 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get colorBy() {
-          return self.getConfWithOverride<ColorBy>('colorBy')
+        get colorBy(): ColorBy {
+          return self.getConfWithOverride('colorBy')
         },
 
         /**
          * #getter
          */
-        get filterBy() {
-          return self.getConfWithOverride<FilterBy>('filterBy')
+        get filterBy(): FilterBy {
+          return self.getConfWithOverride('filterBy')
         },
 
         /**
          * #getter
          */
         get featureHeight() {
-          return self.getConfWithOverride<number>('featureHeight')
+          return self.getConfWithOverride('featureHeight')
         },
 
         /**
          * #getter
          */
         get featureSpacing() {
-          return self.getConfWithOverride<number>('featureSpacing')
+          return self.getConfWithOverride('featureSpacing')
         },
 
         /**
          * #getter
          */
         get maxHeight() {
-          return self.getConfWithOverride<number>('maxHeight')
+          return self.getConfWithOverride('maxHeight')
         },
 
         /**
@@ -796,9 +805,9 @@ export default function stateModelFactory(
                   sortedBy: this.sortedBy,
                   showSoftClipping: self.showSoftClipping,
                   maxRows: maxRowsFor(
-                    self.getConfWithOverride<number>('maxHeight'),
-                    self.getConfWithOverride<number>('featureHeight') +
-                      self.getConfWithOverride<number>('featureSpacing'),
+                    self.getConfWithOverride('maxHeight'),
+                    self.getConfWithOverride('featureHeight') +
+                      self.getConfWithOverride('featureSpacing'),
                   ),
                 })
           const laidOut = self.showLinkedReadLines
@@ -961,7 +970,7 @@ export default function stateModelFactory(
          * #getter
          */
         get readConnectionsLineWidth() {
-          return self.getConfWithOverride<number>('readConnectionsLineWidth')
+          return self.getConfWithOverride('readConnectionsLineWidth')
         },
 
         /**
@@ -2034,7 +2043,7 @@ export default function stateModelFactory(
             return {
               adapterConfig: self.adapterConfig,
               fetchSizeLimit:
-                self.getConfWithOverride<number>('fetchSizeLimit'),
+                self.getConfWithOverride('fetchSizeLimit'),
               userByteSizeLimit: self.userByteSizeLimit,
               visibleBp: view.visibleBp,
             }

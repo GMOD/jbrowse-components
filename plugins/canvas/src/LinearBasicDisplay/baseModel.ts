@@ -47,6 +47,7 @@ import { createIncrementalLayout } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
+
 import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type {
   DisplayConfig,
@@ -58,6 +59,7 @@ import type {
   FlatbushRegionIndexes,
   VisibleRegion,
 } from './components/hitTesting.ts'
+import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
@@ -120,7 +122,7 @@ export default function baseStateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        ConfigOverrideMixin([
+        ConfigOverrideMixin<LinearBasicDisplayConfigModel>([
           'maxHeight',
           'autoHeight',
           'displayMode',
@@ -260,28 +262,28 @@ export default function baseStateModelFactory(
          * #getter
          */
         get maxHeight() {
-          return self.getConfWithOverride<number>('maxHeight')
+          return self.getConfWithOverride('maxHeight')
         },
 
         /**
          * #getter
          */
         get autoHeight() {
-          return self.getConfWithOverride<boolean>('autoHeight')
+          return self.getConfWithOverride('autoHeight')
         },
 
         /**
          * #getter
          */
         get displayMode() {
-          return self.getConfWithOverride<DisplayMode>('displayMode')
+          return self.getConfWithOverride('displayMode') as DisplayMode
         },
 
         /**
          * #getter
          */
         get showLabelsMode() {
-          return self.getConfWithOverride<ShowLabelsMode>('showLabels')
+          return self.getConfWithOverride('showLabels') as ShowLabelsMode
         },
 
         /**
@@ -302,7 +304,7 @@ export default function baseStateModelFactory(
           }
           return (
             self.visibleFeatureDensityPerPx <=
-            self.getConfWithOverride<number>('maxLabelFeatureDensity')
+            self.getConfWithOverride('maxLabelFeatureDensity')
           )
         },
 
@@ -310,14 +312,14 @@ export default function baseStateModelFactory(
          * #getter
          */
         get showDescriptions() {
-          return self.getConfWithOverride<boolean>('showDescriptions')
+          return self.getConfWithOverride('showDescriptions')
         },
 
         /**
          * #getter
          */
         get showOutline() {
-          return !!self.getConfWithOverride<string>('outlineColor')
+          return !!self.getConfWithOverride('outlineColor')
         },
 
         /**
@@ -375,7 +377,7 @@ export default function baseStateModelFactory(
           }
           return (
             self.userFeatureDensityLimit ??
-            self.getConfWithOverride<number>('maxFeatureScreenDensity')
+            self.getConfWithOverride('maxFeatureScreenDensity')
           )
         },
 

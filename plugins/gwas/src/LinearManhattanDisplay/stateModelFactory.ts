@@ -100,11 +100,11 @@ export function stateModelFactory(
       get TooltipComponent() {
         return TooltipComponent
       },
-      get color() {
-        return self.getConfWithOverride<string>('color')
+      get color(): string {
+        return self.getConfWithOverride('color')
       },
-      get colorBy() {
-        return self.getConfWithOverride<'normal' | 'ld'>('colorBy')
+      get colorBy(): 'normal' | 'ld' {
+        return self.getConfWithOverride('colorBy')
       },
       get ldAdapterConfig(): Record<string, unknown> | undefined {
         // unset slot defaults to null; normalize to undefined for "absent"
@@ -143,7 +143,7 @@ export function stateModelFactory(
           height: self.height,
           domain: self.domain,
           scaleType: 'linear',
-          minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
+          minimalTicks: self.getOverride<boolean>('minimalTicks') ?? false,
         })
       },
       // SettingsInvalidate watches this shape — any change (color, colorBy,

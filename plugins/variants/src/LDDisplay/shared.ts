@@ -24,6 +24,7 @@ import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
+import type { LDDisplayConfigModel } from './SharedLDConfigSchema.ts'
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
@@ -63,7 +64,7 @@ export default function sharedModelFactory(
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
-      ConfigOverrideMixin([
+      ConfigOverrideMixin<LDDisplayConfigModel>([
         'lineZoneHeight',
         'minorAlleleFrequencyFilter',
         'lengthCutoffFilter',
@@ -167,55 +168,55 @@ export default function sharedModelFactory(
         return true
       },
       get minorAlleleFrequencyFilter() {
-        return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
+        return self.getConfWithOverride('minorAlleleFrequencyFilter')
       },
       get lengthCutoffFilter() {
-        return self.getConfWithOverride<number>('lengthCutoffFilter')
+        return self.getConfWithOverride('lengthCutoffFilter')
       },
       get lineZoneHeight() {
-        return self.getConfWithOverride<number>('lineZoneHeight')
+        return self.getConfWithOverride('lineZoneHeight')
       },
       get ldMetric() {
-        return self.getConfWithOverride<LDMetric>('ldMetric')
+        return self.getConfWithOverride('ldMetric') as LDMetric
       },
       get showLegend() {
-        return self.getConfWithOverride<boolean>('showLegend')
+        return self.getConfWithOverride('showLegend')
       },
       get showLDTriangle() {
-        return self.getConfWithOverride<boolean>('showLDTriangle')
+        return self.getConfWithOverride('showLDTriangle')
       },
       get showRecombination() {
-        return self.getConfWithOverride<boolean>('showRecombination')
+        return self.getConfWithOverride('showRecombination')
       },
       get recombinationZoneHeight() {
-        return self.getConfWithOverride<number>('recombinationZoneHeight')
+        return self.getConfWithOverride('recombinationZoneHeight')
       },
       get fitToHeight() {
-        return self.getConfWithOverride<boolean>('fitToHeight')
+        return self.getConfWithOverride('fitToHeight')
       },
       get hweFilterThreshold() {
-        return self.getConfWithOverride<number>('hweFilterThreshold')
+        return self.getConfWithOverride('hweFilterThreshold')
       },
       get callRateFilter() {
-        return self.getConfWithOverride<number>('callRateFilter')
+        return self.getConfWithOverride('callRateFilter')
       },
       get showVerticalGuides() {
-        return self.getConfWithOverride<boolean>('showVerticalGuides')
+        return self.getConfWithOverride('showVerticalGuides')
       },
       get showLabels() {
-        return self.getConfWithOverride<boolean>('showLabels')
+        return self.getConfWithOverride('showLabels')
       },
       get tickHeight() {
-        return self.getConfWithOverride<number>('tickHeight')
+        return self.getConfWithOverride('tickHeight')
       },
       get useGenomicPositions() {
-        return self.getConfWithOverride<boolean>('useGenomicPositions')
+        return self.getConfWithOverride('useGenomicPositions')
       },
       get signedLD() {
-        return self.getConfWithOverride<boolean>('signedLD')
+        return self.getConfWithOverride('signedLD')
       },
-      get jexlFilters() {
-        return self.getConfWithOverride<string[]>('jexlFilters')
+      get jexlFilters(): string[] {
+        return self.getConfWithOverride('jexlFilters')
       },
       /**
        * #getter

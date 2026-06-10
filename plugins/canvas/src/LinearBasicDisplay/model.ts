@@ -63,23 +63,23 @@ export default function stateModelFactory(
     })
     .views(self => ({
       get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
-        return self.getConfWithOverride<DisplayConfig['subfeatureLabels']>(
+        return self.getConfWithOverride(
           'subfeatureLabels',
-        )
+        ) as DisplayConfig['subfeatureLabels']
       },
 
       get displayMode(): DisplayMode {
-        return self.getConfWithOverride<DisplayMode>('displayMode')
+        return self.getConfWithOverride('displayMode') as DisplayMode
       },
 
       get geneGlyphMode(): DisplayConfig['geneGlyphMode'] {
-        return self.getConfWithOverride<DisplayConfig['geneGlyphMode']>(
+        return self.getConfWithOverride(
           'geneGlyphMode',
-        )
+        ) as DisplayConfig['geneGlyphMode']
       },
 
       get displayDirectionalChevrons() {
-        return self.getConfWithOverride<boolean>('displayDirectionalChevrons')
+        return self.getConfWithOverride('displayDirectionalChevrons')
       },
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {

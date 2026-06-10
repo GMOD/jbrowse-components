@@ -71,75 +71,75 @@ export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
       /**
        * #getter
        */
-      get posColor() {
-        return self.getConfWithOverride<string>('posColor')
+      get posColor(): string {
+        return self.getConfWithOverride('posColor')
       },
       /**
        * #getter
        */
-      get negColor() {
-        return self.getConfWithOverride<string>('negColor')
+      get negColor(): string {
+        return self.getConfWithOverride('negColor')
       },
       /**
        * #getter
        */
-      get bicolorPivot() {
-        return self.getConfWithOverride<number>('bicolorPivot')
+      get bicolorPivot(): number {
+        return self.getConfWithOverride('bicolorPivot')
       },
       /**
        * #getter
        */
-      get scaleType() {
-        return self.getConfWithOverride<string>('scaleType')
+      get scaleType(): string {
+        return self.getConfWithOverride('scaleType')
       },
       /**
        * #getter
        */
-      get autoscaleType() {
-        return self.getConfWithOverride<string>('autoscale')
+      get autoscaleType(): string {
+        return self.getConfWithOverride('autoscale')
       },
       /**
        * #getter
        */
-      get numStdDev() {
-        return self.getConfWithOverride<number>('numStdDev')
+      get numStdDev(): number {
+        return self.getConfWithOverride('numStdDev')
       },
       /**
        * #getter
        */
-      get summaryScoreMode() {
-        return self.getConfWithOverride<string>('summaryScoreMode')
+      get summaryScoreMode(): string {
+        return self.getConfWithOverride('summaryScoreMode')
       },
       /**
        * #getter
        */
-      get renderingType() {
-        return self.getConfWithOverride<string>('defaultRendering')
+      get renderingType(): string {
+        return self.getConfWithOverride('defaultRendering')
       },
       /**
        * #getter
        */
-      get minScore() {
-        return self.getConfWithOverride<number>('minScore')
+      get minScore(): number {
+        return self.getConfWithOverride('minScore')
       },
       /**
        * #getter
        */
-      get maxScore() {
-        return self.getConfWithOverride<number>('maxScore')
+      get maxScore(): number {
+        return self.getConfWithOverride('maxScore')
       },
       /**
        * #getter
        */
-      get minScoreBound() {
-        const val = self.getConfWithOverride<number>('minScore')
+      get minScoreBound(): number | undefined {
+        const val: number = self.getConfWithOverride('minScore')
         return val === Number.MIN_VALUE ? undefined : val
       },
       /**
        * #getter
        */
-      get maxScoreBound() {
-        const val = self.getConfWithOverride<number>('maxScore')
+      get maxScoreBound(): number | undefined {
+        const val: number = self.getConfWithOverride('maxScore')
         return val === Number.MAX_VALUE ? undefined : val
       },
     }))

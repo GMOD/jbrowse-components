@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config LinearAlignmentsDisplay
@@ -127,3 +128,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
     },
   )
 }
+
+export type LinearAlignmentsDisplayConfigModel = Instance<
+  ReturnType<typeof configSchemaFactory>
+>

@@ -153,7 +153,7 @@ export default function stateModelFactory(
           height: self.rowHeight,
           domain: self.domain,
           scaleType: self.scaleType,
-          minimalTicks: self.getConfWithOverride<boolean>('minimalTicks'),
+          minimalTicks: self.getOverride<boolean>('minimalTicks') ?? false,
           offset: 0,
         })
       },

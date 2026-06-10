@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config SharedLDDisplay
  */
@@ -161,3 +163,7 @@ export default function sharedLDConfigFactory() {
     },
   )
 }
+
+export type LDDisplayConfigModel = Instance<
+  ReturnType<typeof sharedLDConfigFactory>
+>

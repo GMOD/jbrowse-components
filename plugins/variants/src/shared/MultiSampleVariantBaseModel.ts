@@ -411,7 +411,7 @@ export default function MultiSampleVariantBaseModelF(
          * Returns the effective rendering mode, falling back to config
          */
         get renderingMode(): string {
-          return self.getConfWithOverride<string>('renderingMode')
+          return self.getConfWithOverride('renderingMode')
         },
 
         get featureWidgetType() {
@@ -421,10 +421,9 @@ export default function MultiSampleVariantBaseModelF(
           }
         },
 
-        get fetchSizeLimit() {
+        get fetchSizeLimit(): number {
           return (
-            self.userByteSizeLimit ??
-            self.getConfWithOverride<number>('fetchSizeLimit')
+            self.userByteSizeLimit ?? self.getConfWithOverride('fetchSizeLimit')
           )
         },
       }))
@@ -590,8 +589,8 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * Returns the effective minor allele frequency filter, falling back to config
          */
-        get minorAlleleFrequencyFilter() {
-          return self.getConfWithOverride<number>('minorAlleleFrequencyFilter')
+        get minorAlleleFrequencyFilter(): number {
+          return self.getConfWithOverride('minorAlleleFrequencyFilter')
         },
 
         /**
@@ -608,24 +607,22 @@ export default function MultiSampleVariantBaseModelF(
             : undefined
         },
 
-        get showSidebarLabels() {
-          return self.getConfWithOverride<boolean>('showSidebarLabels')
+        get showSidebarLabels(): boolean {
+          return self.getConfWithOverride('showSidebarLabels')
         },
 
-        get showTree() {
-          return self.getConfWithOverride<boolean>('showTree')
+        get showTree(): boolean {
+          return self.getConfWithOverride('showTree')
         },
 
-        get showBranchLength() {
-          return self.getConfWithOverride<boolean>('showBranchLength')
+        get showBranchLength(): boolean {
+          return self.getConfWithOverride('showBranchLength')
         },
 
         get referenceDrawingMode(): string {
           return (
             self.getOverride<string>('referenceDrawingMode') ??
-            (self.getConfWithOverride<boolean>('showReferenceAlleles')
-              ? 'draw'
-              : 'skip')
+            (self.getConfWithOverride('showReferenceAlleles') ? 'draw' : 'skip')
           )
         },
 
@@ -908,7 +905,7 @@ export default function MultiSampleVariantBaseModelF(
           }
           return {
             adapterConfig: self.adapterConfig,
-            fetchSizeLimit: self.getConfWithOverride<number>('fetchSizeLimit'),
+            fetchSizeLimit: self.getConfWithOverride('fetchSizeLimit'),
             userByteSizeLimit: self.userByteSizeLimit,
             visibleBp: view.visibleBp,
           }

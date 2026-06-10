@@ -1,7 +1,12 @@
 import { isCallbackValue, readConfObject } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotName,
+  ConfigurationSlotValue,
+} from '@jbrowse/core/configuration'
 
 /**
  * Migrate old `*Setting` snapshot properties to flat config override keys.
@@ -46,9 +51,27 @@ export function migrateOldSettingSnapshots(
  * Read with `getConfWithOverride` (override wins, else config slot value) or
  * `getOverride` (override only). Write with `setOverride`/`clearOverride`.
  */
-export default function ConfigOverrideMixin(
-  configKeys: readonly string[] = [],
+/**
+ * `CONF` — the display's config model type; narrows `getConfWithOverride` key
+ * args to valid slot names when a concrete type is passed.
+ *
+ * `EXTRA` — additional keys that are stored flat in the snapshot but are NOT
+ * config slots (no fallback to a config value). Use these for pure runtime
+ * state that persists via the snapshot mechanism. They are accepted by
+ * `getOverride`/`setOverride`/`clearOverride` but NOT by `getConfWithOverride`
+ * (which requires a config-slot fallback).
+ */
+export default function ConfigOverrideMixin<
+  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+  EXTRA extends string = never,
+>(
+  configKeys: readonly (
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>
+    | EXTRA
+  )[] = [],
 ) {
+  type SlotName = ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>
+  type AnyKey = SlotName | EXTRA
   return types
     .model({
       // Internal override map. Not serialized directly — postProcessSnapshot
@@ -69,7 +92,7 @@ export default function ConfigOverrideMixin(
       const fromFlat: Record<string, unknown> = {}
       const rest: Record<string, unknown> = {}
       for (const [k, v] of Object.entries(s)) {
-        if (configKeys.includes(k)) {
+        if ((configKeys as readonly string[]).includes(k)) {
           fromFlat[k] = v
         } else {
           rest[k] = v
@@ -85,18 +108,26 @@ export default function ConfigOverrideMixin(
        * #method
        * the override value for a key, or undefined if not overridden
        */
-      getOverride<T>(key: string) {
+      getOverride<T>(key: AnyKey) {
         const val = self.configOverrides[key]
         return val as T | undefined
       },
       /**
        * #method
-       * the override value if set, otherwise the resolved config slot value
+       * the override value if set, otherwise the resolved config slot value.
+       * Return type is derived from the schema slot (scalar slots are typed
+       * precisely; object/array/frozen slots degrade to `any`), mirroring the
+       * adapter `getConf`.
        */
-      getConfWithOverride<T>(key: string) {
+      getConfWithOverride<SLOT extends SlotName = SlotName>(
+        key: SLOT,
+      ): ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT> {
         const val = self.configOverrides[key]
         if (val !== undefined) {
-          return val as T
+          return val as ConfigurationSlotValue<
+            ConfigurationSchemaForModel<CONF>,
+            SLOT
+          >
         }
         // ConfigOverrideMixin is always composed with models that provide
         // 'configuration'. Access it via plain-object cast to avoid propagating
@@ -110,14 +141,16 @@ export default function ConfigOverrideMixin(
         // evaluation; readConfObject would otherwise clone object values into a
         // fresh reference each call.
         const raw = (conf as unknown as Record<string, unknown>)[key]
-        return (isCallbackValue(raw) ? readConfObject(conf, key) : raw) as T
+        return (
+          isCallbackValue(raw) ? readConfObject(conf, key) : raw
+        ) as ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
       },
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setOverride(key: string, value: unknown) {
+      setOverride(key: AnyKey, value: unknown) {
         if (value === undefined) {
           const { [key]: _, ...rest } = self.configOverrides
           self.configOverrides = rest
@@ -128,7 +161,7 @@ export default function ConfigOverrideMixin(
       /**
        * #action
        */
-      clearOverride(key: string) {
+      clearOverride(key: AnyKey) {
         const { [key]: _, ...rest } = self.configOverrides
         self.configOverrides = rest
       },

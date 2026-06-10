@@ -3,6 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config LinearBasicDisplay
@@ -51,3 +52,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
     },
   )
 }
+
+export type LinearBasicDisplayConfigModel = Instance<
+  ReturnType<typeof configSchemaFactory>
+>
