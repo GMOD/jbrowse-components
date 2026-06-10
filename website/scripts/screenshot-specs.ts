@@ -1546,7 +1546,7 @@ export const specs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Open track...' },
-          { type: 'waitForText', text: 'Type of add track workflow' },
+          { type: 'waitForText', text: 'Enter track data' },
           { type: 'delay', ms: 1000 },
         ],
       },
@@ -2030,11 +2030,10 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 4000,
     actions: [
-      // open track selector
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Open track selector' },
+      // open the track selector directly via the header button — with no tracks
+      // active the view body also renders an "Open track selector" button, so a
+      // text-based click is ambiguous; the header button's title is unique
+      { type: 'click', selector: 'button[title="Open track selector"]' },
       {
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
