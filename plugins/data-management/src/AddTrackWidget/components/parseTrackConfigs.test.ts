@@ -35,3 +35,11 @@ test('reports a missing type', () => {
     /missing a "type"/,
   )
 })
+
+test('throws on a duplicate trackId within the pasted configs', () => {
+  expect(() =>
+    parseTrackConfigs(
+      '[{"trackId":"t1","type":"FeatureTrack"},{"trackId":"t1","type":"VariantTrack"}]',
+    ),
+  ).toThrow(/Duplicate trackId "t1"/)
+})

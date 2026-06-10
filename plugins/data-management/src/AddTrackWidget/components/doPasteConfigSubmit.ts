@@ -22,16 +22,29 @@ export function doPasteConfigSubmit({
   if (!isSessionWithAddTracks(session)) {
     throw new Error("Can't add tracks to this session")
   } else {
+    // addTrackConf silently returns the existing track on a trackId collision,
+    // so a pasted config reusing an id would be a confusing no-op; reject it up
+    // front instead.
+    const existing = confs.find(conf => session.tracksById[conf.trackId])
+    if (existing) {
+      throw new Error(
+        `A track with trackId "${existing.trackId}" already exists; change the trackId or remove the existing track`,
+      )
+    }
     const { view } = model
     const viewAsms = view?.assemblyNames as string[] | undefined
     const notShown: string[] = []
     transaction(() => {
       for (const conf of confs) {
-        session.addTrackConf(conf)
-        if (viewAsms?.some(asm => conf.assemblyNames?.includes(asm))) {
-          view?.showTrack?.(conf.trackId)
-        } else {
-          notShown.push(conf.name ?? conf.trackId)
+        // addTrackConf returns undefined for an invalid config, which it
+        // already surfaced as an error snackbar; don't show or warn about a
+        // track that wasn't added.
+        if (session.addTrackConf(conf)) {
+          if (viewAsms?.some(asm => conf.assemblyNames?.includes(asm))) {
+            view?.showTrack?.(conf.trackId)
+          } else {
+            notShown.push(conf.name ?? conf.trackId)
+          }
         }
       }
       model.clearData()

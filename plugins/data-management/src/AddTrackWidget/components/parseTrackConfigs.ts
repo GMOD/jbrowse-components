@@ -36,7 +36,15 @@ export function parseTrackConfigs(jsonText: string): PastedTrackConf[] {
   if (list.length === 0) {
     throw new Error('No track configuration found in the pasted text')
   }
-  return list.map((conf, i) =>
+  const confs = list.map((conf, i) =>
     asTrackConf(conf, list.length > 1 ? ` at index ${i}` : ''),
   )
+  const seen = new Set<string>()
+  for (const { trackId } of confs) {
+    if (seen.has(trackId)) {
+      throw new Error(`Duplicate trackId "${trackId}" in the pasted configs`)
+    }
+    seen.add(trackId)
+  }
+  return confs
 }
