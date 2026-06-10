@@ -1,0 +1,187 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: JBrowse newsletter subscription service
+Parameters:
+  FromEmail:
+    Type: String
+    Description: SES-verified email address to send from (e.g. newsletter@jbrowse.org)
+  AllowedOrigins:
+    Type: CommaDelimitedList
+    Default: https://jbrowse.org,http://localhost:4321
+    Description: CORS allowed origins for the subscribe endpoint
+  ApiBaseUrl:
+    Type: String
+    Default: ''
+    Description: API base URL (leave empty on first deploy; set to ApiUrl output on
+      subsequent deploys)
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Timeout: 30
+    Environment:
+      Variables:
+        TABLE_NAME:
+          Ref: SubscribersTable
+        FROM_EMAIL:
+          Ref: FromEmail
+        API_URL:
+          Ref: ApiBaseUrl
+Resources:
+  SubscribersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: jbrowse-newsletter-subscribers
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: email
+        AttributeType: S
+      - AttributeName: confirmToken
+        AttributeType: S
+      - AttributeName: unsubscribeToken
+        AttributeType: S
+      KeySchema:
+      - AttributeName: email
+        KeyType: HASH
+      GlobalSecondaryIndexes:
+      - IndexName: confirmToken-index
+        KeySchema:
+        - AttributeName: confirmToken
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+      - IndexName: unsubscribeToken-index
+        KeySchema:
+        - AttributeName: unsubscribeToken
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+  NewsletterApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          Ref: AllowedOrigins
+        AllowMethods:
+        - POST
+        - GET
+        - OPTIONS
+        AllowHeaders:
+        - Content-Type
+  SubscribeFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+        - src/subscribe.ts
+        External: []
+        Minify: false
+        Target: node22
+      SamResourceId: SubscribeFunction
+    Properties:
+      FunctionName: jbrowse-newsletter-subscribe
+      Handler: subscribe.handler
+      Events:
+        Subscribe:
+          Type: HttpApi
+          Properties:
+            Path: /subscribe
+            Method: POST
+            ApiId:
+              Ref: NewsletterApi
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SubscribersTable
+      - Statement:
+          Effect: Allow
+          Action: ses:SendEmail
+          Resource: '*'
+      CodeUri: SubscribeFunction
+  ConfirmFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+        - src/confirm.ts
+        External: []
+        Minify: false
+        Target: node22
+      SamResourceId: ConfirmFunction
+    Properties:
+      FunctionName: jbrowse-newsletter-confirm
+      Handler: confirm.handler
+      Events:
+        Confirm:
+          Type: HttpApi
+          Properties:
+            Path: /confirm
+            Method: GET
+            ApiId:
+              Ref: NewsletterApi
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SubscribersTable
+      CodeUri: ConfirmFunction
+  UnsubscribeFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+        - src/unsubscribe.ts
+        External: []
+        Minify: false
+        Target: node22
+      SamResourceId: UnsubscribeFunction
+    Properties:
+      FunctionName: jbrowse-newsletter-unsubscribe
+      Handler: unsubscribe.handler
+      Events:
+        Unsubscribe:
+          Type: HttpApi
+          Properties:
+            Path: /unsubscribe
+            Method: GET
+            ApiId:
+              Ref: NewsletterApi
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SubscribersTable
+      CodeUri: UnsubscribeFunction
+  SendFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+        - src/send.ts
+        External: []
+        Minify: false
+        Target: node22
+      SamResourceId: SendFunction
+    Properties:
+      FunctionName: jbrowse-newsletter-send
+      Handler: send.handler
+      Timeout: 300
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: SubscribersTable
+      - Statement:
+          Effect: Allow
+          Action: ses:SendEmail
+          Resource: '*'
+      CodeUri: SendFunction
+Outputs:
+  ApiUrl:
+    Description: Set this as PUBLIC_NEWSLETTER_API_URL in website/.env
+    Value:
+      Fn::Sub: https://${NewsletterApi}.execute-api.${AWS::Region}.amazonaws.com
+  SendFunctionName:
+    Description: Invoke this Lambda to send a newsletter (see README)
+    Value:
+      Ref: SendFunction

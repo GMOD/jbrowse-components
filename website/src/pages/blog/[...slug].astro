@@ -5,6 +5,7 @@ import { blogPath } from '../../lib/blog-path'
 import BlogLayout from '../../layouts/BlogLayout.astro'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
+import NewsletterSignup from '../../components/NewsletterSignup'
 
 export async function getStaticPaths() {
   const posts = (await getCollection('blog')).sort(
@@ -77,6 +78,10 @@ const { html } = await renderMarkdown(post.body ?? '')
       <Fragment set:html={html} />
     </div>
     <footer>
+      <div class="newsletter-cta">
+        <p class="newsletter-label">Get notified about new JBrowse releases</p>
+        <NewsletterSignup client:load />
+      </div>
       <div class="post-nav">
         <div class="post-nav-prev">
           {
@@ -156,6 +161,17 @@ const { html } = await renderMarkdown(post.body ?? '')
     margin-top: 3rem;
     padding-top: 1rem;
     border-top: 1px solid var(--color-border);
+  }
+  .newsletter-cta {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+  }
+  .newsletter-label {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    color: var(--color-text-muted);
   }
   .post-nav {
     display: flex;

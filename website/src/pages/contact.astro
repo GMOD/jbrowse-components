@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import page from '../styles/page.module.css'
+import NewsletterSignup from '../components/NewsletterSignup'
 ---
 
 <BaseLayout title="Contact — JBrowse">
@@ -36,6 +37,10 @@ import page from '../styles/page.module.css'
         Feedback: <a href="https://forms.gle/CRf9Ur9iXu2uuz1o9">Google Form</a>
       </li>
     </ul>
+
+    <h2>Newsletter</h2>
+    <p>Subscribe to receive JBrowse release announcements by email:</p>
+    <NewsletterSignup client:load />
 
     <h2>Social media</h2>
     <ul>

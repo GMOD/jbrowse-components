@@ -2,6 +2,7 @@
 import { Icon } from 'astro-icon/components'
 import { baseUrl } from '../lib/base-url'
 import btn from '../styles/button.module.css'
+import NewsletterSignup from './NewsletterSignup'
 ---
 
 <div class="outer-box">
@@ -93,6 +94,16 @@ import btn from '../styles/button.module.css'
         />
       </div>
     </div>
+  </div>
+
+  <!-- Newsletter -->
+  <div class="section-box">
+    <p class="section-title">Stay up to date</p>
+    <hr />
+    <p class="body-text" style="text-align:center">
+      Subscribe to receive announcements when new JBrowse releases are published.
+    </p>
+    <NewsletterSignup client:load />
   </div>
 
   <!-- Citation -->

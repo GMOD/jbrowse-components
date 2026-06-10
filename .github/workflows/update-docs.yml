@@ -40,6 +40,8 @@ jobs:
       - name: Build website
         run: pnpm build
         working-directory: website
+        env:
+          PUBLIC_NEWSLETTER_API_URL: ${{ secrets.PUBLIC_NEWSLETTER_API_URL }}
       - name: Upload to S3 and invalidate CloudFront cache
         run: |
           aws s3 sync --delete dist s3://jbrowse.org/jb2/
