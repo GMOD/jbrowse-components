@@ -1,7 +1,9 @@
-import { ScanCommand } from '@aws-sdk/lib-dynamodb'
-import type { NativeAttributeValue } from '@aws-sdk/util-dynamodb'
 import { SendEmailCommand } from '@aws-sdk/client-ses'
-import { dynamo, ses, TABLE, FROM, API_URL } from './shared'
+import { ScanCommand } from '@aws-sdk/lib-dynamodb'
+
+import { API_URL, FROM, TABLE, dynamo, ses } from './shared.ts'
+
+import type { NativeAttributeValue } from '@aws-sdk/util-dynamodb'
 
 interface SendEvent {
   subject: string
@@ -39,15 +41,21 @@ export async function handler(event: SendEvent): Promise<SendResult> {
     )
 
     for (const item of result.Items ?? []) {
-      if (typeof item.email === 'string' && typeof item.unsubscribeToken === 'string') {
-        subscribers.push({ email: item.email, unsubscribeToken: item.unsubscribeToken })
+      if (
+        typeof item.email === 'string' &&
+        typeof item.unsubscribeToken === 'string'
+      ) {
+        subscribers.push({
+          email: item.email,
+          unsubscribeToken: item.unsubscribeToken,
+        })
       }
     }
 
     lastKey = result.LastEvaluatedKey
   } while (lastKey)
 
-  console.log(`${subscribers.length} confirmed subscribers (dryRun=${dryRun})`)
+  console.warn(`${subscribers.length} confirmed subscribers (dryRun=${dryRun})`)
 
   if (dryRun) {
     return { sent: 0, skipped: subscribers.length, errors: [] }
@@ -80,9 +88,13 @@ export async function handler(event: SendEvent): Promise<SendResult> {
       )
       sent++
       // 50ms between sends keeps well within SES production rate limits
-      await new Promise<void>(resolve => { setTimeout(resolve, 50) })
+      await new Promise<void>(resolve => {
+        setTimeout(resolve, 50)
+      })
     } catch (err) {
-      errors.push(`${email}: ${err instanceof Error ? err.message : String(err)}`)
+      errors.push(
+        `${email}: ${err instanceof Error ? err.message : String(err)}`,
+      )
     }
   }
 

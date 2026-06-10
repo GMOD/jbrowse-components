@@ -107,7 +107,9 @@ test('the (S<len>) summary is suppressed when per-base clip letters render', () 
     makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 }),
   )
   expect(labels.filter(l => l.type === 'softclip')).toHaveLength(0)
-  expect(mismatchTexts(makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 }))).toEqual(['T', 'G'])
+  expect(
+    mismatchTexts(makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 })),
+  ).toEqual(['T', 'G'])
 })
 
 test('the (S<len>) summary still renders when no per-base clip data', () => {

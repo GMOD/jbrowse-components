@@ -5,7 +5,8 @@ Description: JBrowse newsletter subscription service
 Parameters:
   FromEmail:
     Type: String
-    Description: SES-verified email address to send from (e.g. newsletter@jbrowse.org)
+    Description:
+      SES-verified email address to send from (e.g. newsletter@jbrowse.org)
   AllowedOrigins:
     Type: CommaDelimitedList
     Default: https://jbrowse.org,http://localhost:4321
@@ -15,7 +16,9 @@ Parameters:
   ApiBaseUrl:
     Type: String
     Default: ''
-    Description: API base URL (leave empty on first deploy; set to ApiUrl output on subsequent deploys)
+    Description:
+      API base URL (leave empty on first deploy; set to ApiUrl output on
+      subsequent deploys)
 
 Globals:
   Function:

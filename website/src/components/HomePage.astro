@@ -73,11 +73,6 @@ import NewsletterSignup from './NewsletterSignup'
             <b>Powerful extensibility</b> with a plugin ecosystem which can add additional
             view types, track types, data adapters, and more!
           </li>
-          <li>
-            <a href={`${baseUrl}/features/`}>
-              See a summary of new features and a comparison to JBrowse 1
-            </a>
-          </li>
         </ul>
       </div>
       <div class="features-image">
@@ -91,24 +86,58 @@ import NewsletterSignup from './NewsletterSignup'
     </div>
   </div>
 
-  <!-- Also explore -->
-  <div class="section-box explore-row">
-    <a href={`${baseUrl}/blog/`} class="explore-link">
-      <span class="explore-title">Release blog</span>
-      <span class="explore-desc">Detailed notes on every release</span>
-    </a>
-    <a href={`${baseUrl}/docs/embedded_components/`} class="explore-link">
-      <span class="explore-title">Embedded components</span>
-      <span class="explore-desc">Use JBrowse inside your React app</span>
-    </a>
-    <a href={`${baseUrl}/download/#jbrowse-cli-tools`} class="explore-link">
-      <span class="explore-title">CLI tools</span>
-      <span class="explore-desc">Manage configs and index files</span>
-    </a>
+  <!-- Resources -->
+  <div class="section-box">
+    <p class="section-title">Get started</p>
+    <hr />
+    <div class="resources">
+      <div class="resource-group">
+        <p class="resource-group-label">Quick starts</p>
+        <ul>
+          <li>
+            <a href={`${baseUrl}/docs/quickstart_desktop/`}>JBrowse desktop</a>
+          </li>
+          <li><a href={`${baseUrl}/docs/quickstart_web/`}>JBrowse web</a></li>
+        </ul>
+      </div>
+      <div class="resource-group">
+        <p class="resource-group-label">Guides</p>
+        <ul>
+          <li><a href={`${baseUrl}/docs/user_guide/`}>User guide</a></li>
+          <li><a href={`${baseUrl}/docs/config_guide/`}>Config guide</a></li>
+          <li>
+            <a href={`${baseUrl}/docs/developer_guide/`}>Developer guide</a>
+          </li>
+        </ul>
+      </div>
+      <div class="resource-group">
+        <p class="resource-group-label">Explore</p>
+        <ul>
+          <li><a href={`${baseUrl}/gallery/`}>Visualization gallery</a></li>
+          <li><a href={`${baseUrl}/demos/`}>Live demos</a></li>
+          <li><a href={`${baseUrl}/features/`}>Feature list</a></li>
+          <li><a href={`${baseUrl}/blog/`}>Release blog</a></li>
+        </ul>
+      </div>
+      <div class="resource-group">
+        <p class="resource-group-label">Developers</p>
+        <ul>
+          <li>
+            <a href={`${baseUrl}/docs/embedded_components/`}
+              >Embedded React components</a>
+          </li>
+          <li>
+            <a href={`${baseUrl}/download/#jbrowse-cli-tools`}
+              >Command line tools</a>
+          </li>
+          <li><a href={`${baseUrl}/plugin_store/`}>Plugin store</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <!-- Citation -->
-  <div class="section-box">
+  <div class="section-box centered">
     <p class="section-title">Citation</p>
     <hr />
     <p class="body-text">
@@ -131,27 +160,18 @@ import NewsletterSignup from './NewsletterSignup'
     </cite>
   </div>
 
-  <!-- License -->
-  <div class="section-box">
-    <p class="section-title">License</p>
-    <hr />
-    <p class="body-text">
-      JBrowse is released under the
-      <a href="https://www.apache.org/licenses/LICENSE-2.0">
-        Apache License, Version 2.0
-      </a>.
-    </p>
-  </div>
-
   <!-- Funding -->
-  <div class="section-box">
+  <div class="section-box centered">
     <p class="section-title">Funding and Collaboration</p>
     <hr />
     <p class="body-text">
       JBrowse development has received support from the US National Institutes
       of Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
       Institute for Cancer Research (OICR), and the University of California,
-      Berkeley.
+      Berkeley. JBrowse is released under the
+      <a href="https://www.apache.org/licenses/LICENSE-2.0"
+        >Apache License, Version 2.0</a
+      >.
     </p>
   </div>
 </div>
@@ -206,37 +226,29 @@ import NewsletterSignup from './NewsletterSignup'
     color: var(--color-text-muted);
     margin: 0 0 8px;
   }
-  .explore-row {
-    flex-direction: row !important;
-    flex-wrap: wrap;
-    gap: 12px !important;
-    margin-bottom: clamp(2rem, 5vw, 3rem);
-  }
-  .explore-link {
-    flex: 1 1 180px;
+  .resources {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    text-decoration: none;
-    color: inherit;
-    transition:
-      border-color 200ms,
-      background 200ms;
+    flex-wrap: wrap;
+    gap: 2rem;
   }
-  .explore-link:hover {
-    border-color: var(--color-primary);
-    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+  .resource-group {
+    min-width: 160px;
   }
-  .explore-title {
-    font-weight: 500;
-    color: var(--color-primary);
-  }
-  .explore-desc {
-    font-size: 0.875rem;
+  .resource-group-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: var(--color-text-muted);
+    margin: 0 0 0.4rem;
+  }
+  .resource-group ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .resource-group li {
+    margin: 0.25rem 0;
   }
   .hero-image img {
     border-radius: 8px;
@@ -257,6 +269,12 @@ import NewsletterSignup from './NewsletterSignup'
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+
+  .centered {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .two-col {

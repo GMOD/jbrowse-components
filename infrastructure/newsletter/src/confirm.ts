@@ -1,6 +1,11 @@
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
-import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda'
-import { dynamo, TABLE, htmlResponse, responsePage } from './shared'
+
+import { TABLE, dynamo, htmlResponse, responsePage } from './shared.ts'
+
+import type {
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResultV2,
+} from 'aws-lambda'
 
 export async function handler(
   event: APIGatewayProxyEventV2,
@@ -8,7 +13,10 @@ export async function handler(
   const token = event.queryStringParameters?.token
 
   if (!token) {
-    return htmlResponse(400, responsePage('Error', 'Missing confirmation token.', '#c0392b'))
+    return htmlResponse(
+      400,
+      responsePage('Error', 'Missing confirmation token.', '#c0392b'),
+    )
   }
 
   const result = await dynamo.send(
@@ -30,7 +38,14 @@ export async function handler(
   }
 
   if (item.status === 'confirmed') {
-    return htmlResponse(200, responsePage('Already Subscribed', 'You are already subscribed!', '#2d7a57'))
+    return htmlResponse(
+      200,
+      responsePage(
+        'Already Subscribed',
+        'You are already subscribed!',
+        '#2d7a57',
+      ),
+    )
   }
 
   await dynamo.send(

@@ -1,14 +1,18 @@
 import { useState } from 'react'
+import type { SyntheticEvent } from 'react'
+
 import styles from './NewsletterSignup.module.css'
 
 const API_URL = import.meta.env.PUBLIC_NEWSLETTER_API_URL as string | undefined
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle')
   const [message, setMessage] = useState('')
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     setStatus('loading')
     try {
@@ -44,13 +48,19 @@ export default function NewsletterSignup() {
           <input
             type="email"
             value={email}
-            onChange={e => { setEmail(e.target.value) }}
+            onChange={e => {
+              setEmail(e.target.value)
+            }}
             placeholder="your@email.com"
             required
             disabled={status === 'loading'}
             className={styles.input}
           />
-          <button type="submit" disabled={status === 'loading'} className={styles.btn}>
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className={styles.btn}
+          >
             {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
           </button>
           {status === 'error' && <p className={styles.error}>{message}</p>}

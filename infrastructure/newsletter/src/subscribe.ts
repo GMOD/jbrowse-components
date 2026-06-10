@@ -1,20 +1,38 @@
-import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb'
-import { SendEmailCommand } from '@aws-sdk/client-ses'
-import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda'
 import { randomUUID } from 'crypto'
-import { dynamo, ses, TABLE, FROM, API_URL, jsonResponse, isValidEmail } from './shared'
+
+import { SendEmailCommand } from '@aws-sdk/client-ses'
+import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb'
+
+import {
+  API_URL,
+  FROM,
+  TABLE,
+  dynamo,
+  isValidEmail,
+  jsonResponse,
+  ses,
+} from './shared.ts'
+
+import type {
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResultV2,
+} from 'aws-lambda'
 
 export async function handler(
   event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2> {
   const body = JSON.parse(event.body ?? '{}') as Record<string, unknown>
-  const email = String(body.email ?? '').trim().toLowerCase()
+  const email = String(body.email ?? '')
+    .trim()
+    .toLowerCase()
 
   if (!isValidEmail(email)) {
     return jsonResponse(400, { error: 'Invalid email address.' })
   }
 
-  const existing = await dynamo.send(new GetCommand({ TableName: TABLE, Key: { email } }))
+  const existing = await dynamo.send(
+    new GetCommand({ TableName: TABLE, Key: { email } }),
+  )
 
   if (existing.Item?.status === 'confirmed') {
     return jsonResponse(200, { message: 'Already subscribed!' })
@@ -63,8 +81,12 @@ export async function handler(
     )
   } catch (err) {
     console.error('SES send failed:', err)
-    return jsonResponse(500, { error: 'Failed to send confirmation email. Please try again later.' })
+    return jsonResponse(500, {
+      error: 'Failed to send confirmation email. Please try again later.',
+    })
   }
 
-  return jsonResponse(200, { message: 'Check your email to confirm your subscription.' })
+  return jsonResponse(200, {
+    message: 'Check your email to confirm your subscription.',
+  })
 }

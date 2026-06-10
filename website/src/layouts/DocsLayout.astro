@@ -108,6 +108,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     padding: 0.15em 0.4em;
     border-radius: 3px;
     font-size: 0.875em;
+    font-weight: 500;
     color: var(--color-inline-code-text);
   }
   .docs-content :global(img) {
@@ -142,16 +143,16 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
   .docs-content :global(th),
   .docs-content :global(td) {
-    border: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
   .docs-content :global(th) {
-    background: var(--color-surface);
+    border-bottom: 2px solid var(--color-border);
     font-weight: 600;
   }
   .docs-content :global(tr:nth-child(even)) {
-    background: var(--color-surface);
+    background: var(--color-table-stripe);
   }
   .docs-content :global(blockquote) {
     border-left: 4px solid var(--color-accent);

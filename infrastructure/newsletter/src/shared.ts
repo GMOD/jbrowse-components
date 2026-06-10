@@ -1,6 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
 import { SESClient } from '@aws-sdk/client-ses'
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
 
 const raw = new DynamoDBClient({})
 export const dynamo = DynamoDBDocumentClient.from(raw)

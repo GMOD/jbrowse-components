@@ -1,6 +1,11 @@
 import { QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
-import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda'
-import { dynamo, TABLE, htmlResponse, responsePage } from './shared'
+
+import { TABLE, dynamo, htmlResponse, responsePage } from './shared.ts'
+
+import type {
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResultV2,
+} from 'aws-lambda'
 
 export async function handler(
   event: APIGatewayProxyEventV2,
@@ -8,7 +13,10 @@ export async function handler(
   const token = event.queryStringParameters?.token
 
   if (!token) {
-    return htmlResponse(400, responsePage('Error', 'Missing unsubscribe token.', '#c0392b'))
+    return htmlResponse(
+      400,
+      responsePage('Error', 'Missing unsubscribe token.', '#c0392b'),
+    )
   }
 
   const result = await dynamo.send(
@@ -23,13 +31,20 @@ export async function handler(
   const item = result.Items?.[0]
 
   if (!item) {
-    return htmlResponse(404, responsePage('Error', 'Invalid unsubscribe link.', '#c0392b'))
+    return htmlResponse(
+      404,
+      responsePage('Error', 'Invalid unsubscribe link.', '#c0392b'),
+    )
   }
 
   if (item.status === 'unsubscribed') {
     return htmlResponse(
       200,
-      responsePage('Already Unsubscribed', 'You have already unsubscribed.', '#2d7a57'),
+      responsePage(
+        'Already Unsubscribed',
+        'You have already unsubscribed.',
+        '#2d7a57',
+      ),
     )
   }
 

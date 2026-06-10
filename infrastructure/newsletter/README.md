@@ -17,10 +17,11 @@ aws ses verify-email-identity --email-address newsletter@jbrowse.org
 ```
 
 Check your inbox for the verification link. If you want to verify the whole
-`jbrowse.org` domain instead, use the SES console → Verified identities → Create identity.
+`jbrowse.org` domain instead, use the SES console → Verified identities → Create
+identity.
 
-SES starts in **sandbox mode** — you can only send to verified addresses. To send
-to arbitrary subscribers, request production access via the SES console:
+SES starts in **sandbox mode** — you can only send to verified addresses. To
+send to arbitrary subscribers, request production access via the SES console:
 Support → Create case → Service limit increase → SES Sending Limits.
 
 ## Deploy
@@ -33,6 +34,7 @@ sam deploy --guided
 ```
 
 Answer the prompts. When asked for parameters:
+
 - **FromEmail** — the verified SES address (e.g. `newsletter@jbrowse.org`)
 - **AllowedOrigins** — leave default or adjust if your domain differs
 
@@ -52,8 +54,8 @@ Add the API URL to `website/.env`:
 PUBLIC_NEWSLETTER_API_URL=https://XXXXXXXXXX.execute-api.us-east-1.amazonaws.com
 ```
 
-If you deploy via GitHub Actions, add `PUBLIC_NEWSLETTER_API_URL` as a repository
-secret and expose it in the build step:
+If you deploy via GitHub Actions, add `PUBLIC_NEWSLETTER_API_URL` as a
+repository secret and expose it in the build step:
 
 ```yaml
 - name: Build website
@@ -64,7 +66,8 @@ secret and expose it in the build step:
 
 ## Sending a newsletter
 
-Invoke the send Lambda directly with the AWS CLI — no public endpoint is exposed:
+Invoke the send Lambda directly with the AWS CLI — no public endpoint is
+exposed:
 
 ```bash
 aws lambda invoke \

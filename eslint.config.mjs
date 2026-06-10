@@ -350,16 +350,20 @@ export default defineConfig(
       ],
     },
   },
-  // website/src + website/scripts — use website/tsconfig.json (not root)
-  // and have no React components, so React rules are disabled.
+  // website/src + website/scripts — use website/tsconfig.json (not root).
   {
-    files: ['website/src/**/*.ts', 'website/scripts/**/*.ts'],
+    files: ['website/src/**/*.{ts,tsx}', 'website/scripts/**/*.ts'],
     languageOptions: {
       parserOptions: {
         project: ['./website/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
+  },
+  // Plain .ts files in website/src + website/scripts have no React
+  // components, so React rules are disabled.
+  {
+    files: ['website/src/**/*.ts', 'website/scripts/**/*.ts'],
     rules: {
       'react-compiler/react-compiler': 'off',
       'react-refresh/only-export-components': 'off',
