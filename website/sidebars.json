@@ -25,6 +25,7 @@
         "tutorials/sv_visualization_cgiab",
         "tutorials/sv_multisamples",
         "tutorials/synteny_visualization",
+        "tutorials/protein_structure",
         "tutorials/methylation",
         "tutorials/rnaseq",
         "tutorials/display_settings"

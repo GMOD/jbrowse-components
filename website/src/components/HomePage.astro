@@ -57,22 +57,24 @@ import NewsletterSignup from './NewsletterSignup'
       <div>
         <ul>
           <li>
-            Improved visualization of <b>structural variants</b> and
-            <b>genome synteny</b> with tightly-integrated linear, circular, dotplot,
-            and synteny views
+            Visualize
+            <a href={`${baseUrl}/docs/user_guides/sv_visualization/`}
+              >structural variants</a
+            > and <a href={`${baseUrl}/docs/tutorials/synteny_visualization/`}>synteny</a
+            > across integrated linear, circular, and dotplot views
           </li>
           <li>
-            In-browser <b>protein 3D structure displays</b> with integrated alignment
-            and phylogenetic tree views. Mouse over a genomic variant to see where
-            it lands on the structure!
+            <a href={`${baseUrl}/docs/tutorials/protein_structure/`}
+              >Browse 3D protein structures and multiple sequence alignments</a
+            >, linked to genomic variants
           </li>
           <li>
-            <b>Support for many common data types</b> including BAM, CRAM, tabix indexed
-            VCF, GFF, BED, BigBed, BigWig, and several specialized formats
+            <a href={`${baseUrl}/docs/user_guide/`}>Load common data types</a>
+            including BAM, CRAM, tabix-indexed VCF, GFF, BED, BigBed, BigWig, and more
           </li>
           <li>
-            <b>Powerful extensibility</b> with a plugin ecosystem which can add additional
-            view types, track types, data adapters, and more!
+            <a href={`${baseUrl}/plugin_store/`}>Extend with plugins</a> that add view
+            types, track types, data adapters, and more
           </li>
         </ul>
       </div>
@@ -205,6 +207,9 @@ import NewsletterSignup from './NewsletterSignup'
 
   .outer-box {
     margin: clamp(0.75rem, 4vw, 3rem);
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .hero-row {
@@ -277,7 +282,7 @@ import NewsletterSignup from './NewsletterSignup'
   }
 
   .centered {
-    max-width: 720px;
+    max-width: 860px;
     margin-left: auto;
     margin-right: auto;
   }

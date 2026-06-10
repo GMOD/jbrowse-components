@@ -51,20 +51,9 @@ interface ArcSettings {
 const LARGE_INSERT_THRESHOLD = 10_000
 const LONG_RANGE_STDDEV_THRESHOLD = 3
 
-// pairOrientationToNum (see shared/buildBaseFeatureData.ts) encodes:
-//   0=unknown, 1=LR/normal (F1R2,F2R1), 2=RL (R1F2,R2F1),
-//   3=RR (R1R2,R2R1), 4=FF (F1F2,F2F1).
-function getOrientationColorIndex(pairOrientationNum: number) {
-  switch (pairOrientationNum) {
-    case 2:
-      return 6
-    case 3:
-      return 5
-    case 4:
-      return 4
-    default:
-      return undefined
-  }
+interface InsertSizeStats {
+  upper: number
+  lower: number
 }
 
 // A pair is concordant FR (the modal, "normal" insert) when its tlen sits
@@ -73,7 +62,7 @@ function getOrientationColorIndex(pairOrientationNum: number) {
 function isConcordantFRPair(
   pairOrientationNum: number | undefined,
   tlen: number | undefined,
-  stats: { upper: number; lower: number } | undefined,
+  stats: InsertSizeStats | undefined,
 ) {
   if (pairOrientationNum !== 1 || tlen === undefined || stats === undefined) {
     return false
@@ -86,31 +75,64 @@ function isConcordantFRPair(
 // classifier reads as a story rather than as magic numbers.
 const COLOR_DEFAULT = 0
 const COLOR_LONG_INSERT = 1
+const COLOR_SHORT_INSERT = 2
+const COLOR_INTERCHROM = 3
+// LL and unpaired-FR share slot 4; RR slot 5; RL slot 6 (see arcColorPalette).
+const COLOR_PAIR_LL = 4
+const COLOR_PAIR_RR = 5
+const COLOR_PAIR_RL = 6
 const COLOR_UNPAIRED_FR = 4
 const COLOR_UNPAIRED_RF = 7
 
 function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
-  if (p1Strand === -1 && p2Strand === 1) {
-    return COLOR_UNPAIRED_RF
-  }
-  if (p1Strand === 1 && p2Strand === -1) {
-    return COLOR_UNPAIRED_FR
-  }
-  return COLOR_DEFAULT
+  return p1Strand === -1 && p2Strand === 1
+    ? COLOR_UNPAIRED_RF
+    : p1Strand === 1 && p2Strand === -1
+      ? COLOR_UNPAIRED_FR
+      : COLOR_DEFAULT
 }
 
+// pairOrientationToNum (see shared/buildBaseFeatureData.ts) encodes:
+//   0=unknown, 1=LR/normal (F1R2,F2R1), 2=RL (R1F2,R2F1),
+//   3=RR (R1R2,R2R1), 4=FF (F1F2,F2F1).
+// undefined means "normal/LR or unknown orientation" — the caller decides the
+// fallback (plain default vs. defer to insert size).
+function orientationColor(pairOrientationNum: number) {
+  switch (pairOrientationNum) {
+    case 2:
+      return COLOR_PAIR_RL
+    case 3:
+      return COLOR_PAIR_RR
+    case 4:
+      return COLOR_PAIR_LL
+    default:
+      return undefined
+  }
+}
+
+function insertSizeColor(tlen: number, stats: InsertSizeStats | undefined) {
+  const abs = Math.abs(tlen)
+  return stats && abs > stats.upper
+    ? COLOR_LONG_INSERT
+    : stats && abs < stats.lower
+      ? COLOR_SHORT_INSERT
+      : COLOR_DEFAULT
+}
+
+// Same-chromosome color classifier (interchromosomal ticks are colored
+// separately, always COLOR_INTERCHROM). Read cloud (samplot) shares this so its
+// flat lines color the same as arcs — red/green/teal/navy by insert size +
+// orientation.
 function getArcColorType(args: {
   colorByType: ArcColorByType
   hasPaired: boolean
   longRange: boolean
   largeInsert: boolean
-  pairOrientationNum: number | undefined
-  tlen: number | undefined
-  p1Ref: string
-  p2Ref: string
+  pairOrientationNum: number
+  tlen: number
   p1Strand: number
   p2Strand: number
-  stats: { upper: number; lower: number } | undefined
+  stats: InsertSizeStats | undefined
 }) {
   const {
     colorByType,
@@ -119,60 +141,30 @@ function getArcColorType(args: {
     largeInsert,
     pairOrientationNum,
     tlen,
-    p1Ref,
-    p2Ref,
     p1Strand,
     p2Strand,
     stats,
   } = args
 
-  // Long-range, large-insert pairs always paint as long-insert. Read cloud
-  // (samplot) shares this classifier so its flat lines color the same as arcs —
-  // red/green/teal/navy by insert size + orientation.
+  // Long-range, large-insert pairs always paint as long-insert.
   if (longRange && largeInsert) {
     return COLOR_LONG_INSERT
   }
-
-  // Otherwise dispatch on scheme; each branch decides paired vs unpaired.
-  const insertSizeColor = () =>
-    getInsertSizeColorIndex(p1Ref, p2Ref, tlen ?? 0, stats) ?? COLOR_DEFAULT
-
+  if (!hasPaired) {
+    return colorByType === 'insertSize'
+      ? COLOR_DEFAULT
+      : unpairedOrientationColor(p1Strand, p2Strand)
+  }
+  const orient = orientationColor(pairOrientationNum)
+  const insert = insertSizeColor(tlen, stats)
   switch (colorByType) {
     case 'insertSize':
-      return hasPaired ? insertSizeColor() : COLOR_DEFAULT
-
+      return insert
     case 'orientation':
-      return hasPaired
-        ? (getOrientationColorIndex(pairOrientationNum ?? 0) ?? COLOR_DEFAULT)
-        : unpairedOrientationColor(p1Strand, p2Strand)
-
+      return orient ?? COLOR_DEFAULT
     case 'insertSizeAndOrientation':
-      return hasPaired
-        ? (getOrientationColorIndex(pairOrientationNum ?? 0) ??
-            insertSizeColor())
-        : unpairedOrientationColor(p1Strand, p2Strand)
+      return orient ?? insert
   }
-}
-
-function getInsertSizeColorIndex(
-  refName: string,
-  nextRef: string | undefined,
-  tlen: number,
-  stats?: { upper: number; lower: number },
-) {
-  if (nextRef && refName !== nextRef) {
-    return 3
-  }
-  if (stats) {
-    const absTlen = Math.abs(tlen)
-    if (absTlen > stats.upper) {
-      return 1
-    }
-    if (absTlen < stats.lower) {
-      return 2
-    }
-  }
-  return undefined
 }
 
 interface SAAlignment {
@@ -308,46 +300,47 @@ function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
   return mean + LONG_RANGE_STDDEV_THRESHOLD * std
 }
 
-export function computeArcsFromPileupData(
+interface ReadEntry {
+  displayedRegionIndex: number
+  refName: string
+  readIdx: number
+  data: PileupDataResult
+}
+
+// Bucket every fetched read by its QNAME so mates / split segments that share a
+// name (possibly across displayed regions) land in the same list.
+function groupReadsByName(
   rpcDataMap: ReadonlyMap<number, PileupDataResult>,
   regions: RegionInfo[],
-  settings: ArcSettings,
 ) {
-  const { colorByType, samplot = false, drawInter, drawLongRange } = settings
-
-  const readsByName = new Map<
-    string,
-    {
-      displayedRegionIndex: number
-      refName: string
-      readIdx: number
-      data: PileupDataResult
-    }[]
-  >()
-
+  const readsByName = new Map<string, ReadEntry[]>()
   for (const region of regions) {
     const data = rpcDataMap.get(region.displayedRegionIndex)
-    if (!data) {
-      continue
-    }
-    for (let i = 0; i < data.readIds.length; i++) {
-      const name = data.readNames[i]!
-      let list = readsByName.get(name)
-      if (!list) {
-        list = []
-        readsByName.set(name, list)
+    if (data) {
+      for (let i = 0; i < data.readIds.length; i++) {
+        const name = data.readNames[i]!
+        let list = readsByName.get(name)
+        if (!list) {
+          list = []
+          readsByName.set(name, list)
+        }
+        list.push({
+          displayedRegionIndex: region.displayedRegionIndex,
+          refName: region.refName,
+          readIdx: i,
+          data,
+        })
       }
-      list.push({
-        displayedRegionIndex: region.displayedRegionIndex,
-        refName: region.refName,
-        readIdx: i,
-        data,
-      })
     }
   }
+  return readsByName
+}
 
+function computePairingInfo(
+  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+) {
   let hasPaired = false
-  let stats: { upper: number; lower: number } | undefined
+  let stats: InsertSizeStats | undefined
   for (const data of rpcDataMap.values()) {
     if (!hasPaired) {
       for (let i = 0; i < data.readIds.length; i++) {
@@ -361,113 +354,146 @@ export function computeArcsFromPileupData(
       stats = data.insertSizeStats
     }
   }
+  return { hasPaired, stats }
+}
 
+// A lone read whose mate is mapped elsewhere: connect its near endpoint to the
+// recorded mate position.
+function mateArc(entry: ReadEntry): PendingArc {
+  const { data, readIdx, refName } = entry
+  const flags = data.readFlags[readIdx]!
+  const strand = data.readStrands[readIdx]!
+  const start = data.readPositions[readIdx * 2]!
+  const end = data.readPositions[readIdx * 2 + 1]!
+  const mateRef = data.readNextRefs?.[readIdx] ?? ''
+  return {
+    p1Ref: refName,
+    p1Bp: strand === -1 ? start : end,
+    p1Strand: strand,
+    p2Ref: mateRef || refName,
+    p2Bp: data.readNextPositions?.[readIdx] ?? 0,
+    p2Strand: flags & SAM_FLAG_MATE_REVERSE ? -1 : 1,
+    pairOrientationNum: data.readPairOrientations[readIdx]!,
+    tlen: data.readInsertSizes[readIdx],
+    isSplit: false,
+  }
+}
+
+// A lone read carrying an SA tag: chain primary → supplementary blocks. Each
+// a1.end→a2.start gap is a genomic junction; fwd→rev / rev→fwd junctions cluster
+// narrow arcs at each inversion breakpoint.
+function splitArcsFromSA(entry: ReadEntry): PendingArc[] {
+  const { data, readIdx, refName } = entry
+  const allAlns: SAAlignment[] = [
+    {
+      refName,
+      start: data.readPositions[readIdx * 2]!,
+      end: data.readPositions[readIdx * 2 + 1]!,
+      strand: data.readStrands[readIdx]!,
+    },
+    ...parseSATag(data.readSuppAlignments?.[readIdx] ?? ''),
+  ]
+  const arcs: PendingArc[] = []
+  for (let j = 0; j < allAlns.length - 1; j++) {
+    const a1 = allAlns[j]!
+    const a2 = allAlns[j + 1]!
+    arcs.push({
+      p1Ref: a1.refName,
+      p1Bp: a1.end,
+      p1Strand: a1.strand,
+      p2Ref: a2.refName,
+      p2Bp: a2.start,
+      p2Strand: a2.strand,
+      pairOrientationNum: undefined,
+      tlen: undefined,
+      isSplit: true,
+    })
+  }
+  return arcs
+}
+
+// Multiple reads sharing a name: a mate pair (paired data) or a split-read
+// chain. Drop supplementary/mate-unmapped (paired) or secondary (unpaired)
+// entries, then connect consecutive survivors.
+function chainArcs(entries: ReadEntry[], hasPaired: boolean): PendingArc[] {
+  const filtered = hasPaired
+    ? entries.filter(
+        e =>
+          !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SUPPLEMENTARY) &&
+          !(e.data.readFlags[e.readIdx]! & SAM_FLAG_MATE_UNMAPPED),
+      )
+    : entries.filter(e => !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SECONDARY))
+
+  const arcs: PendingArc[] = []
+  for (let j = 0; j < filtered.length - 1; j++) {
+    const e1 = filtered[j]!
+    const e2 = filtered[j + 1]!
+    const f1 = e1.data.readFlags[e1.readIdx]!
+    const f2 = e2.data.readFlags[e2.readIdx]!
+    const s1 = e1.data.readStrands[e1.readIdx]!
+    const s2 = e2.data.readStrands[e2.readIdx]!
+    const start1 = e1.data.readPositions[e1.readIdx * 2]!
+    const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
+    const start2 = e2.data.readPositions[e2.readIdx * 2]!
+    const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
+    // A supplementary alignment sharing this read name is a split-read junction,
+    // not a mate pair: it carries no template_length or pair orientation. Mark
+    // it so samplot renders a dashed line at the gap span — leaving tlen here
+    // would feed |0| into the samplot Y and collapse the line to the baseline.
+    // Matches splitArcsFromSA (orientation/tlen undefined for the same reason).
+    const isSplit = !!((f1 | f2) & SAM_FLAG_SUPPLEMENTARY)
+    arcs.push({
+      p1Ref: e1.refName,
+      // Unpaired: end1→start2 = genomic gap, giving narrow inversion bp arcs.
+      p1Bp: hasPaired && s1 === -1 ? start1 : end1,
+      p1Strand: s1,
+      p2Ref: e2.refName,
+      p2Bp: hasPaired ? (s2 === -1 ? start2 : end2) : start2,
+      p2Strand: s2,
+      pairOrientationNum: isSplit
+        ? undefined
+        : e1.data.readPairOrientations[e1.readIdx],
+      tlen: isSplit ? undefined : e1.data.readInsertSizes[e1.readIdx],
+      isSplit,
+    })
+  }
+  return arcs
+}
+
+function collectPendingArcs(
+  readsByName: Map<string, ReadEntry[]>,
+  hasPaired: boolean,
+  drawLongRange: boolean,
+) {
   const pendingArcs: PendingArc[] = []
-
-  for (const [, entries] of readsByName) {
+  for (const entries of readsByName.values()) {
     if (entries.length === 1) {
-      if (!drawLongRange) {
-        continue
-      }
-      const entry = entries[0]!
-      const { data, readIdx, refName } = entry
-      const flags = data.readFlags[readIdx]!
-      const strand = data.readStrands[readIdx]!
-      const start = data.readPositions[readIdx * 2]!
-      const end = data.readPositions[readIdx * 2 + 1]!
-      const isMateUnmapped = flags & SAM_FLAG_MATE_UNMAPPED
-
-      if (hasPaired && !isMateUnmapped) {
-        const mateRef = data.readNextRefs?.[readIdx] ?? ''
-        const matePos = data.readNextPositions?.[readIdx] ?? 0
-        const mateStrand = flags & SAM_FLAG_MATE_REVERSE ? -1 : 1
-        const p1 = strand === -1 ? start : end
-        pendingArcs.push({
-          p1Ref: refName,
-          p1Bp: p1,
-          p1Strand: strand,
-          p2Ref: mateRef || refName,
-          p2Bp: matePos,
-          p2Strand: mateStrand,
-          pairOrientationNum: data.readPairOrientations[readIdx]!,
-          tlen: data.readInsertSizes[readIdx],
-          isSplit: false,
-        })
-      } else {
-        const sa = data.readSuppAlignments?.[readIdx] ?? ''
-        const saAlns = parseSATag(sa)
-        if (saAlns.length > 0) {
-          const primary = { refName, start, end, strand }
-          const allAlns = [primary, ...saAlns]
-          for (let j = 0; j < allAlns.length - 1; j++) {
-            const a1 = allAlns[j]!
-            const a2 = allAlns[j + 1]!
-            // a1.end→a2.start = genomic gap between blocks; fwd→rev and rev→fwd
-            // junctions produce narrow arcs clustered at each inversion breakpoint.
-            const p1 = a1.end
-            const p2 = a2.start
-            pendingArcs.push({
-              p1Ref: a1.refName,
-              p1Bp: p1,
-              p1Strand: a1.strand,
-              p2Ref: a2.refName,
-              p2Bp: p2,
-              p2Strand: a2.strand,
-              pairOrientationNum: undefined,
-              tlen: undefined,
-              isSplit: true,
-            })
-          }
-        }
+      // A lone read connects to an off-screen mate / supplementary block — only
+      // drawn when long-range connections are enabled.
+      if (drawLongRange) {
+        const entry = entries[0]!
+        const flags = entry.data.readFlags[entry.readIdx]!
+        const isMateMapped = hasPaired && !(flags & SAM_FLAG_MATE_UNMAPPED)
+        pendingArcs.push(
+          ...(isMateMapped ? [mateArc(entry)] : splitArcsFromSA(entry)),
+        )
       }
     } else {
-      const filtered = hasPaired
-        ? entries.filter(
-            e =>
-              !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SUPPLEMENTARY) &&
-              !(e.data.readFlags[e.readIdx]! & SAM_FLAG_MATE_UNMAPPED),
-          )
-        : entries.filter(
-            e => !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SECONDARY),
-          )
-
-      for (let j = 0; j < filtered.length - 1; j++) {
-        const e1 = filtered[j]!
-        const e2 = filtered[j + 1]!
-        const f1 = e1.data.readFlags[e1.readIdx]!
-        const f2 = e2.data.readFlags[e2.readIdx]!
-        const s1 = e1.data.readStrands[e1.readIdx]!
-        const s2 = e2.data.readStrands[e2.readIdx]!
-        const start1 = e1.data.readPositions[e1.readIdx * 2]!
-        const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
-        const start2 = e2.data.readPositions[e2.readIdx * 2]!
-        const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
-        // A supplementary alignment sharing this read name is a split-read
-        // junction, not a mate pair: it carries no template_length or pair
-        // orientation. Mark it so samplot renders a dashed line at the gap
-        // span — leaving tlen here would feed |0| into the samplot Y and
-        // collapse the line to the baseline. Matches the single-entry SA-tag
-        // path (which passes tlen/orientation undefined for the same reason).
-        const isSplit = !!((f1 | f2) & SAM_FLAG_SUPPLEMENTARY)
-        // Unpaired: end1→start2 = genomic gap, giving narrow inversion bp arcs.
-        const p1 = hasPaired && s1 === -1 ? start1 : end1
-        const p2 = hasPaired ? (s2 === -1 ? start2 : end2) : start2
-        pendingArcs.push({
-          p1Ref: e1.refName,
-          p1Bp: p1,
-          p1Strand: s1,
-          p2Ref: e2.refName,
-          p2Bp: p2,
-          p2Strand: s2,
-          pairOrientationNum: isSplit
-            ? undefined
-            : e1.data.readPairOrientations[e1.readIdx],
-          tlen: isSplit ? undefined : e1.data.readInsertSizes[e1.readIdx],
-          isSplit,
-        })
-      }
+      pendingArcs.push(...chainArcs(entries, hasPaired))
     }
   }
+  return pendingArcs
+}
+
+export function computeArcsFromPileupData(
+  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  regions: RegionInfo[],
+  settings: ArcSettings,
+) {
+  const { colorByType, samplot = false, drawInter, drawLongRange } = settings
+  const readsByName = groupReadsByName(rpcDataMap, regions)
+  const { hasPaired, stats } = computePairingInfo(rpcDataMap)
+  const pendingArcs = collectPendingArcs(readsByName, hasPaired, drawLongRange)
 
   const longRangeThreshold = computeLongRangeThreshold(pendingArcs)
 
@@ -485,30 +511,17 @@ export function computeArcsFromPileupData(
     tlen,
     isSplit,
   } of pendingArcs) {
-    // Interchromosomal: never an arc — drop a tick on each endpoint. Color it
-    // with the same classifier as arcs so the scheme stays informative: the
-    // insert-size schemes resolve to the dedicated interchromosomal color (the
-    // refs differ), and the orientation schemes surface the translocation's
-    // orientation. Insert-size/long-range distance is meaningless across refs,
-    // so those inputs are suppressed.
+    // Interchromosomal: never an arc — drop a tick on each endpoint, always
+    // painted the single dedicated interchromosomal color. Insert size,
+    // long-range distance, and pair orientation are all meaningless across refs
+    // (a cross-chromosome "pair orientation" is arbitrary), so coloring by them
+    // just produces visual noise — every translocation tick is one uniform
+    // color regardless of colorByType.
     if (p1Ref !== p2Ref) {
       if (drawInter) {
-        const colorType = getArcColorType({
-          colorByType,
-          hasPaired,
-          longRange: false,
-          largeInsert: false,
-          pairOrientationNum,
-          tlen,
-          p1Ref,
-          p2Ref,
-          p1Strand,
-          p2Strand,
-          stats,
-        })
         lines.push(
-          { x: { refName: p1Ref, bp: p1Bp }, colorType },
-          { x: { refName: p2Ref, bp: p2Bp }, colorType },
+          { x: { refName: p1Ref, bp: p1Bp }, colorType: COLOR_INTERCHROM },
+          { x: { refName: p2Ref, bp: p2Bp }, colorType: COLOR_INTERCHROM },
         )
       }
       continue
@@ -534,10 +547,8 @@ export function computeArcsFromPileupData(
       hasPaired,
       longRange,
       largeInsert,
-      pairOrientationNum,
-      tlen,
-      p1Ref,
-      p2Ref,
+      pairOrientationNum: pairOrientationNum ?? 0,
+      tlen: tlen ?? 0,
       p1Strand,
       p2Strand,
       stats,

@@ -193,6 +193,37 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines[1]!.colorType).toBe(3)
   })
 
+  test('inter-chromosomal always uses the interchrom color regardless of orientation', () => {
+    // RL orientation (2) would resolve to the RL slot (6) for a same-chromosome
+    // arc; across chromosomes "pair orientation" is meaningless, so the tick
+    // must stay the single interchrom color (3) and not vary by orientation.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([0, 100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([2]),
+      readNames: ['readA'],
+      readNextRefs: ['chr2'],
+      readNextPositions: new Uint32Array([5000]),
+    })
+
+    const rpcDataMap = new Map([[0, data]])
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
+    ]
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: true,
+      drawLongRange: true,
+    })
+
+    expect(result.lines.length).toBe(2)
+    expect(result.lines[0]!.colorType).toBe(3)
+    expect(result.lines[1]!.colorType).toBe(3)
+  })
+
   test('inter-chromosomal produces nothing when drawInter=false', () => {
     const data = makePileupData({
       regionStart: 1000,

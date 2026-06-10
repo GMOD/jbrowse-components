@@ -3219,32 +3219,36 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Live protein3d/msaview demo sessions hosted on jbrowse.org (BRAF). These
-  // load external plugins + query AlphaFold/UniProt, so they target the full
-  // hosted URL and get a long settle for the structure/alignment to render.
+  // Declarative protein3d demo. curated so a normal regen keeps the committed
+  // PNG; to regenerate, `pnpm start` (PORT=9000) in jbrowse-plugin-protein3d
+  // (serves the plugin + config.json + a `.test-jbrowse-nightly` app), then run
+  // this spec without `curated`. The session spec launches a ProteinView for
+  // BRAF (UniProt P15056) via the plugin's LaunchView-ProteinView extension
+  // point; the structure streams from AlphaFold DB.
   {
     mode: 'url',
-    name: 'protein/probe1',
-    url: 'https://jbrowse.org/code/jb2/main/?config=%2Fucsc%2Fhg38%2Fconfig.json&session=share-oZc6gP5zSQ&password=zFvQi',
-    readySelector: '[data-testid^="view-container-"]',
+    curated: true,
+    name: 'protein/structure',
+    url:
+      `http://localhost:9000/.test-jbrowse-nightly/?config=/config.json&session=${ 
+      encodeURIComponent(
+        `spec-${ 
+          JSON.stringify({
+            views: [
+              {
+                type: 'ProteinView',
+                url: 'https://alphafold.ebi.ac.uk/files/AF-P15056-F1-model_v6.cif',
+              },
+            ],
+          })}`,
+      )}`,
+    readySelector: 'canvas',
     readyTimeout: 60000,
-    settleMs: 12000,
-  },
-  {
-    mode: 'url',
-    name: 'protein/probe2',
-    url: 'https://jbrowse.org/code/jb2/main/?config=%2Fucsc%2Fhg38%2Fconfig.json&session=share-xgw4Y7Xoby&password=SMk7u',
-    readySelector: '[data-testid^="view-container-"]',
-    readyTimeout: 60000,
-    settleMs: 12000,
-  },
-  {
-    mode: 'url',
-    name: 'protein/probe3',
-    url: 'https://jbrowse.org/code/jb2/main/?config=%2Fucsc%2Fhg38%2Fconfig.json&session=share-muppi_-WsU&password=tvhMa',
-    readySelector: '[data-testid^="view-container-"]',
-    readyTimeout: 60000,
-    settleMs: 12000,
+    settleMs: 15000,
+    actions: [
+      { type: 'click', text: 'Show alignment' },
+      { type: 'delay', ms: 1500 },
+    ],
   },
 ]
 
