@@ -7,6 +7,7 @@ import {
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
+import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Button, Paper, TextField, Typography } from '@mui/material'
@@ -14,11 +15,11 @@ import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import {
+  addMultiWiggleTrack,
   applyName,
   buildAdapterPayload,
   canSubmit,
   itemToName,
-  makeTrackId,
   parseItems,
 } from './util.ts'
 
@@ -45,7 +46,7 @@ interface TrackRow {
 }
 
 function itemToRow(item: TrackItem): TrackRow {
-  return { id: crypto.randomUUID(), name: itemToName(item), item }
+  return { id: nanoid(), name: itemToName(item), item }
 }
 
 function doSubmit({
@@ -58,21 +59,15 @@ function doSubmit({
   model: AddTrackModel
 }) {
   const session = getSession(model)
-  const trackId = makeTrackId(trackName, !!session.adminMode)
-
-  if (isSessionWithAddTracks(session)) {
-    session.addTrackConf({
-      trackId,
-      type: 'MultiQuantitativeTrack',
+  const { assembly } = model
+  if (assembly && isSessionWithAddTracks(session)) {
+    addMultiWiggleTrack({
+      session,
+      view: model.view,
       name: trackName,
-      assemblyNames: [model.assembly],
-      adapter: {
-        type: 'MultiWiggleAdapter',
-        ...buildAdapterPayload(tracks.map(t => applyName(t.item, t.name))),
-      },
+      assemblyNames: [assembly],
+      adapter: buildAdapterPayload(tracks.map(t => applyName(t.item, t.name))),
     })
-
-    model.view?.showTrack(trackId)
   }
   model.clearData()
   if (isSessionModelWithWidgets(session)) {
@@ -206,10 +201,10 @@ const MultiWiggleAddTrackWorkflow = observer(
           Submit
         </Button>
         <Typography variant="body2" color="textSecondary">
-          The list of bigwig files in the text box can be a list of URLs, or a
-          list of elements like{' '}
+          The text box accepts a list of URLs (one per line), or a JSON array of
+          subadapter configs like{' '}
           <code>{`[{"type":"BigWigAdapter","bigWigLocation":{"uri":"http://host/file.bw"}, "color":"green","source":"name for subtrack"}]`}</code>{' '}
-          to apply e.g. the color attribute to the view
+          to set per-subtrack options such as color or source name.
         </Typography>
       </Paper>
     )

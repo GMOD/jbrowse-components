@@ -22,19 +22,16 @@ const ConfirmDialog = ({
   onClose,
 }: {
   tracks: AnyConfigurationModel[]
-  onClose: (
-    arg: boolean,
-    arg1?: { name: string; tracks: AnyConfigurationModel[] },
-  ) => void
+  onClose: (result?: { name: string; tracks: AnyConfigurationModel[] }) => void
 }) => {
-  const [val, setVal] = useState(() => `MultiWiggle ${Date.now()}`)
+  const [val, setVal] = useState('MultiWiggle')
   const [tracks, setTracks] = useState(initialTracks)
   const allQuant = tracks.every(t => t.type === 'QuantitativeTrack')
   return (
     <Dialog
       open
       onClose={() => {
-        onClose(false)
+        onClose()
       }}
       title="Create multi-wiggle track?"
     >
@@ -101,7 +98,7 @@ const ConfirmDialog = ({
       <DialogActions>
         <Button
           onClick={() => {
-            onClose(false)
+            onClose()
           }}
           color="primary"
         >
@@ -109,11 +106,12 @@ const ConfirmDialog = ({
         </Button>
         <Button
           onClick={() => {
-            onClose(true, { name: val, tracks })
+            onClose({ name: val, tracks })
           }}
           color="primary"
           variant="contained"
           autoFocus
+          disabled={tracks.length === 0 || !val.trim()}
         >
           Submit
         </Button>

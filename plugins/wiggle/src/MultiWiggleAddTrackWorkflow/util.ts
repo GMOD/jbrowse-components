@@ -1,3 +1,5 @@
+import type { SessionWithAddTracks } from '@jbrowse/core/util'
+
 export type TrackItem = string | Record<string, unknown>
 
 function lineSplit(val: string) {
@@ -27,7 +29,7 @@ export function itemToName(item: TrackItem) {
 export function urlToSubadapter(uri: string, source = uri) {
   return {
     type: 'BigWigAdapter',
-    bigWigLocation: { uri, locationType: 'UriLocation' },
+    bigWigLocation: { uri },
     source,
   }
 }
@@ -71,4 +73,36 @@ export function buildAdapterPayload(items: TrackItem[]) {
       typeof i === 'string' ? urlToSubadapter(i) : i,
     ),
   }
+}
+
+/**
+ * Shared between the add-track workflow and the track-selector "Create
+ * multi-wiggle track" extension: builds a MultiQuantitativeTrack config around a
+ * MultiWiggleAdapter and shows it in the target view.
+ */
+export function addMultiWiggleTrack({
+  session,
+  view,
+  name,
+  assemblyNames,
+  adapter,
+}: {
+  session: SessionWithAddTracks
+  view?: { showTrack: (trackId: string) => void }
+  name: string
+  assemblyNames: string[]
+  adapter: Record<string, unknown>
+}) {
+  const trackId = makeTrackId(name, !!session.adminMode)
+  session.addTrackConf({
+    trackId,
+    type: 'MultiQuantitativeTrack',
+    name,
+    assemblyNames,
+    adapter: {
+      type: 'MultiWiggleAdapter',
+      ...adapter,
+    },
+  })
+  view?.showTrack(trackId)
 }
