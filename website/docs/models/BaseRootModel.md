@@ -76,9 +76,7 @@ assemblyManager: types.optional(
 // type signature
 RpcManager
 // code
-rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
-  MainThreadRpcDriver: {},
-})
+rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc)
 ```
 
 #### volatile: adminMode

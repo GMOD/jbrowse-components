@@ -29,6 +29,8 @@ this page is self-contained.
 
 #### slot: defaultRendering
 
+Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
+
 ```js
 defaultRendering: {
       type: 'stringEnum',
@@ -36,6 +38,15 @@ defaultRendering: {
       defaultValue: 'xyplot',
       description: 'Default rendering type',
     }
+```
+
+**Example:**
+
+```json
+{
+  "type": "LinearWiggleDisplay",
+  "defaultRendering": "density"
+}
 ```
 
 #### slot: height

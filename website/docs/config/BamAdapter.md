@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BamAdapter.md)
 
-## Docs
-
-used to configure BAM adapter
-
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.bai` index. For a `.csi` index or a
@@ -31,6 +27,12 @@ differently-named index, set `index` explicitly with the full slot form:
   uri: 'https://example.com/sample.bam',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+used to configure BAM adapter
 
 ### BamAdapter - Pre-processor / simplified config
 

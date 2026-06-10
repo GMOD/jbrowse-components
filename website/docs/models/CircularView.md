@@ -18,12 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/CircularView.md)
 
-## Docs
-
-extends
-
-- [BaseViewModel](../baseviewmodel)
-
 ## Example usage
 
 Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
@@ -38,6 +32,12 @@ Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
   },
 }
 ```
+
+## Docs
+
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ## Inherited members
 

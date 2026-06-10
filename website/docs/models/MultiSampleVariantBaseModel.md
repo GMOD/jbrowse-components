@@ -18,13 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultiSampleVariantBaseModel.md)
 
-## Docs
-
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-
 ## Example usage
 
 `renderingMode`, `colorBy`, and `minorAlleleFrequencyFilter` are config slots
@@ -45,20 +38,22 @@ displays: [
 ]
 ```
 
-In a display _instance_ snapshot (a session / `displaySnapshot`), the
-configuration is a reference, so the runtime override goes in the
-`configOverrides` map (via `ConfigOverrideMixin`) — exactly what a saved session
-serializes. A top-level `renderingMode` here is silently dropped because there
-is no MST property by that name:
+In a display _instance_ snapshot (a session / `displaySnapshot`), set it flat —
+exactly what a saved session serializes:
 
 ```js
 {
   type: 'LinearMultiSampleVariantMatrixDisplay',
-  configOverrides: {
-    renderingMode: 'phased',
-  },
+  renderingMode: 'phased',
 }
 ```
+
+## Docs
+
+extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
 
 ## Inherited members
 
@@ -345,7 +340,7 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-getPortableSettings: () => { configOverrides: Record<string, unknown> & IStateTreeNode<IOptionalIType<IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>, [undefined]>>; ... 4 more ...; height: number; }
+getPortableSettings: () => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IMaybe<IArrayType<ISimpleType<string>>>>) | undefined; ... 5 more ...; $__mstStateTreeNodeType__?: [...] | ... 1 more ... | undefined; }
 ```
 
 #### method: legendItems

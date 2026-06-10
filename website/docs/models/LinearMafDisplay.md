@@ -18,11 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearMafDisplay.md)
 
-## Docs
-
-extends BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin +
-TreeSidebarMixin
-
 ## Example usage
 
 A complete `MafTrack` config to paste into `tracks`. `samples` lists the aligned
@@ -49,6 +44,11 @@ species in track order; `rowHeight` sets the per-sample band height:
   ],
 }
 ```
+
+## Docs
+
+extends BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin +
+TreeSidebarMixin
 
 ### LinearMafDisplay - Properties
 

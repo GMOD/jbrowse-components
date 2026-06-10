@@ -18,12 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ChordVariantDisplay.md)
 
-## Docs
-
-extends
-
-- [BaseDisplay](../basedisplay)
-
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
@@ -49,6 +43,12 @@ controls how far the chords bow toward the center:
   ],
 }
 ```
+
+## Docs
+
+extends
+
+- [BaseDisplay](../basedisplay)
 
 ## Inherited members
 

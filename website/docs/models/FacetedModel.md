@@ -97,7 +97,7 @@ filters: observable.map<string, string[]>()
 
 ```js
 // type signature
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 // code
 trackConfigurations: [] as AnyConfigurationModel[]
 ```
@@ -120,7 +120,7 @@ configurations change, not on every filterText keystroke.
 
 ```js
 // type
-{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: rows
@@ -129,7 +129,7 @@ Text-filtered rows. Cheap string filtering on already-built allRows.
 
 ```js
 // type
-{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: filteredNonMetadataKeys
@@ -174,7 +174,7 @@ Set<string>
 
 ```js
 // type
-{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: facetCategoryCounts
@@ -205,7 +205,7 @@ Record<string, number>
 
 ```js
 // type signature
-setTrackConfigurations: (tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[], session: AbstractSessionModel) => void
+setTrackConfigurations: (tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[], session: AbstractSessionModel) => void
 ```
 
 #### action: setFilter

@@ -16,7 +16,7 @@ member (a track or display state model). For a raw configuration model, use
 
 ```js
 // type signature
-<CONFMODEL extends AnyConfigurationModel>(model: { configuration: CONFMODEL; }, slotPath?: string[] | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | undefined, args?: Record<...> | undefined) => any
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { ...; }, slotPath?: SLOT | undefined, args?: Record<...>) => SLOT extends string ? ConfigurationSlotValue<...> : any
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)
@@ -29,7 +29,7 @@ model directly, e.g. an entry from `session.tracks`.
 
 ```js
 // type signature
-<CONFMODEL extends AnyConfigurationModel>(confObject: CONFMODEL, slotPath?: string[] | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | undefined, args?: Record<...>) => any
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(confObject: CONFMODEL, slotPath?: SLOT | undefined, args?: Record<...> | undefined) => SLOT extends string ? ConfigurationSl...
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)

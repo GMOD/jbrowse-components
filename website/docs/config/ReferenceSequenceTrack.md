@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/ReferenceSequenceTrack.md)
 
-## Docs
-
-used to display base level DNA sequence tracks
-
 ## Example usage
 
 Usually authored as the `sequence` member of an assembly rather than a top-level
@@ -35,6 +31,12 @@ sequence: {
   },
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+used to display base level DNA sequence tracks
 
 ### ReferenceSequenceTrack - Identifier
 

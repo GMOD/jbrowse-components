@@ -234,7 +234,7 @@ Override in subclasses to provide legend items for the display
 
 ```js
 // type signature
-legendItems: (_theme?: Theme | undefined) => LegendItem[]
+legendItems: () => LegendItem[]
 ```
 
 #### method: svgLegendWidth
@@ -244,7 +244,7 @@ SVG export to add extra width for the legend area.
 
 ```js
 // type signature
-svgLegendWidth: (theme?: Theme | undefined) => number
+svgLegendWidth: () => number
 ```
 
 #### method: getFeatureById

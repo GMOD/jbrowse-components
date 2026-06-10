@@ -201,6 +201,11 @@ function getOwnJSDocText(node: ts.Node): string {
     .join('\n')
 }
 
+export interface Example {
+  label: string
+  content: string
+}
+
 // Extracts the entity name, human-readable description, and optional example
 // usage from a comment body like:
 //   #stateModel LinearGenomeView
@@ -210,9 +215,10 @@ function getOwnJSDocText(node: ts.Node): string {
 //   ```js
 //   const state = createViewState({ ... })
 //   ```
-// Returns { name, docs, examples }. Everything after an `#example` marker is
-// runnable usage rendered in its own section — authored LAST so it stays out of
-// the prose `docs` and the `extends` block that parseExtends reads from docs.
+// Multiple #example blocks are supported; an optional label follows the tag
+// (#example minimal, #example full). Returns { name, docs, examples }.
+// Examples are authored LAST so they stay out of the prose `docs` and the
+// `extends` block that parseExtends reads from docs.
 export function parseTaggedComment(
   comment: string,
   type: TagType,
@@ -222,26 +228,40 @@ export function parseTaggedComment(
   const lines = comment.split('\n')
   let name = fallbackName
   const docs: string[] = []
-  const examples: string[] = []
-  let inExample = false
+  const examples: Example[] = []
+  let current: { label: string; lines: string[] } | undefined
   for (const line of lines) {
     if (line.includes('#example')) {
-      inExample = true
+      if (current) {
+        examples.push({
+          label: current.label,
+          content: current.lines.join('\n').trim(),
+        })
+      }
+      current = { label: line.replace(/.*#example\s*/, '').trim(), lines: [] }
     } else if (line.includes(tag)) {
       const fromTag = line.replace(tag, '').trim()
       if (fromTag) {
         name = fromTag
       }
-    } else if (inExample) {
-      examples.push(line)
-    } else if (!line.includes('#category')) {
+    } else if (line.includes('#category')) {
+      // skip
+    } else if (current) {
+      current.lines.push(line)
+    } else {
       docs.push(line)
     }
+  }
+  if (current) {
+    examples.push({
+      label: current.label,
+      content: current.lines.join('\n').trim(),
+    })
   }
   return {
     name,
     docs: docs.join('\n'),
-    examples: examples.join('\n').trim(),
+    examples,
   }
 }
 
@@ -282,11 +302,39 @@ export function section(...parts: (string | false | 0 | undefined)[]) {
   return parts.filter(Boolean).join('\n\n')
 }
 
-// Renders an authored `#example` block under a consistent heading so every
-// config/state-model page surfaces copy-pasteable usage the same way. Empty when
-// no example was authored.
-export function exampleSection(examples: string, heading = '## Example usage') {
-  return examples ? section(heading, examples) : ''
+// Renders authored #example blocks under a consistent heading. Empty when none
+// were authored.
+//
+// heading controls the level: '## Example usage' for top-level config/model
+// pages, '#### Example usage' for API exports, '**Example:**' for slot/member
+// level. Sub-example labels nest one level deeper (### for ##, ##### for ####,
+// _italic_ for non-heading markers).
+//
+// note, if provided, is rendered in italics after all example content — useful
+// for a "see Slots below" hint on config pages.
+export function exampleSection(
+  examples: Example[],
+  heading = '## Example usage',
+  note = '',
+) {
+  if (!examples.length) {
+    return ''
+  }
+  const headingLevelMatch = /^(#+)/.exec(heading)
+  const subHeadingPrefix = headingLevelMatch
+    ? '#'.repeat(headingLevelMatch[1].length + 1)
+    : undefined
+  const bodies = examples.map(ex =>
+    section(
+      ex.label
+        ? subHeadingPrefix
+          ? `${subHeadingPrefix} Example: ${ex.label}`
+          : `_${ex.label}_`
+        : '',
+      ex.content,
+    ),
+  )
+  return section(heading, ...bodies, note ? `_${note}_` : '')
 }
 
 export interface ExtendsRef {

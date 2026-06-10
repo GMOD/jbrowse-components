@@ -18,10 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearReferenceSequenceDisplay.md)
 
-## Docs
-
-base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
-
 ## Example usage
 
 A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
@@ -47,6 +43,10 @@ A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
   ],
 }
 ```
+
+## Docs
+
+base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
 
 ### LinearReferenceSequenceDisplay - Properties
 

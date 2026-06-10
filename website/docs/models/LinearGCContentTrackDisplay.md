@@ -18,15 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearGCContentTrackDisplay.md)
 
-## Docs
-
-used on GCContentTrack, separately from the display type on the
-ReferenceSequenceTrack
-
-extends
-
-- [SharedGCContentModel](../sharedgccontentmodel)
-
 ## Example usage
 
 A standalone `GCContentTrack` whose `GCContentAdapter` wraps a sequence adapter
@@ -57,6 +48,15 @@ its own track):
 }
 ```
 
+## Docs
+
+used on GCContentTrack, separately from the display type on the
+ReferenceSequenceTrack
+
+extends
+
+- [SharedGCContentModel](../sharedgccontentmodel)
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -80,7 +80,8 @@ renderState
 **Methods:** rpcProps, gpuProps, trackMenuItems
 
 **Actions:** setRpcData, setUseBicolor, setPosColor, setNegColor,
-setFeatureUnderMouse, fetchNeeded, renderSvg, startRenderingBackend
+setFeatureUnderMouse, selectFeature, fetchNeeded, renderSvg,
+startRenderingBackend
 
 ### Available via [BaseDisplay](../basedisplay)
 
@@ -159,15 +160,13 @@ setRenderError, attachRenderingBackend
 
 **Getters:** scalebarOverlapLeft, posColor, negColor, bicolorPivot, scaleType,
 autoscaleType, numStdDev, summaryScoreMode, renderingType, minScore, maxScore,
-minScoreConfig, maxScoreConfig, hasResolution
+minScoreBound, maxScoreBound, hasResolution
 
 **Actions:** toggleCrossHatches, setResolution, setLoadedBpPerPx, setScaleType,
 setColor, setMinScore, setMaxScore, setRenderingType, setSummaryScoreMode,
 setAutoscale, isCacheValid
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 

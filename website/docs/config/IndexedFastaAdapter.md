@@ -16,8 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/IndexedFastaAdapter.md)
 
-## Docs
-
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.fai` index:
@@ -28,6 +26,10 @@ The `uri` shorthand auto-resolves the `.fai` index:
   uri: 'https://example.com/genome.fa',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
 
 ### IndexedFastaAdapter - Pre-processor / simplified config
 

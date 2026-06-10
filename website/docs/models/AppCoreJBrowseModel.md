@@ -51,7 +51,7 @@ RpcManager
 
 ```js
 // type signature
-addAssemblyConf: (conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => ModelInstanceTypeProps<...> & ... 1 more ... & IStateTreeNode<...>
+addAssemblyConf: (conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => ModelInstanceTypeProps<...> & ... 1 more ... & IStateTreeNode<...>
 ```
 
 #### action: removeAssemblyConf
@@ -72,21 +72,21 @@ addTrackConf: (trackConf: { trackId: string; type: string; }) => { [key: string]
 
 ```js
 // type signature
-addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteConnectionConf
 
 ```js
 // type signature
-deleteConnectionConf: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => boolean
+deleteConnectionConf: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
 ```
 
 #### action: deleteTrackConf
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) | { ...; }) => void
+deleteTrackConf: (trackConf: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
 ```
 
 #### action: updateTrackConf
@@ -117,19 +117,19 @@ removePlugin: (pluginDefinition: PluginDefinition) => void
 
 ```js
 // type signature
-setDefaultSessionConf: (sessionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setDefaultSessionConf: (sessionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
 ```
 
 #### action: addInternetAccountConf
 
 ```js
 // type signature
-addInternetAccountConf: (internetAccountConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+addInternetAccountConf: (internetAccountConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteInternetAccountConf
 
 ```js
 // type signature
-deleteInternetAccountConf: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => boolean
+deleteInternetAccountConf: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
 ```

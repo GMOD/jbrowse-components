@@ -16,11 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/QuantitativeTrack.md)
 
-## Docs
-
-a numerical signal track (coverage, conservation, etc.), typically backed by a
-BigWig file and drawn as an XY plot or density
-
 ## Example usage
 
 ```js
@@ -35,6 +30,13 @@ BigWig file and drawn as an XY plot or density
   },
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+a numerical signal track (coverage, conservation, etc.), typically backed by a
+BigWig file and drawn as an XY plot or density
 
 ## Inherited config slots
 

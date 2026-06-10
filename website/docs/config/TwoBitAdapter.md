@@ -16,8 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/TwoBitAdapter.md)
 
-## Docs
-
 ## Example usage
 
 A `.2bit` file is self-contained; add `chromSizes` to skip an initial full-file
@@ -29,6 +27,10 @@ scan on genomes with many contigs:
   uri: 'https://example.com/genome.2bit',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
 
 ### TwoBitAdapter - Pre-processor / simplified config
 

@@ -39,12 +39,12 @@ sessionConnections: types.array(
 
 ```js
 // type signature
-addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>>) => any
+addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteConnection
 
 ```js
 // type signature
-deleteConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+deleteConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```

@@ -28,7 +28,7 @@ raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
 
 ```js
 // type signature
-getTrackActions: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, view?: { ...; } | undefined) ...
+getTrackActions: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
 ```
 
 #### method: getTrackListMenuItems
@@ -37,12 +37,12 @@ flattened menu items for use in hierarchical track selector
 
 ```js
 // type signature
-getTrackListMenuItems: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, view?: { ...; } | undefined) ...
+getTrackListMenuItems: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
 
 ```js
 // type signature
-getTrackActionMenuItems: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, extraTrackActions: MenuItem[]...
+getTrackActionMenuItems: (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, extraTrackActions: MenuItem[] | undefined, effectiveConfig: Record<...>, view?: { ...; } | undefined) => MenuItem[]
 ```

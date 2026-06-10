@@ -18,17 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearSyntenyDisplay.md)
 
-## Docs
-
-extends
-
-- [BaseDisplay](../basedisplay)
-
-Pure-data model. The containing LinearSyntenyView owns the shared GPU backend,
-the upload autorun (which watches every display's `instanceData` and keys it by
-`displayKey`), and the render autorun. This display only carries per-track state
-and the `renderParams` the view reads out.
-
 ## Example usage
 
 A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs the
@@ -55,6 +44,17 @@ query (first) and target (second) assembly names, matched by the track's
   ],
 }
 ```
+
+## Docs
+
+extends
+
+- [BaseDisplay](../basedisplay)
+
+Pure-data model. The containing LinearSyntenyView owns the shared GPU backend,
+the upload autorun (which watches every display's `instanceData` and keys it by
+`displayKey`), and the render autorun. This display only carries per-track state
+and the `renderParams` the view reads out.
 
 ## Inherited members
 

@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/VcfTabixAdapter.md)
 
-## Docs
-
-used to load bgzip-compressed, tabix-indexed VCF files
-
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
@@ -31,6 +27,12 @@ The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
   uri: 'https://example.com/variants.vcf.gz',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+used to load bgzip-compressed, tabix-indexed VCF files
 
 ### VcfTabixAdapter - Pre-processor / simplified config
 

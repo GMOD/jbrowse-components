@@ -146,7 +146,7 @@ pendingFileHandleIds: [] as string[]
 
 ```js
 // type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: root
@@ -164,7 +164,7 @@ dropdown
 
 ```js
 // type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { ...; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>> & { ...; })[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...> & { ...; })[]
 ```
 
 #### getter: connections
@@ -173,7 +173,7 @@ list of config connections and session connections
 
 ```js
 // type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { type: string; defaultValue: string; description: string; }; assemblyNames: { ...; }; }, ConfigurationSchemaOptions<...>>>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: assemblyNames
@@ -247,7 +247,7 @@ raw track actions (Settings, Copy, Delete) without submenu wrapper
 
 ```js
 // type signature
-getTrackActions: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, view?: { ...; } | undefined) => Me...
+getTrackActions: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
 ```
 
 #### method: getTrackListMenuItems
@@ -256,14 +256,14 @@ flattened menu items for use in hierarchical track selector
 
 ```js
 // type signature
-getTrackListMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, view?: { ...; } | undefined) => Me...
+getTrackListMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ name: { ...; }; ... 9 more ...; formatAbout: ConfigurationSchemaType<...>; }, ConfigurationSchemaOptions<...>>>, extraTrackActions: MenuItem[] | un...
+getTrackActionMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, extraTrackActions: MenuItem[] | undefined, effectiveConfig: Record<...>, view?: { ...; } | undefined) => MenuItem[]
 ```
 
 #### method: menus
@@ -310,6 +310,13 @@ deleteSavedSession: (id: string) => Promise<void>
 setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
 ```
 
+#### action: renameSavedSession
+
+```js
+// type signature
+renameSavedSession: (id: string, name: string) => Promise<void>
+```
+
 #### action: renameCurrentSession
 
 ```js
@@ -342,5 +349,5 @@ setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps
 
 ```js
 // type signature
-editTrackConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) | { ...; }) => void
+editTrackConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
 ```

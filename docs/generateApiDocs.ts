@@ -2,13 +2,19 @@ import fs from 'fs'
 
 import slugify from 'slugify'
 
-import { codeBlock, parseTaggedComment, section } from './util.ts'
+import {
+  codeBlock,
+  exampleSection,
+  parseTaggedComment,
+  section,
+} from './util.ts'
 
-import type { ExtractedNode } from './util.ts'
+import type { Example, ExtractedNode } from './util.ts'
 
 interface ApiExport {
   name: string
   docs: string
+  examples: Example[]
   signature: string
   filename: string
 }
@@ -43,28 +49,36 @@ export function accumulateApi(
   obj: ExtractedNode,
 ) {
   if (obj.type === 'api' && obj.name) {
-    const { name: explicitGroup, docs } = parseTaggedComment(
-      obj.comment,
-      'api',
-      '',
-    )
+    const {
+      name: explicitGroup,
+      docs,
+      examples,
+    } = parseTaggedComment(obj.comment, 'api', '')
     const group = explicitGroup || groupFromFilename(obj.filename)
     const id = groupId(group)
     byGroup[id] ??= { group, id, exports: [] }
     byGroup[id].exports.push({
       name: obj.name,
       docs,
+      examples,
       signature: obj.signature,
       filename: obj.filename.replace(cwd, ''),
     })
   }
 }
 
-function renderExport({ name, docs, signature, filename }: ApiExport) {
+function renderExport({
+  name,
+  docs,
+  examples,
+  signature,
+  filename,
+}: ApiExport) {
   return section(
     `### ${name}`,
     docs,
     signature && codeBlock('// type signature', signature),
+    exampleSection(examples, '#### Example usage'),
     `[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})`,
   )
 }

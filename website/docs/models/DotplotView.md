@@ -18,12 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/DotplotView.md)
 
-## Docs
-
-extends
-
-- [BaseViewModel](../baseviewmodel)
-
 ## Example usage
 
 Hand-authored under `defaultSession.views`. `init.views` lists the two
@@ -39,6 +33,12 @@ is allowed):
   },
 }
 ```
+
+## Docs
+
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ## Inherited members
 

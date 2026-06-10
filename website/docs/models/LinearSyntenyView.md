@@ -18,12 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearSyntenyView.md)
 
-## Docs
-
-extends
-
-- [LinearComparativeView](../linearcomparativeview)
-
 ## Example usage
 
 Hand-authored under `defaultSession.views`. `init.views` declares the two member
@@ -39,6 +33,12 @@ connecting them with a ribbon:
   },
 }
 ```
+
+## Docs
+
+extends
+
+- [LinearComparativeView](../linearcomparativeview)
 
 ## Inherited members
 

@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BigWigAdapter.md)
 
-## Docs
-
-used to load BigWig or BigBed quantitative signal files
-
 ## Example usage
 
 ```js
@@ -28,6 +24,12 @@ used to load BigWig or BigBed quantitative signal files
   uri: 'https://example.com/coverage.bw',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+used to load BigWig or BigBed quantitative signal files
 
 ### BigWigAdapter - Pre-processor / simplified config
 

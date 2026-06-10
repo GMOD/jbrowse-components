@@ -40,8 +40,9 @@ shareURL, textSearchManager, assemblyManager, savedSessionMetadata, history
 getTrackActionMenuItems, menus
 
 **Actions:** addAssemblyConf, addSessionPlugin, removeSessionPlugin,
-deleteSavedSession, setSavedSessionFavorite, renameCurrentSession,
-activateSession, setDefaultSession, setSession, editTrackConfiguration
+deleteSavedSession, setSavedSessionFavorite, renameSavedSession,
+renameCurrentSession, activateSession, setDefaultSession, setSession,
+editTrackConfiguration
 
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 

@@ -49,7 +49,7 @@ temporaryAssemblies: types.array(assemblyConfigSchemasType)
 
 ```js
 // type signature
-addSessionAssembly: (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>
+addSessionAssembly: (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### action: addAssembly
@@ -79,7 +79,7 @@ used for read vs ref type assemblies.
 
 ```js
 // type signature
-addTemporaryAssembly: (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>
+addTemporaryAssembly: (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### action: removeTemporaryAssembly

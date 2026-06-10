@@ -39,7 +39,7 @@ internetAccounts: types.array(
 
 ```js
 // type signature
-initializeInternetAccount: (internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: any) => any
+initializeInternetAccount: (internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
 ```
 
 #### action: createEphemeralInternetAccount

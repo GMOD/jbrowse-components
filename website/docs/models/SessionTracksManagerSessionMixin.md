@@ -39,7 +39,7 @@ sessionTracks: types.array(
 
 ```js
 // type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 ### SessionTracksManagerSessionMixin - Actions
@@ -55,5 +55,5 @@ addTrackConf: (trackConf: AnyConfiguration) => any
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any[] | undefined
+deleteTrackConf: (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any[] | undefined
 ```

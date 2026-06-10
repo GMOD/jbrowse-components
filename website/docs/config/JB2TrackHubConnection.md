@@ -25,7 +25,7 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 ```json
 {
   "type": "JB2TrackHubConnection",
-  "uri": "http://mysite.com/path/to/config.json"
+  "uri": "https://mysite.com/path/to/config.json"
 }
 ```
 
@@ -37,7 +37,7 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 configJsonLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http://mysite.com/path/to/config.json',
+        uri: 'https://mysite.com/path/to/config.json',
         locationType: 'UriLocation',
       },
       description:

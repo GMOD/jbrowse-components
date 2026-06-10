@@ -11,12 +11,12 @@ import {
   section,
 } from './util.ts'
 
-import type { ExtendsRef, ExtractedNode } from './util.ts'
+import type { Example, ExtendsRef, ExtractedNode } from './util.ts'
 
 interface Member {
   name: string
   docs: string
-  examples: string
+  examples: Example[]
   code: string
   signature: string
 }
@@ -24,7 +24,7 @@ interface ModelHeader {
   name: string
   id: string
   docs: string
-  examples: string
+  examples: Example[]
 }
 export interface StateModel {
   header?: ModelHeader
@@ -186,6 +186,10 @@ function renderModel(
     ),
   )
 
+  const exSection = exampleSection(header.examples)
+  const docsBody = section(header.docs, inheritedSection(ancestors), sections)
+  const docsSection = docsBody ? `## Docs\n\n${docsBody}` : ''
+
   return `---
 id: ${header.id}
 title: ${header.name}
@@ -205,9 +209,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/${header.name}.md)
 
-## Docs
-
-${section(header.docs, exampleSection(header.examples), inheritedSection(ancestors), sections)}
+${section(exSection, docsSection)}
 `
 }
 
@@ -226,7 +228,7 @@ function memberSection(
             `#### ${kind}: ${m.name}`,
             m.docs,
             renderBody(m),
-            exampleSection(m.examples, '_Example_'),
+            exampleSection(m.examples, '**Example:**'),
           ),
         ),
       )

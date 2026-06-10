@@ -55,7 +55,7 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-connect: (_arg: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+connect: (_arg: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
 ```
 
 #### action: addTrackConf

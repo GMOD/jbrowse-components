@@ -20,27 +20,12 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-Provides a single `configOverrides` map for runtime display config overrides,
-replacing per-setting `types.maybe()` properties with one frozen map. Read a
-value with `getConfWithOverride` (override wins, else the config slot's value)
-or `getOverride` (override only); write with `setOverride`.
+Provides a runtime override map for display config slots. Pass the list of
+config slot names that can be overridden; these are serialized flat on the
+session snapshot (not nested under a sub-key) for readability.
 
-### ConfigOverrideMixin - Properties
-
-#### property: configOverrides
-
-runtime overrides keyed by config slot name; serialized only when non-empty (see
-postProcessSnapshot)
-
-```js
-// type signature
-IOptionalIType<IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>, [undefined]>
-// code
-configOverrides: types.optional(
-        types.frozen<Record<string, unknown>>(),
-        {},
-      )
-```
+Read with `getConfWithOverride` (override wins, else config slot value) or
+`getOverride` (override only). Write with `setOverride`/`clearOverride`.
 
 ### ConfigOverrideMixin - Methods
 

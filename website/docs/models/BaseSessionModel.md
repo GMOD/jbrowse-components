@@ -165,7 +165,7 @@ TextSearchManager
 
 ```js
 // type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<ConfigurationSchemaType<{ aliases: { ...; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>)[]
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: DialogComponent

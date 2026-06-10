@@ -95,8 +95,6 @@ setRenderError, attachRenderingBackend
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
-**Properties:** configOverrides
-
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride

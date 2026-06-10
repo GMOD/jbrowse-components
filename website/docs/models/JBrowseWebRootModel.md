@@ -117,8 +117,8 @@ pluginsUpdated: false
 RpcManager
 // code
 rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
-  WebWorkerRpcDriver: { makeWorkerInstance },
-  MainThreadRpcDriver: {},
+  makeWorkerInstance,
+  defaultDriverName: 'WebWorkerRpcDriver',
 })
 ```
 
@@ -217,4 +217,11 @@ setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
 ```js
 // type signature
 deleteSavedSession: (id: string) => Promise<void>
+```
+
+#### action: renameSavedSession
+
+```js
+// type signature
+renameSavedSession: (id: string, name: string) => Promise<void>
 ```

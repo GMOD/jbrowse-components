@@ -18,12 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearGenomeView.md)
 
-## Docs
-
-extends
-
-- [BaseViewModel](../baseviewmodel)
-
 ## Example usage
 
 A `LinearGenomeView` is what you hand-author under `defaultSession.views`. The
@@ -54,6 +48,12 @@ await view.navToLocString('chr1:2,000,000-2,100,000')
 view.showTrack('alignments')
 view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 ```
+
+## Docs
+
+extends
+
+- [BaseViewModel](../baseviewmodel)
 
 ## Inherited members
 
@@ -877,8 +877,6 @@ fetching and rendering.
   assemblyName: string
   reversed: boolean | undefined
   displayedRegionIndex: number
-  offsetPx: number
-  widthPx: number
   screenStartPx: number
   screenEndPx: number
 }

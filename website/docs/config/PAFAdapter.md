@@ -16,8 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/PAFAdapter.md)
 
-## Docs
-
 ## Example usage
 
 A PAF has no index, but it needs the query and target assembly names (query
@@ -31,6 +29,10 @@ first):
   targetAssembly: 'hg38',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
 
 ### PAFAdapter - Pre-processor / simplified config
 

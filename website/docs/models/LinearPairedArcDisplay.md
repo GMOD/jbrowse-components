@@ -18,17 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearPairedArcDisplay.md)
 
-## Docs
-
-this is a non-block-based track type, and can connect arcs across multiple
-displayedRegions
-
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [FeatureDensityMixin](../featuredensitymixin)
-
 ## Example usage
 
 Selected on a `VariantTrack` of structural variants — arcs connect each breakend
@@ -52,6 +41,17 @@ to its mate, even across displayed regions:
   ],
 }
 ```
+
+## Docs
+
+this is a non-block-based track type, and can connect arcs across multiple
+displayedRegions
+
+extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ## Inherited members
 

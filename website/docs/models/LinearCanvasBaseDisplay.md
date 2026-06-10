@@ -102,8 +102,6 @@ setRenderError, attachRenderingBackend
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
-**Properties:** configOverrides
-
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
@@ -266,6 +264,13 @@ number
 ```js
 // type
 boolean
+```
+
+#### getter: displayMode
+
+```js
+// type
+DisplayMode
 ```
 
 #### getter: showLabelsMode

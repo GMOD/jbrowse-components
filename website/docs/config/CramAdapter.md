@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/CramAdapter.md)
 
-## Docs
-
-used to configure CRAM adapter
-
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.crai` index. CRAM also needs a sequence
@@ -32,6 +28,12 @@ file locations:
   uri: 'https://example.com/sample.cram',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+used to configure CRAM adapter
 
 ### CramAdapter - Pre-processor / simplified config
 

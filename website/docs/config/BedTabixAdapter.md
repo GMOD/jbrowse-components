@@ -16,8 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedTabixAdapter.md)
 
-## Docs
-
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
@@ -29,6 +27,10 @@ index instead:
   uri: 'https://example.com/features.bed.gz',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
 
 ### BedTabixAdapter - Pre-processor / simplified config
 

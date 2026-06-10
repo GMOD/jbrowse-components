@@ -22,28 +22,29 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: defaultDriver
 
+which RPC backend to use by default. Empty means "use the host application's
+default" (web/desktop default to the web worker driver, embedded/headless to the
+main thread). A per-track or per-call `rpcDriverName` still overrides this.
+
 ```js
 defaultDriver: {
       type: 'string',
       description:
         'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
-      defaultValue: 'MainThreadRpcDriver',
+      defaultValue: '',
     }
 ```
 
-#### slot: drivers
+#### slot: workerCount
+
+number of web workers to spawn for the web worker RPC driver. 0 lets JBrowse
+pick based on hardware concurrency.
 
 ```js
-drivers: types.optional(
-  types.map(
-    types.union(
-      MainThreadRpcDriverConfigSchema,
-      WebWorkerRpcDriverConfigSchema,
-    ),
-  ),
-  {
-    MainThreadRpcDriver: { type: 'MainThreadRpcDriver' },
-    WebWorkerRpcDriver: { type: 'WebWorkerRpcDriver' },
-  },
-)
+workerCount: {
+      type: 'number',
+      description:
+        'The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.',
+      defaultValue: 0,
+    }
 ```

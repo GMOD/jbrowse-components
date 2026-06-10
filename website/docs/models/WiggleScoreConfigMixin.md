@@ -36,8 +36,6 @@ and docs.
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
-**Properties:** configOverrides
-
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
@@ -152,14 +150,14 @@ number
 number
 ```
 
-#### getter: minScoreConfig
+#### getter: minScoreBound
 
 ```js
 // type
 number | undefined
 ```
 
-#### getter: maxScoreConfig
+#### getter: maxScoreBound
 
 ```js
 // type

@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/Gff3TabixAdapter.md)
 
-## Docs
-
-used to load bgzip-compressed, tabix-indexed GFF3 files
-
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
@@ -31,6 +27,12 @@ index instead:
   uri: 'https://example.com/genes.gff3.gz',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+used to load bgzip-compressed, tabix-indexed GFF3 files
 
 ### Gff3TabixAdapter - Pre-processor / simplified config
 

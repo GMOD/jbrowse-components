@@ -15,5 +15,3 @@ reference the markdown files in our repo of the checked out git tag
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/configSchema.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearReferenceSequenceDisplay.md)
-
-## Docs

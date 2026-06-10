@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>> | undefined, ModelSnapshotType<...>, ModelInstanceTyp...
+IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; workerCount: { type: string; description: string; defaultValue: number; }; }, ConfigurationSchemaOptions<undefined, undefined>>; ... 4 more ...; theme: { ....
 // code
 config: createConfigModel(pluginManager, assemblyConfigSchema)
 ```
@@ -96,10 +96,7 @@ version
 RpcManager
 // code
 rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
-  WebWorkerRpcDriver: {
-    makeWorkerInstance,
-  },
-  MainThreadRpcDriver: {},
+  makeWorkerInstance,
 })
 ```
 
@@ -118,7 +115,7 @@ textSearchManager: new TextSearchManager(pluginManager)
 
 ```js
 // type
-ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>> | undefined, ModelSnapshotType<...>, Mode...
+ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; workerCount: { type: string; description: string; defaultValue: number; }; }, ConfigurationSchemaOptions<undefined, undefined>>; ... 4 more ......
 ```
 
 #### getter: pluginManager

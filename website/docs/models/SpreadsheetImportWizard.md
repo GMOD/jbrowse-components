@@ -102,7 +102,7 @@ string | undefined
 
 ```js
 // type signature
-tracksForAssembly: (selectedAssembly: string) => { track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>; label: string; type: "VCF" | ... 2 more ... | "STAR-Fusion"; loc: FileLocation; }[]
+tracksForAssembly: (selectedAssembly: string) => { track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; label: string; type: "VCF" | ... 2 more ... | "STAR-Fusion"; loc: FileLocation; }[]
 ```
 
 ### SpreadsheetImportWizard - Actions

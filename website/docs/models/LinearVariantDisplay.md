@@ -18,12 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearVariantDisplay.md)
 
-## Docs
-
-GPU-accelerated variant display with custom feature widget on click. extends
-
-- [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
-
 ## Example usage
 
 A complete `VariantTrack` config to paste into `tracks`:
@@ -48,6 +42,12 @@ A complete `VariantTrack` config to paste into `tracks`:
 }
 ```
 
+## Docs
+
+GPU-accelerated variant display with custom feature widget on click. extends
+
+- [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -62,10 +62,10 @@ subfeatureIdUnderMouse, mouseoverExtraInformation, contextMenuFeature,
 contextMenuInfo, userFeatureDensityLimit, heightBeforeExpand, incrementalLayout
 
 **Getters:** visibleFeatureDensityPerPx, renderState, DisplayMessageComponent,
-showTooltipsEnabled, showLegend, maxHeight, autoHeight, showLabelsMode,
-showLabels, showDescriptions, showOutline, featureColor, utrColor,
-effectiveShowDescriptions, selectedFeatureId, maxFeatureDensity, colorByCDS,
-sequenceAdapter, regionKeys, reversedRegions, featureWidgetType,
+showTooltipsEnabled, showLegend, maxHeight, autoHeight, displayMode,
+showLabelsMode, showLabels, showDescriptions, showOutline, featureColor,
+utrColor, effectiveShowDescriptions, selectedFeatureId, maxFeatureDensity,
+colorByCDS, sequenceAdapter, regionKeys, reversedRegions, featureWidgetType,
 bytesEstimateTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
 laidOutDataMap, maxY, hasOverflow, featureIdIndex, subfeatureIdIndex,
 hoveredFeature, hoveredSubfeature, featureItemMap, flatbushIndexes
@@ -144,8 +144,6 @@ setRenderError, attachRenderingBackend
 **Actions:** setError, setStatusMessage, cancelFetch, runFetch
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 

@@ -18,17 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearArcDisplay.md)
 
-## Docs
-
-a non-block-based display drawing an arc connecting the start and end of each
-feature, rendered as plain SVG on the main thread
-
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [FeatureDensityMixin](../featuredensitymixin)
-
 ## Example usage
 
 Selected on a `FeatureTrack`; each feature is drawn as an arc from its start to
@@ -53,6 +42,17 @@ its end. `displayMode` is `arcs` or `semicircles`:
   ],
 }
 ```
+
+## Docs
+
+a non-block-based display drawing an arc connecting the start and end of each
+feature, rendered as plain SVG on the main thread
+
+extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ## Inherited members
 

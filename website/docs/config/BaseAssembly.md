@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BaseAssembly.md)
 
-## Docs
-
-This corresponds to the assemblies section of the config
-
 ## Example usage
 
 A hand-authored assembly. `sequence` is a `ReferenceSequenceTrack` whose adapter
@@ -40,6 +36,12 @@ points at an indexed FASTA — the `uri` shorthand auto-resolves the companion
   },
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+This corresponds to the assemblies section of the config
 
 ### BaseAssembly - Identifier
 

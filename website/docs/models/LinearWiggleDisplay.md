@@ -18,17 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearWiggleDisplay.md)
 
-## Docs
-
-State model factory for the single-source wiggle display.
-
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [MultiRegionDisplayMixin](../multiregiondisplaymixin)
-- [WiggleCommonMixin](../wigglecommonmixin)
-
 ## Example usage
 
 A complete `QuantitativeTrack` config to paste into `tracks`. `height` is the
@@ -52,6 +41,17 @@ min/max score, renderer) are config slots on the track itself — see the
   ],
 }
 ```
+
+## Docs
+
+State model factory for the single-source wiggle display.
+
+extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+- [WiggleCommonMixin](../wigglecommonmixin)
 
 ## Inherited members
 
@@ -135,15 +135,13 @@ setRenderError, attachRenderingBackend
 
 **Getters:** scalebarOverlapLeft, posColor, negColor, bicolorPivot, scaleType,
 autoscaleType, numStdDev, summaryScoreMode, renderingType, minScore, maxScore,
-minScoreConfig, maxScoreConfig, hasResolution
+minScoreBound, maxScoreBound, hasResolution
 
 **Actions:** toggleCrossHatches, setResolution, setLoadedBpPerPx, setScaleType,
 setColor, setMinScore, setMaxScore, setRenderingType, setSummaryScoreMode,
 setAutoscale, isCacheValid
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 
@@ -305,6 +303,13 @@ setNegColor: (color?: string | undefined) => void
 ```js
 // type signature
 setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse | undefined) => void
+```
+
+#### action: selectFeature
+
+```js
+// type signature
+selectFeature: (feat: WiggleFeatureUnderMouse) => void
 ```
 
 #### action: fetchNeeded

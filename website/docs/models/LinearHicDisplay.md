@@ -18,14 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearHicDisplay.md)
 
-## Docs
-
-Hi-C display that renders contact matrix using WebGL extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [GlobalDataDisplayMixin](../globaldatadisplaymixin)
-
 ## Example usage
 
 A complete `HicTrack` config to paste into `tracks`. `resolutionBias` nudges the
@@ -48,6 +40,14 @@ auto-picked binsize (negative = finer, positive = coarser):
   ],
 }
 ```
+
+## Docs
+
+Hi-C display that renders contact matrix using WebGL extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [GlobalDataDisplayMixin](../globaldatadisplaymixin)
 
 ## Inherited members
 

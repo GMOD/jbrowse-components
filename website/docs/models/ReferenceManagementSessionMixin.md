@@ -37,5 +37,5 @@ getReferring: (object: IAnyStateTreeNode) => ReferringNode[]
 
 ```js
 // type signature
-removeReferring: (referring: ReferringNode[], track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; } & IStateTreeNode<...>, callbacks: (() => void)[], dereferenceTypeCount: Record<...>) => void
+removeReferring: (referring: ReferringNode[], track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, callbacks: (() => void)[], dereferenceTypeCount: Record<...>) => void
 ```

@@ -18,17 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearAlignmentsDisplay.md)
 
-## Docs
-
-State model factory for LinearAlignmentsDisplay
-
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [MultiRegionDisplayMixin](../multiregiondisplaymixin)
-- [ConfigOverrideMixin](../configoverridemixin)
-
 ## Example usage
 
 The display goes in a track's `displays` array; here are three complete
@@ -93,6 +82,17 @@ Long reads with soft-clipping shown and split/mate reads connected by arcs:
   ],
 }
 ```
+
+## Docs
+
+State model factory for LinearAlignmentsDisplay
+
+extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+- [ConfigOverrideMixin](../configoverridemixin)
 
 ## Inherited members
 
@@ -161,8 +161,6 @@ setRenderError, attachRenderingBackend
 **Actions:** setError, setStatusMessage, cancelFetch, runFetch
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 
@@ -577,14 +575,14 @@ number
 number
 ```
 
-#### getter: minScoreConfig
+#### getter: minScoreBound
 
 ```js
 // type
 number | undefined
 ```
 
-#### getter: maxScoreConfig
+#### getter: maxScoreBound
 
 ```js
 // type
@@ -629,6 +627,13 @@ LazyExoticComponent<({ model, height, clientMouseCoord, offsetMouseCoord, }: { m
 string[]
 ```
 
+#### getter: hasPairedReads
+
+```js
+// type
+boolean
+```
+
 #### getter: colorBy
 
 ```js
@@ -643,7 +648,7 @@ ColorBy
 FilterBy
 ```
 
-#### getter: featureHeightSetting
+#### getter: featureHeight
 
 ```js
 // type
@@ -689,7 +694,7 @@ boolean
 
 ```js
 // type
-boolean | undefined
+boolean
 ```
 
 #### getter: sortedBy
@@ -725,13 +730,6 @@ ScoreStats | undefined
 ```js
 // type
 YScaleTicks | undefined
-```
-
-#### getter: legendItems
-
-```js
-// type
-LegendItem[]
 ```
 
 #### getter: laidOutPileupMap
@@ -878,7 +876,7 @@ number
 number
 ```
 
-#### getter: showOutlineSetting
+#### getter: showOutline
 
 ```js
 // type
@@ -947,6 +945,13 @@ SimpleFeature | undefined
 ```
 
 ### LinearAlignmentsDisplay - Methods
+
+#### method: legendItems
+
+```js
+// type signature
+legendItems: () => LegendItem[]
+```
 
 #### method: findFeatureInRpcData
 

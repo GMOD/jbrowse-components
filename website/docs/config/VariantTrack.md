@@ -16,11 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/VariantTrack.md)
 
-## Docs
-
-Mostly similar to feature track, but has `ChordDisplayType` registered to it,
-and custom feature details in `LinearVariantDisplay`
-
 ## Example usage
 
 ```js
@@ -35,6 +30,13 @@ and custom feature details in `LinearVariantDisplay`
   },
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+Mostly similar to feature track, but has `ChordDisplayType` registered to it,
+and custom feature details in `LinearVariantDisplay`
 
 ## Inherited config slots
 

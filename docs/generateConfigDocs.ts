@@ -10,18 +10,18 @@ import {
   section,
 } from './util.ts'
 
-import type { ExtractedNode } from './util.ts'
+import type { Example, ExtractedNode } from './util.ts'
 
 interface Item {
   name: string
   docs: string
-  examples: string
+  examples: Example[]
   code: string
 }
 interface ConfigHeader {
   name: string
   docs: string
-  examples: string
+  examples: Example[]
   id: string
   // "file:pos" identity of the declaration this #config sits on. A deriving
   // config's `baseConfiguration:` slot resolves (alias-followed) to this same
@@ -188,6 +188,19 @@ function renderConfig(
       ),
   )
 
+  const hasSlots =
+    slots.length > 0 || bases.some(b => (b.config?.slots.length ?? 0) > 0)
+  const slotsNote = hasSlots
+    ? 'See the **Slots** section below for all available configuration fields.'
+    : ''
+  const exSection = exampleSection(
+    header.examples,
+    '## Example usage',
+    slotsNote,
+  )
+  const docsBody = section(header.docs, sections)
+  const docsSection = docsBody ? `## Docs\n\n${docsBody}` : ''
+
   return `---
 id: ${header.id}
 title: ${header.name}
@@ -206,9 +219,7 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/${header.name}.md)
 
-## Docs
-
-${section(header.docs, exampleSection(header.examples), sections)}
+${section(exSection, docsSection)}
 `
 }
 
@@ -217,7 +228,7 @@ function slotBlock({ name, docs, examples, code }: Item) {
     `#### slot: ${name}`,
     docs,
     codeBlock(code),
-    exampleSection(examples, '_Example_'),
+    exampleSection(examples, '**Example:**'),
   )
 }
 

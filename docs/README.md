@@ -120,3 +120,75 @@ to be written — `createBaseTrackConfig(pluginManager)`,
 the quoted name) all link. Each config page then renders an "Inherited config
 slots" section reproducing every base slot in full, so the page is
 self-contained; an unresolved base prints a warning at generation time.
+
+## Adding examples with `#example`
+
+Any `#config`, `#stateModel`, `#slot`, `#getter`, `#action`, `#method`, or
+`#api` block can carry one or more `#example` sections. Examples are rendered
+prominently at the top of the generated page (before the prose description), so
+they are the first thing a reader sees.
+
+Write an `#example` block **after** the rest of the doc text so it stays out of
+the prose that `extends` resolution reads:
+
+````js
+/**
+ * #config BamAdapter
+ * used to configure BAM adapter
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.bai` index:
+ * ```js
+ * {
+ *   type: 'BamAdapter',
+ *   uri: 'https://example.com/sample.bam',
+ * }
+ * ```
+ */
+````
+
+The content between `#example` and the end of the JSDoc (or the next `#example`
+marker) is rendered verbatim — prose lines explain the snippet, fenced code
+blocks are copy-pasteable.
+
+### Multiple labeled examples
+
+Add a label after `#example` to get named subsections. Useful when showing a
+minimal form alongside a fully-expanded one:
+
+````js
+/**
+ * #config CramAdapter
+ *
+ * #example minimal
+ * Minimal — `uri` auto-resolves the `.crai` index:
+ * ```js
+ * { type: 'CramAdapter', uri: 'https://example.com/sample.cram' }
+ * ```
+ *
+ * #example with-explicit-index
+ * Explicit index path for non-standard naming:
+ * ```js
+ * {
+ *   type: 'CramAdapter',
+ *   cramLocation: { uri: 'https://example.com/sample.cram' },
+ *   craiLocation: { uri: 'https://example.com/sample.crai' },
+ * }
+ * ```
+ */
+````
+
+Labeled examples render as `### Example: minimal` /
+`### Example: with-explicit-index` subsections nested under `## Example usage`.
+Slot- and member-level labeled examples use italic (`_label_`) instead of a
+heading to stay subordinate.
+
+### Where `#example` can appear
+
+| Tag                               | Renders at                                      |
+| --------------------------------- | ----------------------------------------------- |
+| `#config`                         | Top of the config page (`## Example usage`)     |
+| `#stateModel`                     | Top of the model page (`## Example usage`)      |
+| `#slot`                           | After the slot's code block (`**Example:**`)    |
+| `#getter` / `#method` / `#action` | After the member's code block (`**Example:**`)  |
+| `#api`                            | After the type signature (`#### Example usage`) |

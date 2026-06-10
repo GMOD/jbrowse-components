@@ -18,10 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearGCContentDisplay.md)
 
-## Docs
-
-base model `SharedGCContentModel`
-
 ## Example usage
 
 This display attaches to a `ReferenceSequenceTrack` — it derives GC from the
@@ -49,3 +45,7 @@ track's own sequence adapter, so no extra adapter is needed. `gcMode` is
   ],
 }
 ```
+
+## Docs
+
+base model `SharedGCContentModel`

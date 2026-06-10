@@ -18,18 +18,11 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearBasicDisplay.md)
 
-## Docs
-
-GPU-accelerated feature display with gene-specific UI on top of the shared
-canvas base display (`LinearCanvasBaseDisplay`). This is the GPU stack — despite
-the name it does NOT extend `BaseLinearDisplay` (the legacy block stack). See
-agent-docs/TRACK_DISPLAY_CONCEPTS.md.
-
 ## Example usage
 
 A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
-`tracks`. `configOverrides.displayMode` switches between `normal`, `compact`,
-`superCompact`, `reducedRepresentation`, and `collapse`:
+`tracks`. `displayMode` switches between `normal`, `compact`, `superCompact`,
+`reducedRepresentation`, and `collapse`:
 
 ```js
 {
@@ -46,8 +39,15 @@ A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
       type: 'LinearBasicDisplay',
       displayId: 'genes-LinearBasicDisplay',
       height: 200,
-      configOverrides: { displayMode: 'compact' },
+      displayMode: 'compact',
     },
   ],
 }
 ```
+
+## Docs
+
+GPU-accelerated feature display with gene-specific UI on top of the shared
+canvas base display (`LinearCanvasBaseDisplay`). This is the GPU stack — despite
+the name it does NOT extend `BaseLinearDisplay` (the legacy block stack). See
+agent-docs/TRACK_DISPLAY_CONCEPTS.md.

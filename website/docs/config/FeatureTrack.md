@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/FeatureTrack.md)
 
-## Docs
-
-used for basic gene and feature tracks, generally used with LinearBasicDisplay
-
 ## Example usage
 
 A minimal hand-authored entry in the top-level `tracks` array — `adapter` points
@@ -37,6 +33,12 @@ at the data file, and the track opens with a `LinearBasicDisplay`:
   },
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+used for basic gene and feature tracks, generally used with LinearBasicDisplay
 
 ### FeatureTrack - Identifier
 

@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/AlignmentsTrack.md)
 
-## Docs
-
-has very little config; most config and state logic is on the display
-
 ## Example usage
 
 A BAM track — swap the adapter to `CramAdapter` with a `uri` to a `.cram` for
@@ -37,6 +33,12 @@ CRAM:
   },
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+has very little config; most config and state logic is on the display
 
 ## Inherited config slots
 

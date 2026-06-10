@@ -16,10 +16,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GtfTabixAdapter.md)
 
-## Docs
-
-used to load bgzip-compressed, tabix-indexed GTF files
-
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index:
@@ -30,6 +26,12 @@ The `uri` shorthand auto-resolves the `.tbi` index:
   uri: 'https://example.com/genes.gtf.gz',
 }
 ```
+
+_See the **Slots** section below for all available configuration fields._
+
+## Docs
+
+used to load bgzip-compressed, tabix-indexed GTF files
 
 ### GtfTabixAdapter - Pre-processor / simplified config
 

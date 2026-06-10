@@ -25,7 +25,7 @@ preprocessor to allow minimal config, where `uri` points at the hub.txt:
 ```json
 {
   "type": "UCSCTrackHubConnection",
-  "uri": "http://mysite.com/path/to/hub.txt"
+  "uri": "https://mysite.com/path/to/hub.txt"
 }
 ```
 
@@ -37,7 +37,7 @@ preprocessor to allow minimal config, where `uri` points at the hub.txt:
 hubTxtLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http://mysite.com/path/to/hub.txt',
+        uri: 'https://mysite.com/path/to/hub.txt',
         locationType: 'UriLocation',
       },
       description: 'location of the hub file (usually called hub.txt)',

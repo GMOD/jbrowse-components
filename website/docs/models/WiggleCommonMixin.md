@@ -42,15 +42,13 @@ and docs.
 
 **Getters:** scalebarOverlapLeft, posColor, negColor, bicolorPivot, scaleType,
 autoscaleType, numStdDev, summaryScoreMode, renderingType, minScore, maxScore,
-minScoreConfig, maxScoreConfig, hasResolution
+minScoreBound, maxScoreBound, hasResolution
 
 **Actions:** toggleCrossHatches, setResolution, setLoadedBpPerPx, setScaleType,
 setColor, setMinScore, setMaxScore, setRenderingType, setSummaryScoreMode,
 setAutoscale, isCacheValid
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 

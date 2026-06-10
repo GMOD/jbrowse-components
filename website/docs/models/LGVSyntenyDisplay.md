@@ -18,15 +18,6 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LGVSyntenyDisplay.md)
 
-## Docs
-
-displays location of "synteny" feature in a plain LGV, allowing linking out to
-external synteny views
-
-extends
-
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-
 ## Example usage
 
 Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
@@ -54,6 +45,15 @@ display type:
 }
 ```
 
+## Docs
+
+displays location of "synteny" feature in a plain LGV, allowing linking out to
+external synteny views
+
+extends
+
+- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -74,21 +74,21 @@ highlightedChainIds, selectedChainIds, colorTagMap, visibleModifications,
 modificationsReady, overCigarItem, colorPalette
 
 **Getters:** isChainMode, showLinkedReadLines, scaleType, autoscaleType,
-minScore, maxScore, minScoreConfig, maxScoreConfig, numStdDev,
-featureWidgetType, selectedFeatureId, TooltipComponent,
-visibleModificationTypes, colorBy, filterBy, featureHeightSetting,
-featureSpacing, maxHeight, chainIdMap, mismatchAlpha, showLowFreqMismatches,
-showLegend, sortedBy, coverageIsLog, coverageStats, coverageDomain,
-coverageTicks, legendItems, laidOutPileupMap, maxY, pileupTruncated,
-arcsComputed, arcsRpcDataMap, modificationThreshold, colorSchemeIndex,
-showModifications, showPerBaseQuality, showPerBaseLetter, totalPileupHeight,
-readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs, belowCoverageBands,
-coverageDisplayHeight, pileupViewportHeight, scalebarOverlapLeft,
-showOutlineSetting, visibleLabels, highlightBoxes, scrollableHeight, sortTag,
-renderState, arcsYDomainBp, insertSizeTicks, featureUnderMouse
+minScore, maxScore, minScoreBound, maxScoreBound, numStdDev, featureWidgetType,
+selectedFeatureId, TooltipComponent, visibleModificationTypes, hasPairedReads,
+colorBy, filterBy, featureHeight, featureSpacing, maxHeight, chainIdMap,
+mismatchAlpha, showLowFreqMismatches, showLegend, sortedBy, coverageIsLog,
+coverageStats, coverageDomain, coverageTicks, laidOutPileupMap, maxY,
+pileupTruncated, arcsComputed, arcsRpcDataMap, modificationThreshold,
+colorSchemeIndex, showModifications, showPerBaseQuality, showPerBaseLetter,
+totalPileupHeight, readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs,
+belowCoverageBands, coverageDisplayHeight, pileupViewportHeight,
+scalebarOverlapLeft, showOutline, visibleLabels, highlightBoxes,
+scrollableHeight, sortTag, renderState, arcsYDomainBp, insertSizeTicks,
+featureUnderMouse
 
-**Methods:** findFeatureInRpcData, searchFeatureByID, getFeatureInfoById,
-rpcProps, trackMenuItems, contextMenuItems
+**Methods:** legendItems, findFeatureInRpcData, searchFeatureByID,
+getFeatureInfoById, rpcProps, trackMenuItems, contextMenuItems
 
 **Actions:** clearMouseoverState, setError, setRegionTooLarge, setRpcData,
 clearDisplaySpecificData, setOverCigarItem, setColorPalette, setScrollTop,
@@ -172,8 +172,6 @@ setRenderError, attachRenderingBackend
 **Actions:** setError, setStatusMessage, cancelFetch, runFetch
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 
