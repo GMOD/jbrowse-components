@@ -50,6 +50,10 @@ export function getPluginManager(
     { pluginManager },
   )
 
+  // web defaults to WebWorkerRpcDriver, but web workers don't run under jest
+  // (makeWorkerInstance is mocked to a no-op), so force the main-thread driver
+  rootModel.rpcManager.defaultDriverName = 'MainThreadRpcDriver'
+
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
