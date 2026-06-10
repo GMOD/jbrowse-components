@@ -3,8 +3,8 @@ id: alignmentstrack
 title: AlignmentsTrack
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -20,7 +20,6 @@ reference the markdown files in our repo of the checked out git tag
 
 A BAM track — swap the adapter to `CramAdapter` with a `uri` to a `.cram` for
 CRAM:
-
 ```js
 {
   type: 'AlignmentsTrack',
@@ -40,10 +39,10 @@ _See the **Slots** section below for all available configuration fields._
 
 has very little config; most config and state logic is on the display
 
+
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseTrack](../basetrack)
 
@@ -139,8 +138,8 @@ indexingFeatureTypesToExclude: {
 
 ```js
 textSearchAdapter: pluginManager.pluggableConfigSchemaType(
-  'text search adapter',
-)
+          'text search adapter',
+        )
 ```
 
 #### slot: displays

@@ -4,9 +4,9 @@ title: core/configuration
 ---
 
 Note: this document is automatically generated from exported functions marked
-with an `#api` JSDoc tag in our source code. See
-[Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
-for how to import these from a plugin.
+with an `#api` JSDoc tag in our source code. See [Plugin dependencies and
+re-exports](/docs/developer_guides/imports_and_reexports) for how to import
+these from a plugin.
 
 ### getConf
 
@@ -24,8 +24,8 @@ member (a track or display state model). For a raw configuration model, use
 ### readConfObject
 
 Given a configuration model (an instance of a ConfigurationSchema), read the
-configuration value at the given path. Use this when you hold the configuration
-model directly, e.g. an entry from `session.tracks`.
+configuration value at the given path. Use this when you hold the
+configuration model directly, e.g. an entry from `session.tracks`.
 
 ```js
 // type signature

@@ -3,8 +3,8 @@ id: varianttrack
 title: VariantTrack
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -38,10 +38,10 @@ _See the **Slots** section below for all available configuration fields._
 Mostly similar to feature track, but has `ChordDisplayType` registered to it,
 and custom feature details in `LinearVariantDisplay`
 
+
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseTrack](../basetrack)
 
@@ -137,8 +137,8 @@ indexingFeatureTypesToExclude: {
 
 ```js
 textSearchAdapter: pluginManager.pluggableConfigSchemaType(
-  'text search adapter',
-)
+          'text search adapter',
+        )
 ```
 
 #### slot: displays

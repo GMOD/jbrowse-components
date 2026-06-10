@@ -3,8 +3,8 @@ id: pafadapter
 title: PAFAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -20,7 +20,6 @@ reference the markdown files in our repo of the checked out git tag
 
 A PAF has no index, but it needs the query and target assembly names (query
 first):
-
 ```js
 {
   type: 'PAFAdapter',
@@ -36,14 +35,15 @@ _See the **Slots** section below for all available configuration fields._
 
 ### PAFAdapter - Pre-processor / simplified config
 
-preprocessor to allow minimal config:
 
+
+preprocessor to allow minimal config:
 ```json
 {
   "type": "PAFAdapter",
   "uri": "file.paf.gz",
-  "queryAssembly": "hg19",
-  "targetAssembly": "hg38"
+  "queryAssembly":"hg19",
+  "targetAssembly":"hg38"
 }
 ```
 
@@ -59,7 +59,6 @@ assemblyNames: {
         'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
     }
 ```
-
 #### slot: targetAssembly
 
 ```js
@@ -69,7 +68,6 @@ targetAssembly: {
       description: 'Alternative to assemblyNames: the target assembly name',
     }
 ```
-
 #### slot: queryAssembly
 
 ```js
@@ -79,7 +77,6 @@ queryAssembly: {
       description: 'Alternative to assemblyNames: the query assembly name',
     }
 ```
-
 #### slot: pafLocation
 
 ```js

@@ -3,8 +3,8 @@ id: splitvcftabixadapter
 title: SplitVcfTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -30,7 +30,6 @@ vcfGzLocationMap: {
       defaultValue: {},
     }
 ```
-
 #### slot: indexLocationMap
 
 object like `{chr1:{uri:'url to index'}}`
@@ -41,7 +40,6 @@ indexLocationMap: {
       defaultValue: {},
     }
 ```
-
 #### slot: indexType
 
 ```js
@@ -50,7 +48,6 @@ indexType: {
       defaultValue: 'TBI',
     }
 ```
-
 #### slot: samplesTsvLocation
 
 ```js

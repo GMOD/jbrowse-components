@@ -3,8 +3,8 @@ id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -29,7 +29,6 @@ authEndpoint: {
       defaultValue: 'https://accounts.google.com/o/oauth2/v2/auth',
     }
 ```
-
 #### slot: scopes
 
 ```js
@@ -39,7 +38,6 @@ scopes: {
       defaultValue: 'https://www.googleapis.com/auth/drive.readonly',
     }
 ```
-
 #### slot: domains
 
 ```js
@@ -50,7 +48,6 @@ domains: {
       defaultValue: ['drive.google.com'],
     }
 ```
-
 #### slot: responseType
 
 ```js
@@ -63,8 +60,7 @@ responseType: {
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [OAuthInternetAccount](../oauthinternetaccount)
 

@@ -3,8 +3,8 @@ id: cramadapter
 title: CramAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,10 +18,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-The `uri` shorthand auto-resolves the `.crai` index. CRAM also needs a sequence
-adapter, supplied by the enclosing assembly, so a track usually only sets the
-file locations:
-
+The `uri` shorthand auto-resolves the `.crai` index. CRAM also needs a
+sequence adapter, supplied by the enclosing assembly, so a track usually only
+sets the file locations:
 ```js
 {
   type: 'CramAdapter',
@@ -35,7 +34,9 @@ _See the **Slots** section below for all available configuration fields._
 
 used to configure CRAM adapter
 
+
 ### CramAdapter - Pre-processor / simplified config
+
 
 preprocessor to allow minimal config, assumes yourfile.cram.crai:
 
@@ -58,7 +59,6 @@ fetchSizeLimit: {
       defaultValue: 3_000_000,
     }
 ```
-
 #### slot: cramLocation
 
 ```js
@@ -70,7 +70,6 @@ cramLocation: {
       },
     }
 ```
-
 #### slot: craiLocation
 
 ```js

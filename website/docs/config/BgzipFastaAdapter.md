@@ -3,8 +3,8 @@ id: bgzipfastaadapter
 title: BgzipFastaAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -19,7 +19,6 @@ reference the markdown files in our repo of the checked out git tag
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
-
 ```js
 {
   type: 'BgzipFastaAdapter',
@@ -33,9 +32,9 @@ _See the **Slots** section below for all available configuration fields._
 
 ### BgzipFastaAdapter - Pre-processor / simplified config
 
-preprocessor to allow minimal config, assumes yourfile.fa.fai and
-yourfile.fa.gzi:
 
+
+preprocessor to allow minimal config, assumes yourfile.fa.fai and yourfile.fa.gzi:
 ```json
 {
   "type": "BgzipFastaAdapter",
@@ -53,7 +52,6 @@ fastaLocation: {
       defaultValue: { uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' },
     }
 ```
-
 #### slot: faiLocation
 
 ```js
@@ -65,7 +63,6 @@ faiLocation: {
       },
     }
 ```
-
 #### slot: metadataLocation
 
 ```js
@@ -78,7 +75,6 @@ metadataLocation: {
       },
     }
 ```
-
 #### slot: gziLocation
 
 ```js

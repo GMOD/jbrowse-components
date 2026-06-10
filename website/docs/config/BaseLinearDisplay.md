@@ -3,8 +3,8 @@ id: baselineardisplay
 title: BaseLinearDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,14 +18,16 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-Shared base config for **both** linear display stacks — its slots (`height`,
-`maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
-common to all linear displays. The GPU stack's `LinearCanvasBaseDisplay` config
-extends it, the legacy block `LinearBareDisplay` config extends it, and
-third-party plugins extend it too.
 
-Note: the _state model_ named `BaseLinearDisplay` is narrower than this config —
-it backs only the legacy block stack. See agent-docs/TRACK_DISPLAY_CONCEPTS.md.
+Shared base config for **both** linear display stacks — its slots
+(`height`, `maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`,
+`jexlFilters`) are common to all linear displays. The GPU stack's
+`LinearCanvasBaseDisplay` config extends it, the legacy block
+`LinearBareDisplay` config extends it, and third-party plugins extend it too.
+
+Note: the *state model* named `BaseLinearDisplay` is narrower than this config
+— it backs only the legacy block stack. See
+agent-docs/TRACK_DISPLAY_CONCEPTS.md.
 
 ### BaseLinearDisplay - Identifier
 
@@ -43,7 +45,6 @@ maxFeatureScreenDensity: {
       defaultValue: 0.3,
     }
 ```
-
 #### slot: fetchSizeLimit
 
 ```js
@@ -54,7 +55,6 @@ fetchSizeLimit: {
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
     }
 ```
-
 #### slot: height
 
 ```js
@@ -64,7 +64,6 @@ height: {
       description: 'default height for the track',
     }
 ```
-
 #### slot: mouseover
 
 ```js
@@ -75,11 +74,10 @@ mouseover: {
       contextVariable: ['feature', 'mouseoverExtraInformation'],
     }
 ```
-
 #### slot: jexlFilters
 
-config jexlFilters are deferred evaluated so they are prepended with jexl at
-runtime rather than being stored with jexl in the config
+config jexlFilters are deferred evaluated so they are prepended with
+jexl at runtime rather than being stored with jexl in the config
 
 ```js
 jexlFilters: {

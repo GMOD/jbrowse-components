@@ -4,9 +4,9 @@ title: synteny-core
 ---
 
 Note: this document is automatically generated from exported functions marked
-with an `#api` JSDoc tag in our source code. See
-[Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
-for how to import these from a plugin.
+with an `#api` JSDoc tag in our source code. See [Plugin dependencies and
+re-exports](/docs/developer_guides/imports_and_reexports) for how to import
+these from a plugin.
 
 ### applyAlpha
 

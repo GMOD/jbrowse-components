@@ -3,8 +3,8 @@ id: linearcanvasbasedisplay
 title: LinearCanvasBaseDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -31,7 +31,6 @@ maxHeight: {
         description: 'Maximum height of the display in pixels',
       }
 ```
-
 #### slot: maxFeatureScreenDensity
 
 ```js
@@ -42,7 +41,6 @@ maxFeatureScreenDensity: {
           'Maximum features per pixel before showing region too large message',
       }
 ```
-
 #### slot: autoHeight
 
 ```js
@@ -53,7 +51,6 @@ autoHeight: {
           'Automatically resize the track height to fit all features',
       }
 ```
-
 #### slot: showLabels
 
 ```js
@@ -65,7 +62,6 @@ showLabels: {
           'Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides',
       }
 ```
-
 #### slot: maxLabelFeatureDensity
 
 ```js
@@ -76,7 +72,6 @@ maxLabelFeatureDensity: {
           'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
       }
 ```
-
 #### slot: showDescriptions
 
 ```js
@@ -86,7 +81,6 @@ showDescriptions: {
         description: 'Show feature descriptions',
       }
 ```
-
 #### slot: color
 
 ```js
@@ -98,7 +92,6 @@ color: {
         contextVariable: ['feature'],
       }
 ```
-
 #### slot: connectorColor
 
 ```js
@@ -110,7 +103,6 @@ connectorColor: {
         contextVariable: ['feature'],
       }
 ```
-
 #### slot: utrColor
 
 ```js
@@ -121,7 +113,6 @@ utrColor: {
         contextVariable: ['feature'],
       }
 ```
-
 #### slot: outlineColor
 
 ```js
@@ -131,7 +122,6 @@ outlineColor: {
         defaultValue: '',
       }
 ```
-
 #### slot: featureHeight
 
 ```js
@@ -142,7 +132,6 @@ featureHeight: {
         contextVariable: ['feature'],
       }
 ```
-
 #### slot: displayMode
 
 ```js
@@ -159,7 +148,6 @@ displayMode: {
         defaultValue: 'normal',
       }
 ```
-
 #### slot: geneGlyphMode
 
 ```js
@@ -171,7 +159,6 @@ geneGlyphMode: {
         defaultValue: 'auto',
       }
 ```
-
 #### slot: subfeatureLabels
 
 ```js
@@ -186,7 +173,6 @@ subfeatureLabels: {
         defaultValue: 'none',
       }
 ```
-
 #### slot: displayDirectionalChevrons
 
 ```js
@@ -197,7 +183,6 @@ displayDirectionalChevrons: {
         defaultValue: true,
       }
 ```
-
 #### slot: transcriptTypes
 
 ```js
@@ -206,7 +191,6 @@ transcriptTypes: {
         defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
       }
 ```
-
 #### slot: containerTypes
 
 ```js
@@ -215,7 +199,6 @@ containerTypes: {
         defaultValue: ['proteoform_orf'],
       }
 ```
-
 #### slot: subParts
 
 ```js
@@ -225,7 +208,6 @@ subParts: {
         defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
       }
 ```
-
 #### slot: impliedUTRs
 
 ```js
@@ -235,30 +217,28 @@ impliedUTRs: {
         defaultValue: false,
       }
 ```
-
 #### slot: labels
 
 ```js
 labels: ConfigurationSchema('CanvasFeatureLabels', {
-  name: {
-    type: 'string',
-    description: 'the primary name of the feature to show',
-    defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
-    contextVariable: ['feature'],
-  },
-  description: {
-    type: 'string',
-    description: 'the text description to show',
-    defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
-    contextVariable: ['feature'],
-  },
-})
+        name: {
+          type: 'string',
+          description: 'the primary name of the feature to show',
+          defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
+          contextVariable: ['feature'],
+        },
+        description: {
+          type: 'string',
+          description: 'the text description to show',
+          defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
+          contextVariable: ['feature'],
+        },
+      })
 ```
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseLinearDisplay](../baselineardisplay)
 
@@ -307,8 +287,8 @@ mouseover: {
 
 #### slot: jexlFilters
 
-config jexlFilters are deferred evaluated so they are prepended with jexl at
-runtime rather than being stored with jexl in the config
+config jexlFilters are deferred evaluated so they are prepended with
+jexl at runtime rather than being stored with jexl in the config
 
 ```js
 jexlFilters: {

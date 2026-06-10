@@ -3,8 +3,8 @@ id: referencesequencetrack
 title: ReferenceSequenceTrack
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,9 +18,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-Usually authored as the `sequence` member of an assembly rather than a top-level
-track:
-
+Usually authored as the `sequence` member of an assembly rather than a
+top-level track:
 ```js
 sequence: {
   type: 'ReferenceSequenceTrack',
@@ -38,6 +37,7 @@ _See the **Slots** section below for all available configuration fields._
 
 used to display base level DNA sequence tracks
 
+
 ### ReferenceSequenceTrack - Identifier
 
 #### slot: explicitIdentifier
@@ -51,7 +51,6 @@ configuration for track adapter
 ```js
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
-
 #### slot: displays
 
 configuration for the displays e.g. LinearReferenceSequenceDisplay
@@ -59,7 +58,6 @@ configuration for the displays e.g. LinearReferenceSequenceDisplay
 ```js
 displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
-
 #### slot: name
 
 ```js
@@ -70,7 +68,6 @@ name: {
         defaultValue: '',
       }
 ```
-
 #### slot: sequenceType
 
 ```js
@@ -80,7 +77,6 @@ sequenceType: {
         defaultValue: 'dna',
       }
 ```
-
 #### slot: description
 
 ```js
@@ -90,7 +86,6 @@ description: {
         defaultValue: '',
       }
 ```
-
 #### slot: metadata
 
 ```js
@@ -100,7 +95,6 @@ metadata: {
         defaultValue: {},
       }
 ```
-
 #### slot: formatAbout.config
 
 ```js
@@ -111,7 +105,6 @@ config: {
           contextVariable: ['config'],
         }
 ```
-
 #### slot: formatAbout.hideUris
 
 ```js

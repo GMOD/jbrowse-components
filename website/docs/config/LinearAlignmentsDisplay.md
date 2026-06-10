@@ -3,8 +3,8 @@ id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -31,7 +31,6 @@ featureHeight: {
         description: 'Height of each feature (read) in pixels',
       }
 ```
-
 #### slot: featureSpacing
 
 ```js
@@ -41,7 +40,6 @@ featureSpacing: {
         description: 'Spacing between features in pixels',
       }
 ```
-
 #### slot: readConnectionsLineWidth
 
 ```js
@@ -51,7 +49,6 @@ readConnectionsLineWidth: {
         description: 'Line width for read-connection arcs/lines in pixels',
       }
 ```
-
 #### slot: maxHeight
 
 ```js
@@ -62,7 +59,6 @@ maxHeight: {
           'Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)',
       }
 ```
-
 #### slot: height
 
 ```js
@@ -71,7 +67,6 @@ height: {
         defaultValue: 250,
       }
 ```
-
 #### slot: colorBy
 
 ```js
@@ -81,7 +76,6 @@ colorBy: {
         description: 'Color scheme for reads',
       }
 ```
-
 #### slot: filterBy
 
 ```js
@@ -94,7 +88,6 @@ filterBy: {
         description: 'Filter settings for reads',
       }
 ```
-
 #### slot: autoscale
 
 ```js
@@ -108,7 +101,6 @@ autoscale: {
         description: 'Coverage autoscale type',
       }
 ```
-
 #### slot: minScore
 
 ```js
@@ -118,7 +110,6 @@ minScore: {
         description: 'Minimum coverage depth bound',
       }
 ```
-
 #### slot: maxScore
 
 ```js
@@ -128,7 +119,6 @@ maxScore: {
         description: 'Maximum coverage depth bound',
       }
 ```
-
 #### slot: scaleType
 
 ```js
@@ -139,7 +129,6 @@ scaleType: {
         description: 'Coverage scale type (linear or log)',
       }
 ```
-
 #### slot: numStdDev
 
 ```js
@@ -152,8 +141,7 @@ numStdDev: {
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseLinearDisplay](../baselineardisplay)
 
@@ -202,8 +190,8 @@ mouseover: {
 
 #### slot: jexlFilters
 
-config jexlFilters are deferred evaluated so they are prepended with jexl at
-runtime rather than being stored with jexl in the config
+config jexlFilters are deferred evaluated so they are prepended with
+jexl at runtime rather than being stored with jexl in the config
 
 ```js
 jexlFilters: {

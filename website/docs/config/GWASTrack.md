@@ -3,8 +3,8 @@ id: gwastrack
 title: GWASTrack
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -22,8 +22,7 @@ used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseTrack](../basetrack)
 
@@ -119,8 +118,8 @@ indexingFeatureTypesToExclude: {
 
 ```js
 textSearchAdapter: pluginManager.pluggableConfigSchemaType(
-  'text search adapter',
-)
+          'text search adapter',
+        )
 ```
 
 #### slot: displays

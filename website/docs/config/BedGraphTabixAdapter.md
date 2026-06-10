@@ -3,8 +3,8 @@ id: bedgraphtabixadapter
 title: BedGraphTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -20,8 +20,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BedGraphTabixAdapter - Pre-processor / simplified config
 
-preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 
+
+preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 ```json
 {
   "type": "BedGraphTabixAdapter",
@@ -42,7 +43,6 @@ bedGraphGzLocation: {
       },
     }
 ```
-
 #### slot: index.indexType
 
 ```js
@@ -52,7 +52,6 @@ indexType: {
         defaultValue: 'TBI',
       }
 ```
-
 #### slot: index.location
 
 ```js
@@ -64,7 +63,6 @@ location: {
         },
       }
 ```
-
 #### slot: columnNames
 
 ```js

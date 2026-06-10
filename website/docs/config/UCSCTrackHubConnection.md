@@ -3,8 +3,8 @@ id: ucsctrackhubconnection
 title: UCSCTrackHubConnection
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -19,6 +19,8 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 ### UCSCTrackHubConnection - Pre-processor / simplified config
+
+
 
 preprocessor to allow minimal config, where `uri` points at the hub.txt:
 
@@ -43,7 +45,6 @@ hubTxtLocation: {
       description: 'location of the hub file (usually called hub.txt)',
     }
 ```
-
 #### slot: assemblyNames
 
 ```js
@@ -57,8 +58,7 @@ assemblyNames: {
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseConnection](../baseconnection)
 

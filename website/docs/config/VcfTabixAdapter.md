@@ -3,8 +3,8 @@ id: vcftabixadapter
 title: VcfTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -20,7 +20,6 @@ reference the markdown files in our repo of the checked out git tag
 
 The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 `.csi` index):
-
 ```js
 {
   type: 'VcfTabixAdapter',
@@ -34,14 +33,18 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed VCF files
 
+
 ### VcfTabixAdapter - Pre-processor / simplified config
 
-preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
+
+
+preprocessor to allow minimal config, assumes tbi index at
+yourfile.vcf.gz.tbi:
 
 ```json
 {
   "type": "VcfTabixAdapter",
-  "uri": "yourfile.vcf.gz"
+  "uri": "yourfile.vcf.gz",
 }
 ```
 
@@ -58,7 +61,6 @@ vcfGzLocation: {
       },
     }
 ```
-
 #### slot: index.indexType
 
 ```js
@@ -68,7 +70,6 @@ indexType: {
         defaultValue: 'TBI',
       }
 ```
-
 #### slot: index.location
 
 ```js
@@ -80,7 +81,6 @@ location: {
         },
       }
 ```
-
 #### slot: samplesTsvLocation
 
 ```js

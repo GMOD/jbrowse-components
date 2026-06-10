@@ -3,8 +3,8 @@ id: formatabout
 title: FormatAbout
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -32,7 +32,6 @@ config: {
       contextVariable: ['config'],
     }
 ```
-
 #### slot: configuration.formatAbout.hideUris
 
 ```js

@@ -3,8 +3,8 @@ id: featuretrack
 title: FeatureTrack
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in
+our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
@@ -18,9 +18,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-A minimal hand-authored entry in the top-level `tracks` array — `adapter` points
-at the data file, and the track opens with a `LinearBasicDisplay`:
-
+A minimal hand-authored entry in the top-level `tracks` array — `adapter`
+points at the data file, and the track opens with a `LinearBasicDisplay`:
 ```js
 {
   type: 'FeatureTrack',
@@ -40,14 +39,14 @@ _See the **Slots** section below for all available configuration fields._
 
 used for basic gene and feature tracks, generally used with LinearBasicDisplay
 
+
 ### FeatureTrack - Identifier
 
 #### slot: explicitIdentifier
 
 ## Inherited config slots
 
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+Slots available on this config via its base configuration(s), shown in full so this page is self-contained.
 
 ### Inherited from [BaseTrack](../basetrack)
 
@@ -143,8 +142,8 @@ indexingFeatureTypesToExclude: {
 
 ```js
 textSearchAdapter: pluginManager.pluggableConfigSchemaType(
-  'text search adapter',
-)
+          'text search adapter',
+        )
 ```
 
 #### slot: displays
