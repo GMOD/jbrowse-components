@@ -28,6 +28,7 @@ import makeWorkerInstance from '../src/makeWorkerInstance.ts'
 
 // barrel re-exports for stories not shown in MDX (appear in "Source code for examples" page)
 export {
+  LocusZoomLD,
   NextstrainExample,
   OneLinearGenomeView,
   PanUKBGWAS,
