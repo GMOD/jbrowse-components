@@ -124,12 +124,12 @@ async function loadRefNameMap(
     throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
   }
 
+  const result: RefNameAliases = {}
   for (const name of refNames) {
     checkRefName(name)
+    result[assembly.getCanonicalRefName(name) ?? name] = name
   }
-  return Object.fromEntries(
-    refNames.map(name => [assembly.getCanonicalRefName(name) ?? name, name]),
-  )
+  return result
 }
 
 // Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
@@ -484,6 +484,27 @@ export default function assemblyFactory(
     }))
     .views(self => ({
       /**
+       * #getter
+       * memoized refName -> first region index, so getRefNameColor is O(1)
+       * instead of an O(n) indexOf per call (matters for assemblies with many
+       * contigs rendered in overview scalebars/rulers)
+       */
+      get refNameToIndex() {
+        const { refNames } = self
+        if (!refNames) {
+          return undefined
+        }
+        const map = new Map<string, number>()
+        for (const [i, refName] of refNames.entries()) {
+          if (!map.has(refName)) {
+            map.set(refName, i)
+          }
+        }
+        return map
+      },
+    }))
+    .views(self => ({
+      /**
        * #method
        * Returns the canonical refName for a given alias or refName.
        * Note: The canonical name may differ from what's in the FASTA file when
@@ -506,11 +527,8 @@ export default function assemblyFactory(
        * #method
        */
       getRefNameColor(refName: string) {
-        if (!self.refNames) {
-          return undefined
-        }
-        const idx = self.refNames.indexOf(refName)
-        return idx === -1
+        const idx = self.refNameToIndex?.get(refName)
+        return idx === undefined
           ? undefined
           : self.refNameColors[idx % self.refNameColors.length]
       },
@@ -578,14 +596,14 @@ export default function assemblyFactory(
     }))
 }
 
-async function instantiateAdapter(
+async function instantiateAdapter<T>(
   config: AnyConfigurationModel,
   pluginManager: PluginManager,
 ) {
   const CLASS = await pluginManager
     .getAdapterType(config.type)
     .getAdapterClass()
-  return new CLASS(config, undefined, pluginManager)
+  return new CLASS(config, undefined, pluginManager) as T
 }
 
 async function getRefNameAliases({
@@ -595,10 +613,10 @@ async function getRefNameAliases({
   config: AnyConfigurationModel
   pluginManager: PluginManager
 }) {
-  const adapter = (await instantiateAdapter(
+  const adapter = await instantiateAdapter<BaseRefNameAliasAdapter>(
     config,
     pluginManager,
-  )) as BaseRefNameAliasAdapter
+  )
   return adapter.getRefNameAliases({})
 }
 
@@ -609,10 +627,10 @@ async function getCytobands({
   config: AnyConfigurationModel
   pluginManager: PluginManager
 }) {
-  const adapter = (await instantiateAdapter(
+  const adapter = await instantiateAdapter<CytobandAdapter>(
     config,
     pluginManager,
-  )) as CytobandAdapter
+  )
   return adapter.getData()
 }
 
@@ -623,10 +641,10 @@ async function getAssemblyRegions({
   config: AnyConfigurationModel
   pluginManager: PluginManager
 }) {
-  const adapter = (await instantiateAdapter(
+  const adapter = await instantiateAdapter<RegionsAdapter>(
     config,
     pluginManager,
-  )) as RegionsAdapter
+  )
   return adapter.getRegions({})
 }
 
