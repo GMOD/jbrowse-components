@@ -99,6 +99,10 @@ export const recentConfigs: readonly SampleLink[] = [
     label: 'GWAS (Manhattan + LD)',
   },
   {
+    config: 'test_data/gwas/locuszoom_ld.json',
+    label: 'GWAS LocusZoom LD (GIANT BMI, FTO locus)',
+  },
+  {
     config: 'test_data/arabidopsis_methylation/config.json',
     label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
   },
