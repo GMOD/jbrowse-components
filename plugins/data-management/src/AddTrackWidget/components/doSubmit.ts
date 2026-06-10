@@ -54,6 +54,15 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
     session.addTrackConf(trackConfig)
     if (view?.assemblyNames?.includes(model.assembly)) {
       view.showTrack(trackId)
+    } else {
+      // The track was added to the session but can't be shown here because its
+      // assembly isn't open in this view (common when the assembly dropdown is
+      // changed in a multi-assembly session). Tell the user instead of silently
+      // doing nothing.
+      session.notify(
+        `Added track "${model.trackName}" to the session, but it was not displayed because it uses assembly "${model.assembly}", which is not open in this view. Open a view for that assembly and use its track selector to display it.`,
+        'warning',
+      )
     }
 
     if (

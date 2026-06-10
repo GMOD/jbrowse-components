@@ -24,11 +24,14 @@ export function doPasteConfigSubmit({
   } else {
     const { view } = model
     const viewAsms = view?.assemblyNames as string[] | undefined
+    const notShown: string[] = []
     transaction(() => {
       for (const conf of confs) {
         session.addTrackConf(conf)
         if (viewAsms?.some(asm => conf.assemblyNames?.includes(asm))) {
           view?.showTrack?.(conf.trackId)
+        } else {
+          notShown.push(conf.name ?? conf.trackId)
         }
       }
       model.clearData()
@@ -36,5 +39,14 @@ export function doPasteConfigSubmit({
         session.hideWidget(model)
       }
     })
+    if (notShown.length) {
+      // These tracks were added to the session but can't be shown here because
+      // their assembly isn't open in this view; surface that rather than
+      // silently doing nothing.
+      session.notify(
+        `Added ${notShown.length} track(s) to the session that were not displayed because their assembly is not open in this view: ${notShown.join(', ')}`,
+        'warning',
+      )
+    }
   }
 }

@@ -1,6 +1,7 @@
 export interface PastedTrackConf {
   trackId: string
   type: string
+  name?: string
   assemblyNames?: string[]
 }
 
