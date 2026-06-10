@@ -15,19 +15,15 @@ export const MODIFICATION_PASS = slangPass({
 })
 
 export function packModifications(data: ModificationUploadData): ArrayBuffer {
-  const n = data.modificationPositions.length
-  const F = modificationShader.FIELD_OFFSET_F32
-  const s32 = modificationShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * modificationShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const pos = data.modificationPositions
-  const ys = data.modificationYs
-  const colors = data.modificationColors
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.position] = pos[i]!
-    u32[o + F.y] = ys[i]!
-    u32[o + F.packedColor] = colors[i]!
-  }
-  return buf
+  // Pure field-for-field copy — delegate to the generated packInstances so the
+  // instance layout (offsets, stride, per-field view) can't drift from the
+  // shader struct.
+  return modificationShader.packInstances(
+    {
+      position: data.modificationPositions,
+      y: data.modificationYs,
+      packedColor: data.modificationColors,
+    },
+    data.modificationPositions.length,
+  )
 }

@@ -20,44 +20,27 @@ export const ARC_LINE_PASS = slangPass({
   topology: 'line-list',
 })
 
+// Field-for-field packing is delegated to the generated packInstances so the
+// instance layout can never drift from the shader struct.
 export function packArcs(data: ArcsUploadData): ArrayBuffer {
-  const n = data.numArcs
-  const F = arcShader.FIELD_OFFSET_F32
-  const s32 = arcShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * arcShader.INSTANCE_STRIDE_BYTES)
-  const f32 = new Float32Array(buf)
-  const u32 = new Uint32Array(buf)
-  const x1 = data.arcX1
-  const x2 = data.arcX2
-  const cts = data.arcColorTypes
-  const shape = data.arcShapeTypes
-  const yBp = data.arcYBp
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.x1] = x1[i]!
-    u32[o + F.x2] = x2[i]!
-    f32[o + F.colorType] = cts[i]!
-    f32[o + F.shapeType] = shape[i]!
-    u32[o + F.yBp] = yBp[i]!
-  }
-  return buf
+  return arcShader.packInstances(
+    {
+      x1: data.arcX1,
+      x2: data.arcX2,
+      colorType: data.arcColorTypes,
+      shapeType: data.arcShapeTypes,
+      yBp: data.arcYBp,
+    },
+    data.numArcs,
+  )
 }
 
 export function packArcLines(data: ArcsUploadData): ArrayBuffer {
-  const n = data.numArcLines
-  const F = arcLineShader.FIELD_OFFSET_F32
-  const s32 = arcLineShader.INSTANCE_STRIDE_F32
-  const buf = new ArrayBuffer(n * arcLineShader.INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  const pos = data.arcLinePositions
-  const ys = data.arcLineYs
-  const cts = data.arcLineColorTypes
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F.position] = pos[i]!
-    f32[o + F.y] = ys[i]!
-    f32[o + F.colorType] = cts[i]!
-  }
-  return buf
+  return arcLineShader.packInstances(
+    {
+      position: data.arcLinePositions,
+      colorType: data.arcLineColorTypes,
+    },
+    data.numArcLines,
+  )
 }

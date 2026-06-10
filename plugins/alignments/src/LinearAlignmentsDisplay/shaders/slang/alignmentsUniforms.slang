@@ -105,8 +105,6 @@ public struct Uniforms {
   public uint arcColor5;
   public uint arcColor6;
   public uint arcColor7;
-  public uint arcLineColor0;
-  public uint arcLineColor1;
   // Linked-read connecting-line palette (linkedReadBezier mode). 8 slots so
   // every paired-orientation (unknown/LR/RL/RR/LL) and split-strand pairing
   // (RF/FR/same) has its own ABGR color, looked up by per-instance colorType.
@@ -171,6 +169,18 @@ public float2 pileupY(float row, Uniforms u) {
 // Screen-pixel Y of a pileup row's vertical center.
 public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
+}
+
+// Paired-read arc palette (arcColor0..7), indexed by the per-instance color
+// type. Shared by the arc curves (arc.slang) and the interchromosomal
+// connector ticks (arcLine.slang) so both stay in lockstep.
+public float3 arcColorByIndex(uint idx, Uniforms u) {
+  uint colors[8];
+  colors[0] = u.arcColor0; colors[1] = u.arcColor1;
+  colors[2] = u.arcColor2; colors[3] = u.arcColor3;
+  colors[4] = u.arcColor4; colors[5] = u.arcColor5;
+  colors[6] = u.arcColor6; colors[7] = u.arcColor7;
+  return unpackRGBA(colors[min(idx, 7u)]).xyz;
 }
 
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip

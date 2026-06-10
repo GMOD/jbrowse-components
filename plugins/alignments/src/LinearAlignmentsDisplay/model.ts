@@ -71,7 +71,7 @@ import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 import type { CompactnessLevel } from './menus/featureSize.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
-import type { ArcsDataResult } from '../features/arcs/compute.ts'
+import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type {
   ArcColorByType,
@@ -846,11 +846,9 @@ export default function stateModelFactory(
         },
 
         // The heavy work — running `computeArcsFromPileupData` over every
-        // pileup region — is cached here so that height changes (which only
-        // affect the line-end Y values in the per-region pack) don't redo it.
-        // Arcs/lines are also pre-grouped by refName so the per-region
-        // arcsRpcDataMap lookup is O(1) instead of filtering every arc per
-        // displayed region.
+        // pileup region — is cached here. Arcs/lines are pre-grouped by refName
+        // so the per-region arcsRpcDataMap lookup is O(1) instead of filtering
+        // every arc per displayed region.
         /**
          * #getter
          */
@@ -888,14 +886,13 @@ export default function stateModelFactory(
             return new Map()
           }
           const { arcsByRef, linesByRef, regionInfos } = computed
-          const out = new Map<number, ArcsDataResult>()
+          const out = new Map<number, ArcsUploadData>()
           for (const ri of regionInfos) {
             out.set(
               ri.displayedRegionIndex,
               arcsToRegionResult(
                 arcsByRef.get(ri.refName) ?? [],
                 linesByRef.get(ri.refName) ?? [],
-                self.height,
               ),
             )
           }

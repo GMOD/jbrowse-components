@@ -51,15 +51,7 @@ struct VsOut {
   float  dashed   : COLOR2;
 };
 
-float3 arcColorByIndex(uint idx, Uniforms u) {
-  uint colors[8];
-  colors[0] = u.arcColor0; colors[1] = u.arcColor1;
-  colors[2] = u.arcColor2; colors[3] = u.arcColor3;
-  colors[4] = u.arcColor4; colors[5] = u.arcColor5;
-  colors[6] = u.arcColor6; colors[7] = u.arcColor7;
-  return unpackRGBA(colors[min(idx, 7u)]).xyz;
-}
-
+// arcColorByIndex is shared from alignmentsUniforms (also used by arcLine).
 float3 arcColor(float ct, Uniforms u) {
   uint idx = uint(ct + 0.5);
   if (idx < 8u) { return arcColorByIndex(idx, u); }

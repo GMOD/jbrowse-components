@@ -8,7 +8,6 @@ import {
 import {
   ARC_HEIGHT_MARGIN,
   arcColorPalette,
-  arcLineColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 
 import type { ArcsUploadData } from './types.ts'
@@ -156,15 +155,18 @@ export function drawArcs(
     screenWidthPx,
   })
 
+  // Interchromosomal connector ticks: a vertical line spanning the arc band at
+  // the breakpoint, matching arcLine.slang's full-band ±1 span.
+  ctx.lineWidth = state.readConnectionsLineWidth ?? 1
+  ctx.setLineDash([])
   for (let i = 0; i < region.numArcLines; i++) {
     const bp = region.arcLinePositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    const y = arcsTop + region.arcLineYs[i]! * arcsH
     const colorIdx = region.arcLineColorTypes[i]!
-
-    ctx.fillStyle = rgb255(
-      arcLineColorPalette[colorIdx % arcLineColorPalette.length]!,
-    )
-    ctx.fillRect(x - 1, y - 1, 2, 2)
+    ctx.strokeStyle = rgb255(arcColorPalette[colorIdx % arcColorPalette.length]!)
+    ctx.beginPath()
+    ctx.moveTo(x, arcsTop)
+    ctx.lineTo(x, arcsTop + arcsH)
+    ctx.stroke()
   }
 }

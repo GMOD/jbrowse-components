@@ -92,7 +92,6 @@ import { getChainBounds, toClipRect } from '../components/chainOverlayUtils.ts'
 import {
   ARC_HEIGHT_MARGIN,
   arcColorPalette,
-  arcLineColorPalette,
   linkedReadColorPalette,
 } from '../shaders/palettes.ts'
 import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
@@ -256,9 +255,6 @@ function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
   u[U.colorMutedSnpBase] = pack(c.colorMutedSnpBase)
   for (let i = 0; i < arcColorPalette.length; i++) {
     u[USLOTS.arcColor[i]!] = pack(arcColorPalette[i]!)
-  }
-  for (let i = 0; i < arcLineColorPalette.length; i++) {
-    u[USLOTS.arcLineColor[i]!] = pack(arcLineColorPalette[i]!)
   }
   for (let i = 0; i < linkedReadColorPalette.length; i++) {
     u[USLOTS.linkedReadColor[i]!] = pack(linkedReadColorPalette[i]!)

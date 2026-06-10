@@ -187,8 +187,10 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines.length).toBe(2)
     expect(result.lines[0]!.x.refName).toBe('chr1')
     expect(result.lines[1]!.x.refName).toBe('chr2')
-    expect(result.lines[0]!.colorType).toBe(0)
-    expect(result.lines[1]!.colorType).toBe(0)
+    // Interchromosomal pairs color with the dedicated interchromosomal slot (3)
+    // under the insert-size schemes (the refs differ).
+    expect(result.lines[0]!.colorType).toBe(3)
+    expect(result.lines[1]!.colorType).toBe(3)
   })
 
   test('inter-chromosomal produces nothing when drawInter=false', () => {
@@ -688,7 +690,7 @@ describe('arcsToRegionResult', () => {
     ]
     const regionLines = [{ x: { refName: 'chr1', bp: 1200 }, colorType: 0 }]
 
-    const result = arcsToRegionResult(regionArcs, regionLines, 200)
+    const result = arcsToRegionResult(regionArcs, regionLines)
 
     expect(result.numArcs).toBe(1)
     expect(result.arcX1[0]).toBe(1100)
@@ -698,19 +700,22 @@ describe('arcsToRegionResult', () => {
   })
 
   test('returns empty arrays for empty inputs', () => {
-    const result = arcsToRegionResult([], [], 200)
+    const result = arcsToRegionResult([], [])
 
     expect(result.numArcs).toBe(0)
     expect(result.arcX1.length).toBe(0)
     expect(result.numArcLines).toBe(0)
   })
 
-  test('line Y values span 0 to height', () => {
-    const lines = [{ x: { refName: 'chr1', bp: 1500 }, colorType: 0 }]
-    const result = arcsToRegionResult([], lines, 300)
+  test('one entry per connector line, packed in order', () => {
+    const lines = [
+      { x: { refName: 'chr1', bp: 1500 }, colorType: 3 },
+      { x: { refName: 'chr1', bp: 2500 }, colorType: 3 },
+    ]
+    const result = arcsToRegionResult([], lines)
 
-    expect(result.numArcLines).toBe(1)
-    expect(result.arcLineYs[0]).toBe(0)
-    expect(result.arcLineYs[1]).toBe(300)
+    expect(result.numArcLines).toBe(2)
+    expect(Array.from(result.arcLinePositions)).toEqual([1500, 2500])
+    expect(Array.from(result.arcLineColorTypes)).toEqual([3, 3])
   })
 })

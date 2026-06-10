@@ -6,6 +6,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
+import type { ArcsUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 
@@ -27,27 +28,6 @@ export const ARC_SHAPE_FLAT_SPLIT = 2
 // Matches samplot.py --jitter const default (0.08). Applied multiplicatively
 // to |tlen| so lines at the same insert size are visually separated.
 const SAMPLOT_JITTER_BOUNDS = 0.08
-
-export interface ArcsDataResult {
-  arcX1: Uint32Array
-  arcX2: Uint32Array
-  arcColorTypes: Uint8Array
-  // See ARC_SHAPE_* constants.
-  arcShapeTypes: Uint8Array
-  // Target Y in genomic bp (|tlen| for samplot, |(x2-x1)/2| otherwise)
-  arcYBp: Uint32Array
-  numArcs: number
-  // Max `arcYBp` across `arcShapeTypes === ARC_SHAPE_FLAT` entries. Precomputed
-  // so the `arcsYDomainBp` view reduces over regions, not over every arc.
-  maxFlatArcYBp: number
-  arcLinePositions: Uint32Array
-  arcLineYs: Float32Array
-  arcLineColorTypes: Uint8Array
-  numArcLines: number
-  coverageDepths: Float32Array
-  coverageMaxDepth: number
-  coverageStartPos: number
-}
 
 interface RegionInfo {
   refName: string
@@ -505,12 +485,30 @@ export function computeArcsFromPileupData(
     tlen,
     isSplit,
   } of pendingArcs) {
-    // Interchromosomal: never an arc — drop a tick on each endpoint.
+    // Interchromosomal: never an arc — drop a tick on each endpoint. Color it
+    // with the same classifier as arcs so the scheme stays informative: the
+    // insert-size schemes resolve to the dedicated interchromosomal color (the
+    // refs differ), and the orientation schemes surface the translocation's
+    // orientation. Insert-size/long-range distance is meaningless across refs,
+    // so those inputs are suppressed.
     if (p1Ref !== p2Ref) {
       if (drawInter) {
+        const colorType = getArcColorType({
+          colorByType,
+          hasPaired,
+          longRange: false,
+          largeInsert: false,
+          pairOrientationNum,
+          tlen,
+          p1Ref,
+          p2Ref,
+          p1Strand,
+          p2Strand,
+          stats,
+        })
         lines.push(
-          { x: { refName: p1Ref, bp: p1Bp }, colorType: 0 },
-          { x: { refName: p2Ref, bp: p2Bp }, colorType: 0 },
+          { x: { refName: p1Ref, bp: p1Bp }, colorType },
+          { x: { refName: p2Ref, bp: p2Bp }, colorType },
         )
       }
       continue
@@ -595,8 +593,7 @@ export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
 export function arcsToRegionResult(
   regionArcs: ComputedArc[],
   regionLines: ComputedLine[],
-  height: number,
-): ArcsDataResult {
+): ArcsUploadData {
   const arcX1 = new Uint32Array(regionArcs.length)
   const arcX2 = new Uint32Array(regionArcs.length)
   const arcColorTypes = new Uint8Array(regionArcs.length)
@@ -618,18 +615,14 @@ export function arcsToRegionResult(
     }
   }
 
-  const arcLinePositions = new Uint32Array(regionLines.length * 2)
-  const arcLineYs = new Float32Array(regionLines.length * 2)
-  const arcLineColorTypes = new Uint8Array(regionLines.length * 2)
-
+  // One entry per connector tick — the arcLine pass self-expands each instance
+  // to the two band-edge vertices (see arcLine.slang / packInstances).
+  const arcLinePositions = new Uint32Array(regionLines.length)
+  const arcLineColorTypes = new Uint8Array(regionLines.length)
   for (let i = 0; i < regionLines.length; i++) {
     const line = regionLines[i]!
-    arcLinePositions[i * 2] = line.x.bp
-    arcLinePositions[i * 2 + 1] = line.x.bp
-    arcLineYs[i * 2] = 0
-    arcLineYs[i * 2 + 1] = height
-    arcLineColorTypes[i * 2] = line.colorType
-    arcLineColorTypes[i * 2 + 1] = line.colorType
+    arcLinePositions[i] = line.x.bp
+    arcLineColorTypes[i] = line.colorType
   }
 
   return {
@@ -641,11 +634,7 @@ export function arcsToRegionResult(
     numArcs: regionArcs.length,
     maxFlatArcYBp,
     arcLinePositions,
-    arcLineYs,
     arcLineColorTypes,
     numArcLines: regionLines.length,
-    coverageDepths: new Float32Array(0),
-    coverageMaxDepth: 0,
-    coverageStartPos: 0,
   }
 }
