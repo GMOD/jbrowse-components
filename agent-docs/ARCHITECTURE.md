@@ -108,42 +108,54 @@ payload covering all visible regions, so variants' `fetchNeeded` expands
 `needed` to all `bufferedVisibleRegions` and marks them all loaded together
 when the work callback returns.
 
-### Terminal states unmount the canvas — they don't wrap it
+### Terminal states early-return their own root — they don't nest under the canvas
 
 `DisplayChrome` renders the `regionTooLarge` / render-error banners by
-**early-returning** the banner component, replacing the entire display subtree —
-*not* by keeping its container `<div>` mounted and swapping the canvas for a
-message. This looks like a leak (the caller's `className` / `ref` / mouse
-handlers are absent in those two states) but it is **load-bearing** for the
-**imperative** `regionTooLarge` (wiggle, alignments, hic), where the flag is a
-volatile set as a *side effect of fetching*:
+**early-returning** the banner as its *entire* output, replacing the display
+subtree — *not* by keeping its container `<div>` mounted and rendering the
+banner as a swapped-in child beside the canvas/overlays. This looks like a leak
+(the caller's `className` / `ref` / mouse handlers are absent in those two
+states) but the leak is benign — a too-large region has no canvas to interact
+with, and the ref re-attaches on force-load — and the early-return is
+**load-bearing** for two independent reasons.
 
-- `fetchRegions` **sets** the flag `true` (`MultiRegionDisplayMixin` ~line 240)
-  when the byte estimate exceeds the limit, and `FetchVisibleRegions` **gates**
-  on it (reads it *tracked*, so every flip re-runs that autorun).
-- `clearAllRpcData()` **clears** the flag `false` (~line 158). It is called by
-  the invalidation autoruns (`DisplayedRegionsChange` / `SettingsInvalidate` /
-  `ClearBlockingStateOnViewportChange`) to let a retry run.
+**1. React won't render a nested swapped-in terminal child.** If the banner is
+nested — `{regionTooLarge ? <TooLargeMessage/> : children}` inside the
+persistent container, next to the `DisplayErrorBar` / `DisplayLoadingOverlay`
+siblings — the banner never reaches the DOM and `StatsEstimation.test` times
+out. Instrumenting every site shows why: `DisplayChrome` re-renders with
+`regionTooLarge` true, the sibling overlays render normally
+(`DisplayLoadingOverlay` logs `visible=false`, which is only reachable when
+`regionTooLarge` is true), but **React never descends into the
+`<TooLargeMessage>` element** — its component body never runs. Returning the
+banner as a fresh top-level root mounts it reliably; a swapped-in child of a
+persistent observer subtree does not. The exact React-internal reason a
+memo/observer child in this position is skipped is unconfirmed, and the repro is
+jsdom + React 19 + `act()`; the **rule** — terminal UI is its own `return`,
+never a nested child — is what's load-bearing.
 
-So "am I rendering?" and "am I too large?" are coupled: a fetch sets the flag;
-the flag should hide the canvas; an invalidation clears it and the refetch
-re-detects over-limit and re-sets it. With the canvas merely *hidden* inside a
-still-mounted container, the mount/unmount churn keeps re-triggering that
-invalidate→refetch cycle, so `setRegionTooLarge` **ping-pongs** `false`
-(`clearAllRpcData`) → `true` (`fetchRegions`) → `false` → … forever. (Verified
-by instrumenting `setRegionTooLarge`: it logs alternating calls from those two
-sites throughout the thrash; `DisplayChrome` re-renders alternating and the
-banner never commits, so `StatsEstimation.test` times out waiting for it.)
-Replacing the whole subtree keeps the canvas out of the React tree across the
-*entire* too-large state, so the churn stops, the fetch settles, and the flag
-holds. This is the ADR-025 dispose/re-init contract; the comment block in
-`DisplayChrome.tsx` spells it out so a future pass doesn't "fix" the apparent
-leak.
+There is **no** `regionTooLarge` oscillation here, despite what earlier writeups
+of this section (and commit `614465dd51`) claimed. Instrumentation shows
+`setRegionTooLarge` reaches `true` **once and holds**; `clearAllRpcData`
+(~line 158) and `fetchRegions` (~line 240) do **not** ping-pong, and the fetch
+state machine settles. The prior "flag thrash / invalidate→refetch loop" story
+was wrong: the failure is React reconciliation, not the fetch machinery. (The
+`FetchVisibleRegions` gate and `ClearBlockingStateOnViewportChange` clear,
+described in the table above, are real and correct — they just don't loop during
+a steady too-large state.)
 
-The **derived** canvas `regionTooLarge` (above) is a pure function of cached
-stats with no render→fetch feedback, which is the deeper reason it doesn't
-flicker. The early-return is what gives the imperative variant the same
-stability.
+**2. Clean GPU dispose/re-init (ADR-025).** Early-returning unmounts the body,
+firing `canvasRef(null)` → effect cleanup → `backend.dispose()` +
+`stopRenderingBackend()`; force-load remounts and re-inits via the callback ref.
+The detached-context bug only occurs when the canvas is unmounted **without**
+disposing — which the early-return never does.
+
+The `DisplayChrome.tsx` comment block restates the rule so a future pass doesn't
+"fix" the apparent leak. The **derived** canvas `regionTooLarge` (above) is a
+pure function of cached stats, so its *value* never flickers regardless — but
+that's orthogonal to the DOM-commit rule here, which is shared by **every**
+display because it lives in `DisplayChrome`'s JSX shape, not in how
+`regionTooLarge` is computed.
 
 ### `rpcProps()` loop trap and how to break it
 

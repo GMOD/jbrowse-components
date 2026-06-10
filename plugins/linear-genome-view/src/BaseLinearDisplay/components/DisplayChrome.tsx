@@ -48,14 +48,18 @@ interface CanvasHandle {
 // load-bearing, not stylistic — it looks like a leak (caller className/ref/mouse
 // handlers are absent in those states) but the leak is benign (a too-large
 // region has no canvas to interact with; the ref re-attaches on force-load) and
-// closing it reintroduces a real bug. Nesting (keep the container mounted, swap
-// only its children) makes `regionTooLarge` THRASH: the canvas mounts while
-// false -> the byte-estimate fetch flips it true -> the terminal branch unmounts
-// the canvas -> the fetch system clears it back to false next tick -> the canvas
-// remounts -> repeat forever (caught by StatsEstimation.test: DisplayChrome
-// re-renders alternating true/false). Fully replacing the subtree keeps the
-// canvas out of the tree across the whole too-large state — the ADR-025
-// dispose/re-init contract, and what breaks the loop. Don't wrap these.
+// closing it reintroduces a real bug. If the banner is nested instead — a child
+// swapped into this still-mounted container next to the overlay siblings,
+// `{regionTooLarge ? <TooLargeMessage/> : children}` — React silently skips it:
+// DisplayChrome re-renders with regionTooLarge true and the sibling overlays
+// render, but the swapped-in <TooLargeMessage> body never runs and it never
+// reaches the DOM (StatsEstimation.test times out waiting for it). Returning the
+// banner as its own root mounts it reliably. `regionTooLarge` does NOT oscillate
+// here — instrumentation shows it is set once and holds; the failure is React
+// reconciliation of a swapped-in child under a persistent observer subtree, not
+// a fetch/flag thrash. Early-return also gives the canvas a clean
+// stopRenderingBackend -> startRenderingBackend dispose/re-init (ADR-025). Don't
+// wrap these.
 //
 // The body is a function so callers mount the canvas wherever it belongs. It
 // returns a named observer component (every display does) so observable reads
