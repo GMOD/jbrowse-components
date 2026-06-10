@@ -63,8 +63,11 @@ autosaves. Click a session name to reopen it (see
 
 ## Opening a genome
 
-Click **Open new genome** to bring up the "Open genome(s)" dialog. It has two
-modes:
+Click **Open new genome** to bring up the "Open genome(s)" dialog.
+
+<Figure src="/img/desktop-open-genome.png" caption="The Open genome(s) dialog in Guided mode, with a Format dropdown and file selectors that each toggle between a local File and a URL."/>
+
+It has two modes:
 
 - **Guided** — pick a **Format**, then choose the matching files. Supported
   formats:
@@ -83,6 +86,10 @@ options** to set a human-readable display name, refName aliases (e.g. to treat
 `chr1` and `1` as the same contig), or cytoband data. To load several genomes at
 once for comparative views, use **Stage this genome and add another**.
 
+A linear genome view opens on the new assembly, ready for tracks:
+
+<Figure src="/img/desktop-session.png" caption="A linear genome view open on a freshly loaded assembly, before any tracks are added."/>
+
 ### Using a pre-loaded genome
 
 If you just want a common reference genome, click **Show all available genomes**
@@ -90,6 +97,8 @@ to open a searchable table of public assemblies. Find your genome by name,
 scientific name, or accession, and launch it directly — no files needed. Star a
 genome to add it to the **Favorite genomes** quick-launch list on the start
 screen.
+
+<Figure src="/img/desktop-available-genomes.png" caption="The Available genomes browser: a searchable, star-to-favorite table of public reference assemblies, each launchable in one click."/>
 
 The **Quickstart list** works the same way for genomes you've saved yourself
 (see
@@ -104,6 +113,8 @@ Once a genome is open, add data tracks from local files or URLs.
 Open the **File** menu and choose **Open track...**, or open the track selector
 and use its **Add track** button. Either opens the "Add a track" form:
 
+<Figure src="/img/desktop-add-track.png" caption="The Add a track form: choose a main file (local File, URL, or cloud), with the index URL auto-inferred from the main file."/>
+
 - Choose **Add a track from file or URL**.
 - Set the **Main file** (the data file) and optionally an **Index file** — for
   formats that need one (BAM/CRAM/tabix), the index URL is inferred from the
@@ -114,8 +125,6 @@ and use its **Add track** button. Either opens the "Add a track" form:
 - Click **Add**.
 
 The new track appears in the track selector — turn it on to display it.
-
-<Figure src="/img/desktop-session.png" caption="A loaded session in JBrowse desktop, with a linear genome view open."/>
 
 JBrowse desktop supports the same file formats as JBrowse web, including BAM,
 CRAM, VCF (bgzip + tabix), BigWig, BigBed, GFF3 (bgzip + tabix), and synteny

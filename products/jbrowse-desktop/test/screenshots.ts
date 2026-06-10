@@ -5,7 +5,7 @@ import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { ChildProcess } from 'child_process'
 
-import { WebDriver } from 'selenium-webdriver'
+import { WebDriver, By, until } from 'selenium-webdriver'
 
 import {
   APP_BINARY,
@@ -17,6 +17,10 @@ import {
   createDriver,
   waitForStartScreen,
   openVolvoxGenome,
+  clickButton,
+  findByText,
+  cleanupUI,
+  openMenuItem,
   flushBrowserLogs,
   killProcesses,
 } from './harness.ts'
@@ -71,6 +75,24 @@ async function main(): Promise<void> {
   await delay(1500) // let panels settle
   await capture(driver, 'desktop-landing.png')
 
+  // "Open genome(s)" dialog (custom genome from files/URLs)
+  console.log('Capturing open-genome dialog...')
+  await clickButton(driver, 'Open new genome')
+  await findByText(driver, 'Open genome(s)')
+  await delay(1000)
+  await capture(driver, 'desktop-open-genome.png')
+  await cleanupUI(driver)
+
+  // "Available genomes" dialog (searchable table of public assemblies, fetched
+  // from jbrowse.org/hubs — wait for real rows, not the skeleton loader)
+  console.log('Capturing available-genomes dialog...')
+  await clickButton(driver, 'Show all available genomes')
+  await findByText(driver, 'Available genomes')
+  await driver.wait(until.elementLocated(By.css('table tbody tr')), 30000)
+  await delay(2000) // let rows/network settle
+  await capture(driver, 'desktop-available-genomes.png')
+  await cleanupUI(driver)
+
   // Loaded session with the bundled volvox assembly, served over http
   console.log('Opening volvox genome...')
   await openVolvoxGenome(
@@ -79,6 +101,14 @@ async function main(): Promise<void> {
   )
   await delay(2000) // let the view fully paint
   await capture(driver, 'desktop-session.png')
+
+  // "Add a track" form (File -> Open track...)
+  console.log('Capturing add-track form...')
+  await openMenuItem(driver, 'File', 'Open track...')
+  await findByText(driver, 'Add a track')
+  await delay(1500)
+  await capture(driver, 'desktop-add-track.png')
+  await cleanupUI(driver)
 
   console.log('\nCleaning up...')
   try {
