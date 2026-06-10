@@ -1626,18 +1626,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * Used by WebGL displays for per-region data fetching and rendering.
          */
         get visibleRegions() {
-          return this.dynamicBlocks.contentBlocks.map(block => ({
-            refName: block.refName,
-            start: block.start,
-            end: block.end,
-            assemblyName: block.assemblyName,
-            reversed: block.reversed,
-            displayedRegionIndex: block.displayedRegionIndex!,
-            offsetPx: block.offsetPx,
-            widthPx: block.widthPx,
-            screenStartPx: block.offsetPx - self.offsetPx,
-            screenEndPx: block.offsetPx - self.offsetPx + block.widthPx,
-          }))
+          return this.dynamicBlocks.contentBlocks.map(block => {
+            const screenStartPx = block.offsetPx - self.offsetPx
+            return {
+              refName: block.refName,
+              start: block.start,
+              end: block.end,
+              assemblyName: block.assemblyName,
+              reversed: block.reversed,
+              displayedRegionIndex: block.displayedRegionIndex!,
+              screenStartPx,
+              screenEndPx: screenStartPx + block.widthPx,
+            }
+          })
         },
 
         /**
