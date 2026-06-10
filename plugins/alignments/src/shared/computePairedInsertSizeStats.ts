@@ -20,7 +20,8 @@ export function computePairedInsertSizeStats(features: FeatureData[]) {
   for (const f of features) {
     if (
       f.flags & SAM_FLAG_PROPER_PAIR &&
-      !(f.flags & PRIMARY_PROPER_PAIR_MASK)
+      !(f.flags & PRIMARY_PROPER_PAIR_MASK) &&
+      f.insertSize > 0
     ) {
       pairedInsertSizes.push(f.insertSize)
     }

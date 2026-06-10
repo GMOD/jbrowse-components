@@ -11,7 +11,7 @@ export function getInsertSizeStats(filtered: number[]) {
   const avg = s / len
   const sd = Math.sqrt((len * sumSquared - s * s) / (len * len))
   const upper = avg + 3 * sd
-  const lower = avg - 3 * sd
+  const lower = Math.max(0, avg - 3 * sd)
   return {
     upper,
     lower,
