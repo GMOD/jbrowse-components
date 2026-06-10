@@ -28,3 +28,22 @@ regionTooLarge reactively from bytes/density thresholds.
 
 For canvas/GPU displays, use MultiRegionDisplayMixin instead (which also
 composes RegionTooLargeMixin but uses an imperative check path).
+
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload, forceLoad

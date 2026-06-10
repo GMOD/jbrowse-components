@@ -47,10 +47,6 @@ query (first) and target (second) assembly names, matched by the track's
 
 ## Overview
 
-extends
-
-- [BaseDisplay](../basedisplay)
-
 Pure-data model. The containing LinearSyntenyView owns the shared GPU backend,
 the upload autorun (which watches every display's `instanceData` and keys it by
 `displayKey`), and the render autorun. This display only carries per-track state

@@ -20,10 +20,6 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-extends
-
-- [LinearWiggleDisplay](../linearwiggledisplay)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

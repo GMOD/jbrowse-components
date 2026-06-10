@@ -20,6 +20,20 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+
+**Properties:** connectionInstances
+
+**Getters:** connections
+
+**Actions:** makeConnection, prepareToBreakConnection, breakConnection,
+deleteConnection, addConnectionConf, clearConnections
+
 ### WebSessionConnectionsMixin - Properties
 
 #### property: sessionConnections

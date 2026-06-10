@@ -24,10 +24,6 @@ Legacy block-stack display for `BasicTrack`: `BaseLinearDisplay` plus a
 pluggable `renderer` slot. Not commonly used; the GPU `LinearBasicDisplay` is
 the default feature display. See agent-docs/TRACK_DISPLAY_CONCEPTS.md.
 
-extends
-
-- [BaseLinearDisplay](../baselineardisplay)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -70,6 +66,20 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Volatiles:** scrollTop
 
 **Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload, forceLoad
 
 ### LinearBareDisplay - Properties
 

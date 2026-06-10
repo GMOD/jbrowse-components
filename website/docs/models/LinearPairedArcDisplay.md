@@ -47,12 +47,6 @@ to its mate, even across displayed regions:
 this is a non-block-based track type, and can connect arcs across multiple
 displayedRegions
 
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [FeatureDensityMixin](../featuredensitymixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -77,6 +71,20 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Volatiles:** scrollTop
 
 **Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload, forceLoad
 
 ### LinearPairedArcDisplay - Properties
 

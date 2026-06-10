@@ -46,10 +46,6 @@ controls how far the chords bow toward the center:
 
 ## Overview
 
-extends
-
-- [BaseDisplay](../basedisplay)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

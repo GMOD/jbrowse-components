@@ -25,10 +25,6 @@ does not extend, but is a combination of a
 - [SpreadsheetView](../spreadsheetview)
 - [CircularView](../circularview)
 
-extends
-
-- [BaseViewModel](../baseviewmodel)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

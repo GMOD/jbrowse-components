@@ -25,10 +25,6 @@ reset. Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays that
 own a different rpcDataMap type should compose WiggleScoreConfigMixin directly
 instead.
 
-extends
-
-- [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

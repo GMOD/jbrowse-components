@@ -53,10 +53,6 @@ its own track):
 used on GCContentTrack, separately from the display type on the
 ReferenceSequenceTrack
 
-extends
-
-- [SharedGCContentModel](../sharedgccontentmodel)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

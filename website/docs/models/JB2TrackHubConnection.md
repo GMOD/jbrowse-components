@@ -20,7 +20,16 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-extends BaseConnectionModel
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseConnectionModel](../baseconnectionmodel)
+
+**Properties:** name, tracks, configuration
+
+**Actions:** connect, addTrackConf, addTrackConfs, setTrackConfs, clear
 
 ### JB2TrackHubConnection - Properties
 

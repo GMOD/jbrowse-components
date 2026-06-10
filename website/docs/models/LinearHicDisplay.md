@@ -43,11 +43,7 @@ auto-picked binsize (negative = finer, positive = coarser):
 
 ## Overview
 
-Hi-C display that renders contact matrix using WebGL extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [GlobalDataDisplayMixin](../globaldatadisplaymixin)
+Hi-C display that renders contact matrix using WebGL
 
 ## Inherited members
 
@@ -107,6 +103,18 @@ setRenderError, attachRenderingBackend
 **Getters:** isLoading
 
 **Actions:** setError, setStatusMessage, cancelFetch, runFetch
+
+### Available via [StaleViewportRescaleMixin](../staleviewportrescalemixin)
+
+**Volatiles:** lastDrawnOffsetPx, lastDrawnBpPerPx
+
+**Actions:** setLastDrawnViewport
+
+### Available via [ConfigOverrideMixin](../configoverridemixin)
+
+**Methods:** getOverride, getConfWithOverride
+
+**Actions:** setOverride, clearOverride
 
 ### LinearHicDisplay - Properties
 

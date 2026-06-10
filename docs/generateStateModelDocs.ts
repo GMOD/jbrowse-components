@@ -6,13 +6,13 @@ import {
   codeBlock,
   exampleSection,
   overviewSection,
-  parseExtends,
   parseTaggedComment,
   removeComments,
   section,
+  stripComposedBlock,
 } from './util.ts'
 
-import type { Example, ExtendsRef, ExtractedNode } from './util.ts'
+import type { ComposedRef, Example, ExtractedNode } from './util.ts'
 
 interface Member {
   name: string
@@ -26,6 +26,11 @@ interface ModelHeader {
   id: string
   docs: string
   examples: Example[]
+  // declId of this model's own declaration; keys the byDeclId map so a composed
+  // reference can be matched back to the model page it documents.
+  selfDeclId?: string
+  // the models this one composes (derived from its types.compose call)
+  composedOf: ComposedRef[]
 }
 export interface StateModel {
   header?: ModelHeader
@@ -38,8 +43,11 @@ export interface StateModel {
 }
 type ModelWithHeader = StateModel & { header: ModelHeader }
 interface Ancestor {
-  ref: ExtendsRef
-  model?: ModelWithHeader
+  model: ModelWithHeader
+}
+interface ModelIndex {
+  byDeclId: Map<string, ModelWithHeader>
+  bySlug: Map<string, ModelWithHeader>
 }
 
 function buildMember(obj: ExtractedNode): Member {
@@ -80,9 +88,11 @@ export function accumulateModel(
   if (obj.type === 'stateModel') {
     file.header = {
       name: member.name,
-      docs: member.docs,
+      docs: stripComposedBlock(member.docs),
       examples: member.examples,
       id: slugify(member.name, { lower: true }),
+      selfDeclId: obj.selfDeclId,
+      composedOf: obj.composedOf ?? [],
     }
   } else if (obj.type === 'property') {
     file.properties.push(member)
@@ -97,23 +107,25 @@ export function accumulateModel(
   }
 }
 
-// Walk the extends graph transitively, depth-first, deduping by slug and
+// Walk the composition graph transitively, depth-first, deduping by declId and
 // guarding cycles. Returns ancestors in reading order (direct parents first,
-// then their parents). An unresolved slug yields an entry with model undefined.
+// then their parents). Composed models that aren't documented #stateModels
+// (plain types.model mixins, config bases) resolve to nothing and are skipped —
+// they contribute no member section.
 function collectAncestors(
-  model: StateModel,
-  bySlug: Map<string, ModelWithHeader>,
+  model: ModelWithHeader,
+  index: ModelIndex,
   seen = new Set<string>(),
 ): Ancestor[] {
   const out: Ancestor[] = []
-  for (const ref of parseExtends(model.header?.docs ?? '')) {
-    if (!seen.has(ref.slug)) {
-      seen.add(ref.slug)
-      const parent = bySlug.get(ref.slug)
-      out.push({ ref, model: parent })
-      if (parent) {
-        out.push(...collectAncestors(parent, bySlug, seen))
-      }
+  for (const ref of model.header.composedOf) {
+    const parent =
+      (ref.declId ? index.byDeclId.get(ref.declId) : undefined) ??
+      (ref.name ? index.bySlug.get(slugify(ref.name, { lower: true })) : undefined)
+    if (parent && !seen.has(parent.header.id)) {
+      seen.add(parent.header.id)
+      out.push({ model: parent })
+      out.push(...collectAncestors(parent, index, seen))
     }
   }
   return out
@@ -130,16 +142,14 @@ function memberLine(label: string, members: Member[]) {
 // to traverse the whole inheritance chain to learn what is available.
 function inheritedSection(ancestors: Ancestor[]) {
   const blocks = ancestors.flatMap(({ model }) => {
-    const lines = model
-      ? [
-          memberLine('Properties', model.properties),
-          memberLine('Volatiles', model.volatiles),
-          memberLine('Getters', model.getters),
-          memberLine('Methods', model.methods),
-          memberLine('Actions', model.actions),
-        ].filter(Boolean)
-      : []
-    return model && lines.length
+    const lines = [
+      memberLine('Properties', model.properties),
+      memberLine('Volatiles', model.volatiles),
+      memberLine('Getters', model.getters),
+      memberLine('Methods', model.methods),
+      memberLine('Actions', model.actions),
+    ].filter(Boolean)
+    return lines.length
       ? [
           section(
             `### Available via [${model.header.name}](../${model.header.id})`,
@@ -239,26 +249,22 @@ function memberSection(
     : ''
 }
 
-function validateLinks(model: ModelWithHeader, ancestors: Ancestor[]) {
-  for (const { ref, model: parent } of ancestors) {
-    if (!parent) {
-      console.warn(
-        `${model.header.name}: extends link "[${ref.name}](../${ref.slug})" does not resolve to a generated model page`,
-      )
-    }
-  }
-}
-
 export function writeModelDocs(byFile: Record<string, StateModel>) {
   const dir = 'website/docs/models'
   fs.mkdirSync(dir, { recursive: true })
   const withHeader = Object.values(byFile).filter((m): m is ModelWithHeader =>
     Boolean(m.header),
   )
-  const bySlug = new Map(withHeader.map(m => [m.header.id, m] as const))
+  const index: ModelIndex = {
+    byDeclId: new Map(
+      withHeader
+        .filter(m => m.header.selfDeclId)
+        .map(m => [m.header.selfDeclId!, m] as const),
+    ),
+    bySlug: new Map(withHeader.map(m => [m.header.id, m] as const)),
+  }
   for (const model of withHeader) {
-    const ancestors = collectAncestors(model, bySlug)
-    validateLinks(model, ancestors)
+    const ancestors = collectAncestors(model, index)
     fs.writeFileSync(
       `${dir}/${model.header.name}.md`,
       renderModel(model, ancestors),

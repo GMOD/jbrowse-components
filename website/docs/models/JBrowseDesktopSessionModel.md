@@ -20,85 +20,106 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-composed of
+## Inherited members
 
-- ReferenceManagementSessionMixin
-- ConnectionManagementSessionMixin
-- ThemeManagerSessionMixin
-- TracksManagerSessionMixin
-- MultipleViewsSessionMixin
-- AssembliesMixin
-- DesktopSessionTrackMenuMixin
-- DockviewLayoutMixin
+Available on this model via composition. Follow each link for full signatures
+and docs.
 
-### JBrowseDesktopSessionModel - Getters
+### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
-#### getter: assemblies
+**Methods:** getReferring
 
-```js
-// type
-ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displayName: { ....
-```
+**Actions:** removeReferring
 
-#### getter: root
+### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
 
-```js
-// type
-ModelInstanceTypeProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<{ jbrowse: IAnyType; session: IMaybe<IAnyType>; sessionPath: IOptionalIType<ISimpleType<string>, [undefined]>; assemblyManager: IOptionalIType<...>; }, { ...; }>, { ...; }>, never>, { ...; }>> & ... 12 more ... & IStateTreeNode<...>
-```
+**Properties:** connectionInstances
 
-#### getter: assemblyNames
+**Getters:** connections
 
-```js
-// type
-string[]
-```
+**Actions:** makeConnection, prepareToBreakConnection, breakConnection,
+deleteConnection, addConnectionConf, clearConnections
 
-#### getter: version
+### Available via [ThemeManagerSessionMixin](../thememanagersessionmixin)
 
-```js
-// type
-string
-```
+**Getters:** themeName, theme
 
-#### getter: history
+**Methods:** allThemes
 
-```js
-// type
-ModelInstanceTypeProps<{ undoIdx: IType<number | undefined, number, number>; targetPath: IType<string | undefined, string, string>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>
-```
+**Actions:** setThemeName
 
-#### getter: menus
+### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
 
-```js
-// type
-() => Menu[]
-```
+**Getters:** tracks, getTracksById, tracksById
 
-#### getter: assemblyManager
+**Actions:** addTrackConf, deleteTrackConf
 
-```js
-// type
-ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 10 more ... & { ...; }, _NotCustomized, _NotCust...
-```
+### Available via [BaseSessionModel](../basesessionmodel)
 
-### JBrowseDesktopSessionModel - Methods
+**Properties:** id, name, margin, focusedViewId
 
-#### method: renderProps
+**Volatiles:** selection, hovered, queueOfDialogs
 
-```js
-// type signature
-renderProps: () => {
-  theme: Theme
-  highResolutionScaling: any
-}
-```
+**Getters:** root, jbrowse, rpcManager, configuration, adminMode,
+textSearchManager, assemblies, DialogComponent, DialogProps
 
-### JBrowseDesktopSessionModel - Actions
+**Actions:** setSelection, clearSelection, setHovered, setName,
+setFocusedViewId, removeActiveDialog, queueDialog
 
-#### action: renameCurrentSession
+### Available via [SnackbarModel](../snackbarmodel)
 
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => void
-```
+**Volatiles:** snackbarMessages
+
+**Getters:** snackbarMessageSet
+
+**Actions:** notify, notifyError, pushSnackbarMessage, popSnackbarMessage,
+removeSnackbarMessage
+
+### Available via [MultipleViewsSessionMixin](../multipleviewssessionmixin)
+
+**Properties:** views, stickyViewHeaders, useWorkspaces
+
+**Actions:** moveViewDown, moveViewUp, moveViewToTop, moveViewToBottom, addView,
+removeView, setStickyViewHeaders, setUseWorkspaces
+
+### Available via [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+
+**Properties:** drawerPosition, drawerWidth, widgets, activeWidgets, minimized
+
+**Getters:** visibleWidget
+
+**Actions:** setDrawerPosition, updateDrawerWidth, resizeDrawer, addWidget,
+showWidget, hideWidget, minimizeWidgetDrawer, showWidgetDrawer, hideAllWidgets,
+editConfiguration
+
+### Available via [AssembliesMixin](../assembliesmixin)
+
+**Properties:** sessionAssemblies, temporaryAssemblies
+
+**Getters:** assemblies, assemblyNames
+
+**Actions:** addSessionAssembly, addAssembly, removeAssembly,
+removeSessionAssembly, addTemporaryAssembly, removeTemporaryAssembly
+
+### Available via [AppSessionMixin](../appsessionmixin)
+
+**Getters:** root, version, history, assemblyManager
+
+**Methods:** renderProps, menus
+
+**Actions:** renameCurrentSession
+
+### Available via [DesktopSessionTrackMenuMixin](../desktopsessiontrackmenumixin)
+
+**Methods:** getTrackActions, getTrackListMenuItems, getTrackActionMenuItems
+
+### Available via [DockviewLayoutMixin](../dockviewlayoutmixin)
+
+**Properties:** dockviewLayout, panelViewAssignments, init, pendingMove,
+activePanelId
+
+**Getters:** getViewIdsForPanel, getPanelContainingView
+
+**Actions:** setDockviewLayout, setActivePanelId, setInit, setPendingMove,
+assignViewToPanel, removeViewFromPanel, removePanel, moveViewUpInPanel,
+moveViewDownInPanel, moveViewToTopInPanel, moveViewToBottomInPanel

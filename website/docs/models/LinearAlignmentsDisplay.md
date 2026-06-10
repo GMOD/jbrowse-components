@@ -87,13 +87,6 @@ Long reads with soft-clipping shown and split/mate reads connected by arcs:
 
 State model factory for LinearAlignmentsDisplay
 
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [MultiRegionDisplayMixin](../multiregiondisplaymixin)
-- [ConfigOverrideMixin](../configoverridemixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -995,7 +988,7 @@ Track menu items
 
 ```js
 // type signature
-trackMenuItems: () => (MenuItem | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; })[]; } | ... 5 more ... | { ...; })[]
+trackMenuItems: () => (MenuItem | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; })[]; } | ... 4 more ... | { ...; })[]
 ```
 
 #### method: contextMenuItems

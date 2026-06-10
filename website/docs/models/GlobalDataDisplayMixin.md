@@ -35,12 +35,6 @@ no autoruns. Fetch triggering is left entirely to the display's own afterAttach
 autorun so each display can express its own trigger conditions (HiC: viewport
 change; LD: viewport + showLDTriangle + etc).
 
-extends
-
-- [RegionTooLargeMixin](../regiontoolargemixin)
-- [RenderLifecycleMixin](../renderlifecyclemixin)
-- [FetchMixin](../fetchmixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

@@ -51,10 +51,6 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 
 ## Overview
 
-extends
-
-- [BaseViewModel](../baseviewmodel)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

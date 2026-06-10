@@ -29,6 +29,22 @@ export interface ExtractedNode {
   // `pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` links to
   // the config named "LinearWiggleDisplay".
   baseConfigName?: string
+  // For `#stateModel` nodes only: the models passed to this model's
+  // `types.compose(...)` call, alias-followed. Lets the state-model generator
+  // derive the composition graph from code instead of a hand-authored
+  // `composed of` comment, the same way `baseDeclId` derives config inheritance.
+  composedOf?: ComposedRef[]
+}
+
+// A model referenced inside a `types.compose(...)` call, identified two ways so
+// the generator can match it back to the #stateModel page that documents it:
+// by declaration identity (works when the #stateModel tag sits on the composed
+// binding, e.g. `TrackHeightMixin`), and by resolved name (works when the tag
+// sits on an inner factory whose result is re-exported, e.g.
+// `export const BaseDisplay = stateModelFactory()`).
+export interface ComposedRef {
+  declId?: string
+  name?: string
 }
 
 const TAG_TYPES = [
@@ -79,6 +95,9 @@ export function extractWithComment(
           tags.includes('baseConfiguration') && ts.isPropertyAssignment(node)
             ? findStringLiteral(node.initializer)
             : undefined,
+        composedOf: tags.includes('stateModel')
+          ? resolveComposedModels(checker, node)
+          : undefined,
       }
       for (const type of tags) {
         cb({ type, ...base })
@@ -102,13 +121,9 @@ function describeSymbol(checker: ts.TypeChecker, node: ts.Node) {
   }
 }
 
-// "file:pos" of the declaration a symbol resolves to, following import aliases
-// to the original declaration so two references to the same config (under
-// different local/imported names) produce the same id.
-function symbolDeclId(checker: ts.TypeChecker, symbol: ts.Symbol | undefined) {
-  if (!symbol) {
-    return undefined
-  }
+// Follow import aliases to the original symbol so two references to the same
+// declaration (under different local/imported names) resolve identically.
+function followAlias(checker: ts.TypeChecker, symbol: ts.Symbol) {
   let s = symbol
   while (s.flags & ts.SymbolFlags.Alias) {
     const aliased = checker.getAliasedSymbol(s)
@@ -117,6 +132,15 @@ function symbolDeclId(checker: ts.TypeChecker, symbol: ts.Symbol | undefined) {
     }
     s = aliased
   }
+  return s
+}
+
+// "file:pos" of the declaration a symbol resolves to, alias-followed.
+function symbolDeclId(checker: ts.TypeChecker, symbol: ts.Symbol | undefined) {
+  if (!symbol) {
+    return undefined
+  }
+  const s = followAlias(checker, symbol)
   const decl = s.declarations?.[0] ?? s.valueDeclaration
   return decl
     ? `${decl.getSourceFile().fileName}:${decl.getStart()}`
@@ -138,6 +162,153 @@ function resolveBaseConfigDeclId(checker: ts.TypeChecker, node: ts.Node) {
   return ts.isIdentifier(expr)
     ? symbolDeclId(checker, checker.getSymbolAtLocation(expr))
     : undefined
+}
+
+// The models a `#stateModel` declaration composes. Two patterns are covered:
+//
+//   A. `types.compose('Name', Base, Mixin(), types.model({...}))` — each
+//      argument is resolved (alias-followed); `Mixin` resolves directly,
+//      `Mixin(args)` reduces to its head identifier, and the string-literal name
+//      and inline `types.model(...)` (any `types.*` literal) yield no identifier
+//      and are skipped.
+//   B. `return BaseFactory(args).views(...).actions(...)` — a model built by
+//      extending another factory's result rather than composing. The base is the
+//      head identifier of the factory's own returned chain.
+//
+// Deduped by declId/name, in source order. Requires the #stateModel JSDoc to sit
+// on the model's factory (or its `types.compose`), not an unrelated preceding
+// declaration.
+function resolveComposedModels(checker: ts.TypeChecker, node: ts.Node) {
+  const out: ComposedRef[] = []
+  const seen = new Set<string>()
+  const add = (ref: ComposedRef | undefined) => {
+    const key = ref && (ref.declId ?? ref.name)
+    if (ref && key && !seen.has(key)) {
+      seen.add(key)
+      out.push(ref)
+    }
+  }
+  const walk = (n: ts.Node) => {
+    if (ts.isCallExpression(n) && isTypesMember(n.expression, 'compose')) {
+      for (const arg of n.arguments) {
+        add(composedArgRef(checker, arg))
+      }
+    }
+    ts.forEachChild(n, walk)
+  }
+  walk(node)
+  add(returnedBaseRef(checker, node))
+  return out
+}
+
+// Pattern B: the base factory a model extends by chaining `.views()/.actions()/
+// ...` onto another factory's result. Peels the factory's own returned method
+// chain to the root call and returns its callee when it is a bare identifier.
+// `types.compose(...)` / `types.model(...)` roots return undefined (compose is
+// handled by the walk above; a plain model has no base).
+function returnedBaseRef(checker: ts.TypeChecker, node: ts.Node) {
+  const fn = factoryFunction(node)
+  const ret = fn && returnedExpression(fn)
+  if (!ret) {
+    return undefined
+  }
+  let expr: ts.Expression = ret
+  while (
+    ts.isCallExpression(expr) &&
+    ts.isPropertyAccessExpression(expr.expression) &&
+    ts.isCallExpression(expr.expression.expression)
+  ) {
+    expr = expr.expression.expression
+  }
+  return ts.isCallExpression(expr) && ts.isIdentifier(expr.expression)
+    ? identifierRef(checker, expr.expression)
+    : undefined
+}
+
+// The function a #stateModel JSDoc annotates: the declaration itself, or the
+// arrow/function initializer of a `const Factory = (...) => {...}`.
+function factoryFunction(node: ts.Node) {
+  if (ts.isFunctionDeclaration(node)) {
+    return node
+  }
+  if (
+    ts.isVariableDeclaration(node) &&
+    node.initializer &&
+    (ts.isArrowFunction(node.initializer) ||
+      ts.isFunctionExpression(node.initializer))
+  ) {
+    return node.initializer
+  }
+  return undefined
+}
+
+// The expression a factory returns: an arrow's expression body, or the first
+// top-level `return` in a block body (nested returns inside view/action
+// callbacks are intentionally ignored).
+function returnedExpression(fn: ts.FunctionLikeDeclaration) {
+  const body = fn.body
+  if (body && !ts.isBlock(body)) {
+    return body
+  }
+  return body?.statements.find(ts.isReturnStatement)?.expression
+}
+
+// True for a `types.<name>` property access — the MST namespace import used
+// throughout the codebase (`types.compose`, `types.model`).
+function isTypesMember(expr: ts.Expression, name: string) {
+  return (
+    ts.isPropertyAccessExpression(expr) &&
+    ts.isIdentifier(expr.expression) &&
+    expr.expression.text === 'types' &&
+    expr.name.text === name
+  )
+}
+
+// Resolve one `types.compose` argument: peel call/non-null wrappers to the head
+// expression, then resolve only if it is a bare identifier. `types.model(...)`
+// peels to the `types.model` property access (not an identifier) and so returns
+// undefined.
+function composedArgRef(
+  checker: ts.TypeChecker,
+  arg: ts.Expression,
+): ComposedRef | undefined {
+  let expr: ts.Expression = arg
+  while (ts.isCallExpression(expr) || ts.isNonNullExpression(expr)) {
+    expr = expr.expression
+  }
+  return ts.isIdentifier(expr) ? identifierRef(checker, expr) : undefined
+}
+
+// Resolve an identifier naming a composed/base model to a ComposedRef, returning
+// both declId and alias-followed name so the generator can match on either. When
+// it resolves to a `const X = Factory(...)` — the common "export the factory's
+// result" shape, and the `const base = factory(schema)` local that's then
+// composed — follow the initializer to the factory identifier, which carries the
+// #stateModel tag so its declId matches the model's page.
+function identifierRef(
+  checker: ts.TypeChecker,
+  id: ts.Identifier,
+  depth = 0,
+): ComposedRef | undefined {
+  const symbol = checker.getSymbolAtLocation(id)
+  if (!symbol) {
+    return undefined
+  }
+  const aliased = followAlias(checker, symbol)
+  const decl = aliased.declarations?.[0]
+  if (depth < 3 && decl && ts.isVariableDeclaration(decl) && decl.initializer) {
+    let init: ts.Expression = decl.initializer
+    while (ts.isCallExpression(init) || ts.isNonNullExpression(init)) {
+      init = init.expression
+    }
+    const followed = ts.isIdentifier(init)
+      ? identifierRef(checker, init, depth + 1)
+      : undefined
+    if (followed) {
+      return followed
+    }
+  }
+  return { declId: symbolDeclId(checker, aliased), name: aliased.getName() }
 }
 
 // First string literal anywhere in an expression (depth-first). Used to recover
@@ -335,31 +506,34 @@ export function exampleSection(
   return section(heading, ...bodies, note ? `_${note}_` : '')
 }
 
-export interface ExtendsRef {
-  name: string
-  slug: string
-}
-
-// The composition graph is authored inside the #stateModel comment after an
-// `extends` or `composed of` marker, in list or inline style:
-//   composed of
-//   - [BaseDisplay](../basedisplay)
-// or inline:
-//   extends [BaseWebSession](../basewebsession)
-// We parse those links back into structured refs so the generator can flatten
-// the inherited API and validate that each link resolves. The extends block is
-// the last thing in the doc body (member sections come from the template), so
-// every relative model link after the marker is an extends ref.
-export function parseExtends(docs: string): ExtendsRef[] {
-  const marker = /^\s*(?:extends|composed of)\b/m.exec(docs)
-  if (!marker) {
-    return []
+// Composition is now derived from each model's factory (see
+// resolveComposedModels), so any hand-authored `extends`/`composed of` marker
+// block left in a #stateModel comment is redundant. Strip it from the rendered
+// prose so it does not duplicate the generated "Inherited members" section.
+//
+// Removes the marker line and the bullet list that follows it — bullets, their
+// indented continuation lines, and interleaved blanks — but stops at the next
+// column-0 prose line, so description text authored after the block (e.g. a
+// "note: ..." paragraph on the root models) is preserved.
+export function stripComposedBlock(docs: string) {
+  const lines = docs.split('\n')
+  const out: string[] = []
+  let i = 0
+  while (i < lines.length) {
+    if (/^[^\S\n]*(?:extends|composed of)\b/.test(lines[i]!)) {
+      i++
+      while (
+        i < lines.length &&
+        (/^\s*$/.test(lines[i]!) || /^\s*-\s/.test(lines[i]!) || /^\s+\S/.test(lines[i]!))
+      ) {
+        i++
+      }
+    } else {
+      out.push(lines[i]!)
+      i++
+    }
   }
-  const body = docs.slice(marker.index + marker[0].length)
-  return [...body.matchAll(/\[([^\]]+)\]\(\.\.\/([^)]+)\)/g)].map(m => ({
-    name: m[1]!,
-    slug: m[2]!,
-  }))
+  return out.join('\n').trim()
 }
 
 export async function getAllFiles() {

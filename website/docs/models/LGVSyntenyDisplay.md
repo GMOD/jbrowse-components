@@ -50,10 +50,6 @@ display type:
 displays location of "synteny" feature in a plain LGV, allowing linking out to
 external synteny views
 
-extends
-
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

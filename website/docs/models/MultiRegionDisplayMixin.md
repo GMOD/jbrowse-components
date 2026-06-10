@@ -25,12 +25,6 @@ Per-region fetch lifecycle for LGV-based GPU displays. Installs four autoruns in
 `isCacheValid`, `getByteEstimateConfig`, `clearDisplaySpecificData`) plus the
 `fetchRegions` / `loadedRegions` machinery.
 
-extends
-
-- [RegionTooLargeMixin](../regiontoolargemixin)
-- [RenderLifecycleMixin](../renderlifecyclemixin)
-- [FetchMixin](../fetchmixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

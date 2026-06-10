@@ -20,6 +20,44 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+
+**Getters:** tracks, getTracksById, tracksById
+
+**Actions:** addTrackConf, deleteTrackConf
+
+### Available via [BaseSessionModel](../basesessionmodel)
+
+**Properties:** id, name, margin, focusedViewId
+
+**Volatiles:** selection, hovered, queueOfDialogs
+
+**Getters:** root, jbrowse, rpcManager, configuration, adminMode,
+textSearchManager, assemblies, DialogComponent, DialogProps
+
+**Actions:** setSelection, clearSelection, setHovered, setName,
+setFocusedViewId, removeActiveDialog, queueDialog
+
+### Available via [SnackbarModel](../snackbarmodel)
+
+**Volatiles:** snackbarMessages
+
+**Getters:** snackbarMessageSet
+
+**Actions:** notify, notifyError, pushSnackbarMessage, popSnackbarMessage,
+removeSnackbarMessage
+
+### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+
+**Methods:** getReferring
+
+**Actions:** removeReferring
+
 ### SessionTracksManagerSessionMixin - Properties
 
 #### property: sessionTracks

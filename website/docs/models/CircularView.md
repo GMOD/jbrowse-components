@@ -35,10 +35,6 @@ Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
 
 ## Overview
 
-extends
-
-- [BaseViewModel](../baseviewmodel)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

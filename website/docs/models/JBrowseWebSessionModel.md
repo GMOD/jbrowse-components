@@ -20,8 +20,6 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-extends [BaseWebSession](../basewebsession)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -33,16 +31,14 @@ and docs.
 
 **Volatiles:** sessionThemeName, pendingFileHandleIds
 
-**Getters:** tracks, root, assemblies, connections, assemblyNames, version,
-shareURL, textSearchManager, assemblyManager, savedSessionMetadata, history
+**Getters:** tracks, root, connections, shareURL, textSearchManager,
+savedSessionMetadata
 
-**Methods:** renderProps, getTrackActions, getTrackListMenuItems,
-getTrackActionMenuItems, menus
+**Methods:** getTrackActions, getTrackListMenuItems, getTrackActionMenuItems
 
 **Actions:** addAssemblyConf, addSessionPlugin, removeSessionPlugin,
 deleteSavedSession, setSavedSessionFavorite, renameSavedSession,
-renameCurrentSession, activateSession, setDefaultSession, setSession,
-editTrackConfiguration
+activateSession, setDefaultSession, setSession, editTrackConfiguration
 
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
@@ -104,15 +100,51 @@ editConfiguration
 
 **Actions:** addTrackConf, deleteTrackConf
 
+### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+
+**Getters:** tracks, getTracksById, tracksById
+
+**Actions:** addTrackConf, deleteTrackConf
+
 ### Available via [AssembliesMixin](../assembliesmixin)
 
 **Properties:** sessionAssemblies, temporaryAssemblies
 
+**Getters:** assemblies, assemblyNames
+
 **Actions:** addSessionAssembly, addAssembly, removeAssembly,
 removeSessionAssembly, addTemporaryAssembly, removeTemporaryAssembly
+
+### Available via [AppSessionMixin](../appsessionmixin)
+
+**Getters:** root, version, history, assemblyManager
+
+**Methods:** renderProps, menus
+
+**Actions:** renameCurrentSession
 
 ### Available via [WebSessionConnectionsMixin](../websessionconnectionsmixin)
 
 **Properties:** sessionConnections
 
 **Actions:** addConnectionConf, deleteConnection
+
+### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+
+**Properties:** connectionInstances
+
+**Getters:** connections
+
+**Actions:** makeConnection, prepareToBreakConnection, breakConnection,
+deleteConnection, addConnectionConf, clearConnections
+
+### Available via [DockviewLayoutMixin](../dockviewlayoutmixin)
+
+**Properties:** dockviewLayout, panelViewAssignments, init, pendingMove,
+activePanelId
+
+**Getters:** getViewIdsForPanel, getPanelContainingView
+
+**Actions:** setDockviewLayout, setActivePanelId, setInit, setPendingMove,
+assignViewToPanel, removeViewFromPanel, removePanel, moveViewUpInPanel,
+moveViewDownInPanel, moveViewToTopInPanel, moveViewToBottomInPanel

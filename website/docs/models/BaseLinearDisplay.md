@@ -28,12 +28,6 @@ newer GPU stack uses a separate base, `LinearCanvasBaseDisplay` (plugins/canvas)
 — `LinearBasicDisplay` extends that, not this. See
 agent-docs/TRACK_DISPLAY_CONCEPTS.md.
 
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [FeatureDensityMixin](../featuredensitymixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -58,6 +52,20 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Volatiles:** scrollTop
 
 **Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload, forceLoad
 
 ### BaseLinearDisplay - Properties
 

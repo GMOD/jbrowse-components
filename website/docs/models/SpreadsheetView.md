@@ -20,6 +20,19 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseViewModel](../baseviewmodel)
+
+**Properties:** id, displayName, minimized
+
+**Getters:** menuItems
+
+**Actions:** setDisplayName, setWidth, setMinimized
+
 ### SpreadsheetView - Properties
 
 #### property: type

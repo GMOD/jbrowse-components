@@ -20,14 +20,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-used for "web based" products, including jbrowse-web and react-app composed of
-
-- [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
-- [ThemeManagerSessionMixin](../thememanagersessionmixin)
-- [MultipleViewsSessionMixin](../multipleviewssessionmixin)
-- [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
-- [AssembliesMixin](../assembliesmixin)
-- [WebSessionConnectionsMixin](../websessionconnectionsmixin)
+used for "web based" products, including jbrowse-web and react-app
 
 ## Inherited members
 
@@ -94,18 +87,54 @@ editConfiguration
 
 **Actions:** addTrackConf, deleteTrackConf
 
+### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+
+**Getters:** tracks, getTracksById, tracksById
+
+**Actions:** addTrackConf, deleteTrackConf
+
 ### Available via [AssembliesMixin](../assembliesmixin)
 
 **Properties:** sessionAssemblies, temporaryAssemblies
 
+**Getters:** assemblies, assemblyNames
+
 **Actions:** addSessionAssembly, addAssembly, removeAssembly,
 removeSessionAssembly, addTemporaryAssembly, removeTemporaryAssembly
+
+### Available via [AppSessionMixin](../appsessionmixin)
+
+**Getters:** root, version, history, assemblyManager
+
+**Methods:** renderProps, menus
+
+**Actions:** renameCurrentSession
 
 ### Available via [WebSessionConnectionsMixin](../websessionconnectionsmixin)
 
 **Properties:** sessionConnections
 
 **Actions:** addConnectionConf, deleteConnection
+
+### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+
+**Properties:** connectionInstances
+
+**Getters:** connections
+
+**Actions:** makeConnection, prepareToBreakConnection, breakConnection,
+deleteConnection, addConnectionConf, clearConnections
+
+### Available via [DockviewLayoutMixin](../dockviewlayoutmixin)
+
+**Properties:** dockviewLayout, panelViewAssignments, init, pendingMove,
+activePanelId
+
+**Getters:** getViewIdsForPanel, getPanelContainingView
+
+**Actions:** setDockviewLayout, setActivePanelId, setInit, setPendingMove,
+assignViewToPanel, removeViewFromPanel, removePanel, moveViewUpInPanel,
+moveViewDownInPanel, moveViewToTopInPanel, moveViewToBottomInPanel
 
 ### BaseWebSession - Properties
 
@@ -156,17 +185,6 @@ pendingFileHandleIds: [] as string[]
 WebRootModelInterface
 ```
 
-#### getter: assemblies
-
-list of sessionAssemblies and jbrowse config assemblies, does not include
-temporaryAssemblies. basically the list to be displayed in a AssemblySelector
-dropdown
-
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...> & { ...; })[]
-```
-
 #### getter: connections
 
 list of config connections and session connections
@@ -174,24 +192,6 @@ list of config connections and session connections
 ```js
 // type
 (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
-```
-
-#### getter: assemblyNames
-
-list of sessionAssemblies and jbrowse config assemblies, does not include
-temporaryAssemblies. basically the list to be displayed in a AssemblySelector
-dropdown
-
-```js
-// type
-string[]
-```
-
-#### getter: version
-
-```js
-// type
-string
 ```
 
 #### getter: shareURL
@@ -208,13 +208,6 @@ any
 TextSearchManager
 ```
 
-#### getter: assemblyManager
-
-```js
-// type
-ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 10 more ... & { ...; }, _NotCustomized, _NotCust...
-```
-
 #### getter: savedSessionMetadata
 
 ```js
@@ -222,24 +215,7 @@ ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMay
 SessionMetadata[] | undefined
 ```
 
-#### getter: history
-
-```js
-// type
-{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; }
-```
-
 ### BaseWebSession - Methods
-
-#### method: renderProps
-
-```js
-// type signature
-renderProps: () => {
-  theme: Theme
-  highResolutionScaling: any
-}
-```
 
 #### method: getTrackActions
 
@@ -264,13 +240,6 @@ getTrackListMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { 
 ```js
 // type signature
 getTrackActionMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, extraTrackActions: MenuItem[] | undefined, effectiveConfig: Record<...>, view?: { ...; } | undefined) => MenuItem[]
-```
-
-#### method: menus
-
-```js
-// type signature
-menus: () => Menu[]
 ```
 
 ### BaseWebSession - Actions
@@ -317,13 +286,6 @@ setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
 renameSavedSession: (id: string, name: string) => Promise<void>
 ```
 
-#### action: renameCurrentSession
-
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => void
-```
-
 #### action: activateSession
 
 ```js
@@ -342,7 +304,7 @@ setDefaultSession: () => void
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<...>; focusedViewId: IMa...
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<...>; focusedViewId...
 ```
 
 #### action: editTrackConfiguration

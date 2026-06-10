@@ -44,9 +44,7 @@ A complete `VariantTrack` config to paste into `tracks`:
 
 ## Overview
 
-GPU-accelerated variant display with custom feature widget on click. extends
-
-- [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+GPU-accelerated variant display with custom feature widget on click.
 
 ## Inherited members
 

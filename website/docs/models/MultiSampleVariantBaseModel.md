@@ -50,11 +50,6 @@ exactly what a saved session serializes:
 
 ## Overview
 
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -79,6 +74,53 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Volatiles:** scrollTop
 
 **Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+
+**Volatiles:** loadedRegions
+
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+loadingOverlayVisible
+
+**Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
+invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
+fetchRegions, afterAttach
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload, forceLoad
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
+
+### Available via [FetchMixin](../fetchmixin)
+
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+
+**Getters:** isLoading
+
+**Actions:** setError, setStatusMessage, cancelFetch, runFetch
+
+### Available via [ConfigOverrideMixin](../configoverridemixin)
+
+**Methods:** getOverride, getConfWithOverride
+
+**Actions:** setOverride, clearOverride
 
 ### MultiSampleVariantBaseModel - Volatiles
 

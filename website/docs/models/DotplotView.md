@@ -36,10 +36,6 @@ is allowed):
 
 ## Overview
 
-extends
-
-- [BaseViewModel](../baseviewmodel)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -52,6 +48,14 @@ and docs.
 **Getters:** menuItems
 
 **Actions:** setDisplayName, setWidth, setMinimized
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
 
 ### DotplotView - Properties
 

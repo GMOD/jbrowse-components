@@ -46,13 +46,6 @@ min/max score, renderer) are config slots on the track itself — see the
 
 State model factory for the single-source wiggle display.
 
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [MultiRegionDisplayMixin](../multiregiondisplaymixin)
-- [WiggleCommonMixin](../wigglecommonmixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

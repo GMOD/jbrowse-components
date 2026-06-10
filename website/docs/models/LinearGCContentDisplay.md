@@ -49,3 +49,118 @@ track's own sequence adapter, so no extra adapter is needed. `gcMode` is
 ## Overview
 
 base model `SharedGCContentModel`
+
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [SharedGCContentModel](../sharedgccontentmodel)
+
+**Properties:** windowSizeOverride, windowDeltaOverride, gcModeOverride
+
+**Getters:** adapterConfig
+
+### Available via [LinearWiggleDisplay](../linearwiggledisplay)
+
+**Properties:** type, configuration
+
+**Volatiles:** featureUnderMouse
+
+**Getters:** DisplayMessageComponent, color, useBicolor, isDensityMode, ticks,
+renderState
+
+**Methods:** rpcProps, gpuProps, trackMenuItems
+
+**Actions:** setRpcData, setUseBicolor, setPosColor, setNegColor,
+setFeatureUnderMouse, selectFeature, fetchNeeded, renderSvg,
+startRenderingBackend
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
+### Available via [TrackHeightMixin](../trackheightmixin)
+
+**Properties:** heightOverride
+
+**Volatiles:** scrollTop
+
+**Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [MultiRegionDisplayMixin](../multiregiondisplaymixin)
+
+**Volatiles:** loadedRegions
+
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+loadingOverlayVisible
+
+**Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
+invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
+fetchRegions, afterAttach
+
+### Available via [RegionTooLargeMixin](../regiontoolargemixin)
+
+**Properties:** userByteSizeLimit
+
+**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
+featureDensityStats
+
+**Getters:** regionTooLarge, regionTooLargeReason
+
+**Methods:** regionCannotBeRenderedText
+
+**Actions:** setRegionTooLarge, setFeatureDensityStats,
+setFeatureDensityStatsLimit, reload, forceLoad
+
+### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
+
+**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
+autorunsInstalled, renderError
+
+**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
+setRenderError, attachRenderingBackend
+
+### Available via [FetchMixin](../fetchmixin)
+
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+
+**Getters:** isLoading
+
+**Actions:** setError, setStatusMessage, cancelFetch, runFetch
+
+### Available via [WiggleCommonMixin](../wigglecommonmixin)
+
+**Volatiles:** rpcDataMap
+
+**Getters:** visibleScoreRange, domain
+
+**Actions:** clearDisplaySpecificData
+
+### Available via [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
+
+**Properties:** resolution, displayCrossHatches
+
+**Volatiles:** loadedBpPerPx
+
+**Getters:** scalebarOverlapLeft, posColor, negColor, bicolorPivot, scaleType,
+autoscaleType, numStdDev, summaryScoreMode, renderingType, minScore, maxScore,
+minScoreBound, maxScoreBound, hasResolution
+
+**Actions:** toggleCrossHatches, setResolution, setLoadedBpPerPx, setScaleType,
+setColor, setMinScore, setMaxScore, setRenderingType, setSummaryScoreMode,
+setAutoscale, isCacheValid
+
+### Available via [ConfigOverrideMixin](../configoverridemixin)
+
+**Methods:** getOverride, getConfWithOverride
+
+**Actions:** setOverride, clearOverride

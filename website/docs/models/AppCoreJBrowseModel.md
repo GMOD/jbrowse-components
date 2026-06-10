@@ -20,14 +20,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-note that JBrowseRootConfig is a config model, but config models are MST trees
-themselves, which is why this stateModel is allowed to extend it
-
-the AppCoreJBrowseModel is generally on a property named rootModel.jbrowse
-
-extends
-
-- [JBrowseRootConfig](/docs/config/jbrowserootconfig)
+built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model —
+config models are MST trees themselves, which is why this state model is allowed
+to build on one. Generally found on a property named rootModel.jbrowse
 
 ### AppCoreJBrowseModel - Getters
 

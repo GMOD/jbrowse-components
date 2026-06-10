@@ -20,15 +20,6 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-composed of
-
-- [BaseSessionModel](../basesessionmodel)
-- [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
-- [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
-- [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
-- [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
-- [TrackMenuSessionMixin](../trackmenusessionmixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -85,6 +76,12 @@ deleteConnection, addConnectionConf, clearConnections
 **Properties:** sessionTracks
 
 **Getters:** tracks
+
+**Actions:** addTrackConf, deleteTrackConf
+
+### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+
+**Getters:** tracks, getTracksById, tracksById
 
 **Actions:** addTrackConf, deleteTrackConf
 

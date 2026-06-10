@@ -20,13 +20,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-Shared state model for LD displays extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [GlobalDataDisplayMixin](../globaldatadisplaymixin)
-- [StaleViewportRescaleMixin](../staleviewportrescalemixin)
-- [ConfigOverrideMixin](../configoverridemixin)
+Shared state model for LD displays
 
 ## Inherited members
 

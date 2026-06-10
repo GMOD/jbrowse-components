@@ -43,6 +43,27 @@ IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: neve
 temporaryAssemblies: types.array(assemblyConfigSchemasType)
 ```
 
+### AssembliesMixin - Getters
+
+#### getter: assemblies
+
+sessionAssemblies plus jbrowse config assemblies. Does not include
+temporaryAssemblies; this is the list shown in the AssemblySelector dropdown.
+
+```js
+// type
+(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
+
+#### getter: assemblyNames
+
+names of the assemblies returned by the `assemblies` getter
+
+```js
+// type
+string[]
+```
+
 ### AssembliesMixin - Actions
 
 #### action: addSessionAssembly

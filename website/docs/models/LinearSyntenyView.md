@@ -36,10 +36,6 @@ connecting them with a ribbon:
 
 ## Overview
 
-extends
-
-- [LinearComparativeView](../linearcomparativeview)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

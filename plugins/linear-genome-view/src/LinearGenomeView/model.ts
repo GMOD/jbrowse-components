@@ -111,6 +111,8 @@ function resolveCanonicalRefName(
   return asm?.getCanonicalRefName(region.refName) ?? region.refName
 }
 
+export const AUTO_FORCE_LOAD_BP = 20_000
+
 /**
  * #stateModel LinearGenomeView
  * #category view
@@ -145,8 +147,6 @@ function resolveCanonicalRefName(
  * view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
  * ```
  */
-export const AUTO_FORCE_LOAD_BP = 20_000
-
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(

@@ -87,21 +87,19 @@ Then, in statemodels
 #method - a view that takes function params or is called as a function
 ```
 
-A `#stateModel` JSDoc can declare its composition graph with an `extends` block,
-which the generator parses to (a) render a flattened "Inherited members"
-overview listing every member reachable through composition, grouped by the
-model that defines it, and (b) validate that each link resolves to a generated
-page (unresolved links print a warning at generation time):
+Each `#stateModel` page renders a flattened "Inherited members" overview listing
+every member reachable through composition, grouped by the model that defines
+it. The composition graph is **derived from code**, not authored — the generator
+resolves the models passed to the factory's `types.compose(...)` call, and the
+base of a `return BaseFactory(args).views(...)` extension chain, through the
+TypeScript checker (alias-followed, and following `const X = factory()` exports),
+so no `extends`/`composed of` comment needs to be written or kept in sync. The
+only requirement is that the `#stateModel` JSDoc sit on the model's factory (or
+its `types.compose`), not an unrelated preceding declaration. Any leftover
+hand-authored `extends`/`composed of` block is stripped from the rendered prose
+so it cannot drift from the derived list.
 
-```
-/**
- * #stateModel LinearArcDisplay
- * #category display
- *
- * extends
- * - [BaseLinearDisplay](../baselineardisplay)
- */
-```
+This mirrors how `#baseConfiguration` derives config inheritance (below).
 
 and in config models
 

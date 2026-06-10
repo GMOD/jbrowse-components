@@ -20,6 +20,24 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [OAuthInternetAccount](../oauthinternetaccount)
+
+**Properties:** type, configuration
+
+**Getters:** codeVerifierPKCE, authEndpoint, tokenEndpoint, needsPKCE, clientId,
+scopes, state, responseType, refreshTokenKey
+
+**Methods:** retrieveRefreshToken
+
+**Actions:** storeRefreshToken, removeRefreshToken,
+exchangeAuthorizationForAccessToken, exchangeRefreshForAccessToken,
+getTokenViaAuthFlow, getTokenFromUser, validateToken, getFetcher
+
 ### DropboxOAuthInternetAccount - Properties
 
 #### property: type

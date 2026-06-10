@@ -21,3 +21,17 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 the rootModel.jbrowse state model for JBrowseDesktop
+
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [AppCoreJBrowseModel](../appcorejbrowsemodel)
+
+**Getters:** assemblyNames, rpcManager
+
+**Actions:** addAssemblyConf, removeAssemblyConf, addTrackConf,
+addConnectionConf, deleteConnectionConf, deleteTrackConf, updateTrackConf,
+addPlugin, removePlugin, setDefaultSessionConf, addInternetAccountConf,
+deleteInternetAccountConf

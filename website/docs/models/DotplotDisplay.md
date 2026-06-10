@@ -20,6 +20,23 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [BaseDisplay](../basedisplay)
+
+**Properties:** id, type, rpcDriverName
+
+**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
+adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
+rendererType, DisplayMessageComponent, viewMenuActions
+
+**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+
+**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+
 ### DotplotDisplay - Properties
 
 #### property: type

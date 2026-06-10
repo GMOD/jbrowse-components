@@ -27,13 +27,6 @@ menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
 super-extension pattern, and extend rpcProps() via the standard super-capture
 pattern.
 
-extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [MultiRegionDisplayMixin](../multiregiondisplaymixin)
-- [ConfigOverrideMixin](../configoverridemixin)
-
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

@@ -10,18 +10,6 @@ import { ConfigOverrideMixin } from '@jbrowse/plugin-linear-genome-view'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-/**
- * #stateModel WiggleScoreConfigMixin
- * #category display
- *
- * Score/scale/color config and isCacheValid for wiggle-family displays. Does
- * NOT include rpcDataMap or autoscale domain computation — those live in
- * WiggleCommonMixin, which composes this. Displays that own their own
- * rpcDataMap type (e.g. LinearManhattanDisplay) should compose this instead.
- *
- * extends
- * - [ConfigOverrideMixin](../configoverridemixin)
- */
 const WIGGLE_SCORE_CONFIG_KEYS = [
   'posColor',
   'negColor',
@@ -37,6 +25,18 @@ const WIGGLE_SCORE_CONFIG_KEYS = [
   'useBicolor',
 ] as const
 
+/**
+ * #stateModel WiggleScoreConfigMixin
+ * #category display
+ *
+ * Score/scale/color config and isCacheValid for wiggle-family displays. Does
+ * NOT include rpcDataMap or autoscale domain computation — those live in
+ * WiggleCommonMixin, which composes this. Displays that own their own
+ * rpcDataMap type (e.g. LinearManhattanDisplay) should compose this instead.
+ *
+ * extends
+ * - [ConfigOverrideMixin](../configoverridemixin)
+ */
 export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
   return types
     .compose(
