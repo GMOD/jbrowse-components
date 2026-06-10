@@ -1,6 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
+import { shell } from 'electron'
+
 import { getThumbnailPath, stringify } from '../paths.ts'
 import { logError } from '../util.ts'
 import { ipcHandle } from './channels.ts'
@@ -40,6 +42,30 @@ function upsertRecentSession(sessions: RecentSession[], entry: RecentSession) {
   } else {
     sessions[idx] = entry
   }
+  return sessions
+}
+
+// recent_sessions.json is rewritten whole on every change with no file locking.
+// The 1s autosave autorun can interleave with a delete/rename at an await point
+// and clobber it (or a reader can observe a half-written file). Funnel every
+// access through one promise chain so each read-modify-write stays atomic.
+let recentSessionsQueue: Promise<unknown> = Promise.resolve()
+
+function serializeRecentSessions<T>(fn: () => Promise<T>): Promise<T> {
+  const run = recentSessionsQueue.then(fn, fn)
+  recentSessionsQueue = run.catch(() => {})
+  return run
+}
+
+function updateRecentSessions(
+  recentSessionsPath: string,
+  update: (rows: RecentSession[]) => RecentSession[],
+) {
+  return serializeRecentSessions(async () => {
+    const next = update(await readRecentSessions(recentSessionsPath))
+    await writeFile(recentSessionsPath, stringify(next))
+    return next
+  })
 }
 
 export function registerSessionHandlers(
@@ -47,7 +73,9 @@ export function registerSessionHandlers(
   getMainWindow: () => Electron.BrowserWindow | null,
 ) {
   ipcHandle('listSessions', async (_, showAutosaves) => {
-    const sessions = await readRecentSessions(paths.recentSessionsPath)
+    const sessions = await serializeRecentSessions(() =>
+      readRecentSessions(paths.recentSessionsPath),
+    )
     return showAutosaves
       ? sessions
       : sessions.filter(f => !f.path.startsWith(paths.autosaveDir))
@@ -64,7 +92,6 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('createInitialAutosaveFile', async (_, snap) => {
-    const rows = await readRecentSessions(paths.recentSessionsPath)
     const now = Date.now()
     const autosavePath = path.join(paths.autosaveDir, `${now}.json`)
     const entry: RecentSession = {
@@ -73,10 +100,10 @@ export function registerSessionHandlers(
       name: snap.defaultSession?.name,
     }
 
-    upsertRecentSession(rows, entry)
-
     await Promise.all([
-      writeFile(paths.recentSessionsPath, stringify(rows)),
+      updateRecentSessions(paths.recentSessionsPath, rows =>
+        upsertRecentSession(rows, entry),
+      ),
       writeFile(autosavePath, stringify(snap)),
     ])
 
@@ -84,12 +111,7 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('saveSession', async (_, sessionPath, snap) => {
-    const mainWindow = getMainWindow()
-    const [page, rows] = await Promise.all([
-      mainWindow?.capturePage(),
-      readRecentSessions(paths.recentSessionsPath),
-    ])
-
+    const page = await getMainWindow()?.capturePage()
     const png = page?.resize({ width: THUMBNAIL_WIDTH }).toDataURL()
     const entry: RecentSession = {
       path: sessionPath,
@@ -97,21 +119,20 @@ export function registerSessionHandlers(
       name: snap.defaultSession?.name,
     }
 
-    upsertRecentSession(rows, entry)
-
     await Promise.all([
+      updateRecentSessions(paths.recentSessionsPath, rows =>
+        upsertRecentSession(rows, entry),
+      ),
       ...(png ? [writeFile(getThumbnailPath(paths, sessionPath), png)] : []),
-      writeFile(paths.recentSessionsPath, stringify(rows)),
       writeFile(sessionPath, stringify(snap)),
     ])
   })
 
   ipcHandle('deleteSessions', async (_, sessionPaths) => {
-    const sessions = await readRecentSessions(paths.recentSessionsPath)
-    const remaining = sessions.filter(s => !sessionPaths.includes(s.path))
-
     await Promise.all([
-      writeFile(paths.recentSessionsPath, stringify(remaining)),
+      updateRecentSessions(paths.recentSessionsPath, rows =>
+        rows.filter(s => !sessionPaths.includes(s.path)),
+      ),
       ...sessionPaths.flatMap(sessionPath => [
         unlink(getThumbnailPath(paths, sessionPath)).catch(logError),
         unlink(sessionPath).catch(logError),
@@ -120,27 +141,36 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('renameSession', async (_, sessionPath, newName) => {
-    const [sessions, session] = await Promise.all([
-      readRecentSessions(paths.recentSessionsPath),
-      readSession(sessionPath),
-    ])
-    const idx = sessions.findIndex(row => row.path === sessionPath)
+    // serialize the whole read-modify-write: the session file is only rewritten
+    // when its entry is present in recent_sessions, so the existence check and
+    // both writes must happen without another handler mutating the list between
+    await serializeRecentSessions(async () => {
+      const [rows, session] = await Promise.all([
+        readRecentSessions(paths.recentSessionsPath),
+        readSession(sessionPath),
+      ])
+      const idx = rows.findIndex(row => row.path === sessionPath)
 
-    if (idx === -1) {
-      throw new Error(`Session at ${sessionPath} not found`)
-    }
+      if (idx === -1) {
+        throw new Error(`Session at ${sessionPath} not found`)
+      }
 
-    if (!session.defaultSession) {
-      throw new Error('Session has no defaultSession')
-    }
+      if (!session.defaultSession) {
+        throw new Error('Session has no defaultSession')
+      }
 
-    sessions[idx]!.name = newName
-    session.defaultSession.name = newName
+      rows[idx]!.name = newName
+      session.defaultSession.name = newName
 
-    await Promise.all([
-      writeFile(paths.recentSessionsPath, stringify(sessions)),
-      writeFile(sessionPath, stringify(session)),
-    ])
+      await Promise.all([
+        writeFile(paths.recentSessionsPath, stringify(rows)),
+        writeFile(sessionPath, stringify(session)),
+      ])
+    })
+  })
+
+  ipcHandle('showItemInFolder', (_, sessionPath) => {
+    shell.showItemInFolder(sessionPath)
   })
 
   ipcHandle('loadThumbnail', async (_, name) => {
@@ -161,7 +191,7 @@ export function registerSessionHandlers(
       ...thumbnailFiles.map(f => path.join(paths.thumbnailDir, f)),
     ]
     await Promise.all([
-      writeFile(paths.recentSessionsPath, stringify([])),
+      updateRecentSessions(paths.recentSessionsPath, () => []),
       ...filesToDelete.map(f => unlink(f).catch(logError)),
     ])
   })

@@ -33,6 +33,7 @@ export interface IpcChannels {
   saveSession: { args: [sessionPath: string, snap: SessionSnap]; return: void }
   deleteSessions: { args: [sessionPaths: string[]]; return: void }
   renameSession: { args: [sessionPath: string, newName: string]; return: void }
+  showItemInFolder: { args: [sessionPath: string]; return: void }
   loadThumbnail: { args: [name: string]; return: string | undefined }
   reset: { args: []; return: void }
   listQuickstarts: { args: []; return: string[] }

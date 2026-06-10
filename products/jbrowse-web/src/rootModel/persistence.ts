@@ -3,8 +3,33 @@ import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'
 
+import type { SessionDB } from '../types.ts'
 import type { WebRootModel } from './rootModel.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { IDBPDatabase } from 'idb'
+
+// Autosaves accumulate in IndexedDB forever otherwise: every distinct session
+// leaves a full snapshot behind, eventually risking the storage quota. Keep all
+// favorites plus the most recent non-favorites; the active session is never
+// pruned.
+const MAX_AUTOSAVED_SESSIONS = 100
+
+async function pruneOldSessions(
+  sessionDB: IDBPDatabase<SessionDB>,
+  activeId: string | undefined,
+) {
+  const metadata = await sessionDB.getAll('metadata')
+  const stale = metadata
+    .filter(m => !m.favorite && m.id !== activeId)
+    .sort((a, b) => +b.createdAt - +a.createdAt)
+    .slice(MAX_AUTOSAVED_SESSIONS)
+  await Promise.all(
+    stale.flatMap(m => [
+      sessionDB.delete('sessions', m.id),
+      sessionDB.delete('metadata', m.id),
+    ]),
+  )
+}
 
 // Opens the IndexedDB for autosave persistence, then mirrors session changes
 // + metadata into idb on each session edit (debounced 400ms). Skipped when
@@ -13,6 +38,8 @@ export async function setupSessionDB(self: WebRootModel) {
   try {
     const sessionDB = await openSessionDB()
     self.setSessionDB(sessionDB)
+    await pruneOldSessions(sessionDB, self.session?.id)
+    await self.fetchSessionMetadata()
 
     addDisposer(
       self,

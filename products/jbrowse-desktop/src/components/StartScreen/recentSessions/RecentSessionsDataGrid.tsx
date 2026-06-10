@@ -95,6 +95,9 @@ function RecentSessionsDataGrid({
       field: 'lastModified',
       headerName: 'Last modified',
       width: lastModifiedWidth,
+      // sort/filter on the numeric timestamp, not the formatted label (which
+      // would order "a minute ago" before "2 days ago" alphabetically)
+      valueGetter: (_value: unknown, row: RecentSessionData) => row.updated ?? 0,
       renderCell: ({ row }: GridRenderCellParams) => (
         <DateSinceLastUsed row={row} />
       ),

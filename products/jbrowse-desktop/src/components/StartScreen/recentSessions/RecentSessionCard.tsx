@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import StarIcon from '@mui/icons-material/Star'
@@ -185,6 +186,17 @@ function RecentSessionCard({
             <PlaylistAddIcon />
           </ListItemIcon>
           <Typography variant="inherit">Add to quickstart list</Typography>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setMenuAnchorEl(null)
+            ipcRenderer.invoke('showItemInFolder', path).catch(console.error)
+          }}
+        >
+          <ListItemIcon>
+            <FolderOpenIcon />
+          </ListItemIcon>
+          <Typography variant="inherit">Show in folder</Typography>
         </MenuItem>
       </Menu>
     </>

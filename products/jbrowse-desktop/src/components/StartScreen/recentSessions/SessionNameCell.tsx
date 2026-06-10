@@ -6,6 +6,8 @@ import StarIcon from '../StarIcon.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 
+const { ipcRenderer } = window.require('electron')
+
 const useStyles = makeStyles()({
   flexContainer: {
     display: 'flex',
@@ -78,6 +80,12 @@ function SessionNameCell({
             label: 'Rename',
             onClick: () => {
               setSessionToRename(row)
+            },
+          },
+          {
+            label: 'Show in folder',
+            onClick: () => {
+              ipcRenderer.invoke('showItemInFolder', row.path).catch(console.error)
             },
           },
         ]}
