@@ -3,8 +3,8 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type { AppRootModel } from './AppRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { BaseSession } from '@jbrowse/product-core'
-import type { Theme } from '@mui/material'
 
 /**
  * #stateModel AppSessionMixin
@@ -19,7 +19,8 @@ export function AppSessionMixin(_pluginManager: PluginManager) {
   return types
     .model({})
     .views(s => {
-      const self = s as typeof s & BaseSession & { theme: Theme }
+      const self = s as typeof s &
+        BaseSession & { themeOptions: SerializableThemeArgs }
       return {
         /**
          * #getter
@@ -30,9 +31,12 @@ export function AppSessionMixin(_pluginManager: PluginManager) {
         /**
          * #method
          */
+        // Ship the structurally-serializable theme description, not the created
+        // MUI theme (which carries functions that can't cross the RPC worker
+        // boundary). Consumers rebuild via createJBrowseThemeFromArgs.
         renderProps() {
           return {
-            theme: self.theme,
+            theme: self.themeOptions,
             highResolutionScaling: getConf(self, 'highResolutionScaling'),
           }
         },

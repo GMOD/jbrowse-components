@@ -88,7 +88,9 @@ export async function renderBaseLinearDisplaySvg(
           ...renderProps,
           renderingProps,
           exportSVG: opts,
-          theme: opts.theme ?? renderProps.theme,
+          // SVG export always supplies opts.theme (the view resolves it from the
+          // selected themeName); the renderer ignores theme regardless.
+          theme: opts.theme,
         }),
       ] as const
     }),
