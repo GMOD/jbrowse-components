@@ -217,12 +217,16 @@ export function drawInterbaseSegments(
   colors: InterbaseDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
+  coverageHeight: number,
 ) {
   if (interbaseMaxCount === 0) {
     return
   }
 
-  const interbaseHeight = Math.min(interbaseMaxCount * 2, 20)
+  // Inverted clip/insertion bars scale to half the coverage drawing height
+  // (matches origin/main's `range: [0, height/2]`), so they grow with the
+  // track rather than being clipped at a fixed pixel cap.
+  const interbaseHeight = coverageLayout(coverageHeight).effectiveH / 2
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]

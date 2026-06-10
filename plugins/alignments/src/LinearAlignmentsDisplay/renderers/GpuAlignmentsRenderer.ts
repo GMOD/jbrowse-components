@@ -1,3 +1,4 @@
+import { coverageLayout } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/blockClipUtils'
 import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
 import { slangPass } from '@jbrowse/core/gpu/slangPass'
@@ -157,9 +158,11 @@ function fillFrameUniforms(
   i[U.coverageScaleType] = state.coverageIsLog ? 1 : 0
   i[U.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   f[U.binSize] = region.binSize
+  // scale clip/insertion bars to half the coverage drawing height (matches
+  // origin/main + the Canvas2D path in drawInterbaseSegments)
   f[U.interbaseHeight] =
     region.interbaseMaxCount > 0
-      ? Math.min(region.interbaseMaxCount * 2, 20)
+      ? coverageLayout(state.coverageHeight).effectiveH / 2
       : 0
   f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0

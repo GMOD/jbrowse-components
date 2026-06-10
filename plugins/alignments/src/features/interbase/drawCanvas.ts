@@ -23,5 +23,6 @@ export function drawInterbaseCanvas(
     },
     bpToX,
     viewWidth,
+    state.coverageHeight,
   )
 }

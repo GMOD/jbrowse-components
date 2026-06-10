@@ -149,6 +149,11 @@ export function computeVisibleLabels(
       interbaseLengths,
       interbaseTypes,
     } = rpcData
+    // Per-base soft-clip sequence; only populated when "show soft clipping" is
+    // enabled. When present and zoomed in enough for letters, the per-base loop
+    // below draws the clipped bases, so the (S<len>) summary is suppressed.
+    const { softclipBasePositions, softclipBaseYs, softclipBaseBases } = rpcData
+    const hasSoftclipBases = softclipBasePositions.length > 0
     const numInterbases = interbasePositions.length
 
     for (let i = 0; i < numInterbases; i++) {
@@ -195,7 +200,9 @@ export function computeVisibleLabels(
         }
       } else if (canRenderText) {
         const prefix = clipPrefix[type]
-        if (prefix !== undefined) {
+        // suppress the soft-clip summary when per-base clip letters are drawn
+        const perBaseDrawn = type === INTERBASE_SOFTCLIP && hasSoftclipBases
+        if (prefix !== undefined && !perBaseDrawn) {
           labels.push({
             type: type === INTERBASE_SOFTCLIP ? 'softclip' : 'hardclip',
             x: xPx + 3,
@@ -242,6 +249,32 @@ export function computeVisibleLabels(
           x: centerPx,
           y: yPx,
           text: String.fromCharCode(mismatchBases[i]!),
+          fontSize,
+        })
+      }
+    }
+
+    // Per-base soft-clip letters (parity with legacy renderSoftClipping). The
+    // arrays are only populated when "show soft clipping" is enabled, so this is
+    // naturally empty otherwise. Reuses the 'mismatch' contrast-text coloring,
+    // matching the base-color boxes the clipped bases draw under them.
+    if (canRenderText && hasSoftclipBases) {
+      const numSoftclipBases = softclipBasePositions.length
+      for (let i = 0; i < numSoftclipBases; i++) {
+        const pos = softclipBasePositions[i]!
+        if (pos < blockStart || pos + 1 > blockEnd) {
+          continue
+        }
+        const yPx = rowYPx(softclipBaseYs[i]!)
+        if (!rowYInRange(yPx)) {
+          continue
+        }
+        const centerPx = (bpToPx(pos) + bpToPx(pos + 1)) / 2
+        labels.push({
+          type: 'mismatch',
+          x: centerPx,
+          y: yPx,
+          text: String.fromCharCode(softclipBaseBases[i]!),
           fontSize,
         })
       }

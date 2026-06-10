@@ -1,5 +1,5 @@
 import { computeVisibleLabels } from './computeVisibleLabels.ts'
-import { INTERBASE_INSERTION } from '../../shared/types.ts'
+import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -18,6 +18,10 @@ function makeRpcData(
     mismatchPositions: new Uint32Array(),
     mismatchYs: new Uint16Array(),
     mismatchBases: new Uint8Array(),
+    softclipBasePositions: new Uint32Array(),
+    softclipBaseYs: new Uint16Array(),
+    softclipBaseBases: new Uint8Array(),
+    softclipBaseReadIndices: new Uint32Array(),
     ...overrides,
   } as PileupDataResult
 }
@@ -78,5 +82,43 @@ test('the large insertion still emits its own length label', () => {
   const labels = run(makeRpcData({ ...largeInsertionAt10, ...threeMismatches }))
   expect(labels.filter(l => l.type === 'insertion').map(l => l.text)).toEqual([
     '20',
+  ])
+})
+
+// 'T' and 'G' clipped bases at pos 30/31 row 2 (show-soft-clipping data).
+const softclipBasesAt30 = {
+  softclipBasePositions: new Uint32Array([30, 31]),
+  softclipBaseYs: new Uint16Array([2, 2]),
+  softclipBaseBases: new Uint8Array([84, 71]),
+}
+
+test('soft-clip bases render per-base letters (as mismatch-colored text)', () => {
+  expect(mismatchTexts(makeRpcData(softclipBasesAt30))).toEqual(['T', 'G'])
+})
+
+test('the (S<len>) summary is suppressed when per-base clip letters render', () => {
+  const softclipInterbase = {
+    interbasePositions: new Uint32Array([30]),
+    interbaseYs: new Uint16Array([2]),
+    interbaseLengths: new Uint16Array([2]),
+    interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
+  }
+  const labels = run(
+    makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 }),
+  )
+  expect(labels.filter(l => l.type === 'softclip')).toHaveLength(0)
+  expect(mismatchTexts(makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 }))).toEqual(['T', 'G'])
+})
+
+test('the (S<len>) summary still renders when no per-base clip data', () => {
+  const softclipInterbase = {
+    interbasePositions: new Uint32Array([30]),
+    interbaseYs: new Uint16Array([2]),
+    interbaseLengths: new Uint16Array([5]),
+    interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
+  }
+  const labels = run(makeRpcData(softclipInterbase))
+  expect(labels.filter(l => l.type === 'softclip').map(l => l.text)).toEqual([
+    '(S5)',
   ])
 })

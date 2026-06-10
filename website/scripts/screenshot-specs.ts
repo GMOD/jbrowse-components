@@ -389,10 +389,11 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
-  // Linked reads / read-cloud display on the volvox synthetic-SV CRAM: mates are
+  // Read cloud (samplot-style) display on the volvox synthetic-SV CRAM: mates are
   // laid out on the Y axis by the log distance between them, so insertion pairs
-  // (drawn pink) separate from background. Paired arcs have their own spec above
-  // (arc_display).
+  // (drawn pink) separate from background. Drawn below the coverage band
+  // (readConnectionsDown) so the cloud doesn't overlap the coverage histogram.
+  // Paired arcs have their own spec above (arc_display).
   {
     mode: 'url',
     name: 'alignments/read_cloud',
@@ -401,7 +402,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'AlignmentsTrack',
           trackId: 'volvox_sv_cram_linked',
-          name: 'volvox-sv linked reads',
+          name: 'volvox-sv read cloud',
           assemblyNames: ['volvox'],
           adapter: VOLVOX_SV_CRAM_ADAPTER,
         },
@@ -416,7 +417,8 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'volvox_sv_cram_linked',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                linkedReads: 'normal',
+                readConnections: 'samplot',
+                readConnectionsDown: true,
               },
             },
           ],
@@ -536,8 +538,12 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
       { type: 'hover', text: 'Show...' },
       { type: 'waitForText', text: 'Show center line' },
+      { type: 'delay', ms: 300 },
+      // keep the mouse on the submenu item so it stays open at capture time
+      { type: 'hover', text: 'Show center line' },
       { type: 'delay', ms: 500 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'Show center line' } }],
   },
 
   // Track menu -> "Show..." submenu exposing the "Show soft clipping" toggle.
@@ -563,6 +569,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Show soft clipping' },
       { type: 'delay', ms: 500 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'Show soft clipping' } }],
   },
 
   // Right-click context menu on a read in a LinearAlignmentsDisplay (Open
@@ -678,6 +685,7 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 filterBy: { flagInclude: 0, flagExclude: 1556 },
                 colorBy: { type: 'strand' },
+                showLegend: false,
               },
             },
             {
@@ -686,6 +694,7 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 filterBy: { flagInclude: 16, flagExclude: 1540 },
                 colorBy: { type: 'strand' },
+                showLegend: false,
               },
             },
           ],
@@ -779,13 +788,16 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'volvox',
-          loc: 'ctgA:2636-2746',
+          loc: 'ctgA:1000-1100',
           showCenterLine: true,
-          tracks: ['volvox-long-reads-sv-cram'],
+          tracks: ['volvox_bam'],
         },
       ],
     }),
     readyText: 'ctgA',
+    // smaller window keeps focus on the center line over the pileup
+    viewportWidth: 1100,
+    viewportHeight: 650,
     settleMs: 4000,
   },
 
@@ -1533,6 +1545,9 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
+    // smaller window so the File menu + add-track drawer are easy to read
+    viewportWidth: 1000,
+    viewportHeight: 720,
     settleMs: 3000,
     actions: [
       { type: 'click', text: 'File' },
@@ -1583,16 +1598,30 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 800 },
     ],
+    // ring each control (leaving the icon itself visible) with a text label
+    // beside it, rather than a numbered badge centered on — and hiding — the icon
     annotations: [
       {
-        type: 'circle',
-        text: '1',
+        type: 'box',
         anchor: { selector: 'button[title="Open track selector"]' },
       },
       {
-        type: 'circle',
-        text: '2',
+        type: 'text',
+        text: 'Track selector',
+        anchor: { selector: 'button[title="Open track selector"]' },
+        dx: 18,
+        dy: 30,
+      },
+      {
+        type: 'box',
         anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
+      },
+      {
+        type: 'text',
+        text: 'Add track',
+        anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
+        dx: -95,
+        dy: 4,
       },
     ],
   },
@@ -1801,7 +1830,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'hover', text: 'Open bookmark widget' },
       { type: 'delay', ms: 800 },
     ],
-    annotations: [{ type: 'circle', anchor: { text: 'Open bookmark widget' } }],
+    annotations: [{ type: 'box', anchor: { text: 'Open bookmark widget' } }],
   },
 
   // Rubberband context menu with "Bookmark region" option visible.
@@ -1825,7 +1854,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Bookmark region' },
       { type: 'delay', ms: 1000 },
     ],
-    annotations: [{ type: 'circle', anchor: { text: 'Bookmark region' } }],
+    annotations: [{ type: 'box', anchor: { text: 'Bookmark region' } }],
   },
 
   // Bookmark widget with a bookmark label showing a highlight on the LGV.
@@ -1866,12 +1895,16 @@ export const specs: ScreenshotSpec[] = [
       { type: 'type', text: 'Add label...', value: 'my region' },
       { type: 'delay', ms: 1500 },
     ],
+    // anchor to the "Label" column header in the bookmark widget (the edited
+    // value lives in an <input>, which has no textContent to anchor to, so the
+    // old anchor fell back to the top-left corner)
     annotations: [
       {
         type: 'text',
-        text: 'Single-click the label field to edit the region as free text',
-        anchor: { text: 'my region' },
-        dy: 40,
+        text: 'Single-click the label to edit it',
+        anchor: { text: 'Bookmark link' },
+        dx: -10,
+        dy: 70,
       },
     ],
   },
@@ -1907,7 +1940,11 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Read connections (arc display) toggle in the track menu.
+  // Read connections (arc display): two-stage figure on the volvox-sv CRAM (whose
+  // discordant pairs make the arcs meaningful). Top frame: the track menu opened
+  // to the "Read connections → Show pair overlay" submenu (where the Arcs option
+  // lives) with it boxed. Bottom frame: the arcs themselves (readConnections is
+  // preset to 'arc' so they render in the result frame).
   {
     mode: 'url',
     name: 'alignments/select_arc_display',
@@ -1916,23 +1953,44 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'volvox',
-          loc: 'ctgA:2400-2800',
-          tracks: ['volvox_alignments'],
+          loc: 'ctgA:1-50000',
+          tracks: [
+            {
+              trackId: 'volvox_sv_cram',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                readConnections: 'arc',
+              },
+            },
+          ],
         },
       ],
     }),
     readyText: 'ctgA',
     settleMs: 5000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Read connections' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Read connections' },
-      { type: 'waitForText', text: 'Show pair overlay' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Show pair overlay' },
-      { type: 'waitForText', text: 'Arcs' },
-      { type: 'delay', ms: 500 },
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'waitForText', text: 'Read connections' },
+          { type: 'delay', ms: 300 },
+          { type: 'hover', text: 'Read connections' },
+          { type: 'waitForText', text: 'Show pair overlay' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Show pair overlay' } }],
+      },
+      {
+        // click the location box to dismiss the (nested) menu before the result
+        // frame — a single Escape only closes the innermost submenu
+        actions: [
+          {
+            type: 'click',
+            selector: 'input[placeholder="Search for location"]',
+          },
+          { type: 'delay', ms: 3000 },
+        ],
+      },
     ],
   },
 
@@ -1942,12 +2000,15 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments/modifications1',
+    // zoomed to ~5kb so the CRAM force-loads (the wider window tripped the
+    // "region too large" guard and the modifications never loaded, leaving the
+    // submenu stuck on "Loading modifications...")
     url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '20:19,749,000-19,770,000',
+          loc: '20:19,757,000-19,762,000',
           tracks: ['human_chr20_mod_call_5mC_5hmC_CG_cram'],
         },
       ],
@@ -1962,7 +2023,11 @@ export const specs: ScreenshotSpec[] = [
       { type: 'hover', text: 'Color by...' },
       { type: 'waitForText', text: 'Modifications...' },
       { type: 'delay', ms: 500 },
+      { type: 'hover', text: 'Modifications...' },
+      { type: 'waitForText', text: 'All modification types' },
+      { type: 'delay', ms: 800 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'All modification types' } }],
   },
 
   // ────────────────────────────────────────────────────────────────────────

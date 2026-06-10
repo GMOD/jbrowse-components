@@ -92,6 +92,7 @@ export function drawMafCoverage(
         interbaseColors,
         bpToX,
         canvasWidth,
+        coverageHeight,
       )
       drawIndicators(
         ctx,
