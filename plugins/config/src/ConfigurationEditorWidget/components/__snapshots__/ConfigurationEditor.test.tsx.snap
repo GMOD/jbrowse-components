@@ -435,11 +435,6 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <div
                       class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
                     >
-                      <label
-                        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated css-41lcur-MuiFormLabel-root-MuiInputLabel-root"
-                      >
-                        stringArrayMapTest
-                      </label>
                       <ul
                         class="MuiList-root css-54zhjy-MuiList-root"
                       >
@@ -545,7 +540,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               >
                                 <button
                                   class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
-                                  data-testid="stringArrayAdd-stringArrayMapTest"
+                                  data-testid="stringArrayAdd-"
                                   disabled=""
                                   tabindex="-1"
                                   type="button"

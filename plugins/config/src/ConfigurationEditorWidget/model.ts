@@ -26,7 +26,11 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         let timeout: ReturnType<typeof setTimeout> | undefined
         // Auto-save configuration changes with 400ms debounce. The autorun
         // reacts to any changes in the target configuration model and persists
-        // them back to the session after a short delay.
+        // them back to the session after a short delay. Note: updateTrackConf
+        // is a no-op for snapshots without a matching trackId, so this widget
+        // is only safe to open on track configs (see editConfiguration, which
+        // enforces a trackId). Non-track configs (assembly/connection) edit the
+        // ConfigurationEditor component directly and mutate live nodes in place.
         addDisposer(
           self,
           autorun(() => {

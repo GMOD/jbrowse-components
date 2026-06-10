@@ -1,7 +1,6 @@
-import { FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import MapEntryCard, { MapAddCard } from './MapEntryCard.tsx'
+import MapSlotEditor from './MapSlotEditor.tsx'
 import StringArrayEditor from './StringArrayEditor.tsx'
 
 const StringArrayMapEditor = observer(function StringArrayMapEditor({
@@ -14,39 +13,27 @@ const StringArrayMapEditor = observer(function StringArrayMapEditor({
     description: string
   }
 }) {
-  // plain deep copy so edits never reuse the live MST array nodes
-  const obj = Object.fromEntries([...slot.value].map(([k, v]) => [k, [...v]]))
   return (
-    <>
-      <InputLabel>{slot.name}</InputLabel>
-      {Object.entries(obj).map(([key, val]) => (
-        <MapEntryCard
-          key={key}
-          title={key}
-          onDelete={() => {
-            const { [key]: _omit, ...rest } = obj
-            slot.set(rest)
+    <MapSlotEditor<string[]>
+      name={slot.name}
+      description={slot.description}
+      // deep copy so per-entry edits never reuse the live MST array nodes
+      entries={[...slot.value].map(([k, v]) => [k, [...v]])}
+      emptyValue={[]}
+      setMap={val => {
+        slot.set(val)
+      }}
+      renderValue={(val, set, key) => (
+        <StringArrayEditor
+          slot={{
+            name: '',
+            value: val,
+            description: `Values associated with entry ${key}`,
+            set,
           }}
-        >
-          <StringArrayEditor
-            slot={{
-              name: slot.name,
-              value: val,
-              description: `Values associated with entry ${key}`,
-              set: newVal => {
-                slot.set({ ...obj, [key]: newVal })
-              },
-            }}
-          />
-        </MapEntryCard>
-      ))}
-      <MapAddCard
-        onAdd={key => {
-          slot.set({ ...obj, [key]: [] })
-        }}
-      />
-      <FormHelperText>{slot.description}</FormHelperText>
-    </>
+        />
+      )}
+    />
   )
 })
 

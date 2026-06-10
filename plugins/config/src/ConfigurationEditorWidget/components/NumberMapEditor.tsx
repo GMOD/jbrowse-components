@@ -1,7 +1,6 @@
-import { FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import MapEntryCard, { MapAddCard } from './MapEntryCard.tsx'
+import MapSlotEditor from './MapSlotEditor.tsx'
 import NumberEditor from './NumberEditor.tsx'
 
 const NumberMapEditor = observer(function NumberMapEditor({
@@ -14,37 +13,19 @@ const NumberMapEditor = observer(function NumberMapEditor({
     description: string
   }
 }) {
-  const entries = [...slot.value]
-  const obj = Object.fromEntries(entries)
   return (
-    <>
-      <InputLabel>{slot.name}</InputLabel>
-      {entries.map(([key, val]) => (
-        <MapEntryCard
-          key={key}
-          title={key}
-          onDelete={() => {
-            const { [key]: _omit, ...rest } = obj
-            slot.set(rest)
-          }}
-        >
-          <NumberEditor
-            slot={{
-              value: val,
-              set: val => {
-                slot.set({ ...obj, [key]: val })
-              },
-            }}
-          />
-        </MapEntryCard>
-      ))}
-      <MapAddCard
-        onAdd={key => {
-          slot.set({ ...obj, [key]: 0 })
-        }}
-      />
-      <FormHelperText>{slot.description}</FormHelperText>
-    </>
+    <MapSlotEditor<number>
+      name={slot.name}
+      description={slot.description}
+      entries={[...slot.value]}
+      emptyValue={0}
+      setMap={val => {
+        slot.set(val)
+      }}
+      renderValue={(val, set) => (
+        <NumberEditor slot={{ value: val, set }} />
+      )}
+    />
   )
 })
 
