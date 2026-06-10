@@ -72,10 +72,7 @@ exports[`<AboutWidget /> renders 1`] = `
               <p
                 class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
               >
-                RPC: 
-                <strong>
-                  MainThreadRpcDriver
-                </strong>
+                Browser settings
               </p>
             </span>
             <span
@@ -114,12 +111,9 @@ exports[`<AboutWidget /> renders 1`] = `
                 >
                   <ul>
                     <li>
-                      Rendering runs on the main thread — UI blocks during heavy work.
-                    </li>
-                    <li>
-                      Worker abort:
+                      Rendering:
                        
-                      SharedArrayBuffer (fast atomic abort)
+                      on main thread
                     </li>
                   </ul>
                 </div>
@@ -147,7 +141,7 @@ exports[`<AboutWidget /> renders 1`] = `
               <p
                 class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
               >
-                External plugins loaded
+                Plugins loaded
               </p>
             </span>
             <span
@@ -184,6 +178,11 @@ exports[`<AboutWidget /> renders 1`] = `
                 <div
                   class="MuiAccordionDetails-root css-1uc1gvv-MuiAccordionDetails-root"
                 >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                  >
+                    External plugins
+                  </p>
                   <ul>
                     <li>
                       <a
@@ -208,68 +207,11 @@ exports[`<AboutWidget /> renders 1`] = `
                       </a>
                     </li>
                   </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-9g9pc9-MuiPaper-root-MuiAccordion-root"
-        style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
-      >
-        <h3
-          class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
-        >
-          <button
-            aria-expanded="true"
-            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
-            >
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
-              >
-                Core plugins loaded
-              </p>
-            </span>
-            <span
-              class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
-                data-testid="ExpandMoreIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
-                />
-              </svg>
-            </span>
-          </button>
-        </h3>
-        <div
-          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
-          style="min-height: 0px;"
-        >
-          <div
-            class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
-          >
-            <div
-              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
-            >
-              <div
-                class="MuiAccordion-region css-at4ued-MuiAccordion-region"
-                role="region"
-              >
-                <div
-                  class="MuiAccordionDetails-root css-1uc1gvv-MuiAccordionDetails-root"
-                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                  >
+                    Core plugins
+                  </p>
                   <ul />
                 </div>
               </div>

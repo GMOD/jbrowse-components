@@ -1,12 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ExternalLink } from '@jbrowse/core/ui'
-import {
-  availableRenderers,
-  preferredRenderer,
-} from '@jbrowse/core/ui/getGraphicsCapabilities'
+import { preferredRenderer } from '@jbrowse/core/ui/getGraphicsCapabilities'
 import { useGraphicsCapabilities } from '@jbrowse/core/ui/useGraphicsCapabilities'
 import { getSession } from '@jbrowse/core/util'
-import { hasSharedArrayBuffer } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -57,6 +53,9 @@ const AboutWidget = observer(function AboutWidget({
       .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
       .map(p => p.name),
   )
+  const externalPlugins = plugins.filter(
+    plugin => !corePlugins.has(plugin.name),
+  )
 
   return (
     <div className={classes.root}>
@@ -81,47 +80,22 @@ const AboutWidget = observer(function AboutWidget({
       </Typography>
 
       <div className={classes.accordions}>
-        {graphicsCapabilities ? (
-          <Accordion defaultExpanded>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon className={classes.icon} />}
-            >
-              <Typography>
-                Graphics:{' '}
-                <strong>{preferredRenderer(graphicsCapabilities)}</strong>
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <ul>
-                <li>
-                  Available:{' '}
-                  {availableRenderers(graphicsCapabilities).join(', ')}
-                </li>
-              </ul>
-            </AccordionDetails>
-          </Accordion>
-        ) : null}
-
         <Accordion defaultExpanded>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.icon} />}
           >
-            <Typography>
-              RPC: <strong>{defaultRpcDriver}</strong>
-            </Typography>
+            <Typography>Browser settings</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <ul>
+              {graphicsCapabilities ? (
+                <li>Graphics: {preferredRenderer(graphicsCapabilities)}</li>
+              ) : null}
               <li>
+                Rendering:{' '}
                 {defaultRpcDriver === 'WebWorkerRpcDriver'
-                  ? 'Rendering runs off the main thread in a web worker.'
-                  : 'Rendering runs on the main thread — UI blocks during heavy work.'}
-              </li>
-              <li>
-                Worker abort:{' '}
-                {hasSharedArrayBuffer
-                  ? 'SharedArrayBuffer (fast atomic abort)'
-                  : 'XHR fallback (cross-origin isolation headers missing — synchronous worker abort is slow)'}
+                  ? 'off main thread'
+                  : 'on main thread'}
               </li>
             </ul>
           </AccordionDetails>
@@ -131,13 +105,13 @@ const AboutWidget = observer(function AboutWidget({
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.icon} />}
           >
-            <Typography>External plugins loaded</Typography>
+            <Typography>Plugins loaded</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <ul>
-              {plugins
-                .filter(plugin => !corePlugins.has(plugin.name))
-                .map(plugin => {
+            <Typography>External plugins</Typography>
+            {externalPlugins.length ? (
+              <ul>
+                {externalPlugins.map(plugin => {
                   const { url, name, version = '' } = plugin
                   const text = `${name} ${version || ''}`
                   return (
@@ -150,17 +124,11 @@ const AboutWidget = observer(function AboutWidget({
                     </li>
                   )
                 })}
-            </ul>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion defaultExpanded>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon className={classes.icon} />}
-          >
-            <Typography>Core plugins loaded</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
+              </ul>
+            ) : (
+              <Typography>No external plugins loaded</Typography>
+            )}
+            <Typography>Core plugins</Typography>
             <ul>
               {plugins
                 .filter(plugin => corePlugins.has(plugin.name))

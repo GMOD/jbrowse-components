@@ -145,10 +145,17 @@ export default function ErrorMessageStackTraceDialog({
       ? `${errorText.slice(0, MAX_ERR_LEN)}...`
       : errorText,
     mappedStackTrace || stackTrace || 'No stack trace available',
+    '--- environment ---',
     version ? `JBrowse ${version}` : '',
     graphicsInfo,
     rpcInfo,
     sabInfo,
+    `Cross-origin isolated: ${crossOriginIsolated}`,
+    `CPU cores: ${navigator.hardwareConcurrency}`,
+    `Device pixel ratio: ${window.devicePixelRatio}`,
+    `Window size: ${window.innerWidth}x${window.innerHeight}`,
+    `URL: ${window.location.href}`,
+    `User agent: ${navigator.userAgent}`,
   ]
     .filter(Boolean)
     .join('\n')
