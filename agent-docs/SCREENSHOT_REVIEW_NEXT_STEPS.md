@@ -58,6 +58,13 @@ shrinking the capture viewport (which would clip menus mid-interaction).
 - **`alignments_soft_clipped`** / **`alignment_clipping_indicators`** — code fixes
   from the prior session (590bb9d) re-verified: soft-clip per-base letters render;
   clip-indicator bars scale with coverage height.
+- **`alignments_sort_by_base`** — now captures the right-click workflow: right-click
+  the ctgA:14481 SNP (`rightclick` action at viewport coords on the green-A column,
+  reads pre-sorted so variant rows are top/predictable) opens the read context menu
+  `SNP/Mismatch → Sort by base at position`, boxed.
+- **`rnaseq/compact_stacked`** — raised display `height`/`maxHeight` + viewport so
+  the full dense compact read stack renders instead of clipping at ~150px; the deep
+  stack (= high expression) now makes compact mode visually obvious.
 
 ## Remaining judgment calls
 
@@ -72,12 +79,6 @@ shrinking the capture viewport (which would clip menus mid-interaction).
   force-loads instead of drawing reads). Re-share at a tighter zoom to re-enable
   autogen, or leave curated.
 - **`inverted_duplication`** — empty review note; user said leave it.
-- **`alignments_sort_by_base`** — reviewer wants the right-click→"Sort by base at
-  position" *workflow* captured (the menu over the SNP), not just the declarative
-  sorted result. Needs an empirical canvas right-click row (no DOM for reads); a
-  two-stage capture (right-click menu, then sorted result) is the path. NOT done.
-- **`rnaseq/compact_stacked`** — reviewer: "not clear compact is used"; make the
-  `featureHeight:3/spacing:0` more obviously compact or annotate. NOT done.
 - Stale captions worth a light pass (figures fine): `dotplot_view.md:18`
   (old appbar wording), `sv_visualization_cgiab.md:246` (compact/sort not set).
 
