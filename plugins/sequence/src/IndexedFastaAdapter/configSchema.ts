@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config IndexedFastaAdapter
@@ -76,4 +77,5 @@ const IndexedFastaAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+export type IndexedFastaAdapterConfig = Instance<typeof IndexedFastaAdapter>
 export default IndexedFastaAdapter

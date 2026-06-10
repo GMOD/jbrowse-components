@@ -147,19 +147,28 @@ read-density / bug-finding potential, not a mandate to do all at once.
   `HtsgetBamAdapter` extends `BamAdapter`; typed via
   `readConfObject(this.config as unknown as HtsgetBamAdapterConfig, ...)` since
   its slots are not in BamAdapterConfig.
+- **Done:** `BaseSequenceAdapter<CONF>` — generic param threaded (mirrors
+  `BaseFeatureDataAdapter<CONF>`). `TwoBitAdapter` and `UnindexedFastaAdapter`
+  opted in (`rewriteRefNames` string now typed in Unindexed). `IndexedFastaAdapter`
+  kept non-generic because `BgzipFastaAdapter extends IndexedFastaAdapter` and
+  reads `gziLocation` (not in `IndexedFastaAdapterConfig`) — same subclass
+  conflict as BamAdapter/HtsgetBamAdapter. Config type alias exported for both.
+- **Done:** `gccontent` — `GCContentAdapter` (`windowSize`/`windowDelta` number,
+  `gcMode` `'content'|'skew'` now typed). Factory-pattern schema uses
+  `Instance<ReturnType<typeof GCContentAdapterF>>`.
 
 **Remaining (low priority / blockers noted):**
-- `SNPCoverageAdapter` — does not exist as a standalone class; remove from list.
 - `PAFAdapter`/`ChainAdapter`/`DeltaAdapter`/`MashMapAdapter` — inheritance
   chain, zero scalar casts to drop in any of them. Deferred.
 - `MafTabixAdapter`/`BigMafAdapter`/`BgzipTaffyAdapter` — `getSamplesFromConfig(key => this.getConf(key))` dynamic-string reads would fail the slot-name constraint after typing. Needs either a cast or refactor to `readConfObject`.
-- `GCContentAdapter` — factory-pattern configSchema (`const f = (pm) => ConfigurationSchema(...)`) needs `ReturnType<typeof f>` not `typeof schema`; plus only number/stringEnum reads, no casts to drop.
-- `NCListAdapter`/`HicAdapter`/`Gff3Adapter`/`VcfAdapter`/`SplitVcfTabixAdapter`/`MultiWiggleAdapter`/`SPARQLAdapter` — fileLocation/frozen/stringArray only, or already typed via constructor-param pattern (SPARQL). Deferred until touched for other reasons.
+- `NCListAdapter`/`HicAdapter`/`Gff3Adapter`/`SplitVcfTabixAdapter`/`MultiWiggleAdapter`/`SPARQLAdapter` — fileLocation/frozen/stringArray only, or already typed via constructor-param pattern (SPARQL). Deferred until touched for other reasons.
+- `IndexedFastaAdapter` / `BgzipFastaAdapter` — same subclass conflict as
+  BamAdapter/HtsgetBamAdapter; `IndexedFastaAdapterConfig` alias exported but
+  class kept non-generic.
 
-Base classes still on the non-generic default that need the `<CONF>` param
-threaded before their subclasses can opt in: `BaseRefNameAliasAdapter`,
-`BaseSequenceAdapter`, `BaseTextSearchAdapter`, `RegionsAdapter`. Mechanical —
-mirror the `BaseFeatureDataAdapter<CONF>` edit.
+Base classes done: `BaseSequenceAdapter<CONF>` threaded. Remaining interfaces
+(`BaseRefNameAliasAdapter`, `BaseTextSearchAdapter`, `RegionsAdapter`) need no
+threading — they are interfaces, not classes.
 
 ## Displays — separate, lower-priority track
 

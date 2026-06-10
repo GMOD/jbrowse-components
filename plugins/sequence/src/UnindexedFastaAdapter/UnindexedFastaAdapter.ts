@@ -1,5 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -29,7 +31,7 @@ function parseSmallFasta(text: string) {
   )
 }
 
-export default class UnindexedFastaAdapter extends BaseSequenceAdapter {
+export default class UnindexedFastaAdapter extends BaseSequenceAdapter<UnindexedFastaAdapterConfig> {
   protected setupP?: Promise<{
     fasta: ReturnType<typeof parseSmallFasta>
   }>

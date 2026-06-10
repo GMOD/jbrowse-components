@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config TwoBitAdapter
@@ -82,4 +83,5 @@ const TwoBitAdapter = ConfigurationSchema(
   },
 )
 
+export type TwoBitAdapterConfig = Instance<typeof TwoBitAdapter>
 export default TwoBitAdapter

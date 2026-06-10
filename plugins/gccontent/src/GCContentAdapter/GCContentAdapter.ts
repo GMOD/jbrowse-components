@@ -1,4 +1,6 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+import type { GCContentAdapterConfig } from './configSchema.ts'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
@@ -12,7 +14,7 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class GCContentAdapter extends BaseFeatureDataAdapter {
+export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAdapterConfig> {
   public static capabilities = ['hasLocalStats']
 
   public async configure() {

@@ -4,11 +4,14 @@ import { toArray } from 'rxjs/operators'
 import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 
 import type { BaseOptions } from './types.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { NoAssemblyRegion } from '../../util/index.ts'
 import type { RegionsAdapter } from '../BaseAdapter/index.ts'
 
-export abstract class BaseSequenceAdapter
-  extends BaseFeatureDataAdapter
+export abstract class BaseSequenceAdapter<
+  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+>
+  extends BaseFeatureDataAdapter<CONF>
   implements RegionsAdapter
 {
   async getMultiRegionFeatureDensityStats() {

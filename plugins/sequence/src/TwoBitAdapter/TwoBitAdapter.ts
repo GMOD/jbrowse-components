@@ -1,5 +1,7 @@
 import { TwoBitFile } from '@gmod/twobit'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+import type { TwoBitAdapterConfig } from './configSchema.ts'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -13,7 +15,7 @@ import {
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
-export default class TwoBitAdapter extends BaseSequenceAdapter {
+export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConfig> {
   protected setupP?: Promise<{
     twobit: TwoBitFile
     chromSizesData: Record<string, number> | undefined

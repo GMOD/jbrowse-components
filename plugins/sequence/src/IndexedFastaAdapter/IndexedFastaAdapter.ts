@@ -12,6 +12,7 @@ import { readOptionalMetadata, refSizesToRegions } from '../chromSizesUtils.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { IndexedFastaAdapterConfig } from './configSchema.ts'
 
 interface T {
   refName: string
