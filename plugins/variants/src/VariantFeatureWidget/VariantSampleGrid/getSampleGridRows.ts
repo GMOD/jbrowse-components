@@ -14,46 +14,61 @@ function countAlleles(gt: string, resolve: (allele: string) => string) {
     .join(';')
 }
 
+// Build one grid row from a sample's FORMAT fields. Guarantees string `GT` and
+// `genotype` (so the frequency table and genotype filter never key on
+// undefined when a sample lacks a GT call) and flattens every other FORMAT
+// array value to a string. The row then genuinely satisfies
+// VariantSampleGridRow's string index signature instead of leaning on the grid
+// and filter regex to stringify arrays at the point of use.
+function makeSampleGridRow(
+  sample: string,
+  fields: InfoFields,
+  REF: string,
+  ALT: string[],
+  useCounts: boolean,
+): VariantSampleGridRow {
+  const gt = fields.GT?.[0]
+  const gtStr = gt ? `${gt}` : undefined
+  const row: VariantSampleGridRow = {
+    sample,
+    id: sample,
+    GT: gtStr ? (useCounts ? countAlleles(gtStr, allele => allele) : gtStr) : '',
+    genotype: gtStr
+      ? useCounts
+        ? countAlleles(gtStr, allele => resolveAllele(allele, REF, ALT))
+        : makeSimpleAltString(gtStr, REF, ALT)
+      : '',
+  }
+  for (const key in fields) {
+    if (key !== 'GT') {
+      row[key] = `${fields[key] ?? ''}`
+    }
+  }
+  return row
+}
+
 export function getSampleGridRows(
   samples: Record<string, InfoFields>,
   REF: string,
   ALT: string[],
   filter: Filters,
-  useCounts?: boolean,
+  useCounts = false,
 ): {
   rows: VariantSampleGridRow[]
   error: unknown
 } {
   let error: unknown
   let rows: VariantSampleGridRow[] = []
-  const filterKeys = Object.keys(filter)
 
   try {
-    const compiledFilters = filterKeys.map(k => ({
+    const compiledFilters = Object.keys(filter).map(k => ({
       key: k,
       re: filter[k] ? new RegExp(filter[k], 'i') : null,
     }))
     rows = Object.entries(samples)
-      .map(([key, val]) => {
-        const gt = val.GT?.[0]
-        const gtStr = gt ? `${gt}` : undefined
-        const displayGT = gtStr
-          ? useCounts
-            ? countAlleles(gtStr, allele => allele)
-            : gtStr
-          : undefined
-        const displayGenotype = gtStr
-          ? useCounts
-            ? countAlleles(gtStr, allele => resolveAllele(allele, REF, ALT))
-            : makeSimpleAltString(gtStr, REF, ALT)
-          : undefined
-        return {
-          ...val,
-          ...(gtStr ? { GT: displayGT, genotype: displayGenotype } : {}),
-          sample: key,
-          id: key,
-        } as VariantSampleGridRow
-      })
+      .map(([sample, fields]) =>
+        makeSampleGridRow(sample, fields, REF, ALT, useCounts),
+      )
       .filter(row =>
         compiledFilters.every(({ key, re }) =>
           re ? re.exec(row[key] ?? '') : true,

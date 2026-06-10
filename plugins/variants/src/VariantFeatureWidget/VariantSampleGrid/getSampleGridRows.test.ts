@@ -25,6 +25,13 @@ test('useCounts converts GT and genotype to allele dosage', () => {
   ])
 })
 
+test('a sample without a GT call yields empty string GT/genotype, not undefined', () => {
+  const { rows } = getSampleGridRows({ HG001: { DP: [30] } }, 'A', ['T'], {})
+  expect(rows.map(r => [r.sample, r.GT, r.genotype, r.DP])).toEqual([
+    ['HG001', '', '', '30'],
+  ])
+})
+
 test('filter applies a case-insensitive regex per column', () => {
   const { rows } = getSampleGridRows(samples, 'A', ['T'], {
     sample: 'hg00[12]',

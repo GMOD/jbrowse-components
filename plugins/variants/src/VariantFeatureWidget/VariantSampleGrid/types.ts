@@ -1,7 +1,7 @@
 export interface FrequencyTableEntry {
   count: number
   GT: string
-  genotype: string | undefined
+  genotype: string
 }
 
 export type FrequencyTable = Record<string, FrequencyTableEntry>
@@ -10,6 +10,7 @@ export interface VariantSampleGridRow {
   sample: string
   id: string
   GT: string
+  genotype: string
   [key: string]: string
 }
 
