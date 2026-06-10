@@ -80,11 +80,11 @@ export function createBaseTrackModel(
       /**
        * #property
        */
-      minimized: false,
+      minimized: types.stripDefault(types.boolean, false),
       /**
        * #property
        */
-      pinned: false,
+      pinned: types.stripDefault(types.boolean, false),
       /**
        * #property
        */
@@ -287,18 +287,6 @@ export function createBaseTrackModel(
         ]
       },
     }))
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { minimized, pinned, ...rest } = snap
-      return {
-        ...rest,
-        ...(minimized ? { minimized } : {}),
-        ...(pinned ? { pinned } : {}),
-      } as typeof snap
-    })
 }
 
 export type BaseTrackStateModel = ReturnType<typeof createBaseTrackModel>

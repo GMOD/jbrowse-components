@@ -21,7 +21,7 @@ export default function stateModelFactory(
         MultiSampleVariantBaseModelF(configSchema, 'matrix'),
         types.model({
           type: types.literal('LinearMultiSampleVariantMatrixDisplay'),
-          lineZoneHeight: types.optional(types.number, 20),
+          lineZoneHeight: types.stripDefault(types.number, 20),
         }),
       )
       // Remap the old type literal on active (view-level) display instances. The
@@ -92,13 +92,6 @@ export default function stateModelFactory(
           })
         },
       }))
-      .postProcessSnapshot(snap => {
-        const { lineZoneHeight, ...rest } = snap
-        return {
-          ...rest,
-          ...(lineZoneHeight !== 20 ? { lineZoneHeight } : {}),
-        }
-      })
   )
 }
 

@@ -66,27 +66,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(types.number, defaultHeight),
+        height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
          */
-        trackSelectorType: 'hierarchical',
+        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
          */
-        showIntraviewLinks: true,
+        showIntraviewLinks: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
-        linkViews: false,
+        linkViews: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        interactiveOverlay: true,
+        interactiveOverlay: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
-        showHeader: true,
+        showHeader: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
@@ -630,25 +630,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const {
-        init,
-        height,
-        trackSelectorType,
-        showIntraviewLinks,
-        linkViews,
-        interactiveOverlay,
-        showHeader,
-        ...rest
-      } = snap
-      return {
-        ...rest,
-        ...(height !== 400 ? { height } : {}),
-        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
-        ...(linkViews ? { linkViews } : {}),
-        ...(!interactiveOverlay ? { interactiveOverlay } : {}),
-        ...(!showHeader ? { showHeader } : {}),
-      }
+      // init is transient view-setup state, never persisted
+      const { init, ...rest } = snap
+      return rest
     })
 }
 

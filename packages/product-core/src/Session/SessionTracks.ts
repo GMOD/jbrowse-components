@@ -20,8 +20,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       /**
        * #property
        */
-      sessionTracks: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
+      sessionTracks: types.stripDefault(
+        types.array(pluginManager.pluggableConfigSchemaType('track')),
+        [],
       ),
     })
     .views(self => ({
@@ -85,19 +86,6 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           return self.sessionTracks.splice(idx, 1)
         },
       }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { sessionTracks, ...rest } = snap
-      return {
-        ...rest,
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(sessionTracks?.length ? { sessionTracks } : {}),
-      } as typeof snap
     })
 }
 

@@ -27,7 +27,7 @@ const BaseViewModel = types
     /**
      * #property
      */
-    minimized: false,
+    minimized: types.stripDefault(types.boolean, false),
   })
   .volatile(() => ({
     width: 800,
@@ -70,17 +70,6 @@ const BaseViewModel = types
       self.minimized = flag
     },
   }))
-  .postProcessSnapshot(snap => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!snap) {
-      return snap
-    }
-    const { minimized, ...rest } = snap
-    return {
-      ...rest,
-      ...(minimized ? { minimized } : {}),
-    } as typeof snap
-  })
 
 export default BaseViewModel
 

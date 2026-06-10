@@ -263,8 +263,11 @@ export default function MultiSampleVariantBaseModelF(
         types.model({
           type: types.string,
           configuration: ConfigurationReference(configSchema),
-          rowHeightMode: types.optional(types.number, 0),
-          jexlFilters: types.maybe(types.array(types.string)),
+          rowHeightMode: types.stripDefault(types.number, 0),
+          jexlFilters: types.stripDefault(
+            types.maybe(types.array(types.string)),
+            undefined,
+          ),
           lineZoneHeight: types.optional(types.number, 0),
         }),
       )
@@ -430,7 +433,8 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setJexlFilters(f?: string[]) {
-          self.jexlFilters = cast(f)
+          // normalize empty to undefined so the field has a single stripped state
+          self.jexlFilters = f?.length ? cast(f) : undefined
         },
         /**
          * #action
@@ -975,26 +979,6 @@ export default function MultiSampleVariantBaseModelF(
           })()
         },
       }))
-      .postProcessSnapshot(snap => {
-        const {
-          layout,
-          rowHeightMode,
-          jexlFilters,
-          clusterTree,
-          treeAreaWidth,
-          subtreeFilter,
-          ...rest
-        } = snap
-        return {
-          ...rest,
-          ...(layout.length ? { layout } : {}),
-          ...(rowHeightMode !== 0 ? { rowHeightMode } : {}),
-          ...(jexlFilters?.length ? { jexlFilters } : {}),
-          ...(clusterTree !== undefined ? { clusterTree } : {}),
-          ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
-          ...(subtreeFilter?.length ? { subtreeFilter } : {}),
-        }
-      })
   )
 }
 

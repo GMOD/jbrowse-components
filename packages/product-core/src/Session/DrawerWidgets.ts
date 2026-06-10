@@ -39,23 +39,26 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       /**
        * #property
        */
-      drawerWidth: types.optional(
+      drawerWidth: types.stripDefault(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
       ),
       /**
        * #property
        */
-      widgets: types.map(widgetStateModelType),
+      widgets: types.stripDefault(types.map(widgetStateModelType), {}),
       /**
        * #property
        */
-      activeWidgets: types.map(types.safeReference(widgetStateModelType)),
+      activeWidgets: types.stripDefault(
+        types.map(types.safeReference(widgetStateModelType)),
+        {},
+      ),
 
       /**
        * #property
        */
-      minimized: types.optional(types.boolean, false),
+      minimized: types.stripDefault(types.boolean, false),
     })
     .views(self => ({
       /**
@@ -207,29 +210,16 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
+      // drawerPosition default is localStorage-derived; strip only against the
+      // universal default 'right' so a localStorage-set value stays portable
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const {
-        drawerPosition,
-        drawerWidth,
-        widgets,
-        activeWidgets,
-        minimized,
-        ...rest
-      } = snap
+      const { drawerPosition, ...rest } = snap
       return {
         ...rest,
         ...(drawerPosition !== 'right' ? { drawerPosition } : {}),
-        ...(drawerWidth !== 384 ? { drawerWidth } : {}),
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(Object.keys(widgets ?? {}).length ? { widgets } : {}),
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(Object.keys(activeWidgets ?? {}).length ? { activeWidgets } : {}),
-        ...(minimized ? { minimized } : {}),
       } as typeof snap
     })
 }

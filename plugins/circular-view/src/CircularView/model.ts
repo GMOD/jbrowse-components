@@ -83,11 +83,11 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * similar to offsetPx in linear genome view
          */
-        offsetRadians: defaultOffsetRadians,
+        offsetRadians: types.stripDefault(types.number, defaultOffsetRadians),
         /**
          * #property
          */
-        bpPerPx: defaultBpPerPx,
+        bpPerPx: types.stripDefault(types.number, defaultBpPerPx),
         /**
          * #property
          */
@@ -98,48 +98,51 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        hideVerticalResizeHandle: false,
+        hideVerticalResizeHandle: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        hideTrackSelectorButton: false,
+        hideTrackSelectorButton: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        disableImportForm: false,
+        disableImportForm: types.stripDefault(types.boolean, false),
 
         /**
          * #property
          */
-        height: types.optional(types.number, defaultHeight),
+        height: types.stripDefault(types.number, defaultHeight),
         /*
          * #property
          */
-        displayedRegions: types.optional(types.frozen<Region[]>(), []),
+        displayedRegions: types.stripDefault(types.frozen<Region[]>(), []),
         /**
          * #property
          */
-        minimumRadiusPx: defaultMinimumRadiusPx,
+        minimumRadiusPx: types.stripDefault(types.number, defaultMinimumRadiusPx),
         /**
          * #property
          */
-        spacingPx: defaultSpacingPx,
+        spacingPx: types.stripDefault(types.number, defaultSpacingPx),
         /**
          * #property
          */
-        paddingPx: defaultPaddingPx,
+        paddingPx: types.stripDefault(types.number, defaultPaddingPx),
         /**
          * #property
          */
-        minVisibleWidth: defaultMinVisibleWidth,
+        minVisibleWidth: types.stripDefault(types.number, defaultMinVisibleWidth),
         /**
          * #property
          */
-        minimumBlockWidth: defaultMinimumBlockWidth,
+        minimumBlockWidth: types.stripDefault(
+          types.number,
+          defaultMinimumBlockWidth,
+        ),
         /**
          * #property
          */
-        trackSelectorType: 'hierarchical',
+        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
          * used for initializing the view from a session snapshot
@@ -662,49 +665,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
+      // init is transient view-setup state, never persisted
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const {
-        init,
-        offsetRadians,
-        bpPerPx,
-        hideVerticalResizeHandle,
-        hideTrackSelectorButton,
-        disableImportForm,
-        height,
-        displayedRegions,
-        minimumRadiusPx,
-        spacingPx,
-        paddingPx,
-        minVisibleWidth,
-        minimumBlockWidth,
-        trackSelectorType,
-        ...rest
-      } = snap
-      return {
-        ...rest,
-        ...(offsetRadians !== defaultOffsetRadians ? { offsetRadians } : {}),
-        ...(bpPerPx !== defaultBpPerPx ? { bpPerPx } : {}),
-        ...(hideVerticalResizeHandle ? { hideVerticalResizeHandle } : {}),
-        ...(hideTrackSelectorButton ? { hideTrackSelectorButton } : {}),
-        ...(disableImportForm ? { disableImportForm } : {}),
-        ...(height !== defaultHeight ? { height } : {}),
-        ...(displayedRegions.length ? { displayedRegions } : {}),
-        ...(minimumRadiusPx !== defaultMinimumRadiusPx
-          ? { minimumRadiusPx }
-          : {}),
-        ...(spacingPx !== defaultSpacingPx ? { spacingPx } : {}),
-        ...(paddingPx !== defaultPaddingPx ? { paddingPx } : {}),
-        ...(minVisibleWidth !== defaultMinVisibleWidth
-          ? { minVisibleWidth }
-          : {}),
-        ...(minimumBlockWidth !== defaultMinimumBlockWidth
-          ? { minimumBlockWidth }
-          : {}),
-        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-      } as typeof snap
+      const { init, ...rest } = snap
+      return rest as typeof snap
     })
 }
 

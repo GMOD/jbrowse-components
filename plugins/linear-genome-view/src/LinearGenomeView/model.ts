@@ -167,13 +167,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * corresponds roughly to the horizontal scroll of the LGV
          */
-        offsetPx: 0,
+        offsetPx: types.stripDefault(types.number, 0),
 
         /**
          * #property
          * corresponds roughly to the zoom level, base-pairs per pixel
          */
-        bpPerPx: 1,
+        bpPerPx: types.stripDefault(types.number, 1),
 
         /**
          * #property
@@ -182,7 +182,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * advised to use the entire set of chromosomes if your assembly is very
          * fragmented
          */
-        displayedRegions: types.optional(types.frozen<Region[]>(), []),
+        displayedRegions: types.stripDefault(types.frozen<Region[]>(), []),
 
         /**
          * #property
@@ -195,22 +195,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        hideHeader: false,
+        hideHeader: types.stripDefault(types.boolean, false),
 
         /**
          * #property
          */
-        hideHeaderOverview: false,
+        hideHeaderOverview: types.stripDefault(types.boolean, false),
 
         /**
          * #property
          */
-        hideNoTracksActive: false,
+        hideNoTracksActive: types.stripDefault(types.boolean, false),
 
         /**
          * #property
          */
-        trackSelectorType: types.optional(
+        trackSelectorType: types.stripDefault(
           types.enumeration(['hierarchical']),
           'hierarchical',
         ),
@@ -247,13 +247,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * show the "gridlines" in the track area
          */
-        showGridlines: true,
+        showGridlines: types.stripDefault(types.boolean, true),
 
         /**
          * #property
          * highlights on the LGV from the URL parameters
          */
-        highlight: types.optional(
+        highlight: types.stripDefault(
           types.array(types.frozen<HighlightType>()),
           [],
         ),
@@ -262,13 +262,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * controls whether view.highlight entries are rendered
          */
-        highlightsVisible: types.optional(types.boolean, true),
+        highlightsVisible: types.stripDefault(types.boolean, true),
 
         /**
          * #property
          * controls whether highlight/bookmark chip labels are shown inline
          */
-        labelsVisible: types.optional(types.boolean, true),
+        labelsVisible: types.stripDefault(types.boolean, true),
 
         /**
          * #property
@@ -2153,48 +2153,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
+      // init is transient launch state, never persisted. The remaining fields
+      // are localStorage-backed: their strip baseline is the universal default
+      // (hardcoded here), not the localStorage-derived creation default, so a
+      // localStorage-set value stays portable across browsers.
       const {
         init,
-        offsetPx,
-        bpPerPx,
-        hideHeader,
-        hideHeaderOverview,
-        hideNoTracksActive,
-        showGridlines,
-        trackSelectorType,
-        displayedRegions,
-        highlight,
         showCenterLine,
         showCytobandsSetting,
         trackLabels,
         colorByCDS,
         showTrackOutlines,
         scrollZoom,
-        highlightsVisible,
-        labelsVisible,
         ...rest
       } = snap
 
       return {
         ...rest,
-        // only include non-default values
-        ...(offsetPx ? { offsetPx } : {}),
-        ...(bpPerPx !== 1 ? { bpPerPx } : {}),
-        ...(hideHeader ? { hideHeader } : {}),
-        ...(hideHeaderOverview ? { hideHeaderOverview } : {}),
-        ...(hideNoTracksActive ? { hideNoTracksActive } : {}),
-        ...(!showGridlines ? { showGridlines } : {}),
-        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(displayedRegions.length ? { displayedRegions } : {}),
-        ...(highlight.length ? { highlight } : {}),
         ...(showCenterLine ? { showCenterLine } : {}),
         ...(!showCytobandsSetting ? { showCytobandsSetting } : {}),
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
         ...(scrollZoom ? { scrollZoom } : {}),
-        ...(!highlightsVisible ? { highlightsVisible } : {}),
-        ...(!labelsVisible ? { labelsVisible } : {}),
       }
     })
 }

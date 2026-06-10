@@ -437,17 +437,6 @@ export default function stateModelFactory(
         return renderSvg(self as MultiLinearWiggleDisplayModel, opts)
       },
     }))
-    .postProcessSnapshot(snap => {
-      const { layout, clusterTree, treeAreaWidth, subtreeFilter, ...rest } =
-        snap
-      return {
-        ...rest,
-        ...(layout.length ? { layout } : {}),
-        ...(clusterTree !== undefined ? { clusterTree } : {}),
-        ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
-        ...(subtreeFilter?.length ? { subtreeFilter } : {}),
-      }
-    })
 }
 
 export type MultiLinearWiggleDisplayStateModel = ReturnType<

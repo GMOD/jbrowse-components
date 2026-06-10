@@ -36,7 +36,7 @@ export function BaseSessionModel<
       /**
        * #property
        */
-      margin: 0,
+      margin: types.stripDefault(types.number, 0),
       /**
        * #property
        * used to keep track of which view is in focus
@@ -179,17 +179,7 @@ export function BaseSessionModel<
       },
     }))
 
-  return types.compose(baseModel, SnackbarModel()).postProcessSnapshot(snap => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!snap) {
-      return snap
-    }
-    const { margin, ...rest } = snap
-    return {
-      ...rest,
-      ...(margin ? { margin } : {}),
-    } as typeof snap
-  })
+  return types.compose(baseModel, SnackbarModel())
 }
 
 /** Session mixin MST type for the most basic session */

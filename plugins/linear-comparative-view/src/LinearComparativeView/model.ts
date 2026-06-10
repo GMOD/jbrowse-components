@@ -53,23 +53,23 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        trackSelectorType: 'hierarchical',
+        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
          */
-        showIntraviewLinks: true,
+        showIntraviewLinks: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
-        linkViews: false,
+        linkViews: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        interactiveOverlay: false,
+        interactiveOverlay: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        scrollZoom: false,
+        scrollZoom: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
@@ -89,8 +89,9 @@ function stateModelFactory(pluginManager: PluginManager) {
          * read vs ref dotplots where this track would not really apply
          * elsewhere
          */
-        viewTrackConfigs: types.array(
-          pluginManager.pluggableConfigSchemaType('track'),
+        viewTrackConfigs: types.stripDefault(
+          types.array(pluginManager.pluggableConfigSchemaType('track')),
+          [],
         ),
       }),
     )
@@ -476,30 +477,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...rest,
         levels,
       }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const {
-        trackSelectorType,
-        showIntraviewLinks,
-        linkViews,
-        interactiveOverlay,
-        scrollZoom,
-        viewTrackConfigs,
-        ...rest
-      } = snap
-      return {
-        ...rest,
-        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
-        ...(linkViews ? { linkViews } : {}),
-        ...(interactiveOverlay ? { interactiveOverlay } : {}),
-        ...(scrollZoom ? { scrollZoom } : {}),
-        ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
-      } as typeof snap
     })
 }
 

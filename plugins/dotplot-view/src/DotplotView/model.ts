@@ -113,39 +113,39 @@ export default function stateModelFactory(pm: PluginManager) {
           /**
            * #property
            */
-          height: defaultHeight,
+          height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
            */
-          borderSize: defaultBorderSize,
+          borderSize: types.stripDefault(types.number, defaultBorderSize),
           /**
            * #property
            */
-          tickSize: defaultTickSize,
+          tickSize: types.stripDefault(types.number, defaultTickSize),
           /**
            * #property
            */
-          vtextRotation: 0,
+          vtextRotation: types.stripDefault(types.number, 0),
           /**
            * #property
            */
-          htextRotation: defaultHtextRotation,
+          htextRotation: types.stripDefault(types.number, defaultHtextRotation),
           /**
            * #property
            */
-          fontSize: defaultFontSize,
+          fontSize: types.stripDefault(types.number, defaultFontSize),
           /**
            * #property
            */
-          trackSelectorType: 'hierarchical',
+          trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
           /**
            * #property
            */
-          assemblyNames: types.array(types.string),
+          assemblyNames: types.stripDefault(types.array(types.string), []),
           /**
            * #property
            */
-          drawCigar: true,
+          drawCigar: types.stripDefault(types.boolean, true),
           /**
            * #property
            * Level-of-detail tier override for PIF adapters. 'auto' uses the
@@ -153,7 +153,7 @@ export default function stateModelFactory(pm: PluginManager) {
            * view-level so all displays render at the same tier and the menu
            * doesn't need to fan out per display.
            */
-          lodMode: types.optional(
+          lodMode: types.stripDefault(
             types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
             'auto',
           ),
@@ -163,14 +163,14 @@ export default function stateModelFactory(pm: PluginManager) {
            * dotplot stays square. Wheel zoom already preserves the ratio;
            * box-zoom and other independent ops trigger an autorun resync.
            */
-          lockAspectRatio: false,
+          lockAspectRatio: types.stripDefault(types.boolean, false),
           /**
            * #property
            * Screen-space line width (CSS pixels) applied to every dotplot
            * display in this view. View-level because the GPU pass renders all
            * displays with one uniform.
            */
-          lineWidth: types.optional(types.number, defaultLineWidth),
+          lineWidth: types.stripDefault(types.number, defaultLineWidth),
           /**
            * #property
            */
@@ -191,7 +191,10 @@ export default function stateModelFactory(pm: PluginManager) {
            * for read vs ref dotplots where this track would not really apply
            * elsewhere
            */
-          viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track')),
+          viewTrackConfigs: types.stripDefault(
+            types.array(pm.pluggableConfigSchemaType('track')),
+            [],
+          ),
           /**
            * #property
            * used for initializing the view from a session snapshot
@@ -202,7 +205,7 @@ export default function stateModelFactory(pm: PluginManager) {
            * translucent highlight bands drawn per-axis: vertical when the
            * region's assembly matches hview, horizontal when it matches vview
            */
-          highlight: types.optional(
+          highlight: types.stripDefault(
             types.array(types.frozen<HighlightType>()),
             [],
           ),
@@ -210,7 +213,7 @@ export default function stateModelFactory(pm: PluginManager) {
            * #property
            * controls whether view.highlight entries are rendered
            */
-          highlightsVisible: types.optional(types.boolean, true),
+          highlightsVisible: types.stripDefault(types.boolean, true),
         }),
       )
       .volatile(() => ({
@@ -1086,49 +1089,13 @@ export default function stateModelFactory(pm: PluginManager) {
         },
       }))
       .postProcessSnapshot(snap => {
+        // init is transient view-setup state, never persisted
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!snap) {
           return snap
         }
-        const {
-          init,
-          height,
-          borderSize,
-          tickSize,
-          vtextRotation,
-          htextRotation,
-          fontSize,
-          trackSelectorType,
-          drawCigar,
-          lodMode,
-          lockAspectRatio,
-          lineWidth,
-          assemblyNames,
-          viewTrackConfigs,
-          highlight,
-          highlightsVisible,
-          ...rest
-        } = snap
-        return {
-          ...rest,
-          ...(height !== defaultHeight ? { height } : {}),
-          ...(borderSize !== defaultBorderSize ? { borderSize } : {}),
-          ...(tickSize !== defaultTickSize ? { tickSize } : {}),
-          ...(vtextRotation ? { vtextRotation } : {}),
-          ...(htextRotation !== defaultHtextRotation ? { htextRotation } : {}),
-          ...(fontSize !== defaultFontSize ? { fontSize } : {}),
-          ...(trackSelectorType !== 'hierarchical'
-            ? { trackSelectorType }
-            : {}),
-          ...(!drawCigar ? { drawCigar } : {}),
-          ...(lodMode !== 'auto' ? { lodMode } : {}),
-          ...(lockAspectRatio ? { lockAspectRatio } : {}),
-          ...(lineWidth !== defaultLineWidth ? { lineWidth } : {}),
-          ...(assemblyNames.length ? { assemblyNames } : {}),
-          ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
-          ...(highlight.length ? { highlight } : {}),
-          ...(!highlightsVisible ? { highlightsVisible } : {}),
-        } as typeof snap
+        const { init, ...rest } = snap
+        return rest as typeof snap
       })
   )
 }

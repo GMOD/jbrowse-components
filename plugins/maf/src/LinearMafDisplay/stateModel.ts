@@ -133,47 +133,65 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        rowHeight: DEFAULTS.rowHeight,
+        rowHeight: types.stripDefault(types.number, DEFAULTS.rowHeight),
         /**
          * #property
          */
-        rowProportion: DEFAULTS.rowProportion,
+        rowProportion: types.stripDefault(types.number, DEFAULTS.rowProportion),
         /**
          * #property
          */
-        showAllLetters: DEFAULTS.showAllLetters,
+        showAllLetters: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showAllLetters,
+        ),
         /**
          * #property
          */
-        mismatchRendering: DEFAULTS.mismatchRendering,
+        mismatchRendering: types.stripDefault(
+          types.boolean,
+          DEFAULTS.mismatchRendering,
+        ),
         /**
          * #property
          */
-        showAsUpperCase: DEFAULTS.showAsUpperCase,
+        showAsUpperCase: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showAsUpperCase,
+        ),
         /**
          * #property
          */
-        showTree: DEFAULTS.showTree,
+        showTree: types.stripDefault(types.boolean, DEFAULTS.showTree),
         /**
          * #property
          * Position tree nodes by their cluster merge height (dendrogram) rather
          * than evenly by topology (cladogram).
          */
-        showBranchLength: DEFAULTS.showBranchLength,
+        showBranchLength: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showBranchLength,
+        ),
         /**
          * #property
          */
-        showCoverage: DEFAULTS.showCoverage,
+        showCoverage: types.stripDefault(types.boolean, DEFAULTS.showCoverage),
         /**
          * #property
          * Show the per-sample alignment rows. When off, only the coverage band
          * renders (independent of `showCoverage`).
          */
-        showAlignments: DEFAULTS.showAlignments,
+        showAlignments: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showAlignments,
+        ),
         /**
          * #property
          */
-        coverageHeight: DEFAULTS.coverageHeight,
+        coverageHeight: types.stripDefault(
+          types.number,
+          DEFAULTS.coverageHeight,
+        ),
       }),
     )
     .volatile(() => ({
@@ -897,46 +915,9 @@ export default function stateModelFactory(
     })
     .postProcessSnapshot(snap => {
       // layout/clusterTree intentionally dropped — both are rebuilt from
-      // worker output on every fetch. The remaining defaults are stripped to
-      // keep saved sessions small.
-      const {
-        rowHeight,
-        rowProportion,
-        showAllLetters,
-        mismatchRendering,
-        treeAreaWidth,
-        showAsUpperCase,
-        showTree,
-        showBranchLength,
-        showCoverage,
-        showAlignments,
-        coverageHeight,
-        subtreeFilter,
-        layout: _layout,
-        clusterTree: _clusterTree,
-        ...rest
-      } = snap
-      return {
-        ...rest,
-        ...(rowHeight !== DEFAULTS.rowHeight && { rowHeight }),
-        ...(rowProportion !== DEFAULTS.rowProportion && { rowProportion }),
-        ...(showAllLetters !== DEFAULTS.showAllLetters && { showAllLetters }),
-        ...(mismatchRendering !== DEFAULTS.mismatchRendering && {
-          mismatchRendering,
-        }),
-        ...(treeAreaWidth !== 80 && { treeAreaWidth }),
-        ...(showAsUpperCase !== DEFAULTS.showAsUpperCase && {
-          showAsUpperCase,
-        }),
-        ...(showTree !== DEFAULTS.showTree && { showTree }),
-        ...(showBranchLength !== DEFAULTS.showBranchLength && {
-          showBranchLength,
-        }),
-        ...(showCoverage !== DEFAULTS.showCoverage && { showCoverage }),
-        ...(showAlignments !== DEFAULTS.showAlignments && { showAlignments }),
-        ...(coverageHeight !== DEFAULTS.coverageHeight && { coverageHeight }),
-        ...(subtreeFilter?.length && { subtreeFilter }),
-      }
+      // worker output on every fetch (unconditional, so not a stripDefault).
+      const { layout: _layout, clusterTree: _clusterTree, ...rest } = snap
+      return rest
     })
 }
 

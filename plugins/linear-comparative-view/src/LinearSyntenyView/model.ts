@@ -61,55 +61,55 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        cigarMode: types.optional(
+        cigarMode: types.stripDefault(
           types.enumeration(['off', 'matches', 'full']),
           'full',
         ),
         /**
          * #property
          */
-        drawCurves: false,
+        drawCurves: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        drawLocationMarkers: false,
+        drawLocationMarkers: types.stripDefault(types.boolean, false),
         /**
          * #property
          * pixels beyond the visible viewport edge that synteny lines are still drawn
          */
-        overdrawPx: DEFAULT_OVERDRAW_PX,
+        overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX),
         /**
          * #property
          */
-        alpha: types.optional(types.number, 0.2),
+        alpha: types.stripDefault(types.number, 0.2),
         /**
          * #property
          * Hide alignment blocks shorter than this many bp. Enforced per-feature
          * by its own span in buildSyntenyGeometry, then culled in the shader
          * (isCulled) and pick engine. Cuts whole-genome hairball noise.
          */
-        minAlignmentLength: types.optional(types.number, 0),
+        minAlignmentLength: types.stripDefault(types.number, 0),
         /**
          * #property
          * Level-of-detail tier selection for PIF adapters. 'auto' uses the
          * adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier
          * (t/q); 'coarse' forces the no-CIGAR tier (T/Q) when present.
          */
-        lodMode: types.optional(
+        lodMode: types.stripDefault(
           types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
           'auto',
         ),
         /**
          * #property
          */
-        colorBy: types.optional(types.string, 'default'),
+        colorBy: types.stripDefault(types.string, 'default'),
         /**
          * #property
          * Fade alignment blocks by per-feature identity (lower identity = more
          * transparent). Orthogonal to colorBy — surfaces identity-dropoff zones
          * without consuming the color channel.
          */
-        opacityByIdentity: types.optional(types.boolean, false),
+        opacityByIdentity: types.stripDefault(types.boolean, false),
         /**
          * #property
          * used for initializing the view from a session snapshot. tracks is
@@ -684,35 +684,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
+      // init is transient view-setup state, never persisted
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const {
-        init,
-        cigarMode,
-        drawCurves,
-        drawLocationMarkers,
-        overdrawPx,
-        lodMode,
-        alpha,
-        minAlignmentLength,
-        colorBy,
-        opacityByIdentity,
-        ...rest
-      } = snap
-      return {
-        ...rest,
-        ...(cigarMode !== 'full' ? { cigarMode } : {}),
-        ...(drawCurves ? { drawCurves } : {}),
-        ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
-        ...(overdrawPx !== DEFAULT_OVERDRAW_PX ? { overdrawPx } : {}),
-        ...(lodMode !== 'auto' ? { lodMode } : {}),
-        ...(alpha !== 0.2 ? { alpha } : {}),
-        ...(minAlignmentLength ? { minAlignmentLength } : {}),
-        ...(colorBy !== 'default' ? { colorBy } : {}),
-        ...(opacityByIdentity ? { opacityByIdentity } : {}),
-      } as typeof snap
+      const { init, ...rest } = snap
+      return rest as typeof snap
     })
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>

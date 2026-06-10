@@ -59,7 +59,7 @@ export default function stateModelFactory(
   return baseStateModelFactory(configSchema)
     .props({
       type: types.literal('LinearBasicDisplay'),
-      showOnlyGenes: false,
+      showOnlyGenes: types.stripDefault(types.boolean, false),
     })
     .views(self => ({
       get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
@@ -259,13 +259,6 @@ export default function stateModelFactory(
             },
           ]
         },
-      }
-    })
-    .postProcessSnapshot(snap => {
-      const { showOnlyGenes, ...rest } = snap
-      return {
-        ...rest,
-        ...(showOnlyGenes && { showOnlyGenes }),
       }
     })
 }

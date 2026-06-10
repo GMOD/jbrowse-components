@@ -85,15 +85,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        showForward: true,
+        showForward: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
-        showReverse: true,
+        showReverse: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
-        showTranslation: true,
+        showTranslation: types.stripDefault(types.boolean, true),
       }),
     )
     .volatile(() => ({
@@ -353,15 +353,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           : []
       },
     }))
-    .postProcessSnapshot(snap => {
-      const { showForward, showReverse, showTranslation, ...rest } = snap
-      return {
-        ...rest,
-        ...(showForward ? {} : { showForward }),
-        ...(showReverse ? {} : { showReverse }),
-        ...(showTranslation ? {} : { showTranslation }),
-      } as typeof snap // cast: omitted fields default to true, which is correct
-    })
 }
 
 export type LinearReferenceSequenceDisplayStateModel = ReturnType<

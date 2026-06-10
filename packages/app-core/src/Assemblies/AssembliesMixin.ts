@@ -25,11 +25,17 @@ export function AssembliesMixin(
       /**
        * #property
        */
-      sessionAssemblies: types.array(assemblyConfigSchemasType),
+      sessionAssemblies: types.stripDefault(
+        types.array(assemblyConfigSchemasType),
+        [],
+      ),
       /**
        * #property
        */
-      temporaryAssemblies: types.array(assemblyConfigSchemasType),
+      temporaryAssemblies: types.stripDefault(
+        types.array(assemblyConfigSchemasType),
+        [],
+      ),
     })
     .actions(s => {
       const self = s as typeof s & BaseSession
@@ -127,16 +133,4 @@ export function AssembliesMixin(
         return self.assemblies.map(a => readConfObject(a, 'name'))
       },
     }))
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { sessionAssemblies, temporaryAssemblies, ...rest } = snap
-      return {
-        ...rest,
-        ...(sessionAssemblies.length ? { sessionAssemblies } : {}),
-        ...(temporaryAssemblies.length ? { temporaryAssemblies } : {}),
-      } as typeof snap
-    })
 }

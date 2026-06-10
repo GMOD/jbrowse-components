@@ -38,12 +38,15 @@ export function DockviewLayoutMixin() {
        * #property
        * Serialized dockview layout state
        */
-      dockviewLayout: types.maybe(types.frozen<SerializedDockview>()),
+      dockviewLayout: types.stripDefault(
+        types.maybe(types.frozen<SerializedDockview>()),
+        undefined,
+      ),
       /**
        * #property
        * Maps panel IDs to arrays of view IDs (for stacking views within a panel)
        */
-      panelViewAssignments: types.optional(
+      panelViewAssignments: types.stripDefault(
         types.map(types.array(types.string)),
         {},
       ),
@@ -62,7 +65,7 @@ export function DockviewLayoutMixin() {
        * #property
        * The currently active panel ID in dockview
        */
-      activePanelId: types.maybe(types.string),
+      activePanelId: types.stripDefault(types.maybe(types.string), undefined),
     })
     .views(self => ({
       /**
@@ -206,28 +209,14 @@ export function DockviewLayoutMixin() {
       },
     }))
     .postProcessSnapshot(snap => {
+      // init/pendingMove are transient, processed once then cleared, never
+      // persisted (unconditional drop, so not a stripDefault)
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const {
-        dockviewLayout,
-        panelViewAssignments,
-        init: _init,
-        pendingMove: _pendingMove,
-        activePanelId,
-        ...rest
-      } = snap
-      return {
-        ...rest,
-        ...(dockviewLayout !== undefined ? { dockviewLayout } : {}),
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(panelViewAssignments && Object.keys(panelViewAssignments).length
-          ? { panelViewAssignments }
-          : {}),
-        ...(activePanelId !== undefined ? { activePanelId } : {}),
-      } as typeof snap
+      const { init: _init, pendingMove: _pendingMove, ...rest } = snap
+      return rest as typeof snap
     })
 }
 

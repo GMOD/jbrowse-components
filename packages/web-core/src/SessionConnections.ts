@@ -36,8 +36,9 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
         /**
          * #property
          */
-        sessionConnections: types.array(
-          pluginManager.pluggableConfigSchemaType('connection'),
+        sessionConnections: types.stripDefault(
+          types.array(pluginManager.pluggableConfigSchemaType('connection')),
+          [],
         ),
       }),
     )
@@ -86,16 +87,5 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
           }
         },
       }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { sessionConnections, ...rest } = snap
-      return {
-        ...rest,
-        ...(sessionConnections.length ? { sessionConnections } : {}),
-      } as typeof snap
     })
 }

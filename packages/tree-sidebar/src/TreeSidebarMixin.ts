@@ -10,10 +10,13 @@ export function TreeSidebarMixin<
 >() {
   return types
     .model({
-      layout: types.optional(types.frozen<S[]>(), []),
-      clusterTree: types.maybe(types.string),
-      treeAreaWidth: types.optional(types.number, 80),
-      subtreeFilter: types.maybe(types.array(types.string)),
+      layout: types.stripDefault(types.frozen<S[]>(), []),
+      clusterTree: types.stripDefault(types.maybe(types.string), undefined),
+      treeAreaWidth: types.stripDefault(types.number, 80),
+      subtreeFilter: types.stripDefault(
+        types.maybe(types.array(types.string)),
+        undefined,
+      ),
     })
     .volatile(() => ({
       hoveredTreeNode: undefined as HoveredTreeNode | undefined,
@@ -71,7 +74,8 @@ export function TreeSidebarMixin<
         self.treeAreaWidth = width
       },
       setSubtreeFilter(names?: string[]) {
-        self.subtreeFilter = names ? cast(names) : undefined
+        // normalize empty to undefined so the field has a single stripped state
+        self.subtreeFilter = names?.length ? cast(names) : undefined
       },
       setHoveredTreeNode(node?: HoveredTreeNode) {
         self.hoveredTreeNode = node
