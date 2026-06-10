@@ -1,6 +1,10 @@
 import type React from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession, isFeature, openFeatureWidget } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -11,7 +15,10 @@ import {
 
 import { migrateArcSnapshot } from './migrate.ts'
 
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type {
+  LinearArcDisplayConfig,
+  LinearArcDisplayConfigModel,
+} from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -43,7 +50,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
+export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
   return types
     .compose(
       'LinearArcDisplay',
@@ -77,6 +84,17 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => ({
       /**
        * #getter
+       * the config typed off the concrete schema; `ConfigurationReference`
+       * erases `self.configuration` to `any`, so reads route through this to
+       * stay typed (same move as `BaseAdapter<CONF>`)
+       */
+      get conf(): LinearArcDisplayConfig {
+        return self.configuration
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        */
       get fetchSettled() {
         return (
@@ -87,7 +105,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get displayMode() {
-        return self.displayModeOverride ?? getConf(self, 'displayMode')
+        return (
+          self.displayModeOverride ?? readConfObject(self.conf, 'displayMode')
+        )
       },
       /**
        * #getter
@@ -96,12 +116,18 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * positions) doesn't re-run these jexl expressions per feature per frame.
        */
       get arcStyles() {
+        // thickness/arcHeight are numeric slots with jexl-string defaults; the
+        // slot's declared `type: 'number'` is erased by the time it reaches the
+        // value-type derivation (only the jexl default string survives, as
+        // `string`), so a typed `self.conf` read would mistype them as string.
+        // They stay on the untyped `getConf` read; the string-valued slots use
+        // the typed `self.conf`.
         return self.features?.map(feature => ({
           feature,
-          color: getConf(self, 'color', { feature }),
+          color: readConfObject(self.conf, 'color', { feature }),
           thickness: getConf(self, 'thickness', { feature }) ?? 2,
-          label: getConf(self, 'label', { feature }),
-          caption: getConf(self, 'caption', { feature }),
+          label: readConfObject(self.conf, 'label', { feature }),
+          caption: readConfObject(self.conf, 'caption', { feature }),
           arcHeight: Math.min(
             getConf(self, 'arcHeight', { feature }) ?? 100,
             self.height,

@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/alignments-core'
 import {
   ConfigurationReference,
-  getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
@@ -51,6 +50,7 @@ import type {
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type { MafSummaryRecord, Sample } from '../types.ts'
+import type { LinearMafDisplayConfig } from './configSchema.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -376,6 +376,17 @@ export default function stateModelFactory(
         },
       }
     })
+    .views(self => ({
+      /**
+       * #getter
+       * the config typed off the concrete schema; `ConfigurationReference`
+       * erases `self.configuration` to `any`, so direct reads route through this
+       * to stay typed (same move as `BaseAdapter<CONF>`)
+       */
+      get conf(): LinearMafDisplayConfig {
+        return self.configuration
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -930,7 +941,7 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LinearGenomeViewModel
         return {
           adapterConfig: self.adapterConfig,
-          fetchSizeLimit: getConf(self, 'fetchSizeLimit'),
+          fetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),
           userByteSizeLimit: self.userByteSizeLimit,
           visibleBp: view.visibleBp,
         }

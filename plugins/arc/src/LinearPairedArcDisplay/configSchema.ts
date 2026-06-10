@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config LinearPairedArcDisplay
  */
@@ -27,3 +29,9 @@ export function configSchemaFactory() {
     },
   )
 }
+
+export type LinearPairedArcDisplayConfigModel = ReturnType<
+  typeof configSchemaFactory
+>
+export type LinearPairedArcDisplayConfig =
+  Instance<LinearPairedArcDisplayConfigModel>

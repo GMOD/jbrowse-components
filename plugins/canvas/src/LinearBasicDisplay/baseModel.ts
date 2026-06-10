@@ -47,7 +47,6 @@ import { createIncrementalLayout } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
-
 import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type {
   DisplayConfig,
@@ -201,6 +200,18 @@ export default function baseStateModelFactory(
         // O(N). The volatile holds a stable reference; mutating its internal
         // cache is invisible to MobX, so reading it in the computed is safe.
         incrementalLayout: createIncrementalLayout(),
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * the config typed off the concrete schema; `ConfigurationReference`
+         * erases `self.configuration` to `any`, so direct reads route through
+         * this to stay typed (same move as `BaseAdapter<CONF>`). The
+         * override-aware reads use `getConfWithOverride` instead.
+         */
+        get conf(): LinearBasicDisplayConfigModel {
+          return self.configuration
+        },
       }))
       .views(self => ({
         /**
@@ -498,7 +509,7 @@ export default function baseStateModelFactory(
           const limit =
             self.userByteSizeLimit ??
             stats.fetchSizeLimit ??
-            (getConf(self, 'fetchSizeLimit') as number)
+            readConfObject(self.conf, 'fetchSizeLimit')
           return stats.bytes > limit
         },
 
@@ -848,7 +859,7 @@ export default function baseStateModelFactory(
             const baseline =
               observedMax > 0
                 ? observedMax
-                : (getConf(self, 'maxFeatureScreenDensity') as number)
+                : readConfObject(self.conf, 'maxFeatureScreenDensity')
             self.userFeatureDensityLimit = Math.ceil(baseline * 1.5)
           }
           // Derived regionTooLarge recomputes once the limit changes — no

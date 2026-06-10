@@ -4,6 +4,8 @@ import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-vie
 
 import { migrateLegacyArcRendererConfig } from './migrate.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config LinearArcDisplay
  */
@@ -77,3 +79,6 @@ export function configSchemaFactory() {
     },
   )
 }
+
+export type LinearArcDisplayConfigModel = ReturnType<typeof configSchemaFactory>
+export type LinearArcDisplayConfig = Instance<LinearArcDisplayConfigModel>

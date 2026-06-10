@@ -1,6 +1,9 @@
 import type React from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -11,7 +14,10 @@ import {
 
 import { makeFeaturePair } from './components/util.ts'
 
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type {
+  LinearPairedArcDisplayConfig,
+  LinearPairedArcDisplayConfigModel,
+} from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -42,7 +48,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
+export function stateModelFactory(
+  configSchema: LinearPairedArcDisplayConfigModel,
+) {
   return types
     .compose(
       'LinearPairedArcDisplay',
@@ -66,6 +74,17 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 
     .views(self => ({
+      /**
+       * #getter
+       * the config typed off the concrete schema; `ConfigurationReference`
+       * erases `self.configuration` to `any`, so reads route through this to
+       * stay typed (same move as `BaseAdapter<CONF>`)
+       */
+      get conf(): LinearPairedArcDisplayConfig {
+        return self.configuration
+      },
+    }))
+    .views(self => ({
       get fetchSettled() {
         return (
           self.features !== undefined || !!self.error || self.regionTooLarge
@@ -83,7 +102,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const make = (alt: string | undefined) => ({
             feature,
             alt,
-            color: getConf(self, 'color', { feature, alt }),
+            color: readConfObject(self.conf, 'color', { feature, alt }),
             ...makeFeaturePair(feature, alt),
           })
           return alts?.length ? alts.map(alt => make(alt)) : [make(undefined)]
