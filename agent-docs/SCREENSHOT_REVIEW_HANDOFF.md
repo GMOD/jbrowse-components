@@ -1,5 +1,13 @@
 # Screenshot-review handoff (webgl-poc)
 
+> **STATUS UPDATE:** the "REMAINING (not done)" items below have largely been
+> completed in a later session — arc_display, compact, track_arcs, modifications1,
+> cnv, horizontally_flip, breakpoint_split_view, sv_cgiab/cnv_show_all_regions,
+> bigwig/whole_genome_coverage are all done + verified. See
+> `SCREENSHOT_REVIEW_NEXT_STEPS.md` for the current authoritative state; only
+> `multisv` (keep-decision), `alignments_sort_by_base`, and `rnaseq/compact_stacked`
+> remain. Treat the sections below as historical.
+
 Working through the "bad" verdicts in `website/scripts/screenshot-review.json`.
 Specs live in `website/scripts/screenshot-specs.ts`; generator is
 `website/scripts/generate-screenshots.ts`. **This doc supersedes the open items
