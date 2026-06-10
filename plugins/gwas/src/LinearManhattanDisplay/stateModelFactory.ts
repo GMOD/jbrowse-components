@@ -92,6 +92,7 @@ export function stateModelFactory(
       flatbushes: observable.map<number, Flatbush>(),
       // Currently hovered point — drives the hover circle + tooltip.
       featureUnderMouse: undefined as ManhattanHit | undefined,
+      showLdLegend: true,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -242,6 +243,9 @@ export function stateModelFactory(
       setFeatureUnderMouse(hit: ManhattanHit | undefined) {
         self.featureUnderMouse = hit
       },
+      setShowLdLegend(val: boolean) {
+        self.showLdLegend = val
+      },
       setColorBy(mode: 'normal' | 'ld') {
         self.setOverride('colorBy', mode)
       },
@@ -279,6 +283,15 @@ export function stateModelFactory(
         return [
           makeScoreSubMenu(self, { scaleType: false }),
           makeCrossHatchItem(self),
+          {
+            label: 'Show LD legend',
+            type: 'checkbox' as const,
+            checked: self.showLdLegend,
+            disabled: self.colorBy !== 'ld',
+            onClick: () => {
+              self.setShowLdLegend(!self.showLdLegend)
+            },
+          },
           {
             label: 'Color by LD to index SNP',
             type: 'checkbox' as const,

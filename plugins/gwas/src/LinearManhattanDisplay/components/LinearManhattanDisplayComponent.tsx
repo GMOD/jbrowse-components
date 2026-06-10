@@ -131,7 +131,7 @@ const ManhattanBody = observer(function ManhattanBody({
 }) {
   const { ticks, featureUnderMouse, displayCrossHatches, colorBy } = model
   const scalebarLeft = model.scalebarOverlapLeft
-  const ldMode = colorBy === 'ld' && model.canvasDrawn
+  const ldMode = colorBy === 'ld' && model.canvasDrawn && model.showLdLegend
 
   return (
     <>
@@ -163,7 +163,14 @@ const ManhattanBody = observer(function ManhattanBody({
           height={height}
         />
       ) : null}
-      {ldMode ? <LdColorLegend offsetTop={YSCALEBAR_LABEL_OFFSET} /> : null}
+      {ldMode ? (
+        <LdColorLegend
+          offsetTop={YSCALEBAR_LABEL_OFFSET}
+          onDismiss={() => {
+            model.setShowLdLegend(false)
+          }}
+        />
+      ) : null}
       {model.indexSnpMissing ? (
         <LdIndexWarning offsetTop={YSCALEBAR_LABEL_OFFSET} />
       ) : null}

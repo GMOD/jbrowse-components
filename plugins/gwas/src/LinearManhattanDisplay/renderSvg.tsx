@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/wiggle-core'
 
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
+import { LD_LEGEND } from './ldBins.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -33,6 +34,8 @@ interface RenderSvgModel {
   renderState?: ManhattanRenderState
   error: unknown
   regionTooLarge: boolean
+  colorBy: 'normal' | 'ld'
+  showLdLegend: boolean
 }
 
 export async function renderSvg(
@@ -64,6 +67,43 @@ export async function renderSvg(
     </g>
   ) : null
 
+  const ROW_H = 14
+  const SWATCH = 10
+  const ldLegendEl =
+    model.colorBy === 'ld' && model.showLdLegend ? (
+      <g
+        transform={`translate(${view.width - 84},${YSCALEBAR_LABEL_OFFSET + 4})`}
+      >
+        <rect
+          x={-4}
+          y={-4}
+          width={88}
+          height={ROW_H + LD_LEGEND.length * ROW_H + 4}
+          fill="rgba(255,255,255,0.85)"
+          stroke="#ccc"
+          strokeWidth={0.5}
+          rx={2}
+        />
+        <text fontSize={10} fontWeight="bold" y={ROW_H - 4}>
+          r² to index
+        </text>
+        {LD_LEGEND.map(({ label, color }, i) => (
+          <g key={label} transform={`translate(0,${ROW_H + i * ROW_H})`}>
+            <rect
+              width={SWATCH}
+              height={SWATCH}
+              fill={color}
+              stroke="rgba(0,0,0,0.2)"
+              strokeWidth={0.5}
+            />
+            <text fontSize={10} x={SWATCH + 4} y={SWATCH - 1}>
+              {label}
+            </text>
+          </g>
+        ))}
+      </g>
+    ) : null
+
   const totalWidth = view.totalWidthPx
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   // SVG export spans all visible regions side-by-side, so canvasWidth is
@@ -88,6 +128,7 @@ export async function renderSvg(
         {manhattanNode}
       </SvgClipRect>
       {legendEl}
+      {ldLegendEl}
     </>
   )
 }

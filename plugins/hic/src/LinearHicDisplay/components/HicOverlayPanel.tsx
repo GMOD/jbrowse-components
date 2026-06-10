@@ -1,3 +1,5 @@
+import CloseIcon from '@mui/icons-material/Close'
+import IconButton from '@mui/material/IconButton'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getNiceScale } from '@jbrowse/wiggle-core'
@@ -62,6 +64,10 @@ const useStyles = makeStyles()({
     textDecoration: 'underline',
     textDecorationStyle: 'dotted',
   },
+  legendHeader: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
 })
 
 const HicOverlayPanel = observer(function HicOverlayPanel({
@@ -97,6 +103,17 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     <div className={classes.panel}>
       {showLegendArea ? (
         <div>
+          <div className={classes.legendHeader}>
+            <IconButton
+              size="small"
+              title="Hide legend"
+              onClick={() => {
+                model.setShowLegend(false)
+              }}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          </div>
           <div
             className={classes.gradientBar}
             style={{ background: getLegendCssGradient(colorScheme) }}
