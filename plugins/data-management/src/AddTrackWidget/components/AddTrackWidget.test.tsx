@@ -195,6 +195,8 @@ test('TextIndexingConfig adds a trimmed value on Enter and de-duplicates', () =>
   fireEvent.change(attributesInput!, { target: { value: 'Parent' } })
   fireEvent.keyDown(attributesInput!, { key: 'Enter' })
   expect(
-    model.textIndexingConf?.attributes.filter(attr => attr === 'Parent'),
+    model.textIndexingConf?.attributes.filter(
+      (attr: string) => attr === 'Parent',
+    ),
   ).toHaveLength(1)
 })

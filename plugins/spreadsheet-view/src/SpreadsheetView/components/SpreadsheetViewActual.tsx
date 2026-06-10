@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -27,7 +25,6 @@ const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
 }: {
   model: SpreadsheetViewModel
 }) {
-  const [initialHeight, setInitialHeight] = useState(0)
   const { classes } = useStyles()
   const { spreadsheet, hideVerticalResizeHandle, height } = model
   return spreadsheet ? (
@@ -37,10 +34,7 @@ const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
       </div>
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle
-          onMouseDown={() => {
-            setInitialHeight(height)
-          }}
-          onDrag={(_, dist) => model.setHeight(initialHeight - dist)}
+          onDrag={delta => model.setHeight(height - delta)}
           className={classes.resizeHandle}
         />
       )}
