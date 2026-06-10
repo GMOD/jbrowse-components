@@ -1,8 +1,8 @@
-import CloseIcon from '@mui/icons-material/Close'
-import IconButton from '@mui/material/IconButton'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getNiceScale } from '@jbrowse/wiggle-core'
+import CloseIcon from '@mui/icons-material/Close'
+import IconButton from '@mui/material/IconButton'
 import { observer } from 'mobx-react'
 
 import { getLegendCssGradient } from './colorRamp.ts'

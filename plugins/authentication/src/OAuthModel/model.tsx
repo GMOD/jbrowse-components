@@ -1,4 +1,7 @@
-import { ConfigurationReference, readConfObject } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron, sha256Base64Url, toBase64Url } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'

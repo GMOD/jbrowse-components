@@ -85,7 +85,9 @@ function SessionNameCell({
           {
             label: 'Show in folder',
             onClick: () => {
-              ipcRenderer.invoke('showItemInFolder', row.path).catch(console.error)
+              ipcRenderer
+                .invoke('showItemInFolder', row.path)
+                .catch(console.error)
             },
           },
         ]}

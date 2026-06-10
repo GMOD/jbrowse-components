@@ -1,13 +1,12 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-
-import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { readOptionalMetadata } from '../chromSizesUtils.ts'
 
+import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 

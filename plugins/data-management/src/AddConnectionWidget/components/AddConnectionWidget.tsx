@@ -50,7 +50,10 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
 
   // useMemo is needed for react@18+mobx-react@9, previous code called configSchema.create directly in a setConfigModel useState hook setter but this caused infinite loop
   const { configModel, defaultSnapshot } = useMemo(() => {
-    const m = connectionType.configSchema.create({ connectionId }, getEnv(model))
+    const m = connectionType.configSchema.create(
+      { connectionId },
+      getEnv(model),
+    )
     return { configModel: m, defaultSnapshot: JSON.stringify(getSnapshot(m)) }
   }, [connectionId, connectionType, model])
 
@@ -106,7 +109,9 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
                         const conf = session.addConnectionConf(configModel)
                         session.makeConnection(conf)
                       } else {
-                        session.notify('This session does not support connections')
+                        session.notify(
+                          'This session does not support connections',
+                        )
                       }
 
                       if (isSessionModelWithWidgets(session)) {

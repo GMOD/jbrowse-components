@@ -32,7 +32,10 @@ function getSession() {
   return { session, model }
 }
 
-function pasteUrls(getByLabelText: (text: RegExp) => HTMLElement, urls: string) {
+function pasteUrls(
+  getByLabelText: (text: RegExp) => HTMLElement,
+  urls: string,
+) {
   fireEvent.change(getByLabelText(/File URLs/), { target: { value: urls } })
 }
 

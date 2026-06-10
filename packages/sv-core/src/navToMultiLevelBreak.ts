@@ -55,7 +55,9 @@ export async function navToMultiLevelBreak({
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          tracks: stripTrackIds(mirror ? [...viewTracks].reverse() : viewTracks),
+          tracks: stripTrackIds(
+            mirror ? [...viewTracks].reverse() : viewTracks,
+          ),
         },
       ],
     }) as unknown as BreakpointSplitView

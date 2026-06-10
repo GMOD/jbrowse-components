@@ -24,7 +24,8 @@ pluginManager.addConnectionType(
       configSchema: myConfigSchema,
       stateModel: myModelFactory(pluginManager),
       displayName: 'My Awesome Connection',
-      description: 'Add tracks to JBrowse from data in the myAwesomeData format',
+      description:
+        'Add tracks to JBrowse from data in the myAwesomeData format',
       url: '//mysite.com/info',
     }),
 )
@@ -35,8 +36,8 @@ pluginManager.addConnectionType(
 - `name`: the name JBrowse uses internally and in configuration files to refer
   to this type of connection
 - `configSchema`: a
-  [configuration schema](/docs/developer_guides/configuration_schema) for
-  the connection. It defines the options a user can configure when adding the
+  [configuration schema](/docs/developer_guides/configuration_schema) for the
+  connection. It defines the options a user can configure when adding the
   connection, and must at least have a `name` slot.
 - `stateModel`: the `@jbrowse/mobx-state-tree` model that does the queries and
   creates tracks (see below).
@@ -58,9 +59,9 @@ understand the connection they are adding:
 
 ## State model
 
-The state model composes `BaseConnectionModelFactory` and implements `connect()`,
-which reads the connection's configuration, fetches the data, and adds the
-resulting tracks:
+The state model composes `BaseConnectionModelFactory` and implements
+`connect()`, which reads the connection's configuration, fetches the data, and
+adds the resulting tracks:
 
 ```js
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'

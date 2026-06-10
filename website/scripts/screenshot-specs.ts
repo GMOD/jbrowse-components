@@ -1801,9 +1801,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'hover', text: 'Open bookmark widget' },
       { type: 'delay', ms: 800 },
     ],
-    annotations: [
-      { type: 'circle', anchor: { text: 'Open bookmark widget' } },
-    ],
+    annotations: [{ type: 'circle', anchor: { text: 'Open bookmark widget' } }],
   },
 
   // Rubberband context menu with "Bookmark region" option visible.

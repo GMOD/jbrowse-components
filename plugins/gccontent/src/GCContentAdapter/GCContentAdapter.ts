@@ -1,6 +1,4 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-
-import type { GCContentAdapterConfig } from './configSchema.ts'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
@@ -8,6 +6,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
+import type { GCContentAdapterConfig } from './configSchema.ts'
 import type {
   BaseOptions,
   BaseSequenceAdapter,

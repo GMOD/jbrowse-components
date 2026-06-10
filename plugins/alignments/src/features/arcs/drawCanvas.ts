@@ -163,7 +163,9 @@ export function drawArcs(
     const bp = region.arcLinePositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const colorIdx = region.arcLineColorTypes[i]!
-    ctx.strokeStyle = rgb255(arcColorPalette[colorIdx % arcColorPalette.length]!)
+    ctx.strokeStyle = rgb255(
+      arcColorPalette[colorIdx % arcColorPalette.length]!,
+    )
     ctx.beginPath()
     ctx.moveTo(x, arcsTop)
     ctx.lineTo(x, arcsTop + arcsH)

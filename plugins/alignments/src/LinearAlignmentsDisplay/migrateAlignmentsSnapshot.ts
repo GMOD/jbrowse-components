@@ -229,7 +229,9 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
 
   const overrides: Record<string, unknown> = {}
   const set = (key: string, val: unknown) => {
-    if (val !== undefined) overrides[key] = val
+    if (val !== undefined) {
+      overrides[key] = val
+    }
   }
 
   set('colorBy', colorBySetting)

@@ -22,9 +22,7 @@ const NumberMapEditor = observer(function NumberMapEditor({
       setMap={val => {
         slot.set(val)
       }}
-      renderValue={(val, set) => (
-        <NumberEditor slot={{ value: val, set }} />
-      )}
+      renderValue={(val, set) => <NumberEditor slot={{ value: val, set }} />}
     />
   )
 })

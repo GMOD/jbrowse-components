@@ -1,7 +1,10 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './baseConnectionConfig.ts'
-import { ConfigurationReference, readConfObject } from '../../configuration/index.ts'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '../../configuration/index.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'

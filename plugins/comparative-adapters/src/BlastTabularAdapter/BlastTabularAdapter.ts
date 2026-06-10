@@ -8,7 +8,6 @@ import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { getAssemblyNamesFromConf } from '../util.ts'
 
 import type { BlastTabularAdapterConfig } from './configSchema.ts'
-
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 

@@ -79,6 +79,8 @@ export default defineConfig(
       'website/static',
 
       'website/.astro',
+      'website/.prettierrc.mjs',
+      'website/astro.config.mjs',
       'docs',
       'benchmarks',
       'auth_test_utils',

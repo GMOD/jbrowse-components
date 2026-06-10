@@ -1,8 +1,6 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-
-import type { SplitVcfTabixAdapterConfig } from './configSchema.ts'
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -10,6 +8,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import VcfFeature from '../VcfFeature/index.ts'
 import { parseSamplesTsv } from '../shared/parseSamplesTsv.ts'
 
+import type { SplitVcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'

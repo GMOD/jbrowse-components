@@ -11,10 +11,10 @@ import {
   parseGtf,
 } from '../util.ts'
 
+import type { GtfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-import type { GtfTabixAdapterConfig } from './configSchema.ts'
 import type { Observer } from 'rxjs'
 
 interface GtfLine {

@@ -1,9 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { Instance } from '@jbrowse/mobx-state-tree'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config GCContentAdapter

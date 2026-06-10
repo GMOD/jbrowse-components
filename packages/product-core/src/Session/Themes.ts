@@ -1,8 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import {
-  createJBrowseThemeFromArgs,
-  defaultThemes,
-} from '@jbrowse/core/ui'
+import { createJBrowseThemeFromArgs, defaultThemes } from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'

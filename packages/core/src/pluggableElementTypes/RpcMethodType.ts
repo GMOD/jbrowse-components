@@ -119,7 +119,10 @@ function isStructuredClonePassthrough(thing: object): boolean {
 // arrays, Blobs, the SAB stop token...) pass through by reference unchanged; a
 // genuinely non-cloneable value that leaked in by mistake is surfaced at the
 // worker postMessage boundary (real structuredClone) in production.
-function ownArgs(thing: unknown, seen = new WeakMap<object, unknown>()): unknown {
+function ownArgs(
+  thing: unknown,
+  seen = new WeakMap<object, unknown>(),
+): unknown {
   if (!thing || typeof thing !== 'object') {
     return thing
   }

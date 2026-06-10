@@ -97,7 +97,9 @@ export function migrateBasicSnapshot(
 
   const migrated: Record<string, unknown> = {}
   const set = (key: string, val: unknown) => {
-    if (val !== undefined) migrated[key] = val
+    if (val !== undefined) {
+      migrated[key] = val
+    }
   }
 
   set('color', color ?? color1)

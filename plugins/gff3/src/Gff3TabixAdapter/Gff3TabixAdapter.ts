@@ -7,12 +7,12 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { extractType, parseRecordsJBrowse } from 'gff-nostream'
 
+import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
 import type { LineRecord } from 'gff-nostream'
 import type { Observer } from 'rxjs'
-import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAdapterConfig> {
   private configured?: Promise<{

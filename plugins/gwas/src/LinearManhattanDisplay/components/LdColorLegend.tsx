@@ -1,11 +1,11 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { LD_LEGEND } from '../ldBins.ts'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   container: {
     position: 'absolute',
     right: 4,
@@ -35,7 +35,7 @@ const useStyles = makeStyles()(theme => ({
     marginRight: 4,
     border: '1px solid rgba(0,0,0,0.2)',
   },
-}))
+})
 
 // LocusZoom-style r² key, shown when the display colors points by LD to the
 // index SNP. Positioned top-right over the plot, like LocusZoom.

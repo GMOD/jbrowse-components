@@ -12,10 +12,10 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import VcfFeature from '../VcfFeature/index.ts'
 import { parseSamplesTsv } from '../shared/parseSamplesTsv.ts'
 
+import type { VcfAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StatusCallback } from '@jbrowse/core/util/parseLineByLine'
-import type { VcfAdapterConfig } from './configSchema.ts'
 
 export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig> {
   private vcfFeatures?: Promise<{

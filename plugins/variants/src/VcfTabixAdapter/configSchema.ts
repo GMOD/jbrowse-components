@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

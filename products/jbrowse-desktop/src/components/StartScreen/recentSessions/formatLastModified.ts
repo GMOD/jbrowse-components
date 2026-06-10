@@ -15,7 +15,10 @@ export function formatLastModified(updated: number | undefined, now: number) {
   const date = new Date(updated)
   const absolute = date.toLocaleString('en-US')
   return {
-    label: now - updated < oneDayMs ? formatDistanceToNow(date, { addSuffix: true }) : absolute,
+    label:
+      now - updated < oneDayMs
+        ? formatDistanceToNow(date, { addSuffix: true })
+        : absolute,
     tooltip: absolute,
   }
 }

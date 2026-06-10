@@ -8,7 +8,6 @@ import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { getAssemblyNamesFromConf, pafIdentity, parsePAFLine } from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'

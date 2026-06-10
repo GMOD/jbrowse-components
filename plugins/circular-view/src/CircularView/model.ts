@@ -119,7 +119,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        minimumRadiusPx: types.stripDefault(types.number, defaultMinimumRadiusPx),
+        minimumRadiusPx: types.stripDefault(
+          types.number,
+          defaultMinimumRadiusPx,
+        ),
         /**
          * #property
          */
@@ -131,7 +134,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        minVisibleWidth: types.stripDefault(types.number, defaultMinVisibleWidth),
+        minVisibleWidth: types.stripDefault(
+          types.number,
+          defaultMinVisibleWidth,
+        ),
         /**
          * #property
          */

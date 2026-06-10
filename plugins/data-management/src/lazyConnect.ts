@@ -15,9 +15,13 @@ export interface ConnectionDoConnectArg {
  * StrictMode double-mount disposes the first rootModel). `doConnect` walks up
  * to the session, which requires a live node.
  */
-export async function lazyConnect<T extends ConnectionDoConnectArg & IAnyStateTreeNode>(
+export async function lazyConnect<
+  T extends ConnectionDoConnectArg & IAnyStateTreeNode,
+>(
   self: T,
-  loadDoConnect: () => Promise<{ doConnect: (self: ConnectionDoConnectArg) => unknown }>,
+  loadDoConnect: () => Promise<{
+    doConnect: (self: ConnectionDoConnectArg) => unknown
+  }>,
 ) {
   const { doConnect } = await loadDoConnect()
   if (isAlive(self)) {
