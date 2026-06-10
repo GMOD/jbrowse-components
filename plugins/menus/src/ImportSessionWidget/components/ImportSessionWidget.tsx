@@ -58,13 +58,28 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
     multiple: false,
     onDrop: async (acceptedFiles, rejectedFiles) => {
       try {
+        setError(undefined)
         if (rejectedFiles.length > 0) {
           throw new Error(
             rejectedFiles[0]!.errors.map(e => e.message).join(', '),
           )
         }
         const sessionText = await acceptedFiles[0]!.text()
-        getSession(model).setSession?.(JSON.parse(sessionText).session)
+        const parsed: unknown = JSON.parse(sessionText)
+        if (!parsed || typeof parsed !== 'object') {
+          throw new Error('File does not contain a JSON object')
+        }
+        // session exports wrap the session under a top-level "session" key;
+        // fall back to treating the whole object as the session
+        const session = 'session' in parsed ? parsed.session : parsed
+        if (!session || typeof session !== 'object') {
+          throw new Error(
+            'No session found in file. Expected a JBrowse session export (a JSON file with a top-level "session" key).',
+          )
+        }
+        getSession(model).setSession?.(
+          session as { name: string; [key: string]: unknown },
+        )
       } catch (e) {
         console.error(e)
         setError(e)
@@ -88,7 +103,7 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
           <input {...getInputProps()} />
           <CloudUploadIcon className={classes.uploadIcon} fontSize="large" />
           <Typography color="text.secondary" align="center" variant="body1">
-            Drag and drop files here
+            Drag and drop a session file here
           </Typography>
           <Typography color="text.secondary" align="center" variant="body2">
             or
