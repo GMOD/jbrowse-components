@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -24,19 +22,16 @@ import {
   applyColorPalette,
   buildSpatialIndex,
   clusterLayout,
-  treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
-import CategoryIcon from '@mui/icons-material/Category'
-import ClearAllIcon from '@mui/icons-material/ClearAll'
-import HeightIcon from '@mui/icons-material/Height'
-import SortIcon from '@mui/icons-material/Sort'
-import SplitscreenIcon from '@mui/icons-material/Splitscreen'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
 import { GENOTYPE_SPLITTER } from './constants.ts'
 import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
-import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
+import {
+  variantContextMenuItems,
+  variantShowSubmenuItems,
+  variantTrackMenuItems,
+} from './multiSampleVariantMenuItems.ts'
 import {
   getGenotypeLegendItems,
   getSampleGroupLegendItems,
@@ -80,19 +75,6 @@ export function maybeApplyColorByPalette(
   )
   return undefined
 }
-
-// lazies
-const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
-
-const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
-
-const ClusterDialog = lazy(
-  () =>
-    import('./components/MultiSampleVariantClusterDialog/ClusterDialog.tsx'),
-)
-const SetRowHeightDialog = lazy(
-  () => import('./components/SetRowHeightDialog.tsx'),
-)
 
 function encodeGenotype(gt: string) {
   const alleles = gt.split(GENOTYPE_SPLITTER)
@@ -818,45 +800,8 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #method
          */
-        showSubmenuItems() {
-          return [
-            {
-              label: 'Show sidebar labels',
-              type: 'checkbox',
-              checked: self.showSidebarLabels,
-              onClick: () => {
-                self.setShowSidebarLabels(!self.showSidebarLabels)
-              },
-            },
-            {
-              label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
-              type: 'checkbox',
-              checked: self.showTree,
-              disabled: !self.clusterTree,
-              onClick: () => {
-                self.setShowTree(!self.showTree)
-              },
-            },
-            treeBranchLengthMenuItem(self),
-            ...(self.subtreeFilter?.length
-              ? [
-                  {
-                    label: 'Clear subtree filter',
-                    onClick: () => {
-                      self.setSubtreeFilter(undefined)
-                    },
-                  },
-                ]
-              : []),
-            {
-              label: 'Show legend',
-              type: 'checkbox',
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
-              },
-            },
-          ]
+        showSubmenuItems(): MenuItem[] {
+          return variantShowSubmenuItems(self as MultiSampleVariantBaseModel)
         },
       }))
       .views(self => {
@@ -865,156 +810,14 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #method
            */
-          trackMenuItems() {
+          trackMenuItems(): MenuItem[] {
             return [
               ...superTrackMenuItems(),
-              {
-                label: 'Show...',
-                icon: VisibilityIcon,
-                type: 'subMenu',
-                subMenu: self.showSubmenuItems(),
-              },
-              {
-                label: 'Row height',
-                icon: HeightIcon,
-                subMenu: [
-                  {
-                    label: 'Manually set row height',
-                    onClick: () => {
-                      getSession(self).queueDialog(handleClose => [
-                        SetRowHeightDialog,
-                        {
-                          model: self,
-                          handleClose,
-                        },
-                      ])
-                    },
-                  },
-                  {
-                    label: 'Fit to display height',
-                    onClick: () => {
-                      self.setFitToHeight()
-                    },
-                  },
-                ],
-              },
-              {
-                label: 'Rendering mode',
-                icon: SplitscreenIcon,
-                subMenu: [
-                  {
-                    label: 'Allele count (dosage)',
-                    helpText:
-                      'Draws the color darker the more times this allele exists, so homozygous variants are darker than heterozygous. Works on polyploid also',
-                    type: 'radio',
-                    checked: self.renderingMode === 'alleleCount',
-                    onClick: () => {
-                      self.setPhasedMode('alleleCount')
-                    },
-                  },
-                  {
-                    label: `Phased${
-                      self.hasPhased
-                        ? ''
-                        : !self.featuresVolatile
-                          ? ' (checking for phased variants...)'
-                          : ' (disabled, no phased variants found)'
-                    }`,
-                    helpText:
-                      'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1-HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
-                    disabled: !self.hasPhased,
-                    checked: self.renderingMode === 'phased',
-                    type: 'radio',
-                    onClick: () => {
-                      self.setPhasedMode('phased')
-                    },
-                  },
-                ],
-              },
-
-              {
-                label: 'Filter by',
-                icon: ClearAllIcon,
-                subMenu: [
-                  createMAFFilterMenuItem(self),
-                  {
-                    label: 'Edit filters',
-                    onClick: () => {
-                      getSession(self).queueDialog(handleClose => [
-                        AddFiltersDialog,
-                        {
-                          model: self,
-                          handleClose,
-                        },
-                      ])
-                    },
-                  },
-                ],
-              },
-              {
-                label: 'Cluster by genotype',
-                icon: CategoryIcon,
-                onClick: () => {
-                  getSession(self).queueDialog(handleClose => [
-                    ClusterDialog,
-                    {
-                      model: self,
-                      handleClose,
-                    },
-                  ])
-                },
-              },
-              {
-                label: 'Edit colors/arrangement...',
-                disabled: !self.sourcesVolatile?.length,
-                onClick: () => {
-                  getSession(self).queueDialog(handleClose => [
-                    SetColorDialog,
-                    {
-                      model: self,
-                      handleClose,
-                    },
-                  ])
-                },
-              },
+              ...variantTrackMenuItems(self as MultiSampleVariantBaseModel),
             ]
           },
           contextMenuItems(): MenuItem[] {
-            const feat = self.contextMenuFeature
-            if (!feat) {
-              return []
-            }
-            return [
-              {
-                label: 'Open feature details',
-                onClick: () => {
-                  self.selectFeature(feat)
-                },
-              },
-              {
-                label: 'Copy to clipboard',
-                onClick: async () => {
-                  try {
-                    const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
-                    const id = feat.get('name') || feat.id()
-                    const { default: copy } =
-                      await import('@jbrowse/core/util/copyToClipboard')
-                    copy(`${id} ${loc}`)
-                    getSession(self).notify('Copied to clipboard', 'info')
-                  } catch (e) {
-                    console.error(e)
-                    getSession(self).notifyError(`${e}`, e)
-                  }
-                },
-              },
-              {
-                label: 'Sort by genotype',
-                icon: SortIcon,
-                onClick: () => {
-                  self.sortByGenotype(feat.id())
-                },
-              },
-            ]
+            return variantContextMenuItems(self as MultiSampleVariantBaseModel)
           },
         }
       })
