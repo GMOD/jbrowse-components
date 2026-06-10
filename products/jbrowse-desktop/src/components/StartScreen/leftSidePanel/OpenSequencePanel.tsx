@@ -45,7 +45,6 @@ export default function OpenSequencePanel({
       </Button>
       <Button
         variant="contained"
-        color="secondary"
         className={classes.button}
         onClick={() => {
           setShowAll(true)

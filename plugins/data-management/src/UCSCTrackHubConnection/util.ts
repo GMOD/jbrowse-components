@@ -17,11 +17,7 @@ export async function fetchTrackDbFile(trackDbLoc: FileLocation) {
 // resolve a track's data path against the trackDb location, producing a
 // location of the same kind (uri or local path). `fallback` supplies a default
 // path (e.g. an index sitting next to its data file) when `path` is empty.
-export function makeLoc(
-  path: string,
-  base: FileLocation,
-  fallback?: string,
-) {
+export function makeLoc(path: string, base: FileLocation, fallback?: string) {
   const p = path || fallback || ''
   return isUriLocation(base)
     ? {

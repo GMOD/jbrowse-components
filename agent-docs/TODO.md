@@ -3,9 +3,7 @@
 - hic testing
 - reversed region testing
 - hide sashimi arcs options if not relevant?
-- show coverage hides arcs even when 'below'...
 - show outlines autohide
-- when vertical scrolling, weird behavior that kind of scrolls the page too fast when you just want to scroll element
 - more 'group operations'
 - fullpage_arcs-collapse-introns-sashimi.png need to scroll down to see the collapsed arcs
 - does yeast demo really need remote
@@ -13,7 +11,6 @@
 - persistent no-close cascading submenu for subselectingmultiple items
 - A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
 - gccontent track config_demo
-- re-review configoverrides refactor
 - copy and edit track settings
 - fix fallow recommendations
 - choose renderer backend via preferences

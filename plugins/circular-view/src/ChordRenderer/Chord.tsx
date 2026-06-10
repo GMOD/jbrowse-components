@@ -28,7 +28,10 @@ function getEndpoint(
   if (parsed) {
     return {
       endBlock: blocksForRefs[parsed.mateRefName],
-      endPosition: parsed.matePos,
+      // parsed.matePos is VCF 1-based; convert to 0-based like the other
+      // parseSvAlt consumers (sv-core getBreakendCoveringRegions, arc
+      // makeFeaturePair)
+      endPosition: parsed.matePos - 1,
     }
   } else if (mate) {
     return { endBlock: blocksForRefs[mate.refName], endPosition: mate.start }

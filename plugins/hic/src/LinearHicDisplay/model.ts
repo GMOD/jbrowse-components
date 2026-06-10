@@ -27,6 +27,7 @@ import type {
 } from '../RenderHicDataRPC/types.ts'
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { HicRenderingBackend } from './components/hicRenderingBackendTypes.ts'
+import type { HicTrackConfig } from './configSchema.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -78,7 +79,10 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
-      ConfigOverrideMixin(['colorScheme', 'showLegend']),
+      ConfigOverrideMixin<HicTrackConfig, 'colorScheme' | 'showLegend'>([
+        'colorScheme',
+        'showLegend',
+      ]),
       types.model({
         type: types.literal('LinearHicDisplay'),
         configuration: ConfigurationReference(configSchema),

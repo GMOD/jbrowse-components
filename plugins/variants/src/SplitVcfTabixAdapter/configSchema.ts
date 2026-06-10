@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config SplitVcfTabixAdapter
@@ -49,5 +50,7 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
     explicitlyTyped: true,
   },
 )
+
+export type SplitVcfTabixAdapterConfig = Instance<typeof SplitVcfTabixAdapter>
 
 export default SplitVcfTabixAdapter

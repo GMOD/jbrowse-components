@@ -34,6 +34,20 @@ export function useMouseoverElt() {
   return [mouseoverElt, setMouseoverElt] as const
 }
 
+function hoverHandlers(
+  id: string,
+  setMouseoverElt: (id: string | undefined) => void,
+) {
+  return {
+    onMouseOver: () => {
+      setMouseoverElt(id)
+    },
+    onMouseOut: () => {
+      setMouseoverElt(undefined)
+    },
+  }
+}
+
 export function createVariantMouseHandlers(
   id: string,
   setMouseoverElt: (id: string | undefined) => void,
@@ -49,12 +63,7 @@ export function createVariantMouseHandlers(
       )
       session.showWidget?.(featureWidget)
     },
-    onMouseOver: () => {
-      setMouseoverElt(id)
-    },
-    onMouseOut: () => {
-      setMouseoverElt(undefined)
-    },
+    ...hoverHandlers(id, setMouseoverElt),
   }
 }
 
@@ -74,12 +83,7 @@ export function createAlignmentMouseHandlers(
       )
       session.showWidget?.(featureWidget)
     },
-    onMouseOver: () => {
-      setMouseoverElt(id)
-    },
-    onMouseOut: () => {
-      setMouseoverElt(undefined)
-    },
+    ...hoverHandlers(id, setMouseoverElt),
   }
 }
 
@@ -184,11 +188,11 @@ export const VariantOverlay = observer(function VariantOverlay({
       fill="none"
       data-testid={getTestId(trackId, match.layoutMatches.length > 0)}
     >
-      {specs.map(({ id, path }) => (
+      {specs.map(({ id, path }, i) => (
         <path
           d={path}
           data-testid={pathTestId}
-          key={path}
+          key={`${id}-${i}`}
           pointerEvents={interactiveOverlay ? 'auto' : undefined}
           strokeWidth={id === mouseoverElt ? 10 : 5}
           {...createVariantMouseHandlers(

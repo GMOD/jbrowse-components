@@ -213,9 +213,8 @@ export function variantContextMenuItems(
         try {
           const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
           const id = feat.get('name') || feat.id()
-          const { default: copy } = await import(
-            '@jbrowse/core/util/copyToClipboard'
-          )
+          const { default: copy } =
+            await import('@jbrowse/core/util/copyToClipboard')
           copy(`${id} ${loc}`)
           getSession(self).notify('Copied to clipboard', 'info')
         } catch (e) {

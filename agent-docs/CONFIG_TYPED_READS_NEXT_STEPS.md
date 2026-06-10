@@ -1,6 +1,6 @@
 # Plan: typed config reads — next steps
 
-Status: **in progress.** The reader-typing change landed (commit `224dd07bcb`).
+Status: **complete.** The reader-typing change landed (commit `224dd07bcb`).
 A pilot then established that the highest-value lever is **adapters**, not
 displays, and added a generic `BaseAdapter<CONF>` so `this.getConf(...)` types
 off the concrete schema (opt-in per subclass; full back-compat). The entire
@@ -170,7 +170,8 @@ read-density / bug-finding potential, not a mandate to do all at once.
 **Remaining (low priority / blockers noted):**
 - `PAFAdapter`/`ChainAdapter`/`DeltaAdapter`/`MashMapAdapter` — inheritance
   chain, zero scalar casts to drop in any of them. Deferred.
-- `NCListAdapter`/`HicAdapter`/`Gff3Adapter`/`SplitVcfTabixAdapter`/`MultiWiggleAdapter`/`SPARQLAdapter` — fileLocation/frozen/stringArray only, or already typed via constructor-param pattern (SPARQL). Deferred until touched for other reasons.
+- **Done:** `SplitVcfTabixAdapter` — one scalar slot (`indexType: string`).
+- `NCListAdapter`/`HicAdapter`/`Gff3Adapter`/`MultiWiggleAdapter`/`SPARQLAdapter` — fileLocation/frozen/stringArray only, or already typed via constructor-param pattern (SPARQL). Deferred until touched for other reasons.
 - `IndexedFastaAdapter` / `BgzipFastaAdapter` — same subclass conflict as
   BamAdapter/HtsgetBamAdapter; `IndexedFastaAdapterConfig` alias exported but
   class kept non-generic.
@@ -179,17 +180,37 @@ Base classes done: `BaseSequenceAdapter<CONF>` threaded. Remaining interfaces
 (`BaseRefNameAliasAdapter`, `BaseTextSearchAdapter`, `RegionsAdapter`) need no
 threading — they are interfaces, not classes.
 
-## Displays — separate, lower-priority track
+## Displays — `ConfigOverrideMixin` (Phase 1 done)
 
-The reader typing is live for `getConf`/`readConfObject`, but display state
-models read their own slots through `getConfWithOverride<T>` (explicit generic,
-bypasses the typed reader). To make displays benefit, `getConfWithOverride`
-would need to infer `T` from the schema — but it lives on the shared
-`ConfigOverrideMixin` where `self.configuration` is `AnyConfigurationModel`
-(erased), so it can't without making the mixin generic over the display's
-schema. Deferred; the win there is small (most display reads are
-`name`/`adapter`/frozen → `any` anyway). Free functions / renderers that take a
-typed config param and read scalar slots are the exception worth converting.
+`ConfigOverrideMixin` is now generic:
+`ConfigOverrideMixin<CONF extends AnyConfigurationModel = AnyConfigurationModel>`.
+The `configKeys` parameter and all key arguments (`getConfWithOverride`,
+`getOverride`, `setOverride`, `clearOverride`) are constrained to
+`ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>`. Default is
+`AnyConfigurationModel` → `string` (fully backward-compatible; zero new
+errors at the call sites).
+
+**Phase 1 win:** Callers that opt in by passing a concrete CONF get **key-name
+validation** at the `ConfigOverrideMixin<Config>(keys)` call site — typo'd slot
+names become compile errors.
+
+**EXTRA param (done):** `ConfigOverrideMixin<CONF, EXTRA extends string = never>`
+adds a second type parameter for keys that are stored flat in the snapshot but
+are NOT config slots (pure runtime state with no config-slot fallback). EXTRA
+keys are accepted by `getOverride`/`setOverride`/`clearOverride` but rejected
+by `getConfWithOverride`. `LinearHicDisplay` is opted in:
+`ConfigOverrideMixin<HicTrackConfig, 'colorScheme' | 'showLegend'>` — both keys
+are pure runtime state, validated against the declared set, and correctly blocked
+from `getConfWithOverride`.
+
+**Why all remaining callers are still untyped:** Every remaining display is a
+generic factory function taking `configSchema: AnyConfigurationSchemaType`.
+Inside a generic factory body, TypeScript resolves
+`ConfigurationSlotName<SCHEMA>` to `string` (the upper bound), so specific
+string literals are always valid — no actual key validation. Making factories
+generic `<SCHEMA>` threads the type but doesn't help inside the body. The
+validation only materialises when a model is built concretely (not through a
+generic factory). Deferred.
 
 Guardrail: where a usage genuinely handles *arbitrary* configs (generic editor,
 hydration, copy-config, `getConfigOverrides`, wrapper adapters forwarding a

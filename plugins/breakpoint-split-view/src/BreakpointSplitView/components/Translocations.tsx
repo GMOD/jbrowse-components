@@ -37,14 +37,17 @@ export default function Translocations(props: OverlayProps) {
               if (!mate) {
                 return []
               }
-              const level2 = findFeatureViewLevel(views, mate.chr, mate.pos)
+              // mate.pos is the raw VCF INFO.END (1-based); convert to 0-based
+              // for bpToPx, matching getBreakendCoveringRegions
+              const matePos = mate.pos - 1
+              const level2 = findFeatureViewLevel(views, mate.chr, matePos)
               if (
                 level2 === undefined ||
                 isLevelPairMinimized(tracks, level1, level2)
               ) {
                 return []
               }
-              const x2 = getX(level2, mate.chr, mate.pos)
+              const x2 = getX(level2, mate.chr, matePos)
               if (x2 == null) {
                 return []
               }

@@ -19,7 +19,8 @@ export function WebSessionManagementMixin(_pluginManager: PluginManager) {
        * #getter
        */
       get savedSessionMetadata() {
-        return getParent<AbstractWebSessionDbRootModel>(self).savedSessionMetadata
+        return getParent<AbstractWebSessionDbRootModel>(self)
+          .savedSessionMetadata
       },
     }))
     .actions(self => {

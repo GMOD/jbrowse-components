@@ -52,6 +52,37 @@ on real user demand.
   id prefix/suffix and deletes them — real ungroup path.
 - Grouped tracks share a `category` so they collapse together in the selector.
 
+## Headless / declarative (jbrowse-img, URL params)
+
+Group-by's *output* is plain track configs with a display `filterBy`, which is a
+fully declarative artifact — so non-interactive entry points already work with no
+new code:
+
+- **jbrowse-img** builds real MST display models and honors
+  `displays: [{ type: 'LinearAlignmentsDisplay', filterBy: {...} }]`, so N
+  hand-written (or scripted) filtered track configs render as groups.
+- **URL / session**: grouped tracks are session tracks, which serialize into the
+  session snapshot — a grouping made in the UI is already shareable via `?session=`.
+
+This is a further argument for subtracks over a custom grouped display: a new
+display type would force *both* jbrowse-img and the session/URL deserializer to
+learn it. Subtracks keeps the declarative surface at "just track configs."
+
+What is UI-bound is only the *generation*, which couples three separable steps:
+
+- **Discovery** — `getUniqueTags` (already a headless adapter/RPC call; the dialog
+  just wraps it in `useFetch`).
+- **Expansion** — `(trackConf, displaySnapshot, groupSpec, values) → TrackConf[]`,
+  pure (currently `groupsForTag`/`groupsForStrand` + `createGroupTracks` minus the
+  session calls).
+- **Installation** — `addTrackConf` + `showTrack`, genuinely UI/session-only.
+
+If headless *convenience* group-by is ever wanted (e.g. a CLI `group:tag:HP` flag
+that auto-discovers + expands instead of hand-writing configs), the enabling step
+is pulling the pure **expansion** out of the dialog so CLI and dialog share it —
+not a new display type. Not built speculatively: the declarative path already
+works by enumerating configs or sharing a UI-made session URL.
+
 ## Accepted limitation
 
 Groups are snapshotted from the current view (`staticBlocks`) at creation. Scroll

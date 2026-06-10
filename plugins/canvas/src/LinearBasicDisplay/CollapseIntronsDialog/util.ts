@@ -155,10 +155,15 @@ export async function collapseIntrons({
   }
   const snapshot = getSnapshot(view)
   const { id, ...rest } = snapshot
-  // Compute bpPerPx/offsetPx upfront to avoid layout thrashing on the new view
+  // Compute bpPerPx/offsetPx upfront to avoid layout thrashing on the new view.
+  // Strip the track AND nested display identifiers (both are types.identifier)
+  // so they don't collide with the source view's in the session tree.
   const newView = getSession(view).addView('LinearGenomeView', {
     ...rest,
-    tracks: rest.tracks.map(({ id, ...r }) => r),
+    tracks: rest.tracks.map(({ id, displays, ...r }) => ({
+      ...r,
+      displays: displays.map(({ id, ...d }) => d),
+    })),
     displayedRegions: args.mergedRegions,
     bpPerPx: args.initialState.bpPerPx,
     offsetPx: args.initialState.offsetPx,

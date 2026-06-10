@@ -180,7 +180,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Get tracks with a given trackId across multiple views
+       * Get tracks with a given trackId across multiple views. Callers that
+       * index the result by view level (getTrackOverlayData,
+       * getMatchedFeaturesInLayout) rely on it staying aligned with `views` —
+       * which holds only because overlays are driven by `overlayMatches`, whose
+       * trackIds come from `matchedTracks` (the intersect across all views), so
+       * the track is present in every view and `filter` drops nothing. Don't
+       * level-index the result for an arbitrary trackId.
        */
       getMatchedTracks(trackConfigId: string) {
         return self.views
