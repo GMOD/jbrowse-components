@@ -46,7 +46,7 @@ string
 
 ```js
 // type
-{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; }
+{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; } | undefined
 ```
 
 #### getter: assemblyManager

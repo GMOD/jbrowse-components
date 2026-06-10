@@ -368,14 +368,14 @@ boolean
 
 ```js
 // type signature
-showSubmenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+showSubmenuItems: () => MenuItem[]
 ```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => MenuItem[]
 ```
 
 #### method: getPortableSettings

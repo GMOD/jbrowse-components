@@ -20,121 +20,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-used for "web based" products, including jbrowse-web and react-app
-
-## Inherited members
-
-Available on this model via composition. Follow each link for full signatures
-and docs.
-
-### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
-
-**Methods:** getReferring
-
-**Actions:** removeReferring
-
-### Available via [ThemeManagerSessionMixin](../thememanagersessionmixin)
-
-**Getters:** themeName, theme
-
-**Methods:** allThemes
-
-**Actions:** setThemeName
-
-### Available via [MultipleViewsSessionMixin](../multipleviewssessionmixin)
-
-**Properties:** views, stickyViewHeaders, useWorkspaces
-
-**Actions:** moveViewDown, moveViewUp, moveViewToTop, moveViewToBottom, addView,
-removeView, setStickyViewHeaders, setUseWorkspaces
-
-### Available via [BaseSessionModel](../basesessionmodel)
-
-**Properties:** id, name, margin, focusedViewId
-
-**Volatiles:** selection, hovered, queueOfDialogs
-
-**Getters:** root, jbrowse, rpcManager, configuration, adminMode,
-textSearchManager, assemblies, DialogComponent, DialogProps
-
-**Actions:** setSelection, clearSelection, setHovered, setName,
-setFocusedViewId, removeActiveDialog, queueDialog
-
-### Available via [SnackbarModel](../snackbarmodel)
-
-**Volatiles:** snackbarMessages
-
-**Getters:** snackbarMessageSet
-
-**Actions:** notify, notifyError, pushSnackbarMessage, popSnackbarMessage,
-removeSnackbarMessage
-
-### Available via [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
-
-**Properties:** drawerPosition, drawerWidth, widgets, activeWidgets, minimized
-
-**Getters:** visibleWidget
-
-**Actions:** setDrawerPosition, updateDrawerWidth, resizeDrawer, addWidget,
-showWidget, hideWidget, minimizeWidgetDrawer, showWidgetDrawer, hideAllWidgets,
-editConfiguration
-
-### Available via [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
-
-**Properties:** sessionTracks
-
-**Getters:** tracks
-
-**Actions:** addTrackConf, deleteTrackConf
-
-### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
-
-**Getters:** tracks, getTracksById, tracksById
-
-**Actions:** addTrackConf, deleteTrackConf
-
-### Available via [AssembliesMixin](../assembliesmixin)
-
-**Properties:** sessionAssemblies, temporaryAssemblies
-
-**Getters:** assemblies, assemblyNames
-
-**Actions:** addSessionAssembly, addAssembly, removeAssembly,
-removeSessionAssembly, addTemporaryAssembly, removeTemporaryAssembly
-
-### Available via [AppSessionMixin](../appsessionmixin)
-
-**Getters:** root, version, history, assemblyManager
-
-**Methods:** renderProps, menus
-
-**Actions:** renameCurrentSession
-
-### Available via [WebSessionConnectionsMixin](../websessionconnectionsmixin)
-
-**Properties:** sessionConnections
-
-**Actions:** addConnectionConf, deleteConnection
-
-### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
-
-**Properties:** connectionInstances
-
-**Getters:** connections
-
-**Actions:** makeConnection, prepareToBreakConnection, breakConnection,
-deleteConnection, addConnectionConf, clearConnections
-
-### Available via [DockviewLayoutMixin](../dockviewlayoutmixin)
-
-**Properties:** dockviewLayout, panelViewAssignments, init, pendingMove,
-activePanelId
-
-**Getters:** getViewIdsForPanel, getPanelContainingView
-
-**Actions:** setDockviewLayout, setActivePanelId, setInit, setPendingMove,
-assignViewToPanel, removeViewFromPanel, removePanel, moveViewUpInPanel,
-moveViewDownInPanel, moveViewToTopInPanel, moveViewToBottomInPanel
+Finalized web session without the session-database management surface. Used by
+the embedded react-app; jbrowse-web composes `WebSessionManagementMixin` before
+finalizing.
 
 ### BaseWebSession - Properties
 
@@ -182,7 +70,7 @@ pendingFileHandleIds: [] as string[]
 
 ```js
 // type
-WebRootModelInterface
+AbstractWebRootModel
 ```
 
 #### getter: connections
@@ -206,13 +94,6 @@ any
 ```js
 // type
 TextSearchManager
-```
-
-#### getter: savedSessionMetadata
-
-```js
-// type
-SessionMetadata[] | undefined
 ```
 
 ### BaseWebSession - Methods
@@ -263,34 +144,6 @@ addSessionPlugin: (plugin: PluginDefinition & { name: string; }) => void
 ```js
 // type signature
 removeSessionPlugin: (pluginDefinition: PluginDefinition) => void
-```
-
-#### action: deleteSavedSession
-
-```js
-// type signature
-deleteSavedSession: (id: string) => Promise<void>
-```
-
-#### action: setSavedSessionFavorite
-
-```js
-// type signature
-setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
-```
-
-#### action: renameSavedSession
-
-```js
-// type signature
-renameSavedSession: (id: string, name: string) => Promise<void>
-```
-
-#### action: activateSession
-
-```js
-// type signature
-activateSession: (sessionName: string) => Promise<void>
 ```
 
 #### action: setDefaultSession
