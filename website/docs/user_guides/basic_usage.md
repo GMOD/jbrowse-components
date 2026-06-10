@@ -68,7 +68,7 @@ To load an entire track hub (UCSC track hub or JBrowse 1 data directory) at
 once, use `File` → `Open connection...`. See the
 [Connections guide](/docs/user_guides/connections) for details.
 
-<Figure caption="After opening the menu item for 'Open track..', the 'Add a track' form appears as a drawer widget." src="/img/add_track_form.png" />
+<Figure caption="Open the 'Open track...' item in the File menu (top), and the 'Add a track' form appears as a drawer widget (bottom)." src="/img/add_track_form.png" />
 
 :::tip
 

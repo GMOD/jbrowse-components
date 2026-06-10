@@ -31,7 +31,7 @@ Here is an example track with a formatter:
 }
 ```
 
-<Figure src="/img/customized_feature_details.png" caption="Example screenshot showing customized feature detail panel with links"/>
+<Figure src="/img/customized_feature_details.png" caption="Example screenshot showing a customized feature detail panel. The red callout highlights the name field, which the formatDetails callback has turned into a clickable link."/>
 
 This formatter links the `name` field to a Google search — useful for linking to
 gene pages. It also adds a custom `newfield` and removes `type` from the

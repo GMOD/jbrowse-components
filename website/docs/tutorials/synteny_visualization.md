@@ -77,7 +77,7 @@ assemblies (one per axis), and pick the synteny track. The query assembly goes
 in the first box and the target in the second — the same query/target order as
 the PAF columns.
 
-<Figure caption="The dotplot import form. Select a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
+<Figure caption="The dotplot import form. The red callouts point at the two assembly selectors: choose a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 
 ### Reading the dotplot
 

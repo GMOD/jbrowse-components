@@ -94,6 +94,25 @@ a `MultiQuantitativeTrack` with `h` (5hmC) and `m` (5mC) subtracks.
 
 [Live demo — COLO829 CRAM + bedMethyl](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-RveRrmeOL8&password=V2mo9)
 
+## Plant methylation in non-CpG contexts (CHG/CHH)
+
+Mammalian methylation is overwhelmingly in the CpG context, but plants also
+methylate cytosines in the **CHG** and **CHH** contexts (where H is A, C, or T).
+JBrowse 2 lets you restrict modification coloring to a specific cytosine context
+via the `cytosineContext` setting, which is useful for examining plant
+methylation patterns.
+
+The screenshot below shows an _Arabidopsis_ chromosome 1 ONT dataset with
+per-read modification coloring restricted to the **CHH** context.
+
+<Figure caption="Arabidopsis chr1 ONT alignments colored by 5mC/5hmC modification, restricted to the CHH cytosine context. Only cytosines in a CHH context are colored." src="/img/methylation/arabidopsis_chh.png" />
+
+The same region can also be examined with **bisulfite** (or EM-seq) data. In
+bisulfite mode JBrowse infers methylation from C-to-T conversion in the read
+alignment rather than from MM/ML tags, again restricted here to the CHH context.
+
+<Figure caption="Arabidopsis chr1 EM-seq (bisulfite-style) alignments in bisulfite coloring mode, restricted to the CHH cytosine context. Methylation is inferred from C-to-T conversion patterns rather than modification tags." src="/img/methylation/arabidopsis_bisulfite_chh.png" />
+
 ## Choosing between the two approaches
 
 | Approach                         | Best for                                                                                     |

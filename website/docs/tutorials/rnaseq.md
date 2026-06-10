@@ -16,11 +16,11 @@ the same view yourself.
 
 Here is an RNA-seq BAM file shown in JBrowse 2:
 
-<Figure caption="An RNA-seq BAM file in JBrowse 2. The grey boxes connected by black lines are reads; the histogram along the top shows read coverage at each position. The orange and green track at top is the reference gene annotation (from a GFF downloaded from NCBI)." src="/img/rnaseq/overview.png" />
+<Figure caption="An RNA-seq BAM file in JBrowse 2. The grey boxes connected by teal lines are reads; the histogram along the top shows read coverage at each position. The orange and green track at top is the reference gene annotation (from a GFF downloaded from NCBI)." src="/img/rnaseq/overview.png" />
 
 [Live demo — RNA-seq BAM overview at ACTB](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5562000-5575000","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
 
-The little grey boxes connected by black lines are the **reads** in the RNA-seq
+The little grey boxes connected by teal lines are the **reads** in the RNA-seq
 BAM file. The histogram along the top shows how many reads mapped to a given
 position in the genome.
 

@@ -53,7 +53,7 @@ called from the SKBR3 breast cancer cell line
 ([published data](https://schatz-lab.org/publications/SKBR3/)). Paste the URL
 into the import form and select hg19:
 
-<Figure caption="The SV inspector with the import form and URL pasted." src="/img/sv_inspector_importform_after.png" />
+<Figure caption="The SV inspector import form with a VCF URL pasted. As the callout notes, you can instead choose 'Open from track' to populate the inspector from a VCF track already open in the session, rather than re-entering its URL." src="/img/sv_inspector_importform_after.png" />
 
 ### SV inspector results
 

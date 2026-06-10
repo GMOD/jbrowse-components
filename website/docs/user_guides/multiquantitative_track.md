@@ -44,7 +44,7 @@ Three ways to create one:
   [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
   guide
 
-<Figure caption="The add-track widget's workflow selector lets you reach the multi-wiggle workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
+<Figure caption="The add-track widget's workflow selector (red callout) lets you reach the multi-wiggle workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
 <Figure caption="In the track selector, the '...' menu adds individual tracks or whole categories to your selection. The cart icon in the add-track widget then turns the selection into a multi-wiggle track." src="/img/multiwig/trackselector.png" />
 
 ## Loading bedMethyl as a multi-quantitative track

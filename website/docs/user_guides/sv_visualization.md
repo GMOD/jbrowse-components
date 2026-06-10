@@ -191,7 +191,7 @@ by the log-scaled distance between mates, making it easy to count how many reads
 span a breakpoint and read their orientation at a glance. Chains with
 supplementary alignments are connected by an orange line.
 
-<Figure caption="Two tracks using different modes on the same SV dataset. Top track: paired arcs — the large red bezier curve spans a long-range connection (~ctgA:5,000–40,000), making the SV immediately visible at this scale. Bottom track: linked reads — reads are drawn as horizontal lines stratified by insert size; the red bar at the bottom row indicates an abnormally large insert corresponding to the same event." src="/img/alignments/read_cloud.png" />
+<Figure caption="Linked reads on an SV dataset: reads are drawn as horizontal lines stratified on the Y axis by the log distance between mates. The bar on the bottom row marks an abnormally large insert, flagging the structural-variant event." src="/img/alignments/read_cloud.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR)
 — inversion example in linked reads mode

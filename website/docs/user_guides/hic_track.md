@@ -20,7 +20,7 @@ triangular contact matrix below the chromosome ruler.
 
 ## Reading the contact matrix
 
-<Figure caption="Hi-C contact matrix for a region of hg19 (~chr19:50–60 Mb). The diagonal (brightest red strip) represents self-interactions." src="/img/hic_track.png" />
+<Figure caption="Hi-C contact matrix for a region of hg19 (chr8:50,000,000–51,000,000), zoomed in enough to also show gene labels on the annotation track above. The diagonal (brightest red strip) represents self-interactions." src="/img/hic_track.png" />
 
 Key features to interpret:
 

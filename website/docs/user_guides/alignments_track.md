@@ -135,6 +135,8 @@ for background. Assuming standard `fr` (Illumina) pairs:
 
 <Figure caption="An inverted duplication, where pair-orientation coloring highlights reads whose mates point in unexpected directions. See the SV visualization guide for an interpreted example." src="/img/inverted_duplication.png" />
 
+<Figure caption="The same inverted duplication shown at a normal (non-compact) feature height, where individual read pairs and their orientation coloring are easier to follow." src="/img/inverted_duplication/normal_height.png" />
+
 ### Color by insert size
 
 For paired-end data, **Color by → Insert size** tints reads by the distance
@@ -145,8 +147,6 @@ coloring and the read-connection arcs, this is the main way to scan short-read
 data for structural variants — the
 [SV visualization guide](/docs/user_guides/sv_visualization) walks through
 worked examples.
-
-<Figure caption="Paired-end reads colored by insert size. Grey pairs map a normal distance apart; the red/blue/pink pairs clustered on the right flag the structural variants." src="/img/alignments/color_by_insert_size.png" />
 
 ### Sashimi-style arcs
 
@@ -192,6 +192,8 @@ variants and misassemblies.
 
 Enable paired arcs from the track menu's **Read connections** submenu.
 
+<Figure caption="Paired arcs drawn over a synthetic SV dataset; bezier curves connect mates, with long-range and discordant pairs standing out from the short local arcs." src="/img/alignments/arc_display.png" />
+
 <Figure caption="Enabling paired arcs from the Read connections submenu, showing arcs alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
 
 The arcs automatically re-fit when you resize the track height, so dragging the
@@ -217,7 +219,7 @@ Enable linked reads from the track menu's **Read connections** submenu. Like
 paired arcs, dragging the track taller re-packs the features into the available
 height.
 
-<Figure caption="Paired arcs (top) and linked reads (bottom) on the same synthetic SV dataset. Linked reads surfaces insertion pairs (pink) more clearly." src="/img/alignments/read_cloud.png" />
+<Figure caption="Linked reads on a synthetic SV dataset. Reads are stratified on the Y axis by the log distance between mates, surfacing insertion pairs (drawn pink) clearly against the background." src="/img/alignments/read_cloud.png" />
 
 ### Compact display
 
