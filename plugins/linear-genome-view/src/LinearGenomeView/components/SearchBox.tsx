@@ -11,9 +11,9 @@ import { observer } from 'mobx-react'
 import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
-const defaultStyle = { margin: SPACING }
-
 import type { LinearGenomeViewModel } from '../model.ts'
+
+const defaultStyle = { margin: SPACING }
 
 const SearchBox = observer(function SearchBox({
   model,

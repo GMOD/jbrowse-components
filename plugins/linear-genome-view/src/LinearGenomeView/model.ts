@@ -2201,14 +2201,3 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
-
-export {
-  default as LinearGenomeView,
-  default as ReactComponent,
-} from './components/LinearGenomeView.tsx'
-
-// RefNameAutocomplete moved to @jbrowse/core/ui; re-exported for back-compat.
-export { RefNameAutocomplete } from '@jbrowse/core/ui'
-export { default as SearchBox } from './components/SearchBox.tsx'
-
-export { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'
