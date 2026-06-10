@@ -34,3 +34,13 @@ test('leaves a snapshot with no GC params unchanged', () => {
 test('handles undefined', () => {
   expect(migrateGCContentSnapshot(undefined)).toBeUndefined()
 })
+
+test('strips legacy BaseLinearDisplay fields', () => {
+  const result = migrateGCContentSnapshot({
+    type: 'LinearGCContentDisplay',
+    blockState: { x: 1 },
+    showLegend: true,
+    showTooltips: false,
+  })
+  expect(result).toEqual({ type: 'LinearGCContentDisplay' })
+})

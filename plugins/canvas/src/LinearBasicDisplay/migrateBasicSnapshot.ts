@@ -73,8 +73,9 @@ export function migrateBasicSnapshot(
     blockState,
     showLegend,
     showTooltips,
+    // userBpPerPxLimit was from FeatureDensityMixin, which canvas no longer
+    // composes; strip it so MST doesn't see an unknown property.
     userBpPerPxLimit,
-    userByteSizeLimit,
     trackShowLabels,
     trackShowDescriptions,
     trackSubfeatureLabels,

@@ -24,7 +24,6 @@ test('strips removed FeatureDensityMixin fields', () => {
     showLegend: true,
     showTooltips: false,
     userBpPerPxLimit: 0.5,
-    userByteSizeLimit: 1000,
   })
   expect(result).toEqual({ type: 'LinearBasicDisplay' })
 })
@@ -148,6 +147,7 @@ test('full legacy snapshot: strips and promotes', () => {
   expect(result).toEqual({
     type: 'LinearBasicDisplay',
     configuration: 'gene_track',
+    userByteSizeLimit: 5000,
     height: 180,
     showLabels: 'off',
     subfeatureLabels: 'below',
@@ -163,13 +163,19 @@ test('stripped keys never appear in the result', () => {
     showLegend: true,
     showTooltips: true,
     userBpPerPxLimit: 1,
-    userByteSizeLimit: 1,
     trackShowLabels: true,
   })
   expect(result).not.toHaveProperty('blockState')
   expect(result).not.toHaveProperty('showLegend')
   expect(result).not.toHaveProperty('showTooltips')
   expect(result).not.toHaveProperty('userBpPerPxLimit')
-  expect(result).not.toHaveProperty('userByteSizeLimit')
   expect(result).not.toHaveProperty('trackShowLabels')
+})
+
+// userByteSizeLimit is a live field in RegionTooLargeMixin (composed via
+// MultiRegionDisplayMixin) — it persists the user's force-load threshold so it
+// survives session restore. Do not strip it.
+test('userByteSizeLimit passes through', () => {
+  const result = migrateBasicSnapshot({ userByteSizeLimit: 1000 })
+  expect(result).toHaveProperty('userByteSizeLimit', 1000)
 })

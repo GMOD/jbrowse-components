@@ -1,17 +1,29 @@
-// Back-compat for SharedGCContentModel: the explicit override fields were
-// renamed from the bare `windowSize`/`windowDelta`/`gcMode` to their `*Override`
-// names. The matching getters now take the bare names.
+// Back-compat for SharedGCContentModel:
+//   - bare `windowSize`/`windowDelta`/`gcMode` renamed to `*Override`
+//   - `blockState`/`showLegend`/`showTooltips` removed from BaseLinearDisplay
 export function migrateGCContentSnapshot(
   snap: Record<string, unknown> | undefined,
 ) {
-  if (snap) {
-    const { windowSize, windowDelta, gcMode, ...rest } = snap
-    return {
-      ...rest,
-      windowSizeOverride: rest.windowSizeOverride ?? windowSize,
-      windowDeltaOverride: rest.windowDeltaOverride ?? windowDelta,
-      gcModeOverride: rest.gcModeOverride ?? gcMode,
-    }
+  if (!snap) {
+    return snap
   }
-  return snap
+  const {
+    windowSize,
+    windowDelta,
+    gcMode,
+    blockState: _blockState,
+    showLegend: _showLegend,
+    showTooltips: _showTooltips,
+    ...rest
+  } = snap
+  if (rest.windowSizeOverride === undefined && windowSize !== undefined) {
+    rest.windowSizeOverride = windowSize
+  }
+  if (rest.windowDeltaOverride === undefined && windowDelta !== undefined) {
+    rest.windowDeltaOverride = windowDelta
+  }
+  if (rest.gcModeOverride === undefined && gcMode !== undefined) {
+    rest.gcModeOverride = gcMode
+  }
+  return rest
 }

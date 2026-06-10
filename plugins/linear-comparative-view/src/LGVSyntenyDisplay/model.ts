@@ -78,6 +78,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(schema),
       }),
     )
+    // The composed LinearAlignmentsDisplay defaults showCoverage to true; synteny
+    // display hides coverage by default. MST composition doesn't allow overriding
+    // a parent model's property default, so the preProcessSnapshot injection is
+    // the correct mechanism — the snapshot wins over the default.
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => ({
       showCoverage: false,
       ...snap,

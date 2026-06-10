@@ -80,7 +80,7 @@ export function migrateAlignmentsSnapshot(
   // Strip removed showReadCloud property from old snapshots
   if (result.showReadCloud !== undefined) {
     const { showReadCloud, ...rest } = result
-    const linked = result.showLinkedReads || showReadCloud
+    const linked = result.showLinkedReads === true || showReadCloud === true
     result = {
       ...rest,
       showLinkedReads: linked,

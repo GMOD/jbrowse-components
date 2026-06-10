@@ -134,7 +134,7 @@ export default function stateModelFactory(
       reloadCounter: 0,
     }))
 
-    .preProcessSnapshot((snap: any) => {
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       if (!snap) {
         return snap
       }
