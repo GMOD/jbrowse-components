@@ -1,8 +1,8 @@
 import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { buildCompactAllTracksMenu } from '@jbrowse/core/ui'
-import { avg, getSession, notEmpty } from '@jbrowse/core/util'
+import { buildAllTracksMenu } from '@jbrowse/core/ui'
+import { avg, getEnv, getSession, notEmpty } from '@jbrowse/core/util'
 import {
   addDisposer,
   addMiddleware,
@@ -573,7 +573,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
-              ...buildCompactAllTracksMenu(allTracks),
+              ...buildAllTracksMenu(getEnv(self).pluginManager, allTracks),
               {
                 label: 'Show header',
                 type: 'checkbox',

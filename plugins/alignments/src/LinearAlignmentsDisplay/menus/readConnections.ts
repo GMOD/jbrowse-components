@@ -5,7 +5,10 @@ import { checkboxItem, radioModeMenuItem } from './menuHelpers.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-const PAIR_OVERLAY_OPTIONS: { value: ReadConnectionsMode; label: string }[] = [
+export const PAIR_OVERLAY_OPTIONS: {
+  value: ReadConnectionsMode
+  label: string
+}[] = [
   { value: 'off', label: 'Off' },
   { value: 'arc', label: 'Arcs' },
   { value: 'samplot', label: 'Read cloud' },

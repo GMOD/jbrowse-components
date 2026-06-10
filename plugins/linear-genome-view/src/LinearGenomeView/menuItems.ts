@@ -1,6 +1,7 @@
-import { buildCompactAllTracksMenu } from '@jbrowse/core/ui'
+import { buildAllTracksMenu } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
+  getEnv,
   getSession,
   isSessionWithAddTracks,
   toLocale,
@@ -268,7 +269,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       ],
     },
-    ...buildCompactAllTracksMenu(self.tracks),
+    ...buildAllTracksMenu(getEnv(self).pluginManager, self.tracks),
   ]
 
   // add track's view level menu options

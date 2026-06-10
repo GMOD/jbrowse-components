@@ -1,8 +1,13 @@
 import { lazy } from 'react'
 
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { buildCompactAllTracksMenu } from '@jbrowse/core/ui'
-import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { buildAllTracksMenu } from '@jbrowse/core/ui'
+import {
+  avg,
+  getEnv,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   addDisposer,
@@ -431,7 +436,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       menuItems(): MenuItem[] {
         const allTracks = self.views.flatMap(v => v.tracks)
         return [
-          ...buildCompactAllTracksMenu(allTracks),
+          ...buildAllTracksMenu(getEnv(self).pluginManager, allTracks),
           {
             label: 'Return to import form',
             onClick: () => {

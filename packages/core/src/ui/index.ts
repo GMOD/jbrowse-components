@@ -37,7 +37,8 @@ export * from './MenuTypes.ts'
 export {
   type CompactableDisplay,
   type Compactness,
-  buildCompactAllTracksMenu,
+  type GroupOp,
+  buildAllTracksMenu,
   isCompactable,
-} from './buildCompactAllTracksMenu.ts'
+} from './buildAllTracksMenu.ts'
 export const VIEW_HEADER_HEIGHT = 28
