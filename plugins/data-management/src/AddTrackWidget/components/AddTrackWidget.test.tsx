@@ -176,3 +176,25 @@ test('TextIndexingConfig edits existing values and has distinct add buttons', ()
   })
   expect(model.textIndexingConf?.attributes).toContain('GeneName')
 })
+
+test('TextIndexingConfig adds a trimmed value on Enter and de-duplicates', () => {
+  const { model } = getSession()
+  const { getAllByPlaceholderText } = render(
+    <TextIndexingConfig model={model} />,
+  )
+
+  // the first "add new" field belongs to the attributes section
+  const [attributesInput] = getAllByPlaceholderText('add new')
+
+  // Enter adds the (trimmed) value rather than requiring the + button
+  fireEvent.change(attributesInput!, { target: { value: '  Parent  ' } })
+  fireEvent.keyDown(attributesInput!, { key: 'Enter' })
+  expect(model.textIndexingConf?.attributes).toContain('Parent')
+
+  // re-adding an existing value is a no-op rather than a duplicate entry
+  fireEvent.change(attributesInput!, { target: { value: 'Parent' } })
+  fireEvent.keyDown(attributesInput!, { key: 'Enter' })
+  expect(
+    model.textIndexingConf?.attributes.filter(attr => attr === 'Parent'),
+  ).toHaveLength(1)
+})

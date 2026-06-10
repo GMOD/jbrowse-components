@@ -19,18 +19,22 @@ export function doPasteConfigSubmit({
   const session = getSession(model)
   const confs = parseTrackConfigs(jsonText)
 
-  if (isSessionWithAddTracks(session) && isSessionModelWithWidgets(session)) {
+  if (!isSessionWithAddTracks(session)) {
+    throw new Error("Can't add tracks to this session")
+  } else {
     const { view } = model
     const viewAsms = view?.assemblyNames as string[] | undefined
     transaction(() => {
       for (const conf of confs) {
         session.addTrackConf(conf)
         if (viewAsms?.some(asm => conf.assemblyNames?.includes(asm))) {
-          view.showTrack?.(conf.trackId)
+          view?.showTrack?.(conf.trackId)
         }
       }
       model.clearData()
-      session.hideWidget(model)
+      if (isSessionModelWithWidgets(session)) {
+        session.hideWidget(model)
+      }
     })
   }
 }
