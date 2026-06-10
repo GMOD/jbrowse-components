@@ -955,13 +955,51 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 3000,
   },
 
+  // Before/after horizontal flip, stacked into one figure: top frame is the
+  // normal orientation, bottom frame after the view-menu "Horizontally flip"
+  // (reverse complement) — the gene arrows and overview triangles reverse
+  // direction. Rebuilt from the old server-side share link as a self-contained
+  // sessionSpec over the hg19 ACTB locus (single longest-coding transcript so the
+  // strand arrow reads clearly).
   {
     mode: 'url',
     name: 'horizontally_flip',
-    url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-6pkcSXlbFL&password=ER28C',
-    readyText: 'RefSeq',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr7:5,562,000-5,575,000',
+          tracks: [
+            {
+              trackId: 'ncbi_gff_hg19',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ACTB',
     readyTimeout: 60000,
-    settleMs: 12000,
+    settleMs: 8000,
+    // applied to each stage before they're stacked: crops off the empty viewport
+    // below each (short) single-track frame
+    crop: { x: 0, y: 0, width: 1500, height: 300 },
+    stages: [
+      {},
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+          { type: 'waitForText', text: 'Horizontally flip' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Horizontally flip' },
+          { type: 'delay', ms: 3000 },
+        ],
+      },
+    ],
   },
 
   // Whole-genome CNV: COLO829 melanoma tumor (red) vs matched normal (blue)
