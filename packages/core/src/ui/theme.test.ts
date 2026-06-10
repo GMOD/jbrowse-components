@@ -1,4 +1,8 @@
-import { createJBrowseTheme } from './theme.ts'
+import {
+  createJBrowseTheme,
+  createJBrowseThemeFromArgs,
+  defaultThemes,
+} from './theme.ts'
 
 test('can create a default theme', () => {
   const theme = createJBrowseTheme()
@@ -108,4 +112,45 @@ test('orientation alignmentFill colors present for named themes', () => {
   const theme = createJBrowseTheme({}, undefined, 'darkStock')
   expect(theme.palette.alignmentFill.pairLR).toBeTruthy()
   expect(theme.palette.alignmentFill.pairRR).toBeTruthy()
+})
+
+// createJBrowseThemeFromArgs is how the RPC worker (and any consumer of the
+// serializable theme args) rebuilds the theme the session resolved on the main
+// thread. These guard that the rebuild matches the equivalent direct call.
+describe('createJBrowseThemeFromArgs', () => {
+  test('no args yields the default theme', () => {
+    expect(createJBrowseThemeFromArgs().palette.primary.main).toBe(
+      createJBrowseTheme().palette.primary.main,
+    )
+  })
+
+  test('reproduces a non-default named theme (dark)', () => {
+    const fromArgs = createJBrowseThemeFromArgs({ themeName: 'darkStock' })
+    const direct = createJBrowseTheme({}, defaultThemes, 'darkStock')
+    expect(fromArgs.palette.mode).toBe('dark')
+    expect(fromArgs.palette.coverage).toBe(direct.palette.coverage)
+    expect(fromArgs.palette.primary.main).toBe(direct.palette.primary.main)
+  })
+
+  test('applies configTheme palette overrides', () => {
+    const theme = createJBrowseThemeFromArgs({
+      configTheme: { palette: { primary: { main: '#888888' } } },
+    })
+    expect(theme.palette.primary.main).toBe('#888888')
+  })
+
+  // extraThemes is why the args ship more than configTheme: a config-defined
+  // theme selected by name can't be rebuilt from defaultThemes alone.
+  test('resolves a config-defined extra theme selected by name', () => {
+    const theme = createJBrowseThemeFromArgs({
+      themeName: 'myCustom',
+      extraThemes: {
+        myCustom: {
+          name: 'My Custom',
+          palette: { primary: { main: '#abcdef' } },
+        },
+      },
+    })
+    expect(theme.palette.primary.main).toBe('#abcdef')
+  })
 })
