@@ -16,14 +16,14 @@ export function migrateGCContentSnapshot(
     showTooltips: _showTooltips,
     ...rest
   } = snap
-  if (rest.windowSizeOverride === undefined && windowSize !== undefined) {
-    rest.windowSizeOverride = windowSize
+  // Apply a legacy field value only when the renamed key is not already set.
+  const applyLegacy = (newKey: string, legacyVal: unknown) => {
+    if (rest[newKey] === undefined && legacyVal !== undefined) {
+      rest[newKey] = legacyVal
+    }
   }
-  if (rest.windowDeltaOverride === undefined && windowDelta !== undefined) {
-    rest.windowDeltaOverride = windowDelta
-  }
-  if (rest.gcModeOverride === undefined && gcMode !== undefined) {
-    rest.gcModeOverride = gcMode
-  }
+  applyLegacy('windowSizeOverride', windowSize)
+  applyLegacy('windowDeltaOverride', windowDelta)
+  applyLegacy('gcModeOverride', gcMode)
   return rest
 }

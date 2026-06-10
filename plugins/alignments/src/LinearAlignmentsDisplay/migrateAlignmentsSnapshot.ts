@@ -228,19 +228,14 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
   } = snap
 
   const overrides: Record<string, unknown> = {}
-  if (colorBySetting !== undefined) {
-    overrides.colorBy = colorBySetting
+  const set = (key: string, val: unknown) => {
+    if (val !== undefined) overrides[key] = val
   }
-  if (filterBySetting !== undefined) {
-    overrides.filterBy = filterBySetting
-  }
-  if (featureHeight !== undefined) {
-    overrides.featureHeight = featureHeight
-  }
-  const lineWidthVal = lineWidthSetting ?? lineWidth
-  if (lineWidthVal !== undefined) {
-    overrides.readConnectionsLineWidth = lineWidthVal
-  }
+
+  set('colorBy', colorBySetting)
+  set('filterBy', filterBySetting)
+  set('featureHeight', featureHeight)
+  set('readConnectionsLineWidth', lineWidthSetting ?? lineWidth)
   // featureSpacing override directly maps; legacy noSpacing boolean folds
   // into it (true → 0, false → 2 to preserve the pre-unification render).
   // featureSpacing wins if both are present in an in-flight session.
@@ -249,22 +244,11 @@ function migrateOverrideProperties(snap: Record<string, unknown>) {
   } else if (noSpacing !== undefined) {
     overrides.featureSpacing = noSpacing ? 0 : 2
   }
-  if (showOutline !== undefined) {
-    overrides.showOutline = showOutline
-  }
-  if (mismatchAlpha !== undefined) {
-    overrides.mismatchAlpha = mismatchAlpha
-  }
-  if (showLegend !== undefined) {
-    overrides.showLegend = showLegend
-  }
-  const sortedByVal = sortedBySetting ?? sortedBy
-  if (sortedByVal !== undefined) {
-    overrides.sortedBy = sortedByVal
-  }
-  if (trackMaxHeight !== undefined) {
-    overrides.maxHeight = trackMaxHeight
-  }
+  set('showOutline', showOutline)
+  set('mismatchAlpha', mismatchAlpha)
+  set('showLegend', showLegend)
+  set('sortedBy', sortedBySetting ?? sortedBy)
+  set('maxHeight', trackMaxHeight)
 
   return { ...rest, ...overrides }
 }
