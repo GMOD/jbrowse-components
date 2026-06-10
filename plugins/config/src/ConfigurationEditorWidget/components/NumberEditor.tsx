@@ -6,6 +6,7 @@ import ConfigurationTextField from './ConfigurationTextField.tsx'
 
 const NumberEditor = observer(function NumberEditor({
   slot,
+  integer = false,
 }: {
   slot: {
     name?: string
@@ -13,6 +14,7 @@ const NumberEditor = observer(function NumberEditor({
     description?: string
     set: (val: number) => void
   }
+  integer?: boolean
 }) {
   const [val, setVal] = useState(String(slot.value))
   return (
@@ -24,7 +26,10 @@ const NumberEditor = observer(function NumberEditor({
         const v = evt.target.value
         setVal(v)
         const num = Number(v)
-        if (v !== '' && Number.isFinite(num)) {
+        // commit only valid values; the text buffer preserves in-progress
+        // entries like "-" or "1." without writing garbage to the config
+        const valid = integer ? Number.isInteger(num) : Number.isFinite(num)
+        if (v !== '' && valid) {
           slot.set(num)
         }
       }}

@@ -38,3 +38,17 @@ test('does not call slot.set on initial render', () => {
   render(<NumberEditor slot={slot} />)
   expect(slot.set).not.toHaveBeenCalled()
 })
+
+test('integer mode rejects non-integer input', () => {
+  const slot = {
+    name: 'testInteger',
+    value: 42,
+    description: 'test',
+    set: jest.fn(),
+  }
+  const { getByDisplayValue } = render(<NumberEditor slot={slot} integer />)
+  fireEvent.change(getByDisplayValue('42'), { target: { value: '1.5' } })
+  expect(slot.set).not.toHaveBeenCalled()
+  fireEvent.change(getByDisplayValue('1.5'), { target: { value: '100' } })
+  expect(slot.set).toHaveBeenCalledWith(100)
+})

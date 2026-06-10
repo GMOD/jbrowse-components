@@ -11,11 +11,15 @@ import {
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getMembers } from '@jbrowse/mobx-state-tree'
+import ClearIcon from '@mui/icons-material/Clear'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import SearchIcon from '@mui/icons-material/Search'
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  IconButton,
+  InputAdornment,
   TextField,
   Typography,
 } from '@mui/material'
@@ -45,6 +49,10 @@ const useStyles = makeStyles()(theme => ({
   },
   filter: {
     margin: theme.spacing(1),
+  },
+  noResults: {
+    margin: theme.spacing(2),
+    fontStyle: 'italic',
   },
 }))
 
@@ -229,8 +237,36 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
           }}
           size="small"
           fullWidth
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              endAdornment: filter ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    aria-label="clear filter"
+                    onClick={() => {
+                      setFilter('')
+                    }}
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            },
+          }}
         />
-        <Schema schema={target} filter={filter} />
+        {filter && !schemaMatches(target, filter.toLowerCase()) ? (
+          <Typography className={classes.noResults}>
+            No options match “{filter}”
+          </Typography>
+        ) : (
+          <Schema schema={target} filter={filter} />
+        )}
       </AccordionDetails>
     </Accordion>
   )
