@@ -83,7 +83,14 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
       )}
       {children}
 
-      {legendItems.length > 0 ? <FloatingLegend items={legendItems} /> : null}
+      {legendItems.length > 0 ? (
+        <FloatingLegend
+          items={legendItems}
+          onDismiss={() => {
+            model.setShowLegend(false)
+          }}
+        />
+      ) : null}
 
       {showTooltipsEnabled ? (
         <Suspense fallback={null}>

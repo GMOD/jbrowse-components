@@ -56,7 +56,14 @@ const VariantDisplayComponent = observer(
                 <LegendBar model={model} />
               </g>
             </svg>
-            {showLegend ? <FloatingLegend items={model.legendItems()} /> : null}
+            {showLegend ? (
+              <FloatingLegend
+                items={model.legendItems()}
+                onDismiss={() => {
+                  model.setShowLegend(false)
+                }}
+              />
+            ) : null}
             <div style={{ position: 'absolute', left: 0 }}>
               <VariantBody
                 model={model}

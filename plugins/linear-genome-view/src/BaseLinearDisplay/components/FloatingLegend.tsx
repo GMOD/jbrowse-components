@@ -1,3 +1,5 @@
+import CloseIcon from '@mui/icons-material/Close'
+import IconButton from '@mui/material/IconButton'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -9,9 +11,12 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.background.paper,
     padding: 3,
     fontSize: 10,
-    pointerEvents: 'none',
     zIndex: 100,
     maxWidth: 200,
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'flex-end',
   },
   item: {
     display: 'flex',
@@ -41,8 +46,10 @@ export interface LegendItem {
 
 const FloatingLegend = observer(function FloatingLegend({
   items,
+  onDismiss,
 }: {
   items: LegendItem[]
+  onDismiss?: () => void
 }) {
   const { classes } = useStyles()
 
@@ -52,6 +59,19 @@ const FloatingLegend = observer(function FloatingLegend({
 
   return (
     <div className={classes.legend}>
+      {onDismiss ? (
+        <div className={classes.header}>
+          <IconButton
+            size="small"
+            title="Hide legend"
+            onClick={() => {
+              onDismiss()
+            }}
+          >
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
+        </div>
+      ) : null}
       {items.map((item, idx) => (
         <div key={`${item.label}-${idx}`} className={classes.item}>
           <div

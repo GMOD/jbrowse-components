@@ -399,7 +399,14 @@ const LegendHost = observer(function LegendHost({
   if (!model.showLegend) {
     return null
   }
-  return <FloatingLegend items={model.legendItems()} />
+  return (
+    <FloatingLegend
+      items={model.legendItems()}
+      onDismiss={() => {
+        model.setShowLegend(false)
+      }}
+    />
+  )
 })
 
 const PileupScrollbar = observer(function PileupScrollbar({

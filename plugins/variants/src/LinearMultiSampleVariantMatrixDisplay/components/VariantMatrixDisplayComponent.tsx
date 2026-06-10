@@ -81,7 +81,14 @@ const VariantMatrixDisplayComponent = observer(
                 <LegendBar model={model} />
               </g>
             </svg>
-            {showLegend ? <FloatingLegend items={model.legendItems()} /> : null}
+            {showLegend ? (
+              <FloatingLegend
+                items={model.legendItems()}
+                onDismiss={() => {
+                  model.setShowLegend(false)
+                }}
+              />
+            ) : null}
             {inMatrix ? (
               <Crosshair
                 mouseX={mouseState.x}
