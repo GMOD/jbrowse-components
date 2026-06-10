@@ -1,8 +1,10 @@
 import { Cable } from '@jbrowse/core/ui/Icons'
 import ExtensionIcon from '@mui/icons-material/Extension'
+import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
+import UndoIcon from '@mui/icons-material/Undo'
 
 import type { SessionWithMultipleViews } from '../Session/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -84,6 +86,40 @@ export function preferencesMenuItem(
         PreferencesDialog,
         { session, pluginManager, handleClose },
       ])
+    },
+  }
+}
+
+// undo/redo read the root's HistoryManagementMixin TimeTraveller; only the full
+// app shells (jbrowse-web, desktop) compose it, so the node is passed in rather
+// than reached for here
+interface HistoryManager {
+  canUndo: boolean
+  canRedo: boolean
+  undo(): void
+  redo(): void
+}
+
+export function undoMenuItem(history: HistoryManager): MenuItem {
+  return {
+    label: 'Undo',
+    icon: UndoIcon,
+    onClick: () => {
+      if (history.canUndo) {
+        history.undo()
+      }
+    },
+  }
+}
+
+export function redoMenuItem(history: HistoryManager): MenuItem {
+  return {
+    label: 'Redo',
+    icon: RedoIcon,
+    onClick: () => {
+      if (history.canRedo) {
+        history.redo()
+      }
     },
   }
 }

@@ -18,15 +18,15 @@ import {
   openTrackMenuItem,
   pluginStoreMenuItem,
   preferencesMenuItem,
+  redoMenuItem,
+  undoMenuItem,
   workspacesMenuItem,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
-import RedoIcon from '@mui/icons-material/Redo'
 import StarIcon from '@mui/icons-material/Star'
-import UndoIcon from '@mui/icons-material/Undo'
 
 import packageJSON from '../../package.json' with { type: 'json' }
 import jbrowseWebFactory from '../jbrowseModel.ts'
@@ -442,24 +442,8 @@ export default function RootModel({
           {
             label: 'Tools',
             menuItems: [
-              {
-                label: 'Undo',
-                icon: UndoIcon,
-                onClick: () => {
-                  if (self.history.canUndo) {
-                    self.history.undo()
-                  }
-                },
-              },
-              {
-                label: 'Redo',
-                icon: RedoIcon,
-                onClick: () => {
-                  if (self.history.canRedo) {
-                    self.history.redo()
-                  }
-                },
-              },
+              undoMenuItem(self.history),
+              redoMenuItem(self.history),
               { type: 'divider' },
               pluginStoreMenuItem(),
               {

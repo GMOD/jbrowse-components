@@ -28,13 +28,49 @@ reads — the dense config-read lever lives in adapters, not displays/views).
 
 ---
 
-## P1 progress (in flight)
+## P1 — DONE
 
-- **desktop** — `_checkDesktopRootModel(m): AppRootModel` assertion added (mirrors
-  jbrowse-web's `_checkWebRootModel`). Compiles clean; desktop composes
-  `HistoryManagementMixin` + `BaseRootModelFactory` so it satisfies the contract.
-- **jbrowse-web** — already enforced via `_checkWebRootModel(m): WebRootModelInterface`
-  (and `WebRootModelInterface extends AppRootModel`).
+All three roots are now structurally checked at compile time, and the one piece
+of genuinely-identical duplication between roots has been collapsed via the
+established menu-item-builder pattern:
+
+- **desktop** — `_checkDesktopRootModel(m): AppRootModel`.
+- **jbrowse-web** — `_checkWebRootModel(m): AbstractWebRootModel &
+  AbstractWebSessionDbRootModel`.
+- **react-app** — `_checkReactAppRootModel(m): AbstractWebRootModel` (the narrow
+  contract; option **B** below was taken — see "react-app, resolved").
+- **Undo/Redo menu items** — were byte-identical in the web and desktop roots;
+  extracted to `undoMenuItem(history)`/`redoMenuItem(history)` in
+  `product-core/RootModel/menuItems.ts` alongside the existing
+  `openTrackMenuItem`/`pluginStoreMenuItem`/… builders. Covered by
+  `menuItems.test.ts`.
+
+### Deliberately NOT extracted (anti over-engineering)
+
+A `BaseWebRootModel` mixin mirroring `BaseWebSessionModel` was considered and
+rejected. The surface that is actually shared between the web and react-app
+roots — and not already in `BaseRootModelFactory` — is only three thin members:
+the `pluginsUpdated` volatile, a one-line `setPluginsUpdated`, and the
+timestamped `setDefaultSession` override. `version` and `rpcManager` differ in
+value (and react-app reacts to `pluginsUpdated` with a window-reload autorun that
+web does not). Extracting a mixin for three small, value-divergent members is the
+"thin submodel for modularization" anti-pattern; the verbose-but-obvious
+duplication is preferred here. The session pass's `BaseWebSessionModel` was large
+and genuinely shared — this is not.
+
+### react-app, resolved
+
+The earlier finding (react-app's root satisfied neither contract because
+BaseWebSession delegated history + the session-DB actions to a root that didn't
+provide them) was fixed by **option B**: the session-DB surface moved out of
+`BaseWebSession` into `WebSessionManagementMixin` (composed only by jbrowse-web),
+`AppRootModel.history` became optional, and the contract split into
+`AbstractWebRootModel` (both web roots satisfy) vs `AbstractWebSessionDbRootModel`
+(jbrowse-web only). See commit `b75804603b`. Original finding retained below for
+context.
+
+### Original finding (react-app, now resolved)
+
 - **react-app — FINDING: its root satisfies NEITHER contract.** It composes
   `BaseRootModelFactory + InternetAccountsRootModelMixin + RootAppMenuMixin` —
   no `HistoryManagementMixin`, and none of the session-DB actions. Yet its session
@@ -127,10 +163,10 @@ LinearComparative/Synteny, BreakpointSplit, SvInspector). These are plugin-level
 
 ## Suggested order
 
-1. **P1 root models** — same lens, one level up, biggest payoff. Start with the
-   web vs react-app diff and the `AppRootModel` compile-time assertion (cheap win
-   that hardens what this pass already built).
-2. **P2 config models** — small, bounded, complements P1.
+1. ~~**P1 root models**~~ — **DONE** (see "P1 — DONE" above): all three roots
+   compile-time-checked against their contracts, undo/redo menu items
+   deduplicated, thin `BaseWebRootModel` deliberately skipped.
+2. **P2 config models** — small, bounded, complements P1. Next.
 3. **P3/P4** — opportunistic consistency audits; do alongside other work in those
    files rather than as a standalone sweep.
 

@@ -2,6 +2,8 @@ import {
   openConnectionMenuItem,
   openTrackMenuItem,
   preferencesMenuItem,
+  redoMenuItem,
+  undoMenuItem,
   workspacesMenuItem,
 } from './menuItems.ts'
 
@@ -85,6 +87,30 @@ describe('preferencesMenuItem', () => {
       Dialog,
       { session, pluginManager, handleClose },
     ])
+  })
+})
+
+describe('undoMenuItem / redoMenuItem', () => {
+  it('undoes only when history can undo', () => {
+    const undo = jest.fn()
+    const history = { canUndo: true, canRedo: false, undo, redo: jest.fn() }
+    clickOf(undoMenuItem(history))()
+    expect(undo).toHaveBeenCalledTimes(1)
+
+    history.canUndo = false
+    clickOf(undoMenuItem(history))()
+    expect(undo).toHaveBeenCalledTimes(1)
+  })
+
+  it('redoes only when history can redo', () => {
+    const redo = jest.fn()
+    const history = { canUndo: false, canRedo: true, undo: jest.fn(), redo }
+    clickOf(redoMenuItem(history))()
+    expect(redo).toHaveBeenCalledTimes(1)
+
+    history.canRedo = false
+    clickOf(redoMenuItem(history))()
+    expect(redo).toHaveBeenCalledTimes(1)
   })
 })
 

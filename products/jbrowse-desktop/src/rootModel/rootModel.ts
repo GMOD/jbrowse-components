@@ -17,14 +17,14 @@ import {
   openTrackMenuItem,
   pluginStoreMenuItem,
   preferencesMenuItem,
+  redoMenuItem,
+  undoMenuItem,
   workspacesMenuItem,
 } from '@jbrowse/product-core'
 import AppsIcon from '@mui/icons-material/Apps'
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
-import RedoIcon from '@mui/icons-material/Redo'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
-import UndoIcon from '@mui/icons-material/Undo'
 import { autorun } from 'mobx'
 
 import packageJSON from '../../package.json' with { type: 'json' }
@@ -270,24 +270,8 @@ export default function rootModelFactory({
               {
                 label: 'Tools',
                 menuItems: [
-                  {
-                    label: 'Undo',
-                    icon: UndoIcon,
-                    onClick: () => {
-                      if (self.history.canUndo) {
-                        self.history.undo()
-                      }
-                    },
-                  },
-                  {
-                    label: 'Redo',
-                    icon: RedoIcon,
-                    onClick: () => {
-                      if (self.history.canRedo) {
-                        self.history.redo()
-                      }
-                    },
-                  },
+                  undoMenuItem(self.history),
+                  redoMenuItem(self.history),
                   { type: 'divider' },
                   pluginStoreMenuItem(),
                   preferencesMenuItem(pluginManager, PreferencesDialog),
