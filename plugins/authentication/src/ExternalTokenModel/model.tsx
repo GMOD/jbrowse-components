@@ -1,11 +1,17 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { getRoot, types } from '@jbrowse/mobx-state-tree'
 
 import { ExternalTokenEntryForm } from './ExternalTokenEntryForm.tsx'
 import { validateTokenWithHEAD } from '../util.ts'
 
-import type { ExternalTokenInternetAccountConfigModel } from './configSchema.ts'
+import type {
+  ExternalTokenInternetAccountConfig,
+  ExternalTokenInternetAccountConfigModel,
+} from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -18,8 +24,14 @@ const stateModelFactory = (
       configuration: ConfigurationReference(configSchema),
     })
     .views(self => ({
-      get validateWithHEAD(): boolean {
-        return getConf(self, 'validateWithHEAD')
+      // typed config accessor; see OAuthModel for why reads go through this
+      get conf(): ExternalTokenInternetAccountConfig {
+        return self.configuration
+      },
+    }))
+    .views(self => ({
+      get validateWithHEAD() {
+        return readConfObject(self.conf, 'validateWithHEAD')
       },
     }))
     .actions(self => ({

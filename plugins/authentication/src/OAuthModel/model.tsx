@@ -1,4 +1,4 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference, readConfObject } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron, sha256Base64Url, toBase64Url } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -10,7 +10,10 @@ import {
   waitForOAuthMessage,
 } from './util.ts'
 
-import type { OAuthInternetAccountConfigModel } from './configSchema.ts'
+import type {
+  OAuthInternetAccountConfig,
+  OAuthInternetAccountConfigModel,
+} from './configSchema.ts'
 import type { OAuthWindowParams } from './util.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -30,6 +33,18 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        */
       configuration: ConfigurationReference(configSchema),
     })
+    .views(self => ({
+      /**
+       * #getter
+       * The config typed off the concrete schema. `ConfigurationReference`
+       * erases `self.configuration` to `any` (the reference's MST instance brand
+       * doesn't carry the schema's slot definitions), so reads go through this
+       * getter to recover per-slot types and slot-name validation.
+       */
+      get conf(): OAuthInternetAccountConfig {
+        return self.configuration
+      },
+    }))
     .views(() => {
       // Closure variable rather than MST state so it survives model re-renders
       // without being serialized to the snapshot.
@@ -52,32 +67,32 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       /**
        * #getter
        */
-      get authEndpoint(): string {
-        return getConf(self, 'authEndpoint')
+      get authEndpoint() {
+        return readConfObject(self.conf, 'authEndpoint')
       },
       /**
        * #getter
        */
-      get tokenEndpoint(): string {
-        return getConf(self, 'tokenEndpoint')
+      get tokenEndpoint() {
+        return readConfObject(self.conf, 'tokenEndpoint')
       },
       /**
        * #getter
        */
-      get needsPKCE(): boolean {
-        return getConf(self, 'needsPKCE')
+      get needsPKCE() {
+        return readConfObject(self.conf, 'needsPKCE')
       },
       /**
        * #getter
        */
-      get clientId(): string {
-        return getConf(self, 'clientId')
+      get clientId() {
+        return readConfObject(self.conf, 'clientId')
       },
       /**
        * #getter
        */
-      get scopes(): string {
-        return getConf(self, 'scopes')
+      get scopes() {
+        return readConfObject(self.conf, 'scopes')
       },
       /**
        * #getter
@@ -86,14 +101,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        *
        * Can override or extend if dynamic state is needed.
        */
-      get state(): string | undefined {
-        return getConf(self, 'state')
+      get state() {
+        return readConfObject(self.conf, 'state')
       },
       /**
        * #getter
        */
-      get responseType(): 'token' | 'code' {
-        return getConf(self, 'responseType')
+      get responseType() {
+        return readConfObject(self.conf, 'responseType') as 'token' | 'code'
       },
       /**
        * #getter
