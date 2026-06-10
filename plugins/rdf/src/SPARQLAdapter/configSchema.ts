@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
+const SPARQLAdapterConfigSchema = ConfigurationSchema(
   'SPARQLAdapter',
   {
     endpoint: {
@@ -38,3 +40,7 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default SPARQLAdapterConfigSchema
+
+export type SPARQLAdapterConfig = Instance<typeof SPARQLAdapterConfigSchema>

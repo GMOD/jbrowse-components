@@ -82,6 +82,19 @@ export type ConfigurationSlotValue<SCHEMA, K extends string> =
         : any
     : any
 
+/**
+ * Naming convention for config types, paired per schema:
+ * - `XConfigSchema` is the MST IType (the schema itself). Use it for
+ *   `getConf`, `ConfigurationReference`, and factory params — anywhere a schema
+ *   is expected.
+ * - `XConfigModel` is `Instance<XConfigSchema>` (a resolved config node). Use it
+ *   for `readConfObject` results, model fields, and values read off a session.
+ *
+ * Prefer a named `XConfigModel` alias over inlining `Instance<XConfigSchema>` at
+ * call sites. Two historical names predate this convention and stay as-is:
+ * `BaseTrackConfig` (the track instance type) and `AnyConfiguration` (a
+ * model-or-snapshot union, not a plain instance).
+ */
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>

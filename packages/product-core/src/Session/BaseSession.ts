@@ -4,7 +4,7 @@ import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { DialogComponentType } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -115,7 +115,7 @@ export function BaseSessionModel<
       /**
        * #getter
        */
-      get assemblies(): Instance<BaseAssemblyConfigSchema>[] {
+      get assemblies(): BaseAssemblyConfigModel[] {
         return self.jbrowse.assemblies
       },
       /**

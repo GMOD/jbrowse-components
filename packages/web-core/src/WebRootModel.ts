@@ -1,14 +1,12 @@
-import type { Menu } from '@jbrowse/app-core'
+import type { AppRootModel } from '@jbrowse/app-core'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
-import type { AssemblyManager } from '@jbrowse/core/util/types'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface SessionMetadata {
   id: string
@@ -21,7 +19,7 @@ export interface SessionMetadata {
 /** Shape of the jbrowse config model as seen from the session */
 export interface JBrowseModelInterface {
   readonly configuration: AnyConfigurationModel
-  readonly assemblies: Instance<BaseAssemblyConfigSchema>[]
+  readonly assemblies: BaseAssemblyConfigModel[]
   readonly connections: BaseConnectionConfigModel[]
   readonly tracks: readonly { trackId: string; [key: string]: unknown }[]
   addAssemblyConf(conf: AnyConfiguration): unknown
@@ -31,29 +29,20 @@ export interface JBrowseModelInterface {
 }
 
 /**
- * What BaseWebSession requires from its parent root model.
+ * What BaseWebSession requires from its parent root model: the shared
+ * {@link AppRootModel} surface plus the web-only session-management members.
  * The concrete root model (e.g. jbrowse-web's RootModel) must satisfy this.
  */
-export interface WebRootModelInterface {
+export interface WebRootModelInterface extends AppRootModel {
   readonly jbrowse: JBrowseModelInterface
   readonly rpcManager: RpcManager
   readonly adminMode: boolean
-  readonly assemblyManager: AssemblyManager
   readonly textSearchManager: TextSearchManager
-  readonly version: string
   readonly savedSessionMetadata: SessionMetadata[] | undefined
-  readonly history: {
-    canUndo: boolean
-    canRedo: boolean
-    undo(): void
-    redo(): void
-  }
-  menus(): Menu[]
   setPluginsUpdated(): void
   deleteSavedSession(id: string): Promise<void>
   setSavedSessionFavorite(id: string, favorite: boolean): Promise<void>
   renameSavedSession(id: string, name: string): Promise<void>
-  renameCurrentSession(name: string): void
   activateSession(id: string): Promise<void>
   setDefaultSession(): void
   setSession(snapshot: Record<string, unknown>): void

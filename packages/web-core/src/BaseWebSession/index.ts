@@ -1,6 +1,10 @@
-import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
+import {
+  AppSessionMixin,
+  AssembliesMixin,
+  DockviewLayoutMixin,
+} from '@jbrowse/app-core'
 import { pluginUrl } from '@jbrowse/core/PluginLoader'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
   restoreFileHandles,
@@ -29,7 +33,6 @@ import { autorun } from 'mobx'
 import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
 import type { WebRootModelInterface } from '../WebRootModel.ts'
-import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -41,8 +44,7 @@ import type {
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AssemblyManager } from '@jbrowse/core/util/types'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseWebSession
@@ -53,6 +55,7 @@ import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
  * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
  * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
  * - [AssembliesMixin](../assembliesmixin)
+ * - [AppSessionMixin](../appsessionmixin)
  * - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
  */
 export function BaseWebSession({
@@ -70,6 +73,7 @@ export function BaseWebSession({
       MultipleViewsSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
       AssembliesMixin(pluginManager, assemblyConfigSchema),
+      AppSessionMixin(pluginManager),
       WebSessionConnectionsMixin(pluginManager),
       DockviewLayoutMixin(),
     )
@@ -106,17 +110,6 @@ export function BaseWebSession({
       },
       /**
        * #getter
-       * list of sessionAssemblies and jbrowse config assemblies, does not
-       * include temporaryAssemblies. basically the list to be displayed in a
-       * AssemblySelector dropdown
-       */
-      get assemblies(): (Instance<BaseAssemblyConfigSchema> & {
-        sequence: { trackId: string }
-      })[] {
-        return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
-      },
-      /**
-       * #getter
        * list of config connections and session connections
        */
       get connections(): BaseConnectionConfigModel[] {
@@ -133,21 +126,6 @@ export function BaseWebSession({
 
       /**
        * #getter
-       * list of sessionAssemblies and jbrowse config assemblies, does not
-       * include temporaryAssemblies. basically the list to be displayed in a
-       * AssemblySelector dropdown
-       */
-      get assemblyNames() {
-        return self.assemblies.map(f => readConfObject(f, 'name') as string)
-      },
-      /**
-       * #getter
-       */
-      get version() {
-        return self.root.version
-      },
-      /**
-       * #getter
        */
       get shareURL() {
         return getConf(self.jbrowse, 'shareURL')
@@ -161,31 +139,8 @@ export function BaseWebSession({
       /**
        * #getter
        */
-      get assemblyManager(): AssemblyManager {
-        return self.root.assemblyManager
-      },
-      /**
-       * #getter
-       */
       get savedSessionMetadata() {
         return self.root.savedSessionMetadata
-      },
-
-      /**
-       * #getter
-       */
-      get history() {
-        return self.root.history
-      },
-
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          theme: self.theme,
-          highResolutionScaling: getConf(self, 'highResolutionScaling'),
-        }
       },
     }))
     .actions(self => ({
@@ -236,13 +191,6 @@ export function BaseWebSession({
       renameSavedSession(id: string, name: string) {
         return self.root.renameSavedSession(id, name)
       },
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        self.root.renameCurrentSession(sessionName)
-      },
-
       /**
        * #action
        */
@@ -336,12 +284,6 @@ export function BaseWebSession({
         )
       },
 
-      /**
-       * #method
-       */
-      menus(): Menu[] {
-        return self.root.menus()
-      },
     }))
     .actions(self => ({
       setPendingFileHandleIds(ids: string[]) {

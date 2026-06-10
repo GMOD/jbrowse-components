@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '../configuration/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BaseAssembly
@@ -131,4 +132,9 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
 }
 
 export default assemblyConfigSchema
+
+/** the assembly config schema IType (use with `getConf`, `ConfigurationReference`, etc.) */
 export type BaseAssemblyConfigSchema = ReturnType<typeof assemblyConfigSchema>
+
+/** a resolved assembly config instance, i.e. `Instance<BaseAssemblyConfigSchema>` */
+export type BaseAssemblyConfigModel = Instance<BaseAssemblyConfigSchema>

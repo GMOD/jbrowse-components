@@ -19,8 +19,5 @@ export {
 } from './BaseTrackModel.ts'
 export type { BaseTrackModel, BaseTrackStateModel } from './BaseTrackModel.ts'
 export { createBaseTrackConfig } from './baseTrackConfig.ts'
-export type {
-  BaseTrackConfig,
-  BaseTrackConfigSchema as BaseTrackConfigModel,
-} from './baseTrackConfig.ts'
+export type { BaseTrackConfig } from './baseTrackConfig.ts'
 export type { FileTypeExporter } from './saveTrackFileTypes/types.ts'

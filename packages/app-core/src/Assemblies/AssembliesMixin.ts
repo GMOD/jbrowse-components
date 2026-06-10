@@ -1,7 +1,11 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type {
+  BaseAssemblyConfigModel,
+  BaseAssemblyConfigSchema,
+} from '@jbrowse/core/assemblyManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
 import type { BaseSession } from '@jbrowse/product-core'
 
@@ -100,6 +104,29 @@ export function AssembliesMixin(
         },
       }
     })
+    .views(s => {
+      const self = s as typeof s & BaseSession
+      return {
+        /**
+         * #getter
+         * sessionAssemblies plus jbrowse config assemblies. Does not include
+         * temporaryAssemblies; this is the list shown in the AssemblySelector
+         * dropdown.
+         */
+        get assemblies(): BaseAssemblyConfigModel[] {
+          return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
+        },
+      }
+    })
+    .views(self => ({
+      /**
+       * #getter
+       * names of the assemblies returned by the `assemblies` getter
+       */
+      get assemblyNames(): string[] {
+        return self.assemblies.map(a => readConfObject(a, 'name'))
+      },
+    }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

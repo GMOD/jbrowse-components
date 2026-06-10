@@ -1,6 +1,9 @@
-import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import {
+  AppSessionMixin,
+  AssembliesMixin,
+  DockviewLayoutMixin,
+} from '@jbrowse/app-core'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   ConnectionManagementSessionMixin,
   MultipleViewsSessionMixin,
@@ -11,7 +14,6 @@ import {
 
 import { DesktopSessionTrackMenuMixin } from './TrackMenu.ts'
 
-import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -26,6 +28,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * - TracksManagerSessionMixin
  * - MultipleViewsSessionMixin
  * - AssembliesMixin
+ * - AppSessionMixin
  * - DesktopSessionTrackMenuMixin
  * - DockviewLayoutMixin
  *
@@ -37,82 +40,18 @@ export default function sessionModelFactory({
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  const sessionModel = types
-    .compose(
-      'JBrowseDesktopSessionModel',
-      ReferenceManagementSessionMixin(pluginManager),
-      ConnectionManagementSessionMixin(pluginManager),
-      ThemeManagerSessionMixin(pluginManager),
-      TracksManagerSessionMixin(pluginManager),
-      MultipleViewsSessionMixin(pluginManager),
-      AssembliesMixin(pluginManager, assemblyConfigSchema),
-      DesktopSessionTrackMenuMixin(pluginManager),
-      DockviewLayoutMixin(),
-    )
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get assemblies(): Instance<BaseAssemblyConfigSchema[]> {
-        return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
-      },
-      /**
-       * #getter
-       */
-      get root() {
-        return getParent<DesktopRootModel>(self)
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        self.root.renameCurrentSession(sessionName)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get assemblyNames(): string[] {
-        return self.assemblies.map(a => readConfObject(a, 'name'))
-      },
-      /**
-       * #getter
-       */
-      get version() {
-        return self.root.version
-      },
-      /**
-       * #getter
-       */
-      get history() {
-        return self.root.history
-      },
-      /**
-       * #getter
-       */
-      get menus() {
-        return self.root.menus
-      },
-      /**
-       * #getter
-       */
-      get assemblyManager() {
-        return self.root.assemblyManager
-      },
-
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          theme: self.theme,
-          highResolutionScaling: getConf(self, 'highResolutionScaling'),
-        }
-      },
-    }))
+  const sessionModel = types.compose(
+    'JBrowseDesktopSessionModel',
+    ReferenceManagementSessionMixin(pluginManager),
+    ConnectionManagementSessionMixin(pluginManager),
+    ThemeManagerSessionMixin(pluginManager),
+    TracksManagerSessionMixin(pluginManager),
+    MultipleViewsSessionMixin(pluginManager),
+    AssembliesMixin(pluginManager, assemblyConfigSchema),
+    AppSessionMixin(pluginManager),
+    DesktopSessionTrackMenuMixin(pluginManager),
+    DockviewLayoutMixin(),
+  )
 
   const extendedSessionModel = pluginManager.evaluateExtensionPoint(
     'Core-extendSession',
