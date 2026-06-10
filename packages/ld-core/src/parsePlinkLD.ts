@@ -1,5 +1,40 @@
 import type { PlinkLDHeader, PlinkLDRecord } from './plinkLDTypes.ts'
 
+// Column layout of a headerless PLINK `--r2` file (the standard emit order).
+// LocusZoom's hosted demo LD files (e.g. plink.ld.tab.gz) ship without the
+// header row, so we fall back to these fixed indices.
+export const DEFAULT_PLINK_LD_HEADER: PlinkLDHeader = {
+  chrAIdx: 0,
+  bpAIdx: 1,
+  snpAIdx: 2,
+  chrBIdx: 3,
+  bpBIdx: 4,
+  snpBIdx: 5,
+  r2Idx: 6,
+  dprimeIdx: -1,
+  mafAIdx: -1,
+  mafBIdx: -1,
+}
+
+// A header line names at least one of the position columns; a data row never
+// does. Used to tell a real header apart from a first data row.
+function looksLikePlinkLDHeader(line: string) {
+  return /\b(CHR_A|CHR1|BP_A|BP1|POS_A|POS1)\b/.test(line)
+}
+
+// Resolve a file's column layout from its first line. A recognizable header is
+// parsed (and reported as consumed so the caller skips it); anything else —
+// empty (tabix files with no `#` comment header) or a bare data row — falls
+// back to the default PLINK column order, leaving the line as data.
+export function resolvePlinkLDHeader(firstLine: string): {
+  header: PlinkLDHeader
+  isHeaderLine: boolean
+} {
+  return looksLikePlinkLDHeader(firstLine)
+    ? { header: parsePlinkLDHeader(firstLine), isHeaderLine: true }
+    : { header: DEFAULT_PLINK_LD_HEADER, isHeaderLine: false }
+}
+
 // PLINK header looks like: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
 // With optional: DP, MAF_A, MAF_B, PHASE
 export function parsePlinkLDHeader(headerLine: string): PlinkLDHeader {

@@ -169,6 +169,43 @@
           }
         }
       ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "giant_bmi_locuszoom",
+      "name": "GIANT BMI (LocusZoom demo data, genome-wide; toggle LD + zoom FTO chr16:53.8Mb)",
+      "category": ["GWAS"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/gwas/gwas_giant-bmi_meta_women-only.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gwas/gwas_giant-bmi_meta_women-only.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "giant_bmi_locuszoom-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay",
+          "ldAdapter": {
+            "type": "PlinkLDTabixAdapter",
+            "ldLocation": {
+              "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz"
+            },
+            "index": {
+              "indexType": "TBI",
+              "location": {
+                "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz.tbi"
+              }
+            }
+          }
+        }
+      ]
     }
   ]
 }

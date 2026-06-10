@@ -1,7 +1,7 @@
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { parsePlinkLDHeader, parsePlinkLDLine } from '@jbrowse/ld-core'
+import { parsePlinkLDLine, resolvePlinkLDHeader } from '@jbrowse/ld-core'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -25,12 +25,14 @@ export default class PlinkLDAdapter extends BaseAdapter {
       throw new Error('Empty LD file')
     }
 
-    const header = parsePlinkLDHeader(lines[0]!)
+    // Headerless (LocusZoom-style) files fall back to default PLINK columns
+    // and keep line 0 as data; a real header is parsed and skipped.
+    const { header, isHeaderLine } = resolvePlinkLDHeader(lines[0]!)
 
     const records: PlinkLDRecord[] = []
     const refNamesSet = new Set<string>()
 
-    for (let i = 1; i < lines.length; i++) {
+    for (let i = isHeaderLine ? 1 : 0; i < lines.length; i++) {
       const record = parsePlinkLDLine(lines[i]!, header)
       if (record) {
         records.push(record)

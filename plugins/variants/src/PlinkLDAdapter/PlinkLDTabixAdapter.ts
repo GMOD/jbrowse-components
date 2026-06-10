@@ -2,7 +2,7 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
-import { parsePlinkLDHeader, parsePlinkLDLine } from '@jbrowse/ld-core'
+import { parsePlinkLDLine, resolvePlinkLDHeader } from '@jbrowse/ld-core'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -25,8 +25,10 @@ export default class PlinkLDTabixAdapter extends BaseAdapter {
       chunkCacheSize: 50 * 2 ** 20,
     })
 
-    const headerLine = await ld.getHeader()
-    const header = parsePlinkLDHeader(headerLine)
+    // LocusZoom-style files ship without a header row (getHeader returns ''),
+    // so fall back to the default PLINK column order. tabix already skips any
+    // real `#`/`-S` header, so getLines only yields data rows either way.
+    const { header } = resolvePlinkLDHeader(await ld.getHeader())
 
     return { ld, header }
   }

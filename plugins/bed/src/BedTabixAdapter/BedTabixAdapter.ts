@@ -18,6 +18,23 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
+// 0-based column offsets + coordinate conventions derived from the tabix index
+// metadata. `hasEndColumn` is false when the index has a begin but no end
+// column (`-b` only, e.g. LocusZoom GWAS / point data, where end column is 0) —
+// those features are a single position, so callers use end = start + 1.
+function resolveBedColumns(
+  metadata: Awaited<ReturnType<TabixIndexedFile['getMetadata']>>,
+) {
+  const { columnNumbers, coordinateType } = metadata
+  return {
+    colRef: columnNumbers.ref - 1,
+    colStart: columnNumbers.start - 1,
+    colEnd: columnNumbers.end - 1,
+    hasEndColumn: columnNumbers.end > 0,
+    oneBased: coordinateType === '1-based-closed',
+  }
+}
+
 export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdapterConfig> {
   private parser: BED
 
@@ -113,11 +130,8 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   public getFeatures(query: Region, opts?: BaseOptions) {
     const { stopToken, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { columnNumbers, coordinateType } = await this.getMetadata()
-      const colRef = columnNumbers.ref - 1
-      const colStart = columnNumbers.start - 1
-      const colEnd = columnNumbers.end - 1
-      const oneBased = coordinateType === '1-based-closed'
+      const { colRef, colStart, colEnd, hasEndColumn, oneBased } =
+        resolveBedColumns(await this.getMetadata())
       const names = await this.getNames()
       const scoreColumn = this.getConf('scoreColumn')
       const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
@@ -128,15 +142,17 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
           lineCallback: (line, fileOffset) => {
             checkStopToken2(stopTokenCheck)
             const splitLine = line.split('\t')
+            const start = +splitLine[colStart]! - (oneBased ? 1 : 0)
+            const end = hasEndColumn
+              ? +splitLine[colEnd]! + (colStart === colEnd && !oneBased ? 1 : 0)
+              : start + 1
             observer.next(
               new SimpleFeature(
                 featureData({
                   splitLine,
                   refName: splitLine[colRef]!,
-                  start: +splitLine[colStart]! - (oneBased ? 1 : 0),
-                  end:
-                    +splitLine[colEnd]! +
-                    (colStart === colEnd && !oneBased ? 1 : 0),
+                  start,
+                  end,
                   scoreColumn,
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,
