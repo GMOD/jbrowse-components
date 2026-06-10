@@ -118,23 +118,27 @@ handlers are absent in those two states) but it is **load-bearing** for the
 **imperative** `regionTooLarge` (wiggle, alignments, hic), where the flag is a
 volatile set as a *side effect of fetching*:
 
-- `FetchVisibleRegions` both **sets** `regionTooLarge` (inside `fetchRegions`)
-  and **gates** on it, and it reads the flag **tracked** (line `self.error ||
-  self.regionTooLarge` near the top) — so every flip re-runs the autorun.
-- `ClearBlockingStateOnViewportChange` **clears** the flag whenever
-  viewport-derived state changes.
+- `fetchRegions` **sets** the flag `true` (`MultiRegionDisplayMixin` ~line 240)
+  when the byte estimate exceeds the limit, and `FetchVisibleRegions` **gates**
+  on it (reads it *tracked*, so every flip re-runs that autorun).
+- `clearAllRpcData()` **clears** the flag `false` (~line 158). It is called by
+  the invalidation autoruns (`DisplayedRegionsChange` / `SettingsInvalidate` /
+  `ClearBlockingStateOnViewportChange`) to let a retry run.
 
-So "am I rendering?" and "am I too large?" are coupled: rendering drives the
-fetch that sets the flag; the flag hides the canvas; a clear/refetch reopens the
-gate. If the canvas is merely *hidden* inside a still-mounted container, the
-mount → fetch → too-large → unmount → clear → remount churn perturbs those
-autoruns enough to reopen the gate, and `regionTooLarge` **oscillates
-true/false forever** (`DisplayChrome` re-renders alternating — caught by
-`StatsEstimation.test`, which times out waiting for the banner). Replacing the
-whole subtree keeps the canvas out of the React tree across the *entire*
-too-large state, so nothing drives the fetch and the flag holds steady. This is
-the ADR-025 dispose/re-init contract; the comment block in `DisplayChrome.tsx`
-spells it out so a future pass doesn't "fix" the apparent leak.
+So "am I rendering?" and "am I too large?" are coupled: a fetch sets the flag;
+the flag should hide the canvas; an invalidation clears it and the refetch
+re-detects over-limit and re-sets it. With the canvas merely *hidden* inside a
+still-mounted container, the mount/unmount churn keeps re-triggering that
+invalidate→refetch cycle, so `setRegionTooLarge` **ping-pongs** `false`
+(`clearAllRpcData`) → `true` (`fetchRegions`) → `false` → … forever. (Verified
+by instrumenting `setRegionTooLarge`: it logs alternating calls from those two
+sites throughout the thrash; `DisplayChrome` re-renders alternating and the
+banner never commits, so `StatsEstimation.test` times out waiting for it.)
+Replacing the whole subtree keeps the canvas out of the React tree across the
+*entire* too-large state, so the churn stops, the fetch settles, and the flag
+holds. This is the ADR-025 dispose/re-init contract; the comment block in
+`DisplayChrome.tsx` spells it out so a future pass doesn't "fix" the apparent
+leak.
 
 The **derived** canvas `regionTooLarge` (above) is a pure function of cached
 stats with no render→fetch feedback, which is the deeper reason it doesn't
