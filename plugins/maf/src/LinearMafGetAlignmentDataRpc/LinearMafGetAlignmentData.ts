@@ -35,10 +35,11 @@ export interface LinearMafGetAlignmentDataArgs {
   adapterConfig: AnyConfigurationModel
   sessionId: string
   region: Region
-  // Sample ids to include in the coverage computation (the visible subtree).
-  // Undefined = all samples. Only scopes coverage; the rendered blocks always
-  // carry every sample's row.
-  sampleFilter?: string[]
+  // Display row order (the client's layout, narrowed by any subtree filter). A
+  // block row is emitted at its index in this list, so the worker's `rowIndex`
+  // is the on-screen row (and coverage is scoped to the set). Undefined on the
+  // first fetch — falls back to canonical sample order. Mirrors variants.
+  orderedSampleIds?: string[]
   stopToken?: StopToken
   statusCallback?: (msg: string) => void
 }
@@ -133,7 +134,14 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     const samples: Sample[] = hasConfiguredSamples
       ? configSamples
       : [...discoveredOrder.keys()].map(id => ({ id, label: id }))
-    const sampleToRow = new Map(samples.map((s, i) => [s.id, i]))
+    // Block rows are keyed/ordered by the client's display order; samples not
+    // in it are dropped. The returned `samples` stays the full canonical set so
+    // the sidebar tree + "clear filter" still see every genome.
+    const { orderedSampleIds } = deserializedArgs
+    const rowOrder = orderedSampleIds?.length
+      ? orderedSampleIds
+      : samples.map(s => s.id)
+    const sampleToRow = new Map(rowOrder.map((id, i) => [id, i]))
 
     // One MAF feature = one alignment block. A single fetched region can
     // contain many disjoint blocks at unrelated genomic anchors.
@@ -182,29 +190,10 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       },
     )
 
-    // Coverage is scoped to the visible subtree: filter the rows fed to the
-    // coverage computation to the requested samples. The rendered `blocks`
-    // always keep every row — only the depth/SNP/insertion bars narrow.
-    const { sampleFilter } = deserializedArgs
-    let coverageBlocks = blocks
-    if (sampleFilter?.length) {
-      const allowed = new Set<number>()
-      for (const id of sampleFilter) {
-        const idx = sampleToRow.get(id)
-        if (idx !== undefined) {
-          allowed.add(idx)
-        }
-      }
-      coverageBlocks = blocks.map(b => ({
-        ...b,
-        rows: b.rows.filter(r => allowed.has(r.rowIndex)),
-      }))
-    }
-    const coverage = buildMafCoverageRegion(
-      coverageBlocks,
-      region.start,
-      region.end,
-    )
+    // `blocks` already contains exactly the display rows (narrowed by the
+    // subtree filter via `rowOrder`), so coverage over them is automatically
+    // scoped to the visible subtree — no separate row filtering needed.
+    const coverage = buildMafCoverageRegion(blocks, region.start, region.end)
 
     return { samples, treeNewick, regionData: { blocks, coverage } }
   }

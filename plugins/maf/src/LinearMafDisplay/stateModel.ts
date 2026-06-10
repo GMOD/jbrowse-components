@@ -60,9 +60,8 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * Per-row metadata stored in `sourcesVolatile` and reordered through the
- * TreeSidebarMixin `layout`. `name` is the sample id (matches the canonical
- * `Sample.id`); `label`/`color` are display-only.
+ * Per-row metadata stored in `sourcesVolatile`. `name` is the sample id
+ * (matches the canonical `Sample.id`); `label`/`color` are display-only.
  */
 export interface MafSource {
   name: string
@@ -213,12 +212,20 @@ export default function stateModelFactory(
       prefersOffset: true,
       /**
        * #volatile
-       * Canonical row metadata received from the worker. Reordering /
-       * recoloring lives in TreeSidebarMixin's `layout`; this volatile
-       * holds the unfiltered authoritative set so the merged `sources` view
-       * can fall back when `layout` is empty.
+       * The worker's authoritative row set, in tree (leaf) order. `layout`
+       * overlays any user reorder/relabel on top; `editableSources` merges the
+       * two and `sources` narrows that by the subtree filter.
        */
       sourcesVolatile: [] as MafSource[],
+      /**
+       * #volatile
+       * The worker's guide-tree Newick (the default, before any reorder). The
+       * active displayed tree lives in the mixin's `clusterTree`, which a
+       * reorder clears (rows no longer match the dendrogram) and "Clear
+       * arrangement" restores from here — so we keep the worker tree separately
+       * rather than re-fetching it.
+       */
+      treeNewickVolatile: undefined as string | undefined,
       /**
        * #volatile
        * Theme-derived color palette (per-base colors + match/gap/mismatch/
@@ -265,14 +272,12 @@ export default function stateModelFactory(
       /**
        * #action
        * Receive worker-authoritative `samples` + serialized Newick tree.
-       * Samples + tree are derived from track config, so they're identical on
-       * every region fetch — the deepEqual guard makes this fire once and skips
-       * the redundant frozen-array reassignment (plus the downstream
-       * `sources`/instance-buffer recompute) on each later scroll/zoom, while
-       * preserving any in-session row reordering held in `layout`. Goes through
-       * TreeSidebarMixin's `setLayoutAndClusterTree` so the mixin's `root`
-       * getter re-parses; `sourcesVolatile` carries the full pre-filter set used
-       * as the fallback in the merged `sources` view.
+       * Samples + tree are config-derived and identical on every region fetch,
+       * so the deepEqual guard makes this fire once and skips the redundant
+       * frozen-array reassignment (and downstream `sources`/instance-buffer
+       * recompute) on later scroll/zoom. The active `clusterTree` is set from
+       * the worker tree only when there's no custom arrangement — a reorder has
+       * cleared it and must keep it cleared until the user clears the layout.
        */
       setSamples({
         samples,
@@ -288,7 +293,10 @@ export default function stateModelFactory(
         }))
         if (!deepEqual(next, self.sourcesVolatile)) {
           self.sourcesVolatile = next
-          self.setLayoutAndClusterTree(next, treeNewick)
+          self.treeNewickVolatile = treeNewick
+          if (!self.layout.length) {
+            self.setClusterTree(treeNewick)
+          }
         }
       },
       /**
@@ -351,16 +359,55 @@ export default function stateModelFactory(
         })
       },
     }))
+    .actions(self => {
+      const superClearLayout = self.clearLayout
+      return {
+        /**
+         * #action
+         * Drop the custom arrangement and restore the worker's guide tree (the
+         * base `clearLayout` only clears it — the worker tree lives in
+         * `treeNewickVolatile`).
+         */
+        clearLayout() {
+          superClearLayout()
+          if (self.treeNewickVolatile) {
+            self.setClusterTree(self.treeNewickVolatile)
+          }
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
-       * Merged row set: prefer the persisted `layout` when present (carries
-       * any user reordering / recoloring) and fall back to the worker's
-       * `sourcesVolatile`. Subtree filter narrows in both cases.
+       * The full row set with the user's arrangement applied: `layout` supplies
+       * order + label/color overrides, merged over the worker's `sourcesVolatile`
+       * by name. Empty `layout` (no customization) passes the worker set through.
+       * Not subtree-filtered — this is what the arrangement dialog edits.
+       * Undefined until the first fetch populates the worker set.
+       */
+      get editableSources(): MafSource[] | undefined {
+        const base = self.sourcesVolatile
+        if (base.length === 0) {
+          return undefined
+        }
+        if (self.layout.length === 0) {
+          return base
+        }
+        const byName = new Map(base.map(s => [s.name, s]))
+        return self.layout.flatMap(row => {
+          const b = byName.get(row.name)
+          return b ? [{ ...b, ...row }] : []
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The display rows: `editableSources` narrowed to the selected subtree.
        */
       get sources(): MafSource[] | undefined {
-        const base = self.layout.length ? self.layout : self.sourcesVolatile
-        if (base.length === 0) {
+        const base = self.editableSources
+        if (!base) {
           return undefined
         }
         if (self.subtreeFilter?.length) {
@@ -489,13 +536,14 @@ export default function stateModelFactory(
        * #method
        * Worker-fetch inputs that invalidate cached data when changed (tier-1,
        * via MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).
-       * `subtreeFilter` is user-set — never derived from worker output — so it is
-       * loop-safe here; changing the visible subtree refetches and the worker
-       * recomputes coverage over only those samples. A future arbitrary-sample
-       * selection belongs here too.
+       * `orderedSampleIds` is the display row order (layout reorder + subtree
+       * filter); the worker emits block rows in it so `rowIndex` is the
+       * on-screen row. Loop-safe despite deriving from worker output: `sources`
+       * is set-stable (`sourcesVolatile` deepEqual-guarded in `setSamples`,
+       * `layout`/`subtreeFilter` user-driven), so it doesn't churn per fetch.
        */
       rpcProps() {
-        return { subtreeFilter: self.subtreeFilter }
+        return { orderedSampleIds: self.sources?.map(s => s.name) }
       },
     }))
     .views(self => ({
@@ -913,9 +961,11 @@ export default function stateModelFactory(
       }
     })
     .postProcessSnapshot(snap => {
-      // layout/clusterTree intentionally dropped — both are rebuilt from
-      // worker output on every fetch (unconditional, so not a stripDefault).
-      const { layout: _layout, clusterTree: _clusterTree, ...rest } = snap
+      // The active clusterTree is derived (rebuilt from worker output on fetch,
+      // or restored from treeNewickVolatile on clear), so it's dropped rather
+      // than persisted. `layout` IS persisted — it's the user's custom row
+      // arrangement; stripDefault omits it when empty (the common case).
+      const { clusterTree: _clusterTree, ...rest } = snap
       return rest
     })
 }

@@ -3,11 +3,15 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 
+import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog/SetRowHeightDialog.tsx'),
+)
+const SetRowArrangementDialog = lazy(
+  () => import('./components/SetRowArrangementDialog.tsx'),
 )
 
 interface MafMenuSelf extends IAnyStateTreeNode {
@@ -20,6 +24,8 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showCoverage: boolean
   showAlignments: boolean
   subtreeFilter?: readonly string[]
+  editableSources?: MafSource[]
+  clusterTree?: string
   setRowHeight: (n: number) => void
   setRowProportion: (n: number) => void
   setShowAllLetters: (f: boolean) => void
@@ -30,6 +36,8 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowCoverage: (f: boolean) => void
   setShowAlignments: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
+  setLayout: (s: MafSource[]) => void
+  clearLayout: () => void
 }
 
 export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
@@ -117,6 +125,16 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           },
         },
       ],
+    },
+    {
+      label: 'Edit row arrangement...',
+      disabled: !self.editableSources?.length,
+      onClick: () => {
+        getSession(self).queueDialog(handleClose => [
+          SetRowArrangementDialog,
+          { model: self, handleClose },
+        ])
+      },
     },
     ...(self.subtreeFilter
       ? [
