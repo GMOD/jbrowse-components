@@ -87,11 +87,13 @@ function walkLocationObjects(
 
 // Deep-clone the object/array spine of the RPC args so blob conversion and auth
 // augmentation mutate owned data, never the read-only config snapshots that flow
-// in via readConfObject. A plain structuredClone can't be used: the args always
-// carry a `statusCallback` function (and may carry others, e.g. theme methods),
-// which structuredClone rejects. Non-cloneable leaves (functions, Errors) and
-// structured-clone natives (typed arrays, Blobs...) pass through by reference;
-// the driver's filterArgs strips or keeps them downstream.
+// in via readConfObject. A plain structuredClone can't be used here: the test
+// environment's structuredClone collapses typed arrays and the SharedArrayBuffer
+// stop token to plain objects, and it would reject any stray function. Non-
+// cloneable leaves (functions, Errors) and structured-clone natives (typed
+// arrays, Blobs, the SAB stop token...) pass through by reference unchanged; a
+// genuinely non-cloneable value that leaked in by mistake is surfaced at the
+// worker postMessage boundary (real structuredClone) in production.
 function ownArgs(thing: unknown, seen = new WeakMap<object, unknown>()): unknown {
   if (!thing || typeof thing !== 'object') {
     return thing

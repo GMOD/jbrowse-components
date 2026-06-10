@@ -32,8 +32,15 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     if (rpcMethod.supportsDirectExecution()) {
       return rpcMethod.executeDirect(args)
     } else {
-      const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
-      const result = await rpcMethod.execute(serializedArgs, this.name)
+      // statusCallback is an out-of-band handle, not serializable data; keep it
+      // out of serializeArguments (which deep-clones the payload to own it) and
+      // re-attach it for the in-band execute, mirroring the worker's wrapForRpc.
+      const { statusCallback, ...rest } = args
+      const serializedArgs = await rpcMethod.serializeArguments(rest, this.name)
+      const result = await rpcMethod.execute(
+        { ...serializedArgs, statusCallback },
+        this.name,
+      )
       return rpcMethod.deserializeReturn(result, args, this.name)
     }
   }

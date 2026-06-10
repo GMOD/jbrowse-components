@@ -131,10 +131,9 @@ test('augmentLocationObject still walks when only file handles are present', asy
   }
 })
 
-// Regression: rpcProps can carry non-cloneable values (e.g. the created MUI
-// theme's breakpoints.up function). Owning the arg tree must not throw on them
-// (a strict structuredClone did) — they pass through for the driver's
-// filterArgs to strip before the worker boundary.
+// Owning the arg tree must not throw on a stray non-cloneable (the test env's
+// structuredClone would): it passes through by reference, and a genuine bug is
+// surfaced at the worker postMessage boundary in production instead.
 test('augmentLocationObject tolerates non-cloneable args (functions) while owning the tree', async () => {
   const mockFile = new File(['x'], 'a.bam')
   setFileInCache('augment-fn-test', mockFile)
@@ -163,7 +162,8 @@ test('augmentLocationObject tolerates non-cloneable args (functions) while ownin
         >
       ).locationType,
     ).toBe('BlobLocation')
-    // function passed through by reference (filterArgs strips it later)
+    // function passed through by reference (a real bug would surface at the
+    // worker postMessage boundary; here we just verify owning doesn't throw)
     const theme = result.theme as { breakpoints: { up: unknown } }
     expect(theme.breakpoints.up).toBe(themeFn)
     // input args untouched (config snapshots are read-only)

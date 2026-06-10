@@ -2,6 +2,7 @@ import BaseRpcDriver from './BaseRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
 import type { WorkerHandle } from './BaseRpcDriver.ts'
+import type PluginManager from '../PluginManager.ts'
 
 function makeConfig(overrides: { workerCount?: number } = {}) {
   return rpcConfigSchema.create(overrides)
@@ -9,14 +10,14 @@ function makeConfig(overrides: { workerCount?: number } = {}) {
 
 class FakeWorker implements WorkerHandle {
   destroyed = false
-  calls: { fn: string; args: unknown }[] = []
+  calls: { fn: string; args: unknown; opts?: unknown }[] = []
 
   destroy() {
     this.destroyed = true
   }
 
-  async call(fn: string, args?: unknown) {
-    this.calls.push({ fn, args })
+  async call(fn: string, args?: unknown, opts?: unknown) {
+    this.calls.push({ fn, args, opts })
     return args
   }
 }
@@ -41,68 +42,35 @@ class TestDriver extends BaseRpcDriver {
   }
 }
 
-describe('BaseRpcDriver.filterArgs', () => {
-  const driver = new TestDriver()
+describe('BaseRpcDriver.call statusCallback handling', () => {
+  // identity rpc method + minimal plugin manager so we can observe what the
+  // driver hands the worker
+  const rpcMethod = {
+    serializeArguments: async (args: unknown) => args,
+    deserializeReturn: (ret: unknown) => ret,
+  }
+  const pluginManager = {
+    getRpcMethodType: () => rpcMethod,
+    evaluateExtensionPoint: (_name: string, worker: unknown) => worker,
+  } as unknown as PluginManager
 
-  test('strips functions from nested objects', () => {
-    const out = driver.filterArgs({
-      a: 1,
-      fn: () => 0,
-      nested: { b: () => 0, c: 2 },
-    })
-    expect(out).toEqual({ a: 1, nested: { c: 2 } })
-  })
-
-  test('strips Error instances from arrays and objects', () => {
-    const out = driver.filterArgs([1, new Error('x'), 2])
-    expect(out).toEqual([1, 2])
-  })
-
-  test('preserves primitives unchanged', () => {
-    expect(driver.filterArgs(42)).toBe(42)
-    expect(driver.filterArgs('hi')).toBe('hi')
-    expect(driver.filterArgs(true)).toBe(true)
-    expect(driver.filterArgs(null)).toBe(null)
-    const u: unknown = undefined
-    expect(driver.filterArgs(u)).toBeUndefined()
-  })
-
-  test('preserves Date instances (structured-clone handles them)', () => {
-    const d = new Date(123456789)
-    const out = driver.filterArgs({ when: d })
-    expect(out.when).toBe(d)
-    expect(out.when).toBeInstanceOf(Date)
-  })
-
-  test('preserves Map instances', () => {
-    const m = new Map([['a', 1]])
-    const out = driver.filterArgs({ m })
-    expect(out.m).toBe(m)
-    expect(out.m).toBeInstanceOf(Map)
-  })
-
-  test('preserves Set instances', () => {
-    const s = new Set([1, 2, 3])
-    const out = driver.filterArgs({ s })
-    expect(out.s).toBe(s)
-    expect(out.s).toBeInstanceOf(Set)
-  })
-
-  test('preserves ArrayBuffer and typed arrays', () => {
-    const buf = new ArrayBuffer(8)
-    const u8 = new Uint8Array([1, 2, 3])
-    const out = driver.filterArgs({ buf, u8 })
-    expect(out.buf).toBe(buf)
-    expect(out.u8).toBe(u8)
-  })
-
-  test('preserves RegExp', () => {
-    const re = /abc/g
-    expect(driver.filterArgs({ re }).re).toBe(re)
-  })
-
-  test('returns undefined for a top-level function', () => {
-    expect(driver.filterArgs(() => 1)).toBeUndefined()
+  test('extracts statusCallback out of the serialized payload, passes it via options', async () => {
+    const driver = new TestDriver()
+    const statusCallback = () => {}
+    const callArgs: Record<string, unknown> & { statusCallback: () => void } = {
+      sessionId: 'sid',
+      data: 1,
+      statusCallback,
+    }
+    await driver.call(pluginManager, 'sid', 'SomeMethod', callArgs)
+    const { args, opts } = driver.workers[0]!.calls[0]!
+    // statusCallback never reaches the serialized payload...
+    expect(args).toEqual({ sessionId: 'sid', data: 1 })
+    expect((args as Record<string, unknown>).statusCallback).toBeUndefined()
+    // ...it travels out-of-band via the worker call options instead
+    expect((opts as { statusCallback: unknown }).statusCallback).toBe(
+      statusCallback,
+    )
   })
 })
 

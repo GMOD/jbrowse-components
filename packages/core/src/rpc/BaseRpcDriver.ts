@@ -1,8 +1,5 @@
-import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-
 import { readConfObject } from '../configuration/index.ts'
 import { clamp } from '../util/index.ts'
-import { isCloneable, isStructuredClonePassthrough } from '../util/rpc.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -86,39 +83,6 @@ export default abstract class BaseRpcDriver {
     this.config = args.config
   }
 
-  // filter the given object and just remove any non-cloneable things from it
-  filterArgs<THING_TYPE>(thing: THING_TYPE): THING_TYPE {
-    // Fast path for primitives (most common case)
-    if (thing === null || thing === undefined) {
-      return thing
-    }
-    const type = typeof thing
-    if (['string', 'number', 'boolean'].includes(type)) {
-      return thing
-    }
-    if (type !== 'object') {
-      // functions and other non-cloneables
-      return undefined as unknown as THING_TYPE
-    }
-
-    // Object cases
-    if (Array.isArray(thing)) {
-      return thing
-        .filter(t => isCloneable(t))
-        .map(t => this.filterArgs(t)) as unknown as THING_TYPE
-    } else if (isStateTreeNode(thing) && !isAlive(thing)) {
-      throw new Error('dead state tree node passed to RPC call')
-    } else if (isStructuredClonePassthrough(thing)) {
-      return thing
-    } else {
-      return Object.fromEntries(
-        Object.entries(thing)
-          .filter(e => isCloneable(e[1]))
-          .map(([k, v]) => [k, this.filterArgs(v)]),
-      ) as THING_TYPE
-    }
-  }
-
   freeSession(sessionId: string) {
     this.workerAssignments.delete(sessionId)
   }
@@ -184,12 +148,18 @@ export default abstract class BaseRpcDriver {
       unextendedWorker,
     )
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
-    const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
-    const filteredAndSerializedArgs = this.filterArgs(serializedArgs)
+
+    // statusCallback is an out-of-band progress handle, not data: the worker
+    // wires up its own via a message channel (see rpcWorker wrapForRpc), so keep
+    // it out of the serialized payload entirely. Everything that remains must be
+    // structured-cloneable; postMessage clones it and throws on anything that
+    // isn't, surfacing bad data at the boundary instead of silently dropping it.
+    const { statusCallback, ...rest } = args
+    const serializedArgs = await rpcMethod.serializeArguments(rest, this.name)
 
     // now actually call the worker
-    const call = await worker.call(functionName, filteredAndSerializedArgs, {
-      statusCallback: args.statusCallback,
+    const call = await worker.call(functionName, serializedArgs, {
+      statusCallback,
       rpcDriverClassName: this.name,
       ...options,
     })
