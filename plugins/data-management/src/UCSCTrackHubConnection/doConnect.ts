@@ -2,10 +2,15 @@ import { HubFile, SingleFileHub } from '@gmod/ucsc-hub'
 import { getConf } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { createElementId } from '@jbrowse/core/util/types/mst'
 
+import { generateAssembly } from './generateAssembly.ts'
 import { generateTracks } from './ucscTrackHub.ts'
-import { fetchGenomesFile, fetchTrackDbFile, resolve } from './util.ts'
+import {
+  fetchGenomesFile,
+  fetchTrackDbFile,
+  makeLocFromUri,
+  resolve,
+} from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { UriLocation } from '@jbrowse/core/util'
@@ -26,45 +31,9 @@ export async function doConnect(self: {
       const hub = new SingleFileHub(hubFileText)
       const { genome, tracks } = hub
       const genomeName = genome.name!
-      const shortLabel = genome.data.description
 
-      const asm = assemblyManager.get(genomeName)
-      if (!asm) {
-        session.addSessionAssembly?.({
-          name: genomeName,
-          displayName: shortLabel,
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            metadata: {
-              ...genome.data,
-              ...(genome.data.htmlPath
-                ? {
-                    htmlPath: `<a href="${resolve(genome.data.htmlPath, hubUri)}">${genome.data.htmlPath}</a>`,
-                  }
-                : {}),
-            },
-            trackId: `${genomeName}-${createElementId()}`,
-            adapter: {
-              type: 'TwoBitAdapter',
-              twoBitLocation: {
-                uri: resolve(genome.data.twoBitPath!, hubUri),
-              },
-              chromSizesLocation: {
-                uri: resolve(genome.data.chromSizes!, hubUri),
-              },
-            },
-          },
-          ...(genome.data.chromAliasBb
-            ? {
-                refNameAliases: {
-                  adapter: {
-                    type: 'BigBedAdapter',
-                    uri: resolve(genome.data.chromAliasBb, hubUri),
-                  },
-                },
-              }
-            : {}),
-        })
+      if (!assemblyManager.get(genomeName)) {
+        session.addSessionAssembly?.(generateAssembly(genome, hubUri))
       }
       const tracksNew = generateTracks({
         trackDb: tracks,
@@ -86,19 +55,13 @@ export async function doConnect(self: {
         throw new Error('genomesFile not found on hub')
       }
 
-      const genomesFileLocation = hubUri
-        ? {
-            uri: resolve(genomeFile, hubUri),
-            locationType: 'UriLocation' as const,
-          }
-        : {
-            localPath: genomeFile,
-            locationType: 'LocalPathLocation' as const,
-          }
-      const genomesFile = await fetchGenomesFile(genomesFileLocation)
+      const genomesFile = await fetchGenomesFile(
+        makeLocFromUri(genomeFile, hubUri),
+      )
+      const assemblyNames = getConf(self, 'assemblyNames')
+      const genomesBaseUri = hubUri ? resolve(genomeFile, hubUri) : undefined
       const map: Record<string, number> = {}
       for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
-        const assemblyNames = getConf(self, 'assemblyNames')
         if (assemblyNames.length > 0 && !assemblyNames.includes(genomeName)) {
           continue
         }
@@ -111,18 +74,9 @@ export async function doConnect(self: {
 
         const db = genome.data.trackDb
         if (!db) {
-          throw new Error('genomesFile not found on hub')
+          throw new Error(`trackDb not found for ${genomeName}`)
         }
-        const base = new URL(genomeFile, hubUri)
-        const loc = hubUri
-          ? {
-              uri: new URL(db, base).href,
-              locationType: 'UriLocation' as const,
-            }
-          : {
-              localPath: db,
-              locationType: 'LocalPathLocation' as const,
-            }
+        const loc = makeLocFromUri(db, genomesBaseUri)
         const trackDb = await fetchTrackDbFile(loc)
         const tracks = generateTracks({
           trackDb,
