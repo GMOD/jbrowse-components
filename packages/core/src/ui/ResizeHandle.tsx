@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useEvent } from './useEvent.ts'
 import { cx, makeStyles } from '../util/tss-react/index.ts'
-import { useEventCallback } from '../util/useEventCallback.ts'
 
 const useStyles = makeStyles()(theme => ({
   horizontalHandle: {
@@ -14,46 +14,27 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     '&:hover': { background: theme.palette.divider },
   },
-  flexbox_verticalHandle: {
-    cursor: 'col-resize',
-    alignSelf: 'stretch', // the height: 100% is actually unable to function inside flexbox
-    '&:hover': { background: theme.palette.divider },
-  },
-  flexbox_horizontalHandle: {
-    cursor: 'row-resize',
-    alignSelf: 'stretch', // similar to above
-    '&:hover': { background: theme.palette.divider },
-  },
 }))
 
 function ResizeHandle({
   onDrag,
-  onDragStart,
-  onDragEnd,
   vertical = false,
-  flexbox = false,
   className: originalClassName,
   onMouseDown,
   ...props
 }: {
-  onDrag: (
-    lastFrameDistance: number,
-    totalDistance: number,
-  ) => number | undefined
-  onDragStart?: () => void
-  onDragEnd?: () => void
+  onDrag: (distance: number) => void
   onMouseDown?: (event: React.MouseEvent) => void
   vertical?: boolean
-  flexbox?: boolean
   className?: string
   [props: string]: unknown
 }) {
   const [mouseDragging, setMouseDragging] = useState(false)
-  const initialPosition = useRef(0)
   const prevPos = useRef(0)
+  const latestPos = useRef(0)
+  const scheduled = useRef(false)
   const { classes } = useStyles()
-  const onDragStable = useEventCallback(onDrag)
-  const onDragEndStable = useEventCallback(() => onDragEnd?.())
+  const onDragStable = useEvent(onDrag)
 
   const getPos = useCallback(
     (event: MouseEvent | React.MouseEvent) =>
@@ -68,16 +49,20 @@ function ResizeHandle({
 
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
-      const pos = getPos(event)
-      const totalDistance = initialPosition.current - pos
-      const lastFrameDistance = pos - prevPos.current
-      prevPos.current = pos
-      onDragStable(lastFrameDistance, totalDistance)
+      latestPos.current = getPos(event)
+      if (!scheduled.current) {
+        scheduled.current = true
+        requestAnimationFrame(() => {
+          const distance = latestPos.current - prevPos.current
+          prevPos.current = latestPos.current
+          onDragStable(distance)
+          scheduled.current = false
+        })
+      }
     }
 
     function mouseUp() {
       setMouseDragging(false)
-      onDragEndStable()
     }
 
     window.addEventListener('mousemove', mouseMove, true)
@@ -86,34 +71,28 @@ function ResizeHandle({
       window.removeEventListener('mousemove', mouseMove, true)
       window.removeEventListener('mouseup', mouseUp, true)
     }
-  }, [mouseDragging, getPos, onDragStable, onDragEndStable])
+  }, [mouseDragging, onDragStable, getPos])
 
   const handleMouseDown = useCallback(
     (event: React.MouseEvent) => {
       event.preventDefault()
       const pos = getPos(event)
-      initialPosition.current = pos
       prevPos.current = pos
+      latestPos.current = pos
       setMouseDragging(true)
-      onDragStart?.()
       onMouseDown?.(event)
     },
-    [getPos, onMouseDown, onDragStart],
+    [getPos, onMouseDown],
   )
-
-  const className = flexbox
-    ? vertical
-      ? classes.flexbox_verticalHandle
-      : classes.flexbox_horizontalHandle
-    : vertical
-      ? classes.verticalHandle
-      : classes.horizontalHandle
 
   return (
     <div
       data-resizer="true"
       onMouseDown={handleMouseDown}
-      className={cx(originalClassName, className)}
+      className={cx(
+        originalClassName,
+        vertical ? classes.verticalHandle : classes.horizontalHandle,
+      )}
       {...props}
     />
   )

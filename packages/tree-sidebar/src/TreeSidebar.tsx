@@ -147,7 +147,6 @@ const TreeSidebar = observer(function TreeSidebar({
         <ResizeHandle
           onDrag={distance => {
             model.setTreeAreaWidth(Math.max(10, treeAreaWidth + distance))
-            return undefined
           }}
           style={{
             position: 'absolute',
