@@ -13,10 +13,13 @@ hold either a fixed value, or a function that can be called to produce a value.
 These types are specific to configuration schemas.
 
 - `string`
+- `text` - a string edited in a multi-line text area
 - `number`
 - `integer`
 - `boolean`
 - `color` - a color, usually used in renderer configs
+- `stringEnum` - one of a fixed set of string choices; supply the choices via a
+  `model: types.enumeration('Name', ['a', 'b'])` on the slot definition
 - `stringArray` - an array of strings
 - `stringArrayMap` - map of string -> array[string]
 - `numberMap` - map of string -> number
