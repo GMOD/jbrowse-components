@@ -22,23 +22,18 @@ import NewsletterSignup from './NewsletterSignup'
         </a>
         <a
           class:list={[btn.btn, btn.btnSecondary]}
-          href="https://jbrowse.org/code/jb2/latest/?session=share-HShsEcnq3i&password=nYzTU"
+          href="https://genomes.jbrowse.org"
         >
-          <Icon name="mdi:open-in-app" width="20" height="20" />
-          Browse demo
+          🧬 Browse genomes
         </a>
       </div>
-      <div style="text-align:center">
-        <p class="body-text">
-          Check out our <a href={`${baseUrl}/blog/`}>latest release blogpost</a
-          >, our
-          <a href={`${baseUrl}/docs/embedded_components/`}
-            >embedded components</a
-          >, and our
-          <a href={`${baseUrl}/download/#jbrowse-cli-tools`}
-            >command line tools</a
-          >.
+      <div class="newsletter-hero">
+        <p class="newsletter-label">
+          Get notified about new releases &mdash; <a href={`${baseUrl}/blog/`}
+            >see latest release notes</a
+          >
         </p>
+        <NewsletterSignup client:load />
       </div>
     </div>
     <div class="hero-image">
@@ -96,14 +91,20 @@ import NewsletterSignup from './NewsletterSignup'
     </div>
   </div>
 
-  <!-- Newsletter -->
-  <div class="section-box">
-    <p class="section-title">Stay up to date</p>
-    <hr />
-    <p class="body-text" style="text-align:center">
-      Subscribe to receive announcements when new JBrowse releases are published.
-    </p>
-    <NewsletterSignup client:load />
+  <!-- Also explore -->
+  <div class="section-box explore-row">
+    <a href={`${baseUrl}/blog/`} class="explore-link">
+      <span class="explore-title">Release blog</span>
+      <span class="explore-desc">Detailed notes on every release</span>
+    </a>
+    <a href={`${baseUrl}/docs/embedded_components/`} class="explore-link">
+      <span class="explore-title">Embedded components</span>
+      <span class="explore-desc">Use JBrowse inside your React app</span>
+    </a>
+    <a href={`${baseUrl}/download/#jbrowse-cli-tools`} class="explore-link">
+      <span class="explore-title">CLI tools</span>
+      <span class="explore-desc">Manage configs and index files</span>
+    </a>
   </div>
 
   <!-- Citation -->
@@ -195,6 +196,47 @@ import NewsletterSignup from './NewsletterSignup'
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+  .newsletter-hero {
+    text-align: center;
+    padding-top: 4px;
+  }
+  .newsletter-label {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin: 0 0 8px;
+  }
+  .explore-row {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 12px !important;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+  .explore-link {
+    flex: 1 1 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition:
+      border-color 200ms,
+      background 200ms;
+  }
+  .explore-link:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+  }
+  .explore-title {
+    font-weight: 500;
+    color: var(--color-primary);
+  }
+  .explore-desc {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
   }
   .hero-image img {
     border-radius: 8px;
