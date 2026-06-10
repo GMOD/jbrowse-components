@@ -33,6 +33,7 @@ import jobsModelFactory from '../indexJobsModel.ts'
 import JBrowseDesktop from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 
+import type { AppRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -318,3 +319,11 @@ export default function rootModelFactory({
 
 export type DesktopRootModelType = ReturnType<typeof rootModelFactory>
 export type DesktopRootModel = Instance<DesktopRootModelType>
+
+// Verify DesktopRootModel satisfies AppRootModel at compile time. If this
+// errors, the root model is missing something the app session layer
+// (AppSessionMixin) delegates to via self.root.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _checkDesktopRootModel(m: DesktopRootModel): AppRootModel {
+  return m
+}
