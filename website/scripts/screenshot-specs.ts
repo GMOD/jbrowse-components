@@ -3363,11 +3363,14 @@ export const specs: ScreenshotSpec[] = [
   // Connected genome + protein demo (TP53 / UniProt P04637). A single ProteinView
   // spec entry creates and connects its own LinearGenomeView via the plugin's
   // `connectedView` launch param, so the genome (NCBI RefSeq + ClinVar) and the
-  // AlphaFold structure load linked. Requires a local jbrowse-plugin-protein3d
-  // build that includes the `connectedView` param (`pnpm start`, PORT=9000). The
-  // `feature` is the NM_000546.6 CDS in absolute hg38 coords; the transcript
-  // sequence is the P04637 protein, which the view aligns to the structure to
-  // map genome positions onto residues.
+  // AlphaFold structure load linked. This uses the short-form declarative launch:
+  // from just `uniprotId` + `transcriptId` the plugin derives the AlphaFold
+  // structure URL, resolves the transcript feature from the hg38-ncbiRefSeq track
+  // at `loc`, and translates its CDS to the protein sequence it aligns to the
+  // structure. Requires a local jbrowse-plugin-protein3d build that supports the
+  // uniprotId/transcriptId short form (`pnpm start`, PORT=9000). curated, so a
+  // normal regen keeps the committed PNG; drop `curated` (with that local build)
+  // to re-shoot it.
   {
     mode: 'url',
     curated: true,
@@ -3377,41 +3380,9 @@ export const specs: ScreenshotSpec[] = [
         views: [
           {
             type: 'ProteinView',
-            url: 'https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif',
+            uniprotId: 'P04637',
+            transcriptId: 'NM_000546.6',
             height: 540,
-            userProvidedTranscriptSequence:
-              'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD',
-            feature: {
-              uniqueId: 'NM_000546.6',
-              refName: 'chr17',
-              start: 7668420,
-              end: 7687490,
-              strand: -1,
-              type: 'mRNA',
-              name: 'TP53',
-              subfeatures: (
-                [
-                  [7676520, 7676594, 0],
-                  [7676381, 7676403, 1],
-                  [7675993, 7676272, 0],
-                  [7675052, 7675236, 0],
-                  [7674858, 7674971, 2],
-                  [7674180, 7674290, 0],
-                  [7673700, 7673837, 1],
-                  [7673534, 7673608, 2],
-                  [7670608, 7670715, 0],
-                  [7669608, 7669690, 1],
-                ] as const
-              ).map(([start, end, phase], i) => ({
-                uniqueId: `tp53-cds-${i}`,
-                refName: 'chr17',
-                start,
-                end,
-                phase,
-                type: 'CDS',
-                strand: -1,
-              })),
-            },
             connectedView: {
               assembly: 'hg38',
               loc: 'chr17:7,668,421-7,687,550',

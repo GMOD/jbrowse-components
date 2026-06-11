@@ -68,6 +68,46 @@ functional domain or is buried in the core.
 The genome-to-protein mapping is derived from the transcript's coding exons, so
 intronic and UTR positions are skipped and each codon maps to a single residue.
 
+### Sharing a connected view as a URL
+
+A connected session can also be built **declaratively** as a session-spec URL,
+which is handy for demo links and embedded apps. In the simplest form you give
+the plugin a UniProt accession and a transcript id, plus the genome location and
+tracks to show, and it resolves the rest — the AlphaFold structure, the
+transcript feature, and the aligned protein sequence:
+
+```js
+const session = {
+  views: [
+    {
+      type: 'ProteinView',
+      uniprotId: 'P04637',
+      transcriptId: 'NM_000546.6',
+      connectedView: {
+        assembly: 'hg38',
+        loc: 'chr17:7,668,421-7,687,550',
+        tracks: ['hg38-ncbiRefSeqCurated', 'hg38-clinvarMain'],
+      },
+    },
+  ],
+}
+```
+
+Pass it as the `session` URL parameter, prefixed with `spec-` (the prefix tells
+JBrowse the value is an inline session):
+
+```
+https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json&session=spec-{"views":[{"type":"ProteinView","uniprotId":"P04637","transcriptId":"NM_000546.6","connectedView":{"assembly":"hg38","loc":"chr17:7,668,421-7,687,550","tracks":["hg38-ncbiRefSeqCurated","hg38-clinvarMain"]}}]}
+```
+
+[Live demo — TP53 connected structure](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22uniprotId%22%3A%22P04637%22%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C421-7%2C687%2C550%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeqCurated%22%2C%22hg38-clinvarMain%22%5D%7D%7D%5D%7D)
+
+The transcript must be present in one of the listed `tracks` at `loc`; if you
+need a transcript that isn't loaded as a track, you can instead pass the
+structure `url`, the `feature`, and the protein sequence explicitly. Both forms,
+the full parameter list, and ready-to-open URLs are documented in the
+[protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view).
+
 ## Viewing a multiple sequence alignment
 
 Right click a gene and open the MSA viewer to load a precomputed alignment and
