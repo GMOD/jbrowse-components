@@ -44,7 +44,7 @@ export function BaseRootModelFactory({
       /**
        * #property
        */
-      sessionPath: types.optional(types.string, ''),
+      sessionPath: types.stripDefault(types.string, ''),
 
       /**
        * #property

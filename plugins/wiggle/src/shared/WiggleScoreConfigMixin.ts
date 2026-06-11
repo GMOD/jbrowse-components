@@ -43,11 +43,11 @@ export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
         /**
          * #property
          */
-        resolution: types.optional(types.number, 1),
+        resolution: types.stripDefault(types.number, 1),
         /**
          * #property
          */
-        displayCrossHatches: types.optional(types.boolean, false),
+        displayCrossHatches: types.stripDefault(types.boolean, false),
       }),
     )
     .volatile(() => ({

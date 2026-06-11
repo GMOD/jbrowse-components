@@ -297,7 +297,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * when true, only the header and coordinate scalebar are rendered
          */
-        scalebarOnly: types.optional(types.boolean, false),
+        scalebarOnly: types.stripDefault(types.boolean, false),
         /**
          * #property
          * transient declarative launch spec: assembly + optional location,

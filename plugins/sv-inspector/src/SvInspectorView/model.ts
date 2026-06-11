@@ -53,11 +53,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(types.number, defaultHeight),
+        height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
          */
-        onlyDisplayRelevantRegionsInCircularView: false,
+        onlyDisplayRelevantRegionsInCircularView: types.stripDefault(
+          types.boolean,
+          false,
+        ),
         /**
          * #property
          */

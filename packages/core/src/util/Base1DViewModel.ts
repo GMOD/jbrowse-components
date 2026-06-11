@@ -37,7 +37,7 @@ const Base1DView = types
     /**
      * #property
      */
-    minimumBlockWidth: types.optional(types.number, 0),
+    minimumBlockWidth: types.stripDefault(types.number, 0),
   })
   .volatile(() => ({
     features: undefined as undefined | Feature[],

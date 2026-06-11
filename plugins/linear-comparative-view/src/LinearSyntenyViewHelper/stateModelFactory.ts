@@ -50,7 +50,7 @@ export function linearSyntenyViewHelperModelFactory(
         /**
          * #property
          */
-        height: 100,
+        height: types.stripDefault(types.number, 100),
         /**
          * #property
          */

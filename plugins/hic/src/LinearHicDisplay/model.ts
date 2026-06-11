@@ -95,17 +95,17 @@ export default function stateModelFactory(
          * with bias=-1 still means "one step finer than auto" when reopened
          * at a different scale.
          */
-        resolutionBias: 0,
-        useLogScale: false,
+        resolutionBias: types.stripDefault(types.number, 0),
+        useLogScale: types.stripDefault(types.boolean, false),
         /**
          * #property
          * Color saturation point: false → maxScore/20 (linear) or maxScore
          * (log), matches legacy behavior. true → 95th percentile of counts;
          * lower saturation point so off-diagonal contacts read more strongly.
          */
-        useColorPercentile: false,
-        activeNormalization: 'KR',
-        mode: types.optional(
+        useColorPercentile: types.stripDefault(types.boolean, false),
+        activeNormalization: types.stripDefault(types.string, 'KR'),
+        mode: types.stripDefault(
           types.enumeration<HicRenderMode>('HicRenderMode', [
             'triangular',
             'adjust',

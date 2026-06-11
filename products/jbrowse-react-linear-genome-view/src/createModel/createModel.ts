@@ -45,11 +45,11 @@ export default function createModel(
       /**
        * #property
        */
-      disableAddTracks: types.optional(types.boolean, false),
+      disableAddTracks: types.stripDefault(types.boolean, false),
       /**
        * #property
        */
-      drawerViewHeight: types.optional(types.string, '100vh'),
+      drawerViewHeight: types.stripDefault(types.string, '100vh'),
       /**
        * #property
        */

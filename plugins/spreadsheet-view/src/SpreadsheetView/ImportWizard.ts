@@ -82,7 +82,7 @@ export default function stateModelFactory() {
       /**
        * #property
        */
-      fileType: types.optional(types.enumeration(fileTypes), 'VCF'),
+      fileType: types.stripDefault(types.enumeration(fileTypes), 'VCF'),
       /**
        * #property
        */

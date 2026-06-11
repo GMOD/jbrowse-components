@@ -268,7 +268,7 @@ export default function MultiSampleVariantBaseModelF(
             types.maybe(types.array(types.string)),
             undefined,
           ),
-          lineZoneHeight: types.optional(types.number, 0),
+          lineZoneHeight: types.stripDefault(types.number, 0),
         }),
       )
       // Migration boundary: input is a legacy snapshot whose shape predates

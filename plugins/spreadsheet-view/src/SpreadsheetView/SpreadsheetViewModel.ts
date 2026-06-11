@@ -38,19 +38,19 @@ export default function stateModelFactory() {
           /**
            * #property
            */
-          offsetPx: 0,
+          offsetPx: types.stripDefault(types.number, 0),
           /**
            * #property
            */
-          height: types.optional(types.number, defaultHeight),
+          height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
            */
-          hideVerticalResizeHandle: false,
+          hideVerticalResizeHandle: types.stripDefault(types.boolean, false),
           /**
            * #property
            */
-          hideFilterControls: false,
+          hideFilterControls: types.stripDefault(types.boolean, false),
 
           /**
            * #property

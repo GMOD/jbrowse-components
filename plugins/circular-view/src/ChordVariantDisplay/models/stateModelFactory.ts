@@ -65,7 +65,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         /**
          * #property
          */
-        bezierRadiusRatio: 0.1,
+        bezierRadiusRatio: types.stripDefault(types.number, 0.1),
         /**
          * #property
          */

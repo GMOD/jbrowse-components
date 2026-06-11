@@ -337,7 +337,7 @@ export default function stateModelFactory(
           /**
            * #property
            */
-          linkedReads: types.optional(
+          linkedReads: types.stripDefault(
             types.enumeration<LinkedReadsMode>('LinkedReadsMode', [
               'off',
               'normal',
@@ -350,47 +350,47 @@ export default function stateModelFactory(
            * straight lines for normal pairs). Orthogonal to `linkedReads`
            * layout, so curves work over an ordinary pileup or chain layout.
            */
-          showBezierConnections: false,
+          showBezierConnections: types.stripDefault(types.boolean, false),
           /**
            * #property
            */
-          showCoverage: true,
+          showCoverage: types.stripDefault(types.boolean, true),
           /**
            * #property
            */
-          coverageHeight: 45,
+          coverageHeight: types.stripDefault(types.number, 45),
           /**
            * #property
            */
-          showMismatches: true,
+          showMismatches: types.stripDefault(types.boolean, true),
           /**
            * #property
            */
-          showInterbaseIndicators: true,
+          showInterbaseIndicators: types.stripDefault(types.boolean, true),
           /**
            * #property
            */
-          drawSingletons: true,
+          drawSingletons: types.stripDefault(types.boolean, true),
           /**
            * #property
            */
-          drawProperPairs: true,
+          drawProperPairs: types.stripDefault(types.boolean, true),
           /**
            * #property
            */
-          flipStrandLongReadChains: true,
+          flipStrandLongReadChains: types.stripDefault(types.boolean, true),
           /**
            * #property
            */
-          drawInter: true,
+          drawInter: types.stripDefault(types.boolean, true),
           /**
            * #property
            */
-          drawLongRange: true,
+          drawLongRange: types.stripDefault(types.boolean, true),
           /**
            * #property
            */
-          arcColorByType: types.optional(
+          arcColorByType: types.stripDefault(
             arcColorByTypes,
             'insertSizeAndOrientation',
           ),
@@ -399,7 +399,7 @@ export default function stateModelFactory(
            * read-connection rendering mode (mate pairs + split reads),
            * orthogonal to direction
            */
-          readConnections: types.optional(
+          readConnections: types.stripDefault(
             types.enumeration<ReadConnectionsMode>('ReadConnectionsMode', [
               'off',
               'arc',
@@ -411,14 +411,14 @@ export default function stateModelFactory(
            * #property
            * draw read connections below the coverage band instead of over it
            */
-          readConnectionsDown: false,
+          readConnectionsDown: types.stripDefault(types.boolean, false),
           /**
            * #property
            */
           // Direction is the shared below-coverage band orientation
           // (`readConnectionsDown`), so sashimi stores only its own
           // visibility — one source of truth for direction, nothing to sync.
-          showSashimiArcs: types.optional(types.boolean, true),
+          showSashimiArcs: types.stripDefault(types.boolean, true),
           /**
            * #property
            * hide sashimi junction arcs with fewer than this many supporting
@@ -428,15 +428,15 @@ export default function stateModelFactory(
           /**
            * #property
            */
-          sashimiArcsHeight: 40,
+          sashimiArcsHeight: types.stripDefault(types.number, 40),
           /**
            * #property
            */
-          readConnectionsHeight: 40,
+          readConnectionsHeight: types.stripDefault(types.number, 40),
           /**
            * #property
            */
-          showSoftClipping: false,
+          showSoftClipping: types.stripDefault(types.boolean, false),
         }),
       )
       .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>

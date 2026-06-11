@@ -80,7 +80,7 @@ export function stateModelFactory(
          * True once the user pins a specific index SNP (right-clicking a point).
          * While false, the index auto-tracks the top hit as data loads.
          */
-        indexSnpPinned: types.optional(types.boolean, false),
+        indexSnpPinned: types.stripDefault(types.boolean, false),
       }),
     )
     .volatile(() => ({
