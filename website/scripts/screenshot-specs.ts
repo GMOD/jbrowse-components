@@ -1664,6 +1664,30 @@ export const specs: ScreenshotSpec[] = [
             },
           },
         },
+        // A small region-slice of the 116x tumor PacBio BAM (chr10:122.8-122.87Mb,
+        // ~360 reads, 2.8MB) rehosted on jbrowse.org/demos/cgiab so the reads
+        // auto-load fast instead of tripping the force-load guard the full 116x
+        // BAM hits over this 28kb window (reviewer: render the reads).
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg008t_pacbio_chr10_deletion_slice',
+          name: 'HG008-T PacBio HiFi (116x, chr10 slice)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam.bai',
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
       ],
       views: [
         {
@@ -1671,19 +1695,22 @@ export const specs: ScreenshotSpec[] = [
           assembly: 'GRCh38_GIABv3',
           loc: 'chr10:122,822,042-122,850,825',
           // The somatic SV VCF's SV_85 <DEL> call marks the deletion against the
-          // NCBI RefSeq gene context (CUZD1); the 116x PacBio reads are omitted
-          // here (28kb of 116x trips the density guard → a FORCE-LOAD prompt).
+          // NCBI RefSeq gene context (CUZD1), with the rehosted PacBio read slice
+          // showing the supporting reads across the deletion.
           tracks: [
             'hg38_ncbiRefSeq_ucsc',
             'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
+            {
+              trackId: 'hg008t_pacbio_chr10_deletion_slice',
+              displaySnapshot: { height: 300 },
+            },
           ],
         },
       ],
     }),
     readyText: 'chr10',
     readyTimeout: 60000,
-    // force-loading ~12Mb of remote PacBio reads is slow; settle long
-    settleMs: 40000,
+    settleMs: 20000,
   },
 
   {
