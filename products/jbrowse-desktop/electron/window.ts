@@ -3,6 +3,7 @@ import { pathToFileURL } from 'url'
 
 import { BrowserWindow, Menu, app, shell } from 'electron'
 
+import { checkForUpdatesManually } from './autoUpdater.ts'
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
@@ -51,7 +52,7 @@ function createMenu(autoUpdater: AppUpdater) {
         {
           label: 'Check for updates...',
           click: () => {
-            autoUpdater.checkForUpdates().catch(logError)
+            checkForUpdatesManually(autoUpdater)
           },
         },
       ],
