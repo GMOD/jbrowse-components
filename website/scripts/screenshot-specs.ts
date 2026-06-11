@@ -237,7 +237,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'volvox',
-          loc: 'ctgA:1500-3500',
+          loc: 'ctgA:14439-14515',
           tracks: ['volvox_filtered_vcf', 'volvox_cram_alignments'],
         },
       ],
@@ -880,7 +880,9 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Sort by base at position' },
       { type: 'delay', ms: 500 },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'Sort by base at position' } }],
+    annotations: [
+      { type: 'box', anchor: { text: 'Sort by base at position' } },
+    ],
   },
 
   {
@@ -912,7 +914,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: 'chr8:50,000,000-51,000,000',
+          loc: 'chr8:50,366,343-61,321,733',
           tracks: ['ncbi_gff_hg19', 'hic'],
         },
       ],
@@ -980,16 +982,6 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'CHROM',
     readyTimeout: 60000,
     settleMs: 15000,
-  },
-
-  {
-    mode: 'url',
-    name: 'sv_inspector_begin',
-    url: sessionSpec(VOLVOX, {
-      views: [{ type: 'SvInspectorView' }],
-    }),
-    readyText: 'Open file from URL or local computer',
-    settleMs: 3000,
   },
 
   // Before/after horizontal flip, stacked into one figure: top frame is the
@@ -1230,33 +1222,6 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 20000,
   },
 
-  // Large-insertion indicator on HG002 long reads, with 'show soft clipping'
-  // enabled on the short-read Illumina track below for comparison.
-  {
-    mode: 'url',
-    name: 'insertion_indicators',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '1:55,705,770-55,706,090',
-          tracks: [
-            'nstd175.GRCh37.variant_call.vcf',
-            'hg002_nanopore',
-            {
-              trackId: 'illumina_hg002',
-              displaySnapshot: { showSoftClipping: true },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'HG002',
-    readyTimeout: 60000,
-    settleMs: 20000,
-  },
-
   // Inverted duplication (CPX/INVdup HGSV_2721) on real 1000-genomes data: the
   // HG02768 CRAM with linkedReads (mates drawn connected on one row) plus arc
   // read-connections and pair-orientation coloring makes the overlapping
@@ -1339,15 +1304,34 @@ export const specs: ScreenshotSpec[] = [
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
 
+  // Two-stage SV-inspector launch figure: top frame opens the app "Add" menu
+  // with the "SV inspector" item boxed; bottom frame is the import form that
+  // item opens. Replaces the old single-frame sv_inspector_begin (menu launch)
+  // and sv_inspector_importform (import form) screenshots.
   {
     mode: 'url',
     name: 'sv_cgiab/translocation_sv_inspector_start',
-    url: cgiabUrl({
-      views: [{ type: 'SvInspectorView' }],
-    }),
-    readyText: 'Open file from URL or local computer',
+    url: cgiabUrl({ views: [] }),
+    readyText: 'Select a view to launch',
     readyTimeout: 60000,
-    settleMs: 3000,
+    settleMs: 2000,
+    stages: [
+      {
+        actions: [
+          { type: 'click', text: 'Add' },
+          { type: 'waitForText', text: 'SV inspector' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'SV inspector' } }],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'SV inspector' },
+          { type: 'waitForText', text: 'Open file from URL or local computer' },
+          { type: 'delay', ms: 2000 },
+        ],
+      },
+    ],
   },
 
   {
@@ -2076,7 +2060,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: '1:55,704,500-55,707,500',
+          loc: 'chr1:161,172,613-161,181,745',
           tracks: [
             {
               trackId: 'illumina_hg002',
@@ -2233,6 +2217,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'hover', text: 'Collapse...' },
       { type: 'waitForText', text: 'Collapse top-level categories' },
       { type: 'delay', ms: 500 },
+    ],
+    annotations: [
+      { type: 'box', anchor: { text: 'Collapse top-level categories' } },
+      { type: 'box', anchor: { text: 'Collapse subcategories' } },
     ],
   },
 
@@ -2836,6 +2824,9 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Multi-sample variant display (matrix)' },
       { type: 'delay', ms: 500 },
     ],
+    annotations: [
+      { type: 'box', anchor: { text: 'Multi-sample variant display (matrix)' } },
+    ],
   },
 
   // Phased matrix with the "Rendering mode" menu visible.
@@ -2871,6 +2862,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Phased' },
       { type: 'delay', ms: 500 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'Phased' } }],
   },
 
   // Phased matrix clean (no menu overlay).
@@ -2903,18 +2895,6 @@ export const specs: ScreenshotSpec[] = [
   // ────────────────────────────────────────────────────────────────────────
   // Previously hand-captured UI-guide figures, now autogenerated
   // ────────────────────────────────────────────────────────────────────────
-
-  // SV inspector import form (sv_inspector_view.md getting-started figure) —
-  // the empty SpreadsheetImportWidget the SvInspectorView opens with.
-  {
-    mode: 'url',
-    name: 'sv_inspector_importform',
-    url: sessionSpec(VOLVOX, {
-      views: [{ type: 'SvInspectorView' }],
-    }),
-    readyText: 'Open file from URL or local computer',
-    settleMs: 3000,
-  },
 
   // LGV assembly/sequence import form (quickstart_web.md) — a linear genome view
   // with an assembly but no region opens on the assembly + sequence selectors.
@@ -3000,22 +2980,19 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'extrafield' },
       { type: 'delay', ms: 2000 },
     ],
+    // ring the formatDetails-generated hyperlink in the feature-details panel,
+    // with the explanatory text above it. The previous arrow landed its head on
+    // the link itself, covering the link text — the ring alone identifies it.
     annotations: [
-      // ring the formatDetails-generated hyperlink in the feature-details panel
       {
         type: 'circle',
         anchor: { selector: 'a[href^="https://google.com/?q="]' },
       },
       {
         type: 'text',
-        x: 760,
+        x: 700,
         y: 150,
         text: 'The callback turns the name into a clickable link',
-      },
-      {
-        type: 'arrow',
-        from: { x: 900, y: 165 },
-        anchor: { selector: 'a[href^="https://google.com/?q="]' },
       },
     ],
   },
@@ -3229,25 +3206,233 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     curated: true,
     name: 'protein/structure',
-    url:
-      `http://localhost:9000/.test-jbrowse-nightly/?config=/config.json&session=${ 
-      encodeURIComponent(
-        `spec-${ 
-          JSON.stringify({
-            views: [
-              {
-                type: 'ProteinView',
-                url: 'https://alphafold.ebi.ac.uk/files/AF-P15056-F1-model_v6.cif',
-              },
-            ],
-          })}`,
-      )}`,
+    url: `http://localhost:9000/.test-jbrowse-nightly/?config=/config.json&session=${encodeURIComponent(
+      `spec-${JSON.stringify({
+        views: [
+          {
+            type: 'ProteinView',
+            url: 'https://alphafold.ebi.ac.uk/files/AF-P15056-F1-model_v6.cif',
+          },
+        ],
+      })}`,
+    )}`,
     readySelector: 'canvas',
     readyTimeout: 60000,
     settleMs: 15000,
     actions: [
       { type: 'click', text: 'Show alignment' },
       { type: 'delay', ms: 1500 },
+    ],
+  },
+
+  // Connected genome + protein demo (TP53 / UniProt P04637). A single ProteinView
+  // spec entry creates and connects its own LinearGenomeView via the plugin's
+  // `connectedView` launch param, so the genome (NCBI RefSeq + ClinVar) and the
+  // AlphaFold structure load linked. Requires a local jbrowse-plugin-protein3d
+  // build that includes the `connectedView` param (`pnpm start`, PORT=9000). The
+  // `feature` is the NM_000546.6 CDS in absolute hg38 coords; the transcript
+  // sequence is the P04637 protein, which the view aligns to the structure to
+  // map genome positions onto residues.
+  {
+    mode: 'url',
+    curated: true,
+    name: 'protein/connected',
+    url: `http://localhost:9000/.test-jbrowse-nightly/?config=/config.json&session=${encodeURIComponent(
+      `spec-${JSON.stringify({
+        views: [
+          {
+            type: 'ProteinView',
+            url: 'https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif',
+            height: 540,
+            userProvidedTranscriptSequence:
+              'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD',
+            feature: {
+              uniqueId: 'NM_000546.6',
+              refName: 'chr17',
+              start: 7668420,
+              end: 7687490,
+              strand: -1,
+              type: 'mRNA',
+              name: 'TP53',
+              subfeatures: (
+                [
+                  [7676520, 7676594, 0],
+                  [7676381, 7676403, 1],
+                  [7675993, 7676272, 0],
+                  [7675052, 7675236, 0],
+                  [7674858, 7674971, 2],
+                  [7674180, 7674290, 0],
+                  [7673700, 7673837, 1],
+                  [7673534, 7673608, 2],
+                  [7670608, 7670715, 0],
+                  [7669608, 7669690, 1],
+                ] as const
+              ).map(([start, end, phase], i) => ({
+                uniqueId: `tp53-cds-${i}`,
+                refName: 'chr17',
+                start,
+                end,
+                phase,
+                type: 'CDS',
+                strand: -1,
+              })),
+            },
+            connectedView: {
+              assembly: 'hg38',
+              loc: 'chr17:7,668,421-7,687,550',
+              tracks: ['hg38-ncbiRefSeq', 'clinvar_ncbi_hg38'],
+            },
+          },
+        ],
+      })}`,
+    )}`,
+    readySelector: 'canvas',
+    readyTimeout: 90000,
+    settleMs: 15000,
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Clustering workflows
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Multi-wiggle "Cluster by score" dialog open over the volvox microarray_multi
+  // track — shows the auto/manual mode selector before any clustering is run.
+  {
+    mode: 'url',
+    name: 'multiwig/cluster_dialog',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['volvox_microarray_multi'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Cluster rows by score' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Cluster rows by score' },
+      { type: 'waitForText', text: 'Cluster by score' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Multi-wiggle clustered result — runs in-app clustering on the volvox
+  // microarray_multi track, then captures the dendrogram sidebar + reordered rows.
+  {
+    mode: 'url',
+    name: 'multiwig/clustered_result',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: [
+            {
+              trackId: 'volvox_microarray_multi',
+              displaySnapshot: { type: 'MultiLinearWiggleDisplay', height: 400 },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    viewportHeight: 600,
+    settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Cluster rows by score' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Cluster rows by score' },
+      { type: 'waitForText', text: 'Run clustering' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Run clustering' },
+      { type: 'waitForText', text: 'Run clustering', hidden: true },
+      { type: 'delay', ms: 6000 },
+    ],
+  },
+
+  // Multi-sample variant "Cluster by genotype" dialog open over the volvox
+  // multi-sample SV track (matrix display, 20 samples).
+  {
+    mode: 'url',
+    name: 'variants/cluster_dialog',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: [
+            {
+              trackId: 'volvox multi-sample sv',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantMatrixDisplay',
+                height: 300,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 8000,
+    viewportHeight: 700,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Cluster by genotype' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Cluster by genotype' },
+      { type: 'waitForText', text: 'Run clustering' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Multi-sample variant clustered result — runs in-app clustering on the
+  // volvox multi-sample SV track (20 samples, matrix display), then captures
+  // the dendrogram sidebar + reordered sample rows.
+  {
+    mode: 'url',
+    name: 'variants/clustered_result',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: [
+            {
+              trackId: 'volvox multi-sample sv',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantMatrixDisplay',
+                height: 400,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 8000,
+    viewportHeight: 700,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Cluster by genotype' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Cluster by genotype' },
+      { type: 'waitForText', text: 'Run clustering' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Run clustering' },
+      { type: 'waitForText', text: 'Run clustering', hidden: true },
+      { type: 'delay', ms: 10000 },
     ],
   },
 ]
