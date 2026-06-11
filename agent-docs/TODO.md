@@ -118,15 +118,6 @@ Arcs + semicircles modes render, tooltip works, color/thickness config edits app
   (volvox=MafTabix, evolverMammals=TAF, neither carries e/i). Point a track at a real
   UCSC multiz/cactus `.bb`.
 
-### DisplayChrome (unification landed; confirm jsdom-only changes)
-
-- **Variant force-load cycle** (highest value): zoom to too-large on multi-variant /
-  variant-matrix → force load → canvas re-renders cleanly (no blank/detached canvas).
-  Proves the old `visibility:hidden` special-casing was artificial (ADR-025).
-- **Loading overlay timing**: shows on pan/zoom fetch, hides on first paint; LD with
-  triangle toggled off shows NO overlay (empty-state, fetches nothing).
-- Run the `browser-tests` GPU-display suites and diff goldens.
-
 ### Screenshot review — final cleanup
 
 - Re-review changed shots; run `pnpm review-screenshots-web` to clear verdicts.
