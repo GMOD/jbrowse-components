@@ -1006,11 +1006,15 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * True when any loaded region has splice junctions to draw as sashimi
-         * arcs. Drives whether the below-coverage band reserves space.
+         * True when any loaded region has a junction passing minSashimiScore.
+         * Drives whether the below-coverage band reserves space, so a threshold
+         * that hides every arc also reclaims the empty band.
          */
         get hasSashimiArcs() {
-          return [...self.rpcDataMap.values()].some(d => d.sashimiX1.length > 0)
+          const { minSashimiScore } = self
+          return [...self.rpcDataMap.values()].some(d =>
+            d.sashimiCounts.some(c => c >= minSashimiScore),
+          )
         },
 
         /**
