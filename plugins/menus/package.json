@@ -37,8 +37,7 @@
     "@mui/x-data-grid": "^9.4.0",
     "date-fns": "^4.4.0",
     "mobx": "^6.16.1",
-    "mobx-react": "^9.2.2",
-    "react-dropzone": "^15.0.0"
+    "mobx-react": "^9.2.2"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

@@ -1,11 +1,10 @@
 import { useState } from 'react'
 
+import { FileDropZone } from '@jbrowse/core/ui'
 import { fileToLocation } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import { Alert, Box, Button, TextField, Typography, alpha } from '@mui/material'
+import { Alert, Box, Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { useDropzone } from 'react-dropzone'
 
 import {
   adapterLabels,
@@ -20,60 +19,10 @@ import type { FormState } from './util.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
-  dropZone: {
-    textAlign: 'center',
-    padding: theme.spacing(3),
-    borderWidth: 2,
-    borderRadius: 4,
-    borderStyle: 'dashed',
-    cursor: 'pointer',
-    display: 'block',
-    transition: 'border .24s ease-in-out, background-color .24s ease-in-out',
-  },
-  dropZoneActive: {
-    borderColor: theme.palette.secondary.light,
-    backgroundColor: alpha(
-      theme.palette.text.primary,
-      theme.palette.action.hoverOpacity,
-    ),
-  },
-  dropZoneInactive: {
-    borderColor: theme.palette.divider,
-    backgroundColor: theme.palette.background.default,
-  },
-  uploadIcon: {
-    color: theme.palette.text.secondary,
-  },
   section: {
     marginTop: theme.spacing(2),
   },
 }))
-
-function DropArea({ onFiles }: { onFiles: (files: File[]) => void }) {
-  const { classes, cx } = useStyles()
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: files => {
-      onFiles(files)
-    },
-  })
-  return (
-    <div
-      {...getRootProps({
-        className: cx(
-          classes.dropZone,
-          isDragActive ? classes.dropZoneActive : classes.dropZoneInactive,
-        ),
-      })}
-    >
-      <input {...getInputProps()} />
-      <CloudUploadIcon className={classes.uploadIcon} fontSize="large" />
-      <Typography color="text.secondary">
-        Drop your sequence file plus any index files (.fai/.gzi) here, or click
-        to browse
-      </Typography>
-    </div>
-  )
-}
 
 const BulkForm = observer(function BulkForm({
   form,
@@ -126,8 +75,9 @@ const BulkForm = observer(function BulkForm({
         }}
       />
       <Box className={classes.section}>
-        <DropArea
-          onFiles={files => {
+        <FileDropZone
+          message="Drop your sequence file plus any index files (.fai/.gzi) here, or click to browse"
+          onDrop={files => {
             const next = [
               ...dropped,
               ...files.map(file => fileToLocation(file)),

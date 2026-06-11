@@ -1,19 +1,16 @@
 import type { Dispatch, SetStateAction } from 'react'
 
+import { FileDropZone } from '@jbrowse/core/ui'
 import { fileToLocation } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import {
   Button,
   FormControlLabel,
   Radio,
   RadioGroup,
   TextField,
-  Typography,
-  alpha,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { useDropzone } from 'react-dropzone'
 
 import type { BulkLocationsState } from './useBulkLocations.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -21,29 +18,6 @@ import type { FileLocation } from '@jbrowse/core/util/types'
 const useStyles = makeStyles()(theme => ({
   section: {
     marginTop: theme.spacing(2),
-  },
-  dropZone: {
-    textAlign: 'center',
-    padding: theme.spacing(2),
-    borderWidth: 2,
-    borderRadius: 2,
-    borderStyle: 'dashed',
-    outline: 'none',
-    transition: 'border .24s ease-in-out, background-color .24s ease-in-out',
-  },
-  dropZoneActive: {
-    borderColor: theme.palette.secondary.light,
-    backgroundColor: alpha(
-      theme.palette.text.primary,
-      theme.palette.action.hoverOpacity,
-    ),
-  },
-  dropZoneInactive: {
-    borderColor: theme.palette.divider,
-    backgroundColor: theme.palette.background.default,
-  },
-  uploadIcon: {
-    color: theme.palette.text.secondary,
   },
 }))
 
@@ -54,28 +28,14 @@ const DropZone = observer(function DropZone({
   localLocations: FileLocation[]
   setLocalLocations: Dispatch<SetStateAction<FileLocation[]>>
 }) {
-  const { classes, cx } = useStyles()
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: accepted => {
-      setLocalLocations(prev => [...prev, ...accepted.map(fileToLocation)])
-    },
-  })
+  const { classes } = useStyles()
   return (
     <div className={classes.section}>
-      <div
-        {...getRootProps({
-          className: cx(
-            classes.dropZone,
-            isDragActive ? classes.dropZoneActive : classes.dropZoneInactive,
-          ),
-        })}
-      >
-        <input {...getInputProps()} />
-        <CloudUploadIcon className={classes.uploadIcon} fontSize="large" />
-        <Typography color="text.secondary" align="center">
-          Drag and drop files here, or click to browse
-        </Typography>
-      </div>
+      <FileDropZone
+        onDrop={accepted => {
+          setLocalLocations(prev => [...prev, ...accepted.map(fileToLocation)])
+        }}
+      />
       {localLocations.length > 0 ? (
         <Button
           size="small"
