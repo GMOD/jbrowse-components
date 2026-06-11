@@ -1656,38 +1656,212 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
+  // Whole-genome normal-vs-tumor coverage as a MultiQuantitativeTrack, from
+  // indexcov-estimated coverage bigWigs (computed in seconds from the BAM .bai
+  // indexes, normalized so median≈1 → reads directly as copy number) hosted at
+  // jbrowse.org/demos/cgiab. All 24 chromosomes via a multi-region locstring
+  // (showAllRegions races the giant remote assembly load, so name them).
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cnv_multi_bigwig',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'MultiQuantitativeTrack',
+          trackId: 'hg008_cnv_indexcov',
+          name: 'HG008 normal vs tumor coverage (indexcov)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              {
+                name: 'HG008-N (normal)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+              {
+                name: 'HG008-T (tumor)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+            ],
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY',
+          tracks: [
+            {
+              trackId: 'hg008_cnv_indexcov',
+              displaySnapshot: { height: 200 },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 90000,
+    viewportWidth: 1800,
+    settleMs: 25000,
+  },
+
+  // Same whole-genome multi-bigwig with a manual max-score cap so a few
+  // high-coverage spikes (centromeres/repeats) don't compress the copy-number
+  // band — the normalized indexcov domain runs ~0-2, so cap at 2.5.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cnv_score_limit',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'MultiQuantitativeTrack',
+          trackId: 'hg008_cnv_indexcov',
+          name: 'HG008 normal vs tumor coverage (indexcov)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              {
+                name: 'HG008-N (normal)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+              {
+                name: 'HG008-T (tumor)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+            ],
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY',
+          tracks: [
+            {
+              trackId: 'hg008_cnv_indexcov',
+              displaySnapshot: { height: 200, minScore: 0, maxScore: 2.5 },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 90000,
+    viewportWidth: 1800,
+    settleMs: 25000,
+  },
+
   {
     mode: 'url',
     name: 'sv_cgiab/dotplot_result',
+    // The cgiab config ships this synteny track with a plain PAFAdapter pointed
+    // at a .pif.gz — but PAFAdapter doesn't strip the PIF q/t refName prefixes,
+    // so every feature's refName ("qhaplotype1-…") fails to match the assembly
+    // refName ("haplotype1-…") and the dotplot renders empty. Override the track
+    // with the correct PairwiseIndexedPAFAdapter (tabix .pif.gz) so the dots paint.
     url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'SyntenyTrack',
+          trackId: 'HG008T.hap1_pif',
+          name: 'HG008T.hap1',
+          assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+          adapter: {
+            type: 'PairwiseIndexedPAFAdapter',
+            assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+            pifGzLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'TBI',
+              location: {
+                uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz.tbi',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
       views: [
         {
           type: 'DotplotView',
           views: [{ assembly: 'HG008T.hap1' }, { assembly: 'GRCh38_GIABv3' }],
-          tracks: ['HG008T.hap1'],
+          tracks: ['HG008T.hap1_pif'],
         },
       ],
     }),
+    readyText: 'chr1',
+    readyTimeout: 90000,
     viewportWidth: 1800,
-    // giant remote assembly PAF; needs a long settle for the dots to paint
+    // canvasDrawn doesn't reliably flip for this whole-genome WebGL dotplot, so
+    // gate on the grid labels then settle long for the heavy whole-genome PIF
+    // fetch to paint its dots
     settleMs: 60000,
   },
 
   {
     mode: 'url',
     name: 'sv_cgiab/synteny_view',
+    // Same fix as sv_cgiab/dotplot_result: the config's plain PAFAdapter can't
+    // strip the PIF q/t refName prefixes, so ribbons never map. Override with
+    // PairwiseIndexedPAFAdapter. hap1 contigs 16 (↔chr3, ↔chr13) and 11 (↔chr13)
+    // are the ones that actually align to the displayed GRCh38 chromosomes, so
+    // the ribbons connect (contig 15 maps to chr1/chr5, not shown here).
     url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'SyntenyTrack',
+          trackId: 'HG008T.hap1_pif',
+          name: 'HG008T.hap1',
+          assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+          adapter: {
+            type: 'PairwiseIndexedPAFAdapter',
+            assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+            pifGzLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'TBI',
+              location: {
+                uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz.tbi',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearSyntenyView',
-          tracks: ['HG008T.hap1'],
+          tracks: ['HG008T.hap1_pif'],
           views: [
             {
               loc: 'chr3:1-198295559 chr13:1-114364328',
               assembly: 'GRCh38_GIABv3',
             },
             {
-              loc: 'haplotype1-0000015:1-300000000 haplotype1-0000016:1-300000000',
+              loc: 'haplotype1-0000016:1-212902875 haplotype1-0000011:1-99479325',
               assembly: 'HG008T.hap1',
             },
           ],
@@ -1829,7 +2003,32 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'methylation/arabidopsis_bisulfite_chh',
-    url: '?config=test_data/arabidopsis_methylation/config_emseq_bisulfite.json&sessionName=Screenshot',
+    // The config's defaultSession sits at 50-53kb, which is mostly unmethylated.
+    // A CHH-methylation scan of the EM-seq reads (C-retention at reference CHH
+    // cytosines) ranked NC_003070.9:144,001-146,000 highest (~61% mean CHH
+    // methylation, 277 sites, ~2000x), so navigate there with the bisulfite CHH
+    // coloring to show an actually-methylated region.
+    url: sessionSpec('test_data/arabidopsis_methylation/config_emseq_bisulfite.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'arabidopsis',
+          loc: 'NC_003070.9:144,001-146,000',
+          tracks: [
+            {
+              trackId: 'arabidopsis_emseq',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                colorBySetting: {
+                  type: 'bisulfite',
+                  modifications: { cytosineContext: 'CHH' },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    }),
     readyText: 'NC_003070',
     readyTimeout: 60000,
     settleMs: 14000,
@@ -3152,6 +3351,11 @@ export const specs: ScreenshotSpec[] = [
                 featureSpacing: 0,
                 maxHeight: 2000,
                 height: 700,
+                // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
+                // the spurious forward-strand sashimi arcs are single-/2-read
+                // aligner noise (correct XS-tag strand, just low support). A
+                // min-support of 3 drops the noise, keeps the real junctions.
+                minSashimiScore: 3,
               },
             },
           ],

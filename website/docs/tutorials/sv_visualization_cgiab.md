@@ -260,12 +260,13 @@ chromosome at once
 
 Open the tumor and normal bigWigs as a multi-bigwig track for direct comparison.
 
-<Figure caption="A multi-bigwig track with tumor and normal coverage across all chromosomes." src="/img/sv_cgiab/cnv_multi_bigwig.png" />
+<Figure caption="A multi-bigwig track with tumor and normal coverage across all chromosomes. These bigWigs are indexcov coverage estimates (computed in seconds from the BAM indexes) normalized so a copy-number-neutral region sits near 1." src="/img/sv_cgiab/cnv_multi_bigwig.png" />
 
-Apply a manual **min/max score** limit from the track menu to cap the y-axis at,
-e.g., 300.
+Apply a manual **min/max score** limit from the track menu to cap the y-axis so
+a few high-coverage spikes (centromeres, repeats) don't flatten the
+copy-number signal — for the normalized indexcov scale a max of ~2.5 works well.
 
-<Figure caption="After applying a manual score limit of 300." src="/img/sv_cgiab/cnv_score_limit.png" />
+<Figure caption="After capping the y-axis with a manual max score." src="/img/sv_cgiab/cnv_score_limit.png" />
 
 Switch the fill mode to **No fill** for a clearer line-style trace, zoom into a
 region of interest, and open the benchmark CNV BED track to check whether
