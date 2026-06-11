@@ -37,10 +37,10 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
   const input = useBulkLocations()
   const { locations } = input
-  // assemblyOverride is set when the user explicitly picks an assembly; otherwise
-  // model.assembly (reactive via observer) tracks the current view's assembly.
-  const [assemblyOverride, setAssemblyOverride] = useState<string>()
-  const assembly = assemblyOverride ?? model.assembly ?? ''
+  // Reuse the widget model's assembly derivation/action (shared with the
+  // single-track flow): it resolves to the view's assembly until the user picks
+  // one, and setAssembly is reactive via observer.
+  const assembly = model.assembly ?? ''
   const [customNames, setCustomNames] = useState<Record<string, string>>({})
   const [timestamp] = useState(() => Date.now())
 
@@ -65,14 +65,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
         data file automatically.
       </Typography>
 
-      <LocationInput
-        mode={input.mode}
-        setMode={input.setMode}
-        text={input.text}
-        setText={input.setText}
-        localLocations={input.localLocations}
-        setLocalLocations={input.setLocalLocations}
-      />
+      <LocationInput input={input} />
 
       <div className={classes.section}>
         <AssemblySelector
@@ -80,7 +73,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
           helperText="Assembly for all added tracks"
           selected={assembly}
           onChange={arg => {
-            setAssemblyOverride(arg)
+            model.setAssembly(arg)
           }}
           fullWidth
         />

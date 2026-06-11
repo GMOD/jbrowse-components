@@ -44,3 +44,5 @@ export function useBulkLocations() {
     removeLocations,
   }
 }
+
+export type BulkLocationsState = ReturnType<typeof useBulkLocations>

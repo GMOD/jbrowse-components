@@ -15,7 +15,7 @@ import {
 import { observer } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
 
-import type { InputMode } from './util.ts'
+import type { BulkLocationsState } from './useBulkLocations.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
@@ -92,20 +92,12 @@ const DropZone = observer(function DropZone({
 })
 
 const LocationInput = observer(function LocationInput({
-  mode,
-  setMode,
-  text,
-  setText,
-  localLocations,
-  setLocalLocations,
+  input,
 }: {
-  mode: InputMode
-  setMode: (mode: InputMode) => void
-  text: string
-  setText: (text: string) => void
-  localLocations: FileLocation[]
-  setLocalLocations: Dispatch<SetStateAction<FileLocation[]>>
+  input: BulkLocationsState
 }) {
+  const { mode, setMode, text, setText, localLocations, setLocalLocations } =
+    input
   const { classes } = useStyles()
   return (
     <>
