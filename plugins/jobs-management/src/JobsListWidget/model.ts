@@ -53,22 +53,24 @@ export function stateModelFactory(_pluginManager: PluginManager) {
     })
     .actions(self => {
       function addJobToArray(arr: typeof self.jobs, job: JobInput) {
-        const existing = arr.find(j => j.name === job.name)
-        if (existing) {
-          return existing
+        // dedupe by name so re-adding doesn't create a duplicate card, but
+        // still refresh the fields so a repeated same-named job (common in
+        // Apollo's job manager) shows current status rather than stale state
+        let target = arr.find(j => j.name === job.name)
+        if (!target) {
+          const length = arr.push({ name: job.name })
+          target = arr[length - 1]!
         }
-        const length = arr.push({ name: job.name })
-        const added = arr[length - 1]!
         if (job.cancelCallback) {
-          added.setCancelCallback(job.cancelCallback)
+          target.setCancelCallback(job.cancelCallback)
         }
         if (job.statusMessage !== undefined) {
-          added.setStatusMessage(job.statusMessage)
+          target.setStatusMessage(job.statusMessage)
         }
         if (job.progressPct !== undefined) {
-          added.setProgressPct(job.progressPct)
+          target.setProgressPct(job.progressPct)
         }
-        return added
+        return target
       }
 
       function removeFromArray(arr: typeof self.jobs, jobName: string) {

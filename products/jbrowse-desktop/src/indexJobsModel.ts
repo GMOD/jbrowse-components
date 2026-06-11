@@ -4,6 +4,7 @@ import path from 'path'
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
 import {
   type Track,
   createTextSearchConf,
@@ -17,7 +18,6 @@ import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -33,7 +33,6 @@ interface TrackTextIndexing {
 
 interface JobsEntry {
   name: string
-  progressPct?: number
   statusMessage?: string
 }
 export interface TextJobsEntry extends JobsEntry {
@@ -82,10 +81,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #volatile
        */
       jobsQueue: observable.array<TextJobsEntry>([]),
-      /**
-       * #volatile
-       */
-      finishedJobs: observable.array<TextJobsEntry>([]),
     }))
     .views(self => ({
       /**
@@ -125,11 +120,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #method
        */
       getJobStatusWidget() {
-        const { session } = self
-        const { widgets } = session
-        let jobStatusWidget = widgets.get('JobsList')
-        jobStatusWidget ??= session.addWidget('JobsListWidget', 'JobsList')
-        return jobStatusWidget as JobsListModel
+        return getOrCreateJobsListWidget(self.session)
       },
     }))
     .actions(self => ({
@@ -203,12 +194,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         self.statusMessage = arg
       },
 
-      /**
-       * #action
-       */
-      addFinishedJob(entry: TextJobsEntry) {
-        self.finishedJobs.push(entry)
-      },
       /**
        * #action
        */
@@ -324,18 +309,13 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           rootModel.textSearchManager.clearCache()
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
-          if (current) {
-            this.addFinishedJob(current)
-            if (isSessionModelWithWidgets(session)) {
-              const jobStatusWidget = self.getJobStatusWidget()
-              session.showWidget(jobStatusWidget)
-              const { name, statusMessage, progressPct } = current
-              jobStatusWidget.addFinishedJob({
-                name,
-                statusMessage: statusMessage ?? 'done',
-                progressPct: progressPct ?? 100,
-              })
-            }
+          if (current && isSessionModelWithWidgets(session)) {
+            const jobStatusWidget = self.getJobStatusWidget()
+            session.showWidget(jobStatusWidget)
+            jobStatusWidget.addFinishedJob({
+              name: current.name,
+              statusMessage: current.statusMessage ?? 'done',
+            })
           }
         } catch (e) {
           if (self.aborted) {
