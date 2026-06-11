@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import {
-  fileToLocation,
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
@@ -10,10 +9,18 @@ import {
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { Button, Paper, TextField, Typography } from '@mui/material'
+import {
+  Button,
+  Paper,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import DropZone from './DropZone.tsx'
 import {
   addMultiWiggleTrack,
   applyName,
@@ -31,6 +38,9 @@ const useStyles = makeStyles()(theme => ({
   paper: {
     margin: theme.spacing(),
     padding: theme.spacing(),
+  },
+  toggle: {
+    marginBottom: theme.spacing(),
   },
   submit: {
     marginTop: 25,
@@ -78,6 +88,7 @@ function doSubmit({
 const MultiWiggleAddTrackWorkflow = observer(
   function MultiWiggleAddTrackWorkflow({ model }: { model: AddTrackModel }) {
     const { classes } = useStyles()
+    const [inputMode, setInputMode] = useState<'paste' | 'upload'>('paste')
     const [inputVal, setInputVal] = useState('')
     const [tracks, setTracks] = useState<TrackRow[]>([])
     const [trackName, setTrackName] = useState('MultiWiggle')
@@ -91,46 +102,56 @@ const MultiWiggleAddTrackWorkflow = observer(
     }
 
     return (
-      <Paper className={classes.paper}>
-        <TextField
-          multiline
-          fullWidth
-          rows={5}
-          value={inputVal}
-          placeholder="Paste a list of URLs (one per line) or a JSON array of subadapter configs, then click 'Add tracks'"
-          variant="outlined"
-          onChange={event => {
-            setInputVal(event.target.value)
-          }}
-        />
-        <Button
-          variant="outlined"
-          disabled={!inputVal.trim()}
-          onClick={() => {
-            addTracks(parseItems(inputVal))
-            setInputVal('')
+      <Paper
+        className={classes.paper}
+        onDragEnter={event => {
+          if (event.dataTransfer.types.includes('Files')) {
+            setInputMode('upload')
+          }
+        }}
+      >
+        <ToggleButtonGroup
+          className={classes.toggle}
+          color="primary"
+          size="small"
+          exclusive
+          value={inputMode}
+          onChange={(_event, val) => {
+            if (val) {
+              setInputMode(val === 'upload' ? 'upload' : 'paste')
+            }
           }}
         >
-          Add tracks
-        </Button>
-        <Button variant="outlined" component="label">
-          Choose Files from your computer
-          <input
-            type="file"
-            hidden
-            multiple
-            onChange={({ target }) => {
-              addTracks(
-                [...(target.files ?? [])].map(file => ({
-                  type: 'BigWigAdapter',
-                  bigWigLocation: fileToLocation(file),
-                  source: file.name,
-                })),
-              )
-              target.value = ''
-            }}
-          />
-        </Button>
+          <ToggleButton value="paste">Paste list of files</ToggleButton>
+          <ToggleButton value="upload">Drag and drop files</ToggleButton>
+        </ToggleButtonGroup>
+        {inputMode === 'paste' ? (
+          <>
+            <TextField
+              multiline
+              fullWidth
+              rows={5}
+              value={inputVal}
+              placeholder="Paste a list of URLs (one per line) or a JSON array of subadapter configs, then click 'Add tracks'"
+              variant="outlined"
+              onChange={event => {
+                setInputVal(event.target.value)
+              }}
+            />
+            <Button
+              variant="outlined"
+              disabled={!inputVal.trim()}
+              onClick={() => {
+                addTracks(parseItems(inputVal))
+                setInputVal('')
+              }}
+            >
+              Add tracks
+            </Button>
+          </>
+        ) : (
+          <DropZone addTracks={addTracks} />
+        )}
         {tracks.length > 0 ? (
           <div style={{ marginTop: 8 }}>
             <Button
