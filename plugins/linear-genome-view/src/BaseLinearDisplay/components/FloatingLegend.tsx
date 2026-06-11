@@ -14,9 +14,10 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 100,
     maxWidth: 200,
   },
-  header: {
-    display: 'flex',
-    justifyContent: 'flex-end',
+  closeButton: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
   item: {
     display: 'flex',
@@ -60,17 +61,16 @@ const FloatingLegend = observer(function FloatingLegend({
   return (
     <div className={classes.legend}>
       {onDismiss ? (
-        <div className={classes.header}>
-          <IconButton
-            size="small"
-            title="Hide legend"
-            onClick={() => {
-              onDismiss()
-            }}
-          >
-            <CloseIcon fontSize="inherit" />
-          </IconButton>
-        </div>
+        <IconButton
+          className={classes.closeButton}
+          size="small"
+          title="Hide legend"
+          onClick={() => {
+            onDismiss()
+          }}
+        >
+          <CloseIcon fontSize="inherit" />
+        </IconButton>
       ) : null}
       {items.map((item, idx) => (
         <div key={`${item.label}-${idx}`} className={classes.item}>
