@@ -4205,71 +4205,61 @@ export const specs: ScreenshotSpec[] = [
   // Clustering workflows
   // ────────────────────────────────────────────────────────────────────────
 
-  // Multi-wiggle "Cluster by score" dialog open over the volvox microarray_multi
-  // track — shows the auto/manual mode selector before any clustering is run.
+  // Multi-wiggle clustering, two-stage figure over the PUR copy-number panel
+  // (1000 Genomes kidd-lab CNV bigWigs, 104 PUR individuals) added to
+  // config_demo — a far richer dataset than the synthetic volvox wiggle
+  // (reviewer). Shown across the AMY1 locus (chr1, hg38), a classic
+  // copy-number-polymorphic region, so the per-individual copy-number differences
+  // drive a meaningful clustering. Top frame: the "Cluster by score" dialog open
+  // (auto/manual mode, before). Bottom frame: after "Run clustering", the 104
+  // rows are reordered by signal similarity with a dendrogram on the left.
+  // Combines the old cluster_dialog + clustered_result into one before/after.
   {
     mode: 'url',
     name: 'multiwig/cluster_dialog',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_microarray_multi'],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    readySelector: '[data-testid="multi-wiggle-display-done"]',
-    settleMs: 4000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Cluster rows by score' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Cluster rows by score' },
-      { type: 'waitForText', text: 'Cluster by score' },
-      { type: 'delay', ms: 500 },
-    ],
-  },
-
-  // Multi-wiggle clustered result — runs in-app clustering on the volvox
-  // microarray_multi track, then captures the dendrogram sidebar + reordered rows.
-  {
-    mode: 'url',
-    name: 'multiwig/clustered_result',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
+          assembly: 'hg38',
+          loc: 'chr1:103,500,000-104,800,000',
           tracks: [
             {
-              trackId: 'volvox_microarray_multi',
+              trackId: 'pur_copynumber_1000g',
               displaySnapshot: {
                 type: 'MultiLinearWiggleDisplay',
-                height: 400,
+                height: 420,
               },
             },
           ],
         },
       ],
     }),
-    readyText: 'ctgA',
+    readyText: 'PUR',
     readySelector: '[data-testid="multi-wiggle-display-done"]',
-    viewportHeight: 600,
-    settleMs: 4000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Cluster rows by score' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Cluster rows by score' },
-      { type: 'waitForText', text: 'Run clustering' },
-      { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Run clustering' },
-      { type: 'waitForText', text: 'Run clustering', hidden: true },
-      { type: 'delay', ms: 6000 },
+    readyTimeout: 90000,
+    viewportHeight: 620,
+    settleMs: 15000,
+    stages: [
+      {
+        // top frame: the Cluster by score dialog open, before clustering
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'waitForText', text: 'Cluster rows by score' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Cluster rows by score' },
+          { type: 'waitForText', text: 'Run clustering' },
+          { type: 'delay', ms: 500 },
+        ],
+      },
+      {
+        // bottom frame: run clustering, then show reordered rows + dendrogram
+        actions: [
+          { type: 'click', text: 'Run clustering' },
+          { type: 'waitForText', text: 'Run clustering', hidden: true },
+          { type: 'delay', ms: 7000 },
+        ],
+      },
     ],
   },
 
