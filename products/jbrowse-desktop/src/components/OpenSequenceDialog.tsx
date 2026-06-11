@@ -64,6 +64,8 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [loading, setLoading] = useState('')
   const [mode, setMode] = useState<'guided' | 'bulk'>('guided')
 
+  const totalToOpen = assemblyConfs.length + (form.assemblyName ? 1 : 0)
+
   async function stageCurrentAssembly() {
     if (!form.assemblyName) {
       throw new Error('No assembly name set')
@@ -176,6 +178,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             className={classes.modeToggle}
             size="small"
             exclusive
+            disabled={!!loading}
             value={mode}
             onChange={(_event, value: 'guided' | 'bulk' | null) => {
               if (value) {
@@ -219,10 +222,10 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             void handleOpen()
           }}
           color="primary"
-          disabled={!!loading || (!form.assemblyName && !assemblyConfs.length)}
+          disabled={!!loading || !totalToOpen}
           variant="contained"
         >
-          Open
+          {totalToOpen > 1 ? `Open ${totalToOpen} genomes` : 'Open'}
         </Button>
       </DialogActions>
     </Dialog>
