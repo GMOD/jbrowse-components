@@ -85,9 +85,9 @@ function extractCDSRegions(feature: Feature) {
   const featureStart = feature.get('start')
 
   const regions = subfeatures
-    .filter((sub: Feature) => isCDS(sub) && sub.get('start') < sub.get('end'))
-    .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-    .map((sub: Feature) => ({
+    .filter(sub => isCDS(sub) && sub.get('start') < sub.get('end'))
+    .sort((a, b) => a.get('start') - b.get('start'))
+    .map(sub => ({
       start: sub.get('start') - featureStart,
       end: sub.get('end') - featureStart,
       phase: sub.get('phase') ?? 0,
