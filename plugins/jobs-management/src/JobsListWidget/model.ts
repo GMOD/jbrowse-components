@@ -8,8 +8,16 @@ import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 export type JobSnapshot = SnapshotIn<typeof Job>
 
-export interface NewJob extends JobSnapshot {
-  cancelCallback(): void
+/**
+ * Input for adding a job. `name` is the persisted property; `statusMessage`,
+ * `progressPct`, and `cancelCallback` are volatile runtime state applied via
+ * the job's setters after creation.
+ */
+export interface JobInput {
+  name: string
+  statusMessage?: string
+  progressPct?: number
+  cancelCallback?: () => void
 }
 
 /**
@@ -44,19 +52,21 @@ export function stateModelFactory(_pluginManager: PluginManager) {
       aborted: types.array(Job),
     })
     .actions(self => {
-      function addJobToArray(
-        arr: typeof self.jobs,
-        job: JobSnapshot,
-        cancelCallback?: () => void,
-      ) {
+      function addJobToArray(arr: typeof self.jobs, job: JobInput) {
         const existing = arr.find(j => j.name === job.name)
         if (existing) {
           return existing
         }
-        const length = arr.push(job)
+        const length = arr.push({ name: job.name })
         const added = arr[length - 1]!
-        if (cancelCallback) {
-          added.setCancelCallback(cancelCallback)
+        if (job.cancelCallback) {
+          added.setCancelCallback(job.cancelCallback)
+        }
+        if (job.statusMessage !== undefined) {
+          added.setStatusMessage(job.statusMessage)
+        }
+        if (job.progressPct !== undefined) {
+          added.setProgressPct(job.progressPct)
         }
         return added
       }
@@ -73,8 +83,8 @@ export function stateModelFactory(_pluginManager: PluginManager) {
         /**
          * #action
          */
-        addJob(job: NewJob) {
-          return addJobToArray(self.jobs, job, job.cancelCallback)
+        addJob(job: JobInput) {
+          return addJobToArray(self.jobs, job)
         },
         /**
          * #action
@@ -85,19 +95,19 @@ export function stateModelFactory(_pluginManager: PluginManager) {
         /**
          * #action
          */
-        addFinishedJob(job: JobSnapshot) {
+        addFinishedJob(job: JobInput) {
           return addJobToArray(self.finished, job)
         },
         /**
          * #action
          */
-        addQueuedJob(job: JobSnapshot) {
+        addQueuedJob(job: JobInput) {
           return addJobToArray(self.queued, job)
         },
         /**
          * #action
          */
-        addAbortedJob(job: JobSnapshot) {
+        addAbortedJob(job: JobInput) {
           return addJobToArray(self.aborted, job)
         },
         /**

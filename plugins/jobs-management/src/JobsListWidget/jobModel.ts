@@ -11,17 +11,17 @@ export const Job = types
      * #property
      */
     name: types.string,
-    /**
-     * #property
-     */
-    statusMessage: types.maybe(types.string),
-    /**
-     * #property
-     */
-    progressPct: types.optional(types.number, 0),
   })
   .volatile(() => ({
     cancelCallback() {},
+    /**
+     * #volatile
+     */
+    statusMessage: undefined as string | undefined,
+    /**
+     * #volatile
+     */
+    progressPct: 0,
   }))
   .actions(self => ({
     /**
