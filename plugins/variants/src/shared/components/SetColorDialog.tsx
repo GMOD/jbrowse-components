@@ -1,6 +1,7 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 
 import type { ProcessedSource } from '../types.ts'
+import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 // Variants' `editableSources` is the haplotype-expanded, layout-merged,
 // non-subtree-filtered view; reordering it persists haplotype rows directly.
@@ -12,26 +13,14 @@ export default function MultiSampleVariantSetColorDialog({
   model,
   handleClose,
 }: {
-  model: {
-    editableSources?: ProcessedSource[]
-    clusterTree?: string
-    setLayout: (s: ProcessedSource[]) => void
-    clearLayout: () => void
-  }
+  model: TreeLayoutModel<ProcessedSource>
   handleClose: () => void
 }) {
   return (
     <SetColorDialog
-      getSources={() => model.editableSources ?? []}
-      onSetLayout={s => {
-        model.setLayout(s)
-      }}
-      onClearLayout={() => {
-        model.clearLayout()
-      }}
+      model={model}
       handleClose={handleClose}
       title="Multi-sample variant display - Color/arrangement editor"
-      hasClusterTree={!!model.clusterTree}
       enableBulkEdit
       enableRowPalettizer
       showTipsStorageKey="multivariant-showTips"

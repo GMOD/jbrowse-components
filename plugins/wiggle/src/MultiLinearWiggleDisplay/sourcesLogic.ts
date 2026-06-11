@@ -20,26 +20,34 @@ export function pickColor(
 // adapter order when no layout has been set yet). No subtree filter and no
 // overlay-palette synthesis — this is what the edit dialog should see, so
 // Submit only persists colors the user actually chose.
+//
+// Membership is reconciled against the current adapter sources: a saved layout
+// is only an ordering/override hint, so entries whose source no longer exists
+// are dropped and adapter sources the layout never saw (e.g. a subtrack added
+// after the layout was saved) are appended in adapter order.
 export function buildEditableSources(
   sourcesVolatile: SourceInfo[],
   layout: Source[],
 ): EditableSource[] {
+  if (!layout.length) {
+    return sourcesVolatile.map(s => ({ ...s, source: s.name }))
+  }
   const adapterByName = new Map(sourcesVolatile.map(s => [s.name, s]))
-  const base = layout.length ? layout : sourcesVolatile
-  return base.map(s => {
+  const laidOut = layout.flatMap(s => {
     const info = adapterByName.get(s.name)
-    const source = 'source' in s ? s.source : s.name
-    const res: EditableSource = {
-      ...info,
-      ...s,
-      source,
-    }
-    return res
+    return info ? [{ ...info, ...s }] : []
   })
+  const inLayout = new Set(layout.map(s => s.name))
+  const appended = sourcesVolatile
+    .filter(s => !inLayout.has(s.name))
+    .map(s => ({ ...s, source: s.name }))
+  return [...laidOut, ...appended]
 }
 
 // What the canvas/SVG renderers consume: editable sources after subtree
-// filter, with overlay-palette synthesis filling unset colors.
+// filter, with overlay-palette synthesis filling unset colors. Palette index
+// is the post-filter position, so the visible rows always get the most
+// distinct hues (set1[0], set1[1], …) — see the re-index test.
 export function buildSources(
   editableSources: Source[],
   subtreeFilter: readonly string[] | undefined,

@@ -62,6 +62,26 @@ describe('buildEditableSources', () => {
       expect(s.color).toBeUndefined()
     }
   })
+
+  it('appends adapter sources added after the layout was saved', () => {
+    const layout: Source[] = [
+      { source: 'source_1', name: 'source_1' },
+      { source: 'source_0', name: 'source_0' },
+    ]
+    // adapter now has a third source that the saved layout never saw
+    const out = buildEditableSources(adapter(3), layout)
+    expect(out.map(s => s.name)).toEqual(['source_1', 'source_0', 'source_2'])
+  })
+
+  it('drops layout entries whose source no longer exists in the adapter', () => {
+    const layout: Source[] = [
+      { source: 'source_1', name: 'source_1' },
+      { source: 'ghost', name: 'ghost' },
+      { source: 'source_0', name: 'source_0' },
+    ]
+    const out = buildEditableSources(adapter(2), layout)
+    expect(out.map(s => s.name)).toEqual(['source_1', 'source_0'])
+  })
 })
 
 describe('buildSources', () => {

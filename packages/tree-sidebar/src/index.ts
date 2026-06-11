@@ -23,7 +23,10 @@ export {
 export { applyColorPalette } from './setColorDialog/applyColorPalette.ts'
 export type { Colored } from './setColorDialog/applyColorPalette.ts'
 export { default as SetColorDialog } from './setColorDialog/SetColorDialog.tsx'
-export type { SetColorDialogProps } from './setColorDialog/SetColorDialog.tsx'
+export type {
+  SetColorDialogProps,
+  TreeLayoutModel,
+} from './setColorDialog/SetColorDialog.tsx'
 export type { ColorColumn } from './setColorDialog/SourceGrid.tsx'
 export {
   assignDepthY,

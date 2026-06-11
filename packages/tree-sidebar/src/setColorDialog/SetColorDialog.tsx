@@ -24,24 +24,28 @@ const useStyles = makeStyles()({
   },
 })
 
+// The slice of a TreeSidebarMixin display the dialog drives. Consumers pass the
+// model itself (not four separate callbacks) so every plugin shares one
+// contract. `editableSources` is the dialog-editable list (no palette
+// synthesis, no subtree filter), read live so it reflects a mid-dialog
+// "Clear custom settings".
+export interface TreeLayoutModel<S extends { name: string }> {
+  editableSources?: S[]
+  setLayout: (s: S[]) => void
+  clearLayout: () => void
+  // Whether submitting `next` would invalidate a loaded cluster tree; when true
+  // the ClearTreeWarning is shown before Submit.
+  willClearTree: (next: S[]) => boolean
+}
+
 export interface SetColorDialogProps<
   S extends { name: string; color?: string },
 > {
-  // Returns the current dialog-editable source list (no palette synthesis, no
-  // subtree filter). Called once on mount to seed local state and again after
-  // "Clear custom settings" to refresh from the underlying model. Use a
-  // function (not a value) so the dialog reads the post-clearLayout state.
-  getSources: () => S[]
-  onSetLayout: (s: S[]) => void
-  onClearLayout: () => void
+  model: TreeLayoutModel<S>
   handleClose: () => void
   // PopoverPicker columns. Each renders both a bulk header button and a
   // PopoverPicker column. Defaults to a single `color` column.
   colorColumns?: ColorColumn<S>[]
-  // Returns whether submitting `next` would invalidate a loaded cluster tree;
-  // when true the ClearTreeWarning dialog is shown before Submit. Called fresh
-  // at submit (not a snapshot) so it reflects a tree cleared mid-dialog.
-  getWillClearTree?: (next: S[]) => boolean
   title?: string
   enableBulkEdit?: boolean
   enableRowPalettizer?: boolean
@@ -55,12 +59,9 @@ export interface SetColorDialogProps<
 export default function SetColorDialog<
   S extends { name: string; color?: string },
 >({
-  getSources,
-  onSetLayout,
-  onClearLayout,
+  model,
   handleClose,
   colorColumns = [{ field: 'color', headerName: 'Color' }],
-  getWillClearTree,
   title = 'Color/arrangement editor',
   enableBulkEdit = false,
   enableRowPalettizer = false,
@@ -68,18 +69,19 @@ export default function SetColorDialog<
   reservedFields,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
+  const getSources = () => model.editableSources ?? []
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(getSources)
   const [showTips, setShowTips] = useLocalStorage(showTipsStorageKey, false)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
 
   const submit = () => {
-    onSetLayout(currLayout)
+    model.setLayout(currLayout)
     handleClose()
   }
 
   const onSubmit = () => {
-    if (getWillClearTree?.(currLayout)) {
+    if (model.willClearTree(currLayout)) {
       setPendingReorderConfirm(true)
     } else {
       submit()
@@ -88,7 +90,7 @@ export default function SetColorDialog<
 
   // Drop custom settings and re-seed the grid from the model's persisted state.
   const resetToModel = () => {
-    onClearLayout()
+    model.clearLayout()
     setCurrLayout(getSources())
   }
 

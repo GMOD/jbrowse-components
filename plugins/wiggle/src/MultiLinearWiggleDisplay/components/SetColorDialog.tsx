@@ -1,7 +1,7 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 
 import type { Source } from '../../util.ts'
-import type { ColorColumn } from '@jbrowse/tree-sidebar'
+import type { ColorColumn, TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 const COLOR_COLUMNS: ColorColumn<Source>[] = [
   {
@@ -17,34 +17,22 @@ const COLOR_COLUMNS: ColorColumn<Source>[] = [
 ]
 
 // Seed from `editableSources` (not `sources`) so overlay-palette synthesis
-// doesn't bake unset colors into the persisted layout on Submit. setLayout's
-// `namesChanged` heuristic already clears the cluster tree on reorder, but
-// the warning dialog surfaces that destruction to the user first.
+// doesn't bake unset colors into the persisted layout on Submit. setLayout
+// already clears the cluster tree on reorder (via willClearTree), but the
+// warning dialog surfaces that destruction to the user first.
 export default function MultiWiggleSetColorDialog({
   model,
   handleClose,
 }: {
-  model: {
-    editableSources: Source[]
-    clusterTree?: string
-    setLayout: (s: Source[]) => void
-    clearLayout: () => void
-  }
+  model: TreeLayoutModel<Source>
   handleClose: () => void
 }) {
   return (
     <SetColorDialog
-      getSources={() => model.editableSources}
-      onSetLayout={s => {
-        model.setLayout(s)
-      }}
-      onClearLayout={() => {
-        model.clearLayout()
-      }}
+      model={model}
       handleClose={handleClose}
       title="Multi-wiggle color/arrangement editor"
       colorColumns={COLOR_COLUMNS}
-      hasClusterTree={!!model.clusterTree}
       enableBulkEdit
       enableRowPalettizer
       showTipsStorageKey="multiwiggle-showTips"

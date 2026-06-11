@@ -38,6 +38,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MafSource[]) => void
   clearLayout: () => void
+  willClearTree: (s: MafSource[]) => boolean
 }
 
 export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
