@@ -17,6 +17,11 @@ import type { FileLocation } from '@jbrowse/core/util/types'
 
 export type InputMode = 'remote' | 'local'
 
+/** Pick the singular or plural wording for a count (1 is singular). */
+export function plural(count: number, singular: string, plural: string) {
+  return count === 1 ? singular : plural
+}
+
 /**
  * Parse a textarea of one-URL-per-line into remote file locations, ignoring
  * blank lines and surrounding whitespace.
@@ -41,17 +46,17 @@ export function locationWarnings(locations: FileLocation[]): string[] {
   const warnings: string[] = []
   if (ftp > 0) {
     warnings.push(
-      `${ftp} ${ftp === 1 ? 'URL uses' : 'URLs use'} the ftp protocol, which JBrowse cannot access`,
+      `${ftp} ${plural(ftp, 'URL uses', 'URLs use')} the ftp protocol, which JBrowse cannot access`,
     )
   }
   if (relative > 0) {
     warnings.push(
-      `${relative} ${relative === 1 ? 'URL is' : 'URLs are'} relative; provide an absolute URL (e.g. https://) unless a relative URL is intended`,
+      `${relative} ${plural(relative, 'URL is', 'URLs are')} relative; provide an absolute URL (e.g. https://) unless a relative URL is intended`,
     )
   }
   if (http > 0) {
     warnings.push(
-      `${http} http:// ${http === 1 ? 'URL' : 'URLs'} may be blocked because this page is served over https`,
+      `${http} http:// ${plural(http, 'URL', 'URLs')} may be blocked because this page is served over https`,
     )
   }
   return warnings

@@ -56,29 +56,31 @@ export function isIndexFile(loc: FileLocation) {
  * location (e.g. a URL pasted twice) collapse to a single entry.
  */
 export function pairLocations(locations: FileLocation[]): LocationPair[] {
-  const named = locations.map(loc => ({ loc, name: getFileName(loc) }))
-  const indexEntries = named.filter(e => indexSuffixOf(e.name) !== undefined)
+  const named = locations.map(loc => {
+    const name = getFileName(loc)
+    return { loc, lower: name.toLowerCase(), suffix: indexSuffixOf(name) }
+  })
+  const indexEntries = named.filter(e => e.suffix !== undefined)
+  // Dedupe data files repeated under the same location (e.g. a URL pasted
+  // twice). Callers that pre-dedupe (the workflow component) keep this as a
+  // harmless no-op; direct callers and tests rely on it.
   const dataEntries = [
     ...new Map(
       named
-        .filter(e => indexSuffixOf(e.name) === undefined)
+        .filter(e => e.suffix === undefined)
         .map(e => [locationId(e.loc), e] as const),
     ).values(),
   ]
   const usedIndexes = new Set<FileLocation>()
 
-  return dataEntries.map(({ loc, name }) => {
-    const dataLower = name.toLowerCase()
-    const match = indexEntries.find(({ loc: indexLoc, name: indexName }) => {
-      const suffix = indexSuffixOf(indexName)
-      const indexLower = indexName.toLowerCase()
-      return (
+  return dataEntries.map(({ loc, lower: dataLower }) => {
+    const match = indexEntries.find(
+      ({ loc: indexLoc, lower: indexLower, suffix }) =>
         suffix !== undefined &&
         !usedIndexes.has(indexLoc) &&
         (indexLower === `${dataLower}${suffix}` ||
-          indexLower === `${stripLastExt(dataLower)}${suffix}`)
-      )
-    })
+          indexLower === `${stripLastExt(dataLower)}${suffix}`),
+    )
     if (match) {
       usedIndexes.add(match.loc)
     }

@@ -11,6 +11,7 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 import { reaction } from 'mobx'
 
+import { makeTrackId } from './makeTrackId.ts'
 import { isBlockedHttpUrl, isFtpUrl, isRelativeUrl } from './urlWarnings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -263,10 +264,11 @@ export default function f(pluginManager: PluginManager) {
           self.trackAdapter.type !== UNKNOWN
           ? deepmerge(
               {
-                trackId: [
-                  `${self.trackName.toLowerCase().replaceAll(' ', '_')}-${timestamp}`,
-                  session.adminMode ? '' : '-sessionTrack',
-                ].join(''),
+                trackId: makeTrackId({
+                  name: self.trackName,
+                  timestamp,
+                  adminMode: !!session.adminMode,
+                }),
                 type: self.trackType,
                 name: self.trackName,
                 assemblyNames: [self.assembly],

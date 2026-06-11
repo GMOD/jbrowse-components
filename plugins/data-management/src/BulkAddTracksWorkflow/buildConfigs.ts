@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 
 import { locationId } from './pairLocations.ts'
+import { makeTrackId } from '../AddTrackWidget/makeTrackId.ts'
 
 import type { LocationPair } from './pairLocations.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -60,9 +61,7 @@ export function buildTrackConfigs({
     const adapterType = adapter.type
     const trackType = guessTrackType(adapterType, model, pair.file)
     const name = getFileName(pair.file)
-    const trackId = `${name.toLowerCase().replaceAll(' ', '_')}-${timestamp}-${idx}${
-      adminMode ? '' : '-sessionTrack'
-    }`
+    const trackId = makeTrackId({ name, timestamp, adminMode, index: idx })
     return {
       id: locationId(pair.file),
       conf: {

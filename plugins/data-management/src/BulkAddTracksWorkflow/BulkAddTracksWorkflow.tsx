@@ -3,18 +3,18 @@ import { useState } from 'react'
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, Paper, Typography } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LocationInput from './LocationInput.tsx'
+import PreviewMessages from './PreviewMessages.tsx'
+import SubmitTracksButton from './SubmitTracksButton.tsx'
 import TrackPreviewTable from './TrackPreviewTable.tsx'
-import { buildTrackConfigs } from './buildConfigs.ts'
-import { isIndexFile, locationId, pairLocations } from './pairLocations.ts'
-import { locationWarnings, parseUrlList, submitBulkTracks } from './util.ts'
+import { locationId } from './pairLocations.ts'
+import { summarizeBulkInput } from './preview.ts'
+import { useBulkLocations } from './useBulkLocations.ts'
 
-import type { InputMode } from './util.ts'
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
-import type { FileLocation } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -23,10 +23,6 @@ const useStyles = makeStyles()(theme => ({
   },
   section: {
     marginTop: theme.spacing(2),
-  },
-  submit: {
-    marginTop: theme.spacing(2),
-    display: 'block',
   },
 }))
 
@@ -39,9 +35,8 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const session = getSession(model)
   const adminMode = !!session.adminMode
 
-  const [mode, setMode] = useState<InputMode>('remote')
-  const [text, setText] = useState('')
-  const [localLocations, setLocalLocations] = useState<FileLocation[]>([])
+  const input = useBulkLocations()
+  const { locations } = input
   // assemblyOverride is set when the user explicitly picks an assembly; otherwise
   // model.assembly (reactive via observer) tracks the current view's assembly.
   const [assemblyOverride, setAssemblyOverride] = useState<string>()
@@ -49,27 +44,8 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const [customNames, setCustomNames] = useState<Record<string, string>>({})
   const [timestamp] = useState(() => Date.now())
 
-  // The input (textarea lines or dropped files) is the single source of truth;
-  // removing a row deletes its location(s) from that input rather than tracking
-  // a separate "removed" overlay. Dedupe by location id so a URL pasted twice
-  // collapses to one row and the orphan-index count below stays accurate.
-  const rawLocations = mode === 'remote' ? parseUrlList(text) : localLocations
-  const locations = [
-    ...new Map(rawLocations.map(loc => [locationId(loc), loc])).values(),
-  ]
-  const pairs = pairLocations(locations)
-  const rows = buildTrackConfigs({
-    pairs,
-    model,
-    assembly,
-    adminMode,
-    timestamp,
-  })
-  const okRows = rows.filter(row => row.status === 'ok')
-  const skippedCount = rows.length - okRows.length
-  const orphanIndexCount =
-    locations.filter(isIndexFile).length - pairs.filter(p => p.index).length
-  const warnings = locationWarnings(locations)
+  const { pairs, rows, okRows, skippedCount, orphanIndexCount, warnings } =
+    summarizeBulkInput({ locations, model, assembly, adminMode, timestamp })
 
   function removeRow(rowId: string) {
     const pair = pairs.find(p => locationId(p.file) === rowId)
@@ -77,12 +53,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
     if (pair?.index) {
       dropped.add(locationId(pair.index))
     }
-    const remaining = locations.filter(loc => !dropped.has(locationId(loc)))
-    if (mode === 'remote') {
-      setText(remaining.map(locationId).join('\n'))
-    } else {
-      setLocalLocations(remaining)
-    }
+    input.removeLocations(dropped)
   }
 
   return (
@@ -95,12 +66,12 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
       </Typography>
 
       <LocationInput
-        mode={mode}
-        setMode={setMode}
-        text={text}
-        setText={setText}
-        localLocations={localLocations}
-        setLocalLocations={setLocalLocations}
+        mode={input.mode}
+        setMode={input.setMode}
+        text={input.text}
+        setText={input.setText}
+        localLocations={input.localLocations}
+        setLocalLocations={input.setLocalLocations}
       />
 
       <div className={classes.section}>
@@ -124,39 +95,18 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
         />
       ) : null}
 
-      {orphanIndexCount > 0 ? (
-        <Typography variant="body2" color="textSecondary">
-          {orphanIndexCount} index {orphanIndexCount === 1 ? 'file' : 'files'}{' '}
-          had no matching data file and{' '}
-          {orphanIndexCount === 1 ? 'was' : 'were'} ignored
-        </Typography>
-      ) : null}
-      {warnings.map(warning => (
-        <Typography key={warning} variant="body2" color="warning">
-          {warning}
-        </Typography>
-      ))}
-      {skippedCount > 0 ? (
-        <Typography variant="body2" color="error">
-          {skippedCount} {skippedCount === 1 ? 'row' : 'rows'} with unrecognized
-          types will not be added
-        </Typography>
-      ) : null}
-      <Button
-        variant="contained"
-        color="primary"
-        className={classes.submit}
-        disabled={okRows.length === 0 || !assembly}
-        onClick={() => {
-          try {
-            submitBulkTracks({ model, rows: okRows, customNames, assembly })
-          } catch (e) {
-            session.notifyError(`${e}`, e)
-          }
-        }}
-      >
-        Add {okRows.length} {okRows.length === 1 ? 'track' : 'tracks'}
-      </Button>
+      <PreviewMessages
+        orphanIndexCount={orphanIndexCount}
+        warnings={warnings}
+        skippedCount={skippedCount}
+      />
+
+      <SubmitTracksButton
+        model={model}
+        okRows={okRows}
+        customNames={customNames}
+        assembly={assembly}
+      />
     </Paper>
   )
 })
