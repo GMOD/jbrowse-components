@@ -10,33 +10,13 @@ import {
   Typography,
 } from '@mui/material'
 
+import { mergeParsedRows, parseRowsByName } from './bulkEditParse.ts'
+
 const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
 })
-
-// Parse CSV/TSV with a header row that includes a `name` column for join.
-function parseRowsByName(val: string) {
-  const lines = val
-    .split('\n')
-    .map(f => f.trim())
-    .filter(f => !!f)
-  const fields = lines[0]!.split(/[,\t]/)
-  if (!fields.includes('name')) {
-    throw new Error('No "name" column found on line 1')
-  }
-  const nameIdx = fields.indexOf('name')
-  return Object.fromEntries(
-    lines.slice(1).flatMap(line => {
-      const cols = line.split(/[,\t]/)
-      const name = cols[nameIdx]
-      return name
-        ? [[name, Object.fromEntries(fields.map((f, i) => [f, cols[i] ?? '']))]]
-        : []
-    }),
-  )
-}
 
 export default function BulkEditPanel<S extends { name: string }>({
   onClose,
@@ -52,14 +32,7 @@ export default function BulkEditPanel<S extends { name: string }>({
   const apply = (replace: boolean) => {
     try {
       setError(undefined)
-      const newByName = parseRowsByName(val)
-      onClose(
-        currLayout.map(record => ({
-          ...(replace ? {} : record),
-          ...newByName[record.name],
-          name: record.name,
-        })) as S[],
-      )
+      onClose(mergeParsedRows(currLayout, parseRowsByName(val), replace))
     } catch (e) {
       console.error(e)
       setError(e)

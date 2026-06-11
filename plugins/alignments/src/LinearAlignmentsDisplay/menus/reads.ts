@@ -3,7 +3,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { checkboxItem } from './menuHelpers.ts'
 import { getArcDirectionMenuItem } from './readConnections.ts'
 
-import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
+import type { ReadConnectionsMode } from '../constants.ts'
 
 interface ReadsModel {
   showLegend: boolean
@@ -26,8 +26,6 @@ interface ReadsModel {
   setFlipStrandLongReadChains: (flag: boolean) => void
   showSashimiArcs: boolean
   toggleSashimiArcs: () => void
-  linkedReads: LinkedReadsMode
-  setLinkedReads: (mode: LinkedReadsMode) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
   readConnections: ReadConnectionsMode

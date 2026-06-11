@@ -42,20 +42,24 @@ export function TreeSidebarMixin<
       get treeHasBranchLengths() {
         return !!self.root && maxNodeHeight(self.root) > 0
       },
+
+      // True when persisting `next` would invalidate the cluster tree: the tree
+      // was built from the current `layout`, so any membership/order change
+      // (with a tree loaded) makes it stale. Single source of truth shared by
+      // `setLayout` and the color dialog's pre-submit warning.
+      willClearTree(next: S[]) {
+        return (
+          !!self.clusterTree &&
+          (self.layout.length !== next.length ||
+            self.layout.some((source, idx) => source.name !== next[idx]?.name))
+        )
+      },
     }))
     .actions(self => ({
       setLayout(layout: S[]) {
-        // Clear the cached cluster tree whenever the set of sample names
-        // changes (membership or order) — the tree was built from the prior
-        // layout and is no longer valid.
-        const namesChanged =
-          !!self.clusterTree &&
-          (self.layout.length !== layout.length ||
-            self.layout.some(
-              (source, idx) => source.name !== layout[idx]?.name,
-            ))
+        const clearTree = self.willClearTree(layout)
         self.layout = layout
-        if (namesChanged) {
+        if (clearTree) {
           self.clusterTree = undefined
         }
       },

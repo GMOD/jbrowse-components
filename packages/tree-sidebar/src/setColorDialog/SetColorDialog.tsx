@@ -38,9 +38,10 @@ export interface SetColorDialogProps<
   // PopoverPicker columns. Each renders both a bulk header button and a
   // PopoverPicker column. Defaults to a single `color` column.
   colorColumns?: ColorColumn<S>[]
-  // Trigger the ClearTreeWarning dialog before Submit when the user reordered
-  // rows. Pass true when a cluster tree is currently loaded.
-  hasClusterTree?: boolean
+  // Returns whether submitting `next` would invalidate a loaded cluster tree;
+  // when true the ClearTreeWarning dialog is shown before Submit. Called fresh
+  // at submit (not a snapshot) so it reflects a tree cleared mid-dialog.
+  getWillClearTree?: (next: S[]) => boolean
   title?: string
   enableBulkEdit?: boolean
   enableRowPalettizer?: boolean
@@ -59,7 +60,7 @@ export default function SetColorDialog<
   onClearLayout,
   handleClose,
   colorColumns = [{ field: 'color', headerName: 'Color' }],
-  hasClusterTree,
+  getWillClearTree,
   title = 'Color/arrangement editor',
   enableBulkEdit = false,
   enableRowPalettizer = false,
@@ -78,16 +79,17 @@ export default function SetColorDialog<
   }
 
   const onSubmit = () => {
-    const original = getSources()
-    const reordered =
-      hasClusterTree &&
-      original.length === currLayout.length &&
-      original.some((s, idx) => s.name !== currLayout[idx]?.name)
-    if (reordered) {
+    if (getWillClearTree?.(currLayout)) {
       setPendingReorderConfirm(true)
     } else {
       submit()
     }
+  }
+
+  // Drop custom settings and re-seed the grid from the model's persisted state.
+  const resetToModel = () => {
+    onClearLayout()
+    setCurrLayout(getSources())
   }
 
   return (
@@ -150,11 +152,9 @@ export default function SetColorDialog<
           <DialogActions>
             <Button
               variant="contained"
-              type="submit"
               color="inherit"
               onClick={() => {
-                onClearLayout()
-                setCurrLayout(getSources())
+                resetToModel()
               }}
             >
               Clear custom settings
@@ -171,7 +171,6 @@ export default function SetColorDialog<
             <Button
               variant="contained"
               color="primary"
-              type="submit"
               onClick={() => {
                 onSubmit()
               }}

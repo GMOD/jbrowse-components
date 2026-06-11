@@ -103,3 +103,37 @@ The COLO829 tumor modkit bedMethyl file is included in the
 [demo config](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)
 as the track **"COLO829_tumor.ht_modkit.bed (as MultiQuantitativeTrack)"** under
 the Methylation category (assembly hg38, chr21).
+
+## Clustering rows by score
+
+Subtracks can be reordered by signal similarity using hierarchical clustering.
+From the track menu, select **Cluster rows by score**. A dialog opens with two
+modes:
+
+- **Auto** — runs hierarchical clustering (hclust via JavaScript) directly in
+  the browser, sampling signal values at each pixel across the visible region.
+- **Manual** — downloads an R script that builds the score matrix and runs
+  `hclust`. Run the script in R, then paste the resulting row ordering back into
+  the dialog and click **Apply clustering**.
+
+<Figure caption="The 'Cluster by score' dialog showing the auto/manual mode options." src="/img/multiwig/cluster_dialog.png" />
+
+After clustering, a dendrogram appears on the left side of the track and rows
+are reordered by similarity.
+
+<Figure caption="Multi-wiggle track after clustering: rows are reordered by signal similarity and a dendrogram appears on the left." src="/img/multiwig/clustered_result.png" />
+
+Click any internal node in the dendrogram to collapse the view to that clade.
+Click the same node again to clear the subtree filter.
+
+The "Show tree" toggle in the track menu shows or hides the dendrogram sidebar
+after clustering. Clustering uses only the signal in the currently visible
+region, so navigate to a region of interest before running it.
+
+### Encoding a clustering result in a session URL
+
+A clustering result can be embedded directly in a session snapshot — useful for
+sharing a pre-computed clustering via URL. Set `layout`, `clusterTree`,
+`treeAreaWidth`, and `subtreeFilter` in the display's `displaySnapshot`. See the
+[MultiLinearWiggleDisplay config](/docs/config/MultiLinearWiggleDisplay) for the
+display's full config reference.
