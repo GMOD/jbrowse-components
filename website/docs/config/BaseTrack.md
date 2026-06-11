@@ -18,6 +18,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+Configuration shared by all track types. Concrete tracks (FeatureTrack,
+AlignmentsTrack, VariantTrack, ...) extend this, so every track accepts these
+fields in addition to its own.
+
 ### BaseTrack - Identifier
 
 #### slot: explicitIdentifier
@@ -121,6 +125,20 @@ textSearchAdapter: pluginManager.pluggableConfigSchemaType(
 ```
 
 #### slot: displays
+
+The track's displays. Accepts two forms:
+
+- an **object** of display settings, e.g. `displays: { color: 'green' }`. Each
+  setting routes to the display type(s) that define that slot, so you don't have
+  to name the display type or write the array. Slot names disambiguate across
+  displays on their own (e.g. `color` → LinearVariantDisplay, `strokeColor` →
+  ChordVariantDisplay).
+- an **array** of explicit display configs, e.g.
+  `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, for full
+  per-display control (an explicit `displayId`, different settings for two
+  displays sharing a slot, choosing the default display).
+
+See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
 
 ```js
 displays: types.array(pluginManager.pluggableConfigSchemaType('display'))

@@ -17,6 +17,9 @@ interface TrackConfigSnapshot {
 
 /**
  * #config BaseTrack
+ * Configuration shared by all track types. Concrete tracks (FeatureTrack,
+ * AlignmentsTrack, VariantTrack, ...) extend this, so every track accepts these
+ * fields in addition to its own.
  */
 export function createBaseTrackConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(
@@ -105,6 +108,19 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
 
       /**
        * #slot
+       * The track's displays. Accepts two forms:
+       *
+       * - an **object** of display settings, e.g. `displays: { color: 'green' }`.
+       *   Each setting routes to the display type(s) that define that slot, so you
+       *   don't have to name the display type or write the array. Slot names
+       *   disambiguate across displays on their own (e.g. `color` →
+       *   LinearVariantDisplay, `strokeColor` → ChordVariantDisplay).
+       * - an **array** of explicit display configs, e.g.
+       *   `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, for full
+       *   per-display control (an explicit `displayId`, different settings for two
+       *   displays sharing a slot, choosing the default display).
+       *
+       * See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
        */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
 

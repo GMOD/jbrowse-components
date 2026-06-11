@@ -34,6 +34,24 @@ at the data file, and the track opens with a `LinearBasicDisplay`:
 }
 ```
 
+Colored with the `displays` shorthand: display settings go in a `displays`
+object and route to the display by slot name, so you don't have to name
+`LinearBasicDisplay`. A `jexl:` value gives per-feature coloring:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'genes',
+  name: 'Genes',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://example.com/genes.sorted.gff.gz',
+  },
+  displays: { color: "jexl:get(feature,'type')=='CDS'?'red':'blue'" },
+}
+```
+
 _See the **Slots** section below for all available configuration fields._
 
 ## Overview
@@ -148,6 +166,20 @@ textSearchAdapter: pluginManager.pluggableConfigSchemaType(
 ```
 
 #### slot: displays
+
+The track's displays. Accepts two forms:
+
+- an **object** of display settings, e.g. `displays: { color: 'green' }`. Each
+  setting routes to the display type(s) that define that slot, so you don't have
+  to name the display type or write the array. Slot names disambiguate across
+  displays on their own (e.g. `color` → LinearVariantDisplay, `strokeColor` →
+  ChordVariantDisplay).
+- an **array** of explicit display configs, e.g.
+  `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, for full
+  per-display control (an explicit `displayId`, different settings for two
+  displays sharing a slot, choosing the default display).
+
+See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
 
 ```js
 displays: types.array(pluginManager.pluggableConfigSchemaType('display'))

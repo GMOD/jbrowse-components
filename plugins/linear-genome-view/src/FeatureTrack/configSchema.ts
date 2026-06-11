@@ -23,6 +23,24 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *   },
  * }
  * ```
+ *
+ * #example
+ * Colored with the `displays` shorthand: display settings go in a `displays`
+ * object and route to the display by slot name, so you don't have to name
+ * `LinearBasicDisplay`. A `jexl:` value gives per-feature coloring:
+ * ```js
+ * {
+ *   type: 'FeatureTrack',
+ *   trackId: 'genes',
+ *   name: 'Genes',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'Gff3TabixAdapter',
+ *     uri: 'https://example.com/genes.sorted.gff.gz',
+ *   },
+ *   displays: { color: "jexl:get(feature,'type')=='CDS'?'red':'blue'" },
+ * }
+ * ```
  */
 
 const configSchema = (pluginManager: PluginManager) =>
