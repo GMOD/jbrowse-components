@@ -23,9 +23,9 @@ Turn on modification or methylation coloring from the track menu. Each
 modification type renders in its own color, with intensity reflecting the
 modification probability (ML tag value).
 
-<Figure caption="Per-read 5mC and 5hmC coloring on a chr20 Nanopore BAM. Each colored mark on a read represents a modified cytosine; unmodified sites appear as the background grey read color." src="/img/methylation/per_read_mod_bam.png" />
+<Figure caption="A methylated and unmethylated CpG island shown using the MM tag with nanopore reads on the COLO829 (melanoma) cancer cell line, alongside a UCSC CpG island annotation track." src="/img/modifications.png" />
 
-[Live demo — chr20 per-read modification coloring](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-vJq5bptC3-&password=KEw26)
+[Live demo — COLO829 CpG island methylation](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl)
 
 ## Aggregate methylation with modkit bedMethyl
 

@@ -800,23 +800,12 @@ export const specs: ScreenshotSpec[] = [
             {
               loc: 'Pp05:1-18496696',
               assembly: 'peach',
-              // shorter in-panel MCScan track (reviewer: ~80)
-              tracks: [
-                {
-                  trackId: 'grape_peach_synteny_mcscan_simple',
-                  displaySnapshot: { height: 80 },
-                },
-              ],
+              tracks: ['grape_peach_synteny_mcscan_simple'],
             },
             {
               loc: 'chr2:1-18779844',
               assembly: 'grape',
-              tracks: [
-                {
-                  trackId: 'grape_peach_synteny_mcscan_simple',
-                  displaySnapshot: { height: 80 },
-                },
-              ],
+              tracks: ['grape_peach_synteny_mcscan_simple'],
             },
           ],
         },
@@ -1302,8 +1291,14 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearMultiSampleVariantDisplay',
                 userByteSizeLimit: 100_000_000,
-                height: 700,
+                // shorter multi-sample display (reviewer: ~400px)
+                height: 400,
               },
+            },
+            // NCBI RefSeq gene track below the variant display (reviewer)
+            {
+              trackId: 'ncbi_refseq_109_hg38',
+              displaySnapshot: { height: 140 },
             },
           ],
         },
@@ -1311,15 +1306,21 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: '1KGP',
     readyTimeout: 90000,
-    viewportHeight: 850,
-    settleMs: 25000,
+    viewportHeight: 720,
+    settleMs: 35000,
     hideTooltip: true,
     actions: [
+      // y=450 lands in the multi-sample matrix (proven coordinate); the dense
+      // 5Mb gene track never fully clears "Loading" headless, so don't gate on it
       { type: 'rightclick', from: { x: 1130, y: 450 } },
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'delay', ms: 500 },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
+      // move the pointer off the matrix so the mouseover crosshair doesn't bake
+      // into the capture (reviewer: remove the crosshairs)
+      { type: 'hover', from: { x: 6, y: 6 } },
+      { type: 'delay', ms: 800 },
     ],
   },
 
@@ -2819,7 +2820,20 @@ export const specs: ScreenshotSpec[] = [
       { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
       { type: 'delay', ms: 800 },
       { type: 'click', text: 'NCBI RefSeq w/ subfeature details' },
+      // wait for the just-opened track to finish loading so the first frame
+      // isn't captured mid-"Loading" (reviewer)
+      { type: 'waitForText', text: 'Loading', hidden: true },
       { type: 'delay', ms: 1500 },
+      // clear the filter (target the actual input, not the floating label, so
+      // select-all + Backspace empties it) so the tracklist behind the dropdown
+      // isn't showing distracting search text (reviewer)
+      {
+        type: 'type',
+        selector: '[data-testid="hierarchical_track_selector"] input',
+        value: '',
+        clear: true,
+      },
+      { type: 'delay', ms: 800 },
     ],
     stages: [
       {

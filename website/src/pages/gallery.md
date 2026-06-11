@@ -118,14 +118,6 @@ sequence of any read portion
 
 ---
 
-![CpG methylation](/jb2/img/modifications.png)
-
-A methylated and unmethylated CpG island shown using the MM tag with nanopore
-reads on the COLO829 (melanoma) cancer cell line.
-([live link](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl))
-
----
-
 ![1000 genomes structural variants](/jb2/img/multisv.png)
 
 An example of the 1000 genomes structural variant call VCF, showing a large

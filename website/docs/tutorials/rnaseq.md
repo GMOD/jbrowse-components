@@ -26,9 +26,7 @@ position in the genome.
 
 ## Zooming in on the reads
 
-Here is what the reads look like when zoomed in:
-
-<Figure caption="RNA-seq reads zoomed in. Each grey box is a single read produced by a DNA sequencer (here, an Illumina machine), and each read corresponds to a fragment of RNA." src="/img/rnaseq/reads_zoomed.png" />
+Zoom in further to see the individual reads:
 
 [Live demo — reads zoomed in](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5568000-5569000","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
 

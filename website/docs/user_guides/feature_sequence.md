@@ -26,7 +26,7 @@ sequence together for you. Options:
 The up/downstream extension defaults to 100bp and the intron flank to 10bp; both
 are configurable from the gear icon.
 
-<Figure caption="Sequence panel showing upstream, exonic, intronic, and downstream sequence for a selected feature." src="/img/feature_detail_sequence.png" />
+<Figure caption="Sequence panel for a selected feature, color-coded by region: upstream/downstream (red), UTR (blue), CDS (yellow), and intronic (white)." src="/img/feature_detail_sequence.png" />
 
 ### Other feature types
 

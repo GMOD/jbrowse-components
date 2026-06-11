@@ -168,7 +168,11 @@ async function runAction(page: Page, action: ScreenshotAction) {
   } else if (action.type === 'type') {
     const el = await resolveTarget(page, action)
     if (action.clear) {
+      // triple-click selects the field's current text, then Backspace deletes it
+      // so an empty value genuinely clears the field (typing '' alone leaves the
+      // selection in place)
       await el?.click({ count: 3 })
+      await page.keyboard.press('Backspace')
     } else {
       await el?.click()
     }

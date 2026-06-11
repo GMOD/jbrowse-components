@@ -8,8 +8,6 @@ The bookmark widget stores genomic regions for easy navigation. Each bookmark is
 a single region (chromosome, start, end); clicking one navigates a linear genome
 view to it.
 
-<Figure caption="The bookmark widget can be accessed from the Tools menu, or from a view's 'Bookmarks' menu." src="/img/bookmark_widget_open.png"/>
-
 The dropdown menu above the table of bookmarks can be used to view a subset of
 all assemblies with bookmarks.
 
