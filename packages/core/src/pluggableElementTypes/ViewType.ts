@@ -27,12 +27,6 @@ export default class ViewType extends PluggableElementBase {
 
   viewMetadata: ViewMetadata = {}
 
-  // Short key accepted by the track-config display shorthand (see
-  // expandTrackConfigShorthand). Falls back to the view name's capital-letter
-  // acronym when unset, so only views whose acronym is non-obvious need it
-  // (e.g. CircularView declares 'cgv', whose acronym would otherwise be 'cv').
-  abbreviation?: string
-
   // extendedName can be used for when you extend a given view type, and want
   // to register all of that view types displays to yourself
   //
@@ -47,7 +41,6 @@ export default class ViewType extends PluggableElementBase {
     displayName?: string
     stateModel: IAnyModelType
     extendedName?: string
-    abbreviation?: string
     viewMetadata?: ViewMetadata
     ReactComponent: ViewComponentType
   }) {
@@ -56,7 +49,6 @@ export default class ViewType extends PluggableElementBase {
     this.viewMetadata = stuff.viewMetadata ?? {}
     this.stateModel = stuff.stateModel
     this.extendedName = stuff.extendedName
-    this.abbreviation = stuff.abbreviation
   }
 
   addDisplayType(display: DisplayType) {

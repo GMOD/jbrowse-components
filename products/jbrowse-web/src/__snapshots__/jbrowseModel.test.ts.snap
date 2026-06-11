@@ -1663,7 +1663,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "Shorthand examples",
       ],
-      "color": "#6a3d9a",
+      "displays": {
+        "color": "#6a3d9a",
+      },
       "name": "GFF3Tabix genes (shorthand color)",
       "trackId": "gff3tabix_genes_shorthand_color",
       "type": "FeatureTrack",
@@ -1688,13 +1690,11 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "Shorthand examples",
       ],
-      "cgv": {
+      "displays": {
+        "color": "#1f78b4",
         "strokeColor": "#e31a1c",
       },
-      "lgv": {
-        "color": "#1f78b4",
-      },
-      "name": "volvox filtered vcf (shorthand per-view color)",
+      "name": "volvox filtered vcf (shorthand display colors)",
       "trackId": "volvox_filtered_vcf_shorthand",
       "type": "VariantTrack",
     },

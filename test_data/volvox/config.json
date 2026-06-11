@@ -1315,12 +1315,12 @@
           }
         }
       },
-      "color": "#6a3d9a"
+      "displays": { "color": "#6a3d9a" }
     },
     {
       "type": "VariantTrack",
       "trackId": "volvox_filtered_vcf_shorthand",
-      "name": "volvox filtered vcf (shorthand per-view color)",
+      "name": "volvox filtered vcf (shorthand display colors)",
       "assemblyNames": ["volvox"],
       "category": ["Shorthand examples"],
       "adapter": {
@@ -1336,8 +1336,7 @@
           }
         }
       },
-      "lgv": { "color": "#1f78b4" },
-      "cgv": { "strokeColor": "#e31a1c" }
+      "displays": { "color": "#1f78b4", "strokeColor": "#e31a1c" }
     },
     {
       "type": "AlignmentsTrack",

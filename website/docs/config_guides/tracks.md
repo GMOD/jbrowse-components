@@ -90,16 +90,61 @@ options.
 { "type": "Gff3TabixAdapter", "uri": "http://yourhost/file.gff3.gz" }
 ```
 
-## The displays array
+## Configuring displays
 
-Tracks can include a `displays` array to configure display-level settings such
-as height, color callbacks, or which display type is active by default. Each
-entry targets a specific display type via its `displayId`.
+Display-level settings — `color`, `height`, `labels`, jexl color callbacks, and
+so on — live on a track's **displays**. The `displays` field accepts two shapes:
+a simple object for the common case, or the full array when you need precise
+control.
 
-Displays are matched by their `type`. The `displayId` is optional — if you omit
-it, JBrowse fills in the convention `{trackId}-{displayType}`, for example
-`my_bam_track-LinearAlignmentsDisplay`. Settings like `color`, `height`, and
-`labels` go directly on the display entry.
+### Shorthand object
+
+Put your settings in a `displays` object and JBrowse routes each one to the
+display that uses it — you don't have to know or name the display type:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "repeats_hg19",
+  "name": "Repeats",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "BigBedAdapter",
+    "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+  },
+  "displays": { "color": "green", "height": 200 }
+}
+```
+
+Each setting goes to whichever of the track's displays defines that slot.
+Because settings route by slot name, a track that draws in more than one view
+styles each one with the slot it uses — e.g. a `VariantTrack` colors its linear
+display with `color` and its circular (chord) display with `strokeColor` in the
+same object:
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "variants_hg19",
+  "name": "Variants",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://yourhost/file.vcf.gz"
+  },
+  "displays": { "color": "green", "strokeColor": "red" }
+}
+```
+
+A setting that no display on the track defines is ignored with a console
+warning, so typos surface.
+
+### Full array
+
+For precise control — different settings for two displays that share a slot,
+choosing which display is the default, setting an explicit `displayId` — pass
+`displays` as an array. Each entry targets a display `type`; `displayId` is
+optional and defaults to `{trackId}-{displayType}`.
 
 ```json
 {
@@ -122,7 +167,7 @@ it, JBrowse fills in the convention `{trackId}-{displayType}`, for example
 }
 ```
 
-Common display types and their `displayId` suffix:
+Common display types, for the array form:
 
 | Track type             | Display type             |
 | ---------------------- | ------------------------ |
@@ -133,53 +178,3 @@ Common display types and their `displayId` suffix:
 | QuantitativeTrack      | LinearWiggleDisplay      |
 
 See the [config_guides](/docs/config_guide) for per-track display options.
-
-## Display shorthand
-
-Writing out the `displays` array means knowing the display type name and nesting
-your settings inside it. For the common case you can skip that and put display
-settings directly on the track — JBrowse moves them into the right display for
-you.
-
-Put a display setting at the top level and it applies to every display type on
-the track that supports it:
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "repeats_hg19",
-  "name": "Repeats",
-  "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "BigBedAdapter",
-    "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
-  },
-  "color": "green"
-}
-```
-
-If a track shows in more than one view and you want to set them differently,
-group settings under a view key — the view's full name (`LinearGenomeView`), its
-lowercase form, a short alias (`lgv`, `cgv`), or its capital-letter acronym. For
-example, a `VariantTrack` shows in both the linear and circular views:
-
-```json
-{
-  "type": "VariantTrack",
-  "trackId": "variants_hg19",
-  "name": "Variants",
-  "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://yourhost/file.vcf.gz"
-  },
-  "lgv": { "color": "green" },
-  "cgv": { "color": "blue" }
-}
-```
-
-Both forms are sugar for the `displays` array above — anything you can set on a
-display entry (`color`, `height`, `displayMode`, jexl callbacks, etc.) works as
-shorthand. If you also include an explicit `displays` array, its entries win on
-any conflicting setting, so you can shorthand most tracks and still drop down to
-the full form when you need precise control.

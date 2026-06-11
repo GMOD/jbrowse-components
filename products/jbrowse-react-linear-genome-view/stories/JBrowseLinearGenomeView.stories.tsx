@@ -1249,6 +1249,132 @@ function App() {
 }
 
 // ---------------------------------------------------------------------------
+// WithTrackColorShorthand
+// ---------------------------------------------------------------------------
+
+const colorShorthandAssembly = {
+  name: 'volvox',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+    },
+  },
+}
+
+const colorShorthandTracks = [
+  {
+    type: 'FeatureTrack',
+    trackId: 'volvox_genes_green',
+    name: 'Volvox genes (green via shorthand)',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: {
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz',
+      },
+      index: {
+        location: {
+          uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz.tbi',
+        },
+      },
+    },
+    // Shorthand: display settings go in a `displays` OBJECT and route to the
+    // display by slot name — no need to know the display type (LinearBasicDisplay)
+    // or write the `displays` array. A `jexl:` value works here too.
+    displays: { color: 'green' },
+  },
+]
+
+function WithTrackColorShorthandRender() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly: colorShorthandAssembly,
+      tracks: colorShorthandTracks,
+      defaultSession: {
+        name: 'Color shorthand',
+        view: {
+          type: 'LinearGenomeView',
+          init: {
+            assembly: 'volvox',
+            loc: 'ctgA:1..50,000',
+            tracks: ['volvox_genes_green'],
+          },
+        },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithTrackColorShorthand = {
+  render: WithTrackColorShorthandRender,
+  parameters: {
+    docs: {
+      source: {
+        language: 'tsx',
+        code: `\
+import { useState } from 'react'
+import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+const assembly = {
+  name: 'volvox',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+    },
+  },
+}
+
+const tracks = [
+  {
+    type: 'FeatureTrack',
+    trackId: 'volvox_genes_green',
+    name: 'Volvox genes (green via shorthand)',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz' },
+      index: { location: { uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz.tbi' } },
+    },
+    // settings go in a \`displays\` object and route to the display by slot name —
+    // no need to know the display type or write the \`displays\` array. A \`jexl:\`
+    // value works here too, e.g. "jexl:get(feature,'type')=='CDS'?'red':'blue'"
+    displays: { color: 'green' },
+  },
+]
+
+function App() {
+  const [state] = useState(() =>
+    createViewState({
+      assembly,
+      tracks,
+      defaultSession: {
+        name: 'Color shorthand',
+        view: {
+          type: 'LinearGenomeView',
+          init: {
+            assembly: 'volvox',
+            loc: 'ctgA:1..50,000',
+            tracks: ['volvox_genes_green'],
+          },
+        },
+      },
+    }),
+  )
+  return <JBrowseLinearGenomeView viewState={state} />
+}`,
+      },
+    },
+  },
+}
+
+// ---------------------------------------------------------------------------
 // WithDisableZoomAndSideScroll
 // ---------------------------------------------------------------------------
 

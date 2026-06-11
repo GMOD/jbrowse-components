@@ -27,9 +27,9 @@ Example QuantitativeTrack config:
 #### Display options
 
 Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
-`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) live on
-`LinearWiggleDisplay`, not on the track. Setting them at the track top level has
-no effect — nest them in a `displays` entry to change the defaults:
+`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are display
+settings. Put them in a `displays` object and JBrowse routes them to the wiggle
+display for you — no need to name `LinearWiggleDisplay`:
 
 ```json
 {
@@ -41,17 +41,14 @@ no effect — nest them in a `displays` entry to change the defaults:
     "type": "BigWigAdapter",
     "uri": "http://yourhost/file.bw"
   },
-  "displays": [
-    {
-      "type": "LinearWiggleDisplay",
-      "scaleType": "log"
-    }
-  ]
+  "displays": { "scaleType": "log" }
 }
 ```
 
-See the [LinearWiggleDisplay config docs](/docs/config/linearwiggledisplay) for
-the full list of display slots and their defaults.
+For per-display control, use the `displays` array form (see the
+[track config guide](/docs/config_guides/tracks/#configuring-displays)). See the
+[LinearWiggleDisplay config docs](/docs/config/linearwiggledisplay) for the full
+list of display slots and their defaults.
 
 #### Adapters
 

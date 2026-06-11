@@ -79,15 +79,16 @@ field via `get(feature,'INFO').SVTYPE` and maps it to a color:
     "type": "VcfTabixAdapter",
     "uri": "http://yourhost/svs.vcf.gz"
   },
-  "displays": [
-    {
-      "type": "LinearVariantDisplay",
-      "displayId": "my_sv_track-LinearVariantDisplay",
-      "color": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[get(feature,'INFO').SVTYPE[0]] || 'gray'"
-    }
-  ]
+  "displays": {
+    "color": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[get(feature,'INFO').SVTYPE[0]] || 'gray'"
+  }
 }
 ```
+
+The `displays` object is shorthand — the `color` routes to the variant display
+by slot name, so you don't have to name `LinearVariantDisplay` or write the
+array. For per-display control use the array form (see the
+[track config guide](/docs/config_guides/tracks/#configuring-displays)).
 
 The `|| 'gray'` fallback colors any SVTYPE not in the map (or variants without
 an SVTYPE field) gray. INFO fields are parsed as arrays, so index the first

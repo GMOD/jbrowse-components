@@ -1,28 +1,18 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../../PluginManager.ts'
 import { ConfigurationSchema, readConfObject } from '../../configuration/index.ts'
 import DisplayType from '../DisplayType.ts'
 import TrackType from '../TrackType.ts'
-import ViewType from '../ViewType.ts'
 import { createBaseTrackConfig } from './index.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 
-// A FeatureTrack-like setup with a LinearGenomeView display ('color' slot) and a
-// CircularView display ('color' slot, declaring the 'cgv' abbreviation), to
-// exercise both shorthand forms end-to-end through real config creation.
+// A track with two displays whose color slots differ ('color' vs 'strokeColor'),
+// to exercise slot-name routing of the `displays: {...}` object shorthand end to
+// end through real config creation.
 function makePluginManager() {
   const pluginManager = new PluginManager()
-  const view = (name: string, abbreviation?: string) =>
-    new ViewType({
-      name,
-      abbreviation,
-      stateModel: types.model(name, {}),
-      ReactComponent: () => null,
-    })
-  pluginManager.addViewType(() => view('LinearGenomeView'))
-  pluginManager.addViewType(() => view('CircularView', 'cgv'))
   pluginManager.addTrackType(
     () =>
       new TrackType({
@@ -38,21 +28,23 @@ function makePluginManager() {
         stateModel: types.model('FeatureTrack', {}),
       }),
   )
-  const display = (name: string, viewType: string) =>
+  const displayType = (name: string, colorSlot: string) =>
     new DisplayType({
       name,
       configSchema: ConfigurationSchema(
         name,
-        { color: { type: 'color', defaultValue: 'goldenrod' } },
+        { [colorSlot]: { type: 'color', defaultValue: 'goldenrod' } },
         { explicitIdentifier: 'displayId', explicitlyTyped: true },
       ),
       stateModel: types.model(name, {}),
       trackType: 'FeatureTrack',
-      viewType,
+      viewType: 'LinearGenomeView',
       ReactComponent: () => null,
     })
-  pluginManager.addDisplayType(() => display('LinearBasicDisplay', 'LinearGenomeView'))
-  pluginManager.addDisplayType(() => display('CircularChordDisplay', 'CircularView'))
+  pluginManager.addDisplayType(() => displayType('LinearBasicDisplay', 'color'))
+  pluginManager.addDisplayType(() =>
+    displayType('ChordVariantDisplay', 'strokeColor'),
+  )
   pluginManager.createPluggableElements()
   pluginManager.configure()
   return pluginManager
@@ -66,66 +58,70 @@ function createTrack(snapshot: Record<string, unknown>) {
   }
 }
 
-function displayColor(
-  conf: { displays: AnyConfigurationModel[] },
-  type: string,
-) {
-  const display = conf.displays.find(d => readConfObject(d, 'type') === type)
-  return display ? readConfObject(display, 'color') : undefined
+function display(conf: { displays: AnyConfigurationModel[] }, type: string) {
+  const found = conf.displays.find(d => readConfObject(d, 'type') === type)
+  if (!found) {
+    throw new Error(`display ${type} not found`)
+  }
+  return found
 }
 
-test('flat top-level slot forwards to every display defining it', () => {
+test('displays object routes a slot to the display that defines it', () => {
   const conf = createTrack({
     trackId: 'mytrack',
     type: 'FeatureTrack',
-    color: 'green',
+    displays: { color: 'green' },
   })
-  expect(displayColor(conf, 'LinearBasicDisplay')).toBe('green')
-  expect(displayColor(conf, 'CircularChordDisplay')).toBe('green')
+  expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
+    'green',
+  )
 })
 
-test('view-scoped object targets only its view, disambiguating displays', () => {
+test('settings route by slot name across displays', () => {
   const conf = createTrack({
     trackId: 'mytrack',
     type: 'FeatureTrack',
-    lgv: { color: 'green' },
-    cv: { color: 'blue' },
+    displays: { color: 'green', strokeColor: 'red' },
   })
-  expect(displayColor(conf, 'LinearBasicDisplay')).toBe('green')
-  expect(displayColor(conf, 'CircularChordDisplay')).toBe('blue')
+  expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
+    'green',
+  )
+  expect(
+    readConfObject(display(conf, 'ChordVariantDisplay'), 'strokeColor'),
+  ).toBe('red')
 })
 
-test('view-scoped key accepts a declared abbreviation (cgv → CircularView)', () => {
+test('the explicit displays array form passes through untouched', () => {
   const conf = createTrack({
     trackId: 'mytrack',
     type: 'FeatureTrack',
-    cgv: { color: 'blue' },
-  })
-  expect(displayColor(conf, 'CircularChordDisplay')).toBe('blue')
-})
-
-test('explicit displays array wins over shorthand on conflict', () => {
-  const conf = createTrack({
-    trackId: 'mytrack',
-    type: 'FeatureTrack',
-    color: 'green',
     displays: [{ type: 'LinearBasicDisplay', displayId: 'd1', color: 'red' }],
   })
-  expect(displayColor(conf, 'LinearBasicDisplay')).toBe('red')
-  // shorthand still reaches the non-conflicting display
-  expect(displayColor(conf, 'CircularChordDisplay')).toBe('green')
+  expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
+    'red',
+  )
+  expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'displayId')).toBe(
+    'd1',
+  )
 })
 
-test('shorthand keys are stripped from the resulting config', () => {
+test('a jexl color expression routes through the shorthand', () => {
+  const expr = "jexl:get(feature,'type')=='CDS'?'red':'blue'"
   const conf = createTrack({
     trackId: 'mytrack',
     type: 'FeatureTrack',
-    color: 'green',
+    displays: { color: expr },
   })
-  expect(conf).not.toHaveProperty('color')
+  // read the raw snapshot, not readConfObject, which would evaluate the jexl
+  const snap = getSnapshot(display(conf, 'LinearBasicDisplay')) as {
+    color?: string
+  }
+  expect(snap.color).toBe(expr)
 })
 
-test('a plain track with no shorthand still gets its display stub', () => {
+test('a plain track with no displays still gets its display stub', () => {
   const conf = createTrack({ trackId: 'mytrack', type: 'FeatureTrack' })
-  expect(displayColor(conf, 'LinearBasicDisplay')).toBe('goldenrod')
+  expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
+    'goldenrod',
+  )
 })

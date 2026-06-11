@@ -1,15 +1,16 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import corePlugins from '../corePlugins.ts'
 import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
+import corePlugins from '../corePlugins.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-// Exercises the track-config display shorthand (expandTrackConfigShorthand) end
-// to end with the full set of jbrowse-web plugins, using the example tracks in
-// test_data/volvox/config.json. Confirms top-level/per-view settings land on the
-// right display configs after preProcessSnapshot runs during hydration.
+// Exercises the `display: {...}` track-config shorthand
+// (expandTrackConfigShorthand) end to end with the full set of jbrowse-web
+// plugins, using the example tracks in test_data/volvox/config.json. Confirms
+// settings route to the right display configs by slot name after
+// preProcessSnapshot runs during hydration.
 function makePluginManager() {
   return new PluginManager(corePlugins.map(P => new P()))
     .createPluggableElements()
@@ -23,7 +24,9 @@ function hydrateTrack(trackId: string) {
     throw new Error(`track ${trackId} not found in volvox config`)
   }
   const { configSchema } = pluginManager.getTrackType(snap.type)
-  return configSchema.create(snap, { pluginManager }) as AnyConfigurationModel & {
+  return configSchema.create(snap, {
+    pluginManager,
+  }) as AnyConfigurationModel & {
     displays: AnyConfigurationModel[]
   }
 }
@@ -36,16 +39,16 @@ function display(conf: { displays: AnyConfigurationModel[] }, type: string) {
   return found
 }
 
-test('flat top-level color lands on the LinearBasicDisplay', () => {
+test('displays object shorthand color lands on the LinearBasicDisplay', () => {
+  // the object form (displays: {...}) was expanded to the array form during
+  // hydration; the color routed to the display that defines a `color` slot
   const conf = hydrateTrack('gff3tabix_genes_shorthand_color')
   expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
     '#6a3d9a',
   )
-  // shorthand key is consumed, not left at the track top level
-  expect(conf).not.toHaveProperty('color')
 })
 
-test('per-view shorthand lands on each view-specific display', () => {
+test('display settings route by slot name across a track’s displays', () => {
   const conf = hydrateTrack('volvox_filtered_vcf_shorthand')
   expect(readConfObject(display(conf, 'LinearVariantDisplay'), 'color')).toBe(
     '#1f78b4',

@@ -53,17 +53,19 @@ Put `myplugin.js` in the same folder as your config file and reference it:
           "uri": "volvox.filtered.gff"
         }
       },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "mytrack-LinearBasicDisplay",
-          "color": "jexl:colorFeature(feature)"
-        }
-      ]
+      "displays": { "color": "jexl:colorFeature(feature)" }
     }
   ]
 }
 ```
+
+The `color` is set with the `displays` shorthand: put display settings in a
+`displays` object and JBrowse routes each one to the display that uses it, so
+you don't have to name the display type (`LinearBasicDisplay`) or write the
+`displays` array. The same `color` works as a plain CSS color
+(`"displays": { "color": "green" }`) or, as here, a `jexl:` expression evaluated
+per feature. For per-display control you can still use the array form — see the
+[track config guide](/docs/config_guides/tracks/#configuring-displays).
 
 The feature is a `SimpleFeature` — use `feature.get('start')`,
 `feature.get('refName')`, `feature.get('other_attribute')`, etc.

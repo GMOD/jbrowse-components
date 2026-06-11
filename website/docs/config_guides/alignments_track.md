@@ -113,15 +113,14 @@ in the track's `displays` array:
   "name": "My Alignments",
   "assemblyNames": ["hg19"],
   "adapter": { "type": "BamAdapter", "uri": "http://yourhost/file.bam" },
-  "displays": [
-    {
-      "type": "LinearAlignmentsDisplay",
-      "colorBy": { "type": "pairOrientation" },
-      "height": 250
-    }
-  ]
+  "displays": { "colorBy": { "type": "pairOrientation" }, "height": 250 }
 }
 ```
+
+The `displays` object is shorthand — each setting routes to the display by slot
+name, so you don't have to name `LinearAlignmentsDisplay` or write the array.
+Use the array form when you need per-display control (see the
+[track config guide](/docs/config_guides/tracks/#configuring-displays)).
 
 See the
 [LinearAlignmentsDisplay config docs](/docs/config/linearalignmentsdisplay) for

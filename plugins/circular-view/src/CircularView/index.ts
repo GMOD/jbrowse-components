@@ -14,7 +14,6 @@ export default function CircularViewF(pluginManager: PluginManager) {
         stateModel: stateModelFactory(pluginManager),
         name: 'CircularView',
         displayName: 'Circular view',
-        abbreviation: 'cgv',
       }),
   )
 }

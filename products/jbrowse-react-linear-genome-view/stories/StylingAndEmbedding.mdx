@@ -7,6 +7,7 @@ import {
   WithDisableZoomAndSideScroll,
   WithDrawerWidget,
   WithOutsideStyling,
+  WithTrackColorShorthand,
 } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Styling and Embedding" />
@@ -14,8 +15,38 @@ import {
 # Styling and embedding
 
 This page covers how the view looks and how it integrates into a host page:
-theme colors, composing with surrounding CSS, locking down interaction, the side
-drawer, and Shadow DOM isolation.
+theme colors, track display settings, composing with surrounding CSS, locking
+down interaction, the side drawer, and Shadow DOM isolation.
+
+## Track display settings
+
+Per-track appearance — color, height, display mode, jexl color callbacks — lives
+on a track's **displays**. For the common case, put your settings in a
+`displays` object and JBrowse routes each one to the display that uses it. You
+don't have to name the display type or write the `displays` array:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'volvox_genes_green',
+  name: 'Volvox genes',
+  assemblyNames: ['volvox'],
+  adapter: {
+    /* ... */
+  },
+  // routes by slot name — `color` lands on whichever display defines it
+  displays: { color: 'green' },
+}
+```
+
+A `jexl:` expression works the same way for per-feature coloring, e.g.
+`displays: { color: "jexl:get(feature,'type')=='CDS'?'red':'blue'" }`. For full
+control — different settings for two displays that share a slot, an explicit
+`displayId`, choosing the default display — pass `displays` as the array form
+instead (see the
+[track config guide](https://jbrowse.org/jb2/docs/config_guides/tracks/)).
+
+<Canvas of={WithTrackColorShorthand} />
 
 ## Theming
 
