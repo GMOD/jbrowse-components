@@ -1,20 +1,25 @@
 import { useEffect, useState } from 'react'
 import type { RefObject } from 'react'
 
+import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 // Fires `onInteract` when a mousedown/keydown lands inside `ref`. Listens at the
 // document level (not via React handlers) so it still fires when child drag
 // handlers call stopPropagation; used to set the focused view on click.
+// `onInteract` is wrapped in a stable callback so callers can pass an inline
+// closure without re-subscribing the listeners every render (we don't rely on
+// the React Compiler memoizing it, since library consumers may not run it).
 export function useFocusOnInteraction(
   ref: RefObject<HTMLElement | null>,
   onInteract: () => void,
 ) {
+  const stableOnInteract = useEventCallback(onInteract)
   useEffect(() => {
     function handleSelectView(e: Event) {
       if (e.target instanceof Element && ref.current?.contains(e.target)) {
-        onInteract()
+        stableOnInteract()
       }
     }
     document.addEventListener('mousedown', handleSelectView)
@@ -23,7 +28,7 @@ export function useFocusOnInteraction(
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref, onInteract])
+  }, [ref, stableOnInteract])
 }
 
 export function useDebounce<T>(value: T, delay: number) {
