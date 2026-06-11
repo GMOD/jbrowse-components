@@ -340,6 +340,9 @@ export const specs: ScreenshotSpec[] = [
                 // scatter rendering reads copy-number gains/losses better than
                 // the filled XY plot across the whole genome (reviewer request)
                 defaultRendering: 'scatter',
+                // finer binning (basesPerSpan = bpPerPx/resolution) so the
+                // whole-genome scatter resolves copy-number structure (reviewer)
+                resolution: 5,
               },
             },
           ],
@@ -1206,9 +1209,9 @@ export const specs: ScreenshotSpec[] = [
                 autoscale: 'localsd',
                 numStdDev: 3,
                 defaultRendering: 'multiscatter',
-                // finer binning so the scatter resolves copy-number structure
-                // (reviewer request)
-                resolution: 5,
+                // even finer binning (basesPerSpan = bpPerPx/resolution) so the
+                // scatter resolves copy-number structure (reviewer: even finer)
+                resolution: 10,
               },
             },
           ],
