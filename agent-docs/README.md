@@ -17,6 +17,7 @@ Start with `PRD.md`. It is the governing doc for agent work on this branch.
 | **[MIGRATION_AUDIT.md](MIGRATION_AUDIT.md)**                         | Config/session migration patterns + verification method     | Migrating a display or stored snapshot        |
 | **[PERF_INSTRUMENTATION.md](PERF_INSTRUMENTATION.md)**               | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
 | **[RFC-001-community-plugin-api.md](RFC-001-community-plugin-api.md)** | Community plugin API proposal                              | Plugin API design                             |
+| **[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md)**               | Why plugin exports ossify into permanent ABI + fixes (fleshes out RFC-001 §7) | Removing/renaming a plugin export; "why can't we delete this?" |
 | **[architecture-decision-records/](architecture-decision-records/)** | Design decisions                                            | Understanding why something is the way it is  |
 
 ## Common questions

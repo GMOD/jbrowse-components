@@ -52,7 +52,7 @@ type LGV = LinearGenomeViewModel
  * This is the base of the **legacy block / server-side-RPC render stack**. The
  * newer GPU stack uses a separate base, `LinearCanvasBaseDisplay`
  * (plugins/canvas) — `LinearBasicDisplay` extends that, not this. See
- * agent-docs/TRACK_DISPLAY_CONCEPTS.md.
+ * agent-docs/ARCHITECTURE.md "Display stacks".
  */
 function stateModelFactory() {
   return (

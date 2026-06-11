@@ -56,6 +56,16 @@ export default function RootConfiguration({
       type: 'boolean',
       defaultValue: false,
     },
+    /**
+     * #slot configuration.extendDefaultSessionWithUrlParams
+     * when true, URL params like `&loc=` navigate within the configured
+     * defaultSession (preserving its tracks and settings) instead of starting a
+     * fresh session
+     */
+    extendDefaultSessionWithUrlParams: {
+      type: 'boolean',
+      defaultValue: false,
+    },
 
     hierarchical: HierarchicalConfigSchemaFactory(),
     /**

@@ -2,6 +2,7 @@ import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
+import { applyDefaultSessionViewInit } from './applyDefaultSessionViewInit.ts'
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
 import { loadSessionSpec } from './loadSessionSpec.ts'
@@ -27,6 +28,14 @@ export interface PluginManagerSource {
   readonly sessionName?: string
   readonly initialTimestamp: number
   readonly sessionQuery?: string
+  readonly defaultSessionViewInit?: {
+    loc?: string
+    assembly?: string
+    tracks?: string[]
+    tracklist?: boolean
+    nav?: boolean
+    highlight?: string[]
+  }
 }
 
 function asPluginRecord({ plugin: P, definition }: PluginRecord) {
@@ -88,8 +97,14 @@ function initSession(
   pluginManager: PluginManager,
   model: PluginManagerSource,
 ) {
-  const { sessionError, sessionSpec, sessionSnapshot, hubSpec, sessionName } =
-    model
+  const {
+    sessionError,
+    sessionSpec,
+    sessionSnapshot,
+    hubSpec,
+    sessionName,
+    defaultSessionViewInit,
+  } = model
   try {
     if (sessionError) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
@@ -106,6 +121,9 @@ function initSession(
       void loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
     } else {
       rootModel.setDefaultSession()
+      if (defaultSessionViewInit) {
+        applyDefaultSessionViewInit(rootModel.session, defaultSessionViewInit)
+      }
       if (sessionName) {
         rootModel.renameCurrentSession(sessionName)
       }

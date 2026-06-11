@@ -2,28 +2,51 @@
 
 ## Display stacks
 
-There are two parallel linear-display **state-model** stacks. New feature
-displays should use the GPU stack; the legacy block stack is kept indefinitely.
+Linear-genome-view displays compose from a small set of **foundation mixins**
+on `BaseDisplay`. "GPU vs block" is a *render-path* distinction layered on top —
+not the primary axis of sharing. Three foundations cover every in-tree display:
 
-| Stack | Base state model | Render path | Concrete displays |
-| --- | --- | --- | --- |
-| **GPU canvas** | `LinearCanvasBaseDisplay` (plugins/canvas) | canvas/WebGL, data uploaded to GPU | `LinearBasicDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay`, `LinearManhattanDisplay` |
-| **Legacy block** | `BaseLinearDisplay` (plugins/linear-genome-view) | block-based, server-side RPC render → SVG | `LinearBareDisplay`, `LinearArcDisplay` |
+| Foundation (composed on `BaseDisplay`) | Brings | Displays |
+| --- | --- | --- |
+| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the four fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, and — via `LinearCanvasBaseDisplay` — `LinearBasicDisplay`, `LinearVariantDisplay` |
+| `GlobalDataDisplayMixin()` | same slot mixins, **no** fetch autoruns (each display installs its own `afterAttach` autorun) | HiC (`LinearHicDisplay`), LD (`plugins/variants/LDDisplay`), multi-variant matrix, dotplot |
+| `FeatureDensityMixin()` + custom `renderSvg` | lightweight React-SVG render — no GPU upload, no block machinery | `LinearArcDisplay`, `LinearPairedArcDisplay` |
 
-The vagueness comes from three differently-scoped artifacts sharing the
-`BaseLinearDisplay` name:
+`LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these — it is a
+canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
+`LinearBasicDisplay` + `LinearVariantDisplay` extend it. Wiggle, Manhattan, and
+alignments compose `MultiRegionDisplayMixin` directly; they render on the GPU
+but share **no** state model with canvas.
+
+**Render path is a separate axis.** GPU-canvas vs Canvas2D is chosen per frame
+at the backend factory (see "RenderingBackend interfaces per plugin"), not by
+which foundation a display composes.
+
+### Legacy block stack (`BaseLinearDisplay` state model)
+
+`BaseLinearDisplay` (plugins/linear-genome-view) is the one remaining
+**server-side RPC render → SVG block** state model — and the pluggable
+server-side-renderer extension point. It is **kept indefinitely** because it is
+public API composed by external plugins (`jbrowse-plugin-gdc`, `-icgc`, and the
+legacy `-mafviewer`, now superseded in-tree by `plugins/maf`) via
+`LinearGenomePlugin.exports.BaseLinearDisplay`. In-tree, only `LinearBareDisplay`
+still composes it — a rarely-used fallback display for `FeatureTrack`/`BasicTrack`
+(the GPU `LinearBasicDisplay` is the default). `LinearBareDisplay` is also the
+LGV core test suite's lightweight test vehicle and the sole in-tree exerciser of
+the block path, so it stays as long as the path does.
+
+Three differently-scoped artifacts share the `BaseLinearDisplay` name — a
+documented hazard, not a bug to "fix" (the name is external public API):
 
 | Artifact | Kind | Scope |
 | --- | --- | --- |
-| `baseLinearDisplayConfigSchema` | config schema | **shared by both stacks** + third-party plugins |
-| `BaseLinearDisplay` | state model | **legacy block only** (arc + bare) |
-| `BaseLinearDisplayComponent` | React shell | **shared by both stacks** |
+| `baseLinearDisplayConfigSchema` | config schema | **shared by every foundation** + external plugins (gwas, quantseq, mafviewer) |
+| `BaseLinearDisplay` | state model | **legacy block only** — in-tree `LinearBareDisplay`; external gdc/icgc/mafviewer |
+| `BaseLinearDisplayComponent` | React shell | **shared** — branches on `model.DisplayMessageComponent`: set → the display's own content (GPU path); unset → `<LinearBlocks>` (legacy block path). Also used externally (mafviewer, gdc) |
 
 So `LinearBasicDisplay` (GPU) does **not** extend the `BaseLinearDisplay` state
 model, even though it uses the shared config schema and React shell.
-`BasicTrack` is a back-compat synonym for `FeatureTrack`. Full rationale,
-constraints, and the (deferred) retirement sketch:
-`agent-docs/TRACK_DISPLAY_CONCEPTS.md`.
+`BasicTrack` is a back-compat synonym for `FeatureTrack`.
 
 ## Coordinate system
 
@@ -427,19 +450,26 @@ factories or RPC methods:
 - `normalize.ts` — `SCALE_TYPE_LOG`/`LINEAR`, `scaleTypeFromString`, `makeScoreNormalizer`
 - `displayModel.ts` — `WiggleGpuDisplayModel<TRenderingBackend>`: model↔component contract
 - `scale.ts` / `autoscale.ts` — `getNiceDomain`, `getScale`, autoscale helpers
+- `scoreMenuItems.ts` — `makeScoreSubMenu(self, opts)` + `ScoreScaleModel`: the shared
+  Score submenu composed by every wiggle-family display (wiggle, multi-wiggle, Manhattan)
 
 `@jbrowse/plugin-wiggle` — composable model pieces. These live in the plugin
 because they depend on `BaseDisplay` / `MultiRegionDisplayMixin` and wire up
 RPC methods:
 
-- `linearWiggleDisplayConfigSchema` / `linearWiggleDisplayModelFactory` — used
-  by GWAS's `LinearManhattanDisplay` as the base for config + model
-- `rendererMenuItems(self, {extraScoreItems})` — shared Score + cross-hatch
-  menu items composed by every wiggle-family display
+- `linearWiggleDisplayConfigSchema` / `linearWiggleDisplayModelFactory` — the
+  full LinearWiggleDisplay config + model. Composed **wholesale** by GC-content's
+  `LinearGCContentDisplay` (`plugins/gccontent`). The config schema is reused
+  more widely (Manhattan extends it); the model factory is not.
+- `WiggleScoreConfigMixin([...slots])` / `WiggleCommonMixin` — score/color config
+  pieces composed à la carte by displays that build their own model.
 
-GWAS's Manhattan composes `linearWiggleDisplayModelFactory` for the shared
-score-domain / cross-hatch / color machinery, but ships its own
-`GetManhattanData` RPC (Manhattan returns per-feature points, not pre-binned
+GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It
+builds its own model — `BaseDisplay` + `TrackHeightMixin()` +
+`MultiRegionDisplayMixin()` + `WiggleScoreConfigMixin(['colorBy', 'minimalTicks'])`
+— pulls the score domain/scale utilities and `makeScoreSubMenu` from
+`@jbrowse/wiggle-core`, and takes its config from `linearWiggleDisplayConfigSchema`.
+It ships its own `GetManhattanData` RPC (per-feature points, not pre-binned
 density), implements `WiggleRenderingBackend` with its own pass, and overrides
 `isCacheValid` to `() => true` since Manhattan data is zoom-independent.
 
@@ -1064,10 +1094,13 @@ key on a tuple of two displayedRegion indices.
     </DisplayChrome>
   )
   ```
-- **Wiggle-style displays** — compose `linearWiggleDisplayModelFactory` from
-  `@jbrowse/plugin-wiggle` and implement `WiggleRenderingBackend` (typed from
-  `@jbrowse/wiggle-core`). Override `isCacheValid` to `() => true` if the
-  display is zoom-independent. See plugins/gwas.
+- **Wiggle-style displays** — to reuse the whole LinearWiggleDisplay model,
+  compose `linearWiggleDisplayModelFactory` from `@jbrowse/plugin-wiggle` (see
+  `plugins/gccontent`). To build a custom model that only borrows the score
+  machinery, compose `WiggleScoreConfigMixin` + `makeScoreSubMenu` instead (see
+  `plugins/gwas` Manhattan). Implement `WiggleRenderingBackend` (typed from
+  `@jbrowse/wiggle-core`); override `isCacheValid` to `() => true` if the display
+  is zoom-independent.
 - **Tests** — unit (`MockHal`); browser (Puppeteer, `--backend=webgl|webgpu|canvas2d`).
 
 ---

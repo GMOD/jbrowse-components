@@ -12,7 +12,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  *
  * Note: the *state model* named `BaseLinearDisplay` is narrower than this config
  * — it backs only the legacy block stack. See
- * agent-docs/TRACK_DISPLAY_CONCEPTS.md.
+ * agent-docs/ARCHITECTURE.md "Display stacks".
  */
 
 const baseLinearDisplayConfigSchema = ConfigurationSchema(

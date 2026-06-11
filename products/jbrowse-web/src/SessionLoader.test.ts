@@ -121,6 +121,68 @@ describe('SessionLoader', () => {
       expect(loader.isJb1StyleSession).toBe(true)
     })
 
+    it('extendDefaultSession reads the config flag', () => {
+      expect(
+        SessionLoader.create({
+          loc: 'chr1:1-1000',
+          initialTimestamp: Date.now(),
+        }).extendDefaultSession,
+      ).toBe(false)
+
+      expect(
+        SessionLoader.create({
+          loc: 'chr1:1-1000',
+          configSnapshot: {
+            configuration: { extendDefaultSessionWithUrlParams: true },
+          },
+          initialTimestamp: Date.now(),
+        }).extendDefaultSession,
+      ).toBe(true)
+    })
+
+    it('builds defaultSessionViewInit from loc when flag enabled', () => {
+      const loader = SessionLoader.create({
+        loc: 'chr1:1-1000',
+        tracks: 'a,b',
+        highlight: 'chr1:5-10',
+        configSnapshot: {
+          configuration: { extendDefaultSessionWithUrlParams: true },
+        },
+        initialTimestamp: Date.now(),
+      })
+      expect(loader.defaultSessionViewInit).toEqual({
+        loc: 'chr1:1-1000',
+        assembly: undefined,
+        tracks: ['a', 'b'],
+        tracklist: undefined,
+        nav: undefined,
+        highlight: ['chr1:5-10'],
+      })
+    })
+
+    it('defaultSessionViewInit is undefined when flag disabled', () => {
+      expect(
+        SessionLoader.create({
+          loc: 'chr1:1-1000',
+          initialTimestamp: Date.now(),
+        }).defaultSessionViewInit,
+      ).toBeUndefined()
+    })
+
+    it('extend flag routes loc to default session instead of a spec', async () => {
+      const loader = SessionLoader.create({
+        loc: 'chr1:1-1000',
+        configSnapshot: {
+          configuration: { extendDefaultSessionWithUrlParams: true },
+        },
+        initialTimestamp: Date.now(),
+      })
+      await loader.loadSessionByType()
+      // no fresh sessionSpec built: falls through to setDefaultSession
+      expect(loader.sessionSpec).toBeUndefined()
+      expect(loader.blankSession).toBe(true)
+    })
+
     it('returns false for all session types when no query', () => {
       const loader = SessionLoader.create({
         initialTimestamp: Date.now(),

@@ -502,7 +502,11 @@ function App() {
 // HorizontallyFlipped*
 // ---------------------------------------------------------------------------
 
-const FlipButton = observer(function FlipButton({ state }: { state: ViewModel }) {
+const FlipButton = observer(function FlipButton({
+  state,
+}: {
+  state: ViewModel
+}) {
   const [error, setError] = useState<unknown>()
   return (
     <div>
@@ -3280,7 +3284,10 @@ const VisibleRegions = observer(function VisibleRegions({
   const view = viewState.session.view
   return view.initialized ? (
     <div>
-      <p>Visible region {view.coarseDynamicBlocks.map(loc).filter(Boolean).join(',')}</p>
+      <p>
+        Visible region{' '}
+        {view.coarseDynamicBlocks.map(loc).filter(Boolean).join(',')}
+      </p>
       <p>
         Static blocks{' '}
         {view.staticBlocks.contentBlocks

@@ -9,6 +9,7 @@ import {
   loadPluginRecords,
   readSessionFromIDB,
   readSessionFromStorage,
+  splitHighlights,
   stripPrefix,
 } from './sessionLoaderHelpers.ts'
 import { readSessionFromDynamo } from './sessionSharing.ts'
@@ -168,6 +169,17 @@ const SessionLoader = types
     get isJb1StyleSession() {
       return !!(self.loc || self.assembly)
     },
+    /**
+     * #getter
+     * reads the opt-in config.json flag that makes URL params layer onto the
+     * configured defaultSession instead of replacing it
+     */
+    get extendDefaultSession() {
+      const config = self.configSnapshot?.configuration as
+        | { extendDefaultSessionWithUrlParams?: boolean }
+        | undefined
+      return !!config?.extendDefaultSessionWithUrlParams
+    },
 
     /**
      * #getter
@@ -228,6 +240,26 @@ const SessionLoader = types
      */
     get ready(): boolean {
       return self.isSessionLoaded && !self.configError && self.pluginsLoaded
+    },
+    /**
+     * #getter
+     * URL-derived init (loc/tracks/highlight/...) applied onto the
+     * defaultSession's first view when `extendDefaultSession` is enabled,
+     * otherwise undefined
+     */
+    get defaultSessionViewInit() {
+      return self.extendDefaultSession && self.isJb1StyleSession
+        ? {
+            loc: self.loc,
+            assembly: self.assembly,
+            tracks: self.tracks?.split(','),
+            tracklist: self.tracklist,
+            nav: self.nav,
+            highlight: self.highlight
+              ? splitHighlights(self.highlight)
+              : undefined,
+          }
+        : undefined
     },
   }))
   .actions(self => ({
@@ -512,7 +544,13 @@ const SessionLoader = types
         } else if (self.isSpecSession) {
           self.decodeSessionSpec()
         } else if (self.isJb1StyleSession) {
-          self.decodeJb1StyleSession()
+          if (self.extendDefaultSession) {
+            // layer loc/tracks onto the configured defaultSession (applied in
+            // initSession via defaultSessionViewInit) rather than replacing it
+            self.setBlankSession(true)
+          } else {
+            self.decodeJb1StyleSession()
+          }
         } else if (self.isEncodedSession) {
           await self.decodeEncodedUrlSession()
         } else if (self.isJsonSession) {

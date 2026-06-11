@@ -11,7 +11,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
  *
  * Legacy block-stack display for `BasicTrack`: `BaseLinearDisplay` plus a
  * pluggable `renderer` slot. Not commonly used; the GPU `LinearBasicDisplay`
- * is the default feature display. See agent-docs/TRACK_DISPLAY_CONCEPTS.md.
+ * is the default feature display. See agent-docs/ARCHITECTURE.md "Display stacks".
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
