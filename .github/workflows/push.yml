@@ -14,6 +14,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  CLOUDFRONT_DISTRIBUTION_ID: E13LGELJOT4GQO
+
 jobs:
   check_commit_message:
     name: Check Commit Message
@@ -21,11 +24,6 @@ jobs:
     outputs:
       skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 1
-          persist-credentials: false
       - name: Check commit message
         id: check_message
         env:
@@ -215,13 +213,6 @@ jobs:
         run: node --experimental-strip-types scripts/pack.ts
       - name: Test build
         run: BUILT_TESTS=1 pnpm built-test-ci
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@99214aa6889fcddfa57764031d71add364327e59 # v6.1.3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
       - name: Upload packed artifacts for component tests
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -273,9 +264,12 @@ jobs:
           zip -r "jbrowse-web-${REF_NAME}.zip" .
           cp test_data/config.json config.json
           aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${REF_NAME}/*"
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/${REF_NAME}/*"
 
       - name: Build LGV storybook
+        if:
+          github.ref == 'refs/heads/main' || startsWith(github.ref,
+          'refs/tags/')
         run: pnpm storybook:build
         working-directory: products/jbrowse-react-linear-genome-view
       - name: Deploy LGV storybook
@@ -284,10 +278,13 @@ jobs:
           'refs/tags/')
         run: |
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${REF_NAME}/*"
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/lgv/${REF_NAME}/*"
         working-directory: products/jbrowse-react-linear-genome-view
 
       - name: Build React App storybook
+        if:
+          github.ref == 'refs/heads/main' || startsWith(github.ref,
+          'refs/tags/')
         run: pnpm storybook:build
         working-directory: products/jbrowse-react-app
       - name: Deploy React App storybook
@@ -296,10 +293,13 @@ jobs:
           'refs/tags/')
         run: |
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${REF_NAME}/*"
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/app/${REF_NAME}/*"
         working-directory: products/jbrowse-react-app
 
       - name: Build CGV storybook
+        if:
+          github.ref == 'refs/heads/main' || startsWith(github.ref,
+          'refs/tags/')
         run: pnpm storybook:build
         working-directory: products/jbrowse-react-circular-genome-view
       - name: Deploy CGV storybook
@@ -308,10 +308,9 @@ jobs:
           'refs/tags/')
         run: |
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${REF_NAME}/*"
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/cgv/${REF_NAME}/*"
         working-directory: products/jbrowse-react-circular-genome-view
 
-  # Conditionally run the buildwebsite job
   buildwebsite:
     name: Build website
     needs: check_commit_message
@@ -326,7 +325,7 @@ jobs:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -447,7 +446,7 @@ jobs:
           version: 10
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Install deps
         run: pnpm install --frozen-lockfile
       - name: Build and test Electron on Windows
