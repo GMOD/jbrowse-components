@@ -45,6 +45,9 @@ export interface Annotation {
   text?: string
   color?: string // default red (#e3242b)
   textColor?: string // circle/text label color (circle default white)
+  // for 'text': draw a rounded filled pill behind the label (any CSS color, e.g.
+  // 'rgba(0,0,0,0.78)') so callout text stays readable over busy page content
+  background?: string
   fontSize?: number // text/circle label, default 18
   anchor?: { selector?: string; text?: string }
   dx?: number
@@ -552,36 +555,10 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // The LGV view (hamburger) menu open, showing the "Show center line" toggle.
-  {
-    mode: 'url',
-    name: 'alignments_center_line_menu',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:2615-2725',
-          tracks: ['volvox-long-reads-sv-cram'],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    settleMs: 4000,
-    actions: [
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'delay', ms: 500 },
-      { type: 'hover', text: 'Show...' },
-      { type: 'waitForText', text: 'Show center line' },
-      { type: 'delay', ms: 300 },
-      // keep the mouse on the submenu item so it stays open at capture time
-      { type: 'hover', text: 'Show center line' },
-      { type: 'delay', ms: 500 },
-    ],
-    annotations: [{ type: 'box', anchor: { text: 'Show center line' } }],
-  },
-
-  // Track menu -> "Show..." submenu exposing the "Show soft clipping" toggle.
+  // Soft clipping, two-stage figure: top frame opens the track menu's "Show..."
+  // submenu with "Show soft clipping" boxed; bottom frame closes the menu to
+  // show the result (showSoftClipping is preset so the clipped bases render in
+  // the result frame). Combines the old separate menu + result screenshots.
   {
     mode: 'url',
     name: 'alignments_soft_clipped_menu',
@@ -591,20 +568,42 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:2615-2725',
-          tracks: ['volvox-long-reads-sv-cram'],
+          tracks: [
+            {
+              trackId: 'volvox-long-reads-sv-bam',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                showSoftClipping: true,
+              },
+            },
+          ],
         },
       ],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'delay', ms: 500 },
-      { type: 'hover', text: 'Show...' },
-      { type: 'waitForText', text: 'Show soft clipping' },
-      { type: 'delay', ms: 500 },
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'delay', ms: 500 },
+          { type: 'hover', text: 'Show...' },
+          { type: 'waitForText', text: 'Show soft clipping' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Show soft clipping' } }],
+      },
+      {
+        // click the location box to dismiss the menu before the result frame
+        actions: [
+          {
+            type: 'click',
+            selector: 'input[placeholder="Search for location"]',
+          },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'Show soft clipping' } }],
   },
 
   // Right-click context menu on a read in a LinearAlignmentsDisplay (Open
@@ -813,8 +812,10 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Center line over a long-read SV CRAM. Migrated from a hand-captured shot —
-  // showCenterLine is a view-level flag.
+  // Center line, two-stage figure: top frame opens the LGV view menu's "Show..."
+  // submenu with "Show center line" boxed; bottom frame closes the menu to show
+  // the resulting center line over the pileup. Both frames use the same region
+  // (replaces the old separate alignments_center_line_menu screenshot).
   {
     mode: 'url',
     name: 'alignments_center_line',
@@ -834,6 +835,30 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 650,
     settleMs: 4000,
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+          { type: 'delay', ms: 500 },
+          { type: 'hover', text: 'Show...' },
+          { type: 'waitForText', text: 'Show center line' },
+          { type: 'delay', ms: 300 },
+          { type: 'hover', text: 'Show center line' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Show center line' } }],
+      },
+      {
+        // click the location box to dismiss the menu before the result frame
+        actions: [
+          {
+            type: 'click',
+            selector: 'input[placeholder="Search for location"]',
+          },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
+    ],
   },
 
   // Sort by base at a SNP, showing the right-click workflow (reviewer wanted the
@@ -872,16 +897,32 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 5000,
     hideTooltip: true,
-    actions: [
-      { type: 'rightclick', from: { x: 758, y: 272 } },
-      { type: 'waitForText', text: 'SNP/Mismatch' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'SNP/Mismatch' },
-      { type: 'waitForText', text: 'Sort by base at position' },
-      { type: 'delay', ms: 500 },
-    ],
-    annotations: [
-      { type: 'box', anchor: { text: 'Sort by base at position' } },
+    // two-stage: top frame is the right-click "SNP/Mismatch → Sort by base at
+    // position" menu; bottom frame closes the menu to show the resulting sorted
+    // pileup (reads carrying the same base at ctgA:14481 grouped together)
+    stages: [
+      {
+        actions: [
+          { type: 'rightclick', from: { x: 758, y: 272 } },
+          { type: 'waitForText', text: 'SNP/Mismatch' },
+          { type: 'delay', ms: 300 },
+          { type: 'hover', text: 'SNP/Mismatch' },
+          { type: 'waitForText', text: 'Sort by base at position' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          { type: 'box', anchor: { text: 'Sort by base at position' } },
+        ],
+      },
+      {
+        actions: [
+          {
+            type: 'click',
+            selector: 'input[placeholder="Search for location"]',
+          },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
     ],
   },
 
@@ -1315,6 +1356,8 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
     settleMs: 2000,
+    // crop off the empty viewport below the menu / import form in each frame
+    crop: { x: 0, y: 0, width: 1500, height: 460 },
     stages: [
       {
         actions: [
@@ -2591,45 +2634,35 @@ export const specs: ScreenshotSpec[] = [
   // Dotplot / synteny interactions
   // ────────────────────────────────────────────────────────────────────────
 
-  // Add menu -> Dotplot view, then the resulting dotplot import form. (Close the
-  // linear genome view first in real usage; here the import form is what the
-  // caption points at.)
+  // Dotplot launch, two-stage figure: top frame opens the app "Add" menu with
+  // "Dotplot view" boxed; bottom frame is the import form it opens (launched
+  // from an empty session so only the import form shows, no leftover LGV).
+  // Replaces the old separate dotplot_menu screenshot. Narrow window + height
+  // crop keep the figure tight on the menu and form.
   {
     mode: 'url',
     name: 'dotplot_add',
-    url: `?config=${VOLVOX}&sessionName=Screenshot`,
-    readyText: 'ctgA',
-    settleMs: 2500,
-    actions: [
-      { type: 'click', text: 'Add' },
-      { type: 'waitForText', text: 'Dotplot view' },
-      { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Dotplot view' },
-      { type: 'waitForText', text: 'Select assemblies for dotplot view' },
-      { type: 'delay', ms: 1500 },
-    ],
-  },
-
-  // Dotplot view hamburger menu showing view-specific options.
-  {
-    mode: 'url',
-    name: 'dotplot_menu',
-    url: sessionSpec(DOTPLOT_CONFIG, {
-      views: [
-        {
-          type: 'DotplotView',
-          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-          tracks: ['grape_peach_paf'],
-        },
-      ],
-    }),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
-    readyTimeout: 60000,
-    settleMs: 3000,
-    actions: [
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'delay', ms: 500 },
+    url: sessionSpec(VOLVOX, { views: [] }),
+    readyText: 'Select a view to launch',
+    viewportWidth: 900,
+    settleMs: 2000,
+    crop: { x: 0, y: 0, width: 900, height: 540 },
+    stages: [
+      {
+        actions: [
+          { type: 'click', text: 'Add' },
+          { type: 'waitForText', text: 'Dotplot view' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Dotplot view' } }],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Dotplot view' },
+          { type: 'waitForText', text: 'Select assemblies for dotplot view' },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
     ],
   },
 
@@ -2677,15 +2710,19 @@ export const specs: ScreenshotSpec[] = [
   // RNA-seq tutorial screenshots (use hg19 ACTB region from DEMO_CONFIG)
   // ────────────────────────────────────────────────────────────────────────
 
+  // Basic splicing: ACTB RNA-seq reads at exon-scale zoom so the spliced
+  // alignments (grey read blocks joined by thin teal skip lines across introns)
+  // are individually visible, with the gene model above. Replaces the old
+  // rnaseq/overview, which duplicated the reads_zoomed view.
   {
     mode: 'url',
-    name: 'rnaseq/overview',
+    name: 'rnaseq/basic_splicing',
     url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: 'chr7:5,562,000-5,575,000',
+          loc: 'chr7:5,567,000-5,570,000',
           tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
         },
       ],
