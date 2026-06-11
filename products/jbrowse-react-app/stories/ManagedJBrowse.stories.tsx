@@ -26,10 +26,6 @@ const tracks = [
     adapter: {
       type: 'CramAdapter',
       uri: 'test_data/volvox/volvox-sorted.cram',
-      sequenceAdapter: {
-        type: 'TwoBitAdapter',
-        uri: 'test_data/volvox/volvox.2bit',
-      },
     },
   },
 ]
@@ -86,7 +82,6 @@ const tracks = [
     adapter: {
       type: 'CramAdapter',
       uri: 'test_data/volvox/volvox-sorted.cram',
-      sequenceAdapter: { type: 'TwoBitAdapter', uri: 'test_data/volvox/volvox.2bit' },
     },
   },
 ]

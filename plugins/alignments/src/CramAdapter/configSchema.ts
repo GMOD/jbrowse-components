@@ -6,10 +6,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config CramAdapter
  * used to configure CRAM adapter
  *
+ * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
+ * automatically supplies it from the enclosing assembly's sequence track.
+ *
  * #example
- * The `uri` shorthand auto-resolves the `.crai` index. CRAM also needs a
- * sequence adapter, supplied by the enclosing assembly, so a track usually only
- * sets the file locations:
+ * The `uri` shorthand auto-resolves the `.crai` index:
  * ```js
  * {
  *   type: 'CramAdapter',

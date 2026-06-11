@@ -15,13 +15,6 @@ const tracks = [
         uri: 'volvox-sorted.cram.crai',
         locationType: 'UriLocation',
       },
-      sequenceAdapter: {
-        type: 'TwoBitAdapter',
-        twoBitLocation: {
-          uri: 'volvox.2bit',
-          locationType: 'UriLocation',
-        },
-      },
     },
   },
 ]

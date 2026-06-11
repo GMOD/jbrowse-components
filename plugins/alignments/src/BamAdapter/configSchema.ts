@@ -7,6 +7,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config BamAdapter
  * used to configure BAM adapter
  *
+ * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
+ * automatically supplies it from the enclosing assembly's sequence track.
+ *
  * #example
  * The `uri` shorthand auto-resolves the `.bai` index. For a `.csi` index or a
  * differently-named index, set `index` explicitly with the full slot form:

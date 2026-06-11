@@ -61,38 +61,10 @@ the index is at `yourfile.bam.bai` (the data URI with `.bai` appended). See the
 
 - `cramLocation` - a 'file location' for the CRAM
 - `craiLocation` - a 'file location' for the CRAI
-- `sequenceAdapter` - a subadapter describing the location of the reference
-  assembly (_e.g._ an
-  [IndexedFastaAdapter](/docs/config_guides/assemblies/#indexedfastaadapter))
 
-Example `CramAdapter` config:
-
-```json
-{
-  "type": "CramAdapter",
-  "cramLocation": {
-    "uri": "http://yourhost/file.cram"
-  },
-  "craiLocation": {
-    "uri": "http://yourhost/file.cram.crai"
-  },
-  "sequenceAdapter": {
-    "type": "IndexedFastaAdapter",
-    "fastaLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa",
-      "locationType": "UriLocation"
-    },
-    "faiLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai",
-      "locationType": "UriLocation"
-    }
-  }
-}
-```
-
-A reduced form is also accepted: when only `uri` is given, the adapter assumes
-the index is at `yourfile.cram.crai` (the data URI with `.crai` appended). See
-the [CramAdapter config docs](/docs/config/cramadapter) for all options.
+The sequence adapter is automatically supplied from the enclosing assembly — you
+do not need to set `sequenceAdapter` manually. See the
+[CramAdapter config docs](/docs/config/cramadapter) for all options.
 
 ```json
 { "type": "CramAdapter", "uri": "http://yourhost/file.cram" }

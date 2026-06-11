@@ -434,12 +434,6 @@ Example config for a CRAM file with a small `fetchSizeLimit` configured:
     "craiLocation": {
       "uri": "volvox-sorted-altname.cram.crai"
     },
-    "sequenceAdapter": {
-      "type": "TwoBitAdapter",
-      "twoBitLocation": {
-        "uri": "volvox.2bit"
-      }
-    },
     "fetchSizeLimit": 1000
   }
 }

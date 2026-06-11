@@ -72,9 +72,8 @@ Adapters parse a given data format. To write your own, see
 
 - `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it for
   use by the browser.
-- `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. Note that
-  CramAdapter also takes a sequenceAdapter as a sub-adapter configuration, and
-  uses getSubAdapter to instantiate it
+- `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. The sequence
+  adapter is automatically injected at runtime from the enclosing assembly
 
 ### Track types
 

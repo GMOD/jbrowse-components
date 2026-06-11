@@ -74,11 +74,6 @@ function BasicExampleRender() {
             adapter: {
               type: 'CramAdapter',
               uri: 'volvox-sorted.cram',
-              locationType: 'UriLocation',
-              sequenceAdapter: {
-                type: 'TwoBitAdapter',
-                uri: 'volvox.2bit',
-              },
             },
           },
         ],
@@ -136,7 +131,6 @@ export const BasicExample = () => {
             adapter: {
               type: 'CramAdapter',
               uri: 'volvox-sorted.cram',
-              sequenceAdapter: { type: 'TwoBitAdapter', uri: 'volvox.2bit' },
             },
           },
         ],
@@ -243,10 +237,6 @@ function HumanDemoRender() {
             adapter: {
               type: 'CramAdapter',
               uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-              sequenceAdapter: {
-                type: 'BgzipFastaAdapter',
-                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-              },
             },
           },
           {
@@ -339,10 +329,6 @@ export const HumanDemo = () => {
             adapter: {
               type: 'CramAdapter',
               uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-              sequenceAdapter: {
-                type: 'BgzipFastaAdapter',
-                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-              },
             },
           },
           {
@@ -516,6 +502,7 @@ function DarkThemeRender() {
   const [state] = useState(() =>
     createViewState({
       config: {
+        ...volvoxConfig,
         configuration: {
           theme: {
             palette: {
@@ -523,55 +510,6 @@ function DarkThemeRender() {
             },
           },
         },
-        assemblies: [
-          {
-            name: 'volvox',
-            sequence: {
-              type: 'ReferenceSequenceTrack',
-              trackId: 'volvox_refseq',
-              adapter: {
-                type: 'TwoBitAdapter',
-                uri: 'volvox.2bit',
-              },
-            },
-            refNameAliases: {
-              adapter: {
-                type: 'FromConfigAdapter',
-                adapterId: 'W6DyPGJ0UU',
-                features: [
-                  {
-                    refName: 'ctgA',
-                    uniqueId: 'alias1',
-                    aliases: ['A', 'contigA'],
-                  },
-                  {
-                    refName: 'ctgB',
-                    uniqueId: 'alias2',
-                    aliases: ['B', 'contigB'],
-                  },
-                ],
-              },
-            },
-          },
-        ],
-        tracks: [
-          {
-            type: 'AlignmentsTrack',
-            trackId: 'volvox_cram',
-            name: 'volvox-sorted.cram',
-            assemblyNames: ['volvox'],
-            category: ['Alignments'],
-            adapter: {
-              type: 'CramAdapter',
-              uri: 'volvox-sorted.cram',
-              locationType: 'UriLocation',
-              sequenceAdapter: {
-                type: 'TwoBitAdapter',
-                uri: 'volvox.2bit',
-              },
-            },
-          },
-        ],
         defaultSession: {
           name: 'My session',
           views: [
@@ -632,7 +570,6 @@ export const DarkTheme = () => {
             adapter: {
               type: 'CramAdapter',
               uri: 'volvox-sorted.cram',
-              sequenceAdapter: { type: 'TwoBitAdapter', uri: 'volvox.2bit' },
             },
           },
         ],
@@ -1656,7 +1593,6 @@ export const WithOnChange = () => {
             adapter: {
               type: 'CramAdapter',
               uri: 'volvox-sorted.cram',
-              sequenceAdapter: { type: 'TwoBitAdapter', uri: 'volvox.2bit' },
             },
           },
         ],

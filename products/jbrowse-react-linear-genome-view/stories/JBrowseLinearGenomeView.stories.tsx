@@ -681,10 +681,6 @@ const humanTracks = [
     adapter: {
       type: 'CramAdapter',
       uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-      sequenceAdapter: {
-        type: 'BgzipFastaAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-      },
     },
   },
 ]
@@ -749,10 +745,6 @@ const tracks = [
     adapter: {
       type: 'CramAdapter',
       uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-      sequenceAdapter: {
-        type: 'BgzipFastaAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-      },
     },
   },
 ]
@@ -919,7 +911,7 @@ const ShadowComponent = () => {
   }, [])
   return (
     <div ref={node}>
-      {rootNode && config
+      {rootNode && config && cacheNode
         ? createPortal(
             <CacheProvider value={cacheNode}>
               <JBrowseLinearGenomeView viewState={config} />
@@ -1228,7 +1220,7 @@ function App() {
 // WithTrackColorShorthand
 // ---------------------------------------------------------------------------
 
-const colorShorthandAssembly = {
+const volvoxPublicAssembly = {
   name: 'volvox',
   sequence: {
     type: 'ReferenceSequenceTrack',
@@ -1267,7 +1259,7 @@ const colorShorthandTracks = [
 function WithTrackColorShorthandRender() {
   return (
     <LinearGenomeView
-      assembly={colorShorthandAssembly}
+      assembly={volvoxPublicAssembly}
       tracks={colorShorthandTracks}
       init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_green'] }}
     />
@@ -1277,18 +1269,6 @@ function WithTrackColorShorthandRender() {
 // ---------------------------------------------------------------------------
 // WithJexlFeatureColorsAndLabels — per-feature color + label from jexl
 // ---------------------------------------------------------------------------
-
-const jexlColorLabelAssembly = {
-  name: 'volvox',
-  sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
-    adapter: {
-      type: 'TwoBitAdapter',
-      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
-    },
-  },
-}
 
 const jexlColorLabelTracks = [
   {
@@ -1323,7 +1303,7 @@ const jexlColorLabelTracks = [
 function WithJexlFeatureColorsAndLabelsRender() {
   return (
     <LinearGenomeView
-      assembly={jexlColorLabelAssembly}
+      assembly={volvoxPublicAssembly}
       tracks={jexlColorLabelTracks}
       init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_jexl'] }}
     />
@@ -1559,7 +1539,6 @@ function WithDrawerWidgetRender() {
     createViewState({
       assembly: volvoxAssembly,
       tracks: volvoxTracks,
-      location: 'ctgA:1105..1221',
       drawerViewHeight: '100vh',
       defaultSession: {
         name: 'Drawer Widget Example',
@@ -2125,10 +2104,6 @@ const grch38CramTracks = [
     adapter: {
       type: 'CramAdapter',
       uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-      sequenceAdapter: {
-        type: 'BgzipFastaAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-      },
     },
   },
 ]
@@ -2195,10 +2170,6 @@ const tracks = [
     adapter: {
       type: 'CramAdapter',
       uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-      sequenceAdapter: {
-        type: 'BgzipFastaAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-      },
     },
   },
 ]
@@ -2989,10 +2960,6 @@ const multiRegionTracks = [
     adapter: {
       type: 'CramAdapter',
       uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-      sequenceAdapter: {
-        type: 'BgzipFastaAdapter',
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-      },
     },
   },
 ]
