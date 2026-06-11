@@ -1581,26 +1581,6 @@ export const specs: ScreenshotSpec[] = [
     name: 'sv_cgiab/deletion_linear_view',
     url: cgiabUrl({
       sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
-          name: 'HG008-T PacBio HiFi 116x',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam.bai',
-                locationType: 'UriLocation',
-              },
-              indexType: 'BAI',
-            },
-          },
-        },
         // hg38 NCBI RefSeq genes served from the jbrowse.org/ucsc hub (chr-named,
         // CSI-indexed) — matches the GRCh38_GIABv3 chr refnames directly, so no
         // rehosting needed.
@@ -1630,17 +1610,20 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr10:122,822,042-122,850,825',
+          // The somatic SV VCF's SV_85 <DEL> call marks the deletion against the
+          // NCBI RefSeq gene context (CUZD1); the 116x PacBio reads are omitted
+          // here (28kb of 116x trips the density guard → a FORCE-LOAD prompt).
           tracks: [
             'hg38_ncbiRefSeq_ucsc',
             'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
-            'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
           ],
         },
       ],
     }),
     readyText: 'chr10',
     readyTimeout: 60000,
-    settleMs: 15000,
+    // force-loading ~12Mb of remote PacBio reads is slow; settle long
+    settleMs: 40000,
   },
 
   {
@@ -1653,7 +1636,14 @@ export const specs: ScreenshotSpec[] = [
           assembly: 'GRCh38_GIABv3',
           loc: 'chr5:1-180915260',
           tracks: [
-            'HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all',
+            {
+              trackId:
+                'HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all',
+              // localsd autoscale clamps the Y domain to a few std-devs of the
+              // visible window, so copy-number gains/losses read clearly instead
+              // of being flattened by a few high-coverage outliers.
+              displaySnapshot: { autoscale: 'localsd' },
+            },
             'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
           ],
         },
@@ -2746,40 +2736,27 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiwig/multi_colorselect',
-    url: sessionSpec(DEMO_CONFIG, {
+    // Uses the local volvox MultiWiggle (sources k1-k4) rather than the
+    // config_demo ENCODE microarray_multi: ENCODE's bigWigs 403 to the headless
+    // browser. The figure's point is the per-source color/arrangement editor, so
+    // any multi-source wiggle works — preset k1 red, k2/k3 green, k4 blue.
+    url: sessionSpec(VOLVOX, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr1:1,000,000-2,000,000',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
           tracks: [
             {
-              trackId: 'microarray_multi',
+              trackId: 'volvox_microarray_multi',
               displaySnapshot: {
                 type: 'MultiLinearWiggleDisplay',
                 height: 400,
                 layout: [
-                  { name: 'ENCFF055ZII', color: 'red' },
-                  { name: 'ENCFF826HEW', color: 'red' },
-                  { name: 'ENCFF858LIM', color: 'red' },
-                  { name: 'ENCFF425TNW', color: 'green' },
-                  { name: 'ENCFF207RBY', color: 'green' },
-                  { name: 'ENCFF289CTN', color: 'green' },
-                  { name: 'ENCFF884IEG', color: 'green' },
-                  { name: 'ENCFF495SBQ', color: 'green' },
-                  { name: 'ENCFF959EZF', color: 'green' },
-                  { name: 'ENCFF926YZX', color: 'green' },
-                  { name: 'ENCFF269CHA', color: 'green' },
-                  { name: 'ENCFF857KTJ', color: 'green' },
-                  { name: 'ENCFF109KCQ', color: 'green' },
-                  { name: 'ENCFF942TZX', color: 'blue' },
-                  { name: 'ENCFF140HPM', color: 'blue' },
-                  { name: 'ENCFF305JRR', color: 'blue' },
-                  { name: 'ENCFF739FDJ', color: 'blue' },
-                  { name: 'ENCFF518OJP', color: 'blue' },
-                  { name: 'ENCFF810HHS', color: 'blue' },
-                  { name: 'ENCFF939JSB', color: 'blue' },
-                  { name: 'ENCFF041TAK', color: 'blue' },
+                  { name: 'k1', color: 'red' },
+                  { name: 'k2', color: 'green' },
+                  { name: 'k3', color: 'green' },
+                  { name: 'k4', color: 'blue' },
                 ],
               },
             },
@@ -2789,7 +2766,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'MultiWig',
     readyTimeout: 90000,
-    settleMs: 20000,
+    settleMs: 12000,
     stages: [
       {
         actions: [
