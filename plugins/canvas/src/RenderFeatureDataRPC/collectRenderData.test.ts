@@ -114,3 +114,21 @@ describe('collectRenderData peptide overlay', () => {
     expect(result.aminoAcidOverlay).toBeUndefined()
   })
 })
+
+describe('collectRenderData intron chevrons', () => {
+  // twoExonTranscript has exons 100-104 and 200-205, so a single intron line
+  // spans the 104-200 gap. The line's `direction` drives chevron rendering.
+  it('sets intron line direction to the strand when chevrons are enabled', () => {
+    const { layout } = twoExonTranscript()
+    const cfg = mockDisplayConfig({ displayDirectionalChevrons: true })
+    const result = collectRenderData([layout], 0, 1000, cfg, theme, false)
+    expect([...result.lineDirections]).toEqual([1])
+  })
+
+  it('zeroes intron line direction when chevrons are disabled', () => {
+    const { layout } = twoExonTranscript()
+    const cfg = mockDisplayConfig({ displayDirectionalChevrons: false })
+    const result = collectRenderData([layout], 0, 1000, cfg, theme, false)
+    expect([...result.lineDirections]).toEqual([0])
+  })
+})

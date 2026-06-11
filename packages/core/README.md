@@ -52,8 +52,8 @@ no containing display.
 
 ### getContainingTrack
 
-Returns the track model that contains the given node. Throws if the node has
-no containing track.
+Returns the track model that contains the given node. Throws if the node has no
+containing track.
 
 ```js
 // type signature
@@ -87,8 +87,8 @@ Returns the MST environment for a node, which carries the `pluginManager`.
 
 ### getSession
 
-Returns the JBrowse session model for any node in the state tree. Throws if
-the node has no session ancestor.
+Returns the JBrowse session model for any node in the state tree. Throws if the
+node has no session ancestor.
 
 ```js
 // type signature
@@ -100,8 +100,8 @@ the node has no session ancestor.
 ### readConfObject
 
 Given a configuration model (an instance of a ConfigurationSchema), read the
-configuration value at the given path. Use this when you hold the
-configuration model directly, e.g. an entry from `session.tracks`.
+configuration value at the given path. Use this when you hold the configuration
+model directly, e.g. an entry from `session.tracks`.
 
 ```js
 // type signature

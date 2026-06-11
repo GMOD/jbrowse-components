@@ -34,8 +34,14 @@ function reservedLabelWidthPx(
   labelData: FeatureLabelData,
   showLabels: boolean,
   showDescriptions: boolean,
+  showSubfeatureLabels: boolean,
 ) {
-  const width = maxLabelTextWidth(labelData, showLabels, showDescriptions)
+  const width = maxLabelTextWidth(
+    labelData,
+    showLabels,
+    showDescriptions,
+    showSubfeatureLabels,
+  )
   return width > 0 ? width + LABEL_PADDING_PX : 0
 }
 
@@ -124,9 +130,9 @@ export function computeLaidOutData(
 
   // In collapse mode, labels are decimated at render time and don't contribute
   // to feature stacking height, so treat them as absent for layout purposes.
-  const packShowLabels = displayMode === 'collapse' ? false : showLabels
-  const packShowDescriptions =
-    displayMode === 'collapse' ? false : showDescriptions
+  const showLabelsInLayout = displayMode !== 'collapse'
+  const packShowLabels = showLabelsInLayout && showLabels
+  const packShowDescriptions = showLabelsInLayout && showDescriptions
 
   for (const [, regions] of refGroups) {
     const { layoutMap, layoutHeights } = packRef(
@@ -134,6 +140,7 @@ export function computeLaidOutData(
       bpPerPx,
       packShowLabels,
       packShowDescriptions,
+      showLabelsInLayout,
       reversedRegions,
     )
     for (const [, data] of regions) {
@@ -279,6 +286,7 @@ function packRef(
   bpPerPx: number,
   showLabels: boolean,
   showDescriptions: boolean,
+  showSubfeatureLabels: boolean,
   reversedRegions: ReadonlySet<number>,
 ) {
   const layout = new GranularRectLayout({ displayMode: 'normal' })
@@ -296,6 +304,7 @@ function packRef(
         labelData,
         showLabels,
         showDescriptions,
+        showSubfeatureLabels,
       )
       const existing = labelInfoByFeatureId.get(targetId)
       if (existing) {

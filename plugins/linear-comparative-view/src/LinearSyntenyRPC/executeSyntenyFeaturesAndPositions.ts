@@ -1,6 +1,6 @@
 import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { updateStatus } from '@jbrowse/core/util'
+import { cmpStr, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -78,7 +78,7 @@ export async function executeSyntenyFeaturesAndPositions({
     ),
   )
   const seen = new Set<string>()
-  const features = allFeatures.filter(f => {
+  const deduped = allFeatures.filter(f => {
     const id = f.id()
     if (seen.has(id)) {
       return false
@@ -86,12 +86,39 @@ export async function executeSyntenyFeaturesAndPositions({
     seen.add(id)
     return true
   })
-  // Paint-order: emit features small→large so big ribbons land on top of
-  // sub-pixel noise in alpha-over compositing. Matches the standalone
-  // ribbon-plot script and makes the whole-genome view legible.
-  features.sort(
-    (a, b) => a.get('end') - a.get('start') - (b.get('end') - b.get('start')),
+  // Emit a deterministic total order so the worker's output never depends on
+  // the adapter's block-arrival order (which varies run-to-run as concurrent
+  // region fetches resolve). Length stays the primary key — small→large so big
+  // ribbons land on top of sub-pixel noise in alpha-over compositing (matches
+  // the standalone ribbon-plot script) — but ties now break on position/mate/id
+  // instead of arrival order. This stabilizes alpha compositing of equal-length
+  // overlapping ribbons, the feature-index→featureId mapping (click/hover
+  // identity), and downstream diagonalize. Decorate-sort-undecorate reads each
+  // feature's keys once (O(n)) rather than via repeated getters in the O(n log
+  // n) comparator.
+  const decorated = deduped.map(f => {
+    const mate = f.get('mate') as { refName: string; start: number }
+    const start = f.get('start')
+    return {
+      f,
+      len: f.get('end') - start,
+      refName: f.get('refName'),
+      start,
+      mateRefName: mate.refName,
+      mateStart: mate.start,
+      id: f.id(),
+    }
+  })
+  decorated.sort(
+    (a, b) =>
+      a.len - b.len ||
+      cmpStr(a.refName, b.refName) ||
+      a.start - b.start ||
+      cmpStr(a.mateRefName, b.mateRefName) ||
+      a.mateStart - b.mateStart ||
+      cmpStr(a.id, b.id),
   )
+  const features = decorated.map(d => d.f)
 
   const v1 = viewSnaps[level]!
   const v2 = viewSnaps[level + 1]!

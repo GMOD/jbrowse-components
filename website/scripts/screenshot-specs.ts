@@ -1984,7 +1984,11 @@ export const specs: ScreenshotSpec[] = [
               // compact pileup (reviewer): the "Compact" feature-height preset
               // sets featureHeight=3, featureSpacing=0 (COMPACTNESS_PRESETS),
               // both flat config-override keys on LinearAlignmentsDisplay
-              displaySnapshot: { height: 300, featureHeight: 3, featureSpacing: 0 },
+              displaySnapshot: {
+                height: 300,
+                featureHeight: 3,
+                featureSpacing: 0,
+              },
             },
           ],
         },

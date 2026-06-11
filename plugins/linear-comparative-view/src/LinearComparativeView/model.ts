@@ -9,13 +9,8 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import {
-  addDisposer,
-  addMiddleware,
-  cast,
-  getPath,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
@@ -161,31 +156,9 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          addMiddleware(self, (rawCall, next) => {
-            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
-              // doesn't link showTrack/hideTrack, doesn't make sense in
-              // synteny views most time
-              const syncActions = ['horizontalScroll', 'zoomTo']
-
-              if (self.linkViews && syncActions.includes(rawCall.name)) {
-                const sourcePath = getPath(rawCall.context)
-                next(rawCall)
-                // Sync to all other views
-                for (const view of self.views) {
-                  const viewPath = getPath(view)
-                  if (viewPath !== sourcePath) {
-                    // @ts-expect-error dynamic dispatch by action name
-                    view[rawCall.name](...rawCall.args)
-                  }
-                }
-                return
-              }
-            }
-            next(rawCall)
-          }),
-        )
+        // doesn't link showTrack/hideTrack, doesn't make sense in synteny
+        // views most time
+        installLinkedViewSync(self, ['horizontalScroll', 'zoomTo'])
         addDisposer(
           self,
           autorun(

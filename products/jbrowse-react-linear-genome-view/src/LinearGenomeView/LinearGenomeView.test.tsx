@@ -44,13 +44,19 @@ test('<LinearGenomeView /> builds its own engine and navigates via init', async 
   )
   const getInputValue = () =>
     (getByPlaceholderText('Search for location') as HTMLInputElement).value
-  await waitFor(() => {
-    expect(getInputValue()).toBe('ctgA:1..40')
-  }, { timeout })
+  await waitFor(
+    () => {
+      expect(getInputValue()).toBe('ctgA:1..40')
+    },
+    { timeout },
+  )
 
   // the ref exposed the live engine, and init cleared itself once applied
   expect(ref.current).toBeDefined()
-  await waitFor(() => {
-    expect(ref.current!.session.view.init).toBeUndefined()
-  }, { timeout })
+  await waitFor(
+    () => {
+      expect(ref.current!.session.view.init).toBeUndefined()
+    },
+    { timeout },
+  )
 }, 40000)

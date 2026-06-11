@@ -154,7 +154,8 @@ jobs:
         working-directory: products/jbrowse-desktop
       - name: Clean up keychain
         if: always()
-        run: security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
+        run:
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
 
   buildlinux:
     needs: createrelease

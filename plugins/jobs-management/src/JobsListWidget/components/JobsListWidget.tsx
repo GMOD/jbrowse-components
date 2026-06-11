@@ -39,14 +39,18 @@ const JobsListWidget = observer(function JobsListWidget({
         jobs={finished}
         emptyText="No completed jobs"
         renderCard={job => <JobCard key={job.name} job={job} />}
-        onClear={() => { model.clearFinished() }}
+        onClear={() => {
+          model.clearFinished()
+        }}
       />
       <JobsSection
         title="Aborted jobs"
         jobs={aborted}
         emptyText="No aborted jobs"
         renderCard={job => <JobCard key={job.name} job={job} />}
-        onClear={() => { model.clearAborted() }}
+        onClear={() => {
+          model.clearAborted()
+        }}
       />
     </div>
   )

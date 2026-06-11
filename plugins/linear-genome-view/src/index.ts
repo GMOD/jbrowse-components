@@ -127,6 +127,8 @@ export {
   type LinearGenomeViewStateModel,
   OverviewHighlightBand,
   SearchBox,
+  type SyncableViewAction,
+  installLinkedViewSync,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
 export {

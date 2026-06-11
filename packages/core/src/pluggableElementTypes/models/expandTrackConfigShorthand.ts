@@ -141,5 +141,8 @@ export function expandTrackConfigShorthand(
     )
   }
 
-  return { ...snap, displays: mergeOverridesIntoDisplays([], overrides, trackId) }
+  return {
+    ...snap,
+    displays: mergeOverridesIntoDisplays([], overrides, trackId),
+  }
 }

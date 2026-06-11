@@ -134,7 +134,15 @@ export default class BamSlightlyLazyFeature
   get refName() {
     return this.adapter.refIdToName(this.ref_id)!
   }
-  get(field: string): any {
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
+  get(field: string): unknown
+  get(field: string): unknown {
     switch (field) {
       case 'mismatches':
         return this.mismatches

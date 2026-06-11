@@ -1816,4 +1816,58 @@ describe('diagonalizeRegions', () => {
 
     expect(names.indexOf('aligned')).toBeLessThan(names.indexOf('unaligned'))
   })
+
+  // The synteny worker emits alignments in nondeterministic order (concurrent
+  // region fetches resolve out of order), so diagonalizeRegions must produce an
+  // identical result regardless of input order — otherwise the whole-genome
+  // layout reshuffles differently each render. The flip below is an exact
+  // integer base-count tie: query `qX` aligns equally (50000 bp) to both
+  // ref_chrA and ref_chrB, so an order-dependent algorithm picks whichever it
+  // sees first and lands qX in a different column.
+  test('result is independent of input alignment order (base-count tie)', async () => {
+    const refRegions: Region[] = [
+      { refName: 'ref_chrA', start: 0, end: 300000, assemblyName: 'ref' },
+      { refName: 'ref_chrB', start: 0, end: 300000, assemblyName: 'ref' },
+    ]
+    const queryRegions: Region[] = [
+      { refName: 'qX', start: 0, end: 300000, assemblyName: 'query' },
+      { refName: 'qY', start: 0, end: 300000, assemblyName: 'query' },
+      { refName: 'qZ', start: 0, end: 300000, assemblyName: 'query' },
+    ]
+    const aln = (
+      queryRefName: string,
+      refRefName: string,
+      refStart: number,
+      refEnd: number,
+    ): AlignmentData => ({
+      queryRefName,
+      refRefName,
+      refStart,
+      refEnd,
+      queryStart: refStart,
+      queryEnd: refEnd,
+      strand: 1,
+    })
+    // qY firmly maps to ref_chrA (low position), qZ firmly to ref_chrB (low
+    // position); qX ties between A and B but at a high position, so its column
+    // choice decides whether it sorts after qY (in A) or after qZ (in B).
+    const alignments: AlignmentData[] = [
+      aln('qY', 'ref_chrA', 0, 100000),
+      aln('qZ', 'ref_chrB', 0, 100000),
+      aln('qX', 'ref_chrA', 200000, 250000),
+      aln('qX', 'ref_chrB', 200000, 250000),
+    ]
+
+    const order = async (a: AlignmentData[]) =>
+      (await diagonalizeRegions(a, refRegions, queryRegions)).newRegions.map(
+        r => r.refName,
+      )
+
+    const forward = await order(alignments)
+    // reversing flips which ref qX is grouped under in an order-dependent impl
+    const reversed = await order([...alignments].reverse())
+
+    expect(forward).toEqual(['qY', 'qX', 'qZ'])
+    expect(reversed).toEqual(forward)
+  })
 })

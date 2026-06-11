@@ -80,7 +80,17 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-type LoadedFeatureData = FeatureDataResult & { loadedBpPerPx: number }
+// Region identity (regionKey/reversed) is stored alongside the data so layout
+// grouping derives from rpcDataMap directly. Deriving it from loadedRegions
+// instead would lag: loadedRegions is cleared on every settings change but
+// rpcDataMap is preserved through the refetch window, and loadedRegions is
+// populated one action after setRpcData. During that gap every region would
+// collapse to one layout group and features from different refs would mis-stack.
+type LoadedFeatureData = FeatureDataResult & {
+  loadedBpPerPx: number
+  regionKey: string
+  reversed: boolean
+}
 
 export function getView(self: IAnyStateTreeNode): LGV {
   return getContainingView(self) as LGV
@@ -421,8 +431,8 @@ export default function baseStateModelFactory(
          */
         get regionKeys() {
           const map = new Map<number, string>()
-          for (const [num, region] of self.loadedRegions) {
-            map.set(num, `${region.assemblyName}:${region.refName}`)
+          for (const [num, data] of self.rpcDataMap) {
+            map.set(num, data.regionKey)
           }
           return map
         },
@@ -432,8 +442,8 @@ export default function baseStateModelFactory(
          */
         get reversedRegions() {
           const set = new Set<number>()
-          for (const [num, region] of self.loadedRegions) {
-            if (region.reversed) {
+          for (const [num, data] of self.rpcDataMap) {
+            if (data.reversed) {
               set.add(num)
             }
           }
@@ -683,6 +693,7 @@ export default function baseStateModelFactory(
           const labels = {
             showLabels: self.showLabels,
             showDescriptions: self.effectiveShowDescriptions,
+            showSubfeatureLabels: self.displayMode !== 'collapse',
           }
           const reversedRegions = self.reversedRegions
           const bpPerPx = view.bpPerPx
@@ -742,8 +753,14 @@ export default function baseStateModelFactory(
           displayedRegionIndex: number,
           data: FeatureDataResult,
           loadedBpPerPx: number,
+          region: Region,
         ) {
-          self.rpcDataMap.set(displayedRegionIndex, { ...data, loadedBpPerPx })
+          self.rpcDataMap.set(displayedRegionIndex, {
+            ...data,
+            loadedBpPerPx,
+            regionKey: `${region.assemblyName}:${region.refName}`,
+            reversed: !!region.reversed,
+          })
         },
 
         /**
@@ -1079,7 +1096,7 @@ export default function baseStateModelFactory(
           }
           return {
             adapterConfig: self.adapterConfig,
-            fetchSizeLimit: 1_000_000,
+            fetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),
             userByteSizeLimit: self.userByteSizeLimit,
             visibleBp: view.visibleBp,
           }
@@ -1163,7 +1180,12 @@ export default function baseStateModelFactory(
           for (const r of results) {
             const regionWidthBp = r.region.end - r.region.start
             if (r.kind === 'ok') {
-              self.setRpcData(r.displayedRegionIndex, r.data, r.bpPerPx)
+              self.setRpcData(
+                r.displayedRegionIndex,
+                r.data,
+                r.bpPerPx,
+                r.region,
+              )
               self.setDensityStats(r.displayedRegionIndex, {
                 featureCount: r.data.featureCount,
                 regionWidthBp,

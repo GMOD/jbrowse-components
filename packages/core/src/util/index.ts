@@ -387,6 +387,7 @@ export { IntervalTree } from './IntervalTree.ts'
 export { useRenderingBackend } from './useRenderingBackend.ts'
 export { useRenderer } from './useRenderer.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'
+export { cmpStr } from './cmpStr.ts'
 export {
   type AlignmentData,
   type DiagonalizationResult,

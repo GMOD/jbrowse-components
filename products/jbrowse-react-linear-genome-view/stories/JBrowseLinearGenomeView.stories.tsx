@@ -15,6 +15,7 @@ import { createPortal } from 'react-dom'
 
 import {
   JBrowseLinearGenomeView,
+  LinearGenomeView,
   createViewState,
   loadPlugins,
   useCreateViewState,
@@ -290,12 +291,9 @@ function App() {
 
 function DisableAddTrackRender() {
   const { assembly, tracks } = getVolvoxConfig()
-  const state = useCreateViewState({
-    assembly,
-    tracks,
-    disableAddTracks: true,
-  })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return (
+    <LinearGenomeView assembly={assembly} tracks={tracks} disableAddTracks />
+  )
 }
 
 export const DisableAddTrack = {
@@ -305,17 +303,13 @@ export const DisableAddTrack = {
       source: {
         language: 'tsx',
         code: `\
-import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 ${VOLVOX_SOURCE_CONFIG}
 
+// managed API: props are initial values, the component owns the engine
 function App() {
-  const state = useCreateViewState({
-    assembly,
-    tracks,
-    disableAddTracks: true,
-  })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return <LinearGenomeView assembly={assembly} tracks={tracks} disableAddTracks />
 }`,
       },
     },
@@ -530,20 +524,17 @@ function FlipButton({ state }: { state: ViewModel }) {
 
 function HorizontallyFlippedViaLocstringRender() {
   const { assembly, tracks } = getVolvoxConfig()
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      location: 'ctgA:1-50000[rev]',
-    }),
-  )
   return (
     <div>
       <p>
         The <code>[rev]</code> suffix in a locstring navigates to that region in
         the horizontally flipped orientation.
       </p>
-      <JBrowseLinearGenomeView viewState={state} />
+      <LinearGenomeView
+        assembly={assembly}
+        tracks={tracks}
+        init={{ loc: 'ctgA:1-50000[rev]' }}
+      />
     </div>
   )
 }
@@ -555,16 +546,19 @@ export const HorizontallyFlippedViaLocstring = {
       source: {
         language: 'tsx',
         code: `\
-import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 ${VOLVOX_SOURCE_CONFIG}
 
+// managed API: props are initial values, the component owns the engine
 function App() {
-  const [state] = useState(() =>
-    createViewState({ assembly, tracks, location: 'ctgA:1-50000[rev]' }),
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{ loc: 'ctgA:1-50000[rev]' }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }`,
       },
     },
@@ -696,24 +690,16 @@ const humanTracks = [
 ]
 
 function HumanExomeExampleRender() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly: humanAssembly,
-      tracks: humanTracks,
-      defaultSession: {
-        name: 'My session',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: '1:100,987,269..100,987,368',
-            assembly: 'GRCh38',
-            tracks: ['NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'],
-          },
-        },
-      },
-    }),
+  return (
+    <LinearGenomeView
+      assembly={humanAssembly}
+      tracks={humanTracks}
+      init={{
+        loc: '1:100,987,269..100,987,368',
+        tracks: ['NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'],
+      }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }
 
 export const HumanExomeExample = {
@@ -723,8 +709,7 @@ export const HumanExomeExample = {
       source: {
         language: 'tsx',
         code: `\
-import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'GRCh38',
@@ -772,25 +757,18 @@ const tracks = [
   },
 ]
 
+// managed API: props are initial values, the component owns the engine
 function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'My session',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: '1:100,987,269..100,987,368',
-            assembly: 'GRCh38',
-            tracks: ['NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'],
-          },
-        },
-      },
-    }),
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{
+        loc: '1:100,987,269..100,987,368',
+        tracks: ['NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'],
+      }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }`,
       },
     },
@@ -1289,24 +1267,136 @@ const colorShorthandTracks = [
 ]
 
 function WithTrackColorShorthandRender() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly: colorShorthandAssembly,
-      tracks: colorShorthandTracks,
-      defaultSession: {
-        name: 'Color shorthand',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            assembly: 'volvox',
-            loc: 'ctgA:1..50,000',
-            tracks: ['volvox_genes_green'],
-          },
+  return (
+    <LinearGenomeView
+      assembly={colorShorthandAssembly}
+      tracks={colorShorthandTracks}
+      init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_green'] }}
+    />
+  )
+}
+
+// ---------------------------------------------------------------------------
+// WithJexlFeatureColorsAndLabels — per-feature color + label from jexl
+// ---------------------------------------------------------------------------
+
+const jexlColorLabelAssembly = {
+  name: 'volvox',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+    },
+  },
+}
+
+const jexlColorLabelTracks = [
+  {
+    type: 'FeatureTrack',
+    trackId: 'volvox_genes_jexl',
+    name: 'Volvox genes (jexl color + label)',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: {
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz',
+      },
+      index: {
+        location: {
+          uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz.tbi',
         },
       },
-    }),
+    },
+    // `displays` OBJECT shorthand: each setting is routed to the track's
+    // display for you. `color` and `labels.name` both accept a `jexl:`
+    // expression evaluated per feature, with `feature` in scope — so coloring
+    // by strand and labeling with the feature type takes no extra UI or code.
+    displays: {
+      color: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+      labels: {
+        name: "jexl:get(feature,'name')+' ['+get(feature,'type')+']'",
+      },
+    },
+  },
+]
+
+function WithJexlFeatureColorsAndLabelsRender() {
+  return (
+    <LinearGenomeView
+      assembly={jexlColorLabelAssembly}
+      tracks={jexlColorLabelTracks}
+      init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_jexl'] }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithJexlFeatureColorsAndLabels = {
+  render: WithJexlFeatureColorsAndLabelsRender,
+  parameters: {
+    docs: {
+      source: {
+        language: 'tsx',
+        code: `\
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+const assembly = {
+  name: 'volvox',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+    },
+  },
+}
+
+const tracks = [
+  {
+    type: 'FeatureTrack',
+    trackId: 'volvox_genes_jexl',
+    name: 'Volvox genes (jexl color + label)',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'Gff3TabixAdapter',
+      gffGzLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz' },
+      index: { location: { uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz.tbi' } },
+    },
+    // \`displays\` OBJECT shorthand routes each setting to the track's display.
+    // \`color\` and \`labels.name\` accept a \`jexl:\` expression evaluated per
+    // feature (\`feature\` is in scope) — here: color by strand, label with type.
+    displays: {
+      color: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+      labels: { name: "jexl:get(feature,'name')+' ['+get(feature,'type')+']'" },
+    },
+    // Equivalent explicit form (use when you need the display type/displayId):
+    // displays: [
+    //   {
+    //     type: 'LinearBasicDisplay',
+    //     displayId: 'volvox_genes_jexl-LinearBasicDisplay',
+    //     color: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+    //     labels: { name: "jexl:get(feature,'name')+' ['+get(feature,'type')+']'" },
+    //   },
+    // ],
+  },
+]
+
+// managed API: props are initial values, the component owns the engine — no
+// createViewState / useState ceremony
+function App() {
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_jexl'] }}
+    />
+  )
+}`,
+      },
+    },
+  },
 }
 
 export const WithTrackColorShorthand = {
@@ -1316,8 +1406,7 @@ export const WithTrackColorShorthand = {
       source: {
         language: 'tsx',
         code: `\
-import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'volvox',
@@ -1350,25 +1439,16 @@ const tracks = [
   },
 ]
 
+// managed API: props are initial values, the component owns the engine — no
+// createViewState / useState ceremony
 function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Color shorthand',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            assembly: 'volvox',
-            loc: 'ctgA:1..50,000',
-            tracks: ['volvox_genes_green'],
-          },
-        },
-      },
-    }),
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_green'] }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }`,
       },
     },
@@ -1831,32 +1911,19 @@ const hg38Tracks = [
 ]
 
 function WithInitAdvancedRender() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly: hg38Assembly,
-      tracks: hg38Tracks,
-      defaultSession: {
-        name: 'Advanced init',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: 'chr1:11,106,077-11,261,675',
-            assembly: 'hg38',
-            tracklist: true,
-            nav: true,
-            tracks: [
-              {
-                trackId: refseqTrackId,
-                displaySnapshot: { height: 200 },
-              },
-            ],
-            highlight: ['chr1:11,170,000-11,190,000'],
-          },
-        },
-      },
-    }),
+  return (
+    <LinearGenomeView
+      assembly={hg38Assembly}
+      tracks={hg38Tracks}
+      init={{
+        loc: 'chr1:11,106,077-11,261,675',
+        tracklist: true,
+        nav: true,
+        tracks: [{ trackId: refseqTrackId, displaySnapshot: { height: 200 } }],
+        highlight: ['chr1:11,170,000-11,190,000'],
+      }}
+    />
   )
-  return <ViewWithErrorHandling state={state} />
 }
 
 export const WithInitAdvanced = {
@@ -1866,8 +1933,7 @@ export const WithInitAdvanced = {
       source: {
         language: 'tsx',
         code: `\
-import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'hg38',
@@ -1900,28 +1966,23 @@ const tracks = [
   },
 ]
 
+// managed API: the \`init\` blob is the component's whole declarative input —
+// loc, which tracks to open (with per-display snapshots), tracklist/nav
+// visibility, and highlights
 function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Advanced init',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: 'chr1:11,106,077-11,261,675',
-            assembly: 'hg38',
-            tracklist: true,
-            nav: true,
-            tracks: [{ trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } }],
-            highlight: ['chr1:11,170,000-11,190,000'],
-          },
-        },
-      },
-    }),
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{
+        loc: 'chr1:11,106,077-11,261,675',
+        tracklist: true,
+        nav: true,
+        tracks: [{ trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } }],
+        highlight: ['chr1:11,170,000-11,190,000'],
+      }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }`,
       },
     },
@@ -2083,34 +2144,26 @@ const grch38CramTracks = [
 ]
 
 function WithInitAlignmentsDisplayRender() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly: grch38Assembly,
-      tracks: grch38CramTracks,
-      defaultSession: {
-        name: 'Alignments display config',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: '1:100,987,200..100,987,450',
-            assembly: 'GRCh38',
-            tracks: [
-              {
-                trackId: cramTrackId,
-                displaySnapshot: {
-                  type: 'LinearAlignmentsDisplay',
-                  height: 250,
-                  showSoftClipping: true,
-                  colorBy: { type: 'pairOrientation' },
-                },
-              },
-            ],
+  return (
+    <LinearGenomeView
+      assembly={grch38Assembly}
+      tracks={grch38CramTracks}
+      init={{
+        loc: '1:100,987,200..100,987,450',
+        tracks: [
+          {
+            trackId: cramTrackId,
+            displaySnapshot: {
+              type: 'LinearAlignmentsDisplay',
+              height: 250,
+              showSoftClipping: true,
+              colorBy: { type: 'pairOrientation' },
+            },
           },
-        },
-      },
-    }),
+        ],
+      }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }
 
 export const WithInitAlignmentsDisplay = {
@@ -2120,8 +2173,7 @@ export const WithInitAlignmentsDisplay = {
       source: {
         language: 'tsx',
         code: `\
-import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'GRCh38',
@@ -2161,35 +2213,28 @@ const tracks = [
   },
 ]
 
+// managed API: props are initial values, the component owns the engine
 function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Alignments display config',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: '1:100,987,200..100,987,450',
-            assembly: 'GRCh38',
-            tracks: [
-              {
-                trackId: cramTrackId,
-                displaySnapshot: {
-                  type: 'LinearAlignmentsDisplay',
-                  height: 250,
-                  showSoftClipping: true,
-                  colorBy: { type: 'pairOrientation' },
-                },
-              },
-            ],
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{
+        loc: '1:100,987,200..100,987,450',
+        tracks: [
+          {
+            trackId: cramTrackId,
+            displaySnapshot: {
+              type: 'LinearAlignmentsDisplay',
+              height: 250,
+              showSoftClipping: true,
+              colorBy: { type: 'pairOrientation' },
+            },
           },
-        },
-      },
-    }),
+        ],
+      }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }`,
       },
     },
@@ -2259,26 +2304,18 @@ const multiSampleVariantTracks = [
 ]
 
 function WithMultiSampleVariantDisplayRender() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly: multiSampleVariantAssembly,
-      tracks: multiSampleVariantTracks,
-      defaultSession: {
-        name: 'Multi-sample variants colored by population',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: 'ctgA:1..50,000',
-            assembly: 'volvox',
-            // opening by trackId auto-selects displays[0] from the track config
-            // (LinearMultiSampleVariantDisplay), so no displaySnapshot is needed
-            tracks: [multiSampleVariantTrackId],
-          },
-        },
-      },
-    }),
+  return (
+    <LinearGenomeView
+      assembly={multiSampleVariantAssembly}
+      tracks={multiSampleVariantTracks}
+      init={{
+        loc: 'ctgA:1..50,000',
+        // opening by trackId auto-selects displays[0] from the track config
+        // (LinearMultiSampleVariantDisplay), so no displaySnapshot is needed
+        tracks: [multiSampleVariantTrackId],
+      }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }
 
 export const WithMultiSampleVariantDisplay = {
@@ -2288,8 +2325,7 @@ export const WithMultiSampleVariantDisplay = {
       source: {
         language: 'tsx',
         code: `\
-import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'volvox',
@@ -2347,27 +2383,20 @@ const tracks = [
   },
 ]
 
+// managed API: props are initial values, the component owns the engine
 function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Multi-sample variants colored by population',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: 'ctgA:1..50,000',
-            assembly: 'volvox',
-            // opening by trackId auto-selects displays[0] from the track config
-            // (LinearMultiSampleVariantDisplay), so no displaySnapshot is needed
-            tracks: ['volvox_multisample_sv'],
-          },
-        },
-      },
-    }),
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{
+        loc: 'ctgA:1..50,000',
+        // opening by trackId auto-selects displays[0] from the track config
+        // (LinearMultiSampleVariantDisplay), so no displaySnapshot is needed
+        tracks: ['volvox_multisample_sv'],
+      }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }`,
       },
     },

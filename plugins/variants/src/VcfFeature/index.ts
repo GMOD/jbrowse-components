@@ -59,15 +59,20 @@ export default class VCFFeature implements Feature {
     this._id = args.id
   }
 
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source' | 'REF'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score' | 'QUAL'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
   get(field: 'ALT'): string[] | undefined
-  get(field: 'REF'): string | undefined
   get(field: 'FILTER'): string | string[] | undefined
-  get(field: 'QUAL'): number | undefined
   get(field: 'INFO'): Record<string, unknown>
   get(field: 'genotypes'): Record<string, string>
   get(field: 'samples'): ReturnType<Variant['SAMPLES']>
-  get(field: string): any
-  get(field: string): any {
+  get(field: string): unknown
+  get(field: string): unknown {
     return field === 'samples'
       ? this.variant.SAMPLES()
       : field === 'genotypes'

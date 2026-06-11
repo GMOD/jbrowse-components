@@ -38,6 +38,7 @@ export type FeatureItemEntry =
 export interface LabelVisibility {
   showLabels: boolean
   showDescriptions: boolean
+  showSubfeatureLabels: boolean
 }
 
 export interface FlatbushRegionIndexes {
@@ -81,6 +82,7 @@ export function buildFeatureFlatbushIndex(
           featureWidthPx,
           labels.showLabels,
           labels.showDescriptions,
+          labels.showSubfeatureLabels,
         ) * bpPerPx
       if (extraBp > 0) {
         if (reversed) {

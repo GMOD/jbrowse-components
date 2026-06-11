@@ -48,15 +48,23 @@ function getArtifacts(platforms: string[]) {
       if (file.endsWith('.yml')) {
         return true
       }
-      if (platforms.includes('win') && (file.endsWith('.exe') || file.includes('-win'))) {
+      if (
+        platforms.includes('win') &&
+        (file.endsWith('.exe') || file.includes('-win'))
+      ) {
         return true
       }
-      if (platforms.includes('linux') && (file.endsWith('.AppImage') || file.includes('-linux'))) {
+      if (
+        platforms.includes('linux') &&
+        (file.endsWith('.AppImage') || file.includes('-linux'))
+      ) {
         return true
       }
       if (
         platforms.includes('mac') &&
-        (file.endsWith('.dmg') || file.endsWith('.zip') || file.includes('-mac'))
+        (file.endsWith('.dmg') ||
+          file.endsWith('.zip') ||
+          file.includes('-mac'))
       ) {
         return true
       }
@@ -104,7 +112,9 @@ function main() {
   }
 
   if (platforms.length === 0) {
-    console.error('Error: --publish requires at least one platform flag (--linux, --mac, --win)')
+    console.error(
+      'Error: --publish requires at least one platform flag (--linux, --mac, --win)',
+    )
     process.exit(1)
   }
 

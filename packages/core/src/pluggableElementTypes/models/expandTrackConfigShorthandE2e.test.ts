@@ -1,7 +1,10 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../../PluginManager.ts'
-import { ConfigurationSchema, readConfObject } from '../../configuration/index.ts'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '../../configuration/index.ts'
 import DisplayType from '../DisplayType.ts'
 import TrackType from '../TrackType.ts'
 import { createBaseTrackConfig } from './index.ts'
@@ -53,7 +56,9 @@ function makePluginManager() {
 function createTrack(snapshot: Record<string, unknown>) {
   const pluginManager = makePluginManager()
   const TrackConfig = pluginManager.getTrackType('FeatureTrack').configSchema
-  return TrackConfig.create(snapshot, { pluginManager }) as AnyConfigurationModel & {
+  return TrackConfig.create(snapshot, {
+    pluginManager,
+  }) as AnyConfigurationModel & {
     displays: AnyConfigurationModel[]
   }
 }

@@ -3,13 +3,8 @@ import { lazy } from 'react'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { buildAllTracksMenu } from '@jbrowse/core/ui'
 import { avg, getEnv, getSession, notEmpty } from '@jbrowse/core/util'
-import {
-  addDisposer,
-  addMiddleware,
-  cast,
-  getPath,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -454,36 +449,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          addMiddleware(self, (rawCall, next) => {
-            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
-              const syncActions = [
-                'horizontalScroll',
-                'zoomTo',
-                'showTrack',
-                'toggleTrack',
-                'hideTrack',
-                'setTrackLabels',
-                'toggleCenterLine',
-              ]
-
-              if (self.linkViews && syncActions.includes(rawCall.name)) {
-                const sourcePath = getPath(rawCall.context)
-                next(rawCall)
-                for (const view of self.views) {
-                  const viewPath = getPath(view)
-                  if (viewPath !== sourcePath) {
-                    // @ts-expect-error
-                    view[rawCall.name](rawCall.args[0])
-                  }
-                }
-                return
-              }
-            }
-            next(rawCall)
-          }),
-        )
+        installLinkedViewSync(self, [
+          'horizontalScroll',
+          'zoomTo',
+          'showTrack',
+          'toggleTrack',
+          'hideTrack',
+          'setTrackLabels',
+          'setShowCenterLine',
+        ])
         addDisposer(
           self,
           autorun(

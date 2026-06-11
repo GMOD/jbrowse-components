@@ -76,12 +76,14 @@ function emitIntronLines(
   strokeUint: number,
   flatbushIdx: number,
   lines: LineData[],
+  showChevrons: boolean,
 ) {
   const feature = transcript.feature
   const start = feature.get('start')
   const end = feature.get('end')
   const lineY = transcriptTopPx + transcript.height / 2
-  const strand = feature.get('strand') ?? 0
+  // direction drives chevron rendering; 0 means draw a plain connecting line
+  const direction = showChevrons ? (feature.get('strand') ?? 0) : 0
 
   let prevEnd = start
   for (const child of transcript.children) {
@@ -93,7 +95,7 @@ function emitIntronLines(
         end: childStart,
         y: lineY,
         color: strokeUint,
-        direction: strand,
+        direction,
         flatbushIdx,
       })
     }
@@ -107,7 +109,7 @@ function emitIntronLines(
       end,
       y: lineY,
       color: strokeUint,
-      direction: strand,
+      direction,
       flatbushIdx,
     })
   }
@@ -337,6 +339,7 @@ function processTranscriptLayout(
     strokeUint,
     flatbushIdx,
     collector.lines,
+    ctx.config.displayDirectionalChevrons,
   )
 
   emitExonRects(transcript, transcriptTopPx, ctx, flatbushIdx, collector)

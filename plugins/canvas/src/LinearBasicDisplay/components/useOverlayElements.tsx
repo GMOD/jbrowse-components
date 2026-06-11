@@ -33,6 +33,7 @@ interface OverlayModel {
 interface HighlightModel {
   showLabels: boolean
   effectiveShowDescriptions: boolean
+  displayMode: string
   selectedFeatureId: string | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
@@ -308,7 +309,9 @@ export function useHighlightOverlays(
     selectedFeatureId,
     showLabels,
     effectiveShowDescriptions,
+    displayMode,
   } = model
+  const decimateLabels = displayMode === 'collapse'
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
       return null
@@ -387,16 +390,13 @@ export function useHighlightOverlays(
       if (!labelData) {
         return 0
       }
-      const blockBpPerPx =
-        (entry.vr.end - entry.vr.start) /
-        (entry.vr.screenEndPx - entry.vr.screenStartPx)
-      const featureWidthPx =
-        (entry.item.endBp - entry.item.startBp) / blockBpPerPx
+      const featureWidthPx = (entry.item.endBp - entry.item.startBp) / bpPerPx
       return computeLabelExtraWidth(
         labelData,
         featureWidthPx,
         showLabels,
         effectiveShowDescriptions,
+        !decimateLabels,
       )
     }
 
@@ -448,5 +448,6 @@ export function useHighlightOverlays(
     selectedFeatureId,
     showLabels,
     effectiveShowDescriptions,
+    decimateLabels,
   ])
 }

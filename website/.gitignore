@@ -1,6 +1,3 @@
 
-# screenshot review verdicts (local)
-scripts/screenshot-review.json
-
 # debug screenshots dumped by generate-screenshots on failure
 static/img/debug_*.png

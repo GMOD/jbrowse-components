@@ -174,7 +174,7 @@ parseSvAlt) out of the per-pan render loop.
 
 ```js
 // type
-{ k1: { refName: string; start: number; end: number; strand: number; mateDirection: number; }; k2: { refName: string; start: number; end: number; mateDirection?: number | undefined; }; feature: Feature; alt: string | undefined; color: string; }[] | undefined
+{ k1: { refName: string; start: number; end: number; strand: 0 | 1 | -1; mateDirection: number; }; k2: { refName: string; start: number; end: number; mateDirection?: number | undefined; }; feature: Feature; alt: string | undefined; color: string; }[] | undefined
 ```
 
 ### LinearPairedArcDisplay - Actions

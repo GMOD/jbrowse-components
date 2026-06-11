@@ -44,7 +44,7 @@ type: types.literal('JobsListWidget')
 
 ```js
 // type signature
-IArrayType<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [undefined]>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ name: ISimpleType<string>; }, { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; }, _NotCustomized, _NotCustomized>>
 // code
 jobs: types.array(Job)
 ```
@@ -53,7 +53,7 @@ jobs: types.array(Job)
 
 ```js
 // type signature
-IArrayType<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [undefined]>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ name: ISimpleType<string>; }, { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; }, _NotCustomized, _NotCustomized>>
 // code
 finished: types.array(Job)
 ```
@@ -62,7 +62,7 @@ finished: types.array(Job)
 
 ```js
 // type signature
-IArrayType<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [undefined]>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ name: ISimpleType<string>; }, { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; }, _NotCustomized, _NotCustomized>>
 // code
 queued: types.array(Job)
 ```
@@ -71,7 +71,7 @@ queued: types.array(Job)
 
 ```js
 // type signature
-IArrayType<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [undefined]>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ name: ISimpleType<string>; }, { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string | undefined): void; setProgressPct(pct: number): void; }, _NotCustomized, _NotCustomized>>
 // code
 aborted: types.array(Job)
 ```
@@ -82,42 +82,42 @@ aborted: types.array(Job)
 
 ```js
 // type signature
-addJob: (job: NewJob) => ModelInstanceTypeProps<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [...]>; }> & { ...; } & { ...; } & IStateTreeNode<...>
+addJob: (job: JobInput) => ModelInstanceTypeProps<{ name: ISimpleType<string>; }> & { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { ...; } & IStateTreeNode<...>
 ```
 
 #### action: removeJob
 
 ```js
 // type signature
-removeJob: (jobName: string) => (ModelInstanceTypeProps<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [...]>; }> & { ...; } & { ...; } & IStateTreeNode<...>) | undefined
+removeJob: (jobName: string) => (ModelInstanceTypeProps<{ name: ISimpleType<string>; }> & { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { ...; } & IStateTreeNode<...>) | undefined
 ```
 
 #### action: addFinishedJob
 
 ```js
 // type signature
-addFinishedJob: (job: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [undefined]>; }>>) => ModelInstanceTypeProps<...> & ... 2 more ... & IStateTreeNode<...>
+addFinishedJob: (job: JobInput) => ModelInstanceTypeProps<{ name: ISimpleType<string>; }> & { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { ...; } & IStateTreeNode<...>
 ```
 
 #### action: addQueuedJob
 
 ```js
 // type signature
-addQueuedJob: (job: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [undefined]>; }>>) => ModelInstanceTypeProps<...> & ... 2 more ... & IStateTreeNode<...>
+addQueuedJob: (job: JobInput) => ModelInstanceTypeProps<{ name: ISimpleType<string>; }> & { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { ...; } & IStateTreeNode<...>
 ```
 
 #### action: addAbortedJob
 
 ```js
 // type signature
-addAbortedJob: (job: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [undefined]>; }>>) => ModelInstanceTypeProps<...> & ... 2 more ... & IStateTreeNode<...>
+addAbortedJob: (job: JobInput) => ModelInstanceTypeProps<{ name: ISimpleType<string>; }> & { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { ...; } & IStateTreeNode<...>
 ```
 
 #### action: removeQueuedJob
 
 ```js
 // type signature
-removeQueuedJob: (jobName: string) => (ModelInstanceTypeProps<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: IOptionalIType<ISimpleType<number>, [...]>; }> & { ...; } & { ...; } & IStateTreeNode<...>) | undefined
+removeQueuedJob: (jobName: string) => (ModelInstanceTypeProps<{ name: ISimpleType<string>; }> & { cancelCallback(): void; statusMessage: string | undefined; progressPct: number; } & { ...; } & IStateTreeNode<...>) | undefined
 ```
 
 #### action: clearFinished

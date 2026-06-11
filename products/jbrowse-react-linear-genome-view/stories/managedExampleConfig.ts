@@ -24,7 +24,9 @@ export const tracks = [
       type: 'Gff3TabixAdapter',
       gffGzLocation: { uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz' },
       index: {
-        location: { uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi' },
+        location: {
+          uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
+        },
         indexType: 'CSI',
       },
     },

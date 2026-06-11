@@ -62,7 +62,7 @@ appendToSubMenu, insertInSubMenu
 
 ```js
 // type signature
-IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName: string; stopToken: StopToken | undefined; aborted: boolean; jobsQueue: IObservableArray<TextJobsEntry>; finishedJobs: IObservableArray<...>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName: string; stopToken: StopToken | undefined; aborted: boolean; jobsQueue: IObservableArray<TextJobsEntry>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 jobsManager: types.optional(JobsManager, {})
 ```

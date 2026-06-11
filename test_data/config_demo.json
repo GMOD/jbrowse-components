@@ -83,14 +83,9 @@
     {
       "trackId": "pur_copynumber_1000g",
       "name": "PUR copy number (1000 Genomes)",
-      "category": [
-        "1000 Genomes",
-        "Copy number"
-      ],
+      "category": ["1000 Genomes", "Copy number"],
       "type": "MultiQuantitativeTrack",
-      "assemblyNames": [
-        "hg38"
-      ],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "MultiWiggleAdapter",
         "bigWigs": [

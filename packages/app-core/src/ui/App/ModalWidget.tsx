@@ -4,7 +4,14 @@ import { Dialog, LoadingEllipses, PluggableComponent } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import CloseIcon from '@mui/icons-material/Close'
-import { AppBar, Box, IconButton, Paper, Toolbar, Typography } from '@mui/material'
+import {
+  AppBar,
+  Box,
+  IconButton,
+  Paper,
+  Toolbar,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { SessionWithWidgets } from '@jbrowse/core/util'

@@ -617,7 +617,9 @@ function pngDiffFraction(a: string, b: string): number | null {
   if (!Number.isFinite(ae)) {
     return null
   }
-  const id = spawnSync('identify', ['-format', '%w %h', a], { encoding: 'utf8' })
+  const id = spawnSync('identify', ['-format', '%w %h', a], {
+    encoding: 'utf8',
+  })
   const [w, h] = (id.stdout || '').trim().split(/\s+/).map(Number)
   const total = (w ?? 0) * (h ?? 0)
   return total > 0 ? ae / total : null
@@ -644,7 +646,8 @@ function commitScreenshot(tmpPath: string, outputPath: string, name: string) {
   } else {
     fs.copyFileSync(tmpPath, outputPath)
     fs.rmSync(tmpPath, { force: true })
-    const detail = frac === null ? 'resized' : `${(frac * 100).toFixed(2)}% diff`
+    const detail =
+      frac === null ? 'resized' : `${(frac * 100).toFixed(2)}% diff`
     console.log(`  ✓ ${name}.png (updated, ${detail})`)
   }
 }

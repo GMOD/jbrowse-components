@@ -1298,6 +1298,39 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_jexl_color_and_label",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (per-feature jexl color + label)",
+      "category": ["Miscellaneous"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3tabix_genes_jexl_color_and_label_linear",
+          "color": "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+          "labels": {
+            "name": "jexl:get(feature,'name')+' ['+get(feature,'type')+']'"
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "gff3tabix_genes_shorthand_color",
       "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes (shorthand color)",
@@ -1316,6 +1349,35 @@
         }
       },
       "displays": { "color": "#6a3d9a" }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_shorthand_jexl",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (shorthand jexl color + label)",
+      "category": ["Shorthand examples"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": {
+        "color": "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+        "labels": {
+          "name": "jexl:get(feature,'name')+' ['+get(feature,'type')+']'"
+        }
+      }
     },
     {
       "type": "VariantTrack",

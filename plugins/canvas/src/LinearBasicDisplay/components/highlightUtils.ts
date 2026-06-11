@@ -7,9 +7,15 @@ export function computeLabelExtraWidth(
   featureWidthPx: number,
   showLabels = true,
   showDescriptions = true,
+  showSubfeatureLabels = true,
 ) {
   return Math.max(
     0,
-    maxLabelTextWidth(labelData, showLabels, showDescriptions) - featureWidthPx,
+    maxLabelTextWidth(
+      labelData,
+      showLabels,
+      showDescriptions,
+      showSubfeatureLabels,
+    ) - featureWidthPx,
   )
 }

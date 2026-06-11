@@ -2,7 +2,6 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
 import {
   PORT,
@@ -18,8 +17,6 @@ import { snapshotConfig } from '../snapshot.ts'
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
 // Returns a fresh per-test temp directory so concurrent tests never share a
 // download path and overwrite each other's jbrowse.svg.
 async function setupDownloadInterception(page: Page) {
@@ -32,7 +29,11 @@ async function setupDownloadInterception(page: Page) {
   return downloadDir
 }
 
-function waitForDownload(downloadDir: string, filename: string, timeout = 30000) {
+function waitForDownload(
+  downloadDir: string,
+  filename: string,
+  timeout = 30000,
+) {
   const filePath = path.join(downloadDir, filename)
   return new Promise<string>((resolve, reject) => {
     const start = Date.now()
@@ -102,7 +103,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForLoadingToComplete(page)
 
-        const svg = await exportSvgAndSave(page, downloadDir,'svg-export-wiggle')
+        const svg = await exportSvgAndSave(
+          page,
+          downloadDir,
+          'svg-export-wiggle',
+        )
         if (!svg.includes('</svg>')) {
           throw new Error('SVG file appears truncated')
         }
@@ -125,7 +130,7 @@ const suite: TestSuite = {
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForLoadingToComplete(page)
 
-        await exportSvgAndSave(page, downloadDir,'svg-export-alignments')
+        await exportSvgAndSave(page, downloadDir, 'svg-export-alignments')
       },
     },
     {
@@ -145,7 +150,7 @@ const suite: TestSuite = {
         await findByTestId(page, 'wiggle-display-done', 60000)
         await waitForLoadingToComplete(page)
 
-        await exportSvgAndSave(page, downloadDir,'svg-export-multiple-tracks')
+        await exportSvgAndSave(page, downloadDir, 'svg-export-multiple-tracks')
       },
     },
     {
@@ -168,7 +173,11 @@ const suite: TestSuite = {
         // The sequence layer is canvas-drawn (drawSequence) and routed through
         // paintLayer, so the default SVG export rasterizes it into an <image>
         // (the old monospace <text> path no longer exists).
-        const svg = await exportSvgAndSave(page, downloadDir,'svg-export-sequence')
+        const svg = await exportSvgAndSave(
+          page,
+          downloadDir,
+          'svg-export-sequence',
+        )
         if (!svg.includes('<image')) {
           throw new Error(
             'Sequence track SVG missing rasterized sequence image',
@@ -193,7 +202,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'multi-wiggle-display-done', 60000)
         await waitForLoadingToComplete(page)
 
-        const svg = await exportSvgAndSave(page, downloadDir,'svg-export-multi-wiggle')
+        const svg = await exportSvgAndSave(
+          page,
+          downloadDir,
+          'svg-export-multi-wiggle',
+        )
         // multirowxy renders as lines, not rects
         const lineCount = (svg.match(/<line/g) ?? []).length
         if (lineCount < 10) {
@@ -228,7 +241,11 @@ const suite: TestSuite = {
         })
         await waitForLoadingToComplete(page)
 
-        const svg = await exportSvgAndSave(page, downloadDir,'svg-export-genes-peptides')
+        const svg = await exportSvgAndSave(
+          page,
+          downloadDir,
+          'svg-export-genes-peptides',
+        )
         const textCount = (svg.match(/<text/g) ?? []).length
         console.log(`    ${textCount} text elements`)
         if (textCount > 0 && !svg.includes('font-family="monospace"')) {
@@ -255,7 +272,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForLoadingToComplete(page)
 
-        const svg = await exportSvgAndSave(page, downloadDir,'svg-export-sashimi-arcs')
+        const svg = await exportSvgAndSave(
+          page,
+          downloadDir,
+          'svg-export-sashimi-arcs',
+        )
         const pathCount = (svg.match(/<path/g) ?? []).length
         console.log(`    ${pathCount} path elements (includes sashimi arcs)`)
         if (pathCount === 0) {
@@ -291,7 +312,7 @@ const suite: TestSuite = {
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
 
-        await exportSvgAndSave(page, downloadDir,'svg-export-synteny-2way')
+        await exportSvgAndSave(page, downloadDir, 'svg-export-synteny-2way')
       },
     },
     {
@@ -315,7 +336,7 @@ const suite: TestSuite = {
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
 
-        await exportSvgAndSave(page, downloadDir,'svg-export-synteny-3way')
+        await exportSvgAndSave(page, downloadDir, 'svg-export-synteny-3way')
       },
     },
   ],

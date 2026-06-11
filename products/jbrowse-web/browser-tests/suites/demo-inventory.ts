@@ -123,7 +123,10 @@ const localDemos: TestSuite = {
     {
       name: 'Grape-peach synteny demo loads',
       fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/config_synteny_grape_peach.json')
+        await loadDemoAndCheck(
+          page,
+          'test_data/config_synteny_grape_peach.json',
+        )
       },
     },
     {
@@ -209,9 +212,12 @@ const localDemos: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await page.waitForSelector('[data-testid="dotplot_webgl_canvas_done"]', {
-          timeout: 60000,
-        })
+        await page.waitForSelector(
+          '[data-testid="dotplot_webgl_canvas_done"]',
+          {
+            timeout: 60000,
+          },
+        )
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,

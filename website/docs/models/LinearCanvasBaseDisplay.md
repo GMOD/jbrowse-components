@@ -559,7 +559,7 @@ clearHeightBeforeExpand: () => void
 
 ```js
 // type signature
-setRpcData: (displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number) => void
+setRpcData: (displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number, region: Region) => void
 ```
 
 #### action: setDensityStats

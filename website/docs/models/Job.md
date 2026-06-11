@@ -31,22 +31,24 @@ ISimpleType<string>
 name: types.string
 ```
 
-#### property: statusMessage
+### Job - Volatiles
+
+#### volatile: statusMessage
 
 ```js
 // type signature
-IMaybe<ISimpleType<string>>
+string | undefined
 // code
-statusMessage: types.maybe(types.string)
+statusMessage: undefined as string | undefined
 ```
 
-#### property: progressPct
+#### volatile: progressPct
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+number
 // code
-progressPct: types.optional(types.number, 0)
+progressPct: 0
 ```
 
 ### Job - Actions

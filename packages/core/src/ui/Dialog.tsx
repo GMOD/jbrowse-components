@@ -11,6 +11,7 @@ import {
   createTheme,
   useTheme,
 } from '@mui/material'
+
 import ErrorBanner from './ErrorBanner.tsx'
 import { ErrorBoundary } from './ErrorBoundary.tsx'
 import SanitizedHTML from './SanitizedHTML.tsx'

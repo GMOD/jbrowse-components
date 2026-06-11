@@ -1,3 +1,5 @@
+import { cmpStr } from './cmpStr.ts'
+
 import type { Region } from './types/index.ts'
 
 export interface AlignmentData {
@@ -47,7 +49,26 @@ export async function diagonalizeRegions(
   // outer key: vertical chrom; inner key: horizontal chrom
   const queryGroups = new Map<string, Map<string, PairStats>>()
 
-  for (const aln of alignments) {
+  // The synteny worker emits alignments in nondeterministic order (features
+  // from concurrently-resolved blocks are concatenated by arrival, not
+  // position). Float addition is non-associative, so a varying order would
+  // perturb each pair's `weightedPosSum` (→ `bestRefPos`) in its low bits and
+  // could flip the query-chromosome ordering on a near-tie — producing a
+  // different reshuffle each render. Sorting to a fixed total order first makes
+  // the accumulation (and thus the whole result) deterministic. Callers pass a
+  // freshly-collected array, so the copy is cheap (pointer-only) insurance
+  // against mutating caller state.
+  const sorted = [...alignments].sort(
+    (a, b) =>
+      cmpStr(a.queryRefName, b.queryRefName) ||
+      cmpStr(a.refRefName, b.refRefName) ||
+      a.refStart - b.refStart ||
+      a.queryStart - b.queryStart ||
+      a.refEnd - b.refEnd ||
+      a.queryEnd - b.queryEnd,
+  )
+
+  for (const aln of sorted) {
     // Use x-axis (reference) length throughout: consistent weighting for
     // x-axis position and base-count, matching the original jmonlong R
     // implementation
