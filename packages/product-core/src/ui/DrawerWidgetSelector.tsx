@@ -72,7 +72,8 @@ const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
               data-testid={`${widget.type}-drawer-delete`}
               color="inherit"
               aria-label="Delete"
-              onClick={() => {
+              onClick={e => {
+                e.stopPropagation()
                 session.hideWidget(widget)
               }}
             >

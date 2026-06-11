@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
+import { useFocusOnInteraction } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -35,23 +36,12 @@ const Drawer = observer(function Drawer({
   const { classes } = useStyles()
   const ref = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref.current?.contains(e.target)) {
-        const visibleWidgetId = session.visibleWidget?.view?.id
-        if (visibleWidgetId) {
-          session.setFocusedViewId(visibleWidgetId)
-        }
-      }
+  useFocusOnInteraction(ref, () => {
+    const visibleWidgetId = session.visibleWidget?.view?.id
+    if (visibleWidgetId) {
+      session.setFocusedViewId(visibleWidgetId)
     }
-
-    document.addEventListener('mousedown', handleSelectView)
-    document.addEventListener('keydown', handleSelectView)
-    return () => {
-      document.removeEventListener('mousedown', handleSelectView)
-      document.removeEventListener('keydown', handleSelectView)
-    }
-  }, [session])
+  })
 
   return (
     <Paper

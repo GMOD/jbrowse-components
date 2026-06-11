@@ -17,15 +17,17 @@ const DrawerControls = observer(function DrawerControls({
   const { drawerPosition, visibleWidget } = session
   return (
     <>
-      <IconButton
-        data-testid="drawer-position-button"
-        color="inherit"
-        onClick={event => {
-          setAnchorEl(event.currentTarget)
-        }}
-      >
-        <MoreVertIcon />
-      </IconButton>
+      <Tooltip title="Drawer position">
+        <IconButton
+          data-testid="drawer-position-button"
+          color="inherit"
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+        >
+          <MoreVertIcon />
+        </IconButton>
+      </Tooltip>
       <Tooltip title="Minimize drawer">
         <IconButton
           data-testid="drawer-minimize"

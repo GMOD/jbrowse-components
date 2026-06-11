@@ -3,11 +3,7 @@ import { observer } from 'mobx-react'
 
 import ViewContainer from './ViewContainer.tsx'
 
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type {
-  AbstractViewContainer,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   container: {
@@ -21,15 +17,8 @@ const useStyles = makeStyles()({
   },
 })
 
-type SessionType = SessionWithFocusedViewAndDrawerWidgets &
-  AbstractViewContainer & {
-    renameCurrentSession: (arg: string) => void
-    snackbarMessages: SnackbarMessage[]
-    popSnackbarMessage: () => unknown
-  }
-
 interface Props {
-  session: SessionType
+  session: SessionWithFocusedViewAndDrawerWidgets
 }
 
 const ClassicViewsContainer = observer(function ClassicViewsContainer({

@@ -1,6 +1,4 @@
-import { useEffect } from 'react'
-
-import { useWidthSetter } from '@jbrowse/core/util'
+import { useFocusOnInteraction, useWidthSetter } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -40,20 +38,9 @@ const ViewContainer = observer(function ViewContainer({
   const ref = useWidthSetter(view, theme.spacing(1))
   const { classes } = useStyles()
 
-  useEffect(() => {
-    function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref.current?.contains(e.target)) {
-        session.setFocusedViewId(view.id)
-      }
-    }
-
-    document.addEventListener('mousedown', handleSelectView)
-    document.addEventListener('keydown', handleSelectView)
-    return () => {
-      document.removeEventListener('mousedown', handleSelectView)
-      document.removeEventListener('keydown', handleSelectView)
-    }
-  }, [ref, session, view])
+  useFocusOnInteraction(ref, () => {
+    session.setFocusedViewId(view.id)
+  })
 
   const backgroundColorClassName =
     session.focusedViewId === view.id

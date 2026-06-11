@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, useFocusOnInteraction } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
@@ -71,22 +71,11 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
       observer?.disconnect()
     }
   }, [])
-  useEffect(() => {
-    // sets the focused view id based on a click within the LGV;
-    // necessary for subviews to be focused properly
-    function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref.current?.contains(e.target)) {
-        session.setFocusedViewId?.(model.id)
-      }
-    }
-
-    document.addEventListener('mousedown', handleSelectView)
-    document.addEventListener('keydown', handleSelectView)
-    return () => {
-      document.removeEventListener('mousedown', handleSelectView)
-      document.removeEventListener('keydown', handleSelectView)
-    }
-  }, [session, model])
+  // sets the focused view id based on a click within the LGV; necessary for
+  // subviews to be focused properly
+  useFocusOnInteraction(ref, () => {
+    session.setFocusedViewId?.(model.id)
+  })
 
   return (
     <div

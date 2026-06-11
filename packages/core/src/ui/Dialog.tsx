@@ -1,4 +1,4 @@
-import { isValidElement, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import CloseIcon from '@mui/icons-material/Close'
 import {
@@ -49,8 +49,8 @@ export interface Props extends DialogProps {
 
 const Dialog = observer(function Dialog(props: Props) {
   const { classes } = useStyles()
-  const { titleNode, ...rest } = props
-  const { title, header, children, onClose } = rest
+  const { titleNode, header, ...rest } = props
+  const { title, children, onClose } = rest
   const theme = useTheme()
   // content-box override xref https://github.com/GMOD/jbrowse-components/pull/3666
   const dialogTheme = useMemo(
@@ -72,11 +72,11 @@ const Dialog = observer(function Dialog(props: Props) {
   return (
     <MUIDialog {...rest}>
       <ScopedCssBaseline>
-        {isValidElement(header) ? (
+        {header ? (
           header
         ) : (
           <DialogTitle>
-            {titleNode || <SanitizedHTML html={title || ''} />}
+            {titleNode ?? <SanitizedHTML html={title ?? ''} />}
             {onClose ? (
               <IconButton
                 className={classes.closeButton}
