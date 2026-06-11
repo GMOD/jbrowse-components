@@ -48,3 +48,22 @@ export function makeLocFromUri(path: string, baseUri?: string) {
 export function resolve(uri: string, baseUri?: string) {
   return new URL(uri, baseUri).href
 }
+
+// build the connection's success notification: which assemblies had tracks
+// loaded (with counts) and which were skipped because no matching assembly was
+// present and none could be added
+export function formatHubLoadSummary(
+  trackCounts: Record<string, number>,
+  skippedAssemblies: string[],
+) {
+  const loaded = Object.entries(trackCounts)
+  const loadedStr = loaded.length
+    ? `Loaded data from these assemblies: ${loaded
+        .map(([name, count]) => `${name} (${count} tracks)`)
+        .join(', ')}`
+    : ''
+  const skippedStr = skippedAssemblies.length
+    ? `Skipped data from these assemblies: ${skippedAssemblies.join(', ')}`
+    : ''
+  return [loadedStr, skippedStr].filter(f => !!f).join('. ')
+}

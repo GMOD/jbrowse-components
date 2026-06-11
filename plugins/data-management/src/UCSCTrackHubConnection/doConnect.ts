@@ -8,12 +8,41 @@ import { generateTracks } from './ucscTrackHub.ts'
 import {
   fetchGenomesFile,
   fetchTrackDbFile,
+  formatHubLoadSummary,
   makeLocFromUri,
   resolve,
 } from './util.ts'
 
 import type { ConnectionDoConnectArg } from '../lazyConnect.ts'
+import type { RaStanza } from '@gmod/ucsc-hub'
 import type { UriLocation } from '@jbrowse/core/util'
+
+// fetch a single genome's trackDb (resolved against the genomes.txt location)
+// and convert it into jbrowse track configs
+async function loadGenomeTracks({
+  genome,
+  genomeName,
+  genomesBaseUri,
+  hubUri,
+}: {
+  genome: RaStanza
+  genomeName: string
+  genomesBaseUri: string | undefined
+  hubUri: string
+}) {
+  const db = genome.data.trackDb
+  if (!db) {
+    throw new Error(`trackDb not found for ${genomeName}`)
+  }
+  const loc = makeLocFromUri(db, genomesBaseUri)
+  const trackDb = await fetchTrackDbFile(loc)
+  return generateTracks({
+    trackDb,
+    trackDbLoc: loc,
+    assemblyName: genomeName,
+    baseUrl: hubUri,
+  })
+}
 
 export async function doConnect(self: ConnectionDoConnectArg) {
   const { pluginManager } = getEnv(self)
@@ -57,46 +86,39 @@ export async function doConnect(self: ConnectionDoConnectArg) {
       )
       const assemblyNames = getConf(self, 'assemblyNames')
       const genomesBaseUri = hubUri ? resolve(genomeFile, hubUri) : undefined
-      const map: Record<string, number> = {}
+      const trackCounts: Record<string, number> = {}
       for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
         if (assemblyNames.length > 0 && !assemblyNames.includes(genomeName)) {
           continue
         }
 
-        const asm = assemblyManager.get(genomeName)
-        if (!asm) {
-          notLoadedAssemblies.push(genomeName)
-          continue
+        // mirror the single-file branch: auto-add an assembly the instance
+        // doesn't already have, so a standard multi-genome hub still loads its
+        // tracks. only skip when there's no way to add one (addSessionAssembly
+        // absent)
+        if (!assemblyManager.get(genomeName)) {
+          if (session.addSessionAssembly) {
+            session.addSessionAssembly(generateAssembly(genome, genomesBaseUri))
+          } else {
+            notLoadedAssemblies.push(genomeName)
+            continue
+          }
         }
 
-        const db = genome.data.trackDb
-        if (!db) {
-          throw new Error(`trackDb not found for ${genomeName}`)
-        }
-        const loc = makeLocFromUri(db, genomesBaseUri)
-        const trackDb = await fetchTrackDbFile(loc)
-        const tracks = generateTracks({
-          trackDb,
-          trackDbLoc: loc,
-          assemblyName: genomeName,
-          baseUrl: hubUri,
+        const tracks = await loadGenomeTracks({
+          genome,
+          genomeName,
+          genomesBaseUri,
+          hubUri,
         })
         self.addTrackConfs(tracks)
-        map[genomeName] = tracks.length
+        trackCounts[genomeName] = tracks.length
       }
 
-      const loadedAssemblies = Object.entries(map)
-      const str1 = loadedAssemblies.length
-        ? `Loaded data from these assemblies: ${loadedAssemblies
-            .map(([key, val]) => `${key} (${val} tracks)`)
-            .join(', ')}`
-        : ''
-      const str2 = notLoadedAssemblies.length
-        ? `Skipped data from these assemblies: ${notLoadedAssemblies.join(
-            ', ',
-          )}`
-        : ''
-      session.notify([str1, str2].filter(f => !!f).join('. '), 'success')
+      session.notify(
+        formatHubLoadSummary(trackCounts, notLoadedAssemblies),
+        'success',
+      )
     }
   } catch (e) {
     console.error(e)
