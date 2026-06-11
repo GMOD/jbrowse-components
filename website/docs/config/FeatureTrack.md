@@ -34,9 +34,11 @@ at the data file, and the track opens with a `LinearBasicDisplay`:
 }
 ```
 
-Colored with the `displays` shorthand: display settings go in a `displays`
-object and route to the display by slot name, so you don't have to name
-`LinearBasicDisplay`. A `jexl:` value gives per-feature coloring:
+The same track, colored. Rather than writing out the full `displays` array, you
+can put appearance settings in a `displays` object — JBrowse works out which
+display they belong to and applies them for you (here, the track's
+`LinearBasicDisplay`), so you don't have to know display names. A `jexl:` value
+gives per-feature coloring:
 
 ```js
 {
@@ -167,17 +169,18 @@ textSearchAdapter: pluginManager.pluggableConfigSchemaType(
 
 #### slot: displays
 
-The track's displays. Accepts two forms:
+The track's displays. You can give this two ways:
 
-- an **object** of display settings, e.g. `displays: { color: 'green' }`. Each
-  setting routes to the display type(s) that define that slot, so you don't have
-  to name the display type or write the array. Slot names disambiguate across
-  displays on their own (e.g. `color` → LinearVariantDisplay, `strokeColor` →
-  ChordVariantDisplay).
-- an **array** of explicit display configs, e.g.
-  `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, for full
-  per-display control (an explicit `displayId`, different settings for two
-  displays sharing a slot, choosing the default display).
+- an **object** of appearance settings, e.g. `displays: { color: 'green' }`.
+  JBrowse applies each setting to the display that uses it, so you don't need to
+  know the display's name or write the array. If a track can be shown more than
+  one way, each setting lands where it fits (for example `color` on a variant
+  track's linear view, `strokeColor` on its circular view). A setting that
+  nothing on the track uses is ignored, with a console warning so typos show up.
+- an **array** of full display configs, e.g.
+  `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, when you need
+  exact control — your own `displayId`, different settings for two displays, or
+  choosing which display is the default.
 
 See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
 

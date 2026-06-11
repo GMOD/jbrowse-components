@@ -27,9 +27,9 @@ Example QuantitativeTrack config:
 #### Display options
 
 Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
-`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are display
-settings. Put them in a `displays` object and JBrowse routes them to the wiggle
-display for you — no need to name `LinearWiggleDisplay`:
+`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are appearance
+settings. Put them in a `displays` object and JBrowse applies them to the wiggle
+display for you — no need to know the display's name (`LinearWiggleDisplay`):
 
 ```json
 {

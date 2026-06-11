@@ -34,6 +34,25 @@ CRAM:
 }
 ```
 
+The same track with appearance settings in place. Rather than writing out the
+full `displays` array, you can list them in a `displays` object — JBrowse works
+out which display they belong to and applies them for you (here, the
+`LinearAlignmentsDisplay`), so you don't have to know display names:
+
+```js
+{
+  type: 'AlignmentsTrack',
+  trackId: 'ngs-reads',
+  name: 'NGS reads',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BamAdapter',
+    uri: 'https://example.com/sample.bam',
+  },
+  displays: { colorBy: { type: 'pairOrientation' }, height: 250 },
+}
+```
+
 _See the **Slots** section below for all available configuration fields._
 
 ## Overview
@@ -145,17 +164,18 @@ textSearchAdapter: pluginManager.pluggableConfigSchemaType(
 
 #### slot: displays
 
-The track's displays. Accepts two forms:
+The track's displays. You can give this two ways:
 
-- an **object** of display settings, e.g. `displays: { color: 'green' }`. Each
-  setting routes to the display type(s) that define that slot, so you don't have
-  to name the display type or write the array. Slot names disambiguate across
-  displays on their own (e.g. `color` → LinearVariantDisplay, `strokeColor` →
-  ChordVariantDisplay).
-- an **array** of explicit display configs, e.g.
-  `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, for full
-  per-display control (an explicit `displayId`, different settings for two
-  displays sharing a slot, choosing the default display).
+- an **object** of appearance settings, e.g. `displays: { color: 'green' }`.
+  JBrowse applies each setting to the display that uses it, so you don't need to
+  know the display's name or write the array. If a track can be shown more than
+  one way, each setting lands where it fits (for example `color` on a variant
+  track's linear view, `strokeColor` on its circular view). A setting that
+  nothing on the track uses is ignored, with a console warning so typos show up.
+- an **array** of full display configs, e.g.
+  `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, when you need
+  exact control — your own `displayId`, different settings for two displays, or
+  choosing which display is the default.
 
 See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
 

@@ -85,9 +85,10 @@ field via `get(feature,'INFO').SVTYPE` and maps it to a color:
 }
 ```
 
-The `displays` object is shorthand — the `color` routes to the variant display
-by slot name, so you don't have to name `LinearVariantDisplay` or write the
-array. For per-display control use the array form (see the
+The `displays` object is shorthand — JBrowse applies the `color` to the variant
+display for you, so you don't have to know the display's name
+(`LinearVariantDisplay`) or write the array. For per-display control use the
+array form (see the
 [track config guide](/docs/config_guides/tracks/#configuring-displays)).
 
 The `|| 'gray'` fallback colors any SVTYPE not in the map (or variants without

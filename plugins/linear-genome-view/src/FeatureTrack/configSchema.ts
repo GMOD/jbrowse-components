@@ -25,9 +25,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * ```
  *
  * #example
- * Colored with the `displays` shorthand: display settings go in a `displays`
- * object and route to the display by slot name, so you don't have to name
- * `LinearBasicDisplay`. A `jexl:` value gives per-feature coloring:
+ * The same track, colored. Rather than writing out the full `displays` array,
+ * you can put appearance settings in a `displays` object — JBrowse works out
+ * which display they belong to and applies them for you (here, the track's
+ * `LinearBasicDisplay`), so you don't have to know display names. A `jexl:`
+ * value gives per-feature coloring:
  * ```js
  * {
  *   type: 'FeatureTrack',

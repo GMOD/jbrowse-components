@@ -117,9 +117,9 @@ in the track's `displays` array:
 }
 ```
 
-The `displays` object is shorthand — each setting routes to the display by slot
-name, so you don't have to name `LinearAlignmentsDisplay` or write the array.
-Use the array form when you need per-display control (see the
+The `displays` object is shorthand — JBrowse applies each setting for you, so
+you don't have to know the display's name (`LinearAlignmentsDisplay`) or write
+the array. Use the array form when you need per-display control (see the
 [track config guide](/docs/config_guides/tracks/#configuring-displays)).
 
 See the

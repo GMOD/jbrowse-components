@@ -20,10 +20,11 @@ down interaction, the side drawer, and Shadow DOM isolation.
 
 ## Track display settings
 
-Per-track appearance — color, height, display mode, jexl color callbacks — lives
-on a track's **displays**. For the common case, put your settings in a
-`displays` object and JBrowse routes each one to the display that uses it. You
-don't have to name the display type or write the `displays` array:
+Per-track appearance — color, height, display mode, jexl color callbacks — is
+set on a track's **displays** (the different ways a track can be drawn). The
+quick way: rather than writing out the full `displays` array, list your settings
+in a `displays` object. JBrowse works out which display each setting belongs to
+and applies it for you, so you don't have to know the display's name:
 
 ```js
 {
@@ -34,15 +35,15 @@ don't have to name the display type or write the `displays` array:
   adapter: {
     /* ... */
   },
-  // routes by slot name — `color` lands on whichever display defines it
+  // JBrowse applies this to the track's LinearBasicDisplay for you
   displays: { color: 'green' },
 }
 ```
 
 A `jexl:` expression works the same way for per-feature coloring, e.g.
 `displays: { color: "jexl:get(feature,'type')=='CDS'?'red':'blue'" }`. For full
-control — different settings for two displays that share a slot, an explicit
-`displayId`, choosing the default display — pass `displays` as the array form
+control — giving two displays different values for the same setting, an explicit
+`displayId`, or choosing the default display — pass `displays` as the array form
 instead (see the
 [track config guide](https://jbrowse.org/jb2/docs/config_guides/tracks/)).
 

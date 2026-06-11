@@ -22,6 +22,25 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *   },
  * }
  * ```
+ *
+ * #example
+ * The same track with appearance settings in place. Rather than writing out the
+ * full `displays` array, you can list them in a `displays` object — JBrowse works
+ * out which display they belong to and applies them for you (here, the
+ * `LinearAlignmentsDisplay`), so you don't have to know display names:
+ * ```js
+ * {
+ *   type: 'AlignmentsTrack',
+ *   trackId: 'ngs-reads',
+ *   name: 'NGS reads',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'BamAdapter',
+ *     uri: 'https://example.com/sample.bam',
+ *   },
+ *   displays: { colorBy: { type: 'pairOrientation' }, height: 250 },
+ * }
+ * ```
  */
 export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(

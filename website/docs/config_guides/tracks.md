@@ -92,15 +92,15 @@ options.
 
 ## Configuring displays
 
-Display-level settings — `color`, `height`, `labels`, jexl color callbacks, and
-so on — live on a track's **displays**. The `displays` field accepts two shapes:
-a simple object for the common case, or the full array when you need precise
-control.
+Appearance settings — `color`, `height`, `labels`, jexl color callbacks, and so
+on — belong to a track's **displays** (the different ways a track can be drawn).
+The `displays` field accepts two shapes: a simple object for the common case, or
+the full array when you need precise control.
 
 ### Shorthand object
 
-Put your settings in a `displays` object and JBrowse routes each one to the
-display that uses it — you don't have to know or name the display type:
+Put your settings in a `displays` object and JBrowse applies each one for you —
+you don't have to know or write the display's name:
 
 ```json
 {
@@ -116,11 +116,10 @@ display that uses it — you don't have to know or name the display type:
 }
 ```
 
-Each setting goes to whichever of the track's displays defines that slot.
-Because settings route by slot name, a track that draws in more than one view
-styles each one with the slot it uses — e.g. a `VariantTrack` colors its linear
-display with `color` and its circular (chord) display with `strokeColor` in the
-same object:
+JBrowse applies each setting to the display that uses it. If a track can be
+drawn more than one way, each setting lands where it fits — e.g. a
+`VariantTrack` colors its linear display with `color` and its circular (chord)
+display with `strokeColor`, both in the same object:
 
 ```json
 {
@@ -136,14 +135,14 @@ same object:
 }
 ```
 
-A setting that no display on the track defines is ignored with a console
-warning, so typos surface.
+A setting that nothing on the track uses is ignored, with a console warning so
+typos show up.
 
 ### Full array
 
-For precise control — different settings for two displays that share a slot,
-choosing which display is the default, setting an explicit `displayId` — pass
-`displays` as an array. Each entry targets a display `type`; `displayId` is
+For precise control — giving two displays different values for the same setting,
+choosing which display is the default, or setting an explicit `displayId` — pass
+`displays` as an array. Each entry names a display `type`; `displayId` is
 optional and defaults to `{trackId}-{displayType}`.
 
 ```json

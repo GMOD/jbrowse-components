@@ -1281,9 +1281,9 @@ const colorShorthandTracks = [
         },
       },
     },
-    // Shorthand: display settings go in a `displays` OBJECT and route to the
-    // display by slot name — no need to know the display type (LinearBasicDisplay)
-    // or write the `displays` array. A `jexl:` value works here too.
+    // Shorthand: appearance settings go in a `displays` OBJECT and JBrowse
+    // applies each one for you — no need to know the display's name
+    // (LinearBasicDisplay) or write the `displays` array. A `jexl:` value works too.
     displays: { color: 'green' },
   },
 ]
@@ -1342,8 +1342,9 @@ const tracks = [
       gffGzLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz' },
       index: { location: { uri: 'https://jbrowse.org/genomes/volvox/volvox.sort.gff3.gz.tbi' } },
     },
-    // settings go in a \`displays\` object and route to the display by slot name —
-    // no need to know the display type or write the \`displays\` array. A \`jexl:\`
+    // list appearance settings in a \`displays\` object and JBrowse applies each
+    // one to the right display for you (here the track's LinearBasicDisplay) —
+    // no need to know display names or write the full \`displays\` array. A \`jexl:\`
     // value works here too, e.g. "jexl:get(feature,'type')=='CDS'?'red':'blue'"
     displays: { color: 'green' },
   },
