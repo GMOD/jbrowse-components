@@ -16,7 +16,7 @@ type RenderSvgModel = IAnyStateTreeNode & {
   features: Feature[] | undefined
   blocksForRefs: Record<string, Block>
   bezierRadiusRatio: number
-  configuration: { renderer: AnyConfigurationModel }
+  configuration: AnyConfigurationModel
   id: string
   selectedFeatureId: string | undefined
   onChordClick: (feature: Feature) => void
@@ -34,7 +34,7 @@ export async function renderSvg(self: RenderSvgModel) {
       blocksForRefs={self.blocksForRefs}
       radius={radius}
       bezierRadius={radius * self.bezierRadiusRatio}
-      config={self.configuration.renderer}
+      config={self.configuration}
       displayModel={self}
       onChordClick={self.onChordClick}
     />

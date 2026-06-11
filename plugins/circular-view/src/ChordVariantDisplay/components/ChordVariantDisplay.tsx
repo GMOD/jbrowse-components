@@ -16,7 +16,7 @@ interface DisplayModel {
   features: Feature[] | undefined
   blocksForRefs: Record<string, Block>
   selectedFeatureId: string | undefined
-  configuration: { renderer: AnyConfigurationModel }
+  configuration: AnyConfigurationModel
   bezierRadiusRatio: number
   onChordClick: (feature: Feature) => void
 }
@@ -42,7 +42,7 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
       blocksForRefs={display.blocksForRefs}
       radius={radius}
       bezierRadius={radius * display.bezierRadiusRatio}
-      config={display.configuration.renderer}
+      config={display.configuration}
       displayModel={display}
       onChordClick={display.onChordClick}
     />
