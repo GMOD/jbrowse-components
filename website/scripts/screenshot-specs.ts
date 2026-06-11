@@ -1070,16 +1070,23 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 8000,
-    // applied to each stage before they're stacked: crops off the empty viewport
-    // below each (short) single-track frame
-    crop: { x: 0, y: 0, width: 1500, height: 300 },
+    // tall enough to show the view menu down to "Horizontally flip" in the top
+    // frame, while trimming most of the empty viewport below the single track
+    crop: { x: 0, y: 0, width: 1500, height: 470 },
     stages: [
-      {},
       {
+        // top frame: the view menu open with "Horizontally flip" boxed, so the
+        // reader sees it is a toggle
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
           { type: 'waitForText', text: 'Horizontally flip' },
-          { type: 'delay', ms: 300 },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Horizontally flip' } }],
+      },
+      {
+        // bottom frame: after clicking it, the gene arrows / overview reverse
+        actions: [
           { type: 'click', text: 'Horizontally flip' },
           { type: 'delay', ms: 3000 },
         ],
@@ -3206,9 +3213,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     viewportHeight: 900,
     actions: [
-      // click the gene's clickable name label (a real DOM element) rather than a
-      // canvas coordinate
-      { type: 'click', text: 'EDEN' },
+      // canvas-drawn gene glyph: at this zoom the label is baked into the canvas
+      // (no DOM text / overlay div to target), so a coordinate click is required
+      { type: 'click', from: { x: 430, y: 314 } },
       { type: 'waitForText', text: 'extrafield' },
       { type: 'delay', ms: 2000 },
     ],
