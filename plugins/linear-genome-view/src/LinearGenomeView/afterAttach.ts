@@ -1,5 +1,6 @@
 import {
   getSession,
+  isSessionModelWithWidgets,
   localStorageSetItem,
   parseLocString,
 } from '@jbrowse/core/util'
@@ -7,7 +8,8 @@ import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
-import type { InitState } from './types.ts'
+import type { HighlightType, InitState } from './types.ts'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // Derived from InitState so the two can't drift: the Record requires exactly
 // one entry per InitState key, so adding/removing a field without updating
@@ -34,6 +36,173 @@ function tryParseJson(s: string): Record<string, unknown> | undefined {
   }
 }
 
+// a declarative init is easy to typo (e.g. `tracksList`, `highlights`); MST
+// stores it as a frozen blob so a mistyped key would otherwise be silently
+// dropped with no diagnostic
+function warnUnknownInitKeys(init: InitState) {
+  const unknown = Object.keys(init).filter(k => !knownInitKeys.has(k))
+  if (unknown.length) {
+    console.warn(
+      `LinearGenomeView init ignored unknown key(s): ${unknown.join(', ')}`,
+    )
+  }
+}
+
+// Activate tracklist first so the drawer opens before we navigate, so
+// volatileWidth accounts for the drawer; otherwise navigation computes the
+// region at full width and the drawer then obscures part of it. Opening the
+// drawer shrinks the view, which the ResizeObserver reports as a volatileWidth
+// change — but only if the drawer wasn't already open. So wait for the change
+// (no timeout) only when we actually opened it; if a widget was already
+// visible, the width is already correct and no change is coming.
+async function openTracklist(
+  self: LinearGenomeViewModel,
+  session: AbstractSessionModel,
+) {
+  const drawerWasOpen =
+    isSessionModelWithWidgets(session) && !!session.visibleWidget
+  const widthBefore = self.volatileWidth
+  self.activateTrackSelector()
+  if (!drawerWasOpen) {
+    await when(() => self.volatileWidth !== widthBefore)
+  }
+}
+
+async function navigateInit(
+  self: LinearGenomeViewModel,
+  session: AbstractSessionModel,
+  init: InitState,
+) {
+  try {
+    if (init.loc) {
+      const asm = await session.assemblyManager.waitForAssembly(init.assembly)
+      if (!asm) {
+        throw new Error('Assembly not found')
+      }
+      await self.navToLocString(init.loc, init.assembly)
+    } else if (!self.hasDisplayedRegions) {
+      // a highlight-only init (no loc) must not clobber a defaultSession's
+      // existing navigation, so only auto-navigate when nothing is shown yet
+      self.showAllRegionsInAssembly(init.assembly)
+    }
+  } catch (e) {
+    console.error(init, e)
+    session.notifyError(`${e}`, e)
+  }
+}
+
+// showTrack funnels through showTrackGeneric, which surfaces any failure
+// (unresolved id, bad config, etc) as its own snackbar
+function showInitTracks(self: LinearGenomeViewModel, init: InitState) {
+  for (const t of init.tracks ?? []) {
+    if (typeof t === 'string') {
+      self.showTrack(t)
+    } else {
+      self.showTrack(t.trackId, t.trackSnapshot ?? {}, t.displaySnapshot ?? {})
+    }
+  }
+}
+
+// backfill assemblyName on any session-authored highlights that omitted it so
+// downstream code (bookmark widget grid, addBookmark, etc) doesn't have to keep
+// falling back
+function backfillHighlightAssemblies(self: LinearGenomeViewModel) {
+  const fallback = self.assemblyNames[0]
+  if (self.highlight.length && fallback) {
+    const normalized = self.highlight.map(h =>
+      h.assemblyName ? h : { ...h, assemblyName: fallback },
+    )
+    if (normalized.some((h, i) => h !== self.highlight[i])) {
+      self.setHighlight(normalized)
+    }
+  }
+}
+
+// a string is either a loc string ("chr1:100-200") or a JSON-encoded
+// HighlightType (the URL wire-format, since URL params can't carry objects).
+// note: the jbrowse-web &highlight= URL param is space-split, so the JSON-string
+// form only survives when it contains no spaces; a label with a space is
+// shattered by the split — pass a HighlightType object instead
+function parseJsonHighlight(
+  s: string,
+  defaultAssembly: string,
+): HighlightType | undefined {
+  const json = s.trim().startsWith('{') ? tryParseJson(s) : undefined
+  return json &&
+    typeof json.refName === 'string' &&
+    typeof json.start === 'number' &&
+    typeof json.end === 'number'
+    ? {
+        refName: json.refName,
+        start: json.start,
+        end: json.end,
+        assemblyName:
+          typeof json.assemblyName === 'string'
+            ? json.assemblyName
+            : defaultAssembly,
+        color: typeof json.color === 'string' ? json.color : undefined,
+        label: typeof json.label === 'string' ? json.label : undefined,
+      }
+    : undefined
+}
+
+function parseLocHighlight(
+  s: string,
+  defaultAssembly: string,
+  isValidRefName: (refName: string) => boolean,
+): HighlightType | undefined {
+  const { refName, start, end } = parseLocString(s, isValidRefName)
+  return start !== undefined && end !== undefined
+    ? { refName, start, end, assemblyName: defaultAssembly }
+    : undefined
+}
+
+// normalize an init.highlight entry (HighlightType object, JSON string, or loc
+// string) into a HighlightType, defaulting the assemblyName
+function coerceHighlight(
+  h: string | HighlightType,
+  defaultAssembly: string,
+  isValidRefName: (refName: string) => boolean,
+): HighlightType | undefined {
+  return typeof h === 'object'
+    ? { ...h, assemblyName: h.assemblyName ?? defaultAssembly }
+    : (parseJsonHighlight(h, defaultAssembly) ??
+        parseLocHighlight(h, defaultAssembly, isValidRefName))
+}
+
+function applyInitHighlights(
+  self: LinearGenomeViewModel,
+  session: AbstractSessionModel,
+  init: InitState,
+) {
+  for (const h of init.highlight ?? []) {
+    const highlight = coerceHighlight(h, init.assembly, refName =>
+      session.assemblyManager.isValidRefName(refName, init.assembly),
+    )
+    if (highlight) {
+      self.addToHighlights(highlight)
+    }
+  }
+}
+
+async function applyInit(self: LinearGenomeViewModel, init: InitState) {
+  const session = getSession(self)
+  warnUnknownInitKeys(init)
+  if (init.tracklist) {
+    await openTracklist(self, session)
+  }
+  await navigateInit(self, session, init)
+  showInitTracks(self, init)
+  if (init.nav !== undefined) {
+    self.setHideHeader(!init.nav)
+  }
+  if (init.showCenterLine !== undefined) {
+    self.setShowCenterLine(init.showCenterLine)
+  }
+  backfillHighlightAssemblies(self)
+  applyInitHighlights(self, session, init)
+}
+
 /**
  * Autorun that handles the init state - navigating to initial location,
  * showing tracks, etc.
@@ -58,134 +227,7 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
         }
         applyingInit = true
         try {
-          const session = getSession(self)
-          const { assemblyManager } = session
-
-          // a declarative init is easy to typo (e.g. `tracksList`,
-          // `highlights`); MST stores it as a frozen blob so a mistyped key
-          // would otherwise be silently dropped with no diagnostic
-          const unknownKeys = Object.keys(init).filter(
-            k => !knownInitKeys.has(k),
-          )
-          if (unknownKeys.length) {
-            console.warn(
-              `LinearGenomeView init ignored unknown key(s): ${unknownKeys.join(', ')}`,
-            )
-          }
-
-          // Workaround: activate tracklist first so the drawer opens before we
-          // navigate. This ensures volatileWidth accounts for the drawer width.
-          // Without this, the navigation calculates the region based on full
-          // width, then the drawer opens and obscures part of the region.
-          if (init.tracklist) {
-            self.activateTrackSelector()
-            const currentWidth = self.volatileWidth
-            await when(() => self.volatileWidth !== currentWidth, {
-              timeout: 500,
-            }).catch(() => {
-              // Timeout is ok - width may not change if drawer was already open
-            })
-          }
-
-          try {
-            if (init.loc) {
-              const asm = await assemblyManager.waitForAssembly(init.assembly)
-              if (!asm) {
-                throw new Error('Assembly not found')
-              }
-              await self.navToLocString(init.loc, init.assembly)
-            } else {
-              self.showAllRegionsInAssembly(init.assembly)
-            }
-          } catch (e) {
-            console.error(init, e)
-            session.notifyError(`${e}`, e)
-          }
-
-          if (init.tracks) {
-            // showTrack funnels through showTrackGeneric, which surfaces any
-            // failure (unresolved id, bad config, etc) as its own snackbar
-            for (const t of init.tracks) {
-              if (typeof t === 'string') {
-                self.showTrack(t)
-              } else {
-                self.showTrack(
-                  t.trackId,
-                  t.trackSnapshot ?? {},
-                  t.displaySnapshot ?? {},
-                )
-              }
-            }
-          }
-
-          if (init.nav !== undefined) {
-            self.setHideHeader(!init.nav)
-          }
-
-          if (init.showCenterLine !== undefined) {
-            self.setShowCenterLine(init.showCenterLine)
-          }
-
-          // backfill assemblyName on any session-authored highlights that
-          // omitted it so downstream code (bookmark widget grid, addBookmark,
-          // etc) doesn't have to keep falling back
-          if (self.highlight.length) {
-            const fallback = self.assemblyNames[0]
-            if (fallback) {
-              const normalized = self.highlight.map(h =>
-                h.assemblyName ? h : { ...h, assemblyName: fallback },
-              )
-              if (normalized.some((h, i) => h !== self.highlight[i])) {
-                self.setHighlight(normalized)
-              }
-            }
-          }
-
-          if (init.highlight) {
-            for (const h of init.highlight) {
-              // accept either a loc string ("chr1:100-200") or a JSON object
-              // ({refName, start, end, assemblyName?, color?, label?}) to carry
-              // color/label like session-authored highlights. note: the
-              // jbrowse-web &highlight= URL param is space-split, so the JSON
-              // form is only reliable for programmatic init.highlight entries
-              // (createViewState/session JSON) or space-free JSON; a JSON value
-              // containing a space (e.g. a label) is shattered by the split
-              const json = h.trim().startsWith('{') && tryParseJson(h)
-              if (
-                json &&
-                typeof json.refName === 'string' &&
-                typeof json.start === 'number' &&
-                typeof json.end === 'number'
-              ) {
-                self.addToHighlights({
-                  refName: json.refName,
-                  start: json.start,
-                  end: json.end,
-                  assemblyName:
-                    typeof json.assemblyName === 'string'
-                      ? json.assemblyName
-                      : init.assembly,
-                  color:
-                    typeof json.color === 'string' ? json.color : undefined,
-                  label:
-                    typeof json.label === 'string' ? json.label : undefined,
-                })
-              } else {
-                const p = parseLocString(h, refName =>
-                  assemblyManager.isValidRefName(refName, init.assembly),
-                )
-                const { start, end } = p
-                if (start !== undefined && end !== undefined) {
-                  self.addToHighlights({
-                    ...p,
-                    start,
-                    end,
-                    assemblyName: init.assembly,
-                  })
-                }
-              }
-            }
-          }
+          await applyInit(self, init)
         } finally {
           // always clear init (even on a thrown apply) so a re-entrant run
           // early-returns, and release the guard for any future setInit

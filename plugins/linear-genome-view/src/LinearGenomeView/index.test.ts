@@ -1762,6 +1762,38 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     expect(model.highlight[0]!.assemblyName).toBe('volvox2')
   })
 
+  test('init.highlight accepts a HighlightType object directly', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: [
+        { refName: 'ctgA', start: 100, end: 200, label: 'a label with spaces' },
+      ],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    const h = model.highlight[0]!
+    expect(h.start).toBe(100)
+    expect(h.end).toBe(200)
+    expect(h.label).toBe('a label with spaces')
+    // assemblyName omitted on the object, so it falls back to init.assembly
+    expect(h.assemblyName).toBe('volvox')
+  })
+
+  test('init.highlight without loc applies the highlight', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      highlight: ['ctgA:100-200'],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    // no loc => showAllRegionsInAssembly ran (nothing was displayed yet)
+    expect(model.hasDisplayedRegions).toBe(true)
+    expect(model.highlight[0]!.refName).toBe('ctgA')
+  })
+
   // regression: with init.tracklist the autorun reads raw volatileWidth and
   // awaits a width settle, so a width change while init is mid-apply re-triggers
   // it before `init` is cleared. addToHighlights pushes, so a re-entrant pass

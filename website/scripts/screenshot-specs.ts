@@ -512,21 +512,32 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // Location-search autocomplete: typing a gene name into the search box surfaces
-  // matching features from the assembly's text-search index.
+  // matching features from the assembly's text-search index. Uses config_demo's
+  // hg19 (whose trix index covers RefSeq/Gencode names) searching "brca".
   {
     mode: 'url',
     name: 'searching_lgv',
-    url: `?config=${VOLVOX}&sessionName=Screenshot`,
-    readyText: 'ctgA',
-    settleMs: 3000,
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '1:1-100,000',
+          tracks: ['ncbi_gff_hg19'],
+        },
+      ],
+    }),
+    readyText: 'NCBI RefSeq',
+    readyTimeout: 60000,
+    settleMs: 8000,
     actions: [
       {
         type: 'type',
         selector: 'input[placeholder="Search for location"]',
-        value: 'eden',
+        value: 'brca',
         clear: true,
       },
-      { type: 'waitForText', text: 'EDEN.1' },
+      { type: 'waitForText', text: 'BRCA1' },
       { type: 'delay', ms: 1500 },
     ],
   },
@@ -654,6 +665,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'C -> T' },
       { type: 'waitForText', text: 'HG00096' },
       { type: 'delay', ms: 1500 },
+    ],
+    // ring the SAMPLES section (the per-sample genotype table)
+    annotations: [
+      { type: 'box', anchor: { selector: '[data-testid="BaseCard-Samples"]' } },
     ],
   },
 
@@ -1166,8 +1181,9 @@ export const specs: ScreenshotSpec[] = [
   // nanopore (top), PacBio (middle), and Illumina (bottom) read tracks under the
   // HG002 dbVar variant call. Reconstructed from DEMO_CONFIG (was a share-link
   // that opened with the track selector covering the panel) so the sessionSpec
-  // form opens with the selector closed. Same locus + nanopore/illumina/variant
-  // tracks as insertion_indicators, plus the canonical 15kb GIAB PacBio track.
+  // form opens with the selector closed. The high-depth PacBio Sequel track is
+  // capped to a fixed height and the window is taller, so its deep coverage no
+  // longer pushes the Illumina reads out of frame.
   {
     mode: 'url',
     name: 'insertion',
@@ -1179,15 +1195,20 @@ export const specs: ScreenshotSpec[] = [
           loc: '1:55,705,770-55,706,090',
           tracks: [
             'nstd175.GRCh37.variant_call.vcf',
-            'hg002_nanopore',
-            'HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio',
-            'illumina_hg002',
+            { trackId: 'hg002_nanopore', displaySnapshot: { height: 200 } },
+            {
+              trackId:
+                'HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio',
+              displaySnapshot: { height: 200 },
+            },
+            { trackId: 'illumina_hg002', displaySnapshot: { height: 250 } },
           ],
         },
       ],
     }),
     readyText: 'HG002',
     readyTimeout: 60000,
+    viewportHeight: 1000,
     settleMs: 20000,
   },
 
@@ -1287,7 +1308,7 @@ export const specs: ScreenshotSpec[] = [
                 linkedReads: 'normal',
                 readConnections: 'arc',
                 readConnectionsDown: true,
-                height: 400,
+                height: 650,
                 colorBy: { type: 'pairOrientation' },
                 featureHeight: 3,
                 featureSpacing: 0,
@@ -1299,7 +1320,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    viewportHeight: 1100,
+    viewportHeight: 1300,
     settleMs: 25000,
     actions: [
       { type: 'click', selector: '[data-testid="feature-name-HGSV_2721"]' },
@@ -1539,28 +1560,38 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'Select assemblies for dotplot view',
     readyTimeout: 60000,
     settleMs: 3000,
+    // arrows point at the select boxes themselves (anchored to the helper label
+    // below each, nudged up onto the dropdown), with callouts on dark pills
     annotations: [
       {
         type: 'text',
         x: 120,
         y: 110,
         text: 'Select the query (x-axis) assembly',
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
+        fontSize: 15,
       },
       {
         type: 'arrow',
-        from: { x: 300, y: 130 },
+        from: { x: 300, y: 128 },
         anchor: { text: 'x-axis assembly' },
+        dy: -44,
       },
       {
         type: 'text',
         x: 950,
         y: 110,
         text: 'Select the target (y-axis) assembly',
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
+        fontSize: 15,
       },
       {
         type: 'arrow',
-        from: { x: 1130, y: 130 },
+        from: { x: 1130, y: 128 },
         anchor: { text: 'y-axis assembly' },
+        dy: -44,
       },
     ],
   },
@@ -1588,10 +1619,17 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 12000,
   },
-  // Gene feature-details sequence panel: click the multi-exon EDEN gene to open
-  // its details, expand "Show feature sequence", and switch the type selector to
-  // the genomic-with-introns + up/down-stream mode so the panel shows the colored
-  // upstream / exon / intron / downstream sequence the caption describes.
+  // Gene feature-details sequence panel: click the multi-exon volvox EDEN gene to
+  // open its details, expand "Show feature sequence", and switch the type selector
+  // to the genomic-with-introns + up/down-stream mode so the panel shows the
+  // colored upstream / exon / intron / downstream sequence.
+  //
+  // NOTE: the reviewer asked for a human FAF1 example on config_demo. That is
+  // blocked headless — the demo human gene tracks (RefSeq `ncbi_gff_hg19` and
+  // Gencode GFF) don't expose the "Genomic w/ full introns" option in the
+  // sequence panel (only plain "Genomic +/- Nbp"), because the clicked gene
+  // feature's CDS subfeatures aren't recognized; the Gencode track also labels by
+  // Ensembl ID, not "FAF1". See SCREENSHOT_REVIEW_HANDOFF.md §feature_detail_sequence.
   {
     mode: 'url',
     name: 'feature_detail_sequence',
@@ -1602,10 +1640,7 @@ export const specs: ScreenshotSpec[] = [
           assembly: 'volvox',
           loc: 'ctgA:17200-23200',
           tracks: [
-            {
-              trackId: 'gff3tabix_genes',
-              displaySnapshot: { height: 300 },
-            },
+            { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
           ],
         },
       ],
@@ -1614,6 +1649,12 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     viewportHeight: 900,
     actions: [
+      // Must click a transcript glyph, not the gene: the gene-level sequence
+      // panel is only a container for its transcripts and offers no
+      // full-introns/CDS option. Transcript glyphs are canvas-drawn with no DOM
+      // text label (only the gene gets a clickable `feature-name-EDEN` div), so a
+      // coordinate click on the transcript row is required here — a text click
+      // can only reach the gene label. (x,y lands on the EDEN.1 transcript.)
       { type: 'click', from: { x: 430, y: 314 } },
       { type: 'waitForText', text: 'Show feature sequence' },
       { type: 'delay', ms: 1000 },
@@ -1621,10 +1662,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
       { type: 'click', selector: '[aria-label="Sequence type"]' },
       { type: 'delay', ms: 1000 },
-      {
-        type: 'click',
-        text: 'Genomic w/ full introns +/- 100bp up+down stream',
-      },
+      { type: 'click', text: 'Genomic w/ full introns +/-' },
       { type: 'delay', ms: 3000 },
     ],
   },
@@ -1781,7 +1819,10 @@ export const specs: ScreenshotSpec[] = [
         ],
         // ring the AddTrackWidget drawer that opened in the sidebar
         annotations: [
-          { type: 'box', anchor: { selector: '[data-testid="drawer-widget"]' } },
+          {
+            type: 'box',
+            anchor: { selector: '[data-testid="drawer-widget"]' },
+          },
         ],
       },
     ],
@@ -1910,22 +1951,25 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track label positioning submenu in the view menu.
+  // Track label positioning submenu in the view menu, over config_demo's hg19
+  // gene + HG002 Illumina BAM tracks. The view menu (hamburger) icon is ringed
+  // so the reader can see where the menu was opened from.
   {
     mode: 'url',
     name: 'tracklabels',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes', 'volvox_sv_test'],
+          assembly: 'hg19',
+          loc: '1:55,704,500-55,707,500',
+          tracks: ['ncbi_gff_hg19', 'illumina_hg002'],
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 4000,
+    readyText: 'HG002',
+    readyTimeout: 60000,
+    settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       { type: 'waitForText', text: 'Track labels' },
@@ -1933,6 +1977,12 @@ export const specs: ScreenshotSpec[] = [
       { type: 'hover', text: 'Track labels' },
       { type: 'waitForText', text: 'Overlapping' },
       { type: 'delay', ms: 500 },
+    ],
+    annotations: [
+      {
+        type: 'circle',
+        anchor: { selector: '[data-testid="view_menu_icon"]' },
+      },
     ],
   },
 
@@ -2114,23 +2164,25 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Bookmark widget with a bookmark label showing a highlight on the LGV.
+  // Bookmark widget with a bookmark label showing a highlight on the LGV, over
+  // config_demo's hg19. Shorter viewport keeps the figure tight.
   {
     mode: 'url',
     name: 'bookmark_widget_edit_label',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
+          assembly: 'hg19',
+          loc: 'chr1:1-20,000',
+          tracks: ['ncbi_gff_hg19'],
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 4000,
-    viewportHeight: 900,
+    readyText: 'NCBI RefSeq',
+    readyTimeout: 60000,
+    settleMs: 10000,
+    viewportHeight: 620,
     actions: [
       // create a bookmark via rubberband
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
@@ -2146,7 +2198,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Open bookmark widget' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Open bookmark widget' },
-      { type: 'waitForText', text: 'ctgA' },
+      { type: 'waitForText', text: 'Add label...' },
       { type: 'delay', ms: 1000 },
       // single-click the "Add label..." cell to enter edit mode, then type
       { type: 'type', text: 'Add label...', value: 'my region' },
@@ -2213,10 +2265,10 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // Read connections (arc display): two-stage figure on the volvox-sv CRAM (whose
-  // discordant pairs make the arcs meaningful). Top frame: the track menu opened
-  // to the "Read connections → Show pair overlay" submenu (where the Arcs option
-  // lives) with it boxed. Bottom frame: the arcs themselves (readConnections is
-  // preset to 'arc' so they render in the result frame).
+  // discordant pairs make the arcs meaningful). Top frame: the track menu's "Read
+  // connections → Show pair overlay" radio submenu with "Arcs" boxed, drawn over
+  // a plain pileup (no arcs yet). Bottom frame: "Arcs" selected, so the arcs
+  // render. Cropped to drop the empty viewport below the short track.
   {
     mode: 'url',
     name: 'alignments/select_arc_display',
@@ -2226,19 +2278,14 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-50000',
-          tracks: [
-            {
-              trackId: 'volvox_sv_cram',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                readConnections: 'arc',
-              },
-            },
-          ],
+          tracks: ['volvox_sv_cram'],
         },
       ],
     }),
     readyText: 'ctgA',
+    // shorter viewport (rather than a crop) so the result frame isn't mostly
+    // whitespace while still leaving room for the deep "Read connections" submenu
+    viewportHeight: 600,
     settleMs: 5000,
     stages: [
       {
@@ -2248,18 +2295,17 @@ export const specs: ScreenshotSpec[] = [
           { type: 'delay', ms: 300 },
           { type: 'hover', text: 'Read connections' },
           { type: 'waitForText', text: 'Show pair overlay' },
-          { type: 'delay', ms: 500 },
+          { type: 'delay', ms: 600 },
         ],
         annotations: [{ type: 'box', anchor: { text: 'Show pair overlay' } }],
       },
       {
-        // click the location box to dismiss the (nested) menu before the result
-        // frame — a single Escape only closes the innermost submenu
+        // open the radio submenu and pick Arcs so the result frame shows them
         actions: [
-          {
-            type: 'click',
-            selector: 'input[placeholder="Search for location"]',
-          },
+          { type: 'hover', text: 'Show pair overlay' },
+          { type: 'waitForText', text: 'Arcs' },
+          { type: 'delay', ms: 400 },
+          { type: 'click', text: 'Arcs' },
           { type: 'delay', ms: 3000 },
         ],
       },
@@ -2288,18 +2334,33 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'human_chr20',
     readyTimeout: 60000,
     settleMs: 12000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Color by...' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Color by...' },
-      { type: 'waitForText', text: 'Base modifications (MM tag)' },
-      { type: 'delay', ms: 500 },
-      { type: 'hover', text: 'Base modifications (MM tag)' },
-      { type: 'waitForText', text: 'By modification type' },
-      { type: 'delay', ms: 800 },
+    // two-stage: top frame is the Color by... → Base modifications → "By
+    // modification type" menu path (boxed); bottom frame applies it so the reads
+    // color by 5mC/5hmC modification
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'waitForText', text: 'Color by...' },
+          { type: 'delay', ms: 300 },
+          { type: 'hover', text: 'Color by...' },
+          { type: 'waitForText', text: 'Base modifications (MM tag)' },
+          { type: 'delay', ms: 500 },
+          { type: 'hover', text: 'Base modifications (MM tag)' },
+          { type: 'waitForText', text: 'By modification type' },
+          { type: 'delay', ms: 800 },
+        ],
+        annotations: [
+          { type: 'box', anchor: { text: 'By modification type' } },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'By modification type' },
+          { type: 'delay', ms: 6000 },
+        ],
+      },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'By modification type' } }],
   },
 
   // ────────────────────────────────────────────────────────────────────────
@@ -2357,17 +2418,23 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'recent_tracks',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
+          assembly: 'hg19',
+          loc: '1:1-100,000',
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 4000,
+    // hg19 displays the refname as "1" (no chr prefix); wait for the menubar
+    // instead of a chr label since this view starts with no tracks
+    readyText: 'Open track selector',
+    readyTimeout: 60000,
+    // smaller window keeps the focus on the track-list + recently-used dropdown
+    viewportWidth: 1100,
+    viewportHeight: 650,
+    settleMs: 8000,
     actions: [
       // open the track selector directly via the header button — with no tracks
       // active the view body also renders an "Open track selector" button, so a
@@ -2378,15 +2445,12 @@ export const specs: ScreenshotSpec[] = [
         selector: '[data-testid="hierarchical_track_selector"]',
       },
       { type: 'delay', ms: 500 },
-      // filter the (virtualized) list so the target row is rendered
-      { type: 'type', text: 'Filter tracks', value: 'GFF3Tabix' },
+      // filter the (virtualized) list so the target row is rendered, then open
+      // it through the UI (by name) so it lands in "recently used"
+      { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
       { type: 'delay', ms: 800 },
-      // open the track via the UI so it lands in "recently used"
-      {
-        type: 'click',
-        selector: '[data-testid="htsTrackLabel-Tracks,gff3tabix_genes"]',
-      },
-      { type: 'delay', ms: 800 },
+      { type: 'click', text: 'NCBI RefSeq w/ subfeature details' },
+      { type: 'delay', ms: 1500 },
     ],
     stages: [
       {
@@ -2405,7 +2469,7 @@ export const specs: ScreenshotSpec[] = [
             type: 'click',
             selector: '[data-testid="recently-used-tracks-button"]',
           },
-          { type: 'waitForText', text: 'GFF3Tabix genes' },
+          { type: 'waitForText', text: 'NCBI RefSeq w/ subfeature details' },
           { type: 'delay', ms: 500 },
         ],
       },
@@ -2555,22 +2619,40 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'Open track...' },
       { type: 'waitForText', text: 'Enter track data' },
       { type: 'delay', ms: 500 },
-      // open the workflow selector dropdown (shows its current value as text)
-      { type: 'click', text: 'Add a track from file or URL' },
-      { type: 'waitForText', text: 'Add multi-wiggle track' },
-      { type: 'delay', ms: 800 },
     ],
-    annotations: [
+    // two-stage: top frame opens the workflow-selector dropdown with a callout
+    // (on a dark pill so it reads over the form) and an arrow to it; bottom frame
+    // selects "Add multi-wiggle track" so the multi-wiggle entry form shows
+    stages: [
       {
-        type: 'text',
-        x: 520,
-        y: 150,
-        text: 'Use this dropdown to access alternative add-track workflows for adding multi-wiggle tracks',
+        actions: [
+          { type: 'click', text: 'Add a track from file or URL' },
+          { type: 'waitForText', text: 'Add multi-wiggle track' },
+          { type: 'delay', ms: 800 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 470,
+            y: 150,
+            text: 'Use this dropdown to reach alternative add-track workflows, e.g. multi-wiggle',
+            background: 'rgba(0,0,0,0.8)',
+            textColor: '#fff',
+            fontSize: 15,
+          },
+          {
+            type: 'arrow',
+            from: { x: 880, y: 162 },
+            anchor: { selector: '[aria-expanded="true"]' },
+          },
+        ],
       },
       {
-        type: 'arrow',
-        from: { x: 900, y: 165 },
-        anchor: { selector: '[aria-expanded="true"]' },
+        actions: [
+          { type: 'click', text: 'Add multi-wiggle track' },
+          { type: 'waitForText', text: 'Add' },
+          { type: 'delay', ms: 1200 },
+        ],
       },
     ],
   },
@@ -2633,26 +2715,33 @@ export const specs: ScreenshotSpec[] = [
   // GWAS / Manhattan plot
   // ────────────────────────────────────────────────────────────────────────
 
-  // Manhattan plot rendered from the local volvox GWAS track (-log10 p on Y,
-  // genomic position on X). Local data, so fast + deterministic. Waits on the
-  // per-display canvasDrawn testid like the browser-tests gwas suite.
+  // Manhattan plot from a real human GWAS (config_gwas hg19 genome-wide summary
+  // stats) over a wide chr2 window, so the classic dense field of points with
+  // significant peaks is visible — the volvox example was too small. (Genome-wide
+  // showAllRegions never finished loading headless, so this bounds to one region
+  // that still reads as a Manhattan plot.)
   {
     mode: 'url',
     name: 'gwas/manhattan',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec('test_data/config_gwas.json', {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_gwas'],
+          assembly: 'hg19',
+          loc: '2:1-50,000,000',
+          tracks: [
+            {
+              trackId: 'gwas_track',
+              displaySnapshot: { type: 'LinearManhattanDisplay', height: 400 },
+            },
+          ],
         },
       ],
     }),
-    readyText: 'ctgA',
     readySelector: '[data-testid="manhattan-display-done"]',
+    readyTimeout: 90000,
     viewportHeight: 500,
-    settleMs: 4000,
+    settleMs: 12000,
   },
 
   // LocusZoom-style LD r² coloring at the STAT4 locus on hg19 (SLE summary
@@ -2960,7 +3049,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
     ],
     annotations: [
-      { type: 'box', anchor: { text: 'Multi-sample variant display (matrix)' } },
+      {
+        type: 'box',
+        anchor: { text: 'Multi-sample variant display (matrix)' },
+      },
     ],
   },
 
@@ -3038,6 +3130,9 @@ export const specs: ScreenshotSpec[] = [
     name: 'lgv_assembly',
     url: sessionSpec(VOLVOX, { views: [] }),
     readyText: 'Select a view to launch',
+    // smaller window keeps the focus on the compact import form
+    viewportWidth: 900,
+    viewportHeight: 560,
     settleMs: 2000,
     actions: [
       { type: 'click', text: 'Launch view' },
@@ -3111,7 +3206,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     viewportHeight: 900,
     actions: [
-      { type: 'click', from: { x: 430, y: 314 } },
+      // click the gene's clickable name label (a real DOM element) rather than a
+      // canvas coordinate
+      { type: 'click', text: 'EDEN' },
       { type: 'waitForText', text: 'extrafield' },
       { type: 'delay', ms: 2000 },
     ],
@@ -3269,20 +3366,24 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 1500 },
     ],
-    // also call out the "Open from track" workflow: instead of pasting a URL you
-    // can populate the inspector from a VCF track already open in the session
+    // call out the "Open from track" workflow with the text off to the right and
+    // the arrow pointing right-to-left at the radio, so neither overlaps the URL
+    // text box below
     annotations: [
-      {
-        type: 'arrow',
-        from: { x: 720, y: 430 },
-        anchor: { text: 'Open from track' },
-      },
       {
         type: 'text',
         text: 'You can also load SV calls from a VCF track already in the session',
+        x: 870,
+        y: 250,
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
+        fontSize: 15,
+      },
+      {
+        type: 'arrow',
+        from: { x: 1080, y: 270 },
         anchor: { text: 'Open from track' },
-        dx: -140,
-        dy: 90,
+        dy: -6,
       },
     ],
   },
@@ -3443,7 +3544,10 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'volvox_microarray_multi',
-              displaySnapshot: { type: 'MultiLinearWiggleDisplay', height: 400 },
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                height: 400,
+              },
             },
           ],
         },

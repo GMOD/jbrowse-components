@@ -67,6 +67,9 @@ export interface InitState {
   tracks?: TrackInit[]
   tracklist?: boolean
   nav?: boolean
-  highlight?: string[]
+  // a string entry is a locstring or a JSON-encoded HighlightType (the URL
+  // wire-format); programmatic callers (createViewState/session JSON) can pass
+  // a HighlightType object directly
+  highlight?: (string | HighlightType)[]
   showCenterLine?: boolean
 }

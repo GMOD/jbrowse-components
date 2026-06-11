@@ -54,7 +54,13 @@ const Drawer = observer(function Drawer({
   }, [session])
 
   return (
-    <Paper ref={ref} className={classes.paper} elevation={16} square>
+    <Paper
+      ref={ref}
+      className={classes.paper}
+      elevation={16}
+      square
+      data-testid="drawer-widget"
+    >
       {drawerPosition === 'right' ? (
         <ResizeHandle
           onDrag={session.resizeDrawer}

@@ -35,10 +35,12 @@ Stable reference docs: [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 ### Drop CoreRender from BaseDisplayModel (deferred follow-up)
 
 Arc displays are now off the renderer concept (LinearArcDisplay + PairedArc both
-direct whole-view fetch + SVG), but `BaseDisplayModel` still carries
-`rendererTypeName`/`rendererType` because `LinearBareDisplay`,
-`LinearAlignmentsDisplay`, and `BaseLinearDisplay` remain live `CoreRender`
-consumers. Once those migrate off server-side block rendering, drop
+direct whole-view fetch + SVG), and `LinearAlignmentsDisplay` is fully GPU
+(composes `BaseDisplay`, never sets `rendererTypeName`, fetches via
+`RenderAlignmentData` + GPU/Canvas2D backends — no `CoreRender`). But
+`BaseDisplayModel` still carries `rendererTypeName`/`rendererType` because
+`LinearBareDisplay` and `BaseLinearDisplay` remain live `CoreRender` consumers.
+Once those migrate off server-side block rendering, drop
 `rendererTypeName`/`rendererType` from `BaseDisplayModel` and tighten/delete
 `CoreRender`/`CoreGetFeatureDetails`.
 
@@ -57,23 +59,6 @@ incomplete. Remaining build work:
 
 The summary path and e-lines also need a browser pass — see
 [Pending verification](#pending-verification).
-
-### UCSC multi-genome hub: auto-add missing assemblies (bug)
-
-`plugins/data-management/src/UCSCTrackHubConnection/doConnect.ts` — the multi-genome
-(`genomes.txt`) branch pushes unknown assemblies to `notLoadedAssemblies` and skips,
-so connecting a standard multi-genome hub against an instance lacking those assemblies
-loads **zero tracks**. The single-file branch already does the right thing
-(`generateAssembly` → `addSessionAssembly`). Mirror it.
-
-- Confirm `generateAssembly` handles the per-genome `GenomesFile` shape (twoBitPath /
-  description / defaultPos); may need a variant for the genomes.txt shape.
-- Resolve the sequence location against `genomesBaseUri` (not `hubUri`).
-- Keep the `addSessionAssembly?.` guard; decide behavior when absent.
-- Respect the connection's `assemblyNames` filter (as the track loop does).
-- Add a test in `AddConnectionWidget.test.tsx` (multi-genome hub, no preloaded
-  assembly → assembly + tracks added). JB2 connection auto-adds assemblies too —
-  another reference for the UX.
 
 ### Typed config reads — opportunistic adapter rollout
 
@@ -168,5 +153,3 @@ Arcs + semicircles modes render, tooltip works, color/thickness config edits app
   subscribes to the whole frozen `rpcProps` object; destructuring label fields out
   doesn't help). Partial mitigation via ADR-006: refetch still fires but
   `rawRpcDataMap` is no longer cleared, so labels don't visually disappear.
-</content>
-</invoke>

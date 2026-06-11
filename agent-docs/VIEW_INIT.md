@@ -15,7 +15,8 @@ interface InitState {
   tracks?: TrackInit[] // string id, or { trackId, trackSnapshot?, displaySnapshot? }
   tracklist?: boolean // open the hierarchical track selector
   nav?: boolean // false => setHideHeader(true)
-  highlight?: string[] // locstring OR JSON-encoded HighlightType (see wart below)
+  highlight?: (string | HighlightType)[] // HighlightType object, locstring, or
+  // (URL wire-format) JSON-encoded HighlightType string
 }
 ```
 
@@ -35,7 +36,8 @@ URL ?loc=&assembly=&tracks=&tracklist=&nav=&highlight=
   → LaunchLinearGenomeViewF: session.addView('LinearGenomeView', { init })
 
 createViewState({ location, highlight })  (react-linear-genome-view)
-  → view.setInit({ assembly, loc, highlight })   (only when `location` is set — see wart)
+  → view.setInit({ assembly, loc, highlight })   (when `location` OR `highlight` is set;
+                                                  loc-less init skips re-nav if regions exist)
 
 session/config JSON
   → view snapshot carries `init` directly
@@ -43,7 +45,7 @@ session/config JSON
                          ▼ all converge ▼
 afterAttach.ts setupInitAutorun (autorun "LGVInit"):
   wait for `initialized`            → warn on unknown keys
-  → if tracklist: open selector, wait for width to settle
+  → if tracklist: open selector, wait for the one width change (only if drawer was closed)
   → if loc: navToLocString  else: showAllRegionsInAssembly
   → showTrack for each init.tracks entry
   → if nav !== undefined: setHideHeader(!nav)
@@ -76,24 +78,14 @@ breakpoint, sv-inspector). Same lifecycle, per-view `InitState` shape. Beware:
 
 ## Known warts (see also the user doc website/docs/initializing_views.md)
 
-- **`highlight: string[]` leaks the URL wire-format into the programmatic API.**
-  Each entry is *either* a locstring *or* a JSON-encoded `HighlightType` string,
-  because URL params are strings (hence `splitHighlights`' brace-counting).
-  `createViewState`/session-JSON authors are forced to hand-write JSON-in-a-string
-  instead of passing a `HighlightType`. The natural fix is
-  `highlight?: (string | HighlightType)[]`.
-- **The field list is duplicated across ~6 sites** and drifts: `InitState`,
-  `knownInitKeys` (afterAttach), `LaunchLinearGenomeViewArgs`,
-  `buildJb1SessionSpec`, `createSessionLoaderFromUrl`, plus the docs. The
-  `knownInitKeys` runtime warning exists only because `init` is an untyped
-  `frozen` blob, so typos can't be caught at compile time.
-- **`createViewState` drops `highlight` when `location` is absent** — `setInit`
-  is only called inside `if (location)`. The naive fix regresses by clobbering a
-  `defaultSession`'s navigation via `showAllRegionsInAssembly`; needs a
-  loc-less-but-highlight-only path that doesn't re-navigate.
-- **The `tracklist` width race** — `await when(volatileWidth changes, {timeout:
-  500})` guesses the drawer changes width within 500ms; the most likely source of
-  a future "navigated to the wrong region with `&tracklist=true`" bug.
+- **The URL wire layer duplicates the param list.** `buildJb1SessionSpec`
+  (`sessionLoaderHelpers.ts`) and the `SessionLoader.ts` MST props are *all-string*
+  shapes (`tracks` comma-joined, `highlight` space-joined via `splitHighlights`'
+  brace-counting, booleans as `types.maybe(types.boolean)`), so they can't share
+  `InitState`'s value types — adding a new URL param means touching both. Note the
+  *type* sites do NOT drift: `knownInitKeyMap` is `Record<keyof InitState, true>`
+  and `LaunchLinearGenomeViewArgs` is `Partial<InitState> & {session}`, both
+  compile-checked against `InitState`.
 
 ## Tests
 
