@@ -61,6 +61,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -113,6 +115,51 @@ SyntenyGeometry | undefined
 instanceData: undefined as SyntenyGeometry | undefined
 ```
 
+#### volatile: hoveredFeatureIdx
+
+```js
+// type signature
+number
+// code
+hoveredFeatureIdx: -1
+```
+
+#### volatile: clickedFeatureIdx
+
+```js
+// type signature
+number
+// code
+clickedFeatureIdx: -1
+```
+
+#### volatile: contextMenuAnchor
+
+```js
+// type signature
+ClickCoord | undefined
+// code
+contextMenuAnchor: undefined as ClickCoord | undefined
+```
+
+#### volatile: statusMessage
+
+```js
+// type signature
+string | undefined
+// code
+statusMessage: undefined as string | undefined
+```
+
+#### volatile: assembliesSwapped
+
+```js
+// type signature
+false
+// code
+assembliesSwapped: false
+```
+
 ### LinearSyntenyDisplay - Getters
 
 #### getter: parentHelper
@@ -123,6 +170,13 @@ instanceData: undefined as SyntenyGeometry | undefined
   height: number
   level: number
 }
+```
+
+#### getter: level
+
+```js
+// type
+number
 ```
 
 #### getter: displayKey
@@ -202,7 +256,7 @@ boolean
 
 ```js
 // type
-ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>
+ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>
 ```
 
 #### getter: colorSchemeConfig
@@ -263,6 +317,13 @@ round-trip.
 { colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 9 more ...; instanceCount: number; } | undefined
 ```
 
+#### getter: tooltipText
+
+```js
+// type
+string
+```
+
 #### getter: renderParams
 
 Per-track render params consumed by the view's aggregator. The view substitutes
@@ -271,6 +332,15 @@ yTop before handing this to the backend.
 ```js
 // type
 { yTop: number; height: number; alpha: number; minAlignmentLength: number; hoveredFeatureId: number; clickedFeatureId: number; offsetPx0: number; offsetPx1: number; bpPerPx0: number; bpPerPx1: number; drawCurves: boolean; } | undefined
+```
+
+### LinearSyntenyDisplay - Methods
+
+#### method: getFeature
+
+```js
+// type signature
+getFeature: (index: number) => FeatPos | undefined
 ```
 
 ### LinearSyntenyDisplay - Actions
@@ -283,4 +353,46 @@ Set both feature and instance data in one MST action so downstream autoruns
 ```js
 // type signature
 setRpcData: (featureData: SyntenyFeatureData | undefined, instanceData: SyntenyGeometry | undefined) => void
+```
+
+#### action: setStatusMessage
+
+```js
+// type signature
+setStatusMessage: (msg?: string | undefined) => void
+```
+
+#### action: setAssembliesSwapped
+
+```js
+// type signature
+setAssembliesSwapped: (arg: boolean) => void
+```
+
+#### action: setHoveredFeatureIdx
+
+```js
+// type signature
+setHoveredFeatureIdx: (idx: number) => void
+```
+
+#### action: setClickedFeatureIdx
+
+```js
+// type signature
+setClickedFeatureIdx: (idx: number) => void
+```
+
+#### action: openContextMenu
+
+```js
+// type signature
+openContextMenu: (anchor: ClickCoord) => void
+```
+
+#### action: closeContextMenu
+
+```js
+// type signature
+closeContextMenu: () => void
 ```

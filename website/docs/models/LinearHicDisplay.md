@@ -54,6 +54,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -67,6 +69,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -112,11 +116,31 @@ setRenderError, attachRenderingBackend
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
 
 ### LinearHicDisplay - Properties
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearHicDisplay">
+// code
+type: types.literal('LinearHicDisplay')
+```
+
+#### property: configuration
+
+```js
+// type signature
+ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
 
 #### property: resolutionBias
 
@@ -128,9 +152,18 @@ when reopened at a different scale.
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-resolutionBias: 0
+resolutionBias: types.stripDefault(types.number, 0)
+```
+
+#### property: useLogScale
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+useLogScale: types.stripDefault(types.boolean, false)
 ```
 
 #### property: useColorPercentile
@@ -141,9 +174,33 @@ off-diagonal contacts read more strongly.
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-useColorPercentile: false
+useColorPercentile: types.stripDefault(types.boolean, false)
+```
+
+#### property: activeNormalization
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+activeNormalization: types.stripDefault(types.string, 'KR')
+```
+
+#### property: mode
+
+```js
+// type signature
+IOptionalIType<ISimpleType<HicRenderMode>, [undefined]>
+// code
+mode: types.stripDefault(
+          types.enumeration<HicRenderMode>('HicRenderMode', [
+            'triangular',
+            'adjust',
+          ]),
+          'triangular',
+        )
 ```
 
 ### LinearHicDisplay - Volatiles
@@ -188,6 +245,27 @@ reloadCounter: 0
 
 ### LinearHicDisplay - Getters
 
+#### getter: colorScheme
+
+```js
+// type
+;'fall' | 'juicebox' | 'viridis' | undefined
+```
+
+#### getter: showLegend
+
+```js
+// type
+boolean | undefined
+```
+
+#### getter: colorMaxScore
+
+```js
+// type
+number
+```
+
 #### getter: autoResolutionIdx
 
 Index into `availableResolutions` that pure auto-mode would pick at the current
@@ -196,6 +274,13 @@ when nothing qualifies (very zoomed in).
 
 The factor 2 floors at ~0.5 bins/screen-pixel, which keeps bins visible without
 going sub-pixel; users who want finer can step the resolution bias down.
+
+```js
+// type
+number
+```
+
+#### getter: yScalar
 
 ```js
 // type
@@ -232,6 +317,16 @@ RenderTransform
 ```
 
 ### LinearHicDisplay - Methods
+
+#### method: rpcProps
+
+```js
+// type signature
+rpcProps: () => {
+  resolution: number | undefined
+  normalization: string
+}
+```
 
 #### method: nextResolution
 

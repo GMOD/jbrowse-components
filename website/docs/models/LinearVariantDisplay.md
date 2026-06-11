@@ -59,14 +59,15 @@ and docs.
 subfeatureIdUnderMouse, mouseoverExtraInformation, contextMenuFeature,
 contextMenuInfo, userFeatureDensityLimit, heightBeforeExpand, incrementalLayout
 
-**Getters:** visibleFeatureDensityPerPx, renderState, DisplayMessageComponent,
-showTooltipsEnabled, showLegend, maxHeight, autoHeight, displayMode,
-showLabelsMode, showLabels, showDescriptions, showOutline, featureColor,
-utrColor, effectiveShowDescriptions, selectedFeatureId, maxFeatureDensity,
-colorByCDS, sequenceAdapter, regionKeys, reversedRegions, featureWidgetType,
-bytesEstimateTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
-laidOutDataMap, maxY, hasOverflow, featureIdIndex, subfeatureIdIndex,
-hoveredFeature, hoveredSubfeature, featureItemMap, flatbushIndexes
+**Getters:** conf, visibleFeatureDensityPerPx, renderState,
+DisplayMessageComponent, showTooltipsEnabled, showLegend, maxHeight, autoHeight,
+displayMode, showLabelsMode, showLabels, showDescriptions, showOutline,
+featureColor, utrColor, effectiveShowDescriptions, selectedFeatureId,
+maxFeatureDensity, colorByCDS, sequenceAdapter, regionKeys, reversedRegions,
+featureWidgetType, bytesEstimateTooLarge, densityTooLarge, regionTooLarge,
+regionTooLargeReason, laidOutDataMap, maxY, hasOverflow, featureIdIndex,
+subfeatureIdIndex, hoveredFeature, hoveredSubfeature, featureItemMap,
+flatbushIndexes
 
 **Methods:** rpcProps, getFeatureById, searchFeatureByID, renderSvg,
 showSubmenuMenuItems, contextMenuItems, trackMenuItems
@@ -84,6 +85,8 @@ reload, fetchNeeded, clearStaleDensityState, afterAttach
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -97,6 +100,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -142,6 +147,8 @@ setRenderError, attachRenderingBackend
 **Actions:** setError, setStatusMessage, cancelFetch, runFetch
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
+
+**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 

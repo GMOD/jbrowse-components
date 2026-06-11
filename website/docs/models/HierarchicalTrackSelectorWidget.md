@@ -255,6 +255,27 @@ filters out tracks that are not in the recently used group
 { name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; nestingLevel: number; children: TreeNode[]; }[]; }
 ```
 
+#### getter: flattenedItems
+
+```js
+// type
+TreeNode[]
+```
+
+#### getter: flattenedItemOffsets
+
+```js
+// type
+{ cumulativeHeight: number; offsets: number[]; }
+```
+
+#### getter: folderCategoryStats
+
+```js
+// type
+Map<string, { active: number; total: number; }>
+```
+
 #### getter: hasAnySubcategories
 
 ```js
@@ -290,6 +311,13 @@ isRecentlyUsed: (trackId: string) => boolean
 ```js
 // type signature
 getRefSeqTrackConf: (assemblyName: string) => (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | undefined
+```
+
+#### method: itemOffsets
+
+```js
+// type signature
+itemOffsets: (height: number, scrollTop: number) => { startIndex: number; endIndex: number; totalHeight: number; itemOffsets: number[]; }
 ```
 
 ### HierarchicalTrackSelectorWidget - Actions

@@ -61,7 +61,8 @@ and docs.
 showCoverage, coverageHeight, showMismatches, showInterbaseIndicators,
 drawSingletons, drawProperPairs, flipStrandLongReadChains, drawInter,
 drawLongRange, arcColorByType, readConnections, readConnectionsDown,
-showSashimiArcs, sashimiArcsHeight, readConnectionsHeight, showSoftClipping
+showSashimiArcs, minSashimiScore, sashimiArcsHeight, readConnectionsHeight,
+showSoftClipping
 
 **Volatiles:** featureIdUnderMouse, mouseoverExtraInformation,
 contextMenuFeature, contextMenuCoord, contextMenuCigarHit,
@@ -78,7 +79,7 @@ coverageStats, coverageDomain, coverageTicks, laidOutPileupMap, maxY,
 pileupTruncated, arcsComputed, arcsRpcDataMap, modificationThreshold,
 colorSchemeIndex, showModifications, showPerBaseQuality, showPerBaseLetter,
 totalPileupHeight, readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs,
-belowCoverageBands, coverageDisplayHeight, pileupViewportHeight,
+belowCoverageBands, sashimiArcsTop, coverageDisplayHeight, pileupViewportHeight,
 scalebarOverlapLeft, showOutline, visibleLabels, highlightBoxes,
 scrollableHeight, sortTag, renderState, arcsYDomainBp, insertSizeTicks,
 featureUnderMouse
@@ -95,9 +96,9 @@ setSortedBy, setSortedByAtPosition, clearSortedBy, setScaleType, setAutoscale,
 setMinScore, setMaxScore, setFeatureHeight, setFeatureSpacing, setMaxHeight,
 setCompactness, setShowSashimiArcs, toggleSashimiArcs, setReadConnections,
 setReadConnectionsDown, setShowCoverage, setCoverageHeight,
-setReadConnectionsHeight, setSashimiArcsHeight, setReadConnectionsLineWidth,
-setDrawInter, setDrawLongRange, setColorByType, setShowMismatches,
-setShowLegend, setDrawSingletons, setDrawProperPairs,
+setReadConnectionsHeight, setSashimiArcsHeight, setMinSashimiScore,
+setReadConnectionsLineWidth, setDrawInter, setDrawLongRange, setColorByType,
+setShowMismatches, setShowLegend, setDrawSingletons, setDrawProperPairs,
 setShowInterbaseIndicators, setFlipStrandLongReadChains, setLinkedReads,
 setShowBezierConnections, updateVisibleModifications, setModificationsReady,
 setFeatureIdUnderMouse, setMouseoverExtraInformation, setHoverState,
@@ -109,6 +110,8 @@ setContextMenuFeatureById, getByteEstimateConfig, fetchNeeded, renderSvg
 ### Available via [BaseDisplay](../basedisplay)
 
 **Properties:** id, type, rpcDriverName
+
+**Volatiles:** rendererTypeName, error, statusMessage
 
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
@@ -123,6 +126,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -169,6 +174,8 @@ setRenderError, attachRenderingBackend
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
@@ -193,6 +200,18 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(schema)
 ```
 
+### LGVSyntenyDisplay - Getters
+
+#### getter: featureWidgetType
+
+```js
+// type
+{
+  type: string
+  id: string
+}
+```
+
 ### LGVSyntenyDisplay - Methods
 
 #### method: contextMenuItems
@@ -206,7 +225,7 @@ contextMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconType
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; })[]; } | { ...; } | { ...; })[]
+trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; })[]; } | { ...; } | { ...; })[]
 ```
 
 ### LGVSyntenyDisplay - Actions

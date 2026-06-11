@@ -45,6 +45,8 @@ and docs.
 
 **Properties:** id, displayName, minimized
 
+**Volatiles:** width
+
 **Getters:** menuItems
 
 **Actions:** setDisplayName, setWidth, setMinimized
@@ -81,81 +83,81 @@ type: types.literal('DotplotView')
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: defaultHeight
+height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: borderSize
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-borderSize: defaultBorderSize
+borderSize: types.stripDefault(types.number, defaultBorderSize)
 ```
 
 #### property: tickSize
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-tickSize: defaultTickSize
+tickSize: types.stripDefault(types.number, defaultTickSize)
 ```
 
 #### property: vtextRotation
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-vtextRotation: 0
+vtextRotation: types.stripDefault(types.number, 0)
 ```
 
 #### property: htextRotation
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-htextRotation: defaultHtextRotation
+htextRotation: types.stripDefault(types.number, defaultHtextRotation)
 ```
 
 #### property: fontSize
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-fontSize: defaultFontSize
+fontSize: types.stripDefault(types.number, defaultFontSize)
 ```
 
 #### property: trackSelectorType
 
 ```js
 // type signature
-string
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-trackSelectorType: 'hierarchical'
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
 
 #### property: assemblyNames
 
 ```js
 // type signature
-IArrayType<ISimpleType<string>>
+IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
 // code
-assemblyNames: types.array(types.string)
+assemblyNames: types.stripDefault(types.array(types.string), [])
 ```
 
 #### property: drawCigar
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-drawCigar: true
+drawCigar: types.stripDefault(types.boolean, true)
 ```
 
 #### property: lodMode
@@ -169,7 +171,7 @@ display.
 // type signature
 IOptionalIType<ISimpleType<"auto" | "fine" | "coarse">, [undefined]>
 // code
-lodMode: types.optional(
+lodMode: types.stripDefault(
             types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
             'auto',
           )
@@ -183,9 +185,9 @@ ops trigger an autorun resync.
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-lockAspectRatio: false
+lockAspectRatio: types.stripDefault(types.boolean, false)
 ```
 
 #### property: lineWidth
@@ -197,7 +199,7 @@ view. View-level because the GPU pass renders all displays with one uniform.
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-lineWidth: types.optional(types.number, defaultLineWidth)
+lineWidth: types.stripDefault(types.number, defaultLineWidth)
 ```
 
 #### property: hview
@@ -234,9 +236,12 @@ dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
-IArrayType<IAnyModelType>
+IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
 // code
-viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
+viewTrackConfigs: types.stripDefault(
+            types.array(pm.pluggableConfigSchemaType('track')),
+            [],
+          )
 ```
 
 #### property: init
@@ -259,7 +264,7 @@ matches hview, horizontal when it matches vview
 // type signature
 IOptionalIType<IArrayType<IType<HighlightType, HighlightType, HighlightType>>, [undefined]>
 // code
-highlight: types.optional(
+highlight: types.stripDefault(
             types.array(types.frozen<HighlightType>()),
             [],
           )
@@ -273,7 +278,7 @@ controls whether view.highlight entries are rendered
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-highlightsVisible: types.optional(types.boolean, true)
+highlightsVisible: types.stripDefault(types.boolean, true)
 ```
 
 ### DotplotView - Volatiles
@@ -468,6 +473,20 @@ number
 number
 ```
 
+#### getter: hblockLabelKeysToHide
+
+```js
+// type
+Set<string>
+```
+
+#### getter: vblockLabelKeysToHide
+
+```js
+// type
+Set<string>
+```
+
 #### getter: views
 
 ```js
@@ -566,6 +585,13 @@ menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{},
 ```js
 // type signature
 setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
+```
+
+#### action: startRenderingBackend
+
+```js
+// type signature
+startRenderingBackend: (backend: DotplotRenderingBackend) => void
 ```
 
 #### action: setCursorMode

@@ -25,7 +25,29 @@ config slot names that can be overridden; these are serialized flat on the
 session snapshot (not nested under a sub-key) for readability.
 
 Read with `getConfWithOverride` (override wins, else config slot value) or
-`getOverride` (override only). Write with `setOverride`/`clearOverride`.
+`getOverride` (override only). Write with `setOverride`/`clearOverride`. `CONF`
+— the display's config model type; narrows `getConfWithOverride` key args to
+valid slot names when a concrete type is passed.
+
+`EXTRA` — additional keys that are stored flat in the snapshot but are NOT
+config slots (no fallback to a config value). Use these for pure runtime state
+that persists via the snapshot mechanism. They are accepted by
+`getOverride`/`setOverride`/`clearOverride` but NOT by `getConfWithOverride`
+(which requires a config-slot fallback).
+
+### ConfigOverrideMixin - Properties
+
+#### property: configOverrides
+
+```js
+// type signature
+IOptionalIType<IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>, [undefined]>
+// code
+configOverrides: types.optional(
+        types.frozen<Record<string, unknown>>(),
+        {},
+      )
+```
 
 ### ConfigOverrideMixin - Methods
 
@@ -35,16 +57,18 @@ the override value for a key, or undefined if not overridden
 
 ```js
 // type signature
-getOverride: <T>(key: string) => T | undefined
+getOverride: <T>(key: AnyKey) => T | undefined
 ```
 
 #### method: getConfWithOverride
 
-the override value if set, otherwise the resolved config slot value
+the override value if set, otherwise the resolved config slot value. Return type
+is derived from the schema slot (scalar slots are typed precisely;
+object/array/frozen slots degrade to `any`), mirroring the adapter `getConf`.
 
 ```js
 // type signature
-getConfWithOverride: <T>(key: string) => T
+getConfWithOverride: <SLOT extends SlotName = ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>>(key: SLOT) => ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
 ```
 
 ### ConfigOverrideMixin - Actions
@@ -53,12 +77,12 @@ getConfWithOverride: <T>(key: string) => T
 
 ```js
 // type signature
-setOverride: (key: string, value: unknown) => void
+setOverride: (key: AnyKey, value: unknown) => void
 ```
 
 #### action: clearOverride
 
 ```js
 // type signature
-clearOverride: (key: string) => void
+clearOverride: (key: AnyKey) => void
 ```

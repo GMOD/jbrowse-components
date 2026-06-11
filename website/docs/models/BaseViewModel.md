@@ -47,9 +47,20 @@ displayName: types.maybe(types.string)
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-minimized: false
+minimized: types.stripDefault(types.boolean, false)
+```
+
+### BaseViewModel - Volatiles
+
+#### volatile: width
+
+```js
+// type signature
+number
+// code
+width: 800
 ```
 
 ### BaseViewModel - Getters

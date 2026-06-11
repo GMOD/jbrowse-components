@@ -47,6 +47,8 @@ findAppropriateInternetAccount
 
 ### Available via [RootAppMenuMixin](../rootappmenumixin)
 
+**Volatiles:** mutableMenuActions
+
 **Actions:** setMenus, appendMenu, insertMenu, appendToMenu, insertInMenu,
 appendToSubMenu, insertInSubMenu
 
@@ -78,6 +80,10 @@ RpcManager
 // code
 rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
   makeWorkerInstance,
+
+  defaultDriverName: makeWorkerInstance
+    ? 'WebWorkerRpcDriver'
+    : 'MainThreadRpcDriver',
 })
 ```
 

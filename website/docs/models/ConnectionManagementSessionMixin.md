@@ -26,10 +26,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IOptionalIType<IArrayType<IAnyType>, [undefined]>
 // code
-connectionInstances: types.array(
-        pluginManager.pluggableMstType('connection', 'stateModel'),
+connectionInstances: types.stripDefault(
+        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+        [],
       )
 ```
 

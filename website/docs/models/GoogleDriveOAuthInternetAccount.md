@@ -29,8 +29,8 @@ and docs.
 
 **Properties:** type, configuration
 
-**Getters:** codeVerifierPKCE, authEndpoint, tokenEndpoint, needsPKCE, clientId,
-scopes, state, responseType, refreshTokenKey
+**Getters:** conf, codeVerifierPKCE, authEndpoint, tokenEndpoint, needsPKCE,
+clientId, scopes, state, responseType, refreshTokenKey
 
 **Methods:** retrieveRefreshToken
 

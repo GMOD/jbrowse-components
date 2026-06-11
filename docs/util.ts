@@ -62,6 +62,17 @@ const TAG_TYPES = [
   'method',
 ] as const
 
+// MST lifecycle hooks live in `.actions()` blocks but are not public API, so
+// they are skipped during structural member detection.
+const LIFECYCLE_HOOKS = new Set([
+  'afterCreate',
+  'afterAttach',
+  'afterDetach',
+  'beforeDestroy',
+  'beforeDetach',
+  'afterCreationFinalization',
+])
+
 export function extractWithComment(
   fileNames: string[],
   cb: (obj: ExtractedNode) => void,
@@ -69,14 +80,20 @@ export function extractWithComment(
 ) {
   const program = ts.createProgram(fileNames, options)
   const checker = program.getTypeChecker()
+  const blindSpots: BlindSpot[] = []
 
   for (const sourceFile of program.getSourceFiles()) {
     if (!sourceFile.isDeclarationFile) {
-      ts.forEachChild(sourceFile, visit)
+      // Structural member detection only runs in files that document a
+      // #stateModel, so non-model helper files with their own .views()/
+      // .actions() chains don't contribute spurious members.
+      const isStateModel = hasTag(sourceFile.getFullText(), 'stateModel')
+      ts.forEachChild(sourceFile, node => visit(node, isStateModel))
     }
   }
+  reportBlindSpots(blindSpots)
 
-  function visit(node: ts.Node) {
+  function visit(node: ts.Node, isStateModel: boolean) {
     const comment = getOwnJSDocText(node)
     const tags = comment ? TAG_TYPES.filter(t => hasTag(comment, t)) : []
     if (tags.length) {
@@ -102,9 +119,217 @@ export function extractWithComment(
       for (const type of tags) {
         cb({ type, ...base })
       }
+    } else if (isStateModel) {
+      // Untagged members are recovered structurally from their position in the
+      // MST factory chain. A node either has a tag (handled above, unchanged) or
+      // is examined here, so no member is ever emitted twice.
+      emitUntaggedMember(checker, node, comment, cb, blindSpots)
     }
-    ts.forEachChild(node, visit)
+    ts.forEachChild(node, n => visit(n, isStateModel))
   }
+}
+
+// A member that sits in an MST block but the structural pass can't document and
+// no tag rescued: an untagged `{ foo }` shorthand returning a local function in
+// .views()/.actions(). Surfaced as a warning so the gap is visible, not silent.
+interface BlindSpot {
+  filename: string
+  kind: MemberBlock
+  name: string
+}
+
+// Emit an ExtractedNode for an untagged MST member, classified by which block of
+// the factory chain encloses it. Tagged members never reach here, so this only
+// fills the documentation gaps that hand-written tags missed. Members in a block
+// that resist structural classification are recorded as blind spots instead.
+function emitUntaggedMember(
+  checker: ts.TypeChecker,
+  node: ts.Node,
+  comment: string,
+  cb: (obj: ExtractedNode) => void,
+  blindSpots: BlindSpot[],
+) {
+  const block = enclosingMemberBlock(node)
+  if (!block) {
+    return
+  }
+  const type = memberType(node, block)
+  if (type) {
+    const { name, signature, declId } = describeSymbol(checker, node)
+    if (name && !(block === 'actions' && LIFECYCLE_HOOKS.has(name))) {
+      cb({
+        type,
+        name,
+        comment,
+        signature,
+        node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
+        selfDeclId: declId,
+      })
+    }
+  } else if (
+    (block === 'views' || block === 'actions') &&
+    ts.isShorthandPropertyAssignment(node) &&
+    isUndocumentedLocal(checker, node)
+  ) {
+    blindSpots.push({
+      filename: node.getSourceFile().fileName,
+      kind: block,
+      name: node.name.text,
+    })
+  }
+}
+
+// True when a `{ foo }` shorthand's target declaration carries no member tag, so
+// the tag pass didn't already document it from the declaration. Tagged
+// local-function returns (e.g. LinearGenomeView `slide`/`zoom`) are excluded.
+function isUndocumentedLocal(
+  checker: ts.TypeChecker,
+  node: ts.ShorthandPropertyAssignment,
+) {
+  const symbol = checker.getShorthandAssignmentValueSymbol(node)
+  const decl = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
+  const doc = decl ? getOwnJSDocText(decl) : ''
+  return !MEMBER_TAGS.some(t => hasTag(doc, t))
+}
+
+function reportBlindSpots(blindSpots: BlindSpot[]) {
+  if (blindSpots.length) {
+    const cwd = `${process.cwd()}/`
+    const byFile = new Map<string, BlindSpot[]>()
+    for (const spot of blindSpots) {
+      const file = spot.filename.replace(cwd, '')
+      byFile.set(file, [...(byFile.get(file) ?? []), spot])
+    }
+    console.warn(
+      `${blindSpots.length} undocumented member(s) the autogen can't auto-detect (untagged shorthand returns of local functions). Add a #getter/#method/#action tag to the local declaration to document:`,
+    )
+    for (const [file, spots] of byFile) {
+      console.warn(`  ${file}: ${spots.map(s => s.name).join(', ')}`)
+    }
+  }
+}
+
+const MEMBER_TAGS = [
+  'property',
+  'volatile',
+  'getter',
+  'method',
+  'action',
+] as const
+
+type MemberBlock = 'property' | 'volatile' | 'views' | 'actions'
+
+// The MST member block a call introduces, or undefined. `types.model({...})`
+// carries the persisted properties; `.volatile()`, `.views()`, and `.actions()`
+// each contribute their named kind. Detected structurally so members need no
+// per-member JSDoc tag to be documented.
+function memberBlockKind(node: ts.Node): MemberBlock | undefined {
+  if (!ts.isCallExpression(node)) {
+    return undefined
+  }
+  if (isTypesMember(node.expression, 'model')) {
+    return 'property'
+  }
+  if (ts.isPropertyAccessExpression(node.expression)) {
+    const name = node.expression.name.text
+    if (name === 'volatile' || name === 'views' || name === 'actions') {
+      return name
+    }
+  }
+  return undefined
+}
+
+// The object literal a member block exposes: the last object-literal argument of
+// `types.model(...)`, or the object returned by a `self => ({...})` /
+// `() => {...; return {...}}` callback for volatile/views/actions.
+function memberObjectLiteral(node: ts.CallExpression, kind: MemberBlock) {
+  if (kind === 'property') {
+    for (let i = node.arguments.length - 1; i >= 0; i--) {
+      const arg = node.arguments[i]!
+      if (ts.isObjectLiteralExpression(arg)) {
+        return arg
+      }
+    }
+    return undefined
+  }
+  const cb = node.arguments.at(-1)
+  return cb && (ts.isArrowFunction(cb) || ts.isFunctionExpression(cb))
+    ? returnedObjectLiteral(cb)
+    : undefined
+}
+
+// The object literal a callback yields, covering both the concise
+// `self => ({...})` body and the `self => { ...; return {...} }` block body.
+function returnedObjectLiteral(fn: ts.FunctionLikeDeclaration) {
+  const body = fn.body
+  const expr =
+    body && ts.isBlock(body)
+      ? body.statements.find(ts.isReturnStatement)?.expression
+      : body
+  const unwrapped =
+    expr && ts.isParenthesizedExpression(expr) ? expr.expression : expr
+  return unwrapped && ts.isObjectLiteralExpression(unwrapped)
+    ? unwrapped
+    : undefined
+}
+
+// The MemberBlock whose members object directly contains `node`, or undefined.
+// Climbs from the node's parent object literal through the callback wrappers
+// (parens, arrow/function body, block return) to the owning chain call, then
+// confirms that object literal really is that block's members object — so an
+// unrelated object literal nested inside a member's body is not mistaken for a
+// member block.
+function enclosingMemberBlock(node: ts.Node): MemberBlock | undefined {
+  const obj = node.parent
+  if (!ts.isObjectLiteralExpression(obj)) {
+    return undefined
+  }
+  let cur: ts.Node = obj.parent
+  while (
+    ts.isParenthesizedExpression(cur) ||
+    ts.isReturnStatement(cur) ||
+    ts.isBlock(cur) ||
+    ts.isArrowFunction(cur) ||
+    ts.isFunctionExpression(cur)
+  ) {
+    cur = cur.parent
+  }
+  if (ts.isCallExpression(cur)) {
+    const kind = memberBlockKind(cur)
+    if (kind && memberObjectLiteral(cur, kind) === obj) {
+      return kind
+    }
+  }
+  return undefined
+}
+
+// The documented kind of one object-literal member within a given block, or
+// undefined for members that aren't documentable API (spreads, setters, plain
+// non-function values, and the shorthand `{ slide }` returns whose tagged
+// declaration the tag pass already emitted).
+function memberType(node: ts.Node, kind: MemberBlock): TagType | undefined {
+  const isField =
+    ts.isPropertyAssignment(node) || ts.isShorthandPropertyAssignment(node)
+  if (kind === 'property') {
+    return isField ? 'property' : undefined
+  }
+  if (kind === 'volatile') {
+    return isField ? 'volatile' : undefined
+  }
+  const isFn =
+    ts.isMethodDeclaration(node) ||
+    (ts.isPropertyAssignment(node) &&
+      (ts.isArrowFunction(node.initializer) ||
+        ts.isFunctionExpression(node.initializer)))
+  if (kind === 'views') {
+    return ts.isGetAccessorDeclaration(node)
+      ? 'getter'
+      : isFn
+        ? 'method'
+        : undefined
+  }
+  return isFn ? 'action' : undefined
 }
 
 function describeSymbol(checker: ts.TypeChecker, node: ts.Node) {

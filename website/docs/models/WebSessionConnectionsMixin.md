@@ -40,10 +40,11 @@ deleteConnection, addConnectionConf, clearConnections
 
 ```js
 // type signature
-IArrayType<IAnyModelType>
+IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
 // code
-sessionConnections: types.array(
-          pluginManager.pluggableConfigSchemaType('connection'),
+sessionConnections: types.stripDefault(
+          types.array(pluginManager.pluggableConfigSchemaType('connection')),
+          [],
         )
 ```
 

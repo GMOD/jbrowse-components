@@ -65,14 +65,15 @@ and docs.
 subfeatureIdUnderMouse, mouseoverExtraInformation, contextMenuFeature,
 contextMenuInfo, userFeatureDensityLimit, heightBeforeExpand, incrementalLayout
 
-**Getters:** visibleFeatureDensityPerPx, renderState, DisplayMessageComponent,
-showTooltipsEnabled, showLegend, maxHeight, autoHeight, displayMode,
-showLabelsMode, showLabels, showDescriptions, showOutline, featureColor,
-utrColor, effectiveShowDescriptions, selectedFeatureId, maxFeatureDensity,
-colorByCDS, sequenceAdapter, regionKeys, reversedRegions, featureWidgetType,
-bytesEstimateTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
-laidOutDataMap, maxY, hasOverflow, featureIdIndex, subfeatureIdIndex,
-hoveredFeature, hoveredSubfeature, featureItemMap, flatbushIndexes
+**Getters:** conf, visibleFeatureDensityPerPx, renderState,
+DisplayMessageComponent, showTooltipsEnabled, showLegend, maxHeight, autoHeight,
+displayMode, showLabelsMode, showLabels, showDescriptions, showOutline,
+featureColor, utrColor, effectiveShowDescriptions, selectedFeatureId,
+maxFeatureDensity, colorByCDS, sequenceAdapter, regionKeys, reversedRegions,
+featureWidgetType, bytesEstimateTooLarge, densityTooLarge, regionTooLarge,
+regionTooLargeReason, laidOutDataMap, maxY, hasOverflow, featureIdIndex,
+subfeatureIdIndex, hoveredFeature, hoveredSubfeature, featureItemMap,
+flatbushIndexes
 
 **Methods:** rpcProps, getFeatureById, searchFeatureByID, renderSvg,
 showSubmenuMenuItems, contextMenuItems, trackMenuItems
@@ -90,6 +91,8 @@ reload, fetchNeeded, clearStaleDensityState, afterAttach
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -103,6 +106,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -149,6 +154,126 @@ setRenderError, attachRenderingBackend
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
+
+### LinearBasicDisplay - Getters
+
+#### getter: subfeatureLabels
+
+```js
+// type
+;'none' | 'overlay' | 'below'
+```
+
+#### getter: displayMode
+
+```js
+// type
+DisplayMode
+```
+
+#### getter: geneGlyphMode
+
+```js
+// type
+;'auto' | 'all' | 'longestCoding'
+```
+
+#### getter: displayDirectionalChevrons
+
+```js
+// type
+boolean
+```
+
+#### getter: effectiveGeneGlyphMode
+
+```js
+// type
+;'auto' | 'all' | 'longestCoding'
+```
+
+#### getter: isGeneLike
+
+```js
+// type
+boolean
+```
+
+### LinearBasicDisplay - Methods
+
+#### method: rpcProps
+
+```js
+// type signature
+rpcProps: () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 7 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: number | undefined; colorByCDS: boolean; the...
+```
+
+#### method: showSubmenuMenuItems
+
+```js
+// type signature
+showSubmenuMenuItems: () => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: "checkbox"; checked: boolean; onClick: () => void; })[]
+```
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => (MenuItem | { label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; })[]
+```
+
+#### method: contextMenuItems
+
+```js
+// type signature
+contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+```
+
+### LinearBasicDisplay - Actions
+
+#### action: setSubfeatureLabels
+
+```js
+// type signature
+setSubfeatureLabels: (value: "none" | "overlay" | "below") => void
+```
+
+#### action: setGeneGlyphMode
+
+```js
+// type signature
+setGeneGlyphMode: (value: "auto" | "all" | "longestCoding") => void
+```
+
+#### action: setDisplayMode
+
+```js
+// type signature
+setDisplayMode: (value: DisplayMode) => void
+```
+
+#### action: setCompactness
+
+```js
+// type signature
+setCompactness: (level: "normal" | "compact" | "super-compact") => void
+```
+
+#### action: setShowOnlyGenes
+
+```js
+// type signature
+setShowOnlyGenes: (value: boolean) => void
+```
+
+#### action: setDisplayDirectionalChevrons
+
+```js
+// type signature
+setDisplayDirectionalChevrons: (value: boolean) => void
+```

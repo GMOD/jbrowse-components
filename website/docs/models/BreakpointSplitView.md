@@ -29,6 +29,8 @@ and docs.
 
 **Properties:** id, displayName, minimized
 
+**Volatiles:** width
+
 **Getters:** menuItems
 
 **Actions:** setDisplayName, setWidth, setMinimized
@@ -50,59 +52,59 @@ type: types.literal('BreakpointSplitView')
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(types.number, defaultHeight)
+height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: trackSelectorType
 
 ```js
 // type signature
-string
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-trackSelectorType: 'hierarchical'
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
 
 #### property: showIntraviewLinks
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showIntraviewLinks: true
+showIntraviewLinks: types.stripDefault(types.boolean, true)
 ```
 
 #### property: linkViews
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-linkViews: false
+linkViews: types.stripDefault(types.boolean, false)
 ```
 
 #### property: interactiveOverlay
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-interactiveOverlay: true
+interactiveOverlay: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showHeader
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showHeader: true
+showHeader: types.stripDefault(types.boolean, true)
 ```
 
 #### property: views
 
 ```js
 // type signature
-IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
+IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
@@ -170,7 +172,7 @@ boolean
 
 ```js
 // type
-(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & IStateTreeNode<...>) | undefined
+(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: matchedTracks
@@ -209,7 +211,12 @@ exportSvg: (opts?: ExportSvgOptions) => Promise<void>
 
 #### method: getMatchedTracks
 
-Get tracks with a given trackId across multiple views
+Get tracks with a given trackId across multiple views. Callers that index the
+result by view level (getTrackOverlayData, getMatchedFeaturesInLayout) rely on
+it staying aligned with `views` — which holds only because overlays are driven
+by `overlayMatches`, whose trackIds come from `matchedTracks` (the intersect
+across all views), so the track is present in every view and `filter` drops
+nothing. Don't level-index the result for an arbitrary trackId.
 
 ```js
 // type signature
@@ -229,6 +236,13 @@ SVG), scrollTops still read from model.
 ```js
 // type signature
 getTrackOverlayData: (trackId: string, yOffsetsOverride?: number[] | undefined, domYOffsets?: number[] | undefined) => { tracks: any[]; yOffsets: any[]; heights: any[]; getX: (level: number, refName: string, coord: number) => number | undefined; getY: (level: number, c: LayoutRecord) => any; }
+```
+
+#### method: getMatchedFeaturesInLayout
+
+```js
+// type signature
+getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: number; clipLengthAtStartOfRead: number; }[][]
 ```
 
 #### method: menuItems

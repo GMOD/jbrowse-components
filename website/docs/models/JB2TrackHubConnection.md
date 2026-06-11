@@ -27,7 +27,9 @@ and docs.
 
 ### Available via [BaseConnectionModel](../baseconnectionmodel)
 
-**Properties:** name, tracks, configuration
+**Properties:** tracks, configuration
+
+**Getters:** connectionId, name
 
 **Actions:** connect, addTrackConf, addTrackConfs, setTrackConfs, clear
 

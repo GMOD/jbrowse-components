@@ -51,6 +51,8 @@ findAppropriateInternetAccount
 
 ### Available via [RootAppMenuMixin](../rootappmenumixin)
 
+**Volatiles:** mutableMenuActions
+
 **Actions:** setMenus, appendMenu, insertMenu, appendToMenu, insertInMenu,
 appendToSubMenu, insertInSubMenu
 
@@ -63,6 +65,49 @@ appendToSubMenu, insertInSubMenu
 IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName: string; stopToken: StopToken | undefined; aborted: boolean; jobsQueue: IObservableArray<TextJobsEntry>; finishedJobs: IObservableArray<...>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 jobsManager: types.optional(JobsManager, {})
+```
+
+### JBrowseDesktopRootModel - Volatiles
+
+#### volatile: version
+
+```js
+// type signature
+string
+// code
+version: packageJSON.version
+```
+
+#### volatile: adminMode
+
+```js
+// type signature
+true
+// code
+adminMode: true
+```
+
+#### volatile: rpcManager
+
+```js
+// type signature
+RpcManager
+// code
+rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
+  makeWorkerInstance,
+  defaultDriverName: 'WebWorkerRpcDriver',
+})
+```
+
+#### volatile: openNewSessionCallback
+
+```js
+// type signature
+(_path: string) => Promise<void>
+// code
+openNewSessionCallback: async (_path: string) => {
+          console.error('openNewSessionCallback unimplemented')
+        }
 ```
 
 ### JBrowseDesktopRootModel - Methods

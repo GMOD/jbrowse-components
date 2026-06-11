@@ -59,6 +59,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -72,6 +74,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -118,9 +122,61 @@ setRenderError, attachRenderingBackend
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
+
+### MultiSampleVariantBaseModel - Properties
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<string>
+// code
+type: types.string
+```
+
+#### property: configuration
+
+```js
+// type signature
+ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
+#### property: rowHeightMode
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+rowHeightMode: types.stripDefault(types.number, 0)
+```
+
+#### property: jexlFilters
+
+```js
+// type signature
+IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>
+// code
+jexlFilters: types.stripDefault(
+            types.maybe(types.array(types.string)),
+            undefined,
+          )
+```
+
+#### property: lineZoneHeight
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+lineZoneHeight: types.stripDefault(types.number, 0)
+```
 
 ### MultiSampleVariantBaseModel - Volatiles
 
@@ -182,6 +238,33 @@ call setCellData(result).
 CellDataResult | undefined
 // code
 cellData: undefined as CellDataResult | undefined
+```
+
+#### volatile: loadedBpPerPx
+
+```js
+// type signature
+number | undefined
+// code
+loadedBpPerPx: undefined as number | undefined
+```
+
+#### volatile: reloadCount
+
+```js
+// type signature
+number
+// code
+reloadCount: 0
+```
+
+#### volatile: pendingClusterTree
+
+```js
+// type signature
+string | undefined
+// code
+pendingClusterTree: undefined as string | undefined
 ```
 
 ### MultiSampleVariantBaseModel - Getters
@@ -248,6 +331,23 @@ Returns the effective rendering mode, falling back to config
 string
 ```
 
+#### getter: featureWidgetType
+
+```js
+// type
+{
+  type: string
+  id: string
+}
+```
+
+#### getter: fetchSizeLimit
+
+```js
+// type
+number
+```
+
 #### getter: minorAlleleFrequencyFilter
 
 Returns the effective minor allele frequency filter, falling back to config
@@ -268,6 +368,48 @@ rebuilds it in the worker with pluginManager.jexl.
 ```js
 // type
 SerializableFilterChain | undefined
+```
+
+#### getter: showSidebarLabels
+
+```js
+// type
+boolean
+```
+
+#### getter: showTree
+
+```js
+// type
+boolean
+```
+
+#### getter: showBranchLength
+
+```js
+// type
+boolean
+```
+
+#### getter: referenceDrawingMode
+
+```js
+// type
+string
+```
+
+#### getter: sourcesWithoutLayout
+
+```js
+// type
+ProcessedSource[] | undefined
+```
+
+#### getter: sourcesBase
+
+```js
+// type
+ProcessedSource[] | undefined
 ```
 
 #### getter: sources
@@ -341,6 +483,13 @@ number
 PositionedHierarchyNode<NewickNode> | undefined
 ```
 
+#### getter: spatialIndex
+
+```js
+// type
+{ index: Flatbush; nodes: ClusterHierarchyNode[]; } | undefined
+```
+
 #### getter: canDisplayLabels
 
 ```js
@@ -364,6 +513,13 @@ boolean
 
 ### MultiSampleVariantBaseModel - Methods
 
+#### method: rpcProps
+
+```js
+// type signature
+rpcProps: () => { sources: ProcessedSource[] | undefined; minorAlleleFrequencyFilter: number; filters: SerializableFilterChain | undefined; renderingMode: string; referenceDrawingMode: string; }
+```
+
 #### method: showSubmenuItems
 
 ```js
@@ -378,11 +534,18 @@ showSubmenuItems: () => MenuItem[]
 trackMenuItems: () => MenuItem[]
 ```
 
+#### method: contextMenuItems
+
+```js
+// type signature
+contextMenuItems: () => MenuItem[]
+```
+
 #### method: getPortableSettings
 
 ```js
 // type signature
-getPortableSettings: () => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IMaybe<IArrayType<ISimpleType<string>>>>) | undefined; ... 5 more ...; $__mstStateTreeNodeType__?: [...] | ... 1 more ... | undefined; }
+getPortableSettings: () => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>>) | undefined; ... 5 more ...; $__mstStateTreeNodeType__?: [...] | ... 1 more ... | undefined; }
 ```
 
 #### method: legendItems
@@ -395,6 +558,27 @@ legendItems: () => LegendItem[]
 ```
 
 ### MultiSampleVariantBaseModel - Actions
+
+#### action: setCellData
+
+```js
+// type signature
+setCellData: (data: CellDataResult | undefined) => void
+```
+
+#### action: setContextMenuFeature
+
+```js
+// type signature
+setContextMenuFeature: (feature?: Feature | undefined) => void
+```
+
+#### action: setLoadedBpPerPx
+
+```js
+// type signature
+setLoadedBpPerPx: (bpPerPx: number | undefined) => void
+```
 
 #### action: setJexlFilters
 
@@ -464,6 +648,34 @@ clearLayout: () => void
 setMafFilter: (arg: number) => void
 ```
 
+#### action: setShowSidebarLabels
+
+```js
+// type signature
+setShowSidebarLabels: (arg: boolean) => void
+```
+
+#### action: setShowTree
+
+```js
+// type signature
+setShowTree: (arg: boolean) => void
+```
+
+#### action: setShowBranchLength
+
+```js
+// type signature
+setShowBranchLength: (arg: boolean) => void
+```
+
+#### action: setLayoutAndPendingClusterTree
+
+```js
+// type signature
+setLayoutAndPendingClusterTree: (layout: Source[], tree: string) => void
+```
+
 #### action: setPhasedMode
 
 ```js
@@ -495,4 +707,46 @@ resizeHeight: (distance: number) => number
 ```js
 // type signature
 setReferenceDrawingMode: (arg: string) => void
+```
+
+#### action: sortByGenotype
+
+```js
+// type signature
+sortByGenotype: (featureId: string) => void
+```
+
+#### action: clearDisplaySpecificData
+
+```js
+// type signature
+clearDisplaySpecificData: () => void
+```
+
+#### action: isCacheValid
+
+```js
+// type signature
+isCacheValid: (_displayedRegionIndex: number) => boolean
+```
+
+#### action: getByteEstimateConfig
+
+```js
+// type signature
+getByteEstimateConfig: () => ByteEstimateConfig | null
+```
+
+#### action: fetchNeeded
+
+```js
+// type signature
+fetchNeeded: (_needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>
+```
+
+#### action: reload
+
+```js
+// type signature
+reload: () => void
 ```

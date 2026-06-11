@@ -96,6 +96,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -109,6 +111,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -155,6 +159,8 @@ setRenderError, attachRenderingBackend
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
@@ -185,7 +191,7 @@ configuration: ConfigurationReference(configSchema)
 // type signature
 IOptionalIType<ISimpleType<LinkedReadsMode>, [undefined]>
 // code
-linkedReads: types.optional(
+linkedReads: types.stripDefault(
             types.enumeration<LinkedReadsMode>('LinkedReadsMode', [
               'off',
               'normal',
@@ -202,90 +208,90 @@ ordinary pileup or chain layout.
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showBezierConnections: false
+showBezierConnections: types.stripDefault(types.boolean, false)
 ```
 
 #### property: showCoverage
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showCoverage: true
+showCoverage: types.stripDefault(types.boolean, true)
 ```
 
 #### property: coverageHeight
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-coverageHeight: 45
+coverageHeight: types.stripDefault(types.number, 45)
 ```
 
 #### property: showMismatches
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showMismatches: true
+showMismatches: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showInterbaseIndicators
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showInterbaseIndicators: true
+showInterbaseIndicators: types.stripDefault(types.boolean, true)
 ```
 
 #### property: drawSingletons
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-drawSingletons: true
+drawSingletons: types.stripDefault(types.boolean, true)
 ```
 
 #### property: drawProperPairs
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-drawProperPairs: true
+drawProperPairs: types.stripDefault(types.boolean, true)
 ```
 
 #### property: flipStrandLongReadChains
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-flipStrandLongReadChains: true
+flipStrandLongReadChains: types.stripDefault(types.boolean, true)
 ```
 
 #### property: drawInter
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-drawInter: true
+drawInter: types.stripDefault(types.boolean, true)
 ```
 
 #### property: drawLongRange
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-drawLongRange: true
+drawLongRange: types.stripDefault(types.boolean, true)
 ```
 
 #### property: arcColorByType
@@ -294,7 +300,7 @@ drawLongRange: true
 // type signature
 IOptionalIType<ISimpleType<ArcColorByType>, [undefined]>
 // code
-arcColorByType: types.optional(
+arcColorByType: types.stripDefault(
             arcColorByTypes,
             'insertSizeAndOrientation',
           )
@@ -309,7 +315,7 @@ direction
 // type signature
 IOptionalIType<ISimpleType<ReadConnectionsMode>, [undefined]>
 // code
-readConnections: types.optional(
+readConnections: types.stripDefault(
             types.enumeration<ReadConnectionsMode>('ReadConnectionsMode', [
               'off',
               'arc',
@@ -325,9 +331,9 @@ draw read connections below the coverage band instead of over it
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-readConnectionsDown: false
+readConnectionsDown: types.stripDefault(types.boolean, false)
 ```
 
 #### property: showSashimiArcs
@@ -336,34 +342,46 @@ readConnectionsDown: false
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showSashimiArcs: types.optional(types.boolean, true)
+showSashimiArcs: types.stripDefault(types.boolean, true)
+```
+
+#### property: minSashimiScore
+
+hide sashimi junction arcs with fewer than this many supporting reads (0 shows
+all)
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minSashimiScore: types.stripDefault(types.number, 0)
 ```
 
 #### property: sashimiArcsHeight
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-sashimiArcsHeight: 40
+sashimiArcsHeight: types.stripDefault(types.number, 40)
 ```
 
 #### property: readConnectionsHeight
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-readConnectionsHeight: 40
+readConnectionsHeight: types.stripDefault(types.number, 40)
 ```
 
 #### property: showSoftClipping
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showSoftClipping: false
+showSoftClipping: types.stripDefault(types.boolean, false)
 ```
 
 ### LinearAlignmentsDisplay - Volatiles
@@ -821,8 +839,9 @@ number
 
 #### getter: hasSashimiArcs
 
-True when any loaded region has splice junctions to draw as sashimi arcs. Drives
-whether the below-coverage band reserves space.
+True when any loaded region has a junction passing minSashimiScore. Drives
+whether the below-coverage band reserves space, so a threshold that hides every
+arc also reclaims the empty band.
 
 ```js
 // type
@@ -846,6 +865,16 @@ pileup begins (== coverageDisplayHeight).
   sashimiBandTop: number
   bottom: number
 }
+```
+
+#### getter: sashimiArcsTop
+
+Y offset where the sashimi overlay/export is drawn: below coverage in down mode,
+just under the y-scalebar label otherwise.
+
+```js
+// type
+number
 ```
 
 #### getter: coverageDisplayHeight
@@ -988,7 +1017,7 @@ Track menu items
 
 ```js
 // type signature
-trackMenuItems: () => (MenuItem | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; })[]; } | ... 4 more ... | { ...; })[]
+trackMenuItems: () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ ...; } | ... 1 more ... | { ...; })[]; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: contextMenuItems
@@ -1264,6 +1293,13 @@ setReadConnectionsHeight: (height: number) => void
 ```js
 // type signature
 setSashimiArcsHeight: (height: number) => void
+```
+
+#### action: setMinSashimiScore
+
+```js
+// type signature
+setMinSashimiScore: (score: number) => void
 ```
 
 #### action: setReadConnectionsLineWidth

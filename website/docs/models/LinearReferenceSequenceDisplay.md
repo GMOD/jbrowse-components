@@ -57,6 +57,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -70,6 +72,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -138,30 +142,39 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showForward: true
+showForward: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showReverse
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showReverse: true
+showReverse: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showTranslation
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showTranslation: true
+showTranslation: types.stripDefault(types.boolean, true)
 ```
 
 ### LinearReferenceSequenceDisplay - Volatiles
+
+#### volatile: sequenceData
+
+```js
+// type signature
+ObservableMap<number, SequenceRegionData>
+// code
+sequenceData: observable.map<number, SequenceRegionData>()
+```
 
 #### volatile: colorState
 
@@ -224,6 +237,20 @@ the view is too zoomed out to show individual bases
 boolean
 ```
 
+#### getter: numRows
+
+```js
+// type
+number
+```
+
+#### getter: sequenceHeight
+
+```js
+// type
+number
+```
+
 #### getter: computedHeight
 
 collapses to 50px when zoomed out (no sequence visible) or before the view
@@ -238,6 +265,13 @@ number
 
 override TrackHeightMixin height: use manual resize if set, otherwise the
 zoom-aware computed height.
+
+```js
+// type
+number
+```
+
+#### getter: rowHeight
 
 ```js
 // type
@@ -267,6 +301,13 @@ boolean
 
 ### LinearReferenceSequenceDisplay - Methods
 
+#### method: renderSvg
+
+```js
+// type signature
+renderSvg: (opts?: ExportSvgDisplayOptions | undefined) => Promise<Element | null>
+```
+
 #### method: trackMenuItems
 
 ```js
@@ -276,6 +317,13 @@ trackMenuItems: () => { label: string; type: string; checked: boolean; onClick: 
 
 ### LinearReferenceSequenceDisplay - Actions
 
+#### action: setSequenceRegion
+
+```js
+// type signature
+setSequenceRegion: (idx: number, data: SequenceRegionData) => void
+```
+
 #### action: setColorState
 
 push theme-derived colors in from the component
@@ -283,6 +331,13 @@ push theme-derived colors in from the component
 ```js
 // type signature
 setColorState: (palette: ColorPalette, textColors: TextColors) => void
+```
+
+#### action: clearDisplaySpecificData
+
+```js
+// type signature
+clearDisplaySpecificData: () => void
 ```
 
 #### action: toggleShowForward
@@ -315,4 +370,11 @@ created. Streams each fetched region into the backend and draws every frame from
 ```js
 // type signature
 startRenderingBackend: (backend: Canvas2DSequenceRenderer) => void
+```
+
+#### action: fetchNeeded
+
+```js
+// type signature
+fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>
 ```

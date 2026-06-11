@@ -55,6 +55,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -68,6 +70,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -135,6 +139,8 @@ setColor, setMinScore, setMaxScore, setRenderingType, setSummaryScoreMode,
 setAutoscale, isCacheValid
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
+
+**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 

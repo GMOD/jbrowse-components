@@ -44,6 +44,8 @@ startRenderingBackend
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -57,6 +59,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -125,6 +129,8 @@ setAutoscale, isCacheValid
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
@@ -169,6 +175,27 @@ gcModeOverride: types.maybe(
 
 ### SharedGCContentModel - Getters
 
+#### getter: windowSize
+
+```js
+// type
+any
+```
+
+#### getter: windowDelta
+
+```js
+// type
+any
+```
+
+#### getter: gcMode
+
+```js
+// type
+any
+```
+
 #### getter: adapterConfig
 
 retrieves the sequence adapter from parent track, and puts it as a subadapter on
@@ -183,4 +210,29 @@ a GCContentAdapter
   windowDelta: any
   gcMode: any
 }
+```
+
+### SharedGCContentModel - Methods
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```
+
+### SharedGCContentModel - Actions
+
+#### action: setGCContentParams
+
+```js
+// type signature
+setGCContentParams: ({ windowSize, windowDelta, }: { windowSize: number; windowDelta: number; }) => void
+```
+
+#### action: setGCMode
+
+```js
+// type signature
+setGCMode: (mode: "content" | "skew") => void
 ```

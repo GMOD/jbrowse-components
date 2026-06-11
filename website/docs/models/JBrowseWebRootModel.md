@@ -51,6 +51,8 @@ findAppropriateInternetAccount
 
 ### Available via [RootAppMenuMixin](../rootappmenumixin)
 
+**Volatiles:** mutableMenuActions
+
 **Actions:** setMenus, appendMenu, insertMenu, appendToMenu, insertInMenu,
 appendToSubMenu, insertInSubMenu
 
@@ -91,7 +93,16 @@ sessionDB: undefined as IDBPDatabase<SessionDB> | undefined
 // type signature
 string
 // code
-version: `${packageJSON.version} (${process.env.BUILD_GIT_HASH ?? 'dev'})`
+version: packageJSON.version
+```
+
+#### volatile: gitCommit
+
+```js
+// type signature
+string
+// code
+gitCommit
 ```
 
 #### volatile: pluginsUpdated

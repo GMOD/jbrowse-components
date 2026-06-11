@@ -47,3 +47,154 @@ featureDensityStats
 
 **Actions:** setRegionTooLarge, setFeatureDensityStats,
 setFeatureDensityStatsLimit, reload, forceLoad
+
+### FeatureDensityMixin - Properties
+
+#### property: userBpPerPxLimit
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+userBpPerPxLimit: types.maybe(types.number)
+```
+
+### FeatureDensityMixin - Volatiles
+
+#### volatile: featureDensityStatsP
+
+```js
+// type signature
+Promise<FeatureDensityStats> | undefined
+// code
+featureDensityStatsP: undefined as
+        | undefined
+        | Promise<FeatureDensityStats>
+```
+
+#### volatile: currStatsBpPerPx
+
+```js
+// type signature
+number
+// code
+currStatsBpPerPx: 0
+```
+
+### FeatureDensityMixin - Getters
+
+#### getter: currentBytesRequested
+
+```js
+// type
+number
+```
+
+#### getter: currentFeatureScreenDensity
+
+```js
+// type
+number
+```
+
+#### getter: maxFeatureScreenDensity
+
+```js
+// type
+any
+```
+
+#### getter: featureDensityStatsReady
+
+```js
+// type
+boolean
+```
+
+#### getter: maxAllowableBytes
+
+```js
+// type
+number
+```
+
+#### getter: bytesTooLarge
+
+```js
+// type
+boolean
+```
+
+#### getter: densityTooLarge
+
+```js
+// type
+boolean
+```
+
+#### getter: regionTooLarge
+
+```js
+// type
+boolean
+```
+
+#### getter: regionTooLargeReason
+
+```js
+// type
+string
+```
+
+#### getter: featureDensityStatsReadyAndRegionNotTooLarge
+
+```js
+// type
+boolean
+```
+
+### FeatureDensityMixin - Methods
+
+#### method: regionCannotBeRendered
+
+```js
+// type signature
+regionCannotBeRendered: (_region: Region) => Element | null
+```
+
+### FeatureDensityMixin - Actions
+
+#### action: setCurrStatsBpPerPx
+
+```js
+// type signature
+setCurrStatsBpPerPx: (n: number) => void
+```
+
+#### action: setFeatureDensityStatsLimit
+
+```js
+// type signature
+setFeatureDensityStatsLimit: (stats?: FeatureDensityStats | undefined) => void
+```
+
+#### action: getFeatureDensityStats
+
+```js
+// type signature
+getFeatureDensityStats: () => Promise<FeatureDensityStats>
+```
+
+#### action: setFeatureDensityStatsP
+
+```js
+// type signature
+setFeatureDensityStatsP: (arg: Promise<FeatureDensityStats> | undefined) => void
+```
+
+#### action: clearFeatureDensityStats
+
+```js
+// type signature
+clearFeatureDensityStats: () => void
+```

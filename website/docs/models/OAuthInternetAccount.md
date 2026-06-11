@@ -42,6 +42,18 @@ configuration: ConfigurationReference(configSchema)
 
 ### OAuthInternetAccount - Getters
 
+#### getter: conf
+
+The config typed off the concrete schema. `ConfigurationReference` erases
+`self.configuration` to `any` (the reference's MST instance brand doesn't carry
+the schema's slot definitions), so reads go through this getter to recover
+per-slot types and slot-name validation.
+
+```js
+// type
+ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
+
 #### getter: codeVerifierPKCE
 
 ```js
@@ -92,7 +104,7 @@ Can override or extend if dynamic state is needed.
 
 ```js
 // type
-string | undefined
+string
 ```
 
 #### getter: responseType

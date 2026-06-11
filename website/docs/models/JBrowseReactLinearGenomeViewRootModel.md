@@ -35,7 +35,7 @@ config: createConfigModel(pluginManager, assemblyConfig)
 
 ```js
 // type signature
-IModelType<_OverrideProps<Omit<_OverrideProps<Omit<_OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; }, never>, { ...; }>, { ...; }>, never>, _OverrideProps<...>>, never>...
+IModelType<_OverrideProps<Omit<_OverrideProps<Omit<_OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<ISimpleType<number>, [...]>; focusedViewId: IMaybe<...>; }, never>, { ...; }>, { ...; }>, never>, _OverrideProps<...>>, never...
 // code
 session: Session
 ```
@@ -44,7 +44,7 @@ session: Session
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 10 more ... & { ...; }, _NotCustomized, _NotC...
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotC...
 // code
 assemblyManager: types.optional(AssemblyManager, {})
 ```
@@ -55,7 +55,7 @@ assemblyManager: types.optional(AssemblyManager, {})
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-disableAddTracks: types.optional(types.boolean, false)
+disableAddTracks: types.stripDefault(types.boolean, false)
 ```
 
 #### property: drawerViewHeight
@@ -64,7 +64,7 @@ disableAddTracks: types.optional(types.boolean, false)
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-drawerViewHeight: types.optional(types.string, '100vh')
+drawerViewHeight: types.stripDefault(types.string, '100vh')
 ```
 
 #### property: internetAccounts
@@ -97,6 +97,10 @@ RpcManager
 // code
 rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
   makeWorkerInstance,
+
+  defaultDriverName: makeWorkerInstance
+    ? 'WebWorkerRpcDriver'
+    : 'MainThreadRpcDriver',
 })
 ```
 
@@ -142,7 +146,7 @@ ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: Configura
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<Omit<_OverrideProps<Omit<_OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; }, never>, { ...; }>, { .....
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<Omit<_OverrideProps<Omit<_OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<ISimpleType<number>, [...]>; focusedViewId: IMaybe<...>; }, never>, { ...; }>, { ....
 ```
 
 #### action: renameCurrentSession

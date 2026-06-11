@@ -31,9 +31,12 @@ Serialized dockview layout state
 
 ```js
 // type signature
-IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>
+IOptionalIType<IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>, [undefined]>
 // code
-dockviewLayout: types.maybe(types.frozen<SerializedDockview>())
+dockviewLayout: types.stripDefault(
+        types.maybe(types.frozen<SerializedDockview>()),
+        undefined,
+      )
 ```
 
 #### property: panelViewAssignments
@@ -44,7 +47,7 @@ Maps panel IDs to arrays of view IDs (for stacking views within a panel)
 // type signature
 IOptionalIType<IMapType<IArrayType<ISimpleType<string>>>, [undefined]>
 // code
-panelViewAssignments: types.optional(
+panelViewAssignments: types.stripDefault(
         types.map(types.array(types.string)),
         {},
       )
@@ -79,9 +82,9 @@ The currently active panel ID in dockview
 
 ```js
 // type signature
-IMaybe<ISimpleType<string>>
+IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
 // code
-activePanelId: types.maybe(types.string)
+activePanelId: types.stripDefault(types.maybe(types.string), undefined)
 ```
 
 ### DockviewLayoutMixin - Getters

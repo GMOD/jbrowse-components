@@ -57,18 +57,18 @@ configuration: ConfigurationReference(baseTrackConfig)
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-minimized: false
+minimized: types.stripDefault(types.boolean, false)
 ```
 
 #### property: pinned
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-pinned: false
+pinned: types.stripDefault(types.boolean, false)
 ```
 
 #### property: displays

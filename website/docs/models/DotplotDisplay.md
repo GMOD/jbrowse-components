@@ -29,6 +29,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -112,7 +114,48 @@ DotplotGeometryData | undefined
 geometry: undefined as DotplotGeometryData | undefined
 ```
 
+#### volatile: fetchStopToken
+
+```js
+// type signature
+StopToken | undefined
+// code
+fetchStopToken: undefined as StopToken | undefined
+```
+
+#### volatile: fetchWarnings
+
+```js
+// type signature
+{ message: string; effect: string; }[]
+// code
+fetchWarnings: [] as { message: string; effect: string }[]
+```
+
+#### volatile: assembliesSwapped
+
+```js
+// type signature
+false
+// code
+assembliesSwapped: false
+```
+
 ### DotplotDisplay - Getters
+
+#### getter: isLoading
+
+```js
+// type
+boolean
+```
+
+#### getter: isRefetching
+
+```js
+// type
+boolean
+```
 
 #### getter: warnings
 
@@ -150,6 +193,27 @@ setLoading: (stopToken: StopToken) => void
 ```js
 // type signature
 setRpcData: (data: DotplotRpcData) => void
+```
+
+#### action: setWarnings
+
+```js
+// type signature
+setWarnings: (w: { message: string; effect: string; }[]) => void
+```
+
+#### action: setAssembliesSwapped
+
+```js
+// type signature
+setAssembliesSwapped: (arg: boolean) => void
+```
+
+#### action: setGeometry
+
+```js
+// type signature
+setGeometry: (data: DotplotGeometryData | undefined) => void
 ```
 
 #### action: setError

@@ -64,10 +64,11 @@ removeSnackbarMessage
 
 ```js
 // type signature
-IArrayType<IAnyModelType>
+IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
 // code
-sessionTracks: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
+sessionTracks: types.stripDefault(
+        types.array(pluginManager.pluggableConfigSchemaType('track')),
+        [],
       )
 ```
 

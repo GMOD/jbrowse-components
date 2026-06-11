@@ -51,6 +51,17 @@ Promise<void> | undefined
 loadingP: undefined as Promise<void> | undefined
 ```
 
+#### volatile: adapterLoads
+
+```js
+// type signature
+QuickLRU<string, Promise<RefNameAliases>>
+// code
+adapterLoads: new QuickLRU<string, Promise<RefNameAliases>>({
+          maxSize: 1000,
+        })
+```
+
 #### volatile: volatileRegions
 
 ```js
@@ -190,6 +201,17 @@ RpcManager
 ```js
 // type
 string[] | undefined
+```
+
+#### getter: refNameToIndex
+
+memoized refName -> first region index, so getRefNameColor is O(1) instead of an
+O(n) indexOf per call (matters for assemblies with many contigs rendered in
+overview scalebars/rulers)
+
+```js
+// type
+Map<string, number> | undefined
 ```
 
 ### Assembly - Methods

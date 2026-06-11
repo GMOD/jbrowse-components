@@ -44,6 +44,8 @@ and docs.
 
 **Properties:** id, displayName, minimized
 
+**Volatiles:** width
+
 **Getters:** menuItems
 
 **Actions:** setDisplayName, setWidth, setMinimized
@@ -65,18 +67,18 @@ similar to offsetPx in linear genome view
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-offsetRadians: defaultOffsetRadians
+offsetRadians: types.stripDefault(types.number, defaultOffsetRadians)
 ```
 
 #### property: bpPerPx
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-bpPerPx: defaultBpPerPx
+bpPerPx: types.stripDefault(types.number, defaultBpPerPx)
 ```
 
 #### property: tracks
@@ -94,27 +96,27 @@ tracks: types.array(
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-hideVerticalResizeHandle: false
+hideVerticalResizeHandle: types.stripDefault(types.boolean, false)
 ```
 
 #### property: hideTrackSelectorButton
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-hideTrackSelectorButton: false
+hideTrackSelectorButton: types.stripDefault(types.boolean, false)
 ```
 
 #### property: disableImportForm
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-disableImportForm: false
+disableImportForm: types.stripDefault(types.boolean, false)
 ```
 
 #### property: height
@@ -123,61 +125,79 @@ disableImportForm: false
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(types.number, defaultHeight)
+height: types.stripDefault(types.number, defaultHeight)
+```
+
+#### property: displayedRegions
+
+```js
+// type signature
+IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
+// code
+displayedRegions: types.stripDefault(types.frozen<Region[]>(), [])
 ```
 
 #### property: minimumRadiusPx
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minimumRadiusPx: defaultMinimumRadiusPx
+minimumRadiusPx: types.stripDefault(
+          types.number,
+          defaultMinimumRadiusPx,
+        )
 ```
 
 #### property: spacingPx
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-spacingPx: defaultSpacingPx
+spacingPx: types.stripDefault(types.number, defaultSpacingPx)
 ```
 
 #### property: paddingPx
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-paddingPx: defaultPaddingPx
+paddingPx: types.stripDefault(types.number, defaultPaddingPx)
 ```
 
 #### property: minVisibleWidth
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minVisibleWidth: defaultMinVisibleWidth
+minVisibleWidth: types.stripDefault(
+          types.number,
+          defaultMinVisibleWidth,
+        )
 ```
 
 #### property: minimumBlockWidth
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minimumBlockWidth: defaultMinimumBlockWidth
+minimumBlockWidth: types.stripDefault(
+          types.number,
+          defaultMinimumBlockWidth,
+        )
 ```
 
 #### property: trackSelectorType
 
 ```js
 // type signature
-string
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-trackSelectorType: 'hierarchical'
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
 
 #### property: init
@@ -189,6 +209,44 @@ used for initializing the view from a session snapshot
 IType<CircularViewInit | undefined, CircularViewInit | undefined, CircularViewInit | undefined>
 // code
 init: types.frozen<CircularViewInit | undefined>()
+```
+
+### CircularView - Volatiles
+
+#### volatile: volatileWidth
+
+```js
+// type signature
+number | undefined
+// code
+volatileWidth: undefined as number | undefined
+```
+
+#### volatile: volatileError
+
+```js
+// type signature
+unknown
+// code
+volatileError: undefined as unknown
+```
+
+#### volatile: panX
+
+```js
+// type signature
+number
+// code
+panX: 0
+```
+
+#### volatile: panY
+
+```js
+// type signature
+number
+// code
+panY: 0
 ```
 
 ### CircularView - Getters
@@ -387,6 +445,13 @@ menuItems: () => MenuItem[]
 ```js
 // type signature
 fitToWindow: () => void
+```
+
+#### action: setWidth
+
+```js
+// type signature
+setWidth: (newWidth: number) => number
 ```
 
 #### action: setHeight

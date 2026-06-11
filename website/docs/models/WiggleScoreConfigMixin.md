@@ -32,6 +32,8 @@ and docs.
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
@@ -44,7 +46,7 @@ and docs.
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-resolution: types.optional(types.number, 1)
+resolution: types.stripDefault(types.number, 1)
 ```
 
 #### property: displayCrossHatches
@@ -53,7 +55,7 @@ resolution: types.optional(types.number, 1)
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-displayCrossHatches: types.optional(types.boolean, false)
+displayCrossHatches: types.stripDefault(types.boolean, false)
 ```
 
 ### WiggleScoreConfigMixin - Volatiles

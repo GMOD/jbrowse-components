@@ -40,7 +40,7 @@ drawerPosition: types.optional(
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-drawerWidth: types.optional(
+drawerWidth: types.stripDefault(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
       )
@@ -50,18 +50,21 @@ drawerWidth: types.optional(
 
 ```js
 // type signature
-IMapType<IAnyType>
+IOptionalIType<IMapType<IAnyType>, [undefined]>
 // code
-widgets: types.map(widgetStateModelType)
+widgets: types.stripDefault(types.map(widgetStateModelType), {})
 ```
 
 #### property: activeWidgets
 
 ```js
 // type signature
-IMapType<IMaybe<IReferenceType<IAnyType>>>
+IOptionalIType<IMapType<IMaybe<IReferenceType<IAnyType>>>, [undefined]>
 // code
-activeWidgets: types.map(types.safeReference(widgetStateModelType))
+activeWidgets: types.stripDefault(
+        types.map(types.safeReference(widgetStateModelType)),
+        {},
+      )
 ```
 
 #### property: minimized
@@ -70,7 +73,7 @@ activeWidgets: types.map(types.safeReference(widgetStateModelType))
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-minimized: types.optional(types.boolean, false)
+minimized: types.stripDefault(types.boolean, false)
 ```
 
 ### DrawerWidgetSessionMixin - Getters

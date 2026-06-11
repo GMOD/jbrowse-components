@@ -61,9 +61,9 @@ name: types.string
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-margin: 0
+margin: types.stripDefault(types.number, 0)
 ```
 
 #### property: focusedViewId

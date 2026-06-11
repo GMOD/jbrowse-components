@@ -98,6 +98,13 @@ TextSearchManager
 
 ### BaseWebSession - Methods
 
+#### method: canEditTrack
+
+```js
+// type signature
+canEditTrack: (trackId: string) => boolean
+```
+
 #### method: getTrackActions
 
 raw track actions (Settings, Copy, Delete) without submenu wrapper
@@ -157,7 +164,7 @@ setDefaultSession: () => void
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<...>; focusedViewId...
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<...>; focu...
 ```
 
 #### action: editTrackConfiguration
@@ -165,4 +172,11 @@ setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps
 ```js
 // type signature
 editTrackConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
+```
+
+#### action: setPendingFileHandleIds
+
+```js
+// type signature
+setPendingFileHandleIds: (ids: string[]) => void
 ```

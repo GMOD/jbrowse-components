@@ -36,6 +36,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -49,6 +51,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -94,6 +98,8 @@ setRenderError, attachRenderingBackend
 **Actions:** setError, setStatusMessage, cancelFetch, runFetch
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
+
+**Properties:** configOverrides
 
 **Methods:** getOverride, getConfWithOverride
 
@@ -205,6 +211,18 @@ incrementalLayout: createIncrementalLayout()
 ```
 
 ### LinearCanvasBaseDisplay - Getters
+
+#### getter: conf
+
+the config typed off the concrete schema; `ConfigurationReference` erases
+`self.configuration` to `any`, so direct reads route through this to stay typed
+(same move as `BaseAdapter<CONF>`). The override-aware reads use
+`getConfWithOverride` instead.
+
+```js
+// type
+ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
 
 #### getter: visibleFeatureDensityPerPx
 
@@ -468,7 +486,7 @@ rpcProps: () => {
   displayConfig: DisplayConfig
   maxFeatureDensity: number | undefined
   colorByCDS: boolean
-  theme: ThemeOptions | undefined
+  theme: SerializableThemeArgs | undefined
 }
 ```
 

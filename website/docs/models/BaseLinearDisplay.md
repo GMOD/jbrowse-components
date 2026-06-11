@@ -37,6 +37,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -51,7 +53,25 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** scrollTop
 
+**Getters:** height
+
 **Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [FeatureDensityMixin](../featuredensitymixin)
+
+**Properties:** userBpPerPxLimit
+
+**Volatiles:** featureDensityStatsP, currStatsBpPerPx
+
+**Getters:** currentBytesRequested, currentFeatureScreenDensity,
+maxFeatureScreenDensity, featureDensityStatsReady, maxAllowableBytes,
+bytesTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
+featureDensityStatsReadyAndRegionNotTooLarge
+
+**Methods:** regionCannotBeRendered
+
+**Actions:** setCurrStatsBpPerPx, setFeatureDensityStatsLimit,
+getFeatureDensityStats, setFeatureDensityStatsP, clearFeatureDensityStats
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
@@ -108,6 +128,15 @@ showTooltips: types.maybe(types.boolean)
 ```
 
 ### BaseLinearDisplay - Volatiles
+
+#### volatile: mouseoverExtraInformation
+
+```js
+// type signature
+string | undefined
+// code
+mouseoverExtraInformation: undefined as string | undefined
+```
 
 #### volatile: featureIdUnderMouse
 

@@ -49,6 +49,35 @@ IMaybe<ISimpleType<string>>
 rpcDriverName: types.maybe(types.string)
 ```
 
+### BaseDisplay - Volatiles
+
+#### volatile: rendererTypeName
+
+```js
+// type signature
+string
+// code
+rendererTypeName: ''
+```
+
+#### volatile: error
+
+```js
+// type signature
+unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: statusMessage
+
+```js
+// type signature
+string | undefined
+// code
+statusMessage: undefined as string | undefined
+```
+
 ### BaseDisplay - Getters
 
 #### getter: parentTrack

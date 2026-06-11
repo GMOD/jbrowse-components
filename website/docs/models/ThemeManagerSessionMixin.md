@@ -20,6 +20,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### ThemeManagerSessionMixin - Volatiles
+
+#### volatile: sessionThemeName
+
+```js
+// type signature
+string
+// code
+sessionThemeName: localStorageGetItem('themeName') ?? 'default'
+```
+
 ### ThemeManagerSessionMixin - Getters
 
 #### getter: themeName
@@ -27,6 +38,13 @@ reference the markdown files in our repo of the checked out git tag
 ```js
 // type
 string
+```
+
+#### getter: themeOptions
+
+```js
+// type
+SerializableThemeArgs
 ```
 
 #### getter: theme

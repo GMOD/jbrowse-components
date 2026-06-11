@@ -29,6 +29,8 @@ and docs.
 
 **Properties:** id, displayName, minimized
 
+**Volatiles:** width
+
 **Getters:** menuItems
 
 **Actions:** setDisplayName, setWidth, setMinimized
@@ -62,45 +64,45 @@ type: types.string
 
 ```js
 // type signature
-string
+IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-trackSelectorType: 'hierarchical'
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
 
 #### property: showIntraviewLinks
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showIntraviewLinks: true
+showIntraviewLinks: types.stripDefault(types.boolean, true)
 ```
 
 #### property: linkViews
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-linkViews: false
+linkViews: types.stripDefault(types.boolean, false)
 ```
 
 #### property: interactiveOverlay
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-interactiveOverlay: false
+interactiveOverlay: types.stripDefault(types.boolean, false)
 ```
 
 #### property: scrollZoom
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-scrollZoom: false
+scrollZoom: types.stripDefault(types.boolean, false)
 ```
 
 #### property: levels
@@ -118,7 +120,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
+IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
@@ -133,10 +135,11 @@ dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
-IArrayType<IAnyModelType>
+IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
 // code
-viewTrackConfigs: types.array(
-          pluginManager.pluggableConfigSchemaType('track'),
+viewTrackConfigs: types.stripDefault(
+          types.array(pluginManager.pluggableConfigSchemaType('track')),
+          [],
         )
 ```
 
@@ -242,14 +245,14 @@ setWidth: (newWidth: number) => void
 
 ```js
 // type signature
-setViews: (views: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>>>[]) => void
+setViews: (views: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<...>, [...]>; }, { ...; }>>>[]) => void
 ```
 
 #### action: removeView
 
 ```js
 // type signature
-removeView: (view: ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>) => void
+removeView: (view: ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<...>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: addView
@@ -258,7 +261,7 @@ Push a new genome row. The new trailing level starts with no synteny tracks.
 
 ```js
 // type signature
-addView: (view: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; }, { ...; }>>>) => void
+addView: (view: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<...>, [...]>; }, { ...; }>>>) => void
 ```
 
 #### action: removeLastRow

@@ -53,6 +53,15 @@ number
 scrollTop: 0
 ```
 
+### TrackHeightMixin - Getters
+
+#### getter: height
+
+```js
+// type
+number
+```
+
 ### TrackHeightMixin - Actions
 
 #### action: setScrollTop

@@ -55,6 +55,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -78,9 +80,9 @@ type: types.literal('ChordVariantDisplay')
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-bezierRadiusRatio: 0.1
+bezierRadiusRatio: types.stripDefault(types.number, 0.1)
 ```
 
 #### property: configuration

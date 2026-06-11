@@ -67,7 +67,27 @@ offsetPx: 0
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minimumBlockWidth: types.optional(types.number, 0)
+minimumBlockWidth: types.stripDefault(types.number, 0)
+```
+
+### Base1DView - Volatiles
+
+#### volatile: features
+
+```js
+// type signature
+Feature[] | undefined
+// code
+features: undefined as undefined | Feature[]
+```
+
+#### volatile: volatileWidth
+
+```js
+// type signature
+number
+// code
+volatileWidth: 0
 ```
 
 ### Base1DView - Getters

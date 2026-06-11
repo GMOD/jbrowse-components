@@ -31,6 +31,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -44,6 +46,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -89,9 +93,22 @@ setRenderError, attachRenderingBackend
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
+
+### SharedLDModel - Properties
+
+#### property: configuration
+
+```js
+// type signature
+ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
 
 ### SharedLDModel - Volatiles
 
@@ -124,6 +141,125 @@ reloadCounter: 0
 boolean
 ```
 
+#### getter: minorAlleleFrequencyFilter
+
+```js
+// type
+number
+```
+
+#### getter: lengthCutoffFilter
+
+```js
+// type
+number
+```
+
+#### getter: lineZoneHeight
+
+```js
+// type
+number
+```
+
+#### getter: ldMetric
+
+```js
+// type
+LDMetric
+```
+
+#### getter: showLegend
+
+```js
+// type
+boolean
+```
+
+#### getter: showLDTriangle
+
+```js
+// type
+boolean
+```
+
+#### getter: showRecombination
+
+```js
+// type
+boolean
+```
+
+#### getter: recombinationZoneHeight
+
+```js
+// type
+number
+```
+
+#### getter: fitToHeight
+
+```js
+// type
+boolean
+```
+
+#### getter: hweFilterThreshold
+
+```js
+// type
+number
+```
+
+#### getter: callRateFilter
+
+```js
+// type
+number
+```
+
+#### getter: showVerticalGuides
+
+```js
+// type
+boolean
+```
+
+#### getter: showLabels
+
+```js
+// type
+boolean
+```
+
+#### getter: tickHeight
+
+```js
+// type
+number
+```
+
+#### getter: useGenomicPositions
+
+```js
+// type
+boolean
+```
+
+#### getter: signedLD
+
+```js
+// type
+boolean
+```
+
+#### getter: jexlFilters
+
+```js
+// type
+string[]
+```
+
 #### getter: snps
 
 Returns true if this display uses pre-computed LD data (PLINK, ldmat) rather
@@ -132,6 +268,34 @@ than computing LD from VCF genotypes
 ```js
 // type
 LDSnp[]
+```
+
+#### getter: cellWidth
+
+```js
+// type
+number
+```
+
+#### getter: filterStats
+
+```js
+// type
+FilterStats | undefined
+```
+
+#### getter: recombination
+
+```js
+// type
+{ values: Float32Array<ArrayBufferLike>; positions: number[]; } | undefined
+```
+
+#### getter: isPrecomputedLD
+
+```js
+// type
+boolean
 ```
 
 #### getter: effectiveLineZoneHeight
@@ -190,6 +354,13 @@ model.fitToHeight, rpcData contents, …) re-fires it.
 
 ### SharedLDModel - Methods
 
+#### method: rpcProps
+
+```js
+// type signature
+rpcProps: () => { ldMetric: LDMetric; minorAlleleFrequencyFilter: number; lengthCutoffFilter: number; hweFilterThreshold: number; callRateFilter: number; jexlFilters: string[]; signedLD: boolean; useGenomicPositions: boolean; }
+```
+
 #### method: hitTest
 
 Inverse of `renderTransform` for the LD matrix: takes mouse coords
@@ -238,6 +409,132 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 ```
 
 ### SharedLDModel - Actions
+
+#### action: setRpcData
+
+```js
+// type signature
+setRpcData: (data: LDDataResult | null) => void
+```
+
+#### action: setLineZoneHeight
+
+```js
+// type signature
+setLineZoneHeight: (n: number) => void
+```
+
+#### action: setMafFilter
+
+```js
+// type signature
+setMafFilter: (arg: number) => void
+```
+
+#### action: setLengthCutoffFilter
+
+```js
+// type signature
+setLengthCutoffFilter: (arg: number) => void
+```
+
+#### action: setLDMetric
+
+```js
+// type signature
+setLDMetric: (metric: LDMetric) => void
+```
+
+#### action: setShowLegend
+
+```js
+// type signature
+setShowLegend: (show: boolean) => void
+```
+
+#### action: setShowLDTriangle
+
+```js
+// type signature
+setShowLDTriangle: (show: boolean) => void
+```
+
+#### action: setShowRecombination
+
+```js
+// type signature
+setShowRecombination: (show: boolean) => void
+```
+
+#### action: setRecombinationZoneHeight
+
+```js
+// type signature
+setRecombinationZoneHeight: (n: number) => void
+```
+
+#### action: setFitToHeight
+
+```js
+// type signature
+setFitToHeight: (value: boolean) => void
+```
+
+#### action: setHweFilter
+
+```js
+// type signature
+setHweFilter: (threshold: number) => void
+```
+
+#### action: setCallRateFilter
+
+```js
+// type signature
+setCallRateFilter: (threshold: number) => void
+```
+
+#### action: setShowVerticalGuides
+
+```js
+// type signature
+setShowVerticalGuides: (show: boolean) => void
+```
+
+#### action: setShowLabels
+
+```js
+// type signature
+setShowLabels: (show: boolean) => void
+```
+
+#### action: setTickHeight
+
+```js
+// type signature
+setTickHeight: (height: number) => void
+```
+
+#### action: setUseGenomicPositions
+
+```js
+// type signature
+setUseGenomicPositions: (value: boolean) => void
+```
+
+#### action: setSignedLD
+
+```js
+// type signature
+setSignedLD: (value: boolean) => void
+```
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (filters: string[] | undefined) => void
+```
 
 #### action: startRenderingBackend
 

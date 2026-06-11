@@ -22,15 +22,6 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BaseConnectionModel - Properties
 
-#### property: name
-
-```js
-// type signature
-ISimpleType<string>
-// code
-name: types.identifier
-```
-
 #### property: tracks
 
 ```js
@@ -47,6 +38,25 @@ tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+### BaseConnectionModel - Getters
+
+#### getter: connectionId
+
+the connection's unique id, resolved from its configuration (the config is the
+source of truth; connection names are not guaranteed unique)
+
+```js
+// type
+string
+```
+
+#### getter: name
+
+```js
+// type
+string
 ```
 
 ### BaseConnectionModel - Actions

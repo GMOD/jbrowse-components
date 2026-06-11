@@ -56,6 +56,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -70,7 +72,25 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** scrollTop
 
+**Getters:** height
+
 **Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [FeatureDensityMixin](../featuredensitymixin)
+
+**Properties:** userBpPerPxLimit
+
+**Volatiles:** featureDensityStatsP, currStatsBpPerPx
+
+**Getters:** currentBytesRequested, currentFeatureScreenDensity,
+maxFeatureScreenDensity, featureDensityStatsReady, maxAllowableBytes,
+bytesTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
+featureDensityStatsReadyAndRegionNotTooLarge
+
+**Methods:** regionCannotBeRendered
+
+**Actions:** setCurrStatsBpPerPx, setFeatureDensityStatsLimit,
+getFeatureDensityStats, setFeatureDensityStatsP, clearFeatureDensityStats
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
@@ -106,7 +126,45 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
+### LinearPairedArcDisplay - Volatiles
+
+#### volatile: features
+
+```js
+// type signature
+Feature[] | undefined
+// code
+features: undefined as Feature[] | undefined
+```
+
+#### volatile: loading
+
+```js
+// type signature
+false
+// code
+loading: false
+```
+
 ### LinearPairedArcDisplay - Getters
+
+#### getter: conf
+
+the config typed off the concrete schema; `ConfigurationReference` erases
+`self.configuration` to `any`, so reads route through this to stay typed (same
+move as `BaseAdapter<CONF>`)
+
+```js
+// type
+ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
+
+#### getter: fetchSettled
+
+```js
+// type
+boolean
+```
 
 #### getter: arcStyles
 
@@ -116,7 +174,7 @@ parseSvAlt) out of the per-pan render loop.
 
 ```js
 // type
-{ k1: { refName: string; start: number; end: number; strand: number; mateDirection: number; }; k2: { refName: string; start: number; end: number; mateDirection?: number | undefined; }; feature: Feature; alt: string | undefined; color: any; }[] | undefined
+{ k1: { refName: string; start: number; end: number; strand: number; mateDirection: number; }; k2: { refName: string; start: number; end: number; mateDirection?: number | undefined; }; feature: Feature; alt: string | undefined; color: string; }[] | undefined
 ```
 
 ### LinearPairedArcDisplay - Actions

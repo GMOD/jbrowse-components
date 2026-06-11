@@ -28,7 +28,7 @@ reference the markdown files in our repo of the checked out git tag
 // type signature
 IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>
 // code
-fileType: types.optional(types.enumeration(fileTypes), 'VCF')
+fileType: types.stripDefault(types.enumeration(fileTypes), 'VCF')
 ```
 
 #### property: selectedAssemblyName

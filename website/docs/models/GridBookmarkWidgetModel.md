@@ -22,6 +22,24 @@ reference the markdown files in our repo of the checked out git tag
 
 ### GridBookmarkWidgetModel - Properties
 
+#### property: label
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+label: types.optional(types.string, '')
+```
+
+#### property: highlight
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+highlight: types.optional(types.string, DEFAULT_HIGHLIGHT)
+```
+
 #### property: id
 
 ```js
@@ -133,6 +151,20 @@ string[]
 
 ### GridBookmarkWidgetModel - Actions
 
+#### action: setLabel
+
+```js
+// type signature
+setLabel: (label: string) => void
+```
+
+#### action: setHighlight
+
+```js
+// type signature
+setHighlight: (color: string) => void
+```
+
 #### action: setSelectedAssemblies
 
 ```js
@@ -222,4 +254,11 @@ clearBookmarksForLoadedAssemblies: () => void
 ```js
 // type signature
 clearSelectedBookmarks: () => void
+```
+
+#### action: removeBookmarkObject
+
+```js
+// type signature
+removeBookmarkObject: (arg: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>) => void
 ```

@@ -57,6 +57,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -71,7 +73,25 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** scrollTop
 
+**Getters:** height
+
 **Actions:** setScrollTop, setHeight, resizeHeight
+
+### Available via [FeatureDensityMixin](../featuredensitymixin)
+
+**Properties:** userBpPerPxLimit
+
+**Volatiles:** featureDensityStatsP, currStatsBpPerPx
+
+**Getters:** currentBytesRequested, currentFeatureScreenDensity,
+maxFeatureScreenDensity, featureDensityStatsReady, maxAllowableBytes,
+bytesTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
+featureDensityStatsReadyAndRegionNotTooLarge
+
+**Methods:** regionCannotBeRendered
+
+**Actions:** setCurrStatsBpPerPx, setFeatureDensityStatsLimit,
+getFeatureDensityStats, setFeatureDensityStatsP, clearFeatureDensityStats
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
@@ -119,7 +139,38 @@ IMaybe<ISimpleType<string>>
 displayModeOverride: types.maybe(types.string)
 ```
 
+### LinearArcDisplay - Volatiles
+
+#### volatile: features
+
+```js
+// type signature
+Feature[] | undefined
+// code
+features: undefined as Feature[] | undefined
+```
+
+#### volatile: loading
+
+```js
+// type signature
+false
+// code
+loading: false
+```
+
 ### LinearArcDisplay - Getters
+
+#### getter: conf
+
+the config typed off the concrete schema; `ConfigurationReference` erases
+`self.configuration` to `any`, so reads route through this to stay typed (same
+move as `BaseAdapter<CONF>`)
+
+```js
+// type
+ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
 
 #### getter: fetchSettled
 
@@ -132,7 +183,7 @@ boolean
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: arcStyles
@@ -145,10 +196,10 @@ these jexl expressions per feature per frame.
 // type
 {
   feature: Feature
-  color: any
+  color: string
   thickness: any
-  label: any
-  caption: any
+  label: string
+  caption: string
   arcHeight: number
 }
 ;[] | undefined

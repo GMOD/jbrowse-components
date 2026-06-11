@@ -56,6 +56,8 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -69,6 +71,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -137,54 +141,63 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-15
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-rowHeight: DEFAULTS.rowHeight
+rowHeight: types.stripDefault(types.number, DEFAULTS.rowHeight)
 ```
 
 #### property: rowProportion
 
 ```js
 // type signature
-0.8
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-rowProportion: DEFAULTS.rowProportion
+rowProportion: types.stripDefault(types.number, DEFAULTS.rowProportion)
 ```
 
 #### property: showAllLetters
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showAllLetters: DEFAULTS.showAllLetters
+showAllLetters: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showAllLetters,
+        )
 ```
 
 #### property: mismatchRendering
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-mismatchRendering: DEFAULTS.mismatchRendering
+mismatchRendering: types.stripDefault(
+          types.boolean,
+          DEFAULTS.mismatchRendering,
+        )
 ```
 
 #### property: showAsUpperCase
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showAsUpperCase: DEFAULTS.showAsUpperCase
+showAsUpperCase: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showAsUpperCase,
+        )
 ```
 
 #### property: showTree
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showTree: DEFAULTS.showTree
+showTree: types.stripDefault(types.boolean, DEFAULTS.showTree)
 ```
 
 #### property: showBranchLength
@@ -194,18 +207,21 @@ evenly by topology (cladogram).
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showBranchLength: DEFAULTS.showBranchLength
+showBranchLength: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showBranchLength,
+        )
 ```
 
 #### property: showCoverage
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showCoverage: DEFAULTS.showCoverage
+showCoverage: types.stripDefault(types.boolean, DEFAULTS.showCoverage)
 ```
 
 #### property: showAlignments
@@ -215,18 +231,24 @@ Show the per-sample alignment rows. When off, only the coverage band renders
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showAlignments: DEFAULTS.showAlignments
+showAlignments: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showAlignments,
+        )
 ```
 
 #### property: coverageHeight
 
 ```js
 // type signature
-45
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-coverageHeight: DEFAULTS.coverageHeight
+coverageHeight: types.stripDefault(
+          types.number,
+          DEFAULTS.coverageHeight,
+        )
 ```
 
 ### LinearMafDisplay - Volatiles
@@ -265,15 +287,29 @@ prefersOffset: true
 
 #### volatile: sourcesVolatile
 
-Canonical row metadata received from the worker. Reordering / recoloring lives
-in TreeSidebarMixin's `layout`; this volatile holds the unfiltered authoritative
-set so the merged `sources` view can fall back when `layout` is empty.
+The worker's authoritative row set, in tree (leaf) order. `layout` overlays any
+user reorder/relabel on top; `editableSources` merges the two and `sources`
+narrows that by the subtree filter.
 
 ```js
 // type signature
 MafSource[]
 // code
 sourcesVolatile: [] as MafSource[]
+```
+
+#### volatile: treeNewickVolatile
+
+The worker's guide-tree Newick (the default, before any reorder). The active
+displayed tree lives in the mixin's `clusterTree`, which a reorder clears (rows
+no longer match the dendrogram) and "Clear arrangement" restores from here — so
+we keep the worker tree separately rather than re-fetching it.
+
+```js
+// type signature
+string | undefined
+// code
+treeNewickVolatile: undefined as string | undefined
 ```
 
 #### volatile: colorPalette
@@ -293,11 +329,33 @@ colorPalette: undefined as MafColorPalette | undefined
 
 ### LinearMafDisplay - Getters
 
+#### getter: conf
+
+the config typed off the concrete schema; `ConfigurationReference` erases
+`self.configuration` to `any`, so direct reads route through this to stay typed
+(same move as `BaseAdapter<CONF>`)
+
+```js
+// type
+ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
+
+#### getter: editableSources
+
+The full row set with the user's arrangement applied: `layout` supplies order +
+label/color overrides, merged over the worker's `sourcesVolatile` by name. Empty
+`layout` (no customization) passes the worker set through. Not subtree-filtered
+— this is what the arrangement dialog edits. Undefined until the first fetch
+populates the worker set.
+
+```js
+// type
+MafSource[] | undefined
+```
+
 #### getter: sources
 
-Merged row set: prefer the persisted `layout` when present (carries any user
-reordering / recoloring) and fall back to the worker's `sourcesVolatile`.
-Subtree filter narrows in both cases.
+The display rows: `editableSources` narrowed to the selected subtree.
 
 ```js
 // type
@@ -362,6 +420,13 @@ band is offset separately by the React layer.
 ```js
 // type
 PositionedHierarchyNode<NewickNode> | undefined
+```
+
+#### getter: spatialIndex
+
+```js
+// type
+{ index: Flatbush; nodes: ClusterHierarchyNode[]; } | undefined
 ```
 
 #### getter: renderState
@@ -490,14 +555,15 @@ gpuProps: () => MafGpuProps | undefined
 
 Worker-fetch inputs that invalidate cached data when changed (tier-1, via
 MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).
-`subtreeFilter` is user-set — never derived from worker output — so it is
-loop-safe here; changing the visible subtree refetches and the worker recomputes
-coverage over only those samples. A future arbitrary-sample selection belongs
-here too.
+`orderedSampleIds` is the display row order (layout reorder + subtree filter);
+the worker emits block rows in it so `rowIndex` is the on-screen row. Loop-safe
+despite deriving from worker output: `sources` is set-stable (`sourcesVolatile`
+deepEqual-guarded in `setSamples`, `layout`/`subtreeFilter` user-driven), so it
+doesn't churn per fetch.
 
 ```js
 // type signature
-rpcProps: () => { subtreeFilter: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IMaybe<IArrayType<ISimpleType<string>>>>) | undefined; }
+rpcProps: () => { orderedSampleIds: string[] | undefined; }
 ```
 
 #### method: rowHoverInfo
@@ -588,13 +654,12 @@ setColorPalette: (p: MafColorPalette) => void
 #### action: setSamples
 
 Receive worker-authoritative `samples` + serialized Newick tree. Samples + tree
-are derived from track config, so they're identical on every region fetch — the
-deepEqual guard makes this fire once and skips the redundant frozen-array
-reassignment (plus the downstream `sources`/instance-buffer recompute) on each
-later scroll/zoom, while preserving any in-session row reordering held in
-`layout`. Goes through TreeSidebarMixin's `setLayoutAndClusterTree` so the
-mixin's `root` getter re-parses; `sourcesVolatile` carries the full pre-filter
-set used as the fallback in the merged `sources` view.
+are config-derived and identical on every region fetch, so the deepEqual guard
+makes this fire once and skips the redundant frozen-array reassignment (and
+downstream `sources`/instance-buffer recompute) on later scroll/zoom. The active
+`clusterTree` is set from the worker tree only when there's no custom
+arrangement — a reorder has cleared it and must keep it cleared until the user
+clears the layout.
 
 ```js
 // type signature
@@ -650,6 +715,65 @@ setCoverageHeight: (arg: number) => void
 showInsertionSequenceDialog: (insertionData: { sequence: string; sampleLabel: string; chr: string; pos: number; }) => void
 ```
 
+#### action: clearLayout
+
+Drop the custom arrangement and restore the worker's guide tree (the base
+`clearLayout` only clears it — the worker tree lives in `treeNewickVolatile`).
+
+```js
+// type signature
+clearLayout: () => void
+```
+
+#### action: setRpcData
+
+```js
+// type signature
+setRpcData: (regionIndex: number, data: MafRegionData) => void
+```
+
+#### action: setSummaryData
+
+```js
+// type signature
+setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
+```
+
+#### action: clearAlignmentData
+
+```js
+// type signature
+clearAlignmentData: () => void
+```
+
+#### action: clearDisplaySpecificData
+
+```js
+// type signature
+clearDisplaySpecificData: () => void
+```
+
+#### action: setHeight
+
+```js
+// type signature
+setHeight: (newHeight: number) => void
+```
+
+#### action: startRenderingBackend
+
+```js
+// type signature
+startRenderingBackend: (backend: MafRenderingBackend) => void
+```
+
+#### action: fetchNeeded
+
+```js
+// type signature
+fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>
+```
+
 #### action: isCacheValid
 
 Force a refetch when the loaded data is the wrong kind for the current zoom:
@@ -674,7 +798,7 @@ so it must never be blocked by the gate.
 
 ```js
 // type signature
-getByteEstimateConfig: () => { adapterConfig: any; fetchSizeLimit: any; userByteSizeLimit: number | undefined; visibleBp: number; } | null
+getByteEstimateConfig: () => { adapterConfig: any; fetchSizeLimit: number; userByteSizeLimit: number | undefined; visibleBp: number; } | null
 ```
 
 #### action: renderSvg

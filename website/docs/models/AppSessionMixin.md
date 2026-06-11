@@ -42,6 +42,13 @@ AppRootModel
 string
 ```
 
+#### getter: gitCommit
+
+```js
+// type
+string | undefined
+```
+
 #### getter: history
 
 ```js
@@ -53,7 +60,7 @@ string
 
 ```js
 // type
-ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 10 more ... & { ...; }, _NotCustomized, _NotCust...
+ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCust...
 ```
 
 ### AppSessionMixin - Methods
@@ -63,7 +70,7 @@ ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMay
 ```js
 // type signature
 renderProps: () => {
-  theme: Theme
+  theme: SerializableThemeArgs
   highResolutionScaling: any
 }
 ```

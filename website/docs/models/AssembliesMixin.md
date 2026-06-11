@@ -29,18 +29,24 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 
 ```js
 // type signature
-IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displ...
+IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaT...
 // code
-sessionAssemblies: types.array(assemblyConfigSchemasType)
+sessionAssemblies: types.stripDefault(
+        types.array(assemblyConfigSchemasType),
+        [],
+      )
 ```
 
 #### property: temporaryAssemblies
 
 ```js
 // type signature
-IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displ...
+IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaT...
 // code
-temporaryAssemblies: types.array(assemblyConfigSchemasType)
+temporaryAssemblies: types.stripDefault(
+        types.array(assemblyConfigSchemasType),
+        [],
+      )
 ```
 
 ### AssembliesMixin - Getters

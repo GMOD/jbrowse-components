@@ -42,7 +42,9 @@ deleteConnection, addConnectionConf, clearConnections
 
 ### Available via [ThemeManagerSessionMixin](../thememanagersessionmixin)
 
-**Getters:** themeName, theme
+**Volatiles:** sessionThemeName
+
+**Getters:** themeName, themeOptions, theme
 
 **Methods:** allThemes
 
@@ -103,7 +105,7 @@ removeSessionAssembly, addTemporaryAssembly, removeTemporaryAssembly
 
 ### Available via [AppSessionMixin](../appsessionmixin)
 
-**Getters:** root, version, history, assemblyManager
+**Getters:** root, version, gitCommit, history, assemblyManager
 
 **Methods:** renderProps, menus
 

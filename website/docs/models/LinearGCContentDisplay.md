@@ -59,7 +59,11 @@ and docs.
 
 **Properties:** windowSizeOverride, windowDeltaOverride, gcModeOverride
 
-**Getters:** adapterConfig
+**Getters:** windowSize, windowDelta, gcMode, adapterConfig
+
+**Methods:** trackMenuItems
+
+**Actions:** setGCContentParams, setGCMode
 
 ### Available via [LinearWiggleDisplay](../linearwiggledisplay)
 
@@ -80,6 +84,8 @@ startRenderingBackend
 
 **Properties:** id, type, rpcDriverName
 
+**Volatiles:** rendererTypeName, error, statusMessage
+
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
 rendererType, DisplayMessageComponent, viewMenuActions
@@ -93,6 +99,8 @@ rendererType, DisplayMessageComponent, viewMenuActions
 **Properties:** heightOverride
 
 **Volatiles:** scrollTop
+
+**Getters:** height
 
 **Actions:** setScrollTop, setHeight, resizeHeight
 
@@ -161,6 +169,19 @@ setAutoscale, isCacheValid
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
+**Properties:** configOverrides
+
 **Methods:** getOverride, getConfWithOverride
 
 **Actions:** setOverride, clearOverride
+
+### LinearGCContentDisplay - Properties
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<"LinearGCContentDisplay">
+// code
+type: types.literal('LinearGCContentDisplay')
+```

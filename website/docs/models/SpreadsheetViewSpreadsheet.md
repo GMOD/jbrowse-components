@@ -95,6 +95,13 @@ boolean
 ({ field: string; width: number; type: "number" | undefined; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[] | undefined
 ```
 
+#### getter: visibleRows
+
+```js
+// type
+GridRow[] | undefined
+```
+
 ### SpreadsheetViewSpreadsheet - Actions
 
 #### action: setVisibleRows

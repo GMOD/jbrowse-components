@@ -60,6 +60,8 @@ and docs.
 
 **Properties:** id, displayName, minimized
 
+**Volatiles:** width
+
 **Getters:** menuItems
 
 **Actions:** setDisplayName, setWidth, setMinimized
@@ -94,9 +96,9 @@ corresponds roughly to the horizontal scroll of the LGV
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-offsetPx: 0
+offsetPx: types.stripDefault(types.number, 0)
 ```
 
 #### property: bpPerPx
@@ -105,9 +107,9 @@ corresponds roughly to the zoom level, base-pairs per pixel
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-bpPerPx: 1
+bpPerPx: types.stripDefault(types.number, 1)
 ```
 
 #### property: displayedRegions
@@ -120,7 +122,7 @@ entire set of chromosomes if your assembly is very fragmented
 // type signature
 IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 // code
-displayedRegions: types.optional(types.frozen<Region[]>(), [])
+displayedRegions: types.stripDefault(types.frozen<Region[]>(), [])
 ```
 
 #### property: tracks
@@ -140,27 +142,27 @@ tracks: types.array(
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-hideHeader: false
+hideHeader: types.stripDefault(types.boolean, false)
 ```
 
 #### property: hideHeaderOverview
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-hideHeaderOverview: false
+hideHeaderOverview: types.stripDefault(types.boolean, false)
 ```
 
 #### property: hideNoTracksActive
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-hideNoTracksActive: false
+hideNoTracksActive: types.stripDefault(types.boolean, false)
 ```
 
 #### property: trackSelectorType
@@ -169,7 +171,7 @@ hideNoTracksActive: false
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-trackSelectorType: types.optional(
+trackSelectorType: types.stripDefault(
           types.enumeration(['hierarchical']),
           'hierarchical',
         )
@@ -201,7 +203,7 @@ showCytobandsSetting: types.optional(types.boolean, () =>
         )
 ```
 
-#### property: trackLabels
+#### property: trackLabelsOverride
 
 how to display the track labels, can be "overlapping", "offset", or "hidden", or
 empty string "" (which results in conf being used). see LinearGenomeViewPlugin
@@ -212,7 +214,7 @@ used
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-trackLabels: types.optional(
+trackLabelsOverride: types.optional(
           types.string,
           () => localStorageGetItem('lgv-trackLabels') ?? '',
         )
@@ -224,9 +226,9 @@ show the "gridlines" in the track area
 
 ```js
 // type signature
-true
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showGridlines: true
+showGridlines: types.stripDefault(types.boolean, true)
 ```
 
 #### property: highlight
@@ -237,7 +239,7 @@ highlights on the LGV from the URL parameters
 // type signature
 IOptionalIType<IArrayType<IType<HighlightType, HighlightType, HighlightType>>, [undefined]>
 // code
-highlight: types.optional(
+highlight: types.stripDefault(
           types.array(types.frozen<HighlightType>()),
           [],
         )
@@ -251,7 +253,7 @@ controls whether view.highlight entries are rendered
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-highlightsVisible: types.optional(types.boolean, true)
+highlightsVisible: types.stripDefault(types.boolean, true)
 ```
 
 #### property: labelsVisible
@@ -262,7 +264,7 @@ controls whether highlight/bookmark chip labels are shown inline
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-labelsVisible: types.optional(types.boolean, true)
+labelsVisible: types.stripDefault(types.boolean, true)
 ```
 
 #### property: colorByCDS
@@ -312,7 +314,7 @@ when true, only the header and coordinate scalebar are rendered
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-scalebarOnly: types.optional(types.boolean, false)
+scalebarOnly: types.stripDefault(types.boolean, false)
 ```
 
 #### property: init
@@ -485,10 +487,10 @@ any[]
 any[]
 ```
 
-#### getter: trackLabelsSetting
+#### getter: trackLabels
 
-this is the effective value of the track labels setting, incorporating both the
-config and view state. use this instead of view.trackLabels
+the effective track labels setting, resolving the stored `trackLabelsOverride`
+against the LinearGenomeViewPlugin config default
 
 ```js
 // type
@@ -546,6 +548,13 @@ boolean
 ```
 
 #### getter: rubberbandTop
+
+```js
+// type
+number
+```
+
+#### getter: pinnedTracksTop
 
 ```js
 // type
@@ -1356,7 +1365,7 @@ toggleTrack: (trackId: string) => boolean
 
 ```js
 // type signature
-setTrackLabels: (setting: "overlapping" | "offset" | "hidden") => void
+setTrackLabels: (setting: "offset" | "hidden" | "overlapping") => void
 ```
 
 #### action: setShowCenterLine

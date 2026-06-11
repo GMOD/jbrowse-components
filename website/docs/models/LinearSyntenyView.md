@@ -62,6 +62,8 @@ expandAllViews, autoScaleLevelHeights, appendRow
 
 **Properties:** id, displayName, minimized
 
+**Volatiles:** width
+
 **Getters:** menuItems
 
 **Actions:** setDisplayName, setWidth, setMinimized
@@ -83,7 +85,7 @@ type: types.literal('LinearSyntenyView')
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-cigarMode: types.optional(
+cigarMode: types.stripDefault(
           types.enumeration(['off', 'matches', 'full']),
           'full',
         )
@@ -93,18 +95,18 @@ cigarMode: types.optional(
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-drawCurves: false
+drawCurves: types.stripDefault(types.boolean, false)
 ```
 
 #### property: drawLocationMarkers
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-drawLocationMarkers: false
+drawLocationMarkers: types.stripDefault(types.boolean, false)
 ```
 
 #### property: overdrawPx
@@ -113,9 +115,9 @@ pixels beyond the visible viewport edge that synteny lines are still drawn
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-overdrawPx: DEFAULT_OVERDRAW_PX
+overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX)
 ```
 
 #### property: alpha
@@ -124,7 +126,7 @@ overdrawPx: DEFAULT_OVERDRAW_PX
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-alpha: types.optional(types.number, 0.2)
+alpha: types.stripDefault(types.number, 0.2)
 ```
 
 #### property: minAlignmentLength
@@ -137,7 +139,7 @@ engine. Cuts whole-genome hairball noise.
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minAlignmentLength: types.optional(types.number, 0)
+minAlignmentLength: types.stripDefault(types.number, 0)
 ```
 
 #### property: lodMode
@@ -150,7 +152,7 @@ the no-CIGAR tier (T/Q) when present.
 // type signature
 IOptionalIType<ISimpleType<"auto" | "fine" | "coarse">, [undefined]>
 // code
-lodMode: types.optional(
+lodMode: types.stripDefault(
           types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
           'auto',
         )
@@ -162,7 +164,7 @@ lodMode: types.optional(
 // type signature
 IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-colorBy: types.optional(types.string, 'default')
+colorBy: types.stripDefault(types.string, 'default')
 ```
 
 #### property: opacityByIdentity
@@ -175,7 +177,7 @@ consuming the color channel.
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-opacityByIdentity: types.optional(types.boolean, false)
+opacityByIdentity: types.stripDefault(types.boolean, false)
 ```
 
 #### property: init

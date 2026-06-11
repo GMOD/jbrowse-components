@@ -29,6 +29,8 @@ and docs.
 
 **Properties:** id, displayName, minimized
 
+**Volatiles:** width
+
 **Getters:** menuItems
 
 **Actions:** setDisplayName, setWidth, setMinimized
@@ -48,9 +50,9 @@ type: types.literal('SpreadsheetView')
 
 ```js
 // type signature
-number
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-offsetPx: 0
+offsetPx: types.stripDefault(types.number, 0)
 ```
 
 #### property: height
@@ -59,25 +61,25 @@ offsetPx: 0
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(types.number, defaultHeight)
+height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: hideVerticalResizeHandle
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-hideVerticalResizeHandle: false
+hideVerticalResizeHandle: types.stripDefault(types.boolean, false)
 ```
 
 #### property: hideFilterControls
 
 ```js
 // type signature
-false
+IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-hideFilterControls: false
+hideFilterControls: types.stripDefault(types.boolean, false)
 ```
 
 #### property: importWizard

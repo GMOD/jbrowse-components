@@ -20,6 +20,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### RootAppMenuMixin - Volatiles
+
+#### volatile: mutableMenuActions
+
+```js
+// type signature
+MenuAction[]
+// code
+mutableMenuActions: [] as MenuAction[]
+```
+
 ### RootAppMenuMixin - Actions
 
 #### action: setMenus
