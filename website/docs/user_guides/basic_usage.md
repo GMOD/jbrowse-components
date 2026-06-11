@@ -35,7 +35,7 @@ Keyboard shortcuts (when the view is focused):
 Click and drag up or down on the drag handle on the track labels (indicated by
 six vertical dots) to reorder tracks.
 
-<Figure caption="(1) Use Add, Linear genome view to add a new LGV. (2) The pan buttons can be used to scroll left or right. (3) The zoom buttons or the slider can be used to zoom on the view. (4) Tracks can be reordered by clicking and dragging the drag handle indicated by six vertical dots." src="/img/lgv_usage_guide.png" />
+<Figure caption="The main linear genome view controls, labeled in place: the Add menu opens new views, the pan buttons scroll left/right, the zoom buttons and slider zoom the view, the search box accepts regions or feature names, the scroll-to-zoom toggle controls mousewheel behavior on WebGL tracks, and each track can be reordered by its drag handle or configured from its track menu." src="/img/lgv_usage_guide.png" />
 
 #### Re-ordering views
 

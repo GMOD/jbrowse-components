@@ -1648,10 +1648,10 @@ export const specs: ScreenshotSpec[] = [
   // Basic UI guides
   // ────────────────────────────────────────────────────────────────────────
 
-  // LGV usage guide: numbered callout badges anchored to the live toolbar
-  // controls (so positions track the UI, no hand-tuned coords). (1) Add menu,
-  // (2) pan buttons, (3) zoom controls, (4) track drag handle, (5) track menu,
-  // (6) scroll-zoom toggle, (7) search box.
+  // LGV usage guide: text-label callouts anchored to the live toolbar controls
+  // (so positions track the UI, no hand-tuned coords), each on a dark pill so
+  // the reader doesn't have to cross-reference a numbered legend. Labels are
+  // staggered vertically so same-row controls don't overlap.
   {
     mode: 'url',
     name: 'lgv_usage_guide',
@@ -1668,38 +1668,77 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 5000,
     annotations: [
-      { type: 'circle', text: '1', anchor: { text: 'Add' } },
       {
-        type: 'circle',
-        text: '2',
+        type: 'text',
+        text: 'Add view',
+        anchor: { text: 'Add' },
+        dx: -10,
+        dy: 26,
+        fontSize: 14,
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
+      },
+      {
+        type: 'text',
+        text: 'Pan',
         anchor: { selector: 'button[aria-label="Pan left"]' },
+        dx: -10,
+        dy: 50,
+        fontSize: 14,
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
       },
       {
-        type: 'circle',
-        text: '3',
+        type: 'text',
+        text: 'Zoom',
         anchor: { selector: '[data-testid="zoom_in"]' },
+        dx: -12,
+        dy: 26,
+        fontSize: 14,
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
       },
       {
-        type: 'circle',
-        text: '4',
-        anchor: { selector: '[data-testid^="dragHandle-"]' },
+        type: 'text',
+        text: 'Search box',
+        anchor: { selector: 'input[placeholder="Search for location"]' },
+        dx: -30,
+        dy: 50,
+        fontSize: 14,
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
       },
       {
-        type: 'circle',
-        text: '5',
-        anchor: { selector: '[data-testid="track_menu_icon"]' },
-      },
-      {
-        type: 'circle',
-        text: '6',
+        type: 'text',
+        text: 'Scroll-to-zoom toggle',
         anchor: {
           selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
         },
+        dx: -60,
+        dy: 26,
+        fontSize: 14,
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
       },
       {
-        type: 'circle',
-        text: '7',
-        anchor: { selector: 'input[placeholder="Search for location"]' },
+        type: 'text',
+        text: 'Drag to reorder track',
+        anchor: { selector: '[data-testid^="dragHandle-"]' },
+        dx: 4,
+        dy: 24,
+        fontSize: 14,
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
+      },
+      {
+        type: 'text',
+        text: 'Track menu',
+        anchor: { selector: '[data-testid="track_menu_icon"]' },
+        dx: -30,
+        dy: 24,
+        fontSize: 14,
+        background: 'rgba(0,0,0,0.8)',
+        textColor: '#fff',
       },
     ],
   },
@@ -1723,7 +1762,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     // smaller window so the File menu + add-track drawer are easy to read
     viewportWidth: 1000,
-    viewportHeight: 720,
+    viewportHeight: 600,
     settleMs: 3000,
     actions: [
       { type: 'click', text: 'File' },
@@ -1739,6 +1778,10 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', text: 'Open track...' },
           { type: 'waitForText', text: 'Enter track data' },
           { type: 'delay', ms: 1000 },
+        ],
+        // ring the AddTrackWidget drawer that opened in the sidebar
+        annotations: [
+          { type: 'box', anchor: { selector: '[data-testid="drawer-widget"]' } },
         ],
       },
     ],
@@ -1786,7 +1829,9 @@ export const specs: ScreenshotSpec[] = [
         text: 'Track selector',
         anchor: { selector: 'button[title="Open track selector"]' },
         dx: 18,
-        dy: 30,
+        dy: 36,
+        background: 'rgba(0,0,0,0.78)',
+        textColor: '#fff',
       },
       {
         type: 'box',
@@ -1796,8 +1841,10 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         text: 'Add track',
         anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
-        dx: -95,
+        dx: -110,
         dy: 4,
+        background: 'rgba(0,0,0,0.78)',
+        textColor: '#fff',
       },
     ],
   },
@@ -1916,8 +1963,10 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Drawer widget position menu open (showing left/right options), triggered
-  // by clicking the MoreVert icon in the drawer header.
+  // Drawer widget position, two-stage figure. Top frame opens the drawer's
+  // position menu (MoreVert in the drawer header) with the menu trigger ringed
+  // and the "left" option boxed; bottom frame clicks "left" so the drawer moves
+  // to the left side of the screen.
   {
     mode: 'url',
     name: 'drawer_widget_toggle',
@@ -1932,6 +1981,7 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
+    viewportHeight: 650,
     settleMs: 3000,
     actions: [
       // open the track selector to get a widget in the drawer
@@ -1944,10 +1994,29 @@ export const specs: ScreenshotSpec[] = [
         selector: '[data-testid="hierarchical_track_selector"]',
       },
       { type: 'delay', ms: 500 },
-      // click the MoreVert to open the position menu
-      { type: 'click', selector: '[data-testid="drawer-position-button"]' },
-      { type: 'waitForText', text: 'left' },
-      { type: 'delay', ms: 500 },
+    ],
+    stages: [
+      {
+        actions: [
+          // click the MoreVert to open the position menu
+          { type: 'click', selector: '[data-testid="drawer-position-button"]' },
+          { type: 'waitForText', text: 'left' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="drawer-position-button"]' },
+          },
+          { type: 'box', anchor: { text: 'left' } },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'left' },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
     ],
   },
 
@@ -2009,7 +2078,9 @@ export const specs: ScreenshotSpec[] = [
     annotations: [{ type: 'box', anchor: { text: 'Open bookmark widget' } }],
   },
 
-  // Rubberband context menu with "Bookmark region" option visible.
+  // Bookmark create, two-stage figure: top frame is the rubberband context menu
+  // with "Bookmark region" boxed; bottom frame clicks it so the bookmarked
+  // region appears as a colored highlight across the view.
   {
     mode: 'url',
     name: 'bookmark_widget_create',
@@ -2028,9 +2099,19 @@ export const specs: ScreenshotSpec[] = [
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
       { type: 'waitForText', text: 'Bookmark region' },
-      { type: 'delay', ms: 1000 },
+      { type: 'delay', ms: 500 },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'Bookmark region' } }],
+    stages: [
+      {
+        annotations: [{ type: 'box', anchor: { text: 'Bookmark region' } }],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Bookmark region' },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
+    ],
   },
 
   // Bookmark widget with a bookmark label showing a highlight on the LGV.
@@ -2331,9 +2412,9 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Favorite tracks: two-stage figure. Top frame shows the per-track menu's
-  // "Add to favorites" item with a ring around the Favorites (star) button;
-  // bottom frame shows the resulting Favorites dropdown.
+  // Favorite tracks: two-stage figure. Top frame boxes the per-track menu's
+  // "Add to favorites" item; bottom frame opens the resulting Favorites dropdown
+  // with a ring around the Favorites (star) button.
   {
     mode: 'url',
     name: 'favorite_tracks',
@@ -2348,6 +2429,7 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
+    viewportHeight: 650,
     settleMs: 4000,
     actions: [
       // open track selector
@@ -2373,12 +2455,7 @@ export const specs: ScreenshotSpec[] = [
     ],
     stages: [
       {
-        annotations: [
-          {
-            type: 'circle',
-            anchor: { selector: '[data-testid="favorite-tracks-button"]' },
-          },
-        ],
+        annotations: [{ type: 'box', anchor: { text: 'Add to favorites' } }],
       },
       {
         actions: [
@@ -2387,6 +2464,12 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', selector: '[data-testid="favorite-tracks-button"]' },
           { type: 'waitForText', text: 'GFF3Tabix genes' },
           { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="favorite-tracks-button"]' },
+          },
         ],
       },
     ],
@@ -2605,7 +2688,8 @@ export const specs: ScreenshotSpec[] = [
   // Plugin store
   // ────────────────────────────────────────────────────────────────────────
 
-  // Plugin store dialog opened from the Tools menu.
+  // Plugin store, two-stage figure: top frame opens the Tools menu with the
+  // "Plugin store" item boxed; bottom frame is the dialog it opens.
   {
     mode: 'url',
     name: 'plugin_store',
@@ -2620,13 +2704,22 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    actions: [
-      { type: 'click', text: 'Tools' },
-      { type: 'waitForText', text: 'Plugin store' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Plugin store' },
-      { type: 'waitForText', text: 'Installed plugins' },
-      { type: 'delay', ms: 2000 },
+    stages: [
+      {
+        actions: [
+          { type: 'click', text: 'Tools' },
+          { type: 'waitForText', text: 'Plugin store' },
+          { type: 'delay', ms: 400 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Plugin store' } }],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Plugin store' },
+          { type: 'waitForText', text: 'Installed plugins' },
+          { type: 'delay', ms: 2000 },
+        ],
+      },
     ],
   },
 
@@ -2692,7 +2785,8 @@ export const specs: ScreenshotSpec[] = [
     stages: [
       // top frame: the context menu left open by the shared actions above
       {},
-      // bottom frame: launch the linear synteny view and let it draw
+      // bottom frame: launch the linear synteny view, close the now-redundant
+      // dotplot view (views[0], so the first close_view button) and let it draw
       {
         actions: [
           { type: 'click', text: 'Open linear synteny view' },
@@ -2700,7 +2794,9 @@ export const specs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: '[data-testid="synteny_canvas_done"]',
           },
-          { type: 'delay', ms: 3000 },
+          { type: 'delay', ms: 2000 },
+          { type: 'click', selector: '[data-testid="close_view"]' },
+          { type: 'delay', ms: 2000 },
         ],
       },
     ],
@@ -2730,6 +2826,8 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
+    // crop off the empty viewport below the (short) two-track stack
+    crop: { x: 0, y: 0, width: 1500, height: 250 },
   },
 
   {
