@@ -21,6 +21,9 @@ const useStyles = makeStyles()(theme => ({
   advancedButton: {
     marginTop: theme.spacing(1),
   },
+  fastaWarning: {
+    margin: theme.spacing(1),
+  },
 }))
 
 const AdapterSelector = observer(function AdapterSelector({
@@ -57,9 +60,10 @@ function FastaAdapterInput({
   form: FormState
   setPrimaryFile: (l: FileLocation) => void
 }) {
+  const { classes } = useStyles()
   return (
     <>
-      <Alert severity="warning" style={{ margin: 8 }}>
+      <Alert severity="warning" className={classes.fastaWarning}>
         Note: a FASTA index will be generated on submit, might take a couple
         minutes and if the file is remote, it will be downloaded in full
       </Alert>

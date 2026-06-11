@@ -47,6 +47,9 @@ const useStyles = makeStyles()(theme => ({
   modeToggle: {
     marginBottom: theme.spacing(1),
   },
+  chip: {
+    margin: 2,
+  },
 }))
 
 const OpenSequenceDialog = observer(function OpenSequenceDialog({
@@ -71,17 +74,37 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     return [...assemblyConfs, await createAssemblyConfig()]
   }
 
-  async function addAnotherAssembly() {
+  async function runStaging(action: () => Promise<void>) {
     try {
       setError(undefined)
-      setAssemblyConfs(await stageCurrentAssembly())
-      setForm(clearFormFields)
+      await action()
     } catch (e) {
       setError(e)
       console.error(e)
     } finally {
       setLoading('')
     }
+  }
+
+  function addAnotherAssembly() {
+    return runStaging(async () => {
+      setAssemblyConfs(await stageCurrentAssembly())
+      setForm(clearFormFields)
+    })
+  }
+
+  function handleOpen() {
+    return runStaging(async () => {
+      const confs = form.assemblyName
+        ? await stageCurrentAssembly()
+        : assemblyConfs
+      if (!confs.length) {
+        throw new Error('No assemblies specified')
+      }
+      setAssemblyConfs(confs)
+      setForm(clearFormFields)
+      await onClose(confs)
+    })
   }
 
   async function indexFasta(fastaLocation: FileLocation) {
@@ -132,11 +155,11 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             {assemblyConfs.map((conf, idx) => (
               <Chip
                 key={conf.name}
+                className={classes.chip}
                 label={conf.name}
                 onDelete={() => {
                   setAssemblyConfs(assemblyConfs.filter((_, i) => i !== idx))
                 }}
-                style={{ margin: 2 }}
               />
             ))}
           </Box>
@@ -192,26 +215,11 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         </Button>
         <Button
           data-testid="open-sequence-submit"
-          onClick={async () => {
-            try {
-              setError(undefined)
-              const confs = form.assemblyName
-                ? await stageCurrentAssembly()
-                : assemblyConfs
-              if (!confs.length) {
-                throw new Error('No assemblies specified')
-              }
-              setAssemblyConfs(confs)
-              await onClose(confs)
-            } catch (e) {
-              setError(e)
-              console.error(e)
-            } finally {
-              setLoading('')
-            }
+          onClick={() => {
+            void handleOpen()
           }}
           color="primary"
-          disabled={!!loading}
+          disabled={!!loading || (!form.assemblyName && !assemblyConfs.length)}
           variant="contained"
         >
           Open
