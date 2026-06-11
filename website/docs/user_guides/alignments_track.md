@@ -84,6 +84,11 @@ coloring alone. Strand, read group (RG), or any other tag work the same way.
 
 <Figure caption="Group by strand splits the track into a forward-strand pileup (top) and a reverse-strand pileup (bottom)." src="/img/alignments/group_by_strand.png" />
 
+The track menu's **Group by...** opens a dialog where you pick strand or a tag
+(e.g. `HP` for haplotype); submitting spawns one new session sub-track per group.
+
+<Figure caption="Top: the Group by dialog grouping a phased HG002 PacBio BAM by the HP tag. Bottom: the result — one sub-track per haplotype (HP:1, HP:2, and untagged reads)." src="/img/alignments/group_by_hp.png" />
+
 ### Color by modifications/methylation
 
 If a BAM or CRAM file has MM-tag annotations for DNA/RNA modifications, the

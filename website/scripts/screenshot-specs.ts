@@ -760,6 +760,101 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
   },
 
+  // Group by HP (haplotype) tag, two-stage figure on the rehosted HG002
+  // haplotagged PacBio slice (HP:1 / HP:2 phased reads). Top frame drives the
+  // track menu's "Group by..." → "Group by tag or strand..." dialog, picks the
+  // Tag option and enters HP; bottom frame submits, which spawns one subtrack
+  // per haplotype value (the feature's actual behavior — reviewer wanted the
+  // menu option shown and the subtrack launch explained).
+  {
+    mode: 'url',
+    name: 'alignments/group_by_hp',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg002_pacbio_hp_slice',
+          name: 'HG002 PacBio (haplotagged)',
+          assemblyNames: ['hg19'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam.bai',
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '1:55,705,500-55,707,500',
+          tracks: [
+            {
+              trackId: 'hg002_pacbio_hp_slice',
+              displaySnapshot: { type: 'LinearAlignmentsDisplay', height: 130 },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG002',
+    readyTimeout: 60000,
+    viewportHeight: 900,
+    settleMs: 12000,
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'waitForText', text: 'Group by...' },
+          { type: 'delay', ms: 300 },
+          { type: 'hover', text: 'Group by...' },
+          { type: 'waitForText', text: 'Group by tag or strand...' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Group by tag or strand...' },
+          { type: 'waitForText', text: 'creates one new session track' },
+          { type: 'delay', ms: 500 },
+          { type: 'click', selector: '[role="dialog"] [role="combobox"]' },
+          { type: 'waitForText', text: 'Tag' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Tag' },
+          {
+            type: 'type',
+            selector: '[data-testid="group-tag-name-input"]',
+            value: 'HP',
+          },
+          { type: 'waitForText', text: 'Found unique' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 60,
+            y: 120,
+            text: 'Group by the HP tag launches one subtrack per haplotype',
+            background: 'rgba(0,0,0,0.78)',
+            textColor: '#fff',
+          },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Submit' },
+          { type: 'waitForText', text: 'HP:1' },
+          { type: 'delay', ms: 7000 },
+        ],
+      },
+    ],
+  },
+
   {
     mode: 'url',
     name: 'dotplot',
