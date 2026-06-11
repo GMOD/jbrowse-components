@@ -1,6 +1,7 @@
 import { isValidElement } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
+import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -55,7 +56,7 @@ function SimpleTooltipContents({
   return isValidElement(message) ? (
     message
   ) : message ? (
-    <div dangerouslySetInnerHTML={{ __html: String(message) }} />
+    <SanitizedHTML html={message} />
   ) : null
 }
 

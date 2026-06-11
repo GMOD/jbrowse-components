@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
+import { MonospaceTextField } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-
-import MonospaceTextField from './MonospaceTextField.tsx'
 
 const useStyles = makeStyles()(theme => ({
   jsonEditor: {

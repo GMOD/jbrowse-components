@@ -1,11 +1,13 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputLabel, TextField } from '@mui/material'
 
-import { monospaceFontFamily as fontFamily } from './useSlotEditorStyles.ts'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { TextFieldProps } from '@mui/material'
 
-const useStyles = makeStyles()(() => ({
+const monospaceFontFamily =
+  'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
+
+const useStyles = makeStyles()({
   error: {
     color: 'red',
     fontSize: '0.8em',
@@ -15,14 +17,14 @@ const useStyles = makeStyles()(() => ({
     overflowX: 'auto',
   },
   field: {
-    fontFamily,
+    fontFamily: monospaceFontFamily,
   },
-}))
+})
 
-// shared scaffolding for the jexl-callback and JSON slot editors: a monospace
-// multiline TextField that turns red on a parse error, with an error banner
-// above and an optional InputLabel. `children` render below the field (e.g. a
-// description or help button).
+// Monospace multiline TextField for code/jexl/JSON/sequence content. Turns red
+// on a parse error, renders an optional error banner above and an InputLabel,
+// and applies the shared monospace font stack to the input slot. `children`
+// render below the field (e.g. a description or help button).
 export default function MonospaceTextField({
   value,
   onChange,
@@ -30,14 +32,16 @@ export default function MonospaceTextField({
   label,
   children,
   style,
+  readOnly,
   ...rest
 }: {
   value: string
-  onChange: (value: string) => void
+  onChange?: (value: string) => void
   error?: unknown
   label?: React.ReactNode
   children?: React.ReactNode
-} & Omit<TextFieldProps, 'value' | 'onChange' | 'error'>) {
+  readOnly?: boolean
+} & Omit<TextFieldProps, 'value' | 'onChange' | 'error' | 'slotProps'>) {
   const { classes } = useStyles()
   return (
     <>
@@ -49,11 +53,12 @@ export default function MonospaceTextField({
           multiline
           value={value}
           onChange={event => {
-            onChange(event.target.value)
+            onChange?.(event.target.value)
           }}
           style={{ background: error ? '#fdd' : undefined, ...style }}
           slotProps={{
             input: {
+              readOnly,
               classes: {
                 input: classes.field,
               },

@@ -73,7 +73,7 @@ export default function VariantSampleGrid({
 
   return !rows.length ? null : (
     <BaseCard title="Samples">
-      {error ? <Typography color="error">{`${error}`}</Typography> : null}
+      {error ? <ErrorBanner error={error} /> : null}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <CascadingMenuButton
           menuItems={[

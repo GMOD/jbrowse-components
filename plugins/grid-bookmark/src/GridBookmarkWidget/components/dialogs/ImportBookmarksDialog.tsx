@@ -2,14 +2,13 @@ import { useState } from 'react'
 
 import {
   AssemblySelector,
-  Dialog,
   ErrorBanner,
   FileSelector,
+  SubmitDialog,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import ImportIcon from '@mui/icons-material/Publish'
-import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel } from '../../model.ts'
@@ -66,59 +65,51 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
 
   return (
-    <Dialog open onClose={onClose} maxWidth="xl" title="Import bookmarks">
-      <DialogContent>
-        <FileSelector
-          location={location}
-          setLocation={setLocation}
-          name="File"
-          description={`Choose a BED or TSV format file to import. Required TSV column headers are "chrom, start, end, label, assembly_name".`}
-        />
-        <AssemblySelector
-          onChange={val => {
-            setSelectedAsm(val)
-          }}
-          helperText="Select the assembly for BED file."
-          session={session}
-          selected={selectedAsm}
-        />
-        {error ? <ErrorBanner error={error} /> : null}
-      </DialogContent>
-      <DialogActions>
-        <Button variant="contained" color="secondary" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          data-testid="dialogImport"
-          variant="contained"
-          color="primary"
-          disabled={!location}
-          startIcon={<ImportIcon />}
-          onClick={async () => {
-            try {
-              if (location) {
-                const data = await openLocation(location).readFile('utf8')
-                const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
-                if (lines.length) {
-                  const fileType = guessFileType(lines[0]!)
-                  model.importBookmarks(
-                    fileType === 'BED'
-                      ? getBookmarksFromBEDFile(lines, selectedAsm)
-                      : getBookmarksFromTSVFile(lines),
-                  )
-                }
-              }
-              onClose()
-            } catch (e) {
-              console.error(e)
-              setError(e)
+    <SubmitDialog
+      open
+      maxWidth="xl"
+      title="Import bookmarks"
+      submitText="Import"
+      submitStartIcon={<ImportIcon />}
+      submitDisabled={!location}
+      onCancel={onClose}
+      onSubmit={async () => {
+        try {
+          if (location) {
+            const data = await openLocation(location).readFile('utf8')
+            const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
+            if (lines.length) {
+              const fileType = guessFileType(lines[0]!)
+              model.importBookmarks(
+                fileType === 'BED'
+                  ? getBookmarksFromBEDFile(lines, selectedAsm)
+                  : getBookmarksFromTSVFile(lines),
+              )
             }
-          }}
-        >
-          Import
-        </Button>
-      </DialogActions>
-    </Dialog>
+          }
+          onClose()
+        } catch (e) {
+          console.error(e)
+          setError(e)
+        }
+      }}
+    >
+      <FileSelector
+        location={location}
+        setLocation={setLocation}
+        name="File"
+        description={`Choose a BED or TSV format file to import. Required TSV column headers are "chrom, start, end, label, assembly_name".`}
+      />
+      <AssemblySelector
+        onChange={val => {
+          setSelectedAsm(val)
+        }}
+        helperText="Select the assembly for BED file."
+        session={session}
+        selected={selectedAsm}
+      />
+      {error ? <ErrorBanner error={error} /> : null}
+    </SubmitDialog>
   )
 })
 export default ImportBookmarksDialog

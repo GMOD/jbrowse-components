@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses, SubmitDialog } from '@jbrowse/core/ui'
 import {
   type SessionWithAddTracks,
   getContainingTrack,
@@ -10,14 +10,7 @@ import {
   useFetch,
 } from '@jbrowse/core/util'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  MenuItem,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { MenuItem, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
@@ -205,74 +198,63 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   }
 
   return (
-    <Dialog open onClose={handleClose} title="Group by">
-      <DialogContent>
-        <Typography>
-          NOTE: this creates one new session track per group (with "filter by"
-          set to that group) rather than changing the current track. Remove them
-          later with "Group by... → Remove grouped tracks".
-        </Typography>
-        <TextField
-          fullWidth
-          value={type}
-          onChange={event => {
-            setType(event.target.value)
-          }}
-          label="Group by..."
-          select
-        >
-          <MenuItem value="strand">Strand</MenuItem>
-          <MenuItem value="tag">Tag</MenuItem>
-        </TextField>
-        {type === 'tag' ? (
-          <>
-            <Typography color="text.secondary">
-              Examples: HP for haplotype, RG for read group, etc.
-            </Typography>
+    <SubmitDialog
+      open
+      title="Group by"
+      submitDisabled={submitDisabled}
+      onCancel={handleClose}
+      onSubmit={handleSubmit}
+    >
+      <Typography>
+        NOTE: this creates one new session track per group (with "filter by" set
+        to that group) rather than changing the current track. Remove them later
+        with "Group by... → Remove grouped tracks".
+      </Typography>
+      <TextField
+        fullWidth
+        value={type}
+        onChange={event => {
+          setType(event.target.value)
+        }}
+        label="Group by..."
+        select
+      >
+        <MenuItem value="strand">Strand</MenuItem>
+        <MenuItem value="tag">Tag</MenuItem>
+      </TextField>
+      {type === 'tag' ? (
+        <>
+          <Typography color="text.secondary">
+            Examples: HP for haplotype, RG for read group, etc.
+          </Typography>
 
-            <TextField
-              value={tag}
-              onChange={event => {
-                setGroupByTag(event.target.value)
-              }}
-              placeholder="Enter tag name"
-              error={isInvalid}
-              helperText={isInvalid ? 'Not a valid tag' : ''}
-              autoComplete="off"
-              data-testid="group-tag-name"
-              slotProps={{
-                htmlInput: {
-                  maxLength: 2,
-                  'data-testid': 'group-tag-name-input',
-                },
-              }}
-            />
-            {error ? (
-              <ErrorBanner error={error} />
-            ) : loading ? (
-              <LoadingEllipses message="Loading unique tags" />
-            ) : tagSet ? (
-              <TagResults tag={tag} tagSet={tagSet} />
-            ) : null}
-          </>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          disabled={submitDisabled}
-          autoFocus
-          onClick={handleSubmit}
-        >
-          Submit
-        </Button>
-        <Button variant="contained" color="secondary" onClick={handleClose}>
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <TextField
+            value={tag}
+            onChange={event => {
+              setGroupByTag(event.target.value)
+            }}
+            placeholder="Enter tag name"
+            error={isInvalid}
+            helperText={isInvalid ? 'Not a valid tag' : ''}
+            autoComplete="off"
+            data-testid="group-tag-name"
+            slotProps={{
+              htmlInput: {
+                maxLength: 2,
+                'data-testid': 'group-tag-name-input',
+              },
+            }}
+          />
+          {error ? (
+            <ErrorBanner error={error} />
+          ) : loading ? (
+            <LoadingEllipses message="Loading unique tags" />
+          ) : tagSet ? (
+            <TagResults tag={tag} tagSet={tagSet} />
+          ) : null}
+        </>
+      ) : null}
+    </SubmitDialog>
   )
 })
 

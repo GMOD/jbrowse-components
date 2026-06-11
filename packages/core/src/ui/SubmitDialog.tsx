@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import Dialog from './Dialog.tsx'
 
 import type { Props as DialogComponentProps } from './Dialog.tsx'
+import type { ButtonProps } from '@mui/material'
 
 export interface SubmitDialogProps extends DialogComponentProps {
   onCancel: () => void
@@ -11,6 +12,8 @@ export interface SubmitDialogProps extends DialogComponentProps {
   cancelText?: string
   submitText?: string
   submitDisabled?: boolean
+  submitColor?: ButtonProps['color']
+  submitStartIcon?: React.ReactNode
 }
 
 const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
@@ -20,6 +23,8 @@ const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
     cancelText = 'Cancel',
     submitText = 'Submit',
     submitDisabled = false,
+    submitColor = 'primary',
+    submitStartIcon,
     children,
     ...dialogProps
   } = props
@@ -46,9 +51,10 @@ const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
           </Button>
           <Button
             type="submit"
-            color="primary"
+            color={submitColor}
             variant="contained"
             disabled={submitDisabled}
+            startIcon={submitStartIcon}
           >
             {submitText}
           </Button>

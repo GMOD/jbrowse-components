@@ -6,7 +6,7 @@ import {
   getTag,
 } from '@jbrowse/alignments-core'
 import { getConf } from '@jbrowse/core/configuration'
-import { Dialog, NumberTextField } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage, NumberTextField } from '@jbrowse/core/ui'
 import { getContainingView, getSession, useFetch } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -127,7 +127,7 @@ export default function ReadVsRefDialog({
     <Dialog open onClose={handleClose} title="Set window size">
       <DialogContent>
         {error ? (
-          <Typography color="error">{`${error}`}</Typography>
+          <ErrorMessage error={error} />
         ) : !primaryFeature ? (
           <div>
             <Typography>

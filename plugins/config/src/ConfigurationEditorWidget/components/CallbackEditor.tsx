@@ -1,12 +1,11 @@
 import { useState, useTransition } from 'react'
 
+import { MonospaceTextField } from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import HelpIcon from '@mui/icons-material/Help'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import MonospaceTextField from './MonospaceTextField.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

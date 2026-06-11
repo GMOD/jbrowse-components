@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
@@ -110,7 +110,7 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
           <Typography variant="h5">Available plugins</Typography>
         </AccordionSummary>
         {error ? (
-          <Typography color="error">{`${error}`}</Typography>
+          <ErrorMessage error={error} />
         ) : plugins ? (
           plugins
             .filter(plugin => {

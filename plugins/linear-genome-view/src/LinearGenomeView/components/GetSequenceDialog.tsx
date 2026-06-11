@@ -5,10 +5,10 @@ import {
   Dialog,
   ErrorBanner,
   LoadingEllipses,
+  MonospaceTextField,
 } from '@jbrowse/core/ui'
 import { complement, reverse, toLocale, useFetch } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
@@ -18,7 +18,6 @@ import {
   DialogContent,
   FormControlLabel,
   FormGroup,
-  TextField,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -27,15 +26,6 @@ import { fetchSequence } from './fetchSequence.ts'
 
 import type { BpOffset } from '../types.ts'
 import type { Region } from '@jbrowse/core/util'
-
-const useStyles = makeStyles()({
-  dialogContent: {
-    width: '80em',
-  },
-  textAreaFont: {
-    fontFamily: 'Courier New',
-  },
-})
 
 const GetSequenceDialog = observer(function GetSequenceDialog({
   model,
@@ -49,7 +39,6 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
   }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const [rev, setReverse] = useState(false)
   const [comp, setComplement] = useState(false)
   const { leftOffset, rightOffset } = model
@@ -123,27 +112,17 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         ) : loading ? (
           <LoadingEllipses message="Retrieving sequences" />
         ) : null}
-        <TextField
-          variant="outlined"
-          multiline
+        <MonospaceTextField
+          fullWidth
+          readOnly
           minRows={5}
           maxRows={10}
           disabled={sequenceTooLarge}
-          className={classes.dialogContent}
-          fullWidth
           value={
             sequenceTooLarge
               ? 'Reference sequence too large to display, use the download FASTA button'
               : sequence
           }
-          slotProps={{
-            input: {
-              readOnly: true,
-              classes: {
-                input: classes.textAreaFont,
-              },
-            },
-          }}
         />
         <FormGroup>
           <FormControlLabel
