@@ -3313,9 +3313,9 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // tall viewport so the whole (react-window-virtualized) category tree
-    // renders — the BigWig category sits below the default fold otherwise
-    viewportHeight: 1600,
+    // shorter viewport (reviewer: the old 1600px figure was way too tall); the
+    // "Integration test" wiggle category still renders within this height
+    viewportHeight: 760,
     stages: [
       {
         actions: [
@@ -3328,9 +3328,8 @@ export const specs: ScreenshotSpec[] = [
             selector: '[data-testid="hierarchical_track_selector"]',
           },
           { type: 'delay', ms: 500 },
-          // open a category's "..." menu (stable testid added to the category
-          // CascadingMenuButton); "Integration test" is reliably visible and
-          // contains the wiggle subtracks
+          // open the category's "..." menu (stable testid on the category
+          // CascadingMenuButton)
           {
             type: 'click',
             selector: '[data-testid="htsCategoryMenu-Integration test"]',
