@@ -60,16 +60,13 @@ export function createTestServer(
     const server = http.createServer((req, res) => {
       const url = req.url ?? '/'
       if (url.startsWith('/test_data/')) {
-        return handler(req, res, {
-          public: jbrowseWebRoot,
-          headers: corsHeaders,
-        })
+        void handler(req, res, { public: jbrowseWebRoot, headers: corsHeaders })
       } else if (url.startsWith('/extra_test_data/')) {
-        return handler(req, res, { public: repoRoot, headers: corsHeaders })
+        void handler(req, res, { public: repoRoot, headers: corsHeaders })
       } else if (proxyPort !== undefined) {
-        return proxyToPort(req, res, proxyPort)
+        proxyToPort(req, res, proxyPort)
       } else {
-        return handler(req, res, { public: buildPath, headers: corsHeaders })
+        void handler(req, res, { public: buildPath, headers: corsHeaders })
       }
     })
     server.on('error', reject)
