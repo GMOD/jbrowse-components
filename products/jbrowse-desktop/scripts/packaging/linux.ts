@@ -71,18 +71,13 @@ MimeType=application/x-jbrowse;
   fs.copyFileSync(pngIcon, path.join(appDir, `${APP_NAME}.png`))
   fs.copyFileSync(pngIcon, path.join(appDir, '.DirIcon'))
 
-  // Download appimagetool if needed
-  const toolDir = path.join(DIST, '.tools')
-  ensureDir(toolDir)
-  const appimagetool = path.join(toolDir, 'appimagetool')
-
-  if (!fs.existsSync(appimagetool)) {
-    log('Downloading appimagetool...')
-    run(
-      `curl -fsSL -o "${appimagetool}" "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"`,
-    )
-    fs.chmodSync(appimagetool, 0o755)
-  }
+  const appimagetool = path.join(DIST, '.tools', 'appimagetool')
+  ensureDir(path.dirname(appimagetool))
+  log('Downloading appimagetool...')
+  run(
+    `curl -fsSL -o "${appimagetool}" "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"`,
+  )
+  fs.chmodSync(appimagetool, 0o755)
 
   log('Creating AppImage...')
   run(`"${appimagetool}" --no-appstream "${appDir}" "${appImagePath}"`, {

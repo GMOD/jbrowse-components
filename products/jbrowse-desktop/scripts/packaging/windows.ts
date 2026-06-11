@@ -11,26 +11,19 @@ function toWinePath(unixPath: string) {
   if (process.platform === 'win32') {
     return unixPath.replace(/\//g, '\\')
   }
-  // Use winepath to convert Unix path to Windows path
   return runQuiet(`winepath -w "${unixPath}"`).replace(/\\/g, '\\\\')
 }
 
 function createNsisScript(appDir: string, outputExe: string, useWine: boolean) {
-  let iconPath = path.join(ASSETS, 'installerIcon.ico')
-  let appDirEscaped = appDir
-  let outputExeEscaped = outputExe
-
-  if (useWine) {
-    // Convert paths to Windows format for Wine
-    iconPath = toWinePath(iconPath)
-    appDirEscaped = toWinePath(appDir)
-    outputExeEscaped = toWinePath(outputExe)
-  } else {
-    // On Windows, just escape backslashes
-    iconPath = iconPath.replace(/\\/g, '\\\\')
-    appDirEscaped = appDir.replace(/\\/g, '\\\\')
-    outputExeEscaped = outputExe.replace(/\\/g, '\\\\')
-  }
+  const iconPath = useWine
+    ? toWinePath(path.join(ASSETS, 'installerIcon.ico'))
+    : path.join(ASSETS, 'installerIcon.ico').replace(/\\/g, '\\\\')
+  const appDirEscaped = useWine
+    ? toWinePath(appDir)
+    : appDir.replace(/\\/g, '\\\\')
+  const outputExeEscaped = useWine
+    ? toWinePath(outputExe)
+    : outputExe.replace(/\\/g, '\\\\')
 
   return `
 !include "MUI2.nsh"
@@ -98,75 +91,52 @@ SectionEnd
 `
 }
 
-function getNsisCommand() {
-  // On Windows, use makensis directly
+function getNsisCommand(): { cmd: string; useWine: boolean } {
   if (process.platform === 'win32') {
     try {
       runQuiet('makensis -VERSION')
       return { cmd: 'makensis', useWine: false }
     } catch {
-      return null
+      throw new Error('makensis not found — install NSIS for Windows')
     }
   }
-  // On Linux/macOS, try Wine with NSIS
   try {
-    // Check if NSIS is installed in Wine's Program Files
-    const wineNsis =
-      'wine "C:\\Program Files (x86)\\NSIS\\makensis.exe" /VERSION'
-    runQuiet(wineNsis)
+    runQuiet('wine "C:\\Program Files (x86)\\NSIS\\makensis.exe" /VERSION')
     return {
       cmd: 'wine "C:\\Program Files (x86)\\NSIS\\makensis.exe"',
       useWine: true,
     }
   } catch {
-    return null
+    throw new Error(
+      'NSIS not found in Wine — install NSIS under Wine (Linux/macOS)',
+    )
   }
 }
 
 async function createWindowsInstaller(electronAppDir: string) {
   const exeName = `${APP_NAME}-v${VERSION}-win.exe`
   const exePath = path.join(DIST, exeName)
-
   const nsis = getNsisCommand()
 
-  if (nsis) {
-    log('Creating NSIS installer...')
-
-    const scriptPath = path.join(DIST, 'installer.nsi')
-    fs.writeFileSync(
-      scriptPath,
-      createNsisScript(electronAppDir, exePath, nsis.useWine),
-    )
-
-    // Convert script path to Windows format when using Wine
-    const scriptArg = nsis.useWine
-      ? runQuiet(`winepath -w "${scriptPath}"`)
-      : scriptPath
-    run(`${nsis.cmd} "${scriptArg}"`)
-    fs.unlinkSync(scriptPath)
-
-    signWindowsFile(exePath)
-
-    log(`Created: ${exeName}`)
-    return exePath
-  }
-
-  // Fallback: create portable ZIP
-  log('NSIS not available - creating portable ZIP...')
-  const portableZip = path.join(
-    DIST,
-    `${APP_NAME}-v${VERSION}-win-portable.zip`,
+  log('Creating NSIS installer...')
+  const scriptPath = path.join(DIST, 'installer.nsi')
+  fs.writeFileSync(
+    scriptPath,
+    createNsisScript(electronAppDir, exePath, nsis.useWine),
   )
-  // Use PowerShell on Windows, zip command on Linux/macOS
-  if (process.platform === 'win32') {
-    run(
-      `powershell -command "Compress-Archive -Path '${electronAppDir}\\*' -DestinationPath '${portableZip}'"`,
-    )
-  } else {
-    run(`cd "${electronAppDir}" && zip -r "${portableZip}" .`)
+
+  const scriptArg = nsis.useWine
+    ? runQuiet(`winepath -w "${scriptPath}"`)
+    : scriptPath
+  try {
+    run(`${nsis.cmd} "${scriptArg}"`)
+  } finally {
+    fs.rmSync(scriptPath, { force: true })
   }
-  log(`Created: ${path.basename(portableZip)}`)
-  return portableZip
+
+  signWindowsFile(exePath)
+  log(`Created: ${exeName}`)
+  return exePath
 }
 
 export async function buildWindows({ noInstaller = false } = {}) {
@@ -174,32 +144,22 @@ export async function buildWindows({ noInstaller = false } = {}) {
 
   const electronAppDir = await packageApp('win32', 'x64')
 
-  // For --no-installer mode (e.g., E2E tests), just return the unpacked app dir
   if (noInstaller) {
     log(`Unpacked app at: ${electronAppDir}`)
     return electronAppDir
   }
 
-  // Sign the main executable before packaging
   const mainExe = path.join(electronAppDir, `${APP_NAME}.exe`)
-  if (fs.existsSync(mainExe)) {
-    signWindowsFile(mainExe)
-  }
+  signWindowsFile(mainExe)
 
   const installerPath = await createWindowsInstaller(electronAppDir)
-  const installerName = path.basename(installerPath)
-
-  // Cleanup unpacked dir
   fs.rmSync(electronAppDir, { recursive: true })
 
-  // Generate latest.yml
-  if (installerName.endsWith('.exe')) {
-    fs.writeFileSync(
-      path.join(DIST, 'latest.yml'),
-      generateLatestYml([installerName]),
-    )
-    log('Created: latest.yml')
-  }
+  fs.writeFileSync(
+    path.join(DIST, 'latest.yml'),
+    generateLatestYml([path.basename(installerPath)]),
+  )
+  log('Created: latest.yml')
 
   return installerPath
 }
