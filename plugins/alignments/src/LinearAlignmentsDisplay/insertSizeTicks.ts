@@ -62,7 +62,10 @@ export function computeInsertSizeTicks({
 
   const items: YScaleTicks['items'] = []
   for (const v of logTickValues(arcsYDomainBp)) {
-    const offset = Math.min(arcYFraction(v, arcsYDomainBp, true) * availH, availH)
+    const offset = Math.min(
+      arcYFraction(v, arcsYDomainBp, true) * availH,
+      availH,
+    )
     const y = band.down ? anchor + offset : anchor - offset
     items.push({ value: v, y, label: formatBp(v) })
   }

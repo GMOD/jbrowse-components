@@ -4,10 +4,10 @@ Graphviz sources for the architecture figures used in the developer guide. These
 replace the old hand-drawn PNGs so the figures are version-controllable and easy
 to edit.
 
-| Source                      | Rendered output                              | Used in                                            |
-| --------------------------- | -------------------------------------------- | -------------------------------------------------- |
-| `products_and_plugins.dot`  | `../static/img/products_and_plugins.png`     | `docs/developer_guide.md` (Products and plugins)   |
-| `product_architecture.dot`  | `../static/img/product_architecture.png`     | `docs/developer_guide.md` (state model / React)    |
+| Source                     | Rendered output                          | Used in                                          |
+| -------------------------- | ---------------------------------------- | ------------------------------------------------ |
+| `products_and_plugins.dot` | `../static/img/products_and_plugins.png` | `docs/developer_guide.md` (Products and plugins) |
+| `product_architecture.dot` | `../static/img/product_architecture.png` | `docs/developer_guide.md` (state model / React)  |
 
 ## Rendering
 

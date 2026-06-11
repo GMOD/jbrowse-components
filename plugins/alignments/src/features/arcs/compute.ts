@@ -336,9 +336,7 @@ function groupReadsByName(
   return readsByName
 }
 
-function computePairingInfo(
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
-) {
+function computePairingInfo(rpcDataMap: ReadonlyMap<number, PileupDataResult>) {
   let hasPaired = false
   let stats: InsertSizeStats | undefined
   for (const data of rpcDataMap.values()) {

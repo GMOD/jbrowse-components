@@ -84,7 +84,11 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       const endBp = sashimiX2[i]!
       const left = bpToScreenX(refName, startBp)
       const right = bpToScreenX(refName, endBp)
-      if (left === undefined || right === undefined || count < minSashimiScore) {
+      if (
+        left === undefined ||
+        right === undefined ||
+        count < minSashimiScore
+      ) {
         continue
       }
       const strand = colorTypeToStrand(sashimiColorTypes[i]!)

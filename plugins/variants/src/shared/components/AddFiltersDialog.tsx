@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { ExternalLink, MonospaceTextField, SubmitDialog } from '@jbrowse/core/ui'
+import {
+  ExternalLink,
+  MonospaceTextField,
+  SubmitDialog,
+} from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { observer } from 'mobx-react'
 

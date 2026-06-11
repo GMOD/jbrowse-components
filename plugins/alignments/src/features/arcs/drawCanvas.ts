@@ -106,7 +106,10 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
 
     const sx1 = bpToScreenX(x1Bp)
     const sx2 = bpToScreenX(x2Bp)
-    const arcH = Math.min(arcYFraction(yBp, arcsYDomainBp, arcsYLog) * availH, availH)
+    const arcH = Math.min(
+      arcYFraction(yBp, arcsYDomainBp, arcsYLog) * availH,
+      availH,
+    )
     const apexY = pairedArcsDown ? anchorY + arcH : anchorY - arcH
 
     const isFlat = shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT

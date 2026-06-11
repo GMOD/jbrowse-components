@@ -39,7 +39,10 @@ test('compactness op fans out to every compactable display', () => {
   const b = { setCompactness: (v: string) => calls.push(`b:${v}`) }
   const pm = makePM()
 
-  const menu = buildAllTracksMenu(pm, [{ displays: [a, {}] }, { displays: [b] }])
+  const menu = buildAllTracksMenu(pm, [
+    { displays: [a, {}] },
+    { displays: [b] },
+  ])
   const allTracks = findSub(menu, 'All tracks')!
   clickLabel(findSub(allTracks, 'Compactness')!, 'Compact')
 
@@ -53,8 +56,14 @@ test('contributed op only appears when a display supports it', () => {
       ? [{ label: 'Foo', onClick: () => {} }]
       : []
 
-  const withFoo = buildAllTracksMenu(makePM([fooOp]), [{ displays: [settable] }])
-  expect(findSub(withFoo, 'All tracks')!.some(i => 'label' in i && i.label === 'Foo')).toBe(true)
+  const withFoo = buildAllTracksMenu(makePM([fooOp]), [
+    { displays: [settable] },
+  ])
+  expect(
+    findSub(withFoo, 'All tracks')!.some(
+      i => 'label' in i && i.label === 'Foo',
+    ),
+  ).toBe(true)
 
   const withoutFoo = buildAllTracksMenu(makePM([fooOp]), [{ displays: [{}] }])
   expect(findSub(withoutFoo, 'All tracks')).toBeUndefined()

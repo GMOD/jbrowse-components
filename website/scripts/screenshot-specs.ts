@@ -2008,27 +2008,30 @@ export const specs: ScreenshotSpec[] = [
     // cytosines) ranked NC_003070.9:144,001-146,000 highest (~61% mean CHH
     // methylation, 277 sites, ~2000x), so navigate there with the bisulfite CHH
     // coloring to show an actually-methylated region.
-    url: sessionSpec('test_data/arabidopsis_methylation/config_emseq_bisulfite.json', {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'arabidopsis',
-          loc: 'NC_003070.9:144,001-146,000',
-          tracks: [
-            {
-              trackId: 'arabidopsis_emseq',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                colorBySetting: {
-                  type: 'bisulfite',
-                  modifications: { cytosineContext: 'CHH' },
+    url: sessionSpec(
+      'test_data/arabidopsis_methylation/config_emseq_bisulfite.json',
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'arabidopsis',
+            loc: 'NC_003070.9:144,001-146,000',
+            tracks: [
+              {
+                trackId: 'arabidopsis_emseq',
+                displaySnapshot: {
+                  type: 'LinearAlignmentsDisplay',
+                  colorBySetting: {
+                    type: 'bisulfite',
+                    modifications: { cytosineContext: 'CHH' },
+                  },
                 },
               },
-            },
-          ],
-        },
-      ],
-    }),
+            ],
+          },
+        ],
+      },
+    ),
     readyText: 'NC_003070',
     readyTimeout: 60000,
     settleMs: 14000,

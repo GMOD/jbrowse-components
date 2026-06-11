@@ -1,1 +1,1 @@
-export const gitCommit = 'def1b9978f'
+export const gitCommit = '53eb896e0d'

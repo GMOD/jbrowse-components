@@ -150,6 +150,34 @@ async function resolveTarget(page: Page, action: ScreenshotAction) {
   return null
 }
 
+// Click a resolved element. A real mouse click at the element's center is
+// preferred (it exercises hover/focus the way a user would), but absolutely-
+// positioned overlays — e.g. an offset/overlapping track-name label sitting on
+// top of a feature's floating label — can intercept that coordinate. When the
+// element is covered (elementFromPoint resolves to a non-descendant), fall back
+// to dispatching the click directly on the node, which still fires React's
+// onClick but can't be stolen by a painted-over sibling.
+async function clickElement(el: Awaited<ReturnType<typeof resolveTarget>>) {
+  if (!el) {
+    return
+  }
+  const covered = await el.evaluate(node => {
+    const r = node.getBoundingClientRect()
+    const top = document.elementFromPoint(
+      r.left + r.width / 2,
+      r.top + r.height / 2,
+    )
+    return !top || (top !== node && !node.contains(top) && !top.contains(node))
+  })
+  if (covered) {
+    await el.evaluate(node => {
+      ;(node as HTMLElement).click()
+    })
+  } else {
+    await el.click()
+  }
+}
+
 async function runAction(page: Page, action: ScreenshotAction) {
   if (action.type === 'delay') {
     await delay(action.ms ?? 500)
@@ -160,7 +188,7 @@ async function runAction(page: Page, action: ScreenshotAction) {
       await page.mouse.click(action.from.x, action.from.y)
     } else {
       const el = await resolveTarget(page, action)
-      await el?.click()
+      await clickElement(el)
     }
   } else if (action.type === 'rightclick') {
     if (action.from) {
