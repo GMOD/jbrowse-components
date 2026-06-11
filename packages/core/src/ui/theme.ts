@@ -179,6 +179,22 @@ export const colorLongreadRevFwd = '#6688ee'
 export const colorLongreadInv = '#7755bb'
 export const colorSupplementary = '#f0b878'
 
+// Qualitative palette for coloring reads by an arbitrary tag value (e.g. the HP
+// haplotype tag). Pale "tol_light" scheme:
+// https://cran.r-project.org/web/packages/khroma/vignettes/tol.html
+export const tagColorPalette = [
+  '#BBCCEE',
+  'pink',
+  '#CCDDAA',
+  '#EEEEBB',
+  '#FFCCCC',
+  'lightblue',
+  'lightgreen',
+  'tan',
+  '#CCEEFF',
+  'lightsalmon',
+]
+
 export const methylated5mC = '#ff0000'
 export const unmethylated5mC = '#0000ff'
 export const methylated5hmC = '#ffc0cb'

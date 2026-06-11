@@ -34,8 +34,8 @@ Parse MM tag to extract modification positions on the read sequence.
 
 ### getModProbabilities
 
-Reads the ML tag from a feature and returns per-call modification probabilities
-scaled to 0..1.
+Reads the ML tag from a feature and returns per-call modification
+probabilities scaled to 0..1.
 
 ```js
 // type signature
@@ -91,8 +91,8 @@ interleaved per position.
 
 ### parseModHeader
 
-Parses one MM-tag modification header (e.g. `C+m`) into its base, strand, type
-string, and modification code.
+Parses one MM-tag modification header (e.g. `C+m`) into its base, strand,
+type string, and modification code.
 
 ```js
 // type signature

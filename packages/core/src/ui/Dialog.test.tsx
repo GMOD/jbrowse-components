@@ -75,7 +75,7 @@ test('close button calls onClose with backdropClick', () => {
 
 test('error boundary catches errors thrown by children', async () => {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-  function Bomb() {
+  function Bomb(): never {
     throw new Error('boom')
   }
   const { findByText } = render(

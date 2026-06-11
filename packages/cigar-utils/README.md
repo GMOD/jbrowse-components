@@ -32,8 +32,8 @@ Length the read spans on the reference (sum of M/=/X/D/N ops).
 
 ### getMismatches
 
-Computes the list of mismatches (SNVs, indels, clips, skips) for a read from its
-CIGAR, optional MD tag, sequence, reference, and quality.
+Computes the list of mismatches (SNVs, indels, clips, skips) for a read from
+its CIGAR, optional MD tag, sequence, reference, and quality.
 
 ```js
 // type signature
@@ -80,9 +80,9 @@ Parses a CIGAR string to a packed number array where each value is
 
 ### parseCigar2Typed
 
-Same encoding as `parseCigar2` but writes into a packed `Uint32Array` — matches
-the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can use a
-single typed-array code path.
+Same encoding as `parseCigar2` but writes into a packed `Uint32Array` —
+matches the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can
+use a single typed-array code path.
 
 ```js
 // type signature

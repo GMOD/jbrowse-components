@@ -10,8 +10,8 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 ### breakpointBpPerPx
 
-bpPerPx that fits `windowSize` bp on each side of a breakpoint across the view
-width. Falls back to a zoomed-in default when no window is requested.
+bpPerPx that fits `windowSize` bp on each side of a breakpoint across the
+view width. Falls back to a zoomed-in default when no window is requested.
 
 ```js
 // type signature
@@ -23,8 +23,8 @@ width. Falls back to a zoomed-in default when no window is requested.
 ### getBreakendAssemblyRegions
 
 Loads the assembly for a breakend feature and resolves the two regions its
-endpoints span. Throws if the assembly, its regions, or either endpoint's region
-cannot be found.
+endpoints span. Throws if the assembly, its regions, or either endpoint's
+region cannot be found.
 
 ```js
 // type signature
@@ -58,8 +58,8 @@ Returns undefined when no mate coordinate info is found.
 
 ### splitRegionAtPosition
 
-Splits a region at `pos` into two halves that both include `pos`, so a breakend
-there stays visible in each.
+Splits a region at `pos` into two halves that both include `pos`, so a
+breakend there stays visible in each.
 
 ```js
 // type signature
