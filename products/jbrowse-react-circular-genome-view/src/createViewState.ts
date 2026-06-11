@@ -17,7 +17,9 @@ type Tracks = ConfigSnapshot['tracks']
 type InternetAccounts = ConfigSnapshot['internetAccounts']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 
-interface ViewStateOptions {
+// engine-construction inputs shared by the imperative createViewState and the
+// declarative <CircularGenomeView> component
+export interface CreateViewStateBaseOptions {
   assembly: Assembly
   tracks: Tracks
   internetAccounts?: InternetAccounts
@@ -25,8 +27,13 @@ interface ViewStateOptions {
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
   makeWorkerInstance?: () => Worker
-  defaultSession?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
+}
+
+// the imperative API adds a full session snapshot; the managed
+// <CircularGenomeView> component expresses initial state through an `init` blob
+export interface ViewStateOptions extends CreateViewStateBaseOptions {
+  defaultSession?: SessionSnapshot
 }
 
 export default function createViewState(opts: ViewStateOptions) {

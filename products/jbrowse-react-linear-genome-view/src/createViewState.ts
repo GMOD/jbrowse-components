@@ -25,20 +25,27 @@ interface Location {
   assemblyName?: string
 }
 
-export interface ViewStateOptions {
+// engine-construction inputs shared by the imperative createViewState and the
+// declarative <LinearGenomeView> component
+export interface CreateViewStateBaseOptions {
   assembly: Assembly
   tracks: Tracks
   internetAccounts?: InternetAccounts
   aggregateTextSearchAdapters?: AggregateTextSearchAdapters
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
-  location?: string | Location
-  highlight?: (string | HighlightType)[]
-  defaultSession?: SessionSnapshot
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
   drawerViewHeight?: string
+}
+
+// the imperative API adds three ways to express initial state; the managed
+// <LinearGenomeView> component expresses the same through a single `init` blob
+export interface ViewStateOptions extends CreateViewStateBaseOptions {
+  location?: string | Location
+  highlight?: (string | HighlightType)[]
+  defaultSession?: SessionSnapshot
 }
 
 export default function createViewState(opts: ViewStateOptions) {

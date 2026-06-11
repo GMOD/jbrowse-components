@@ -32,6 +32,7 @@ export default class CircularViewPlugin extends Plugin {
 }
 
 export {
+  type CircularViewInit,
   type CircularViewModel,
   type CircularViewStateModel,
   type ExportSvgOptions,

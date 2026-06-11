@@ -1,4 +1,7 @@
 export { default as JBrowseCircularGenomeView } from './JBrowseCircularGenomeView/index.ts'
+export { default as CircularGenomeView } from './CircularGenomeView/index.ts'
+export type { CircularGenomeViewProps } from './CircularGenomeView/index.ts'
 export { default as createModel } from './createModel/index.ts'
 export { default as createViewState } from './createViewState.ts'
 export { default as loadPlugins } from './loadPlugins.ts'
+export type { ViewModel } from './createModel/createModel.ts'
