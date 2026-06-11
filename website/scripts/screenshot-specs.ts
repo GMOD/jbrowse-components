@@ -1245,6 +1245,31 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'insertion',
     url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        // A region-slice of the HG002 PacBio Sequel 15kb BAM (1:55.70-55.71Mb,
+        // 70 reads, 650KB) rehosted on jbrowse.org/demos/hg002 so the PacBio reads
+        // load reliably — the full remote NCBI BAM intermittently errored here.
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg002_pacbio_chr1_insertion_slice',
+          name: 'HG002 PacBio Sequel 15kb (chr1 slice)',
+          assemblyNames: ['hg19'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam.bai',
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1254,11 +1279,15 @@ export const specs: ScreenshotSpec[] = [
             'nstd175.GRCh37.variant_call.vcf',
             { trackId: 'hg002_nanopore', displaySnapshot: { height: 200 } },
             {
-              trackId:
-                'HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio',
+              trackId: 'hg002_pacbio_chr1_insertion_slice',
               displaySnapshot: { height: 200 },
             },
-            { trackId: 'illumina_hg002', displaySnapshot: { height: 250 } },
+            {
+              trackId: 'illumina_hg002',
+              // show soft clipping so the clipped bases flanking the insertion
+              // are visible on the Illumina reads (reviewer)
+              displaySnapshot: { height: 250, showSoftClipping: true },
+            },
           ],
         },
       ],
