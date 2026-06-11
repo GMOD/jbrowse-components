@@ -41,6 +41,7 @@ export function getSortByMenuItem(model: SortByModel) {
     : 'Base pair'
   return {
     label: 'Sort by...',
+    type: 'subMenu' as const,
     icon: SwapVertIcon,
     subMenu: [
       {
@@ -118,6 +119,7 @@ function removeGroupTracks(model: IAnyStateTreeNode) {
 export function getGroupByMenuItem(model: IAnyStateTreeNode) {
   return {
     label: 'Group by...',
+    type: 'subMenu' as const,
     icon: WorkspacesIcon,
     subMenu: [
       {

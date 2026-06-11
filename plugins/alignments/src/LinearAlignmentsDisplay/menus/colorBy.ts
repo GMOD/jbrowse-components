@@ -73,10 +73,10 @@ const pairedEndColorOptions: ColorOption[] = [
   { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
 ]
 
-const arcColorOptions: { label: string; type: ArcColorByType }[] = [
-  { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
-  { label: 'Insert size', type: 'insertSize' },
-  { label: 'Orientation', type: 'orientation' },
+const arcColorOptions: { value: ArcColorByType; label: string }[] = [
+  { value: 'insertSizeAndOrientation', label: 'Insert size and orientation' },
+  { value: 'insertSize', label: 'Insert size' },
+  { value: 'orientation', label: 'Orientation' },
 ]
 
 const cytosineContextOptions: { value: CytosineContext; label: string }[] = [
@@ -294,9 +294,7 @@ export function getColorByMenuItem(
     },
   })
 
-  const headItems = colorOptions
-    ? colorOptions.map(colorRadio)
-    : basicColorOptions.map(colorRadio)
+  const headItems = (colorOptions ?? basicColorOptions).map(colorRadio)
 
   const tagItem = includeTagOption
     ? [
@@ -338,7 +336,7 @@ export function getColorByMenuItem(
   const modItem =
     hasModifications(model) &&
     ((!model.modificationsReady && !model.regionTooLarge) ||
-      model.visibleModificationTypes.length)
+      model.visibleModificationTypes.length > 0)
       ? [
           {
             label: 'Base modifications (MM tag)',
@@ -363,20 +361,18 @@ export function getColorByMenuItem(
         {
           label: 'Arc color',
           type: 'subMenu' as const,
-          subMenu: arcColorOptions.map(({ label, type }) => ({
-            label,
-            type: 'radio' as const,
-            checked: arcColor.current === type,
-            onClick: () => {
-              arcColor.setColor(type)
-            },
-          })),
+          subMenu: radioItems(
+            arcColorOptions,
+            arcColor.current,
+            arcColor.setColor,
+          ),
         },
       ]
     : []
 
   return {
     label: 'Color by...',
+    type: 'subMenu' as const,
     icon: Palette,
     subMenu: [
       ...headItems,
