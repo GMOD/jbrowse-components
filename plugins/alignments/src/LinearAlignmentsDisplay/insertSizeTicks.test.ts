@@ -61,16 +61,30 @@ describe('computeInsertSizeTicks', () => {
 
   // Ticks are base-2 log-positioned, not linear: at domain 1000 the value-100
   // tick sits at log2(100)/log2(1000) ≈ 0.666 of the band, far from the linear
-  // 0.1 it would occupy.
+  // 0.1 it would occupy. (Tall band so the 100 decade survives tick-thinning.)
   it('positions ticks on a log scale', () => {
     const arcsYDomainBp = 1000
-    const availH = 40 - ARC_HEIGHT_MARGIN
+    const availH = 200 - ARC_HEIGHT_MARGIN
     const r = computeInsertSizeTicks({
       arcsYDomainBp,
-      band: { top: 0, height: 40, down: true },
+      band: { top: 0, height: 200, down: true },
     })!
     const t100 = r.items.find(t => t.value === 100)!
     expect(t100.y / availH).toBeCloseTo(Math.log2(100) / Math.log2(1000), 5)
     expect(t100.y / availH).toBeGreaterThan(0.6)
+  })
+
+  // A short band (read-cloud TLEN) thins down to just the min + max ticks
+  // instead of a dense unreadable ladder.
+  it('thins to two ticks on a short band', () => {
+    const r = computeInsertSizeTicks({
+      arcsYDomainBp: 34000,
+      band: { top: 0, height: 80, down: true },
+    })!
+    expect(r.items.length).toBe(2)
+    expect(r.items[0]!.value).toBe(1)
+    expect(r.items.at(-1)!.value).toBe(34000)
+    // 33950→"34kb" rounding: the domain-max label has no fractional unit
+    expect(r.items.at(-1)!.label).toBe('34kb')
   })
 })

@@ -4,40 +4,46 @@ import { arcYFraction } from '../features/arcs/arcYScale.ts'
 import type { ArcBand } from './renderers/rendererTypes.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
-// Format bp values with a compact unit (matches the X-axis ruler style).
+// Format bp values with a compact unit (matches the X-axis ruler style). Large
+// kb/Mb values round to a whole number (e.g. 33950 → "34kb", not "34.0kb") since
+// a fractional unit on a coarse insert-size tick reads as noise (reviewer).
 function formatBp(v: number) {
   if (v === 0) {
     return '0'
   }
   if (v >= 1_000_000) {
     const mb = v / 1_000_000
-    return `${mb % 1 === 0 ? mb : mb.toFixed(1)}Mb`
+    return `${mb >= 10 ? Math.round(mb) : mb % 1 === 0 ? mb : mb.toFixed(1)}Mb`
   }
   if (v >= 1000) {
     const kb = v / 1000
-    return `${kb % 1 === 0 ? kb : kb.toFixed(1)}kb`
+    return `${kb >= 10 ? Math.round(kb) : kb % 1 === 0 ? kb : kb.toFixed(1)}kb`
   }
-  return `${v}bp`
+  return `${Math.round(v)}bp`
 }
 
-// "Nice" log tick values (1,2,5 × 10^k) within [1, domain], so the ruler reads
-// like d3.scaleLog().base(2).ticks(). Always includes the domain max as the top
-// tick.
-function logTickValues(domain: number) {
-  const values: number[] = []
-  const maxExp = Math.floor(Math.log10(domain))
-  for (let e = 0; e <= maxExp; e++) {
-    for (const m of [1, 2, 5]) {
-      const v = m * 10 ** e
-      if (v <= domain) {
-        values.push(v)
-      }
-    }
+// Decade log tick values (1, 10, 100, … powers of 10) within [1, domain], always
+// ending at the domain max. Thinned to at most `maxTicks` (keeping the min and
+// max) so a short band shows just a couple of readable ticks instead of a dense
+// unreadable ladder — `maxTicks` is derived from the band height by the caller.
+function logTickValues(domain: number, maxTicks: number) {
+  const values: number[] = [1]
+  for (let v = 10; v <= domain; v *= 10) {
+    values.push(v)
   }
   if (values.at(-1) !== domain) {
     values.push(domain)
   }
-  return values
+  if (values.length <= maxTicks) {
+    return values
+  }
+  // thin evenly across the decades, always keeping the first (min) and last (max)
+  const step = (values.length - 1) / (maxTicks - 1)
+  const out: number[] = []
+  for (let i = 0; i < maxTicks; i++) {
+    out.push(values[Math.round(i * step)]!)
+  }
+  return [...new Set(out)]
 }
 
 // Ruler for the samplot insert-size arcs. Geometry is derived from the same
@@ -60,8 +66,12 @@ export function computeInsertSizeTicks({
   }
   const anchor = band.down ? band.top : band.top + band.height
 
+  // ~30px of vertical room per tick keeps the 10px labels from colliding; a
+  // short band (e.g. the read-cloud TLEN band) thus shows just min + max
+  const maxTicks = Math.max(2, Math.floor(availH / 30))
+
   const items: YScaleTicks['items'] = []
-  for (const v of logTickValues(arcsYDomainBp)) {
+  for (const v of logTickValues(arcsYDomainBp, maxTicks)) {
     const offset = Math.min(
       arcYFraction(v, arcsYDomainBp, true) * availH,
       availH,
