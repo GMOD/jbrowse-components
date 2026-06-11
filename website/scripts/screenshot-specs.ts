@@ -1,3 +1,5 @@
+import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
+
 export interface ScreenshotAction {
   type:
     | 'click'
@@ -140,18 +142,18 @@ const HPYLORI_BASE =
   'https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json'
 
 function sessionSpec(config: string, session: object) {
-  return `?config=${config}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
+  return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
 function cgiabUrl(session?: object) {
   if (!session) {
     return CGIAB_BASE
   }
-  return `${CGIAB_BASE}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
+  return `${CGIAB_BASE}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
 function hpyloriUrl(session: object) {
-  return `${HPYLORI_BASE}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
+  return `${HPYLORI_BASE}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
 // remote 1000-genomes config loaded against the *local* build (a bare ?config=
@@ -162,7 +164,7 @@ const KG_CONFIG =
   'https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json'
 
 function kgUrl(session: object) {
-  return `?config=${encodeURIComponent(KG_CONFIG)}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=Screenshot`
+  return `?config=${encodeURIComponent(KG_CONFIG)}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
 // Three H. pylori strains stacked top-to-bottom, with a synteny track between
@@ -565,12 +567,15 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Zoom to region' },
       { type: 'delay', ms: 1000 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'Zoom to region' } }],
   },
 
   // Soft clipping, two-stage figure: top frame opens the track menu's "Show..."
-  // submenu with "Show soft clipping" boxed; bottom frame closes the menu to
-  // show the result (showSoftClipping is preset so the clipped bases render in
-  // the result frame). Combines the old separate menu + result screenshots.
+  // submenu with "Show soft clipping" boxed — soft clipping is NOT yet enabled,
+  // so the reads render normally (clipped bases hidden). Bottom frame clicks the
+  // item, enabling soft clipping and closing the menu, so it teaches cause→effect
+  // (reviewer: stage 1 must be the not-yet-enabled state, stage 2 the result with
+  // no menu open). Combines the old separate menu + result screenshots.
   {
     mode: 'url',
     name: 'alignments_soft_clipped_menu',
@@ -581,15 +586,7 @@ export const specs: ScreenshotSpec[] = [
           assembly: 'volvox',
           // zoomed in toward the soft-clip breakpoint (reviewer request)
           loc: 'ctgA:2670-2730',
-          tracks: [
-            {
-              trackId: 'volvox-long-reads-sv-bam',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                showSoftClipping: true,
-              },
-            },
-          ],
+          tracks: ['volvox-long-reads-sv-bam'],
         },
       ],
     }),
@@ -609,13 +606,13 @@ export const specs: ScreenshotSpec[] = [
         annotations: [{ type: 'box', anchor: { text: 'Show soft clipping' } }],
       },
       {
-        // click the location box to dismiss the menu before the result frame
+        // click the boxed item to actually enable soft clipping; the menu closes
+        // on click, so the result frame shows the soft-clipped reads with no menu
         actions: [
-          {
-            type: 'click',
-            selector: 'input[placeholder="Search for location"]',
-          },
-          { type: 'delay', ms: 1500 },
+          { type: 'click', text: 'Show soft clipping' },
+          { type: 'waitForText', text: 'Show soft clipping', hidden: true },
+          { type: 'hover', from: { x: 200, y: 100 } },
+          { type: 'delay', ms: 2500 },
         ],
       },
     ],
@@ -793,6 +790,8 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           drawCurves: true,
+          // taller synteny ribbon band between the panels (reviewer: ~250)
+          levelHeights: [250],
           tracks: [
             'grape_peach_synteny_mcscan',
             'grape_peach_synteny_mcscan_simple',
@@ -801,12 +800,23 @@ export const specs: ScreenshotSpec[] = [
             {
               loc: 'Pp05:1-18496696',
               assembly: 'peach',
-              tracks: ['grape_peach_synteny_mcscan_simple'],
+              // shorter in-panel MCScan track (reviewer: ~80)
+              tracks: [
+                {
+                  trackId: 'grape_peach_synteny_mcscan_simple',
+                  displaySnapshot: { height: 80 },
+                },
+              ],
             },
             {
               loc: 'chr2:1-18779844',
               assembly: 'grape',
-              tracks: ['grape_peach_synteny_mcscan_simple'],
+              tracks: [
+                {
+                  trackId: 'grape_peach_synteny_mcscan_simple',
+                  displaySnapshot: { height: 80 },
+                },
+              ],
             },
           ],
         },
@@ -909,6 +919,9 @@ export const specs: ScreenshotSpec[] = [
     // narrower window (reviewer request); the rightclick x below is recomputed
     // for this width — the SNP at ctgA:14481 sits at ~0.51 of the 107bp region
     viewportWidth: 1100,
+    // crop each stage to the populated header+pileup so the stacked two-frame
+    // figure isn't padded by the empty viewport below (reviewer: shorter window)
+    crop: { x: 0, y: 0, width: 1100, height: 430 },
     settleMs: 5000,
     hideTooltip: true,
     // two-stage: top frame is the right-click "SNP/Mismatch → Sort by base at
@@ -960,7 +973,15 @@ export const specs: ScreenshotSpec[] = [
           // with a single isoform and just 3 introns, so the RNA-seq sashimi arcs
           // are few and clean (GAPDH's many short exons gave "tons of small arcs").
           loc: 'chr15:45,003,000-45,012,000',
-          tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
+          tracks: [
+            {
+              trackId: 'ncbi_gff_hg19',
+              // give the gene track room so the B2M model is clearly visible
+              // above the sashimi arcs (reviewer: gene track too short to see)
+              displaySnapshot: { type: 'LinearBasicDisplay', height: 120 },
+            },
+            'Pairend_StrandSpecific_51mer_Human_hg19',
+          ],
         },
       ],
     }),
@@ -1026,39 +1047,6 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'COLO829',
     readyTimeout: 60000,
     // deep remote nanopore CRAM + methylation processing is slow over the network
-    settleMs: 35000,
-  },
-
-  // Per-read modification BAM/CRAM: COLO829_tumor.ht nanopore reads colored by
-  // ALL modification types (colorBy {type:'modifications'}, the "all
-  // modifications" preset) over a ~20kb window, so each read's per-base mod
-  // calls are visible. Flat displaySnapshot override (LinearAlignmentsDisplay
-  // takes flat overrides now).
-  {
-    mode: 'url',
-    name: 'methylation/per_read_mod_bam',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr20:9,990,000-10,010,002',
-          tracks: [
-            {
-              trackId: 'COLO829_tumor.ht',
-              displaySnapshot: {
-                colorBy: { type: 'modifications' },
-                // ~20kb of nanopore reads is ~5Mb, over the default fetch guard;
-                // raise the limit so per-read mods auto-load without a click.
-                userByteSizeLimit: 100_000_000,
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'COLO829',
-    readyTimeout: 60000,
     settleMs: 35000,
   },
 
@@ -1144,8 +1132,24 @@ export const specs: ScreenshotSpec[] = [
     crop: { x: 0, y: 0, width: 1500, height: 300 },
     stages: [
       {
-        // top frame: normal orientation (no menu open)
+        // top frame: normal orientation, with the view-menu icon ringed and a
+        // callout telling the reader to select "Horizontally flip" from it
         actions: [{ type: 'delay', ms: 500 }],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="view_menu_icon"]' },
+          },
+          {
+            type: 'text',
+            text: 'Select "Horizontally flip"',
+            anchor: { selector: '[data-testid="view_menu_icon"]' },
+            dx: 40,
+            dy: 0,
+            background: 'rgba(0,0,0,0.78)',
+            textColor: '#fff',
+          },
+        ],
       },
       {
         // bottom frame: after the view-menu "Horizontally flip" the gene arrows /
@@ -1386,7 +1390,31 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'breakpoint split view' },
       { type: 'delay', ms: 1500 },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'breakpoint split view' } }],
+    annotations: [
+      { type: 'box', anchor: { text: 'breakpoint split view' } },
+      // arrow + explanatory callout pointing at the boxed split-view link
+      {
+        type: 'arrow',
+        from: { x: 760, y: 300 },
+        anchor: { text: 'breakpoint split view' },
+      },
+      {
+        type: 'text',
+        x: 60,
+        y: 270,
+        text: 'Automatically launches a breakpoint split view for the TRA SV',
+        background: 'rgba(0,0,0,0.78)',
+        textColor: '#fff',
+      },
+      {
+        type: 'text',
+        x: 60,
+        y: 300,
+        text: 'Paired-end and long reads also have this in their feature details',
+        background: 'rgba(0,0,0,0.78)',
+        textColor: '#fff',
+      },
+    ],
   },
 
   {
@@ -1490,7 +1518,9 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    viewportHeight: 1100,
+    // taller window so more of the pileup + the feature-details sidebar fit
+    // (reviewer request)
+    viewportHeight: 1300,
     settleMs: 30000,
     // click the HGSV_2721 variant's floating feature label (stable per-feature
     // testid) to open its feature details
@@ -1501,6 +1531,8 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 4000 },
     ],
+    // ring the CPX_TYPE INFO field in the variant feature-details sidebar
+    annotations: [{ type: 'circle', anchor: { text: 'CPX_TYPE' } }],
   },
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
@@ -2387,7 +2419,9 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    viewportHeight: 650,
+    // smaller capture window in both dimensions (reviewer request)
+    viewportWidth: 1150,
+    viewportHeight: 560,
     settleMs: 3000,
     actions: [
       // open the track selector to get a widget in the drawer
@@ -2415,6 +2449,13 @@ export const specs: ScreenshotSpec[] = [
             anchor: { selector: '[data-testid="drawer-position-button"]' },
           },
           { type: 'box', anchor: { text: 'left' } },
+          // arrow drawing the eye from the ringed position button down to the
+          // boxed "left" option (reviewer: add an arrow to the annotation)
+          {
+            type: 'arrow',
+            from: { x: 560, y: 230 },
+            anchor: { text: 'left' },
+          },
         ],
       },
       {
@@ -2452,37 +2493,6 @@ export const specs: ScreenshotSpec[] = [
   // ────────────────────────────────────────────────────────────────────────
   // Bookmark widget screenshots
   // ────────────────────────────────────────────────────────────────────────
-
-  // How to open the bookmark widget: the view menu's Bookmarks/highlights submenu
-  // open with the "Open bookmark widget" item hovered/highlighted (not clicked),
-  // matching the origin/main figure that shows the menu path.
-  {
-    mode: 'url',
-    name: 'bookmark_widget_open',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    settleMs: 3000,
-    actions: [
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Bookmarks/highlights' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Bookmarks/highlights' },
-      { type: 'waitForText', text: 'Open bookmark widget' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Open bookmark widget' },
-      { type: 'delay', ms: 800 },
-    ],
-    annotations: [{ type: 'box', anchor: { text: 'Open bookmark widget' } }],
-  },
 
   // Bookmark create, two-stage figure: top frame is the rubberband context menu
   // with "Bookmark region" boxed; bottom frame clicks it so the bookmarked
@@ -3112,69 +3122,16 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Rendered multi-row XY output (the default mode): one XY plot per subtrack,
-  // stacked, each keeping its configured color. Pairs with multiwig/overlapping
-  // for the doc's "two families" contrast.
-  {
-    mode: 'url',
-    name: 'multiwig/multirow_xy',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_microarray_multi'],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    readySelector: '[data-testid="multi-wiggle-display-done"]',
-    viewportHeight: 600,
-    settleMs: 4000,
-  },
-
-  // Rendered overlapping output: all subtracks drawn together in one plot with
-  // auto-assigned palette colors. defaultRendering override drives the same
-  // switch the track menu's "Rendering type" submenu writes.
-  {
-    mode: 'url',
-    name: 'multiwig/overlapping',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: [
-            {
-              trackId: 'volvox_microarray_multi',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                // override keys serialize flat on the snapshot (see
-                // ConfigOverrideMixin), not nested under configOverrides
-                defaultRendering: 'multixyplot',
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    readySelector: '[data-testid="multi-wiggle-display-done"]',
-    viewportHeight: 600,
-    settleMs: 4000,
-  },
-
   // ────────────────────────────────────────────────────────────────────────
   // GWAS / Manhattan plot
   // ────────────────────────────────────────────────────────────────────────
 
   // Manhattan plot from a real human GWAS (config_gwas hg19 genome-wide summary
-  // stats) over a wide chr2 window, so the classic dense field of points with
-  // significant peaks is visible — the volvox example was too small. (Genome-wide
-  // showAllRegions never finished loading headless, so this bounds to one region
-  // that still reads as a Manhattan plot.)
+  // stats) over a whole chromosome (chr2), so the classic dense field of points
+  // with significant peaks reads as a per-chromosome Manhattan overview (reviewer:
+  // show a whole-chromosome overview). The binned Manhattan display renders the
+  // full contig fast enough headless even though genome-wide showAllRegions did
+  // not.
   {
     mode: 'url',
     name: 'gwas/manhattan',
@@ -3183,7 +3140,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: '2:1-50,000,000',
+          loc: '2',
           tracks: [
             {
               trackId: 'gwas_track',
@@ -3215,7 +3172,7 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'sle_gwas_ld',
-              displaySnapshot: { type: 'LinearManhattanDisplay', height: 380 },
+              displaySnapshot: { type: 'LinearManhattanDisplay', height: 250 },
             },
           ],
         },
@@ -3223,7 +3180,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 60000,
-    viewportHeight: 480,
+    viewportHeight: 350,
     // settle past the index auto-pick + recolor fetch that follows first paint
     settleMs: 12000,
   },
@@ -3232,8 +3189,12 @@ export const specs: ScreenshotSpec[] = [
   // Plugin store
   // ────────────────────────────────────────────────────────────────────────
 
-  // Plugin store, two-stage figure: top frame opens the Tools menu with the
-  // "Plugin store" item boxed; bottom frame is the dialog it opens.
+  // Plugin store, single frame: the plugin-store drawer widget open on the right
+  // AND the Tools menu reopened over the view, with the "Plugin store" menu item
+  // ringed and an arrow pointing across to the open widget sidebar (reviewer:
+  // collapse the old two-stage figure into one that shows the menu path and the
+  // result together). The ring anchors to the menu item (smaller text area than
+  // the widget's h5 heading, so the smallest-area anchor heuristic picks it).
   {
     mode: 'url',
     name: 'plugin_store',
@@ -3248,21 +3209,25 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    stages: [
+    actions: [
+      { type: 'click', text: 'Tools' },
+      { type: 'waitForText', text: 'Plugin store' },
+      { type: 'delay', ms: 400 },
+      // open the widget (this closes the Tools menu)
+      { type: 'click', text: 'Plugin store' },
+      { type: 'waitForText', text: 'Installed plugins' },
+      { type: 'delay', ms: 1500 },
+      // reopen the Tools menu so the menu path and the open widget show together
+      { type: 'click', text: 'Tools' },
+      { type: 'waitForText', text: 'Plugin store' },
+      { type: 'delay', ms: 600 },
+    ],
+    annotations: [
+      { type: 'circle', anchor: { text: 'Plugin store' } },
       {
-        actions: [
-          { type: 'click', text: 'Tools' },
-          { type: 'waitForText', text: 'Plugin store' },
-          { type: 'delay', ms: 400 },
-        ],
-        annotations: [{ type: 'box', anchor: { text: 'Plugin store' } }],
-      },
-      {
-        actions: [
-          { type: 'click', text: 'Plugin store' },
-          { type: 'waitForText', text: 'Installed plugins' },
-          { type: 'delay', ms: 2000 },
-        ],
+        type: 'arrow',
+        from: { x: 300, y: 250 },
+        anchor: { text: 'Installed plugins' },
       },
     ],
   },
@@ -3372,24 +3337,6 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
     // crop off the empty viewport below the (short) two-track stack
     crop: { x: 0, y: 0, width: 1500, height: 250 },
-  },
-
-  {
-    mode: 'url',
-    name: 'rnaseq/reads_zoomed',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr7:5,568,000-5,569,000',
-          tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
-        },
-      ],
-    }),
-    readyText: 'ACTB',
-    readyTimeout: 60000,
-    settleMs: 15000,
   },
 
   // Compact read drawing mode: featureHeight 3 / spacing 0 packs the full ACTB
@@ -3685,8 +3632,9 @@ export const specs: ScreenshotSpec[] = [
         x: 700,
         y: 150,
         text: 'The callback turns the name into a clickable link',
-        // pill behind the label so it reads over the panel (reviewer request)
-        background: '#fff',
+        // white-on-dark pill to match the other annotated figures (reviewer)
+        background: 'rgba(0,0,0,0.78)',
+        textColor: '#fff',
       },
     ],
   },

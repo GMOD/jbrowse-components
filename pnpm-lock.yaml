@@ -351,6 +351,19 @@ importers:
         specifier: '>=19.0.0'
         version: 19.2.7(react@19.2.7)
 
+  packages/browser-test-utils:
+    dependencies:
+      puppeteer:
+        specifier: ^25.1.0
+        version: 25.1.0
+      serve-handler:
+        specifier: ^6.1.7
+        version: 6.1.7
+    devDependencies:
+      '@types/serve-handler':
+        specifier: ^6.1.4
+        version: 6.1.4
+
   packages/cigar-utils: {}
 
   packages/core:
@@ -2405,6 +2418,10 @@ importers:
       react-dom:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@jbrowse/browser-test-utils':
+        specifier: workspace:*
+        version: link:../../packages/browser-test-utils
 
   website:
     dependencies:
@@ -2463,6 +2480,9 @@ importers:
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
+      '@jbrowse/browser-test-utils':
+        specifier: workspace:*
+        version: link:../packages/browser-test-utils
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.4

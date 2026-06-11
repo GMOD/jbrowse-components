@@ -3,7 +3,12 @@ import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { parseArgs } from 'util'
 
+import {
+  BASE_CHROME_ARGS,
+  isBrowserConsoleNoise,
+} from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
 import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
@@ -18,56 +23,72 @@ import type { Browser } from 'puppeteer'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
 
-const args = process.argv.slice(2)
-const headed = args.includes('--headed')
-const slowMoArg = args.find(a => a.startsWith('--slow-mo='))
-const slowMo = slowMoArg ? parseInt(slowMoArg.split('=', 2)[1]!, 10) : 0
-const updateSnapshots =
-  args.includes('--update-snapshots') || args.includes('-u')
-const runAuthTests = args.includes('--auth')
-// --filter= accepts comma-separated values and/or multiple flags:
-//   --filter=grape,hs1   or   --filter=grape --filter=hs1
+// `--firefox` (bare) is a legacy no-op: WebGPU always uses Firefox Nightly and
+// the binary path already defaults via FIREFOX_NIGHTLY_PATH. Strip it before
+// parsing so strict parseArgs doesn't reject it; `--firefox=<path>` still works.
+const rawArgs = process.argv.slice(2).filter(a => a !== '--firefox')
+// Strict parsing rejects unknown flags (so a typo'd `--fliter` fails loudly
+// instead of silently running every suite) and accepts both `--x=y` and `--x y`.
+const { values } = parseArgs({
+  args: rawArgs,
+  allowPositionals: false,
+  options: {
+    headed: { type: 'boolean', default: false },
+    concurrency: { type: 'string' },
+    'slow-mo': { type: 'string' },
+    'update-snapshots': { type: 'boolean', short: 'u', default: false },
+    auth: { type: 'boolean', default: false },
+    // comma-separated and/or repeated: --filter=grape,hs1 or --filter=a --filter=b
+    filter: { type: 'string', multiple: true, default: [] },
+    test: { type: 'string' },
+    smoke: { type: 'boolean', default: false },
+    'include-remote': { type: 'boolean', default: false },
+    backend: { type: 'string' },
+    'skip-webgpu': { type: 'boolean', default: false },
+    quiet: { type: 'boolean', default: false },
+    debug: { type: 'boolean', default: false },
+    firefox: { type: 'string' },
+  },
+})
+
+const headed = values.headed
+const CONCURRENCY = values.concurrency
+  ? Number(values.concurrency)
+  : headed
+    ? 1
+    : 4
+const slowMo = values['slow-mo'] ? parseInt(values['slow-mo'], 10) : 0
+const updateSnapshots = values['update-snapshots']
+const runAuthTests = values.auth
 // Matching is case-insensitive substring against suite name.
-const filters = args
-  .filter(a => a.startsWith('--filter='))
-  .flatMap(a => a.split('=', 2)[1]!.toLowerCase().split(','))
+const filters = values.filter
+  .flatMap(f => f.toLowerCase().split(','))
   .filter(Boolean)
-// --test= filters individual test cases within matched suites (substring match).
-const testFilterArg = args.find(a => a.startsWith('--test='))
-const testFilter = testFilterArg
-  ? testFilterArg.split('=', 2)[1]!.toLowerCase()
-  : ''
-// --smoke is the full local smoke test: runs every suite, including the
-// requiresRemote ones (grape/peach + hs1/mm39 synteny).
-// Those tests fetch data straight from S3/UCSC at runtime — so it works on any machine online.
-const smoke = args.includes('--smoke')
-// Auto-enable remote when a filter is specified — you shouldn't need to know
-// about --include-remote when targeting a specific suite by name.
-const includeRemote =
-  args.includes('--include-remote') || smoke || filters.length > 0
-const backendArg = args.find(a => a.startsWith('--backend='))
-const backendValue = backendArg ? backendArg.split('=', 2)[1]! : undefined
-const skipWebGPU = args.includes('--skip-webgpu')
-const quiet = args.includes('--quiet')
-const debug = args.includes('--debug')
-const useFirefoxArg = args.find(a => a.startsWith('--firefox='))
-const firefoxPath = useFirefoxArg
-  ? useFirefoxArg.split('=', 2)[1]!
-  : args.includes('--firefox')
-    ? (process.env.FIREFOX_NIGHTLY_PATH ?? '/usr/bin/firefox-nightly')
-    : undefined
+// --test filters individual test cases within matched suites (substring match).
+const testFilter = values.test?.toLowerCase() ?? ''
+// --smoke runs every suite including the requiresRemote ones (grape/peach +
+// hs1/mm39 synteny), whose data is fetched straight from S3/UCSC at runtime.
+const smoke = values.smoke
+// Auto-enable remote when a filter is specified — no need to also pass
+// --include-remote when targeting a specific suite by name.
+const includeRemote = values['include-remote'] || smoke || filters.length > 0
+const backendValue = values.backend
+const skipWebGPU = values['skip-webgpu']
+const quiet = values.quiet
+const debug = values.debug
+// WebGPU always runs through Firefox Nightly; --firefox=<path> or
+// FIREFOX_NIGHTLY_PATH override the default binary location.
+const firefoxPath =
+  values.firefox ??
+  process.env.FIREFOX_NIGHTLY_PATH ??
+  '/usr/bin/firefox-nightly'
 
 snapshotConfig.updateSnapshots = updateSnapshots
 
 type RenderingBackend = 'webgl' | 'webgpu' | 'canvas2d'
 
 function chromeArgsForRenderingBackend(backend?: RenderingBackend) {
-  const chromeArgs = [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-web-security',
-    '--disable-popup-blocking',
-  ]
+  const chromeArgs = [...BASE_CHROME_ARGS, '--disable-popup-blocking']
   // webgl runs on the machine's real GPU (run headed) — no swiftshader, whose
   // per-context memory growth is why we moved off it (see
   // agent-docs/BROWSER_TEST_STABILIZATION.md). webgpu does not use Chrome at all
@@ -137,18 +158,19 @@ async function runOneTest(
   progress: string,
 ) {
   const start = performance.now()
-  testStartTime = start
-  process.stdout.write(`    ⏳ ${progress} ${test.name}...`)
+  const getElapsed = () =>
+    `+${((performance.now() - start) / 1000).toFixed(1)}s`
+  process.stdout.write(`    ⏳ ${progress} ${suiteName} > ${test.name}...`)
 
   let browser: Browser | undefined
   let error: string | undefined
   try {
     browser = await launchBrowser()
-    const page = await setupPage(browser)
+    const page = await setupPage(browser, getElapsed)
     await test.fn(page, browser)
     clearProgressLine()
     console.log(
-      `    ✓ ${progress} ${test.name} (${Math.round(performance.now() - start)}ms)`,
+      `    ✓ ${progress} ${suiteName} > ${test.name} (${Math.round(performance.now() - start)}ms)`,
     )
   } catch (e) {
     error = e instanceof Error ? e.message : String(e)
@@ -180,56 +202,58 @@ async function runSuites(
   const failures: { suite: string; test: string; error: string }[] = []
   const suitesToRun = suites.filter(s => suiteIncluded(s, includeAuth))
 
+  // Flatten all (suite, test) pairs into a single queue so the worker pool
+  // can drain across suite boundaries, maximizing browser slot utilization.
+  const queue: { suite: TestSuite; test: TestCase }[] = []
   for (const suite of suitesToRun) {
-    console.log(`\n  ${suite.name}`)
-    const progress = `[${suitesToRun.indexOf(suite) + 1}/${suitesToRun.length}]`
-
     for (const test of suite.tests) {
       const skip = testSkipReason(test, includeAuth)
       const filteredOut =
         testFilter && !test.name.toLowerCase().includes(testFilter)
       if (skip) {
-        console.log(`    ⚡ ${test.name} (skipped — ${skip})`)
+        console.log(`    ⚡ ${suite.name} > ${test.name} (skipped — ${skip})`)
       } else if (!filteredOut) {
+        queue.push({ suite, test })
+      }
+    }
+  }
+
+  const total = queue.length
+  // Monotonic counter of tests started, for a meaningful [n/total] readout —
+  // the worker pool drains across suites, so a per-suite index would jump
+  // around non-monotonically.
+  let started = 0
+  const workers = Array.from(
+    { length: Math.min(CONCURRENCY, total || 1) },
+    async () => {
+      while (queue.length > 0) {
+        const item = queue.shift()!
+        const progress = `[${++started}/${total}]`
         const error = await runOneTest(
           launchBrowser,
-          suite.name,
-          test,
+          item.suite.name,
+          item.test,
           progress,
         )
         if (error === undefined) {
           passed++
         } else {
           failed++
-          failures.push({ suite: suite.name, test: test.name, error })
+          failures.push({
+            suite: item.suite.name,
+            test: item.test.name,
+            error,
+          })
         }
       }
-    }
-  }
+    },
+  )
+  await Promise.all(workers)
 
   return { passed, failed, failures }
 }
 
-let testStartTime = 0
-
-function isRenderLifecycleNoise(text: string): boolean {
-  if (text.includes('[WebGL2Hal #')) {
-    return !text.includes('context LOST') && !text.includes('GL error')
-  }
-  return (
-    text.includes('[GPU] WebGPU not supported') ||
-    text.includes('[GPU] No compatible GPU adapter') ||
-    text.includes('[GPU] WebGPU initialization failed') ||
-    text.includes('[GPU] WebGL2 unavailable') ||
-    text.includes('[GPU] WebGPU device creation failed') ||
-    text.includes('GroupMarkerNotSet') ||
-    text.includes('Automatic fallback to software WebGL') ||
-    text.includes('No available adapters') ||
-    text.includes('Failed to create WebGPU Context Provider')
-  )
-}
-
-async function setupPage(browser: Browser) {
+async function setupPage(browser: Browser, getElapsed: () => string) {
   const page = await browser.newPage()
 
   page.on('console', msg => {
@@ -244,14 +268,10 @@ async function setupPage(browser: Browser) {
     if (quiet && type !== 'error') {
       return
     }
-    if (!debug && isRenderLifecycleNoise(text)) {
+    if (!debug && isBrowserConsoleNoise(text)) {
       return
     }
-    const elapsed =
-      testStartTime > 0
-        ? `+${((performance.now() - testStartTime) / 1000).toFixed(1)}s`
-        : ''
-    const prefix = elapsed ? `  [${elapsed}] Browser:` : '  Browser:'
+    const prefix = `  [${getElapsed()}] Browser:`
     if (type === 'error') {
       console.error(prefix, text)
     } else if (type === 'warn') {
@@ -261,14 +281,10 @@ async function setupPage(browser: Browser) {
     }
   })
   page.on('pageerror', err => {
-    const elapsed =
-      testStartTime > 0
-        ? `+${((performance.now() - testStartTime) / 1000).toFixed(1)}s`
-        : ''
     if (err instanceof Error) {
-      console.error(`  [${elapsed}] PageError:`, err.stack || err.message)
+      console.error(`  [${getElapsed()}] PageError:`, err.stack || err.message)
     } else {
-      console.error(`  [${elapsed}] PageError:`, err)
+      console.error(`  [${getElapsed()}] PageError:`, err)
     }
   })
   return page
@@ -283,20 +299,14 @@ async function runWithRenderingBackend(
   // WebGPU requires Firefox Nightly on the real GPU, run headed. Chrome +
   // puppeteer does not render WebGPU canvases (blank canvas / adapter-validation
   // errors), so WebGPU always goes through Firefox Nightly.
-  const needsDisplay = backend === 'webgpu'
-  const useHeadless = needsDisplay ? false : !headed
-
-  const resolvedFirefoxPath =
-    firefoxPath ??
-    process.env.FIREFOX_NIGHTLY_PATH ??
-    '/usr/bin/firefox-nightly'
   const useFirefox = backend === 'webgpu'
+  const useHeadless = useFirefox ? false : !headed
 
   const launchBrowser = useFirefox
     ? () =>
         launch({
           browser: 'firefox',
-          executablePath: resolvedFirefoxPath,
+          executablePath: firefoxPath,
           headless: useHeadless,
           slowMo,
           timeout: 60000,
@@ -316,7 +326,7 @@ async function runWithRenderingBackend(
         }).then(trackBrowser)
 
   if (useFirefox) {
-    console.log(`  Using Firefox Nightly: ${resolvedFirefoxPath}`)
+    console.log(`  Using Firefox Nightly: ${firefoxPath}`)
   }
 
   return runSuites(launchBrowser, suites, runAuthTests)
@@ -405,7 +415,7 @@ async function main() {
   killStaleTestBrowsers()
   if (!fs.existsSync(buildPath)) {
     console.error(
-      'Error: Build directory not found. Run `yarn build` in products/jbrowse-web first.',
+      'Error: Build directory not found. Run `pnpm build` in products/jbrowse-web first.',
     )
     process.exit(1)
   }
@@ -466,7 +476,7 @@ async function main() {
       if (smoke) {
         console.log('(smoke test: running all suites including remote)')
       }
-      console.log(`(backend: ${backend})`)
+      console.log(`(backend: ${backend}, concurrency: ${CONCURRENCY})`)
 
       const { passed, failed, failures } = await runWithRenderingBackend(
         suites,

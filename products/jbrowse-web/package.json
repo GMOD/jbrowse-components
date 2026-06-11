@@ -84,5 +84,8 @@
       "last 1 chrome version"
     ]
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@jbrowse/browser-test-utils": "workspace:*"
+  }
 }

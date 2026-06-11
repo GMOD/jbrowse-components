@@ -1,12 +1,6 @@
-import {
-  findByTestId,
-  navigateWithSessionSpec,
-  waitForDataLoaded,
-} from '../helpers.ts'
-import { dualSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestCase, TestSuite } from '../types.ts'
-import type { Page } from 'puppeteer'
 
 function syntenyTest(
   name: string,
@@ -15,42 +9,22 @@ function syntenyTest(
   grapeLoc: string,
   swapped = false,
 ): TestCase {
-  return {
+  const views = swapped
+    ? [
+        { loc: grapeLoc, assembly: 'grape' },
+        { loc: peachLoc, assembly: 'peach' },
+      ]
+    : [
+        { loc: peachLoc, assembly: 'peach' },
+        { loc: grapeLoc, assembly: 'grape' },
+      ]
+  return viewSnapshotTest({
     name,
-    fn: async (page: Page) => {
-      const views = swapped
-        ? [
-            { loc: grapeLoc, assembly: 'grape' },
-            { loc: peachLoc, assembly: 'peach' },
-          ]
-        : [
-            { loc: peachLoc, assembly: 'peach' },
-            { loc: grapeLoc, assembly: 'grape' },
-          ]
-
-      await navigateWithSessionSpec(
-        page,
-        {
-          views: [
-            {
-              type: 'LinearSyntenyView',
-              tracks: ['subset'],
-              views,
-            },
-          ],
-        },
-        'test_data/grape_peach_synteny/config.json',
-      )
-
-      await findByTestId(page, 'synteny_canvas_done', 60000)
-      await waitForDataLoaded(page)
-      await dualSnapshot(
-        page,
-        `${snapshotName}-canvas`,
-        '[data-testid="synteny_canvas_done"]',
-      )
-    },
-  }
+    snapshot: snapshotName,
+    config: 'test_data/grape_peach_synteny/config.json',
+    view: { type: 'LinearSyntenyView', tracks: ['subset'], views },
+    waitTestId: 'synteny_canvas_done',
+  })
 }
 
 const suite: TestSuite = {
@@ -68,31 +42,12 @@ const suite: TestSuite = {
       'Pp01:28,845,211..28,845,272',
       'chr1:316,306..316,364',
     ),
-    {
+    lgvSnapshotTest({
       name: 'LGV synteny track',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:30,222..33,669',
-              tracks: ['volvox_ins.paf'],
-            },
-          ],
-        })
-
-        await page.waitForSelector('[data-testid$="-done"]', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'synteny-lgv-paf-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
+      snapshot: 'synteny-lgv-paf',
+      loc: 'ctgA:30,222..33,669',
+      tracks: ['volvox_ins.paf'],
+    }),
   ],
 }
 

@@ -5,9 +5,12 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
+import { pageSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
+
+const pileup = 'pileup-display-done'
 
 const suite: TestSuite = {
   name: 'Arcs and BEDPE Displays',
@@ -34,170 +37,76 @@ const suite: TestSuite = {
         await pageSnapshot(page, 'arcs-arc-test')
       },
     },
-    {
+    lgvSnapshotTest({
       name: 'read connections arcs (volvox_sv)',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:2,707..48,600',
-              tracks: [
-                {
-                  trackId: 'volvox_sv',
-                  displaySnapshot: {
-                    type: 'LinearAlignmentsDisplay',
-                    readConnections: 'arc',
-                  },
-                },
-              ],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'arcs-read-connections-canvas',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'arcs-read-connections',
+      loc: 'ctgA:2,707..48,600',
+      tracks: [
+        {
+          trackId: 'volvox_sv',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            readConnections: 'arc',
+          },
+        },
+      ],
+      doneTestId: pileup,
+    }),
+    lgvSnapshotTest({
       name: 'RNA-seq sashimi arcs (spliced alignments)',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-10000',
-              tracks: ['spliced'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'arcs-rnaseq-sashimi-canvas',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'arcs-rnaseq-sashimi',
+      loc: 'ctgA:1-10000',
+      tracks: ['spliced'],
+      doneTestId: pileup,
+    }),
+    lgvSnapshotTest({
       name: 'samplot mode (paired-end SV)',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: [
-                {
-                  trackId: 'volvox_sv_cram',
-                  displaySnapshot: {
-                    type: 'LinearAlignmentsDisplay',
-                    readConnections: 'samplot',
-                  },
-                },
-              ],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'arcs-samplot-canvas',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'arcs-samplot',
+      loc: 'ctgA:1-50000',
+      tracks: [
+        {
+          trackId: 'volvox_sv_cram',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            readConnections: 'samplot',
+          },
+        },
+      ],
+      doneTestId: pileup,
+    }),
+    lgvSnapshotTest({
       name: 'samplot down mode (paired-end SV, scalebar left)',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: [
-                {
-                  trackId: 'volvox_sv_cram',
-                  displaySnapshot: {
-                    type: 'LinearAlignmentsDisplay',
-                    readConnections: 'samplot',
-                    readConnectionsDown: true,
-                  },
-                },
-              ],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'arcs-samplot-down-canvas',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'arcs-samplot-down',
+      loc: 'ctgA:1-50000',
+      tracks: [
+        {
+          trackId: 'volvox_sv_cram',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            readConnections: 'samplot',
+            readConnectionsDown: true,
+          },
+        },
+      ],
+      doneTestId: pileup,
+    }),
+    lgvSnapshotTest({
       name: 'BEDPE arcs (LinearPairedArcDisplay)',
-      fn: async page => {
-        // volvox_bedpe has arcs from ctgA:2700→34200 and cross-contig A↔B arcs
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['volvox_bedpe'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'arc-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'arcs-bedpe-canvas',
-          '[data-testid="arc-display-done"]',
-        )
-      },
-    },
-    {
+      snapshot: 'arcs-bedpe',
+      // volvox_bedpe has arcs from ctgA:2700→34200 and cross-contig A↔B arcs
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_bedpe'],
+      doneTestId: 'arc-display-done',
+      // the arc display's `*-done` element IS the canvas, not a parent of one
+      snapshotSelector: '[data-testid="arc-display-done"]',
+    }),
+    lgvSnapshotTest({
       name: 'paired-end stranded RNA-seq',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-10000',
-              tracks: ['paired_end_stranded_rnaseq'],
-            },
-          ],
-        })
-
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'arcs-paired-end-rnaseq-canvas',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
+      snapshot: 'arcs-paired-end-rnaseq',
+      loc: 'ctgA:1-10000',
+      tracks: ['paired_end_stranded_rnaseq'],
+      doneTestId: pileup,
+    }),
     {
       name: 'collapse introns view with RNA-seq sashimi arcs (EDEN gene)',
       fn: async page => {
@@ -216,7 +125,7 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findByTestId(page, pileup, 60000)
         await waitForDataLoaded(page)
 
         // Wait for the EDEN gene label overlay to appear — this confirms the
@@ -233,14 +142,14 @@ const suite: TestSuite = {
         await edenLabel.click({ button: 'right' })
         await delay(500)
 
-        const collapseItem = await findByText(page, /Collapse introns/, 5000)
+        const collapseItem = await findByText(page, /Collapse introns/, 10000)
         if (!collapseItem) {
           throw new Error('"Collapse introns" not found in context menu')
         }
         await collapseItem.click()
         await delay(300)
 
-        const submitBtn = await findByText(page, /^Submit$/, 5000)
+        const submitBtn = await findByText(page, /^Submit$/, 10000)
         if (!submitBtn) {
           throw new Error('Submit button not found in collapse introns dialog')
         }

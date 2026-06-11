@@ -1,13 +1,20 @@
 /* eslint-disable no-console */
 import { execFileSync } from 'child_process'
 import fs from 'fs'
-import http from 'http'
 import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { parseArgs } from 'util'
 
+import {
+  BASE_CHROME_ARGS,
+  createTestServer,
+  findChromeExecutable,
+  isBrowserConsoleNoise,
+  waitForDisplaysDone,
+  waitForLoadingComplete,
+} from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
-import handler from 'serve-handler'
 
 import { specs } from './screenshot-specs.ts'
 
@@ -16,100 +23,52 @@ import type {
   ScreenshotAction,
   ScreenshotSpec,
 } from './screenshot-specs.ts'
+import type { Server } from 'http'
 import type { Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const cliArgs = process.argv.slice(2)
-const headed = cliArgs.includes('--headed')
-const filterArg = cliArgs.find(a => a.startsWith('--filter='))
-const filter = filterArg?.split('=')[1]
-const exact = cliArgs.includes('--exact')
-const portArg = cliArgs.find(a => a.startsWith('--port='))
-const externalPortVal = portArg ? Number(portArg.split('=')[1]) : Number.NaN
+// Strict parsing rejects unknown flags (a typo'd `--fliter` fails loudly
+// instead of silently screenshotting every spec) and accepts `--x=y` or `--x y`.
+const { values } = parseArgs({
+  args: process.argv.slice(2),
+  allowPositionals: false,
+  options: {
+    headed: { type: 'boolean', default: false },
+    filter: { type: 'string' },
+    exact: { type: 'boolean', default: false },
+    // point the proxy at an already-running app server instead of build/
+    port: { type: 'string' },
+    localport: { type: 'string' },
+    concurrency: { type: 'string' },
+  },
+})
+
+const headed = values.headed
+const filter = values.filter
+const exact = values.exact
+const externalPortVal = values.port ? Number(values.port) : Number.NaN
 const externalPort = Number.isFinite(externalPortVal)
   ? externalPortVal
   : undefined
-const DEFAULT_PORT = 3334
+const localPortVal = values.localport ? Number(values.localport) : Number.NaN
+const DEFAULT_PORT = Number.isFinite(localPortVal) ? localPortVal : 3334
+const CONCURRENCY = values.concurrency
+  ? Number(values.concurrency)
+  : headed
+    ? 1
+    : 4
 
 const repoRoot = path.resolve(__dirname, '..', '..')
 const buildPath = path.resolve(repoRoot, 'products', 'jbrowse-web', 'build')
 const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const outDir = path.resolve(__dirname, '..', 'static', 'img')
 const VOLVOX_CONFIG = 'test_data/volvox/config.json'
+// Maximum time to wait for canvas displays to signal paint-complete via their
+// *-done testids. Acts as a timeout (proceed if it expires), not a fixed floor.
 const DEFAULT_SETTLE_MS = 2500
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-function proxyToPort(
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  targetPort: number,
-) {
-  const options: http.RequestOptions = {
-    hostname: 'localhost',
-    port: targetPort,
-    path: req.url ?? '/',
-    method: req.method,
-    headers: req.headers,
-  }
-  const proxyReq = http.request(options, proxyRes => {
-    res.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers)
-    proxyRes.pipe(res, { end: true })
-  })
-  proxyReq.on('error', err => {
-    console.error(`    proxy error: ${err.message}`)
-    res.writeHead(502)
-    res.end('Bad Gateway')
-  })
-  req.pipe(proxyReq, { end: true })
-}
-
-function startServer(port: number, proxyPort?: number): Promise<http.Server> {
-  const corsHeaders = [
-    {
-      source: '**/*',
-      headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
-    },
-  ]
-  return new Promise((resolve, reject) => {
-    const server = http.createServer((req, res) => {
-      const url = req.url ?? '/'
-      if (url.startsWith('/test_data/')) {
-        return handler(req, res, { public: testDataRoot, headers: corsHeaders })
-      } else if (url.startsWith('/extra_test_data/')) {
-        return handler(req, res, { public: repoRoot, headers: corsHeaders })
-      } else if (proxyPort !== undefined) {
-        proxyToPort(req, res, proxyPort)
-      } else {
-        return handler(req, res, { public: buildPath, headers: corsHeaders })
-      }
-    })
-    server.on('error', reject)
-    server.listen(port, () => {
-      resolve(server)
-    })
-  })
-}
-
-async function waitForLoadingComplete(page: Page, timeout = 30000) {
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout },
-  )
-  // The loading-overlay testid can clear while a track is still fetching (the
-  // overlay tracks an earlier phase than e.g. a remote BAM download). Adapters
-  // surface in-progress fetches as "Downloading …" status text; wait for those
-  // to clear so we don't capture a half-loaded track. Best-effort: a slow
-  // remote source may exceed the timeout, in which case the settle below still
-  // applies.
-  await page
-    .waitForFunction(() => !document.body.innerText.includes('Downloading'), {
-      timeout,
-    })
-    .catch(() => {})
-}
 
 // Guard against capturing a view that rendered no content. The ViewContainer
 // always renders its header chrome, so a screenshot with header-but-empty-body
@@ -295,7 +254,7 @@ async function captureLGV(
     visible: true,
     timeout: 30000,
   })
-  await waitForLoadingComplete(page)
+  await waitForLoadingComplete(page, { waitForDownloads: true })
 
   if (spec.loc) {
     await setLocation(page, spec.loc)
@@ -307,7 +266,7 @@ async function captureLGV(
     await delay(300)
   }
 
-  await delay(spec.settleMs ?? DEFAULT_SETTLE_MS)
+  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
 async function debugDump(page: Page, name: string) {
@@ -368,8 +327,8 @@ async function captureUrl(
       })
   }
 
-  await waitForLoadingComplete(page)
-  await delay(spec.settleMs ?? DEFAULT_SETTLE_MS)
+  await waitForLoadingComplete(page, { waitForDownloads: true })
+  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
 const ANNOTATION_OVERLAY_ID = '__screenshot_annotation_overlay'
@@ -641,14 +600,19 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
     // capture each stage to a temp file, then stack them vertically with
     // ImageMagick (`convert f0 f1 -append`), the same composition the hand-made
     // two-stage teaching figures used
+    const safeSpecName = spec.name.replace(/\//g, '_')
     const stageFiles = spec.stages.map((_, i) =>
-      path.join(os.tmpdir(), `jb-shot-${process.pid}-${i}.png`),
+      path.join(os.tmpdir(), `jb-shot-${process.pid}-${safeSpecName}-${i}.png`),
     )
     for (const [i, stage] of spec.stages.entries()) {
       if (stage.closeMenusFirst) {
         await page.keyboard.press('Escape')
         await delay(300)
       }
+      // drop the previous stage's annotation overlay before this stage acts on
+      // the page, so its SVG callout text can't be matched by a ::-p-text() click
+      // target in this stage's actions
+      await clearAnnotations(page)
       await runActions(page, spec.name, stage.actions)
       await shoot(page, spec, stage.annotations, stageFiles[i]!)
     }
@@ -680,7 +644,7 @@ async function main() {
     s => s.mode !== 'url' || !s.url.startsWith('http'),
   )
 
-  let server: http.Server | undefined
+  let server: Server | undefined
   const port = DEFAULT_PORT
 
   if (needsLocalServer) {
@@ -690,7 +654,11 @@ async function main() {
       )
       process.exit(1)
     }
-    server = await startServer(port, externalPort)
+    server = await createTestServer(port, {
+      jbrowseWebRoot: testDataRoot,
+      repoRoot,
+      proxyPort: externalPort,
+    })
     console.log(
       externalPort
         ? `Proxy on port ${port}, app on port ${externalPort}`
@@ -698,22 +666,12 @@ async function main() {
     )
   }
 
-  const chromePaths = [
-    '/usr/bin/google-chrome',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/chromium',
-  ]
-  const executablePath = chromePaths.find(p => fs.existsSync(p))
+  const executablePath = findChromeExecutable()
 
   const launchOptions = {
     headless: !headed,
     executablePath,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-web-security',
-      '--enable-unsafe-swiftshader',
-    ],
+    args: [...BASE_CHROME_ARGS, '--enable-unsafe-swiftshader'],
     // wider viewport for more genomic context; deviceScaleFactor 2 keeps the
     // capture hidpi/retina-crisp (2x backing store) at the larger size
     defaultViewport: { width: 1500, height: 800, deviceScaleFactor: 2 },
@@ -724,47 +682,51 @@ async function main() {
   let failed = 0
   const failures: string[] = []
 
-  try {
-    for (const spec of filteredSpecs) {
-      // Curated specs keep a hand-picked / real-data PNG that the volvox spec
-      // body can't reproduce; skip so a regen never overwrites the committed
-      // image (the spec body stays as documentation).
-      if (spec.curated) {
-        console.log(`  ⊘ ${spec.name} (curated, keeping committed image)`)
-        continue
-      }
-      // Fresh browser per spec to avoid service worker caching between navigations
-      const browser = await launch(launchOptions)
-      try {
-        const page = await browser.newPage()
-        if (spec.viewportHeight || spec.viewportWidth) {
-          await page.setViewport({
-            width: spec.viewportWidth ?? vpWidth,
-            height: spec.viewportHeight ?? 800,
-            deviceScaleFactor,
-          })
-        }
-        page.on('console', msg => {
-          const t = msg.type()
-          if (
-            !msg.text().includes('favicon') &&
-            !msg.text().includes('WebGL') &&
-            !msg.text().includes('GroupMarker') &&
-            !msg.text().includes('GPU stall')
-          ) {
-            console.error(`    browser[${t}]: ${msg.text().substring(0, 300)}`)
-          }
-        })
-        await captureSpec(page, spec, port)
-        passed++
-      } catch (err) {
-        console.error(`  ✗ ${spec.name}: ${err}`)
-        failed++
-        failures.push(spec.name)
-      } finally {
-        await browser.close()
-      }
+  async function runSpec(spec: ScreenshotSpec) {
+    if (spec.curated) {
+      console.log(`  ⊘ ${spec.name} (curated, keeping committed image)`)
+      return
     }
+    // Fresh browser per spec to avoid service worker caching between navigations
+    const browser = await launch(launchOptions)
+    try {
+      const page = await browser.newPage()
+      if (spec.viewportHeight || spec.viewportWidth) {
+        await page.setViewport({
+          width: spec.viewportWidth ?? vpWidth,
+          height: spec.viewportHeight ?? 800,
+          deviceScaleFactor,
+        })
+      }
+      page.on('console', msg => {
+        const t = msg.type()
+        if (!isBrowserConsoleNoise(msg.text())) {
+          console.error(`    browser[${t}]: ${msg.text().substring(0, 300)}`)
+        }
+      })
+      await captureSpec(page, spec, port)
+      passed++
+    } catch (err) {
+      console.error(`  ✗ ${spec.name}: ${err}`)
+      failed++
+      failures.push(spec.name)
+    } finally {
+      await browser.close()
+    }
+  }
+
+  console.log(`Running with concurrency ${CONCURRENCY}`)
+
+  try {
+    // Pool: keep CONCURRENCY browsers running at once
+    const queue = [...filteredSpecs]
+    const workers = Array.from({ length: CONCURRENCY }, async () => {
+      while (queue.length > 0) {
+        const spec = queue.shift()!
+        await runSpec(spec)
+      }
+    })
+    await Promise.all(workers)
   } finally {
     server?.close()
   }

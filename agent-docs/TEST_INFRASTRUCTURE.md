@@ -29,8 +29,8 @@ change → `--update-snapshots`.
 ### WebGL / WebGPU
 
 - **WebGL** — fully supported (Chrome headless / Firefox), CI default.
-- **WebGPU local** (Firefox real GPU): `--backend=webgpu --firefox --headed`;
-  set `FIREFOX_NIGHTLY_PATH` or `--firefox=/path/to/binary`.
+- **WebGPU local** (Firefox real GPU): `--backend=webgpu --headed`; set
+  `FIREFOX_NIGHTLY_PATH` or pass `--firefox=/path/to/binary` to locate the binary.
 - **WebGPU CI** (Linux + lavapipe): install `mesa-vulkan-drivers`, run under
   `xvfb-run` with `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
   --backend=webgpu`. Chrome flags already set in `runner.ts`.

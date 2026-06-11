@@ -1,111 +1,45 @@
-import {
-  findByTestId,
-  findByText,
-  navigateWithSessionSpec,
-  waitForDataLoaded,
-} from '../helpers.ts'
-import { dualSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
+import type { LgvTrack } from '../suiteHelpers.ts'
 import type { TestSuite } from '../types.ts'
 
-function alignmentsSpec(
-  loc: string,
+const colorByTrack = (
   colorBy: Record<string, unknown>,
   trackId = 'volvox_alignments',
-) {
-  return {
-    views: [
-      {
-        type: 'LinearGenomeView',
-        assembly: 'volvox',
-        loc,
-        tracks: [
-          {
-            trackId,
-            displaySnapshot: { colorBy },
-          },
-        ],
-      },
-    ],
-  }
-}
+): LgvTrack => ({ trackId, displaySnapshot: { colorBy } })
 
 const suite: TestSuite = {
   name: 'Alignments Color Schemes',
   tests: [
-    {
+    lgvSnapshotTest({
       name: 'color by strand',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          alignmentsSpec('ctgA:1000-2000', { type: 'strand' }),
-        )
-        await findByText(page, 'ctgA')
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'color-by-strand',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'color-by-strand',
+      loc: 'ctgA:1000-2000',
+      tracks: [colorByTrack({ type: 'strand' })],
+      doneTestId: 'pileup-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'color by mapping quality',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          alignmentsSpec('ctgA:1000-2000', { type: 'mappingQuality' }),
-        )
-        await findByText(page, 'ctgA')
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'color-by-mapping-quality',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'color-by-mapping-quality',
+      loc: 'ctgA:1000-2000',
+      tracks: [colorByTrack({ type: 'mappingQuality' })],
+      doneTestId: 'pileup-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'color by insert size and orientation',
-      fn: async page => {
-        // volvox_sv has discordant pairs (SVs) that produce non-default colors
-        await navigateWithSessionSpec(
-          page,
-          alignmentsSpec(
-            'ctgA:2,707..48,600',
-            { type: 'insertSizeAndOrientation' },
-            'volvox_sv',
-          ),
-        )
-        await findByText(page, 'ctgA')
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'color-by-insert-size-orientation',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'color-by-insert-size-orientation',
+      // volvox_sv has discordant pairs (SVs) that produce non-default colors
+      loc: 'ctgA:2,707..48,600',
+      tracks: [colorByTrack({ type: 'insertSizeAndOrientation' }, 'volvox_sv')],
+      doneTestId: 'pileup-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'color by HP tag renders colored reads',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          alignmentsSpec('ctgA:39,800..40,000', { type: 'tag', tag: 'HP' }),
-        )
-        await findByText(page, 'ctgA')
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'color-by-tag-hp',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
+      snapshot: 'color-by-tag-hp',
+      loc: 'ctgA:39,800..40,000',
+      tracks: [colorByTrack({ type: 'tag', tag: 'HP' })],
+      doneTestId: 'pileup-display-done',
+    }),
   ],
 }
 

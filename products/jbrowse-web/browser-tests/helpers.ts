@@ -1,3 +1,8 @@
+import {
+  encodeSessionSpec,
+  waitForLoadingComplete,
+} from '@jbrowse/browser-test-utils'
+
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
 import { snapshotConfig } from './snapshot.ts'
 
@@ -76,11 +81,7 @@ export async function findByText(
 }
 
 export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout },
-  )
+  await waitForLoadingComplete(page, { timeout })
 }
 
 export async function waitForDataLoaded(page: Page, timeout = 60000) {
@@ -93,11 +94,7 @@ export async function waitForDataLoaded(page: Page, timeout = 60000) {
   } catch {
     // loading may have completed before we checked — that's fine
   }
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout },
-  )
+  await waitForLoadingComplete(page, { timeout })
 }
 
 // Firefox BiDi (the webgpu backend) stalls on networkidle0 — analytics requests
@@ -127,9 +124,8 @@ export async function navigateWithSessionSpec(
   spec: Record<string, unknown>,
   config = 'test_data/volvox/config.json',
 ) {
-  const specParam = encodeURIComponent(JSON.stringify(spec))
   const url = appendGpuParam(
-    `http://localhost:${PORT}/?config=${config}&session=spec-${specParam}&sessionName=Test%20Session`,
+    `http://localhost:${PORT}/?config=${config}&session=${encodeSessionSpec(spec)}&sessionName=Test%20Session`,
   )
   await page.goto(url, { waitUntil: gotoWaitUntil(), timeout: 60000 })
 }
@@ -149,14 +145,6 @@ export async function waitForDisplay(
   timeout = 60000,
 ) {
   await page.waitForSelector(`[data-testid^="display-${trackId}"]`, { timeout })
-}
-
-export async function waitForCanvas(
-  page: Page,
-  testIdOrRegex: string,
-  timeout = 60000,
-) {
-  await page.waitForSelector(`[data-testid="${testIdOrRegex}"]`, { timeout })
 }
 
 // Asserts a rendered element actually drew something interesting — not a

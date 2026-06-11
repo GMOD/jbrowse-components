@@ -8,9 +8,12 @@ import {
   waitForDataLoaded,
 } from '../helpers.ts'
 import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
+import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
+
+const demoConfig = 'test_data/config_demo.json'
 
 async function loadDemoAndCheck(
   page: Page,
@@ -120,10 +123,7 @@ const localDemos: TestSuite = {
     {
       name: 'Grape-peach synteny demo loads',
       fn: async page => {
-        await loadDemoAndCheck(
-          page,
-          'test_data/config_synteny_grape_peach.json',
-        )
+        await loadDemoAndCheck(page, 'test_data/config_synteny_grape_peach.json')
       },
     },
     {
@@ -191,35 +191,14 @@ const localDemos: TestSuite = {
         await pageSnapshot(page, 'demo-volvox-multitrack-fullpage')
       },
     },
-    {
+    lgvSnapshotTest({
       name: 'SARS-CoV2 demo screenshot',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'Wuhan-Hu-1',
-                loc: 'NC_045512.2:1-29903',
-                tracks: ['sequence'],
-              },
-            ],
-          },
-          'test_data/sars-cov2/config.json',
-        )
-
-        await page.waitForSelector('[data-testid$="-done"]', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'demo-sars-cov2-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
+      snapshot: 'demo-sars-cov2',
+      config: 'test_data/sars-cov2/config.json',
+      assembly: 'Wuhan-Hu-1',
+      loc: 'NC_045512.2:1-29903',
+      tracks: ['sequence'],
+    }),
     {
       name: 'Dotplot demo screenshot',
       fn: async page => {
@@ -230,12 +209,9 @@ const localDemos: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await page.waitForSelector(
-          '[data-testid="dotplot_webgl_canvas_done"]',
-          {
-            timeout: 60000,
-          },
-        )
+        await page.waitForSelector('[data-testid="dotplot_webgl_canvas_done"]', {
+          timeout: 60000,
+        })
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,
@@ -244,65 +220,36 @@ const localDemos: TestSuite = {
         )
       },
     },
-    {
+    viewSnapshotTest({
       name: 'Yeast synteny demo screenshot',
       requiresRemote: true,
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearSyntenyView',
-                tracks: ['dotplot_track'],
-                views: [
-                  { loc: 'NC_001133.9', assembly: 'R64' },
-                  { loc: 'I', assembly: 'YJM1447' },
-                ],
-              },
-            ],
-          },
-          'test_data/yeast_synteny/config.json',
-        )
-
-        await findByTestId(page, 'synteny_canvas_done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'demo-yeast-synteny-canvas',
-          '[data-testid="synteny_canvas_done"]',
-        )
+      snapshot: 'demo-yeast-synteny',
+      config: 'test_data/yeast_synteny/config.json',
+      view: {
+        type: 'LinearSyntenyView',
+        tracks: ['dotplot_track'],
+        views: [
+          { loc: 'NC_001133.9', assembly: 'R64' },
+          { loc: 'I', assembly: 'YJM1447' },
+        ],
       },
-    },
-    {
+      waitTestId: 'synteny_canvas_done',
+    }),
+    viewSnapshotTest({
       name: 'Yeast whole-genome synteny screenshot',
       requiresRemote: true,
-      fn: async page => {
-        // whole-genome R64 vs YJM1447 — omitting loc shows all 16 chromosomes
-        // with the near-collinear syntenic ribbons between the two strains
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearSyntenyView',
-                tracks: ['dotplot_track_cigar'],
-                views: [{ assembly: 'R64' }, { assembly: 'YJM1447' }],
-              },
-            ],
-          },
-          'test_data/yeast_synteny/config.json',
-        )
-
-        await findByTestId(page, 'synteny_canvas_done', 120000)
-        await waitForDataLoaded(page, 120000)
-        await dualSnapshot(
-          page,
-          'demo-yeast-wholegenome-synteny-canvas',
-          '[data-testid="synteny_canvas_done"]',
-        )
+      snapshot: 'demo-yeast-wholegenome-synteny',
+      config: 'test_data/yeast_synteny/config.json',
+      timeout: 120000,
+      // whole-genome R64 vs YJM1447 — omitting loc shows all 16 chromosomes
+      // with the near-collinear syntenic ribbons between the two strains
+      view: {
+        type: 'LinearSyntenyView',
+        tracks: ['dotplot_track_cigar'],
+        views: [{ assembly: 'R64' }, { assembly: 'YJM1447' }],
       },
-    },
+      waitTestId: 'synteny_canvas_done',
+    }),
     {
       name: 'Breakpoint split view demo screenshot',
       fn: async page => {
@@ -318,153 +265,64 @@ const localDemos: TestSuite = {
         await pageSnapshot(page, 'demo-breakpoint-split-view-fullpage')
       },
     },
-    {
+    viewSnapshotTest({
       name: 'Hi-C demo screenshot',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'hg19',
-                loc: 'chr1:1..10,000,000',
-                tracks: ['hic_test'],
-              },
-            ],
-          },
-          'extra_test_data/hic_integration_test.json',
-        )
-
-        await findByTestId(page, 'hic-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'demo-hic-canvas',
-          '[data-testid="hic_canvas"]',
-        )
+      snapshot: 'demo-hic',
+      config: 'extra_test_data/hic_integration_test.json',
+      view: {
+        type: 'LinearGenomeView',
+        assembly: 'hg19',
+        loc: 'chr1:1..10,000,000',
+        tracks: ['hic_test'],
       },
-    },
-    {
+      waitTestId: 'hic-display-done',
+      snapshotSelector: '[data-testid="hic_canvas"]',
+    }),
+    lgvSnapshotTest({
       name: 'hg19 gene glyph rendering',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'hg19',
-                loc: '1:47,678,865..47,688,389',
-                tracks: ['ncbi_gff_hg19'],
-              },
-            ],
-          },
-          'test_data/config_demo.json',
-        )
-
-        await page.waitForSelector('[data-testid$="-done"] canvas', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'demo-hg19-gene-glyph-canvas',
-          '[data-testid$="-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'demo-hg19-gene-glyph',
+      config: demoConfig,
+      assembly: 'hg19',
+      loc: '1:47,678,865..47,688,389',
+      tracks: ['ncbi_gff_hg19'],
+    }),
+    lgvSnapshotTest({
       name: 'COLO829 whole-genome wiggle overview',
       requiresRemote: true,
-      fn: async page => {
-        // omitting loc triggers showAllRegionsInAssembly — shows all hg19
-        // chromosomes at once with tumor/normal BigWig coverage side by side
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'hg19',
-                tracks: ['colo_tumor', 'colo_normal'],
-              },
-            ],
-          },
-          'test_data/config_demo.json',
-        )
-
-        await findByTestId(page, 'wiggle-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'demo-colo829-wholegenome-wiggle-canvas',
-          '[data-testid="wiggle-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'demo-colo829-wholegenome-wiggle',
+      config: demoConfig,
+      assembly: 'hg19',
+      // omitting loc triggers showAllRegionsInAssembly — shows all hg19
+      // chromosomes at once with tumor/normal BigWig coverage side by side
+      tracks: ['colo_tumor', 'colo_normal'],
+      doneTestId: 'wiggle-display-done',
+    }),
+    lgvSnapshotTest({
       name: 'Nanopore EGFR amplicon alignments',
       requiresRemote: true,
-      fn: async page => {
-        // 0.1x-downsampled nanopore amplicon reads at the EGFR locus on hg38
-        // (the full-coverage track causes OOM, so we use the downsampled one)
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'hg38',
-                loc: 'chr7:55,000,000-56,000,000',
-                tracks: ['nanopore_targeted_alignments_0.1'],
-              },
-            ],
-          },
-          'test_data/config_demo.json',
-        )
-
-        await findByTestId(page, 'pileup-display-done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'demo-nanopore-egfr-canvas',
-          '[data-testid="pileup-display-done"] canvas',
-        )
-      },
-    },
-    {
+      snapshot: 'demo-nanopore-egfr',
+      config: demoConfig,
+      assembly: 'hg38',
+      // 0.1x-downsampled nanopore amplicon reads at the EGFR locus on hg38
+      // (the full-coverage track causes OOM, so we use the downsampled one)
+      loc: 'chr7:55,000,000-56,000,000',
+      tracks: ['nanopore_targeted_alignments_0.1'],
+      doneTestId: 'pileup-display-done',
+    }),
+    viewSnapshotTest({
       name: 'Grape-peach synteny demo screenshot',
-      fn: async page => {
-        await navigateWithSessionSpec(
-          page,
-          {
-            views: [
-              {
-                type: 'LinearSyntenyView',
-                tracks: ['subset'],
-                views: [
-                  {
-                    loc: 'Pp01:28,845,211..28,845,272',
-                    assembly: 'peach',
-                  },
-                  { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-                ],
-              },
-            ],
-          },
-          'test_data/grape_peach_synteny/config.json',
-        )
-
-        await findByTestId(page, 'synteny_canvas_done', 60000)
-        await waitForDataLoaded(page)
-        await dualSnapshot(
-          page,
-          'demo-grape-peach-synteny-canvas',
-          '[data-testid="synteny_canvas_done"]',
-        )
+      snapshot: 'demo-grape-peach-synteny',
+      config: 'test_data/grape_peach_synteny/config.json',
+      view: {
+        type: 'LinearSyntenyView',
+        tracks: ['subset'],
+        views: [
+          { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+          { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+        ],
       },
-    },
+      waitTestId: 'synteny_canvas_done',
+    }),
   ],
 }
 
