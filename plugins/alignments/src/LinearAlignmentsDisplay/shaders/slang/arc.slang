@@ -72,7 +72,13 @@ ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
 
   // Y scale: availH pixels = arcsYDomainBp genomic bp. CPU chooses the
   // domain (zoom-proportional for arcs, autoscaled |tlen| for samplot).
-  float destY = min(availH, (float(inst.yBp) / u.arcsYDomainBp) * availH);
+  // Samplot uses a base-2 LOG scale (arcsYLog) so small inserts spread out near
+  // the baseline instead of collapsing onto it (matches origin/main's
+  // d3.scaleLog().base(2)); arc mode stays linear (yBp is a genomic radius).
+  float frac = (u.arcsYLog > 0.5)
+    ? log2(max(1.0, float(inst.yBp))) / log2(max(2.0, u.arcsYDomainBp))
+    : float(inst.yBp) / u.arcsYDomainBp;
+  float destY = min(availH, frac * availH);
 
   ArcPoint ap;
   if (inst.shapeType > 0.5) {

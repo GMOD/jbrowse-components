@@ -1,3 +1,4 @@
+import { arcYFraction } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
@@ -21,6 +22,10 @@ interface DrawArcsOpts {
   // autoscaled max |tlen| so Y is zoom-stable. Mirrors arc.slang's
   // `arcsYDomainBp` uniform — one code path, caller-chosen value.
   arcsYDomainBp: number
+  // Samplot maps yBp=|tlen| with a base-2 log scale (small inserts spread near
+  // the baseline, matching origin/main's d3.scaleLog().base(2)); arc mode stays
+  // linear. Mirrors arc.slang's `arcsYLog` uniform.
+  arcsYLog: boolean
   arcsTop: number
   arcsH: number
   pairedArcsDown: boolean
@@ -71,6 +76,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   const {
     bpToScreenX,
     arcsYDomainBp,
+    arcsYLog,
     arcsTop,
     arcsH,
     pairedArcsDown,
@@ -89,7 +95,6 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   // the GPU shader and the right-side insert-size scalebar.
   const anchorY = pairedArcsDown ? arcsTop : arcsTop + arcsH
   const availH = arcsH - ARC_HEIGHT_MARGIN
-  const yScale = arcsYDomainBp > 0 ? availH / arcsYDomainBp : 0
 
   ctx.lineWidth = lineWidth
   for (let i = 0; i < data.numArcs; i++) {
@@ -101,7 +106,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
 
     const sx1 = bpToScreenX(x1Bp)
     const sx2 = bpToScreenX(x2Bp)
-    const arcH = Math.min(yBp * yScale, availH)
+    const arcH = Math.min(arcYFraction(yBp, arcsYDomainBp, arcsYLog) * availH, availH)
     const apexY = pairedArcsDown ? anchorY + arcH : anchorY - arcH
 
     const isFlat = shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT
@@ -147,6 +152,7 @@ export function drawArcs(
   drawArcsToCtx(ctx, region, {
     bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
     arcsYDomainBp: state.arcsYDomainBp ?? fallbackDomain,
+    arcsYLog: state.arcsYDomainBp !== undefined,
     arcsTop,
     arcsH,
     pairedArcsDown,

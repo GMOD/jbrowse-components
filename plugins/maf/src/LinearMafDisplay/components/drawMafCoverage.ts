@@ -93,6 +93,7 @@ export function drawMafCoverage(
         bpToX,
         canvasWidth,
         coverageHeight,
+        coverage.coverageMaxDepth,
       )
       drawIndicators(
         ctx,

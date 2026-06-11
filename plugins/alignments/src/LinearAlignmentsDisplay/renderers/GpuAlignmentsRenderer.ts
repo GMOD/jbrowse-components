@@ -158,11 +158,16 @@ function fillFrameUniforms(
   i[U.coverageScaleType] = state.coverageIsLog ? 1 : 0
   i[U.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   f[U.binSize] = region.binSize
-  // scale clip/insertion bars to half the coverage drawing height (matches
-  // origin/main + the Canvas2D path in drawInterbaseSegments)
+  // Scale clip/insertion bars to half the coverage drawing height (matches
+  // origin/main + the Canvas2D path in drawInterbaseSegments). The worker bakes
+  // each bar as a fraction of the region's raw peak depth (interbaseMaxCount ===
+  // region.maxDepth); renormalize onto the display's autoscaled coverage domain
+  // via depthScale so clip bars track the same domain as the coverage bars
+  // (otherwise they render too short when the fetched peak exceeds the nice
+  // rounded visible domain — e.g. at SV breakpoints).
   f[U.interbaseHeight] =
     region.interbaseMaxCount > 0
-      ? coverageLayout(state.coverageHeight).effectiveH / 2
+      ? (coverageLayout(state.coverageHeight).effectiveH / 2) * f[U.depthScale]!
       : 0
   f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
@@ -224,6 +229,9 @@ function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
   f[U.pxPerBp] = pxPerBp
   f[U.arcsYDomainBp] =
     state.arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1)
+  // Samplot (read cloud) is the only mode that sets arcsYDomainBp; it maps
+  // yBp=|tlen| with a base-2 log scale. Arc mode stays linear.
+  f[U.arcsYLog] = state.arcsYDomainBp !== undefined ? 1 : 0
 }
 
 // Pack every palette color into the UBO as u32 ABGR. Pure — writes through

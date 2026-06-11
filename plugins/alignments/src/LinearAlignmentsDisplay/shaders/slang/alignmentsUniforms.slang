@@ -55,6 +55,9 @@ public struct Uniforms {
   // zoom; samplot mode sets it to the autoscaled max |insert size| so the
   // line Y is zoom-stable. One code path, mode-dependent value.
   public float arcsYDomainBp;
+  // 1 = map yBp→Y with a base-2 log scale (samplot read cloud), 0 = linear
+  // (arc/bezier mode). Float-as-bool to stay in the float block.
+  public float arcsYLog;
 
   // Flags (ints / float-as-bool)
   public int colorScheme;

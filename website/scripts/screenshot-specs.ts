@@ -132,7 +132,6 @@ const VOLVOX_SV_CRAM_ADAPTER = {
   },
 }
 const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
-const SYNTENY_CONFIG = 'test_data/grape_peach_synteny/config.json'
 const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
 const CGIAB_BASE =
@@ -782,26 +781,31 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'linear_synteny',
-    url: sessionSpec(SYNTENY_CONFIG, {
+    // Faithful rebuild of the gallery.md share link (share-4MjF5YGM_G): the
+    // MCScan grape/peach synteny over whole chromosomes (peach Pp05 vs grape
+    // chr2) with curved ribbons. Uses config_dotplot.json (the share's config),
+    // both MCScan synteny tracks between the panels, and the simple-anchors
+    // track inside each panel — not the dense zoomed minimap2 the reviewer
+    // rejected.
+    url: sessionSpec(DOTPLOT_CONFIG, {
       views: [
         {
           type: 'LinearSyntenyView',
-          // full minimap2 grape/peach alignment gives the dense X-crossing red
-          // ribbon bundle between peach Pp05 and grape chr2 that the origin/main
-          // figure showed
-          tracks: ['peach_grape_minimap2'],
-          // also open the synteny track in each sub-view so the alignment blocks
-          // render as rows in both panels (matches origin/main figure)
+          drawCurves: true,
+          tracks: [
+            'grape_peach_synteny_mcscan',
+            'grape_peach_synteny_mcscan_simple',
+          ],
           views: [
             {
-              loc: 'Pp05:7380181-13912038',
+              loc: 'Pp05:1-18496696',
               assembly: 'peach',
-              tracks: ['peach_grape_minimap2'],
+              tracks: ['grape_peach_synteny_mcscan_simple'],
             },
             {
-              loc: 'chr2:1-6826262',
+              loc: 'chr2:1-18779844',
               assembly: 'grape',
-              tracks: ['peach_grape_minimap2'],
+              tracks: ['grape_peach_synteny_mcscan_simple'],
             },
           ],
         },
@@ -929,7 +933,11 @@ export const specs: ScreenshotSpec[] = [
           // bottom frame teaches cause→effect (and isn't a stale preset that
           // restored unsorted); the click closes the menu
           { type: 'click', text: 'Sort by base at position' },
-          { type: 'waitForText', text: 'Sort by base at position', hidden: true },
+          {
+            type: 'waitForText',
+            text: 'Sort by base at position',
+            hidden: true,
+          },
           // move the pointer off the pileup so no hover tooltip lingers, then
           // let the re-sort settle and repaint
           { type: 'hover', from: { x: 200, y: 100 } },
@@ -947,15 +955,15 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          // GAPDH (minus strand, chr12) — a single-strand, highly-expressed,
-          // isolated gene so the RNA-seq sashimi arcs are all one strand color,
-          // not the overlapping fwd/rev arcs the previous ACTB locus showed.
-          loc: 'chr12:6,643,000-6,648,000',
+          // B2M (plus strand, chr15) — a ubiquitously-expressed housekeeping gene
+          // with a single isoform and just 3 introns, so the RNA-seq sashimi arcs
+          // are few and clean (GAPDH's many short exons gave "tons of small arcs").
+          loc: 'chr15:45,003,000-45,012,000',
           tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
         },
       ],
     }),
-    readyText: 'GAPDH',
+    readyText: 'B2M',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -1020,15 +1028,67 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 35000,
   },
 
-  // TODO: restore COLO829 methylation specs (methylation/per_read_mod_bam and
-  // methylation/colo829_cram_and_bedmethyl) on COLO829_tumor.ht and
-  // COLO829_tumor.ht_modkit.bed_multi from DEMO_CONFIG at
-  // chr20:10,000,000-10,002,000. They used the old nested
-  // displaySnapshot: { PileupDisplay: { colorBy: { type: 'methylation' } } },
-  // which MST rejected. LinearAlignmentsDisplay takes flat overrides now
-  // — displaySnapshot: { colorBy: { type: 'methylation' } }
-  // — so these can be restored once the remote data is verified to load
-  // headless (see inverted_duplication below for the working flat-override form).
+  // Per-read modification BAM/CRAM: COLO829_tumor.ht nanopore reads colored by
+  // ALL modification types (colorBy {type:'modifications'}, the "all
+  // modifications" preset) over a ~20kb window, so each read's per-base mod
+  // calls are visible. Flat displaySnapshot override (LinearAlignmentsDisplay
+  // takes flat overrides now).
+  {
+    mode: 'url',
+    name: 'methylation/per_read_mod_bam',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr20:9,990,000-10,010,002',
+          tracks: [
+            {
+              trackId: 'COLO829_tumor.ht',
+              displaySnapshot: {
+                colorBy: { type: 'modifications' },
+                // ~20kb of nanopore reads is ~5Mb, over the default fetch guard;
+                // raise the limit so per-read mods auto-load without a click.
+                userByteSizeLimit: 100_000_000,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'COLO829',
+    readyTimeout: 60000,
+    settleMs: 35000,
+  },
+
+  // CRAM modifications + bedmethyl together: zoomed to ~475bp so the COLO829
+  // nanopore reads' per-base CpG methylation calls (colorBy methylation) line up
+  // with the modkit bedmethyl summary track rendered as a MultiQuantitativeTrack.
+  {
+    mode: 'url',
+    name: 'methylation/colo829_cram_and_bedmethyl',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr20:10,000,000-10,000,475',
+          tracks: [
+            'COLO829_tumor.ht_modkit.bed_multi',
+            {
+              trackId: 'COLO829_tumor.ht',
+              displaySnapshot: {
+                colorBy: { type: 'methylation' },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'COLO829',
+    readyTimeout: 60000,
+    settleMs: 35000,
+  },
 
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 
@@ -1079,23 +1139,20 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 8000,
-    // tall enough to show the view menu down to "Horizontally flip" in the top
-    // frame, while trimming most of the empty viewport below the single track
-    crop: { x: 0, y: 0, width: 1500, height: 470 },
+    // trim the empty viewport below the single track
+    crop: { x: 0, y: 0, width: 1500, height: 300 },
     stages: [
       {
-        // top frame: the view menu open with "Horizontally flip" boxed, so the
-        // reader sees it is a toggle
+        // top frame: normal orientation (no menu open)
+        actions: [{ type: 'delay', ms: 500 }],
+      },
+      {
+        // bottom frame: after the view-menu "Horizontally flip" the gene arrows /
+        // overview triangles reverse direction. The menu auto-closes on click so
+        // it never appears in the result frame.
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
           { type: 'waitForText', text: 'Horizontally flip' },
-          { type: 'delay', ms: 500 },
-        ],
-        annotations: [{ type: 'box', anchor: { text: 'Horizontally flip' } }],
-      },
-      {
-        // bottom frame: after clicking it, the gene arrows / overview reverse
-        actions: [
           { type: 'click', text: 'Horizontally flip' },
           { type: 'delay', ms: 3000 },
         ],
@@ -1261,6 +1318,76 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
+  // Trio SV: the Kinh-Vietnamese trio (HG02030 child / HG02031 mother / HG02032
+  // father) Illumina reads stacked over the 1000 Genomes Illumina ensemble SV
+  // callset, at a ~43kb SV locus. Reads auto-load via a raised userByteSizeLimit;
+  // per-track heights capped so all four tracks fit one viewport.
+  {
+    mode: 'url',
+    name: 'multi-sv-trio',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:40,481,472-40,524,349',
+          tracks: [
+            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: 'HG02030.final',
+              displaySnapshot: { height: 180, userByteSizeLimit: 200_000_000 },
+            },
+            {
+              trackId: 'HG02031.final',
+              displaySnapshot: { height: 180, userByteSizeLimit: 200_000_000 },
+            },
+            {
+              trackId: 'HG02032.final',
+              displaySnapshot: { height: 180, userByteSizeLimit: 200_000_000 },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG02030',
+    readyTimeout: 90000,
+    viewportHeight: 900,
+    settleMs: 25000,
+  },
+
+  // sv_visualization.md: the TRA feature-details panel with its "Launch split
+  // views with breakend source and target" link. Zoomed onto a single SKBR3
+  // Sniffles translocation breakend (14:84871468 // 17:74803924) so clicking
+  // the lone variant opens the details drawer; the BREAKENDS link is annotated.
+  {
+    mode: 'url',
+    name: 'link_to_split_view',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '14:84,871,462-84,871,480',
+          tracks: ['breast_cancer_sniffles_hg19_traonly_tabix'],
+        },
+      ],
+    }),
+    readyText: '84,871',
+    settleMs: 5000,
+    // tall viewport so the full-height feature-details panel shows the
+    // LaunchBreakendPanel link below the long TRA INFO table
+    viewportHeight: 1100,
+    actions: [
+      // click the TRA variant's floating feature label (stable per-feature
+      // testid) to open the feature-details drawer; the translocation's
+      // INFO.CHR2/END drive the LaunchBreakendPanel split-view link
+      { type: 'click', selector: '[data-testid="feature-name-89844_3"]' },
+      { type: 'waitForText', text: 'breakpoint split view' },
+      { type: 'delay', ms: 1500 },
+    ],
+    annotations: [{ type: 'box', anchor: { text: 'breakpoint split view' } }],
+  },
+
   {
     mode: 'url',
     name: 'breakpoint_split_view',
@@ -1331,9 +1458,9 @@ export const specs: ScreenshotSpec[] = [
   // VCF call.
   // loc shifted ~600bp right so HGSV_2721 (near right of original range) sits
   // centered in the panel-narrowed view after the feature sidebar opens.
-  // Two stacked views at the same locus form one combined figure: a compact
-  // overview (top, featureHeight 3) plus the normal feature height (bottom)
-  // where the orientation-colored read pairs are legible.
+  // Single view at the inverted-duplication locus: orientation-colored read pairs
+  // with the connecting arcs pointing upwards and a tall coverage track, with the
+  // HGSV_2721 variant feature details opened.
   {
     mode: 'url',
     name: 'inverted_duplication',
@@ -1350,28 +1477,9 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 linkedReads: 'normal',
                 readConnections: 'arc',
-                readConnectionsDown: true,
-                height: 650,
-                colorBy: { type: 'pairOrientation' },
-                featureHeight: 3,
-                featureSpacing: 0,
-              },
-            },
-          ],
-        },
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '1:39,658,200-39,661,800',
-          tracks: [
-            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-            {
-              trackId: 'HG02768.final',
-              displaySnapshot: {
-                linkedReads: 'normal',
-                readConnections: 'arc',
-                readConnectionsDown: true,
+                readConnectionsDown: false,
                 height: 900,
+                coverageHeight: 120,
                 colorBy: { type: 'pairOrientation' },
               },
             },
@@ -1381,10 +1489,15 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    viewportHeight: 1850,
+    viewportHeight: 1100,
     settleMs: 30000,
+    // click the HGSV_2721 variant's floating feature label (stable per-feature
+    // testid) to open its feature details
     actions: [
-      { type: 'click', selector: '[data-testid="feature-name-HGSV_2721"]' },
+      {
+        type: 'click',
+        selector: '[data-testid="feature-name-HGSV_2721"]',
+      },
       { type: 'delay', ms: 4000 },
     ],
   },
@@ -1488,20 +1601,44 @@ export const specs: ScreenshotSpec[] = [
             },
           },
         },
+        // hg38 NCBI RefSeq genes served from the jbrowse.org/ucsc hub (chr-named,
+        // CSI-indexed) — matches the GRCh38_GIABv3 chr refnames directly, so no
+        // rehosting needed.
+        {
+          type: 'FeatureTrack',
+          trackId: 'hg38_ncbiRefSeq_ucsc',
+          name: 'NCBI RefSeq genes (hg38)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: {
+              uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
+                locationType: 'UriLocation',
+              },
+              indexType: 'CSI',
+            },
+          },
+        },
       ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
-          loc: 'chr5:97050000-97400000',
+          loc: 'chr10:122,822,042-122,850,825',
           tracks: [
+            'hg38_ncbiRefSeq_ucsc',
             'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
             'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
           ],
         },
       ],
     }),
-    readyText: 'chr5',
+    readyText: 'chr10',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -2323,18 +2460,18 @@ export const specs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Read connections' },
           { type: 'delay', ms: 300 },
           { type: 'hover', text: 'Read connections' },
-          { type: 'waitForText', text: 'Show pair overlay' },
+          { type: 'waitForText', text: 'Show read arcs' },
           { type: 'delay', ms: 600 },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Show pair overlay' } }],
+        annotations: [
+          { type: 'box', anchor: { text: 'Show read arcs' } },
+          { type: 'box', anchor: { text: 'Show read cloud' } },
+        ],
       },
       {
-        // open the radio submenu and pick Arcs so the result frame shows them
+        // tick the "Show read arcs" checkbox so the result frame shows arcs
         actions: [
-          { type: 'hover', text: 'Show pair overlay' },
-          { type: 'waitForText', text: 'Arcs' },
-          { type: 'delay', ms: 400 },
-          { type: 'click', text: 'Arcs' },
+          { type: 'click', text: 'Show read arcs' },
           { type: 'delay', ms: 3000 },
         ],
       },

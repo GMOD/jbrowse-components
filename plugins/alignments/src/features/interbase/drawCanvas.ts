@@ -11,6 +11,7 @@ export function drawInterbaseCanvas(
   bpToX: (bp: number) => number,
   viewWidth: number,
   state: RenderState,
+  domainMax: number,
 ) {
   drawInterbaseSegments(
     ctx,
@@ -24,5 +25,6 @@ export function drawInterbaseCanvas(
     bpToX,
     viewWidth,
     state.coverageHeight,
+    domainMax,
   )
 }

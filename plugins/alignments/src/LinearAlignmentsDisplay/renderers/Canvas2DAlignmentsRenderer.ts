@@ -411,16 +411,17 @@ function drawCoverage(
   const viewWidth = fullBlockWidth + block.screenStartPx
   // Depth-scaled layers need the autoscaled domain max; until coverage stats
   // are computed (coarseDynamicBlocks is 500ms-debounced) it's undefined and
-  // these are skipped. Interbase/indicator marks are anchored to the band top,
-  // not the depth scale, so they draw whenever coverage is shown (matching the
-  // GPU pass order).
+  // these are skipped. Interbase clip/insertion bars are *positioned* at the
+  // band top but their *height* tracks the depth domain (like the coverage and
+  // SNP bars), so they belong inside this block. The fixed-size indicator
+  // triangles are the only band-top marks independent of the depth scale.
   const domainMax = state.coverageMaxDepth
   if (domainMax !== undefined) {
     drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
     drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
     drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+    drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
   }
-  drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state)
   drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
 }
 

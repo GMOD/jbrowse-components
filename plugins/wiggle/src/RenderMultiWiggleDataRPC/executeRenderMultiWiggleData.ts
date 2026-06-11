@@ -1,13 +1,15 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { updateStatus } from '@jbrowse/core/util'
+import { groupBy, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
-import { processFeaturesFromArrays } from '../util.ts'
+import { featuresToRaw, processFeaturesFromArrays } from '../util.ts'
 
 import type { RawFeatureArrays, SourceInfo, WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -34,6 +36,30 @@ function isMultiSource(
   adapter: BaseFeatureDataAdapter,
 ): adapter is MultiSourceWiggleAdapter {
   return 'getMultiSourceFeatureArrays' in adapter
+}
+
+// Plain feature adapter (e.g. BedTabixAdapter/BedGraphAdapter) used directly
+// inside a MultiQuantitativeTrack — the modkit bedMethyl use-case. Synthesize
+// per-source arrays by grouping features on their `source` field, mirroring the
+// pre-webgl renderMultiWiggle path.
+async function getFallbackSourceArrays(
+  dataAdapter: BaseFeatureDataAdapter,
+  region: Region,
+  opts: {
+    bpPerPx: number
+    resolution: number
+    sources?: SourceInfo[]
+    stopToken?: StopToken
+  },
+): Promise<{ source: string; raw: RawFeatureArrays }[]> {
+  const features = await firstValueFrom(
+    dataAdapter.getFeatures(region, opts).pipe(toArray()),
+  )
+  const groups = groupBy(features, f => `${f.get('source')}`)
+  return Object.entries(groups).map(([source, feats]) => ({
+    source,
+    raw: featuresToRaw(feats),
+  }))
 }
 
 interface ExecuteParams {
@@ -82,22 +108,15 @@ export async function executeRenderMultiWiggleData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  if (!isMultiSource(dataAdapter)) {
-    throw new Error(
-      `${adapterConfig.type as string} must implement getMultiSourceFeatureArrays to be used as a multi-wiggle adapter`,
-    )
-  }
-
   const perSource = await updateStatus(
     'Loading wiggle data',
     statusCallback,
-    () =>
-      dataAdapter.getMultiSourceFeatureArrays(region, {
-        bpPerPx,
-        resolution,
-        sources: sourcesArg,
-        stopToken,
-      }),
+    () => {
+      const opts = { bpPerPx, resolution, sources: sourcesArg, stopToken }
+      return isMultiSource(dataAdapter)
+        ? dataAdapter.getMultiSourceFeatureArrays(region, opts)
+        : getFallbackSourceArrays(dataAdapter, region, opts)
+    },
   )
   checkStopToken2(stopTokenCheck)
 

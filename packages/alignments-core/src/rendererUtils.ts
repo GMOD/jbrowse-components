@@ -218,15 +218,21 @@ export function drawInterbaseSegments(
   bpToX: (bp: number) => number,
   viewWidth: number,
   coverageHeight: number,
+  domainMax: number,
 ) {
-  if (interbaseMaxCount === 0) {
+  if (interbaseMaxCount === 0 || domainMax === 0) {
     return
   }
 
   // Inverted clip/insertion bars scale to half the coverage drawing height
   // (matches origin/main's `range: [0, height/2]`), so they grow with the
-  // track rather than being clipped at a fixed pixel cap.
-  const interbaseHeight = coverageLayout(coverageHeight).effectiveH / 2
+  // track rather than being clipped at a fixed pixel cap. The worker bakes each
+  // bar as a fraction of the region's raw peak depth (interbaseMaxCount); divide
+  // it back out and multiply by the display's autoscaled domain so the bars
+  // track the same depth scale as the coverage bars (origin/main parity).
+  const interbaseHeight =
+    (coverageLayout(coverageHeight).effectiveH / 2) *
+    (interbaseMaxCount / domainMax)
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]

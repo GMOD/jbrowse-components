@@ -1,6 +1,6 @@
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import { checkboxItem, radioModeMenuItem } from './menuHelpers.ts'
+import { checkboxItem } from './menuHelpers.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -34,12 +34,21 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           model.setLinkedReads(model.linkedReads === 'off' ? 'normal' : 'off')
         },
       ),
-      radioModeMenuItem(
-        'Show pair overlay',
-        PAIR_OVERLAY_OPTIONS,
-        model.readConnections,
-        mode => {
-          model.setReadConnections(mode)
+      // Arcs and read cloud share one band and the read cloud repurposes the
+      // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
+      // overlays are mutually exclusive — enabling one disables the other.
+      checkboxItem('Show read arcs', model.readConnections === 'arc', () => {
+        model.setReadConnections(
+          model.readConnections === 'arc' ? 'off' : 'arc',
+        )
+      }),
+      checkboxItem(
+        'Show read cloud',
+        model.readConnections === 'samplot',
+        () => {
+          model.setReadConnections(
+            model.readConnections === 'samplot' ? 'off' : 'samplot',
+          )
         },
       ),
     ] satisfies MenuItem[],

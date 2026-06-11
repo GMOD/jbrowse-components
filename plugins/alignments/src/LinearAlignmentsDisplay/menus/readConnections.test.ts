@@ -36,32 +36,48 @@ describe('read connections menu', () => {
     expect(model.linkedReads).toBe('off')
   })
 
-  function getPairOverlaySubMenu(model: ReturnType<typeof makeModel>) {
+  function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
     const item = getReadConnectionsMenuItem(model).subMenu.find(
-      i => 'label' in i && i.label === 'Show pair overlay',
+      i => 'label' in i && i.label === label,
     )
-    if (!item || !('subMenu' in item)) {
-      throw new Error('no Show pair overlay submenu')
+    if (!item || !('onClick' in item)) {
+      throw new Error(`no ${label} checkbox`)
     }
-    return item.subMenu
+    return item
   }
 
-  test('"Show pair overlay" → "Arcs" enables arc mode', () => {
+  test('"Show read arcs" toggles arc mode on/off', () => {
     const model = makeModel()
-    const arcs = getPairOverlaySubMenu(model).find(
-      i => 'label' in i && i.label === 'Arcs',
-    )
-    arcs!.onClick()
+    checkboxByLabel(model, 'Show read arcs').onClick()
     expect(model.readConnections).toBe('arc')
+    checkboxByLabel(model, 'Show read arcs').onClick()
+    expect(model.readConnections).toBe('off')
   })
 
-  test('"Show pair overlay" → "Read cloud" enables samplot mode', () => {
+  test('"Show read cloud" toggles samplot mode on/off', () => {
     const model = makeModel()
-    const cloud = getPairOverlaySubMenu(model).find(
-      i => 'label' in i && i.label === 'Read cloud',
-    )
-    cloud!.onClick()
+    checkboxByLabel(model, 'Show read cloud').onClick()
     expect(model.readConnections).toBe('samplot')
+    checkboxByLabel(model, 'Show read cloud').onClick()
+    expect(model.readConnections).toBe('off')
+  })
+
+  test('arcs and read cloud are mutually exclusive', () => {
+    const model = makeModel()
+    checkboxByLabel(model, 'Show read arcs').onClick()
+    expect(model.readConnections).toBe('arc')
+    // enabling read cloud while arcs are on switches mode (turns arcs off)
+    checkboxByLabel(model, 'Show read cloud').onClick()
+    expect(model.readConnections).toBe('samplot')
+    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(false)
+  })
+
+  test('checkbox checked state reflects readConnections', () => {
+    const model = makeModel()
+    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(false)
+    expect(checkboxByLabel(model, 'Show read cloud').checked).toBe(false)
+    model.readConnections = 'arc'
+    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(true)
   })
 })
 
