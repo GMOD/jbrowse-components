@@ -1,26 +1,22 @@
-export function parseError(str: string) {
-  let snapshotError = ''
-  let message = ''
-  const findStr = 'is not assignable'
-  const idx = str.indexOf(findStr)
-  if (idx !== -1) {
-    const trim = str.slice(0, idx + findStr.length)
-    // best effort to make a better error message than the default
-    // @jbrowse/mobx-state-tree
-
-    // case 1. element has a path
-    const match = /.*at path "(.*)" snapshot `(.*)` is not assignable/m.exec(
-      trim,
-    )
-    // case 2. element has no path
-    const match2 = /.*snapshot `(.*)` is not assignable/.exec(trim)
-    if (match) {
-      snapshotError = match[2]!
-      message = `Failed to load element at ${match[1]}...Failed element had snapshot`
-    } else if (match2) {
-      snapshotError = match2[1]!
-      message = 'Failed to load element...Failed element had snapshot'
-    }
+function tryParseJson(str: string): unknown {
+  try {
+    return JSON.parse(str)
+  } catch {
+    return str
   }
-  return { snapshotError, message }
+}
+
+export function parseError(str: string) {
+  let snapshotValue: unknown
+  let message = ''
+  const match = /.*at path "(.*)" snapshot `(.*)` is not assignable/m.exec(str)
+  const match2 = /.*snapshot `(.*)` is not assignable/.exec(str)
+  if (match) {
+    snapshotValue = tryParseJson(match[2]!)
+    message = `Snapshot at path "${match[1]}":`
+  } else if (match2) {
+    snapshotValue = tryParseJson(match2[1]!)
+    message = 'Snapshot:'
+  }
+  return { snapshotValue, message }
 }

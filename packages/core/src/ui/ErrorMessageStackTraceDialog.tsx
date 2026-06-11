@@ -92,8 +92,8 @@ async function mapStackTrace(stack: string) {
 
 const MAX_ERR_LEN = 10_000
 
-// Chrome has the error message in the stacktrace, firefox doesn't.
-// Remove it since it can be very long due to mobx-state-tree stuff
+// Chrome prepends the error message to the stack trace; Firefox doesn't.
+// Strip it to avoid duplication (the message is already shown above the trace).
 function stripMessage(trace: string, error: unknown) {
   return trace.startsWith('Error:') ? trace.slice(`${error}`.length) : trace
 }
