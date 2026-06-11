@@ -2,29 +2,17 @@ import { useState } from 'react'
 
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Box,
-  Button,
-  Chip,
-  DialogActions,
-  DialogContent,
-  Paper,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BulkForm from './BulkForm.tsx'
 import GuidedForm from './GuidedForm.tsx'
-import {
-  clearFormFields,
-  getAdapterConfig,
-  getBaseAssemblyConfig,
-  initialFormState,
-} from './util.ts'
+import ModeToggle from './ModeToggle.tsx'
+import StagedAssemblies from './StagedAssemblies.tsx'
+import { buildAssemblyConf, clearFormFields, initialFormState } from './util.ts'
 
-import type { AssemblyConf } from './util.ts'
+import type { Mode } from './ModeToggle.tsx'
+import type { AssemblyAdapter, AssemblyConf } from './util.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
@@ -39,17 +27,6 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(2),
     margin: theme.spacing(2),
   },
-  stagedAssemblies: {
-    background: theme.palette.success.light,
-    margin: theme.spacing(2),
-    padding: theme.spacing(2),
-  },
-  modeToggle: {
-    marginBottom: theme.spacing(1),
-  },
-  chip: {
-    margin: 2,
-  },
 }))
 
 const OpenSequenceDialog = observer(function OpenSequenceDialog({
@@ -62,9 +39,24 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
-  const [mode, setMode] = useState<'guided' | 'bulk'>('guided')
+  const [mode, setMode] = useState<Mode>('guided')
 
   const totalToOpen = assemblyConfs.length + (form.assemblyName ? 1 : 0)
+
+  async function indexFasta(
+    fastaLocation: FileLocation,
+  ): Promise<AssemblyAdapter> {
+    setLoading('Creating .fai file for FASTA')
+    const faiPath = await ipcRenderer.invoke('indexFasta', fastaLocation)
+    return {
+      type: 'IndexedFastaAdapter',
+      fastaLocation,
+      faiLocation: {
+        localPath: faiPath,
+        locationType: 'LocalPathLocation',
+      },
+    }
+  }
 
   async function stageCurrentAssembly() {
     if (!form.assemblyName) {
@@ -73,7 +65,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     if (assemblyConfs.some(conf => conf.name === form.assemblyName)) {
       throw new Error(`Assembly "${form.assemblyName}" is already staged`)
     }
-    return [...assemblyConfs, await createAssemblyConfig()]
+    return [...assemblyConfs, await buildAssemblyConf(form, indexFasta)]
   }
 
   async function runStaging(action: () => Promise<void>) {
@@ -109,35 +101,6 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     })
   }
 
-  async function indexFasta(fastaLocation: FileLocation) {
-    setLoading('Creating .fai file for FASTA')
-    const faiPath = await ipcRenderer.invoke('indexFasta', fastaLocation)
-    return {
-      type: 'IndexedFastaAdapter' as const,
-      fastaLocation,
-      faiLocation: {
-        localPath: faiPath,
-        locationType: 'LocalPathLocation' as const,
-      },
-    }
-  }
-
-  async function createAssemblyConfig() {
-    const result = getAdapterConfig(form)
-    const adapter =
-      result.kind === 'needsFastaIndex'
-        ? await indexFasta(result.fastaLocation)
-        : result.adapter
-    return {
-      ...getBaseAssemblyConfig(form),
-      sequence: {
-        type: 'ReferenceSequenceTrack' as const,
-        trackId: `${form.assemblyName}-${Date.now()}`,
-        adapter,
-      },
-    }
-  }
-
   return (
     <Dialog
       open
@@ -150,21 +113,12 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     >
       <DialogContent>
         {assemblyConfs.length ? (
-          <Box className={classes.stagedAssemblies}>
-            <Typography variant="body2" gutterBottom>
-              Staged assemblies:
-            </Typography>
-            {assemblyConfs.map((conf, idx) => (
-              <Chip
-                key={conf.name}
-                className={classes.chip}
-                label={conf.name}
-                onDelete={() => {
-                  setAssemblyConfs(assemblyConfs.filter((_, i) => i !== idx))
-                }}
-              />
-            ))}
-          </Box>
+          <StagedAssemblies
+            assemblyConfs={assemblyConfs}
+            onDelete={name => {
+              setAssemblyConfs(assemblyConfs.filter(conf => conf.name !== name))
+            }}
+          />
         ) : null}
 
         {loading ? (
@@ -174,21 +128,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         {error ? <ErrorMessage error={error} /> : null}
 
         <Paper className={classes.paper}>
-          <ToggleButtonGroup
-            className={classes.modeToggle}
-            size="small"
-            exclusive
-            disabled={!!loading}
-            value={mode}
-            onChange={(_event, value: 'guided' | 'bulk' | null) => {
-              if (value) {
-                setMode(value)
-              }
-            }}
-          >
-            <ToggleButton value="guided">Guided</ToggleButton>
-            <ToggleButton value="bulk">Drop / paste files</ToggleButton>
-          </ToggleButtonGroup>
+          <ModeToggle mode={mode} setMode={setMode} disabled={!!loading} />
 
           {mode === 'bulk' ? (
             <BulkForm form={form} setForm={setForm} />

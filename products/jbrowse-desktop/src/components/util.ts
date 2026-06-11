@@ -338,6 +338,28 @@ export function applyClassifiedFiles(
   }
 }
 
+// Build a full assembly config from the form. A plain FASTA has no index, so
+// the caller supplies an indexFasta callback (it runs an out-of-process samtools
+// faidx in the desktop main process) used only for the needsFastaIndex case.
+export async function buildAssemblyConf(
+  form: FormState,
+  indexFasta: (fastaLocation: FileLocation) => Promise<AssemblyAdapter>,
+): Promise<AssemblyConf> {
+  const result = getAdapterConfig(form)
+  const adapter =
+    result.kind === 'needsFastaIndex'
+      ? await indexFasta(result.fastaLocation)
+      : result.adapter
+  return {
+    ...getBaseAssemblyConfig(form),
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: `${form.assemblyName}-${Date.now()}`,
+      adapter,
+    },
+  }
+}
+
 export function urlTextToLocations(text: string): FileLocation[] {
   return text
     .split('\n')
