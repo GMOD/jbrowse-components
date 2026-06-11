@@ -2987,6 +2987,67 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
+  // multiquantitative_track.md: the track-selector selection workflow for
+  // building a multi-wiggle. Two stacked frames: (1) a category's "..." menu
+  // with "Add to selection" boxed, (2) after adding the category, the shopping
+  // cart's "Create multi-wiggle track" item boxed.
+  {
+    mode: 'url',
+    name: 'multiwig/trackselector',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 3000,
+    // tall viewport so the whole (react-window-virtualized) category tree
+    // renders — the BigWig category sits below the default fold otherwise
+    viewportHeight: 1600,
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+          { type: 'waitForText', text: 'Open track selector' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Open track selector' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="hierarchical_track_selector"]',
+          },
+          { type: 'delay', ms: 500 },
+          // open a category's "..." menu (stable testid added to the category
+          // CascadingMenuButton); "Integration test" is reliably visible and
+          // contains the wiggle subtracks
+          {
+            type: 'click',
+            selector: '[data-testid="htsCategoryMenu-Integration test"]',
+          },
+          { type: 'waitForText', text: 'Add to selection' },
+          { type: 'delay', ms: 400 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Add to selection' } }],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Add to selection' },
+          { type: 'delay', ms: 600 },
+          // the shopping cart appears once the selection is non-empty
+          { type: 'click', selector: '[data-testid="hts-shopping-cart"]' },
+          { type: 'waitForText', text: 'Create multi-wiggle track' },
+          { type: 'delay', ms: 400 },
+        ],
+        annotations: [
+          { type: 'box', anchor: { text: 'Create multi-wiggle track' } },
+        ],
+      },
+    ],
+  },
+
   // Add track dialog showing the multi-wiggle workflow selector.
   {
     mode: 'url',

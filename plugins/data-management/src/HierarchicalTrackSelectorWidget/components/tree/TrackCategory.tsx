@@ -165,6 +165,7 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       ) : null}
       <CascadingMenuButton
         className={classes.menuButton}
+        data-testid={`htsCategoryMenu-${name}`}
         menuItems={() => [
           {
             label: 'Expand to category',
@@ -209,6 +210,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         <SanitizedHTML html={name} />
         <CascadingMenuButton
+          data-testid={`htsCategoryMenu-${name}`}
           menuItems={() => {
             const subcategoryIds = getAllSubcategories(item)
             const hasSubcategories = subcategoryIds.length > 0
