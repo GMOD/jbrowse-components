@@ -262,7 +262,7 @@ locstring. Use this only for round-tripping an exported session.
 
 A _session_ is JBrowse's runtime representation of "what's open" — which views,
 which tracks, which display settings. Passing `defaultSession` to
-`createViewState` restores that state on first paint. For most use cases — the
+`createViewState` restores that state on first paint. For most use cases, the
 declarative `init` field above is easier to author by hand. Reach for the full
 `defaultSession` when you need finer control over per-track display settings, or
 when you're round-tripping a session exported from JBrowse Web.
@@ -317,11 +317,11 @@ graphically in the main JBrowse Web app and export it:
 - Drop the file into your app and pull out the view:
 
 ```js
-import session from './session.json'
+import sessionJson from './session.json'
 
 const defaultSession = {
   name: 'My session',
-  view: session.session.views[0],
+  view: sessionJson.session.views[0],
 }
 ```
 

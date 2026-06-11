@@ -1042,9 +1042,11 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 35000,
   },
 
-  // CRAM modifications + bedmethyl together: zoomed to ~475bp so the COLO829
-  // nanopore reads' per-base CpG methylation calls (colorBy methylation) line up
-  // with the modkit bedmethyl summary track rendered as a MultiQuantitativeTrack.
+  // CRAM modifications + bedmethyl together: a wider ~5kb window (reviewer: zoom
+  // out) so the COLO829 nanopore reads' per-base CpG methylation calls (colorBy
+  // methylation) line up with the modkit bedmethyl summary track. The bedmethyl
+  // MultiQuantitativeTrack is forced to a 0-100 domain since modkit outputs
+  // methylation as a percentage (reviewer), with a slightly shorter track.
   {
     mode: 'url',
     name: 'methylation/colo829_cram_and_bedmethyl',
@@ -1053,9 +1055,17 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr20:10,000,000-10,000,475',
+          loc: 'chr20:9,998,000-10,003,000',
           tracks: [
-            'COLO829_tumor.ht_modkit.bed_multi',
+            {
+              trackId: 'COLO829_tumor.ht_modkit.bed_multi',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                minScore: 0,
+                maxScore: 100,
+                height: 150,
+              },
+            },
             {
               trackId: 'COLO829_tumor.ht',
               displaySnapshot: {

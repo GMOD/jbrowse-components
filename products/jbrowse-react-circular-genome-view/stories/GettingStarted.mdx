@@ -3,7 +3,7 @@ import { Volvox, ShowTrack, Human } from './JBrowseCircularGenomeView.stories'
 
 <Meta title="Getting Started" />
 
-# Welcome
+# @jbrowse/react-circular-genome-view2
 
 This is the [Storybook](https://storybook.js.org/) for
 [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2),
@@ -55,8 +55,9 @@ under [docs/models](https://jbrowse.org/jb2/docs/models/) (e.g.
 
 ## Opening tracks programmatically
 
-`createViewState` returns an object with a `showTrack(trackId)` method. Calling
-it after construction is often simpler than crafting a `defaultSession`.
+`createViewState` returns a state object; call `state.session.view.showTrack(trackId)`
+after construction to open a track programmatically — often simpler than crafting
+a `defaultSession`.
 
 <Canvas of={ShowTrack} />
 

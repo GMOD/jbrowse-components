@@ -71,8 +71,9 @@ to see it:
 
 ### Loading a plugin from a URL at runtime
 
-If you don't want to bundle a plugin, fetch it at runtime with `loadPlugins` and
-pass the resulting classes to `createViewState`:
+If you don't want to bundle a plugin, fetch it at runtime with `loadPlugins`,
+which returns `{ plugin, pluginMetadata }[]`, and pass the plugin classes to
+`createViewState`:
 
 ```js
 import { loadPlugins, createViewState } from '@jbrowse/react-app2'

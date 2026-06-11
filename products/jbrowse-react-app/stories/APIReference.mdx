@@ -14,7 +14,7 @@ createViewState({
   config, // required — full app config (same format as jbrowse-web config.json)
   plugins, // PluginConstructor[] — inline or imported plugin classes
   makeWorkerInstance, // () => Worker — web worker factory for WebWorker RPC
-  onChange, // (patch, reversePatch) => void — called on every MST patch
+  onChange, // (patch, reversePatch) => void — patch is the change applied; reversePatch undoes it (useful for undo/redo stacks)
 })
 ```
 
