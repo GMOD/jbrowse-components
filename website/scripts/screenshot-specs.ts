@@ -2033,18 +2033,45 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'methylation/arabidopsis_chh',
-    url: '?config=test_data/arabidopsis_methylation/config.json&sessionName=Screenshot',
+    // ONT 5mC/5hmC per-read modifications (MM/ML), colored by methylation.
+    // Must stay within the 50kb local reference (NC_003070.9 is only 50kb here)
+    // so the cytosine context can be resolved. 16-18kb is a heavily CHH-methylated
+    // RdDM/TE region (~38% CHH by EM-seq, vs ~5% genome-wide), so methylated sites
+    // actually render — the old "only blue" was the colorBySetting field bug, not
+    // the region.
+    url: sessionSpec('test_data/arabidopsis_methylation/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'arabidopsis',
+          loc: 'NC_003070.9:16,000-18,000',
+          tracks: [
+            {
+              trackId: 'arabidopsis_meth',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                colorBy: {
+                  type: 'methylation',
+                  modifications: { cytosineContext: 'CHH' },
+                },
+              },
+            },
+          ],
+        },
+      ],
+    }),
     readyText: 'NC_003070',
-    settleMs: 9000,
+    readyTimeout: 60000,
+    settleMs: 12000,
   },
   {
     mode: 'url',
     name: 'methylation/arabidopsis_bisulfite_chh',
-    // The config's defaultSession sits at 50-53kb, which is mostly unmethylated.
-    // A CHH-methylation scan of the EM-seq reads (C-retention at reference CHH
-    // cytosines) ranked NC_003070.9:144,001-146,000 highest (~61% mean CHH
-    // methylation, 277 sites, ~2000x), so navigate there with the bisulfite CHH
-    // coloring to show an actually-methylated region.
+    // The local reference NC_003070.9 is only 50kb, so the region must stay
+    // within it for bisulfite to resolve cytosine context (the old 144kb loc was
+    // beyond the reference -> no context -> only blue). A C-retention scan of the
+    // EM-seq reads ranked 16-18kb highest (~38% mean CHH methylation, an
+    // RdDM/TE-rich patch), so navigate there to show actually-methylated CHH.
     url: sessionSpec(
       'test_data/arabidopsis_methylation/config_emseq_bisulfite.json',
       {
@@ -2052,13 +2079,13 @@ export const specs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'arabidopsis',
-            loc: 'NC_003070.9:144,001-146,000',
+            loc: 'NC_003070.9:16,000-18,000',
             tracks: [
               {
                 trackId: 'arabidopsis_emseq',
                 displaySnapshot: {
                   type: 'LinearAlignmentsDisplay',
-                  colorBySetting: {
+                  colorBy: {
                     type: 'bisulfite',
                     modifications: { cytosineContext: 'CHH' },
                   },

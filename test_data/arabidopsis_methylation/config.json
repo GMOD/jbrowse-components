@@ -59,13 +59,13 @@
         "type": "LinearGenomeView",
         "init": {
           "assembly": "arabidopsis",
-          "loc": "NC_003070.9:15,500-18,000",
+          "loc": "NC_003070.9:16,000-18,000",
           "tracks": [
             {
               "trackId": "arabidopsis_meth",
               "displaySnapshot": {
                 "type": "LinearAlignmentsDisplay",
-                "colorBySetting": {
+                "colorBy": {
                   "type": "methylation",
                   "modifications": { "cytosineContext": "CHH" }
                 }
