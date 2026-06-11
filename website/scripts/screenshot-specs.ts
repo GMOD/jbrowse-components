@@ -1159,22 +1159,6 @@ export const specs: ScreenshotSpec[] = [
     crop: { x: 0, y: 0, width: 1500, height: 390 },
   },
 
-  // Curated: this shared session rendered correctly at the old 1280px viewport,
-  // but at 1500px each breakpoint panel spans ~17% more bp, pushing the PacBio
-  // CRAM past the "too much data" threshold so it force-loads instead of drawing
-  // the reads + connecting splines the caption describes. The committed PNG is
-  // the pre-regen capture; re-sharing the session at a tighter zoom would let
-  // this autogen again.
-  {
-    mode: 'url',
-    curated: true,
-    name: 'skbr3_translocation',
-    url: 'https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l',
-    readyText: 'SKBR3',
-    readyTimeout: 60000,
-    settleMs: 12000,
-  },
-
   {
     mode: 'url',
     name: 'smalldel',

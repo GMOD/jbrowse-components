@@ -50,9 +50,19 @@ To start the `admin-server`, navigate into your JBrowse 2 directory and run:
 jbrowse admin-server
 ```
 
-This generates a link you can visit in your web browser:
+This prints a link you can visit in your web browser:
 
-<Figure caption="JBrowse CLI admin-server output showing the access link." src="/img/admin_server.png"/>
+```
+Admin server started on port 9090
+
+To access the admin interface, open your browser to:
+http://localhost:9090?adminKey=a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+
+Admin key: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+Config file: /path/to/config.json
+
+To stop the server, press Ctrl+C
+```
 
 ## Adding a genome assembly
 
@@ -133,13 +143,10 @@ Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
 First, open a Linear Genome View, and click on the "Select Tracks" button.
 
 The configuration settings are accessible by clicking the three-dot (...) menu
-on each track.
-
-<Figure caption="The configuration editor, which will persist settings to the config file if editing using the admin-server." src="/img/admin_settings_access.png"/>
-
-Open the configuration editor for the track by clicking on the "Settings" button
-shown above. You can use the configuration editor to live-edit any configurable
-value for a given track.
+on each track. Open the configuration editor for the track by clicking on the
+"Settings" button in that menu. You can use the configuration editor to
+live-edit any configurable value for a given track, and changes are persisted to
+the config file when editing through the admin-server.
 
 ## Setting a default session
 

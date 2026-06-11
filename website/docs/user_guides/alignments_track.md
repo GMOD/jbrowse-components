@@ -97,7 +97,6 @@ alignments track can color reads by modification. Two modes are available:
 
 <Figure caption="Access modifications/methylation coloring from the track menu." src="/img/alignments/modifications1.png" />
 <Figure caption="Screenshot showing the same track in both modifications mode and methylation mode. This is a hypo-methylated CpG island (there are no methylation marks in a CpG island)" src="/img/alignments/modifications2.png" />
-<Figure caption="After the setting has been enabled you can revisit the dialog box to see the current coloring settings." src="/img/alignments/modifications3.png" />
 
 ### Color by strand
 

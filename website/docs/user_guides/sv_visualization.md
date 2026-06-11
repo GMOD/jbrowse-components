@@ -166,9 +166,8 @@ signature.
 - With paired arcs or linked reads enabled, reads with mates on a different
   chromosome are colored **purple**; in the pileup they appear **dark grey**
 - A cluster of such reads at a locus marks one end of a translocation; open the
-  breakpoint split view from the feature details to see both ends at once
-
-<Figure caption="SKBR3 PacBio translocation in the breakpoint split view. The top panel shows one breakpoint locus (~chr1:229 Mb) and the bottom shows the other (~chr1:137 Mb). Black splines connect supporting reads across the two panels; the green diagonal line with arrowheads is the SV call. The density of splines is proportional to the number of spanning reads." src="/img/skbr3_translocation.png" />
+  [breakpoint split view](#breakpoint-split-view) from the feature details to
+  see both ends at once
 
 ## Paired arcs
 
