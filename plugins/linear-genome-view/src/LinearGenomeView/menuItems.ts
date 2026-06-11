@@ -244,7 +244,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Overlapping',
           icon: VisibilityIcon,
           type: 'radio',
-          checked: self.trackLabelsSetting === 'overlapping',
+          checked: self.trackLabels === 'overlapping',
           onClick: () => {
             self.setTrackLabels('overlapping')
           },
@@ -253,7 +253,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Offset',
           icon: VisibilityIcon,
           type: 'radio',
-          checked: self.trackLabelsSetting === 'offset',
+          checked: self.trackLabels === 'offset',
           onClick: () => {
             self.setTrackLabels('offset')
           },
@@ -262,7 +262,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Hidden',
           icon: VisibilityIcon,
           type: 'radio',
-          checked: self.trackLabelsSetting === 'hidden',
+          checked: self.trackLabels === 'hidden',
           onClick: () => {
             self.setTrackLabels('hidden')
           },

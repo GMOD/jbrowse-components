@@ -238,7 +238,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for
          * how conf is used
          */
-        trackLabels: types.optional(
+        trackLabelsOverride: types.optional(
           types.string,
           () => localStorageGetItem('lgv-trackLabels') ?? '',
         ),
@@ -398,15 +398,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * this is the effective value of the track labels setting, incorporating
-       * both the config and view state. use this instead of view.trackLabels
+       * the effective track labels setting, resolving the stored
+       * `trackLabelsOverride` against the LinearGenomeViewPlugin config default
        */
-      get trackLabelsSetting() {
+      get trackLabels() {
         const sessionSetting = getConf(getSession(self), [
           'LinearGenomeViewPlugin',
           'trackLabels',
         ])
-        return self.trackLabels || sessionSetting
+        return self.trackLabelsOverride || sessionSetting
       },
       /**
        * #getter
@@ -1112,7 +1112,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
-        self.trackLabels = setting
+        self.trackLabelsOverride = setting
       },
 
       /**
@@ -2143,12 +2143,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      const { highlight, ...rest } = snap
+      // `trackLabels` was renamed to `trackLabelsOverride` (the bare
+      // `trackLabels` is now the resolved getter); map legacy snapshots forward.
+      const { highlight, trackLabels, ...rest } = snap
       return {
         highlight:
           Array.isArray(highlight) || highlight === undefined
             ? highlight
             : [highlight],
+        ...(trackLabels ? { trackLabelsOverride: trackLabels } : {}),
         ...rest,
       }
     })
@@ -2161,7 +2164,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         init,
         showCenterLine,
         showCytobandsSetting,
-        trackLabels,
+        trackLabelsOverride,
         colorByCDS,
         showTrackOutlines,
         scrollZoom,
@@ -2172,7 +2175,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...rest,
         ...(showCenterLine ? { showCenterLine } : {}),
         ...(!showCytobandsSetting ? { showCytobandsSetting } : {}),
-        ...(trackLabels ? { trackLabels } : {}),
+        ...(trackLabelsOverride ? { trackLabelsOverride } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
         ...(scrollZoom ? { scrollZoom } : {}),

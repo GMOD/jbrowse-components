@@ -62,7 +62,7 @@ export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
        */
       get scalebarOverlapLeft() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (view.trackLabelsSetting === 'overlapping') {
+        if (view.trackLabels === 'overlapping') {
           const track = getContainingTrack(self)
           return measureText(getConf(track, 'name'), 12.8) + 100
         }

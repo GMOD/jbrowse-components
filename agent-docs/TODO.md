@@ -1,9 +1,13 @@
 # TODO — action items
 
-Concrete, actionable work. Fanciful / exploratory directions live in
-[OTHER_IDEAS.md](OTHER_IDEAS.md). Stable reference docs: [PRD.md](PRD.md),
-[ARCHITECTURE.md](ARCHITECTURE.md), [CONFIG_PATTERN.md](CONFIG_PATTERN.md),
-[VIEW_INIT.md](VIEW_INIT.md), [TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md).
+Work to **build or fix** lives here. Items that only need a **browser smoke test
+or manual confirmation** are gathered under [Pending verification](#pending-verification)
+— and *how* to run those tests lives in
+[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md), not here.
+
+Fanciful / exploratory directions live in [OTHER_IDEAS.md](OTHER_IDEAS.md).
+Stable reference docs: [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md),
+[CONFIG_PATTERN.md](CONFIG_PATTERN.md), [VIEW_INIT.md](VIEW_INIT.md).
 
 ## Quick items
 
@@ -28,64 +32,31 @@ Concrete, actionable work. Fanciful / exploratory directions live in
 
 ## Active plans
 
-### Arc renderer removal (LinearArcDisplay)
+### Drop CoreRender from BaseDisplayModel (deferred follow-up)
 
-Drop `plugins/arc/src/ArcRenderer/` and run `LinearArcDisplay` through the same
-direct whole-view fetch + SVG path `LinearPairedArcDisplay` already uses (part of
-"renderer concept goes away with the webgl refactor"). Templates: copy
-`LinearPairedArcDisplay`'s `model.ts` / `fetchChains.ts` / `afterAttach.tsx` /
-`components/Arcs.tsx` / `components/ReactComponent.tsx`; compose
-`BaseDisplay + TrackHeightMixin + FeatureDensityMixin` (drop `BaseLinearDisplay`).
+Arc displays are now off the renderer concept (LinearArcDisplay + PairedArc both
+direct whole-view fetch + SVG), but `BaseDisplayModel` still carries
+`rendererTypeName`/`rendererType` because `LinearBareDisplay`,
+`LinearAlignmentsDisplay`, and `BaseLinearDisplay` remain live `CoreRender`
+consumers. Once those migrate off server-side block rendering, drop
+`rendererTypeName`/`rendererType` from `BaseDisplayModel` and tighten/delete
+`CoreRender`/`CoreGetFeatureDetails`.
 
-- Inline ArcRenderer's config slots (`color`, `thickness`, `label`, `height`,
-  `caption`, `displayMode`) into `LinearArcDisplay/configSchema.ts`; drop the
-  `renderer` slot.
-- Pull semicircle/bezier path logic (`getSemicirclePath`/`getBezierPath`) from the
-  old `ArcRenderer/ArcRendering.tsx` into the new single-feature `Arcs.tsx`.
-- Delete `ArcRenderer/` + its `ArcRendererF` registration + the snapshot test.
-- **Latent bug to fix in passing:** `LinearPairedArcDisplay/model.ts` still reads
-  the stale `getConf(self, ['renderer', 'displayMode'])` after PairedArc lost its
-  `renderer` slot. Correct: `self.displayMode ?? getConf(self, 'displayMode')`.
-- Verify: tsgo, `pnpm test plugins/arc`, browser smoke (arcs + semicircles modes,
-  tooltip, color/thickness config edits).
-- Deferred follow-up: `LinearBareDisplay/model.ts` is the other live-CoreRender
-  consumer; once both migrate, drop `rendererTypeName`/`rendererType` from
-  `BaseDisplayModel` and tighten/delete `CoreRender`/`CoreGetFeatureDetails`.
-
-### MAF UCSC parity — Stage 2 + verification
+### MAF UCSC parity — Stage 2
 
 Stage 1 done (e/i line parse+render via Canvas2D overlay; index-based data-volume
 gate). The `bigMafSummary` zoom-out machinery has **largely landed** (swappable
 `summaryAdapter` frozen sub-adapter slot on `BigMafAdapter`, `LinearMafGetSummaryData`
-RPC, `summaryBars` overlay, real fixture `cactus447way.summary.bb`) but is unverified
-and incomplete:
+RPC, `summaryBars` overlay, real fixture `cactus447way.summary.bb`) but is
+incomplete. Remaining build work:
 
-- **Browser-verify the summary path** — pixels + the summary↔detail mode switch
-  against a real summary-configured track (hg38 multiz470way / cactus447way).
-  Species `src` must match configured `samples[].id` (`rowIndexBySrc` drops
-  non-matches silently → blank bars, not a crash). First thing to check if zoom-out
-  renders blank.
-- **Browser-verify e-lines** — parsing/rendering are unit-tested only; no e/i
-  fixture in repo (volvox=MafTabix, evolverMammals=TAF, neither carries e/i). Point
-  a track at a real UCSC multiz/cactus `.bb`.
 - **Coverage band at summary zoom** — currently empty (reads alignment `rpcDataMap`,
   cleared in summary mode). Wire species-count depth, ideally from bigBed zoom levels.
 - Deferred: q-line (quality) rendering; e/i for MafTabix/TAF (needs encoding+tooling
   changes, not just viewer).
-- Verify: `pnpm test plugins/maf plugins/bed`, tsgo, eslint.
 
-### DisplayChrome — browser smoke tests
-
-Unification landed (10/10 LGV GPU displays on `DisplayChrome`; competing wrappers
-deleted; testid `-done` + view-in-model leak both DONE). Remaining is browser
-confirmation of jsdom-only behavior changes:
-
-- **Variant force-load cycle** (highest value): zoom to too-large on multi-variant /
-  variant-matrix → force load → canvas re-renders cleanly (no blank/detached canvas).
-  Proves the old `visibility:hidden` special-casing was artificial (ADR-025).
-- **Loading overlay timing**: shows on pan/zoom fetch, hides on first paint; LD with
-  triangle toggled off shows NO overlay (empty-state, fetches nothing).
-- Run `products/jbrowse-web/browser-tests` GPU-display tests, diff goldens.
+The summary path and e-lines also need a browser pass — see
+[Pending verification](#pending-verification).
 
 ### UCSC multi-genome hub: auto-add missing assemblies (bug)
 
@@ -103,27 +74,6 @@ loads **zero tracks**. The single-file branch already does the right thing
 - Add a test in `AddConnectionWidget.test.tsx` (multi-genome hub, no preloaded
   assembly → assembly + tracks added). JB2 connection auto-adds assemblies too —
   another reference for the UX.
-
-### Cross-product model-type audit — P2/P3/P4
-
-P1 (root models) done: all three roots compile-time-checked against contracts,
-undo/redo menu items deduplicated, thin `BaseWebRootModel` deliberately skipped.
-Apply the same lens (cross-product duplication, `XConfigModel` naming convention,
-do NOT relitigate the `self as typeof s & BaseSession` cast) to:
-
-- **P2 config models** (next; bounded): `product-core/RootModel/createConfigModel.ts`
-  + the two react products' `createConfigModel.ts`. Look for `getParent<any>` vs the
-  typed `JBrowseModelParent`, shareable config getters, named `…ConfigModel` aliases.
-- **P3 view models** (read-only consistency audit): confirm each of the 19 repo-wide
-  `as typeof s & …` casts is the sanctioned equilibrium; flag any view that split
-  `.views()`/`.actions()` across files.
-- **P4 displays/connections/internet-accounts/widgets**: typed-reads is a known dead
-  end for displays — audit the `<name>Override` field / bare `<name>` getter
-  convention across the ~28 `getConfWithOverride` sites instead.
-- **react-app contract gap (needs a decision):** react-app's root satisfies neither
-  web contract — its `BaseWebSession` delegates `history` + 5 session-DB actions to a
-  root that lacks them (works today only because the embedded use never invokes them).
-  Options: A harden (add mixins/stubs), B split the contract, C document only.
 
 ### Typed config reads — opportunistic adapter rollout
 
@@ -150,19 +100,9 @@ gccontent, maf, config). Do the rest opportunistically when touching the file:
 
 ### View init — known warts (see VIEW_INIT.md)
 
-- `highlight` field leaks the wire format — accept `(string | HighlightType)[]`.
-- Consolidate the duplicated InitState field list across its ~6 definition sites.
-- `createViewState` drops `highlight` when `location` is absent — preserve it.
-- Replace the `tracklist` 500ms width-race timeout with real settling logic.
-
-### Screenshot review — final cleanup
-
-Review loop nearly closed (fixes done + verified). Remaining:
-
-- Re-review changed shots; run `pnpm review-screenshots-web` to clear verdicts.
-- Light caption pass on stale text in `dotplot_view.md:18` and
-  `sv_visualization_cgiab.md:246`.
-- Open judgment calls: multisv, skbr3_translocation, inverted_duplication captions.
+- The URL wire layer (`buildJb1SessionSpec` + `SessionLoader.ts` props) duplicates
+  the param list; it's all-string by nature so it can't share `InitState`'s types.
+  Low value — the type sites are already compile-checked against `InitState`.
 
 ### Track/Display cleanup (deferred)
 
@@ -172,7 +112,44 @@ track-type alias mechanism in `pluggableMstType` + a back-compat test for loadin
 `BasicTrack` from saved sessions first. Deprioritized — revisit only if the alias
 mechanism gets built.
 
-## Known issues to verify
+## Pending verification
+
+Scenarios that need a **browser smoke test or manual pass** — the code is written;
+this is confirmation, not new work. Test invocation, wait signals, and backend flags
+are all in [TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md).
+
+### Arc renderer removal
+
+Arcs + semicircles modes render, tooltip works, color/thickness config edits apply
+(`pnpm test plugins/arc` covers the unit side).
+
+### MAF summary path (`bigMafSummary` landed, unverified)
+
+- **Summary path pixels + the summary↔detail mode switch** against a real
+  summary-configured track (hg38 multiz470way / cactus447way). Species `src` must
+  match configured `samples[].id` (`rowIndexBySrc` drops non-matches silently → blank
+  bars, not a crash) — first thing to check if zoom-out renders blank.
+- **e-lines** — parsing/rendering are unit-tested only; no e/i fixture in repo
+  (volvox=MafTabix, evolverMammals=TAF, neither carries e/i). Point a track at a real
+  UCSC multiz/cactus `.bb`.
+
+### DisplayChrome (unification landed; confirm jsdom-only changes)
+
+- **Variant force-load cycle** (highest value): zoom to too-large on multi-variant /
+  variant-matrix → force load → canvas re-renders cleanly (no blank/detached canvas).
+  Proves the old `visibility:hidden` special-casing was artificial (ADR-025).
+- **Loading overlay timing**: shows on pan/zoom fetch, hides on first paint; LD with
+  triangle toggled off shows NO overlay (empty-state, fetches nothing).
+- Run the `browser-tests` GPU-display suites and diff goldens.
+
+### Screenshot review — final cleanup
+
+- Re-review changed shots; run `pnpm review-screenshots-web` to clear verdicts.
+- Light caption pass on stale text in `dotplot_view.md:18` and
+  `sv_visualization_cgiab.md:246`.
+- Open judgment calls: multisv, skbr3_translocation, inverted_duplication captions.
+
+### Known issues to confirm
 
 | Issue                             | Status               |
 | --------------------------------- | -------------------- |
@@ -191,3 +168,5 @@ mechanism gets built.
   subscribes to the whole frozen `rpcProps` object; destructuring label fields out
   doesn't help). Partial mitigation via ADR-006: refetch still fires but
   `rawRpcDataMap` is no longer cleared, so labels don't visually disappear.
+</content>
+</invoke>

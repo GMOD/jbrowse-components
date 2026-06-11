@@ -12,6 +12,13 @@ import { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
+// This config model lives at rootModel.jbrowse, so its MST parent is the root
+// model; this is the slice it reaches for. Mirrors app-core's JBrowseModelParent
+// — a typed contract in place of getParent<any>.
+interface ConfigModelParent {
+  rpcManager: RpcManager
+}
+
 export function createConfigModel(
   pluginManager: PluginManager,
   assemblyConfigSchemasType: IAnyType,
@@ -50,7 +57,7 @@ export function createConfigModel(
         return readConfObject(self.assembly, 'name')
       },
       get rpcManager() {
-        return getParent<{ rpcManager: RpcManager }>(self).rpcManager
+        return getParent<ConfigModelParent>(self).rpcManager
       },
     }))
 }

@@ -51,7 +51,7 @@ const TrackContainer = observer(function TrackContainer({
   const display = track.displays[0]
   const { showTrackOutlines } = model
   const trackLabelStyle =
-    model.trackLabelsSetting !== 'overlapping' || display.prefersOffset
+    model.trackLabels !== 'overlapping' || display.prefersOffset
       ? classes.trackLabelOffset
       : classes.trackLabelOverlap
 
@@ -66,7 +66,7 @@ const TrackContainer = observer(function TrackContainer({
     >
       {/* offset 1px since for left track border */}
       {track.pinned ? <Gridlines model={model} offset={1} /> : null}
-      {model.trackLabelsSetting !== 'hidden' ? (
+      {model.trackLabels !== 'hidden' ? (
         <TrackLabel
           track={track}
           className={cx(classes.trackLabel, trackLabelStyle)}
