@@ -130,9 +130,8 @@ for background. Assuming standard `fr` (Illumina) pairs:
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
-<Figure caption="An inverted duplication, where pair-orientation coloring highlights reads whose mates point in unexpected directions. See the SV visualization guide for an interpreted example." src="/img/inverted_duplication.png" />
-
-<Figure caption="The same inverted duplication shown at a normal (non-compact) feature height, where individual read pairs and their orientation coloring are easier to follow." src="/img/inverted_duplication/normal_height.png" />
+For a worked example of pair-orientation coloring on a real structural variant,
+see the [SV visualization guide](/docs/user_guides/sv_visualization).
 
 ### Color by insert size
 

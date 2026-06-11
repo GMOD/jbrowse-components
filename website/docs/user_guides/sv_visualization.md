@@ -76,7 +76,7 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
-<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) with two overlapping orientation signals. Teal reads are RL-oriented (mates pointing away from each other, as if ← →), a signature of tandem duplication. Green LL reads (→→) and dark blue RR reads (←←) point the same direction, a signature of an inversion. The feature details panel on the right confirms the variant is classified as INVdup." src="/img/inverted_duplication.png" />
+<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) with two overlapping orientation signals, shown twice: a compact overview (top frame) and the same locus at the normal feature height (bottom frame), where individual read pairs and their orientation colors are easier to follow. Teal reads are RL-oriented (mates pointing away from each other, as if ← →), a signature of tandem duplication. Green LL reads (→→) and dark blue RR reads (←←) point the same direction, a signature of an inversion. The orientation-colored reads are a minority of the pileup — most pairs are concordant LR (light grey) — so they cluster at the breakpoints rather than filling the view." src="/img/inverted_duplication.png" />
 
 ### Insert size color scheme
 

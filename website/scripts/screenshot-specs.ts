@@ -336,6 +336,9 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearWiggleDisplay',
                 autoscale: 'localsd',
                 numStdDev: 3,
+                // scatter rendering reads copy-number gains/losses better than
+                // the filled XY plot across the whole genome (reviewer request)
+                defaultRendering: 'scatter',
               },
             },
           ],
@@ -390,15 +393,15 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
-  // Realistic arc display: SKBR3 breast-cancer cell line at a chr1→chr14
-  // translocation breakpoint (sniffles call 596_2, ~chr1:9,121,448). The PacBio
-  // sniffles SV calls sit on top; the Illumina paired-end reads below, drawn with
-  // readConnections:'arc', arc to their mates — concordant pairs make small grey
-  // arcs while the discordant pairs spanning the translocation draw the prominent
-  // red arcs that make the figure meaningful. (The reviewer's suggested chr1:72Mb
-  // locus only carries small indels, so this nearby real translocation is used
-  // instead.) Window kept under AUTO_FORCE_LOAD_BP (20kb) so the high-coverage
-  // CRAM loads without a force-load click. Remote DEMO_CONFIG data, slow to load.
+  // Realistic arc display on HG002 (reviewer asked for HG002 Illumina reads +
+  // HG002 SV calls instead of SKBR3). The window is centered on a ~1.4 kb GIAB
+  // Tier-1 deletion at chr1:1,285,401-1,286,800: HG002 Illumina 2x250 pairs that
+  // span the deletion get a larger-than-expected insert size, so readConnections:
+  // 'arc' draws them as the long red discordant arcs over the deletion while
+  // concordant pairs stay small grey arcs. The HG002 GIAB consensus SV VCF sits
+  // on top so the called deletion lines up with the arc signature. Window kept
+  // under AUTO_FORCE_LOAD_BP (20kb) so the BAM loads without a force-load click.
+  // Remote DEMO_CONFIG data, slow to load.
   {
     mode: 'url',
     name: 'alignments/arc_display',
@@ -407,12 +410,11 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: 'chr1:9,113,000-9,130,000',
+          loc: 'chr1:1,283,500-1,288,700',
           tracks: [
-            'breast_cancer_sniffles_hg19',
+            'variants_hg002',
             {
-              trackId:
-                'SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram',
+              trackId: 'illumina_hg002',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'arc',
@@ -422,7 +424,7 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'SKBR3',
+    readyText: 'HG002 Illumina',
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -578,7 +580,8 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'volvox',
-          loc: 'ctgA:2615-2725',
+          // zoomed in toward the soft-clip breakpoint (reviewer request)
+          loc: 'ctgA:2670-2730',
           tracks: [
             {
               trackId: 'volvox-long-reads-sv-bam',
@@ -592,6 +595,8 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
+    // narrower window keeps the breakpoint in focus (reviewer request)
+    viewportWidth: 900,
     settleMs: 4000,
     stages: [
       {
@@ -781,12 +786,23 @@ export const specs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearSyntenyView',
-          tracks: ['grape_peach_synteny_tblastx'],
-          // the subset peach_vs_grape.tsv only contains Pp05<->grape chr18
-          // alignments, so this is the region pair that actually draws ribbons
+          // full minimap2 grape/peach alignment gives the dense X-crossing red
+          // ribbon bundle between peach Pp05 and grape chr2 that the origin/main
+          // figure showed
+          tracks: ['peach_grape_minimap2'],
+          // also open the synteny track in each sub-view so the alignment blocks
+          // render as rows in both panels (matches origin/main figure)
           views: [
-            { loc: 'Pp05:1-1100000', assembly: 'peach' },
-            { loc: 'chr18:1-1000000', assembly: 'grape' },
+            {
+              loc: 'Pp05:7380181-13912038',
+              assembly: 'peach',
+              tracks: ['peach_grape_minimap2'],
+            },
+            {
+              loc: 'chr2:1-6826262',
+              assembly: 'grape',
+              tracks: ['peach_grape_minimap2'],
+            },
           ],
         },
       ],
@@ -827,10 +843,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Center line, two-stage figure: top frame opens the LGV view menu's "Show..."
-  // submenu with "Show center line" boxed; bottom frame closes the menu to show
-  // the resulting center line over the pileup. Both frames use the same region
-  // (replaces the old separate alignments_center_line_menu screenshot).
+  // Center line over the pileup (single static frame; the reviewer found the
+  // two-stage menu+result version unnecessary — the plain center-line shot is
+  // enough to illustrate the feature).
   {
     mode: 'url',
     name: 'alignments_center_line',
@@ -850,30 +865,6 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 650,
     settleMs: 4000,
-    stages: [
-      {
-        actions: [
-          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          { type: 'delay', ms: 500 },
-          { type: 'hover', text: 'Show...' },
-          { type: 'waitForText', text: 'Show center line' },
-          { type: 'delay', ms: 300 },
-          { type: 'hover', text: 'Show center line' },
-          { type: 'delay', ms: 500 },
-        ],
-        annotations: [{ type: 'box', anchor: { text: 'Show center line' } }],
-      },
-      {
-        // click the location box to dismiss the menu before the result frame
-        actions: [
-          {
-            type: 'click',
-            selector: 'input[placeholder="Search for location"]',
-          },
-          { type: 'delay', ms: 1500 },
-        ],
-      },
-    ],
   },
 
   // Sort by base at a SNP, showing the right-click workflow (reviewer wanted the
@@ -910,6 +901,9 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
+    // narrower window (reviewer request); the rightclick x below is recomputed
+    // for this width — the SNP at ctgA:14481 sits at ~0.51 of the 107bp region
+    viewportWidth: 1100,
     settleMs: 5000,
     hideTooltip: true,
     // two-stage: top frame is the right-click "SNP/Mismatch → Sort by base at
@@ -918,7 +912,7 @@ export const specs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          { type: 'rightclick', from: { x: 758, y: 272 } },
+          { type: 'rightclick', from: { x: 550, y: 272 } },
           { type: 'waitForText', text: 'SNP/Mismatch' },
           { type: 'delay', ms: 300 },
           { type: 'hover', text: 'SNP/Mismatch' },
@@ -931,11 +925,15 @@ export const specs: ScreenshotSpec[] = [
       },
       {
         actions: [
-          {
-            type: 'click',
-            selector: 'input[placeholder="Search for location"]',
-          },
-          { type: 'delay', ms: 1500 },
+          // actually perform the sort by clicking the boxed menu item so the
+          // bottom frame teaches cause→effect (and isn't a stale preset that
+          // restored unsorted); the click closes the menu
+          { type: 'click', text: 'Sort by base at position' },
+          { type: 'waitForText', text: 'Sort by base at position', hidden: true },
+          // move the pointer off the pileup so no hover tooltip lingers, then
+          // let the re-sort settle and repaint
+          { type: 'hover', from: { x: 200, y: 100 } },
+          { type: 'delay', ms: 2500 },
         ],
       },
     ],
@@ -971,7 +969,18 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: 'chr8:50,366,343-61,321,733',
-          tracks: ['ncbi_gff_hg19', 'hic'],
+          tracks: [
+            {
+              trackId: 'ncbi_gff_hg19',
+              // hide gene descriptions so the gene track stays compact next to
+              // the Hi-C display (reviewer request)
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                showDescriptions: false,
+              },
+            },
+            'hic',
+          ],
         },
       ],
     }),
@@ -1094,11 +1103,12 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Whole-genome CNV: COLO829 melanoma tumor (red) vs matched normal (blue)
-  // coverage as a single multi-quantitative bigWig track, shown at chromosome
-  // scale (no `loc` → showAllRegionsInAssembly) with localsd ±3sd autoscale so
-  // copy-number gains/losses stand out. Rebuilt from the old server-side share
-  // link as a self-contained sessionSpec/MultiWiggleAdapter over the two COLO829
+  // Whole-genome CNV: COLO829 melanoma tumor vs matched normal coverage as a
+  // single multi-quantitative bigWig track, shown at chromosome scale (no `loc`
+  // → showAllRegionsInAssembly) with localsd ±3sd autoscale so copy-number
+  // gains/losses stand out. The two sources use the default multiwiggle palette
+  // (no explicit per-source colors). Rebuilt from the old server-side share link
+  // as a self-contained sessionSpec/MultiWiggleAdapter over the two COLO829
   // coverage bigWigs in config_demo.json.
   {
     mode: 'url',
@@ -1116,7 +1126,6 @@ export const specs: ScreenshotSpec[] = [
               {
                 type: 'BigWigAdapter',
                 source: 'COLO829 tumor',
-                color: 'red',
                 bigWigLocation: {
                   uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw',
                   locationType: 'UriLocation',
@@ -1125,7 +1134,6 @@ export const specs: ScreenshotSpec[] = [
               {
                 type: 'BigWigAdapter',
                 source: 'COLO829 normal',
-                color: 'blue',
                 bigWigLocation: {
                   uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_normal.bw',
                   locationType: 'UriLocation',
@@ -1146,6 +1154,10 @@ export const specs: ScreenshotSpec[] = [
                 type: 'MultiLinearWiggleDisplay',
                 autoscale: 'localsd',
                 numStdDev: 3,
+                defaultRendering: 'multiscatter',
+                // finer binning so the scatter resolves copy-number structure
+                // (reviewer request)
+                resolution: 5,
               },
             },
           ],
@@ -1203,13 +1215,50 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 20000,
   },
 
+  // Multi-sample variant display on the 1000 Genomes phase-3 SV ensemble callset
+  // (3202 samples) across chr19:42.7-47.8Mb, sorted by genotype at the large
+  // ~1.12Mb inversion HGSV_73318 (chr19:46,275,880-47,396,219, AF=0.238). Because
+  // this display draws variants at genomic position, the inversion renders as a
+  // wide band; after the sort, carrier samples cluster to the top so the band
+  // splits cleanly. Rebuilt from a share link as a declarative sessionSpec. The
+  // right-click lands at x~1130 (genomic ~46.55Mb), an inversion-only gap where no
+  // other SV overlaps, so the sort reliably targets the inversion. userByteSizeLimit
+  // lifts the 1MB tabix fetch gate so the 5Mb window auto-loads headless instead of
+  // showing a force-load prompt. Remote 1000genomes data, so allow a long ready/settle.
   {
     mode: 'url',
     name: 'multisv',
-    url: 'https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '19:42,749,096-47,802,386',
+          tracks: [
+            {
+              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantDisplay',
+                userByteSizeLimit: 100_000_000,
+                height: 700,
+              },
+            },
+          ],
+        },
+      ],
+    }),
     readyText: '1KGP',
-    readyTimeout: 60000,
-    settleMs: 15000,
+    readyTimeout: 90000,
+    viewportHeight: 850,
+    settleMs: 25000,
+    hideTooltip: true,
+    actions: [
+      { type: 'rightclick', from: { x: 1130, y: 450 } },
+      { type: 'waitForText', text: 'Sort by genotype' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Sort by genotype' },
+      { type: 'delay', ms: 6000 },
+    ],
   },
 
   {
@@ -1282,6 +1331,9 @@ export const specs: ScreenshotSpec[] = [
   // VCF call.
   // loc shifted ~600bp right so HGSV_2721 (near right of original range) sits
   // centered in the panel-narrowed view after the feature sidebar opens.
+  // Two stacked views at the same locus form one combined figure: a compact
+  // overview (top, featureHeight 3) plus the normal feature height (bottom)
+  // where the orientation-colored read pairs are legible.
   {
     mode: 'url',
     name: 'inverted_duplication',
@@ -1307,24 +1359,6 @@ export const specs: ScreenshotSpec[] = [
             },
           ],
         },
-      ],
-    }),
-    readyText: 'HG02768',
-    readyTimeout: 60000,
-    viewportHeight: 1300,
-    settleMs: 25000,
-    actions: [
-      { type: 'click', selector: '[data-testid="feature-name-HGSV_2721"]' },
-      { type: 'delay', ms: 4000 },
-    ],
-  },
-
-  // Non-compact variant for side-by-side comparison with inverted_duplication.
-  {
-    mode: 'url',
-    name: 'inverted_duplication/normal_height',
-    url: kgUrl({
-      views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
@@ -1347,8 +1381,8 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    viewportHeight: 1250,
-    settleMs: 25000,
+    viewportHeight: 1850,
+    settleMs: 30000,
     actions: [
       { type: 'click', selector: '[data-testid="feature-name-HGSV_2721"]' },
       { type: 'delay', ms: 4000 },
@@ -1424,8 +1458,9 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Show all regions in assembly' },
       { type: 'delay', ms: 2000 },
     ],
-    // the import form is short; crop off the empty viewport below it
-    crop: { x: 0, y: 0, width: 1500, height: 175 },
+    // the import form is short; crop off the empty viewport below it, but
+    // keep enough height to show the form's helper text in full
+    crop: { x: 0, y: 0, width: 1500, height: 230 },
   },
 
   {
@@ -2121,22 +2156,25 @@ export const specs: ScreenshotSpec[] = [
 
   // Bookmark create, two-stage figure: top frame is the rubberband context menu
   // with "Bookmark region" boxed; bottom frame clicks it so the bookmarked
-  // region appears as a colored highlight across the view.
+  // region appears as a colored highlight across the view. Uses config_demo hg19
+  // over the PTEN gene (reviewer request) with a shorter viewport.
   {
     mode: 'url',
     name: 'bookmark_widget_create',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
+          assembly: 'hg19',
+          loc: 'chr10:89,613,000-89,740,000',
+          tracks: ['ncbi_gff_hg19'],
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 4000,
+    readyText: 'NCBI RefSeq',
+    readyTimeout: 60000,
+    viewportHeight: 560,
+    settleMs: 10000,
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
       { type: 'waitForText', text: 'Bookmark region' },
@@ -2173,7 +2211,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
     settleMs: 10000,
-    viewportHeight: 620,
+    viewportHeight: 520,
     actions: [
       // create a bookmark via rubberband
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
@@ -2560,8 +2598,14 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // MultiWig color/arrangement editor dialog, over the ENCODE multi-bigWig demo
-  // track (microarray_multi) from config_demo.json.
+  // MultiWig color/arrangement preset over the ENCODE multi-bigWig demo track
+  // (microarray_multi, 21 ENCODE bigWigs) from config_demo.json. The display
+  // `layout` is the TreeSidebarMixin frozen Source[] of {name,color} overrides
+  // (see packages/tree-sidebar/src/TreeSidebarMixin.ts; source names are the
+  // ENCFF* bigWig filenames, MultiWiggleAdapter.getFilename). Here it presets
+  // the first 3 sources red, the next 10 green, and the remaining 8 blue. Two
+  // stacked frames: the color/arrangement editor showing the per-source
+  // swatches, then the resulting red/green/blue-colored multi-wiggle track.
   {
     mode: 'url',
     name: 'multiwig/multi_colorselect',
@@ -2571,20 +2615,62 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: 'chr1:1,000,000-2,000,000',
-          tracks: ['microarray_multi'],
+          tracks: [
+            {
+              trackId: 'microarray_multi',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                height: 400,
+                layout: [
+                  { name: 'ENCFF055ZII', color: 'red' },
+                  { name: 'ENCFF826HEW', color: 'red' },
+                  { name: 'ENCFF858LIM', color: 'red' },
+                  { name: 'ENCFF425TNW', color: 'green' },
+                  { name: 'ENCFF207RBY', color: 'green' },
+                  { name: 'ENCFF289CTN', color: 'green' },
+                  { name: 'ENCFF884IEG', color: 'green' },
+                  { name: 'ENCFF495SBQ', color: 'green' },
+                  { name: 'ENCFF959EZF', color: 'green' },
+                  { name: 'ENCFF926YZX', color: 'green' },
+                  { name: 'ENCFF269CHA', color: 'green' },
+                  { name: 'ENCFF857KTJ', color: 'green' },
+                  { name: 'ENCFF109KCQ', color: 'green' },
+                  { name: 'ENCFF942TZX', color: 'blue' },
+                  { name: 'ENCFF140HPM', color: 'blue' },
+                  { name: 'ENCFF305JRR', color: 'blue' },
+                  { name: 'ENCFF739FDJ', color: 'blue' },
+                  { name: 'ENCFF518OJP', color: 'blue' },
+                  { name: 'ENCFF810HHS', color: 'blue' },
+                  { name: 'ENCFF939JSB', color: 'blue' },
+                  { name: 'ENCFF041TAK', color: 'blue' },
+                ],
+              },
+            },
+          ],
         },
       ],
     }),
-    readyText: 'chr1',
-    readyTimeout: 60000,
-    settleMs: 12000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Edit colors/arrangement...' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Edit colors/arrangement...' },
-      { type: 'waitForText', text: 'Multi-wiggle color/arrangement editor' },
-      { type: 'delay', ms: 1000 },
+    readyText: 'MultiWig',
+    readyTimeout: 90000,
+    settleMs: 20000,
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'waitForText', text: 'Edit colors/arrangement...' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Edit colors/arrangement...' },
+          {
+            type: 'waitForText',
+            text: 'Multi-wiggle color/arrangement editor',
+          },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
+      {
+        closeMenusFirst: true,
+        actions: [{ type: 'delay', ms: 2000 }],
+      },
     ],
   },
 
@@ -2723,7 +2809,7 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'gwas_track',
-              displaySnapshot: { type: 'LinearManhattanDisplay', height: 400 },
+              displaySnapshot: { type: 'LinearManhattanDisplay', height: 250 },
             },
           ],
         },
@@ -2731,7 +2817,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 90000,
-    viewportHeight: 500,
+    viewportHeight: 470,
     settleMs: 12000,
   },
 
@@ -3216,6 +3302,8 @@ export const specs: ScreenshotSpec[] = [
         x: 700,
         y: 150,
         text: 'The callback turns the name into a clickable link',
+        // pill behind the label so it reads over the panel (reviewer request)
+        background: '#fff',
       },
     ],
   },

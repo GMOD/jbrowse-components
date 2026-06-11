@@ -478,7 +478,9 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
           rect.setAttribute('rx', '4')
           rect.setAttribute('fill', 'none')
           rect.setAttribute('stroke', color)
-          rect.setAttribute('stroke-width', '3')
+          // thicker box stroke so the red callout reads clearly over busy
+          // figures (reviewer request, applied to all box annotations)
+          rect.setAttribute('stroke-width', '5')
           svg.appendChild(rect)
         } else if (a.type === 'circle') {
           const radius = a.radius ?? 16
@@ -487,7 +489,8 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
           circle.setAttribute('cy', String(cy))
           circle.setAttribute('r', String(radius))
           circle.setAttribute('stroke', color)
-          circle.setAttribute('stroke-width', '3')
+          // thicker stroke to match the box callouts (reviewer request)
+          circle.setAttribute('stroke-width', '5')
           // filled badge when it carries a label, hollow ring otherwise
           circle.setAttribute('fill', a.text ? color : 'none')
           svg.appendChild(circle)
