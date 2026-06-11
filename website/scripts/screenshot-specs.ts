@@ -1541,10 +1541,11 @@ export const specs: ScreenshotSpec[] = [
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
 
-  // Two-stage SV-inspector launch figure: top frame opens the app "Add" menu
-  // with the "SV inspector" item boxed; bottom frame is the import form that
-  // item opens. Replaces the old single-frame sv_inspector_begin (menu launch)
-  // and sv_inspector_importform (import form) screenshots.
+  // Three-stage SV-inspector launch figure: (1) the app "Add" menu with the "SV
+  // inspector" item boxed; (2) the import form that item opens; (3) the somatic
+  // SV VCF URL pasted into the import form's URL box (reviewer asked to also show
+  // pasting a file into the URL box). Replaces the old single-frame
+  // sv_inspector_begin (menu launch) and sv_inspector_importform (import form).
   {
     mode: 'url',
     name: 'sv_cgiab/translocation_sv_inspector_start',
@@ -1568,6 +1569,28 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', text: 'SV inspector' },
           { type: 'waitForText', text: 'Open file from URL or local computer' },
           { type: 'delay', ms: 2000 },
+        ],
+      },
+      {
+        actions: [
+          {
+            type: 'type',
+            selector: '[data-testid="urlInput"]',
+            value:
+              'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz',
+          },
+          { type: 'delay', ms: 800 },
+        ],
+        annotations: [
+          { type: 'box', anchor: { selector: '[data-testid="urlInput"]' } },
+          {
+            type: 'text',
+            x: 60,
+            y: 120,
+            text: 'Paste a file URL (here, the somatic SV VCF) and open it',
+            background: 'rgba(0,0,0,0.78)',
+            textColor: '#fff',
+          },
         ],
       },
     ],
@@ -1666,20 +1689,60 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_with_bed_track',
+    // Whole chr5 with BOTH tumor and normal coverage as separate scatter bigwigs
+    // (reviewer) above the somatic CNV benchmark bed calls, so the coverage
+    // gains/losses can be compared against the called intervals. Uses the
+    // normalized indexcov bigwigs (median≈1 → reads directly as copy number).
     url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_normal_indexcov',
+          name: 'HG008-N (normal) coverage',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_tumor_indexcov',
+          name: 'HG008-T (tumor) coverage',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
-          loc: 'chr5:1-180915260',
+          loc: 'chr5',
           tracks: [
             {
-              trackId:
-                'HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all',
-              // localsd autoscale clamps the Y domain to a few std-devs of the
-              // visible window, so copy-number gains/losses read clearly instead
-              // of being flattened by a few high-coverage outliers.
-              displaySnapshot: { autoscale: 'localsd' },
+              trackId: 'hg008_normal_indexcov',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                autoscale: 'localsd',
+              },
+            },
+            {
+              trackId: 'hg008_tumor_indexcov',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                autoscale: 'localsd',
+              },
             },
             'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
           ],
@@ -1690,7 +1753,7 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // wider viewport so the whole-chromosome CNV + bed track aren't cut off
     viewportWidth: 1800,
-    settleMs: 12000,
+    settleMs: 15000,
   },
 
   // Whole-genome normal-vs-tumor coverage as a MultiQuantitativeTrack, from
