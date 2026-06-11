@@ -585,6 +585,27 @@ async function runActions(
   }
 }
 
+// Lossily quantize a PNG in place with pngquant. These captures are flat-color
+// UI screenshots with small palettes, so quantization shrinks them ~50-60% with
+// no perceptible quality loss — worth it for a static site served over the
+// network. Best-effort: if pngquant isn't installed (or the result would be
+// larger), leave the original untouched and keep going.
+function optimizePng(file: string) {
+  try {
+    execFileSync(
+      'pngquant',
+      ['--quality=70-90', '--skip-if-larger', '--force', '--ext', '.png', file],
+      { stdio: 'ignore' },
+    )
+  } catch (e) {
+    // pngquant exits non-zero when it skips (e.g. --skip-if-larger), which is
+    // fine; only surface a hint if the binary is genuinely missing
+    if ((e as { code?: string }).code === 'ENOENT') {
+      console.error('    pngquant not found; skipping image optimization')
+    }
+  }
+}
+
 async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
   console.log(`  → ${spec.name}`)
 
@@ -627,6 +648,7 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
   } else {
     await shoot(page, spec, spec.annotations, outputPath)
   }
+  optimizePng(outputPath)
   console.log(`  ✓ ${spec.name}.png`)
 }
 
