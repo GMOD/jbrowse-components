@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { createElement, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
@@ -502,7 +502,7 @@ function App() {
 // HorizontallyFlipped*
 // ---------------------------------------------------------------------------
 
-function FlipButton({ state }: { state: ViewModel }) {
+const FlipButton = observer(function FlipButton({ state }: { state: ViewModel }) {
   const [error, setError] = useState<unknown>()
   return (
     <div>
@@ -520,7 +520,7 @@ function FlipButton({ state }: { state: ViewModel }) {
       {error ? <ErrorBanner error={error} /> : null}
     </div>
   )
-}
+})
 
 function HorizontallyFlippedViaLocstringRender() {
   const { assembly, tracks } = getVolvoxConfig()
@@ -837,9 +837,8 @@ const ShadowComponent = () => {
   }, [])
   return (
     <div ref={node}>
-      {rootNode && config
+      {rootNode && config && cacheNode
         ? createPortal(
-            // @ts-expect-error
             <CacheProvider value={cacheNode}>
               <JBrowseLinearGenomeView viewState={config} />
               <div ref={nodeForPin} />
@@ -851,14 +850,13 @@ const ShadowComponent = () => {
   )
 }
 
-const JBrowseCustom = () => {
-  return createElement(ShadowComponent, null, null)
+const JBrowseCustom = () => <ShadowComponent />
+
+if (customElements.get('jbrowse-linear-view') === undefined) {
+  customElements.define('jbrowse-linear-view', r2wc(JBrowseCustom))
 }
 
 function ShadowDOMOneLinearGenomeViewRender() {
-  if (customElements.get('jbrowse-linear-view') === undefined) {
-    customElements.define('jbrowse-linear-view', r2wc(JBrowseCustom))
-  }
   return (
     <div>
       {/* @ts-expect-error */}
@@ -1492,13 +1490,7 @@ function WithDisableZoomAndSideScrollRender() {
       location: 'ctgA:1105..1221',
     })
   })
-  return (
-    <div>
-      <JBrowseLinearGenomeView viewState={state} />
-      (Note: This is a basic demo that was added for a user request and may not
-      be a complete solution)
-    </div>
-  )
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 
 export const WithDisableZoomAndSideScroll = {
@@ -1575,8 +1567,7 @@ function WithDrawerWidgetRender() {
           id: 'linearGenomeView',
           type: 'LinearGenomeView',
           init: {
-            // @ts-expect-error assembly guaranteed from getVolvoxConfig
-            assembly: volvoxAssembly.name,
+            assembly: 'volvox',
             tracklist: true,
           },
         },
@@ -1747,8 +1738,7 @@ function WithExternalPluginRender() {
   const [viewState, setViewState] = useState<ViewModel>()
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
+    void (async () => {
       try {
         const plugins = await loadPlugins([
           {
@@ -3135,6 +3125,7 @@ const VisibleFeatures = observer(function VisibleFeatures({
   session: { rpcManager: RpcManager; view: LinearGenomeViewModel }
 }) {
   const [features, setFeatures] = useState<Feature[]>()
+  const [error, setError] = useState<unknown>()
   const { rpcManager, view } = session
 
   useEffect(() => {
@@ -3157,35 +3148,36 @@ const VisibleFeatures = observer(function VisibleFeatures({
         .then(feats => {
           setFeatures(feats)
         })
+        .catch((e: unknown) => {
+          setError(e)
+        })
     })
   }, [rpcManager, view])
-  return (
+  return error ? (
+    <ErrorBanner error={error} />
+  ) : !features ? (
+    <div>Loading...</div>
+  ) : (
     <div>
-      {!features ? (
-        <div>Loading...</div>
-      ) : (
-        <div>
-          <h4>Visible features in {view.coarseVisibleLocStrings}:</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Feature name</th>
-                <th>Feature location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {features.map(f => (
-                <tr key={f.id()}>
-                  <td>{f.get('name')}</td>
-                  <td>
-                    {f.get('refName')}:{f.get('start')}-{f.get('end')}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <h4>Visible features in {view.coarseVisibleLocStrings}:</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature name</th>
+            <th>Feature location</th>
+          </tr>
+        </thead>
+        <tbody>
+          {features.map(f => (
+            <tr key={f.id()}>
+              <td>{f.get('name')}</td>
+              <td>
+                {f.get('refName')}:{f.get('start')}-{f.get('end')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 })
@@ -3240,6 +3232,7 @@ const VisibleFeatures = observer(function VisibleFeatures({
   session: { rpcManager: RpcManager; view: LinearGenomeViewModel }
 }) {
   const [features, setFeatures] = useState<Feature[]>()
+  const [error, setError] = useState<unknown>()
   const { rpcManager, view } = session
 
   useEffect(() => {
@@ -3255,10 +3248,13 @@ const VisibleFeatures = observer(function VisibleFeatures({
           regions: view.coarseDynamicBlocks,
         })
         .then(feats => { setFeatures(feats) })
+        .catch((e: unknown) => { setError(e) })
     })
   }, [rpcManager, view])
 
-  return !features ? (
+  return error ? (
+    <div>Error: {String(error)}</div>
+  ) : !features ? (
     <div>Loading...</div>
   ) : (
     <table>
@@ -3317,8 +3313,13 @@ const VisibleRegions = observer(function VisibleRegions({
   const view = viewState.session.view
   return view.initialized ? (
     <div>
-      <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>
-      <p>Static blocks {view.staticBlocks.contentBlocks.map(loc).join(',')}</p>
+      <p>Visible region {view.coarseDynamicBlocks.map(loc).filter(Boolean).join(',')}</p>
+      <p>
+        Static blocks{' '}
+        {view.staticBlocks.contentBlocks
+          .map(r => `${r.refName}:${Math.floor(r.start)}-${Math.floor(r.end)}`)
+          .join(',')}
+      </p>
     </div>
   ) : null
 })
@@ -3363,8 +3364,13 @@ const VisibleRegions = observer(function VisibleRegions({ viewState }: { viewSta
   const view = viewState.session.view
   return view.initialized ? (
     <div>
-      <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>
-      <p>Static blocks {view.staticBlocks.contentBlocks.map(loc).join(',')}</p>
+      <p>Visible region {view.coarseDynamicBlocks.map(loc).filter(Boolean).join(',')}</p>
+      <p>
+        Static blocks{' '}
+        {view.staticBlocks.contentBlocks
+          .map(r => \`\${r.refName}:\${Math.floor(r.start)}-\${Math.floor(r.end)}\`)
+          .join(',')}
+      </p>
     </div>
   ) : null
 })
