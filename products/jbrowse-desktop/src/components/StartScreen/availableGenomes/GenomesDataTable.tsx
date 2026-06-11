@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 
-import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
+import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Button, IconButton } from '@mui/material'
 
+import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
 import CategorySelector from './CategorySelector.tsx'
 import GenomesTable from './GenomesTable.tsx'
 import MoreInfoDialog from './MoreInfoDialog.tsx'
@@ -125,6 +126,10 @@ export default function GenomesDataTable({
     url,
   })
 
+  // categoriesError leaves url undefined, which would otherwise hang on an
+  // infinite skeleton; surface it (and any genome-list error) instead.
+  const loadError = categoriesError ?? error
+
   const columns = getColumnDefinitions({
     typeOption,
     favs,
@@ -227,9 +232,9 @@ export default function GenomesDataTable({
         </IconButton>
       </div>
 
-      {error ? <ErrorMessage error={error} /> : null}
+      {loadError ? <NetworkErrorMessage error={loadError} /> : null}
 
-      {categoriesLoading || (data.length === 0 && !url) ? (
+      {loadError ? null : categoriesLoading || (data.length === 0 && !url) ? (
         <SkeletonLoader />
       ) : (
         <div ref={tableRef}>

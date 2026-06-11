@@ -1297,6 +1297,49 @@
       ]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_shorthand_color",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (shorthand color)",
+      "category": ["Shorthand examples"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "color": "#6a3d9a"
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_filtered_vcf_shorthand",
+      "name": "volvox filtered vcf (shorthand per-view color)",
+      "assemblyNames": ["volvox"],
+      "category": ["Shorthand examples"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "lgv": { "color": "#1f78b4" },
+      "cgv": { "strokeColor": "#e31a1c" }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted.cram",

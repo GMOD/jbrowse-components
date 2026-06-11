@@ -15,7 +15,6 @@ function ManagedRender() {
       assembly={assembly}
       tracks={tracks}
       init={{
-        assembly: 'hg38',
         loc: 'chr1:11,106,077-11,261,675',
         tracks: ['ncbi-refseq-genes'],
       }}
@@ -69,7 +68,6 @@ function App() {
       assembly={assembly}
       tracks={tracks}
       init={{
-        assembly: 'hg38',
         loc: 'chr1:11,106,077-11,261,675',
         tracks: ['ncbi-refseq-genes'],
       }}

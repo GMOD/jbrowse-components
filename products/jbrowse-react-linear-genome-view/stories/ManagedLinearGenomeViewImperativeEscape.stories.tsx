@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
+ 
 import { useRef } from 'react'
 
-import { LinearGenomeView } from '../src/index.ts'
 import { assembly, bookmarks, tracks } from './managedExampleConfig.ts'
+import { LinearGenomeView } from '../src/index.ts'
 
 import type { ViewModel } from '../src/index.ts'
 
@@ -38,7 +38,7 @@ function ManagedWithImperativeEscapeRender() {
         ref={ref}
         assembly={assembly}
         tracks={tracks}
-        init={{ assembly: 'hg38', loc: 'chr1:11,106,077-11,261,675' }}
+        init={{ loc: 'chr1:11,106,077-11,261,675' }}
       />
     </div>
   )
@@ -82,7 +82,7 @@ function App() {
         ref={ref}
         assembly={assembly}
         tracks={tracks}
-        init={{ assembly: 'hg38', loc: 'chr1:11,106,077-11,261,675' }}
+        init={{ loc: 'chr1:11,106,077-11,261,675' }}
       />
     </div>
   )

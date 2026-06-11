@@ -32,12 +32,14 @@ const assembly = {
 
 test('<LinearGenomeView /> builds its own engine and navigates via init', async () => {
   const ref = createRef<ViewModel>()
+  // init omits the assembly name on purpose: it is filled in from the
+  // `assembly` prop (volvox) by the component
   const { getByPlaceholderText } = render(
     <LinearGenomeView
       ref={ref}
       assembly={assembly}
       tracks={[]}
-      init={{ assembly: 'volvox', loc: 'ctgA:1-40' }}
+      init={{ loc: 'ctgA:1-40' }}
     />,
   )
   const getInputValue = () =>

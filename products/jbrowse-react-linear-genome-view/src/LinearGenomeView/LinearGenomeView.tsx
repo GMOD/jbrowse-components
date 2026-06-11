@@ -1,4 +1,5 @@
-import { forwardRef, useImperativeHandle, useState } from 'react'
+import { useImperativeHandle, useState } from 'react'
+import type { Ref } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -10,10 +11,14 @@ import type { CreateViewStateBaseOptions } from '../createViewState.ts'
 import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 
 export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
-  // declarative description of what to show initially: { assembly, loc, tracks,
-  // highlight, tracklist, nav, ... }. this is the view's own `init` shape, so
-  // the same blob round-trips through saved sessions and URL specs
-  init?: InitState
+  // declarative description of the initial view: optional loc, tracks to show,
+  // highlights, nav/tracklist visibility, etc. mirrors the view's own `init`
+  // shape (minus `assembly`, which is taken from the `assembly` prop), so the
+  // same blob round-trips through saved sessions and URL specs
+  init?: Omit<InitState, 'assembly'>
+  // ref to the live engine, for imperative control after launch
+  // (navToLocString, showTrack, ...)
+  ref?: Ref<ViewModel>
 }
 
 /**
@@ -22,31 +27,35 @@ export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
  * `defaultValue`): the engine is constructed once and later prop changes are
  * ignored. To swap assembly/plugins, remount via React `key`.
  *
- * `init` is the declarative input; for imperative control after launch
- * (navToLocString, showTrack, onPatch, ...) take a `ref` to the live engine.
+ * `init` is the declarative input; for imperative control after launch take a
+ * `ref` to the live engine.
  */
-const LinearGenomeView = observer(
-  forwardRef<ViewModel, LinearGenomeViewProps>(function LinearGenomeView(
-    props,
-    ref,
-  ) {
-    const { init, ...rest } = props
+const LinearGenomeView = observer(function LinearGenomeView({
+  init,
+  ref,
+  ...rest
+}: LinearGenomeViewProps) {
+  const [state] = useState(() =>
+    createViewState({
+      ...rest,
+      // with no init, createViewState shows the import form. otherwise wrap
+      // init in the session the view expects, filling in the configured
+      // assembly name so callers never repeat it
+      defaultSession: init
+        ? {
+            name: `New session ${new Date().toLocaleString()}`,
+            view: {
+              type: 'LinearGenomeView',
+              init: { ...init, assembly: rest.assembly.name },
+            },
+          }
+        : undefined,
+    }),
+  )
 
-    const [state] = useState(() =>
-      createViewState({
-        ...rest,
-        // `init` is the single initial-state mechanism; wrap it in the session
-        // the view expects. with no init, createViewState shows the import form
-        defaultSession: init
-          ? { name: 'this session', view: { type: 'LinearGenomeView', init } }
-          : undefined,
-      }),
-    )
+  useImperativeHandle(ref, () => state, [state])
 
-    useImperativeHandle(ref, () => state, [state])
-
-    return <JBrowseLinearGenomeView viewState={state} />
-  }),
-)
+  return <JBrowseLinearGenomeView viewState={state} />
+})
 
 export default LinearGenomeView

@@ -77,7 +77,7 @@ export default function createViewState(opts: ViewStateOptions) {
       disableAddTracks,
       drawerViewHeight,
       session: defaultSession ?? {
-        name: 'this session',
+        name: `New session ${new Date().toLocaleString()}`,
         view: {
           id: 'linearGenomeView',
           type: 'LinearGenomeView',

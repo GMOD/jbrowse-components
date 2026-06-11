@@ -39,7 +39,7 @@ function ManagedRender() {
     <CircularGenomeView
       assembly={assembly}
       tracks={tracks}
-      init={{ assembly: 'volvox', tracks: ['volvox_sv_test'] }}
+      init={{ tracks: ['volvox_sv_test'] }}
     />
   )
 }
@@ -82,7 +82,7 @@ function App() {
     <CircularGenomeView
       assembly={assembly}
       tracks={tracks}
-      init={{ assembly: 'volvox', tracks: ['volvox_sv_test'] }}
+      init={{ tracks: ['volvox_sv_test'] }}
     />
   )
 }`,

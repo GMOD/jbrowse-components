@@ -1,5 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { expandTrackConfigShorthand } from './expandTrackConfigShorthand.ts'
 import { liftLegacyRendererConfig } from './migrateTrackConfig.ts'
 import { ConfigurationSchema } from '../../configuration/index.ts'
 
@@ -166,9 +167,12 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
     },
     {
       preProcessSnapshot: s2 => {
-        const snap = pluginManager.evaluateExtensionPoint(
-          'Core-preProcessTrackConfig',
-          structuredClone(s2),
+        const snap = expandTrackConfigShorthand(
+          pluginManager.evaluateExtensionPoint(
+            'Core-preProcessTrackConfig',
+            structuredClone(s2),
+          ),
+          pluginManager,
         ) as TrackConfigSnapshot
         const { displays = [] } = snap
         if (snap.trackId !== 'placeholderId') {

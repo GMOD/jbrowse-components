@@ -1,4 +1,5 @@
-import { forwardRef, useImperativeHandle, useState } from 'react'
+import { useImperativeHandle, useState } from 'react'
+import type { Ref } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -34,6 +35,9 @@ export interface JBrowseProps {
   // defaultSession.views, so the same shape round-trips through saved sessions
   views?: ManagedView[]
   sessionName?: string
+  // ref to the live engine, for imperative control after launch
+  // (session.addView, navToLocString, ...)
+  ref?: Ref<ViewModel>
 }
 
 /**
@@ -44,52 +48,49 @@ export interface JBrowseProps {
  * React `key` to swap assemblies/plugins). For imperative control after launch
  * (session.addView, navToLocString, ...) take a `ref` to the live engine.
  */
-const JBrowse = observer(
-  forwardRef<ViewModel, JBrowseProps>(function JBrowse(props, ref) {
-    const {
-      assemblies,
-      tracks,
-      internetAccounts,
-      aggregateTextSearchAdapters,
-      configuration,
+const JBrowse = observer(function JBrowse({
+  assemblies,
+  tracks,
+  internetAccounts,
+  aggregateTextSearchAdapters,
+  configuration,
+  plugins,
+  makeWorkerInstance,
+  onChange,
+  views,
+  sessionName = 'session',
+  ref,
+}: JBrowseProps) {
+  const [state] = useState(() =>
+    createViewState({
+      config: {
+        assemblies,
+        tracks,
+        internetAccounts,
+        aggregateTextSearchAdapters,
+        configuration,
+        // `views` is the single initial-state mechanism; with none given,
+        // createViewState falls back to an empty session
+        defaultSession: views?.length
+          ? {
+              name: sessionName,
+              views: views.map((v, i) => ({
+                id: v.id ?? `view-${i}`,
+                type: v.type,
+                init: v.init,
+              })),
+            }
+          : undefined,
+      },
       plugins,
-      makeWorkerInstance,
       onChange,
-      views,
-      sessionName = 'session',
-    } = props
+      makeWorkerInstance,
+    }),
+  )
 
-    const [state] = useState(() =>
-      createViewState({
-        config: {
-          assemblies,
-          tracks,
-          internetAccounts,
-          aggregateTextSearchAdapters,
-          configuration,
-          // `views` is the single initial-state mechanism; with none given,
-          // createViewState falls back to an empty session
-          defaultSession: views?.length
-            ? {
-                name: sessionName,
-                views: views.map((v, i) => ({
-                  id: v.id ?? `view-${i}`,
-                  type: v.type,
-                  init: v.init,
-                })),
-              }
-            : undefined,
-        },
-        plugins,
-        onChange,
-        makeWorkerInstance,
-      }),
-    )
+  useImperativeHandle(ref, () => state, [state])
 
-    useImperativeHandle(ref, () => state, [state])
-
-    return <JBrowseApp viewState={state} />
-  }),
-)
+  return <JBrowseApp viewState={state} />
+})
 
 export default JBrowse

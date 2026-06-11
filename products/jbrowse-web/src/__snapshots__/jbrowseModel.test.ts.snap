@@ -1645,6 +1645,61 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sort.gff3.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Shorthand examples",
+      ],
+      "color": "#6a3d9a",
+      "name": "GFF3Tabix genes (shorthand color)",
+      "trackId": "gff3tabix_genes_shorthand_color",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Shorthand examples",
+      ],
+      "cgv": {
+        "strokeColor": "#e31a1c",
+      },
+      "lgv": {
+        "color": "#1f78b4",
+      },
+      "name": "volvox filtered vcf (shorthand per-view color)",
+      "trackId": "volvox_filtered_vcf_shorthand",
+      "type": "VariantTrack",
+    },
+    {
+      "adapter": {
         "craiLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",

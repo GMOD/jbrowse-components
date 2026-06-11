@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { fetchJson as fetchjson, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
 
+import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
 import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
@@ -86,7 +87,7 @@ export default function LeftSidePanel({
 
   return (
     <div className={classes.form}>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <NetworkErrorMessage error={error} /> : null}
       {loading ? (
         <LoadingEllipses variant="h6" message={loading} />
       ) : (

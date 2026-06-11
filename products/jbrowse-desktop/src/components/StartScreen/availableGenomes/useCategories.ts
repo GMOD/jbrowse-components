@@ -3,8 +3,10 @@ import { fetchJson, useFetch } from '@jbrowse/core/util'
 const CATEGORIES_URL = 'https://jbrowse.org/hubs/categories.json'
 
 export default function useCategories() {
-  const { data, error, isLoading } = useFetch(CATEGORIES_URL, () =>
-    fetchJson(CATEGORIES_URL),
+  const { data, error, isLoading } = useFetch(
+    CATEGORIES_URL,
+    () => fetchJson(CATEGORIES_URL),
+    { errorRetryCount: 3 },
   )
 
   return {

@@ -5,8 +5,25 @@ import { logError } from './util.ts'
 import type { AppUpdater } from 'electron-updater'
 
 // Distinguishes a user-triggered check from the background startup check so
-// update-not-available only shows a dialog when the user asked for it.
+// update-not-available/error only shows a dialog when the user asked for it.
 let manualCheckActive = false
+
+const NETWORK_ERROR_PATTERNS = [
+  'ERR_INTERNET_DISCONNECTED',
+  'ERR_NETWORK',
+  'ERR_NAME_NOT_RESOLVED',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'ETIMEDOUT',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'net::',
+]
+
+function isNetworkError(error: Error) {
+  const text = `${error.message} ${error.stack ?? ''}`
+  return NETWORK_ERROR_PATTERNS.some(pattern => text.includes(pattern))
+}
 
 export function checkForUpdatesManually(autoUpdater: AppUpdater) {
   manualCheckActive = true
@@ -24,10 +41,22 @@ export function setupAutoUpdater(
     getMainWindow()?.webContents.send('message', 'Checking for update...')
   })
 
-  autoUpdater.on('error', (error: Error) => {
+  autoUpdater.on('error', async (error: Error) => {
+    // A background startup check that fails (e.g. when offline) must stay
+    // silent — only surface an error the user explicitly asked for, and show a
+    // friendly message rather than a raw stack trace for connectivity issues.
+    const wasManual = manualCheckActive
+    manualCheckActive = false
     console.error('Auto-updater error:', error)
-    if (!process.env.CI) {
-      dialog.showErrorBox('Update Error', error.stack ?? error.toString())
+    if (wasManual && !process.env.CI) {
+      await dialog.showMessageBox({
+        type: 'info',
+        title: 'Unable to check for updates',
+        message: isNetworkError(error)
+          ? 'Could not check for updates. Please check your internet connection and try again.'
+          : `Could not check for updates: ${error.message}`,
+        buttons: ['OK'],
+      })
     }
   })
 

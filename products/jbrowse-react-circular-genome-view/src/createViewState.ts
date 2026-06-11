@@ -53,7 +53,7 @@ export default function createViewState(opts: ViewStateOptions) {
   )
   let { defaultSession } = opts
   defaultSession ??= {
-    name: 'this session',
+    name: `New session ${new Date().toLocaleString()}`,
     view: {
       id: 'circularView',
       type: 'CircularView',

@@ -133,3 +133,53 @@ Common display types and their `displayId` suffix:
 | QuantitativeTrack      | LinearWiggleDisplay      |
 
 See the [config_guides](/docs/config_guide) for per-track display options.
+
+## Display shorthand
+
+Writing out the `displays` array means knowing the display type name and nesting
+your settings inside it. For the common case you can skip that and put display
+settings directly on the track — JBrowse moves them into the right display for
+you.
+
+Put a display setting at the top level and it applies to every display type on
+the track that supports it:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "repeats_hg19",
+  "name": "Repeats",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "BigBedAdapter",
+    "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+  },
+  "color": "green"
+}
+```
+
+If a track shows in more than one view and you want to set them differently,
+group settings under a view key — the view's full name (`LinearGenomeView`), its
+lowercase form, a short alias (`lgv`, `cgv`), or its capital-letter acronym. For
+example, a `VariantTrack` shows in both the linear and circular views:
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "variants_hg19",
+  "name": "Variants",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://yourhost/file.vcf.gz"
+  },
+  "lgv": { "color": "green" },
+  "cgv": { "color": "blue" }
+}
+```
+
+Both forms are sugar for the `displays` array above — anything you can set on a
+display entry (`color`, `height`, `displayMode`, jexl callbacks, etc.) works as
+shorthand. If you also include an explicit `displays` array, its entries win on
+any conflicting setting, so you can shorthand most tracks and still drop down to
+the full form when you need precise control.
