@@ -3370,6 +3370,8 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
+    // shorter window — the add-track form is short (reviewer)
+    viewportHeight: 620,
     actions: [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
@@ -3380,7 +3382,7 @@ export const specs: ScreenshotSpec[] = [
     ],
     // two-stage: top frame opens the workflow-selector dropdown with a callout
     // (on a dark pill so it reads over the form) and an arrow to it; bottom frame
-    // selects "Add multi-wiggle track" so the multi-wiggle entry form shows
+    // selects "Add multi-wiggle track" and boxes the paste textbox
     stages: [
       {
         actions: [
@@ -3392,7 +3394,8 @@ export const specs: ScreenshotSpec[] = [
           {
             type: 'text',
             x: 470,
-            y: 150,
+            // farther down so it clears the form fields (reviewer: ~100px lower)
+            y: 250,
             text: 'Use this dropdown to reach alternative add-track workflows, e.g. multi-wiggle',
             background: 'rgba(0,0,0,0.8)',
             textColor: '#fff',
@@ -3400,7 +3403,7 @@ export const specs: ScreenshotSpec[] = [
           },
           {
             type: 'arrow',
-            from: { x: 880, y: 162 },
+            from: { x: 880, y: 262 },
             anchor: { selector: '[aria-expanded="true"]' },
           },
         ],
@@ -3410,6 +3413,22 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', text: 'Add multi-wiggle track' },
           { type: 'waitForText', text: 'Add' },
           { type: 'delay', ms: 1200 },
+        ],
+        // box the paste textbox + tell the user to paste wiggle file URLs there
+        annotations: [
+          {
+            type: 'box',
+            anchor: { selector: 'textarea[placeholder^="Paste a list"]' },
+          },
+          {
+            type: 'text',
+            x: 60,
+            y: 250,
+            text: 'Paste wiggle file URLs here (one per line)',
+            background: 'rgba(0,0,0,0.8)',
+            textColor: '#fff',
+            fontSize: 15,
+          },
         ],
       },
     ],
