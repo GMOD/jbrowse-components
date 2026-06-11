@@ -1,27 +1,30 @@
-import { join } from 'path'
 import { ChildProcess } from 'child_process'
+import http from 'http'
 
 import { WebDriver, By, until, Key } from 'selenium-webdriver'
 
 import {
-  TEST_DATA_DIR,
   APP_BINARY,
+  REPO_ROOT,
   isHeadless,
   delay,
   startChromedriver,
+  startStaticServer,
   createDriver,
   flushBrowserLogs,
   findByText,
-  clickButton,
   clearInput,
-  waitForStartScreen,
   waitForBackdropsToDisappear,
+  openVolvoxGenome,
   cleanupUI,
   openMenuItem,
   killProcesses,
 } from './harness.ts'
 
+const DATA_PORT = 9444
+
 let chromedriverProcess: ChildProcess | null = null
+let dataServer: http.Server | null = null
 let driver: WebDriver | null = null
 
 interface TestResult {
@@ -76,173 +79,10 @@ async function runTest(
 }
 
 async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
-  console.log('    DEBUG: Pressing Escape multiple times to close dialogs...')
-  // Ensure any dialogs are closed - press Escape multiple times
-  await driver.actions().sendKeys(Key.ESCAPE).perform()
-  await delay(300)
-  await driver.actions().sendKeys(Key.ESCAPE).perform()
-  await delay(300)
-  await driver.actions().sendKeys(Key.ESCAPE).perform()
-  await delay(500)
-
-  // Check if we're already in a session with a genome loaded (from hg19 test)
-  const zoomButtons = await driver.findElements(
-    By.css('[data-testid="zoom_in"]'),
+  await openVolvoxGenome(
+    driver,
+    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa`,
   )
-  if (zoomButtons.length > 0) {
-    console.log(
-      '    DEBUG: Already in a session, returning to start screen via File menu...',
-    )
-    await openMenuItem(driver, 'File', 'Return to start screen')
-    await delay(1500)
-  }
-
-  console.log('    DEBUG: Waiting for start screen...')
-  await waitForStartScreen(driver)
-  console.log('    DEBUG: Clicking Open new genome...')
-  await clickButton(driver, 'Open new genome')
-  await delay(1000)
-
-  // Find and fill assembly name input (first visible text input)
-  console.log('    DEBUG: Looking for assembly name input...')
-  const assemblyInput = await driver.wait(
-    until.elementLocated(By.css('input[type="text"]')),
-    10000,
-  )
-  console.log('    DEBUG: Found input, typing volvox...')
-  await assemblyInput.sendKeys('volvox')
-
-  // Click URL toggle buttons to switch from file to URL mode
-  // MUI ToggleButton value prop doesn't render as HTML attribute, so find by text
-  console.log('    DEBUG: Looking for URL toggle buttons...')
-  const urlToggleButtons = await driver.findElements(
-    By.xpath("//button[contains(., 'URL')]"),
-  )
-  console.log(`    DEBUG: Found ${urlToggleButtons.length} URL toggle buttons`)
-
-  // Click first URL toggle (for FASTA file)
-  if (urlToggleButtons.length >= 1) {
-    console.log('    DEBUG: Clicking first URL toggle...')
-    await urlToggleButtons[0]!.click()
-    await delay(500)
-  }
-
-  // Find URL inputs by data-testid
-  let urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
-  console.log(
-    `    DEBUG: Found ${urlInputs.length} URL inputs after first toggle`,
-  )
-
-  if (urlInputs.length >= 1) {
-    console.log(
-      `    DEBUG: Entering FASTA URL: file://${join(TEST_DATA_DIR, 'volvox.fa')}`,
-    )
-    await urlInputs[0]!.sendKeys(`file://${join(TEST_DATA_DIR, 'volvox.fa')}`)
-  }
-
-  // Click second URL toggle (for FAI file) if there is one
-  if (urlToggleButtons.length >= 2) {
-    console.log('    DEBUG: Clicking second URL toggle...')
-    await urlToggleButtons[1]!.click()
-    await delay(500)
-  }
-
-  // Find URL inputs again after second toggle
-  urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
-  console.log(
-    `    DEBUG: Found ${urlInputs.length} URL inputs after second toggle`,
-  )
-
-  if (urlInputs.length >= 2) {
-    console.log(
-      `    DEBUG: Entering FAI URL: file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
-    )
-    await urlInputs[1]!.sendKeys(
-      `file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
-    )
-  }
-
-  console.log('    DEBUG: Looking for Submit button...')
-  // Try data-testid first (if app is rebuilt), fall back to XPath
-  let submitButton = await driver.findElements(
-    By.css('[data-testid="open-sequence-submit"]'),
-  )
-  if (submitButton.length === 0) {
-    console.log('    DEBUG: data-testid not found, using XPath...')
-    submitButton = [
-      await driver.wait(
-        until.elementLocated(By.xpath("//button[contains(., 'Submit')]")),
-        10000,
-      ),
-    ]
-  }
-  const submitBtn = submitButton[0]!
-  console.log('    DEBUG: Found Submit button, scrolling into view...')
-  await driver.executeScript('arguments[0].scrollIntoView(true);', submitBtn)
-  await delay(500)
-  console.log('    DEBUG: Clicking Submit via JavaScript...')
-  await driver.executeScript('arguments[0].click();', submitBtn)
-
-  // Wait for dialog to close and session to be created
-  console.log('    DEBUG: Waiting for dialog to close...')
-  await delay(3000)
-
-  // Check if there's an error message visible
-  const errorElements = await driver.findElements(
-    By.css('.MuiAlert-standardError, [class*="error"]'),
-  )
-  if (errorElements.length > 0) {
-    console.log(`    DEBUG: Found ${errorElements.length} error elements`)
-  }
-
-  // Check if dialog is still open
-  const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
-  console.log(`    DEBUG: ${dialogs.length} dialogs still open after Submit`)
-
-  if (dialogs.length > 0) {
-    // Try pressing Escape to close any remaining dialogs
-    console.log('    DEBUG: Pressing Escape to close remaining dialogs...')
-    await driver.actions().sendKeys(Key.ESCAPE).perform()
-    await delay(1000)
-  }
-
-  // Launch the linear genome view
-  console.log('    DEBUG: Looking for Launch view button...')
-  const launchButtons = await driver.findElements(
-    By.xpath("//button[contains(., 'Launch view')]"),
-  )
-  console.log(`    DEBUG: Found ${launchButtons.length} Launch view buttons`)
-
-  if (launchButtons.length > 0) {
-    console.log('    DEBUG: Clicking Launch view...')
-    await launchButtons[0]!.click()
-    await delay(2000)
-  } else {
-    console.log('    DEBUG: No Launch view button found, view may auto-launch')
-    await delay(2000)
-  }
-
-  // Wait for location search input
-  console.log('    DEBUG: Waiting for location search input...')
-  const searchInput = await driver.wait(
-    until.elementLocated(By.css('input[placeholder="Search for location"]')),
-    30000,
-  )
-
-  // Navigate to a specific region so the view fully loads
-  console.log('    DEBUG: Navigating to ctgA:1-10000...')
-  await clearInput(driver, searchInput)
-  await searchInput.sendKeys('ctgA:1-10000')
-  await searchInput.sendKeys(Key.ENTER)
-  await delay(2000)
-
-  // Wait for zoom controls to appear (indicates view is fully loaded)
-  console.log('    DEBUG: Waiting for zoom controls...')
-  await driver.wait(
-    until.elementLocated(By.css('[data-testid="zoom_in"]')),
-    10000,
-  )
-  console.log('    DEBUG: Volvox genome loaded successfully!')
 }
 
 async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
@@ -281,7 +121,7 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log(`    DEBUG: Found ${urlInputs.length} URL inputs after toggle`)
 
   if (urlInputs.length >= 1) {
-    const gffPath = `file://${join(TEST_DATA_DIR, 'volvox.sort.gff3.gz')}`
+    const gffPath = `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.sort.gff3.gz`
     console.log(`    DEBUG: Entering GFF URL: ${gffPath}`)
     await urlInputs[0]!.sendKeys(gffPath)
     await delay(1000)
@@ -301,7 +141,7 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   )
 
   if (urlInputs.length >= 2) {
-    const indexPath = `file://${join(TEST_DATA_DIR, 'volvox.sort.gff3.gz.tbi')}`
+    const indexPath = `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.sort.gff3.gz.tbi`
     console.log(`    DEBUG: Entering index URL: ${indexPath}`)
     await urlInputs[1]!.sendKeys(indexPath)
     await delay(1000)
@@ -435,6 +275,9 @@ async function main(): Promise<void> {
   console.log('Cleaning up leftover processes...')
   await killProcesses()
 
+  console.log(`Serving ${REPO_ROOT} on http://localhost:${DATA_PORT}...`)
+  dataServer = await startStaticServer(REPO_ROOT, DATA_PORT)
+
   console.log('Starting ChromeDriver...')
   chromedriverProcess = await startChromedriver()
 
@@ -478,6 +321,7 @@ async function main(): Promise<void> {
   if (chromedriverProcess) {
     chromedriverProcess.kill('SIGKILL')
   }
+  dataServer?.close()
   await killProcesses()
 
   process.exit(failed > 0 ? 1 : 0)
@@ -495,6 +339,7 @@ main().catch(async e => {
   if (chromedriverProcess) {
     chromedriverProcess.kill('SIGKILL')
   }
+  dataServer?.close()
   await killProcesses()
   process.exit(1)
 })
