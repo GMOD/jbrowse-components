@@ -100,7 +100,7 @@ alignments track can color reads by modification. Two modes are available:
   positions are not in the MM tag; this mode infers them from the reference CpG
   context
 
-<Figure caption="Access modifications/methylation coloring from the track menu." src="/img/alignments/modifications1.png" />
+<Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a UCSC CpG island on chr20. Enable this from the track menu's Color by → Base modifications → All modification types." src="/img/alignments/modifications1.png" />
 <Figure caption="Screenshot showing the same track in both modifications mode and methylation mode. This is a hypo-methylated CpG island (there are no methylation marks in a CpG island)" src="/img/alignments/modifications2.png" />
 
 ### Color by strand

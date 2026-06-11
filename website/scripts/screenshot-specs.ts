@@ -2153,6 +2153,10 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           tracks: ['HG008T.hap1_pif'],
+          // curved ribbons + a taller synteny band so the connections read
+          // clearly (reviewer)
+          drawCurves: true,
+          levelHeights: [400],
           views: [
             {
               loc: 'chr3:1-198295559 chr13:1-114364328',
@@ -2169,6 +2173,8 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr3',
     readyTimeout: 90000,
     viewportWidth: 1800,
+    // fit the synteny band + both panels without a tall white margin
+    viewportHeight: 470,
     // giant remote assembly PAF; synteny_canvas_done can exceed 90s, so settle
     // long rather than gate on it
     settleMs: 45000,
@@ -2973,55 +2979,38 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track menu showing the Color scheme > Modifications option, over the real
-  // chr20 5mC/5hmC CRAM from the demo config (the MM/ML-tagged example the doc
-  // describes), at the CpG-island locus used by the methylation figures.
+  // COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a
+  // UCSC CpG island on chr20 (reviewer: use COLO829_tumor.ht at a CpG island + add
+  // a CpG island track). Declarative `colorBy: {type:'modifications'}` — the same
+  // state the track menu's Color by → Base modifications → All modification types
+  // applies — because driving that 3-level hover menu live is unreliable over the
+  // COLO829 GPU display (its mod-data load keeps repainting the canvas, which
+  // closes the MUI menu mid-cascade). userByteSizeLimit auto-loads the reads.
   {
     mode: 'url',
     name: 'alignments/modifications1',
-    // zoomed to ~5kb so the CRAM force-loads (the wider window tripped the
-    // "region too large" guard and the modifications never loaded, leaving the
-    // submenu stuck on "Loading modifications...")
     url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '20:19,757,000-19,762,000',
-          tracks: ['human_chr20_mod_call_5mC_5hmC_CG_cram'],
+          loc: 'chr20:18,493,346-18,511,070',
+          tracks: [
+            'cpgisland_ucsc_hg38',
+            {
+              trackId: 'COLO829_tumor.ht',
+              displaySnapshot: {
+                colorBy: { type: 'modifications' },
+                userByteSizeLimit: 100_000_000,
+              },
+            },
+          ],
         },
       ],
     }),
-    readyText: 'human_chr20',
+    readyText: 'COLO829',
     readyTimeout: 60000,
-    settleMs: 12000,
-    // two-stage: top frame is the Color by... → Base modifications → "By
-    // modification type" menu path (boxed); bottom frame applies it so the reads
-    // color by 5mC/5hmC modification
-    stages: [
-      {
-        actions: [
-          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'waitForText', text: 'Color by...' },
-          { type: 'delay', ms: 300 },
-          { type: 'hover', text: 'Color by...' },
-          { type: 'waitForText', text: 'Base modifications (MM tag)' },
-          { type: 'delay', ms: 500 },
-          { type: 'hover', text: 'Base modifications (MM tag)' },
-          { type: 'waitForText', text: 'By modification type' },
-          { type: 'delay', ms: 800 },
-        ],
-        annotations: [
-          { type: 'box', anchor: { text: 'By modification type' } },
-        ],
-      },
-      {
-        actions: [
-          { type: 'click', text: 'By modification type' },
-          { type: 'delay', ms: 6000 },
-        ],
-      },
-    ],
+    settleMs: 35000,
   },
 
   // ────────────────────────────────────────────────────────────────────────
