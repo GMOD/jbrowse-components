@@ -53,6 +53,7 @@ const ShoppingCart = observer(function ShoppingCart({
   return selection.length ? (
     <CascadingMenuButton
       data-testid="hts-shopping-cart"
+      tooltip="Selected tracks"
       menuItems={[
         {
           label: 'Clear selection',

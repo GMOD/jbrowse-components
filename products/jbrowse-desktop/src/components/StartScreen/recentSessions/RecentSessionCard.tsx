@@ -137,6 +137,8 @@ function RecentSessionCard({
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         onClose={() => {
           setMenuAnchorEl(null)
         }}

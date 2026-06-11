@@ -13,6 +13,7 @@ import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 const useStyles = makeStyles()(theme => ({
   toolbar: {
     display: 'flex',
+    alignItems: 'center',
   },
   searchBox: {
     margin: theme.spacing(2),

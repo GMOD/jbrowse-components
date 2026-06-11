@@ -1,4 +1,4 @@
-import { Badge, Tooltip } from '@mui/material'
+import { Badge } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import DropdownTrackSelector from './DropdownTrackSelector.tsx'
@@ -45,6 +45,7 @@ const BadgeDropdownTracks = observer(function BadgeDropdownTracks({
       }}
       tracks={tracks}
       model={model}
+      tooltip={tooltip}
       data-testid={testId}
       extraMenuItems={getDropdownMenuItems({
         hasTracks: tracks.length > 0,
@@ -53,17 +54,15 @@ const BadgeDropdownTracks = observer(function BadgeDropdownTracks({
         onClear,
       })}
     >
-      <Tooltip title={tooltip}>
-        <Badge
-          classes={{ badge: classes.smallBadge }}
-          color="secondary"
-          anchorOrigin={badgeAnchorOrigin}
-          className={classes.margin}
-          badgeContent={counter}
-        >
-          {icon}
-        </Badge>
-      </Tooltip>
+      <Badge
+        classes={{ badge: classes.smallBadge }}
+        color="secondary"
+        anchorOrigin={badgeAnchorOrigin}
+        className={classes.margin}
+        badgeContent={counter}
+      >
+        {icon}
+      </Badge>
     </DropdownTrackSelector>
   ) : null
 })

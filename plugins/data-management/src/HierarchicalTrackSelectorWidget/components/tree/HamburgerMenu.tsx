@@ -80,6 +80,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
     <>
       <CascadingMenuButton
         data-testid="track-selector-hamburger"
+        tooltip="Track selector menu"
         menuItems={[
           {
             label: 'Open faceted track selector',

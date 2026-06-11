@@ -43,6 +43,7 @@ export default function ClearableSearchField({
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
+                aria-label={`Clear ${label.toLowerCase()}`}
                 onClick={() => {
                   setLocalValue('')
                   onChange('')

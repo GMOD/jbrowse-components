@@ -18,12 +18,14 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
   extraMenuItems,
   children,
   onClick,
+  tooltip,
   'data-testid': testId,
 }: {
   model: HierarchicalTrackSelectorModel
   tracks: AnyConfigurationModel[]
   extraMenuItems: MenuItem[]
   onClick?: () => void
+  tooltip?: string
   'data-testid'?: string
   children: React.ReactElement
 }) {
@@ -34,7 +36,12 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
     <CascadingMenuButton
       closeAfterItemClick={false}
       onClick={onClick}
+      tooltip={tooltip}
       data-testid={testId}
+      // these badge buttons sit at the right edge of the header, so align the
+      // dropdown's right edge under the icon
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       menuItems={[
         ...tracks.map(t => ({
           type: 'checkbox' as const,
