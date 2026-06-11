@@ -164,6 +164,8 @@ function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
         display.setResolution(Number.isNaN(val) ? 1 : val)
         break
       }
+      default:
+        break
     }
   }
   // snpcov is a "show only coverage" pseudo-mode. The unified

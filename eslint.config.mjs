@@ -154,7 +154,6 @@ export default defineConfig(
         },
       ],
       'tss-unused-classes/unused-classes': 'warn',
-      //complexity: ['warn', 15],
       curly: 'error',
       'object-shorthand': 'error',
       '@typescript-eslint/no-unnecessary-condition': 'error',
@@ -226,6 +225,11 @@ export default defineConfig(
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/consistent-type-exports': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { considerDefaultExhaustiveForUnions: true },
+      ],
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-empty-function': 'off',
@@ -251,7 +255,6 @@ export default defineConfig(
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-cli/**/*',
       'products/jbrowse-desktop/sign.cjs',
-      'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
     ],
     languageOptions: {
@@ -289,19 +292,6 @@ export default defineConfig(
     },
   },
   {
-    files: ['integration.test.js'],
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-    },
-    rules: {
-      '@typescript-eslint/no-require-imports': 'off',
-      'no-console': 'off',
-    },
-  },
-  {
     files: ['products/jbrowse-web/webgpu-debug.mjs'],
     languageOptions: {
       globals: {
@@ -311,28 +301,6 @@ export default defineConfig(
     },
     rules: {
       'no-console': 'off',
-    },
-  },
-  // Guards against regressions in the SVG-export pipeline. See
-  // agent-docs/ARCHITECTURE.md "SVG export pipeline (single source of truth)".
-  // Heavy draw paths must go through paintLayer; clipPath wrappers must use
-  // SvgClipRect for consistency.
-  {
-    files: ['plugins/**/renderSvg.tsx'],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: "NewExpression[callee.name='SvgCanvas']",
-          message:
-            'Use paintLayer(width, height, opts, ctx => drawXxxToCtx(ctx, …)) instead of constructing SvgCanvas directly. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
-        },
-        {
-          selector: "JSXOpeningElement[name.name='clipPath']",
-          message:
-            'Use <SvgClipRect> from @jbrowse/plugin-linear-genome-view instead of hand-rolling <defs><clipPath><rect>. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
-        },
-      ],
     },
   },
   // Catch jest.mock/unmock calls that reach into another package's src/.
@@ -346,6 +314,36 @@ export default defineConfig(
             "CallExpression[callee.object.name='jest'][callee.property.name=/^(un)?mock$/] > Literal[value=/^@jbrowse\\/[^/]+\\/src(\\/.+)?$/]",
           message:
             'Do not mock from the src directory of another package. Use the package public API instead.',
+        },
+      ],
+    },
+  },
+  // Guards against regressions in the SVG-export pipeline. See
+  // agent-docs/ARCHITECTURE.md "SVG export pipeline (single source of truth)".
+  // Heavy draw paths must go through paintLayer; clipPath wrappers must use
+  // SvgClipRect for consistency.
+  // NOTE: must come after the global no-restricted-syntax block above so that
+  // both selector sets apply to renderSvg.tsx (flat config overrides, not merges).
+  {
+    files: ['plugins/**/renderSvg.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.object.name='jest'][callee.property.name=/^(un)?mock$/] > Literal[value=/^@jbrowse\\/[^/]+\\/src(\\/.+)?$/]",
+          message:
+            'Do not mock from the src directory of another package. Use the package public API instead.',
+        },
+        {
+          selector: "NewExpression[callee.name='SvgCanvas']",
+          message:
+            'Use paintLayer(width, height, opts, ctx => drawXxxToCtx(ctx, …)) instead of constructing SvgCanvas directly. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
+        },
+        {
+          selector: "JSXOpeningElement[name.name='clipPath']",
+          message:
+            'Use <SvgClipRect> from @jbrowse/plugin-linear-genome-view instead of hand-rolling <defs><clipPath><rect>. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
         },
       ],
     },

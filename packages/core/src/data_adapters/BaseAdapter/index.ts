@@ -4,7 +4,7 @@ import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { getSubAdapterType } from '../dataAdapterCache.ts'
 
 export * from './util.ts'
-export * from './types.ts'
+export type * from './types.ts'
 export { BaseAdapter } from './BaseAdapter.ts'
 export { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 export { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'

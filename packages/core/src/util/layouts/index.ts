@@ -1,4 +1,4 @@
-export * from './BaseLayout.ts'
+export type * from './BaseLayout.ts'
 export { default as GranularRectLayout } from './GranularRectLayout.ts'
 export { placeRect } from './placeRect.ts'
 export { default as MultiLayout } from './MultiLayout.ts'

@@ -25,7 +25,7 @@ import type {
 } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
-export * from './util.ts'
+export type * from './util.ts'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer extends IStateTreeNode {

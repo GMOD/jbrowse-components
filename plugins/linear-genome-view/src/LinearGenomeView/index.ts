@@ -18,7 +18,7 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
 }
 
 export * from './model.ts'
-export * from './types.ts'
+export type * from './types.ts'
 export {
   type SyncableViewAction,
   installLinkedViewSync,
