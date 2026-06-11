@@ -1,4 +1,4 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
 import { observer } from 'mobx-react'
@@ -18,6 +18,9 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 0,
     right: 0,
+  },
+  withClose: {
+    paddingRight: 20,
   },
   item: {
     display: 'flex',
@@ -59,7 +62,7 @@ const FloatingLegend = observer(function FloatingLegend({
   }
 
   return (
-    <div className={classes.legend}>
+    <div className={cx(classes.legend, onDismiss && classes.withClose)}>
       {onDismiss ? (
         <IconButton
           className={classes.closeButton}
