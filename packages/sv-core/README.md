@@ -39,7 +39,7 @@ Resolves the two canonical-refName endpoints a breakend/SV feature spans.
 
 ```js
 // type signature
-({ feature, assembly, }: { feature: Feature; assembly: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & ... 12 more ... & IStateTreeNode<...>; }) => { ...; }
+({ feature, assembly, }: { feature: Feature; assembly: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & ... 13 more ... & IStateTreeNode<...>; }) => { ...; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
