@@ -4,10 +4,9 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { makeBpToScreenX } from './alignmentComponentUtils.ts'
 import { openSashimiWidget } from './openFeatureWidget.ts'
+import { computeSashimiArcsFromModel, sashimiArcKey } from './sashimiArcs.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'
-import { computeSashimiArcs } from '../../features/sashimi/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -25,46 +24,33 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     showCoverage,
     coverageHeight,
     sashimiArcsHeight,
-    belowCoverageBands,
     rpcDataMap,
   } = model
-  const { initialized, visibleRegions, width } = view
+  const { initialized, width } = view
 
   if (!showSashimiArcs || !showCoverage || !initialized) {
     return null
   }
 
   const isDown = readConnectionsDown
-  const arcs = computeSashimiArcs({
-    rpcDataMap,
-    visibleRegions,
-    bpToScreenX: makeBpToScreenX(view),
-    coverageHeight,
-    sashimiArcsHeight,
-    sashimiArcsDown: isDown,
-  })
-
-  // Sort by score so high-count arcs paint on top of low-count ones.
-  arcs.sort((a, b) => a.score - b.score)
-
-  const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
+  const arcs = computeSashimiArcsFromModel(model, view, rpcDataMap)
 
   return (
     <svg
       style={{
         position: 'absolute',
-        top: isDown
-          ? belowCoverageBands.sashimiBandTop
-          : YSCALEBAR_LABEL_OFFSET,
+        top: model.sashimiArcsTop,
         left: 0,
         pointerEvents: 'none',
-        height: isDown ? sashimiArcsHeight : effectiveHeight,
+        height: isDown
+          ? sashimiArcsHeight
+          : coverageHeight - YSCALEBAR_LABEL_OFFSET,
         width,
         overflow: isDown ? 'hidden' : 'visible',
       }}
     >
       {arcs.map(arc => {
-        const arcKey = `${arc.refName}:${arc.start}:${arc.end}:${arc.strand}`
+        const arcKey = sashimiArcKey(arc)
         const isSelected = arcKey === selectedArcKey
         return (
           <path

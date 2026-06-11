@@ -1,9 +1,17 @@
+import { lazy } from 'react'
+
+import { getSession } from '@jbrowse/core/util'
+import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { checkboxItem } from './menuHelpers.ts'
 import { getArcDirectionMenuItem } from './readConnections.ts'
 
 import type { ReadConnectionsMode } from '../constants.ts'
+
+const SetSashimiScoreDialog = lazy(
+  () => import('../dialogs/SetSashimiScoreDialog.tsx'),
+)
 
 interface ReadsModel {
   showLegend: boolean
@@ -26,6 +34,8 @@ interface ReadsModel {
   setFlipStrandLongReadChains: (flag: boolean) => void
   showSashimiArcs: boolean
   toggleSashimiArcs: () => void
+  minSashimiScore: number
+  setMinSashimiScore: (score: number) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
   readConnections: ReadConnectionsMode
@@ -89,6 +99,16 @@ export function getReadsMenuItem(model: ReadsModel) {
       checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
         model.toggleSashimiArcs()
       }),
+      {
+        label: 'Filter sashimi arcs by score...',
+        icon: FilterListIcon,
+        onClick: () => {
+          getSession(model).queueDialog(handleClose => [
+            SetSashimiScoreDialog,
+            { model, handleClose },
+          ])
+        },
+      },
       checkboxItem(
         'Show read links as bezier curves',
         model.showBezierConnections,

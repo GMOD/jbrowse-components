@@ -421,6 +421,12 @@ export default function stateModelFactory(
           showSashimiArcs: types.optional(types.boolean, true),
           /**
            * #property
+           * hide sashimi junction arcs with fewer than this many supporting
+           * reads (0 shows all)
+           */
+          minSashimiScore: types.stripDefault(types.number, 0),
+          /**
+           * #property
            */
           sashimiArcsHeight: 40,
           /**
@@ -1040,6 +1046,17 @@ export default function stateModelFactory(
             sashimiBandTop,
             bottom,
           }
+        },
+
+        /**
+         * #getter
+         * Y offset where the sashimi overlay/export is drawn: below coverage in
+         * down mode, just under the y-scalebar label otherwise.
+         */
+        get sashimiArcsTop() {
+          return self.readConnectionsDown
+            ? this.belowCoverageBands.sashimiBandTop
+            : YSCALEBAR_LABEL_OFFSET
         },
 
         /**
@@ -1733,6 +1750,13 @@ export default function stateModelFactory(
            */
           setSashimiArcsHeight(height: number) {
             self.sashimiArcsHeight = height
+          },
+
+          /**
+           * #action
+           */
+          setMinSashimiScore(score: number) {
+            self.minSashimiScore = score
           },
 
           /**

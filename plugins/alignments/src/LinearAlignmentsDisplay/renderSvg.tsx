@@ -1,6 +1,5 @@
 import type React from 'react'
 
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -9,13 +8,12 @@ import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { when } from 'mobx'
 
+import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
+import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import TlenAxisLabel from './components/TlenAxisLabel.tsx'
-import { makeBpToScreenX } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
-import { computePileupBezierArcsFromModel } from './components/pileupBezierArcs.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
-import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
@@ -92,13 +90,9 @@ export async function renderSvg(
     drawAlignmentLabels(ctx, labels, contrastMap, theme)
   })
 
-  // Sashimi: vector SVG by design (low arc count + native hover behavior in
-  // the on-screen overlay). Geometry/colors come from the same
-  // `computeSashimiArcs` the overlay uses; sorted by score so high-count arcs
-  // paint on top, mirroring overlay z-order.
-  const sashimiNode = renderSashimiArcs(model, view)
-  const pileupBezierNode = renderPileupBezierArcs(model, view, 0)
-
+  // Sashimi and linked-read bezier arcs stay vector SVG by design (low arc
+  // count + native hover in the on-screen overlay); these export components
+  // share their geometry helpers with the overlays so the paths can't drift.
   return (
     <>
       <SvgClipRect
@@ -107,8 +101,8 @@ export async function renderSvg(
         height={displayHeight}
       >
         {pileupNode}
-        {sashimiNode}
-        {pileupBezierNode}
+        <SashimiArcsSvg model={model} view={view} />
+        <PileupBezierArcsSvg model={model} view={view} />
       </SvgClipRect>
       {model.showCoverage && model.coverageTicks ? (
         // anchors scale bars to left edge of content; non-zero only when
@@ -143,62 +137,3 @@ export async function renderSvg(
   )
 }
 
-function renderSashimiArcs(
-  model: LinearAlignmentsDisplayModel,
-  view: LinearGenomeViewModel,
-): React.ReactNode {
-  if (!model.showSashimiArcs || !model.showCoverage) {
-    return null
-  }
-  const isDown = model.readConnectionsDown
-  const arcs = computeSashimiArcs({
-    rpcDataMap: model.laidOutPileupMap,
-    visibleRegions: view.visibleRegions,
-    bpToScreenX: makeBpToScreenX(view),
-    coverageHeight: model.coverageHeight,
-    sashimiArcsHeight: model.sashimiArcsHeight,
-    sashimiArcsDown: isDown,
-  })
-  arcs.sort((a, b) => a.score - b.score)
-  const top = isDown
-    ? model.belowCoverageBands.sashimiBandTop
-    : YSCALEBAR_LABEL_OFFSET
-  return (
-    <g transform={`translate(0,${top})`}>
-      {arcs.map(arc => (
-        <path
-          key={`${arc.refName}:${arc.start}:${arc.end}:${arc.strand}`}
-          d={arc.d}
-          stroke={arc.stroke}
-          strokeWidth={arc.strokeWidth}
-          fill="none"
-        />
-      ))}
-    </g>
-  )
-}
-
-function renderPileupBezierArcs(
-  model: LinearAlignmentsDisplayModel,
-  view: LinearGenomeViewModel,
-  scrollTop: number,
-): React.ReactNode {
-  const arcs = computePileupBezierArcsFromModel(model, view, scrollTop)
-  if (!arcs.length) {
-    return null
-  }
-  return (
-    <g style={{ pointerEvents: 'none' }}>
-      {arcs.map(arc => (
-        <path
-          key={`${arc.id1}:${arc.id2}`}
-          d={arc.d}
-          stroke={arc.stroke}
-          strokeWidth={1.5}
-          strokeOpacity={0.8}
-          fill="none"
-        />
-      ))}
-    </g>
-  )
-}

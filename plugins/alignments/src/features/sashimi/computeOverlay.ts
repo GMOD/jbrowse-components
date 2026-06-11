@@ -33,6 +33,7 @@ export interface ComputeSashimiArcsOpts {
   coverageHeight: number
   sashimiArcsHeight: number
   sashimiArcsDown: boolean
+  minSashimiScore: number
 }
 
 const FWD_ARC_COLOR = 'rgba(255,170,170,0.7)'
@@ -55,6 +56,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
     coverageHeight,
     sashimiArcsHeight,
     sashimiArcsDown,
+    minSashimiScore,
   } = opts
   const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
   const baseline = sashimiArcsDown ? 0 : effectiveHeight * 0.9
@@ -77,11 +79,12 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
     const numSashimiArcs = sashimiX1.length
 
     for (let i = 0; i < numSashimiArcs; i++) {
+      const count = sashimiCounts[i]!
       const startBp = sashimiX1[i]!
       const endBp = sashimiX2[i]!
       const left = bpToScreenX(refName, startBp)
       const right = bpToScreenX(refName, endBp)
-      if (left === undefined || right === undefined) {
+      if (left === undefined || right === undefined || count < minSashimiScore) {
         continue
       }
       const strand = colorTypeToStrand(sashimiColorTypes[i]!)
@@ -92,7 +95,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
         start: startBp,
         end: endBp,
         refName,
-        score: sashimiCounts[i]!,
+        score: count,
         strand,
       })
     }

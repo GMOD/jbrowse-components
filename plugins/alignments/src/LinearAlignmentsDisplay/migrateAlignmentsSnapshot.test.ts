@@ -159,6 +159,7 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result.filterBy).toEqual({ flagInclude: 0 })
     expect(result).not.toHaveProperty('jexlFilters')
     expect(result).not.toHaveProperty('minArcScore')
+    expect(result.minSashimiScore).toBe(10)
     expect(result).not.toHaveProperty('showInterbaseCounts')
   })
 

@@ -109,6 +109,8 @@ export function migrateAlignmentsSnapshot(
     const {
       type,
       showArcs,
+      // minArcScore filtered skip/junction features by read support on the old
+      // SNPCoverage display — the same concept as minSashimiScore here.
       minArcScore,
       showInterbaseCounts,
       showInterbaseIndicators,
@@ -125,6 +127,7 @@ export function migrateAlignmentsSnapshot(
       ...rest,
       type: 'LinearAlignmentsDisplay',
       showSashimiArcs: showArcs ?? true,
+      minSashimiScore: minArcScore ?? 0,
       showInterbaseIndicators: showInterbaseIndicators ?? true,
       showCoverage: true,
       coverageHeight: 45,
