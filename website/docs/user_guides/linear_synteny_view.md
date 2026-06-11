@@ -20,7 +20,7 @@ inversion or rearrangement relative to the other genome.
 2. Optionally, add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors or
    .anchors.simple (MCScan) file
 
-<Figure caption="The shared import form for synteny and dotplot views. You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
+<Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
 
 <Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
 

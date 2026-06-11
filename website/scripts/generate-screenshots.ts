@@ -447,6 +447,9 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
       marker.appendChild(arrowPath)
       defs.appendChild(marker)
       svg.appendChild(defs)
+      // append the overlay now (before drawing) so text getBBox() resolves for
+      // the optional background pill below
+      document.body.appendChild(svg)
       for (const a of resolved) {
         const color = a.color ?? '#e3242b'
         const cx = a.x
@@ -511,9 +514,23 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
           text.setAttribute('font-weight', '600')
           text.textContent = a.text
           svg.appendChild(text)
+          if (a.background) {
+            // draw a rounded pill behind the text (inserted before it) so the
+            // label reads over busy page content
+            const bbox = text.getBBox()
+            const padX = 8
+            const padY = 5
+            const rect = document.createElementNS(NS, 'rect')
+            rect.setAttribute('x', String(bbox.x - padX))
+            rect.setAttribute('y', String(bbox.y - padY))
+            rect.setAttribute('width', String(bbox.width + padX * 2))
+            rect.setAttribute('height', String(bbox.height + padY * 2))
+            rect.setAttribute('rx', '5')
+            rect.setAttribute('fill', a.background)
+            svg.insertBefore(rect, text)
+          }
         }
       }
-      document.body.appendChild(svg)
     },
     annotations,
     ANNOTATION_OVERLAY_ID,

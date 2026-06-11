@@ -33,8 +33,7 @@ Turn on the "Show soft clipping" option in the track menu to display them. This
 is useful around structural variants and regions with difficult mappability —
 clusters of soft-clipped bases often mark a breakpoint.
 
-<Figure caption="The soft clipping option is a toggle in the track menu's 'Show...' submenu." src="/img/alignments_soft_clipped_menu.png" />
-<Figure caption="Soft-clipping enabled on a simulated long-read dataset. A simulated deletion causes reads to have bases mapping to the other side of the breakpoint." src="/img/alignments_soft_clipped.png" />
+<Figure caption="Enabling 'Show soft clipping' from the track menu's 'Show...' submenu (top), and the result on a simulated long-read dataset (bottom): a simulated deletion causes reads to have bases mapping to the other side of the breakpoint." src="/img/alignments_soft_clipped_menu.png" />
 
 ### Sort by options
 
@@ -49,8 +48,7 @@ Toggle "Show center line" from the linear genome view menu. The center line is a
 1bp-wide indicator at the middle of the view that the "Sort by" function uses as
 its reference point.
 
-<Figure caption="The 'show center line' option is a toggle in the LGV menu." src="/img/alignments_center_line_menu.png" />
-<Figure caption="The center line is an indicator that shows what base pair underlies the center of the view." src="/img/alignments_center_line.png" />
+<Figure caption="Toggling 'Show center line' from the LGV view menu (top), and the resulting 1bp-wide center line indicator over the pileup (bottom)." src="/img/alignments_center_line.png" />
 
 ### Sorting by base pair
 
@@ -180,7 +178,7 @@ suppress spurious indicators.
 Insertions larger than 10bp also get a larger purple rectangle. This is most
 prominent with long reads, which span larger insertions.
 
-<Figure caption="Large-insertion indicator from long reads; 'show soft clipping' is also enabled on a short-read track for comparison." src="/img/insertion_indicators.png" />
+<Figure caption="A large insertion shown across nanopore, PacBio, and Illumina reads: long reads span the insertion and show it as a dense column of purple insertion rectangles." src="/img/insertion.png" />
 
 The indicators and counts can be toggled independently from the track menu.
 

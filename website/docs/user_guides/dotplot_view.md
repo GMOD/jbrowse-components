@@ -15,9 +15,7 @@ rearrangements appear as off-diagonal blocks.
 2. Optionally, add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors or
    .anchors.simple (MCScan) file
 
-<Figure caption="Adding a new dotplot or synteny view via the menubar." src="/img/dotplot_menu.png" />
-
-<Figure caption="Import form for a dotplot or synteny view. Select two assemblies and optionally supply a synteny file." src="/img/dotplot_add.png" />
+<Figure caption="Launching a dotplot view from the Add menu (top), then the import form where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
 
 <Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes. Diagonal streaks are syntenic blocks where the two genomes are collinear. Off-diagonal blocks indicate chromosomal rearrangements; reverse-diagonal segments indicate inversions." src="/img/dotplot.png" />
 

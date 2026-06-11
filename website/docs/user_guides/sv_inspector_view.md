@@ -10,11 +10,10 @@ triaging structural variant calls.
 For an end-to-end walkthrough using real cancer sequencing data, see the
 [C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab).
 
-Launch it from the main menu bar:
+Launch it from the **Add** menu in the main menu bar; an import form then
+appears asking for your SV data.
 
-<Figure caption="The SV inspector can be launched from the main menu bar." src="/img/sv_inspector_begin.png" />
-
-An import form will appear asking for your SV data.
+<Figure caption="Launching the SV inspector from the Add menu (top), and the import form it opens (bottom)." src="/img/sv_cgiab/translocation_sv_inspector_start.png" />
 
 The following formats are supported:
 
@@ -22,8 +21,6 @@ The following formats are supported:
 - VCF or VCF.gz (plain text VCF, or (b)gzipped VCF)
 - BED, BEDPE
 - STAR-fusion result file
-
-<Figure caption="The import form for getting started with the SV inspector." src="/img/sv_inspector_importform.png" />
 
 ### What the SV inspector is good for
 
