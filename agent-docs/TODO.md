@@ -19,13 +19,12 @@ Stable reference docs: [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 - show outlines autohide
 - more 'group operations'
 - `fullpage_arcs-collapse-introns-sashimi.png` needs scroll-down to see the collapsed arcs
-- does the yeast demo really need remote?
 - no max height react-app
 - persistent no-close cascading submenu for sub-selecting multiple items
 - jest "worker failed to exit gracefully" — chase leak with `--detectOpenHandles` / ensure timers `.unref()`
 - gccontent track in `config_demo`
 - copy and edit track settings
-- fix fallow recommendations
+- run `npx fallow --dry-run` and apply recommendations
 - choose renderer backend via preferences
 - sort by genotype hom/het/ref
 - sort by modifications
@@ -83,12 +82,6 @@ gccontent, maf, config). Do the rest opportunistically when touching the file:
   factories resolve slot names to `string` inside the body, so threading `<SCHEMA>`
   surfaces zero validation. Only worth it when a display is built concretely.
 
-### View init — known warts (see VIEW_INIT.md)
-
-- The URL wire layer (`buildJb1SessionSpec` + `SessionLoader.ts` props) duplicates
-  the param list; it's all-string by nature so it can't share `InitState`'s types.
-  Low value — the type sites are already compile-checked against `InitState`.
-
 ### Track/Display cleanup (deferred)
 
 Naming is clarified and the legacy block-based render path is kept indefinitely. The
@@ -103,11 +96,6 @@ Scenarios that need a **browser smoke test or manual pass** — the code is writ
 this is confirmation, not new work. Test invocation, wait signals, and backend flags
 are all in [TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md).
 
-### Arc renderer removal
-
-Arcs + semicircles modes render, tooltip works, color/thickness config edits apply
-(`pnpm test plugins/arc` covers the unit side).
-
 ### MAF summary path (`bigMafSummary` landed, unverified)
 
 - **Summary path pixels + the summary↔detail mode switch** against a real
@@ -118,18 +106,10 @@ Arcs + semicircles modes render, tooltip works, color/thickness config edits app
   (volvox=MafTabix, evolverMammals=TAF, neither carries e/i). Point a track at a real
   UCSC multiz/cactus `.bb`.
 
-### Screenshot review — final cleanup
-
-- Re-review changed shots; run `pnpm review-screenshots-web` to clear verdicts.
-- Light caption pass on stale text in `dotplot_view.md:18` and
-  `sv_visualization_cgiab.md:246`.
-- Open judgment calls: multisv, skbr3_translocation, inverted_duplication captions.
-
 ### Known issues to confirm
 
 | Issue                             | Status               |
 | --------------------------------- | -------------------- |
-| Hot reload breaks canvas features | Investigate          |
 | Dockview right-side move          | Non-WebGL bug        |
 | Frozen objects (umd_plugin.js)    | Handle read-only     |
 | Zoom to full (synteny)            | Verify               |
