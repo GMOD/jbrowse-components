@@ -649,7 +649,8 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // Variant feature-details panel for an SNV, with the per-sample genotype table
-  // in the SAMPLES section. Opened by clicking the SNV's floating label.
+  // in the SAMPLES section. The variant has no ID, so its only floating label is
+  // the description ("C -> T"); clicking it opens the details panel.
   {
     mode: 'url',
     name: 'variant_panel',
@@ -3464,7 +3465,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:1-500,000',
+          loc: 'chr1:1-1,200,000',
           tracks: ['HG02024_VN049_KHVTrio.chr1.vcf'],
         },
       ],

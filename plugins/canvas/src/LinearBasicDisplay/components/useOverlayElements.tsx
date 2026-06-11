@@ -173,7 +173,13 @@ export function useFloatingLabels(
               : undefined
 
           for (const { label, labelX, labelY, kind } of labels) {
-            const clickable = kind !== 'desc'
+            // A label is clickable iff it resolves to a top-level feature we can
+            // open. Description labels are included: for variants with no ID the
+            // description ("C -> T") is the only visible label, and a user
+            // clicking it expects the feature details. Keying off the handler
+            // (not the kind) also avoids rendering an inert pointer-cursor label
+            // whose onClick is undefined.
+            const clickable = !!handleLabelClick
             const className = clickable
               ? label.isOverlay
                 ? labelClasses.clickableOverlay
