@@ -97,12 +97,10 @@ modes:
   `hclust`. Run the script in R, then paste the resulting sample ordering back
   into the dialog and click **Apply clustering**.
 
-<Figure caption="The 'Cluster by genotype' dialog showing the auto/manual mode options." src="/img/variants/cluster_dialog.png" />
-
 After clustering, a dendrogram appears on the left side of the track and rows
 are reordered so genotypically similar samples sit next to each other.
 
-<Figure caption="Multi-sample variant track after clustering: samples are reordered by genotype similarity with a dendrogram on the left." src="/img/variants/clustered_result.png" />
+<Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster by genotype' dialog with its auto/manual mode options. Bottom: after clustering, samples are reordered by genotype similarity with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
 
 Click any internal node in the dendrogram to collapse the view to that clade
 (subtree filter). Click the same node again to clear the filter and restore all

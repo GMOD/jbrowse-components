@@ -3994,8 +3994,13 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Multi-sample variant "Cluster by genotype" dialog open over the volvox
-  // multi-sample SV track (matrix display, 20 samples).
+  // Multi-sample variant clustering, two-stage figure over the volvox
+  // "1000genomes vcf" track (volvox_test_vcf, real 1000-genomes sample panel —
+  // reviewer asked for this instead of the synthetic multi-sample SV track).
+  // Top frame: the "Cluster by genotype" dialog open (before). Bottom frame:
+  // after "Run clustering", the samples are reordered by genotype similarity
+  // with a dendrogram on the left. Combines the old cluster_dialog +
+  // clustered_result screenshots into one multi-part figure (reviewer).
   {
     mode: 'url',
     name: 'variants/cluster_dialog',
@@ -4007,44 +4012,7 @@ export const specs: ScreenshotSpec[] = [
           loc: 'ctgA:1-50000',
           tracks: [
             {
-              trackId: 'volvox multi-sample sv',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantMatrixDisplay',
-                height: 300,
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    settleMs: 8000,
-    viewportHeight: 700,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Cluster by genotype' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Cluster by genotype' },
-      { type: 'waitForText', text: 'Run clustering' },
-      { type: 'delay', ms: 500 },
-    ],
-  },
-
-  // Multi-sample variant clustered result — runs in-app clustering on the
-  // volvox multi-sample SV track (20 samples, matrix display), then captures
-  // the dendrogram sidebar + reordered sample rows.
-  {
-    mode: 'url',
-    name: 'variants/clustered_result',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: [
-            {
-              trackId: 'volvox multi-sample sv',
+              trackId: 'volvox_test_vcf',
               displaySnapshot: {
                 type: 'LinearMultiSampleVariantMatrixDisplay',
                 height: 400,
@@ -4057,16 +4025,26 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 8000,
     viewportHeight: 700,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Cluster by genotype' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Cluster by genotype' },
-      { type: 'waitForText', text: 'Run clustering' },
-      { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Run clustering' },
-      { type: 'waitForText', text: 'Run clustering', hidden: true },
-      { type: 'delay', ms: 10000 },
+    stages: [
+      {
+        // top frame: the Cluster by genotype dialog open, before clustering
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'waitForText', text: 'Cluster by genotype' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Cluster by genotype' },
+          { type: 'waitForText', text: 'Run clustering' },
+          { type: 'delay', ms: 500 },
+        ],
+      },
+      {
+        // bottom frame: run clustering, then show the reordered rows + dendrogram
+        actions: [
+          { type: 'click', text: 'Run clustering' },
+          { type: 'waitForText', text: 'Run clustering', hidden: true },
+          { type: 'delay', ms: 10000 },
+        ],
+      },
     ],
   },
 ]
