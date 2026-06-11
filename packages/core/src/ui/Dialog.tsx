@@ -11,8 +11,6 @@ import {
   createTheme,
   useTheme,
 } from '@mui/material'
-import { observer } from 'mobx-react'
-
 import ErrorBanner from './ErrorBanner.tsx'
 import { ErrorBoundary } from './ErrorBoundary.tsx'
 import SanitizedHTML from './SanitizedHTML.tsx'
@@ -28,8 +26,8 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.grey[500],
   },
   errorBox: {
-    width: 800,
-    margin: 40,
+    maxWidth: 800,
+    margin: theme.spacing(5),
   },
 }))
 
@@ -47,7 +45,7 @@ export interface Props extends DialogProps {
   titleNode?: React.ReactNode
 }
 
-const Dialog = observer(function Dialog(props: Props) {
+function Dialog(props: Props) {
   const { classes } = useStyles()
   const { titleNode, header, ...rest } = props
   const { title, children, onClose } = rest
@@ -97,6 +95,6 @@ const Dialog = observer(function Dialog(props: Props) {
       </ScopedCssBaseline>
     </MUIDialog>
   )
-})
+}
 
 export default Dialog
