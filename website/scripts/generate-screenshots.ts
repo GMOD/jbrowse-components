@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { execFileSync } from 'child_process'
+import { execFileSync, spawnSync } from 'child_process'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -41,12 +41,22 @@ const { values } = parseArgs({
     port: { type: 'string' },
     localport: { type: 'string' },
     concurrency: { type: 'string' },
+    // overwrite every PNG, bypassing the content-stable diff gate
+    force: { type: 'boolean', default: false },
+    // fraction-of-pixels diff below which a re-render keeps the committed PNG
+    'diff-threshold': { type: 'string' },
   },
 })
 
-const headed = values.headed
-const filter = values.filter
-const exact = values.exact
+const { headed, filter, exact, force } = values
+// Rendering is deterministic (an unchanged spec re-renders byte-for-byte), so a
+// tight default keeps identical images stable while still letting genuine small
+// edits — a legend, an annotation box — through. Raise it to absorb jitter on
+// timing/remote-data specs.
+const DEFAULT_DIFF_THRESHOLD = 0.001
+const diffThreshold = values['diff-threshold']
+  ? Number(values['diff-threshold'])
+  : DEFAULT_DIFF_THRESHOLD
 const externalPortVal = values.port ? Number(values.port) : Number.NaN
 const externalPort = Number.isFinite(externalPortVal)
   ? externalPortVal
@@ -469,9 +479,7 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
           rect.setAttribute('rx', '4')
           rect.setAttribute('fill', 'none')
           rect.setAttribute('stroke', color)
-          // thicker box stroke so the red callout reads clearly over busy
-          // figures (reviewer request, applied to all box annotations)
-          rect.setAttribute('stroke-width', '5')
+          rect.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
           svg.appendChild(rect)
         } else if (a.type === 'circle') {
           const radius = a.radius ?? 16
@@ -480,8 +488,7 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
           circle.setAttribute('cy', String(cy))
           circle.setAttribute('r', String(radius))
           circle.setAttribute('stroke', color)
-          // thicker stroke to match the box callouts (reviewer request)
-          circle.setAttribute('stroke-width', '5')
+          circle.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
           // filled badge when it carries a label, hollow ring otherwise
           circle.setAttribute('fill', a.text ? color : 'none')
           svg.appendChild(circle)
@@ -585,6 +592,63 @@ async function runActions(
   }
 }
 
+// A regen re-renders every spec, but an unchanged spec re-renders byte-for-byte
+// identical (rendering is deterministic). Writing them all back would churn the
+// whole static/img dir on every commit. So a freshly captured PNG only replaces
+// the committed one when it differs by more than `diffThreshold` of its pixels —
+// the same diffFraction gate jbrowse-web/browser-tests/pngDiff.ts uses, here via
+// ImageMagick `compare` (already a dependency alongside convert/pngquant)
+// instead of pixelmatch.
+
+// Fraction in [0,1] of pixels that differ (fuzz-tolerant), or null when the two
+// images are different sizes / the comparison couldn't run (treated as changed).
+function pngDiffFraction(a: string, b: string): number | null {
+  // `compare` writes the metric to stderr and exits 0 (within fuzz), 1
+  // (differ), or 2 (error, e.g. dimension mismatch).
+  const cmp = spawnSync(
+    'compare',
+    ['-metric', 'AE', '-fuzz', '5%', a, b, 'null:'],
+    { encoding: 'utf8' },
+  )
+  if (cmp.error || cmp.status === 2) {
+    return null
+  }
+  const ae = Number.parseFloat((cmp.stderr || '').trim().split(/\s+/)[0] ?? '')
+  if (!Number.isFinite(ae)) {
+    return null
+  }
+  const id = spawnSync('identify', ['-format', '%w %h', a], { encoding: 'utf8' })
+  const [w, h] = (id.stdout || '').trim().split(/\s+/).map(Number)
+  const total = (w ?? 0) * (h ?? 0)
+  return total > 0 ? ae / total : null
+}
+
+// Move a freshly captured PNG into place only when its content actually changed
+// (or with --force / for a brand-new spec), so a regen doesn't rewrite every
+// PNG. copyFileSync (not rename) because tmp and static/img may be on different
+// filesystems.
+function commitScreenshot(tmpPath: string, outputPath: string, name: string) {
+  const isNew = !fs.existsSync(outputPath)
+  if (force || isNew) {
+    fs.copyFileSync(tmpPath, outputPath)
+    fs.rmSync(tmpPath, { force: true })
+    console.log(`  ✓ ${name}.png${isNew ? ' (new)' : ''}`)
+    return
+  }
+  const frac = pngDiffFraction(tmpPath, outputPath)
+  if (frac !== null && frac < diffThreshold) {
+    fs.rmSync(tmpPath, { force: true })
+    console.log(
+      `  ≈ ${name}.png (kept; ${(frac * 100).toFixed(3)}% < ${diffThreshold * 100}% threshold)`,
+    )
+  } else {
+    fs.copyFileSync(tmpPath, outputPath)
+    fs.rmSync(tmpPath, { force: true })
+    const detail = frac === null ? 'resized' : `${(frac * 100).toFixed(2)}% diff`
+    console.log(`  ✓ ${name}.png (updated, ${detail})`)
+  }
+}
+
 // Lossily quantize a PNG in place with pngquant. These captures are flat-color
 // UI screenshots with small palettes, so quantization shrinks them ~50-60% with
 // no perceptible quality loss — worth it for a static site served over the
@@ -621,11 +685,18 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
   const outputPath = path.join(outDir, `${spec.name}.png`)
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
 
+  // render into a temp file first; commitScreenshot decides whether it actually
+  // replaces the committed PNG (content-stable diff gate)
+  const safeSpecName = spec.name.replace(/\//g, '_')
+  const renderPath = path.join(
+    os.tmpdir(),
+    `jb-final-${process.pid}-${safeSpecName}.png`,
+  )
+
   if (spec.stages && spec.stages.length > 0) {
     // capture each stage to a temp file, then stack them vertically with
     // ImageMagick (`convert f0 f1 -append`), the same composition the hand-made
     // two-stage teaching figures used
-    const safeSpecName = spec.name.replace(/\//g, '_')
     const stageFiles = spec.stages.map((_, i) =>
       path.join(os.tmpdir(), `jb-shot-${process.pid}-${safeSpecName}-${i}.png`),
     )
@@ -641,15 +712,15 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
       await runActions(page, spec.name, stage.actions)
       await shoot(page, spec, stage.annotations, stageFiles[i]!)
     }
-    execFileSync('convert', [...stageFiles, '-append', outputPath])
+    execFileSync('convert', [...stageFiles, '-append', renderPath])
     for (const f of stageFiles) {
       fs.rmSync(f, { force: true })
     }
   } else {
-    await shoot(page, spec, spec.annotations, outputPath)
+    await shoot(page, spec, spec.annotations, renderPath)
   }
-  optimizePng(outputPath)
-  console.log(`  ✓ ${spec.name}.png`)
+  optimizePng(renderPath)
+  commitScreenshot(renderPath, outputPath, spec.name)
 }
 
 async function main() {

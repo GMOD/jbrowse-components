@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+import type { TrackInit, TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
@@ -9,7 +9,9 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   views: {
     loc?: string
     assembly: string
-    tracks?: string[]
+    // a bare trackId string, or { trackId, displaySnapshot, trackSnapshot } to
+    // configure the per-panel track (e.g. a compact LGVSyntenyDisplay height)
+    tracks?: TrackInit[]
   }[]
   // synteny track ids per level: tracks[i] is shown between views[i] and
   // views[i+1]. string[] shorthand is treated as a single level-0 entry

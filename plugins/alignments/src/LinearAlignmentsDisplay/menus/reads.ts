@@ -54,7 +54,7 @@ export function getReadsMenuItem(model: ReadsModel) {
     type: 'subMenu' as const,
     subMenu: [
       checkboxItem('Show legend', model.showLegend, () => {
-        model.setShowLegend(model.showLegend ? false : undefined)
+        model.setShowLegend(!model.showLegend)
       }),
       checkboxItem('Show coverage', model.showCoverage, () => {
         model.setShowCoverage(!model.showCoverage)

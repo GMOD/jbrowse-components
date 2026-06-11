@@ -44,6 +44,26 @@ async function capture(
   console.log(`  ✓ wrote ${out}`)
 }
 
+// The Add-track stepper renders one button (testid addTrackNextButton) per step,
+// but only the active step's button is displayed. Click the visible, enabled one
+// to advance ("Next" on the source step, "Add" on the confirm step).
+async function clickActiveAddTrackButton(driver: WebDriver): Promise<void> {
+  const deadline = Date.now() + 20000
+  while (Date.now() < deadline) {
+    const buttons = await driver.findElements(
+      By.css('[data-testid="addTrackNextButton"]'),
+    )
+    for (const button of buttons) {
+      if ((await button.isDisplayed()) && (await button.isEnabled())) {
+        await driver.executeScript('arguments[0].click();', button)
+        return
+      }
+    }
+    await delay(300)
+  }
+  throw new Error('no enabled addTrackNextButton found')
+}
+
 async function main(): Promise<void> {
   console.log(`Running in ${isHeadless ? 'headless' : 'headed'} mode`)
   console.log(`App binary: ${APP_BINARY}`)
@@ -100,6 +120,31 @@ async function main(): Promise<void> {
     `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa`,
   )
   await delay(2000) // let the view fully paint
+
+  // Add the bundled volvox GFF3 genes track over http so the session screenshot
+  // shows annotated genes instead of a bare sequence. An hg38 demo with NCBI
+  // RefSeq + ClinVar is not viable here: the harness serves only local
+  // test_data and the repo has no hg38 FASTA, and those tracks need remote
+  // fetches that are unreliable/blocked in headless Electron.
+  console.log('Adding volvox GFF3 genes track...')
+  await openMenuItem(driver, 'File', 'Open track...')
+  await findByText(driver, 'Add a track')
+  await delay(1000)
+  // The Main-file FileSelector defaults to URL mode (no location yet), so the
+  // urlInput is already present; the index url auto-infers as <main>.tbi.
+  const trackUrlInput = await driver.wait(
+    until.elementLocated(By.css('[data-testid="urlInput"]')),
+    10000,
+  )
+  await trackUrlInput.sendKeys(
+    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.sort.gff3.gz`,
+  )
+  await delay(500)
+  await clickActiveAddTrackButton(driver) // Next: source -> confirm track type
+  await delay(1500)
+  await clickActiveAddTrackButton(driver) // Add: shows track + closes widget
+  await delay(3000) // let the GFF3 track fetch + paint
+
   await capture(driver, 'desktop-session.png')
 
   // "Add a track" form (File -> Open track...)

@@ -618,8 +618,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       view.showAllRegionsInAssembly(viewInit.assembly)
                     }
                     if (viewInit.tracks) {
-                      for (const trackId of viewInit.tracks) {
-                        view.showTrack(trackId)
+                      for (const track of viewInit.tracks) {
+                        if (typeof track === 'string') {
+                          view.showTrack(track)
+                        } else {
+                          view.showTrack(
+                            track.trackId,
+                            track.trackSnapshot ?? {},
+                            track.displaySnapshot ?? {},
+                          )
+                        }
                       }
                     }
                   }),

@@ -51,6 +51,7 @@ export interface Annotation {
   // 'rgba(0,0,0,0.78)') so callout text stays readable over busy page content
   background?: string
   fontSize?: number // text/circle label, default 18
+  strokeWidth?: number // box/circle stroke width (default 5)
   anchor?: { selector?: string; text?: string }
   dx?: number
   dy?: number
@@ -133,6 +134,19 @@ const VOLVOX_SV_CRAM_ADAPTER = {
     locationType: 'UriLocation',
   },
 }
+// HG002 ultralong ONT BAM (the same NCBI GIAB file the DEMO_CONFIG
+// hg002_nanopore track points at). Used to build the two HP-grouped session
+// subtracks the smalldel group-by figure renders.
+const HG002_NANOPORE_BAM =
+  'https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam'
+const HG002_NANOPORE_ADAPTER = {
+  type: 'BamAdapter',
+  bamLocation: { uri: HG002_NANOPORE_BAM, locationType: 'UriLocation' },
+  index: {
+    location: { uri: `${HG002_NANOPORE_BAM}.bai`, locationType: 'UriLocation' },
+    indexType: 'BAI',
+  },
+}
 const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
@@ -212,6 +226,8 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
+    viewportWidth: 1000,
+    viewportHeight: 550,
     readyText: 'ctgA',
     settleMs: 4000,
   },
@@ -229,6 +245,8 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
+    viewportWidth: 1000,
+    viewportHeight: 550,
     readyText: 'ctgA',
     settleMs: 3000,
   },
@@ -368,8 +386,21 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
+    viewportWidth: 1100,
+    viewportHeight: 600,
     readyText: 'ctgA',
     settleMs: 3000,
+    actions: [
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Open track selector' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="hierarchical_track_selector"]',
+      },
+      { type: 'delay', ms: 500 },
+    ],
   },
 
   {
@@ -398,14 +429,18 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // Realistic arc display on HG002 (reviewer asked for HG002 Illumina reads +
-  // HG002 SV calls instead of SKBR3). The window is centered on a ~1.4 kb GIAB
-  // Tier-1 deletion at chr1:1,285,401-1,286,800: HG002 Illumina 2x250 pairs that
-  // span the deletion get a larger-than-expected insert size, so readConnections:
-  // 'arc' draws them as the long red discordant arcs over the deletion while
-  // concordant pairs stay small grey arcs. The HG002 GIAB consensus SV VCF sits
-  // on top so the called deletion lines up with the arc signature. Window kept
-  // under AUTO_FORCE_LOAD_BP (20kb) so the BAM loads without a force-load click.
-  // Remote DEMO_CONFIG data, slow to load.
+  // HG002 SV calls instead of SKBR3). HG002 is the GIAB Ashkenazi son
+  // (NA24385) reference sample — real sequencing data, not a synthetic dataset.
+  // The reviewer-requested chr1:72,548,824-73,163,654 window (~615 kb) spans an
+  // HG002 structural variant: Illumina 2x250 pairs flanking the SV get a
+  // larger-than-expected insert size, so readConnections:'arc' draws them as
+  // long red discordant arcs while concordant pairs stay small grey arcs. The
+  // HG002 GIAB consensus SV VCF sits on top so the call lines up with the arc
+  // signature. At ~615 kb the window is far above AUTO_FORCE_LOAD_BP (20 kb), so
+  // the BAM would normally show a force-load prompt; userByteSizeLimit lifts the
+  // fetch-size gate (same mechanism the smalldel/multisv specs use) so the reads
+  // auto-load headless instead of sitting on the prompt. Remote DEMO_CONFIG
+  // data, slow to load.
   {
     mode: 'url',
     name: 'alignments/arc_display',
@@ -414,7 +449,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: 'chr1:1,283,500-1,288,700',
+          loc: 'chr1:72,548,824-73,163,654',
           tracks: [
             'variants_hg002',
             {
@@ -422,6 +457,7 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'arc',
+                userByteSizeLimit: 500_000_000,
               },
             },
           ],
@@ -563,6 +599,8 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
+    viewportWidth: 1000,
+    viewportHeight: 550,
     readyText: 'ctgA',
     settleMs: 5000,
     actions: [
@@ -673,7 +711,16 @@ export const specs: ScreenshotSpec[] = [
     ],
     // ring the SAMPLES section (the per-sample genotype table)
     annotations: [
-      { type: 'box', anchor: { selector: '[data-testid="BaseCard-Samples"]' } },
+      {
+        type: 'box',
+        anchor: { selector: '[data-testid="BaseCard-Samples"]' },
+        strokeWidth: 8,
+      },
+      {
+        type: 'arrow',
+        from: { x: 150, y: 200 },
+        anchor: { selector: '[data-testid="BaseCard-Samples"]' },
+      },
     ],
   },
 
@@ -898,12 +945,24 @@ export const specs: ScreenshotSpec[] = [
             {
               loc: 'Pp05:1-18496696',
               assembly: 'peach',
-              tracks: ['grape_peach_synteny_mcscan_simple'],
+              tracks: [
+                {
+                  trackId: 'grape_peach_synteny_mcscan_simple',
+                  displaySnapshot: { type: 'LGVSyntenyDisplay', height: 60 },
+                },
+              ],
             },
             {
-              loc: 'chr2:1-18779844',
+              // bottom panel zoomed out a little relative to the chromosome end
+              // (chr2 is 18.78Mb) so the ribbons read less cramped (reviewer)
+              loc: 'chr2:1-21600000',
               assembly: 'grape',
-              tracks: ['grape_peach_synteny_mcscan_simple'],
+              tracks: [
+                {
+                  trackId: 'grape_peach_synteny_mcscan_simple',
+                  displaySnapshot: { type: 'LGVSyntenyDisplay', height: 60 },
+                },
+              ],
             },
           ],
         },
@@ -1153,18 +1212,18 @@ export const specs: ScreenshotSpec[] = [
           loc: 'chr20:9,998,000-10,003,000',
           tracks: [
             {
+              trackId: 'COLO829_tumor.ht',
+              displaySnapshot: {
+                colorBy: { type: 'methylation' },
+              },
+            },
+            {
               trackId: 'COLO829_tumor.ht_modkit.bed_multi',
               displaySnapshot: {
                 type: 'MultiLinearWiggleDisplay',
                 minScore: 0,
                 maxScore: 100,
                 height: 150,
-              },
-            },
-            {
-              trackId: 'COLO829_tumor.ht',
-              displaySnapshot: {
-                colorBy: { type: 'methylation' },
               },
             },
           ],
@@ -1331,18 +1390,43 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // The 27bp heterozygous deletion in HG002 ONT reads at ~1:63,006,xxx (hg19),
-  // rebuilt from a share link as a self-contained sessionSpec so the figure
-  // renders headless without the force-load prompt. The HG002 GIAB consensus SV
-  // VCF (the DEL call) sits on top; the ultralong-ONT BAM below is colored +
-  // sorted by HP tag so the two haplotypes separate (the deletion concentrates
-  // in one). userByteSizeLimit lifts the force-load byte gate so the reads
-  // auto-load instead of sitting on "Loading"; readySelector waits for the
-  // pileup canvas to actually paint before capture (reviewer: wait for tracks
-  // ready, no "Loading").
+  // used to drive a group-by-HP example (reviewer). Group-by-tag spawns one
+  // session subtrack per tag value, each filtered to that value (see
+  // GroupByDialog.groupsForTag — filterBy.tagFilter), so this reproduces the
+  // result declaratively: two subtracks of the same HG002 ultralong-ONT BAM,
+  // one filtered to HP:1 and one to HP:2. The heterozygous deletion concentrates
+  // in a single haplotype, so it shows in one subtrack and not the other — a
+  // cleaner read than the colored+sorted single pileup. The HG002 GIAB consensus
+  // SV VCF (the DEL call) sits on top. userByteSizeLimit lifts the force-load
+  // byte gate so the reads auto-load instead of sitting on "Loading";
+  // readySelector waits for the pileup canvas to actually paint before capture.
+  //
+  // NOTE (color regression, reported separately): coloring HG002 reads by the HP
+  // tag now uses the darker MUI-200 TAG_COLOR_PALETTE
+  // (plugins/alignments/src/LinearAlignmentsDisplay/colorTagUtils.ts) instead of
+  // origin/main's pale Paul-Tol palette, so the haplotypes read darker than the
+  // old "nice pink and blue". That palette is a code constant, not a spec field,
+  // so it is not fixed here.
   {
     mode: 'url',
     name: 'smalldel',
     url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg002_nanopore_hp1',
+          name: 'HG002 ONT (HP:1)',
+          assemblyNames: ['hg19'],
+          adapter: HG002_NANOPORE_ADAPTER,
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg002_nanopore_hp2',
+          name: 'HG002 ONT (HP:2)',
+          assemblyNames: ['hg19'],
+          adapter: HG002_NANOPORE_ADAPTER,
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1351,18 +1435,30 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             'variants_hg002',
             {
-              trackId: 'hg002_nanopore',
+              trackId: 'hg002_nanopore_hp1',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                height: 450,
+                height: 250,
                 userByteSizeLimit: 200_000_000,
                 colorBy: { type: 'tag', tag: 'HP' },
-                sortedBy: {
-                  type: 'tag',
-                  tag: 'HP',
-                  pos: 63006550,
-                  refName: '1',
-                  assemblyName: 'hg19',
+                filterBy: {
+                  flagInclude: 0,
+                  flagExclude: 1540,
+                  tagFilter: { tag: 'HP', value: '1' },
+                },
+              },
+            },
+            {
+              trackId: 'hg002_nanopore_hp2',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                height: 250,
+                userByteSizeLimit: 200_000_000,
+                colorBy: { type: 'tag', tag: 'HP' },
+                filterBy: {
+                  flagInclude: 0,
+                  flagExclude: 1540,
+                  tagFilter: { tag: 'HP', value: '2' },
                 },
               },
             },
@@ -1469,10 +1565,19 @@ export const specs: ScreenshotSpec[] = [
                 height: 400,
               },
             },
-            // NCBI RefSeq gene track below the variant display (reviewer)
+            // NCBI RefSeq gene track below the variant display (reviewer).
+            // showLabels:'on' forces gene names on (the default 'auto' hides
+            // them at this 5Mb zoom past maxLabelFeatureDensity); showOnlyGenes
+            // drops the per-transcript/mRNA subfeatures so only the gene-level
+            // glyphs (and their labels) render (reviewer).
             {
               trackId: 'ncbi_refseq_109_hg38',
-              displaySnapshot: { height: 140 },
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                height: 140,
+                showLabels: 'on',
+                showOnlyGenes: true,
+              },
             },
           ],
         },
@@ -1685,6 +1790,9 @@ export const specs: ScreenshotSpec[] = [
                 height: 900,
                 coverageHeight: 120,
                 colorBy: { type: 'pairOrientation' },
+                // legend is opt-in now; show the pair-orientation key so the
+                // inversion color signature is readable
+                showLegend: true,
               },
             },
           ],
@@ -1873,7 +1981,10 @@ export const specs: ScreenshotSpec[] = [
             'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
             {
               trackId: 'hg008t_pacbio_chr10_deletion_slice',
-              displaySnapshot: { height: 300 },
+              // compact pileup (reviewer): the "Compact" feature-height preset
+              // sets featureHeight=3, featureSpacing=0 (COMPACTNESS_PRESETS),
+              // both flat config-override keys on LinearAlignmentsDisplay
+              displaySnapshot: { height: 300, featureHeight: 3, featureSpacing: 0 },
             },
           ],
         },
@@ -2010,62 +2121,41 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1800,
     settleMs: 25000,
-  },
-
-  // Same whole-genome multi-bigwig with a manual max-score cap so a few
-  // high-coverage spikes (centromeres/repeats) don't compress the copy-number
-  // band — the normalized indexcov domain runs ~0-2, so cap at 2.5.
-  {
-    mode: 'url',
-    name: 'sv_cgiab/cnv_score_limit',
-    url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'MultiQuantitativeTrack',
-          trackId: 'hg008_cnv_indexcov',
-          name: 'HG008 normal vs tumor coverage (indexcov)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'MultiWiggleAdapter',
-            subadapters: [
-              {
-                name: 'HG008-N (normal)',
-                type: 'BigWigAdapter',
-                bigWigLocation: {
-                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
-                  locationType: 'UriLocation',
-                },
-              },
-              {
-                name: 'HG008-T (tumor)',
-                type: 'BigWigAdapter',
-                bigWigLocation: {
-                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
-                  locationType: 'UriLocation',
-                },
-              },
-            ],
+    // Two-stage figure (reviewer, absorbs the former cnv_score_limit spec):
+    // stage 1 is the autoscaled whole-genome multi-bigwig; stage 2 applies a
+    // manual min/max score cap via the track menu (Score > Set min/max score)
+    // so a few high-coverage spikes (centromeres/repeats) don't compress the
+    // copy-number band — the normalized indexcov domain runs ~0-2, so cap at
+    // 0-2.5.
+    stages: [
+      {},
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'waitForText', text: 'Score' },
+          { type: 'delay', ms: 300 },
+          { type: 'hover', text: 'Score' },
+          { type: 'waitForText', text: 'Set min/max score' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Set min/max score' },
+          { type: 'waitForText', text: 'Set min/max score for track' },
+          { type: 'delay', ms: 500 },
+          {
+            type: 'type',
+            selector: '[role="dialog"] input[placeholder="Enter min score"]',
+            value: '0',
           },
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'GRCh38_GIABv3',
-          loc: 'chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY',
-          tracks: [
-            {
-              trackId: 'hg008_cnv_indexcov',
-              displaySnapshot: { height: 200, minScore: 0, maxScore: 2.5 },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    readyTimeout: 90000,
-    viewportWidth: 1800,
-    settleMs: 25000,
+          {
+            type: 'type',
+            selector: '[role="dialog"] input[placeholder="Enter max score"]',
+            value: '2.5',
+          },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Submit' },
+          { type: 'delay', ms: 12000 },
+        ],
+      },
+    ],
   },
 
   {
@@ -2302,16 +2392,18 @@ export const specs: ScreenshotSpec[] = [
     name: 'methylation/arabidopsis_chh',
     // ONT 5mC/5hmC per-read modifications (MM/ML), colored by methylation.
     // Must stay within the 50kb local reference (NC_003070.9 is only 50kb here)
-    // so the cytosine context can be resolved. 16-18kb is a heavily CHH-methylated
-    // RdDM/TE region (~38% CHH by EM-seq, vs ~5% genome-wide), so methylated sites
-    // actually render — the old "only blue" was the colorBySetting field bug, not
-    // the region.
+    // so the cytosine context can be resolved. Region chosen by decoding the MM/ML
+    // 5mC calls against the reference CHH contexts: 16-17kb is essentially
+    // unmethylated (~2-4% high-prob CHH-5mC) while 17.0-18.5kb is a heavily
+    // CHH-methylated RdDM/TE patch (66-81% high-prob CHH-5mC), so the methylated
+    // (red) marks actually fill the view. The old 16-18kb window was dominated by
+    // the unmethylated 16-17kb half, which read as "no methylation shown".
     url: sessionSpec('test_data/arabidopsis_methylation/config.json', {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'arabidopsis',
-          loc: 'NC_003070.9:16,000-18,000',
+          loc: 'NC_003070.9:17,000-18,500',
           tracks: [
             {
               trackId: 'arabidopsis_meth',
@@ -2334,11 +2426,13 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'methylation/arabidopsis_bisulfite_chh',
-    // The local reference NC_003070.9 is only 50kb, so the region must stay
-    // within it for bisulfite to resolve cytosine context (the old 144kb loc was
-    // beyond the reference -> no context -> only blue). A C-retention scan of the
-    // EM-seq reads ranked 16-18kb highest (~38% mean CHH methylation, an
-    // RdDM/TE-rich patch), so navigate there to show actually-methylated CHH.
+    // EM-seq read-vs-reference C->T conversion, colored by bisulfite. A per-base
+    // C-retention scan of the forward EM-seq reads over the CHH contexts puts the
+    // 17.0-18.5kb RdDM/TE patch at ~54-67% CHH methylation (its peak), and the
+    // independent ONT 5mC calls confirm the same window (66-81%), so the retained-C
+    // (red) marks are dense here. Matches the arabidopsis_chh ONT region above so
+    // the two figures show the same methylated locus; the old 16-18kb window
+    // straddled the unmethylated 16-17kb half, which read as "not much methylation".
     url: sessionSpec(
       'test_data/arabidopsis_methylation/config_emseq_bisulfite.json',
       {
@@ -2346,7 +2440,7 @@ export const specs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'arabidopsis',
-            loc: 'NC_003070.9:16,000-18,000',
+            loc: 'NC_003070.9:17,000-18,500',
             tracks: [
               {
                 trackId: 'arabidopsis_emseq',
@@ -2593,6 +2687,8 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
+    viewportWidth: 1000,
+    viewportHeight: 600,
     readyText: 'ctgA',
     settleMs: 4000,
     actions: [
@@ -2669,6 +2765,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'circle',
         anchor: { selector: '[data-testid="view_menu_icon"]' },
       },
+      { type: 'box', anchor: { text: 'Track labels' } },
     ],
   },
 
@@ -2779,6 +2876,8 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
+    viewportWidth: 1000,
+    viewportHeight: 550,
     readyText: 'ctgA',
     settleMs: 4000,
     actions: [
@@ -3001,6 +3100,9 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'COLO829_tumor.ht',
               displaySnapshot: {
                 colorBy: { type: 'modifications' },
+                // legend is opt-in now; this teaching figure explicitly shows
+                // the 5mC/5hmC color key
+                showLegend: true,
                 userByteSizeLimit: 100_000_000,
               },
             },
@@ -3083,7 +3185,7 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // smaller window keeps the focus on the track-list + recently-used dropdown
     viewportWidth: 1100,
-    viewportHeight: 650,
+    viewportHeight: 600,
     settleMs: 8000,
     actions: [
       // open the track selector directly via the header button — with no tracks
@@ -3230,40 +3332,42 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Multi-row XY plot' },
       { type: 'delay', ms: 500 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'Rendering type' } }],
   },
 
-  // MultiWig color/arrangement preset over the ENCODE multi-bigWig demo track
-  // (microarray_multi, 21 ENCODE bigWigs) from config_demo.json. The display
-  // `layout` is the TreeSidebarMixin frozen Source[] of {name,color} overrides
-  // (see packages/tree-sidebar/src/TreeSidebarMixin.ts; source names are the
-  // ENCFF* bigWig filenames, MultiWiggleAdapter.getFilename). Here it presets
-  // the first 3 sources red, the next 10 green, and the remaining 8 blue. Two
-  // stacked frames: the color/arrangement editor showing the per-source
-  // swatches, then the resulting red/green/blue-colored multi-wiggle track.
+  // MultiWig color/arrangement preset over the PUR copy-number panel (1000
+  // Genomes kidd-lab CNV bigWigs, 104 PUR individuals) from config_demo.json — a
+  // far richer copy-number dataset than the synthetic volvox wiggle (reviewer).
+  // The display `layout` is the TreeSidebarMixin frozen Source[] of {name,color}
+  // overrides (see packages/tree-sidebar/src/TreeSidebarMixin.ts; source names
+  // are the bigWig filenames per MultiWiggleAdapter.getFilename, which strips the
+  // last extension: HG00551.qm2.CN.1k.bw -> HG00551.qm2.CN.1k). Here it recolors
+  // a concrete subset of six of the 104 samples (the rest keep their default
+  // colors): two red, two green, two blue. Two stacked frames: the
+  // color/arrangement editor showing the per-source swatches, then the resulting
+  // recolored multi-wiggle track.
   {
     mode: 'url',
     name: 'multiwig/multi_colorselect',
-    // Uses the local volvox MultiWiggle (sources k1-k4) rather than the
-    // config_demo ENCODE microarray_multi: ENCODE's bigWigs 403 to the headless
-    // browser. The figure's point is the per-source color/arrangement editor, so
-    // any multi-source wiggle works — preset k1 red, k2/k3 green, k4 blue.
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
+          assembly: 'hg38',
+          loc: 'chr1:103,500,000-104,800,000',
           tracks: [
             {
-              trackId: 'volvox_microarray_multi',
+              trackId: 'pur_copynumber_1000g',
               displaySnapshot: {
                 type: 'MultiLinearWiggleDisplay',
                 height: 400,
                 layout: [
-                  { name: 'k1', color: 'red' },
-                  { name: 'k2', color: 'green' },
-                  { name: 'k3', color: 'green' },
-                  { name: 'k4', color: 'blue' },
+                  { name: 'HG00551.qm2.CN.1k', color: 'red' },
+                  { name: 'HG00553.qm2.CN.1k', color: 'red' },
+                  { name: 'HG00637.qm2.CN.1k', color: 'green' },
+                  { name: 'HG00638.qm2.CN.1k', color: 'green' },
+                  { name: 'HG00742.qm2.CN.1k', color: 'blue' },
+                  { name: 'HG00743.qm2.CN.1k', color: 'blue' },
                 ],
               },
             },
@@ -3271,7 +3375,8 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'MultiWig',
+    readyText: 'PUR',
+    readySelector: '[data-testid="multi-wiggle-display-done"]',
     readyTimeout: 90000,
     settleMs: 12000,
     stages: [
@@ -3319,16 +3424,16 @@ export const specs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          { type: 'waitForText', text: 'Open track selector' },
-          { type: 'delay', ms: 300 },
-          { type: 'click', text: 'Open track selector' },
+          // open the track selector via the in-view header button, not the view
+          // hamburger menu, which would otherwise linger open over the capture
+          // (reviewer: only the track menus should show)
+          { type: 'click', selector: 'button[title="Open track selector"]' },
           {
             type: 'waitForSelector',
             selector: '[data-testid="hierarchical_track_selector"]',
           },
           { type: 'delay', ms: 500 },
-          // open the category's "..." menu (stable testid on the category
+          // open the category's "..." track menu (stable testid on the category
           // CascadingMenuButton)
           {
             type: 'click',
@@ -3337,7 +3442,24 @@ export const specs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Add to selection' },
           { type: 'delay', ms: 400 },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Add to selection' } }],
+        annotations: [
+          { type: 'box', anchor: { text: 'Add to selection' } },
+          {
+            type: 'arrow',
+            from: { x: 640, y: 200 },
+            anchor: { text: 'Add to selection' },
+          },
+          {
+            type: 'text',
+            anchor: { text: 'Add to selection' },
+            dx: -470,
+            dy: -44,
+            text: 'Open a track category menu and click Add to selection',
+            background: 'rgba(0,0,0,0.8)',
+            textColor: '#fff',
+            fontSize: 15,
+          },
+        ],
       },
       {
         actions: [
@@ -3350,6 +3472,21 @@ export const specs: ScreenshotSpec[] = [
         ],
         annotations: [
           { type: 'box', anchor: { text: 'Create multi-wiggle track' } },
+          {
+            type: 'arrow',
+            from: { x: 640, y: 230 },
+            anchor: { text: 'Create multi-wiggle track' },
+          },
+          {
+            type: 'text',
+            anchor: { text: 'Create multi-wiggle track' },
+            dx: -510,
+            dy: -44,
+            text: 'Open the selection cart and click Create multi-wiggle track',
+            background: 'rgba(0,0,0,0.8)',
+            textColor: '#fff',
+            fontSize: 15,
+          },
         ],
       },
     ],
@@ -3394,12 +3531,11 @@ export const specs: ScreenshotSpec[] = [
           {
             type: 'text',
             x: 470,
-            // farther down so it clears the form fields (reviewer: ~100px lower)
-            y: 250,
+            y: 310,
             text: 'Use this dropdown to reach alternative add-track workflows, e.g. multi-wiggle',
             background: 'rgba(0,0,0,0.8)',
             textColor: '#fff',
-            fontSize: 15,
+            fontSize: 22,
           },
           {
             type: 'arrow',
@@ -3427,7 +3563,7 @@ export const specs: ScreenshotSpec[] = [
             text: 'Paste wiggle file URLs here (one per line)',
             background: 'rgba(0,0,0,0.8)',
             textColor: '#fff',
-            fontSize: 15,
+            fontSize: 22,
           },
         ],
       },
@@ -3535,11 +3671,12 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 600 },
     ],
     annotations: [
-      { type: 'circle', anchor: { text: 'Plugin store' } },
+      { type: 'box', anchor: { text: 'Plugin store' } },
       {
         type: 'arrow',
         from: { x: 300, y: 250 },
-        anchor: { text: 'Installed plugins' },
+        anchor: { text: 'Plugin store' },
+        dy: 30,
       },
     ],
   },
@@ -3582,6 +3719,11 @@ export const specs: ScreenshotSpec[] = [
 
   // Two-stage figure: (top) dotplot drag-selection context menu showing "Open
   // linear synteny view", (bottom) the linear synteny view it launches.
+  // Uses the curated MCScan anchor tracks (the same pair the linear_synteny
+  // figure uses) rather than the raw grape_peach_paf: the dotplot carries its
+  // tracks into the launched synteny view, and the dense PAF produced a chaotic
+  // criss-crossed ribbon (reviewer). The MCScan anchors are 1:1 ortholog blocks
+  // so the launched view shows clean diagonal ribbons instead.
   {
     mode: 'url',
     name: 'synteny_from_dotplot_view',
@@ -3590,7 +3732,10 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'DotplotView',
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
-          tracks: ['grape_peach_paf'],
+          tracks: [
+            'grape_peach_synteny_mcscan',
+            'grape_peach_synteny_mcscan_simple',
+          ],
         },
       ],
     }),
@@ -3630,7 +3775,9 @@ export const specs: ScreenshotSpec[] = [
   // Basic splicing: ACTB RNA-seq reads at exon-scale zoom so the spliced
   // alignments (grey read blocks joined by thin teal skip lines across introns)
   // are individually visible, with the gene model above. Replaces the old
-  // rnaseq/overview, which duplicated the reads_zoomed view.
+  // rnaseq/overview, which duplicated the reads_zoomed view. The pileup needs an
+  // explicit display height (and a tall-enough crop) or the reads render below the
+  // gene+coverage stack and get cropped off — which read as "no RNA-seq visible".
   {
     mode: 'url',
     name: 'rnaseq/basic_splicing',
@@ -3640,15 +3787,25 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: 'chr7:5,567,000-5,570,000',
-          tracks: ['ncbi_gff_hg19', 'Pairend_StrandSpecific_51mer_Human_hg19'],
+          tracks: [
+            'ncbi_gff_hg19',
+            {
+              trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                height: 360,
+              },
+            },
+          ],
         },
       ],
     }),
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
-    // crop off the empty viewport below the (short) two-track stack
-    crop: { x: 0, y: 0, width: 1500, height: 250 },
+    // crop to the gene + coverage + spliced-read stack (tall enough to include
+    // the pileup so the skip lines across introns are visible)
+    crop: { x: 0, y: 0, width: 1500, height: 540 },
   },
 
   // Compact read drawing mode: featureHeight 3 / spacing 0 packs the full ACTB
@@ -3674,7 +3831,11 @@ export const specs: ScreenshotSpec[] = [
                 featureHeight: 3,
                 featureSpacing: 0,
                 maxHeight: 2000,
-                height: 700,
+                // taller SNPCoverage band + shorter pileup viewport + shorter
+                // browser (reviewer): coverageHeight is the LinearAlignmentsDisplay
+                // coverage band, the pileup viewport = height - coverageHeight
+                coverageHeight: 120,
+                height: 420,
                 // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
                 // the spurious forward-strand sashimi arcs are single-/2-read
                 // aligner noise (correct XS-tag strand, just low support). A
@@ -3689,7 +3850,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
-    viewportHeight: 1000,
+    viewportHeight: 650,
   },
 
   // Long-read IsoSeq RNA-seq at ACTB.
@@ -3702,7 +3863,18 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: 'chr7:5,566,000-5,571,000',
-          tracks: ['ncbi_gff_hg19', 'hg_isoforms.fasta_bam'],
+          tracks: [
+            'ncbi_gff_hg19',
+            {
+              trackId: 'hg_isoforms.fasta_bam',
+              // taller SNPCoverage band (reviewer): coverageHeight is the
+              // LinearAlignmentsDisplay coverage-track height (default 45)
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                coverageHeight: 120,
+              },
+            },
+          ],
         },
       ],
     }),
@@ -3724,7 +3896,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:1-1,200,000',
+          loc: 'chr1:1,000,000-1,001,000',
           tracks: ['HG02024_VN049_KHVTrio.chr1.vcf'],
         },
       ],
@@ -3890,6 +4062,8 @@ export const specs: ScreenshotSpec[] = [
         { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
       ],
     }),
+    viewportWidth: 1000,
+    viewportHeight: 600,
     readyText: 'ctgA',
     settleMs: 3000,
     actions: [
@@ -4096,7 +4270,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         text: 'You can also load SV calls from a VCF track already in the session',
         x: 870,
-        y: 250,
+        y: 310,
         background: 'rgba(0,0,0,0.8)',
         textColor: '#fff',
         fontSize: 15,
@@ -4227,9 +4401,10 @@ export const specs: ScreenshotSpec[] = [
   // Multi-wiggle clustering, two-stage figure over the PUR copy-number panel
   // (1000 Genomes kidd-lab CNV bigWigs, 104 PUR individuals) added to
   // config_demo — a far richer dataset than the synthetic volvox wiggle
-  // (reviewer). Shown across the AMY1 locus (chr1, hg38), a classic
-  // copy-number-polymorphic region, so the per-individual copy-number differences
-  // drive a meaningful clustering. Top frame: the "Cluster by score" dialog open
+  // (reviewer). Shown in multi-row density mode across a wide chr1 window
+  // spanning the AMY1 locus (hg38), a classic copy-number-polymorphic region, so
+  // the per-individual copy-number differences drive a meaningful clustering.
+  // Top frame: the "Cluster by score" dialog open
   // (auto/manual mode, before). Bottom frame: after "Run clustering", the 104
   // rows are reordered by signal similarity with a dendrogram on the left.
   // Combines the old cluster_dialog + clustered_result into one before/after.
@@ -4241,13 +4416,17 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:103,500,000-104,800,000',
+          loc: 'chr1:100,000,000-110,000,000',
           tracks: [
             {
               trackId: 'pur_copynumber_1000g',
               displaySnapshot: {
                 type: 'MultiLinearWiggleDisplay',
                 height: 420,
+                // multi-row density renderer (reviewer): one colored density
+                // strip per individual; `defaultRendering` is a config slot, so
+                // this flat key routes into the display's configOverrides
+                defaultRendering: 'multirowdensity',
               },
             },
           ],

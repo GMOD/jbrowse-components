@@ -11,6 +11,16 @@ a `__name` helper that breaks `page.evaluate`'d functions). Specs live in
 `scripts/screenshot-specs.ts`; the review log is `scripts/screenshot-review.json`
 (gitignored, local coordination only).
 
+**Content-stable writes.** Rendering is deterministic (an unchanged spec
+re-renders byte-for-byte), so the generator only overwrites a committed PNG when
+the new capture differs by more than `--diff-threshold` of its pixels (default
+0.001, compared via ImageMagick `compare`, mirroring
+`jbrowse-web/browser-tests/pngDiff.ts`). A regen therefore touches only the
+images that actually changed — it logs `≈ kept` vs `✓ updated` per spec. Pass
+`--force` to rewrite every PNG regardless. A code change still needs a
+`pnpm build` in `products/jbrowse-web` first (the generator renders the built
+bundle, not source).
+
 **Many of these PNGs are too large to analyze directly — downscale first.**
 Capture is 1500px-wide at `deviceScaleFactor: 2`, so most images are ~3000px
 wide and the Read tool rejects them (oversized). Before reading one for visual

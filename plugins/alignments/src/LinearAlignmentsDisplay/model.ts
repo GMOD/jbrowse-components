@@ -718,10 +718,11 @@ export default function stateModelFactory(
          * #getter
          */
         get showLegend() {
-          const override = self.getOverride<boolean>('showLegend')
-          return override !== undefined
-            ? override
-            : this.legendItems().length > 1
+          // Opt-in: the floating color legend is hidden by default for every
+          // color scheme (including modifications) and shown only on demand via
+          // the "Show legend" track-menu item, rather than eagerly covering the
+          // top of every alignments track.
+          return self.getOverride<boolean>('showLegend') ?? false
         },
 
         /**
