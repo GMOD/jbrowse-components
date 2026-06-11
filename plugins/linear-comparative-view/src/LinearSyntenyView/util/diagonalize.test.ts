@@ -1751,6 +1751,42 @@ describe('diagonalizeRegions', () => {
     expect(rev?.reversed).toBe(true)
   })
 
+  test('a refName split across multiple regions keeps all of them, reversed together', async () => {
+    const refRegions: Region[] = [
+      { refName: 'ref1', start: 0, end: 100000, assemblyName: 'ref' },
+    ]
+    // chrA appears twice (split into two displayed regions)
+    const queryRegions: Region[] = [
+      { refName: 'chrA', start: 0, end: 50000, assemblyName: 'query' },
+      { refName: 'chrA', start: 50000, end: 100000, assemblyName: 'query' },
+    ]
+    const alignments: AlignmentData[] = [
+      {
+        refRefName: 'ref1',
+        queryRefName: 'chrA',
+        refStart: 0,
+        refEnd: 80000,
+        queryStart: 0,
+        queryEnd: 80000,
+        strand: -1,
+      },
+    ]
+
+    const result = await diagonalizeRegions(
+      alignments,
+      refRegions,
+      queryRegions,
+    )
+
+    // both chrA regions survive (neither dropped) and both get reversed
+    expect(result.newRegions).toHaveLength(2)
+    expect(result.newRegions.map(r => r.start)).toEqual([0, 50000])
+    for (const region of result.newRegions) {
+      expect(region.refName).toBe('chrA')
+      expect(region.reversed).toBe(true)
+    }
+  })
+
   test('unaligned chromosomes appended after aligned ones', async () => {
     const refRegions: Region[] = [
       { refName: 'ref1', start: 0, end: 100000, assemblyName: 'ref' },

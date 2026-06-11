@@ -24,6 +24,13 @@ export interface DiagonalizationResult {
 // (e.g. wrap checkStopToken from a worker).
 export type DiagonalizeTick = () => void
 
+// Accumulated stats for one (query chrom, reference chrom) pair.
+interface PairStats {
+  bases: number
+  weightedPosSum: number
+  strandWeightedSum: number
+}
+
 // Groups alignments by vertical-axis (query) chromosome, accumulates total
 // aligned bases, length-weighted position, and strand per (query, reference)
 // pair. Selects the reference chromosome with the most aligned bases as the
@@ -38,13 +45,7 @@ export async function diagonalizeRegions(
   onTick?: DiagonalizeTick,
 ): Promise<DiagonalizationResult> {
   // outer key: vertical chrom; inner key: horizontal chrom
-  const queryGroups = new Map<
-    string,
-    Map<
-      string,
-      { bases: number; weightedPosSum: number; strandWeightedSum: number }
-    >
-  >()
+  const queryGroups = new Map<string, Map<string, PairStats>>()
 
   for (const aln of alignments) {
     // Use x-axis (reference) length throughout: consistent weighting for
@@ -82,24 +83,20 @@ export async function diagonalizeRegions(
 
   for (const [verticalChrom, group] of queryGroups) {
     let bestRefName = ''
-    let bestBases = 0
-    let bestWeightedPosSum = 0
-    let bestStrandWeightedSum = 0
+    let best: PairStats = { bases: 0, weightedPosSum: 0, strandWeightedSum: 0 }
 
     for (const [horizontalChrom, data] of group) {
-      if (data.bases > bestBases) {
-        bestBases = data.bases
+      if (data.bases > best.bases) {
         bestRefName = horizontalChrom
-        bestWeightedPosSum = data.weightedPosSum
-        bestStrandWeightedSum = data.strandWeightedSum
+        best = data
       }
     }
 
     queryOrdering.push({
       refName: verticalChrom,
       bestRefName,
-      bestRefPos: bestWeightedPosSum / bestBases,
-      shouldReverse: bestStrandWeightedSum < 0,
+      bestRefPos: best.weightedPosSum / best.bases,
+      shouldReverse: best.strandWeightedSum < 0,
     })
   }
 
@@ -116,14 +113,24 @@ export async function diagonalizeRegions(
     return a.bestRefPos - b.bestRefPos
   })
 
-  const regionsByName = new Map(currentRegions.map(r => [r.refName, r]))
+  // group by refName: a refName can appear in more than one region (e.g. a
+  // chromosome displayed in multiple regions), and all of them move together
+  const regionsByName = new Map<string, Region[]>()
+  for (const region of currentRegions) {
+    let group = regionsByName.get(region.refName)
+    if (!group) {
+      group = []
+      regionsByName.set(region.refName, group)
+    }
+    group.push(region)
+  }
+
   const orderedNames = new Set(queryOrdering.map(q => q.refName))
   const newQueryRegions: Region[] = []
   let regionsReversed = 0
 
   for (const { refName, shouldReverse } of queryOrdering) {
-    const region = regionsByName.get(refName)
-    if (region) {
+    for (const region of regionsByName.get(refName) ?? []) {
       newQueryRegions.push({ ...region, reversed: shouldReverse })
       if (shouldReverse !== (region.reversed ?? false)) {
         regionsReversed++
