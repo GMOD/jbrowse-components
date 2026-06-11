@@ -53,6 +53,7 @@ const ViewMenu = observer(function ViewMenu({
   return (
     <CascadingMenuButton
       data-testid="view_menu_icon"
+      tooltip="View menu"
       menuItems={() => [
         {
           label: 'View options',

@@ -106,7 +106,11 @@ function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
   }
 
   return (
-    <CascadingMenuButton menuItems={getMenuItems} data-testid="track_menu_icon">
+    <CascadingMenuButton
+      menuItems={getMenuItems}
+      data-testid="track_menu_icon"
+      tooltip="Track settings"
+    >
       <MoreVertIcon fontSize="small" />
     </CascadingMenuButton>
   )
