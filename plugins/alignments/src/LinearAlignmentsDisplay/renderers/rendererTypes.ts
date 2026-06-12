@@ -89,6 +89,10 @@ export interface SectionRender {
   // Clip band for the pileup passes.
   pileupClipTop: number
   pileupClipHeight: number
+  // Screen-space paired-end arc band for this section, or undefined when arcs
+  // are off / this section reserves none. Ungrouped is sticky (not scrolled);
+  // grouped scrolls with its section, matching coverage.
+  arcBand?: ArcBand
 }
 
 // HAL/region key namespacing: section 0 keys equal the raw displayedRegionIndex
@@ -103,13 +107,16 @@ export function sectionRegionKey(sectionIdx: number, regionIdx: number) {
 export interface SectionSource {
   groupKey: string
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
+  // This group's paired-end arc upload feed (region idx → arcs). Empty when
+  // read-connections are off. Per-section so each grouped band draws its own
+  // arcs; ungrouped is the single section's feed.
+  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
 }
 
 export interface AlignmentsSources {
   // One entry per stacked group, in stacking order. Ungrouped = single entry
   // (groupKey ''). Parallel to `RenderState.sections`.
   sections: SectionSource[]
-  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
 }
 
 export interface AlignmentsRenderingBackend {

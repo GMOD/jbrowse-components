@@ -6,7 +6,6 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   buildReadIdToIndex,
-  computeArcBand,
   ensureRegion,
   sectionRegionKey,
   shouldDrawOverlaps,
@@ -424,18 +423,17 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
           uploadOverlaps(this.hal, idx, data)
         }
       }
-    })
-    // Arcs are off in grouped mode (v1), so they belong to section 0 — its key
-    // is the raw region index.
-    const section0 = sources.sections[0]?.laidOutPileupMap
-    for (const [regionIdx, data] of sources.arcsRpcDataMap) {
-      const idx = sectionRegionKey(0, regionIdx)
-      if (!section0?.has(regionIdx)) {
-        active.push(idx)
+      // Each section draws its own arcs. A region with arcs but no pileup
+      // (mate off-screen) still needs its renderer-side metadata + active slot.
+      for (const [regionIdx, data] of section.arcsRpcDataMap) {
+        const idx = sectionRegionKey(s, regionIdx)
+        if (!section.laidOutPileupMap.has(regionIdx)) {
+          active.push(idx)
+          ensureRegion(this.regions, idx, emptyRegion)
+        }
+        uploadArcs(this.hal, idx, data)
       }
-      ensureRegion(this.regions, idx, emptyRegion)
-      uploadArcs(this.hal, idx, data)
-    }
+    })
     // Sweeps every HAL buffer not rewritten above — stale passes in active
     // regions and every pass of regions that dropped out this sync.
     this.hal.endUpload()
@@ -524,11 +522,6 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     const bufH = Math.round(canvasHeight * dpr)
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
-
-    // Arcs/sashimi are disabled in grouped mode (v1), so the arc band only
-    // applies to the single (ungrouped) section.
-    const arcBand =
-      state.sections.length === 1 ? computeArcBand(state) : undefined
 
     let hasDrawn = false
     for (const block of blocks) {
@@ -652,8 +645,9 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         // Up- and down-mode arcs both draw here, after the pileup: the arc band
         // never overlaps the pileup region, so a single pass suffices and
         // up-mode arcs still land in front of the coverage histogram (drawn
-        // earlier). Grouped mode has no arcs (arcBand is undefined).
-        if (arcBand) {
+        // earlier). Each section carries its own (scrolled) band; undefined when
+        // arcs are off or this section reserves none.
+        if (sec.arcBand) {
           this.drawArcsPass(
             block,
             region,
@@ -661,7 +655,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
             regionKey,
             scissorX,
             scissorW,
-            arcBand,
+            sec.arcBand,
             dpr,
             bufH,
           )
@@ -694,12 +688,14 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     dpr: number,
     bufH: number,
   ) {
-    const arcViewportTop = Math.round(band.top * dpr)
-    const arcViewportH = Math.min(
-      Math.round(band.height * dpr),
-      Math.max(0, bufH - arcViewportTop),
-    )
-    if (arcViewportH <= 0) {
+    // The viewport keeps the band's FULL height (it sets the arc Y-scale), even
+    // when a grouped section's band scrolls partly off-screen; the scissor clips
+    // to the visible slice. Ungrouped bands sit on-screen, so viewport == scissor
+    // and this is byte-identical to the pre-grouping single pass.
+    const viewportTop = Math.round(band.top * dpr)
+    const viewportH = Math.round(band.height * dpr)
+    const scissor = devBand(band.top, band.height, dpr, bufH)
+    if (scissor.height <= 0 || viewportH <= 0) {
       return
     }
     this.saveUBO()
@@ -709,18 +705,18 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       state,
       scissorX,
       scissorW,
-      arcViewportH,
+      arcViewportH: viewportH,
       dpr,
       // Up mode anchors at the band bottom (offset down by its full height);
       // down mode anchors at the top (no offset).
-      covOffset: band.down ? 0 : arcViewportH / dpr,
+      covOffset: band.down ? 0 : viewportH / dpr,
     })
     this.hal.writeUniforms(this.uData)
 
     const vpX = Math.round(scissorX * dpr)
     const vpW = Math.round(scissorW * dpr)
-    this.hal.setViewport(vpX, arcViewportTop, vpW, arcViewportH)
-    this.hal.setScissor(vpX, arcViewportTop, vpW, arcViewportH)
+    this.hal.setViewport(vpX, viewportTop, vpW, viewportH)
+    this.hal.setScissor(vpX, scissor.top, vpW, scissor.height)
 
     this.hal.drawPass(PASS_ARC, regionKey)
     this.hal.drawPass(PASS_ARC_LINE, regionKey)

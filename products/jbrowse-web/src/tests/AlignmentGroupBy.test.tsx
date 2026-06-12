@@ -61,6 +61,41 @@ test('group by strand stacks two sections in one track', async () => {
   await screen.findByText(/Reverse strand \(\d+\)/, ...opts)
 }, 60000)
 
+// READ_CONNECTIONS_GROUPED_PLAN Stage 3: paired-end arcs draw per stacked
+// section on a shared Y-domain. Grouping by first-of-pair strand keeps both
+// mates in the same section (unlike plain strand), so each section's arcs are
+// meaningful. Asserts the per-section arc feed is populated, then snapshots.
+test('group draws per-section paired-end arcs', async () => {
+  const user = userEvent.setup()
+  const { view } = await createView()
+  await view.navToLocString('ctgA:1-50000')
+  await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
+  await screen.findByTestId('pileup-display-done', ...opts)
+
+  const display = view.tracks[0]?.displays[0]
+  display.setReadConnections('arc')
+  display.setGroupBy({ type: 'firstOfPairStrand' })
+
+  await waitFor(
+    () => {
+      expect(display.isGrouped).toBe(true)
+      expect(display.groupOrder.length).toBe(2)
+      // every section carries its own arc feed, and arcs are actually produced.
+      const totalArcs = display.sourceSections.reduce(
+        (sum, s) =>
+          sum +
+          [...s.arcsRpcDataMap.values()].reduce((a, d) => a + d.numArcs, 0),
+        0,
+      )
+      expect(totalArcs).toBeGreaterThan(0)
+    },
+    { timeout: 30000 },
+  )
+
+  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  expectCanvasMatch(findCanvasIn(el), 0.05)
+}, 90000)
+
 test('ungroup restores a single section', async () => {
   const user = userEvent.setup()
   const { view } = await createView()

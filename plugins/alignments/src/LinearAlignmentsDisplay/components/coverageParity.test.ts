@@ -234,9 +234,9 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         {
           groupKey: '',
           laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+          arcsRpcDataMap: new Map(),
         },
       ],
-      arcsRpcDataMap: new Map(),
     })
 
     // The normalized depths should be identical
@@ -272,9 +272,9 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         {
           groupKey: '',
           laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+          arcsRpcDataMap: new Map(),
         },
       ],
-      arcsRpcDataMap: new Map(),
     })
 
     // Both should have same yOffset, height, colorType per segment
@@ -303,9 +303,9 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         {
           groupKey: '',
           laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+          arcsRpcDataMap: new Map(),
         },
       ],
-      arcsRpcDataMap: new Map(),
     })
 
     const covH = 100
@@ -429,9 +429,12 @@ describe('GPU sync rebuild transaction', () => {
 
     gpu.sync({
       sections: [
-        { groupKey: '', laidOutPileupMap: new Map([[0, withOverlap]]) },
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, withOverlap]]),
+          arcsRpcDataMap: new Map(),
+        },
       ],
-      arcsRpcDataMap: new Map(),
     })
     expect(hal.getBufferCount(0, 'overlap')).toBeGreaterThan(0)
 
@@ -443,9 +446,9 @@ describe('GPU sync rebuild transaction', () => {
         {
           groupKey: '',
           laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+          arcsRpcDataMap: new Map(),
         },
       ],
-      arcsRpcDataMap: new Map(),
     })
     expect(hal.getBufferCount(0, 'overlap')).toBe(0)
   })
@@ -460,13 +463,13 @@ describe('GPU sync rebuild transaction', () => {
         {
           groupKey: '',
           laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+          arcsRpcDataMap: new Map(),
         },
       ],
-      arcsRpcDataMap: new Map(),
     })
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
 
-    gpu.sync({ sections: [], arcsRpcDataMap: new Map() })
+    gpu.sync({ sections: [] })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
   })
 })

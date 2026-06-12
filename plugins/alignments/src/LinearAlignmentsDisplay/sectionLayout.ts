@@ -1,7 +1,7 @@
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
-import type { SectionRender } from './renderers/rendererTypes.ts'
+import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
 
 // Vertical band geometry for one stacked group section. Generalizes the
 // single-pileup `belowCoverageBands` to N sections: every section reserves its
@@ -16,6 +16,9 @@ export interface Section {
   coverageHeight: number
   arcBandTop: number
   arcBandHeight: number
+  // Arcs point down (own band below coverage) vs up (overlay coverage). Carried
+  // so the renderers anchor the arc Y-scale the same way per section.
+  arcDown: boolean
   sashimiBandTop: number
   pileupTop: number
   pileupHeight: number
@@ -120,6 +123,7 @@ export function computeStackedSections(
       // computeArcBand so Stage 3 renderers reproduce the ungrouped band.
       arcBandTop: coverageTop + (arcBand?.top ?? stack.arcsBandTop),
       arcBandHeight: arcBand?.height ?? 0,
+      arcDown: arcBand?.down ?? false,
       sashimiBandTop: coverageTop + stack.sashimiBandTop,
       pileupTop,
       pileupHeight,
@@ -141,8 +145,15 @@ export function buildSectionRenders(
 ): SectionRender[] {
   const { scrollTop, canvasHeight } = opts
   const grouped = layout.sections.length > 1
+  // Screen-space arc band for a section whose band top has already had any
+  // scroll applied. Undefined when the section reserves no arcs.
+  const arcBandAt = (sec: Section, top: number): ArcBand | undefined =>
+    sec.arcBandHeight > 0
+      ? { top, height: sec.arcBandHeight, down: sec.arcDown }
+      : undefined
   if (!grouped) {
-    const pileupTop = layout.sections[0]?.pileupTop ?? 0
+    const sec = layout.sections[0]
+    const pileupTop = sec?.pileupTop ?? 0
     return [
       {
         pileupTopOffset: pileupTop,
@@ -151,6 +162,9 @@ export function buildSectionRenders(
         covClipHeight: canvasHeight,
         pileupClipTop: pileupTop,
         pileupClipHeight: Math.max(0, canvasHeight - pileupTop),
+        // Coverage + arc band are sticky in ungrouped mode (only the pileup
+        // scrolls), so the arc band keeps its content-space top.
+        arcBand: sec ? arcBandAt(sec, sec.arcBandTop) : undefined,
       },
     ]
   }
@@ -161,5 +175,7 @@ export function buildSectionRenders(
     covClipHeight: sec.coverageHeight,
     pileupClipTop: sec.pileupTop - scrollTop,
     pileupClipHeight: sec.pileupHeight,
+    // The whole section scrolls as a unit, so the arc band scrolls too.
+    arcBand: arcBandAt(sec, sec.arcBandTop - scrollTop),
   }))
 }

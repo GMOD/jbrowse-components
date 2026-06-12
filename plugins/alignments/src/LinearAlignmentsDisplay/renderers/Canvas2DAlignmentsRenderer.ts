@@ -11,7 +11,6 @@ import {
   type RenderBlock,
   type RenderState,
   bpToScreenX,
-  computeArcBand,
   interbaseRangeEnds,
   pileupRowY,
   sectionRegionKey,
@@ -207,27 +206,25 @@ function buildPileupRegion(
  * keys equal the raw region index, so ungrouped is byte-identical.
  */
 export function buildAlignmentsRegionMap(sources: AlignmentsSources) {
-  const { sections, arcsRpcDataMap } = sources
   const regions = new Map<number, Canvas2DRegionData>()
-  sections.forEach((section, s) => {
+  sources.sections.forEach((section, s) => {
     for (const [regionIdx, data] of section.laidOutPileupMap) {
-      const key = sectionRegionKey(s, regionIdx)
-      // Arcs are off in grouped mode (v1), so they only attach to section 0.
-      const arcs = s === 0 ? arcsRpcDataMap.get(regionIdx) : undefined
-      regions.set(key, buildPileupRegion(data, arcs))
+      regions.set(
+        sectionRegionKey(s, regionIdx),
+        buildPileupRegion(data, section.arcsRpcDataMap.get(regionIdx)),
+      )
+    }
+    // Arc-only regions (arcs arrived for a region with no pileup) attach to
+    // this same section.
+    for (const [regionIdx, arcs] of section.arcsRpcDataMap) {
+      if (!section.laidOutPileupMap.has(regionIdx)) {
+        regions.set(sectionRegionKey(s, regionIdx), {
+          ...EMPTY_PILEUP_FIELDS,
+          ...arcs,
+        })
+      }
     }
   })
-  // Arc-only regions (arcs arrived for a region with no pileup) belong to
-  // section 0 — its key is the raw region index.
-  const section0 = sections[0]?.laidOutPileupMap
-  for (const [regionIdx, arcs] of arcsRpcDataMap) {
-    if (!section0?.has(regionIdx)) {
-      regions.set(sectionRegionKey(0, regionIdx), {
-        ...EMPTY_PILEUP_FIELDS,
-        ...arcs,
-      })
-    }
-  }
   return regions
 }
 
@@ -305,11 +302,6 @@ export function drawAlignmentBlocks(
   if (regions.size === 0) {
     return false
   }
-
-  // Arcs/sashimi are disabled in grouped mode (v1), so the arc band only
-  // applies to the single (ungrouped) section.
-  const arcBand =
-    state.sections.length === 1 ? computeArcBand(state) : undefined
 
   for (const block of blocks) {
     const blockClip = clipBlockForCanvas(block, canvasWidth)
@@ -414,8 +406,9 @@ export function drawAlignmentBlocks(
 
       // Up- and down-mode arcs both draw here, after the pileup. The band never
       // overlaps the pileup region, and up-mode arcs still land in front of the
-      // coverage histogram (drawn earlier), matching the GPU pass order.
-      // Grouped mode has no arcs (arcBand is undefined).
+      // coverage histogram (drawn earlier), matching the GPU pass order. Each
+      // section carries its own (scrolled) band; undefined when arcs are off.
+      const arcBand = sec.arcBand
       if (arcBand) {
         ctx.save()
         ctx.beginPath()

@@ -88,7 +88,6 @@ export async function renderSvg(
       ctx,
       {
         sections: model.sourceSections,
-        arcsRpcDataMap: model.arcsRpcDataMap,
       },
       renderBlocks,
       state,

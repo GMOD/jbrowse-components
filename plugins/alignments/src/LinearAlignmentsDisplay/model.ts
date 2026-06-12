@@ -918,9 +918,12 @@ export default function stateModelFactory(
          * keys per section. Parallel to `renderState.sections`.
          */
         get sourceSections() {
+          const arcsByGroup = this.arcsByGroup
           return this.groupOrder.map(({ key }) => ({
             groupKey: key,
             laidOutPileupMap: this.groupLaidOutMap(key),
+            arcsRpcDataMap:
+              arcsByGroup.get(key) ?? new Map<number, ArcsUploadData>(),
           }))
         },
 
@@ -989,7 +992,8 @@ export default function stateModelFactory(
          * pre-grouped by refName so each region lookup is O(1)); ungrouped is the
          * single-group case. Empty map when read-connections are off, so the
          * off-path skips the per-read region scan entirely. Source of truth for
-         * both the ungrouped `arcsRpcDataMap` feed and the shared `arcsYDomainBp`.
+         * the per-section arc feed (`sourceSections`) and the shared cross-group
+         * `arcsYDomainBp`.
          */
         get arcsByGroup() {
           const out = new Map<string, Map<number, ArcsUploadData>>()
@@ -1014,20 +1018,6 @@ export default function stateModelFactory(
             out.set(key, computeArcsRegionMap(rawMap, regionInfos, settings))
           }
           return out
-        },
-
-        /**
-         * #getter
-         * Ungrouped arc feed: the primary (first) group's region map. Ungrouped
-         * has exactly one group, so this is the whole feed and stays byte-
-         * identical to pre-grouping; the grouped renderers read `arcsByGroup` per
-         * section directly (Stage 3).
-         */
-        get arcsRpcDataMap(): Map<number, ArcsUploadData> {
-          for (const regionMap of this.arcsByGroup.values()) {
-            return regionMap
-          }
-          return new Map<number, ArcsUploadData>()
         },
       }))
       .views(self => ({
@@ -1224,6 +1214,7 @@ export default function stateModelFactory(
                   coverageHeight: self.showCoverage ? self.coverageHeight : 0,
                   arcBandTop: arcBand?.top ?? bands.arcsBandTop,
                   arcBandHeight: arcBand?.height ?? 0,
+                  arcDown: arcBand?.down ?? false,
                   sashimiBandTop: bands.sashimiBandTop,
                   pileupTop,
                   pileupHeight,
@@ -2281,7 +2272,6 @@ export default function stateModelFactory(
             upload: b => {
               b.sync({
                 sections: self.sourceSections,
-                arcsRpcDataMap: self.arcsRpcDataMap,
               })
             },
             render: b => {
