@@ -36,7 +36,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.11.1",
     "@jbrowse/product-core": "workspace:^",
-    "@mui/material": "^9.1.0",
+    "@mui/material": "^9.1.1",
     "dockview-core": "^6.6.1",
     "mobx": "^6.16.1"
   },

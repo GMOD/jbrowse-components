@@ -31,11 +31,11 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@mui/icons-material": "^9.1.0",
-    "@mui/material": "^9.1.0",
     "@jbrowse/mobx-state-tree": "^5.11.1",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
+    "@mui/icons-material": "^9.1.1",
+    "@mui/material": "^9.1.1",
     "generic-filehandle2": "^2.1.10",
     "hic-straw": "^2.1.4",
     "mobx": "^6.16.1",
