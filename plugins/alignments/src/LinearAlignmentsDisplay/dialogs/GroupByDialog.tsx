@@ -152,13 +152,16 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     adapterConfig: AnyConfigurationModel
     configuration: AnyConfigurationModel
     filterBy: FilterBy
+    groupBy?: GroupBy
     setGroupBy: (groupBy?: GroupBy) => void
   } & IAnyStateTreeNode
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const [tag, setGroupByTag] = useState('')
-  const [type, setType] = useState('')
+  // Pre-fill from the active in-track grouping so reopening the dialog reflects
+  // (and can tweak) the current dimension rather than resetting to blank.
+  const [tag, setGroupByTag] = useState(model.groupBy?.tag ?? '')
+  const [type, setType] = useState<string>(model.groupBy?.type ?? '')
   // 'stack' renders the groups as stacked sections in this one track (the
   // default in-track experience); 'split' is the legacy one-session-track-per-
   // group path, kept for old sessions and very high group counts.

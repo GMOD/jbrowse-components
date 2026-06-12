@@ -883,17 +883,26 @@ export default function stateModelFactory(
         },
 
         /**
+         * #method
+         * Laid-out region map for one group key, or an empty map for a key with
+         * no data. Centralizes the empty-map fallback shared by the section
+         * getters so they never have to branch on a missing group.
+         */
+        groupLaidOutMap(key: string) {
+          return (
+            this.laidOutByGroup.byGroup.get(key) ??
+            new Map<number, PileupDataResult>()
+          )
+        },
+
+        /**
          * #getter
          * Renderer-facing per-region layout. Stage 2 draws a single section, so
          * this exposes the first (for ungrouped, the only) group; Stage 3
          * switches the renderers to loop `sections` directly.
          */
         get laidOutPileupMap() {
-          const first = this.groupOrder[0]?.key ?? ''
-          return (
-            this.laidOutByGroup.byGroup.get(first) ??
-            new Map<number, PileupDataResult>()
-          )
+          return this.groupLaidOutMap(this.groupOrder[0]?.key ?? '')
         },
 
         /**
@@ -906,9 +915,7 @@ export default function stateModelFactory(
         get sourceSections() {
           return this.groupOrder.map(({ key }) => ({
             groupKey: key,
-            laidOutPileupMap:
-              this.laidOutByGroup.byGroup.get(key) ??
-              new Map<number, PileupDataResult>(),
+            laidOutPileupMap: this.groupLaidOutMap(key),
           }))
         },
 
@@ -1227,10 +1234,7 @@ export default function stateModelFactory(
               // Collapsed groups show only their coverage band (pileup height 0).
               maxY: self.isGroupCollapsed(key)
                 ? 0
-                : groupMaxY(
-                    self.laidOutByGroup.byGroup.get(key) ??
-                      new Map<number, PileupDataResult>(),
-                  ),
+                : groupMaxY(self.groupLaidOutMap(key)),
             })),
             {
               coverageHeight: self.showCoverage ? self.coverageHeight : 0,
@@ -1255,9 +1259,7 @@ export default function stateModelFactory(
             return {
               groupKey: key,
               label,
-              laidOutPileupMap:
-                self.laidOutByGroup.byGroup.get(key) ??
-                new Map<number, PileupDataResult>(),
+              laidOutPileupMap: self.groupLaidOutMap(key),
               topOffset: sec?.pileupTop ?? self.coverageDisplayHeight,
               coverageTop: sec?.coverageTop ?? 0,
               coverageHeight: sec?.coverageHeight ?? 0,

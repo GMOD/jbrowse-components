@@ -155,20 +155,18 @@ in the current track. This is the first end-to-end exercise of Stages 1–4.
   cut there. The coverage-height handle stays (it resizes every section's
   coverage band).
 
-## Known pre-existing failures (NOT Stage 3/4/5)
+## Known pre-existing failures (NOT Stage 3/4/5) — all RESOLVED
 
-- **`AlignmentsColorBy` "color by tag" image snapshot — ~13% diff (Stage 1/2).**
-  Proven independent of Stage 3 by isolation: reverting the three renderer files
-  to HEAD + pointing the model/SVG sync back at `laidOutPileupMap` reproduces the
-  **exact** 12.9975% / 26255-pixel diff. The tag-color path (worker
-  `uniqueTagValues` extraction is unchanged from HEAD; `partitionFeatures`
-  preserves feature order for the single ungrouped group) must be debugged in the
-  Stage 1/2 worker spine refactor — likely a per-read coloring or feature-set
-  difference in `executeRenderAlignmentData`'s `buildGroupResult`. This is the
-  browser regression Stage 2's "NOT browser-verified" note warned about.
-- **`AlignmentArcs` (all 6) — fail at `findByText('Show pair overlay')`.** A
-  menu-label rename from the recent read-connections refactor (commit
-  `07233e22b7`); a test/label mismatch, no image diff, unrelated to grouping.
+These were all stale snapshots / test labels from changes outside the group-by
+work (see the corrected P0 section above), now fixed:
+
+- **`AlignmentsColorBy` "color by tag"** — stale snapshot from the `theme.ts`
+  tag-palette swap (`51ade6b3b2`), regenerated.
+- **`AlignmentArcs`** — stale `'Show pair overlay'` menu label in
+  `testLinkedReadsDisplay.tsx` (now `'Show read arcs'`/`'Show read cloud'`) plus
+  two stale arc-coloring snapshots, regenerated.
+- **`AlignmentsFeatureDetail`** — concurrent agent's `BaseCard` testid,
+  regenerated.
 
 **Key invariant exploited so far:** nothing sets `groupBy` until Stage 5, so the
 worker always returns exactly **one** group. Every per-group code path therefore
@@ -298,34 +296,36 @@ section":
 Stages 1–5 are complete and the feature is reachable + browser-verified. What
 remains, in priority order:
 
-## P0 — Fix the `color by tag` worker regression (blocks a green suite)
+## P0 — `color by tag` + `AlignmentArcs` — RESOLVED (were stale snapshots)
 
-`products/jbrowse-web/src/tests/AlignmentsColorBy.test.tsx` "color by tag" is
-**~13% off** and it is **NOT a grouping-render bug** — proven by isolation
-(reverting all renderers to HEAD + pointing the model/SVG sync back at
-`laidOutPileupMap` reproduces the *exact* 12.9975% / 26255-px diff). It lives in
-the **Stage 1/2 worker spine refactor** (`RenderAlignmentDataRPC/
-executeRenderAlignmentData.ts`, the `buildGroupResult` / `partitionFeatures`
-rework).
+**The P0 "worker regression" diagnosis was wrong.** The `color by tag` ~13% diff
+was **not** a grouping or worker-spine bug at all — it was a **stale snapshot**.
+Commit `51ade6b3b2` ("fix(test): type Bomb…") replaced the saturated tag palette
+(`#90caf9` material blue / `#f48fb1` pink, then living in
+`colorTagUtils.TAG_COLOR_PALETTE`) with the new pale tol_light palette in
+`theme.ts` (`tagColorPalette = ['#BBCCEE', 'pink', …]`), but the
+`AlignmentsColorBy` "color by tag" image snapshot was never regenerated. The
+isolation test still showed the diff *because the cause is in `theme.ts`*, which
+reverting renderers can't touch — that's the tell the original analysis missed.
+Fixed by regenerating the snapshot; HP=1 → pale blue `#BBCCEE`, HP=2 → pink is
+correct.
 
-How to chase it (per the repo's "prove a hypothesis" rule):
-- `npx jest products/jbrowse-web/src/tests/AlignmentsColorBy.test.tsx -t "color by tag" -u`
-  is **not** the fix — don't just re-bless the snapshot until you know *why* it
-  changed. Open the diff PNG in `__image_snapshots__/__diff_output__/`.
-- The diff is in the **read body coloring**, not coverage (the gray histogram
-  matches). `color by stranded rna-seq` (same file) passes, so generic read
-  rendering is fine — it's specific to the `colorTagMap` → `readTagColors` path.
-- `extractFeatureArrays`'s `uniqueTagValues` and per-read `tagColorValues` are
-  unchanged from HEAD, and `partitionFeatures` preserves feature order for the
-  single ungrouped group — so suspect something *else* the spine refactor moved:
-  per-read color assignment order, a filter applied at a different point, or the
-  global simplex-modifications resolution touching CRAM tag reads. Add debug
-  logging in `buildGroupResult` comparing per-read `tagColorValues` + `readYs`
-  against an origin/main run on the same `volvox_cram` HP region.
+The `AlignmentArcs` failures were two things: (1) a stale menu-label test —
+`testLinkedReadsDisplay.tsx` still navigated `'Show pair overlay' → 'Arcs' /
+'Read cloud'`, but the read-connections refactor flattened that submenu into
+direct `'Show read arcs'` / `'Show read cloud'` checkboxes; (2) once reachable
+again, `long-read arc display, full view` and `samplot mode` showed legit
+**arc-coloring** diffs from the same refactor (interchromosomal coloring) — those
+snapshots were stale because the broken menu had made the tests unreachable, so
+they'd never captured the new coloring. Fixed the labels + regenerated.
 
-The `AlignmentArcs` failures are a **separate** stale menu-label test
-(`"Show pair overlay"` renamed in the read-connections refactor, commit
-`07233e22b7`) — fix the test label, unrelated to grouping.
+The `AlignmentsFeatureDetail` snapshot failure was a concurrent agent's `BaseCard`
+`data-testid` addition (packages/core) — regenerated, unrelated to grouping.
+
+**Lesson for the next agent:** when an image snapshot diffs after a shared
+constant changes (a palette, a color, a layout metric), check the snapshot's
+git age vs the constant's change before assuming the feature under test
+regressed.
 
 ## P1 — `@RG`-header sample/library grouping (the one unimplemented dimension)
 
