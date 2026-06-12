@@ -501,6 +501,14 @@ export default function stateModelFactory(
           collapsedGroups: observable.set<string>(),
           /**
            * #volatile
+           * Per-group pileup height override in px (in-track grouping). Keyed by
+           * group key, volatile like `collapsedGroups`; absent keys fall back to
+           * the display-wide `maxHeight`. Lets a dense section be shrunk
+           * independently. Cleared by `setGroupBy`.
+           */
+          groupMaxHeightOverrides: observable.map<string, number>(),
+          /**
+           * #volatile
            */
           highlightedChainIds: [] as string[],
           /**
@@ -858,16 +866,20 @@ export default function stateModelFactory(
          * so colorTagMap stays a main-thread tier-2 setting — see readTagColors.
          */
         get laidOutByGroup() {
+          const rowHeight =
+            self.getConfWithOverride('featureHeight') +
+            self.getConfWithOverride('featureSpacing')
+          const maxRowsOverrides = new Map<string, number>()
+          for (const [key, px] of self.groupMaxHeightOverrides) {
+            maxRowsOverrides.set(key, maxRowsFor(px, rowHeight))
+          }
           return buildLaidOutByGroup({
             rpcDataMap: self.rpcDataMap,
             isChainMode: self.linkedReads === 'normal',
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
-            maxRows: maxRowsFor(
-              self.getConfWithOverride('maxHeight'),
-              self.getConfWithOverride('featureHeight') +
-                self.getConfWithOverride('featureSpacing'),
-            ),
+            maxRows: maxRowsFor(self.getConfWithOverride('maxHeight'), rowHeight),
+            maxRowsOverrides,
             showLinkedReadLines: self.showLinkedReadLines,
             colorBy: this.colorBy,
             colorTagMap: self.colorTagMap,
@@ -1263,6 +1275,7 @@ export default function stateModelFactory(
               topOffset: sec?.pileupTop ?? self.coverageDisplayHeight,
               coverageTop: sec?.coverageTop ?? 0,
               coverageHeight: sec?.coverageHeight ?? 0,
+              pileupHeight: sec?.pileupHeight ?? 0,
             }
           })
         },
@@ -1868,6 +1881,7 @@ export default function stateModelFactory(
               self.clearOverride('groupBy')
             }
             self.collapsedGroups.clear()
+            self.groupMaxHeightOverrides.clear()
             self.scrollTop = 0
           },
 
@@ -1881,6 +1895,27 @@ export default function stateModelFactory(
             } else {
               self.collapsedGroups.add(key)
             }
+            // Collapsing shrinks the stack; keep scroll within the new bounds.
+            self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
+          },
+
+          /**
+           * #action
+           * Drag a stacked group's pileup band taller/shorter by `dy` px, capping
+           * how many rows that group lays out. Based on the section's current
+           * displayed height so dragging a truncated group expands it toward its
+           * full read set and dragging shrinks it; one row is the floor.
+           */
+          resizeGroupHeight(key: string, dy: number) {
+            const rowHeight = self.featureHeight + self.featureSpacing
+            const current =
+              self.sections.sections.find(s => s.groupKey === key)
+                ?.pileupHeight ?? 0
+            self.groupMaxHeightOverrides.set(
+              key,
+              Math.max(rowHeight, current + dy),
+            )
+            self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
           },
 
           /**

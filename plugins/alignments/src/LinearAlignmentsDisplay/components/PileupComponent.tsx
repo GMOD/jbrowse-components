@@ -250,8 +250,50 @@ const PileupBody = observer(function PileupBody({
         />
       ) : null}
 
+      <GroupResizeHandles model={model} />
+
       <PileupScrollbar model={model} topOffset={topOffset} />
     </div>
+  )
+})
+
+// Per-group pileup-height drag handles (in-track grouping only). Each sits at a
+// non-collapsed section's pileup bottom and resizes just that group's band, so
+// a dense section can be shrunk without touching the others.
+const GroupResizeHandles = observer(function GroupResizeHandles({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { classes } = useStyles()
+  if (!model.isGrouped) {
+    return null
+  }
+  const { scrollTop, height } = model
+  return (
+    <>
+      {model.renderSections.map(section => {
+        if (model.isGroupCollapsed(section.groupKey)) {
+          return null
+        }
+        const bottom = section.topOffset + section.pileupHeight - scrollTop
+        if (bottom < 0 || bottom > height) {
+          return null
+        }
+        return (
+          <ResizeHandle
+            key={section.groupKey || 'ungrouped'}
+            className={classes.resizeHandle}
+            style={{ top: bottom - YSCALEBAR_LABEL_OFFSET }}
+            onDrag={dy => {
+              model.resizeGroupHeight(section.groupKey, dy)
+              return undefined
+            }}
+            title={`Drag to resize "${section.label || 'group'}"`}
+          />
+        )
+      })}
+    </>
   )
 })
 

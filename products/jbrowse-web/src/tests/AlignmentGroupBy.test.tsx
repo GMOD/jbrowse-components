@@ -124,3 +124,39 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
     expect(display.sections.contentHeight).toBeLessThan(fullHeight)
   }, delay)
 }, 60000)
+
+test('resizing a group caps its rows independently of the others', async () => {
+  const user = userEvent.setup()
+  const { view } = await createView()
+  view.setNewView(5, 100)
+  await user.click(
+    await screen.findByTestId(
+      hts('volvox_alignments_pileup_coverage'),
+      ...opts,
+    ),
+  )
+  await screen.findByTestId('pileup-display-done', ...opts)
+
+  const display = view.tracks[0]?.displays[0]
+  display.setGroupBy({ type: 'strand' })
+  await waitFor(() => {
+    expect(display.renderSections.length).toBe(2)
+  }, delay)
+
+  const firstKey = display.groupOrder[0].key
+  const before = display.sections.sections[0].pileupHeight
+  const otherBefore = display.sections.sections[1].pileupHeight
+  // The first group needs >1 row for a shrink to be observable.
+  expect(before).toBeGreaterThan(display.featureHeight + display.featureSpacing)
+
+  // Drag the first section's bottom up by most of its height → fewer rows.
+  display.resizeGroupHeight(firstKey, -before)
+
+  await waitFor(() => {
+    const sec = display.sections.sections[0]
+    expect(sec.pileupHeight).toBeLessThan(before)
+    expect(sec.pileupHeight).toBeGreaterThan(0)
+    // the other section is untouched by a per-group resize.
+    expect(display.sections.sections[1].pileupHeight).toBe(otherBefore)
+  }, delay)
+}, 60000)

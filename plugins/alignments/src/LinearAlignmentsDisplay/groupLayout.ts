@@ -29,6 +29,7 @@ export function buildLaidOutByGroup({
   sortedBy,
   showSoftClipping,
   maxRows,
+  maxRowsOverrides,
   showLinkedReadLines,
   colorBy,
   colorTagMap,
@@ -38,6 +39,9 @@ export function buildLaidOutByGroup({
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
   maxRows: number
+  // Per-group row caps (from per-group height drags); a key falls back to the
+  // display-wide `maxRows` when absent.
+  maxRowsOverrides?: ReadonlyMap<string, number>
   showLinkedReadLines: boolean
   colorBy: ColorBy | undefined
   colorTagMap: Record<string, string>
@@ -64,7 +68,12 @@ export function buildLaidOutByGroup({
     }
     const base = isChainMode
       ? buildLaidOutChainMap(dataMap)
-      : buildLaidOutPileupMap({ dataMap, sortedBy, showSoftClipping, maxRows })
+      : buildLaidOutPileupMap({
+          dataMap,
+          sortedBy,
+          showSoftClipping,
+          maxRows: maxRowsOverrides?.get(key) ?? maxRows,
+        })
     const withLines = showLinkedReadLines ? attachLinkedReadLines(base) : base
     byGroup.set(key, overlayReadTagColors(withLines, colorBy, colorTagMap))
   }
