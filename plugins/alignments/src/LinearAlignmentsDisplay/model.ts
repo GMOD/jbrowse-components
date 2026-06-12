@@ -946,13 +946,20 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * True when any displayed region hit `maxRows` and overflow reads were
-         * collapsed — drives the "max height reached" indicator.
+         * True when any group hit `maxHeight` and overflow reads were collapsed —
+         * drives the "max height reached" / "show all" banner. Groups the user
+         * explicitly shrank (a per-group height drag) are skipped: their
+         * truncation is intentional, not the global cap the banner offers to lift.
          */
         get pileupTruncated() {
-          for (const data of this.laidOutPileupMap.values()) {
-            if (data.truncated) {
-              return true
+          for (const [key, map] of this.laidOutByGroup.byGroup) {
+            if (self.groupMaxHeightOverrides.has(key)) {
+              continue
+            }
+            for (const data of map.values()) {
+              if (data.truncated) {
+                return true
+              }
             }
           }
           return false
