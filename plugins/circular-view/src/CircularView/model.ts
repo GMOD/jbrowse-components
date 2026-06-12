@@ -519,7 +519,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        toggleTrackGeneric(self, trackId)
+        return toggleTrackGeneric(self, trackId)
       },
 
       /**
@@ -540,7 +540,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        showTrackGeneric(self, trackId, initialSnapshot)
+        return showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
@@ -552,7 +552,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       ) {
         const { trackId } = configuration
         if (typeof trackId === 'string') {
-          showTrackGeneric(self, trackId, initialSnapshot, {}, configuration)
+          return showTrackGeneric(self, trackId, initialSnapshot, {}, configuration)
         }
       },
 
@@ -560,7 +560,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       hideTrack(trackId: string) {
-        hideTrackGeneric(self, trackId)
+        return hideTrackGeneric(self, trackId)
       },
 
       /**
