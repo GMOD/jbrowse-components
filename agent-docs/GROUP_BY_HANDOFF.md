@@ -327,21 +327,26 @@ constant changes (a palette, a color, a layout metric), check the snapshot's
 git age vs the constant's change before assuming the feature under test
 regressed.
 
-## P1 — `@RG`-header sample/library grouping (the one unimplemented dimension)
+## P1 — `@RG`-header sample/library grouping — DROPPED (RG-tag is sufficient)
 
-New worker logic. `parseSamHeader` (`shared/util.ts`) parses `@RG` lines but
-isn't wired to read level. Add `GroupByType` values `'sample'`/`'library'`, a
-`readGroup → SM/LB` map built once per fetch in `executeRenderAlignmentData`, and
-key generators in `groupFeatures.ts`. The dialog already iterates
-`STACK_DIMENSIONS` — add the entries there. `tag`-based RG (`groupBy {type:'tag',
-tag:'RG'}`) already works as a stopgap.
+Decision (user-confirmed): **don't build SM/LB header grouping.** `tag`-based RG
+(`groupBy {type:'tag', tag:'RG'}`) already groups by read group and is
+discoverable in the dialog (the tag option lists "RG for read group"). For the
+typical one-RG-per-sample BAM that equals sample grouping, so the extra
+worker-header plumbing (extending `parseSamHeader` for SM/LB, a per-fetch
+`readGroup → SM/LB` map, new `GroupByType`s) wasn't worth the shared-adapter risk.
+Revisit only if a multi-RG-per-sample need turns up.
 
 ## P2 — Grouping polish
 
-- **Per-group height drag.** `maxHeight` is per-group in layout already; add a
-  resize handle at each section's pileup bottom (reuse `ResizeHandle`, write a
-  per-group `maxHeightOverride`). Today every non-collapsed group shows full
-  height.
+- **Per-group height drag — DONE.** Each non-collapsed section has a
+  `ResizeHandle` at its pileup bottom (`GroupResizeHandles` in
+  `PileupComponent.tsx`) that drives `resizeGroupHeight`. Volatile
+  `groupMaxHeightOverrides` (px per group key) feeds a per-group `maxRows` into
+  `buildLaidOutByGroup`; the drag bases off the section's live displayed height
+  so a truncated group expands toward its full read set and shrinks below it.
+  `setGroupBy` clears it; collapse + resize clamp `scrollTop`. Covered by
+  `AlignmentGroupBy.test.tsx` ("resizing a group caps its rows…").
 - **Base-at-position grouping** via the context menu (plan's last dimension):
   group reads by the base they carry at the clicked column. Needs a worker key
   generator keyed on a genomic position (passed through `rpcProps`).
