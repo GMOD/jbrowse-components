@@ -13,6 +13,15 @@ const MAX_FIELD_NAME_WIDTH = 170
 // sections instead of the data grid (avoids a mostly-empty, hard-to-read grid)
 const DATAGRID_SCHEMA_TOLERANCE = 5
 
+function isHomogeneousObjectArray(arr: unknown[]): arr is Record<string, unknown>[] {
+  if (arr.length <= 1 || !arr.every(isObject)) {
+    return false
+  }
+  const firstKeyCount = Object.keys(arr[0]!).length
+  const unionKeyCount = new Set(arr.flatMap(Object.keys)).size
+  return unionKeyCount < firstKeyCount + DATAGRID_SCHEMA_TOLERANCE
+}
+
 // these are always omitted as too detailed
 const globalOmit = [
   '__jbrowsefmt',
@@ -62,26 +71,12 @@ export default function Attributes(props: {
       {filteredFormattedAttributes.map(([key, value]) => {
         const description = accessNested([...prefix, key], descriptions)
         if (Array.isArray(value)) {
-          if (value.length > 1 && value.every(v => isObject(v))) {
-            const objArr = value as Record<string, unknown>[]
-            const firstKeyCount = Object.keys(objArr[0]!).length
-            const unionKeyCount = new Set(objArr.flatMap(v => Object.keys(v)))
-              .size
-            // Only use the data grid when schemas are homogeneous enough;
-            // heterogeneous arrays fall through to ArrayValue which renders
-            // each object as individual field sections instead of disappearing
-            if (unionKeyCount < firstKeyCount + DATAGRID_SCHEMA_TOLERANCE) {
-              return (
-                <DataGridDetails
-                  key={key}
-                  name={key}
-                  prefix={prefix}
-                  value={objArr}
-                />
-              )
-            }
-          }
-          return (
+          // Only use the data grid when schemas are homogeneous enough;
+          // heterogeneous arrays fall through to ArrayValue which renders
+          // each object as individual field sections instead of disappearing
+          return isHomogeneousObjectArray(value) ? (
+            <DataGridDetails key={key} name={key} prefix={prefix} value={value} />
+          ) : (
             <ArrayValue
               key={key}
               name={key}
@@ -92,21 +87,18 @@ export default function Attributes(props: {
             />
           )
         } else if (isObject(value)) {
-          const { omitSingleLevel, ...rest } = props
           return isUriLocation(value) ? (
             hideUris ? null : (
-              <UriAttribute
-                key={key}
-                name={key}
-                prefix={prefix}
-                value={value}
-              />
+              <UriAttribute key={key} name={key} prefix={prefix} value={value} />
             )
           ) : (
             <Attributes
               key={key}
-              {...rest}
               attributes={value}
+              omit={omit}
+              descriptions={descriptions}
+              formatter={formatter}
+              hideUris={hideUris}
               prefix={[...prefix, key]}
             />
           )

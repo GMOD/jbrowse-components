@@ -46,8 +46,8 @@ function NoFeaturePanel(_props: FeatureDetailsProps) {
 const FeatureDetails = observer(function FeatureDetails(
   props: FeatureDetailsProps,
 ) {
-  const { omit = [], model, feature, depth = 0 } = props
-  const maxDepth: number = model.maxDepth ?? 99999
+  const { omit = [], model, feature, depth = 0, descriptions, formatter } = props
+  const maxDepth: number = model.maxDepth ?? Infinity
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
   const pm = getEnv(model).pluginManager
   const m = mate as { start: number; end: number; refName: string } | undefined
@@ -70,9 +70,10 @@ const FeatureDetails = observer(function FeatureDetails(
       <Typography>Attributes</Typography>
       <Attributes
         attributes={feature}
-        {...props}
         omit={omit}
         omitSingleLevel={coreDetails}
+        descriptions={descriptions}
+        formatter={formatter}
       />
 
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>

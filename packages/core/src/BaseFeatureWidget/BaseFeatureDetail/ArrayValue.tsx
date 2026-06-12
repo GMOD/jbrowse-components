@@ -45,28 +45,18 @@ export default function ArrayValue({
   const displayedValues =
     needsTruncation && !showAll ? value.slice(0, MAX_ARRAY_LENGTH) : value
 
-  if (value.length === 1) {
-    return isObject(value[0]) ? (
+  return value.every(isObject) ? (
+    value.length === 1 ? (
       <Attributes
         formatter={formatter}
         attributes={value[0]}
         prefix={[...prefix, name]}
       />
     ) : (
-      <div className={classes.field}>
-        <FieldName prefix={prefix} description={description} name={name} />
-        <BasicValue
-          value={formatter ? formatter(value[0], name, 0) : value[0]}
-        />
-      </div>
-    )
-  } else if (value.every(val => isObject(val))) {
-    // heterogeneous object arrays that DataGridDetails declined to render
-    return (
       <>
         {value.map((val, i) => (
           <Attributes
-            key={`${JSON.stringify(val)}-${i}`}
+            key={i}
             formatter={formatter}
             attributes={val}
             prefix={[...prefix, `${name}-${i}`]}
@@ -74,31 +64,32 @@ export default function ArrayValue({
         ))}
       </>
     )
-  } else {
-    return (
-      <div className={classes.field}>
-        <FieldName prefix={prefix} description={description} name={name} />
-        {displayedValues.map((val, i) => (
-          <div
-            key={`${JSON.stringify(val)}-${i}`}
-            className={classes.fieldSubvalue}
-          >
-            <BasicValue value={formatter ? formatter(val, name, i) : val} />
-          </div>
-        ))}
-        {needsTruncation ? (
-          <button
-            type="button"
-            onClick={() => {
-              setShowAll(val => !val)
-            }}
-          >
-            {showAll
-              ? 'Show less'
-              : `Showing ${MAX_ARRAY_LENGTH} of ${value.length}. Show all...`}
-          </button>
-        ) : null}
-      </div>
-    )
-  }
+  ) : (
+    <div className={classes.field}>
+      <FieldName prefix={prefix} description={description} name={name} />
+      {value.length === 1 ? (
+        <BasicValue value={formatter ? formatter(value[0], name, 0) : value[0]} />
+      ) : (
+        <>
+          {displayedValues.map((val, i) => (
+            <div key={`${String(val)}-${i}`} className={classes.fieldSubvalue}>
+              <BasicValue value={formatter ? formatter(val, name, i) : val} />
+            </div>
+          ))}
+          {needsTruncation ? (
+            <button
+              type="button"
+              onClick={() => {
+                setShowAll(v => !v)
+              }}
+            >
+              {showAll
+                ? 'Show less'
+                : `Showing ${MAX_ARRAY_LENGTH} of ${value.length}. Show all...`}
+            </button>
+          ) : null}
+        </>
+      )}
+    </div>
+  )
 }

@@ -40,15 +40,8 @@ export default function DataGridDetails({
   // getRowId at it, leaving the feature's own keys (including 'id') untouched
   const rows = value.map((val, k) => ({ ...val, __dataGridRowId: k }))
 
-  const colNames = new Set<string>()
-  for (const val of value) {
-    for (const k of Object.keys(val)) {
-      colNames.add(k)
-    }
-  }
-  const widths = [...colNames].map(col =>
-    measureGridWidth(value.map(r => r[col])),
-  )
+  const cols = [...new Set(value.flatMap(Object.keys))]
+  const widths = cols.map(col => measureGridWidth(value.map(r => r[col])))
   return (
     <div className={classes.margin}>
       <FieldName prefix={prefix} name={name} />
@@ -56,8 +49,8 @@ export default function DataGridDetails({
         control={
           <Checkbox
             checked={checked}
-            onChange={event => {
-              setChecked(event.target.checked)
+            onChange={e => {
+              setChecked(e.target.checked)
             }}
           />
         }
@@ -72,7 +65,7 @@ export default function DataGridDetails({
           columnHeaderHeight={35}
           hideFooter={rows.length < 25}
           showToolbar={checked}
-          columns={[...colNames].map(
+          columns={cols.map(
             (field, index) =>
               ({
                 field,
