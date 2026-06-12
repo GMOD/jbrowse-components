@@ -3,7 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { bpToPx, moveTo, pxToBp } from './Base1DUtils.ts'
 import calculateDynamicBlocks from './calculateDynamicBlocks.ts'
 import calculateStaticBlocks from './calculateStaticBlocks.ts'
-import { clamp, sum } from './index.ts'
+import { clamp } from './index.ts'
 import { ElementId } from './types/mst.ts'
 
 import type { BpOffset } from './Base1DUtils.ts'
@@ -105,7 +105,7 @@ const Base1DView = types
      * #getter
      */
     get totalBp() {
-      return sum(self.displayedRegions.map(a => a.end - a.start))
+      return self.displayedRegions.reduce((acc, r) => acc + r.end - r.start, 0)
     },
   }))
   .views(self => ({
@@ -127,7 +127,10 @@ const Base1DView = types
      * #getter
      */
     get currBp() {
-      return sum(this.dynamicBlocks.contentBlocks.map(a => a.end - a.start))
+      return this.dynamicBlocks.contentBlocks.reduce(
+        (acc, r) => acc + r.end - r.start,
+        0,
+      )
     },
   }))
   .views(self => ({
@@ -198,21 +201,19 @@ const Base1DView = types
       )
 
       const oldBpPerPx = self.bpPerPx
-      if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
-        return oldBpPerPx
+      if (Math.abs(oldBpPerPx - newBpPerPx) >= 0.000001) {
+        self.bpPerPx = newBpPerPx
+
+        // tweak the offset so that the center of the view remains at the same
+        // coordinate
+        self.offsetPx = clamp(
+          Math.round(
+            ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx - offset,
+          ),
+          self.minOffset,
+          self.maxOffset,
+        )
       }
-
-      self.bpPerPx = newBpPerPx
-
-      // tweak the offset so that the center of the view remains at the same
-      // coordinate
-      self.offsetPx = clamp(
-        Math.round(
-          ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx - offset,
-        ),
-        self.minOffset,
-        self.maxOffset,
-      )
       return self.bpPerPx
     },
 
@@ -232,16 +233,15 @@ const Base1DView = types
       refName: string | undefined,
       displayedRegionIndex: number,
     ) {
-      if (!refName) {
-        return
-      }
-      const centerPx = self.bpToPx({
-        refName,
-        coord,
-        displayedRegionIndex,
-      })
-      if (centerPx !== undefined) {
-        this.scrollTo(Math.round(centerPx - self.width / 2))
+      if (refName) {
+        const centerPx = self.bpToPx({
+          refName,
+          coord,
+          displayedRegionIndex,
+        })
+        if (centerPx !== undefined) {
+          this.scrollTo(Math.round(centerPx - self.width / 2))
+        }
       }
     },
 
