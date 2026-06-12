@@ -81,12 +81,12 @@ test('group draws per-section paired-end arcs', async () => {
       expect(display.isGrouped).toBe(true)
       expect(display.groupOrder.length).toBe(2)
       // every section carries its own arc feed, and arcs are actually produced.
-      const totalArcs = display.sourceSections.reduce(
-        (sum, s) =>
-          sum +
-          [...s.arcsRpcDataMap.values()].reduce((a, d) => a + d.numArcs, 0),
-        0,
-      )
+      let totalArcs = 0
+      for (const section of display.sourceSections) {
+        for (const data of section.arcsRpcDataMap.values()) {
+          totalArcs += data.numArcs
+        }
+      }
       expect(totalArcs).toBeGreaterThan(0)
     },
     { timeout: 30000 },
