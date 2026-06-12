@@ -111,6 +111,27 @@ function sortedTreeChildren(
   return [...tracks, ...folders, ...categories]
 }
 
+// Binary search in a sorted array of cumulative pixel offsets; returns the
+// index of the item whose offset range contains `offset`.
+function findIndexAtOffset(offsets: number[], offset: number) {
+  let low = 0
+  let high = offsets.length - 1
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2)
+    if (
+      offsets[mid]! <= offset &&
+      (mid === offsets.length - 1 || offsets[mid + 1]! > offset)
+    ) {
+      return mid
+    } else if (offsets[mid]! < offset) {
+      low = mid + 1
+    } else {
+      high = mid - 1
+    }
+  }
+  return 0
+}
+
 function flattenTree(
   items: TreeNode[],
   folderCategories: { has(key: string): boolean },
@@ -490,8 +511,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get favoriteTracks() {
         return self.favorites
-          .filter(t => self.allTrackConfigurationMap.has(t))
-          .map(t => self.allTrackConfigurationMap.get(t)!)
+          .map(t => self.allTrackConfigurationMap.get(t))
+          .filter(notEmpty)
       },
 
       /**
@@ -500,8 +521,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get recentlyUsedTracks() {
         return self.recentlyUsed
-          .filter(t => self.allTrackConfigurationMap.has(t))
-          .map(t => self.allTrackConfigurationMap.get(t)!)
+          .map(t => self.allTrackConfigurationMap.get(t))
+          .filter(notEmpty)
       },
     }))
     .views(self => ({
@@ -516,7 +537,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             tracks: self.configAndSessionTrackConfigurations,
             noCategories: false,
           },
-          ...connectionInstances.flatMap(c => ({
+          ...connectionInstances.map(c => ({
             group: getConf(c, 'name'),
             tracks: filterTracks(c.tracks, self),
             noCategories: false,
@@ -581,33 +602,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           }
         }
 
-        // Binary search to find the index at a given offset
-        const findIndexAtOffset = (offset: number) => {
-          let low = 0
-          let high = offsets.length - 1
-
-          while (low <= high) {
-            const mid = Math.floor((low + high) / 2)
-            if (
-              offsets[mid]! <= offset &&
-              (mid === offsets.length - 1 || offsets[mid + 1]! > offset)
-            ) {
-              return mid
-            } else if (offsets[mid]! < offset) {
-              low = mid + 1
-            } else {
-              high = mid - 1
-            }
-          }
-
-          return 0
-        }
-
-        const start = Math.max(0, findIndexAtOffset(scrollTop) - overscan)
+        const start = Math.max(
+          0,
+          findIndexAtOffset(offsets, scrollTop) - overscan,
+        )
         const targetHeight = scrollTop + height + overscan * defaultItemHeight
         const end = Math.min(
           offsets.length - 1,
-          findIndexAtOffset(targetHeight) + overscan,
+          findIndexAtOffset(offsets, targetHeight) + overscan,
         )
 
         return {

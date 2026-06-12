@@ -14,12 +14,12 @@ import { observer } from 'mobx-react'
 import { getAllSubcategories, getAllTrackNodes } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { TreeCategoryNode, TreeNode } from '../../types.ts'
+import type { TreeCategoryNode, TreeTrackNode } from '../../types.ts'
 
 export interface FolderDialogProps {
   model: HierarchicalTrackSelectorModel
   title: string
-  subtracks: TreeNode[]
+  subtracks: TreeTrackNode[]
   handleClose: () => void
 }
 
@@ -31,7 +31,7 @@ declare module '@jbrowse/core/PluginManager' {
       props: {
         categoryId: string
         model: HierarchicalTrackSelectorModel
-        subtracks: TreeNode[]
+        subtracks: TreeTrackNode[]
       }
     }
   }
@@ -63,6 +63,32 @@ const useStyles = makeStyles()(theme => ({
     opacity: 0.7,
   },
 }))
+
+function subcategoryCollapseMenuItems(
+  model: HierarchicalTrackSelectorModel,
+  subcategoryIds: string[],
+) {
+  return subcategoryIds.length > 0
+    ? [
+        {
+          label: 'Collapse all subcategories',
+          onClick: () => {
+            for (const id of subcategoryIds) {
+              model.setCategoryCollapsed(id, true)
+            }
+          },
+        },
+        {
+          label: 'Expand all subcategories',
+          onClick: () => {
+            for (const id of subcategoryIds) {
+              model.setCategoryCollapsed(id, false)
+            }
+          },
+        },
+      ]
+    : []
+}
 
 // Menu items shared by folder-mode and normal-mode category labels
 function categoryTrackMenuItems(
@@ -213,7 +239,6 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
           data-testid={`htsCategoryMenu-${name}`}
           menuItems={() => {
             const subcategoryIds = getAllSubcategories(item)
-            const hasSubcategories = subcategoryIds.length > 0
             return [
               {
                 label: 'Collapse into folder',
@@ -222,26 +247,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
                 },
               },
               ...categoryTrackMenuItems(model, item),
-              ...(hasSubcategories
-                ? [
-                    {
-                      label: 'Collapse all subcategories',
-                      onClick: () => {
-                        for (const subcategoryId of subcategoryIds) {
-                          model.setCategoryCollapsed(subcategoryId, true)
-                        }
-                      },
-                    },
-                    {
-                      label: 'Expand all subcategories',
-                      onClick: () => {
-                        for (const subcategoryId of subcategoryIds) {
-                          model.setCategoryCollapsed(subcategoryId, false)
-                        }
-                      },
-                    },
-                  ]
-                : []),
+              ...subcategoryCollapseMenuItems(model, subcategoryIds),
             ]
           }}
           className={classes.contrastColor}

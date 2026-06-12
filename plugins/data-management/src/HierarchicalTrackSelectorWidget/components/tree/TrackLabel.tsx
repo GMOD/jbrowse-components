@@ -76,7 +76,7 @@ const TrackLabelText = observer(function TrackLabelText({
   )
 })
 
-function TrackLabel({
+const TrackLabel = observer(function TrackLabel({
   model,
   item,
 }: {
@@ -123,6 +123,6 @@ function TrackLabel({
       <TrackSelectorTrackMenu model={model} id={id} conf={conf} />
     </>
   )
-}
+})
 
 export default TrackLabel

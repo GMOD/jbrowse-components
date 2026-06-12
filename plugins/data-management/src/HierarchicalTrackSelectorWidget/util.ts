@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-import type { TreeCategoryNode, TreeNode, TreeTrackNode } from './types.ts'
+import type { TreeCategoryNode, TreeTrackNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -40,34 +40,22 @@ interface Node {
   id: string
 }
 
-function findSubCategoriesInner(
-  obj: Node[],
-  depth: number,
-): [paths: string[], hasDirectLeaves: boolean] {
+// Collects IDs of category nodes (depth > 0) that have at least one direct
+// leaf child — i.e. subcategories that contain tracks, not just more folders.
+export function findSubCategories(obj: Node[]) {
   const paths: string[] = []
-  let hasDirectLeaves = false
-  for (const elt of obj) {
-    if (elt.children.length) {
-      const [subPaths, subHasDirectLeaves] = findSubCategoriesInner(
-        elt.children,
-        depth + 1,
-      )
-      // avoid pushing the root "Tracks" node by checking depth>0
-      if (subHasDirectLeaves && depth > 0) {
-        paths.push(elt.id)
+  function collect(nodes: Node[], depth: number) {
+    for (const node of nodes) {
+      if (node.children.length) {
+        if (depth > 0 && node.children.some(c => !c.children.length)) {
+          paths.push(node.id)
+        }
+        collect(node.children, depth + 1)
       }
-      for (const p of subPaths) {
-        paths.push(p)
-      }
-    } else {
-      hasDirectLeaves = true
     }
   }
-  return [paths, hasDirectLeaves]
-}
-
-export function findSubCategories(obj: Node[]) {
-  return findSubCategoriesInner(obj, 0)[0]
+  collect(obj, 0)
+  return paths
 }
 
 export function findTopLevelCategories(obj: Node[]) {
@@ -95,9 +83,9 @@ export function getAllSubcategories(node: TreeCategoryNode): string[] {
   return categoryIds
 }
 
-export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {
+export function getAllTrackNodes(subtree: TreeCategoryNode): TreeTrackNode[] {
   const result: TreeTrackNode[] = []
-  function collect(node: TreeNode) {
+  function collect(node: TreeCategoryNode) {
     for (const child of node.children) {
       if (child.type === 'track') {
         result.push(child)
@@ -106,8 +94,6 @@ export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {
       }
     }
   }
-  if (subtree?.type === 'category') {
-    collect(subtree)
-  }
+  collect(subtree)
   return result
 }

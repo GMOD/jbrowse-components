@@ -29,10 +29,6 @@ const HierarchicalFab = observer(function HierarchicalFab({
   const { classes } = useStyles()
   const session = getSession(model)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
-
-  function handleFabClose() {
-    setAnchorEl(null)
-  }
   const hasConnections = isSessionModelWithConnections(session)
   const hasAddTrack = isSessionWithAddTracks(session)
   return hasAddTrack || hasConnections ? (
@@ -57,7 +53,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
         {hasConnections ? (
           <MenuItem
             onClick={() => {
-              handleFabClose()
+              setAnchorEl(null)
               if (isSessionModelWithWidgets(session)) {
                 session.showWidget(
                   session.addWidget(
@@ -74,7 +70,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
         {hasAddTrack ? (
           <MenuItem
             onClick={() => {
-              handleFabClose()
+              setAnchorEl(null)
               if (isSessionModelWithWidgets(session)) {
                 session.showWidget(
                   session.addWidget('AddTrackWidget', 'addTrackWidget', {

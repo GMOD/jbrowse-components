@@ -11,20 +11,17 @@ import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
 
 import type { FacetedModel } from '../../FacetedSelector/facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
-import type { TreeNode, TreeTrackNode } from '../types.ts'
-
-function getTrackConfs(subtracks: TreeNode[]) {
-  return subtracks
-    .filter((s): s is TreeTrackNode => s.type === 'track')
-    .map(s => s.conf)
-}
+import type { TreeTrackNode } from '../types.ts'
 
 function createFacetedModel(
   model: HierarchicalTrackSelectorModel,
-  subtracks: TreeNode[],
+  subtracks: TreeTrackNode[],
 ) {
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(getTrackConfs(subtracks), getSession(model))
+  faceted.setTrackConfigurations(
+    subtracks.map(s => s.conf),
+    getSession(model),
+  )
   return faceted
 }
 
@@ -36,7 +33,7 @@ const DefaultFolderDialog = observer(function DefaultFolderDialog({
 }: {
   model: HierarchicalTrackSelectorModel
   title: string
-  subtracks: TreeNode[]
+  subtracks: TreeTrackNode[]
   handleClose: () => void
 }) {
   const [faceted] = useState<FacetedModel>(() =>

@@ -27,7 +27,7 @@ const ShoppingCart = observer(function ShoppingCart({
 }: {
   model: {
     clearSelection: () => void
-    selection: (AnyConfigurationModel | undefined)[]
+    selection: AnyConfigurationModel[]
   }
 }) {
   const session = getSession(model)
@@ -41,12 +41,9 @@ const ShoppingCart = observer(function ShoppingCart({
     [],
     { session },
   )
-  const definedSelection = selection.filter(
-    (elt): elt is AnyConfigurationModel => !!elt,
-  )
   const canDeleteAll =
     isSessionWithDeleteTrackConf(session) &&
-    definedSelection.every(
+    selection.every(
       elt => canEdit(elt.trackId) && elt.type !== 'ReferenceSequenceTrack',
     )
 
@@ -66,7 +63,7 @@ const ShoppingCart = observer(function ShoppingCart({
               {
                 label: 'Delete tracks',
                 onClick: () => {
-                  for (const track of definedSelection) {
+                  for (const track of selection) {
                     session.deleteTrackConf(track)
                   }
                 },

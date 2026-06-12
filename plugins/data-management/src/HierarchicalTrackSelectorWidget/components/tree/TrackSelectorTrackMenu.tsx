@@ -58,22 +58,19 @@ const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
                 },
                 icon: StarIcon,
               },
-          {
-            label: 'Add to selection',
-            onClick: () => {
-              model.addToSelection([conf])
-            },
-          },
-          ...(model.isSelected(conf)
-            ? [
-                {
-                  label: 'Remove from selection',
-                  onClick: () => {
-                    model.removeFromSelection([conf])
-                  },
+          model.isSelected(conf)
+            ? {
+                label: 'Remove from selection',
+                onClick: () => {
+                  model.removeFromSelection([conf])
                 },
-              ]
-            : []),
+              }
+            : {
+                label: 'Add to selection',
+                onClick: () => {
+                  model.addToSelection([conf])
+                },
+              },
         ]
       }}
     >
