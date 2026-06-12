@@ -1,5 +1,9 @@
 import { sectionRegionKey } from './renderers/rendererTypes.ts'
-import { buildSectionRenders, computeStackedSections } from './sectionLayout.ts'
+import {
+  buildSectionRenders,
+  computeBandStack,
+  computeStackedSections,
+} from './sectionLayout.ts'
 
 import type { SectionsLayout } from './sectionLayout.ts'
 
@@ -21,6 +25,80 @@ test('sectionRegionKey: higher sections never collide across plausible regions',
   // 16 sections × 1000 regions, all distinct, and none hits the overlay id.
   expect(keys.size).toBe(16 * 1000)
   expect(keys.has(999999)).toBe(false)
+})
+
+test('computeBandStack: no read-connection bands = pileup right below coverage', () => {
+  expect(
+    computeBandStack({
+      coverageHeight: 45,
+      hasArcsBand: false,
+      arcsHeight: 200,
+      hasSashimiBand: false,
+      sashimiHeight: 100,
+    }),
+  ).toEqual({ arcsBandTop: 45, sashimiBandTop: 45, pileupTop: 45 })
+})
+
+test('computeBandStack: arc band then sashimi band stack below coverage', () => {
+  expect(
+    computeBandStack({
+      coverageHeight: 45,
+      hasArcsBand: true,
+      arcsHeight: 200,
+      hasSashimiBand: true,
+      sashimiHeight: 100,
+    }),
+  ).toEqual({ arcsBandTop: 45, sashimiBandTop: 245, pileupTop: 345 })
+})
+
+test('down-mode arcs reserve a band per section, pushing pileups down', () => {
+  const { sections, contentHeight } = computeStackedSections(
+    [
+      { key: 'a', label: 'a', maxY: 2 },
+      { key: 'b', label: 'b', maxY: 3 },
+    ],
+    {
+      coverageHeight: 40,
+      rowHeight: 10,
+      readConnections: 'arc',
+      readConnectionsDown: true,
+      readConnectionsHeight: 100,
+    },
+  )
+  // Each section: coverage 40 + arc band 100, then pileup.
+  expect(
+    sections.map(s => [s.coverageTop, s.arcBandTop, s.pileupTop, s.maxY]),
+  ).toEqual([
+    [0, 40, 140, 2],
+    [160, 200, 300, 3],
+  ])
+  expect(sections.every(s => s.arcBandHeight === 100)).toBe(true)
+  expect(contentHeight).toBe(330)
+})
+
+test('up-mode arcs overlay coverage: no reserved band, draw band at coverage top', () => {
+  const { sections } = computeStackedSections(
+    [
+      { key: 'a', label: 'a', maxY: 2 },
+      { key: 'b', label: 'b', maxY: 2 },
+    ],
+    {
+      coverageHeight: 40,
+      rowHeight: 10,
+      coverageYOffset: 7,
+      readConnections: 'arc',
+      readConnectionsDown: false,
+      readConnectionsHeight: 100,
+    },
+  )
+  // No reserved arc band: pileup sits right under coverage (40), section 2
+  // starts at 40 + 20 = 60. Arc draw band overlays the coverage band.
+  expect(sections.map(s => [s.coverageTop, s.pileupTop])).toEqual([
+    [0, 40],
+    [60, 100],
+  ])
+  expect(sections[0]).toMatchObject({ arcBandTop: 0, arcBandHeight: 33 })
+  expect(sections[1]).toMatchObject({ arcBandTop: 60, arcBandHeight: 33 })
 })
 
 test('single section stacks coverage then pileup from the top', () => {

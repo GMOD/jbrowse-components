@@ -19,8 +19,6 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.text.primary,
     border: 'none',
     width: 1,
-    height: '100%',
-    top: YSCALEBAR_LABEL_OFFSET,
     cursor: 'default',
     position: 'absolute',
     pointerEvents: 'none',
@@ -278,6 +276,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
     mouseoverExtraInformation: TooltipPayload | undefined
     showCoverage: boolean
     coverageHeight: number
+    hoverCoverageBand: { topOffset: number; coverageHeight: number } | undefined
   }
   height: number
   offsetMouseCoord?: Coord
@@ -287,6 +286,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
     mouseoverExtraInformation: tooltipData,
     showCoverage,
     coverageHeight,
+    hoverCoverageBand,
   } = model
   const { classes } = useStyles()
   const x = clientMouseCoord[0] + 5
@@ -306,14 +306,17 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
     )
   }
 
+  // Anchor the bar to the hovered section's coverage band (grouped mode stacks
+  // many); falls back to the top band when no section was resolved.
+  const bandTop = hoverCoverageBand?.topOffset ?? 0
+  const bandHeight = hoverCoverageBand?.coverageHeight ?? coverageHeight
   const hoverBar = offsetMouseCoord ? (
     <div
       className={classes.hoverVertical}
       style={{
         left: offsetMouseCoord[0],
-        height: showCoverage
-          ? coverageHeight - YSCALEBAR_LABEL_OFFSET * 2
-          : height,
+        top: bandTop + YSCALEBAR_LABEL_OFFSET,
+        height: showCoverage ? bandHeight - YSCALEBAR_LABEL_OFFSET * 2 : height,
       }}
     />
   ) : null

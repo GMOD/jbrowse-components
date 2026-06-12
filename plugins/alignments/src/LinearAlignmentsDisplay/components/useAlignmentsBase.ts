@@ -87,6 +87,7 @@ export function useAlignmentsBase(
       : undefined
     return {
       resolved,
+      picked,
       result: performHitTest(canvasX, canvasY, resolved, {
         showCoverage,
         showInterbaseIndicators,
@@ -218,7 +219,16 @@ export function useAlignmentsBase(
       return
     }
 
-    const { result } = runHitTest(coords.canvasX, coords.canvasY)
+    const { result, picked } = runHitTest(coords.canvasX, coords.canvasY)
+
+    // Screen-px coverage band of the hovered section, so the tooltip's vertical
+    // bar lands on the hovered group's coverage band rather than always the top.
+    const hoverCoverageBand = picked
+      ? {
+          topOffset: picked.coverageTopOffset,
+          coverageHeight: picked.section.coverageHeight,
+        }
+      : undefined
 
     switch (result.type) {
       case 'indicator':
@@ -230,6 +240,7 @@ export function useAlignmentsBase(
             result.resolved.rpcData,
             result.resolved.refName,
           ),
+          hoverCoverageBand,
         })
         model.clearHighlights()
         return
@@ -242,6 +253,7 @@ export function useAlignmentsBase(
             result.resolved.rpcData,
             result.resolved.refName,
           ),
+          hoverCoverageBand,
         })
         model.clearHighlights()
         return

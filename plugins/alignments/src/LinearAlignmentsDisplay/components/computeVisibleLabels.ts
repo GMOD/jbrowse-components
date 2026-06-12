@@ -35,9 +35,12 @@ interface LabelView {
 
 // One stacked group's data + its pileup-row top offset (screen px, pre-scroll).
 // Ungrouped is a single section whose topOffset is coverageDisplayHeight.
+// `pileupHeight` is the section's pileup band height: collapsed groups have 0,
+// so their labels clip away instead of overflowing into the next section.
 export interface LabelSection {
   laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
   topOffset: number
+  pileupHeight: number
 }
 
 interface ComputeVisibleLabelsParams {
@@ -82,10 +85,15 @@ export function computeVisibleLabels(
 
   // Each stacked section places its labels at its own pileup top; ungrouped is
   // one section, so this reduces to the prior single-offset loop.
-  for (const { laidOutPileupMap, topOffset } of sections) {
+  for (const { laidOutPileupMap, topOffset, pileupHeight } of sections) {
     const rowYPx = (y: number) =>
       y * rowHeight + featureHeight / 2 - scrollTop + topOffset
-    const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= height
+    // Clip to this section's pileup band bottom, not the whole canvas, so a
+    // collapsed group (pileupHeight 0) draws nothing and a group's labels never
+    // bleed into the section below it.
+    const sectionBottom = Math.min(height, topOffset - scrollTop + pileupHeight)
+    const rowYInRange = (yPx: number) =>
+      yPx >= topOffset && yPx <= sectionBottom
     for (const vr of view.visibleRegions) {
       const rpcData = laidOutPileupMap.get(vr.displayedRegionIndex)
       if (!rpcData) {

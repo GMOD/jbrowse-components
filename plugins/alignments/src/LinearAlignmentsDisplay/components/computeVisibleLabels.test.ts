@@ -35,7 +35,9 @@ function run(rpcData: PileupDataResult) {
       ],
       bpPerPx: 0.1,
     },
-    sections: [{ laidOutPileupMap: { get: () => rpcData }, topOffset: 0 }],
+    sections: [
+      { laidOutPileupMap: { get: () => rpcData }, topOffset: 0, pileupHeight: 1000 },
+    ],
     height: 1000,
     featureHeight: 10,
     featureSpacing: 2,

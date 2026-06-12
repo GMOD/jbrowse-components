@@ -54,7 +54,11 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
-import { buildSectionRenders, computeStackedSections } from './sectionLayout.ts'
+import {
+  buildSectionRenders,
+  computeBandStack,
+  computeStackedSections,
+} from './sectionLayout.ts'
 import { computeArcsRegionMap } from '../features/arcs/compute.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { getColorForModification } from '../util.ts'
@@ -537,6 +541,16 @@ export default function stateModelFactory(
            * #volatile
            */
           overCigarItem: false,
+          /**
+           * #volatile
+           * Screen-px coverage band of the section currently under a
+           * coverage/indicator hover. Drives the tooltip's vertical hover bar so
+           * it lands on the hovered group's coverage band, not always the top
+           * one. `undefined` when not hovering coverage.
+           */
+          hoverCoverageBand: undefined as
+            | { topOffset: number; coverageHeight: number }
+            | undefined,
           /**
            * #volatile
            */
@@ -1141,17 +1155,19 @@ export default function stateModelFactory(
             self.readConnectionsDown &&
             self.showCoverage &&
             this.hasSashimiArcs
-          const arcsBandTop = coverageBand
-          const sashimiBandTop =
-            arcsBandTop + (hasArcsBand ? self.readConnectionsHeight : 0)
-          const bottom =
-            sashimiBandTop + (hasSashimiBand ? self.sashimiArcsHeight : 0)
+          const stack = computeBandStack({
+            coverageHeight: coverageBand,
+            hasArcsBand,
+            arcsHeight: self.readConnectionsHeight,
+            hasSashimiBand,
+            sashimiHeight: self.sashimiArcsHeight,
+          })
           return {
             hasArcsBand,
             hasSashimiBand,
-            arcsBandTop,
-            sashimiBandTop,
-            bottom,
+            arcsBandTop: stack.arcsBandTop,
+            sashimiBandTop: stack.sashimiBandTop,
+            bottom: stack.pileupTop,
           }
         },
 
@@ -1177,11 +1193,12 @@ export default function stateModelFactory(
         /**
          * #getter
          * Single source of all vertical band geometry, one entry per stacked
-         * group. Ungrouped is the one-section case and reuses the existing
-         * `belowCoverageBands` (coverage + arc + sashimi bands) so its layout is
-         * byte-identical to pre-grouping. Grouped sections disable
-         * read-connections (v1) and stack plain coverage + pileup bands, each
-         * scrolling with its section. Consumed by the renderers in Stage 3.
+         * group. Ungrouped is the one-section case: it keeps `belowCoverageBands`
+         * for the reserved pileup top so its layout is byte-identical to
+         * pre-grouping, and carries the real `computeArcBand` draw band so the
+         * renderers read the same band whether grouped or not. Grouped sections
+         * stack coverage + arc + sashimi + pileup bands per section, each
+         * scrolling with its section.
          */
         get sections(): SectionsLayout {
           const order = self.groupOrder
@@ -1190,6 +1207,14 @@ export default function stateModelFactory(
             const bands = self.belowCoverageBands
             const pileupTop = self.coverageDisplayHeight
             const pileupHeight = self.maxY * rowHeight
+            const arcBand = computeArcBand({
+              showCoverage: self.showCoverage,
+              coverageHeight: self.coverageHeight,
+              coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+              readConnections: self.readConnections,
+              readConnectionsDown: self.readConnectionsDown,
+              readConnectionsHeight: self.readConnectionsHeight,
+            })
             return {
               sections: [
                 {
@@ -1197,10 +1222,8 @@ export default function stateModelFactory(
                   label: order[0]?.label ?? '',
                   coverageTop: 0,
                   coverageHeight: self.showCoverage ? self.coverageHeight : 0,
-                  arcBandTop: bands.arcsBandTop,
-                  arcBandHeight: bands.hasArcsBand
-                    ? self.readConnectionsHeight
-                    : 0,
+                  arcBandTop: arcBand?.top ?? bands.arcsBandTop,
+                  arcBandHeight: arcBand?.height ?? 0,
                   sashimiBandTop: bands.sashimiBandTop,
                   pileupTop,
                   pileupHeight,
@@ -1220,8 +1243,15 @@ export default function stateModelFactory(
                 : groupMaxY(self.groupLaidOutMap(key)),
             })),
             {
-              coverageHeight: self.showCoverage ? self.coverageHeight : 0,
+              coverageHeight: self.coverageHeight,
               rowHeight,
+              showCoverage: self.showCoverage,
+              coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+              readConnections: self.readConnections,
+              readConnectionsDown: self.readConnectionsDown,
+              readConnectionsHeight: self.readConnectionsHeight,
+              hasSashimiBand: self.belowCoverageBands.hasSashimiBand,
+              sashimiHeight: self.sashimiArcsHeight,
             },
           )
         },
@@ -1593,6 +1623,7 @@ export default function stateModelFactory(
           self.featureIdUnderMouse = undefined
           self.mouseoverExtraInformation = undefined
           self.overCigarItem = false
+          self.hoverCoverageBand = undefined
           if (self.highlightedChainIds.length > 0) {
             self.highlightedChainIds = []
           }
@@ -2178,10 +2209,12 @@ export default function stateModelFactory(
             overCigarItem: boolean
             featureIdUnderMouse: string | undefined
             mouseoverExtraInformation: TooltipPayload | undefined
+            hoverCoverageBand?: { topOffset: number; coverageHeight: number }
           }) {
             self.overCigarItem = state.overCigarItem
             self.featureIdUnderMouse = state.featureIdUnderMouse
             self.mouseoverExtraInformation = state.mouseoverExtraInformation
+            self.hoverCoverageBand = state.hoverCoverageBand
           },
 
           /**
