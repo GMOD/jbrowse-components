@@ -117,6 +117,11 @@ export function computeHighlightBoxes(
   const rowHeight = featureHeight + featureSpacing
   const { bpPerPx } = view
   const boxes: HighlightBox[] = []
+  // Ungrouped's lone section has a sticky coverage band, so its `topOffset`
+  // (== coverageDisplayHeight) is already the screen-space band top regardless
+  // of scroll. Grouped sections scroll as a stacked unit, so `topOffset` (==
+  // pileupTop, content-space) needs `-scrollTop` to become screen-space.
+  const grouped = sections.length > 1
   for (const vr of view.visibleRegions) {
     for (const bounds of byKey.values()) {
       if (bounds.displayedRegionIndex !== vr.displayedRegionIndex) {
@@ -135,9 +140,12 @@ export function computeHighlightBoxes(
         scrollTop,
         height,
       )
+      const sectionTop = grouped
+        ? bounds.topOffset - scrollTop
+        : bounds.topOffset
       // Strict `<`: a collapsed group has a zero-height band (bottom ==
-      // topOffset), so its row anchored at topOffset must not draw a box.
-      if (top + featureHeight >= bounds.topOffset && top < bottom) {
+      // sectionTop), so its row anchored at sectionTop must not draw a box.
+      if (top + featureHeight >= sectionTop && top < bottom) {
         boxes.push({
           left: Math.min(x1, x2),
           top,

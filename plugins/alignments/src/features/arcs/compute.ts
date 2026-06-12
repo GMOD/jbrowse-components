@@ -658,7 +658,11 @@ export function computeArcsRegionMap(
   regions: RegionInfo[],
   settings: ArcSettings,
 ): Map<number, ArcsUploadData> {
-  const { arcs, lines } = computeArcsFromPileupData(rpcDataMap, regions, settings)
+  const { arcs, lines } = computeArcsFromPileupData(
+    rpcDataMap,
+    regions,
+    settings,
+  )
   const { arcsByRef, linesByRef } = groupArcsByRef(arcs, lines)
   const out = new Map<number, ArcsUploadData>()
   for (const ri of regions) {

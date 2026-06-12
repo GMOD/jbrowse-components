@@ -91,7 +91,8 @@ export function computeStackedSections(
   // Reserve a dedicated arcs band only when arcs don't overlay coverage: down
   // mode always, up mode only when there's no coverage band to overlay.
   // Mirrors `computeArcBand` + `belowCoverageBands`.
-  const hasArcsBand = arcsOn && ((opts.readConnectionsDown ?? false) || !showCoverage)
+  const hasArcsBand =
+    arcsOn && ((opts.readConnectionsDown ?? false) || !showCoverage)
   const arcBand = computeArcBand({
     showCoverage,
     coverageHeight: opts.coverageHeight,

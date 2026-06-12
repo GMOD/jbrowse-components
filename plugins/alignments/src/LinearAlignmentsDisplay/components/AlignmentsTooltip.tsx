@@ -339,7 +339,10 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               />
             </div>
           </BaseTooltip>
-          <CoverageHoverBar left={offsetMouseCoord?.[0]} band={hoverCoverageBand} />
+          <CoverageHoverBar
+            left={offsetMouseCoord?.[0]}
+            band={hoverCoverageBand}
+          />
         </>
       )
     }
@@ -354,7 +357,10 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               />
             </div>
           </BaseTooltip>
-          <CoverageHoverBar left={offsetMouseCoord?.[0]} band={hoverCoverageBand} />
+          <CoverageHoverBar
+            left={offsetMouseCoord?.[0]}
+            band={hoverCoverageBand}
+          />
         </>
       )
     case 'sashimi': {

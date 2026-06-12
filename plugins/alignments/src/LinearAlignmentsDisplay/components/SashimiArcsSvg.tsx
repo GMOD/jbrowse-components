@@ -18,7 +18,11 @@ const SashimiArcsSvg = observer(function SashimiArcsSvg({
   return (
     <>
       {model.sashimiSections.map(section => {
-        const arcs = computeSashimiArcsFromModel(model, view, section.rpcDataMap)
+        const arcs = computeSashimiArcsFromModel(
+          model,
+          view,
+          section.rpcDataMap,
+        )
         return arcs.length ? (
           <g key={section.groupKey} transform={`translate(0,${section.top})`}>
             {arcs.map(arc => (

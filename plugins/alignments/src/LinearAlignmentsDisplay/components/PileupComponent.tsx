@@ -386,30 +386,46 @@ const VisibleLabelsHost = observer(function VisibleLabelsHost({
   )
 })
 
+// One scale bar per section's coverage band. Ungrouped is the single sticky
+// section at top 0; grouped scrolls each section's band with the rest of its
+// stack, so the scale bar tracks `coverageTop - scrollTop`. The coverage
+// Y-domain (`coverageTicks`) is shared across groups (see `coverageStats`), so
+// every section's bar reads the same scale.
 const CoverageAxisHost = observer(function CoverageAxisHost({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { coverageTicks } = model
+  const { coverageTicks, isGrouped, scrollTop, height, renderSections } = model
   if (!coverageTicks) {
     return null
   }
   return (
-    <svg
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: model.scalebarOverlapLeft,
-        pointerEvents: 'none',
-        height: model.coverageHeight,
-        width: 50,
-      }}
-    >
-      <g transform="translate(45, 0)">
-        <YScaleBar ticks={model.coverageTicks} orientation="left" />
-      </g>
-    </svg>
+    <>
+      {renderSections.map(section => {
+        const top = isGrouped ? section.coverageTop - scrollTop : 0
+        if (top + section.coverageHeight < 0 || top > height) {
+          return null
+        }
+        return (
+          <svg
+            key={section.groupKey || 'ungrouped'}
+            style={{
+              position: 'absolute',
+              top,
+              left: model.scalebarOverlapLeft,
+              pointerEvents: 'none',
+              height: section.coverageHeight,
+              width: 50,
+            }}
+          >
+            <g transform="translate(45, 0)">
+              <YScaleBar ticks={coverageTicks} orientation="left" />
+            </g>
+          </svg>
+        )
+      })}
+    </>
   )
 })
 

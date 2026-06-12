@@ -44,13 +44,17 @@ export async function renderSvg(
   }
 
   const baseState = model.renderState
-  if (!baseState || model.laidOutPileupMap.size === 0) {
+  if (
+    !baseState ||
+    model.sourceSections.every(s => s.laidOutPileupMap.size === 0)
+  ) {
     return null
   }
 
   const totalWidth = view.totalWidthPx
   const displayHeight = model.height
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const { coverageTicks } = model
 
   // SVG export renders the full display from y=0 with no Y scroll. Reuse the
   // model's renderState — only viewport-related fields are overridden. The
@@ -109,13 +113,20 @@ export async function renderSvg(
         <SashimiArcsSvg model={model} view={view} />
         <PileupBezierArcsSvg model={model} view={view} />
       </SvgClipRect>
-      {model.showCoverage && model.coverageTicks ? (
-        // anchors scale bars to left edge of content; non-zero only when
-        // scrolled before genome start
-        <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
-          <YScaleBar ticks={model.coverageTicks} orientation="left" />
-        </g>
-      ) : null}
+      {model.showCoverage && coverageTicks
+        ? // anchors scale bars to left edge of content; non-zero x only when
+          // scrolled before genome start. One bar per section's coverage band
+          // (export is always at scrollTop 0, so `coverageTop` is the
+          // section's final y) — mirrors the on-screen `CoverageAxisHost`.
+          model.renderSections.map(section => (
+            <g
+              key={section.groupKey || 'ungrouped'}
+              transform={`translate(${Math.max(-view.offsetPx, 0)}, ${section.coverageTop})`}
+            >
+              <YScaleBar ticks={coverageTicks} orientation="left" />
+            </g>
+          ))
+        : null}
       {model.insertSizeTicks ? (
         // 50 matches the on-screen SVG width for the insert-size scale bar.
         // Down mode puts the TLEN scalebar on the left (matches PileupComponent).

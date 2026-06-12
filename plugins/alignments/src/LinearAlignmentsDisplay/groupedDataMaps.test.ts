@@ -35,9 +35,21 @@ test('buildReadIdIndexMap locates each read by region + group + row', () => {
       [1, grouped([{ key: '-', data: data(['c']) }])],
     ]),
   )
-  expect(map.get('a')).toEqual({ displayedRegionIndex: 0, groupKey: '+', idx: 0 })
-  expect(map.get('b')).toEqual({ displayedRegionIndex: 0, groupKey: '+', idx: 1 })
-  expect(map.get('c')).toEqual({ displayedRegionIndex: 1, groupKey: '-', idx: 0 })
+  expect(map.get('a')).toEqual({
+    displayedRegionIndex: 0,
+    groupKey: '+',
+    idx: 0,
+  })
+  expect(map.get('b')).toEqual({
+    displayedRegionIndex: 0,
+    groupKey: '+',
+    idx: 1,
+  })
+  expect(map.get('c')).toEqual({
+    displayedRegionIndex: 1,
+    groupKey: '-',
+    idx: 0,
+  })
   expect(map.get('missing')).toBeUndefined()
 })
 

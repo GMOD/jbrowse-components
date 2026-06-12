@@ -86,6 +86,11 @@ export function computeVisibleLabels(
 
   // Each stacked section places its labels at its own pileup top; ungrouped is
   // one section, so this reduces to the prior single-offset loop.
+  // Ungrouped's lone section has a sticky coverage band, so its `topOffset`
+  // (== coverageDisplayHeight) is already the screen-space band top regardless
+  // of scroll. Grouped sections scroll as a stacked unit, so `topOffset` (==
+  // pileupTop, content-space) needs `-scrollTop` to become screen-space.
+  const grouped = sections.length > 1
   for (const { laidOutPileupMap, topOffset, pileupHeight } of sections) {
     const rowYPx = (y: number) =>
       y * rowHeight + featureHeight / 2 - scrollTop + topOffset
@@ -93,7 +98,8 @@ export function computeVisibleLabels(
     // collapsed group (pileupHeight 0) draws nothing and a group's labels never
     // bleed into the section below it.
     const bottom = sectionBandBottom(topOffset, pileupHeight, scrollTop, height)
-    const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= bottom
+    const sectionTop = grouped ? topOffset - scrollTop : topOffset
+    const rowYInRange = (yPx: number) => yPx >= sectionTop && yPx <= bottom
     for (const vr of view.visibleRegions) {
       const rpcData = laidOutPileupMap.get(vr.displayedRegionIndex)
       if (!rpcData) {

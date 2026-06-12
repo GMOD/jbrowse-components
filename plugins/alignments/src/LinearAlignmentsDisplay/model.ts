@@ -873,7 +873,10 @@ export default function stateModelFactory(
             isChainMode: self.linkedReads === 'normal',
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
-            maxRows: maxRowsFor(self.getConfWithOverride('maxHeight'), rowHeight),
+            maxRows: maxRowsFor(
+              self.getConfWithOverride('maxHeight'),
+              rowHeight,
+            ),
             maxRowsOverrides,
             showLinkedReadLines: self.showLinkedReadLines,
             colorBy: this.colorBy,

@@ -80,7 +80,10 @@ export function buildRawDataByGroup(
 // letting hit-test/detail lookups resolve a feature back to its raw arrays.
 export function buildReadIdIndexMap(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-): Map<string, { displayedRegionIndex: number; groupKey: string; idx: number }> {
+): Map<
+  string,
+  { displayedRegionIndex: number; groupKey: string; idx: number }
+> {
   const map = new Map<
     string,
     { displayedRegionIndex: number; groupKey: string; idx: number }

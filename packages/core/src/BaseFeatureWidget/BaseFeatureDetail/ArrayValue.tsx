@@ -49,7 +49,7 @@ export default function ArrayValue({
     value.length === 1 ? (
       <Attributes
         formatter={formatter}
-        attributes={value[0]}
+        attributes={value[0]!}
         prefix={[...prefix, name]}
       />
     ) : (

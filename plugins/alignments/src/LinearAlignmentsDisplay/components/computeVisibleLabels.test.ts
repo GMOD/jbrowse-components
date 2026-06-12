@@ -36,7 +36,11 @@ function run(rpcData: PileupDataResult) {
       bpPerPx: 0.1,
     },
     sections: [
-      { laidOutPileupMap: { get: () => rpcData }, topOffset: 0, pileupHeight: 1000 },
+      {
+        laidOutPileupMap: { get: () => rpcData },
+        topOffset: 0,
+        pileupHeight: 1000,
+      },
     ],
     height: 1000,
     featureHeight: 10,
@@ -148,4 +152,37 @@ test('the (S<len>) summary still renders when no per-base clip data', () => {
   expect(labels.filter(l => l.type === 'softclip').map(l => l.text)).toEqual([
     '(S5)',
   ])
+})
+
+test('a grouped section near the top of its band stays visible after scrolling', () => {
+  // Group 2's pileup band starts at content-space topOffset 400; scrolling
+  // down by 200px brings its row 0 (screen yPx ~205) into view at screen y
+  // ~205, which must satisfy the lower bound topOffset - scrollTop (200), not
+  // the unscrolled topOffset (400).
+  const labels = computeVisibleLabels({
+    view: {
+      visibleRegions: [
+        { displayedRegionIndex: 0, start: 0, end: 1000, screenStartPx: 0 },
+      ],
+      bpPerPx: 0.1,
+    },
+    sections: [
+      {
+        laidOutPileupMap: { get: () => undefined },
+        topOffset: 0,
+        pileupHeight: 0,
+      },
+      {
+        laidOutPileupMap: { get: () => makeRpcData(threeMismatches) },
+        topOffset: 400,
+        pileupHeight: 1000,
+      },
+    ],
+    height: 1000,
+    featureHeight: 10,
+    featureSpacing: 2,
+    showMismatches: true,
+    scrollTop: 200,
+  })
+  expect(labels.filter(l => l.type === 'mismatch')).toHaveLength(3)
 })
