@@ -96,6 +96,43 @@ test('group draws per-section paired-end arcs', async () => {
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
+// READ_CONNECTIONS_GROUPED_PLAN Stage 4: sashimi junction arcs draw per stacked
+// section. Grouping spliced RNA-seq reads by strand keeps each junction in its
+// read's strand group, so both sections carry their own sashimi arcs.
+test('group draws per-section sashimi arcs', async () => {
+  const user = userEvent.setup()
+  const { view } = await createView()
+  await view.navToLocString('ctgA:1-50000')
+  await user.click(await screen.findByTestId(hts('spliced'), ...opts))
+  await screen.findByTestId('pileup-display-done', ...opts)
+
+  const display = view.tracks[0]?.displays[0]
+  display.setShowSashimiArcs(true)
+  display.setGroupBy({ type: 'strand' })
+
+  await waitFor(
+    () => {
+      expect(display.isGrouped).toBe(true)
+      expect(display.groupOrder.length).toBe(2)
+      // every section yields its own sashimi band, and at least one has arcs.
+      expect(display.sashimiSections.length).toBe(2)
+      let withArcs = 0
+      for (const section of display.sashimiSections) {
+        for (const data of section.rpcDataMap.values()) {
+          if (data.sashimiX1.length > 0) {
+            withArcs++
+          }
+        }
+      }
+      expect(withArcs).toBeGreaterThan(0)
+    },
+    { timeout: 30000 },
+  )
+
+  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  expectCanvasMatch(findCanvasIn(el), 0.05)
+}, 90000)
+
 test('ungroup restores a single section', async () => {
   const user = userEvent.setup()
   const { view } = await createView()

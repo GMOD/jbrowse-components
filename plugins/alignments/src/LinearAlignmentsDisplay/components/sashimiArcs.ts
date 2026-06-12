@@ -7,9 +7,10 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Shared by the on-screen overlay and the SVG export so geometry, score filter,
-// and paint order can't drift. The data map is the one legitimate difference:
-// the overlay passes `rpcDataMap` (sashimi ignores Y-layout, so no recompute on
-// relayout), the export passes the settled `laidOutPileupMap`.
+// and paint order can't drift. Both pass one group's raw region map (from
+// `sashimiSections` / `rawDataByGroup`); sashimi ignores Y-layout, so raw data
+// avoids a recompute on relayout and the laid-out clone would give the same
+// junctions anyway.
 export function computeSashimiArcsFromModel(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,

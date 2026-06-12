@@ -968,21 +968,13 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Raw (un-laid-out) data for the primary group per region. Read
-         * connections are disabled in grouped mode (v1), so the primary group is
-         * the only group whenever arcs are on — but this keeps a single,
-         * non-grouped `Map<number, PileupDataResult>` for the arc/coverage code
-         * that predates grouping.
+         * Raw (un-laid-out) data regrouped as group key → (region idx → data),
+         * insertion-ordered so the first key is the primary group. The arc
+         * compute and the per-section sashimi overlay both read one group's raw
+         * map from here; ungrouped is the single key `''`.
          */
-        get primaryRawDataMap() {
-          const out = new Map<number, PileupDataResult>()
-          for (const [idx, grouped] of self.rpcDataMap) {
-            const g = grouped.groups[0]
-            if (g) {
-              out.set(idx, g.data)
-            }
-          }
-          return out
+        get rawDataByGroup() {
+          return buildRawDataByGroup(self.rpcDataMap)
         },
 
         /**
@@ -1014,7 +1006,7 @@ export default function stateModelFactory(
             drawInter: self.drawInter,
             drawLongRange: self.drawLongRange,
           }
-          for (const [key, rawMap] of buildRawDataByGroup(self.rpcDataMap)) {
+          for (const [key, rawMap] of this.rawDataByGroup) {
             out.set(key, computeArcsRegionMap(rawMap, regionInfos, settings))
           }
           return out
@@ -1163,17 +1155,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Y offset where the sashimi overlay/export is drawn: below coverage in
-         * down mode, just under the y-scalebar label otherwise.
-         */
-        get sashimiArcsTop() {
-          return self.readConnectionsDown
-            ? this.belowCoverageBands.sashimiBandTop
-            : YSCALEBAR_LABEL_OFFSET
-        },
-
-        /**
-         * #getter
          */
         get coverageDisplayHeight() {
           return this.belowCoverageBands.bottom
@@ -1270,6 +1251,35 @@ export default function stateModelFactory(
               pileupHeight: sec?.pileupHeight ?? 0,
             }
           })
+        },
+
+        /**
+         * #getter
+         * Per-section sashimi band placement, in stacking order. Each entry pairs
+         * a group's raw data (sashimi counts live per-group) with the
+         * content-space top of its sashimi band: down mode uses the reserved
+         * sashimi band, up mode overlays the section's own coverage. The overlay
+         * and SVG export both map over this so their geometry can't drift;
+         * ungrouped is the single-section case (sticky band below sticky
+         * coverage, raw map == the only group). Empty when sashimi is off.
+         */
+        get sashimiSections() {
+          if (!self.showSashimiArcs || !self.showCoverage) {
+            return []
+          }
+          const down = self.readConnectionsDown
+          const byGroup = self.rawDataByGroup
+          const empty = new Map<number, PileupDataResult>()
+          return this.sections.sections.map(sec => ({
+            groupKey: sec.groupKey,
+            rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
+            // Content-space band top; the overlay scrolls it for grouped, the
+            // export reads it as-is (scrollTop 0).
+            top: down
+              ? sec.sashimiBandTop
+              : sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
+            down,
+          }))
         },
 
         /**
