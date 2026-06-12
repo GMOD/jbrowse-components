@@ -647,3 +647,28 @@ export function arcsToRegionResult(
     numArcLines: regionLines.length,
   }
 }
+
+// Full per-region arc upload feed for one set of raw pileup data: compute arcs,
+// bucket them by refName, then materialize each region's `ArcsUploadData`. This
+// is the single arc pipeline — grouped mode runs it once per group, ungrouped
+// once for the lone group — so the ungrouped result is exactly the N==1 case of
+// the grouped one, byte-identical by construction.
+export function computeArcsRegionMap(
+  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  regions: RegionInfo[],
+  settings: ArcSettings,
+): Map<number, ArcsUploadData> {
+  const { arcs, lines } = computeArcsFromPileupData(rpcDataMap, regions, settings)
+  const { arcsByRef, linesByRef } = groupArcsByRef(arcs, lines)
+  const out = new Map<number, ArcsUploadData>()
+  for (const ri of regions) {
+    out.set(
+      ri.displayedRegionIndex,
+      arcsToRegionResult(
+        arcsByRef.get(ri.refName) ?? [],
+        linesByRef.get(ri.refName) ?? [],
+      ),
+    )
+  }
+  return out
+}

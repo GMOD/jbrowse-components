@@ -36,7 +36,11 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 import { ColorScheme } from './constants.ts'
 import { buildLaidOutByGroup, groupMaxY } from './groupLayout.ts'
-import { buildChainIdMap, buildReadIdIndexMap } from './groupedDataMaps.ts'
+import {
+  buildChainIdMap,
+  buildRawDataByGroup,
+  buildReadIdIndexMap,
+} from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
   COMPACTNESS_PRESETS,
@@ -51,11 +55,7 @@ import {
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import { buildSectionRenders, computeStackedSections } from './sectionLayout.ts'
-import {
-  arcsToRegionResult,
-  computeArcsFromPileupData,
-  groupArcsByRef,
-} from '../features/arcs/compute.ts'
+import { computeArcsRegionMap } from '../features/arcs/compute.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { getColorForModification } from '../util.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
@@ -968,16 +968,19 @@ export default function stateModelFactory(
           return out
         },
 
-        // The heavy work — running `computeArcsFromPileupData` over every
-        // pileup region — is cached here. Arcs/lines are pre-grouped by refName
-        // so the per-region arcsRpcDataMap lookup is O(1) instead of filtering
-        // every arc per displayed region.
         /**
          * #getter
+         * Per-group arc upload feed: group key → (region idx → `ArcsUploadData`).
+         * The heavy `computeArcsFromPileupData` pass runs once per group (arcs are
+         * pre-grouped by refName so each region lookup is O(1)); ungrouped is the
+         * single-group case. Empty map when read-connections are off, so the
+         * off-path skips the per-read region scan entirely. Source of truth for
+         * both the ungrouped `arcsRpcDataMap` feed and the shared `arcsYDomainBp`.
          */
-        get arcsComputed() {
+        get arcsByGroup() {
+          const out = new Map<string, Map<number, ArcsUploadData>>()
           if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
-            return undefined
+            return out
           }
           const regionInfos = [...self.loadedRegions.entries()]
             .filter(([idx]) => self.rpcDataMap.has(idx))
@@ -987,39 +990,30 @@ export default function stateModelFactory(
               end: r.end,
               displayedRegionIndex,
             }))
-          const { arcs, lines } = computeArcsFromPileupData(
-            this.primaryRawDataMap,
-            regionInfos,
-            {
-              colorByType: self.arcColorByType,
-              samplot: self.readConnections === 'samplot',
-              drawInter: self.drawInter,
-              drawLongRange: self.drawLongRange,
-            },
-          )
-          return { ...groupArcsByRef(arcs, lines), regionInfos }
+          const settings = {
+            colorByType: self.arcColorByType,
+            samplot: self.readConnections === 'samplot',
+            drawInter: self.drawInter,
+            drawLongRange: self.drawLongRange,
+          }
+          for (const [key, rawMap] of buildRawDataByGroup(self.rpcDataMap)) {
+            out.set(key, computeArcsRegionMap(rawMap, regionInfos, settings))
+          }
+          return out
         },
 
         /**
          * #getter
+         * Ungrouped arc feed: the primary (first) group's region map. Ungrouped
+         * has exactly one group, so this is the whole feed and stays byte-
+         * identical to pre-grouping; the grouped renderers read `arcsByGroup` per
+         * section directly (Stage 3).
          */
-        get arcsRpcDataMap() {
-          const computed = this.arcsComputed
-          if (!computed) {
-            return new Map()
+        get arcsRpcDataMap(): Map<number, ArcsUploadData> {
+          for (const regionMap of this.arcsByGroup.values()) {
+            return regionMap
           }
-          const { arcsByRef, linesByRef, regionInfos } = computed
-          const out = new Map<number, ArcsUploadData>()
-          for (const ri of regionInfos) {
-            out.set(
-              ri.displayedRegionIndex,
-              arcsToRegionResult(
-                arcsByRef.get(ri.refName) ?? [],
-                linesByRef.get(ri.refName) ?? [],
-              ),
-            )
-          }
-          return out
+          return new Map<number, ArcsUploadData>()
         },
       }))
       .views(self => ({
@@ -1517,10 +1511,15 @@ export default function stateModelFactory(
           if (self.readConnections !== 'samplot') {
             return undefined
           }
+          // Max across every group so all sections share one Y-domain (the same
+          // comparability trick coverage uses with coverageMaxDepth). Ungrouped
+          // has one group, so this reduces to the prior single-group max.
           let maxBp = 0
-          for (const data of self.arcsRpcDataMap.values()) {
-            if (data.maxFlatArcYBp > maxBp) {
-              maxBp = data.maxFlatArcYBp
+          for (const regionMap of self.arcsByGroup.values()) {
+            for (const data of regionMap.values()) {
+              if (data.maxFlatArcYBp > maxBp) {
+                maxBp = data.maxFlatArcYBp
+              }
             }
           }
           return Math.max(1000, maxBp)

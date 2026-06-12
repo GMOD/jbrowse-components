@@ -1,5 +1,8 @@
 import type { LinkedReadsMode } from './constants.ts'
-import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts'
+import type {
+  GroupedAlignmentsResult,
+  PileupDataResult,
+} from '../RenderAlignmentDataRPC/types.ts'
 
 // Per-read lookups derived by scanning every group of every fetched region.
 // Pulled out of the model so the O(reads) scans are pure + unit-testable; the
@@ -34,6 +37,29 @@ export function buildChainIdMap(
     }
   }
   return map
+}
+
+// Regroup the fetched `rpcDataMap` (region idx → grouped result) into one raw
+// region map per group key (group key → region idx → that group's raw data).
+// Insertion order follows the worker's group order, so the first key is the
+// primary group — the same `groups[0]` slice the ungrouped arc/sashimi feeds
+// read. The arc compute (`computeArcsFromPileupData`) consumes one of these
+// per-group maps, so this is what lets arcs run per group.
+export function buildRawDataByGroup(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+): Map<string, Map<number, PileupDataResult>> {
+  const out = new Map<string, Map<number, PileupDataResult>>()
+  for (const [idx, grouped] of rpcDataMap) {
+    for (const { key, data } of grouped.groups) {
+      let regionMap = out.get(key)
+      if (!regionMap) {
+        regionMap = new Map<number, PileupDataResult>()
+        out.set(key, regionMap)
+      }
+      regionMap.set(idx, data)
+    }
+  }
+  return out
 }
 
 // read id → where that read lives (which region, which group, row index),

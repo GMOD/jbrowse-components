@@ -1,4 +1,8 @@
-import { buildChainIdMap, buildReadIdIndexMap } from './groupedDataMaps.ts'
+import {
+  buildChainIdMap,
+  buildRawDataByGroup,
+  buildReadIdIndexMap,
+} from './groupedDataMaps.ts'
 
 import type {
   GroupedAlignmentsResult,
@@ -35,6 +39,38 @@ test('buildReadIdIndexMap locates each read by region + group + row', () => {
   expect(map.get('b')).toEqual({ displayedRegionIndex: 0, groupKey: '+', idx: 1 })
   expect(map.get('c')).toEqual({ displayedRegionIndex: 1, groupKey: '-', idx: 0 })
   expect(map.get('missing')).toBeUndefined()
+})
+
+test('buildRawDataByGroup regroups regions into per-group region maps', () => {
+  const a0 = data(['a'])
+  const b0 = data(['b'])
+  const a1 = data(['c'])
+  const byGroup = buildRawDataByGroup(
+    new Map([
+      [
+        0,
+        grouped([
+          { key: '+', data: a0 },
+          { key: '-', data: b0 },
+        ]),
+      ],
+      [1, grouped([{ key: '+', data: a1 }])],
+    ]),
+  )
+  expect([...byGroup.keys()]).toEqual(['+', '-'])
+  expect(byGroup.get('+')!.get(0)).toBe(a0)
+  expect(byGroup.get('+')!.get(1)).toBe(a1)
+  expect(byGroup.get('-')!.get(0)).toBe(b0)
+  expect(byGroup.get('-')!.has(1)).toBe(false)
+})
+
+test('buildRawDataByGroup keeps the single ungrouped group under key ""', () => {
+  const d = data(['a', 'b'])
+  const byGroup = buildRawDataByGroup(
+    new Map([[0, grouped([{ key: '', data: d }])]]),
+  )
+  expect([...byGroup.keys()]).toEqual([''])
+  expect(byGroup.get('')!.get(0)).toBe(d)
 })
 
 test('buildChainIdMap is empty when linked-reads off', () => {

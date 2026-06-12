@@ -21,7 +21,7 @@ MobX tracking.
 | --------------- | ----------------------------------- | ------------------------------------------- |
 | 1 refetch       | clears `rpcDataMap`, worker re-runs | list in `rpcProps()` **and** read in worker |
 | 2 relayout      | redo main-thread Y-layout           | read in `laidOutPileupMap` getter           |
-| 3 arc recompute | rebuild arcs (no refetch)           | read in `arcsComputed` getter               |
+| 3 arc recompute | rebuild arcs (no refetch)           | read in `arcsByGroup` getter                |
 | 4 rerender      | redraw only                         | read in `renderState` getter                |
 
 **Tier 4 means a full canvas repaint** — every field in `renderState` redraws
