@@ -2,12 +2,13 @@
 
 ## Status
 
-Stages 1–3 **built and shipped** (paired-end arcs + read cloud now draw per
-stacked section on a shared Y-domain). Stage 4 (sashimi per section) and Stage 5
-(UI polish: grouped resize handles, samplot TLEN axis) remain. See the per-stage
-"done" notes inline below.
+**All five stages built and shipped.** Paired-end arcs, the samplot read cloud,
+and sashimi junction arcs now draw per stacked section on a shared Y-domain;
+grouped resize handles and the samplot TLEN axis follow the first section. The
+linked-read bezier overlay stays out of scope (grouping × linked-reads is still
+disallowed). See the per-stage "DONE" notes inline below.
 
-Proposal, targeted for build. Restores paired-end **read-connection arcs** and
+Restores paired-end **read-connection arcs** and
 the **read-cloud (samplot)** variant inside in-track grouped mode, where they are
 a v1 scope cut today (drawn only when there is a single section). Companion to
 `GROUP_BY_PLAN.md` / `GROUP_BY_HANDOFF.md`.
@@ -167,7 +168,17 @@ Ship gate: grouped mode draws comparable per-section arcs; ungrouped
 byte-identical (`AlignmentArcs` green). Add a grouped-arc image-snapshot test
 (group by strand + `setReadConnections('arc')`).
 
-### Stage 4 — Sashimi per section (interactive SVG overlay)
+### Stage 4 — Sashimi per section (interactive SVG overlay) — DONE
+
+Built: `sashimiSections` model getter pairs each section's raw per-group data
+with its content-space sashimi band top (down = reserved band, up = overlay
+coverage). `SashimiArcsOverlay` and `SashimiArcsSvg` both map over it (single
+geometry source); native per-`<path>` SVG events resolve each band's hover/click
+with no screen-Y hit-test, so `resolveSectionForCanvasY` wasn't needed. Added
+`rawDataByGroup`, retired `primaryRawDataMap`/`sashimiArcsTop`. Grouped-sashimi
+image snapshot over the spliced RNA-seq track. Original plan text below.
+
+
 
 - `SashimiArcsOverlay.tsx` loops `renderSections`, drawing each section's junction
   arcs in its own sashimi band (`sashimiBandTop` from Stage 2, scrolled).
@@ -178,7 +189,17 @@ byte-identical (`AlignmentArcs` green). Add a grouped-arc image-snapshot test
 - Hover/click hit areas resolve to the section under the cursor (reuse the
   Stage-4 group-by `resolveSectionForCanvasY` already in `useAlignmentsBase`).
 
-### Stage 5 — UI / polish
+### Stage 5 — UI / polish — DONE
+
+Built: `ConnectionBandResizeHandles` re-enables the arc + sashimi resize handles
+in grouped mode (one handle at the first section's band bottom resizes the
+display-global height for every section; scrolls with the first section, hides
+when off-screen). The samplot TLEN axis (`InsertSizeAxisHost`) scrolls with the
+first section in grouped mode — the shared Y-domain keeps one axis value-correct.
+Arcs are left respecting the user's `readConnections` toggle (not force-collapsed
+on first grouping). Original plan text below.
+
+
 
 - Re-enable the arc + sashimi **resize handles** in grouped mode
   (`PileupComponent.tsx` ~225/239 currently gate on `!model.isGrouped`); the
