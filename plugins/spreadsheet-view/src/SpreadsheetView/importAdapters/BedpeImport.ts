@@ -44,11 +44,11 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
         return {
           cellData: {
             refName: cols[0],
-            start: cols[1],
-            end: cols[2],
+            start: +cols[1]!,
+            end: +cols[2]!,
             mateRefName: cols[3],
-            mateStart: cols[4],
-            mateEnd: cols[5],
+            mateStart: +cols[4]!,
+            mateEnd: +cols[5]!,
             name: cols[6],
             score: isNumber(cols[7]) ? +cols[7] : cols[7],
             strand: cols[8],

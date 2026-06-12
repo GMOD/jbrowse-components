@@ -28,13 +28,7 @@ export function parseExtraCols(
 }
 
 export function parseStrand(strand?: string) {
-  if (strand === '+') {
-    return 1
-  } else if (strand === '-') {
-    return -1
-  } else {
-    return undefined
-  }
+  return strand === '+' ? 1 : strand === '-' ? -1 : undefined
 }
 
 export function bufferToLines(buffer: Uint8Array) {
@@ -42,7 +36,7 @@ export function bufferToLines(buffer: Uint8Array) {
     .decode(buffer)
     .split(/\n|\r\n|\r/)
     .map(f => f.trim())
-    .filter(f => !!f)
+    .filter(f => f !== '')
 }
 
 export function filterBedHeaderLines(lines: string[]) {

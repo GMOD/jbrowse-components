@@ -26,6 +26,13 @@ import { fileTypes } from '../ImportWizard.ts'
 import type { SpreadsheetViewModel } from '../SpreadsheetViewModel.ts'
 import type { AbstractRootModel } from '@jbrowse/core/util'
 
+type SelectorType = 'custom' | 'existing'
+
+const selectorTypes: { key: SelectorType; label: string }[] = [
+  { key: 'custom', label: 'Open file from URL or local computer' },
+  { key: 'existing', label: 'Open from track' },
+]
+
 const useStyles = makeStyles()({
   container: {
     margin: '0 auto',
@@ -47,7 +54,7 @@ const ImportWizard = observer(function ImportWizard({
   const [selectedAssembly, setSelectedAssembly] = useState(
     importWizard.selectedAssemblyName ?? assemblyNames[0],
   )
-  const [selectorType, setSelectorType] = useState('custom')
+  const [selectorType, setSelectorType] = useState<SelectorType>('custom')
   const err = assemblyManager.get(selectedAssembly!)?.error ?? error
   const rootModel = getRoot(model)
 
@@ -64,19 +71,16 @@ const ImportWizard = observer(function ImportWizard({
               name="type"
               value={selectorType}
               onChange={event => {
-                setSelectorType(event.target.value)
+                setSelectorType(event.target.value as SelectorType)
               }}
             >
-              {Object.entries({
-                custom: 'Open file from URL or local computer',
-                existing: 'Open from track',
-              }).map(([key, val]) => (
+              {selectorTypes.map(({ key, label }) => (
                 <FormControlLabel
                   key={key}
                   checked={selectorType === key}
                   value={key}
                   control={<Radio />}
-                  label={val}
+                  label={label}
                 />
               ))}
             </RadioGroup>
@@ -137,7 +141,7 @@ const ImportWizard = observer(function ImportWizard({
         </div>
         <div>
           <Button
-            disabled={!isReadyToOpen || !!err || loading}
+            disabled={!isReadyToOpen || Boolean(err) || loading}
             variant="contained"
             data-testid="open_spreadsheet"
             color="primary"

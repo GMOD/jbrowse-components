@@ -1,3 +1,4 @@
+import { isNumber } from './isNumber.ts'
 import {
   bufferToLines,
   filterBedHeaderLines,
@@ -35,7 +36,7 @@ export function parseBedBuffer(buffer: Uint8Array) {
             start: +cols[1]!,
             end: +cols[2]!,
             name: cols[3],
-            score: cols[4],
+            score: isNumber(cols[4]) ? +cols[4] : cols[4],
             strand: cols[5],
             ...extra,
           },
@@ -45,7 +46,7 @@ export function parseBedBuffer(buffer: Uint8Array) {
             start: +cols[1]!,
             end: +cols[2]!,
             name: cols[3],
-            score: cols[4],
+            score: isNumber(cols[4]) ? +cols[4] : cols[4],
             strand: parseStrand(cols[5]),
             ...extra,
           },

@@ -83,11 +83,11 @@ export default function stateModelFactory() {
        * #getter
        */
       get initialized() {
-        const session = getSession(self)
-        const name = self.assemblyName
+        const { rowSet, assemblyName } = self
         return !!(
-          self.rowSet &&
-          (name ? session.assemblyManager.get(name)?.initialized : false)
+          rowSet &&
+          assemblyName &&
+          getSession(self).assemblyManager.get(assemblyName)?.initialized
         )
       },
     }))

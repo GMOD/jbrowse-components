@@ -31,9 +31,9 @@ export function parseSTARFusionBuffer(buffer: Uint8Array) {
           // an actual simplefeatureserialized
           feature: {
             uniqueId: `sf-${rowNumber}`,
-            ...parseSTARFusionBreakpointString(row.LeftBreakpoint! as string),
+            ...parseSTARFusionBreakpointString(row.LeftBreakpoint as string),
             mate: parseSTARFusionBreakpointString(
-              row.RightBreakpoint! as string,
+              row.RightBreakpoint as string,
             ),
           },
         }

@@ -18,37 +18,33 @@ export default function LocationCell({
   const spreadsheetViewId = getParent<{ id: string }>(model).id
   const { assemblyName } = model
   const locString = assembleLocString(feature)
-  return (
+  return assemblyName ? (
     <>
-      {assemblyName ? (
-        <FeatureMenu
-          session={session}
-          spreadsheetViewId={spreadsheetViewId}
-          assemblyName={assemblyName}
-          feature={feature}
-        />
-      ) : null}
-      {assemblyName ? (
-        <ActionLink
-          onClick={async () => {
-            try {
-              await locationLinkClick({
-                spreadsheetViewId,
-                session,
-                locString,
-                assemblyName,
-              })
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            }
-          }}
-        >
-          {locString}
-        </ActionLink>
-      ) : (
-        locString
-      )}
+      <FeatureMenu
+        session={session}
+        spreadsheetViewId={spreadsheetViewId}
+        assemblyName={assemblyName}
+        feature={feature}
+      />
+      <ActionLink
+        onClick={async () => {
+          try {
+            await locationLinkClick({
+              spreadsheetViewId,
+              session,
+              locString,
+              assemblyName,
+            })
+          } catch (e) {
+            console.error(e)
+            session.notifyError(`${e}`, e)
+          }
+        }}
+      >
+        {locString}
+      </ActionLink>
     </>
+  ) : (
+    <>{locString}</>
   )
 }
