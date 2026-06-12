@@ -12,6 +12,7 @@ import {
   startDocumentDrag,
   useAbortableRef,
 } from './alignmentComponentUtils.ts'
+import { findSectionAtY } from './findSectionAtY.ts'
 import { performHitTest } from './hitTestPipeline.ts'
 import {
   openCigarWidget,
@@ -102,30 +103,12 @@ export function useAlignmentsBase(
     }
   }
 
-  // Map a screen-Y to the stacked section it falls in (its group data + the
-  // screen-px top of its coverage band). Ungrouped is one section spanning the
-  // whole canvas, so this returns it for every Y and the hit test reduces to the
-  // pre-grouping single-offset path.
   function resolveSectionForCanvasY(canvasY: number) {
-    const sections = model.renderSections
-    const first = sections[0]
-    if (!first) {
-      return undefined
-    }
-    if (!model.isGrouped) {
-      return { section: first, coverageTopOffset: 0 }
-    }
-    const { scrollTop } = model
-    const contentHeight = model.sections.contentHeight
-    for (let i = 0; i < sections.length; i++) {
-      const top = sections[i]!.coverageTop - scrollTop
-      const next = sections[i + 1]
-      const bottom = (next ? next.coverageTop : contentHeight) - scrollTop
-      if (canvasY >= top && canvasY < bottom) {
-        return { section: sections[i]!, coverageTopOffset: top }
-      }
-    }
-    return undefined
+    return findSectionAtY(model.renderSections, canvasY, {
+      isGrouped: model.isGrouped,
+      scrollTop: model.scrollTop,
+      contentHeight: model.sections.contentHeight,
+    })
   }
 
   function resolveBlockForCanvasX(

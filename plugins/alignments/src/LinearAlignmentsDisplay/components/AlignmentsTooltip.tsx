@@ -38,6 +38,31 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// Vertical bar spanning the hovered section's coverage band. Grouped mode
+// stacks many coverage bands, so the bar anchors to the section the cursor is
+// over (via `band`), not always the top one. Only the coverage/indicator
+// tooltips render it, and both fire only with coverage shown, so `band` is
+// always set when those tooltips appear.
+function CoverageHoverBar({
+  left,
+  band,
+}: {
+  left?: number
+  band?: { topOffset: number; coverageHeight: number }
+}) {
+  const { classes } = useStyles()
+  return left !== undefined && band ? (
+    <div
+      className={classes.hoverVertical}
+      style={{
+        left,
+        top: band.topOffset + YSCALEBAR_LABEL_OFFSET,
+        height: band.coverageHeight - YSCALEBAR_LABEL_OFFSET * 2,
+      }}
+    />
+  ) : null
+}
+
 function formatLocation(refName?: string, position?: number) {
   if (position === undefined) {
     return refName || ''
@@ -268,26 +293,17 @@ type Coord = [number, number]
  */
 const AlignmentsTooltip = observer(function AlignmentsTooltip({
   model,
-  height,
   clientMouseCoord,
   offsetMouseCoord,
 }: {
   model: {
     mouseoverExtraInformation: TooltipPayload | undefined
-    showCoverage: boolean
-    coverageHeight: number
     hoverCoverageBand: { topOffset: number; coverageHeight: number } | undefined
   }
-  height: number
   offsetMouseCoord?: Coord
   clientMouseCoord: Coord
 }) {
-  const {
-    mouseoverExtraInformation: tooltipData,
-    showCoverage,
-    coverageHeight,
-    hoverCoverageBand,
-  } = model
+  const { mouseoverExtraInformation: tooltipData, hoverCoverageBand } = model
   const { classes } = useStyles()
   const x = clientMouseCoord[0] + 5
   const y = clientMouseCoord[1]
@@ -306,21 +322,6 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
     )
   }
 
-  // Anchor the bar to the hovered section's coverage band (grouped mode stacks
-  // many); falls back to the top band when no section was resolved.
-  const bandTop = hoverCoverageBand?.topOffset ?? 0
-  const bandHeight = hoverCoverageBand?.coverageHeight ?? coverageHeight
-  const hoverBar = offsetMouseCoord ? (
-    <div
-      className={classes.hoverVertical}
-      style={{
-        left: offsetMouseCoord[0],
-        top: bandTop + YSCALEBAR_LABEL_OFFSET,
-        height: showCoverage ? bandHeight - YSCALEBAR_LABEL_OFFSET * 2 : height,
-      }}
-    />
-  ) : null
-
   switch (tooltipData.type) {
     case 'indicator': {
       const { bin, refName } = tooltipData
@@ -338,7 +339,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               />
             </div>
           </BaseTooltip>
-          {hoverBar}
+          <CoverageHoverBar left={offsetMouseCoord?.[0]} band={hoverCoverageBand} />
         </>
       )
     }
@@ -353,7 +354,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               />
             </div>
           </BaseTooltip>
-          {hoverBar}
+          <CoverageHoverBar left={offsetMouseCoord?.[0]} band={hoverCoverageBand} />
         </>
       )
     case 'sashimi': {

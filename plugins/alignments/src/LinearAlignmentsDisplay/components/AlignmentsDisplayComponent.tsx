@@ -64,8 +64,7 @@ const AlignmentsDisplayComponent = observer(
       )
     }
 
-    const { TooltipComponent, height, contextMenuCoord, pileupTruncated } =
-      model
+    const { TooltipComponent, contextMenuCoord, pileupTruncated } = model
     const items = contextMenuCoord ? model.contextMenuItems() : []
     return (
       <DisplayChrome
@@ -105,7 +104,6 @@ const AlignmentsDisplayComponent = observer(
             <Suspense fallback={null}>
               <TooltipComponent
                 model={model}
-                height={height}
                 offsetMouseCoord={mouseCoord.offset}
                 clientMouseCoord={mouseCoord.client}
               />
