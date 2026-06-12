@@ -1,9 +1,8 @@
 import eslint from '@eslint/js'
 import { defineConfig } from 'eslint/config'
 import { importX } from 'eslint-plugin-import-x'
-import eslintPluginReact from 'eslint-plugin-react'
+import eslintReact from '@eslint-react/eslint-plugin'
 import reactCompiler from 'eslint-plugin-react-compiler'
-import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import globals from 'globals'
@@ -124,19 +123,13 @@ export default defineConfig(
   ...tseslint.configs.strictTypeChecked,
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
-  eslintPluginReact.configs.flat.recommended,
+  eslintReact.configs['recommended-typescript'],
   {
     files: ['**/*.{js,ts,jsx,tsx}'],
     plugins: { 'baseline-js': baselineJs },
     rules: {
       'baseline-js/use-baseline': ['error', { available: 'widely' }],
     },
-  },
-  {
-    plugins: {
-      'react-hooks': eslintPluginReactHooks,
-    },
-    rules: eslintPluginReactHooks.configs.recommended.rules,
   },
   {
     plugins: {
@@ -169,10 +162,6 @@ export default defineConfig(
       'prefer-template': 'error',
       'one-var': ['error', 'never'],
       'react-refresh/only-export-components': 'error',
-      'react/no-unescaped-entities': 'off',
-      'react/no-is-mounted': 'off',
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
 
       'import-x/no-unresolved': 'off',
       'import-x/order': [
