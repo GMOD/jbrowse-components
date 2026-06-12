@@ -27,7 +27,6 @@ const TrackSelector = observer(function TrackSelector({
       model.setFileSource(firstTrack.loc)
       model.setFileType(firstTrack.type)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firstTrackId])
 
   return (

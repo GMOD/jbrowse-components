@@ -123,12 +123,19 @@ export default defineConfig(
   ...tseslint.configs.strictTypeChecked,
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
-  eslintReact.configs['recommended-typescript'],
+  // eslintReact.configs['recommended-typescript'],
   {
     files: ['**/*.{js,ts,jsx,tsx}'],
-    plugins: { 'baseline-js': baselineJs },
+    plugins: {
+      'baseline-js': baselineJs,
+    },
     rules: {
-      'baseline-js/use-baseline': ['error', { available: 'widely' }],
+      'baseline-js/use-baseline': [
+        'error',
+        {
+          available: 'widely',
+        },
+      ],
     },
   },
   {

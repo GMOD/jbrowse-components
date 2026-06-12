@@ -58,7 +58,6 @@ export function createMakeStyles<Theme>(params: { useTheme: () => Theme }) {
         const mergedClasses = useMemo(
           () =>
             propsClasses ? mergeClasses(classes, propsClasses, cx) : classes,
-          // eslint-disable-next-line react-hooks/exhaustive-deps
           [classes, propsClassesRef, cx],
         )
 
