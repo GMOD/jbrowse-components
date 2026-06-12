@@ -2,6 +2,11 @@
 
 ## Status
 
+Stages 1–3 **built and shipped** (paired-end arcs + read cloud now draw per
+stacked section on a shared Y-domain). Stage 4 (sashimi per section) and Stage 5
+(UI polish: grouped resize handles, samplot TLEN axis) remain. See the per-stage
+"done" notes inline below.
+
 Proposal, targeted for build. Restores paired-end **read-connection arcs** and
 the **read-cloud (samplot)** variant inside in-track grouped mode, where they are
 a v1 scope cut today (drawn only when there is a single section). Companion to
@@ -61,7 +66,15 @@ image-snapshot suite (6 tests) — keep it green at every phase.
 
 ## Staged build (each stage shippable)
 
-### Stage 1 — Per-group arc data + shared Y-domain (model only, no visual change)
+### Stage 1 — Per-group arc data + shared Y-domain (model only, no visual change) — DONE
+
+Built: `buildRawDataByGroup` (regroup `rpcDataMap` into one raw region map per
+group) + `computeArcsRegionMap` (the full compute→bucket-by-ref→upload pipeline
+as one pure helper, run once per group). `arcsByGroup` is the source of truth;
+`arcsYDomainBp` spans all groups. Ungrouped unchanged (the single group is the
+N==1 case). Original plan text below.
+
+
 
 Today: `arcsComputed` runs `computeArcsFromPileupData(primaryRawDataMap, …)` —
 group 0 only. `arcsRpcDataMap: Map<regionIdx, ArcsUploadData>` is the per-region
@@ -85,7 +98,15 @@ partitions the same paired reads), and it is memoized in a getter keyed off
 
 Ship gate: ungrouped unchanged; `AlignmentArcs` + `AlignmentStack` green.
 
-### Stage 2 — Per-section band layout (geometry)
+### Stage 2 — Per-section band layout (geometry) — DONE
+
+Built: `computeBandStack` (pure reserved-space math) shared by
+`belowCoverageBands` (byte-identical) and `computeStackedSections` (per
+section). `Section.arcBandTop/arcBandHeight/arcDown` now carry the real
+`computeArcBand` draw band relative to each section's coverage top. Original
+plan text below.
+
+
 
 This is the structural crux. Today two parallel band stacks exist:
 `belowCoverageBands` (`model.ts` ~1137: coverage → arc → sashimi → pileup, the
@@ -114,7 +135,17 @@ apply to every section's band) — no per-section arc-height setting in v1.
 Ship gate: still no arcs drawn in grouped mode (renderer gate unchanged), but
 grouped layout now reserves the bands; ungrouped byte-identical.
 
-### Stage 3 — Renderers loop sections for arcs (GPU + Canvas2D)
+### Stage 3 — Renderers loop sections for arcs (GPU + Canvas2D) — DONE
+
+Built: arcs moved into `SectionSource` (per group); `SectionRender.arcBand`
+carries the screen-space band (sticky ungrouped, scrolled grouped) from
+`buildSectionRenders`. Both renderers dropped the `sections.length===1` gate and
+read `sec.arcBand`. The GPU arc pass uses a full-height viewport (sets the
+Y-scale) + clamped scissor so a partly-scrolled grouped band doesn't rescale.
+Retired the dead `model.arcsRpcDataMap`. Grouped-arc image snapshot added
+(group by first-of-pair strand keeps mates together). Original plan text below.
+
+
 
 - Replace `computeArcBand(state)` + `sections.length === 1` gate with a
   **per-section** arc band read from each `Section`'s `arcBandTop/Height` +
