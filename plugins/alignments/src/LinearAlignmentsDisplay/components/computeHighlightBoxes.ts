@@ -1,3 +1,5 @@
+import { sectionBandBottom } from './sectionBand.ts'
+
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 export interface HighlightBox {
@@ -20,10 +22,13 @@ interface HighlightView {
 
 // One stacked group's data + its pileup-row top offset (screen px, pre-scroll).
 // Ungrouped is a single section (groupKey '') with topOffset coverageDisplayHeight.
+// `pileupHeight` is the section's pileup band height; collapsed groups have 0,
+// so their highlight boxes clip away instead of bleeding into the next section.
 export interface HighlightSection {
   groupKey: string
   laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
   topOffset: number
+  pileupHeight: number
 }
 
 interface ComputeHighlightBoxesParams {
@@ -45,6 +50,7 @@ interface RegionBounds {
   endBp: number
   yRow: number
   topOffset: number
+  pileupHeight: number
 }
 
 // Screen-space boxes for the hovered read (one id) or hovered chain (its member
@@ -99,6 +105,7 @@ export function computeHighlightBoxes(
               endBp,
               yRow,
               topOffset: section.topOffset,
+              pileupHeight: section.pileupHeight,
               displayedRegionIndex: entry.displayedRegionIndex,
             })
           }
@@ -122,7 +129,13 @@ export function computeHighlightBoxes(
       const x1 = bpToPx(bounds.startBp)
       const x2 = bpToPx(bounds.endBp)
       const top = bounds.yRow * rowHeight - scrollTop + bounds.topOffset
-      if (top + featureHeight >= bounds.topOffset && top <= height) {
+      const bottom = sectionBandBottom(
+        bounds.topOffset,
+        bounds.pileupHeight,
+        scrollTop,
+        height,
+      )
+      if (top + featureHeight >= bounds.topOffset && top <= bottom) {
         boxes.push({
           left: Math.min(x1, x2),
           top,

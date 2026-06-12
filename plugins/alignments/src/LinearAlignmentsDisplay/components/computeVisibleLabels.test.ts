@@ -75,6 +75,30 @@ test('large insertion shadows the SNP letter on its own row only', () => {
   ).toEqual(['C', 'G'])
 })
 
+test('a collapsed section (pileupHeight 0) draws no labels', () => {
+  const labels = computeVisibleLabels({
+    view: {
+      visibleRegions: [
+        { displayedRegionIndex: 0, start: 0, end: 1000, screenStartPx: 0 },
+      ],
+      bpPerPx: 0.1,
+    },
+    sections: [
+      {
+        laidOutPileupMap: { get: () => makeRpcData(threeMismatches) },
+        topOffset: 0,
+        pileupHeight: 0,
+      },
+    ],
+    height: 1000,
+    featureHeight: 10,
+    featureSpacing: 2,
+    showMismatches: true,
+    scrollTop: 0,
+  })
+  expect(labels).toHaveLength(0)
+})
+
 test('without the insertion all three SNP letters render', () => {
   expect(mismatchTexts(makeRpcData(threeMismatches))).toEqual(['A', 'C', 'G'])
 })

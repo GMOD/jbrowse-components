@@ -11,6 +11,7 @@ import {
   getInsertionType,
   insertionBarWidth,
 } from '../constants.ts'
+import { sectionBandBottom } from './sectionBand.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -91,9 +92,8 @@ export function computeVisibleLabels(
     // Clip to this section's pileup band bottom, not the whole canvas, so a
     // collapsed group (pileupHeight 0) draws nothing and a group's labels never
     // bleed into the section below it.
-    const sectionBottom = Math.min(height, topOffset - scrollTop + pileupHeight)
-    const rowYInRange = (yPx: number) =>
-      yPx >= topOffset && yPx <= sectionBottom
+    const bottom = sectionBandBottom(topOffset, pileupHeight, scrollTop, height)
+    const rowYInRange = (yPx: number) => yPx >= topOffset && yPx <= bottom
     for (const vr of view.visibleRegions) {
       const rpcData = laidOutPileupMap.get(vr.displayedRegionIndex)
       if (!rpcData) {
