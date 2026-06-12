@@ -212,3 +212,57 @@ test('buildSectionRenders: grouped pileupTopOffset is content-space (scroll via 
   const b = buildSectionRenders(grouped, { scrollTop: 100, canvasHeight: 600 })
   expect(a.map(s => s.pileupTopOffset)).toEqual(b.map(s => s.pileupTopOffset))
 })
+
+// Down-mode arc layouts for the arcBand screen-geometry tests.
+const ungroupedArcs: SectionsLayout = computeStackedSections(
+  [{ key: '', label: '', maxY: 4 }],
+  {
+    coverageHeight: 40,
+    rowHeight: 10,
+    readConnections: 'arc',
+    readConnectionsDown: true,
+    readConnectionsHeight: 100,
+  },
+)
+
+const groupedArcs: SectionsLayout = computeStackedSections(
+  [
+    { key: 'a', label: 'a', maxY: 2 },
+    { key: 'b', label: 'b', maxY: 3 },
+  ],
+  {
+    coverageHeight: 40,
+    rowHeight: 10,
+    readConnections: 'arc',
+    readConnectionsDown: true,
+    readConnectionsHeight: 100,
+  },
+)
+
+test('buildSectionRenders: ungrouped arc band is sticky (scroll does not move it)', () => {
+  // Coverage + arc band are sticky in ungrouped mode, so the band keeps its
+  // content-space top (40 = below the 40px coverage) regardless of scroll.
+  const a = buildSectionRenders(ungroupedArcs, { scrollTop: 0, canvasHeight: 600 }) // prettier-ignore
+  const b = buildSectionRenders(ungroupedArcs, { scrollTop: 250, canvasHeight: 600 }) // prettier-ignore
+  expect(a[0]!.arcBand).toEqual({ top: 40, height: 100, down: true })
+  expect(b[0]!.arcBand).toEqual({ top: 40, height: 100, down: true })
+})
+
+test('buildSectionRenders: grouped arc band scrolls with its section', () => {
+  // Section a: cov 0, arc 40, pileup 140 (+20 rows) => bottom 160.
+  // Section b: cov 160, arc 200. Each arc band shifts up by scrollTop, the same
+  // as its coverage band.
+  const renders = buildSectionRenders(groupedArcs, {
+    scrollTop: 30,
+    canvasHeight: 600,
+  })
+  expect(renders[0]!.arcBand).toEqual({ top: 10, height: 100, down: true })
+  expect(renders[1]!.arcBand).toEqual({ top: 170, height: 100, down: true })
+})
+
+test('buildSectionRenders: no arc band reserved => arcBand undefined', () => {
+  expect(
+    buildSectionRenders(grouped, { scrollTop: 0, canvasHeight: 600 })[0]!
+      .arcBand,
+  ).toBeUndefined()
+})

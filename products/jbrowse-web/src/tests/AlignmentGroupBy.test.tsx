@@ -96,6 +96,42 @@ test('group draws per-section paired-end arcs', async () => {
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
+// Samplot (read cloud) is in scope alongside arcs and shares the per-section
+// path, but additionally exercises the shared cross-group arcsYDomainBp: the
+// flat |tlen| lines in every section map against one Y-domain so sections stay
+// comparable. firstOfPairStrand keeps mates together so each section has pairs.
+test('group draws per-section read-cloud (samplot) lines', async () => {
+  const user = userEvent.setup()
+  const { view } = await createView()
+  await view.navToLocString('ctgA:1-50000')
+  await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
+  await screen.findByTestId('pileup-display-done', ...opts)
+
+  const display = view.tracks[0]?.displays[0]
+  display.setReadConnections('samplot')
+  display.setGroupBy({ type: 'firstOfPairStrand' })
+
+  await waitFor(
+    () => {
+      expect(display.isGrouped).toBe(true)
+      expect(display.groupOrder.length).toBe(2)
+      // samplot sets a shared, cross-group Y-domain (undefined only in arc mode).
+      expect(display.arcsYDomainBp).toBeGreaterThan(0)
+      let totalArcs = 0
+      for (const section of display.sourceSections) {
+        for (const data of section.arcsRpcDataMap.values()) {
+          totalArcs += data.numArcs
+        }
+      }
+      expect(totalArcs).toBeGreaterThan(0)
+    },
+    { timeout: 30000 },
+  )
+
+  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  expectCanvasMatch(findCanvasIn(el), 0.05)
+}, 90000)
+
 // READ_CONNECTIONS_GROUPED_PLAN Stage 4: sashimi junction arcs draw per stacked
 // section. Grouping spliced RNA-seq reads by strand keeps each junction in its
 // read's strand group, so both sections carry their own sashimi arcs.
