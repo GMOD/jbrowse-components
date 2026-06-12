@@ -137,8 +137,12 @@ export function getReadColor(
       )
 
     case ColorScheme.firstOfPairStrand: {
-      const isFirst = (flags & 64) !== 0
-      const effectiveStrand = isFirst ? strand : -strand
+      // Fragment strand inferred from the first mate: read2 (0x80) reports the
+      // opposite of the fragment, so invert only it. Read1 and single-end reads
+      // represent the fragment strand directly (must match firstOfPairStrandKey
+      // in groupFeatures.ts and firstOfPairColor in read.slang).
+      const isSecond = (flags & 128) !== 0
+      const effectiveStrand = isSecond ? -strand : strand
       return strandColor(effectiveStrand, palette)
     }
 

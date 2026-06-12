@@ -87,8 +87,11 @@ float3 insertSizeGradientColor(float is, Uniforms u) {
 }
 
 float3 firstOfPairColor(uint flags, int s, Uniforms u) {
-  bool isFirst = (flags & 64u) != 0u;
-  int eff = isFirst ? s : -s;
+  // Read2 (0x80) reports the opposite of the fragment strand, so invert only it;
+  // read1 and single-end reads represent the fragment strand directly. Mirrors
+  // firstOfPairStrandKey (groupFeatures.ts) and colorUtils.ts.
+  bool isSecond = (flags & 128u) != 0u;
+  int eff = isSecond ? -s : s;
   return strandColor(eff, u);
 }
 

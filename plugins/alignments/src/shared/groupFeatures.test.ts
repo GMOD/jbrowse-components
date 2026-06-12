@@ -47,6 +47,16 @@ test('first-of-pair strand groups both mates of a pair together', () => {
   expect(groups[0]!.features).toHaveLength(2)
 })
 
+test('first-of-pair strand groups single-end reads by their own strand', () => {
+  // Unpaired reads (no SECOND_IN_PAIR flag) represent the fragment strand
+  // directly: a forward single-end read (flags 0) is forward, not flipped.
+  const features = [feat('fwd', { flags: 0 }), feat('rev', { flags: 0x10 })]
+  const groups = partitionFeatures(features, { type: 'firstOfPairStrand' })
+  expect(keys(groups)).toEqual(['+', '-'])
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['fwd'])
+  expect(groups[1]!.features.map(f => f.id())).toEqual(['rev'])
+})
+
 test('tag grouping sorts values and pins untagged reads last', () => {
   const features = [
     feat('a', { tags: { HP: 2 } }),

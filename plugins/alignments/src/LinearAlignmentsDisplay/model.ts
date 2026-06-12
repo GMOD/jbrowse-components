@@ -40,6 +40,7 @@ import {
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
+  eachGroupData,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
@@ -670,8 +671,8 @@ export default function stateModelFactory(
          * #getter
          */
         get hasPairedReads() {
-          return [...self.rpcDataMap.values()].some(grouped =>
-            grouped.groups.some(g => g.data.insertSizeStats !== undefined),
+          return [...eachGroupData(self.rpcDataMap)].some(
+            d => d.insertSizeStats !== undefined,
           )
         },
 
@@ -868,6 +869,7 @@ export default function stateModelFactory(
           }
           return buildLaidOutByGroup({
             rpcDataMap: self.rpcDataMap,
+            rawByGroup: this.rawDataByGroup,
             isChainMode: self.linkedReads === 'normal',
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
@@ -930,19 +932,14 @@ export default function stateModelFactory(
         /**
          * #getter
          * Row count of the primary group across its regions. This reads only the
-         * first group (`laidOutPileupMap`), so it is meaningful in the ungrouped
-         * (single-section) path — `totalPileupHeight` and the ungrouped `sections`
-         * branch. Grouped layout instead sizes each section from its own
-         * `groupMaxY`; don't use this as a cross-group aggregate.
+         * first group (`laidOutPileupMap`), so it is meaningful only on the
+         * single-section/ungrouped path (`totalPileupHeight`, `searchFeatureByID`,
+         * and the no-data synthetic section in `sections`). Grouped layout sizes
+         * each section from its own `groupMaxY`; don't use this as a cross-group
+         * aggregate.
          */
         get maxY() {
-          let max = 0
-          for (const data of this.laidOutPileupMap.values()) {
-            if (data.maxY > max) {
-              max = data.maxY
-            }
-          }
-          return max
+          return groupMaxY(this.laidOutPileupMap)
         },
 
         /**
@@ -1109,10 +1106,8 @@ export default function stateModelFactory(
          */
         get hasSashimiArcs() {
           const { minSashimiScore } = self
-          return [...self.rpcDataMap.values()].some(grouped =>
-            grouped.groups.some(g =>
-              g.data.sashimiCounts.some(c => c >= minSashimiScore),
-            ),
+          return [...eachGroupData(self.rpcDataMap)].some(d =>
+            d.sashimiCounts.some(c => c >= minSashimiScore),
           )
         },
 
@@ -1164,68 +1159,37 @@ export default function stateModelFactory(
         /**
          * #getter
          * Single source of all vertical band geometry, one entry per stacked
-         * group. Ungrouped is the one-section case: it keeps `belowCoverageBands`
-         * for the reserved pileup top so its layout is byte-identical to
-         * pre-grouping, and carries the real `computeArcBand` draw band so the
-         * renderers read the same band whether grouped or not. Grouped sections
-         * stack coverage + arc + sashimi + pileup bands per section, each
-         * scrolling with its section.
+         * group. `computeStackedSections` reproduces the prior ungrouped reserved
+         * layout exactly for its single-section (N==1) case, so ungrouped is not a
+         * special branch here — it is the one-group call, with a synthetic group
+         * when no data has arrived yet (so `laidOutPileupMap`/`renderState` still
+         * see one section). The sticky-coverage-vs-scroll distinction lives
+         * downstream in `buildSectionRenders`, keyed off section count.
          */
         get sections(): SectionsLayout {
           const order = self.groupOrder
-          const rowHeight = self.featureHeight + self.featureSpacing
-          if (order.length <= 1) {
-            const bands = self.belowCoverageBands
-            const pileupTop = self.coverageDisplayHeight
-            const pileupHeight = self.maxY * rowHeight
-            const arcBand = computeArcBand({
-              showCoverage: self.showCoverage,
-              coverageHeight: self.coverageHeight,
-              coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-              readConnections: self.readConnections,
-              readConnectionsDown: self.readConnectionsDown,
-              readConnectionsHeight: self.readConnectionsHeight,
-            })
-            return {
-              sections: [
-                {
-                  groupKey: order[0]?.key ?? '',
-                  label: order[0]?.label ?? '',
-                  coverageTop: 0,
-                  coverageHeight: self.showCoverage ? self.coverageHeight : 0,
-                  arcBandTop: arcBand?.top ?? bands.arcsBandTop,
-                  arcBandHeight: arcBand?.height ?? 0,
-                  arcDown: arcBand?.down ?? false,
-                  sashimiBandTop: bands.sashimiBandTop,
-                  pileupTop,
-                  pileupHeight,
-                  maxY: self.maxY,
-                },
-              ],
-              contentHeight: pileupTop + pileupHeight,
-            }
-          }
-          return computeStackedSections(
-            order.map(({ key, label }) => ({
-              key,
-              label,
-              // Collapsed groups show only their coverage band (pileup height 0).
-              maxY: self.isGroupCollapsed(key)
-                ? 0
-                : groupMaxY(self.groupLaidOutMap(key)),
-            })),
-            {
-              coverageHeight: self.coverageHeight,
-              rowHeight,
-              showCoverage: self.showCoverage,
-              coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-              readConnections: self.readConnections,
-              readConnectionsDown: self.readConnectionsDown,
-              readConnectionsHeight: self.readConnectionsHeight,
-              hasSashimiBand: self.belowCoverageBands.hasSashimiBand,
-              sashimiHeight: self.sashimiArcsHeight,
-            },
-          )
+          const groups =
+            order.length === 0
+              ? [{ key: '', label: '', maxY: self.maxY }]
+              : order.map(({ key, label }) => ({
+                  key,
+                  label,
+                  // Collapsed groups show only their coverage band (pileup height 0).
+                  maxY: self.isGroupCollapsed(key)
+                    ? 0
+                    : groupMaxY(self.groupLaidOutMap(key)),
+                }))
+          return computeStackedSections(groups, {
+            coverageHeight: self.coverageHeight,
+            rowHeight: self.featureHeight + self.featureSpacing,
+            showCoverage: self.showCoverage,
+            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+            readConnections: self.readConnections,
+            readConnectionsDown: self.readConnectionsDown,
+            readConnectionsHeight: self.readConnectionsHeight,
+            hasSashimiBand: self.belowCoverageBands.hasSashimiBand,
+            sashimiHeight: self.sashimiArcsHeight,
+          })
         },
 
         /**
@@ -1234,23 +1198,20 @@ export default function stateModelFactory(
          * pipeline (labels, highlights, hit-test). Pairs each section's group
          * data map with its `pileupTop` (used as the row `topOffset`) and
          * coverage band so a screen-y can be mapped to the right section and its
-         * group. Ungrouped is one section with `topOffset` ==
-         * `coverageDisplayHeight`, so the pipeline reduces to pre-grouping.
+         * group. Reads straight off `sections` (every field already lives on the
+         * `Section`); ungrouped is the single section, so the pipeline reduces to
+         * pre-grouping.
          */
         get renderSections() {
-          const layout = this.sections.sections
-          return self.groupOrder.map(({ key, label }, i) => {
-            const sec = layout[i]
-            return {
-              groupKey: key,
-              label,
-              laidOutPileupMap: self.groupLaidOutMap(key),
-              topOffset: sec?.pileupTop ?? self.coverageDisplayHeight,
-              coverageTop: sec?.coverageTop ?? 0,
-              coverageHeight: sec?.coverageHeight ?? 0,
-              pileupHeight: sec?.pileupHeight ?? 0,
-            }
-          })
+          return this.sections.sections.map(sec => ({
+            groupKey: sec.groupKey,
+            label: sec.label,
+            laidOutPileupMap: self.groupLaidOutMap(sec.groupKey),
+            topOffset: sec.pileupTop,
+            coverageTop: sec.coverageTop,
+            coverageHeight: sec.coverageHeight,
+            pileupHeight: sec.pileupHeight,
+          }))
         },
 
         /**

@@ -25,6 +25,7 @@ export interface GroupLayout {
 // case, so this reduces exactly to the previous `laidOutPileupMap`.
 export function buildLaidOutByGroup({
   rpcDataMap,
+  rawByGroup,
   isChainMode,
   sortedBy,
   showSoftClipping,
@@ -35,6 +36,10 @@ export function buildLaidOutByGroup({
   colorTagMap,
 }: {
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
+  // Pre-grouped raw data (group key → region idx → data) from
+  // `buildRawDataByGroup`; reused here so the per-key region map is an O(1)
+  // lookup instead of re-partitioning `rpcDataMap` with a nested `.find`.
+  rawByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>
   isChainMode: boolean
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
@@ -59,13 +64,7 @@ export function buildLaidOutByGroup({
 
   const byGroup = new Map<string, Map<number, PileupDataResult>>()
   for (const { key } of order) {
-    const dataMap = new Map<number, PileupDataResult>()
-    for (const [regionIdx, grouped] of rpcDataMap) {
-      const group = grouped.groups.find(x => x.key === key)
-      if (group) {
-        dataMap.set(regionIdx, group.data)
-      }
-    }
+    const dataMap = rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
     const base = isChainMode
       ? buildLaidOutChainMap(dataMap)
       : buildLaidOutPileupMap({

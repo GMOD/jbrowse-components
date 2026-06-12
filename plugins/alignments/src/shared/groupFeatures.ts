@@ -1,13 +1,14 @@
+import {
+  SAM_FLAG_DUPLICATE,
+  SAM_FLAG_REVERSE,
+  SAM_FLAG_SECOND_IN_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/alignments-core'
+
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 
 import type { GroupBy } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-// BAM flag bits used for grouping.
-const FLAG_REVERSE = 0x10
-const FLAG_READ1 = 0x40
-const FLAG_DUPLICATE = 0x400
-const FLAG_SUPPLEMENTARY = 0x800
 
 export interface FeatureGroup {
   // Stable identity for the group (used for ordering + cross-fetch matching).
@@ -28,18 +29,21 @@ interface GroupKey {
 }
 
 function strandKey(feature: Feature): GroupKey {
-  return getFlags(feature) & FLAG_REVERSE
+  return getFlags(feature) & SAM_FLAG_REVERSE
     ? { key: '-', label: 'Reverse strand' }
     : { key: '+', label: 'Forward strand' }
 }
 
-// Strand of the fragment as inferred from the first-of-pair read: read2 reports
-// the opposite of its own strand so both mates land in the same group.
+// Strand of the fragment as inferred from the first-of-pair read. Read2 maps to
+// the opposite of its own strand so both mates land in the same group; read1 and
+// unpaired/single-end reads represent the fragment strand directly (only read2
+// is inverted, so a single-end read groups by its own strand rather than being
+// mis-flipped as if it were a second mate).
 function firstOfPairStrandKey(feature: Feature): GroupKey {
   const flags = getFlags(feature)
-  const reverse = !!(flags & FLAG_REVERSE)
-  const isRead1 = !!(flags & FLAG_READ1)
-  const fwd = isRead1 ? !reverse : reverse
+  const reverse = !!(flags & SAM_FLAG_REVERSE)
+  const isRead2 = !!(flags & SAM_FLAG_SECOND_IN_PAIR)
+  const fwd = isRead2 ? reverse : !reverse
   return fwd
     ? { key: '+', label: 'First-of-pair forward' }
     : { key: '-', label: 'First-of-pair reverse' }
@@ -60,13 +64,13 @@ function pairOrientationKey(feature: Feature): GroupKey {
 }
 
 function supplementaryKey(feature: Feature): GroupKey {
-  return getFlags(feature) & FLAG_SUPPLEMENTARY
+  return getFlags(feature) & SAM_FLAG_SUPPLEMENTARY
     ? { key: 'supplementary', label: 'Supplementary' }
     : { key: 'primary', label: 'Primary' }
 }
 
 function duplicateKey(feature: Feature): GroupKey {
-  return getFlags(feature) & FLAG_DUPLICATE
+  return getFlags(feature) & SAM_FLAG_DUPLICATE
     ? { key: 'duplicate', label: 'Duplicate' }
     : { key: 'nonduplicate', label: 'Non-duplicate' }
 }

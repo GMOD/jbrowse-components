@@ -4,6 +4,20 @@ import type {
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types.ts'
 
+// Every group's per-region data across all fetched regions, in worker order.
+// Ungrouped fetches yield one entry per region; the single nested traversal of
+// `rpcDataMap` → groups → data lives here instead of being re-spelled at each
+// `.some`/max scan in the model.
+export function* eachGroupData(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+) {
+  for (const grouped of rpcDataMap.values()) {
+    for (const { data } of grouped.groups) {
+      yield data
+    }
+  }
+}
+
 // Per-read lookups derived by scanning every group of every fetched region.
 // Pulled out of the model so the O(reads) scans are pure + unit-testable; the
 // model exposes them as memoized getters over `rpcDataMap`.
