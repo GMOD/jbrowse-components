@@ -81,7 +81,7 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks, displayPhase,
 loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
@@ -288,15 +288,16 @@ theme-derived colors arrive (render autorun skips on undefined).
 DrawSequenceState | undefined
 ```
 
-#### getter: loadingOverlayVisible
+#### getter: displayPhase
 
-Same policy as MultiRegionDisplayMixin plus a zoom gate: when zoomed past base
-resolution the body shows a "zoom in" message, so the loading scrim must stay
-hidden over it.
+Same precedence as MultiRegionDisplayMixin plus a zoom gate: when zoomed past
+base resolution the body shows a "zoom in" message, so suppress the loading
+phase (fall through to `ready`) and let that message show. The inherited
+`loadingOverlayVisible` reads this overridden getter.
 
 ```js
 // type
-boolean
+DisplayPhase
 ```
 
 ### LinearReferenceSequenceDisplay - Methods

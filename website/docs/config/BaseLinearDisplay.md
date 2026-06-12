@@ -25,7 +25,8 @@ extends it, the legacy block `LinearBareDisplay` config extends it, and
 third-party plugins extend it too.
 
 Note: the _state model_ named `BaseLinearDisplay` is narrower than this config —
-it backs only the legacy block stack. See agent-docs/TRACK_DISPLAY_CONCEPTS.md.
+it backs only the legacy block stack. See agent-docs/ARCHITECTURE.md "Display
+stacks".
 
 ### BaseLinearDisplay - Identifier
 

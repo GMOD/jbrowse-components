@@ -1316,7 +1316,7 @@ showTrack: (trackId: string, initialSnapshot?: any, displayInitialSnapshot?: any
 
 ```js
 // type signature
-hideTrack: (trackId: string) => 1 | 0
+hideTrack: (trackId: string) => boolean
 ```
 
 #### action: moveTrackDown

@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 
 Legacy block-stack display for `BasicTrack`: `BaseLinearDisplay` plus a
 pluggable `renderer` slot. Not commonly used; the GPU `LinearBasicDisplay` is
-the default feature display. See agent-docs/TRACK_DISPLAY_CONCEPTS.md.
+the default feature display. See agent-docs/ARCHITECTURE.md "Display stacks".
 
 ## Inherited members
 

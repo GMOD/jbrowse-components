@@ -120,7 +120,7 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks, displayPhase,
 loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
@@ -453,9 +453,9 @@ contextMenuRefName: undefined as string | undefined
 
 ```js
 // type signature
-ObservableMap<number, PileupDataResult>
+ObservableMap<number, GroupedAlignmentsResult>
 // code
-rpcDataMap: observable.map<number, PileupDataResult>()
+rpcDataMap: observable.map<number, GroupedAlignmentsResult>()
 ```
 
 #### volatile: scrollTop
@@ -468,6 +468,34 @@ overlay to position its SVG curves.
 number
 // code
 scrollTop: 0
+```
+
+#### volatile: collapsedGroups
+
+Group keys whose pileup is collapsed to just its coverage band (in-track
+grouping). Keyed by group key so it survives re-fetches; volatile so it resets
+on reload. Stale keys from a prior grouping dimension are harmless — they never
+match the new keys.
+
+```js
+// type signature
+ObservableSet<string>
+// code
+collapsedGroups: observable.set<string>()
+```
+
+#### volatile: groupMaxHeightOverrides
+
+Per-group pileup height override in px (in-track grouping). Keyed by group key,
+volatile like `collapsedGroups`; absent keys fall back to the display-wide
+`maxHeight`. Lets a dense section be shrunk independently. Cleared by
+`setGroupBy`.
+
+```js
+// type signature
+ObservableMap<string, number>
+// code
+groupMaxHeightOverrides: observable.map<string, number>()
 ```
 
 #### volatile: highlightedChainIds
@@ -526,6 +554,22 @@ modificationsReady: false
 false
 // code
 overCigarItem: false
+```
+
+#### volatile: hoverCoverageBand
+
+Screen-px coverage band of the section currently under a coverage/indicator
+hover. Drives the tooltip's vertical hover bar so it lands on the hovered
+group's coverage band, not always the top one. `undefined` when not hovering
+coverage.
+
+```js
+// type signature
+{ topOffset: number; coverageHeight: number; } | undefined
+// code
+hoverCoverageBand: undefined as
+            | { topOffset: number; coverageHeight: number }
+            | undefined
 ```
 
 #### volatile: colorPalette
@@ -628,7 +672,7 @@ string | undefined
 
 ```js
 // type
-LazyExoticComponent<({ model, height, clientMouseCoord, offsetMouseCoord, }: { model: { mouseoverExtraInformation: TooltipPayload | undefined; showCoverage: boolean; coverageHeight: number; }; height: number; offsetMouseCoord?: Coord | undefined; clientMouseCoord: Coord; }) => Element | null>
+LazyExoticComponent<({ model, clientMouseCoord, offsetMouseCoord, }: { model: { mouseoverExtraInformation: TooltipPayload | undefined; hoverCoverageBand: { topOffset: number; coverageHeight: number; } | undefined; }; offsetMouseCoord?: Coord | undefined; clientMouseCoord: Coord; }) => Element | null>
 ```
 
 #### getter: visibleModificationTypes
@@ -715,6 +759,16 @@ boolean
 SortedBy | undefined
 ```
 
+#### getter: groupBy
+
+In-track stacked grouping dimension (undefined = ungrouped). Sent to the worker
+via rpcProps; the worker partitions one fetch into N sections.
+
+```js
+// type
+GroupBy | undefined
+```
+
 #### getter: coverageIsLog
 
 ```js
@@ -743,14 +797,61 @@ ScoreStats | undefined
 YScaleTicks | undefined
 ```
 
+#### getter: laidOutByGroup
+
+Per-group laid-out data: group key → (region index → laid-out data). Each group
+lays out independently (own `maxRows` cap) so a dense group can't starve the
+rest. Tag colors are baked here (not in the worker) so colorTagMap stays a
+main-thread tier-2 setting — see readTagColors.
+
+```js
+// type
+GroupLayout
+```
+
+#### getter: groupOrder
+
+Group keys in stacking order; a single entry (key '') when ungrouped.
+
+```js
+// type
+{
+  key: string
+  label: string
+}
+;[]
+```
+
 #### getter: laidOutPileupMap
+
+Renderer-facing per-region layout. Stage 2 draws a single section, so this
+exposes the first (for ungrouped, the only) group; Stage 3 switches the
+renderers to loop `sections` directly.
 
 ```js
 // type
 Map<number, PileupDataResult>
 ```
 
+#### getter: sourceSections
+
+Per-section renderer input, in stacking order. One entry per group (the single
+key '' when ungrouped). Pairs each group's laid-out region map with its key so
+the renderers can namespace HAL region keys per section. Parallel to
+`renderState.sections`.
+
+```js
+// type
+{ groupKey: string; laidOutPileupMap: Map<number, PileupDataResult>; arcsRpcDataMap: Map<number, ArcsUploadData>; }[]
+```
+
 #### getter: maxY
+
+Row count of the primary group across its regions. This reads only the first
+group (`laidOutPileupMap`), so it is meaningful in the ungrouped
+(single-section) path — `totalPileupHeight` and the ungrouped `sections` branch.
+Grouped layout instead sizes each section from its own `groupMaxY`; don't use
+this as a cross-group aggregate.
 
 ```js
 // type
@@ -759,26 +860,40 @@ number
 
 #### getter: pileupTruncated
 
-True when any displayed region hit `maxRows` and overflow reads were collapsed —
-drives the "max height reached" indicator.
+True when any group hit `maxHeight` and overflow reads were collapsed — drives
+the "max height reached" / "show all" banner. Groups the user explicitly shrank
+(a per-group height drag) are skipped: their truncation is intentional, not the
+global cap the banner offers to lift.
 
 ```js
 // type
 boolean
 ```
 
-#### getter: arcsComputed
+#### getter: rawDataByGroup
+
+Raw (un-laid-out) data regrouped as group key → (region idx → data),
+insertion-ordered so the first key is the primary group. The arc compute and the
+per-section sashimi overlay both read one group's raw map from here; ungrouped
+is the single key `''`.
 
 ```js
 // type
-{ regionInfos: { refName: string; start: number; end: number; displayedRegionIndex: number; }[]; arcsByRef: Map<string, ComputedArc[]>; linesByRef: Map<string, ComputedLine[]>; } | undefined
+Map<string, Map<number, PileupDataResult>>
 ```
 
-#### getter: arcsRpcDataMap
+#### getter: arcsByGroup
+
+Per-group arc upload feed: group key → (region idx → `ArcsUploadData`). The
+heavy `computeArcsFromPileupData` pass runs once per group (arcs are pre-grouped
+by refName so each region lookup is O(1)); ungrouped is the single-group case.
+Empty map when read-connections are off, so the off-path skips the per-read
+region scan entirely. Source of truth for the per-section arc feed
+(`sourceSections`) and the shared cross-group `arcsYDomainBp`.
 
 ```js
 // type
-Map<any, any>
+Map<string, Map<number, ArcsUploadData>>
 ```
 
 #### getter: modificationThreshold
@@ -827,7 +942,7 @@ number
 
 ```js
 // type
-Map<string, { displayedRegionIndex: number; idx: number; }>
+Map<string, { displayedRegionIndex: number; groupKey: string; idx: number; }>
 ```
 
 #### getter: readConnectionsLineWidth
@@ -867,16 +982,6 @@ pileup begins (== coverageDisplayHeight).
 }
 ```
 
-#### getter: sashimiArcsTop
-
-Y offset where the sashimi overlay/export is drawn: below coverage in down mode,
-just under the y-scalebar label otherwise.
-
-```js
-// type
-number
-```
-
 #### getter: coverageDisplayHeight
 
 ```js
@@ -884,7 +989,72 @@ number
 number
 ```
 
+#### getter: sections
+
+Single source of all vertical band geometry, one entry per stacked group.
+Ungrouped is the one-section case: it keeps `belowCoverageBands` for the
+reserved pileup top so its layout is byte-identical to pre-grouping, and carries
+the real `computeArcBand` draw band so the renderers read the same band whether
+grouped or not. Grouped sections stack coverage + arc + sashimi + pileup bands
+per section, each scrolling with its section.
+
+```js
+// type
+SectionsLayout
+```
+
+#### getter: renderSections
+
+Per-section data + content-space band tops for the overlay/hit-test pipeline
+(labels, highlights, hit-test). Pairs each section's group data map with its
+`pileupTop` (used as the row `topOffset`) and coverage band so a screen-y can be
+mapped to the right section and its group. Ungrouped is one section with
+`topOffset` == `coverageDisplayHeight`, so the pipeline reduces to pre-grouping.
+
+```js
+// type
+{ groupKey: string; label: string; laidOutPileupMap: Map<number, PileupDataResult>; topOffset: number; coverageTop: number; coverageHeight: number; pileupHeight: number; }[]
+```
+
+#### getter: sashimiSections
+
+Per-section sashimi band placement, in stacking order. Each entry pairs a
+group's raw data (sashimi counts live per-group) with the content-space top of
+its sashimi band: down mode uses the reserved sashimi band, up mode overlays the
+section's own coverage. The overlay and SVG export both map over this so their
+geometry can't drift; ungrouped is the single-section case (sticky band below
+sticky coverage, raw map == the only group). Empty when sashimi is off.
+
+```js
+// type
+{ groupKey: string; rpcDataMap: Map<number, PileupDataResult>; top: number; down: boolean; }[]
+```
+
+#### getter: isGrouped
+
+True when reads are stacked into >1 group section. Drives the scroll model:
+ungrouped keeps coverage sticky (only the pileup scrolls); grouped scrolls the
+whole coverage+pileup stack as one.
+
+```js
+// type
+boolean
+```
+
 #### getter: pileupViewportHeight
+
+Height of the scrollable viewport. Ungrouped excludes the sticky coverage band;
+grouped scrolls the entire display.
+
+```js
+// type
+number
+```
+
+#### getter: pileupContentHeight
+
+Total scrollable content height. Ungrouped is just the pileup (coverage is
+sticky); grouped is the full stacked-sections height.
 
 ```js
 // type
@@ -942,7 +1112,7 @@ string | undefined
 
 ```js
 // type
-{ scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 22 more ...; arcsYDomainBp: number | undefined; } | undefined
+{ scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 24 more ...; arcsYDomainBp: number | undefined; } | undefined
 ```
 
 #### getter: arcsYDomainBp
@@ -968,11 +1138,31 @@ SimpleFeature | undefined
 
 ### LinearAlignmentsDisplay - Methods
 
+#### method: isGroupCollapsed
+
+Whether a stacked group's pileup is collapsed to just its coverage.
+
+```js
+// type signature
+isGroupCollapsed: (key: string) => boolean
+```
+
 #### method: legendItems
 
 ```js
 // type signature
 legendItems: () => LegendItem[]
+```
+
+#### method: groupLaidOutMap
+
+Laid-out region map for one group key, or an empty map for a key with no data.
+Centralizes the empty-map fallback shared by the section getters so they never
+have to branch on a missing group.
+
+```js
+// type signature
+groupLaidOutMap: (key: string) => Map<number, PileupDataResult>
 ```
 
 #### method: findFeatureInRpcData
@@ -1004,6 +1194,7 @@ rpcProps: () => {
   filterBy: FilterBy
   colorBy: ColorBy
   sortTag: string | undefined
+  groupBy: GroupBy | undefined
   showSoftClipping: boolean
   drawSingletons: boolean
   drawProperPairs: boolean
@@ -1054,7 +1245,7 @@ setRegionTooLarge: (val: boolean, reason?: string | undefined) => void
 
 ```js
 // type signature
-setRpcData: (displayedRegionIndex: number, data: PileupDataResult | null) => void
+setRpcData: (displayedRegionIndex: number, data: GroupedAlignmentsResult | null) => void
 ```
 
 #### action: clearDisplaySpecificData
@@ -1181,6 +1372,38 @@ setSortedByAtPosition: (type: string, pos: number, refName: string) => void
 ```js
 // type signature
 clearSortedBy: () => void
+```
+
+#### action: setGroupBy
+
+Set (or clear, when undefined) the in-track stacked grouping dimension. A tier-1
+refetch setting (in `rpcProps`) — the worker re-partitions the fetch into N
+sections. Resets the Y scroll since the stacked content height changes.
+
+```js
+// type signature
+setGroupBy: (groupBy?: GroupBy | undefined) => void
+```
+
+#### action: toggleGroupCollapsed
+
+Collapse/expand a stacked group's pileup (coverage stays visible).
+
+```js
+// type signature
+toggleGroupCollapsed: (key: string) => void
+```
+
+#### action: resizeGroupHeight
+
+Drag a stacked group's pileup band taller/shorter by `dy` px, capping how many
+rows that group lays out. Based on the section's current displayed height so
+dragging a truncated group expands it toward its full read set and dragging
+shrinks it; one row is the floor.
+
+```js
+// type signature
+resizeGroupHeight: (key: string, dy: number) => void
 ```
 
 #### action: setScaleType
@@ -1422,7 +1645,7 @@ setMouseoverExtraInformation: (extra?: TooltipPayload | undefined) => void
 
 ```js
 // type signature
-setHoverState: (state: { overCigarItem: boolean; featureIdUnderMouse: string | undefined; mouseoverExtraInformation: TooltipPayload | undefined; }) => void
+setHoverState: (state: { overCigarItem: boolean; featureIdUnderMouse: string | undefined; mouseoverExtraInformation: TooltipPayload | undefined; hoverCoverageBand?: { topOffset: number; coverageHeight: number; } | undefined; }) => void
 ```
 
 #### action: setContextMenuFeature

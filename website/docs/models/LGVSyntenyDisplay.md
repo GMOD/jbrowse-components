@@ -67,32 +67,36 @@ showSoftClipping
 **Volatiles:** featureIdUnderMouse, mouseoverExtraInformation,
 contextMenuFeature, contextMenuCoord, contextMenuCigarHit,
 contextMenuIndicatorHit, contextMenuRefName, rpcDataMap, scrollTop,
-highlightedChainIds, selectedChainIds, colorTagMap, visibleModifications,
-modificationsReady, overCigarItem, colorPalette
+collapsedGroups, groupMaxHeightOverrides, highlightedChainIds, selectedChainIds,
+colorTagMap, visibleModifications, modificationsReady, overCigarItem,
+hoverCoverageBand, colorPalette
 
 **Getters:** isChainMode, showLinkedReadLines, scaleType, autoscaleType,
 minScore, maxScore, minScoreBound, maxScoreBound, numStdDev, featureWidgetType,
 selectedFeatureId, TooltipComponent, visibleModificationTypes, hasPairedReads,
 colorBy, filterBy, featureHeight, featureSpacing, maxHeight, chainIdMap,
-mismatchAlpha, showLowFreqMismatches, showLegend, sortedBy, coverageIsLog,
-coverageStats, coverageDomain, coverageTicks, laidOutPileupMap, maxY,
-pileupTruncated, arcsComputed, arcsRpcDataMap, modificationThreshold,
-colorSchemeIndex, showModifications, showPerBaseQuality, showPerBaseLetter,
-totalPileupHeight, readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs,
-belowCoverageBands, sashimiArcsTop, coverageDisplayHeight, pileupViewportHeight,
-scalebarOverlapLeft, showOutline, visibleLabels, highlightBoxes,
-scrollableHeight, sortTag, renderState, arcsYDomainBp, insertSizeTicks,
-featureUnderMouse
+mismatchAlpha, showLowFreqMismatches, showLegend, sortedBy, groupBy,
+coverageIsLog, coverageStats, coverageDomain, coverageTicks, laidOutByGroup,
+groupOrder, laidOutPileupMap, sourceSections, maxY, pileupTruncated,
+rawDataByGroup, arcsByGroup, modificationThreshold, colorSchemeIndex,
+showModifications, showPerBaseQuality, showPerBaseLetter, totalPileupHeight,
+readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs, belowCoverageBands,
+coverageDisplayHeight, sections, renderSections, sashimiSections, isGrouped,
+pileupViewportHeight, pileupContentHeight, scalebarOverlapLeft, showOutline,
+visibleLabels, highlightBoxes, scrollableHeight, sortTag, renderState,
+arcsYDomainBp, insertSizeTicks, featureUnderMouse
 
-**Methods:** legendItems, findFeatureInRpcData, searchFeatureByID,
-getFeatureInfoById, rpcProps, trackMenuItems, contextMenuItems
+**Methods:** isGroupCollapsed, legendItems, groupLaidOutMap,
+findFeatureInRpcData, searchFeatureByID, getFeatureInfoById, rpcProps,
+trackMenuItems, contextMenuItems
 
 **Actions:** clearMouseoverState, setError, setRegionTooLarge, setRpcData,
 clearDisplaySpecificData, setOverCigarItem, setColorPalette, setScrollTop,
 setHighlightedChainIds, clearHighlights, clearSelection, setSelectedChainIds,
 setColorScheme, updateColorTagMap, setFilterBy, setShowOutline,
 toggleSoftClipping, toggleMismatchAlpha, toggleShowLowFreqMismatches,
-setSortedBy, setSortedByAtPosition, clearSortedBy, setScaleType, setAutoscale,
+setSortedBy, setSortedByAtPosition, clearSortedBy, setGroupBy,
+toggleGroupCollapsed, resizeGroupHeight, setScaleType, setAutoscale,
 setMinScore, setMaxScore, setFeatureHeight, setFeatureSpacing, setMaxHeight,
 setCompactness, setShowSashimiArcs, toggleSashimiArcs, setReadConnections,
 setReadConnectionsDown, setShowCoverage, setCoverageHeight,
@@ -135,7 +139,7 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks, displayPhase,
 loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,

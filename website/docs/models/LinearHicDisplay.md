@@ -76,7 +76,7 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 ### Available via [GlobalDataDisplayMixin](../globaldatadisplaymixin)
 
-**Getters:** loadingOverlayVisible
+**Getters:** displayPhase, loadingOverlayVisible
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 

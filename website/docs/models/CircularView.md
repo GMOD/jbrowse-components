@@ -531,7 +531,7 @@ activateTrackSelector: () => Widget | undefined
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => void
+toggleTrack: (trackId: string) => boolean
 ```
 
 #### action: setError
@@ -552,21 +552,21 @@ setInit: (init?: CircularViewInit | undefined) => void
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: any) => void
+showTrack: (trackId: string, initialSnapshot?: any) => any
 ```
 
 #### action: addTrackConf
 
 ```js
 // type signature
-addTrackConf: (configuration: Record<string, unknown>, initialSnapshot?: any) => void
+addTrackConf: (configuration: Record<string, unknown>, initialSnapshot?: any) => any
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => void
+hideTrack: (trackId: string) => boolean
 ```
 
 #### action: openExportDialog

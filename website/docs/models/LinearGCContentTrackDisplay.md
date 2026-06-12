@@ -111,7 +111,7 @@ rendererType, DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, viewportWithinLoadedData, renderBlocks,
+**Getters:** isReady, viewportWithinLoadedData, renderBlocks, displayPhase,
 loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,

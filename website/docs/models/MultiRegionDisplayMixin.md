@@ -111,12 +111,23 @@ then issue an empty-blocks render that clears the canvas.
 RenderBlock[]
 ```
 
+#### getter: displayPhase
+
+The display's mutually-exclusive visual state, precedence single-sourced in
+`computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data
+(viewport past loaded) is still on screen through the pre-refetch debounce.
+
+```js
+// type
+DisplayPhase
+```
+
 #### getter: loadingOverlayVisible
 
-whether the loading scrim should show: data not ready yet, or stale data
-(viewport past loaded) still on screen. Not while regionTooLarge / fetch error /
-renderError — those render their own terminal UI. The single signal every
-display's loading overlay reads.
+The single signal every display's loading overlay reads. Derived from
+`displayPhase` so the loading-vs-terminal precedence isn't re-encoded by
+subtraction. Separate `.views` block so it can read the sibling `displayPhase`
+getter through `self`.
 
 ```js
 // type

@@ -72,15 +72,25 @@ setRenderError, attachRenderingBackend
 
 ### GlobalDataDisplayMixin - Getters
 
+#### getter: displayPhase
+
+Same precedence as MultiRegionDisplayMixin (single-sourced in
+`computeDisplayPhase`). A global display has no per-region staleness axis — it
+either has its one dataset or is fetching it — so its `loading` axis is simply
+"fetch in flight".
+
+```js
+// type
+DisplayPhase
+```
+
 #### getter: loadingOverlayVisible
 
 Shared with MultiRegionDisplayMixin's getter of the same name so
-`DisplayLoadingOverlay` reads one signal across all GPU displays. A global
-display has no per-region staleness axis (it either has its one dataset or is
-fetching it), so this is just "fetch in flight, nothing terminal up" — matching
-the legacy CanvasDisplayWrapper, and correctly staying hidden over a display
-that's intentionally empty (e.g. LD with the triangle toggled off, which fetches
-nothing).
+`DisplayLoadingOverlay` reads one signal across all GPU displays. Correctly
+stays hidden over a display that's intentionally empty (e.g. LD with the
+triangle toggled off, which fetches nothing). Separate `.views` block so it can
+read the sibling `displayPhase` getter.
 
 ```js
 // type

@@ -34,6 +34,9 @@ _See the **Slots** section below for all available configuration fields._
 
 used to configure BAM adapter
 
+Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
+automatically supplies it from the enclosing assembly's sequence track.
+
 ### BamAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bam.bai:
