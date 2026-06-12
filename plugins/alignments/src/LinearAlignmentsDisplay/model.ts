@@ -33,19 +33,11 @@ import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { openCigarWidget } from './components/openFeatureWidget.ts'
 import { ColorScheme } from './constants.ts'
 import { buildLaidOutByGroup, groupMaxY } from './groupLayout.ts'
+import { buildChainIdMap, buildReadIdIndexMap } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
-import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
-import { buildSectionRenders, computeStackedSections } from './sectionLayout.ts'
-import {
-  arcsToRegionResult,
-  computeArcsFromPileupData,
-  groupArcsByRef,
-} from '../features/arcs/compute.ts'
-import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
-import { getColorForModification } from '../util.ts'
-import { openCigarWidget } from './components/openFeatureWidget.ts'
 import {
   COMPACTNESS_PRESETS,
   getColorByMenuItem,
@@ -57,6 +49,15 @@ import {
   getReadsMenuItem,
   getSortByMenuItem,
 } from './menus/index.ts'
+import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
+import { buildSectionRenders, computeStackedSections } from './sectionLayout.ts'
+import {
+  arcsToRegionResult,
+  computeArcsFromPileupData,
+  groupArcsByRef,
+} from '../features/arcs/compute.ts'
+import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
+import { getColorForModification } from '../util.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { LinearAlignmentsDisplayConfigModel } from './configSchema.ts'
@@ -699,29 +700,7 @@ export default function stateModelFactory(
          * #getter
          */
         get chainIdMap() {
-          const map = new Map<number, string[]>()
-          if (self.linkedReads !== 'off') {
-            for (const grouped of self.rpcDataMap.values()) {
-              for (const { data } of grouped.groups) {
-                if (!data.readChainIndices) {
-                  continue
-                }
-                for (let i = 0; i < data.readIds.length; i++) {
-                  const chainIdx = data.readChainIndices[i]!
-                  let ids = map.get(chainIdx)
-                  if (!ids) {
-                    ids = []
-                    map.set(chainIdx, ids)
-                  }
-                  const id = data.readIds[i]
-                  if (id !== undefined) {
-                    ids.push(id)
-                  }
-                }
-              }
-            }
-          }
-          return map
+          return buildChainIdMap(self.rpcDataMap, self.linkedReads)
         },
 
         /**
@@ -933,6 +912,11 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Row count of the primary group across its regions. This reads only the
+         * first group (`laidOutPileupMap`), so it is meaningful in the ungrouped
+         * (single-section) path — `totalPileupHeight` and the ungrouped `sections`
+         * branch. Grouped layout instead sizes each section from its own
+         * `groupMaxY`; don't use this as a cross-group aggregate.
          */
         get maxY() {
           let max = 0
@@ -1086,21 +1070,7 @@ export default function stateModelFactory(
          * #getter
          */
         get readIdIndexMap() {
-          const map = new Map<
-            string,
-            { displayedRegionIndex: number; groupKey: string; idx: number }
-          >()
-          for (const [displayedRegionIndex, grouped] of self.rpcDataMap) {
-            for (const { key, data } of grouped.groups) {
-              for (let i = 0; i < data.readIds.length; i++) {
-                const id = data.readIds[i]
-                if (id !== undefined) {
-                  map.set(id, { displayedRegionIndex, groupKey: key, idx: i })
-                }
-              }
-            }
-          }
-          return map
+          return buildReadIdIndexMap(self.rpcDataMap)
         },
       }))
       .views(self => ({
