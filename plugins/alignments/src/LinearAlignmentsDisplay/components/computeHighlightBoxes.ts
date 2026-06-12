@@ -135,7 +135,9 @@ export function computeHighlightBoxes(
         scrollTop,
         height,
       )
-      if (top + featureHeight >= bounds.topOffset && top <= bottom) {
+      // Strict `<`: a collapsed group has a zero-height band (bottom ==
+      // topOffset), so its row anchored at topOffset must not draw a box.
+      if (top + featureHeight >= bounds.topOffset && top < bottom) {
         boxes.push({
           left: Math.min(x1, x2),
           top,
