@@ -222,33 +222,7 @@ const PileupBody = observer(function PileupBody({
         />
       ) : null}
 
-      {!model.isGrouped && bands.hasArcsBand ? (
-        <ResizeHandle
-          className={classes.resizeHandle}
-          style={{ top: bands.sashimiBandTop - YSCALEBAR_LABEL_OFFSET }}
-          onDrag={dy => {
-            model.setReadConnectionsHeight(
-              Math.max(20, model.readConnectionsHeight + dy),
-            )
-            return undefined
-          }}
-          title="Drag to resize arcs area"
-        />
-      ) : null}
-
-      {!model.isGrouped && bands.hasSashimiBand ? (
-        <ResizeHandle
-          className={classes.resizeHandle}
-          style={{ top: bands.bottom - YSCALEBAR_LABEL_OFFSET }}
-          onDrag={dy => {
-            model.setSashimiArcsHeight(
-              Math.max(20, model.sashimiArcsHeight + dy),
-            )
-            return undefined
-          }}
-          title="Drag to resize sashimi arcs area"
-        />
-      ) : null}
+      <ConnectionBandResizeHandles model={model} />
 
       <GroupResizeHandles model={model} />
 
@@ -256,6 +230,58 @@ const PileupBody = observer(function PileupBody({
     </div>
   )
 })
+
+// Arc + sashimi band resize handles. The heights are display-global, so a
+// single handle (at the first section's band bottom) resizes every section's
+// band. Ungrouped keeps them sticky; grouped scrolls them with the first
+// section and hides them once that band scrolls off-screen. The first section
+// starts at content-y 0, so its band bottoms equal `belowCoverageBands`.
+const ConnectionBandResizeHandles = observer(
+  function ConnectionBandResizeHandles({
+    model,
+  }: {
+    model: LinearAlignmentsDisplayModel
+  }) {
+    const { classes } = useStyles()
+    const { belowCoverageBands: bands, isGrouped, scrollTop, height } = model
+    const scroll = isGrouped ? scrollTop : 0
+    const arcHandleTop = bands.sashimiBandTop - YSCALEBAR_LABEL_OFFSET - scroll
+    const sashimiHandleTop = bands.bottom - YSCALEBAR_LABEL_OFFSET - scroll
+    const onScreen = (top: number) =>
+      top >= -YSCALEBAR_LABEL_OFFSET && top <= height
+    return (
+      <>
+        {bands.hasArcsBand && onScreen(arcHandleTop) ? (
+          <ResizeHandle
+            className={classes.resizeHandle}
+            style={{ top: arcHandleTop }}
+            onDrag={dy => {
+              model.setReadConnectionsHeight(
+                Math.max(20, model.readConnectionsHeight + dy),
+              )
+              return undefined
+            }}
+            title="Drag to resize arcs area"
+          />
+        ) : null}
+
+        {bands.hasSashimiBand && onScreen(sashimiHandleTop) ? (
+          <ResizeHandle
+            className={classes.resizeHandle}
+            style={{ top: sashimiHandleTop }}
+            onDrag={dy => {
+              model.setSashimiArcsHeight(
+                Math.max(20, model.sashimiArcsHeight + dy),
+              )
+              return undefined
+            }}
+            title="Drag to resize sashimi arcs area"
+          />
+        ) : null}
+      </>
+    )
+  },
+)
 
 // Per-group pileup-height drag handles (in-track grouping only). Each sits at a
 // non-collapsed section's pileup bottom and resizes just that group's band, so
@@ -393,11 +419,15 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
   model: LinearAlignmentsDisplayModel
 }) {
   // insertSizeTicks is only set in samplot mode. Down mode opens its band
-  // below coverage, so the TLEN scalebar reads better on the left.
-  const { insertSizeTicks, readConnectionsDown } = model
+  // below coverage, so the TLEN scalebar reads better on the left. The ticks
+  // are content-space at the first section's band; the shared Y-domain makes
+  // one axis value-correct for every section, so in grouped mode it just
+  // scrolls with the first section.
+  const { insertSizeTicks, readConnectionsDown, isGrouped, scrollTop } = model
   if (!insertSizeTicks) {
     return null
   }
+  const yShift = isGrouped ? -scrollTop : 0
   return readConnectionsDown ? (
     <svg
       style={{
@@ -409,14 +439,16 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
         width: 50,
       }}
     >
-      <g transform="translate(45, 0)">
-        <YScaleBar ticks={insertSizeTicks} orientation="left" />
+      <g transform={`translate(0, ${yShift})`}>
+        <g transform="translate(45, 0)">
+          <YScaleBar ticks={insertSizeTicks} orientation="left" />
+        </g>
+        <TlenAxisLabel
+          yTop={insertSizeTicks.yTop}
+          yBottom={insertSizeTicks.yBottom}
+          x={6}
+        />
       </g>
-      <TlenAxisLabel
-        yTop={insertSizeTicks.yTop}
-        yBottom={insertSizeTicks.yBottom}
-        x={6}
-      />
     </svg>
   ) : (
     <svg
@@ -429,11 +461,13 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
         width: 50,
       }}
     >
-      <YScaleBar ticks={insertSizeTicks} orientation="right" />
-      <TlenAxisLabel
-        yTop={insertSizeTicks.yTop}
-        yBottom={insertSizeTicks.yBottom}
-      />
+      <g transform={`translate(0, ${yShift})`}>
+        <YScaleBar ticks={insertSizeTicks} orientation="right" />
+        <TlenAxisLabel
+          yTop={insertSizeTicks.yTop}
+          yBottom={insertSizeTicks.yBottom}
+        />
+      </g>
     </svg>
   )
 })
