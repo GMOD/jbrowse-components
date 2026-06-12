@@ -13,7 +13,9 @@ const MAX_FIELD_NAME_WIDTH = 170
 // sections instead of the data grid (avoids a mostly-empty, hard-to-read grid)
 const DATAGRID_SCHEMA_TOLERANCE = 5
 
-function isHomogeneousObjectArray(arr: unknown[]): arr is Record<string, unknown>[] {
+function isHomogeneousObjectArray(
+  arr: unknown[],
+): arr is Record<string, unknown>[] {
   if (arr.length <= 1 || !arr.every(isObject)) {
     return false
   }
@@ -75,7 +77,12 @@ export default function Attributes(props: {
           // heterogeneous arrays fall through to ArrayValue which renders
           // each object as individual field sections instead of disappearing
           return isHomogeneousObjectArray(value) ? (
-            <DataGridDetails key={key} name={key} prefix={prefix} value={value} />
+            <DataGridDetails
+              key={key}
+              name={key}
+              prefix={prefix}
+              value={value}
+            />
           ) : (
             <ArrayValue
               key={key}
@@ -89,7 +96,12 @@ export default function Attributes(props: {
         } else if (isObject(value)) {
           return isUriLocation(value) ? (
             hideUris ? null : (
-              <UriAttribute key={key} name={key} prefix={prefix} value={value} />
+              <UriAttribute
+                key={key}
+                name={key}
+                prefix={prefix}
+                value={value}
+              />
             )
           ) : (
             <Attributes

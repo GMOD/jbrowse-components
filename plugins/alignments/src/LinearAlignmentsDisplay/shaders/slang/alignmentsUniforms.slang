@@ -35,6 +35,12 @@ public struct Uniforms {
   // Coverage strip (above pileup)
   public float covHeight;
   public float covYOffset;
+  // Screen-pixel Y of the coverage area's top edge. 0 for the single-section
+  // (ungrouped) path, where coverage is sticky at the canvas top. For stacked
+  // grouped sections it is the section's scrolled coverage top, so the band
+  // scrolls with its section. covAreaTop() folds it into the clip-space anchor
+  // every coverage pass shares.
+  public float covTop;
   public float depthScale;
   public float binSize;
   public float interbaseHeight;
@@ -228,8 +234,16 @@ public float effHeight(Uniforms u) {
   return u.covHeight - 2.0 * u.covYOffset;
 }
 
+// Clip-space Y of the coverage area's top edge. Single source for where every
+// band-top-anchored coverage mark (bars, SNP/mod segments, indicators,
+// interbase histogram) starts. covTop == 0 → clip-top (1.0), the ungrouped
+// sticky-coverage behavior; grouped sections pass their scrolled top.
+public float covAreaTop(Uniforms u) {
+  return 1.0 - (u.covTop / u.canvasH) * 2.0;
+}
+
 public float covBottom(Uniforms u) {
-  return 1.0 - ((u.covHeight - u.covYOffset) / u.canvasH) * 2.0;
+  return covAreaTop(u) - ((u.covHeight - u.covYOffset) / u.canvasH) * 2.0;
 }
 
 // Normalize a coverage depth value (relDepth = rawDepth / regionMaxDepth) to [0,1]

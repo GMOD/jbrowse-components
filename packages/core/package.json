@@ -47,6 +47,7 @@
     "./gpu/blockClipUtils": "./src/gpu/blockClipUtils.ts",
     "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
     "./gpu/createRenderingBackend": "./src/gpu/createRenderingBackend.ts",
+    "./gpu/displayPhase": "./src/gpu/displayPhase.ts",
     "./gpu/globalRenderingBackend": "./src/gpu/globalRenderingBackend.ts",
     "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
     "./gpu/hal": "./src/gpu/hal/index.ts",
@@ -305,6 +306,10 @@
       "./gpu/canvas2dUtils": {
         "types": "./esm/gpu/canvas2dUtils.d.ts",
         "import": "./esm/gpu/canvas2dUtils.js"
+      },
+      "./gpu/displayPhase": {
+        "types": "./esm/gpu/displayPhase.d.ts",
+        "import": "./esm/gpu/displayPhase.js"
       },
       "./gpu/createRenderingBackend": {
         "types": "./esm/gpu/createRenderingBackend.d.ts",

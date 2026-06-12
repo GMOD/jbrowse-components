@@ -69,6 +69,11 @@ export interface HitTestOptions {
   showInterbaseIndicators: boolean
   coverageHeight: number
   topOffset: number
+  // Screen-px Y of this section's coverage band top. 0 for the ungrouped
+  // sticky-at-top coverage; a stacked group's scrolled coverage top otherwise.
+  // Subtracted from canvasY so the coverage/indicator strip tests are
+  // section-local.
+  coverageTopOffset: number
   featureHeight: number
   featureSpacing: number
   scrollTop: number
@@ -111,11 +116,16 @@ export function performHitTest(
     showInterbaseIndicators,
     coverageHeight,
     topOffset,
+    coverageTopOffset,
     featureHeight,
     featureSpacing,
     scrollTop,
     isChainMode,
   } = options
+
+  // Coverage/indicator strip tests are relative to this section's coverage top
+  // (0 = the ungrouped sticky band at the canvas top).
+  const coverageY = canvasY - coverageTopOffset
 
   if (resolved) {
     // Single site for the canvas-X → genomicPos transform.
@@ -134,7 +144,7 @@ export function performHitTest(
     const indicatorHit = hitTestIndicator(
       genomicPos,
       bpPerPx,
-      canvasY,
+      coverageY,
       resolved.rpcData,
       showCoverage,
       showInterbaseIndicators,
@@ -146,7 +156,7 @@ export function performHitTest(
     const coverageHit = hitTestCoverage(
       genomicPos,
       bpPerPx,
-      canvasY,
+      coverageY,
       resolved.rpcData,
       showCoverage,
       coverageHeight,

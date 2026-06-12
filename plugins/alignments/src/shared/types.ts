@@ -61,6 +61,23 @@ export interface FilterBy {
   }
 }
 
+// In-track stacked grouping. `type` selects the per-read group-key generator
+// (see shared/groupFeatures.ts); `tag` carries the tag name for tag/HP/RG
+// grouping. Absent groupBy means a single ungrouped section.
+export type GroupByType =
+  | 'strand'
+  | 'firstOfPairStrand'
+  | 'tag'
+  | 'pairOrientation'
+  | 'supplementary'
+  | 'duplicate'
+  | 'mapq'
+
+export interface GroupBy {
+  type: GroupByType
+  tag?: string
+}
+
 export interface SortedBy {
   type: string
   pos: number

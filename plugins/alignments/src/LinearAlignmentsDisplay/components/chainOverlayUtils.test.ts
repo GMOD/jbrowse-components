@@ -34,6 +34,17 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     readConnections: 'off',
     showLinkedReadLines: false,
     pileupTopOffset: 50,
+    coverageTopOffset: 0,
+    sections: [
+      {
+        pileupTopOffset: 50,
+        coverageTopOffset: 0,
+        covClipTop: 0,
+        covClipHeight: 600,
+        pileupClipTop: 50,
+        pileupClipHeight: 550,
+      },
+    ],
     ...overrides,
   }
 }

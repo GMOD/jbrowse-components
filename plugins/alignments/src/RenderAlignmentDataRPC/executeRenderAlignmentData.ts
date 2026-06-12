@@ -1,6 +1,7 @@
 import { dedupe, groupBy, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
 import {
@@ -10,18 +11,24 @@ import {
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
-import { collectResultTransferables } from '../shared/collectTransferables.ts'
+import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
 import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
+import { partitionFeatures } from '../shared/groupFeatures.ts'
 import { buildReadInterchrom } from '../shared/readInterchrom.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 
-import type { PileupDataResult, RenderAlignmentDataArgs } from './types.ts'
+import type {
+  AlignmentGroup,
+  PileupDataResult,
+  RenderAlignmentDataArgs,
+} from './types.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 // Chain mode groups reads into chains by name, then optionally drops
 // singletons (chains of one) and proper pairs (every read has the 0x2 flag).
@@ -102,77 +109,29 @@ function buildChainResultFields(
   }
 }
 
-// Single worker entry for both the pileup and chain (linked-reads) displays.
-// The shared spine — fetch, per-read/gap/mismatch arrays, coverage pipeline,
-// result assembly — is identical; `isChain` gates the few divergent steps:
-// chain pre-filters into chains and emits chain metadata; pileup fetches the
-// reference sequence for modification coloring and computes sort-tag values.
-export async function executeRenderAlignmentData({
-  pluginManager,
-  args,
-}: {
-  pluginManager: PluginManager
-  args: RenderAlignmentDataArgs
-}) {
-  const {
-    sessionId,
-    adapterConfig,
-    sequenceAdapter,
-    regions,
-    filterBy,
-    colorBy,
-    sortTag,
-    showSoftClipping = false,
-    linkedReads = 'off',
-    drawSingletons = true,
-    drawProperPairs = true,
-    statusCallback = () => {},
-    stopToken,
-  } = args
-  const region = regions[0]!
-  const isChain = linkedReads !== 'off'
-  // Chain mode never expands soft clips or fetches sequence/sort-tag data.
-  const effShowSoftClipping = isChain ? false : showSoftClipping
+// Per-group context shared across every section of one fetch. The region
+// sequence, simplex-modification set, and color/softclip flags are global to
+// the fetch (not the group) — resolving them once keeps modification coloring
+// identical in every section.
+interface GroupContext {
+  isChain: boolean
+  region: Region
+  effShowSoftClipping: boolean
+  trackStrands: boolean
+  regionSequence: string | undefined
+  regionSequenceStart: number
+  detectedSimplexModifications: ReadonlySet<string>
+  statusCallback: (status: string) => void
+  stopTokenCheck: StopTokenChecker
+}
 
-  const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-    sequenceAdapter,
-    region,
-    filterBy,
-    statusCallback,
-    stopToken,
-  })
-
-  // Chain mode dedupes + filters reads into chains up front; pileup mode
-  // fetches the reference sequence when coloring by methylation/modifications.
-  let inputFeatures = featuresArray
-  let regionSequence: string | undefined
-  let regionSequenceStart = region.start
-  if (isChain) {
-    inputFeatures = filterChainFeatures(
-      featuresArray,
-      drawSingletons,
-      drawProperPairs,
-    )
-  } else if (
-    (colorBy?.type === 'methylation' ||
-      colorBy?.type === 'modifications' ||
-      colorBy?.type === 'bisulfite') &&
-    sequenceAdapter
-  ) {
-    const result = await fetchReferenceSequence({
-      pluginManager,
-      sessionId,
-      sequenceAdapter,
-      region,
-      featuresArray,
-    })
-    regionSequence = result.regionSequence?.toLowerCase()
-    regionSequenceStart = result.regionSequenceStart
-  }
-
+// The shared spine for one group's reads: per-read/gap/mismatch arrays,
+// coverage pipeline, result assembly. Identical for grouped and ungrouped
+// fetches — ungrouped is just the one-group case.
+async function buildGroupResult(
+  extraction: ReturnType<typeof extractFeatureArrays>,
+  ctx: GroupContext,
+): Promise<PileupDataResult> {
   const {
     features,
     gaps,
@@ -190,23 +149,18 @@ export async function executeRenderAlignmentData({
     nextPositions,
     suppAlignments,
     detectedModifications,
+  } = extraction
+  const {
+    isChain,
+    region,
+    effShowSoftClipping,
+    trackStrands,
+    regionSequence,
+    regionSequenceStart,
     detectedSimplexModifications,
-  } = await updateStatus('Processing alignments', statusCallback, async () =>
-    extractFeatureArrays(
-      inputFeatures,
-      isChain ? buildChainFeatureData : buildBaseFeatureData,
-      {
-        colorBy,
-        showSoftClipping: effShowSoftClipping,
-        region,
-        sortTag: isChain ? undefined : sortTag,
-        regionSequence,
-        regionSequenceStart,
-      },
-    ),
-  )
-
-  checkStopToken2(stopTokenCheck)
+    statusCallback,
+    stopTokenCheck,
+  } = ctx
 
   // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread via
   // `laidOutPileupMap` (pileup) / `computeChainLayout` (chain) — the worker
@@ -262,14 +216,6 @@ export async function executeRenderAlignmentData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Pileup tracks per-base strands + reference sequence for modification
-  // coverage; chain omits both so runCoveragePipeline skips mod-coverage.
-  const trackStrands =
-    !isChain &&
-    (colorBy?.type === 'modifications' ||
-      colorBy?.type === 'methylation' ||
-      colorBy?.type === 'bisulfite')
-
   const pipeline = await runCoveragePipeline({
     features,
     gaps,
@@ -298,7 +244,7 @@ export async function executeRenderAlignmentData({
     features.length,
   )
 
-  const result: PileupDataResult = {
+  return {
     ...readArrays,
     readInterchrom,
     ...segmentArrays,
@@ -341,6 +287,144 @@ export async function executeRenderAlignmentData({
     linkedReadLineColorTypes: new Uint8Array(0),
     numLinkedReadLines: 0,
   }
+}
 
-  return rpcResult(result, collectResultTransferables(result))
+// Single worker entry for both the pileup and chain (linked-reads) displays.
+// The shared spine — fetch, per-read/gap/mismatch arrays, coverage pipeline,
+// result assembly — is identical; `isChain` gates the few divergent steps:
+// chain pre-filters into chains and emits chain metadata; pileup fetches the
+// reference sequence for modification coloring and computes sort-tag values.
+//
+// When `groupBy` is set (pileup only), the single fetch is partitioned into N
+// ordered groups and the spine runs once per group, returning one
+// PileupDataResult per group. Ungrouped fetches return a single group.
+export async function executeRenderAlignmentData({
+  pluginManager,
+  args,
+}: {
+  pluginManager: PluginManager
+  args: RenderAlignmentDataArgs
+}) {
+  const {
+    sessionId,
+    adapterConfig,
+    sequenceAdapter,
+    regions,
+    filterBy,
+    colorBy,
+    sortTag,
+    groupBy: groupByArg,
+    showSoftClipping = false,
+    linkedReads = 'off',
+    drawSingletons = true,
+    drawProperPairs = true,
+    statusCallback = () => {},
+    stopToken,
+  } = args
+  const region = regions[0]!
+  const isChain = linkedReads !== 'off'
+  // Chain mode never expands soft clips or fetches sequence/sort-tag data.
+  const effShowSoftClipping = isChain ? false : showSoftClipping
+  // Grouping is a pileup-only feature for v1 (chain mode's read-name chaining
+  // conflicts with arbitrary partitions — see GROUP_BY_PLAN.md v1 scope cuts).
+  const groupBy = isChain ? undefined : groupByArg
+
+  const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+    sequenceAdapter,
+    region,
+    filterBy,
+    statusCallback,
+    stopToken,
+  })
+
+  // Chain mode dedupes + filters reads into chains up front; pileup mode
+  // fetches the reference sequence when coloring by methylation/modifications.
+  let inputFeatures = featuresArray
+  let regionSequence: string | undefined
+  let regionSequenceStart = region.start
+  if (isChain) {
+    inputFeatures = filterChainFeatures(
+      featuresArray,
+      drawSingletons,
+      drawProperPairs,
+    )
+  } else if (
+    (colorBy?.type === 'methylation' ||
+      colorBy?.type === 'modifications' ||
+      colorBy?.type === 'bisulfite') &&
+    sequenceAdapter
+  ) {
+    const result = await fetchReferenceSequence({
+      pluginManager,
+      sessionId,
+      sequenceAdapter,
+      region,
+      featuresArray,
+    })
+    regionSequence = result.regionSequence?.toLowerCase()
+    regionSequenceStart = result.regionSequenceStart
+  }
+
+  const featureGroups = partitionFeatures(inputFeatures, groupBy)
+  const buildFeatureData = isChain
+    ? buildChainFeatureData
+    : buildBaseFeatureData
+  const extractOpts = {
+    colorBy,
+    showSoftClipping: effShowSoftClipping,
+    region,
+    sortTag: isChain ? undefined : sortTag,
+    regionSequence,
+    regionSequenceStart,
+  }
+
+  // Extract per group, then resolve simplex modifications across ALL groups —
+  // simplex-ness is a protocol property of the whole dataset, so a per-group
+  // answer would color the same modification differently between sections.
+  const extractions = await updateStatus(
+    'Processing alignments',
+    statusCallback,
+    async () =>
+      featureGroups.map(g =>
+        extractFeatureArrays(g.features, buildFeatureData, extractOpts),
+      ),
+  )
+  const seenModTypes = new Map(extractions.flatMap(e => [...e.seenModTypes]))
+  const detectedSimplexModifications = detectSimplexModifications([
+    ...seenModTypes.values(),
+  ])
+
+  checkStopToken2(stopTokenCheck)
+
+  // Pileup tracks per-base strands + reference sequence for modification
+  // coverage; chain omits both so runCoveragePipeline skips mod-coverage.
+  const trackStrands =
+    !isChain &&
+    (colorBy?.type === 'modifications' ||
+      colorBy?.type === 'methylation' ||
+      colorBy?.type === 'bisulfite')
+
+  const ctx: GroupContext = {
+    isChain,
+    region,
+    effShowSoftClipping,
+    trackStrands,
+    regionSequence,
+    regionSequenceStart,
+    detectedSimplexModifications,
+    statusCallback,
+    stopTokenCheck,
+  }
+
+  const groups: AlignmentGroup[] = []
+  for (let i = 0; i < featureGroups.length; i++) {
+    const fg = featureGroups[i]!
+    const data = await buildGroupResult(extractions[i]!, ctx)
+    groups.push({ key: fg.key, label: fg.label, data })
+  }
+
+  return rpcResult({ groups }, collectGroupedTransferables(groups))
 }

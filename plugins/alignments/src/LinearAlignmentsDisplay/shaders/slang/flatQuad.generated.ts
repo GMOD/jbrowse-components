@@ -5,7 +5,7 @@ import type { GlAttributeLayout } from '@jbrowse/core/gpu/hal'
 
 export const WGSL_SOURCE = "fn quadLocal_0( vid_0 : u32) -> vec2<f32>\n{\n    var v_0 : u32 = vid_0 % u32(6);\n    var _S1 : bool = v_0 == u32(0);\n    var _S2 : bool;\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(2);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(3);\n    }\n    var _S3 : f32;\n    if(_S2)\n    {\n        _S3 = 0.0f;\n    }\n    else\n    {\n        _S3 = 1.0f;\n    }\n    if(_S1)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(1);\n    }\n    if(_S2)\n    {\n        _S2 = true;\n    }\n    else\n    {\n        _S2 = v_0 == u32(4);\n    }\n    var _S4 : f32;\n    if(_S2)\n    {\n        _S4 = 0.0f;\n    }\n    else\n    {\n        _S4 = 1.0f;\n    }\n    return vec2<f32>(_S3, _S4);\n}\n\nstruct ColorVsOut_0\n{\n    @builtin(position) position_0 : vec4<f32>,\n    @location(0) color_0 : vec4<f32>,\n};\n\nstruct vertexInput_0\n{\n    @location(0) sx1_0 : f32,\n    @location(1) syTop_0 : f32,\n    @location(2) sx2_0 : f32,\n    @location(3) syBot_0 : f32,\n    @location(4) rgba_0 : vec4<f32>,\n};\n\n@vertex\nfn vs_main( _S5 : vertexInput_0, @builtin(vertex_index) vid_1 : u32) -> ColorVsOut_0\n{\n    var local_0 : vec2<f32> = quadLocal_0(vid_1);\n    var o_0 : ColorVsOut_0;\n    o_0.position_0 = vec4<f32>(mix(_S5.sx1_0, _S5.sx2_0, local_0.x), mix(_S5.syBot_0, _S5.syTop_0, local_0.y), 0.0f, 1.0f);\n    o_0.color_0 = _S5.rgba_0;\n    return o_0;\n}\n\nstruct pixelOutput_0\n{\n    @location(0) output_0 : vec4<f32>,\n};\n\nstruct pixelInput_0\n{\n    @location(0) color_1 : vec4<f32>,\n};\n\n@fragment\nfn fs_main( _S6 : pixelInput_0, @builtin(position) position_1 : vec4<f32>) -> pixelOutput_0\n{\n    var _S7 : pixelOutput_0 = pixelOutput_0( _S6.color_1 );\n    return _S7;\n}\n\n"
 
-export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 77 0\nvec2 quadLocal_0(uint vid_0)\n{\n\n#line 78\n    uint v_0 = vid_0 % 6U;\n\n    bool _S1 = v_0 == 0U;\n\n#line 80\n    bool _S2;\n\n#line 80\n    if(_S1)\n    {\n\n#line 80\n        _S2 = true;\n\n#line 80\n    }\n    else\n    {\n\n#line 80\n        _S2 = v_0 == 2U;\n\n#line 80\n    }\n\n#line 80\n    if(_S2)\n    {\n\n#line 80\n        _S2 = true;\n\n#line 80\n    }\n    else\n    {\n\n#line 80\n        _S2 = v_0 == 3U;\n\n#line 80\n    }\n\n#line 80\n    float _S3;\n\n#line 80\n    if(_S2)\n    {\n\n#line 80\n        _S3 = 0.0;\n\n#line 80\n    }\n    else\n    {\n\n#line 80\n        _S3 = 1.0;\n\n#line 80\n    }\n    if(_S1)\n    {\n\n#line 81\n        _S2 = true;\n\n#line 81\n    }\n    else\n    {\n\n#line 81\n        _S2 = v_0 == 1U;\n\n#line 81\n    }\n\n#line 81\n    if(_S2)\n    {\n\n#line 81\n        _S2 = true;\n\n#line 81\n    }\n    else\n    {\n\n#line 81\n        _S2 = v_0 == 4U;\n\n#line 81\n    }\n\n#line 81\n    float _S4;\n\n#line 81\n    if(_S2)\n    {\n\n#line 81\n        _S4 = 0.0;\n\n#line 81\n    }\n    else\n    {\n\n#line 81\n        _S4 = 1.0;\n\n#line 81\n    }\n\n#line 79\n    return vec2(_S3, _S4);\n}\n\n\n#line 993 1\nout vec4 v_color;\n\n\n#line 993\nlayout(location = 0)\nin float a_sx1;\n\n\n#line 993\nlayout(location = 1)\nin float a_syTop;\n\n\n#line 993\nlayout(location = 2)\nin float a_sx2;\n\n\n#line 993\nlayout(location = 3)\nin float a_syBot;\n\n\n#line 993\nlayout(location = 4)\nin vec4 a_rgba;\n\n\n#line 257 2\nstruct ColorVsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\n\n#line 21 3\nvoid main()\n{\n    vec2 local_0 = quadLocal_0(uint(gl_VertexID));\n\n#line 22\n    ColorVsOut_0 o_0;\n\n    o_0.position_0 = vec4(mix(a_sx1, a_sx2, local_0.x), mix(a_syBot, a_syTop, local_0.y), 0.0, 1.0);\n\n\n\n    o_0.color_0 = a_rgba;\n    ColorVsOut_0 _S5 = o_0;\n\n#line 29\n    gl_Position = o_0.position_0;\n\n#line 29\n    v_color = _S5.color_0;\n\n#line 29\n    return;\n}\n\n"
+export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 77 0\nvec2 quadLocal_0(uint vid_0)\n{\n\n#line 78\n    uint v_0 = vid_0 % 6U;\n\n    bool _S1 = v_0 == 0U;\n\n#line 80\n    bool _S2;\n\n#line 80\n    if(_S1)\n    {\n\n#line 80\n        _S2 = true;\n\n#line 80\n    }\n    else\n    {\n\n#line 80\n        _S2 = v_0 == 2U;\n\n#line 80\n    }\n\n#line 80\n    if(_S2)\n    {\n\n#line 80\n        _S2 = true;\n\n#line 80\n    }\n    else\n    {\n\n#line 80\n        _S2 = v_0 == 3U;\n\n#line 80\n    }\n\n#line 80\n    float _S3;\n\n#line 80\n    if(_S2)\n    {\n\n#line 80\n        _S3 = 0.0;\n\n#line 80\n    }\n    else\n    {\n\n#line 80\n        _S3 = 1.0;\n\n#line 80\n    }\n    if(_S1)\n    {\n\n#line 81\n        _S2 = true;\n\n#line 81\n    }\n    else\n    {\n\n#line 81\n        _S2 = v_0 == 1U;\n\n#line 81\n    }\n\n#line 81\n    if(_S2)\n    {\n\n#line 81\n        _S2 = true;\n\n#line 81\n    }\n    else\n    {\n\n#line 81\n        _S2 = v_0 == 4U;\n\n#line 81\n    }\n\n#line 81\n    float _S4;\n\n#line 81\n    if(_S2)\n    {\n\n#line 81\n        _S4 = 0.0;\n\n#line 81\n    }\n    else\n    {\n\n#line 81\n        _S4 = 1.0;\n\n#line 81\n    }\n\n#line 79\n    return vec2(_S3, _S4);\n}\n\n\n#line 993 1\nout vec4 v_color;\n\n\n#line 993\nlayout(location = 0)\nin float a_sx1;\n\n\n#line 993\nlayout(location = 1)\nin float a_syTop;\n\n\n#line 993\nlayout(location = 2)\nin float a_sx2;\n\n\n#line 993\nlayout(location = 3)\nin float a_syBot;\n\n\n#line 993\nlayout(location = 4)\nin vec4 a_rgba;\n\n\n#line 271 2\nstruct ColorVsOut_0\n{\n    vec4 position_0;\n    vec4 color_0;\n};\n\n\n#line 21 3\nvoid main()\n{\n    vec2 local_0 = quadLocal_0(uint(gl_VertexID));\n\n#line 22\n    ColorVsOut_0 o_0;\n\n    o_0.position_0 = vec4(mix(a_sx1, a_sx2, local_0.x), mix(a_syBot, a_syTop, local_0.y), 0.0, 1.0);\n\n\n\n    o_0.color_0 = a_rgba;\n    ColorVsOut_0 _S5 = o_0;\n\n#line 29\n    gl_Position = o_0.position_0;\n\n#line 29\n    v_color = _S5.color_0;\n\n#line 29\n    return;\n}\n\n"
 
 export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 33 1\nvoid main()\n{\n\n#line 33\n    entryPointParam_fs_main_0 = v_color;\n\n#line 33\n    return;\n}\n\n"
 
@@ -27,69 +27,70 @@ export const UNIFORM_OFFSET_F32 = {
   featSpacing: 9,
   covHeight: 10,
   covYOffset: 11,
-  depthScale: 12,
-  binSize: 13,
-  interbaseHeight: 14,
-  depthDomainMax: 15,
-  insertUpper: 16,
-  insertLower: 17,
-  blockStartPx: 18,
-  blockWidth: 19,
-  lineWidthPx: 20,
-  gradientHue: 21,
-  pairedArcsDown: 22,
-  arcsYDomainBp: 23,
-  arcsYLog: 24,
-  colorScheme: 25,
-  chainMode: 26,
-  showStroke: 27,
-  flipStrandLongRead: 28,
-  coverageScaleType: 29,
-  filterMismatchesByFrequency: 30,
-  reversed: 31,
-  colorFwd: 32,
-  colorRev: 33,
-  colorNostrand: 34,
-  colorPairLR: 35,
-  colorPairRL: 36,
-  colorPairRR: 37,
-  colorPairLL: 38,
-  colorBaseA: 39,
-  colorBaseC: 40,
-  colorBaseG: 41,
-  colorBaseT: 42,
-  colorBaseN: 43,
-  colorInsertion: 44,
-  colorDeletion: 45,
-  colorSkip: 46,
-  colorSoftclip: 47,
-  colorHardclip: 48,
-  colorCoverage: 49,
-  colorModFwd: 50,
-  colorModRev: 51,
-  colorLongInsert: 52,
-  colorShortInsert: 53,
-  colorSupplementary: 54,
-  colorUnmappedMate: 55,
-  colorInterchrom: 56,
-  colorMutedSnpBase: 57,
-  arcColor0: 58,
-  arcColor1: 59,
-  arcColor2: 60,
-  arcColor3: 61,
-  arcColor4: 62,
-  arcColor5: 63,
-  arcColor6: 64,
-  arcColor7: 65,
-  linkedReadColor0: 66,
-  linkedReadColor1: 67,
-  linkedReadColor2: 68,
-  linkedReadColor3: 69,
-  linkedReadColor4: 70,
-  linkedReadColor5: 71,
-  linkedReadColor6: 72,
-  linkedReadColor7: 73,
-  pxPerBp: 74,
+  covTop: 12,
+  depthScale: 13,
+  binSize: 14,
+  interbaseHeight: 15,
+  depthDomainMax: 16,
+  insertUpper: 17,
+  insertLower: 18,
+  blockStartPx: 19,
+  blockWidth: 20,
+  lineWidthPx: 21,
+  gradientHue: 22,
+  pairedArcsDown: 23,
+  arcsYDomainBp: 24,
+  arcsYLog: 25,
+  colorScheme: 26,
+  chainMode: 27,
+  showStroke: 28,
+  flipStrandLongRead: 29,
+  coverageScaleType: 30,
+  filterMismatchesByFrequency: 31,
+  reversed: 32,
+  colorFwd: 33,
+  colorRev: 34,
+  colorNostrand: 35,
+  colorPairLR: 36,
+  colorPairRL: 37,
+  colorPairRR: 38,
+  colorPairLL: 39,
+  colorBaseA: 40,
+  colorBaseC: 41,
+  colorBaseG: 42,
+  colorBaseT: 43,
+  colorBaseN: 44,
+  colorInsertion: 45,
+  colorDeletion: 46,
+  colorSkip: 47,
+  colorSoftclip: 48,
+  colorHardclip: 49,
+  colorCoverage: 50,
+  colorModFwd: 51,
+  colorModRev: 52,
+  colorLongInsert: 53,
+  colorShortInsert: 54,
+  colorSupplementary: 55,
+  colorUnmappedMate: 56,
+  colorInterchrom: 57,
+  colorMutedSnpBase: 58,
+  arcColor0: 59,
+  arcColor1: 60,
+  arcColor2: 61,
+  arcColor3: 62,
+  arcColor4: 63,
+  arcColor5: 64,
+  arcColor6: 65,
+  arcColor7: 66,
+  linkedReadColor0: 67,
+  linkedReadColor1: 68,
+  linkedReadColor2: 69,
+  linkedReadColor3: 70,
+  linkedReadColor4: 71,
+  linkedReadColor5: 72,
+  linkedReadColor6: 73,
+  linkedReadColor7: 74,
+  pxPerBp: 75,
 } as const
 
 
@@ -97,8 +98,8 @@ export const UNIFORM_OFFSET_F32 = {
 // fields, indexed into the 4-byte-word uniform buffer (works with
 // either Uint32Array or Float32Array views — the field kind picks).
 export const UNIFORM_SLOT_ARRAYS = {
-  arcColor: [58, 59, 60, 61, 62, 63, 64, 65] as const,
-  linkedReadColor: [66, 67, 68, 69, 70, 71, 72, 73] as const,
+  arcColor: [59, 60, 61, 62, 63, 64, 65, 66] as const,
+  linkedReadColor: [67, 68, 69, 70, 71, 72, 73, 74] as const,
 } as const
 
 export interface Uniforms {
@@ -114,6 +115,7 @@ export interface Uniforms {
   featSpacing: number
   covHeight: number
   covYOffset: number
+  covTop: number
   depthScale: number
   binSize: number
   interbaseHeight: number
@@ -195,69 +197,70 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[9] = uniforms.featSpacing
   f32[10] = uniforms.covHeight
   f32[11] = uniforms.covYOffset
-  f32[12] = uniforms.depthScale
-  f32[13] = uniforms.binSize
-  f32[14] = uniforms.interbaseHeight
-  f32[15] = uniforms.depthDomainMax
-  f32[16] = uniforms.insertUpper
-  f32[17] = uniforms.insertLower
-  f32[18] = uniforms.blockStartPx
-  f32[19] = uniforms.blockWidth
-  f32[20] = uniforms.lineWidthPx
-  f32[21] = uniforms.gradientHue
-  f32[22] = uniforms.pairedArcsDown
-  f32[23] = uniforms.arcsYDomainBp
-  f32[24] = uniforms.arcsYLog
-  i32[25] = uniforms.colorScheme
-  i32[26] = uniforms.chainMode
-  i32[27] = uniforms.showStroke
-  i32[28] = uniforms.flipStrandLongRead
-  i32[29] = uniforms.coverageScaleType
-  i32[30] = uniforms.filterMismatchesByFrequency
-  f32[31] = uniforms.reversed
-  u32[32] = uniforms.colorFwd
-  u32[33] = uniforms.colorRev
-  u32[34] = uniforms.colorNostrand
-  u32[35] = uniforms.colorPairLR
-  u32[36] = uniforms.colorPairRL
-  u32[37] = uniforms.colorPairRR
-  u32[38] = uniforms.colorPairLL
-  u32[39] = uniforms.colorBaseA
-  u32[40] = uniforms.colorBaseC
-  u32[41] = uniforms.colorBaseG
-  u32[42] = uniforms.colorBaseT
-  u32[43] = uniforms.colorBaseN
-  u32[44] = uniforms.colorInsertion
-  u32[45] = uniforms.colorDeletion
-  u32[46] = uniforms.colorSkip
-  u32[47] = uniforms.colorSoftclip
-  u32[48] = uniforms.colorHardclip
-  u32[49] = uniforms.colorCoverage
-  u32[50] = uniforms.colorModFwd
-  u32[51] = uniforms.colorModRev
-  u32[52] = uniforms.colorLongInsert
-  u32[53] = uniforms.colorShortInsert
-  u32[54] = uniforms.colorSupplementary
-  u32[55] = uniforms.colorUnmappedMate
-  u32[56] = uniforms.colorInterchrom
-  u32[57] = uniforms.colorMutedSnpBase
-  u32[58] = uniforms.arcColor0
-  u32[59] = uniforms.arcColor1
-  u32[60] = uniforms.arcColor2
-  u32[61] = uniforms.arcColor3
-  u32[62] = uniforms.arcColor4
-  u32[63] = uniforms.arcColor5
-  u32[64] = uniforms.arcColor6
-  u32[65] = uniforms.arcColor7
-  u32[66] = uniforms.linkedReadColor0
-  u32[67] = uniforms.linkedReadColor1
-  u32[68] = uniforms.linkedReadColor2
-  u32[69] = uniforms.linkedReadColor3
-  u32[70] = uniforms.linkedReadColor4
-  u32[71] = uniforms.linkedReadColor5
-  u32[72] = uniforms.linkedReadColor6
-  u32[73] = uniforms.linkedReadColor7
-  f32[74] = uniforms.pxPerBp
+  f32[12] = uniforms.covTop
+  f32[13] = uniforms.depthScale
+  f32[14] = uniforms.binSize
+  f32[15] = uniforms.interbaseHeight
+  f32[16] = uniforms.depthDomainMax
+  f32[17] = uniforms.insertUpper
+  f32[18] = uniforms.insertLower
+  f32[19] = uniforms.blockStartPx
+  f32[20] = uniforms.blockWidth
+  f32[21] = uniforms.lineWidthPx
+  f32[22] = uniforms.gradientHue
+  f32[23] = uniforms.pairedArcsDown
+  f32[24] = uniforms.arcsYDomainBp
+  f32[25] = uniforms.arcsYLog
+  i32[26] = uniforms.colorScheme
+  i32[27] = uniforms.chainMode
+  i32[28] = uniforms.showStroke
+  i32[29] = uniforms.flipStrandLongRead
+  i32[30] = uniforms.coverageScaleType
+  i32[31] = uniforms.filterMismatchesByFrequency
+  f32[32] = uniforms.reversed
+  u32[33] = uniforms.colorFwd
+  u32[34] = uniforms.colorRev
+  u32[35] = uniforms.colorNostrand
+  u32[36] = uniforms.colorPairLR
+  u32[37] = uniforms.colorPairRL
+  u32[38] = uniforms.colorPairRR
+  u32[39] = uniforms.colorPairLL
+  u32[40] = uniforms.colorBaseA
+  u32[41] = uniforms.colorBaseC
+  u32[42] = uniforms.colorBaseG
+  u32[43] = uniforms.colorBaseT
+  u32[44] = uniforms.colorBaseN
+  u32[45] = uniforms.colorInsertion
+  u32[46] = uniforms.colorDeletion
+  u32[47] = uniforms.colorSkip
+  u32[48] = uniforms.colorSoftclip
+  u32[49] = uniforms.colorHardclip
+  u32[50] = uniforms.colorCoverage
+  u32[51] = uniforms.colorModFwd
+  u32[52] = uniforms.colorModRev
+  u32[53] = uniforms.colorLongInsert
+  u32[54] = uniforms.colorShortInsert
+  u32[55] = uniforms.colorSupplementary
+  u32[56] = uniforms.colorUnmappedMate
+  u32[57] = uniforms.colorInterchrom
+  u32[58] = uniforms.colorMutedSnpBase
+  u32[59] = uniforms.arcColor0
+  u32[60] = uniforms.arcColor1
+  u32[61] = uniforms.arcColor2
+  u32[62] = uniforms.arcColor3
+  u32[63] = uniforms.arcColor4
+  u32[64] = uniforms.arcColor5
+  u32[65] = uniforms.arcColor6
+  u32[66] = uniforms.arcColor7
+  u32[67] = uniforms.linkedReadColor0
+  u32[68] = uniforms.linkedReadColor1
+  u32[69] = uniforms.linkedReadColor2
+  u32[70] = uniforms.linkedReadColor3
+  u32[71] = uniforms.linkedReadColor4
+  u32[72] = uniforms.linkedReadColor5
+  u32[73] = uniforms.linkedReadColor6
+  u32[74] = uniforms.linkedReadColor7
+  f32[75] = uniforms.pxPerBp
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

@@ -27,7 +27,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   // Sits just above the bottom coverage-area edge, below the indicator row.
   float indOff = 9.0 / u.canvasH;
-  float sTop = 1.0 - indOff - (inst.yOffset * u.interbaseHeight / u.canvasH) * 2.0;
+  float sTop = covAreaTop(u) - indOff - (inst.yOffset * u.interbaseHeight / u.canvasH) * 2.0;
   float sBot = sTop - (inst.segHeight * u.interbaseHeight / u.canvasH) * 2.0;
 
   o.position = float4(

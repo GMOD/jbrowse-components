@@ -176,5 +176,9 @@ export function extractFeatureArrays<T extends FeatureData>(
     suppAlignments,
     detectedModifications,
     detectedSimplexModifications,
+    // Raw (strand, type) pairs seen in this call. When extraction is run per
+    // group, the worker merges these across groups and re-resolves simplex
+    // globally so modification coloring is identical in every section.
+    seenModTypes,
   }
 }

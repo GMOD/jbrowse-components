@@ -1,4 +1,5 @@
 import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
+import { computeDisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import {
   getContainingTrack,
@@ -17,6 +18,7 @@ import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 import type { FetchContext } from './FetchMixin.ts'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -116,18 +118,28 @@ export default function MultiRegionDisplayMixin() {
     .views(self => ({
       /**
        * #getter
-       * whether the loading scrim should show: data not ready yet, or stale data
-       * (viewport past loaded) still on screen. Not while regionTooLarge / fetch
-       * error / renderError — those render their own terminal UI. The single
-       * signal every display's loading overlay reads.
+       * The display's mutually-exclusive visual state, precedence single-sourced
+       * in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or
+       * stale data (viewport past loaded) is still on screen through the
+       * pre-refetch debounce.
+       */
+      get displayPhase(): DisplayPhase {
+        return computeDisplayPhase(
+          self,
+          () => !self.isReady || !self.viewportWithinLoadedData,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The single signal every display's loading overlay reads. Derived from
+       * `displayPhase` so the loading-vs-terminal precedence isn't re-encoded by
+       * subtraction. Separate `.views` block so it can read the sibling
+       * `displayPhase` getter through `self`.
        */
       get loadingOverlayVisible() {
-        return (
-          (!self.isReady || !self.viewportWithinLoadedData) &&
-          !self.regionTooLarge &&
-          !self.error &&
-          !self.renderError
-        )
+        return self.displayPhase === 'loading'
       },
     }))
     .actions(self => ({

@@ -552,7 +552,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       ) {
         const { trackId } = configuration
         if (typeof trackId === 'string') {
-          return showTrackGeneric(self, trackId, initialSnapshot, {}, configuration)
+          return showTrackGeneric(
+            self,
+            trackId,
+            initialSnapshot,
+            {},
+            configuration,
+          )
         }
       },
 

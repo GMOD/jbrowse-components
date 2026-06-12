@@ -75,14 +75,20 @@ describe('calculateFeatureDensityStats', () => {
     // refLen 1500 < 2*initialInterval(1000) → size-based exit on round 1 even
     // though far fewer than 70 features were found
     const { getFeatures, calls } = fixedCount(3)
-    const stats = await calculateFeatureDensityStats(region(0, 1500), getFeatures)
+    const stats = await calculateFeatureDensityStats(
+      region(0, 1500),
+      getFeatures,
+    )
     expect(calls).toHaveLength(1)
     expect(stats.featureDensity).toBeCloseTo(3 / 1000)
   })
 
   test('reports zero density for an empty region', async () => {
     const { getFeatures } = fixedCount(0)
-    const stats = await calculateFeatureDensityStats(region(0, 1500), getFeatures)
+    const stats = await calculateFeatureDensityStats(
+      region(0, 1500),
+      getFeatures,
+    )
     expect(stats.featureDensity).toBe(0)
   })
 

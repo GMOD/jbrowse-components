@@ -18,15 +18,25 @@ interface HighlightView {
   bpPerPx: number
 }
 
+// One stacked group's data + its pileup-row top offset (screen px, pre-scroll).
+// Ungrouped is a single section (groupKey '') with topOffset coverageDisplayHeight.
+export interface HighlightSection {
+  groupKey: string
+  laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
+  topOffset: number
+}
+
 interface ComputeHighlightBoxesParams {
   view: HighlightView
-  laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
-  readIdIndexMap: Map<string, { displayedRegionIndex: number; idx: number }>
+  sections: HighlightSection[]
+  readIdIndexMap: Map<
+    string,
+    { displayedRegionIndex: number; groupKey: string; idx: number }
+  >
   ids: string[]
   height: number
   featureHeight: number
   featureSpacing: number
-  topOffset: number
   scrollTop: number
 }
 
@@ -34,6 +44,7 @@ interface RegionBounds {
   startBp: number
   endBp: number
   yRow: number
+  topOffset: number
 }
 
 // Screen-space boxes for the hovered read (one id) or hovered chain (its member
@@ -45,21 +56,28 @@ export function computeHighlightBoxes(
 ): HighlightBox[] {
   const {
     view,
-    laidOutPileupMap,
+    sections,
     readIdIndexMap,
     ids,
     height,
     featureHeight,
     featureSpacing,
-    topOffset,
     scrollTop,
   } = params
 
-  const byRegion = new Map<number, RegionBounds>()
+  const sectionByGroup = new Map(sections.map(s => [s.groupKey, s]))
+
+  // Collapse ids that share a row into one span, keyed per (group, region):
+  // chain members live in one group, and the topOffset is the group's section.
+  const byKey = new Map<
+    string,
+    RegionBounds & { displayedRegionIndex: number }
+  >()
   for (const id of ids) {
     const entry = readIdIndexMap.get(id)
-    if (entry) {
-      const rpcData = laidOutPileupMap.get(entry.displayedRegionIndex)
+    const section = entry && sectionByGroup.get(entry.groupKey)
+    if (entry && section) {
+      const rpcData = section.laidOutPileupMap.get(entry.displayedRegionIndex)
       if (rpcData) {
         const startBp = rpcData.readPositions[entry.idx * 2]
         const endBp = rpcData.readPositions[entry.idx * 2 + 1]
@@ -69,13 +87,20 @@ export function computeHighlightBoxes(
           endBp !== undefined &&
           yRow !== undefined
         ) {
-          const cur = byRegion.get(entry.displayedRegionIndex)
+          const mapKey = `${entry.groupKey}\0${entry.displayedRegionIndex}`
+          const cur = byKey.get(mapKey)
           if (cur) {
             cur.startBp = Math.min(cur.startBp, startBp)
             cur.endBp = Math.max(cur.endBp, endBp)
             cur.yRow = yRow
           } else {
-            byRegion.set(entry.displayedRegionIndex, { startBp, endBp, yRow })
+            byKey.set(mapKey, {
+              startBp,
+              endBp,
+              yRow,
+              topOffset: section.topOffset,
+              displayedRegionIndex: entry.displayedRegionIndex,
+            })
           }
         }
       }
@@ -86,16 +111,18 @@ export function computeHighlightBoxes(
   const { bpPerPx } = view
   const boxes: HighlightBox[] = []
   for (const vr of view.visibleRegions) {
-    const bounds = byRegion.get(vr.displayedRegionIndex)
-    if (bounds) {
+    for (const bounds of byKey.values()) {
+      if (bounds.displayedRegionIndex !== vr.displayedRegionIndex) {
+        continue
+      }
       const reversed = vr.reversed ?? false
       const bpEdge = reversed ? vr.end : vr.start
       const bpToPx = (bp: number) =>
         (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + vr.screenStartPx
       const x1 = bpToPx(bounds.startBp)
       const x2 = bpToPx(bounds.endBp)
-      const top = bounds.yRow * rowHeight - scrollTop + topOffset
-      if (top + featureHeight >= topOffset && top <= height) {
+      const top = bounds.yRow * rowHeight - scrollTop + bounds.topOffset
+      if (top + featureHeight >= bounds.topOffset && top <= height) {
         boxes.push({
           left: Math.min(x1, x2),
           top,

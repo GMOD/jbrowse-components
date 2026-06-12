@@ -46,7 +46,14 @@ function NoFeaturePanel(_props: FeatureDetailsProps) {
 const FeatureDetails = observer(function FeatureDetails(
   props: FeatureDetailsProps,
 ) {
-  const { omit = [], model, feature, depth = 0, descriptions, formatter } = props
+  const {
+    omit = [],
+    model,
+    feature,
+    depth = 0,
+    descriptions,
+    formatter,
+  } = props
   const maxDepth: number = model.maxDepth ?? Infinity
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
   const pm = getEnv(model).pluginManager

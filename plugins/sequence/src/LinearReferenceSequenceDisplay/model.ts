@@ -1,4 +1,8 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  type DisplayPhase,
+  computeDisplayPhase,
+} from '@jbrowse/core/gpu/displayPhase'
 import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -208,17 +212,17 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * Same policy as MultiRegionDisplayMixin plus a zoom gate: when zoomed
-       * past base resolution the body shows a "zoom in" message, so the
-       * loading scrim must stay hidden over it.
+       * Same precedence as MultiRegionDisplayMixin plus a zoom gate: when zoomed
+       * past base resolution the body shows a "zoom in" message, so suppress the
+       * loading phase (fall through to `ready`) and let that message show. The
+       * inherited `loadingOverlayVisible` reads this overridden getter.
        */
-      get loadingOverlayVisible() {
-        return (
-          !self.zoomedOut &&
-          (!self.isReady || !self.viewportWithinLoadedData) &&
-          !self.regionTooLarge &&
-          !self.error &&
-          !self.renderError
+      get displayPhase(): DisplayPhase {
+        return computeDisplayPhase(
+          self,
+          () =>
+            !self.zoomedOut &&
+            (!self.isReady || !self.viewportWithinLoadedData),
         )
       },
     }))

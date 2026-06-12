@@ -15,6 +15,7 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
+import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import HighlightOverlay from './HighlightOverlay.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
@@ -125,7 +126,9 @@ const PileupBody = observer(function PileupBody({
     isChainMode,
     belowCoverageBands: bands,
   } = model
-  const topOffset = bands.bottom
+  // The scrollbar track starts below the sticky coverage (ungrouped) or spans
+  // the whole display (grouped, where the entire stack scrolls).
+  const topOffset = model.isGrouped ? 0 : bands.bottom
 
   function chainIdsForHit(hit: FeatureHit, resolved: ResolvedBlock) {
     const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
@@ -189,6 +192,8 @@ const PileupBody = observer(function PileupBody({
 
       <HighlightOverlay model={model} />
 
+      <GroupLabelsOverlay model={model} />
+
       <SashimiArcsOverlay model={model} />
       <PileupBezierOverlay model={model} />
 
@@ -217,7 +222,7 @@ const PileupBody = observer(function PileupBody({
         />
       ) : null}
 
-      {bands.hasArcsBand ? (
+      {!model.isGrouped && bands.hasArcsBand ? (
         <ResizeHandle
           className={classes.resizeHandle}
           style={{ top: bands.sashimiBandTop - YSCALEBAR_LABEL_OFFSET }}
@@ -231,7 +236,7 @@ const PileupBody = observer(function PileupBody({
         />
       ) : null}
 
-      {bands.hasSashimiBand ? (
+      {!model.isGrouped && bands.hasSashimiBand ? (
         <ResizeHandle
           className={classes.resizeHandle}
           style={{ top: bands.bottom - YSCALEBAR_LABEL_OFFSET }}
@@ -417,7 +422,7 @@ const PileupScrollbar = observer(function PileupScrollbar({
   topOffset: number
 }) {
   const { classes } = useStyles()
-  const { scrollableHeight, pileupViewportHeight, totalPileupHeight } = model
+  const { scrollableHeight, pileupViewportHeight, pileupContentHeight } = model
   const dragAcRef = useAbortableRef()
   if (scrollableHeight <= 0) {
     return null
@@ -425,7 +430,7 @@ const PileupScrollbar = observer(function PileupScrollbar({
   const trackHeight = pileupViewportHeight
   const thumbHeight = Math.max(
     20,
-    trackHeight * (trackHeight / totalPileupHeight),
+    trackHeight * (trackHeight / pileupContentHeight),
   )
   const thumbTop =
     (model.scrollTop / scrollableHeight) * (trackHeight - thumbHeight)

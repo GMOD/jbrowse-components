@@ -55,6 +55,7 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   showInterbaseIndicators: true,
   coverageHeight: 50,
   topOffset: 50,
+  coverageTopOffset: 0,
   featureHeight: 10,
   featureSpacing: 2,
   scrollTop: 0,

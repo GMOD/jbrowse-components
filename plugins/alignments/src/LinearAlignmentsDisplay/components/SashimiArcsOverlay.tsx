@@ -24,7 +24,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
     showCoverage,
     coverageHeight,
     sashimiArcsHeight,
-    rpcDataMap,
+    primaryRawDataMap,
   } = model
   const { initialized, width } = view
 
@@ -33,7 +33,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   }
 
   const isDown = readConnectionsDown
-  const arcs = computeSashimiArcsFromModel(model, view, rpcDataMap)
+  const arcs = computeSashimiArcsFromModel(model, view, primaryRawDataMap)
 
   return (
     <svg

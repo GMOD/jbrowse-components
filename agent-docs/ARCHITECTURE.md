@@ -133,29 +133,50 @@ when the work callback returns.
 
 ### Terminal states early-return their own root — they don't nest under the canvas
 
-`DisplayChrome` renders the `regionTooLarge` / render-error banners by
-**early-returning** the banner as its *entire* output, replacing the display
-subtree — *not* by keeping its container `<div>` mounted and rendering the
-banner as a swapped-in child beside the canvas/overlays. This looks like a leak
-(the caller's `className` / `ref` / mouse handlers are absent in those two
-states) but the leak is benign — a too-large region has no canvas to interact
-with, and the ref re-attaches on force-load — and the early-return is
-**load-bearing** for two independent reasons.
+`DisplayChrome` branches on `model.displayPhase` and renders the `renderError` /
+`tooLarge` banners by **early-`return`ing** the banner as its *entire* output,
+replacing the display subtree — *not* by keeping its container `<div>` mounted
+and rendering the banner as a swapped-in child beside the canvas/overlays. This
+looks like a leak (the caller's `className` / `ref` / mouse handlers are absent
+in those two states) but the leak is benign — a too-large region has no canvas
+to interact with, and the ref re-attaches on force-load — and the structure is
+**load-bearing**: one subtle React-commit reason (1, with two sharp sub-rules
+1a/1b) and one GPU-lifecycle reason (2).
 
 **1. React won't render a nested swapped-in terminal child.** If the banner is
 nested — `{regionTooLarge ? <TooLargeMessage/> : children}` inside the
 persistent container, next to the `DisplayErrorBar` / `DisplayLoadingOverlay`
 siblings — the banner never reaches the DOM and `StatsEstimation.test` times
 out. Instrumenting every site shows why: `DisplayChrome` re-renders with
-`regionTooLarge` true, the sibling overlays render normally
-(`DisplayLoadingOverlay` logs `visible=false`, which is only reachable when
-`regionTooLarge` is true), but **React never descends into the
-`<TooLargeMessage>` element** — its component body never runs. Returning the
-banner as a fresh top-level root mounts it reliably; a swapped-in child of a
-persistent observer subtree does not. The exact React-internal reason a
-memo/observer child in this position is skipped is unconfirmed, and the repro is
-jsdom + React 19 + `act()`; the **rule** — terminal UI is its own `return`,
-never a nested child — is what's load-bearing.
+`tooLarge`, the sibling overlays render normally, but **React never descends
+into the `<TooLargeMessage>` element** — its component body never runs (verified
+with a `console` probe inside `TooLargeMessage`: 0 calls when nested, 2 when
+returned as a root). Returning the banner as a fresh top-level root mounts it
+reliably. The exact React-internal reason a memo/observer child in this position
+is skipped is unconfirmed, and the repro is jsdom + React 19 + `act()`; the
+**rule** — terminal UI is its own `return`, never a nested child — is what's
+load-bearing.
+
+**1a. A literal `return`, not a ternary branch.** Surprisingly, even returning
+the banner from a *single-`return` ternary*
+(`return phase === 'tooLarge' ? <TooLargeMessage/> : <div>…</div>`) reproduces
+the same 0-commit failure, despite producing an element tree identical to the
+early-`return` form. Only literal `if (phase === 'tooLarge') return …` statements
+commit reliably. This was confirmed the same way (probe inside `TooLargeMessage`:
+0 vs 2 calls). So the rule is specifically *early-`return` statements*, and it
+overrides the repo's usual "prefer ternaries over early return" style here.
+
+**1b. `displayPhase`'s loading term must be lazy.** `computeDisplayPhase(self,
+loading)` takes `loading` as a **thunk** and only calls it after ruling out the
+three terminal flags. The loading condition reads the containing view
+(`visibleRegions` / `loadedRegions`); evaluating it eagerly makes the chrome's
+observer track that churning set even while a banner is up, which re-fires the
+observer during the terminal state and reproduces the same commit failure (1) —
+*even with* the early-`return`. Lazy evaluation keeps the tracked set to just the
+terminal flags when one is active, identical to the old direct `model.regionTooLarge`
+reads that always committed. (This is why the older writeup couldn't pin the
+React cause: the visible symptom is reconciliation, but the trigger is the
+observer's tracked-dependency set.)
 
 There is **no** `regionTooLarge` oscillation here, despite what earlier writeups
 of this section (and commit `614465dd51`) claimed. Instrumentation shows
@@ -284,17 +305,23 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
     isReady: boolean              canvasDrawn && !isLoading
     viewportWithinLoadedData: boolean   every visible block ⊆ a loaded region
-    loadingOverlayVisible: boolean      (!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error && !renderError
+    displayPhase: 'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
+                                  computeDisplayPhase(self, () => !isReady || !viewportWithinLoadedData)
+    loadingOverlayVisible: boolean      displayPhase === 'loading'
 ```
 
 Every display renders its canvas through the shared `DisplayChrome`, which calls
 `useRenderingBackend(factory, model)` internally — the backend hook lives in
 exactly one place, so a display can't bury it where the chrome can't see it. It
-owns every terminal state, reading each off the model: `renderError` (the hook
-writes it to model volatile), `regionTooLarge` (rendered as `TooLargeMessage`),
-and the `DisplayErrorBar` + `DisplayLoadingOverlay` overlays. `loadingOverlayVisible`
-subtracts the other three, so the four states are mutually exclusive by
-construction and the JSX order is defensive, not load-bearing. It takes a
+owns every terminal state, all collapsed into one model getter — `displayPhase`
+('renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'), whose precedence is
+single-sourced in `computeDisplayPhase` (`@jbrowse/core/gpu/displayPhase`). The
+chrome branches on it: `renderError` and `tooLarge` early-`return` their own
+component (`DisplayRenderErrorOverlay` / `TooLargeMessage`); `error` + `loading`
+are overlays (`DisplayErrorBar` / `DisplayLoadingOverlay`) drawn over the
+still-mounted canvas. `loadingOverlayVisible` is just `displayPhase === 'loading'`
+— so the loading-vs-terminal precedence is no longer re-encoded by subtraction in
+each model (it was triplicated across MultiRegion / Global / sequence). It takes a
 render-prop child `({ canvasRef, canvas }) => ReactNode`, so it's agnostic to how
 many canvases a display draws and where they mount; pass a `testid` base and the
 chrome appends `-done` once `canvasDrawn` flips.

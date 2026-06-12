@@ -13,7 +13,12 @@ interface TrackActionsView {
     id: string,
     initialSnapshot?: Record<string, unknown>,
     displayInitialSnapshot?: Record<string, unknown>,
-  ): { configuration: { trackId: string }; displays: { rpcDriverName?: string }[] } | undefined
+  ):
+    | {
+        configuration: { trackId: string }
+        displays: { rpcDriverName?: string }[]
+      }
+    | undefined
   hideTrack(id: string): boolean
   toggleTrack(id: string): boolean
   tracks: { configuration: { trackId: string } }[]
@@ -21,7 +26,7 @@ interface TrackActionsView {
 
 function getView(): TrackActionsView {
   const { rootModel } = getPluginManager()
-  return rootModel.session!.views[0] as unknown as TrackActionsView
+  return rootModel.session!.views[0]
 }
 
 test('showTrack returns the track and adds it to view.tracks', () => {
@@ -51,7 +56,11 @@ test('showTrack with unknown id returns undefined', async () => {
 
 test('showTrack passes displayInitialSnapshot state to the display', () => {
   const view = getView()
-  const track = view.showTrack(TRACK_ID, {}, { rpcDriverName: 'MainThreadRpcDriver' })
+  const track = view.showTrack(
+    TRACK_ID,
+    {},
+    { rpcDriverName: 'MainThreadRpcDriver' },
+  )
   expect(track).toBeDefined()
   expect(track!.displays[0]!.rpcDriverName).toBe('MainThreadRpcDriver')
 })

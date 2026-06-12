@@ -208,12 +208,18 @@ export async function restoreFileHandles(
   requestPermission = false,
 ) {
   const settled = await Promise.allSettled(
-    handleIds.map(handleId => ensureFileHandleReady(handleId, requestPermission)),
+    handleIds.map(handleId =>
+      ensureFileHandleReady(handleId, requestPermission),
+    ),
   )
   return settled.map((result, i) =>
     result.status === 'fulfilled'
       ? { handleId: handleIds[i]!, success: true as const }
-      : { handleId: handleIds[i]!, success: false as const, error: result.reason },
+      : {
+          handleId: handleIds[i]!,
+          success: false as const,
+          error: result.reason,
+        },
   )
 }
 
@@ -250,7 +256,10 @@ export async function restoreFileHandlesFromSnapshot(
   sessionSnapshot: unknown,
   requestPermission = false,
 ) {
-  return restoreFileHandles([...findFileHandleIds(sessionSnapshot)], requestPermission)
+  return restoreFileHandles(
+    [...findFileHandleIds(sessionSnapshot)],
+    requestPermission,
+  )
 }
 
 /**
@@ -315,19 +324,17 @@ function filenameFromPath(path: string) {
 }
 
 export function getFileName(track: FileLocation) {
-  if (
-    track.locationType === 'BlobLocation' ||
-    track.locationType === 'FileHandleLocation'
-  ) {
-    return track.name
+  switch (track.locationType) {
+    case 'BlobLocation':
+    case 'FileHandleLocation':
+      return track.name
+    case 'UriLocation':
+      return filenameFromPath(track.uri)
+    case 'LocalPathLocation':
+      return filenameFromPath(track.localPath)
+    default:
+      return ''
   }
-  if (track.locationType === 'UriLocation') {
-    return filenameFromPath(track.uri)
-  }
-  if (track.locationType === 'LocalPathLocation') {
-    return filenameFromPath(track.localPath)
-  }
-  return ''
 }
 
 export function guessAdapter(
@@ -428,7 +435,9 @@ export function getTrackName(
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
   const isMst = isStateTreeNode(conf)
-  const trackName = isMst ? (readConfObject(conf, 'name') as string) : (conf.name ?? '')
+  const trackName = isMst
+    ? (readConfObject(conf, 'name') as string)
+    : (conf.name ?? '')
   const trackType = isMst ? (readConfObject(conf, 'type') as string) : conf.type
   if (!trackName && trackType === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === conf)
@@ -571,5 +580,7 @@ export function hideTrackGeneric(self: GenericView, trackId: string) {
 // Returns true if the track is now shown, false if it was hidden or failed to
 // open (callers use this to e.g. record only newly-opened tracks as recent).
 export function toggleTrackGeneric(self: GenericView, trackId: string) {
-  return hideTrackGeneric(self, trackId) ? false : !!showTrackGeneric(self, trackId)
+  return hideTrackGeneric(self, trackId)
+    ? false
+    : !!showTrackGeneric(self, trackId)
 }

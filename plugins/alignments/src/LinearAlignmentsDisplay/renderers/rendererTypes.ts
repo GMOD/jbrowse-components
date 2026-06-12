@@ -61,12 +61,54 @@ export interface RenderState {
   readConnections: ReadConnectionsMode
   readConnectionsDown?: boolean
   readConnectionsHeight?: number
+  // Pileup row 0 top, screen px before scrollTop subtraction (GPU `covOffset`
+  // uniform, Canvas2D `pileupRowY` base). For ungrouped this is the sticky
+  // coverage height; the renderers override it per section while looping.
   pileupTopOffset: number
+  // Screen px of the coverage area's top edge (GPU `covTop` uniform; added to
+  // Canvas2D coverage draws). 0 = sticky-at-top (ungrouped). Grouped sections
+  // pass their scrolled coverage top so the band scrolls with its section.
+  coverageTopOffset: number
+  // Per-section vertical geometry, in stacking order matching
+  // `AlignmentsSources.sections`. Always length >= 1; ungrouped is one section.
+  // The renderers loop these, cloning the per-section offsets into the state
+  // they hand the draw helpers and clipping to each band.
+  sections: SectionRender[]
   showOutline?: boolean
 }
 
-export interface AlignmentsSources {
+// One stacked section's resolved screen-space draw geometry. All values are
+// screen px (scrollTop already applied for grouped sections). Ungrouped is a
+// single section whose values reproduce the pre-grouping layout exactly.
+export interface SectionRender {
+  pileupTopOffset: number
+  coverageTopOffset: number
+  // Clip band for the coverage passes.
+  covClipTop: number
+  covClipHeight: number
+  // Clip band for the pileup passes.
+  pileupClipTop: number
+  pileupClipHeight: number
+}
+
+// HAL/region key namespacing: section 0 keys equal the raw displayedRegionIndex
+// so the ungrouped path is byte-identical to pre-grouping. Higher sections are
+// offset by a stride larger than any region count or the overlay-region id.
+export const SECTION_KEY_STRIDE = 1 << 20
+
+export function sectionRegionKey(sectionIdx: number, regionIdx: number) {
+  return sectionIdx * SECTION_KEY_STRIDE + regionIdx
+}
+
+export interface SectionSource {
+  groupKey: string
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
+}
+
+export interface AlignmentsSources {
+  // One entry per stacked group, in stacking order. Ungrouped = single entry
+  // (groupKey ''). Parallel to `RenderState.sections`.
+  sections: SectionSource[]
   arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
 }
 

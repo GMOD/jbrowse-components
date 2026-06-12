@@ -76,20 +76,23 @@ export function useAlignmentsBase(
     featureSpacing,
     showCoverage,
     coverageHeight,
-    coverageDisplayHeight: topOffset,
     showInterbaseIndicators,
     isChainMode,
   } = model
 
   function runHitTest(canvasX: number, canvasY: number) {
-    const resolved = resolveBlockForCanvasX(canvasX)
+    const picked = resolveSectionForCanvasY(canvasY)
+    const resolved = picked
+      ? resolveBlockForCanvasX(canvasX, picked.section.laidOutPileupMap)
+      : undefined
     return {
       resolved,
       result: performHitTest(canvasX, canvasY, resolved, {
         showCoverage,
         showInterbaseIndicators,
         coverageHeight,
-        topOffset,
+        topOffset: picked?.section.topOffset ?? model.coverageDisplayHeight,
+        coverageTopOffset: picked?.coverageTopOffset ?? 0,
         featureHeight,
         featureSpacing,
         scrollTop: model.scrollTop,
@@ -98,13 +101,41 @@ export function useAlignmentsBase(
     }
   }
 
-  function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
+  // Map a screen-Y to the stacked section it falls in (its group data + the
+  // screen-px top of its coverage band). Ungrouped is one section spanning the
+  // whole canvas, so this returns it for every Y and the hit test reduces to the
+  // pre-grouping single-offset path.
+  function resolveSectionForCanvasY(canvasY: number) {
+    const sections = model.renderSections
+    const first = sections[0]
+    if (!first) {
+      return undefined
+    }
+    if (!model.isGrouped) {
+      return { section: first, coverageTopOffset: 0 }
+    }
+    const { scrollTop } = model
+    const contentHeight = model.sections.contentHeight
+    for (let i = 0; i < sections.length; i++) {
+      const top = sections[i]!.coverageTop - scrollTop
+      const next = sections[i + 1]
+      const bottom = (next ? next.coverageTop : contentHeight) - scrollTop
+      if (canvasY >= top && canvasY < bottom) {
+        return { section: sections[i]!, coverageTopOffset: top }
+      }
+    }
+    return undefined
+  }
+
+  function resolveBlockForCanvasX(
+    canvasX: number,
+    dataMap: { get(idx: number): ResolvedBlock['rpcData'] | undefined },
+  ): ResolvedBlock | undefined {
     if (!view.initialized) {
       return undefined
     }
 
     const regions = view.visibleRegions
-    const dataMap = model.laidOutPileupMap
 
     for (const r of regions) {
       if (canvasX >= r.screenStartPx && canvasX < r.screenEndPx) {

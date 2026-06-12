@@ -123,12 +123,21 @@ export function getGroupByMenuItem(model: IAnyStateTreeNode) {
     icon: WorkspacesIcon,
     subMenu: [
       {
-        label: 'Group by tag or strand...',
+        label: 'Group by...',
         onClick: () => {
           getSession(model).queueDialog(handleClose => [
             GroupByDialog,
             { model, handleClose },
           ])
+        },
+      },
+      {
+        label: 'Ungroup (this track)',
+        disabled: !(model as { groupBy?: unknown }).groupBy,
+        onClick: () => {
+          ;(model as { setGroupBy: (g?: undefined) => void }).setGroupBy(
+            undefined,
+          )
         },
       },
       {

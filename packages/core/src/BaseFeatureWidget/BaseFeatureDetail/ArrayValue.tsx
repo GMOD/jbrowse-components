@@ -68,7 +68,9 @@ export default function ArrayValue({
     <div className={classes.field}>
       <FieldName prefix={prefix} description={description} name={name} />
       {value.length === 1 ? (
-        <BasicValue value={formatter ? formatter(value[0], name, 0) : value[0]} />
+        <BasicValue
+          value={formatter ? formatter(value[0], name, 0) : value[0]}
+        />
       ) : (
         <>
           {displayedValues.map((val, i) => (

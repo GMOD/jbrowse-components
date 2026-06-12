@@ -25,6 +25,7 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -40,6 +41,7 @@ export interface LinearBasicDisplayModel {
   height: number
   laidOutDataMap: Map<number, FeatureDataResult>
   featureItemMap: Map<string, FeatureItemEntry>
+  displayPhase: DisplayPhase
   loadingOverlayVisible: boolean
   error: unknown
   maxY: number

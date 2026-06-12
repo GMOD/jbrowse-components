@@ -16,7 +16,7 @@ import { observer } from 'mobx-react'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { TAG_REGEX, negFlags, posFlags } from '../../shared/util.ts'
 
-import type { FilterBy } from '../../shared/types.ts'
+import type { FilterBy, GroupBy, GroupByType } from '../../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -131,17 +131,38 @@ function createGroupTracks({
   }
 }
 
+// In-track stacked grouping covers every group-key generator
+// (shared/groupFeatures.ts). The legacy split-into-tracks path only wires
+// strand + tag, so it offers the narrower set.
+const STACK_DIMENSIONS: { value: GroupByType; label: string }[] = [
+  { value: 'strand', label: 'Strand' },
+  { value: 'firstOfPairStrand', label: 'First-of-pair strand' },
+  { value: 'tag', label: 'Tag (HP, RG, ...)' },
+  { value: 'pairOrientation', label: 'Pair orientation' },
+  { value: 'supplementary', label: 'Supplementary' },
+  { value: 'duplicate', label: 'Duplicate' },
+  { value: 'mapq', label: 'MAPQ (binned)' },
+]
+const SPLIT_DIMENSIONS = STACK_DIMENSIONS.filter(
+  d => d.value === 'strand' || d.value === 'tag',
+)
+
 const GroupByDialog = observer(function GroupByDialog(props: {
   model: {
     adapterConfig: AnyConfigurationModel
     configuration: AnyConfigurationModel
     filterBy: FilterBy
+    setGroupBy: (groupBy?: GroupBy) => void
   } & IAnyStateTreeNode
   handleClose: () => void
 }) {
   const { model, handleClose } = props
   const [tag, setGroupByTag] = useState('')
   const [type, setType] = useState('')
+  // 'stack' renders the groups as stacked sections in this one track (the
+  // default in-track experience); 'split' is the legacy one-session-track-per-
+  // group path, kept for old sessions and very high group counts.
+  const [mode, setMode] = useState<'stack' | 'split'>('stack')
 
   const isInvalid = tag.length === 2 && !TAG_REGEX.test(tag)
   const debouncedTag = useDebounce(tag, 1000)
@@ -163,10 +184,25 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       }),
   )
 
-  const submitDisabled =
-    !type || loading || (type === 'tag' && (!tagSet || tagSet.length === 0))
+  const dimensions = mode === 'stack' ? STACK_DIMENSIONS : SPLIT_DIMENSIONS
+  // Stacking partitions in the worker, so it only needs a valid tag name (not a
+  // non-empty current-region tag set the way the split path does to build its
+  // group tracks).
+  const tagBlocksSubmit =
+    type === 'tag' &&
+    (mode === 'stack' ? !isValidTag : loading || !tagSet || tagSet.length === 0)
+  const submitDisabled = !type || tagBlocksSubmit
 
   const handleSubmit = () => {
+    if (mode === 'stack') {
+      model.setGroupBy({
+        type: type as GroupByType,
+        tag: type === 'tag' ? tag : undefined,
+      })
+      handleClose()
+      return
+    }
+
     const track = getContainingTrack(model)
     // Track configurations always carry trackId + name (schema
     // invariant); MST's getSnapshot widens to Record<string, any>.
@@ -205,10 +241,27 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       onCancel={handleClose}
       onSubmit={handleSubmit}
     >
-      <Typography>
-        NOTE: this creates one new session track per group (with "filter by" set
-        to that group) rather than changing the current track. Remove them later
-        with "Group by... → Remove grouped tracks".
+      <TextField
+        fullWidth
+        value={mode}
+        onChange={event => {
+          const next = event.target.value as 'stack' | 'split'
+          setMode(next)
+          // 'split' only supports strand/tag; drop an unsupported selection.
+          if (next === 'split' && type !== 'strand' && type !== 'tag') {
+            setType('')
+          }
+        }}
+        label="Mode"
+        select
+      >
+        <MenuItem value="stack">Stack groups in this track</MenuItem>
+        <MenuItem value="split">Split into separate tracks (legacy)</MenuItem>
+      </TextField>
+      <Typography color="text.secondary">
+        {mode === 'stack'
+          ? 'Renders the reads as stacked sections (one per group) inside this track, sharing one coverage scale.'
+          : 'Creates one new session track per group. Remove them later with "Group by... → Remove grouped tracks".'}
       </Typography>
       <TextField
         fullWidth
@@ -219,8 +272,11 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         label="Group by..."
         select
       >
-        <MenuItem value="strand">Strand</MenuItem>
-        <MenuItem value="tag">Tag</MenuItem>
+        {dimensions.map(d => (
+          <MenuItem key={d.value} value={d.value}>
+            {d.label}
+          </MenuItem>
+        ))}
       </TextField>
       {type === 'tag' ? (
         <>

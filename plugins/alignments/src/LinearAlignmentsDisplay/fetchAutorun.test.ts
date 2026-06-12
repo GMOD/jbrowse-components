@@ -16,7 +16,10 @@ import { waitFor } from '@testing-library/react'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type {
+  GroupedAlignmentsResult,
+  PileupDataResult,
+} from '../RenderAlignmentDataRPC/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function makeEmptyPileupData(_regionStart: number): PileupDataResult {
@@ -115,6 +118,12 @@ function makeEmptyPileupData(_regionStart: number): PileupDataResult {
     linkedReadLineColorTypes: new Uint8Array(0),
     numLinkedReadLines: 0,
   }
+}
+
+// RenderAlignmentData now returns the grouped envelope; ungrouped fetches are a
+// single section with key ''.
+function makeEmptyGroupedData(): GroupedAlignmentsResult {
+  return { groups: [{ key: '', label: '', data: makeEmptyPileupData(0) }] }
 }
 
 function createTestEnvironment() {
@@ -271,7 +280,7 @@ describe('FetchVisibleRegions autorun', () => {
   it('fetches regions on initial load', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
 
     const { display, view } = createDisplay()
 
@@ -341,7 +350,7 @@ describe('FetchVisibleRegions autorun', () => {
           fetchSizeLimit: 1_000_000,
         })
       }
-      return Promise.resolve(makeEmptyPileupData(0))
+      return Promise.resolve(makeEmptyGroupedData())
     })
 
     jest.advanceTimersByTime(400)
@@ -381,7 +390,7 @@ describe('FetchVisibleRegions autorun', () => {
           fetchSizeLimit: 1_000_000,
         })
       }
-      return Promise.resolve(makeEmptyPileupData(0))
+      return Promise.resolve(makeEmptyGroupedData())
     })
 
     jest.advanceTimersByTime(400)
@@ -435,7 +444,7 @@ describe('FetchVisibleRegions autorun', () => {
           fetchSizeLimit: 1_000_000,
         })
       }
-      return Promise.resolve(makeEmptyPileupData(0))
+      return Promise.resolve(makeEmptyGroupedData())
     })
 
     jest.advanceTimersByTime(400)
@@ -459,7 +468,7 @@ describe('FetchVisibleRegions autorun', () => {
   it('clearAllRpcData resets state and triggers a new fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
 
     const { display } = createDisplay()
 
@@ -506,7 +515,7 @@ describe('FetchVisibleRegions autorun', () => {
           fetchSizeLimit: 1_000_000,
         })
       }
-      return Promise.resolve(makeEmptyPileupData(0))
+      return Promise.resolve(makeEmptyGroupedData())
     })
 
     jest.advanceTimersByTime(400)
@@ -547,7 +556,7 @@ describe('FetchVisibleRegions autorun', () => {
           fetchSizeLimit: 100_000_000,
         })
       }
-      return Promise.resolve(makeEmptyPileupData(0))
+      return Promise.resolve(makeEmptyGroupedData())
     })
 
     jest.advanceTimersByTime(400)
@@ -595,7 +604,7 @@ describe('FetchVisibleRegions autorun', () => {
           fetchSizeLimit: 1_000_000,
         })
       }
-      return Promise.resolve(makeEmptyPileupData(0))
+      return Promise.resolve(makeEmptyGroupedData())
     })
 
     jest.advanceTimersByTime(400)
@@ -637,7 +646,7 @@ describe('FetchVisibleRegions autorun', () => {
     let rpcCallCount = 0
     mockRpcCall.mockImplementation(() => {
       rpcCallCount++
-      return Promise.resolve(makeEmptyPileupData(0))
+      return Promise.resolve(makeEmptyGroupedData())
     })
 
     const { display } = createDisplay()
@@ -696,7 +705,7 @@ describe('FetchVisibleRegions autorun', () => {
     const callCount = mockRpcCall.mock.calls.length
 
     // Resolve the pending RPC
-    resolveRpc!(makeEmptyPileupData(0))
+    resolveRpc!(makeEmptyGroupedData())
     await jest.runAllTimersAsync()
 
     // After the first fetch resolves, isLoading becomes false, and the
@@ -710,7 +719,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   it('does NOT refetch when readConnections toggles (arc-only setting)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -728,7 +737,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   it('does NOT refetch when arc draw settings change', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
     display.setReadConnections('arc')
@@ -748,7 +757,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   it('refetches when drawSingletons or drawProperPairs changes (rpcProps fields)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -775,7 +784,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   it('refetches when colorBy changes (rpcProps field)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -795,7 +804,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   it('refetches when linkedReads toggles (switches RPC type)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -815,7 +824,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   it('does NOT refetch when a non-tag sort is applied', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -839,7 +848,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   it('refetches when a tag sort is applied (tag sort needs worker data)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -865,7 +874,7 @@ describe('FetchVisibleRegions autorun', () => {
 
   it('does NOT refetch when tag-sort position changes (same tag)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyPileupData(0))
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
     display.setOverride('sortedBy', {
@@ -922,7 +931,7 @@ describe('FetchVisibleRegions autorun', () => {
           fetchSizeLimit: 5_000_000,
         })
       }
-      return Promise.resolve(makeEmptyPileupData(0))
+      return Promise.resolve(makeEmptyGroupedData())
     })
 
     jest.advanceTimersByTime(400)

@@ -186,6 +186,7 @@ function recordingCtx() {
         rects.push({ x, y, w, h, fill: currentFill })
       },
       setTransform() {},
+      translate() {},
       clearRect() {},
       beginPath() {},
       moveTo() {},
@@ -229,7 +230,12 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
     canvas2d.sync({
-      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+        },
+      ],
       arcsRpcDataMap: new Map(),
     })
 
@@ -262,7 +268,12 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
     canvas2d.sync({
-      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+        },
+      ],
       arcsRpcDataMap: new Map(),
     })
 
@@ -288,7 +299,12 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const renderer = new Canvas2DAlignmentsRenderer(canvas)
 
     renderer.sync({
-      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+        },
+      ],
       arcsRpcDataMap: new Map(),
     })
 
@@ -314,6 +330,17 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       readConnections: 'off',
       readConnectionsHeight: 0,
       pileupTopOffset: covH,
+      coverageTopOffset: 0,
+      sections: [
+        {
+          pileupTopOffset: covH,
+          coverageTopOffset: 0,
+          covClipTop: 0,
+          covClipHeight: 200,
+          pileupClipTop: covH,
+          pileupClipHeight: 100,
+        },
+      ],
       showMismatches: false,
       showSoftClipping: false,
       showModifications: false,
@@ -401,7 +428,9 @@ describe('GPU sync rebuild transaction', () => {
     } as unknown as PileupDataResult
 
     gpu.sync({
-      laidOutPileupMap: new Map([[0, withOverlap]]),
+      sections: [
+        { groupKey: '', laidOutPileupMap: new Map([[0, withOverlap]]) },
+      ],
       arcsRpcDataMap: new Map(),
     })
     expect(hal.getBufferCount(0, 'overlap')).toBeGreaterThan(0)
@@ -410,7 +439,12 @@ describe('GPU sync rebuild transaction', () => {
     // upload's `if (n > 0)` guard skips it, so only the begin/endUpload sweep
     // can clear the now-stale buffer.
     gpu.sync({
-      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+        },
+      ],
       arcsRpcDataMap: new Map(),
     })
     expect(hal.getBufferCount(0, 'overlap')).toBe(0)
@@ -422,12 +456,17 @@ describe('GPU sync rebuild transaction', () => {
     const cov = makeCoverageData()
 
     gpu.sync({
-      laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+        },
+      ],
       arcsRpcDataMap: new Map(),
     })
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
 
-    gpu.sync({ laidOutPileupMap: new Map(), arcsRpcDataMap: new Map() })
+    gpu.sync({ sections: [], arcsRpcDataMap: new Map() })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
   })
 })

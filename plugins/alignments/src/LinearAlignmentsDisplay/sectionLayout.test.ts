@@ -1,0 +1,136 @@
+import { sectionRegionKey } from './renderers/rendererTypes.ts'
+import { buildSectionRenders, computeStackedSections } from './sectionLayout.ts'
+
+import type { SectionsLayout } from './sectionLayout.ts'
+
+test('sectionRegionKey: section 0 keys equal the raw region index', () => {
+  // The ungrouped (section 0) path must produce byte-identical HAL keys to
+  // pre-grouping so it draws exactly as before.
+  expect(sectionRegionKey(0, 0)).toBe(0)
+  expect(sectionRegionKey(0, 5)).toBe(5)
+  expect(sectionRegionKey(0, 999)).toBe(999)
+})
+
+test('sectionRegionKey: higher sections never collide across plausible regions', () => {
+  const keys = new Set<number>()
+  for (let s = 0; s < 16; s++) {
+    for (let r = 0; r < 1000; r++) {
+      keys.add(sectionRegionKey(s, r))
+    }
+  }
+  // 16 sections × 1000 regions, all distinct, and none hits the overlay id.
+  expect(keys.size).toBe(16 * 1000)
+  expect(keys.has(999999)).toBe(false)
+})
+
+test('single section stacks coverage then pileup from the top', () => {
+  const { sections, contentHeight } = computeStackedSections(
+    [{ key: '', label: '', maxY: 4 }],
+    { coverageHeight: 45, rowHeight: 10 },
+  )
+  expect(sections).toHaveLength(1)
+  expect(sections[0]).toMatchObject({
+    coverageTop: 0,
+    coverageHeight: 45,
+    pileupTop: 45,
+    pileupHeight: 40,
+  })
+  expect(contentHeight).toBe(85)
+})
+
+test('multiple sections stack with each coverage above its own pileup', () => {
+  const { sections, contentHeight } = computeStackedSections(
+    [
+      { key: '1', label: 'HP: 1', maxY: 3 },
+      { key: '2', label: 'HP: 2', maxY: 5 },
+    ],
+    { coverageHeight: 20, rowHeight: 10 },
+  )
+  expect(
+    sections.map(s => [s.coverageTop, s.pileupTop, s.pileupHeight]),
+  ).toEqual([
+    [0, 20, 30],
+    [50, 70, 50],
+  ])
+  // arc/sashimi bands pinned to 0 in grouped mode
+  expect(sections.every(s => s.arcBandHeight === 0)).toBe(true)
+  expect(contentHeight).toBe(120)
+})
+
+test('coverageHeight 0 (coverage hidden) collapses each section to its pileup', () => {
+  const { sections } = computeStackedSections(
+    [
+      { key: 'a', label: 'a', maxY: 2 },
+      { key: 'b', label: 'b', maxY: 2 },
+    ],
+    { coverageHeight: 0, rowHeight: 10 },
+  )
+  expect(sections[0]!.pileupTop).toBe(0)
+  expect(sections[1]!.pileupTop).toBe(20)
+})
+
+// One-section layout (groupKey '') with a coverage band of 45 and 4 pileup rows.
+const ungrouped: SectionsLayout = computeStackedSections(
+  [{ key: '', label: '', maxY: 4 }],
+  { coverageHeight: 45, rowHeight: 10 },
+)
+
+const grouped: SectionsLayout = computeStackedSections(
+  [
+    { key: '1', label: 'HP: 1', maxY: 3 },
+    { key: '2', label: 'HP: 2', maxY: 5 },
+  ],
+  { coverageHeight: 20, rowHeight: 10 },
+)
+
+test('buildSectionRenders: ungrouped keeps coverage sticky and pileup full-bleed', () => {
+  // scrollTop must NOT move the ungrouped coverage band (sticky) or its clips.
+  const renders = buildSectionRenders(ungrouped, {
+    scrollTop: 37,
+    canvasHeight: 600,
+  })
+  expect(renders).toEqual([
+    {
+      pileupTopOffset: 45,
+      coverageTopOffset: 0,
+      covClipTop: 0,
+      covClipHeight: 600,
+      pileupClipTop: 45,
+      pileupClipHeight: 555,
+    },
+  ])
+})
+
+test('buildSectionRenders: grouped scrolls each whole section band by scrollTop', () => {
+  const renders = buildSectionRenders(grouped, {
+    scrollTop: 10,
+    canvasHeight: 600,
+  })
+  // Section tops from `grouped`: cov 0/pileup 20 (h30), cov 50/pileup 70 (h50).
+  expect(renders).toEqual([
+    {
+      pileupTopOffset: 20,
+      coverageTopOffset: -10,
+      covClipTop: -10,
+      covClipHeight: 20,
+      pileupClipTop: 10,
+      pileupClipHeight: 30,
+    },
+    {
+      pileupTopOffset: 70,
+      coverageTopOffset: 40,
+      covClipTop: 40,
+      covClipHeight: 20,
+      pileupClipTop: 60,
+      pileupClipHeight: 50,
+    },
+  ])
+})
+
+test('buildSectionRenders: grouped pileupTopOffset is content-space (scroll via shader)', () => {
+  // The pileup top offset is NOT pre-scrolled — the shader subtracts scrollTop
+  // (rangeY0). Only the coverage band and clip bands carry the scroll.
+  const a = buildSectionRenders(grouped, { scrollTop: 0, canvasHeight: 600 })
+  const b = buildSectionRenders(grouped, { scrollTop: 100, canvasHeight: 600 })
+  expect(a.map(s => s.pileupTopOffset)).toEqual(b.map(s => s.pileupTopOffset))
+})

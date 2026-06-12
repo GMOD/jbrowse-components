@@ -34,10 +34,11 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float tw = TRIANGLE_HW * 2.0 * 2.0 / u.canvasW;  // full triangle width in clip-x
   float th = TRIANGLE_H * 2.0 / u.canvasH;
 
+  float top = covAreaTop(u);
   float sx, sy;
-  if (v == 0u)      { sx = cx - tw * 0.5; sy = 1.0;      o.bary = float3(1.0, 0.0, 0.0); }
-  else if (v == 1u) { sx = cx + tw * 0.5; sy = 1.0;      o.bary = float3(0.0, 1.0, 0.0); }
-  else              { sx = cx;            sy = 1.0 - th; o.bary = float3(0.0, 0.0, 1.0); }
+  if (v == 0u)      { sx = cx - tw * 0.5; sy = top;      o.bary = float3(1.0, 0.0, 0.0); }
+  else if (v == 1u) { sx = cx + tw * 0.5; sy = top;      o.bary = float3(0.0, 1.0, 0.0); }
+  else              { sx = cx;            sy = top - th; o.bary = float3(0.0, 0.0, 1.0); }
 
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
   o.color = float4(clipKindColor(inst.colorType, u), 1.0);

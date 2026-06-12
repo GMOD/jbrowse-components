@@ -49,9 +49,10 @@ function cumulativeBp(
 function computeTargetBpPerPx(self: MoveSnap, start: BpOffset, end: BpOffset) {
   const { displayedRegions, width } = self
   return (
-    cumulativeBp(displayedRegions, end.index, end.offset) -
-    cumulativeBp(displayedRegions, start.index, start.offset)
-  ) / width
+    (cumulativeBp(displayedRegions, end.index, end.offset) -
+      cumulativeBp(displayedRegions, start.index, start.offset)) /
+    width
+  )
 }
 
 function computeScrollPos(
@@ -173,7 +174,10 @@ export function offsetBpToPx(
   regionIndex: number,
   regionOffsetBp: number,
 ): number {
-  return cumulativeBp(self.displayedRegions, regionIndex, regionOffsetBp) / self.bpPerPx
+  return (
+    cumulativeBp(self.displayedRegions, regionIndex, regionOffsetBp) /
+    self.bpPerPx
+  )
 }
 
 // Accepts a 0-based genomic coord (BED-style feature.start/end). NOT a proper

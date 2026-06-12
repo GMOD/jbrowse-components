@@ -8,6 +8,7 @@ import {
   buildReadIdToIndex,
   computeArcBand,
   ensureRegion,
+  sectionRegionKey,
   shouldDrawOverlaps,
 } from './rendererTypes.ts'
 import {
@@ -149,6 +150,9 @@ function fillFrameUniforms(
   f[U.featSpacing] = state.featureSpacing
   f[U.covHeight] = state.coverageHeight
   f[U.covYOffset] = state.coverageYOffset
+  // Coverage band top in screen px. 0 = sticky (ungrouped); grouped sections
+  // pass their scrolled top so the band scrolls with its section.
+  f[U.covTop] = state.coverageTopOffset
   const domainMax = state.coverageMaxDepth
   f[U.depthScale] =
     domainMax !== undefined && region.maxDepth > 0
@@ -337,6 +341,16 @@ interface LocalRegion extends ChainBoundsRegion {
 
 const OVERLAY_REGION = 999999
 
+// Convert a CSS-px vertical band [top, top+height] to a device-px scissor band,
+// clamped to the backing store. Rounding the top and bottom edges separately
+// (rather than top + round(height)) keeps the single-section case bit-exact
+// with the prior `bufH - round(top*dpr)` math.
+function devBand(top: number, height: number, dpr: number, bufH: number) {
+  const t = Math.max(0, Math.round(top * dpr))
+  const b = Math.min(bufH, Math.round((top + height) * dpr))
+  return { top: t, height: Math.max(0, b - t) }
+}
+
 export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   private hal: GpuHal
   private uData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
@@ -369,44 +383,54 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     // therefore skipped by its `if (n > 0)` guard) can't leave a stale buffer —
     // no per-region pre-wipe needed, and the guards stay safe by construction.
     this.hal.beginUpload()
-    // `active` must union both maps' keys before the metadata prune: arcs can
-    // arrive for a region whose pileup hasn't loaded yet, and pruning by
-    // pileup-only would drop the arc region's renderer-side metadata.
+    // `active` must union every section's keys plus arcs before the metadata
+    // prune: arcs can arrive for a region whose pileup hasn't loaded yet, and
+    // pruning by pileup-only would drop the arc region's renderer-side
+    // metadata. Each (section, region) pair is namespaced via sectionRegionKey;
+    // section 0 keys equal the raw region index, so the ungrouped path is
+    // byte-identical to pre-grouping.
     const active: number[] = []
-    for (const [idx, data] of sources.laidOutPileupMap) {
-      active.push(idx)
-      this.uploadReads(idx, data)
-      uploadGaps(this.hal, idx, data)
-      uploadMismatches(this.hal, idx, data)
-      uploadInsertions(this.hal, idx, data)
-      uploadClips(this.hal, idx, data)
-      uploadSoftclipBases(this.hal, idx, data)
-      uploadModifications(this.hal, idx, data)
-      uploadPerBaseQuality(this.hal, idx, data)
-      uploadPerBaseLetter(this.hal, idx, data)
-      this.uploadCoverage(idx, data)
-      uploadModCoverage(
-        this.hal,
-        idx,
-        data.modCovPackedBuffer,
-        data.modCovPositions.length,
-      )
-      // uploadReads above already populated this.regions[idx], so the
-      // connecting-line and linked-read uploads don't need their own
-      // ensureRegion call. (The arcs-only loop below does — arcs can arrive
-      // for a region with no pileup data.)
-      if (data.connectingLinePositions.length > 0) {
-        uploadConnectingLines(this.hal, idx, data)
+    sources.sections.forEach((section, s) => {
+      for (const [regionIdx, data] of section.laidOutPileupMap) {
+        const idx = sectionRegionKey(s, regionIdx)
+        active.push(idx)
+        this.uploadReads(idx, data)
+        uploadGaps(this.hal, idx, data)
+        uploadMismatches(this.hal, idx, data)
+        uploadInsertions(this.hal, idx, data)
+        uploadClips(this.hal, idx, data)
+        uploadSoftclipBases(this.hal, idx, data)
+        uploadModifications(this.hal, idx, data)
+        uploadPerBaseQuality(this.hal, idx, data)
+        uploadPerBaseLetter(this.hal, idx, data)
+        this.uploadCoverage(idx, data)
+        uploadModCoverage(
+          this.hal,
+          idx,
+          data.modCovPackedBuffer,
+          data.modCovPositions.length,
+        )
+        // uploadReads above already populated this.regions[idx], so the
+        // connecting-line and linked-read uploads don't need their own
+        // ensureRegion call. (The arcs-only loop below does — arcs can arrive
+        // for a region with no pileup data.)
+        if (data.connectingLinePositions.length > 0) {
+          uploadConnectingLines(this.hal, idx, data)
+        }
+        if (data.numLinkedReadLines > 0) {
+          uploadLinkedReadLines(this.hal, idx, data)
+        }
+        if (data.overlapPositions.length > 0) {
+          uploadOverlaps(this.hal, idx, data)
+        }
       }
-      if (data.numLinkedReadLines > 0) {
-        uploadLinkedReadLines(this.hal, idx, data)
-      }
-      if (data.overlapPositions.length > 0) {
-        uploadOverlaps(this.hal, idx, data)
-      }
-    }
-    for (const [idx, data] of sources.arcsRpcDataMap) {
-      if (!sources.laidOutPileupMap.has(idx)) {
+    })
+    // Arcs are off in grouped mode (v1), so they belong to section 0 — its key
+    // is the raw region index.
+    const section0 = sources.sections[0]?.laidOutPileupMap
+    for (const [regionIdx, data] of sources.arcsRpcDataMap) {
+      const idx = sectionRegionKey(0, regionIdx)
+      if (!section0?.has(regionIdx)) {
         active.push(idx)
       }
       ensureRegion(this.regions, idx, emptyRegion)
@@ -501,13 +525,13 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
 
+    // Arcs/sashimi are disabled in grouped mode (v1), so the arc band only
+    // applies to the single (ungrouped) section.
+    const arcBand =
+      state.sections.length === 1 ? computeArcBand(state) : undefined
+
     let hasDrawn = false
     for (const block of blocks) {
-      const region = this.regions.get(block.displayedRegionIndex)
-      if (!region) {
-        continue
-      }
-
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const scissorW = scissorEnd - scissorX
@@ -525,102 +549,126 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       const clippedBpStart = block.start + pxFromEdge * bpPerPx
       const clippedBpEnd = clippedBpStart + scissorW * bpPerPx
       const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
-      const frame: BlockFrame = {
-        region,
-        bpHi,
-        bpLo,
-        clippedBpStart,
-        clippedBpEnd,
-        canvasW: scissorW,
-        reversed: block.reversed,
-      }
-
-      this.writeUniforms(state, frame)
-
-      const arcBand = computeArcBand(state)
-      const pileupTop = Math.round(state.pileupTopOffset * dpr)
-      const pileupH = Math.max(0, bufH - pileupTop)
 
       const vpX = Math.round(scissorX * dpr)
       const vpW = Math.round(scissorW * dpr)
-      this.hal.setViewport(vpX, 0, vpW, bufH)
-      this.hal.setScissor(vpX, 0, vpW, bufH)
 
-      if (state.showCoverage) {
-        this.hal.drawPass(PASS_COVERAGE, block.displayedRegionIndex)
-        this.hal.drawPass(PASS_SNP_COV, block.displayedRegionIndex)
-        this.hal.drawPass(PASS_MOD_COV, block.displayedRegionIndex)
-        this.hal.drawPass(PASS_INTERBASE, block.displayedRegionIndex)
-        this.hal.drawPass(PASS_INDICATOR, block.displayedRegionIndex)
-      }
-
-      if (pileupH > 0) {
-        this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
-      }
-
-      if (state.linkedReads === 'normal') {
-        this.hal.drawPass(PASS_CONN_LINE, block.displayedRegionIndex)
-      }
-      if (state.showLinkedReadLines) {
-        this.hal.drawPass(PASS_LINKED_READ_LINE, block.displayedRegionIndex)
-      }
-      this.hal.drawPass(PASS_READ, block.displayedRegionIndex)
-      if (shouldDrawOverlaps(state)) {
-        this.hal.drawPass(PASS_OVERLAP, block.displayedRegionIndex)
-      }
-
-      if (state.showModifications) {
-        this.hal.drawPass(PASS_MOD, block.displayedRegionIndex)
-      }
-
-      if (state.showPerBaseQuality) {
-        this.hal.drawPass(PASS_PER_BASE_QUAL, block.displayedRegionIndex)
-      }
-
-      if (state.showMismatches) {
-        this.hal.drawPass(PASS_GAP, block.displayedRegionIndex)
-        this.hal.drawPass(PASS_MISMATCH, block.displayedRegionIndex)
-        this.hal.drawPass(PASS_INSERTION, block.displayedRegionIndex)
-      }
-
-      this.hal.drawPass(PASS_CLIP, block.displayedRegionIndex)
-      if (state.showSoftClipping) {
-        this.hal.drawPass(PASS_SOFTCLIP_BASES, block.displayedRegionIndex)
-      }
-
-      if (state.showPerBaseLetter) {
-        this.hal.drawPass(PASS_PER_BASE_LETTER, block.displayedRegionIndex)
-      }
-
-      this.renderFeatureOverlays(
-        block,
-        state,
-        frame,
-        scissorX,
-        scissorW,
-        bufH,
-        pileupTop,
-        pileupH,
-        dpr,
-      )
-
-      // Up- and down-mode arcs both draw here, after the pileup: the arc band
-      // never overlaps the pileup region, so a single pass suffices and up-mode
-      // arcs still land in front of the coverage histogram (drawn earlier).
-      if (arcBand) {
-        this.drawArcsPass(
-          block,
+      // Each stacked section sets its own coverage/pileup vertical offsets and
+      // clip bands. Section 0's region key equals the raw region index, so the
+      // ungrouped (single-section) case reproduces the prior draw exactly.
+      for (let s = 0; s < state.sections.length; s++) {
+        const sec = state.sections[s]!
+        const regionKey = sectionRegionKey(s, block.displayedRegionIndex)
+        const region = this.regions.get(regionKey)
+        if (!region) {
+          continue
+        }
+        const frame: BlockFrame = {
           region,
-          state,
-          scissorX,
-          scissorW,
-          arcBand,
+          bpHi,
+          bpLo,
+          clippedBpStart,
+          clippedBpEnd,
+          canvasW: scissorW,
+          reversed: block.reversed,
+        }
+        const sectionState: RenderState = {
+          ...state,
+          pileupTopOffset: sec.pileupTopOffset,
+          coverageTopOffset: sec.coverageTopOffset,
+        }
+        this.writeUniforms(sectionState, frame)
+
+        const cov = devBand(sec.covClipTop, sec.covClipHeight, dpr, bufH)
+        const pileup = devBand(
+          sec.pileupClipTop,
+          sec.pileupClipHeight,
           dpr,
           bufH,
         )
-      }
 
-      hasDrawn = true
+        this.hal.setViewport(vpX, 0, vpW, bufH)
+
+        if (state.showCoverage && cov.height > 0) {
+          this.hal.setScissor(vpX, cov.top, vpW, cov.height)
+          this.hal.drawPass(PASS_COVERAGE, regionKey)
+          this.hal.drawPass(PASS_SNP_COV, regionKey)
+          this.hal.drawPass(PASS_MOD_COV, regionKey)
+          this.hal.drawPass(PASS_INTERBASE, regionKey)
+          this.hal.drawPass(PASS_INDICATOR, regionKey)
+        }
+
+        if (pileup.height <= 0) {
+          continue
+        }
+        this.hal.setScissor(vpX, pileup.top, vpW, pileup.height)
+
+        if (state.linkedReads === 'normal') {
+          this.hal.drawPass(PASS_CONN_LINE, regionKey)
+        }
+        if (state.showLinkedReadLines) {
+          this.hal.drawPass(PASS_LINKED_READ_LINE, regionKey)
+        }
+        this.hal.drawPass(PASS_READ, regionKey)
+        if (shouldDrawOverlaps(state)) {
+          this.hal.drawPass(PASS_OVERLAP, regionKey)
+        }
+
+        if (state.showModifications) {
+          this.hal.drawPass(PASS_MOD, regionKey)
+        }
+
+        if (state.showPerBaseQuality) {
+          this.hal.drawPass(PASS_PER_BASE_QUAL, regionKey)
+        }
+
+        if (state.showMismatches) {
+          this.hal.drawPass(PASS_GAP, regionKey)
+          this.hal.drawPass(PASS_MISMATCH, regionKey)
+          this.hal.drawPass(PASS_INSERTION, regionKey)
+        }
+
+        this.hal.drawPass(PASS_CLIP, regionKey)
+        if (state.showSoftClipping) {
+          this.hal.drawPass(PASS_SOFTCLIP_BASES, regionKey)
+        }
+
+        if (state.showPerBaseLetter) {
+          this.hal.drawPass(PASS_PER_BASE_LETTER, regionKey)
+        }
+
+        this.renderFeatureOverlays(
+          block,
+          sectionState,
+          frame,
+          scissorX,
+          scissorW,
+          bufH,
+          pileup.top,
+          pileup.height,
+          dpr,
+        )
+
+        // Up- and down-mode arcs both draw here, after the pileup: the arc band
+        // never overlaps the pileup region, so a single pass suffices and
+        // up-mode arcs still land in front of the coverage histogram (drawn
+        // earlier). Grouped mode has no arcs (arcBand is undefined).
+        if (arcBand) {
+          this.drawArcsPass(
+            block,
+            region,
+            sectionState,
+            regionKey,
+            scissorX,
+            scissorW,
+            arcBand,
+            dpr,
+            bufH,
+          )
+        }
+
+        hasDrawn = true
+      }
     }
 
     this.hal.clearScissor()
@@ -639,6 +687,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     block: RenderBlock,
     region: LocalRegion,
     state: RenderState,
+    regionKey: number,
     scissorX: number,
     scissorW: number,
     band: ArcBand,
@@ -673,8 +722,8 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     this.hal.setViewport(vpX, arcViewportTop, vpW, arcViewportH)
     this.hal.setScissor(vpX, arcViewportTop, vpW, arcViewportH)
 
-    this.hal.drawPass(PASS_ARC, block.displayedRegionIndex)
-    this.hal.drawPass(PASS_ARC_LINE, block.displayedRegionIndex)
+    this.hal.drawPass(PASS_ARC, regionKey)
+    this.hal.drawPass(PASS_ARC_LINE, regionKey)
 
     this.restoreUBO()
     this.hal.setViewport(vpX, 0, vpW, bufH)

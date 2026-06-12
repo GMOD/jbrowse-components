@@ -8,6 +8,7 @@ import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 
+import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 
 // `renderError`/`setRenderError` are NOT here — they live on
@@ -18,6 +19,7 @@ export interface ChromeModel {
   error: unknown
   reload: () => void
   forceLoad: () => void
+  displayPhase: DisplayPhase
   loadingOverlayVisible: boolean
   statusMessage?: string
   regionTooLarge: boolean
@@ -33,33 +35,43 @@ interface CanvasHandle {
 
 // Single home for every GPU display's render lifecycle AND status chrome.
 // DisplayChrome owns the backend hook (`useRenderingBackend`) and renders the
-// terminal-state UI, but the *states themselves* all live on the model:
-// `renderError` (the hook writes it there), `regionTooLarge`, and the
-// fetch-error + loading scrim (`loadingOverlayVisible`). The model is the
-// single source of truth — `loadingOverlayVisible` accounts for all the others,
-// so the four states are mutually exclusive by construction and the JSX order
-// below is defensive, not load-bearing. A display can't show a canvas while
-// skipping a terminal state, can't bury the hook somewhere the chrome can't see
-// (the seam alignments drifted through), and there's nothing to forget — the
-// only per-display variance left is the body, which is irreducible.
+// terminal-state UI, but the *states themselves* all live on the model and
+// collapse to one getter, `model.displayPhase`
+// ('renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'). The precedence
+// among them is single-sourced in `computeDisplayPhase` (see displayPhase.ts);
+// this component branches on it, and `loadingOverlayVisible` is just
+// `displayPhase === 'loading'`. So a display can't show a canvas while skipping
+// a terminal state, can't bury the hook somewhere the chrome can't see (the
+// seam alignments drifted through), and the loading-vs-terminal precedence
+// isn't re-encoded by subtraction in each model's `loadingOverlayVisible`.
 //
-// The two terminal states (renderError, regionTooLarge) **early-return** their
-// own component instead of nesting inside the container `<div>` below. This is
-// load-bearing, not stylistic — it looks like a leak (caller className/ref/mouse
-// handlers are absent in those states) but the leak is benign (a too-large
-// region has no canvas to interact with; the ref re-attaches on force-load) and
-// closing it reintroduces a real bug. If the banner is nested instead — a child
-// swapped into this still-mounted container next to the overlay siblings,
-// `{regionTooLarge ? <TooLargeMessage/> : children}` — React silently skips it:
-// DisplayChrome re-renders with regionTooLarge true and the sibling overlays
-// render, but the swapped-in <TooLargeMessage> body never runs and it never
-// reaches the DOM (StatsEstimation.test times out waiting for it). Returning the
-// banner as its own root mounts it reliably. `regionTooLarge` does NOT oscillate
-// here — instrumentation shows it is set once and holds; the failure is React
-// reconciliation of a swapped-in child under a persistent observer subtree, not
-// a fetch/flag thrash. Early-return also gives the canvas a clean
-// stopRenderingBackend -> startRenderingBackend dispose/re-init (ADR-025). Don't
-// wrap these.
+// The two subtree-replacing states (renderError, tooLarge) **early-`return`**
+// their own component; `error` and `loading` are overlays drawn *over* the
+// still-mounted canvas (the `ready` branch). Two non-obvious constraints make
+// this work — both confirmed by instrumenting StatsEstimation.test, both
+// reintroduce a real bug if violated:
+//
+//   1. The terminal UI must be a literal early-`return`, NOT a branch of a
+//      single ternary `return`. The two produce an identical React element
+//      tree, yet under React 19 + mobx-react + jsdom the ternary form fails to
+//      *commit* the banner subtree — `TooLargeMessage`'s body never runs and it
+//      never reaches the DOM (the test times out). The early-`return` commits
+//      reliably. (This is the previously-"unconfirmed" reconciliation hazard;
+//      the symptom is real even if the React-internal cause isn't pinned down.)
+//
+//   2. `displayPhase`'s loading term is evaluated lazily (a thunk in
+//      `computeDisplayPhase`) so that when a terminal flag is set this observer
+//      tracks ONLY that flag — not the containing view's `visibleRegions` /
+//      `loadedRegions`. Tracking those during a terminal state churns the
+//      observer and reproduces failure (1) even with the early-`return`. Lazy
+//      evaluation keeps the tracked set identical to the old direct reads.
+//
+// Early-`return` also gives the canvas a clean dispose/re-init: unmounting the
+// body fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
+// `stopRenderingBackend()`, then force-load remounts (ADR-025). It looks like a
+// leak (caller className/ref/mouse handlers are absent in those two states) but
+// the leak is benign — a too-large region has no canvas to interact with, and
+// the ref re-attaches on force-load. Don't "fix" it by nesting the banner.
 //
 // The body is a function so callers mount the canvas wherever it belongs. It
 // returns a named observer component (every display does) so observable reads
@@ -89,7 +101,12 @@ function DisplayChromeInner<B extends { dispose(): void }>({
   testid?: string
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
   const { canvas, canvasRef, retry } = useRenderingBackend(factory, model)
-  if (model.renderError) {
+  // Terminal states are literal early-`return`s, NOT ternary branches of a
+  // single return — empirically the two are NOT interchangeable here (identical
+  // element tree, but the ternary form fails to commit the banner subtree in
+  // React 19 + mobx-react + jsdom; StatsEstimation.test catches it). See the
+  // comment block above for the full rule.
+  if (model.displayPhase === 'renderError') {
     return (
       <DisplayRenderErrorOverlay
         error={model.renderError}
@@ -98,7 +115,7 @@ function DisplayChromeInner<B extends { dispose(): void }>({
       />
     )
   }
-  if (model.regionTooLarge) {
+  if (model.displayPhase === 'tooLarge') {
     return <TooLargeMessage model={model} />
   }
   return (

@@ -7,7 +7,7 @@
  * convention" and "BP precision" for details.
  */
 
-import type { ColorBy, FilterBy } from '../shared/types'
+import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
 import type { Region } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -29,6 +29,11 @@ export interface RenderAlignmentDataArgs {
   // invalidate the fetched data — main-thread layout re-runs instead.
   sortTag?: string
   showSoftClipping?: boolean
+  // In-track stacked grouping. When set, the worker partitions the single fetch
+  // into N ordered groups and returns one PileupDataResult per group. Pileup
+  // mode only — ignored in chain mode (linkedReads !== 'off'). Tier-1 refetch
+  // setting (in rpcProps): changing it re-partitions, so the worker must re-run.
+  groupBy?: GroupBy
   linkedReads?: 'off' | 'normal'
   drawSingletons?: boolean
   drawProperPairs?: boolean
@@ -299,4 +304,18 @@ export type ChainPileupData = PileupDataResult &
 
 export function isChainData(data: PileupDataResult): data is ChainPileupData {
   return data.readChainIndices !== undefined
+}
+
+// One stacked section: a group key + its display label + the per-group pileup
+// data. Ungrouped fetches return a single group with `key: ''`, giving one
+// uniform code path for grouped and ungrouped reads.
+export interface AlignmentGroup {
+  key: string
+  label: string
+  data: PileupDataResult
+}
+
+// The RenderAlignmentData RPC return. Always at least one group.
+export interface GroupedAlignmentsResult {
+  groups: AlignmentGroup[]
 }

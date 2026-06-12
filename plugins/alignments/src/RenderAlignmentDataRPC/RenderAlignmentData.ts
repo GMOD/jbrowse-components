@@ -1,12 +1,12 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { PileupDataResult, RenderAlignmentDataArgs } from './types'
+import type { GroupedAlignmentsResult, RenderAlignmentDataArgs } from './types'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderAlignmentData: {
       args: RenderAlignmentDataArgs
-      return: PileupDataResult
+      return: GroupedAlignmentsResult
     }
   }
 }

@@ -14,6 +14,7 @@ import TlenAxisLabel from './components/TlenAxisLabel.tsx'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
+import { buildSectionRenders } from './sectionLayout.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
@@ -52,24 +53,29 @@ export async function renderSvg(
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
 
   // SVG export renders the full display from y=0 with no Y scroll. Reuse the
-  // model's renderState — only viewport-related fields are overridden.
+  // model's renderState — only viewport-related fields are overridden. The
+  // section geometry is rebuilt at scrollTop 0 so grouped coverage bands aren't
+  // shifted off-screen (no-op for the ungrouped single-section case).
   const state = {
     ...baseState,
     scrollTop: 0,
     canvasWidth: totalWidth,
     canvasHeight: displayHeight,
+    sections: buildSectionRenders(model.sections, {
+      scrollTop: 0,
+      canvasHeight: displayHeight,
+    }),
   }
 
   // Same compute as the on-screen getter; only scrollTop differs (SVG export
   // shows the full track height regardless of Y scroll).
   const labels = computeVisibleLabels({
     view,
-    laidOutPileupMap: model.laidOutPileupMap,
+    sections: model.renderSections,
     height: displayHeight,
     featureHeight: model.featureHeight,
     featureSpacing: model.featureSpacing,
     showMismatches: model.showMismatches,
-    topOffset: model.coverageDisplayHeight,
     scrollTop: 0,
   })
   const contrastMap = getMismatchContrastMap(
@@ -81,7 +87,7 @@ export async function renderSvg(
     drawAlignmentsToCtx(
       ctx,
       {
-        laidOutPileupMap: model.laidOutPileupMap,
+        sections: model.sourceSections,
         arcsRpcDataMap: model.arcsRpcDataMap,
       },
       renderBlocks,

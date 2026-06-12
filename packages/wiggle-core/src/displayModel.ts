@@ -4,6 +4,7 @@ import type { WiggleDataResult } from './dataTypes.ts'
 import type { YScaleTicks } from './index.ts'
 import type { WiggleRenderingBackend } from './renderingBackendTypes.ts'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 
 // Intersection contract every wiggle-family GPU display model (wiggle,
@@ -20,6 +21,7 @@ export interface WiggleGpuDisplayModel<
   height: number
   error: Error | null
   isLoading: boolean
+  displayPhase: DisplayPhase
   loadingOverlayVisible: boolean
   statusMessage?: string
   reload: () => void

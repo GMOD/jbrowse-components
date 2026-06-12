@@ -14,6 +14,7 @@ import {
   computeArcBand,
   interbaseRangeEnds,
   pileupRowY,
+  sectionRegionKey,
   shouldDrawOverlaps,
 } from './rendererTypes.ts'
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
@@ -199,22 +200,32 @@ function buildPileupRegion(
 }
 
 /**
- * Pure builder: turns the model's observable per-region inputs into the
- * regions map that `drawAlignmentBlocks` consumes. The on-screen
- * Canvas2DAlignmentsRenderer.sync calls this directly, so on-screen and
- * SVG export share one builder.
+ * Pure builder: turns the model's observable per-section inputs into the
+ * regions map that `drawAlignmentBlocks` consumes, keyed by `sectionRegionKey`
+ * so stacked groups don't collide. The on-screen Canvas2DAlignmentsRenderer.sync
+ * calls this directly, so on-screen and SVG export share one builder. Section 0
+ * keys equal the raw region index, so ungrouped is byte-identical.
  */
-export function buildAlignmentsRegionMap(
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
-  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>,
-) {
+export function buildAlignmentsRegionMap(sources: AlignmentsSources) {
+  const { sections, arcsRpcDataMap } = sources
   const regions = new Map<number, Canvas2DRegionData>()
-  for (const [idx, data] of laidOutPileupMap) {
-    regions.set(idx, buildPileupRegion(data, arcsRpcDataMap.get(idx)))
-  }
-  for (const [idx, arcs] of arcsRpcDataMap) {
-    if (!regions.has(idx)) {
-      regions.set(idx, { ...EMPTY_PILEUP_FIELDS, ...arcs })
+  sections.forEach((section, s) => {
+    for (const [regionIdx, data] of section.laidOutPileupMap) {
+      const key = sectionRegionKey(s, regionIdx)
+      // Arcs are off in grouped mode (v1), so they only attach to section 0.
+      const arcs = s === 0 ? arcsRpcDataMap.get(regionIdx) : undefined
+      regions.set(key, buildPileupRegion(data, arcs))
+    }
+  })
+  // Arc-only regions (arcs arrived for a region with no pileup) belong to
+  // section 0 — its key is the raw region index.
+  const section0 = sections[0]?.laidOutPileupMap
+  for (const [regionIdx, arcs] of arcsRpcDataMap) {
+    if (!section0?.has(regionIdx)) {
+      regions.set(sectionRegionKey(0, regionIdx), {
+        ...EMPTY_PILEUP_FIELDS,
+        ...arcs,
+      })
     }
   }
   return regions
@@ -233,7 +244,7 @@ export function drawAlignmentsToCtx(
 ) {
   return drawAlignmentBlocks(
     ctx,
-    buildAlignmentsRegionMap(sources.laidOutPileupMap, sources.arcsRpcDataMap),
+    buildAlignmentsRegionMap(sources),
     blocks,
     state,
   )
@@ -260,10 +271,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsRenderingBackend {
   }
 
   sync(sources: AlignmentsSources) {
-    this.regions = buildAlignmentsRegionMap(
-      sources.laidOutPileupMap,
-      sources.arcsRpcDataMap,
-    )
+    this.regions = buildAlignmentsRegionMap(sources)
   }
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
@@ -298,15 +306,12 @@ export function drawAlignmentBlocks(
     return false
   }
 
-  const arcBand = computeArcBand(state)
-  const pileupTop = state.pileupTopOffset
+  // Arcs/sashimi are disabled in grouped mode (v1), so the arc band only
+  // applies to the single (ungrouped) section.
+  const arcBand =
+    state.sections.length === 1 ? computeArcBand(state) : undefined
 
   for (const block of blocks) {
-    const region = regions.get(block.displayedRegionIndex)
-    if (!region) {
-      continue
-    }
-
     const blockClip = clipBlockForCanvas(block, canvasWidth)
     if (!blockClip) {
       continue
@@ -319,79 +324,117 @@ export function drawAlignmentBlocks(
     ctx.rect(scissorX, 0, scissorW, canvasHeight)
     ctx.clip()
 
-    if (state.showCoverage) {
-      drawCoverage(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
+    // Each stacked section sets its own vertical offsets and clip bands.
+    // Section 0's region key equals the raw region index, so the ungrouped
+    // (single-section) path reproduces the prior draw exactly.
+    for (let s = 0; s < state.sections.length; s++) {
+      const sec = state.sections[s]!
+      const region = regions.get(
+        sectionRegionKey(s, block.displayedRegionIndex),
+      )
+      if (!region) {
+        continue
+      }
+      const sectionState: RenderState = {
+        ...state,
+        pileupTopOffset: sec.pileupTopOffset,
+        coverageTopOffset: sec.coverageTopOffset,
+      }
 
-    // Clip pileup area
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(scissorX, pileupTop, scissorW, canvasHeight - pileupTop)
-    ctx.clip()
+      if (state.showCoverage) {
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(scissorX, sec.covClipTop, scissorW, sec.covClipHeight)
+        ctx.clip()
+        drawCoverage(ctx, region, block, bpLength, fullBlockWidth, sectionState)
+        ctx.restore()
+      }
 
-    if (state.linkedReads === 'normal') {
-      drawConnectingLines(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-    if (state.showLinkedReadLines) {
-      drawLinkedReadLines(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
-    drawReads(ctx, region, block, bpLength, fullBlockWidth, state)
-
-    if (shouldDrawOverlaps(state)) {
-      drawOverlaps(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
-    if (state.showModifications) {
-      drawModifications(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
-    if (state.showPerBaseQuality) {
-      drawPerBaseQuality(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
-    if (state.showMismatches) {
-      drawGaps(ctx, region, block, bpLength, fullBlockWidth, state)
-      drawMismatches(ctx, region, block, bpLength, fullBlockWidth, state)
-      drawInsertions(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
-    drawSoftclips(ctx, region, block, bpLength, fullBlockWidth, state)
-    drawHardclips(ctx, region, block, bpLength, fullBlockWidth, state)
-
-    if (state.showSoftClipping) {
-      drawSoftclipBases(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
-    if (state.showPerBaseLetter) {
-      drawPerBaseLetter(ctx, region, block, bpLength, fullBlockWidth, state)
-    }
-
-    drawSelectionOverlays(ctx, region, block, state)
-
-    ctx.restore() // pileup clip
-
-    // Up- and down-mode arcs both draw here, after the pileup. The band never
-    // overlaps the pileup region, and up-mode arcs still land in front of the
-    // coverage histogram (drawn earlier), matching the GPU pass order.
-    if (arcBand) {
+      // Clip pileup area
       ctx.save()
       ctx.beginPath()
-      ctx.rect(scissorX, arcBand.top, scissorW, arcBand.height)
+      ctx.rect(scissorX, sec.pileupClipTop, scissorW, sec.pileupClipHeight)
       ctx.clip()
-      drawArcs(
-        ctx,
-        region,
-        block,
-        bpLength,
-        fullBlockWidth,
-        state,
-        arcBand.top,
-        arcBand.height,
-        arcBand.down,
-        scissorW,
-      )
-      ctx.restore()
+
+      if (state.linkedReads === 'normal') {
+        drawConnectingLines(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
+      }
+      if (state.showLinkedReadLines) {
+        drawLinkedReadLines(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
+      }
+
+      drawReads(ctx, region, block, bpLength, fullBlockWidth, sectionState)
+
+      if (shouldDrawOverlaps(state)) {
+        drawOverlaps(ctx, region, block, bpLength, fullBlockWidth, sectionState)
+      }
+
+      if (state.showModifications) {
+        drawModifications(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
+      }
+
+      if (state.showPerBaseQuality) {
+        drawPerBaseQuality(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
+      }
+
+      if (state.showMismatches) {
+        drawGaps(ctx, region, block, bpLength, fullBlockWidth, sectionState)
+        drawMismatches(
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          sectionState,
+        )
+        drawInsertions(
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          sectionState,
+        )
+      }
+
+      drawSoftclips(ctx, region, block, bpLength, fullBlockWidth, sectionState)
+      drawHardclips(ctx, region, block, bpLength, fullBlockWidth, sectionState)
+
+      if (state.showSoftClipping) {
+        drawSoftclipBases(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
+      }
+
+      if (state.showPerBaseLetter) {
+        drawPerBaseLetter(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
+      }
+
+      drawSelectionOverlays(ctx, region, block, sectionState)
+
+      ctx.restore() // pileup clip
+
+      // Up- and down-mode arcs both draw here, after the pileup. The band never
+      // overlaps the pileup region, and up-mode arcs still land in front of the
+      // coverage histogram (drawn earlier), matching the GPU pass order.
+      // Grouped mode has no arcs (arcBand is undefined).
+      if (arcBand) {
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(scissorX, arcBand.top, scissorW, arcBand.height)
+        ctx.clip()
+        drawArcs(
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          sectionState,
+          arcBand.top,
+          arcBand.height,
+          arcBand.down,
+          scissorW,
+        )
+        ctx.restore()
+      }
     }
 
     ctx.restore() // block clip
@@ -415,6 +458,12 @@ function drawCoverage(
   // band top but their *height* tracks the depth domain (like the coverage and
   // SNP bars), so they belong inside this block. The fixed-size indicator
   // triangles are the only band-top marks independent of the depth scale.
+  // The coverage draw helpers anchor bars/segments/indicators at the canvas
+  // top (clip-top). Shifting the whole band by coverageTopOffset lets grouped
+  // sections scroll their coverage with the section; it is 0 (no-op) for the
+  // ungrouped sticky-coverage path, mirroring the shader `covTop` uniform.
+  ctx.save()
+  ctx.translate(0, state.coverageTopOffset)
   const domainMax = state.coverageMaxDepth
   if (domainMax !== undefined) {
     drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
@@ -423,6 +472,7 @@ function drawCoverage(
     drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
   }
   drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
+  ctx.restore()
 }
 
 interface OverlayBounds {

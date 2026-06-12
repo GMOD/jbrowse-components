@@ -30,17 +30,14 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
-import {
-  attachLinkedReadLines,
-  buildLaidOutChainMap,
-} from './computeChainLayout.ts'
-import { ColorScheme } from './constants.ts'
-import { computeInsertSizeTicks } from './insertSizeTicks.ts'
-import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
-import { overlayReadTagColors } from './readTagColors.ts'
-import { buildLaidOutPileupMap } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { ColorScheme } from './constants.ts'
+import { buildLaidOutByGroup, groupMaxY } from './groupLayout.ts'
+import { computeInsertSizeTicks } from './insertSizeTicks.ts'
+import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
+import { buildSectionRenders, computeStackedSections } from './sectionLayout.ts'
 import {
   arcsToRegionResult,
   computeArcsFromPileupData,
@@ -48,7 +45,6 @@ import {
 } from '../features/arcs/compute.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { getColorForModification } from '../util.ts'
-import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 import {
   COMPACTNESS_PRESETS,
@@ -66,17 +62,22 @@ import { computeArcBand } from './renderers/rendererTypes.ts'
 import type { LinearAlignmentsDisplayConfigModel } from './configSchema.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from './constants.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
+import type { SectionsLayout } from './sectionLayout.ts'
+import type {
+  GroupedAlignmentsResult,
+  PileupDataResult,
+} from '../RenderAlignmentDataRPC/types'
+import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 import type { CompactnessLevel } from './menus/featureSize.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
-import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type {
   ArcColorByType,
   ColorBy,
   FilterBy,
+  GroupBy,
   ModificationTypeWithColor,
   SortedBy,
 } from '../shared/types'
@@ -300,6 +301,7 @@ export default function stateModelFactory(
           | 'showLowFreqMismatches'
           | 'showLegend'
           | 'sortedBy'
+          | 'groupBy'
           | 'showOutline'
         >([
           'scaleType',
@@ -316,6 +318,7 @@ export default function stateModelFactory(
           'showLowFreqMismatches',
           'showLegend',
           'sortedBy',
+          'groupBy',
           'readConnectionsLineWidth',
           'showOutline',
         ]),
@@ -478,13 +481,24 @@ export default function stateModelFactory(
           /**
            * #volatile
            */
-          rpcDataMap: observable.map<number, PileupDataResult>(),
+          // Region index → grouped worker result. Ungrouped fetches store a
+          // single group (key ''); grouping (Stage 5) stores N. Every reader
+          // iterates `.groups`, so the ungrouped path is the one-group case.
+          rpcDataMap: observable.map<number, GroupedAlignmentsResult>(),
           /**
            * #volatile
            * pileup vertical scroll offset in px. Also read by the
            * BreakpointSplitView overlay to position its SVG curves.
            */
           scrollTop: 0,
+          /**
+           * #volatile
+           * Group keys whose pileup is collapsed to just its coverage band
+           * (in-track grouping). Keyed by group key so it survives re-fetches;
+           * volatile so it resets on reload. Stale keys from a prior grouping
+           * dimension are harmless — they never match the new keys.
+           */
+          collapsedGroups: observable.set<string>(),
           /**
            * #volatile
            */
@@ -633,8 +647,8 @@ export default function stateModelFactory(
          * #getter
          */
         get hasPairedReads() {
-          return [...self.rpcDataMap.values()].some(
-            d => d.insertSizeStats !== undefined,
+          return [...self.rpcDataMap.values()].some(grouped =>
+            grouped.groups.some(g => g.data.insertSizeStats !== undefined),
           )
         },
 
@@ -679,20 +693,22 @@ export default function stateModelFactory(
         get chainIdMap() {
           const map = new Map<number, string[]>()
           if (self.linkedReads !== 'off') {
-            for (const data of self.rpcDataMap.values()) {
-              if (!data.readChainIndices) {
-                continue
-              }
-              for (let i = 0; i < data.readIds.length; i++) {
-                const chainIdx = data.readChainIndices[i]!
-                let ids = map.get(chainIdx)
-                if (!ids) {
-                  ids = []
-                  map.set(chainIdx, ids)
+            for (const grouped of self.rpcDataMap.values()) {
+              for (const { data } of grouped.groups) {
+                if (!data.readChainIndices) {
+                  continue
                 }
-                const id = data.readIds[i]
-                if (id !== undefined) {
-                  ids.push(id)
+                for (let i = 0; i < data.readIds.length; i++) {
+                  const chainIdx = data.readChainIndices[i]!
+                  let ids = map.get(chainIdx)
+                  if (!ids) {
+                    ids = []
+                    map.set(chainIdx, ids)
+                  }
+                  const id = data.readIds[i]
+                  if (id !== undefined) {
+                    ids.push(id)
+                  }
                 }
               }
             }
@@ -734,6 +750,24 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * In-track stacked grouping dimension (undefined = ungrouped). Sent to
+         * the worker via rpcProps; the worker partitions one fetch into N
+         * sections.
+         */
+        get groupBy() {
+          return self.getOverride<GroupBy>('groupBy')
+        },
+
+        /**
+         * #method
+         * Whether a stacked group's pileup is collapsed to just its coverage.
+         */
+        isGroupCollapsed(key: string) {
+          return self.collapsedGroups.has(key)
+        },
+
+        /**
+         * #getter
          */
         get coverageIsLog() {
           return self.scaleType === 'log'
@@ -753,11 +787,27 @@ export default function stateModelFactory(
           // coarseDynamicBlocks (500ms debounced) instead of dynamicBlocks so
           // the per-bp depth scan doesn't recompute on every animation frame
           // during pan/zoom — same approach as wiggle's visibleScoreRange.
-          return computeVisibleCoverageStats(view.coarseDynamicBlocks, b =>
-            b.displayedRegionIndex === undefined
-              ? undefined
-              : self.rpcDataMap.get(b.displayedRegionIndex),
-          )
+          //
+          // The domain spans EVERY group (expand each block into one entry per
+          // group's coverage): a shared scale is what makes stacked sections
+          // visually comparable. Ungrouped is the one-group case.
+          const covBlocks: {
+            start: number
+            end: number
+            cov: PileupDataResult
+          }[] = []
+          for (const b of view.coarseDynamicBlocks) {
+            const grouped =
+              b.displayedRegionIndex === undefined
+                ? undefined
+                : self.rpcDataMap.get(b.displayedRegionIndex)
+            if (grouped) {
+              for (const { data } of grouped.groups) {
+                covBlocks.push({ start: b.start, end: b.end, cov: data })
+              }
+            }
+          }
+          return computeVisibleCoverageStats(covBlocks, b => b.cov)
         },
 
         /**
@@ -802,27 +852,64 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Per-group laid-out data: group key → (region index → laid-out data).
+         * Each group lays out independently (own `maxRows` cap) so a dense group
+         * can't starve the rest. Tag colors are baked here (not in the worker)
+         * so colorTagMap stays a main-thread tier-2 setting — see readTagColors.
+         */
+        get laidOutByGroup() {
+          return buildLaidOutByGroup({
+            rpcDataMap: self.rpcDataMap,
+            isChainMode: self.linkedReads === 'normal',
+            sortedBy: this.sortedBy,
+            showSoftClipping: self.showSoftClipping,
+            maxRows: maxRowsFor(
+              self.getConfWithOverride('maxHeight'),
+              self.getConfWithOverride('featureHeight') +
+                self.getConfWithOverride('featureSpacing'),
+            ),
+            showLinkedReadLines: self.showLinkedReadLines,
+            colorBy: this.colorBy,
+            colorTagMap: self.colorTagMap,
+          })
+        },
+
+        /**
+         * #getter
+         * Group keys in stacking order; a single entry (key '') when ungrouped.
+         */
+        get groupOrder() {
+          return this.laidOutByGroup.order
+        },
+
+        /**
+         * #getter
+         * Renderer-facing per-region layout. Stage 2 draws a single section, so
+         * this exposes the first (for ungrouped, the only) group; Stage 3
+         * switches the renderers to loop `sections` directly.
          */
         get laidOutPileupMap() {
-          const base =
-            self.linkedReads === 'normal'
-              ? buildLaidOutChainMap(self.rpcDataMap)
-              : buildLaidOutPileupMap({
-                  dataMap: self.rpcDataMap,
-                  sortedBy: this.sortedBy,
-                  showSoftClipping: self.showSoftClipping,
-                  maxRows: maxRowsFor(
-                    self.getConfWithOverride('maxHeight'),
-                    self.getConfWithOverride('featureHeight') +
-                      self.getConfWithOverride('featureSpacing'),
-                  ),
-                })
-          const laidOut = self.showLinkedReadLines
-            ? attachLinkedReadLines(base)
-            : base
-          // Tag colors are baked here (not in the worker) so colorTagMap stays
-          // a main-thread tier-2 setting — see readTagColors.ts.
-          return overlayReadTagColors(laidOut, this.colorBy, self.colorTagMap)
+          const first = this.groupOrder[0]?.key ?? ''
+          return (
+            this.laidOutByGroup.byGroup.get(first) ??
+            new Map<number, PileupDataResult>()
+          )
+        },
+
+        /**
+         * #getter
+         * Per-section renderer input, in stacking order. One entry per group
+         * (the single key '' when ungrouped). Pairs each group's laid-out
+         * region map with its key so the renderers can namespace HAL region
+         * keys per section. Parallel to `renderState.sections`.
+         */
+        get sourceSections() {
+          return this.groupOrder.map(({ key }) => ({
+            groupKey: key,
+            laidOutPileupMap:
+              this.laidOutByGroup.byGroup.get(key) ??
+              new Map<number, PileupDataResult>(),
+          }))
         },
 
         /**
@@ -852,6 +939,25 @@ export default function stateModelFactory(
           return false
         },
 
+        /**
+         * #getter
+         * Raw (un-laid-out) data for the primary group per region. Read
+         * connections are disabled in grouped mode (v1), so the primary group is
+         * the only group whenever arcs are on — but this keeps a single,
+         * non-grouped `Map<number, PileupDataResult>` for the arc/coverage code
+         * that predates grouping.
+         */
+        get primaryRawDataMap() {
+          const out = new Map<number, PileupDataResult>()
+          for (const [idx, grouped] of self.rpcDataMap) {
+            const g = grouped.groups[0]
+            if (g) {
+              out.set(idx, g.data)
+            }
+          }
+          return out
+        },
+
         // The heavy work — running `computeArcsFromPileupData` over every
         // pileup region — is cached here. Arcs/lines are pre-grouped by refName
         // so the per-region arcsRpcDataMap lookup is O(1) instead of filtering
@@ -872,7 +978,7 @@ export default function stateModelFactory(
               displayedRegionIndex,
             }))
           const { arcs, lines } = computeArcsFromPileupData(
-            self.rpcDataMap,
+            this.primaryRawDataMap,
             regionInfos,
             {
               colorByType: self.arcColorByType,
@@ -956,13 +1062,15 @@ export default function stateModelFactory(
         get readIdIndexMap() {
           const map = new Map<
             string,
-            { displayedRegionIndex: number; idx: number }
+            { displayedRegionIndex: number; groupKey: string; idx: number }
           >()
-          for (const [displayedRegionIndex, rpcData] of self.rpcDataMap) {
-            for (let i = 0; i < rpcData.readIds.length; i++) {
-              const id = rpcData.readIds[i]
-              if (id !== undefined) {
-                map.set(id, { displayedRegionIndex, idx: i })
+          for (const [displayedRegionIndex, grouped] of self.rpcDataMap) {
+            for (const { key, data } of grouped.groups) {
+              for (let i = 0; i < data.readIds.length; i++) {
+                const id = data.readIds[i]
+                if (id !== undefined) {
+                  map.set(id, { displayedRegionIndex, groupKey: key, idx: i })
+                }
               }
             }
           }
@@ -985,8 +1093,10 @@ export default function stateModelFactory(
           if (!entry) {
             return undefined
           }
-          const { displayedRegionIndex, idx } = entry
-          const rpcData = self.laidOutPileupMap.get(displayedRegionIndex)
+          const { displayedRegionIndex, groupKey, idx } = entry
+          const rpcData = self.laidOutByGroup.byGroup
+            .get(groupKey)
+            ?.get(displayedRegionIndex)
           if (!rpcData) {
             return undefined
           }
@@ -1013,8 +1123,10 @@ export default function stateModelFactory(
          */
         get hasSashimiArcs() {
           const { minSashimiScore } = self
-          return [...self.rpcDataMap.values()].some(d =>
-            d.sashimiCounts.some(c => c >= minSashimiScore),
+          return [...self.rpcDataMap.values()].some(grouped =>
+            grouped.groups.some(g =>
+              g.data.sashimiCounts.some(c => c >= minSashimiScore),
+            ),
           )
         },
 
@@ -1074,9 +1186,115 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Single source of all vertical band geometry, one entry per stacked
+         * group. Ungrouped is the one-section case and reuses the existing
+         * `belowCoverageBands` (coverage + arc + sashimi bands) so its layout is
+         * byte-identical to pre-grouping. Grouped sections disable
+         * read-connections (v1) and stack plain coverage + pileup bands, each
+         * scrolling with its section. Consumed by the renderers in Stage 3.
+         */
+        get sections(): SectionsLayout {
+          const order = self.groupOrder
+          const rowHeight = self.featureHeight + self.featureSpacing
+          if (order.length <= 1) {
+            const bands = self.belowCoverageBands
+            const pileupTop = self.coverageDisplayHeight
+            const pileupHeight = self.maxY * rowHeight
+            return {
+              sections: [
+                {
+                  groupKey: order[0]?.key ?? '',
+                  label: order[0]?.label ?? '',
+                  coverageTop: 0,
+                  coverageHeight: self.showCoverage ? self.coverageHeight : 0,
+                  arcBandTop: bands.arcsBandTop,
+                  arcBandHeight: bands.hasArcsBand
+                    ? self.readConnectionsHeight
+                    : 0,
+                  sashimiBandTop: bands.sashimiBandTop,
+                  pileupTop,
+                  pileupHeight,
+                  maxY: self.maxY,
+                },
+              ],
+              contentHeight: pileupTop + pileupHeight,
+            }
+          }
+          return computeStackedSections(
+            order.map(({ key, label }) => ({
+              key,
+              label,
+              // Collapsed groups show only their coverage band (pileup height 0).
+              maxY: self.isGroupCollapsed(key)
+                ? 0
+                : groupMaxY(
+                    self.laidOutByGroup.byGroup.get(key) ??
+                      new Map<number, PileupDataResult>(),
+                  ),
+            })),
+            {
+              coverageHeight: self.showCoverage ? self.coverageHeight : 0,
+              rowHeight,
+            },
+          )
+        },
+
+        /**
+         * #getter
+         * Per-section data + content-space band tops for the overlay/hit-test
+         * pipeline (labels, highlights, hit-test). Pairs each section's group
+         * data map with its `pileupTop` (used as the row `topOffset`) and
+         * coverage band so a screen-y can be mapped to the right section and its
+         * group. Ungrouped is one section with `topOffset` ==
+         * `coverageDisplayHeight`, so the pipeline reduces to pre-grouping.
+         */
+        get renderSections() {
+          const layout = this.sections.sections
+          return self.groupOrder.map(({ key, label }, i) => {
+            const sec = layout[i]
+            return {
+              groupKey: key,
+              label,
+              laidOutPileupMap:
+                self.laidOutByGroup.byGroup.get(key) ??
+                new Map<number, PileupDataResult>(),
+              topOffset: sec?.pileupTop ?? self.coverageDisplayHeight,
+              coverageTop: sec?.coverageTop ?? 0,
+              coverageHeight: sec?.coverageHeight ?? 0,
+            }
+          })
+        },
+
+        /**
+         * #getter
+         * True when reads are stacked into >1 group section. Drives the scroll
+         * model: ungrouped keeps coverage sticky (only the pileup scrolls);
+         * grouped scrolls the whole coverage+pileup stack as one.
+         */
+        get isGrouped() {
+          return self.groupOrder.length > 1
+        },
+
+        /**
+         * #getter
+         * Height of the scrollable viewport. Ungrouped excludes the sticky
+         * coverage band; grouped scrolls the entire display.
          */
         get pileupViewportHeight() {
-          return Math.max(0, self.height - self.coverageDisplayHeight)
+          return this.isGrouped
+            ? self.height
+            : Math.max(0, self.height - self.coverageDisplayHeight)
+        },
+
+        /**
+         * #getter
+         * Total scrollable content height. Ungrouped is just the pileup
+         * (coverage is sticky); grouped is the full stacked-sections height.
+         */
+        get pileupContentHeight() {
+          return this.isGrouped
+            ? this.sections.contentHeight
+            : self.totalPileupHeight
         },
 
         /**
@@ -1110,12 +1328,11 @@ export default function stateModelFactory(
           }
           return computeVisibleLabels({
             view,
-            laidOutPileupMap: self.laidOutPileupMap,
+            sections: this.renderSections,
             height: self.height,
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
-            topOffset: self.coverageDisplayHeight,
             scrollTop: self.scrollTop,
           })
         },
@@ -1140,13 +1357,12 @@ export default function stateModelFactory(
           return view.initialized
             ? computeHighlightBoxes({
                 view,
-                laidOutPileupMap: self.laidOutPileupMap,
+                sections: this.renderSections,
                 readIdIndexMap: self.readIdIndexMap,
                 ids,
                 height: self.height,
                 featureHeight: self.featureHeight,
                 featureSpacing: self.featureSpacing,
-                topOffset: self.coverageDisplayHeight,
                 scrollTop: self.scrollTop,
               })
             : []
@@ -1201,7 +1417,10 @@ export default function stateModelFactory(
          * #getter
          */
         get scrollableHeight() {
-          return Math.max(0, self.totalPileupHeight - self.pileupViewportHeight)
+          return Math.max(
+            0,
+            self.pileupContentHeight - self.pileupViewportHeight,
+          )
         },
 
         // Only the tag NAME is sent to the worker (to extract per-read
@@ -1233,6 +1452,7 @@ export default function stateModelFactory(
             filterBy: self.filterBy,
             colorBy: self.colorBy,
             sortTag: this.sortTag,
+            groupBy: self.groupBy,
             showSoftClipping: self.showSoftClipping,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
@@ -1271,6 +1491,11 @@ export default function stateModelFactory(
             readConnectionsDown: self.readConnectionsDown,
             readConnectionsHeight: self.readConnectionsHeight,
             pileupTopOffset: self.coverageDisplayHeight,
+            coverageTopOffset: 0,
+            sections: buildSectionRenders(self.sections, {
+              scrollTop: self.scrollTop,
+              canvasHeight: self.height,
+            }),
             canvasWidth: view.width,
             canvasHeight: self.height,
             selectedFeatureId: self.selectedFeatureId,
@@ -1412,12 +1637,14 @@ export default function stateModelFactory(
            */
           setRpcData(
             displayedRegionIndex: number,
-            data: PileupDataResult | null,
+            data: GroupedAlignmentsResult | null,
           ) {
             if (data) {
               self.rpcDataMap.set(displayedRegionIndex, data)
-              for (const modType of data.detectedModifications) {
-                addModification(modType)
+              for (const { data: groupData } of data.groups) {
+                for (const modType of groupData.detectedModifications) {
+                  addModification(modType)
+                }
               }
             } else {
               self.rpcDataMap.delete(displayedRegionIndex)
@@ -1623,6 +1850,35 @@ export default function stateModelFactory(
            */
           clearSortedBy() {
             self.clearOverride('sortedBy')
+          },
+
+          /**
+           * #action
+           * Set (or clear, when undefined) the in-track stacked grouping
+           * dimension. A tier-1 refetch setting (in `rpcProps`) — the worker
+           * re-partitions the fetch into N sections. Resets the Y scroll since
+           * the stacked content height changes.
+           */
+          setGroupBy(groupBy?: GroupBy) {
+            if (groupBy) {
+              self.setOverride('groupBy', groupBy)
+            } else {
+              self.clearOverride('groupBy')
+            }
+            self.collapsedGroups.clear()
+            self.scrollTop = 0
+          },
+
+          /**
+           * #action
+           * Collapse/expand a stacked group's pileup (coverage stays visible).
+           */
+          toggleGroupCollapsed(key: string) {
+            if (self.collapsedGroups.has(key)) {
+              self.collapsedGroups.delete(key)
+            } else {
+              self.collapsedGroups.add(key)
+            }
           },
 
           /**
@@ -1978,7 +2234,7 @@ export default function stateModelFactory(
           self.attachRenderingBackend<AlignmentsRenderingBackend>(backend, {
             upload: b => {
               b.sync({
-                laidOutPileupMap: self.laidOutPileupMap,
+                sections: self.sourceSections,
                 arcsRpcDataMap: self.arcsRpcDataMap,
               })
             },
@@ -2094,18 +2350,23 @@ export default function stateModelFactory(
                 return
               }
 
-              const newDataMap = new Map<number, PileupDataResult>()
+              const newDataMap = new Map<number, GroupedAlignmentsResult>()
               self.setModificationsReady(true)
               for (const r of results) {
-                if (r.result.newTagValues) {
-                  self.updateColorTagMap(r.result.newTagValues)
+                // newTagValues are discovered per group; union across groups so
+                // colorTagMap covers every section's reads.
+                const tagValues = r.result.groups.flatMap(
+                  g => g.data.newTagValues ?? [],
+                )
+                if (tagValues.length > 0) {
+                  self.updateColorTagMap(tagValues)
                 }
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
-              // Assigning colorTagMap (above) re-runs laidOutPileupMap, which
+              // Assigning colorTagMap (above) re-runs laidOutByGroup, which
               // bakes readTagColors on the main thread — no refetch needed, so
               // there is no feedback loop. Order vs setRpcData no longer
-              // matters: the laidOutPileupMap getter recomputes on either.
+              // matters: the layout getter recomputes on either.
               for (const [displayedRegionIndex, data] of newDataMap) {
                 self.setRpcData(displayedRegionIndex, data)
               }

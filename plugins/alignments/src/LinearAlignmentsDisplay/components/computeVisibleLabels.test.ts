@@ -35,12 +35,11 @@ function run(rpcData: PileupDataResult) {
       ],
       bpPerPx: 0.1,
     },
-    laidOutPileupMap: { get: () => rpcData },
+    sections: [{ laidOutPileupMap: { get: () => rpcData }, topOffset: 0 }],
     height: 1000,
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
-    topOffset: 0,
     scrollTop: 0,
   })
 }
