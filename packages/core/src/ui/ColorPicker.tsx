@@ -13,6 +13,14 @@ import { useDebounce, useLocalStorage } from '../util/index.ts'
 // https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
 
 const useStyles = makeStyles()({
+  root: {
+    display: 'flex',
+    padding: 10,
+  },
+  column: {
+    width: 200,
+    margin: 5,
+  },
   swatches: {
     display: 'flex',
     padding: 12,
@@ -28,6 +36,8 @@ const useStyles = makeStyles()({
     outline: 'none',
   },
 })
+
+const palettes = Object.keys(paletteColors)
 
 type PaletteType = keyof typeof paletteColors
 
@@ -71,12 +81,14 @@ export default function ColorPicker({
   presetAlpha?: number
 }) {
   const { classes } = useStyles()
-  const [val, setVal] = useLocalStorage('colorPickerPalette', 'set1')
+  const [storedPalette, setStoredPalette] = useLocalStorage(
+    'colorPickerPalette',
+    'set1',
+  )
   // a stale localStorage value (e.g. a palette since renamed/removed) would
   // index to undefined and crash the swatch map below
-  const palette = isPaletteType(val) ? val : 'set1'
+  const palette = isPaletteType(storedPalette) ? storedPalette : 'set1'
   const presetColors = paletteColors[palette]
-  const palettes = Object.keys(paletteColors)
   const [text, setText] = useState(color)
   const rgb = colord(color).toRgbString()
   const rgbDebounced = useDebounce(rgb, 1000)
@@ -86,15 +98,15 @@ export default function ColorPicker({
     onChange(colord(val).toRgbString())
   }
   return (
-    <div style={{ display: 'flex', padding: 10 }}>
-      <div style={{ width: 200, margin: 5 }}>
+    <div className={classes.root}>
+      <div className={classes.column}>
         <RgbaStringColorPicker color={rgbDebounced} onChange={handleChange} />
       </div>
-      <div style={{ width: 200, margin: 5 }}>
+      <div className={classes.column}>
         <Select
           value={palette}
           onChange={event => {
-            setVal(event.target.value)
+            setStoredPalette(event.target.value)
           }}
         >
           {palettes.map(p => (
