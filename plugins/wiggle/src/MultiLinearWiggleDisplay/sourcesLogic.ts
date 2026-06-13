@@ -2,22 +2,14 @@ import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 
 import type { EditableSource, Source, SourceInfo } from '../util.ts'
 
-// Apply the overlay palette only to sources with no explicit color, in
-// overlay mode. Explicit choice (user layout or adapter config) always wins,
-// so the palette never overrides what the user picked.
-export function pickColor(
-  index: number,
-  isOverlay: boolean,
-  color: string | undefined,
-) {
-  return (
-    color ??
-    (isOverlay ? overlayColors[index % overlayColors.length] : undefined)
-  )
+// Overlay palette color for a row/group index, wrapping modulo palette length.
+function paletteColor(index: number) {
+  return overlayColors[index % overlayColors.length]!
 }
 
 // Build a group→color map in first-appearance order so every source in the
-// same group shares a palette entry regardless of display mode.
+// same group shares a palette entry regardless of display mode. Empty when no
+// source has a group.
 function buildGroupColors(sources: readonly Source[]): Map<string, string> {
   const seen = new Set<string>()
   const order: string[] = []
@@ -27,9 +19,7 @@ function buildGroupColors(sources: readonly Source[]): Map<string, string> {
       order.push(s.group)
     }
   }
-  return new Map(
-    order.map((g, i) => [g, overlayColors[i % overlayColors.length]!]),
-  )
+  return new Map(order.map((g, i) => [g, paletteColor(i)]))
 }
 
 // Merge adapter fields with the persisted layout, in layout order (or
@@ -75,18 +65,15 @@ export function buildSources(
   const base = filter
     ? editableSources.filter(s => filter.has(s.name))
     : editableSources
-  const groupColors = base.some(s => s.group !== undefined)
-    ? buildGroupColors(base)
-    : undefined
+  const groupColors = buildGroupColors(base)
   return base.map((s, i) => ({
     ...s,
     color:
-      s.color !== undefined
-        ? s.color
-        : s.group !== undefined
-          ? groupColors!.get(s.group)
-          : isOverlay
-            ? overlayColors[i % overlayColors.length]
-            : undefined,
+      s.color ??
+      (s.group !== undefined
+        ? groupColors.get(s.group)
+        : isOverlay
+          ? paletteColor(i)
+          : undefined),
   }))
 }

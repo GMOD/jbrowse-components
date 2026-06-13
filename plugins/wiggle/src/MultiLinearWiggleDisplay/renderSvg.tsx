@@ -4,14 +4,12 @@ import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
-import { YScaleBar, waitForRenderableState } from '@jbrowse/wiggle-core'
+import { SvgTreePath } from '@jbrowse/tree-sidebar'
+import { waitForRenderableState } from '@jbrowse/wiggle-core'
 
+import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
-import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
-import ScoreLegend from '../shared/ScoreLegend.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
-import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type {
@@ -31,16 +29,7 @@ export async function renderSvg(
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)
   const height = model.height
-  const {
-    ticks,
-    rpcDataMap,
-    domain,
-    scaleType,
-    numSources,
-    isOverlay,
-    rowHeight,
-    renderState,
-  } = model
+  const { rpcDataMap, domain, numSources, renderState } = model
 
   if (model.error) {
     return (
@@ -52,66 +41,16 @@ export async function renderSvg(
     return null
   }
 
-  let legendEl: React.ReactNode = null
-  if (model.isDensityMode) {
-    legendEl = (
-      <ScoreLegend
-        domain={domain}
-        scaleType={scaleType}
-        canvasWidth={view.width}
-      />
-    )
-  } else if (ticks) {
-    if (model.rowHeightTooSmallForScalebar) {
-      legendEl = (
-        <ScoreLegend
-          domain={domain}
-          scaleType={scaleType}
-          canvasWidth={view.width}
-        />
-      )
-    } else if (isOverlay) {
-      legendEl = (
-        <g transform={`translate(${scalebarLeft})`}>
-          <YScaleBar ticks={ticks} orientation="left" />
-        </g>
-      )
-    } else {
-      legendEl = (
-        <g transform={`translate(${scalebarLeft})`}>
-          {Array.from({ length: numSources }).map((_, idx) => (
-            <g
-              // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one scalebar per source row
-              key={`scalebar-${idx}`}
-              transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
-            >
-              <YScaleBar ticks={ticks} orientation="left" />
-            </g>
-          ))}
-        </g>
-      )
-    }
-  }
-
-  const sources = model.sources
   const { hierarchy, showTree, treeAreaWidth } = model
   const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
-  let labelsEl: React.ReactNode = null
-  if (sources.length > 1) {
-    labelsEl = isOverlay ? (
-      <OverlayColorLegend
-        sources={sources}
-        fallbackColor={model.posColor}
-        canvasWidth={view.width}
-      />
-    ) : (
-      <SvgRowLabels
-        sources={sources}
-        rowHeight={rowHeight}
-        labelOffset={labelOffset}
-      />
-    )
-  }
+  const scalesEl = (
+    <MultiWiggleSvgScales
+      model={model}
+      canvasWidth={view.width}
+      scalebarLeft={scalebarLeft}
+      labelOffset={labelOffset}
+    />
+  )
 
   const treeEl =
     showTree && hierarchy ? <SvgTreePath hierarchy={hierarchy} /> : null
@@ -142,8 +81,7 @@ export async function renderSvg(
       >
         {wiggleNode}
       </SvgClipRect>
-      {labelsEl}
-      {legendEl}
+      {scalesEl}
       {treeEl}
     </>
   )

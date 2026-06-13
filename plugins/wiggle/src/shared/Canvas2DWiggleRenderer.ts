@@ -23,7 +23,7 @@ import type {
 
 // Pure draw entry point per ARCHITECTURE.md "SVG export pipeline". Paints
 // line / density / scatter / xyplot per render type, one source per row.
-export function drawWiggleBlocks(
+function drawWiggleBlocks(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, SourceRenderData[]>,
   blocks: RenderBlock[],

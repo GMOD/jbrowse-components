@@ -1,17 +1,16 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { findOverlayHit, findRowHit } from './findHit.ts'
-import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
-import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
+import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
 import { getRowTop, hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
+import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
 
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -19,8 +18,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 
 type LGV = LinearGenomeViewModel
-
-const COORD0: [number, number] = [0, 0]
 
 const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model,
@@ -35,65 +32,44 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const totalWidth = view.trackWidthPx
   const height = model.height
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState(COORD0)
-
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      const container = containerRef.current
-      if (container) {
-        const rect = container.getBoundingClientRect()
-        const offsetX = event.clientX - rect.left
-        const offsetY = event.clientY - rect.top
-
-        setClientMouseCoord([event.clientX, event.clientY])
-        setOffsetMouseCoord([offsetX, offsetY])
-
-        const { rowHeight, sources, rpcDataMap, summaryScoreMode } = model
-        const hit =
-          sources.length === 0
-            ? undefined
-            : hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
-
-        if (!hit) {
-          model.setFeatureUnderMouse(undefined)
-        } else {
-          const { region, data, bp } = hit
-          const result = model.isOverlay
-            ? findOverlayHit(
-                data,
-                sources,
-                bp,
-                region.refName,
-                summaryScoreMode,
-              )
-            : findRowHit(
-                data,
-                sources,
-                bp,
-                offsetY,
-                rowHeight,
-                region.refName,
-                summaryScoreMode,
-              )
-          model.setFeatureUnderMouse(result)
-        }
-      }
+  const computeHit = useCallback(
+    (offsetX: number, offsetY: number) => {
+      const { rowHeight, sources, rpcDataMap, summaryScoreMode } = model
+      const hit =
+        sources.length === 0
+          ? undefined
+          : hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
+      return hit
+        ? model.isOverlay
+          ? findOverlayHit(
+              hit.data,
+              sources,
+              hit.bp,
+              hit.region.refName,
+              summaryScoreMode,
+            )
+          : findRowHit(
+              hit.data,
+              sources,
+              hit.bp,
+              offsetY,
+              rowHeight,
+              hit.region.refName,
+              summaryScoreMode,
+            )
+        : undefined
     },
     [model, view],
   )
 
-  const handleMouseLeave = useCallback(() => {
-    model.setFeatureUnderMouse(undefined)
-  }, [model])
-
-  const handleClick = () => {
-    const feat = model.featureUnderMouse
-    if (feat) {
-      model.selectFeature(feat)
-    }
-  }
+  const {
+    containerRef,
+    clientMouseCoord,
+    offsetMouseCoord,
+    handleMouseMove,
+    handleMouseLeave,
+    handleClick,
+  } = useWiggleMouseHandlers(model, computeHit)
 
   return (
     <DisplayChrome
@@ -141,7 +117,6 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   const scalebarLeft = model.scalebarOverlapLeft
   const numSources = model.numSources
   const rowHeight = model.rowHeight
-  const displaySources = model.sources
   const treeShowing = model.showTree && !!model.hierarchy
   const labelOffset = treeShowing ? model.treeAreaWidth : 0
 
@@ -171,53 +146,12 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           width: totalWidth,
         }}
       >
-        {displaySources.length > 1 ? (
-          model.isOverlay ? (
-            <OverlayColorLegend
-              sources={displaySources}
-              fallbackColor={model.posColor}
-              canvasWidth={totalWidth}
-            />
-          ) : (
-            <SvgRowLabels
-              sources={displaySources}
-              rowHeight={rowHeight}
-              labelOffset={labelOffset}
-            />
-          )
-        ) : null}
-
-        {model.isDensityMode && model.domain ? (
-          <ScoreLegend
-            domain={model.domain}
-            scaleType={model.scaleType}
-            canvasWidth={totalWidth}
-          />
-        ) : model.ticks && model.domain ? (
-          model.rowHeightTooSmallForScalebar ? (
-            <ScoreLegend
-              domain={model.domain}
-              scaleType={model.scaleType}
-              canvasWidth={totalWidth}
-            />
-          ) : model.isOverlay ? (
-            <g transform={`translate(${scalebarLeft || 50} 0)`}>
-              <YScaleBar ticks={model.ticks} orientation="left" />
-            </g>
-          ) : (
-            <g transform={`translate(${scalebarLeft || 50} 0)`}>
-              {Array.from({ length: numSources }).map((_, idx) => (
-                <g
-                  transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
-                  // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one scalebar per source row
-                  key={`scalebar-${idx}`}
-                >
-                  <YScaleBar ticks={model.ticks} orientation="left" />
-                </g>
-              ))}
-            </g>
-          )
-        ) : null}
+        <MultiWiggleSvgScales
+          model={model}
+          canvasWidth={totalWidth}
+          scalebarLeft={scalebarLeft || 50}
+          labelOffset={labelOffset}
+        />
 
         {!model.isOverlay && model.showRowSeparators && numSources > 1
           ? Array.from({ length: numSources - 1 }).map((_, idx) => {
@@ -238,39 +172,25 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           : null}
 
         {model.displayCrossHatches && model.ticks
-          ? model.isOverlay
-            ? model.ticks.items.map(({ value, y }) => (
-                <line
-                  key={`ch-${value}`}
-                  x1={0}
-                  x2={totalWidth}
-                  y1={y}
-                  y2={y}
-                  stroke="rgba(200,200,200,0.8)"
-                  strokeWidth={1}
-                />
-              ))
-            : Array.from({ length: numSources }).map((_, rowIdx) => {
+          ? // overlay draws one set of hatches over the full height (rowHeight
+            // === height, top === 0); rows repeat them per source.
+            Array.from({ length: model.isOverlay ? 1 : numSources }).map(
+              (_, rowIdx) => {
                 const top = getRowTop(rowIdx, rowHeight)
-                return model.ticks!.items.map(({ value, y: tickY }) => {
-                  const y = top + tickY
-                  if (y < top || y > top + rowHeight) {
-                    return null
-                  }
-                  return (
-                    <line
-                      // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, tick values can repeat across rows
-                      key={`ch-${rowIdx}-${value}`}
-                      x1={0}
-                      x2={totalWidth}
-                      y1={y}
-                      y2={y}
-                      stroke="rgba(200,200,200,0.8)"
-                      strokeWidth={1}
-                    />
-                  )
-                })
-              })
+                return model.ticks!.items.map(({ value, y: tickY }) => (
+                  <line
+                    // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, tick values can repeat across rows
+                    key={`ch-${rowIdx}-${value}`}
+                    x1={0}
+                    x2={totalWidth}
+                    y1={top + tickY}
+                    y2={top + tickY}
+                    stroke="rgba(200,200,200,0.8)"
+                    strokeWidth={1}
+                  />
+                ))
+              },
+            )
           : null}
       </svg>
 

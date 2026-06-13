@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -12,6 +12,7 @@ import { observer } from 'mobx-react'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
+import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
 import {
   findSourceHit,
   hitTestMouse,
@@ -21,8 +22,6 @@ import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-const COORD0: [number, number] = [0, 0]
 
 const WiggleComponent = observer(function WiggleComponent({
   model,
@@ -37,41 +36,26 @@ const WiggleComponent = observer(function WiggleComponent({
   const width = view.trackWidthPx
   const height = model.height
 
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState(COORD0)
-  const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      const container = containerRef.current
-      if (container) {
-        const rect = container.getBoundingClientRect()
-        const offsetX = event.clientX - rect.left
-        setOffsetMouseCoord([offsetX, event.clientY - rect.top])
-        setClientMouseCoord([event.clientX, event.clientY])
-
-        const { rpcDataMap, summaryScoreMode } = model
-        const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
-        const source = hit?.data.sources[0]
-        const result = source
-          ? findSourceHit(source, hit.bp, hit.region.refName, summaryScoreMode)
-          : undefined
-        model.setFeatureUnderMouse(result)
-      }
+  const computeHit = useCallback(
+    (offsetX: number) => {
+      const { rpcDataMap, summaryScoreMode } = model
+      const hit = hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
+      const source = hit?.data.sources[0]
+      return source
+        ? findSourceHit(source, hit.bp, hit.region.refName, summaryScoreMode)
+        : undefined
     },
     [model, view],
   )
 
-  const handleMouseLeave = useCallback(() => {
-    model.setFeatureUnderMouse(undefined)
-  }, [model])
-
-  const handleClick = () => {
-    const feat = model.featureUnderMouse
-    if (feat) {
-      model.selectFeature(feat)
-    }
-  }
+  const {
+    containerRef,
+    clientMouseCoord,
+    offsetMouseCoord,
+    handleMouseMove,
+    handleMouseLeave,
+    handleClick,
+  } = useWiggleMouseHandlers(model, computeHit)
 
   return (
     <DisplayChrome

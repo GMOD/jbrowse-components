@@ -1,32 +1,11 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 
-import {
-  buildEditableSources,
-  buildSources,
-  pickColor,
-} from './sourcesLogic.ts'
+import { buildEditableSources, buildSources } from './sourcesLogic.ts'
 
 import type { Source, SourceInfo } from '../util.ts'
 
 const adapter = (count: number): SourceInfo[] =>
   Array.from({ length: count }, (_, i) => ({ name: `source_${i}` }))
-
-describe('pickColor', () => {
-  it('returns the explicit color whenever one is set', () => {
-    expect(pickColor(0, true, '#abc')).toBe('#abc')
-    expect(pickColor(0, false, '#abc')).toBe('#abc')
-  })
-
-  it('synthesizes only in overlay mode', () => {
-    expect(pickColor(2, true, undefined)).toBe(overlayColors[2])
-    expect(pickColor(2, false, undefined)).toBeUndefined()
-  })
-
-  it('wraps the palette modulo palette length', () => {
-    const i = overlayColors.length + 3
-    expect(pickColor(i, true, undefined)).toBe(overlayColors[3])
-  })
-})
 
 describe('buildEditableSources', () => {
   it('returns adapter order when no layout', () => {
@@ -110,6 +89,13 @@ describe('buildSources', () => {
     expect(out[0]!.color).toBe('#ff0000')
     expect(out[1]!.color).toBe(overlayColors[1])
     expect(out[2]!.color).toBe('#00ff00')
+  })
+
+  it('wraps the overlay palette modulo palette length', () => {
+    const n = overlayColors.length
+    const out = buildSources(buildEditableSources(adapter(n + 2), []), undefined, true)
+    expect(out[n]!.color).toBe(overlayColors[0])
+    expect(out[n + 1]!.color).toBe(overlayColors[1])
   })
 
   it('re-indexes overlay palette after subtree filter', () => {

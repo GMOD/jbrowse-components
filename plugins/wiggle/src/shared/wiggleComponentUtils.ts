@@ -146,7 +146,7 @@ export function findFeatureAtBp(
   return bpOffset < featurePositions[found * 2 + 1]! ? found : -1
 }
 
-export function isSummaryFeature(
+function isSummaryFeature(
   score: number,
   minScore: number | undefined,
   maxScore: number | undefined,
@@ -162,7 +162,7 @@ export function isSummaryFeature(
 // feature is a real summary (min/max diverge from score) and the user isn't
 // asking for plain 'avg'. Otherwise returns `{}` so the tooltip omits those
 // fields. Used by both single- and multi-wiggle hit handlers.
-export function summaryFields(
+function summaryFields(
   score: number,
   minScore: number | undefined,
   maxScore: number | undefined,
