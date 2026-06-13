@@ -1,6 +1,8 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
+
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -60,11 +62,13 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
     return null
   }
   const { scrollTop, height } = model
+  // Grouping is active here, so the coverage band scrolls with its section.
+  const scroll = { isGrouped: true, scrollTop, canvasHeight: height }
   return (
     <>
       {model.renderSections.map((section, i) => {
-        const top = section.coverageTop - scrollTop
-        if (top + section.coverageHeight < 0 || top > height) {
+        const top = bandScreenTop(section.coverageTop, scroll)
+        if (!bandOnScreen(top, section.coverageHeight, scroll)) {
           return null
         }
         const count = groupReadCount(section.laidOutPileupMap)

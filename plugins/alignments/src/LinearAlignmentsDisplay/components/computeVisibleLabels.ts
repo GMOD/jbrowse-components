@@ -11,7 +11,11 @@ import {
   getInsertionType,
   insertionBarWidth,
 } from '../constants.ts'
-import { sectionBandBottom } from './sectionBand.ts'
+import {
+  bandScreenTop,
+  contentScreenY,
+  sectionBandBottom,
+} from './sectionScreen.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -85,20 +89,17 @@ export function computeVisibleLabels(
   }
 
   // Each stacked section places its labels at its own pileup top; ungrouped is
-  // one section, so this reduces to the prior single-offset loop.
-  // Ungrouped's lone section has a sticky coverage band, so its `topOffset`
-  // (== coverageDisplayHeight) is already the screen-space band top regardless
-  // of scroll. Grouped sections scroll as a stacked unit, so `topOffset` (==
-  // pileupTop, content-space) needs `-scrollTop` to become screen-space.
-  const grouped = sections.length > 1
+  // one section, so this reduces to the prior single-offset loop. See
+  // sectionScreen.ts for the band-top-vs-content scroll tiers used below.
+  const scroll = { isGrouped: sections.length > 1, scrollTop, canvasHeight: height } // prettier-ignore
   for (const { laidOutPileupMap, topOffset, pileupHeight } of sections) {
     const rowYPx = (y: number) =>
-      y * rowHeight + featureHeight / 2 - scrollTop + topOffset
+      contentScreenY(y * rowHeight + featureHeight / 2 + topOffset, scroll)
     // Clip to this section's pileup band bottom, not the whole canvas, so a
     // collapsed group (pileupHeight 0) draws nothing and a group's labels never
     // bleed into the section below it.
-    const bottom = sectionBandBottom(topOffset, pileupHeight, scrollTop, height)
-    const sectionTop = grouped ? topOffset - scrollTop : topOffset
+    const bottom = sectionBandBottom(topOffset, pileupHeight, scroll)
+    const sectionTop = bandScreenTop(topOffset, scroll)
     const rowYInRange = (yPx: number) => yPx >= sectionTop && yPx <= bottom
     for (const vr of view.visibleRegions) {
       const rpcData = laidOutPileupMap.get(vr.displayedRegionIndex)

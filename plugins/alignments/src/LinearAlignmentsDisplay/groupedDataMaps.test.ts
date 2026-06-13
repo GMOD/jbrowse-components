@@ -2,6 +2,7 @@ import {
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
+  orderedGroups,
 } from './groupedDataMaps.ts'
 
 import type {
@@ -27,6 +28,37 @@ function grouped(
 ): GroupedAlignmentsResult {
   return { groups: groups.map(g => ({ ...g, label: g.key })) }
 }
+
+test('orderedGroups dedupes group identities in first-seen order across regions', () => {
+  const order = orderedGroups(
+    new Map([
+      [
+        0,
+        grouped([
+          { key: '+', data: data(['a']) },
+          { key: '-', data: data(['b']) },
+        ]),
+      ],
+      // '-' already seen in region 0; '' is new and keeps its first-seen slot.
+      [
+        1,
+        grouped([
+          { key: '-', data: data(['c']) },
+          { key: '', data: data(['d']) },
+        ]),
+      ],
+    ]),
+  )
+  expect(order).toEqual([
+    { key: '+', label: '+' },
+    { key: '-', label: '-' },
+    { key: '', label: '' },
+  ])
+})
+
+test('orderedGroups is empty for an empty fetch', () => {
+  expect(orderedGroups(new Map())).toEqual([])
+})
 
 test('buildReadIdIndexMap locates each read by region + group + row', () => {
   const map = buildReadIdIndexMap(

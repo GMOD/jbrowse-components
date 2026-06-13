@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import { openSashimiWidget } from './openFeatureWidget.ts'
 import { computeSashimiArcsFromModel, sashimiArcKey } from './sashimiArcs.ts'
+import { bandScreenTop } from './sectionScreen.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -110,7 +111,11 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
 
   // Ungrouped coverage is sticky (only the pileup scrolls), so its band keeps
   // its content-space top; grouped sections scroll as a unit.
-  const { isGrouped, scrollTop } = model
+  const scroll = {
+    isGrouped: model.isGrouped,
+    scrollTop: model.scrollTop,
+    canvasHeight: model.height,
+  }
   return (
     <>
       {model.sashimiSections.map(section => (
@@ -119,7 +124,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
           model={model}
           view={view}
           rpcDataMap={section.rpcDataMap}
-          screenTop={isGrouped ? section.top - scrollTop : section.top}
+          screenTop={bandScreenTop(section.top, scroll)}
           selectedArcKey={selectedArcKey}
           onSelect={setSelectedArcKey}
         />

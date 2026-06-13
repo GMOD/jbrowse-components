@@ -1,5 +1,5 @@
 import { makeBpToScreenX } from './alignmentComponentUtils.ts'
-import { sectionBandBottom } from './sectionBand.ts'
+import { sectionBandBottom } from './sectionScreen.ts'
 import { computePileupBezierArcs } from '../../features/linkedReads/computeOverlay.ts'
 
 import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
@@ -25,14 +25,14 @@ export function computePileupBezierArcsFromModel(
     return []
   }
   const bpToScreenX = makeBpToScreenX(view)
+  const scroll = {
+    isGrouped: model.isGrouped,
+    scrollTop,
+    canvasHeight: model.height,
+  }
   const result: PileupArc[] = []
   for (const sec of model.renderSections) {
-    const bottom = sectionBandBottom(
-      sec.topOffset,
-      sec.pileupHeight,
-      scrollTop,
-      model.height,
-    )
+    const bottom = sectionBandBottom(sec.topOffset, sec.pileupHeight, scroll)
     result.push(
       ...computePileupBezierArcs({
         laidOutPileupMap: sec.laidOutPileupMap,

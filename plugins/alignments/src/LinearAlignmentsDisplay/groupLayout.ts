@@ -5,26 +5,21 @@ import {
 import { overlayReadTagColors } from './readTagColors.ts'
 import { buildLaidOutPileupMap } from '../RenderAlignmentDataRPC/sortLayout.ts'
 
-import type {
-  GroupedAlignmentsResult,
-  PileupDataResult,
-} from '../RenderAlignmentDataRPC/types.ts'
+import type { GroupId } from './groupedDataMaps.ts'
+import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
 
-export interface GroupLayout {
-  // Group keys in stacking order — first-seen order across regions (the worker
-  // already emits groups in a deterministic sorted order, untagged last).
-  order: { key: string; label: string }[]
-  // Per group key: region index → laid-out data (Y arrays filled).
-  byGroup: Map<string, Map<number, PileupDataResult>>
-}
+// Per group key: region index → laid-out data (Y arrays filled).
+export type LaidOutByGroup = Map<string, Map<number, PileupDataResult>>
 
 // Lay out each group independently so one dense group can't starve the rest:
 // every group runs the existing single/multi-region layout over just its own
 // reads, capped at `maxRows` per group. Ungrouped fetches are the one-group
-// case, so this reduces exactly to the previous `laidOutPileupMap`.
+// case, so this reduces exactly to the previous `laidOutPileupMap`. Stacking
+// order is the caller's `order` (see `orderedGroups`), so this stays purely a
+// layout pass — it doesn't re-derive group identity.
 export function buildLaidOutByGroup({
-  rpcDataMap,
+  order,
   rawByGroup,
   isChainMode,
   sortedBy,
@@ -35,7 +30,7 @@ export function buildLaidOutByGroup({
   colorBy,
   colorTagMap,
 }: {
-  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
+  order: GroupId[]
   // Pre-grouped raw data (group key → region idx → data) from
   // `buildRawDataByGroup`; reused here so the per-key region map is an O(1)
   // lookup instead of re-partitioning `rpcDataMap` with a nested `.find`.
@@ -50,19 +45,8 @@ export function buildLaidOutByGroup({
   showLinkedReadLines: boolean
   colorBy: ColorBy | undefined
   colorTagMap: Record<string, string>
-}): GroupLayout {
-  const order: { key: string; label: string }[] = []
-  const seen = new Set<string>()
-  for (const grouped of rpcDataMap.values()) {
-    for (const g of grouped.groups) {
-      if (!seen.has(g.key)) {
-        seen.add(g.key)
-        order.push({ key: g.key, label: g.label })
-      }
-    }
-  }
-
-  const byGroup = new Map<string, Map<number, PileupDataResult>>()
+}): LaidOutByGroup {
+  const byGroup: LaidOutByGroup = new Map()
   for (const { key } of order) {
     const dataMap = rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
     const base = isChainMode
@@ -76,7 +60,7 @@ export function buildLaidOutByGroup({
     const withLines = showLinkedReadLines ? attachLinkedReadLines(base) : base
     byGroup.set(key, overlayReadTagColors(withLines, colorBy, colorTagMap))
   }
-  return { order, byGroup }
+  return byGroup
 }
 
 // Max row count for a group's laid-out region map (sections stack by this).

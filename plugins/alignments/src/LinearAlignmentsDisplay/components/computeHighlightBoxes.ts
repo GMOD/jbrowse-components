@@ -1,4 +1,8 @@
-import { sectionBandBottom } from './sectionBand.ts'
+import {
+  bandScreenTop,
+  contentScreenY,
+  sectionBandBottom,
+} from './sectionScreen.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -117,11 +121,9 @@ export function computeHighlightBoxes(
   const rowHeight = featureHeight + featureSpacing
   const { bpPerPx } = view
   const boxes: HighlightBox[] = []
-  // Ungrouped's lone section has a sticky coverage band, so its `topOffset`
-  // (== coverageDisplayHeight) is already the screen-space band top regardless
-  // of scroll. Grouped sections scroll as a stacked unit, so `topOffset` (==
-  // pileupTop, content-space) needs `-scrollTop` to become screen-space.
-  const grouped = sections.length > 1
+  // See sectionScreen.ts for the band-top-vs-content scroll tiers: a row is
+  // content (always scrolls), the section ceiling is a sticky-capable band top.
+  const scroll = { isGrouped: sections.length > 1, scrollTop, canvasHeight: height } // prettier-ignore
   for (const vr of view.visibleRegions) {
     for (const bounds of byKey.values()) {
       if (bounds.displayedRegionIndex !== vr.displayedRegionIndex) {
@@ -133,16 +135,16 @@ export function computeHighlightBoxes(
         (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + vr.screenStartPx
       const x1 = bpToPx(bounds.startBp)
       const x2 = bpToPx(bounds.endBp)
-      const top = bounds.yRow * rowHeight - scrollTop + bounds.topOffset
+      const top = contentScreenY(
+        bounds.yRow * rowHeight + bounds.topOffset,
+        scroll,
+      )
       const bottom = sectionBandBottom(
         bounds.topOffset,
         bounds.pileupHeight,
-        scrollTop,
-        height,
+        scroll,
       )
-      const sectionTop = grouped
-        ? bounds.topOffset - scrollTop
-        : bounds.topOffset
+      const sectionTop = bandScreenTop(bounds.topOffset, scroll)
       // Strict `<`: a collapsed group has a zero-height band (bottom ==
       // sectionTop), so its row anchored at sectionTop must not draw a box.
       if (top + featureHeight >= sectionTop && top < bottom) {

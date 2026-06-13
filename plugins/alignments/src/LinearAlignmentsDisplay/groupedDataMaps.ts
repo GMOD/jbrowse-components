@@ -18,6 +18,36 @@ export function* eachGroupData(
   }
 }
 
+// A group's stable identity: its sort key and human-readable label.
+export interface GroupId {
+  key: string
+  label: string
+}
+
+// Ordered, de-duplicated group identities across every fetched region, in the
+// worker's emit order (sorted, untagged-key '' last). Group membership, order,
+// and labels are a property of the *fetch*, not of layout — deriving them
+// straight from `rpcDataMap` keeps the order stable across every main-thread
+// relayout (sortedBy / softclip / per-group height drag) and gives the whole
+// model one source of truth for it, rather than recomputing it inside the
+// layout pass (`buildLaidOutByGroup`) and again as `buildRawDataByGroup`'s key
+// order.
+export function orderedGroups(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+): GroupId[] {
+  const order: GroupId[] = []
+  const seen = new Set<string>()
+  for (const grouped of rpcDataMap.values()) {
+    for (const { key, label } of grouped.groups) {
+      if (!seen.has(key)) {
+        seen.add(key)
+        order.push({ key, label })
+      }
+    }
+  }
+  return order
+}
+
 // Per-read lookups derived by scanning every group of every fetched region.
 // Pulled out of the model so the O(reads) scans are pure + unit-testable; the
 // model exposes them as memoized getters over `rpcDataMap`.

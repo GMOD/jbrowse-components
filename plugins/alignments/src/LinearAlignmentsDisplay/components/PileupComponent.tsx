@@ -25,6 +25,7 @@ import {
   startDocumentDrag,
   useAbortableRef,
 } from './alignmentComponentUtils.ts'
+import { bandOnScreen, bandScreenTop, contentScreenY } from './sectionScreen.ts'
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
@@ -264,9 +265,15 @@ const ConnectionBandResizeHandles = observer(
   }) {
     const { classes } = useStyles()
     const { belowCoverageBands: bands, isGrouped, scrollTop, height } = model
-    const scroll = isGrouped ? scrollTop : 0
-    const arcHandleTop = bands.sashimiBandTop - YSCALEBAR_LABEL_OFFSET - scroll
-    const sashimiHandleTop = bands.bottom - YSCALEBAR_LABEL_OFFSET - scroll
+    const scroll = { isGrouped, scrollTop, canvasHeight: height }
+    const arcHandleTop = bandScreenTop(
+      bands.sashimiBandTop - YSCALEBAR_LABEL_OFFSET,
+      scroll,
+    )
+    const sashimiHandleTop = bandScreenTop(
+      bands.bottom - YSCALEBAR_LABEL_OFFSET,
+      scroll,
+    )
     const onScreen = (top: number) =>
       top >= -YSCALEBAR_LABEL_OFFSET && top <= height
     return (
@@ -316,13 +323,17 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
     return null
   }
   const { scrollTop, height } = model
+  const scroll = { isGrouped: true, scrollTop, canvasHeight: height }
   return (
     <>
       {model.renderSections.map(section => {
         if (model.isGroupCollapsed(section.groupKey)) {
           return null
         }
-        const bottom = section.topOffset + section.pileupHeight - scrollTop
+        const bottom = contentScreenY(
+          section.topOffset + section.pileupHeight,
+          scroll,
+        )
         if (bottom < 0 || bottom > height) {
           return null
         }
@@ -423,14 +434,14 @@ const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
   model: LinearAlignmentsDisplayModel
 }) {
   const { coverageTicks, scrollTop, height, renderSections } = model
-  const section = renderSections.find(s => {
-    const top = s.coverageTop - scrollTop
-    return top + s.coverageHeight >= 0 && top <= height
-  })
+  const scroll = { isGrouped: true, scrollTop, canvasHeight: height }
+  const section = renderSections.find(s =>
+    bandOnScreen(bandScreenTop(s.coverageTop, scroll), s.coverageHeight, scroll),
+  )
   if (!section || !coverageTicks) {
     return null
   }
-  const top = section.coverageTop - scrollTop
+  const top = bandScreenTop(section.coverageTop, scroll)
   if (section.coverageHeight < COMPACT_AXIS_HEIGHT) {
     return (
       <CompactCoverageLabel

@@ -42,6 +42,7 @@ import {
   buildRawDataByGroup,
   buildReadIdIndexMap,
   eachGroupData,
+  orderedGroups,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
@@ -905,7 +906,7 @@ export default function stateModelFactory(
             maxRowsOverrides.set(key, maxRowsFor(px, rowHeight))
           }
           return buildLaidOutByGroup({
-            rpcDataMap: self.rpcDataMap,
+            order: this.groupOrder,
             rawByGroup: this.rawDataByGroup,
             isChainMode: self.linkedReads === 'normal',
             sortedBy: this.sortedBy,
@@ -923,10 +924,12 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Group keys in stacking order; a single entry (key '') when ungrouped.
+         * Group keys + labels in stacking order; a single entry (key '') when
+         * ungrouped. Derived straight from the fetched `rpcDataMap` (not from the
+         * layout pass), so group identity/order stays stable across relayouts.
          */
         get groupOrder() {
-          return this.laidOutByGroup.order
+          return orderedGroups(self.rpcDataMap)
         },
 
         /**
@@ -937,8 +940,7 @@ export default function stateModelFactory(
          */
         groupLaidOutMap(key: string) {
           return (
-            this.laidOutByGroup.byGroup.get(key) ??
-            new Map<number, PileupDataResult>()
+            this.laidOutByGroup.get(key) ?? new Map<number, PileupDataResult>()
           )
         },
 
@@ -990,7 +992,7 @@ export default function stateModelFactory(
          * truncation is intentional, not the global cap the banner offers to lift.
          */
         get pileupTruncated() {
-          for (const [key, map] of this.laidOutByGroup.byGroup) {
+          for (const [key, map] of this.laidOutByGroup) {
             if (self.groupMaxHeightOverrides.has(key)) {
               continue
             }
@@ -1121,7 +1123,7 @@ export default function stateModelFactory(
             return undefined
           }
           const { displayedRegionIndex, groupKey, idx } = entry
-          const rpcData = self.laidOutByGroup.byGroup
+          const rpcData = self.laidOutByGroup
             .get(groupKey)
             ?.get(displayedRegionIndex)
           if (!rpcData) {
