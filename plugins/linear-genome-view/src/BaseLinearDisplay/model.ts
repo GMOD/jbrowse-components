@@ -83,15 +83,10 @@ function stateModelFactory() {
         }),
       )
       .volatile(() => ({
-        mouseoverExtraInformation: undefined as string | undefined,
         /**
          * #volatile
          */
         featureIdUnderMouse: undefined as undefined | string,
-        /**
-         * #volatile
-         */
-        subfeatureIdUnderMouse: undefined as undefined | string,
         /**
          * #volatile
          */
@@ -325,21 +320,8 @@ function stateModelFactory() {
         /**
          * #action
          */
-        setSubfeatureIdUnderMouse(subfeatureId?: string) {
-          self.subfeatureIdUnderMouse = subfeatureId
-        },
-
-        /**
-         * #action
-         */
         setContextMenuFeature(feature?: Feature) {
           self.contextMenuFeature = feature
-        },
-        /**
-         * #action
-         */
-        setMouseoverExtraInformation(extra?: string) {
-          self.mouseoverExtraInformation = extra
         },
         /**
          * #action
