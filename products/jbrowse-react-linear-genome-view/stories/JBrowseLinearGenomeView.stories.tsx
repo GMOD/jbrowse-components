@@ -2226,6 +2226,7 @@ function WithGroupByTagRender() {
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 400,
+              colorBy: { type: 'tag', tag: 'HP' },
               groupBy: { type: 'tag', tag: 'HP' },
             },
           },
@@ -2281,12 +2282,14 @@ function App() {
         tracks: [
           {
             trackId: 'volvox_bam',
-            // pass groupBy as a flat key in displaySnapshot — it is collected
-            // into the display's configOverrides map on load.
+            // colorBy + groupBy are flat keys collected into configOverrides on
+            // load. pairing them on the same tag colors each haplotype
+            // distinctly within its group.
             // increase height so all groups (HP:0, HP:1, unassigned) are visible
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 400,
+              colorBy: { type: 'tag', tag: 'HP' },
               groupBy: { type: 'tag', tag: 'HP' },
             },
           },
