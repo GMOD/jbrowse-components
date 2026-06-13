@@ -1,14 +1,9 @@
 import {
-  SAM_FLAG_PROPER_PAIR,
   SAM_FLAG_REVERSE,
-  SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
-import { groupBy, max, min } from '@jbrowse/core/util'
+import { groupBy } from '@jbrowse/core/util'
 
-import { getInsertSizeStats } from './insertSizeStats.ts'
-
-import type { ChainStats } from './types.ts'
 import type { ChainFeatureData } from './webglRpcTypes.ts'
 
 /**
@@ -17,35 +12,15 @@ import type { ChainFeatureData } from './webglRpcTypes.ts'
  * map (`featureIdToChainIdx`) the read-array loop uses to attach reads to
  * chains. `chainFirstReadIndices` is allocated zero-filled — the caller fills
  * it during the read-array pass, since it indexes into the read arrays.
+ *
+ * Insert-size stats are NOT computed here: they describe the whole region's
+ * read set, not one group, so the worker entry computes one shared scale across
+ * all groups (see computeChainInsertSizeStats).
  */
 export function buildChainMetadata(features: ChainFeatureData[]) {
   const featuresByName = groupBy(features, f => f.name)
   const chains = Object.values(featuresByName)
   const numChains = chains.length
-
-  const tlens: number[] = []
-  for (const f of features) {
-    if (
-      f.flags & SAM_FLAG_PROPER_PAIR &&
-      !(f.flags & SAM_FLAG_SECONDARY) &&
-      !(f.flags & SAM_FLAG_SUPPLEMENTARY)
-    ) {
-      const tlen = f.templateLength
-      if (tlen !== 0 && !Number.isNaN(tlen)) {
-        tlens.push(Math.abs(tlen))
-      }
-    }
-  }
-
-  let chainStats: ChainStats | undefined
-  if (tlens.length > 0) {
-    const insertSizeStats = getInsertSizeStats(tlens)
-    chainStats = {
-      ...insertSizeStats,
-      max: max(tlens),
-      min: min(tlens),
-    }
-  }
 
   const chainAbsMinStarts = new Uint32Array(numChains)
   const chainAbsMaxEnds = new Uint32Array(numChains)
@@ -94,7 +69,6 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   }
 
   return {
-    chainStats,
     chainAbsMinStarts,
     chainAbsMaxEnds,
     chainDistances,

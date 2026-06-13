@@ -191,12 +191,17 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
       expect(display.isGrouped).toBe(true)
       expect(display.groupOrder.length).toBeGreaterThanOrEqual(2)
       // every section carries chain metadata, proving the chain-aware partition
-      // ran (rather than degrading to ungrouped).
+      // ran (rather than degrading to ungrouped). Insert-size stats are pooled
+      // across groups in the worker, so every section of a region shares one
+      // color scale (not a per-group denominator).
       for (const grouped of display.rpcDataMap.values()) {
+        const scales = new Set<string>()
         for (const { data } of grouped.groups) {
           expect(data.readChainIndices).toBeDefined()
           expect(data.chainNames).toBeDefined()
+          scales.add(JSON.stringify(data.insertSizeStats ?? null))
         }
+        expect(scales.size).toBe(1)
       }
     },
     { timeout: 30000 },

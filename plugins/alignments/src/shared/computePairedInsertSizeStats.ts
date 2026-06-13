@@ -6,27 +6,46 @@ import {
 
 import { getInsertSizeStats } from './insertSizeStats.ts'
 
-import type { FeatureData } from './webglRpcTypes.ts'
+import type { ChainFeatureData, FeatureData } from './webglRpcTypes.ts'
+
+const PRIMARY_PROPER_PAIR_MASK = SAM_FLAG_SECONDARY | SAM_FLAG_SUPPLEMENTARY
+
+function isPrimaryProperPair(flags: number) {
+  return !!(flags & SAM_FLAG_PROPER_PAIR) && !(flags & PRIMARY_PROPER_PAIR_MASK)
+}
 
 /**
- * Insert-size stats from primary proper-pair reads only. Pileup uses this to
- * gate the insert-size color scale. Chain mode uses chainStats from
- * buildChainMetadata instead — different denominator (template length per
- * chain vs primary read insert size).
+ * Insert-size stats (mean ± 3 SD color thresholds) from primary proper-pair
+ * reads only. The insert-size distribution is a property of the whole fetched
+ * read set, so the caller pools every read of a region (across groups) and feeds
+ * one shared scale to all stacked sections — not a per-group denominator that
+ * would color the same insert size differently between sections.
  */
 export function computePairedInsertSizeStats(features: FeatureData[]) {
-  const PRIMARY_PROPER_PAIR_MASK = SAM_FLAG_SECONDARY | SAM_FLAG_SUPPLEMENTARY
   const pairedInsertSizes: number[] = []
   for (const f of features) {
-    if (
-      f.flags & SAM_FLAG_PROPER_PAIR &&
-      !(f.flags & PRIMARY_PROPER_PAIR_MASK) &&
-      f.insertSize > 0
-    ) {
+    if (isPrimaryProperPair(f.flags) && f.insertSize > 0) {
       pairedInsertSizes.push(f.insertSize)
     }
   }
   return pairedInsertSizes.length > 0
     ? getInsertSizeStats(pairedInsertSizes)
     : undefined
+}
+
+/**
+ * Chain-mode counterpart to computePairedInsertSizeStats: same primary
+ * proper-pair filter, but keyed on template length (the chain denominator)
+ * rather than the per-read insert-size field. Pooled across the region's chains
+ * by the caller for the same shared-scale reason.
+ */
+export function computeChainInsertSizeStats(features: ChainFeatureData[]) {
+  const tlens: number[] = []
+  for (const f of features) {
+    const tlen = f.templateLength
+    if (isPrimaryProperPair(f.flags) && tlen !== 0 && !Number.isNaN(tlen)) {
+      tlens.push(Math.abs(tlen))
+    }
+  }
+  return tlens.length > 0 ? getInsertSizeStats(tlens) : undefined
 }

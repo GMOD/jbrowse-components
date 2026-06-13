@@ -92,13 +92,6 @@ export interface SortedBy {
   tag?: string
 }
 
-export interface ChainStats {
-  max: number
-  min: number
-  upper: number
-  lower: number
-}
-
 // Numeric interbase type codes stored in Uint8Array interbaseTypes.
 // Must match the order used in shared/buildInterbaseArrays addItems calls.
 export const INTERBASE_INSERTION = 1

@@ -12,7 +12,10 @@ import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
-import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
+import {
+  computeChainInsertSizeStats,
+  computePairedInsertSizeStats,
+} from '../shared/computePairedInsertSizeStats.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
@@ -72,7 +75,6 @@ function buildChainResultFields(
   features: ChainFeatureData[],
 ): Partial<PileupDataResult> {
   const {
-    chainStats,
     chainAbsMinStarts,
     chainAbsMaxEnds,
     chainDistances,
@@ -109,7 +111,6 @@ function buildChainResultFields(
     chainNames,
     chainHasMultiple,
     chainFirstReadIndices,
-    insertSizeStats: chainStats,
   }
 }
 
@@ -125,6 +126,9 @@ interface GroupContext {
   regionSequence: string | undefined
   regionSequenceStart: number
   detectedSimplexModifications: ReadonlySet<string>
+  // Shared insert-size color scale, pooled across every group of the fetch so
+  // all stacked sections color long/short inserts on one comparable scale.
+  insertSizeStats: { upper: number; lower: number } | undefined
   statusCallback: (status: string) => void
   stopTokenCheck: StopTokenChecker
 }
@@ -162,6 +166,7 @@ async function buildGroupResult(
     regionSequence,
     regionSequenceStart,
     detectedSimplexModifications,
+    insertSizeStats,
     statusCallback,
     stopTokenCheck,
   } = ctx
@@ -188,7 +193,6 @@ async function buildGroupResult(
     ? buildChainResultFields(features as ChainFeatureData[])
     : {
         readNextRefs: nextRefs,
-        insertSizeStats: computePairedInsertSizeStats(features),
         sortTagValues,
       }
 
@@ -277,6 +281,10 @@ async function buildGroupResult(
     newTagValues: uniqueTagValues,
     readNextPositions: new Uint32Array(nextPositions),
     readSuppAlignments: suppAlignments,
+
+    // One shared insert-size scale for every group of the fetch (pooled in the
+    // worker entry), so stacked sections stay color-comparable.
+    insertSizeStats,
 
     ...chainFields,
 
@@ -409,6 +417,16 @@ export async function executeRenderAlignmentData({
     ...seenModTypes.values(),
   ])
 
+  // One insert-size color scale pooled across ALL groups — the insert-size
+  // distribution is a property of the whole fetched read set, not of a group,
+  // so a per-group scale would color the same insert size differently between
+  // stacked sections. Same cross-section comparability as the simplex-mod set
+  // above. Chain keys on template length, pileup on the per-read insert size.
+  const allFeatures = extractions.flatMap(e => e.features)
+  const sharedInsertSizeStats = isChain
+    ? computeChainInsertSizeStats(allFeatures as ChainFeatureData[])
+    : computePairedInsertSizeStats(allFeatures)
+
   checkStopToken2(stopTokenCheck)
 
   // Pileup tracks per-base strands + reference sequence for modification
@@ -427,6 +445,7 @@ export async function executeRenderAlignmentData({
     regionSequence,
     regionSequenceStart,
     detectedSimplexModifications,
+    insertSizeStats: sharedInsertSizeStats,
     statusCallback,
     stopTokenCheck,
   }
