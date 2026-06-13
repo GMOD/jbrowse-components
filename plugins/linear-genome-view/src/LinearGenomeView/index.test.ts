@@ -1,9 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  ConfigurationSchema,
+} from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import {
+  BaseDisplay,
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
@@ -12,14 +16,29 @@ import { waitFor } from '@testing-library/react'
 
 import { stateModelFactory } from './index.ts'
 import { BaseLinearDisplayComponent } from '../index.ts'
+import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
-import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay/index.ts'
 
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from './index.ts'
 import type { InitState } from './types.ts'
 
 type LGV = LinearGenomeViewModel
+
+// Minimal display state model used as a generic fixture in these LGV unit
+// tests (replaces the removed LinearBareDisplay). Composes the surviving
+// BaseDisplay + TrackHeightMixin so `type` and `height` behave normally.
+function stubDisplayStateModel(configSchema: AnyConfigurationSchemaType) {
+  return types.compose(
+    'LinearBareDisplay',
+    types.compose(BaseDisplay, TrackHeightMixin()),
+    types.model({
+      type: types.literal('LinearBareDisplay'),
+      configuration: ConfigurationReference(configSchema),
+    }),
+  )
+}
 
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
@@ -52,7 +71,7 @@ function initialize() {
     return new DisplayType({
       name: 'LinearBareDisplay',
       configSchema,
-      stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+      stateModel: stubDisplayStateModel(configSchema),
       trackType: 'BasicTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,
@@ -1336,7 +1355,7 @@ describe('TrackInit with display configuration', () => {
       return new DisplayType({
         name: 'LinearBareDisplay',
         configSchema,
-        stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+        stateModel: stubDisplayStateModel(configSchema),
         trackType: 'BasicTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,

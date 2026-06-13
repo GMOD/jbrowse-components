@@ -9,10 +9,8 @@ import {
   BaseLinearDisplayComponent,
   baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay/index.ts'
-import BasicTrackF from './BasicTrack/index.ts'
 import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
-import LinearBareDisplayF from './LinearBareDisplay/index.ts'
 import ZoomControls from './LinearGenomeView/components/HeaderZoomControls.tsx'
 import LinearGenomeViewF, {
   LinearGenomeView,
@@ -54,9 +52,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     FeatureTrackF(pluginManager)
-    BasicTrackF(pluginManager)
     LinearGenomeViewF(pluginManager)
-    LinearBareDisplayF(pluginManager)
     LaunchLinearGenomeViewF(pluginManager)
   }
 
@@ -82,10 +78,6 @@ export type {
   RenderedProps,
 } from './BaseLinearDisplay/index.ts'
 
-export {
-  configSchemaFactory as linearBareDisplayConfigSchemaFactory,
-  stateModelFactory as linearBareDisplayStateModelFactory,
-} from './LinearBareDisplay/index.ts'
 export {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
