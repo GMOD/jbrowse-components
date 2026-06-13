@@ -47,7 +47,8 @@ async function myfetchjson(uri: string) {
 // reference code https://stackoverflow.com/a/77158517/2129219
 const sourceMaps: Record<string, SourceMapConsumer> = {}
 const sourceMappingUrlRe = /\/\/# sourceMappingURL=(.*)/
-const stackLineRe = /((?:https?|file):\/\/[^\s)]*):(\d+):(\d+)\)?$/
+const protocolRe = /(?:https?|file):\/\//
+const digitsRe = /^\d+$/
 
 async function getSourceMapFromUri(uri: string) {
   if (sourceMaps[uri]) {
@@ -62,29 +63,49 @@ async function getSourceMapFromUri(uri: string) {
   return map
 }
 
+// parses a "frame" line like "  at f (file:///foo.js:12:34)" into its
+// prefix ("  at f ("), source uri, line, and column, or undefined if the
+// line doesn't end with a uri:line:column reference
+function parseStackLine(line: string) {
+  const protocolMatch = protocolRe.exec(line)
+  if (!protocolMatch) {
+    return undefined
+  }
+
+  const urlStart = protocolMatch.index
+  const rest = line.slice(urlStart).replace(/\)$/, '')
+  const lastColon = rest.lastIndexOf(':')
+  const secondLastColon = rest.lastIndexOf(':', lastColon - 1)
+  const lineStr = rest.slice(secondLastColon + 1, lastColon)
+  const columnStr = rest.slice(lastColon + 1)
+
+  return secondLastColon > 0 &&
+    digitsRe.test(lineStr) &&
+    digitsRe.test(columnStr)
+    ? {
+        prefix: line.slice(0, urlStart).trim(),
+        uri: rest.slice(0, secondLastColon),
+        line: +lineStr,
+        column: +columnStr,
+      }
+    : undefined
+}
+
 async function mapStackTrace(stack: string) {
   const mappedStack = []
   for (const line of stack.split('\n')) {
-    const match = stackLineRe.exec(line)
-    if (!match) {
+    const frame = parseStackLine(line)
+    if (frame) {
+      const consumer = await getSourceMapFromUri(frame.uri)
+      const pos = consumer.originalPositionFor(frame)
+      mappedStack.push(
+        pos.source && pos.line && pos.column
+          ? `${pos.source}:${pos.line}:${pos.column + 1} (${frame.prefix})`
+          : line,
+      )
+    } else {
       mappedStack.push(line)
-      continue
     }
-
-    const uri = match[1]!
-    const consumer = await getSourceMapFromUri(uri)
-    const pos = consumer.originalPositionFor({
-      line: +match[2]!,
-      column: +match[3]!,
-    })
-
-    if (!pos.source || !pos.line || !pos.column) {
-      mappedStack.push(line)
-      continue
-    }
-
-    const prefix = line.slice(0, match.index).trim()
-    mappedStack.push(`${pos.source}:${pos.line}:${pos.column + 1} (${prefix})`)
   }
   return mappedStack.join('\n')
 }
