@@ -1258,15 +1258,15 @@ importers:
       generic-filehandle2:
         specifier: ^2.1.10
         version: 2.1.10
-      hic-straw:
-        specifier: ^2.1.4
-        version: 2.1.4
       mobx:
         specifier: ^6.16.1
         version: 6.16.1
       mobx-react:
         specifier: ^9.2.2
         version: 9.2.2(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      pako-esm2:
+        specifier: ^2.0.2
+        version: 2.0.2
       react:
         specifier: '>=19.0.0'
         version: 19.2.7
@@ -7648,10 +7648,6 @@ packages:
 
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
-
-  hic-straw@2.1.4:
-    resolution: {integrity: sha512-AV+XqVRUp8iLabNYr0gKyWOgKYURf2FCX0LwHA1neeZseH1zwA0l9u5NLrI2w/VK3iVrtx6goJ2U9STJrQY79w==}
-    hasBin: true
 
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
@@ -16426,8 +16422,6 @@ snapshots:
   hermes-parser@0.25.1:
     dependencies:
       hermes-estree: 0.25.1
-
-  hic-straw@2.1.4: {}
 
   hoist-non-react-statics@3.3.2:
     dependencies:
