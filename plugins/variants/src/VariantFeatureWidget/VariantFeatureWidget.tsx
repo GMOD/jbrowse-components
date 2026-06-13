@@ -137,14 +137,14 @@ const FeatDefined = observer(function FeatDefined({
           descriptions={descriptions}
           fieldKey="CSQ"
           title="Variant CSQ field"
-          regex={/.*Format: (.*)/}
+          regex={/Format: (.*)/}
         />
         <AnnotationPanel
           feature={rest}
           descriptions={descriptions}
           fieldKey="ANN"
           title="Variant ANN field"
-          regex={/.*Functional annotations:'(.*)'$/}
+          regex={/Functional annotations:'(.*)'$/}
         />
         <LaunchBreakendWidgetArea model={model} feat={feat} />
       </Suspense>

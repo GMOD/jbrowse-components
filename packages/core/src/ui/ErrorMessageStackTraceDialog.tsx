@@ -47,7 +47,7 @@ async function myfetchjson(uri: string) {
 // reference code https://stackoverflow.com/a/77158517/2129219
 const sourceMaps: Record<string, SourceMapConsumer> = {}
 const sourceMappingUrlRe = /\/\/# sourceMappingURL=(.*)/
-const stackLineRe = /(.*)((?:https?|file):\/\/.*):(\d+):(\d+)/
+const stackLineRe = /((?:https?|file):\/\/[^\s)]*):(\d+):(\d+)\)?$/
 
 async function getSourceMapFromUri(uri: string) {
   if (sourceMaps[uri]) {
@@ -71,11 +71,11 @@ async function mapStackTrace(stack: string) {
       continue
     }
 
-    const uri = match[2]!
+    const uri = match[1]!
     const consumer = await getSourceMapFromUri(uri)
     const pos = consumer.originalPositionFor({
-      line: +match[3]!,
-      column: +match[4]!,
+      line: +match[2]!,
+      column: +match[3]!,
     })
 
     if (!pos.source || !pos.line || !pos.column) {
@@ -83,9 +83,8 @@ async function mapStackTrace(stack: string) {
       continue
     }
 
-    mappedStack.push(
-      `${pos.source}:${pos.line}:${pos.column + 1} (${match[1]!.trim()})`,
-    )
+    const prefix = line.slice(0, match.index).trim()
+    mappedStack.push(`${pos.source}:${pos.line}:${pos.column + 1} (${prefix})`)
   }
   return mappedStack.join('\n')
 }
