@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha } from '@mui/material'
