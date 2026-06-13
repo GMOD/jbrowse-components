@@ -230,9 +230,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             }
           }
         }
-        const knownRendererTypes = new Set(
-          pluginManager.getRendererTypes().map(r => r.name),
-        )
         // Old sessions can carry several display configs whose types are all
         // aliases of one canonical type (e.g. v4.3.0 alignments had separate
         // LinearPileupDisplay/LinearSNPCoverageDisplay/... that now collapse to
@@ -254,9 +251,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
               seenTypes.add(d.type)
               return !dup
             })
-            .map(d =>
-              liftLegacyRendererConfig(d, snap.trackId, knownRendererTypes),
-            ),
+            .map(d => liftLegacyRendererConfig(d, snap.trackId)),
         }
       },
       /**

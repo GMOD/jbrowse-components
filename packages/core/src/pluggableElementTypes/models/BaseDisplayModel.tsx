@@ -169,18 +169,6 @@ function stateModelFactory() {
 
       /**
        * #getter
-       * the pluggable element type object for this display's renderer
-       */
-      get rendererType() {
-        if (!self.rendererTypeName) {
-          return undefined
-        }
-        const { pluginManager } = getEnv(self)
-        return pluginManager.getRendererType(self.rendererTypeName)
-      },
-
-      /**
-       * #getter
        * if a display-level message should be displayed instead, make this
        * return a react component
        */

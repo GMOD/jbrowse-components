@@ -11,21 +11,16 @@ export interface LegacyDisplaySnapshot {
 
 // The GPU rewrite removed the per-display `renderer` sub-config (which carried
 // color/height/etc.). Old configs still nest those values under `renderer`, so
-// lift them onto the display. A `renderer.type` that is still a registered
-// renderer is left alone (its sub-config is simply dropped); otherwise the
-// renderer's props move up to the display, with `renderer.height` becoming the
-// display's `featureHeight`. Also injects the `${trackId}-${type}` displayId
-// fallback for displays that predate the identifier.
+// lift the renderer's props up onto the display, with `renderer.height`
+// becoming the display's `featureHeight`. Also injects the `${trackId}-${type}`
+// displayId fallback for displays that predate the identifier.
 export function liftLegacyRendererConfig(
   d: LegacyDisplaySnapshot,
   trackId: string,
-  knownRendererTypes: Set<string>,
 ) {
   const displayId = d.displayId ?? `${trackId}-${d.type}`
   const { renderer, ...rest } = d
-  if (renderer?.type && knownRendererTypes.has(renderer.type)) {
-    return { ...d, displayId }
-  } else if (renderer) {
+  if (renderer) {
     const {
       type: _rendererType,
       height: rendererHeight,

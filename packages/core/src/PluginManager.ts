@@ -24,12 +24,10 @@ import type TrackType from './pluggableElementTypes/TrackType.ts'
 import type ViewType from './pluggableElementTypes/ViewType.ts'
 import type WidgetType from './pluggableElementTypes/WidgetType.ts'
 import type { PluggableElementType } from './pluggableElementTypes/index.ts'
-import type RendererType from './pluggableElementTypes/renderers/RendererType.tsx'
 import type { AbstractRootModel } from './util/index.ts'
 import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
 
 type PluggableElementTypeGroup =
-  | 'renderer'
   | 'adapter'
   | 'display'
   | 'track'
@@ -161,7 +159,6 @@ export default class PluginManager {
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'glyph',
-    'renderer',
     'adapter',
     'text search adapter',
     'display',
@@ -177,8 +174,6 @@ export default class PluginManager {
   pluggableElementsCreated = false
 
   glyphTypes = new TypeRecord<GlyphType>('GlyphType')
-
-  rendererTypes = new TypeRecord<RendererType>('RendererType')
 
   adapterTypes = new TypeRecord<AdapterType>('AdapterType')
 
@@ -345,8 +340,6 @@ export default class PluginManager {
         return this.connectionTypes
       case 'widget':
         return this.widgetTypes
-      case 'renderer':
-        return this.rendererTypes
       case 'display':
         return this.displayTypes
       case 'track':
@@ -518,14 +511,6 @@ export default class PluginManager {
     )
   }
 
-  getRendererType(typeName: string) {
-    return this.rendererTypes.get(typeName)
-  }
-
-  getRendererTypes(): RendererType[] {
-    return this.rendererTypes.all()
-  }
-
   getAdapterType(typeName: string) {
     return this.adapterTypes.get(typeName)
   }
@@ -564,10 +549,6 @@ export default class PluginManager {
 
   getInternetAccountType(name: string) {
     return this.internetAccountTypes.get(name)
-  }
-
-  addRendererType(cb: (pm: PluginManager) => RendererType) {
-    return this.addElementType('renderer', cb)
   }
 
   addAdapterType(cb: (pm: PluginManager) => AdapterType) {
