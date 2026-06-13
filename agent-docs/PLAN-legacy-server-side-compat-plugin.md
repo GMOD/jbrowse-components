@@ -15,37 +15,65 @@ so the compat plugin can be reconstructed without re-deriving anything.
 
 ---
 
-## The crucial fact that makes this clean (verify it still holds)
+## UPDATE 2026-06-13: the core server-side machinery has ALSO been ripped
 
-The rip does **not** touch the core server-side rendering machinery. It only
-deletes the LGV-specific block glue and (earlier) the concrete renderers.
-Everything the compat plugin rides on is **stable, still-maintained, public
-`@jbrowse/core` API** exported to external plugins via `ReExports/list.ts`:
+The plan below was written assuming core kept its server-side rendering infra as
+a "frozen contract." **That is no longer true.** A follow-up rip removed it from
+core too (commits `3d1ef53b56` renderer classes + CoreRender RPC, `b2e1a507f4`
+the renderer registry). So the compat plugin can no longer rely on `@jbrowse/core`
+providing any of it. What's now GONE from core:
 
-| Core piece | Path | ReExports? |
-|---|---|---|
-| `ServerSideRendererType` | `packages/core/src/pluggableElementTypes/renderers/ServerSideRendererType.ts` | `list.ts` ✓ |
-| `BoxRendererType` | `.../renderers/BoxRendererType.ts` | `list.ts` ✓ |
-| `FeatureRendererType` | `.../renderers/FeatureRendererType.ts` | `list.ts` ✓ |
-| `renderToAbstractCanvas` | `packages/core/src/util/renderToAbstractCanvas.ts` | ✓ |
-| `CoreRender` RPC method | `packages/core/src/rpc/methods/CoreRender.ts` (registered `RpcRegistry.ts`) | n/a (RPC) |
-| `addRendererType` | `PluginManager.ts:569` | public API |
-| `addDisplayType` / `addTrackType` | `PluginManager.ts` | public API |
-| `blockTypes` etc. | `@jbrowse/core/util/blockTypes` | ✓ |
+| Removed from core | was at |
+|---|---|
+| `ServerSideRendererType` (+test) | `pluggableElementTypes/renderers/ServerSideRendererType.ts` |
+| `BoxRendererType`, `FeatureRendererType`, `LayoutSession`, `CircularChordRendererType` | `pluggableElementTypes/renderers/` |
+| `CoreRender` + `CoreGetFeatureDetails` RPC methods | `rpc/methods/` (+ RpcRegistry + coreRpcMethods entries) |
+| `rpc/methods/util.ts` (`RenderArgs`, `validateRendererType`) | — |
+| `renderToAbstractCanvas` | `util/renderToAbstractCanvas.ts` |
+| `PluginManager.addRendererType` / `getRendererType` / `getRendererTypes` / `rendererTypes` + the `'renderer'` pluggable-element group | `PluginManager.ts` |
+| `BaseDisplayModel.rendererType` getter | `pluggableElementTypes/models/BaseDisplayModel.tsx` |
+| ReExports entries for the 4 renderer classes | `ReExports/list.ts` + `modules.ts` |
 
-**First step for the future agent:** confirm the table above still holds. If
-core has since dropped any of these, the compat plugin must pin to an older
-`@jbrowse/core` version (the npm-published one matching this anchor SHA) rather
-than `latest`. Quick check:
-```
-grep -n "ServerSideRendererType\|BoxRendererType\|FeatureRendererType" \
-  node_modules/@jbrowse/core/dist/ReExports/list.js
-```
+**Still present in core (the compat plugin CAN use these):** `RendererType` base
+class + `RenderProps` type (`renderers/RendererType.tsx`, still in ReExports),
+`renderers/util/serializableFilterChain.ts`, `RpcMethodType` /
+`RpcMethodTypeWithFiltersAndRenameRegions` base, `addDisplayType`/`addTrackType`,
+`BaseDisplay`, `blockTypes`, `BaseDisplayModel.rendererTypeName` prop (kept for
+snapshot back-compat).
 
-Because the deleted block files form a **self-contained leaf** (they depend
-*downward* on stable core + a few KEPT LGV mixins, and nothing in-tree depends
-*back up* on them except the two registration files that move into the plugin),
-this is a genuine plugin — **not** prototype/private monkeypatching.
+### What this means for the compat plugin
+
+It must **vendor the entire server-side stack**, not just register against core:
+
+1. Recover the core renderer infra from SHA **`547288e90f`** (the commit just
+   before the core rip; `git show 547288e90f:packages/core/src/pluggableElementTypes/renderers/ServerSideRendererType.ts`,
+   etc.) — vendor `ServerSideRendererType`, `BoxRendererType`, `FeatureRendererType`,
+   `LayoutSession`, `renderToAbstractCanvas`, `rpc/methods/util.ts`, and the
+   `CoreRender` + `CoreGetFeatureDetails` RPC method classes into the plugin.
+2. **Register the `CoreRender` + `CoreGetFeatureDetails` RPC methods** via the
+   still-present `pluginManager.addRpcMethod(...)` — that extension point survives,
+   so the vendored `ServerSideRendererType.renderInClient` (which does
+   `rpcManager.call('CoreRender', ...)`) still works.
+3. **Renderer registration is the hard part:** `addRendererType` and the
+   `'renderer'` pluggable-element group are GONE. Options, cleanest first:
+   - Have the vendored displays hold their renderer instance directly (don't go
+     through `pluginManager.getRendererType`) — the display owns its renderer.
+   - Or re-add a renderer registry by monkeypatching the PluginManager instance
+     in the plugin's `install()` (assign `pm.rendererTypes`/`addRendererType`).
+     This is the accepted "legacy/monkeypatch" path.
+4. Vendor the concrete renderers (`SvgFeatureRenderer`/`DivSequenceRenderer`) as
+   before (§B below).
+
+Everything in the original plan below still applies for the **display/track/block
+glue**; layer the server-side-infra vendoring above on top of it.
+
+---
+
+## (Original plan — display/block glue; server-side infra now also vendored, see UPDATE above)
+
+The recovery sources below are still correct for the LGV block glue. The "rides
+on stable core API" framing only held for the *first* rip; per the UPDATE, the
+server-side core infra is now vendored too.
 
 ---
 
@@ -181,12 +209,13 @@ re-register `BaseLinearDisplay` into the LGV plugin's exports map (closer to
 4. If core dropped any §table API, pin `@jbrowse/core` to the version matching
    anchor SHA `d673d7e390` instead of chasing `latest`.
 
-## Maintenance contract for the MAIN repo (so this stays buildable)
+## Maintenance contract for the MAIN repo
 
-The compat plugin only consumes the §table core API. For it to keep building
-against `latest`, the main repo should treat these as a **frozen public
-contract**: `ServerSideRendererType`, `BoxRendererType`, `FeatureRendererType`,
-`renderToAbstractCanvas`, the `CoreRender` RPC, and their `ReExports/list.ts`
-entries. If a future cleanup wants to remove them (nothing in-tree uses them
-post-rip), that's the moment the compat plugin must pin to an old core version
-instead — acceptable, but note it in that cleanup's PR.
+~~The main repo should treat the core server-side API as a frozen contract.~~
+**Superseded** — that cleanup happened (see UPDATE at top). The compat plugin no
+longer has a frozen core contract to rely on; it vendors the server-side infra
+from SHA `547288e90f`. The only ongoing main-repo dependency is the *generic*
+extension surface still present: `addRpcMethod`, `addDisplayType`,
+`addTrackType`, `RendererType` base + `RenderProps`, `RpcMethodType` bases, and
+`BaseDisplay`. If a future cleanup removes any of those, the compat plugin must
+pin `@jbrowse/core` to a version at/under `547288e90f` rather than `latest`.
