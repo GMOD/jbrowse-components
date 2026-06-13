@@ -1,14 +1,4 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema.ts'
-export type {
-  BlockModel,
-  RenderedProps,
-} from './models/serverSideRenderedBlock.ts'
-export { BaseLinearDisplay } from './model.ts'
-export type {
-  BaseLinearDisplayModel,
-  BaseLinearDisplayStateModel,
-  LegendItem,
-} from './model.ts'
 export type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 
 export {
@@ -16,6 +6,7 @@ export {
   Tooltip,
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
+export type { LegendItem } from './components/FloatingLegend.tsx'
 export { default as DisplayChrome } from './components/DisplayChrome.tsx'
 export type { ChromeModel } from './components/DisplayChrome.tsx'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'

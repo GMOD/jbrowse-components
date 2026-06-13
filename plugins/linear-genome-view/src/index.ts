@@ -5,7 +5,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
 import {
-  BaseLinearDisplay,
   BaseLinearDisplayComponent,
   baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay/index.ts'
@@ -25,7 +24,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   exports = {
     BaseLinearDisplayComponent,
-    BaseLinearDisplay,
     baseLinearDisplayConfigSchema,
     SearchBox,
     ZoomControls,
@@ -70,16 +68,12 @@ export default class LinearGenomeViewPlugin extends Plugin {
 }
 
 export type {
-  BaseLinearDisplayModel,
-  BlockModel,
   ExportSvgDisplayOptions,
   LayoutRecord,
   LegendItem,
-  RenderedProps,
 } from './BaseLinearDisplay/index.ts'
 
 export {
-  BaseLinearDisplay,
   BaseLinearDisplayComponent,
   BlockMsg,
   ConfigOverrideMixin,

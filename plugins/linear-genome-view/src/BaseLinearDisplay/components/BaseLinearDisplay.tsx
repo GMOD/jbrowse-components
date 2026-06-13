@@ -1,14 +1,7 @@
-import { Suspense, useRef, useState } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import FloatingLegend from './FloatingLegend.tsx'
-import LinearBlocks from './LinearBlocks.tsx'
-import MenuPage from './MenuPage.tsx'
-
-import type { Coord } from './types.ts'
-import type { BaseLinearDisplayModel } from '../model.ts'
+import type { AnyReactComponentType } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   display: {
@@ -20,98 +13,30 @@ const useStyles = makeStyles()({
   },
 })
 
+// Thin container for GPU displays: every consumer (canvas, wiggle,
+// multi-wiggle, gwas, variants) sets DisplayMessageComponent and renders its
+// own canvas/tooltip/legend inside it. The `-done` test-id suffix is consumed
+// by browser-test-utils waits.
 const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
-  model: BaseLinearDisplayModel
+  model: {
+    configuration: { displayId: string }
+    canvasDrawn?: boolean
+    DisplayMessageComponent: AnyReactComponentType
+  }
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const ref = useRef<HTMLDivElement>(null)
-  const [clientRect, setClientRect] = useState<DOMRect>()
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState([0, 0])
-  const [clientMouseCoord, setClientMouseCoord] = useState([0, 0])
-  const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
-  const {
-    TooltipComponent,
-    DisplayMessageComponent,
-    height,
-    showLegend,
-    showTooltipsEnabled,
-  } = model
-  const legendItems = showLegend ? model.legendItems() : []
+  const { DisplayMessageComponent, canvasDrawn, configuration } = model
   return (
     <div
-      ref={ref}
-      data-testid={`display-${model.configuration.displayId}${
-        'canvasDrawn' in model &&
-        (model as { canvasDrawn: boolean }).canvasDrawn
-          ? '-done'
-          : ''
+      data-testid={`display-${configuration.displayId}${
+        canvasDrawn ? '-done' : ''
       }`}
       className={classes.display}
-      onContextMenu={
-        DisplayMessageComponent
-          ? undefined
-          : event => {
-              event.preventDefault()
-              if (contextCoord) {
-                setContextCoord(undefined)
-              } else if (ref.current) {
-                setContextCoord([event.clientX, event.clientY])
-              }
-            }
-      }
-      onMouseMove={
-        DisplayMessageComponent
-          ? undefined
-          : event => {
-              if (!ref.current) {
-                return
-              }
-              const rect = ref.current.getBoundingClientRect()
-              const { left, top } = rect
-              setOffsetMouseCoord([event.clientX - left, event.clientY - top])
-              setClientMouseCoord([event.clientX, event.clientY])
-              setClientRect(rect)
-            }
-      }
     >
-      {DisplayMessageComponent ? (
-        <DisplayMessageComponent model={model} />
-      ) : (
-        <LinearBlocks {...props} />
-      )}
+      <DisplayMessageComponent model={model} />
       {children}
-
-      {legendItems.length > 0 ? (
-        <FloatingLegend
-          items={legendItems}
-          onDismiss={() => {
-            model.setShowLegend(false)
-          }}
-        />
-      ) : null}
-
-      {showTooltipsEnabled ? (
-        <Suspense fallback={null}>
-          <TooltipComponent
-            model={model}
-            height={height}
-            offsetMouseCoord={offsetMouseCoord}
-            clientMouseCoord={clientMouseCoord}
-            clientRect={clientRect}
-          />
-        </Suspense>
-      ) : null}
-      {contextCoord && !DisplayMessageComponent ? (
-        <MenuPage
-          contextCoord={contextCoord}
-          model={model}
-          onClose={() => {
-            setContextCoord(undefined)
-          }}
-        />
-      ) : null}
     </div>
   )
 })
