@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
@@ -14,10 +14,7 @@ export default function AltFormatter({
   svlen?: number
 }) {
   const [show, setShow] = useState(false)
-  const alt = useMemo(
-    () => getMinimalDesc(refString, value),
-    [refString, value],
-  )
+  const alt = getMinimalDesc(refString, value)
   const svlenStr =
     value.startsWith('<') && svlen !== undefined
       ? ` (${getBpDisplayStr(Math.abs(svlen))})`

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
@@ -79,7 +79,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const options = useMemo(() => model.saveTrackFileFormatOptions(), [model])
+  const options = model.saveTrackFileFormatOptions()
   const [type, setType] = useState(Object.keys(options)[0])
   const [helpText, setHelpText] = useState<string>()
 

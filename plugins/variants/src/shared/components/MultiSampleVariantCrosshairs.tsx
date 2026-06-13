@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -51,13 +49,13 @@ const MultiSampleVariantCrosshairs = observer(
     const { hoveredGenotype, height, sourceMap } = model
     const { width } = getContainingView(model) as LinearGenomeViewModel
 
-    const tooltipSource = useMemo(() => {
-      if (!hoveredGenotype) {
-        return undefined
-      }
-      const source = sourceMap?.[hoveredGenotype.name]
-      return source ? { ...source, ...hoveredGenotype } : undefined
-    }, [hoveredGenotype, sourceMap])
+    const hoveredSource = hoveredGenotype
+      ? sourceMap?.[hoveredGenotype.name]
+      : undefined
+    const tooltipSource =
+      hoveredGenotype && hoveredSource
+        ? { ...hoveredSource, ...hoveredGenotype }
+        : undefined
 
     return (
       <div className={classes.container} style={{ width, height }}>

@@ -43,11 +43,12 @@ const MsaHighlightOverlay = observer(function MsaHighlightOverlay({
   const { classes } = useStyles()
   return (
     <>
-      {model.msaHighlights.map(h => {
+      {model.msaHighlights.map((h, idx) => {
         const box = highlightBox(view, h)
         return box ? (
           <div
-            key={`${h.refName}-${h.start}-${h.end}`}
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
+            key={`${h.refName}-${h.start}-${h.end}-${idx}`}
             className={classes.highlight}
             style={{ left: box.left, width: box.width, height }}
           />

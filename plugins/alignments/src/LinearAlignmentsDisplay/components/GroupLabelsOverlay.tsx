@@ -70,7 +70,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         const count = groupReadCount(section.laidOutPileupMap)
         const collapsed = model.isGroupCollapsed(section.groupKey)
         return (
-          <div key={section.groupKey}>
+          <div key={section.groupKey === '' ? 'ungrouped' : section.groupKey}>
             {i > 0 ? <div className={classes.divider} style={{ top }} /> : null}
             <button
               type="button"

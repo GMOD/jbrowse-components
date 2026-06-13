@@ -20,7 +20,10 @@ const TrackSelector = observer(function TrackSelector({
   const [selectedTrackId, setSelectedTrackId] = useState(firstTrackId)
 
   // firstTrackId is a string primitive — stable dep that changes only when the
-  // assembly changes, avoiding the "new array ref on every render" problem
+  // assembly changes. firstTrack/model are intentionally NOT deps:
+  // tracksForAssembly() returns a fresh array each render, so firstTrack is a
+  // new ref every render — listing it reruns the effect on every render and
+  // clobbers the user's dropdown selection back to the first track.
   useEffect(() => {
     // eslint-disable-next-line @eslint-react/set-state-in-effect -- sync with MST model on first-track change
     setSelectedTrackId(firstTrackId)
@@ -28,7 +31,8 @@ const TrackSelector = observer(function TrackSelector({
       model.setFileSource(firstTrack.loc)
       model.setFileType(firstTrack.type)
     }
-  }, [firstTrackId, firstTrack, model])
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- see comment above; only re-sync on assembly change
+  }, [firstTrackId])
 
   return (
     <div>

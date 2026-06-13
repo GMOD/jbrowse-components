@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { getSession, toLocale } from '@jbrowse/core/util'
 import {
   Box,
@@ -65,7 +63,7 @@ export default function TranscriptTable({
   canLaunchView: boolean
   handleClose: () => void
 }) {
-  const rows = useMemo(() => buildRows(transcripts), [transcripts])
+  const rows = buildRows(transcripts)
 
   return (
     <Box sx={{ maxHeight: 600, overflow: 'auto' }}>

@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -21,21 +19,17 @@ const MultiSampleVariantLegendBar = observer(
     const svgFontSize = Math.min(rowHeight, 12)
     const clipid = `legend-${typeof jest === 'undefined' ? id : 'test'}`
 
-    const labelWidth = useMemo(() => {
-      if (!sources) {
-        return 0
-      }
-      let maxWidth = 0
+    let labelWidth = 0
+    if (sources) {
       for (const s of sources) {
         const width = canDisplayLabels
           ? measureText(s.name, svgFontSize) + 10
           : 20
-        if (width > maxWidth) {
-          maxWidth = width
+        if (width > labelWidth) {
+          labelWidth = width
         }
       }
-      return maxWidth
-    }, [sources, svgFontSize, canDisplayLabels])
+    }
 
     const nrow = sources?.length ?? 0
     const startIdx =

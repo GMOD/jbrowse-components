@@ -24,12 +24,14 @@ const OverviewHighlight = observer(function OverviewHighlight({
       return coords ? { coords, highlight } : undefined
     })
     .filter(notEmpty)
-    .map(({ coords, highlight }) => {
+    .map(({ coords, highlight }, idx) => {
       const bandColor = getHighlightColor(highlight, theme)
       return (
         <OverviewHighlightBand
-          // region fields keep the key stable across pan/zoom (unlike pixel coords)
-          key={`${highlight.assemblyName}_${highlight.refName}_${highlight.start}_${highlight.end}`}
+          // region fields keep the key stable across pan/zoom (unlike pixel
+          // coords); idx disambiguates duplicate highlights on the same region
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
+          key={`${highlight.assemblyName}_${highlight.refName}_${highlight.start}_${highlight.end}_${idx}`}
           coords={coords}
           background={bandColor.toRgbString()}
           borderColor={(highlight.color ? bandColor : themed).toRgbString()}

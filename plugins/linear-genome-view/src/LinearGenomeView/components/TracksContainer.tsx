@@ -133,9 +133,10 @@ const HighlightGroup = observer(function HighlightGroup({
 }) {
   return model.highlightsVisible && model.highlight.length ? (
     <Suspense fallback={null}>
-      {model.highlight.map(highlight => (
+      {model.highlight.map((highlight, idx) => (
         <Highlight
-          key={`${highlight.assemblyName}-${highlight.refName}:${highlight.start}-${highlight.end}`}
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
+          key={`${highlight.assemblyName}-${highlight.refName}:${highlight.start}-${highlight.end}-${idx}`}
           model={model}
           highlight={highlight}
         />
@@ -153,11 +154,12 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
   const { pluginManager } = getEnv(model)
   const { classes } = useStyles()
   const viewBands = model.highlightsVisible
-    ? model.highlight.map(h => {
+    ? model.highlight.map((h, idx) => {
         const coords = model.getHighlightCoords(h)
         return coords ? (
           <OverviewHighlightBand
-            key={`${h.assemblyName}-${h.refName}:${h.start}-${h.end}`}
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
+            key={`${h.assemblyName}-${h.refName}:${h.start}-${h.end}-${idx}`}
             coords={coords}
             background={getHighlightColor(h, theme).toRgbString()}
           />

@@ -18,10 +18,11 @@ const SVGHighlights = observer(function SVGHighlights({
 }) {
   const theme = useTheme()
   return model.highlightsVisible
-    ? model.highlight.map(h => {
+    ? model.highlight.map((h, idx) => {
         const coords = model.getHighlightCoords(h)
         return coords ? (
-          <g key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}`}>
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
+          <g key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${idx}`}>
             <rect
               x={coords.left}
               y={0}

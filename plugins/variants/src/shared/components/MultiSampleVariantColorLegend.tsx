@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { getFillProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -76,16 +74,10 @@ const MultiSampleVariantColorLegend = observer(
     const { canDisplayLabels, rowHeight, sources } = model
     const theme = useTheme()
 
-    const hasColors = useMemo(
-      () => sources?.some(s => s.color) ?? false,
-      [sources],
-    )
+    const hasColors = sources?.some(s => s.color) ?? false
     const legendWidth = labelWidth + (hasColors ? COLOR_BOX_WIDTH + 5 : 0)
 
-    const textFillProps = useMemo(
-      () => getFillProps(theme.palette.text.primary),
-      [theme.palette.text.primary],
-    )
+    const textFillProps = getFillProps(theme.palette.text.primary)
 
     const visibleSources = sources?.slice(startIdx, endIdx)
 

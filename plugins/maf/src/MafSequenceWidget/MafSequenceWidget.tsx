@@ -1,11 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
-
 import {
   CascadingMenuButton,
   ErrorMessage,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
-import { getSession, useLocalStorage } from '@jbrowse/core/util'
+import { getSession, useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -71,64 +69,48 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
     'mafSequenceWidget-showSampleNames',
     true,
   )
-  const [rawSequences, setRawSequences] = useState<string[]>([])
-  const [colToGenomePos, setColToGenomePos] = useState<number[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<unknown>()
-
-  // Fetch from server. Re-runs only when RPC inputs change. The `active`
-  // flag drops the result if the effect is torn down (or re-fired) before
-  // the promise resolves, avoiding a stale write to rawSequences.
-  useEffect(() => {
-    if (!adapterConfig || !samples || !regions) {
-      return
-    }
-    const active = { current: true }
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- loading state reset before async RPC call
-    setLoading(true)
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- loading state reset before async RPC call
-    setError(undefined)
-    session.rpcManager
-      .call('MafSequenceWidget', 'MafGetSequences', {
+  // Fetch from server via SWR: keyed on the RPC inputs, so it refetches when
+  // they change, dedupes/caches across reopens, and a null key skips the call
+  // until the inputs are present. SWR drops stale resolutions for us, so no
+  // manual cancellation flag is needed.
+  const { data, error } = useFetch(
+    adapterConfig && samples && regions
+      ? ([
+          'MafGetSequences',
+          adapterConfig,
+          samples,
+          regions,
+          showAllLetters,
+          includeInsertions,
+        ] as const)
+      : null,
+    ([
+      ,
+      adapterConfig,
+      samples,
+      regions,
+      showAllLetters,
+      includeInsertions,
+    ]) =>
+      session.rpcManager.call('MafSequenceWidget', 'MafGetSequences', {
         sessionId: 'MafSequenceWidget',
         adapterConfig,
         samples,
         showAllLetters,
         includeInsertions,
         regions,
-      })
-      .then(({ rows, colToGenomePos }) => {
-        if (active.current) {
-          setRawSequences(rows)
-          setColToGenomePos(colToGenomePos)
-          setLoading(false)
-        }
-      })
-      .catch((e: unknown) => {
-        if (active.current) {
-          console.error(e)
-          setError(e)
-          setLoading(false)
-        }
-      })
-    return () => {
-      active.current = false
-    }
-  }, [
-    adapterConfig,
-    samples,
-    regions,
-    showAllLetters,
-    includeInsertions,
-    session,
-  ])
+      }),
+  )
+  const loading = !data && !error
+  const rawSequences = data?.rows ?? []
+  const colToGenomePos = data?.colToGenomePos ?? []
 
-  // Rebuilding the full FASTA string is expensive on large alignments, so
-  // memoize it — unrelated toggles (colors, sample-name visibility) re-render
-  // without recomputing.
-  const formattedSequence = useMemo(
-    () => formatFastaSequences(rawSequences, samples, singleLineFormat),
-    [rawSequences, samples, singleLineFormat],
+  // Rebuilding the full FASTA string is expensive on large alignments, but the
+  // React Compiler memoizes this derivation, so no manual useMemo is needed.
+  const formattedSequence = formatFastaSequences(
+    rawSequences,
+    samples,
+    singleLineFormat,
   )
 
   if (!adapterConfig || !samples || !regions) {

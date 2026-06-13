@@ -38,11 +38,12 @@ const VariantLabels = observer(function VariantLabels({
 
   return (
     <>
-      {snps.map(snp => {
+      {snps.map((snp, i) => {
         const genomicX = getGenomicX(view, assembly, snp, offsetAdj)
         return (
           <text
-            key={`${snp.refName}-${snp.start}-${snp.end}`}
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- snp.id may be missing or duplicated (multi-allelic sites share a position); idx only breaks ties
+            key={`${snp.id}-${i}`}
             x={genomicX}
             y={0}
             transform={`rotate(-90, ${genomicX}, 0)`}

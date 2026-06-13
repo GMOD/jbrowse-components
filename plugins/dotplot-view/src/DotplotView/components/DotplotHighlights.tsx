@@ -13,9 +13,10 @@ const DotplotHighlights = observer(function DotplotHighlights({
 }) {
   const theme = useTheme()
   return model.highlightsVisible
-    ? model.highlight.map(h => (
+    ? model.highlight.map((h, i) => (
         <DotplotHighlightBands
-          key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}`}
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
+          key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`}
           model={model}
           region={h}
           color={getHighlightColor(h, theme).toRgbString()}

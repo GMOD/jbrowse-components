@@ -30,10 +30,12 @@ const OverviewHighlight = observer(function OverviewHighlight({
       return coords ? { coords, bookmark: r } : undefined
     })
     .filter(notEmpty)
-    .map(({ coords, bookmark: r }) => (
+    .map(({ coords, bookmark: r }, idx) => (
       <OverviewHighlightBand
-        // region fields keep the key stable across pan/zoom (unlike pixel coords)
-        key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}`}
+        // region fields keep the key stable across pan/zoom (unlike pixel
+        // coords); idx disambiguates duplicate bookmarks on the same region
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- bookmarks have no id and can duplicate; idx only breaks ties
+        key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
         coords={coords}
         background={r.highlight}
         borderColor={r.highlight}

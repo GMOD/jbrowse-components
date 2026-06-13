@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import {
@@ -36,29 +36,26 @@ const AddTrackSelector = observer(function AddTrackSelector({
 }) {
   const [val, setVal] = useState(DEFAULT_WORKFLOW)
   const { pluginManager } = getEnv(model)
-  const workflows = useMemo<WorkflowEntry[]>(
-    () => [
-      {
-        name: DEFAULT_WORKFLOW,
-        displayName: 'Add a track from file or URL',
-        category: 'general',
-        Component: DefaultAddTrackWorkflow,
-      },
-      {
-        name: PASTE_JSON_WORKFLOW,
-        displayName: 'Add track from pasted JSON',
-        category: 'general',
-        Component: PasteConfigWorkflow,
-      },
-      ...pluginManager.getAddTrackWorkflowElements().map(w => ({
-        name: w.name,
-        displayName: w.displayName,
-        category: w.category,
-        Component: w.ReactComponent as WorkflowComponent,
-      })),
-    ],
-    [pluginManager],
-  )
+  const workflows: WorkflowEntry[] = [
+    {
+      name: DEFAULT_WORKFLOW,
+      displayName: 'Add a track from file or URL',
+      category: 'general',
+      Component: DefaultAddTrackWorkflow,
+    },
+    {
+      name: PASTE_JSON_WORKFLOW,
+      displayName: 'Add track from pasted JSON',
+      category: 'general',
+      Component: PasteConfigWorkflow,
+    },
+    ...pluginManager.getAddTrackWorkflowElements().map(w => ({
+      name: w.name,
+      displayName: w.displayName,
+      category: w.category,
+      Component: w.ReactComponent as WorkflowComponent,
+    })),
+  ]
 
   const general = workflows.filter(w => w.category === 'general')
   const specialized = workflows.filter(w => w.category === 'specialized')
