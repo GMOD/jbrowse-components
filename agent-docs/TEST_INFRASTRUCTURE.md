@@ -79,7 +79,7 @@ true (this silently burned full snapshot timeouts).
 
 ### Cross-test memory growth is SwiftShader, not a JBrowse leak
 
-(Measured 2026-05-29.) JBrowse disposes GL contexts 1:1 (`useRenderer` unmount +
+(Measured 2026-05-29.) JBrowse disposes GL contexts 1:1 (`useRenderingBackend` unmount +
 `pagehide`; `webgl2Hal.dispose()` frees every GL object) and the main JS heap
 stays flat. The unbounded `~29 MB/cycle` is Chrome's **GPU-process RSS under
 SwiftShader**, which never returns per-context memory to the OS — unfixable from

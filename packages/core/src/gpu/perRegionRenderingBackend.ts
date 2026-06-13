@@ -1,8 +1,11 @@
 import { clipBlock } from './blockClipUtils.ts'
 import { getDpr, prepareCanvas } from './canvas2dUtils.ts'
+import {
+  Canvas2DRenderingBackendBase,
+  GpuRenderingBackendBase,
+} from './renderingBackendBase.ts'
 
 import type { BlockClipResult } from './blockClipUtils.ts'
-import type { GpuHal } from './hal/types.ts'
 import type { RenderBlock } from './renderBlock.ts'
 
 /**
@@ -49,10 +52,11 @@ export interface PerRegionRenderingBackend<
 }
 
 /**
- * Canvas2D-side base for `PerRegionRenderingBackend` implementations. Owns the
- * `canvas` + 2D context; stubs the upload/prune/dispose hooks the backend
- * shape requires but Canvas2D doesn't need (everything comes through `draw`
- * from the model's data map).
+ * Canvas2D-side base for `PerRegionRenderingBackend` implementations. Inherits
+ * the `canvas` + 2D context (and no-op `dispose`) from
+ * `Canvas2DRenderingBackendBase`; stubs the upload/prune hooks the backend shape
+ * requires but Canvas2D doesn't need (everything comes through `draw` from the
+ * model's data map).
  *
  * `renderBlocks` is concrete: it runs `prepareCanvas` (DPR-aware backing-store
  * sizing — symmetric to the GPU base owning `resize`/scissor) and then calls
@@ -62,31 +66,16 @@ export interface PerRegionRenderingBackend<
  * blurry on hi-DPI.
  */
 export abstract class Canvas2DPerRegionRenderingBackend<
-  UploadData,
-  RenderState extends FrameDimensions,
-  Block extends RenderBlock = RenderBlock,
-  RenderData = UploadData,
-> implements PerRegionRenderingBackend<
-  UploadData,
-  RenderState,
-  Block,
-  RenderData
-> {
-  protected canvas: HTMLCanvasElement
-  protected ctx: CanvasRenderingContext2D
-
-  constructor(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.canvas = canvas
-    this.ctx = ctx
-  }
-
+    UploadData,
+    RenderState extends FrameDimensions,
+    Block extends RenderBlock = RenderBlock,
+    RenderData = UploadData,
+  >
+  extends Canvas2DRenderingBackendBase
+  implements PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData>
+{
   uploadRegion(): void {}
   pruneRegions(): void {}
-  dispose(): void {}
 
   renderBlocks(
     blocks: Block[],
@@ -109,10 +98,10 @@ export abstract class Canvas2DPerRegionRenderingBackend<
 }
 
 /**
- * GPU-side base for `PerRegionRenderingBackend` implementations. Owns the `hal`
- * reference and a pre-allocated uniform scratch `ArrayBuffer` reused across
- * frames. Provides the shared `pruneRegions` (delegates to HAL) and
- * `dispose` (also delegates).
+ * GPU-side base for `PerRegionRenderingBackend` implementations. Inherits the
+ * `hal` reference, the pre-allocated uniform scratch `ArrayBuffer`, and the
+ * HAL-delegating `dispose` from `GpuRenderingBackendBase`; adds the shared
+ * `pruneRegions` (delegates to HAL).
  *
  * `renderBlocks` is a concrete frame scaffold shared by every per-region GPU
  * renderer: resize the backing store, `beginFrame`/`endFrame`, and per block
@@ -123,30 +112,16 @@ export abstract class Canvas2DPerRegionRenderingBackend<
  * uniforms and issues draw passes for one already-clipped block.
  */
 export abstract class GpuPerRegionRenderingBackend<
-  UploadData,
-  RenderState extends FrameDimensions,
-  Block extends RenderBlock = RenderBlock,
-  RenderData = UploadData,
-> implements PerRegionRenderingBackend<
-  UploadData,
-  RenderState,
-  Block,
-  RenderData
-> {
-  protected hal: GpuHal
-  protected uniformData: ArrayBuffer
-
-  constructor(hal: GpuHal, uniformByteSize: number) {
-    this.hal = hal
-    this.uniformData = new ArrayBuffer(uniformByteSize)
-  }
-
+    UploadData,
+    RenderState extends FrameDimensions,
+    Block extends RenderBlock = RenderBlock,
+    RenderData = UploadData,
+  >
+  extends GpuRenderingBackendBase
+  implements PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData>
+{
   pruneRegions(activeRegions: Iterable<number>): void {
     this.hal.pruneRegions(activeRegions)
-  }
-
-  dispose(): void {
-    this.hal.dispose()
   }
 
   abstract uploadRegion(displayedRegionIndex: number, data: UploadData): void

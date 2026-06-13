@@ -1,4 +1,7 @@
-import type { GpuHal } from './hal/types.ts'
+import {
+  Canvas2DRenderingBackendBase,
+  GpuRenderingBackendBase,
+} from './renderingBackendBase.ts'
 
 /**
  * Shared contract for monolithic GPU backends (HiC, LD, multi-variant
@@ -18,54 +21,30 @@ export interface GlobalRenderingBackend<UploadData, RenderState> {
 }
 
 /**
- * Canvas2D-side base for `GlobalRenderingBackend` implementations. Owns the
- * `canvas` + 2D context; stubs `uploadData` (no-op — data flows through
+ * Canvas2D-side base for `GlobalRenderingBackend` implementations. Inherits the
+ * `canvas` + 2D context (and no-op `dispose`) from
+ * `Canvas2DRenderingBackendBase`; stubs `uploadData` (no-op — data flows through
  * `render`). Subclasses implement `render` and nothing else.
  */
-export abstract class Canvas2DGlobalRenderingBackend<
-  UploadData,
-  RenderState,
-> implements GlobalRenderingBackend<UploadData, RenderState> {
-  protected canvas: HTMLCanvasElement
-  protected ctx: CanvasRenderingContext2D
-
-  constructor(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('Canvas 2D context not available')
-    }
-    this.canvas = canvas
-    this.ctx = ctx
-  }
-
+export abstract class Canvas2DGlobalRenderingBackend<UploadData, RenderState>
+  extends Canvas2DRenderingBackendBase
+  implements GlobalRenderingBackend<UploadData, RenderState>
+{
   uploadData(): void {}
-  dispose(): void {}
 
   abstract render(data: UploadData | null, state: RenderState): void
 }
 
 /**
- * GPU-side base for `GlobalRenderingBackend` implementations. Owns the
- * `hal` reference and a pre-allocated uniform scratch buffer. Default
- * `dispose()` delegates to `hal.dispose()`. Subclasses implement
+ * GPU-side base for `GlobalRenderingBackend` implementations. Inherits the
+ * `hal` reference, the pre-allocated uniform scratch buffer, and the
+ * HAL-delegating `dispose` from `GpuRenderingBackendBase`. Subclasses implement
  * `uploadData` (push bytes to HAL) and `render`.
  */
-export abstract class GpuGlobalRenderingBackend<
-  UploadData,
-  RenderState,
-> implements GlobalRenderingBackend<UploadData, RenderState> {
-  protected hal: GpuHal
-  protected uniformData: ArrayBuffer
-
-  constructor(hal: GpuHal, uniformByteSize: number) {
-    this.hal = hal
-    this.uniformData = new ArrayBuffer(uniformByteSize)
-  }
-
-  dispose(): void {
-    this.hal.dispose()
-  }
-
+export abstract class GpuGlobalRenderingBackend<UploadData, RenderState>
+  extends GpuRenderingBackendBase
+  implements GlobalRenderingBackend<UploadData, RenderState>
+{
   abstract uploadData(data: UploadData): void
   abstract render(data: UploadData | null, state: RenderState): void
 }

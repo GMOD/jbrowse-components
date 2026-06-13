@@ -18,8 +18,11 @@ Canvas2D fallback. `Global*` mirrors `GlobalDataDisplayMixin` (the
 no-region-partition displays: HiC, LD, variant matrix).
 
 The React hooks that drive the frame lifecycle live in `packages/core/src/util/`
-(`useRenderer`, `useRenderingBackend`, `useTabVisibilityRerender`), not in this
-directory.
+(`useRenderingBackend`, `useTabVisibilityRerender`), not in this directory.
+`useRenderingBackend` owns the whole canvas-init / context-loss / device-loss /
+pagehide / retry lifecycle and wires each event straight to the model's
+`RenderLifecycleMixin` actions (there is no separate generic `useRenderer`
+layer — it was folded in).
 
 **The conceptual reference is `agent-docs/ARCHITECTURE.md` → "GPU Rendering
 Architecture"** (life of a frame, the three upload patterns, hp-math precision,
@@ -43,8 +46,12 @@ this directory_.
   (`attachRenderingBackend`).
 - `installPerRegionLifecycle.ts` — per-key autoruns for per-region streamed
   displays (O(N), not O(N²)).
+- `renderingBackendBase.ts` — `GpuRenderingBackendBase` (hal + uniform scratch +
+  HAL-delegating dispose) and `Canvas2DRenderingBackendBase` (canvas + 2D ctx +
+  no-op dispose), shared by the per-region and global bases below.
 - `perRegionRenderingBackend.ts`, `globalRenderingBackend.ts` — backend base
-  classes (GPU + Canvas2D).
+  classes (GPU + Canvas2D), each extending the shared base in
+  `renderingBackendBase.ts`.
 - `slangPass.ts` — turns a `.generated.ts` shader module into a
   `PassDescriptor`.
 - `blockClipUtils.ts` — GPU clip math + CPU hp-math split
@@ -75,8 +82,11 @@ this directory_.
   handler guards on device identity — keep that guard when touching recovery.
   Tests reset via `resetGpuDeviceForTests`.
 - **Don't redefine lifecycle state.** `canvasDrawn`, `currentRenderingBackend`,
-  `renderTick`, `autorunsInstalled` and their actions belong to
-  `RenderLifecycleMixin`; plugins compose, never re-declare.
+  `renderTick`, `autorunsInstalled`, `renderError` and their actions belong to
+  `RenderLifecycleMixin`; plugins compose, never re-declare. `renderError` is
+  the single source for the `renderError` terminal phase (`displayPhase`) —
+  `useRenderingBackend` writes it via `setRenderError`; don't fork a
+  display-local copy.
   `attachRenderingBackend` is idempotent — re-calling only swaps the backend
   (context-loss recovery), and the upload autorun bumps `renderTick` so render
   re-fires after every upload.

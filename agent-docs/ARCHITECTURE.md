@@ -294,11 +294,13 @@ RenderLifecycleMixin
     currentRenderingBackend: unknown    stored backend; autoruns read it each tick
     renderTick: number            bumped by renderNow() and after every upload
     autorunsInstalled: boolean guards attachRenderingBackend (idempotent)
+    renderError: unknown          render-backend init / context-loss error; single source for the 'renderError' terminal phase
   .actions
     markCanvasDrawn()             idempotent flip to true
     resetCanvasDrawn()            flip to false (called by clearAllRpcData)
     stopRenderingBackend()                 clears currentRenderingBackend + resets canvasDrawn → autoruns idle
     renderNow()                   bumps renderTick → render autorun re-fires
+    setRenderError(error)         set/clear renderError (written by useRenderingBackend on init failure / success / retry)
     attachRenderingBackend(b, cbs)         spawns upload + render autoruns (once)
 
 MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
@@ -355,7 +357,7 @@ lives in the mixin.
 
 ### Context-loss recovery
 
-GPU contexts can be lost. `useRenderer` listens for
+GPU contexts can be lost. `useRenderingBackend` listens for
 `webglcontextlost`/`restored` and `device.lost`, rebuilds the backend, and
 calls `model.startRenderingBackend(newRenderingBackend)`. The mixin sees
 `autorunsInstalled === true`, skips re-installation, just reassigns
@@ -1145,9 +1147,12 @@ key on a tuple of two displayedRegion indices.
   lifecycle delegate to `hal.pruneRegions(active)` rather than mirroring HAL's
   region map. See `PerRegionRenderingBackend` in `@jbrowse/core/gpu/perRegionRenderingBackend`.
 - Don't add or redefine volatiles/actions owned by the slot mixin
-  (`canvasDrawn`, `renderTick`, `currentRenderingBackend`, `markCanvasDrawn`,
-  `resetCanvasDrawn`, `renderNow`, `stopRenderingBackend`, etc.) or the
-  `isReady` view owned by `MultiRegionDisplayMixin`.
+  (`canvasDrawn`, `renderTick`, `currentRenderingBackend`, `renderError`,
+  `markCanvasDrawn`, `resetCanvasDrawn`, `renderNow`, `setRenderError`,
+  `stopRenderingBackend`, etc.) or the `isReady` view owned by
+  `MultiRegionDisplayMixin`. `renderError` in particular is the single source
+  for the `renderError` terminal phase — don't fork it into a display-local
+  volatile.
 - Don't hand-edit `*.generated.ts` or hand-maintain WGSL/GLSL/offset tables
   next to generated modules. Edit `.slang` source and run `pnpm gen:shaders`;
   CI's `git diff --exit-code` catches stale outputs. Consume generated

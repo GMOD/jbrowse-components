@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 
-import { useRenderer } from './useRenderer.ts'
+import { useRenderingBackend } from './useRenderingBackend.ts'
 import { onDeviceLost } from '../gpu/gpuDevice.ts'
 
 jest.mock('../gpu/gpuDevice.ts', () => ({
@@ -32,94 +32,93 @@ function createMockFactory(shouldReject = false) {
   }
 }
 
-describe('useRenderer', () => {
-  test('initializes renderer and sets ready on success', async () => {
+function createMockModel() {
+  return {
+    startRenderingBackend: jest.fn(),
+    stopRenderingBackend: jest.fn(),
+    renderNow: jest.fn(),
+    renderError: undefined as unknown,
+    setRenderError: jest.fn(),
+  }
+}
+
+describe('useRenderingBackend', () => {
+  test('initializes backend and starts it on success', async () => {
     const factory = createMockFactory()
     const canvas = document.createElement('canvas')
-    const onError = jest.fn()
+    const model = createMockModel()
 
-    const opts = { onError }
-
-    const { result } = renderHook(() => useRenderer(factory, opts))
-
-    expect(result.current.ready).toBe(false)
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
 
     act(() => {
       result.current.canvasRef(canvas)
     })
     await act(async () => {})
 
-    expect(result.current.ready).toBe(true)
-    // clears any stale error on successful init
-    expect(onError).toHaveBeenCalledWith(undefined)
-    expect(result.current.rendererRef.current).toBeDefined()
+    // clears any stale error then starts the backend
+    expect(model.setRenderError).toHaveBeenCalledWith(undefined)
+    expect(model.startRenderingBackend).toHaveBeenCalledTimes(1)
+    expect(model.startRenderingBackend.mock.calls[0]![0]).toBeDefined()
   })
 
-  test('reports error via onError when factory rejects', async () => {
+  test('reports error via setRenderError when factory rejects', async () => {
     const factory = createMockFactory(true)
     const canvas = document.createElement('canvas')
-    const onError = jest.fn()
+    const model = createMockModel()
 
-    const opts = { onError }
-
-    const { result } = renderHook(() => useRenderer(factory, opts))
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
     act(() => {
       result.current.canvasRef(canvas)
     })
     await act(async () => {})
 
-    expect(result.current.ready).toBe(false)
-    expect(onError).toHaveBeenCalledWith(expect.any(Error))
+    expect(model.startRenderingBackend).not.toHaveBeenCalled()
+    expect(model.setRenderError).toHaveBeenCalledWith(expect.any(Error))
   })
 
-  test('retry clears error via onError and resets ready', async () => {
+  test('retry clears error via setRenderError', async () => {
     const factory = createMockFactory(true)
     const canvas = document.createElement('canvas')
-    const onError = jest.fn()
+    const model = createMockModel()
 
-    const opts = { onError }
-
-    const { result } = renderHook(() => useRenderer(factory, opts))
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
     act(() => {
       result.current.canvasRef(canvas)
     })
     await act(async () => {})
-    expect(onError).toHaveBeenLastCalledWith(expect.any(Error))
+    expect(model.setRenderError).toHaveBeenLastCalledWith(expect.any(Error))
 
     act(() => {
       result.current.retry()
     })
 
-    expect(onError).toHaveBeenLastCalledWith(undefined)
-    expect(result.current.ready).toBe(false)
+    expect(model.setRenderError).toHaveBeenLastCalledWith(undefined)
   })
 
   test('does nothing when canvas ref is null', async () => {
     const factory = createMockFactory()
-    const onError = jest.fn()
+    const model = createMockModel()
 
-    const opts = { onError }
-
-    const { result } = renderHook(() => useRenderer(factory, opts))
+    renderHook(() => useRenderingBackend(factory, model))
     await act(async () => {})
 
-    expect(result.current.ready).toBe(false)
-    expect(onError).not.toHaveBeenCalled()
-    expect(result.current.rendererRef.current).toBeNull()
+    expect(model.startRenderingBackend).not.toHaveBeenCalled()
+    expect(model.setRenderError).not.toHaveBeenCalled()
   })
 
-  test('disposes old renderer and re-initializes on WebGL context restore', async () => {
+  test('disposes old backend and re-initializes on WebGL context restore', async () => {
     const canvas = document.createElement('canvas')
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
+    const model = createMockModel()
 
-    const { result } = renderHook(() => useRenderer(factory))
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
     act(() => {
       result.current.canvasRef(canvas)
     })
     await act(async () => {})
-    expect(result.current.ready).toBe(true)
     expect(factory).toHaveBeenCalledTimes(1)
+    expect(model.startRenderingBackend).toHaveBeenCalledTimes(1)
 
     act(() => {
       canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
@@ -130,14 +129,16 @@ describe('useRenderer', () => {
     await act(async () => {})
 
     expect(dispose).toHaveBeenCalledTimes(1)
+    expect(model.stopRenderingBackend).toHaveBeenCalledTimes(1)
     expect(factory).toHaveBeenCalledTimes(2)
-    expect(result.current.ready).toBe(true)
+    expect(model.startRenderingBackend).toHaveBeenCalledTimes(2)
   })
 
   test('prevents default on webglcontextlost to allow restore', async () => {
     const canvas = document.createElement('canvas')
     const factory = createMockFactory()
-    const { result } = renderHook(() => useRenderer(factory))
+    const model = createMockModel()
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
     act(() => {
       result.current.canvasRef(canvas)
     })
@@ -149,17 +150,17 @@ describe('useRenderer', () => {
     expect(event.defaultPrevented).toBe(true)
   })
 
-  test('disposes old renderer and re-initializes on WebGPU device loss', async () => {
+  test('disposes old backend and re-initializes on WebGPU device loss', async () => {
     const canvas = document.createElement('canvas')
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
+    const model = createMockModel()
 
-    const { result } = renderHook(() => useRenderer(factory))
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
     act(() => {
       result.current.canvasRef(canvas)
     })
     await act(async () => {})
-    expect(result.current.ready).toBe(true)
     expect(factory).toHaveBeenCalledTimes(1)
 
     act(() => {
@@ -169,7 +170,7 @@ describe('useRenderer', () => {
 
     expect(dispose).toHaveBeenCalledTimes(1)
     expect(factory).toHaveBeenCalledTimes(2)
-    expect(result.current.ready).toBe(true)
+    expect(model.startRenderingBackend).toHaveBeenCalledTimes(2)
   })
 
   test('re-initializes when canvas element is replaced after regionTooLarge recovery', async () => {
@@ -177,14 +178,14 @@ describe('useRenderer', () => {
     const canvas2 = document.createElement('canvas')
     const dispose = jest.fn()
     const factory = jest.fn().mockResolvedValue({ dispose })
+    const model = createMockModel()
 
-    const { result } = renderHook(() => useRenderer(factory))
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
     act(() => {
       result.current.canvasRef(canvas1)
     })
     await act(async () => {})
 
-    expect(result.current.ready).toBe(true)
     expect(factory).toHaveBeenCalledTimes(1)
 
     // Simulate regionTooLarge: component returns early, canvas unmounts
@@ -201,7 +202,7 @@ describe('useRenderer', () => {
 
     expect(factory).toHaveBeenCalledTimes(2)
     expect(dispose).toHaveBeenCalledTimes(1)
-    expect(result.current.ready).toBe(true)
+    expect(model.startRenderingBackend).toHaveBeenCalledTimes(2)
   })
 
   test('cleans up device lost listener on unmount', () => {
@@ -209,7 +210,8 @@ describe('useRenderer', () => {
     jest.mocked(onDeviceLost).mockReturnValueOnce(cleanup)
 
     const factory = createMockFactory()
-    const { unmount } = renderHook(() => useRenderer(factory))
+    const model = createMockModel()
+    const { unmount } = renderHook(() => useRenderingBackend(factory, model))
     unmount()
 
     expect(cleanup).toHaveBeenCalledTimes(1)

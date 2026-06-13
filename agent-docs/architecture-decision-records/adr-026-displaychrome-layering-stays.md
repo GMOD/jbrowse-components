@@ -2,22 +2,29 @@
 
 ## Status
 
-Accepted. Builds on [ADR-025](adr-025-gpu-canvas-stays-mounted-not-xor-error.md)
+Accepted, with one rejected alternative later **reversed** (2026-06): the
+`useRenderer` / `useRenderingBackend` split was collapsed into a single
+`useRenderingBackend` hook as part of an explicit GPU public-API
+simplification pass that accepted breaking changes. See "Merge `useRenderer`
+into `useRenderingBackend`" under Rejected alternatives for why the original
+testability objection no longer holds. The rest of the layering stands.
+
+Builds on [ADR-025](adr-025-gpu-canvas-stays-mounted-not-xor-error.md)
 and [DISPLAYCHROME.md](../DISPLAYCHROME.md) (the migration history and the
 "what it is"). This ADR records the outcome of a **leakiness / radical-simplification
 audit** of the chrome stack so the rejected refactors aren't re-litigated.
 
 ## Context
 
-The GPU-display chrome stack has five layers:
+The GPU-display chrome stack has four layers (originally five, before the
+hook merge below):
 
-- `useRenderer` (`packages/core/src/util/useRenderer.ts`) — pure React/DOM canvas
-  lifecycle: runs the factory after mount, owns the canvas ref, `retry()`
-  remount, dispose-on-unmount.
 - `useRenderingBackend` (`packages/core/src/util/useRenderingBackend.ts`) — the
-  MST adapter: wires `useRenderer`'s `{onReady,onDispose,onError}` to
-  `model.startRenderingBackend` / `stopRenderingBackend` / `setRenderError`, plus
-  `useTabVisibilityRerender → renderNow`.
+  React/DOM canvas lifecycle (runs the factory after mount, owns the canvas
+  ref, `retry()` remount, dispose-on-unmount, context-/device-loss recovery)
+  wired directly to `model.startRenderingBackend` / `stopRenderingBackend` /
+  `setRenderError`, plus `useTabVisibilityRerender → renderNow`. Originally two
+  layers (`useRenderer` + an MST adapter); merged in 2026-06.
 - `RenderLifecycleMixin` (`packages/core/src/gpu/RenderLifecycleMixin.ts`) — the
   *observable* draw-loop state (`canvasDrawn`, `renderError`,
   `currentRenderingBackend`, `renderTick`) and the upload/render autorun pair.
@@ -39,10 +46,6 @@ here as rejected.
 
 Keep the current layering. Each layer maps to a genuine concern boundary:
 
-- **DOM/React lifecycle** (`useRenderer`) is separable from **state-tree wiring**
-  (`useRenderingBackend`). The seam is what lets `useRenderer.test.ts` exercise
-  the hard React parts (async factory, retry remount, dispose) with **no MST
-  model**.
 - **Render-lifecycle state must be model-side**, not React-local, because
   `loadingOverlayVisible` is a *join* of render state (`canvasDrawn`,
   `renderError`) and fetch state (`isLoading`, `error`, `regionTooLarge`). A join
@@ -57,13 +60,21 @@ Keep the current layering. Each layer maps to a genuine concern boundary:
 
 ### Rejected alternatives
 
-- **Merge `useRenderer` into `useRenderingBackend`.** `useRenderer`'s callback API
-  has zero production consumers — every call site (dotplot, synteny,
-  DisplayChrome) goes through `useRenderingBackend`; only `useRenderer.test.ts`
-  uses it directly. So it *could* collapse. Rejected: that test file is the only
-  place the canvas lifecycle is exercised without an MST model. Merging trades one
-  fewer file for coupling those tests to an MST fake. The layer is collapsible but
-  load-bearing for testability.
+- **Merge `useRenderer` into `useRenderingBackend`.** *Originally rejected, then
+  adopted (2026-06).* `useRenderer`'s callback API had zero production consumers —
+  every call site (dotplot, synteny, DisplayChrome) went through
+  `useRenderingBackend`; only `useRenderer.test.ts` used it directly. The original
+  objection was that that test was the only place the canvas lifecycle was
+  exercised without an MST model, so merging would couple those tests to an MST
+  fake. That turned out to be a non-cost: the merged `useRenderingBackend` only
+  ever touches the model through a duck-typed action surface
+  (`startRenderingBackend` / `stopRenderingBackend` / `renderNow` /
+  `setRenderError`) guarded by `nodeAlive`, which returns `true` for any
+  non-`isStateTreeNode` value. So `useRenderingBackend.test.ts` drives the hard
+  React parts (async factory, retry remount, dispose, context/device loss) with a
+  **plain-object** model of `jest.fn()`s — no MST involved — and asserts on those
+  spies instead of on returned `ready`/`rendererRef`. One fewer file, one fewer
+  hop, identical test coverage.
 - **"Body owns its own div; chrome renders overlays around it."** Rejected —
   refuted by the positioning requirement above. The overlays must share the
   canvas's relative container, so the chrome must own it. The outer/body
