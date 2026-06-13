@@ -30,6 +30,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
+import { readColorCategory } from './colorUtils.ts'
 import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
@@ -66,8 +67,10 @@ import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getColorForModification } from '../util.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
+import type { ReadColorCategory } from './colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel } from './configSchema.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from './constants.ts'
+import type { CompactnessLevel } from './menus/featureSize.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
 import type {
@@ -77,7 +80,6 @@ import type {
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
-import type { CompactnessLevel } from './menus/featureSize.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type {
@@ -847,13 +849,44 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Read-color buckets actually present across the rendered reads, the
+         * single input that lets the legend list only relevant swatches (see
+         * legendUtils). Shares readColorCategory with the renderer so the two
+         * can't disagree. Empty while the legend is hidden so the O(reads) scan
+         * is skipped; MobX memoizes it against rpcDataMap + scheme + mode.
+         */
+        get colorLegendCategories(): Set<ReadColorCategory> {
+          const present = new Set<ReadColorCategory>()
+          if (this.showLegend) {
+            const colorScheme = COLOR_BY_TO_SCHEME[this.colorBy.type]
+            const opts = {
+              linkedReads: self.linkedReads,
+              flipStrandLongReadChains: self.flipStrandLongReadChains,
+            }
+            for (const data of eachGroupData(self.rpcDataMap)) {
+              for (let i = 0; i < data.readFlags.length; i++) {
+                present.add(readColorCategory(i, data, colorScheme, opts))
+              }
+            }
+          }
+          return present
+        },
+
+        /**
          * #method
          */
         legendItems() {
-          return getReadDisplayLegendItems(
-            this.colorBy,
-            self.visibleModifications,
-          )
+          // No palette yet (set by the display's mount effect) → no legend.
+          const palette = self.colorPalette
+          return palette
+            ? getReadDisplayLegendItems(
+                this.colorBy,
+                this.colorLegendCategories,
+                palette,
+                self.visibleModifications,
+              )
+            : []
         },
 
         /**
