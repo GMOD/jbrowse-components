@@ -25,6 +25,7 @@ export default function DOMPurifySanitizedHTML({
     <span
       ref={spanRef}
       className={className}
+      // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
       dangerouslySetInnerHTML={{ __html: dompurify.sanitize(value) }}
     />
   )

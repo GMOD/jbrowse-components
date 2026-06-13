@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, use } from 'react'
 
 import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
 
@@ -22,5 +22,5 @@ export const DockviewContext = createContext<DockviewContextValue>({
 })
 
 export function useDockview() {
-  return useContext(DockviewContext)
+  return use(DockviewContext)
 }

@@ -40,6 +40,7 @@ const DiagonalizationProgressDialog = observer(
           // Yield so the LinearProgress paints before the synchronous
           // collect+diagonalize work blocks the main thread.
           await new Promise(resolve => {
+            // eslint-disable-next-line @eslint-react/web-api-no-leaked-timeout -- yields to paint, Promise resolves once
             setTimeout(resolve, 0)
           })
 

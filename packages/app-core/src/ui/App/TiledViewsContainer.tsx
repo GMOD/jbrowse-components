@@ -321,7 +321,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       : 'dockview-theme-light'
 
   return (
-    <DockviewContext.Provider value={contextValue}>
+    <DockviewContext value={contextValue}>
       <div className={`${classes.container} ${themeClass}`}>
         <DockviewReact
           components={components}
@@ -331,7 +331,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
           onReady={onReady}
         />
       </div>
-    </DockviewContext.Provider>
+    </DockviewContext>
   )
 })
 

@@ -134,7 +134,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(
-            function useWorkspacesAutorun() {
+            function workspacesAutorun() {
               localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
             },
             { name: 'UseWorkspaces' },

@@ -209,6 +209,7 @@ export default function sharedModelFactory(
       get tickHeight() {
         return self.getConfWithOverride('tickHeight')
       },
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
       get useGenomicPositions() {
         return self.getConfWithOverride('useGenomicPositions')
       },

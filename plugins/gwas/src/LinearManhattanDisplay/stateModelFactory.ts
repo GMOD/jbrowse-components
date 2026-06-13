@@ -264,6 +264,7 @@ export function stateModelFactory(
       },
       // Release a pinned index back to auto-tracking, seeded at the current top
       // hit (the auto-pick autorun then keeps it on the top hit as data loads).
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST action named for its semantic meaning, not a React hook
       useTopHitAsIndex() {
         self.indexSnpPinned = false
         self.indexSnp = self.topSnp

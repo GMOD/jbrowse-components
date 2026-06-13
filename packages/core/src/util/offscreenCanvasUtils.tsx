@@ -17,6 +17,7 @@ export function ReactRendering({
   return isValidElement(rendering.reactElement) ? (
     rendering.reactElement
   ) : (
+    // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
     <g dangerouslySetInnerHTML={{ __html: rendering.html || '' }} />
   )
 }

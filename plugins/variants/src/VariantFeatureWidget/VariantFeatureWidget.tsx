@@ -164,6 +164,7 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
 }: {
   model: VariantFeatureWidgetModel
 }) {
+  // eslint-disable-next-line @eslint-react/purity -- structuredClone is pure; clones MST proxy to plain object
   const feat = structuredClone(model.featureData)
   return feat ? (
     <FeatDefined feat={feat} model={model} />

@@ -43,5 +43,6 @@ export function paintLayer(
   }
   const svg = new SvgCanvas()
   paint(svg)
+  // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
   return <g dangerouslySetInnerHTML={{ __html: svg.getSerializedSvg() }} />
 }

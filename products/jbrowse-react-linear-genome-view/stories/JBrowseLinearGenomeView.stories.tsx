@@ -776,17 +776,17 @@ function App() {
 // ---------------------------------------------------------------------------
 
 const ShadowComponent = () => {
-  const node = useRef<HTMLDivElement>(null)
-  const nodeForPin = useRef(null)
+  const nodeRef = useRef<HTMLDivElement>(null)
+  const nodeForPinRef = useRef(null)
   const [rootNode, setRootNode] = useState<ShadowRoot>()
   const [cacheNode, setCacheNode] = useState<EmotionCache>()
   const [config, setConfig] = useState<ViewModel>()
   useEffect(() => {
-    if (!node.current) {
+    if (!nodeRef.current) {
       return
     }
     const { assembly: shadowAssembly, tracks: shadowTracks } = getVolvoxConfig()
-    const root = node.current.attachShadow({ mode: 'open' })
+    const root = nodeRef.current.attachShadow({ mode: 'open' })
     setRootNode(root)
     setCacheNode(
       createCache({
@@ -795,6 +795,7 @@ const ShadowComponent = () => {
         container: root,
       }),
     )
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- shadow DOM setup requires setState in effect
     setConfig(
       createViewState({
         assembly: shadowAssembly,
@@ -807,23 +808,23 @@ const ShadowComponent = () => {
             },
             components: {
               MuiPopover: {
-                defaultProps: { container: () => nodeForPin.current },
+                defaultProps: { container: () => nodeForPinRef.current },
               },
               MuiPopper: {
-                defaultProps: { container: () => nodeForPin.current },
+                defaultProps: { container: () => nodeForPinRef.current },
               },
               MuiTooltip: {
                 defaultProps: {
                   slotProps: {
-                    popper: { container: () => nodeForPin.current },
+                    popper: { container: () => nodeForPinRef.current },
                   },
                 },
               },
               MuiModal: {
-                defaultProps: { container: () => nodeForPin.current },
+                defaultProps: { container: () => nodeForPinRef.current },
               },
               MuiMenu: {
-                defaultProps: { container: () => nodeForPin.current },
+                defaultProps: { container: () => nodeForPinRef.current },
               },
             },
           },
@@ -832,12 +833,12 @@ const ShadowComponent = () => {
     )
   }, [])
   return (
-    <div ref={node}>
+    <div ref={nodeRef}>
       {rootNode && config && cacheNode
         ? createPortal(
             <CacheProvider value={cacheNode}>
               <JBrowseLinearGenomeView viewState={config} />
-              <div ref={nodeForPin} />
+              <div ref={nodeForPinRef} />
             </CacheProvider>,
             rootNode,
           )
@@ -881,16 +882,17 @@ ${VOLVOX_SOURCE_CONFIG}
 type ViewState = ReturnType<typeof createViewState>
 
 const ShadowComponent = () => {
-  const node = useRef<HTMLDivElement>(null)
-  const nodeForPin = useRef(null)
+  const nodeRef = useRef<HTMLDivElement>(null)
+  const nodeForPinRef = useRef(null)
   const [rootNode, setRootNode] = useState<ShadowRoot>()
   const [cacheNode, setCacheNode] = useState<EmotionCache>()
   const [config, setConfig] = useState<ViewState>()
   useEffect(() => {
-    if (!node.current) return
-    const root = node.current.attachShadow({ mode: 'open' })
+    if (!nodeRef.current) return
+    const root = nodeRef.current.attachShadow({ mode: 'open' })
     setRootNode(root)
     setCacheNode(createCache({ key: 'react-shadow', prepend: true, container: root }))
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- shadow DOM setup requires setState in effect
     setConfig(
       createViewState({
         assembly,
@@ -900,13 +902,13 @@ const ShadowComponent = () => {
           theme: {
             palette: { primary: { main: '#4400a6' } },
             components: {
-              MuiPopover: { defaultProps: { container: () => nodeForPin.current } },
-              MuiPopper: { defaultProps: { container: () => nodeForPin.current } },
+              MuiPopover: { defaultProps: { container: () => nodeForPinRef.current } },
+              MuiPopper: { defaultProps: { container: () => nodeForPinRef.current } },
               MuiTooltip: {
-                defaultProps: { slotProps: { popper: { container: () => nodeForPin.current } } },
+                defaultProps: { slotProps: { popper: { container: () => nodeForPinRef.current } } },
               },
-              MuiModal: { defaultProps: { container: () => nodeForPin.current } },
-              MuiMenu: { defaultProps: { container: () => nodeForPin.current } },
+              MuiModal: { defaultProps: { container: () => nodeForPinRef.current } },
+              MuiMenu: { defaultProps: { container: () => nodeForPinRef.current } },
             },
           },
         },
@@ -914,12 +916,12 @@ const ShadowComponent = () => {
     )
   }, [])
   return (
-    <div ref={node}>
+    <div ref={nodeRef}>
       {rootNode && config && cacheNode
         ? createPortal(
             <CacheProvider value={cacheNode}>
               <JBrowseLinearGenomeView viewState={config} />
-              <div ref={nodeForPin} />
+              <div ref={nodeForPinRef} />
             </CacheProvider>,
             rootNode,
           )

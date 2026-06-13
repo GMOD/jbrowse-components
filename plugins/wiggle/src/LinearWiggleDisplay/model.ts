@@ -133,6 +133,7 @@ export default function stateModelFactory(
       /**
        * #getter
        */
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
       get useBicolor(): boolean {
         return self.getConfWithOverride('useBicolor')
       },

@@ -21,6 +21,7 @@ export function useVirtualRows(
     if (!el) {
       return
     }
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- initializes from DOM after mount
     setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
     const onScroll = () => {
       setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })

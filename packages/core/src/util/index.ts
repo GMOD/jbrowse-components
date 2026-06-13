@@ -308,6 +308,7 @@ export function getFillProps(str: string) {
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
 export function renderToStaticMarkup(node: React.ReactElement) {
   const div = document.createElement('div')
+  // eslint-disable-next-line @eslint-react/dom-no-flush-sync
   flushSync(() => {
     createRoot(div).render(node)
   })

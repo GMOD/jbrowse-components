@@ -13,6 +13,7 @@ const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail(props: {
 }) {
   const { model } = props
   const { featureData } = model
+  // eslint-disable-next-line @eslint-react/purity -- structuredClone is pure; clones MST proxy to plain object
   const feat = structuredClone(featureData)
   return feat ? (
     <Paper>

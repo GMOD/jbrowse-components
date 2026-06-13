@@ -45,7 +45,7 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
   const firstChoice = connectionTypeChoices[0]!
   const [connectionType, setConnectionType] = useState(firstChoice)
   const [connectionId, setConnectionId] = useState(
-    `${firstChoice.name}-${Date.now()}`,
+    () => `${firstChoice.name}-${Date.now()}`,
   )
 
   // useMemo is needed for react@18+mobx-react@9, previous code called configSchema.create directly in a setConfigModel useState hook setter but this caused infinite loop

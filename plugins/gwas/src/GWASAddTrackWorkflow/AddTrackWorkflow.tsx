@@ -45,7 +45,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   const [scoreColumn, setScoreColumn] = useState('neg_log_pvalue')
   const [ldLocation, setLdLocation] = useState<FileLocation>()
   const [ldIndexLocation, setLdIndexLocation] = useState<FileLocation>()
-  const [trackName, setTrackName] = useState(`GWAS${Date.now()}`)
+  const [trackName, setTrackName] = useState(() => `GWAS${Date.now()}`)
   const [displayId] = useState(() => `gwas-ld-display-${Date.now()}`)
 
   const { assembly } = model

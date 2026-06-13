@@ -16,8 +16,8 @@ const HatchCircle = observer(function HatchCircle({
   text: ReactNode
   children?: ReactNode
 }) {
-  const uid = useId()
-  const patternId = `hatch${uid.replace(/:/g, '')}`
+  const uniqueId = useId()
+  const patternId = `hatch${uniqueId.replace(/:/g, '')}`
   return (
     <g>
       <defs>

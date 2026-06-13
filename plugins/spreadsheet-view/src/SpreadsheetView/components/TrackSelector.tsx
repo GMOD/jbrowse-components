@@ -22,12 +22,13 @@ const TrackSelector = observer(function TrackSelector({
   // firstTrackId is a string primitive — stable dep that changes only when the
   // assembly changes, avoiding the "new array ref on every render" problem
   useEffect(() => {
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- sync with MST model on first-track change
     setSelectedTrackId(firstTrackId)
     if (firstTrack) {
       model.setFileSource(firstTrack.loc)
       model.setFileType(firstTrack.type)
     }
-  }, [firstTrackId])
+  }, [firstTrackId, firstTrack, model])
 
   return (
     <div>

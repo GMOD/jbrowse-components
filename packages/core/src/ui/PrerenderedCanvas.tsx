@@ -22,13 +22,13 @@ function PrerenderedCanvas(props: {
   } = props
   const [done, setDone] = useState(false)
 
-  const featureCanvas = useRef<HTMLCanvasElement>(null)
+  const featureCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     if (!imageData) {
       return
     }
-    const canvas = featureCanvas.current
+    const canvas = featureCanvasRef.current
     if (!canvas) {
       return
     }
@@ -38,6 +38,7 @@ function PrerenderedCanvas(props: {
     }
     context.clearRect(0, 0, canvas.width, canvas.height)
     drawImageOntoCanvasContext(imageData, context)
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
     setDone(true)
   }, [imageData])
 
@@ -51,7 +52,7 @@ function PrerenderedCanvas(props: {
       ]
         .filter(f => !!f)
         .join('_')}
-      ref={featureCanvas}
+      ref={featureCanvasRef}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}
       style={{ width, height, ...style }}

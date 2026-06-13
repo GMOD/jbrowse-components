@@ -84,7 +84,9 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
       return
     }
     const active = { current: true }
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- loading state reset before async RPC call
     setLoading(true)
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- loading state reset before async RPC call
     setError(undefined)
     session.rpcManager
       .call('MafSequenceWidget', 'MafGetSequences', {
