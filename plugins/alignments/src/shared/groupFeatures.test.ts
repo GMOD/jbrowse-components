@@ -1,6 +1,10 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { partitionFeatures } from './groupFeatures.ts'
+import {
+  isChainGroupableType,
+  partitionChains,
+  partitionFeatures,
+} from './groupFeatures.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -84,4 +88,64 @@ test('duplicate grouping splits on the duplicate flag', () => {
   const features = [feat('a', { flags: 0x400 }), feat('b', { flags: 0 })]
   const groups = partitionFeatures(features, { type: 'duplicate' })
   expect(keys(groups).sort()).toEqual(['duplicate', 'nonduplicate'])
+})
+
+test('isChainGroupableType allows only chain-consistent dimensions', () => {
+  expect(isChainGroupableType('tag')).toBe(true)
+  expect(isChainGroupableType('firstOfPairStrand')).toBe(true)
+  expect(isChainGroupableType('pairOrientation')).toBe(true)
+  expect(isChainGroupableType('strand')).toBe(false)
+  expect(isChainGroupableType('supplementary')).toBe(false)
+  expect(isChainGroupableType('mapq')).toBe(false)
+  expect(isChainGroupableType('duplicate')).toBe(false)
+  expect(isChainGroupableType(undefined)).toBe(false)
+})
+
+test('partitionChains ungrouped is a single section holding every read', () => {
+  const features = [
+    feat('a', { name: 'r1', flags: 0 }),
+    feat('b', { name: 'r2', flags: 0 }),
+  ]
+  const groups = partitionChains(features, undefined)
+  expect(groups).toHaveLength(1)
+  expect(groups[0]!.key).toBe('')
+  expect(groups[0]!.features).toHaveLength(2)
+})
+
+test('partitionChains keeps every read of a chain in one group', () => {
+  // read1 (HP 1) and its mate read2 carry the same HP tag, but even if a mate
+  // lacked the tag the representative read's key decides the whole chain.
+  const features = [
+    feat('r1a', { name: 'r1', flags: 0x40, tags: { HP: 1 } }),
+    feat('r1b', { name: 'r1', flags: 0x80, tags: { HP: 1 } }),
+    feat('r2a', { name: 'r2', flags: 0x40, tags: { HP: 2 } }),
+    feat('r2b', { name: 'r2', flags: 0x80, tags: { HP: 2 } }),
+  ]
+  const groups = partitionChains(features, { type: 'tag', tag: 'HP' })
+  expect(keys(groups)).toEqual(['1', '2'])
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['r1a', 'r1b'])
+  expect(groups[1]!.features.map(f => f.id())).toEqual(['r2a', 'r2b'])
+})
+
+test('partitionChains keys a chain from its read1 representative', () => {
+  // The mate (read2, no HP) would key as untagged, but the representative is the
+  // primary read1, which carries HP 1 — so the whole chain lands in group '1'.
+  const features = [
+    feat('mate', { name: 'r1', flags: 0x80 }),
+    feat('primary', { name: 'r1', flags: 0x40, tags: { HP: 1 } }),
+  ]
+  const groups = partitionChains(features, { type: 'tag', tag: 'HP' })
+  expect(keys(groups)).toEqual(['1'])
+  expect(groups[0]!.features).toHaveLength(2)
+})
+
+test('partitionChains ignores supplementary/secondary for the key', () => {
+  // The only primary read is read2 (HP 9); the supplementary record (HP absent)
+  // must not be picked as representative.
+  const features = [
+    feat('supp', { name: 'r1', flags: 0x800 }),
+    feat('prim', { name: 'r1', flags: 0x80, tags: { HP: 9 } }),
+  ]
+  const groups = partitionChains(features, { type: 'tag', tag: 'HP' })
+  expect(keys(groups)).toEqual(['9'])
 })

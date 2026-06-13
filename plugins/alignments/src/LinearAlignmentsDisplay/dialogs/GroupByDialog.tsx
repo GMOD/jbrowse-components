@@ -14,6 +14,7 @@ import { MenuItem, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
+import { GROUP_BY_DIMENSIONS } from '../../shared/groupFeatures.ts'
 import { TAG_REGEX, negFlags, posFlags } from '../../shared/util.ts'
 
 import type { FilterBy, GroupBy, GroupByType } from '../../shared/types.ts'
@@ -131,30 +132,34 @@ function createGroupTracks({
   }
 }
 
-// In-track stacked grouping covers every group-key generator
-// (shared/groupFeatures.ts). The legacy split-into-tracks path only wires
-// strand + tag, so it offers the narrower set.
-const STACK_DIMENSIONS: { value: GroupByType; label: string }[] = [
-  { value: 'strand', label: 'Strand' },
-  { value: 'firstOfPairStrand', label: 'First-of-pair strand' },
-  { value: 'tag', label: 'Tag (HP, RG, ...)' },
-  { value: 'pairOrientation', label: 'Pair orientation' },
-  { value: 'supplementary', label: 'Supplementary' },
-  { value: 'duplicate', label: 'Duplicate' },
-  { value: 'mapq', label: 'MAPQ (binned)' },
-]
+// In-track stacked grouping covers every group-key generator, derived straight
+// from the shared dimension registry so the menu can't drift from the worker's
+// key generators / chain-consistency classification.
+const STACK_DIMENSIONS = Object.values(GROUP_BY_DIMENSIONS)
+// The legacy split-into-tracks path only wires strand + tag, so it offers the
+// narrower set.
 const SPLIT_DIMENSIONS = STACK_DIMENSIONS.filter(
-  d => d.value === 'strand' || d.value === 'tag',
+  d => d.type === 'strand' || d.type === 'tag',
 )
+// Linked-read (chain) mode partitions whole chains, so it only offers the
+// chain-consistent dimensions where every read of a chain shares one key — the
+// same `chainConsistent` flag the worker's partition guard reads.
+const CHAIN_STACK_DIMENSIONS = STACK_DIMENSIONS.filter(d => d.chainConsistent)
+
+// What the group-by feature needs from the display model. Shared with the
+// track-menu item (getGroupByMenuItem) so the dialog and the menu can't disagree
+// about the model surface they depend on.
+export type GroupByModel = {
+  adapterConfig: AnyConfigurationModel
+  configuration: AnyConfigurationModel
+  filterBy: FilterBy
+  groupBy?: GroupBy
+  isChainMode: boolean
+  setGroupBy: (groupBy?: GroupBy) => void
+} & IAnyStateTreeNode
 
 const GroupByDialog = observer(function GroupByDialog(props: {
-  model: {
-    adapterConfig: AnyConfigurationModel
-    configuration: AnyConfigurationModel
-    filterBy: FilterBy
-    groupBy?: GroupBy
-    setGroupBy: (groupBy?: GroupBy) => void
-  } & IAnyStateTreeNode
+  model: GroupByModel
   handleClose: () => void
 }) {
   const { model, handleClose } = props
@@ -187,7 +192,16 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       }),
   )
 
-  const dimensions = mode === 'stack' ? STACK_DIMENSIONS : SPLIT_DIMENSIONS
+  // Chain mode keeps each chain whole inside one group, so only the
+  // chain-consistent dimensions are offered (stack only; chain has no split
+  // path). The worker also defends against a disallowed value from an old
+  // session by degrading to ungrouped.
+  const dimensions =
+    mode === 'split'
+      ? SPLIT_DIMENSIONS
+      : model.isChainMode
+        ? CHAIN_STACK_DIMENSIONS
+        : STACK_DIMENSIONS
   // Stacking partitions in the worker, so it only needs a valid tag name (not a
   // non-empty current-region tag set the way the split path does to build its
   // group tracks).
@@ -266,6 +280,12 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           ? 'Renders the reads as stacked sections (one per group) inside this track, sharing one coverage scale.'
           : 'Creates one new session track per group. Remove them later with "Group by... → Remove grouped tracks".'}
       </Typography>
+      {mode === 'stack' && model.isChainMode ? (
+        <Typography color="text.secondary">
+          In linked-read mode, grouping keeps each chain whole, so only
+          per-template dimensions are offered.
+        </Typography>
+      ) : null}
       <TextField
         fullWidth
         value={type}
@@ -276,7 +296,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         select
       >
         {dimensions.map(d => (
-          <MenuItem key={d.value} value={d.value}>
+          <MenuItem key={d.type} value={d.type}>
             {d.label}
           </MenuItem>
         ))}

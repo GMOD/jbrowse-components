@@ -1,13 +1,14 @@
 import {
   SAM_FLAG_DUPLICATE,
   SAM_FLAG_REVERSE,
+  SAM_FLAG_SECONDARY,
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 
-import type { GroupBy } from './types.ts'
+import type { GroupBy, GroupByType } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface FeatureGroup {
@@ -21,6 +22,12 @@ export interface FeatureGroup {
 
 function getFlags(feature: Feature) {
   return (feature.get('flags') as number | undefined) ?? 0
+}
+
+// QNAME; the empty string is the sentinel for a read with no name, which
+// partitionChains treats as its own one-read chain.
+function getName(feature: Feature) {
+  return (feature.get('name')) ?? ''
 }
 
 interface GroupKey {
@@ -147,6 +154,102 @@ export function partitionFeatures(
       group.features.push(feature)
     } else {
       groups.set(key, { key, label, features: [feature] })
+    }
+  }
+  return orderGroups([...groups.values()])
+}
+
+// The chain's representative read for group-key selection: a primary
+// (non-supplementary, non-secondary) read, preferring read1 so the key is
+// deterministic regardless of fetch order. Falls back to the first read when a
+// chain holds only supplementary/secondary records.
+function chainRepresentative(chain: Feature[]): Feature {
+  let primary: Feature | undefined
+  for (const f of chain) {
+    const flags = getFlags(f)
+    if (!(flags & (SAM_FLAG_SUPPLEMENTARY | SAM_FLAG_SECONDARY))) {
+      if (!(flags & SAM_FLAG_SECOND_IN_PAIR)) {
+        return f
+      }
+      primary ??= f
+    }
+  }
+  return primary ?? chain[0]!
+}
+
+export interface GroupByDimension {
+  type: GroupByType
+  // Menu label shown in the group-by dialog.
+  label: string
+  // True iff every read of a chain yields the same key for this dimension, so
+  // chain-aware partitioning keeps a chain whole — including across separate
+  // per-region worker calls. Per-read dimensions split chains and are excluded
+  // from chain (linked-reads) mode. See agent-docs/GROUP_BY_CHAIN_MODE_PLAN.md.
+  chainConsistent: boolean
+}
+
+// The single registry of group-by dimensions. Typed as a Record keyed by
+// GroupByType, so adding a member to the union is a compile error until it is
+// classified here — a new dimension can't be silently half-wired (missing a
+// label, or unclassified for chain mode). `groupKeyFor`'s exhaustive switch is
+// the matching forcing function for the key generator. Insertion order is the
+// menu order (Object.values preserves it).
+export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
+  strand: { type: 'strand', label: 'Strand', chainConsistent: false },
+  firstOfPairStrand: {
+    type: 'firstOfPairStrand',
+    label: 'First-of-pair strand',
+    chainConsistent: true,
+  },
+  tag: { type: 'tag', label: 'Tag (HP, RG, ...)', chainConsistent: true },
+  pairOrientation: {
+    type: 'pairOrientation',
+    label: 'Pair orientation',
+    chainConsistent: true,
+  },
+  supplementary: {
+    type: 'supplementary',
+    label: 'Supplementary',
+    chainConsistent: false,
+  },
+  duplicate: { type: 'duplicate', label: 'Duplicate', chainConsistent: false },
+  mapq: { type: 'mapq', label: 'MAPQ (binned)', chainConsistent: false },
+}
+
+export function isChainGroupableType(type: GroupByType | undefined) {
+  return type !== undefined && GROUP_BY_DIMENSIONS[type].chainConsistent
+}
+
+// Chain-aware partition for linked-reads/chain mode: reads sharing a QNAME form
+// one chain and are assigned, as a unit, to the group of the chain's
+// representative read — so a chain never splits across sections (which would
+// break connecting lines and desync mate rows). Same shape + ordering as
+// partitionFeatures; the ungrouped fallback is one group holding every read.
+export function partitionChains(
+  features: Feature[],
+  groupBy: GroupBy | undefined,
+): FeatureGroup[] {
+  if (!groupBy) {
+    return [{ key: '', label: '', features }]
+  }
+  const chains = new Map<string, Feature[]>()
+  for (const feature of features) {
+    const name = getName(feature)
+    const chain = chains.get(name)
+    if (chain) {
+      chain.push(feature)
+    } else {
+      chains.set(name, [feature])
+    }
+  }
+  const groups = new Map<string, FeatureGroup>()
+  for (const chain of chains.values()) {
+    const { key, label } = groupKeyFor(chainRepresentative(chain), groupBy)
+    const group = groups.get(key)
+    if (group) {
+      group.features.push(...chain)
+    } else {
+      groups.set(key, { key, label, features: [...chain] })
     }
   }
   return orderGroups([...groups.values()])

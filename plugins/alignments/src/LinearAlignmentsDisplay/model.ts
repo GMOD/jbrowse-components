@@ -43,6 +43,7 @@ import {
   buildReadIdIndexMap,
   eachGroupData,
   orderedGroups,
+  someGroupData,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
@@ -678,7 +679,8 @@ export default function stateModelFactory(
          * #getter
          */
         get hasPairedReads() {
-          return [...eachGroupData(self.rpcDataMap)].some(
+          return someGroupData(
+            self.rpcDataMap,
             d => d.insertSizeStats !== undefined,
           )
         },
@@ -1152,7 +1154,7 @@ export default function stateModelFactory(
          */
         get hasSashimiArcs() {
           const { minSashimiScore } = self
-          return [...eachGroupData(self.rpcDataMap)].some(d =>
+          return someGroupData(self.rpcDataMap, d =>
             d.sashimiCounts.some(c => c >= minSashimiScore),
           )
         },

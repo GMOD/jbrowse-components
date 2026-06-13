@@ -10,6 +10,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import type { SortedBy } from '../../shared/types.ts'
+import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -116,7 +117,7 @@ function removeGroupTracks(model: IAnyStateTreeNode) {
   }
 }
 
-export function getGroupByMenuItem(model: IAnyStateTreeNode) {
+export function getGroupByMenuItem(model: GroupByModel) {
   return {
     label: 'Group by...',
     type: 'subMenu' as const,
@@ -133,11 +134,9 @@ export function getGroupByMenuItem(model: IAnyStateTreeNode) {
       },
       {
         label: 'Ungroup (this track)',
-        disabled: !(model as { groupBy?: unknown }).groupBy,
+        disabled: !model.groupBy,
         onClick: () => {
-          ;(model as { setGroupBy: (g?: undefined) => void }).setGroupBy(
-            undefined,
-          )
+          model.setGroupBy(undefined)
         },
       },
       {

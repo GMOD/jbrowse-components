@@ -169,6 +169,75 @@ test('group draws per-section sashimi arcs', async () => {
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
+// Chain (linked-read) mode + HP-tag grouping (GROUP_BY_CHAIN_MODE_PLAN): the
+// worker partitions whole chains into per-haplotype sections (partitionChains),
+// so each chain's mates stay on shared rows inside one section and connecting
+// lines stay intact. Only the chain-consistent dimensions are allowed; HP
+// haplotype grouping of linked/long reads is the marquee use case.
+test('chain mode groups whole chains by HP tag into sections', async () => {
+  const user = userEvent.setup()
+  const { view } = await createView()
+  view.setNewView(0.8, 49437)
+  await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
+  await screen.findByTestId('pileup-display-done', ...opts)
+
+  const display = view.tracks[0]?.displays[0]
+  display.setLinkedReads('normal')
+  display.setGroupBy({ type: 'tag', tag: 'HP' })
+
+  await waitFor(
+    () => {
+      expect(display.isChainMode).toBe(true)
+      expect(display.isGrouped).toBe(true)
+      expect(display.groupOrder.length).toBeGreaterThanOrEqual(2)
+      // every section carries chain metadata, proving the chain-aware partition
+      // ran (rather than degrading to ungrouped).
+      for (const grouped of display.rpcDataMap.values()) {
+        for (const { data } of grouped.groups) {
+          expect(data.readChainIndices).toBeDefined()
+          expect(data.chainNames).toBeDefined()
+        }
+      }
+    },
+    { timeout: 30000 },
+  )
+
+  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  expectCanvasMatch(findCanvasIn(el), 0.05)
+}, 90000)
+
+// A disallowed (per-read) dimension in chain mode degrades to ungrouped in the
+// worker rather than splitting chains across sections — the defensive
+// isChainGroupableType guard.
+test('chain mode ignores a per-read group dimension (single section)', async () => {
+  const user = userEvent.setup()
+  const { view } = await createView()
+  view.setNewView(5, 100)
+  await user.click(
+    await screen.findByTestId(
+      hts('volvox_alignments_pileup_coverage'),
+      ...opts,
+    ),
+  )
+  await screen.findByTestId('pileup-display-done', ...opts)
+
+  const display = view.tracks[0]?.displays[0]
+  display.setLinkedReads('normal')
+  display.setGroupBy({ type: 'strand' })
+
+  await waitFor(
+    () => {
+      expect(display.isChainMode).toBe(true)
+      // strand is not chain-consistent, so the worker degrades to one section.
+      expect(display.isGrouped).toBe(false)
+      for (const grouped of display.rpcDataMap.values()) {
+        expect(grouped.groups.length).toBe(1)
+      }
+    },
+    { timeout: 30000 },
+  )
+}, 60000)
+
 test('ungroup restores a single section', async () => {
   const user = userEvent.setup()
   const { view } = await createView()

@@ -140,8 +140,10 @@ const PileupBody = observer(function PileupBody({
   const topOffset = model.isGrouped ? 0 : bands.bottom
 
   function chainIdsForHit(hit: FeatureHit, resolved: ResolvedBlock) {
-    const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
-    return chainIdx !== undefined ? (model.chainIdMap.get(chainIdx) ?? []) : []
+    const { readChainIndices, chainNames } = resolved.rpcData
+    const chainIdx = readChainIndices?.[hit.index]
+    const name = chainIdx === undefined ? undefined : chainNames?.[chainIdx]
+    return name === undefined ? [] : (model.chainIdMap.get(name) ?? [])
   }
 
   function handleCanvasMouseMove(e: React.MouseEvent) {

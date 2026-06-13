@@ -31,17 +31,6 @@ Stable reference docs: [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 
 ## Active plans
 
-### Drop CoreRender from BaseDisplayModel (deferred follow-up)
-
-Arc displays are now off the renderer concept (LinearArcDisplay + PairedArc both
-direct whole-view fetch + SVG), and `LinearAlignmentsDisplay` is fully GPU
-(composes `BaseDisplay`, never sets `rendererTypeName`, fetches via
-`RenderAlignmentData` + GPU/Canvas2D backends — no `CoreRender`). But
-`BaseDisplayModel` still carries `rendererTypeName`/`rendererType` because
-`LinearBareDisplay` and `BaseLinearDisplay` remain live `CoreRender` consumers.
-Once those migrate off server-side block rendering, drop
-`rendererTypeName`/`rendererType` from `BaseDisplayModel` and tighten/delete
-`CoreRender`/`CoreGetFeatureDetails`.
 
 ### MAF UCSC parity — Stage 2
 

@@ -16,7 +16,11 @@ import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeS
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
-import { partitionFeatures } from '../shared/groupFeatures.ts'
+import {
+  isChainGroupableType,
+  partitionChains,
+  partitionFeatures,
+} from '../shared/groupFeatures.ts'
 import { buildReadInterchrom } from '../shared/readInterchrom.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 
@@ -295,9 +299,11 @@ async function buildGroupResult(
 // chain pre-filters into chains and emits chain metadata; pileup fetches the
 // reference sequence for modification coloring and computes sort-tag values.
 //
-// When `groupBy` is set (pileup only), the single fetch is partitioned into N
-// ordered groups and the spine runs once per group, returning one
-// PileupDataResult per group. Ungrouped fetches return a single group.
+// When `groupBy` is set, the single fetch is partitioned into N ordered groups
+// and the spine runs once per group, returning one PileupDataResult per group.
+// Pileup partitions per read (partitionFeatures); chain partitions per chain
+// (partitionChains) so a chain stays whole, and is restricted to
+// chain-consistent dimensions. Ungrouped fetches return a single group.
 export async function executeRenderAlignmentData({
   pluginManager,
   args,
@@ -325,9 +331,13 @@ export async function executeRenderAlignmentData({
   const isChain = linkedReads !== 'off'
   // Chain mode never expands soft clips or fetches sequence/sort-tag data.
   const effShowSoftClipping = isChain ? false : showSoftClipping
-  // Grouping is a pileup-only feature for v1 (chain mode's read-name chaining
-  // conflicts with arbitrary partitions — see GROUP_BY_PLAN.md v1 scope cuts).
-  const groupBy = isChain ? undefined : groupByArg
+  // Chain mode allows grouping only on chain-consistent dimensions (tag /
+  // firstOfPairStrand / pairOrientation), where every read of a chain yields the
+  // same key so partitionChains keeps the chain whole. A disallowed dimension
+  // (e.g. an old session with strand + chain) degrades to ungrouped rather than
+  // splitting chains. See agent-docs/GROUP_BY_CHAIN_MODE_PLAN.md.
+  const groupBy =
+    isChain && !isChainGroupableType(groupByArg?.type) ? undefined : groupByArg
 
   const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
     pluginManager,
@@ -368,7 +378,9 @@ export async function executeRenderAlignmentData({
     regionSequenceStart = result.regionSequenceStart
   }
 
-  const featureGroups = partitionFeatures(inputFeatures, groupBy)
+  const featureGroups = isChain
+    ? partitionChains(inputFeatures, groupBy)
+    : partitionFeatures(inputFeatures, groupBy)
   const buildFeatureData = isChain
     ? buildChainFeatureData
     : buildBaseFeatureData
