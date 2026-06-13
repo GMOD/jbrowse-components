@@ -51,15 +51,6 @@ rpcDriverName: types.maybe(types.string)
 
 ### BaseDisplay - Volatiles
 
-#### volatile: rendererTypeName
-
-```js
-// type signature
-string
-// code
-rendererTypeName: ''
-```
-
 #### volatile: error
 
 ```js
@@ -146,15 +137,6 @@ any
 ```js
 // type
 Record<string, unknown>
-```
-
-#### getter: rendererType
-
-the pluggable element type object for this display's renderer
-
-```js
-// type
-RendererType | undefined
 ```
 
 #### getter: DisplayMessageComponent

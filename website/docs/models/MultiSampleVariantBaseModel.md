@@ -59,11 +59,11 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
-**Volatiles:** rendererTypeName, error, statusMessage
+**Volatiles:** error, statusMessage
 
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-rendererType, DisplayMessageComponent, viewMenuActions
+DisplayMessageComponent, viewMenuActions
 
 **Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
 
@@ -488,6 +488,13 @@ PositionedHierarchyNode<NewickNode> | undefined
 ```js
 // type
 { index: Flatbush; nodes: ClusterHierarchyNode[]; } | undefined
+```
+
+#### getter: hoveredTooltipSource
+
+```js
+// type
+{ [x: string]: unknown; genotype: string; name: string; baseUri?: string | undefined; sampleName?: string | undefined; color?: string | undefined; group?: string | undefined; HP?: number | undefined; } | undefined
 ```
 
 #### getter: canDisplayLabels

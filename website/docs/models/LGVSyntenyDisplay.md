@@ -76,15 +76,16 @@ minScore, maxScore, minScoreBound, maxScoreBound, numStdDev, featureWidgetType,
 selectedFeatureId, TooltipComponent, visibleModificationTypes, hasPairedReads,
 colorBy, filterBy, featureHeight, featureSpacing, maxHeight, chainIdMap,
 mismatchAlpha, showLowFreqMismatches, showLegend, sortedBy, groupBy,
-coverageIsLog, coverageStats, coverageDomain, coverageTicks, laidOutByGroup,
-groupOrder, laidOutPileupMap, sourceSections, maxY, pileupTruncated,
-rawDataByGroup, arcsByGroup, modificationThreshold, colorSchemeIndex,
-showModifications, showPerBaseQuality, showPerBaseLetter, totalPileupHeight,
-readIdIndexMap, readConnectionsLineWidth, hasSashimiArcs, belowCoverageBands,
-coverageDisplayHeight, sections, renderSections, sashimiSections, isGrouped,
-pileupViewportHeight, pileupContentHeight, scalebarOverlapLeft, showOutline,
-visibleLabels, highlightBoxes, scrollableHeight, sortTag, renderState,
-arcsYDomainBp, insertSizeTicks, featureUnderMouse
+coverageIsLog, coverageStats, coverageDomain, coverageTicks,
+colorLegendCategories, laidOutByGroup, groupOrder, laidOutPileupMap,
+sourceSections, maxY, pileupTruncated, rawDataByGroup, arcsByGroup,
+modificationThreshold, colorSchemeIndex, showModifications, showPerBaseQuality,
+showPerBaseLetter, totalPileupHeight, readIdIndexMap, readConnectionsLineWidth,
+hasSashimiArcs, belowCoverageBands, coverageDisplayHeight, sections,
+renderSections, sashimiSections, isGrouped, pileupViewportHeight,
+pileupContentHeight, scalebarOverlapLeft, showOutline, visibleLabels,
+highlightBoxes, scrollableHeight, sortTag, renderState, arcsYDomainBp,
+insertSizeTicks, featureUnderMouse
 
 **Methods:** isGroupCollapsed, legendItems, groupLaidOutMap,
 findFeatureInRpcData, searchFeatureByID, getFeatureInfoById, rpcProps,
@@ -115,11 +116,11 @@ setContextMenuFeatureById, getByteEstimateConfig, fetchNeeded, renderSvg
 
 **Properties:** id, type, rpcDriverName
 
-**Volatiles:** rendererTypeName, error, statusMessage
+**Volatiles:** error, statusMessage
 
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-rendererType, DisplayMessageComponent, viewMenuActions
+DisplayMessageComponent, viewMenuActions
 
 **Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
 
@@ -229,7 +230,7 @@ contextMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconType
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; })[]; } | { ...; } | { ...; })[]
+trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; type: "radio"; checked: boolean; onClick: () => void; } | { ...; } | { ...; } | { ...; })[]; } | { ...; } | { ...; })[]
 ```
 
 ### LGVSyntenyDisplay - Actions

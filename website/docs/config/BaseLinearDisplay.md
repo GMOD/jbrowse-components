@@ -18,15 +18,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-Shared base config for **both** linear display stacks — its slots (`height`,
+Shared base config for linear displays — its slots (`height`,
 `maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
-common to all linear displays. The GPU stack's `LinearCanvasBaseDisplay` config
-extends it, the legacy block `LinearBareDisplay` config extends it, and
-third-party plugins extend it too.
-
-Note: the _state model_ named `BaseLinearDisplay` is narrower than this config —
-it backs only the legacy block stack. See agent-docs/ARCHITECTURE.md "Display
-stacks".
+common to all of them. The GPU stack's `LinearCanvasBaseDisplay` config extends
+it, and third-party plugins extend it too.
 
 ### BaseLinearDisplay - Identifier
 

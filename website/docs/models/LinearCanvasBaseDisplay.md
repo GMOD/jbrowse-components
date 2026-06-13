@@ -36,11 +36,11 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
-**Volatiles:** rendererTypeName, error, statusMessage
+**Volatiles:** error, statusMessage
 
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-rendererType, DisplayMessageComponent, viewMenuActions
+DisplayMessageComponent, viewMenuActions
 
 **Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
 
@@ -529,7 +529,7 @@ contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeM
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; })[]; onClick?: undefined; } | { ...; })[]
+trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; })[]; onClick?: undefined; } | { ...; } | { ...; })[]
 ```
 
 ### LinearCanvasBaseDisplay - Actions

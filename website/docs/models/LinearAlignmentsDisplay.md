@@ -96,11 +96,11 @@ and docs.
 
 **Properties:** id, type, rpcDriverName
 
-**Volatiles:** rendererTypeName, error, statusMessage
+**Volatiles:** error, statusMessage
 
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-rendererType, DisplayMessageComponent, viewMenuActions
+DisplayMessageComponent, viewMenuActions
 
 **Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
 
@@ -728,7 +728,7 @@ number
 
 ```js
 // type
-Map<number, string[]>
+Map<string, string[]>
 ```
 
 #### getter: mismatchAlpha
@@ -797,6 +797,19 @@ ScoreStats | undefined
 YScaleTicks | undefined
 ```
 
+#### getter: colorLegendCategories
+
+Read-color buckets actually present across the rendered reads, the single input
+that lets the legend list only relevant swatches (see legendUtils). Shares
+readColorCategory with the renderer so the two can't disagree. Empty while the
+legend is hidden so the O(reads) scan is skipped; MobX memoizes it against
+rpcDataMap + scheme + mode.
+
+```js
+// type
+Set<ReadColorCategory>
+```
+
 #### getter: laidOutByGroup
 
 Per-group laid-out data: group key → (region index → laid-out data). Each group
@@ -806,20 +819,18 @@ main-thread tier-2 setting — see readTagColors.
 
 ```js
 // type
-GroupLayout
+LaidOutByGroup
 ```
 
 #### getter: groupOrder
 
-Group keys in stacking order; a single entry (key '') when ungrouped.
+Group keys + labels in stacking order; a single entry (key '') when ungrouped.
+Derived straight from the fetched `rpcDataMap` (not from the layout pass), so
+group identity/order stays stable across relayouts.
 
 ```js
 // type
-{
-  key: string
-  label: string
-}
-;[]
+GroupId[]
 ```
 
 #### getter: laidOutPileupMap
@@ -848,10 +859,10 @@ the renderers can namespace HAL region keys per section. Parallel to
 #### getter: maxY
 
 Row count of the primary group across its regions. This reads only the first
-group (`laidOutPileupMap`), so it is meaningful in the ungrouped
-(single-section) path — `totalPileupHeight` and the ungrouped `sections` branch.
-Grouped layout instead sizes each section from its own `groupMaxY`; don't use
-this as a cross-group aggregate.
+group (`laidOutPileupMap`), so it is meaningful only on the
+single-section/ungrouped path (`totalPileupHeight`, `searchFeatureByID`, and the
+no-data synthetic section in `sections`). Grouped layout sizes each section from
+its own `groupMaxY`; don't use this as a cross-group aggregate.
 
 ```js
 // type
@@ -992,11 +1003,12 @@ number
 #### getter: sections
 
 Single source of all vertical band geometry, one entry per stacked group.
-Ungrouped is the one-section case: it keeps `belowCoverageBands` for the
-reserved pileup top so its layout is byte-identical to pre-grouping, and carries
-the real `computeArcBand` draw band so the renderers read the same band whether
-grouped or not. Grouped sections stack coverage + arc + sashimi + pileup bands
-per section, each scrolling with its section.
+`computeStackedSections` reproduces the prior ungrouped reserved layout exactly
+for its single-section (N==1) case, so ungrouped is not a special branch here —
+it is the one-group call, with a synthetic group when no data has arrived yet
+(so `laidOutPileupMap`/`renderState` still see one section). The
+sticky-coverage-vs-scroll distinction lives downstream in `buildSectionRenders`,
+keyed off section count.
 
 ```js
 // type
@@ -1008,8 +1020,9 @@ SectionsLayout
 Per-section data + content-space band tops for the overlay/hit-test pipeline
 (labels, highlights, hit-test). Pairs each section's group data map with its
 `pileupTop` (used as the row `topOffset`) and coverage band so a screen-y can be
-mapped to the right section and its group. Ungrouped is one section with
-`topOffset` == `coverageDisplayHeight`, so the pipeline reduces to pre-grouping.
+mapped to the right section and its group. Reads straight off `sections` (every
+field already lives on the `Section`); ungrouped is the single section, so the
+pipeline reduces to pre-grouping.
 
 ```js
 // type
@@ -1208,7 +1221,7 @@ Track menu items
 
 ```js
 // type signature
-trackMenuItems: () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ ...; } | ... 1 more ... | { ...; })[]; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ ...; } | ... 2 more ... | { ...; })[]; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: contextMenuItems

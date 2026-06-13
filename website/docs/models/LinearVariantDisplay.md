@@ -85,11 +85,11 @@ reload, fetchNeeded, clearStaleDensityState, afterAttach
 
 **Properties:** id, type, rpcDriverName
 
-**Volatiles:** rendererTypeName, error, statusMessage
+**Volatiles:** error, statusMessage
 
 **Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
 adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-rendererType, DisplayMessageComponent, viewMenuActions
+DisplayMessageComponent, viewMenuActions
 
 **Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
 

@@ -71,7 +71,6 @@
     "./pluggableElementTypes/models": "./src/pluggableElementTypes/models/index.ts",
     "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
     "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
-    "./pluggableElementTypes/renderers/CircularChordRendererType": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx",
     "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
@@ -120,7 +119,6 @@
     "./util/color": "./src/util/color/index.ts",
     "./util/colorBits": "./src/util/colorBits.ts",
     "./util/colord": "./src/util/colord.ts",
-    "./util/compositeMap": "./src/util/compositeMap.ts",
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
     "./util/copyToClipboard": "./src/util/copyToClipboard.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
@@ -308,13 +306,13 @@
         "types": "./esm/gpu/canvas2dUtils.d.ts",
         "import": "./esm/gpu/canvas2dUtils.js"
       },
-      "./gpu/displayPhase": {
-        "types": "./esm/gpu/displayPhase.d.ts",
-        "import": "./esm/gpu/displayPhase.js"
-      },
       "./gpu/createRenderingBackend": {
         "types": "./esm/gpu/createRenderingBackend.d.ts",
         "import": "./esm/gpu/createRenderingBackend.js"
+      },
+      "./gpu/displayPhase": {
+        "types": "./esm/gpu/displayPhase.d.ts",
+        "import": "./esm/gpu/displayPhase.js"
       },
       "./gpu/globalRenderingBackend": {
         "types": "./esm/gpu/globalRenderingBackend.d.ts",
@@ -407,10 +405,6 @@
       "./pluggableElementTypes/models/baseConnectionConfig": {
         "types": "./esm/pluggableElementTypes/models/baseConnectionConfig.d.ts",
         "import": "./esm/pluggableElementTypes/models/baseConnectionConfig.js"
-      },
-      "./pluggableElementTypes/renderers/CircularChordRendererType": {
-        "types": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js"
       },
       "./pluggableElementTypes/renderers/RendererType": {
         "types": "./esm/pluggableElementTypes/renderers/RendererType.d.ts",
@@ -603,10 +597,6 @@
       "./util/colord": {
         "types": "./esm/util/colord.d.ts",
         "import": "./esm/util/colord.js"
-      },
-      "./util/compositeMap": {
-        "types": "./esm/util/compositeMap.d.ts",
-        "import": "./esm/util/compositeMap.js"
       },
       "./util/convertCodingSequenceToPeptides": {
         "types": "./esm/util/convertCodingSequenceToPeptides.d.ts",
@@ -816,6 +806,9 @@
         "gpu/createRenderingBackend": [
           "esm/gpu/createRenderingBackend.d.ts"
         ],
+        "gpu/displayPhase": [
+          "esm/gpu/displayPhase.d.ts"
+        ],
         "gpu/globalRenderingBackend": [
           "esm/gpu/globalRenderingBackend.d.ts"
         ],
@@ -884,9 +877,6 @@
         ],
         "pluggableElementTypes/models/baseConnectionConfig": [
           "esm/pluggableElementTypes/models/baseConnectionConfig.d.ts"
-        ],
-        "pluggableElementTypes/renderers/CircularChordRendererType": [
-          "esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts"
         ],
         "pluggableElementTypes/renderers/RendererType": [
           "esm/pluggableElementTypes/renderers/RendererType.d.ts"
@@ -1031,9 +1021,6 @@
         ],
         "util/colord": [
           "esm/util/colord.d.ts"
-        ],
-        "util/compositeMap": [
-          "esm/util/compositeMap.d.ts"
         ],
         "util/convertCodingSequenceToPeptides": [
           "esm/util/convertCodingSequenceToPeptides.d.ts"
