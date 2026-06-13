@@ -13,17 +13,15 @@ const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail(props: {
 }) {
   const { model } = props
   const { featureData } = model
-  // eslint-disable-next-line @eslint-react/purity -- structuredClone is pure; clones MST proxy to plain object
-  const feat = structuredClone(featureData)
-  return feat ? (
+  return featureData ? (
     <Paper>
       <FeatureDetails
         {...props}
-        feature={feat}
+        feature={featureData}
         formatter={value => <Formatter value={value} />}
       />
       <BaseCard title="Link to view">
-        <LinkToSyntenyView model={model} feat={feat} />
+        <LinkToSyntenyView model={model} feat={featureData} />
       </BaseCard>
     </Paper>
   ) : (

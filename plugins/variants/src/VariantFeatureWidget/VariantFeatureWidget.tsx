@@ -164,10 +164,9 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
 }: {
   model: VariantFeatureWidgetModel
 }) {
-  // eslint-disable-next-line @eslint-react/purity -- structuredClone is pure; clones MST proxy to plain object
-  const feat = structuredClone(model.featureData)
-  return feat ? (
-    <FeatDefined feat={feat} model={model} />
+  const { featureData } = model
+  return featureData ? (
+    <FeatDefined feat={featureData} model={model} />
   ) : (
     <div>
       No feature loaded, may not be available after page refresh because it was

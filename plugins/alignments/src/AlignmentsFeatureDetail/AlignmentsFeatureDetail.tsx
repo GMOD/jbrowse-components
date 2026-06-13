@@ -77,10 +77,8 @@ const AlignmentsFeatureDetails = observer(
   }) {
     const { model } = props
     const { featureData } = model
-    // eslint-disable-next-line @eslint-react/purity -- structuredClone is pure; clones MST proxy to plain object
-    const feat = structuredClone(featureData)
-    return feat ? (
-      <AlignmentsFeatureDetailsBody feat={feat} {...props} />
+    return featureData ? (
+      <AlignmentsFeatureDetailsBody feat={featureData} {...props} />
     ) : (
       <div>
         No feature loaded, may not be available after page refresh because it
