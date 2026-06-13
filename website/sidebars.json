@@ -97,15 +97,6 @@
     },
     "initializing_views",
     "urlparams",
-    "faq",
-    {
-      "type": "category",
-      "label": "Archive",
-      "items": [
-        "archive/pag2026_setup_and_exploration/index",
-        "archive/pag2023_workshop",
-        "archive/pag2022_synteny_tutorial"
-      ]
-    }
+    "faq"
   ]
 }

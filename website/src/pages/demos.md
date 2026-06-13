@@ -43,8 +43,7 @@ desktop.
 - [2023 publication figures](https://jbrowse.org/demos/paper2022/) (see our
   [Genome Biology](https://doi.org/10.1186/s13059-023-02914-z) publication for
   more info)
-- [2022 Plant and Animal Genomes](https://jbrowse.org/demos/pag2022/) (see also
-  [workshop video tutorial here](/jb2/docs/archive/pag2022_synteny_tutorial))
+- [2022 Plant and Animal Genomes](https://jbrowse.org/demos/pag2022/)
 - [2021 Biology of Genomes](https://jbrowse.org/demos/bog2021/)
 - [2020 Cancer SVs demo](https://jbrowse.org/demos/cancer-demo-2020/) - guided
   demo of structural variant visualization
