@@ -129,5 +129,5 @@ region, so navigate to a region of interest before running it.
 A clustering result can be embedded directly in a session snapshot — useful for
 sharing a pre-computed clustering via URL. Set `layout`, `clusterTree`,
 `treeAreaWidth`, and `subtreeFilter` in the display's `displaySnapshot`. See the
-[MultiLinearWiggleDisplay config](/docs/config/MultiLinearWiggleDisplay) for the
+[MultiLinearWiggleDisplay config](/docs/config/multilinearwiggledisplay) for the
 display's full config reference.

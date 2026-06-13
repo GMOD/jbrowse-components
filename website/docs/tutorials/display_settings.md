@@ -29,7 +29,7 @@ settings. Two ways to discover them:
 - Look up the display in the auto-generated
   [config schema docs](/docs/config_guide) (e.g.
   [LinearWiggleDisplay](/docs/config/linearwiggledisplay),
-  [LinearPileupDisplay](/docs/config/linearpileupdisplay)).
+  [LinearAlignmentsDisplay](/docs/config/linearalignmentsdisplay)).
 
 Common keys include `type` (the display type), `height`, `minScore` /
 `maxScore`, `defaultRendering`, `showSoftClipping`, and `colorBy`.

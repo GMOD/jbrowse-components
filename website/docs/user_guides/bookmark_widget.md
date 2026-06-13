@@ -56,9 +56,6 @@ You can export bookmarks into a list of regions as a BED or TSV file.
 
 You can import bookmarks from a list of regions in a BED or TSV file.
 
-You can also import from a share link generated via the
-[Sharing bookmarks](#sharing-bookmarks) section above.
-
 Imported bookmarks are appended to your existing bookmarks.
 
 ### Deleting bookmarks

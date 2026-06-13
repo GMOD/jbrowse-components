@@ -118,7 +118,7 @@ A clustering result can be embedded directly in a session snapshot — useful fo
 sharing a pre-computed clustering via URL. Set `layout` and `clusterTree` (and
 optionally `treeAreaWidth` / `subtreeFilter`) in the display's
 `displaySnapshot`. See the
-[MultiSampleVariantBaseModel](/docs/models/MultiSampleVariantBaseModel) docs for
+[MultiSampleVariantBaseModel](/docs/models/multisamplevariantbasemodel) docs for
 the full field reference.
 
 ## Walkthroughs

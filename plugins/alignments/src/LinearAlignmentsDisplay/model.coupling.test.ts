@@ -76,6 +76,11 @@ function createDisplay() {
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.frozen()),
     })
+    .volatile(() => ({
+      // satisfies isSessionModel so getSession(view) resolves; the LGV
+      // localStorage autorun calls getSession via the trackLabels getter
+      rpcManager: {},
+    }))
     .views(() => ({
       getTracksById() {
         return { test_track: trackConfig }

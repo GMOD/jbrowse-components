@@ -17,7 +17,10 @@ console.error = (...args) => {
     r.includes('popupState') ||
     r.includes('Cannot update a component') ||
     r.includes('was not wrapped in act') ||
-    r.includes('Only HTTP(S) protocols are supported')
+    r.includes('Only HTTP(S) protocols are supported') ||
+    r.includes(
+      'You are trying to `require` a file outside of the scope of the test code',
+    )
   ) {
     return undefined
   }
