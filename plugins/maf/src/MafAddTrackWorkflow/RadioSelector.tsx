@@ -1,5 +1,3 @@
-import React from 'react'
-
 import {
   FormControl,
   FormControlLabel,
@@ -33,8 +31,7 @@ export default function RadioSelector<T extends string>({
             key={option}
             value={option}
             control={<Radio />}
-            checked={value === option}
-            label={option}
+    label={option}
           />
         ))}
       </RadioGroup>

@@ -33,6 +33,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const dataFileName: Record<AdapterTypeOptions, string> = {
+  BigMafAdapter: 'Path to bigMaf',
+  MafTabixAdapter: 'Path to MAF tabix',
+  BgzipTaffyAdapter: 'Path to TAF.gz (Bgzipped TAF)',
+}
+
 export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
   const [samples, setSamples] = useState('')
@@ -48,39 +54,64 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
     useState<IndexTypeOptions>('TBI')
 
   const rootModel = getRoot<AbstractRootModel>(model)
-  const dataFileName = {
-    BigMafAdapter: 'Path to bigMaf',
-    MafTabixAdapter: 'Path to MAF tabix',
-    BgzipTaffyAdapter: 'Path to TAF.gz (Bgzipped TAF)',
-  }[fileTypeChoice]
+
+  function handleSubmit() {
+    try {
+      const session = getSession(model)
+      const sampleNames = parseSampleNames(samples)
+      const trackId = makeTrackId({
+        name: trackName,
+        adminMode: !!session.adminMode,
+      })
+      if (isSessionWithAddTracks(session)) {
+        session.addTrackConf({
+          trackId,
+          type: 'MafTrack',
+          name: trackName,
+          assemblyNames: [model.assembly],
+          adapter: buildAdapterConfig({
+            fileTypeChoice,
+            indexTypeChoice,
+            loc,
+            indexLoc,
+            nhLoc,
+            summaryLoc,
+            sampleNames,
+          }),
+        })
+        model.view?.showTrack(trackId)
+      }
+      model.clearData()
+      if (isSessionModelWithWidgets(session)) {
+        session.hideWidget(model)
+      }
+    } catch (e) {
+      setError(e)
+    }
+  }
+
   return (
     <Paper className={classes.paper}>
-      <Paper>
+      <div>
         {error ? <ErrorMessage error={error} /> : null}
         <RadioSelector
           label="File type"
           value={fileTypeChoice}
           options={['BigMafAdapter', 'MafTabixAdapter', 'BgzipTaffyAdapter']}
-          onChange={value => {
-            setFileTypeChoice(value)
-          }}
+          onChange={value => { setFileTypeChoice(value) }}
         />
         <FileSelector
           location={loc}
-          name={dataFileName}
+          name={dataFileName[fileTypeChoice]}
           rootModel={rootModel}
-          setLocation={arg => {
-            setLoc(arg)
-          }}
+          setLocation={arg => { setLoc(arg) }}
         />
         {fileTypeChoice === 'BigMafAdapter' ? (
           <FileSelector
             location={summaryLoc}
             name="Path to bigMafSummary (.bb, optional — enables cheap zoom-out rendering)"
             rootModel={rootModel}
-            setLocation={arg => {
-              setSummaryLoc(arg)
-            }}
+            setLocation={arg => { setSummaryLoc(arg) }}
           />
         ) : fileTypeChoice === 'MafTabixAdapter' ? (
           <>
@@ -88,17 +119,13 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
               label="Index type"
               value={indexTypeChoice}
               options={['TBI', 'CSI']}
-              onChange={value => {
-                setIndexTypeChoice(value)
-              }}
+              onChange={value => { setIndexTypeChoice(value) }}
             />
             <FileSelector
               location={indexLoc}
               name="Path to MAF tabix index"
               rootModel={rootModel}
-              setLocation={arg => {
-                setIndexLoc(arg)
-              }}
+              setLocation={arg => { setIndexLoc(arg) }}
             />
           </>
         ) : (
@@ -106,84 +133,37 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
             location={indexLoc}
             name="Path to TAF.gz.tai (TAF index)"
             rootModel={rootModel}
-            setLocation={arg => {
-              setIndexLoc(arg)
-            }}
+            setLocation={arg => { setIndexLoc(arg) }}
           />
         )}
-      </Paper>
+      </div>
       <div>
         <FileSelector
           location={nhLoc}
           name="Path to newick tree (.nh)"
           rootModel={rootModel}
-          setLocation={arg => {
-            setNhLoc(arg)
-          }}
+          setLocation={arg => { setNhLoc(arg) }}
         />
         <TextField
           multiline
           rows={10}
           value={samples}
-          onChange={event => {
-            setSamples(event.target.value)
-          }}
+          onChange={event => { setSamples(event.target.value) }}
           helperText="Sample names (optional — taken from the .nh tree, or auto-detected from the file, when left blank)"
-          placeholder={
-            'Enter sample names from the MAF file, one per line, or JSON formatted array of samples'
-          }
+          placeholder="Enter sample names from the MAF file, one per line, or JSON formatted array of samples"
           variant="outlined"
           fullWidth
         />
       </div>
-
       <TextField
         value={trackName}
         helperText="Track name"
-        onChange={event => {
-          setTrackName(event.target.value)
-        }}
+        onChange={event => { setTrackName(event.target.value) }}
       />
       <Button
         variant="contained"
         className={classes.submit}
-        onClick={() => {
-          try {
-            const session = getSession(model)
-            // Samples + tree are both optional: when neither is supplied the
-            // adapter discovers the genomes from the data itself.
-            const sampleNames = parseSampleNames(samples)
-            const trackId = makeTrackId({
-              name: trackName,
-              adminMode: !!session.adminMode,
-            })
-
-            if (isSessionWithAddTracks(session)) {
-              session.addTrackConf({
-                trackId,
-                type: 'MafTrack',
-                name: trackName,
-                assemblyNames: [model.assembly],
-                adapter: buildAdapterConfig({
-                  fileTypeChoice,
-                  indexTypeChoice,
-                  loc,
-                  indexLoc,
-                  nhLoc,
-                  summaryLoc,
-                  sampleNames,
-                }),
-              })
-              model.view?.showTrack(trackId)
-            }
-            model.clearData()
-            if (isSessionModelWithWidgets(session)) {
-              session.hideWidget(model)
-            }
-          } catch (e) {
-            setError(e)
-          }
-        }}
+        onClick={() => { handleSubmit() }}
       >
         Submit
       </Button>
