@@ -24,14 +24,12 @@ const OverviewHighlight = observer(function OverviewHighlight({
       return coords ? { coords, highlight } : undefined
     })
     .filter(notEmpty)
-    .map(({ coords, highlight }, idx) => {
+    .map(({ coords, highlight }) => {
       const bandColor = getHighlightColor(highlight, theme)
       return (
         <OverviewHighlightBand
-          // region fields keep the key stable across pan/zoom (unlike pixel
-          // coords); idx disambiguates duplicate highlights on the same region
-          // biome-ignore lint/suspicious/noArrayIndexKey: idx is a suffix
-          key={`${highlight.assemblyName}_${highlight.refName}_${highlight.start}_${highlight.end}_${idx}`}
+          // region fields keep the key stable across pan/zoom (unlike pixel coords)
+          key={`${highlight.assemblyName}_${highlight.refName}_${highlight.start}_${highlight.end}`}
           coords={coords}
           background={bandColor.toRgbString()}
           borderColor={(highlight.color ? bandColor : themed).toRgbString()}

@@ -19,7 +19,7 @@ const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
   handleClose: () => void
 }) {
   const { bpPerPx, width } = model
-  const [val, setVal] = useState(format(bpPerPx * width))
+  const [val, setVal] = useState(() => format(bpPerPx * width))
   const val2 = val.replace(/,/g, '')
 
   return (

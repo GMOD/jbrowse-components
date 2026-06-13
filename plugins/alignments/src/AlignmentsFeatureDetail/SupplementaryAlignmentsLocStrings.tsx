@@ -22,7 +22,7 @@ const SupplementaryAlignmentsLocStrings = observer(
           {tag
             .split(';')
             .filter(Boolean)
-            .map((SA, idx) => {
+            .map(SA => {
               const [saRef, saStart, saStrand, saCigar] = SA.split(',')
               if (!saRef || !saStart || !saStrand || !saCigar) {
                 return null
@@ -35,7 +35,7 @@ const SupplementaryAlignmentsLocStrings = observer(
               const label = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]`
               return (
                 /* biome-ignore lint/suspicious/noArrayIndexKey: */
-                <li key={`${locString}-${idx}`}>
+                <li key={locString}>
                   <ActionLink
                     onClick={() => {
                       navToLoc(locString, model)

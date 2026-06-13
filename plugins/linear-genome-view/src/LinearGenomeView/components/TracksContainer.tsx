@@ -103,6 +103,7 @@ const TracksContainer = observer(function TracksContainer({
       </Suspense>
       <RangeSelectOverlay model={model} range={range} />
       {model.volatileGuides.map((guide, idx) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed 2-entry positional list (left/right guide), never reordered
         <VerticalGuide key={idx} model={model} coordX={guide.xPos} />
       ))}
       <Rubberband
@@ -132,9 +133,9 @@ const HighlightGroup = observer(function HighlightGroup({
 }) {
   return model.highlightsVisible && model.highlight.length ? (
     <Suspense fallback={null}>
-      {model.highlight.map((highlight, idx) => (
+      {model.highlight.map(highlight => (
         <Highlight
-          key={`${highlight.assemblyName}-${highlight.refName}:${highlight.start}-${highlight.end}-${idx}`}
+          key={`${highlight.assemblyName}-${highlight.refName}:${highlight.start}-${highlight.end}`}
           model={model}
           highlight={highlight}
         />
@@ -152,11 +153,11 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
   const { pluginManager } = getEnv(model)
   const { classes } = useStyles()
   const viewBands = model.highlightsVisible
-    ? model.highlight.map((h, idx) => {
+    ? model.highlight.map(h => {
         const coords = model.getHighlightCoords(h)
         return coords ? (
           <OverviewHighlightBand
-            key={`${h.assemblyName}-${h.refName}:${h.start}-${h.end}-${idx}`}
+            key={`${h.assemblyName}-${h.refName}:${h.start}-${h.end}`}
             coords={coords}
             background={getHighlightColor(h, theme).toRgbString()}
           />

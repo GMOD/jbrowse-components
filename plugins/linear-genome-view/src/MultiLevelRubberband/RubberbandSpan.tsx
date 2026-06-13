@@ -56,6 +56,7 @@ export default function RubberbandSpan({
             side="left"
             anchorEl={anchorEl}
             text={leftBpOffset.map((l, idx) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- one row per rubberband level, fixed order, values may repeat across levels
               <div key={`${JSON.stringify(l)}-left-${idx}`}>
                 {stringify(l, true)}
               </div>
@@ -65,6 +66,7 @@ export default function RubberbandSpan({
             side="right"
             anchorEl={anchorEl}
             text={rightBpOffset.map((l, idx) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- one row per rubberband level, fixed order, values may repeat across levels
               <div key={`${JSON.stringify(l)}-right-${idx}`}>
                 {stringify(l, true)}
               </div>
@@ -84,6 +86,7 @@ export default function RubberbandSpan({
             }}
           >
             {numOfBpSelected.map((n, i) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- one row per rubberband level, fixed order, values may repeat across levels
               <div key={`bpSelectedRow-${i}`}>{getBpDisplayStr(n)}</div>
             ))}
           </Typography>

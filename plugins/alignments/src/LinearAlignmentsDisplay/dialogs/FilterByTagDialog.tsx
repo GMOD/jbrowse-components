@@ -67,7 +67,7 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
       {flagNames.map((name, index) => {
         const checked = Boolean(flag & (1 << index))
         return (
-          <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
+          <div key={name} style={{ display: 'flex', alignItems: 'center' }}>
             <Checkbox
               checked={checked}
               onChange={event => {

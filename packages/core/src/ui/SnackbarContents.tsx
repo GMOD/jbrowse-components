@@ -48,6 +48,7 @@ export default function SnackbarContents({
             <>
               {actions.map((action, idx) => (
                 <Button
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed, never-reordered list of snackbar action buttons
                   key={idx}
                   color="inherit"
                   onClick={e => {

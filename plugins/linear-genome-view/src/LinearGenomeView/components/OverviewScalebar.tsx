@@ -223,10 +223,10 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
         model={model}
         className={classes.scalebarVisibleRegion}
       />
-      {overviewVisibleRegions.map((block, idx) =>
+      {overviewVisibleRegions.map(block =>
         block.type !== 'ContentBlock' ? (
           <div
-            key={`${block.offsetPx}-${idx}`}
+            key={block.offsetPx}
             className={cx(classes.scalebarContig, classes.elidedOverviewBlock)}
             style={{
               width: block.widthPx,

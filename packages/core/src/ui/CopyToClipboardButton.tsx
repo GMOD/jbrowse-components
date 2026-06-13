@@ -23,10 +23,10 @@ export default function CopyToClipboardButton({
   copiedLabel?: string
 } & Omit<ButtonProps, 'value'>) {
   const [copied, setCopied] = useState(false)
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(
     () => () => {
-      clearTimeout(timer.current)
+      clearTimeout(timerRef.current)
     },
     [],
   )
@@ -36,8 +36,8 @@ export default function CopyToClipboardButton({
       onClick={() => {
         void copy(typeof value === 'function' ? value() : value)
         setCopied(true)
-        clearTimeout(timer.current)
-        timer.current = setTimeout(() => {
+        clearTimeout(timerRef.current)
+        timerRef.current = setTimeout(() => {
           setCopied(false)
         }, 1000)
       }}

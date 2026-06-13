@@ -28,6 +28,7 @@ const HighlightOverlay = observer(function HighlightOverlay({
     <>
       {boxes.map((b, i) => (
         <div
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- highlight boxes are plain geometry with no identifying field, recomputed each render
           key={i}
           className={classes.box}
           style={{

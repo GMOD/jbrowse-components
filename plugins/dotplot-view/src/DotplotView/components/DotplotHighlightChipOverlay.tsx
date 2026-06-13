@@ -68,9 +68,9 @@ const HighlightChip = observer(function HighlightChip({
 const DotplotHighlightChipOverlay = observer(
   function DotplotHighlightChipOverlay({ model }: { model: DotplotViewModel }) {
     return model.highlightsVisible
-      ? model.highlight.map((h, i) => (
+      ? model.highlight.map(h => (
           <HighlightChip
-            key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`}
+            key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}`}
             model={model}
             highlight={h}
           />

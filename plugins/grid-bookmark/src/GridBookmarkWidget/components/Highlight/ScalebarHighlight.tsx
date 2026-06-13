@@ -20,11 +20,11 @@ const ScalebarHighlight = observer(function ScalebarHighlight({
   return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(r => viewAssemblies.has(r.assemblyName))
-        .map((r, idx) => {
+        .map(r => {
           const coords = model.getHighlightCoords(r)
           return coords ? (
             <OverviewHighlightBand
-              key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
+              key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}`}
               coords={coords}
               background={r.highlight}
             />

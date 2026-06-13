@@ -12,7 +12,7 @@ export default function SelectionContextMenu({
 }) {
   const {
     mouseup,
-    mouseupClient,
+    mouseUpClient,
     mousedown,
     setMouseUpClient,
     setMouseDownClient,
@@ -39,8 +39,8 @@ export default function SelectionContextMenu({
       }}
       anchorReference="anchorPosition"
       anchorPosition={
-        mouseupClient
-          ? { top: mouseupClient[1] + 50, left: mouseupClient[0] + 50 }
+        mouseUpClient
+          ? { top: mouseUpClient[1] + 50, left: mouseUpClient[0] + 50 }
           : undefined
       }
       style={{ zIndex: 11000 }}

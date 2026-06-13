@@ -41,7 +41,7 @@ export function useOverlayWheelZoom(
   divRef: React.RefObject<HTMLDivElement | null>,
   views: BreakpointViewModel['views'],
 ) {
-  const state = useRef<WheelState>({
+  const stateRef = useRef<WheelState>({
     zoomAccum: 0,
     lastClientX: 0,
     lastViewIndex: 0,
@@ -54,7 +54,7 @@ export function useOverlayWheelZoom(
     if (!div || views.length === 0) {
       return
     }
-    const s = state.current
+    const s = stateRef.current
 
     function handleWheel(event: WheelEvent) {
       const target = event.target as Element

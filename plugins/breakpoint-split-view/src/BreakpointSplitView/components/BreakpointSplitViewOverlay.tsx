@@ -41,7 +41,7 @@ function useDomTrackYOffsets(
 ) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [offsets, setOffsets] = useState<Record<string, number[]>>({})
-  const lastOffsets = useRef(offsets)
+  const lastOffsetsRef = useRef(offsets)
 
   useEffect(() => {
     let rafId: number
@@ -58,8 +58,8 @@ function useDomTrackYOffsets(
               svgTop,
           )
         }
-        if (!offsetsEqual(lastOffsets.current, next)) {
-          lastOffsets.current = next
+        if (!offsetsEqual(lastOffsetsRef.current, next)) {
+          lastOffsetsRef.current = next
           setOffsets(next)
         }
       }

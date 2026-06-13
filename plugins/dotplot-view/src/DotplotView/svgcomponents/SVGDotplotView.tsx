@@ -59,9 +59,9 @@ export async function renderToSvg(
               </clipPath>
             </defs>
             <g clipPath="url(#clip-ruler)">
-              {displayResults.map(({ result }, i) => (
+              {displayResults.map(({ track, result }) => (
                 /* biome-ignore lint/suspicious/noArrayIndexKey: */
-                <g key={i}>{result}</g>
+                <g key={track.configuration.trackId}>{result}</g>
               ))}
             </g>
           </g>

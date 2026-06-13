@@ -39,8 +39,8 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
   }
   handleClose: () => void
 }) {
-  const [rev, setReverse] = useState(false)
-  const [comp, setComplement] = useState(false)
+  const [rev, setRev] = useState(false)
+  const [comp, setComp] = useState(false)
   const { leftOffset, rightOffset } = model
 
   const { data: sequenceChunks, error } = useFetch(
@@ -130,7 +130,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
               <Checkbox
                 checked={rev}
                 onChange={event => {
-                  setReverse(event.target.checked)
+                  setRev(event.target.checked)
                 }}
               />
             }
@@ -141,7 +141,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
               <Checkbox
                 checked={comp}
                 onChange={event => {
-                  setComplement(event.target.checked)
+                  setComp(event.target.checked)
                 }}
               />
             }

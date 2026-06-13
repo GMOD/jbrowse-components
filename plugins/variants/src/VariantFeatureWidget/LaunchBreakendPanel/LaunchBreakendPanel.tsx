@@ -24,9 +24,8 @@ const LocStringList = observer(function LocStringList({
     <div>
       <Typography>Navigate to breakend endpoint in linear view:</Typography>
       <ul>
-        {locStrings.map((locString, index) => (
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <li key={`${locString}-${index}`}>
+        {locStrings.map(locString => (
+          <li key={locString}>
             {locString}{' '}
             <ActionLink
               onClick={() => {

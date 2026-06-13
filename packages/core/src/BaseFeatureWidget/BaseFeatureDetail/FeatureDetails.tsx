@@ -103,6 +103,7 @@ const FeatureDetails = observer(function FeatureDetails(
         >
           {subfeatures.map((sub, idx) => (
             <FeatureDetails
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- subfeature list order is fixed per feature, no unique field guaranteed by type
               key={`${uniqueId}_${idx}`}
               feature={{
                 ...sub,

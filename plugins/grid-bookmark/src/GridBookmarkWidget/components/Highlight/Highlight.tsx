@@ -25,15 +25,12 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(r => viewAssemblies.has(r.assemblyName))
-        .map((r, idx) => {
+        .map(r => {
           const coords = model.getHighlightCoords(r)
           return coords ? (
             <HighlightBand
-              // region fields keep the key stable across pan/zoom (unlike
-              // pixel coords); idx disambiguates duplicate bookmarks on the
-              // same region
-              // biome-ignore lint/suspicious/noArrayIndexKey: idx is a suffix
-              key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
+              // region fields keep the key stable across pan/zoom (unlike pixel coords)
+              key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}`}
               coords={coords}
               background={r.highlight}
             >

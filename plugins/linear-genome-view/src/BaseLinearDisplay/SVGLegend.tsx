@@ -43,7 +43,7 @@ export default function SVGLegend({
       />
       {items.map((item, idx) => (
         <g
-          key={`legend-${idx}`}
+          key={item.label}
           transform={`translate(${LEGEND_PADDING}, ${LEGEND_PADDING + idx * itemHeight})`}
         >
           {item.color ? (

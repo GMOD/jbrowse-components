@@ -17,7 +17,7 @@ const AssemblyManager = observer(function AssemblyManager({
   session: AbstractSessionModel
   onClose: () => void
 }) {
-  const [isFormOpen, setFormOpen] = useState(false)
+  const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingAssembly, setEditingAssembly] =
     useState<AnyConfigurationModel>()
 
@@ -40,7 +40,7 @@ const AssemblyManager = observer(function AssemblyManager({
         <AssemblyAddForm
           session={session}
           onClose={() => {
-            setFormOpen(false)
+            setIsFormOpen(false)
           }}
         />
       ) : (
@@ -50,7 +50,7 @@ const AssemblyManager = observer(function AssemblyManager({
             onClose()
           }}
           onAddAssembly={() => {
-            setFormOpen(true)
+            setIsFormOpen(true)
           }}
           onEditAssembly={arg => {
             setEditingAssembly(arg)

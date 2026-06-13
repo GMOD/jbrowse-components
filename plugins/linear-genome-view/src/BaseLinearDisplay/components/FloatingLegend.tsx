@@ -75,8 +75,8 @@ const FloatingLegend = observer(function FloatingLegend({
           <CloseIcon fontSize="inherit" />
         </IconButton>
       ) : null}
-      {items.map((item, idx) => (
-        <div key={`${item.label}-${idx}`} className={classes.item}>
+      {items.map(item => (
+        <div key={item.label} className={classes.item}>
           <div
             className={classes.colorBox}
             style={{ backgroundColor: item.color }}

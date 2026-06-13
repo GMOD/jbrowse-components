@@ -39,6 +39,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
           : ''
     return (
       /* biome-ignore lint/suspicious/noArrayIndexKey: */
+      // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of sequence chunks, never reorder
       <Fragment key={`${chunk}-${idx}`}>
         {showCoordinates ? prefix : null}
         <span style={{ background: color }}>{chunk}</span>

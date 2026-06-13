@@ -13,9 +13,9 @@ const DotplotHighlights = observer(function DotplotHighlights({
 }) {
   const theme = useTheme()
   return model.highlightsVisible
-    ? model.highlight.map((h, i) => (
+    ? model.highlight.map(h => (
         <DotplotHighlightBands
-          key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`}
+          key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}`}
           model={model}
           region={h}
           color={getHighlightColor(h, theme).toRgbString()}

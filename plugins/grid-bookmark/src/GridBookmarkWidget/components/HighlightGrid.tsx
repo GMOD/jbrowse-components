@@ -52,7 +52,7 @@ const HighlightGrid = observer(function HighlightGrid({
   const apiRef = useGridApiRef()
   const theme = useTheme()
   const session = getSession(model)
-  const [selectedIds, setSelectedIds] = useState(new Set<GridRowId>())
+  const [selectedIds, setSelectedIds] = useState(() => new Set<GridRowId>())
   const selectedSet = new Set(model.selectedAssemblies)
   const rows = session.views
     .filter(

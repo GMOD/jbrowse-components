@@ -54,7 +54,7 @@ const CallbackEditor = observer(function CallbackEditor({
   const { classes } = useStyles()
 
   const [code, setCode] = useState(slot.value)
-  const [error, setCodeError] = useState<unknown>()
+  const [codeError, setCodeError] = useState<unknown>()
   const [, startTransition] = useTransition()
 
   // if default value is a callback, will have to remove jexl:
@@ -63,7 +63,7 @@ const CallbackEditor = observer(function CallbackEditor({
     <MonospaceTextField
       className={classes.callbackEditor}
       value={code}
-      error={error}
+      error={codeError}
       onChange={value => {
         setCode(value)
         startTransition(() => {

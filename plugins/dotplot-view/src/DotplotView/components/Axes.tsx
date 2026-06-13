@@ -82,6 +82,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
       {ticks.map(({ tick, alongPx: x }, idx) =>
         x > 0 && x < width ? (
           <line
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
             key={`line-${tick.refName}-${tick.base}-${idx}`}
             x1={x}
             x2={x}
@@ -98,6 +99,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             x={x - 7}
             y={0}
             transform={`rotate(${htextRotation},${x},0)`}
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
             key={`text-${tick.refName}-${tick.base}-${idx}`}
             fontSize={11}
             dominantBaseline="middle"
@@ -177,6 +179,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
         const len = tickLen({ tick, alongPx })
         return alongPx > 0 && alongPx < viewHeight ? (
           <line
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
             key={`line-${tick.refName}-${tick.base}-${idx}`}
             y1={y}
             y2={y}
@@ -192,6 +195,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
           <text
             y={viewHeight - alongPx - 3}
             x={borderX - 7}
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
             key={`text-${tick.refName}-${tick.base}-${idx}`}
             textAnchor="end"
             dominantBaseline="hanging"

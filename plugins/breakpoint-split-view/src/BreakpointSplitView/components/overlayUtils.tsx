@@ -188,11 +188,11 @@ export const VariantOverlay = observer(function VariantOverlay({
       fill="none"
       data-testid={getTestId(trackId, match.layoutMatches.length > 0)}
     >
-      {specs.map(({ id, path }, i) => (
+      {specs.map(({ id, path }) => (
         <path
           d={path}
           data-testid={pathTestId}
-          key={`${id}-${i}`}
+          key={id}
           pointerEvents={interactiveOverlay ? 'auto' : undefined}
           strokeWidth={id === mouseoverElt ? 10 : 5}
           {...createVariantMouseHandlers(

@@ -25,12 +25,10 @@ const LGVHighlightSVG = observer(function LGVHighlightSVG({
   return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
     ? bookmarkWidget.bookmarks
         .filter(r => viewAssemblies.has(r.assemblyName))
-        .map((r, idx) => {
+        .map(r => {
           const coords = model.getHighlightCoords(r)
           return coords ? (
-            <g
-              key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
-            >
+            <g key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}`}>
               <rect
                 x={coords.left}
                 y={0}

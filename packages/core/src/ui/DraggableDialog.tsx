@@ -32,13 +32,13 @@ const DraggableDialog = observer(function DraggableDialog(
   const { title, children, onClose } = props
   const [pos, setPos] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
-  const origin = useRef({ mouseX: 0, mouseY: 0, x: 0, y: 0 })
+  const originRef = useRef({ mouseX: 0, mouseY: 0, x: 0, y: 0 })
 
   useEffect(() => {
     if (dragging) {
       function move(event: MouseEvent) {
         event.preventDefault()
-        const { mouseX, mouseY, x, y } = origin.current
+        const { mouseX, mouseY, x, y } = originRef.current
         setPos({
           x: x + event.clientX - mouseX,
           y: y + event.clientY - mouseY,
@@ -71,7 +71,7 @@ const DraggableDialog = observer(function DraggableDialog(
         <DialogTitle
           className={classes.title}
           onMouseDown={event => {
-            origin.current = {
+            originRef.current = {
               mouseX: event.clientX,
               mouseY: event.clientY,
               x: pos.x,

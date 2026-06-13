@@ -142,7 +142,7 @@ function CascadingMenuList({
         if ('subMenu' in item) {
           return (
             <CascadingSubmenu
-              key={`subMenu-${item.label}-${idx}`}
+              key={`subMenu-${item.label}`}
               title={item.label}
               Icon={item.icon}
               inset={hasIcon && !item.icon}
@@ -162,11 +162,12 @@ function CascadingMenuList({
           )
         }
         if (item.type === 'divider') {
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- dividers have no identifying field, list order is fixed
           return <Divider key={`divider-${idx}`} component="li" />
         }
         if (item.type === 'subHeader') {
           return (
-            <ListSubheader key={`subHeader-${item.label}-${idx}`}>
+            <ListSubheader key={`subHeader-${item.label}`}>
               {item.label}
             </ListSubheader>
           )
@@ -175,7 +176,7 @@ function CascadingMenuList({
         const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
         return (
           <MenuItem
-            key={`${item.label}-${idx}`}
+            key={`${item.label}`}
             data-testid={makeTestId('menuitem', item.label)}
             disabled={item.disabled}
             onClick={() => {

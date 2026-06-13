@@ -45,6 +45,7 @@ export default function HicSVGColorLegend({
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
           {stops.map((stop, idx) => (
             <stop
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- static gradient stops from a fixed palette, never reordered
               key={idx}
               offset={stop.offset}
               style={{ stopColor: stop.color, stopOpacity: 1 }}

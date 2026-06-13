@@ -19,7 +19,7 @@ export default function DotplotTooltips({
     mouserectClient,
     xdistance,
     mousedown,
-    mousedownClient,
+    mouseDownClient,
     selection,
   } = interaction
   return (
@@ -36,7 +36,7 @@ export default function DotplotTooltips({
         <DotplotCoordTooltip
           model={model}
           coord={mousedown}
-          clientCoord={mousedownClient}
+          clientCoord={mouseDownClient}
           placement={xdistance < 0 ? 'right' : 'left'}
         />
       ) : null}

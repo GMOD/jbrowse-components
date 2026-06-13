@@ -43,11 +43,11 @@ const MsaHighlightOverlay = observer(function MsaHighlightOverlay({
   const { classes } = useStyles()
   return (
     <>
-      {model.msaHighlights.map((h, idx) => {
+      {model.msaHighlights.map(h => {
         const box = highlightBox(view, h)
         return box ? (
           <div
-            key={`${h.refName}-${h.start}-${h.end}-${idx}`}
+            key={`${h.refName}-${h.start}-${h.end}`}
             className={classes.highlight}
             style={{ left: box.left, width: box.width, height }}
           />

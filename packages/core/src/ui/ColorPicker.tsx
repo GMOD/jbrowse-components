@@ -109,6 +109,7 @@ export default function ColorPicker({
             <button
               type="button"
               /* biome-ignore lint/suspicious/noArrayIndexKey: */
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- static color-legend swatches from a palette array
               key={`${presetColor}-${idx}`}
               className={classes.swatch}
               style={{ background: presetColor }}

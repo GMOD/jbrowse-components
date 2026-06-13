@@ -56,6 +56,7 @@ export default function ArrayValue({
       <>
         {value.map((val, i) => (
           <Attributes
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of attribute objects, no unique field available
             key={i}
             formatter={formatter}
             attributes={val}
@@ -74,6 +75,7 @@ export default function ArrayValue({
       ) : (
         <>
           {displayedValues.map((val, i) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of primitive values, no unique field available
             <div key={`${String(val)}-${i}`} className={classes.fieldSubvalue}>
               <BasicValue value={formatter ? formatter(val, name, i) : val} />
             </div>

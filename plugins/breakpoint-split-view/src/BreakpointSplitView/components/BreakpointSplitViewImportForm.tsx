@@ -41,9 +41,9 @@ const BreakpointSplitViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const defaultAssembly = session.assemblyNames[0] ?? ''
-    const idCounter = useRef(0)
+    const idCounterRef = useRef(0)
     const newRow = () => ({
-      id: `row-${idCounter.current++}`,
+      id: `row-${idCounterRef.current++}`,
       assembly: defaultAssembly,
       loc: '',
     })

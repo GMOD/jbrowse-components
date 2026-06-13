@@ -160,15 +160,15 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   const { model, handleClose } = props
   // Pre-fill from the active in-track grouping so reopening the dialog reflects
   // (and can tweak) the current dimension rather than resetting to blank.
-  const [tag, setGroupByTag] = useState(model.groupBy?.tag ?? '')
+  const [groupByTag, setGroupByTag] = useState(model.groupBy?.tag ?? '')
   const [type, setType] = useState<string>(model.groupBy?.type ?? '')
   // 'stack' renders the groups as stacked sections in this one track (the
   // default in-track experience); 'split' is the legacy one-session-track-per-
   // group path, kept for old sessions and very high group counts.
   const [mode, setMode] = useState<'stack' | 'split'>('stack')
 
-  const isInvalid = tag.length === 2 && !TAG_REGEX.test(tag)
-  const debouncedTag = useDebounce(tag, 1000)
+  const isInvalid = groupByTag.length === 2 && !TAG_REGEX.test(groupByTag)
+  const debouncedTag = useDebounce(groupByTag, 1000)
   const isValidTag = TAG_REGEX.test(debouncedTag)
   const shouldFetch = type === 'tag' && isValidTag
 
@@ -200,7 +200,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     if (mode === 'stack') {
       model.setGroupBy({
         type: type as GroupByType,
-        tag: type === 'tag' ? tag : undefined,
+        tag: type === 'tag' ? groupByTag : undefined,
       })
       handleClose()
       return
@@ -220,7 +220,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
 
     const groups: Group[] = []
     if (type === 'tag' && tagSet) {
-      groups.push(...groupsForTag(tag, tagSet, base))
+      groups.push(...groupsForTag(groupByTag, tagSet, base))
     } else if (type === 'strand') {
       groups.push(...groupsForStrand(base))
     }
@@ -288,7 +288,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           </Typography>
 
           <TextField
-            value={tag}
+            value={groupByTag}
             onChange={event => {
               setGroupByTag(event.target.value)
             }}
@@ -309,7 +309,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           ) : loading ? (
             <LoadingEllipses message="Loading unique tags" />
           ) : tagSet ? (
-            <TagResults tag={tag} tagSet={tagSet} />
+            <TagResults tag={groupByTag} tagSet={tagSet} />
           ) : null}
         </>
       ) : null}

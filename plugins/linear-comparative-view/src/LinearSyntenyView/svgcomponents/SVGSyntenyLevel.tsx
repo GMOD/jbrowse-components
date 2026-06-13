@@ -49,6 +49,7 @@ export default function SVGSyntenyLevel({
         clipPath={`url(#${clipId})`}
       >
         {rendering.map((r, j) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed-order rendering list, never reordered
           <Fragment key={j}>{r}</Fragment>
         ))}
       </g>

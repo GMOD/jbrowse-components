@@ -54,6 +54,7 @@ export default function EditableStringList({
         <List disablePadding>
           {values.map((val, idx) => (
             /* biome-ignore lint/suspicious/noArrayIndexKey: */
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- controlled inputs by position, list order edited via index
             <ListItem key={`${testId}-${idx}`} disableGutters>
               <TextField
                 value={val}

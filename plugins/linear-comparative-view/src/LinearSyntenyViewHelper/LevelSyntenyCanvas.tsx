@@ -109,8 +109,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const width = parentView.width
   const height = model.height
 
-  const dragStartX = useRef<number | undefined>(undefined)
-  const lastDragX = useRef<number | undefined>(undefined)
+  const dragStartXRef = useRef<number | undefined>(undefined)
+  const lastDragXRef = useRef<number | undefined>(undefined)
 
   const {
     canvas,
@@ -156,9 +156,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handleMouseMove(event: React.MouseEvent<HTMLCanvasElement>) {
-    if (lastDragX.current !== undefined) {
-      dragPan(lastDragX.current - event.clientX)
-      lastDragX.current = event.clientX
+    if (lastDragXRef.current !== undefined) {
+      dragPan(lastDragXRef.current - event.clientX)
+      lastDragXRef.current = event.clientX
       return
     }
     if (scrollingRef.current) {
@@ -177,19 +177,19 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 
   function handleMouseLeave() {
     setHoverOnDisplays(model, undefined, -1)
-    dragStartX.current = undefined
-    lastDragX.current = undefined
+    dragStartXRef.current = undefined
+    lastDragXRef.current = undefined
   }
 
   function handleMouseDown(event: React.MouseEvent) {
-    dragStartX.current = event.clientX
-    lastDragX.current = event.clientX
+    dragStartXRef.current = event.clientX
+    lastDragXRef.current = event.clientX
   }
 
   function handleMouseUp(event: React.MouseEvent<HTMLCanvasElement>) {
-    const start = dragStartX.current
-    lastDragX.current = undefined
-    dragStartX.current = undefined
+    const start = dragStartXRef.current
+    lastDragXRef.current = undefined
+    dragStartXRef.current = undefined
     if (
       start === undefined ||
       Math.abs(event.clientX - start) >= CLICK_DRAG_THRESHOLD_PX

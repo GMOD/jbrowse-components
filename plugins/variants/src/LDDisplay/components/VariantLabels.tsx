@@ -38,11 +38,11 @@ const VariantLabels = observer(function VariantLabels({
 
   return (
     <>
-      {snps.map((snp, i) => {
+      {snps.map(snp => {
         const genomicX = getGenomicX(view, assembly, snp, offsetAdj)
         return (
           <text
-            key={`${snp.id}-${i}`}
+            key={`${snp.refName}-${snp.start}-${snp.end}`}
             x={genomicX}
             y={0}
             transform={`rotate(-90, ${genomicX}, 0)`}

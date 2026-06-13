@@ -31,6 +31,7 @@ const StringArrayEditor = observer(function StringArrayEditor({
             slot.value with no per-row state, and the list is never reordered.
             keying by content would remount on every keystroke and drop focus */}
         {value.map((val, idx) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- controlled inputs, list never reordered (see comment above)
           <ListItem key={idx} disableGutters>
             <TextField
               fullWidth

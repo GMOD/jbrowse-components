@@ -31,11 +31,11 @@ export function useWheelScrollZoom(
   parentView: ParentViewDuck,
 ): UseWheelScrollZoomResult {
   const scrollingRef = useRef(false)
-  const scrollAccumX = useRef(0)
-  const scrollScheduled = useRef(false)
-  const zoomAccum = useRef(0)
-  const zoomScheduled = useRef(false)
-  const lastZoomClientX = useRef(0)
+  const scrollAccumXRef = useRef(0)
+  const scrollScheduledRef = useRef(false)
+  const zoomAccumRef = useRef(0)
+  const zoomScheduledRef = useRef(false)
+  const lastZoomClientXRef = useRef(0)
 
   useEffect(() => {
     if (!canvas) {
@@ -44,39 +44,39 @@ export function useWheelScrollZoom(
     let scrollTimer: ReturnType<typeof setTimeout> | undefined
 
     function flushHorizontalScroll() {
-      if (scrollScheduled.current) {
+      if (scrollScheduledRef.current) {
         return
       }
-      scrollScheduled.current = true
+      scrollScheduledRef.current = true
       requestAnimationFrame(() => {
         transaction(() => {
           for (const v of parentView.views) {
-            v.horizontalScroll(scrollAccumX.current)
+            v.horizontalScroll(scrollAccumXRef.current)
           }
         })
-        scrollAccumX.current = 0
-        scrollScheduled.current = false
+        scrollAccumXRef.current = 0
+        scrollScheduledRef.current = false
       })
     }
 
     function flushZoom() {
-      if (zoomScheduled.current) {
+      if (zoomScheduledRef.current) {
         return
       }
-      zoomScheduled.current = true
+      zoomScheduledRef.current = true
       requestAnimationFrame(() => {
-        const d = zoomAccum.current
+        const d = zoomAccumRef.current
         const canvasLeft = canvas!.getBoundingClientRect().left
         transaction(() => {
           for (const v of parentView.views) {
             v.zoomTo(
               d > 0 ? v.bpPerPx * (1 + d) : v.bpPerPx / (1 - d),
-              lastZoomClientX.current - canvasLeft,
+              lastZoomClientXRef.current - canvasLeft,
             )
           }
         })
-        zoomAccum.current = 0
-        zoomScheduled.current = false
+        zoomAccumRef.current = 0
+        zoomScheduledRef.current = false
       })
     }
 
@@ -93,11 +93,11 @@ export function useWheelScrollZoom(
         (parentView.scrollZoom &&
           Math.abs(event.deltaY) > Math.abs(event.deltaX))
       if (doZoom) {
-        zoomAccum.current += event.deltaY / 500
-        lastZoomClientX.current = event.clientX
+        zoomAccumRef.current += event.deltaY / 500
+        lastZoomClientXRef.current = event.clientX
         flushZoom()
       } else if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
-        scrollAccumX.current += event.deltaX / 2
+        scrollAccumXRef.current += event.deltaX / 2
         flushHorizontalScroll()
       }
     }

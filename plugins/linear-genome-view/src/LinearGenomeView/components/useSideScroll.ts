@@ -7,33 +7,31 @@ export function useSideScroll(model: LinearGenomeViewModel) {
   const [mouseDragging, setMouseDragging] = useState(false)
   // refs are to store these variables to avoid repeated rerenders associated
   // with useState/setState
-  const scheduled = useRef(false)
+  const scheduledRef = useRef(false)
 
-  const prevX = useRef(0)
+  const prevXRef = useRef(0)
 
   useEffect(() => {
-    let cleanup = () => {}
-
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
       const currX = event.clientX
-      const distance = currX - prevX.current
+      const distance = currX - prevXRef.current
       if (distance) {
         // use rAF to make it so multiple event handlers aren't fired per-frame
         // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-        if (!scheduled.current) {
-          scheduled.current = true
+        if (!scheduledRef.current) {
+          scheduledRef.current = true
           window.requestAnimationFrame(() => {
             model.horizontalScroll(-distance)
-            scheduled.current = false
-            prevX.current = event.clientX
+            scheduledRef.current = false
+            prevXRef.current = event.clientX
           })
         }
       }
     }
 
     function globalMouseUp() {
-      prevX.current = 0
+      prevXRef.current = 0
       if (mouseDragging) {
         setMouseDragging(false)
       }
@@ -42,12 +40,12 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     if (mouseDragging) {
       window.addEventListener('mousemove', globalMouseMove, true)
       window.addEventListener('mouseup', globalMouseUp, true)
-      cleanup = () => {
+      return () => {
         window.removeEventListener('mousemove', globalMouseMove, true)
         window.removeEventListener('mouseup', globalMouseUp, true)
       }
     }
-    return cleanup
+    return undefined
   }, [model, mouseDragging])
 
   function mouseDown(event: React.MouseEvent) {
@@ -62,7 +60,7 @@ export function useSideScroll(model: LinearGenomeViewModel) {
 
     // otherwise do click and drag scroll
     if (event.button === 0) {
-      prevX.current = event.clientX
+      prevXRef.current = event.clientX
       setMouseDragging(true)
     }
   }

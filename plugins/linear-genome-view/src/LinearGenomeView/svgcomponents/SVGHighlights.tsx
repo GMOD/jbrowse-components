@@ -18,10 +18,10 @@ const SVGHighlights = observer(function SVGHighlights({
 }) {
   const theme = useTheme()
   return model.highlightsVisible
-    ? model.highlight.map((h, i) => {
+    ? model.highlight.map(h => {
         const coords = model.getHighlightCoords(h)
         return coords ? (
-          <g key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`}>
+          <g key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}`}>
             <rect
               x={coords.left}
               y={0}

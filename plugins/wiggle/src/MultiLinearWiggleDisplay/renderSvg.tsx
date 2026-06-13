@@ -81,6 +81,7 @@ export async function renderSvg(
         <g transform={`translate(${scalebarLeft})`}>
           {Array.from({ length: numSources }).map((_, idx) => (
             <g
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one scalebar per source row
               key={`scalebar-${idx}`}
               transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
             >

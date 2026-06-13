@@ -26,8 +26,8 @@ export interface DotplotInteraction {
   mouseup: Coord
   mouserect: Coord
   // viewport-relative coordinates (for tooltip placement)
-  mousedownClient: Coord
-  mouseupClient: Coord
+  mouseDownClient: Coord
+  mouseUpClient: Coord
   mouserectClient: Coord
   // drag-rect size in component pixels
   xdistance: number
@@ -54,18 +54,19 @@ export function useDotplotInteraction(
 ): DotplotInteraction {
   const { hview, vview, cursorMode, lockAspectRatio } = model
 
+  // eslint-disable-next-line @eslint-react/use-state -- refCallback is a callback ref (ref={refCallback}), not a setState setter
   const [refEl, refCallback] = useState<HTMLDivElement | null>(null)
-  const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
-  const [mousedownClient, setMouseDownClient] = useState<Coord>()
-  const [mouseupClient, setMouseUpClient] = useState<Coord>()
+  const [mouseCurrClient, setMouseCurrClient] = useState<Coord>()
+  const [mouseDownClient, setMouseDownClient] = useState<Coord>()
+  const [mouseUpClient, setMouseUpClient] = useState<Coord>()
   const [mouseOvered, setMouseOvered] = useState(false)
   const [ctrlKeyWasUsed, setCtrlKeyWasUsed] = useState(false)
   const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
 
   const rect = refEl?.getBoundingClientRect() ?? blankRect
-  const mousedown = offsetCoord(mousedownClient, rect)
-  const mousecurr = offsetCoord(mousecurrClient, rect)
-  const mouseupRaw = offsetCoord(mouseupClient, rect)
+  const mousedown = offsetCoord(mouseDownClient, rect)
+  const mousecurr = offsetCoord(mouseCurrClient, rect)
+  const mouseupRaw = offsetCoord(mouseUpClient, rect)
   const mouserectRaw = mouseupRaw ?? mousecurr
   const rawX = mousedown && mouserectRaw ? mouserectRaw[0] - mousedown[0] : 0
   const rawY = mousedown && mouserectRaw ? mouserectRaw[1] - mousedown[1] : 0
@@ -82,7 +83,7 @@ export function useDotplotInteraction(
     lockAspectRatio && mousedown && mouserectRaw
       ? ([mousedown[0] + xdistance, mousedown[1] + ydistance] as Coord)
       : mouserectRaw
-  const mouserectClient = mouseupClient ?? mousecurrClient
+  const mouserectClient = mouseUpClient ?? mouseCurrClient
 
   const validPan =
     (cursorMode === 'move' && !ctrlKeyWasUsed) ||
@@ -90,35 +91,35 @@ export function useDotplotInteraction(
   const validSelect =
     (cursorMode === 'move' && ctrlKeyWasUsed) ||
     (cursorMode === 'crosshair' && !ctrlKeyWasUsed)
-  const hasDrag = !!mousedownClient && !mouseupClient
+  const hasDrag = !!mouseDownClient && !mouseUpClient
 
   // wheel: accumulate per-frame, then zoom in a single transaction
-  const distanceX = useRef(0)
-  const distanceY = useRef(0)
-  const scheduled = useRef(false)
+  const distanceXRef = useRef(0)
+  const distanceYRef = useRef(0)
+  const scheduledRef = useRef(false)
   const onWheel = useEventCallback(function onWheel(event: WheelEvent) {
     event.preventDefault()
-    distanceX.current += event.deltaX
-    distanceY.current -= event.deltaY
-    if (!scheduled.current) {
-      scheduled.current = true
+    distanceXRef.current += event.deltaX
+    distanceYRef.current -= event.deltaY
+    if (!scheduledRef.current) {
+      scheduledRef.current = true
       // Anchor on the wheel event's own position rather than the tracked
       // mousecurr, so zoom doesn't depend on a mousemove having landed first.
       const anchor = offsetCoord([event.clientX, event.clientY], rect)
       window.requestAnimationFrame(() => {
         transaction(() => {
           if (
-            Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
+            Math.abs(distanceYRef.current) > Math.abs(distanceXRef.current) * 2 &&
             anchor
           ) {
-            const val = distanceY.current < 0 ? 1.07 : 0.935
+            const val = distanceYRef.current < 0 ? 1.07 : 0.935
             hview.zoomTo(hview.bpPerPx * val, anchor[0])
             vview.zoomTo(vview.bpPerPx * val, rect.height - anchor[1])
           }
         })
-        scheduled.current = false
-        distanceX.current = 0
-        distanceY.current = 0
+        scheduledRef.current = false
+        distanceXRef.current = 0
+        distanceYRef.current = 0
       })
     }
   })
@@ -135,9 +136,9 @@ export function useDotplotInteraction(
   // mousemove: pan while dragging without mouseup pinned
   const onMove = useEventCallback(function onMove(event: MouseEvent) {
     setMouseCurrClient([event.clientX, event.clientY])
-    if (mousecurrClient && mousedownClient && validPan && !mouseupClient) {
-      hview.scroll(-event.clientX + mousecurrClient[0])
-      vview.scroll(event.clientY - mousecurrClient[1])
+    if (mouseCurrClient && mouseDownClient && validPan && !mouseUpClient) {
+      hview.scroll(-event.clientX + mouseCurrClient[0])
+      vview.scroll(event.clientY - mouseCurrClient[1])
     }
   })
   // mousecurr is only fresh while this listener is attached, so attach it
@@ -208,8 +209,8 @@ export function useDotplotInteraction(
     mousecurr,
     mouseup,
     mouserect,
-    mousedownClient,
-    mouseupClient,
+    mouseDownClient,
+    mouseUpClient,
     mouserectClient,
     xdistance,
     ydistance,

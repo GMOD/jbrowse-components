@@ -30,9 +30,9 @@ function ResizeHandle({
   [props: string]: unknown
 }) {
   const [mouseDragging, setMouseDragging] = useState(false)
-  const prevPos = useRef(0)
-  const latestPos = useRef(0)
-  const scheduled = useRef(false)
+  const prevPosRef = useRef(0)
+  const latestPosRef = useRef(0)
+  const scheduledRef = useRef(false)
   const { classes } = useStyles()
   const onDragStable = useEventCallback(onDrag)
 
@@ -49,14 +49,14 @@ function ResizeHandle({
 
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
-      latestPos.current = getPos(event)
-      if (!scheduled.current) {
-        scheduled.current = true
+      latestPosRef.current = getPos(event)
+      if (!scheduledRef.current) {
+        scheduledRef.current = true
         requestAnimationFrame(() => {
-          const distance = latestPos.current - prevPos.current
-          prevPos.current = latestPos.current
+          const distance = latestPosRef.current - prevPosRef.current
+          prevPosRef.current = latestPosRef.current
           onDragStable(distance)
-          scheduled.current = false
+          scheduledRef.current = false
         })
       }
     }
@@ -77,8 +77,8 @@ function ResizeHandle({
     (event: React.MouseEvent) => {
       event.preventDefault()
       const pos = getPos(event)
-      prevPos.current = pos
-      latestPos.current = pos
+      prevPosRef.current = pos
+      latestPosRef.current = pos
       setMouseDragging(true)
       onMouseDown?.(event)
     },

@@ -80,6 +80,7 @@ function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
       {[refName, coord].filter(f => !!f).join(':')}
       <br />
       {rows.slice(0, MAX_ROWS).map((row, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, source can be undefined for unnamed rows
         <SourceRow key={row.source ?? i} {...row} />
       ))}
       {rows.length > MAX_ROWS ? (

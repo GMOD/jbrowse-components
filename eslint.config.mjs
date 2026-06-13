@@ -123,7 +123,7 @@ export default defineConfig(
   ...tseslint.configs.strictTypeChecked,
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
-  // eslintReact.configs['recommended-typescript'],
+  eslintReact.configs['recommended-typescript'],
   {
     files: ['**/*.{js,ts,jsx,tsx}'],
     plugins: {
@@ -154,6 +154,13 @@ export default defineConfig(
         },
       ],
       'tss-unused-classes/unused-classes': 'warn',
+      // Pluggable components (ReactComponent/HeadingComponent/etc.) are
+      // resolved via pluginManager registry lookups (getViewType,
+      // getWidgetType, evaluateExtensionPoint) and rendered as JSX. This rule
+      // can't tell those calls return stable registered references, not
+      // components defined during render, so it false-positives across the
+      // whole plugin architecture.
+      '@eslint-react/static-components': 'off',
       curly: 'error',
       'object-shorthand': 'error',
       '@typescript-eslint/no-unnecessary-condition': 'error',

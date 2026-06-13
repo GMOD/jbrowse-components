@@ -30,12 +30,10 @@ const OverviewHighlight = observer(function OverviewHighlight({
       return coords ? { coords, bookmark: r } : undefined
     })
     .filter(notEmpty)
-    .map(({ coords, bookmark: r }, idx) => (
+    .map(({ coords, bookmark: r }) => (
       <OverviewHighlightBand
-        // region fields keep the key stable across pan/zoom (unlike pixel
-        // coords); idx disambiguates duplicate bookmarks on the same region
-        // biome-ignore lint/suspicious/noArrayIndexKey: idx is a suffix
-        key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
+        // region fields keep the key stable across pan/zoom (unlike pixel coords)
+        key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}`}
         coords={coords}
         background={r.highlight}
         borderColor={r.highlight}

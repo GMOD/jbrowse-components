@@ -68,6 +68,7 @@ const AssemblyRows = observer(function AssemblyRows({
   const { classes } = useStyles()
   const session = getSession(model)
   return selectedAssemblyNames.map((assemblyName, idx) => (
+    // eslint-disable-next-line @eslint-react/no-array-index-key -- row position is the identity here; assembly names can repeat across rows
     <div key={`${assemblyName}-${idx}`} className={classes.rel}>
       <span>Row {idx + 1}: </span>
       <AssemblySelector

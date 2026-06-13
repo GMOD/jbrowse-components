@@ -70,7 +70,7 @@ export default function GenomesDataTable({
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
 }) {
-  const [selected, setSelected] = useState(new Set<string>())
+  const [selected, setSelected] = useState(() => new Set<string>())
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [filterOption, setFilterOption] = useState<FilterOption>('all')
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)

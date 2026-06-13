@@ -209,6 +209,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
               {Array.from({ length: numSources }).map((_, idx) => (
                 <g
                   transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one scalebar per source row
                   key={`scalebar-${idx}`}
                 >
                   <YScaleBar ticks={model.ticks} orientation="left" />
@@ -223,6 +224,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
               const y = getRowTop(idx + 1, rowHeight)
               return (
                 <line
+                  // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one separator per row boundary
                   key={`sep-${idx}`}
                   x1={0}
                   y1={y}
@@ -257,6 +259,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
                   }
                   return (
                     <line
+                      // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, tick values can repeat across rows
                       key={`ch-${rowIdx}-${value}`}
                       x1={0}
                       x2={totalWidth}

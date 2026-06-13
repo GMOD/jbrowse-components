@@ -30,7 +30,7 @@ export function useWheelScroll(
   ref: React.RefObject<HTMLDivElement | null>,
   model: GenomeViewModel,
 ) {
-  const state = useRef<WheelState>({
+  const stateRef = useRef<WheelState>({
     scrollDelta: 0,
     zoomAccum: 0,
     lastClientX: 0,
@@ -45,7 +45,7 @@ export function useWheelScroll(
       return
     }
 
-    const s = state.current
+    const s = stateRef.current
 
     // cache the element's left position via ResizeObserver to avoid calling
     // getBoundingClientRect() inside the wheel handler, which forces a
