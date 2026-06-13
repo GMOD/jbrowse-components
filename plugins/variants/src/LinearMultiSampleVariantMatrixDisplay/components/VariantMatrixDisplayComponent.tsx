@@ -1,10 +1,7 @@
 import { useRef } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
-import {
-  DisplayChrome,
-  FloatingLegend,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -12,7 +9,7 @@ import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGen
 import VariantMatrixBody from './VariantMatrixComponent.tsx'
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
+import LegendOverlay from '../../shared/components/MultiSampleVariantLegendOverlay.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
 import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
@@ -23,15 +20,7 @@ const VariantMatrixDisplayComponent = observer(
     model: LinearMultiSampleVariantMatrixDisplayModel
   }) {
     const { model } = props
-    const {
-      lineZoneHeight,
-      height,
-      availableHeight,
-      showTree,
-      showLegend,
-      hierarchy,
-      treeAreaWidth,
-    } = model
+    const { lineZoneHeight, height } = model
     const view = getContainingView(model) as LinearGenomeViewModel
     const left = Math.max(0, -view.offsetPx)
     const ref = useRef<HTMLDivElement>(null)
@@ -63,40 +52,9 @@ const VariantMatrixDisplayComponent = observer(
               />
             </div>
             <TreeSidebar model={model} />
-            <svg
-              style={{
-                position: 'absolute',
-                top: lineZoneHeight,
-                left: 0,
-                width: '100%',
-                height: availableHeight,
-                zIndex: 100,
-                pointerEvents: 'none',
-                overflow: 'hidden',
-              }}
-            >
-              <g
-                transform={`translate(${showTree && hierarchy ? treeAreaWidth : 0})`}
-              >
-                <LegendBar model={model} />
-              </g>
-            </svg>
-            {showLegend ? (
-              <FloatingLegend
-                items={model.legendItems()}
-                onDismiss={() => {
-                  model.setShowLegend(false)
-                }}
-              />
-            ) : null}
+            <LegendOverlay model={model} top={lineZoneHeight} />
             {inMatrix ? (
-              <Crosshair
-                mouseX={mouseState.x}
-                mouseY={mouseState.y}
-                offsetX={mouseState.offsetX}
-                offsetY={mouseState.offsetY}
-                model={model}
-              />
+              <Crosshair mouseState={mouseState} model={model} />
             ) : null}
           </>
         )}

@@ -201,7 +201,7 @@ const MafBody = observer(function MafBody({
           <Crosshairs
             width={width}
             height={height}
-            scrollTop={scrollTop}
+            top={scrollTop}
             mouseX={mouseX}
             mouseY={mouseY}
           />

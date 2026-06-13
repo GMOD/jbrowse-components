@@ -18,6 +18,6 @@ export interface LegendBarModel {
 export interface MouseState {
   x: number
   y: number
-  offsetX: number
-  offsetY: number
+  clientX: number
+  clientY: number
 }

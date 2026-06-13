@@ -43,4 +43,5 @@ export {
   buildAllTracksMenu,
   isCompactable,
 } from './buildAllTracksMenu.ts'
+export { default as Crosshairs } from './Crosshairs.tsx'
 export const VIEW_HEADER_HEIGHT = 28

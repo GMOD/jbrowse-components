@@ -783,6 +783,17 @@ export default function MultiSampleVariantBaseModelF(
         get spatialIndex() {
           return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
         },
+        /**
+         * #getter
+         */
+        get hoveredTooltipSource() {
+          const { hoveredGenotype, sourceMap } = self
+          if (!hoveredGenotype) {
+            return undefined
+          }
+          const source = sourceMap?.[hoveredGenotype.name]
+          return source ? { ...source, ...hoveredGenotype } : undefined
+        },
       }))
       .actions(self => ({
         sortByGenotype(featureId: string) {

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { type MouseEvent, useRef, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 
@@ -52,7 +52,7 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
     onHoverChange?.(hit)
   }
 
-  const onMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const onMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const hit = getHit(rect, e.clientX, e.clientY)
     const key = hit ? `${hit.name}:${hit.genotype}:${hit.featureId}` : undefined
@@ -69,7 +69,7 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
     }
   }
 
-  const onClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const onClick = (e: MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const hit = getHit(rect, e.clientX, e.clientY)
     const enriched = hit ? enrich(hit) : undefined
@@ -78,7 +78,7 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
     }
   }
 
-  const onContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const onContextMenu = (e: MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const hit = getHit(rect, e.clientX, e.clientY)
     const enriched = hit ? enrich(hit) : undefined

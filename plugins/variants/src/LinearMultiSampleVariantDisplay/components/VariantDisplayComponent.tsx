@@ -1,16 +1,13 @@
 import { useRef } from 'react'
 
-import {
-  DisplayChrome,
-  FloatingLegend,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import VariantBody from './VariantComponent.tsx'
 import { VariantRenderer } from './VariantRenderer.ts'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
+import LegendOverlay from '../../shared/components/MultiSampleVariantLegendOverlay.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
@@ -20,8 +17,6 @@ const VariantDisplayComponent = observer(
     model: LinearMultiSampleVariantDisplayModel
   }) {
     const { model } = props
-    const { availableHeight, showTree, showLegend, hierarchy, treeAreaWidth } =
-      model
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
@@ -38,32 +33,7 @@ const VariantDisplayComponent = observer(
         {({ canvasRef, canvas }) => (
           <>
             <TreeSidebar model={model} />
-            <svg
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: availableHeight,
-                zIndex: 100,
-                pointerEvents: 'none',
-                overflow: 'hidden',
-              }}
-            >
-              <g
-                transform={`translate(${showTree && hierarchy ? treeAreaWidth : 0})`}
-              >
-                <LegendBar model={model} />
-              </g>
-            </svg>
-            {showLegend ? (
-              <FloatingLegend
-                items={model.legendItems()}
-                onDismiss={() => {
-                  model.setShowLegend(false)
-                }}
-              />
-            ) : null}
+            <LegendOverlay model={model} />
             <div style={{ position: 'absolute', left: 0 }}>
               <VariantBody
                 model={model}
@@ -72,13 +42,7 @@ const VariantDisplayComponent = observer(
               />
             </div>
             {mouseState ? (
-              <Crosshair
-                mouseX={mouseState.x}
-                mouseY={mouseState.y}
-                offsetX={mouseState.offsetX}
-                offsetY={mouseState.offsetY}
-                model={model}
-              />
+              <Crosshair mouseState={mouseState} model={model} />
             ) : null}
           </>
         )}
