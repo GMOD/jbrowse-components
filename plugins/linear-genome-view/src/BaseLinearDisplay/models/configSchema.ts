@@ -4,15 +4,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config BaseLinearDisplay
  * #category display
  *
- * Shared base config for **both** linear display stacks — its slots
- * (`height`, `maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`,
- * `jexlFilters`) are common to all linear displays. The GPU stack's
- * `LinearCanvasBaseDisplay` config extends it, the legacy block
- * `LinearBareDisplay` config extends it, and third-party plugins extend it too.
- *
- * Note: the *state model* named `BaseLinearDisplay` is narrower than this config
- * — it backs only the legacy block stack. See
- * agent-docs/ARCHITECTURE.md "Display stacks".
+ * Shared base config for linear displays — its slots (`height`,
+ * `maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
+ * common to all of them. The GPU stack's `LinearCanvasBaseDisplay` config
+ * extends it, and third-party plugins extend it too.
  */
 
 const baseLinearDisplayConfigSchema = ConfigurationSchema(

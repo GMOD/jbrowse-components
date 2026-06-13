@@ -14,15 +14,15 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
-import { stateModelFactory } from './index.ts'
-import { BaseLinearDisplayComponent } from '../index.ts'
-import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
+import { stateModelFactory } from './index.ts'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
+import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
+import { BaseLinearDisplayComponent } from '../index.ts'
 
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from './index.ts'
 import type { InitState } from './types.ts'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 type LGV = LinearGenomeViewModel
 
