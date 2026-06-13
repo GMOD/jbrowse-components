@@ -1,11 +1,6 @@
-import { buildGwasTrackConfig, canSubmit, makeTrackId } from './util.ts'
+import { buildGwasTrackConfig, canSubmit } from './util.ts'
 
 const uri = (s: string) => ({ uri: s, locationType: 'UriLocation' as const })
-
-test('makeTrackId slugifies and marks session tracks', () => {
-  expect(makeTrackId('My GWAS', true)).toMatch(/^my_gwas-\d+$/)
-  expect(makeTrackId('My GWAS', false)).toMatch(/^my_gwas-\d+-sessionTrack$/)
-})
 
 test('canSubmit requires a GWAS file, a name, and an assembly', () => {
   const ld = uri('a.bed.gz')

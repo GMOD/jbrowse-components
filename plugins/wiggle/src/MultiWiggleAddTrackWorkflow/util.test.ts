@@ -3,7 +3,6 @@ import {
   buildAdapterPayload,
   canSubmit,
   itemToName,
-  makeTrackId,
   parseItems,
   urlToSubadapter,
 } from './util.ts'
@@ -48,16 +47,6 @@ describe('itemToName', () => {
 
   it('falls back to "unnamed" when neither present', () => {
     expect(itemToName({})).toBe('unnamed')
-  })
-})
-
-describe('makeTrackId', () => {
-  it('lowercases, trims, and underscores spaces', () => {
-    expect(makeTrackId('  My Track  ', true)).toMatch(/^my_track-\d+$/)
-  })
-
-  it('appends -sessionTrack when not in admin mode', () => {
-    expect(makeTrackId('x', false)).toMatch(/^x-\d+-sessionTrack$/)
   })
 })
 

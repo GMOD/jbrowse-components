@@ -5,6 +5,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
+  makeTrackId,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
@@ -12,7 +13,7 @@ import { Button, Divider, Paper, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { locationName } from './ldAdapterConfig.ts'
-import { buildGwasTrackConfig, canSubmit, makeTrackId } from './util.ts'
+import { buildGwasTrackConfig, canSubmit } from './util.ts'
 
 import type { AbstractRootModel } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -53,7 +54,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
 
   function doSubmit() {
     if (gwasLocation && assembly && isSessionWithAddTracks(session)) {
-      const trackId = makeTrackId(trackName, !!session.adminMode)
+      const trackId = makeTrackId({ name: trackName, adminMode: !!session.adminMode })
       session.addTrackConf(
         buildGwasTrackConfig({
           trackId,

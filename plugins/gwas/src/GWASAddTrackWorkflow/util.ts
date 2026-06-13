@@ -2,11 +2,6 @@ import { buildLdAdapterConfig, deriveTbiLocation } from './ldAdapterConfig.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-export function makeTrackId(trackName: string, adminMode: boolean) {
-  const slug = trackName.trim().toLowerCase().replaceAll(' ', '_')
-  return `${slug}-${Date.now()}${adminMode ? '' : '-sessionTrack'}`
-}
-
 export function canSubmit({
   gwasLocation,
   trackName,

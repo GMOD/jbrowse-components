@@ -36,6 +36,7 @@ export * from './springAnimate.ts'
 export * from './hooks.ts'
 export * from './localStorage.ts'
 export * from './renameRegions.ts'
+export * from './makeTrackId.ts'
 
 export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'

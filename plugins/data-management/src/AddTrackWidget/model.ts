@@ -1,4 +1,4 @@
-import { getSession, isUriLocation } from '@jbrowse/core/util'
+import { getSession, isUriLocation, makeTrackId } from '@jbrowse/core/util'
 import {
   UNKNOWN,
   UNSUPPORTED,
@@ -11,7 +11,6 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 import { reaction } from 'mobx'
 
-import { makeTrackId } from './makeTrackId.ts'
 import { isBlockedHttpUrl, isFtpUrl, isRelativeUrl } from './urlWarnings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

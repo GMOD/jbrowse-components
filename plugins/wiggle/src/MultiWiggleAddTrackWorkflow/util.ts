@@ -1,3 +1,5 @@
+import { makeTrackId } from '@jbrowse/core/util'
+
 import type { SessionWithAddTracks } from '@jbrowse/core/util'
 
 export type TrackItem = string | Record<string, unknown>
@@ -47,11 +49,6 @@ export function applyName(item: TrackItem, name: string): TrackItem {
   }
 }
 
-export function makeTrackId(trackName: string, adminMode: boolean) {
-  const slug = trackName.trim().toLowerCase().replaceAll(' ', '_')
-  return `${slug}-${Date.now()}${adminMode ? '' : '-sessionTrack'}`
-}
-
 export function canSubmit({
   tracks,
   trackName,
@@ -93,7 +90,7 @@ export function addMultiWiggleTrack({
   assemblyNames: string[]
   adapter: Record<string, unknown>
 }) {
-  const trackId = makeTrackId(name, !!session.adminMode)
+  const trackId = makeTrackId({ name, adminMode: !!session.adminMode })
   session.addTrackConf({
     trackId,
     type: 'MultiQuantitativeTrack',

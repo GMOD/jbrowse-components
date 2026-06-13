@@ -1,3 +1,4 @@
+import { makeTrackId } from '@jbrowse/core/util'
 import {
   UNKNOWN,
   UNSUPPORTED,
@@ -7,7 +8,6 @@ import {
 } from '@jbrowse/core/util/tracks'
 
 import { locationId } from './pairLocations.ts'
-import { makeTrackId } from '../AddTrackWidget/makeTrackId.ts'
 
 import type { LocationPair } from './pairLocations.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
