@@ -10,14 +10,20 @@ import {
   useFetch,
 } from '@jbrowse/core/util'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
-import { MenuItem, TextField, Typography } from '@mui/material'
+import {
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { GROUP_BY_DIMENSIONS } from '../../shared/groupFeatures.ts'
 import { TAG_REGEX, negFlags, posFlags } from '../../shared/util.ts'
 
-import type { FilterBy, GroupBy, GroupByType } from '../../shared/types.ts'
+import type { ColorBy, FilterBy, GroupBy, GroupByType } from '../../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -152,10 +158,12 @@ const CHAIN_STACK_DIMENSIONS = STACK_DIMENSIONS.filter(d => d.chainConsistent)
 export type GroupByModel = {
   adapterConfig: AnyConfigurationModel
   configuration: AnyConfigurationModel
+  colorBy: ColorBy
   filterBy: FilterBy
   groupBy?: GroupBy
   isChainMode: boolean
   setGroupBy: (groupBy?: GroupBy) => void
+  setColorScheme: (colorBy: ColorBy) => void
 } & IAnyStateTreeNode
 
 const GroupByDialog = observer(function GroupByDialog(props: {
@@ -167,6 +175,12 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   // (and can tweak) the current dimension rather than resetting to blank.
   const [groupByTag, setGroupByTag] = useState(model.groupBy?.tag ?? '')
   const [type, setType] = useState<string>(model.groupBy?.type ?? '')
+  // Grouping by a tag almost always pairs with coloring by it (e.g. HP
+  // haplotype), so the checkbox defaults on. Reflects the current scheme when
+  // reopening so it isn't silently re-enabled after the user turned it off.
+  const [colorByTag, setColorByTag] = useState(
+    model.colorBy.type !== 'tag' || model.colorBy.tag === model.groupBy?.tag,
+  )
   // 'stack' renders the groups as stacked sections in this one track (the
   // default in-track experience); 'split' is the legacy one-session-track-per-
   // group path, kept for old sessions and very high group counts.
@@ -216,6 +230,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         type: type as GroupByType,
         tag: type === 'tag' ? groupByTag : undefined,
       })
+      if (type === 'tag' && colorByTag) {
+        model.setColorScheme({ type: 'tag', tag: groupByTag })
+      }
       handleClose()
       return
     }
@@ -330,6 +347,19 @@ const GroupByDialog = observer(function GroupByDialog(props: {
             <LoadingEllipses message="Loading unique tags" />
           ) : tagSet ? (
             <TagResults tag={groupByTag} tagSet={tagSet} />
+          ) : null}
+          {mode === 'stack' ? (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={colorByTag}
+                  onChange={event => {
+                    setColorByTag(event.target.checked)
+                  }}
+                />
+              }
+              label="Also color reads by this tag"
+            />
           ) : null}
         </>
       ) : null}

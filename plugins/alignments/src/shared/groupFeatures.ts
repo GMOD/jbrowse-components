@@ -99,22 +99,7 @@ function mapqKey(feature: Feature): GroupKey {
 }
 
 function groupKeyFor(feature: Feature, groupBy: GroupBy): GroupKey {
-  switch (groupBy.type) {
-    case 'strand':
-      return strandKey(feature)
-    case 'firstOfPairStrand':
-      return firstOfPairStrandKey(feature)
-    case 'tag':
-      return tagKey(feature, groupBy.tag ?? '')
-    case 'pairOrientation':
-      return pairOrientationKey(feature)
-    case 'supplementary':
-      return supplementaryKey(feature)
-    case 'duplicate':
-      return duplicateKey(feature)
-    case 'mapq':
-      return mapqKey(feature)
-  }
+  return GROUP_BY_DIMENSIONS[groupBy.type].key(feature, groupBy)
 }
 
 // Stable key sort with the empty-key ("untagged"/"unknown") group pinned last.
@@ -136,6 +121,22 @@ function orderGroups(groups: FeatureGroup[]) {
   })
 }
 
+// Append a single feature into its group, creating the group on first sight.
+// Single-feature push (no array spread) keeps the per-read pileup path
+// allocation-free over thousands of reads.
+function appendFeature(
+  groups: Map<string, FeatureGroup>,
+  feature: Feature,
+  { key, label }: GroupKey,
+) {
+  const group = groups.get(key)
+  if (group) {
+    group.features.push(feature)
+  } else {
+    groups.set(key, { key, label, features: [feature] })
+  }
+}
+
 // Partition the fetched reads into ordered groups. Without groupBy this is a
 // single group with `key: ''` holding every feature, giving one uniform code
 // path for grouped and ungrouped fetches.
@@ -148,13 +149,7 @@ export function partitionFeatures(
   }
   const groups = new Map<string, FeatureGroup>()
   for (const feature of features) {
-    const { key, label } = groupKeyFor(feature, groupBy)
-    const group = groups.get(key)
-    if (group) {
-      group.features.push(feature)
-    } else {
-      groups.set(key, { key, label, features: [feature] })
-    }
+    appendFeature(groups, feature, groupKeyFor(feature, groupBy))
   }
   return orderGroups([...groups.values()])
 }
@@ -186,34 +181,60 @@ export interface GroupByDimension {
   // per-region worker calls. Per-read dimensions split chains and are excluded
   // from chain (linked-reads) mode. See agent-docs/GROUP_BY_CHAIN_MODE_PLAN.md.
   chainConsistent: boolean
+  // The group-key generator for this dimension. Co-located with the metadata so
+  // each dimension is defined in exactly one place — `groupKeyFor` just looks it
+  // up. `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
+  key: (feature: Feature, groupBy: GroupBy) => GroupKey
 }
 
 // The single registry of group-by dimensions. Typed as a Record keyed by
 // GroupByType, so adding a member to the union is a compile error until it is
 // classified here — a new dimension can't be silently half-wired (missing a
-// label, or unclassified for chain mode). `groupKeyFor`'s exhaustive switch is
-// the matching forcing function for the key generator. Insertion order is the
-// menu order (Object.values preserves it).
+// label, a chain-mode classification, or a key generator). Insertion order is
+// the menu order (Object.values preserves it).
 export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
-  strand: { type: 'strand', label: 'Strand', chainConsistent: false },
+  strand: {
+    type: 'strand',
+    label: 'Strand',
+    chainConsistent: false,
+    key: strandKey,
+  },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
     label: 'First-of-pair strand',
     chainConsistent: true,
+    key: firstOfPairStrandKey,
   },
-  tag: { type: 'tag', label: 'Tag (HP, RG, ...)', chainConsistent: true },
+  tag: {
+    type: 'tag',
+    label: 'Tag (HP, RG, ...)',
+    chainConsistent: true,
+    key: (feature, groupBy) => tagKey(feature, groupBy.tag ?? ''),
+  },
   pairOrientation: {
     type: 'pairOrientation',
     label: 'Pair orientation',
     chainConsistent: true,
+    key: pairOrientationKey,
   },
   supplementary: {
     type: 'supplementary',
     label: 'Supplementary',
     chainConsistent: false,
+    key: supplementaryKey,
   },
-  duplicate: { type: 'duplicate', label: 'Duplicate', chainConsistent: false },
-  mapq: { type: 'mapq', label: 'MAPQ (binned)', chainConsistent: false },
+  duplicate: {
+    type: 'duplicate',
+    label: 'Duplicate',
+    chainConsistent: false,
+    key: duplicateKey,
+  },
+  mapq: {
+    type: 'mapq',
+    label: 'MAPQ (binned)',
+    chainConsistent: false,
+    key: mapqKey,
+  },
 }
 
 export function isChainGroupableType(type: GroupByType | undefined) {
@@ -244,12 +265,9 @@ export function partitionChains(
   }
   const groups = new Map<string, FeatureGroup>()
   for (const chain of chains.values()) {
-    const { key, label } = groupKeyFor(chainRepresentative(chain), groupBy)
-    const group = groups.get(key)
-    if (group) {
-      group.features.push(...chain)
-    } else {
-      groups.set(key, { key, label, features: [...chain] })
+    const groupKey = groupKeyFor(chainRepresentative(chain), groupBy)
+    for (const feature of chain) {
+      appendFeature(groups, feature, groupKey)
     }
   }
   return orderGroups([...groups.values()])
