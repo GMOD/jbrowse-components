@@ -4,7 +4,8 @@
   "scripts": {
     "build": "sam build",
     "deploy": "sam deploy --guided",
-    "deploy:update": "sam deploy"
+    "deploy:update": "sam deploy",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3",
