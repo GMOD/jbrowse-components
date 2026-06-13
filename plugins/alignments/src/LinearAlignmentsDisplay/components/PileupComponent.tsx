@@ -34,11 +34,14 @@ import type {
 } from './useAlignmentsBase.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
-const useStyles = makeStyles()({
+const SCROLLBAR_WIDTH = 12
+const COMPACT_AXIS_HEIGHT = 30
+
+const useStyles = makeStyles()(theme => ({
   scrollbarTrack: {
     position: 'absolute' as const,
     right: 0,
-    width: 12,
+    width: SCROLLBAR_WIDTH,
     cursor: 'default',
     zIndex: 10,
     '&:hover > *': {
@@ -60,7 +63,17 @@ const useStyles = makeStyles()({
     height: YSCALEBAR_LABEL_OFFSET,
     zIndex: 10,
   },
-})
+  compactAxisLabel: {
+    position: 'absolute' as const,
+    right: SCROLLBAR_WIDTH + 2,
+    fontSize: 9,
+    lineHeight: '11px',
+    fontFamily: 'sans-serif',
+    color: theme.palette.text.secondary,
+    pointerEvents: 'none' as const,
+    userSelect: 'none' as const,
+  },
+}))
 
 // The pileup canvas + all its positioned overlays. DisplayChrome owns the GPU
 // backend and the three terminal states (render error, region-too-large, fetch
@@ -84,7 +97,6 @@ const PileupBody = observer(function PileupBody({
     processMouseMove,
     processClick,
   } = useAlignmentsBase(model, canvas)
-  const { classes } = useStyles()
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
@@ -119,13 +131,7 @@ const PileupBody = observer(function PileupBody({
     return null
   }
 
-  const {
-    height,
-    showCoverage,
-    coverageHeight,
-    isChainMode,
-    belowCoverageBands: bands,
-  } = model
+  const { height, belowCoverageBands: bands } = model
   // The scrollbar track starts below the sticky coverage (ungrouped) or spans
   // the whole display (grouped, where the entire stack scrolls).
   const topOffset = model.isGrouped ? 0 : bands.bottom
@@ -140,7 +146,7 @@ const PileupBody = observer(function PileupBody({
       e,
       (hit, resolved) => {
         model.setFeatureIdUnderMouse(hit.id)
-        if (isChainMode) {
+        if (model.isChainMode) {
           model.setHighlightedChainIds(chainIdsForHit(hit, resolved))
           model.setMouseoverExtraInformation(
             formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
@@ -163,7 +169,7 @@ const PileupBody = observer(function PileupBody({
       e,
       (hit, resolved) => {
         void model.selectFeatureById(hit.id)
-        if (isChainMode) {
+        if (model.isChainMode) {
           model.setSelectedChainIds(chainIdsForHit(hit, resolved))
         }
       },
@@ -210,17 +216,7 @@ const PileupBody = observer(function PileupBody({
 
       <LegendHost model={model} />
 
-      {showCoverage ? (
-        <ResizeHandle
-          className={classes.resizeHandle}
-          style={{ top: coverageHeight - YSCALEBAR_LABEL_OFFSET }}
-          onDrag={dy => {
-            model.setCoverageHeight(Math.max(20, model.coverageHeight + dy))
-            return undefined
-          }}
-          title="Drag to resize coverage track"
-        />
-      ) : null}
+      <CoverageResizeHandle model={model} />
 
       <ConnectionBandResizeHandles model={model} />
 
@@ -228,6 +224,28 @@ const PileupBody = observer(function PileupBody({
 
       <PileupScrollbar model={model} topOffset={topOffset} />
     </div>
+  )
+})
+
+const CoverageResizeHandle = observer(function CoverageResizeHandle({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { classes } = useStyles()
+  if (!model.showCoverage) {
+    return null
+  }
+  return (
+    <ResizeHandle
+      className={classes.resizeHandle}
+      style={{ top: model.coverageHeight - YSCALEBAR_LABEL_OFFSET }}
+      onDrag={dy => {
+        model.setCoverageHeight(Math.max(20, model.coverageHeight + dy))
+        return undefined
+      }}
+      title="Drag to resize coverage track"
+    />
   )
 })
 
@@ -386,102 +404,142 @@ const VisibleLabelsHost = observer(function VisibleLabelsHost({
   )
 })
 
-// One scale bar per section's coverage band. Ungrouped is the single sticky
-// section at top 0; grouped scrolls each section's band with the rest of its
-// stack, so the scale bar tracks `coverageTop - scrollTop`. The coverage
-// Y-domain (`coverageTicks`) is shared across groups (see `coverageStats`), so
-// every section's bar reads the same scale.
+function CompactCoverageLabel({ top, max }: { top: number; max: number }) {
+  const { classes } = useStyles()
+  return (
+    <div className={classes.compactAxisLabel} style={{ top }}>
+      {`[0, ${Math.round(max)}]`}
+    </div>
+  )
+}
+
+// One bar on the right for the topmost visible section. Right side avoids the
+// group labels at left:4. All groups share coverageTicks so one bar suffices.
+const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { coverageTicks, scrollTop, height, renderSections } = model
+  const section = renderSections.find(s => {
+    const top = s.coverageTop - scrollTop
+    return top + s.coverageHeight >= 0 && top <= height
+  })
+  if (!section || !coverageTicks) {
+    return null
+  }
+  const top = section.coverageTop - scrollTop
+  if (section.coverageHeight < COMPACT_AXIS_HEIGHT) {
+    return (
+      <CompactCoverageLabel
+        top={top + 1}
+        max={coverageTicks.items.at(-1)?.value ?? 0}
+      />
+    )
+  }
+  return (
+    <svg
+      style={{
+        position: 'absolute',
+        top,
+        right: SCROLLBAR_WIDTH + 2,
+        pointerEvents: 'none',
+        height: section.coverageHeight,
+        width: 50,
+      }}
+    >
+      <YScaleBar ticks={coverageTicks} orientation="right" />
+    </svg>
+  )
+})
+
+const UngroupedCoverageAxis = observer(function UngroupedCoverageAxis({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { coverageTicks, renderSections, scalebarOverlapLeft } = model
+  const section = renderSections[0]
+  if (!coverageTicks || !section) {
+    return null
+  }
+  if (section.coverageHeight < COMPACT_AXIS_HEIGHT) {
+    return (
+      <CompactCoverageLabel
+        top={1}
+        max={coverageTicks.items.at(-1)?.value ?? 0}
+      />
+    )
+  }
+  return (
+    <svg
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: scalebarOverlapLeft,
+        pointerEvents: 'none',
+        height: section.coverageHeight,
+        width: 50,
+      }}
+    >
+      <g transform="translate(45, 0)">
+        <YScaleBar ticks={coverageTicks} orientation="left" />
+      </g>
+    </svg>
+  )
+})
+
+// Split so scroll-dependent tracking (GroupedCoverageAxis) is isolated —
+// UngroupedCoverageAxis won't re-render on scroll.
 const CoverageAxisHost = observer(function CoverageAxisHost({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { coverageTicks, isGrouped, scrollTop, height, renderSections } = model
-  if (!coverageTicks) {
-    return null
-  }
-  return (
-    <>
-      {renderSections.map(section => {
-        const top = isGrouped ? section.coverageTop - scrollTop : 0
-        if (top + section.coverageHeight < 0 || top > height) {
-          return null
-        }
-        return (
-          <svg
-            key={section.groupKey || 'ungrouped'}
-            style={{
-              position: 'absolute',
-              top,
-              left: model.scalebarOverlapLeft,
-              pointerEvents: 'none',
-              height: section.coverageHeight,
-              width: 50,
-            }}
-          >
-            <g transform="translate(45, 0)">
-              <YScaleBar ticks={coverageTicks} orientation="left" />
-            </g>
-          </svg>
-        )
-      })}
-    </>
+  return model.isGrouped ? (
+    <GroupedCoverageAxis model={model} />
+  ) : (
+    <UngroupedCoverageAxis model={model} />
   )
 })
 
+// Only rendered in samplot mode (insertSizeTicks is null otherwise). Shared
+// Y-domain means one bar is value-correct for all sections; in grouped mode
+// it scrolls with the first section.
 const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  // insertSizeTicks is only set in samplot mode. Down mode opens its band
-  // below coverage, so the TLEN scalebar reads better on the left. The ticks
-  // are content-space at the first section's band; the shared Y-domain makes
-  // one axis value-correct for every section, so in grouped mode it just
-  // scrolls with the first section.
-  const { insertSizeTicks, readConnectionsDown, isGrouped, scrollTop } = model
+  const { insertSizeTicks, readConnectionsDown, isGrouped, scrollTop, height } =
+    model
   if (!insertSizeTicks) {
     return null
   }
   const yShift = isGrouped ? -scrollTop : 0
-  return readConnectionsDown ? (
+  return (
     <svg
       style={{
         position: 'absolute',
         top: 0,
-        left: 0,
+        ...(readConnectionsDown ? { left: 0 } : { right: 0 }),
         pointerEvents: 'none',
-        height: model.height,
+        height,
         width: 50,
       }}
     >
       <g transform={`translate(0, ${yShift})`}>
-        <g transform="translate(45, 0)">
-          <YScaleBar ticks={insertSizeTicks} orientation="left" />
-        </g>
+        {readConnectionsDown ? (
+          <g transform="translate(45, 0)">
+            <YScaleBar ticks={insertSizeTicks} orientation="left" />
+          </g>
+        ) : (
+          <YScaleBar ticks={insertSizeTicks} orientation="right" />
+        )}
         <TlenAxisLabel
           yTop={insertSizeTicks.yTop}
           yBottom={insertSizeTicks.yBottom}
-          x={6}
-        />
-      </g>
-    </svg>
-  ) : (
-    <svg
-      style={{
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        pointerEvents: 'none',
-        height: model.height,
-        width: 50,
-      }}
-    >
-      <g transform={`translate(0, ${yShift})`}>
-        <YScaleBar ticks={insertSizeTicks} orientation="right" />
-        <TlenAxisLabel
-          yTop={insertSizeTicks.yTop}
-          yBottom={insertSizeTicks.yBottom}
+          x={readConnectionsDown ? 6 : undefined}
         />
       </g>
     </svg>
@@ -514,12 +572,15 @@ const PileupScrollbar = observer(function PileupScrollbar({
   topOffset: number
 }) {
   const { classes } = useStyles()
-  const { scrollableHeight, pileupViewportHeight, pileupContentHeight } = model
+  const {
+    scrollableHeight,
+    pileupViewportHeight: trackHeight,
+    pileupContentHeight,
+  } = model
   const dragAcRef = useAbortableRef()
   if (scrollableHeight <= 0) {
     return null
   }
-  const trackHeight = pileupViewportHeight
   const thumbHeight = Math.max(
     20,
     trackHeight * (trackHeight / pileupContentHeight),
@@ -532,7 +593,7 @@ const PileupScrollbar = observer(function PileupScrollbar({
       style={{ top: topOffset, height: trackHeight }}
       onMouseDown={e => {
         const startScroll = model.scrollTop
-        const scrollRange = model.scrollableHeight
+        const scrollRange = scrollableHeight
         const usableTrack = trackHeight - thumbHeight
         startDocumentDrag(e, dragAcRef, (_dx, dy) => {
           const scrollDelta =

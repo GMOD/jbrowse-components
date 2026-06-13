@@ -71,12 +71,11 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         const collapsed = model.isGroupCollapsed(section.groupKey)
         return (
           <div key={section.groupKey || `group-${i}`}>
-            {/* Skip the divider above the first section (it sits at the top edge). */}
             {i > 0 ? <div className={classes.divider} style={{ top }} /> : null}
             <button
               type="button"
               className={classes.label}
-              style={{ top: top + 1 }}
+              style={{ top: Math.max(0, top) + 1 }}
               onClick={() => {
                 model.toggleGroupCollapsed(section.groupKey)
               }}
