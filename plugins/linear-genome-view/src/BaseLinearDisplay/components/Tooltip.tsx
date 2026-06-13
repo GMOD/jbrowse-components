@@ -8,7 +8,21 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
-function TooltipContents({ message }: { message: React.ReactNode | string }) {
+type Coord = [number, number]
+
+type TooltipModel = {
+  featureUnderMouse: Feature | undefined
+  configuration: AnyConfigurationModel
+}
+
+function getTooltipContents(model: TooltipModel) {
+  const { featureUnderMouse } = model
+  return featureUnderMouse
+    ? getConf(model, 'mouseover', { feature: featureUnderMouse })
+    : undefined
+}
+
+function TooltipContents({ message }: { message: React.ReactNode }) {
   return (
     <div>
       {isValidElement(message) ? (
@@ -20,34 +34,18 @@ function TooltipContents({ message }: { message: React.ReactNode | string }) {
   )
 }
 
-type Coord = [number, number]
-
 const Tooltip = observer(function Tooltip({
   model,
   clientMouseCoord,
 }: {
-  model: {
-    featureUnderMouse: Feature | undefined
-    featureIdUnderMouse: string | undefined
-    mouseoverExtraInformation: string | undefined
-    configuration: AnyConfigurationModel
-  }
+  model: TooltipModel
   clientMouseCoord: Coord
 }) {
-  const { featureUnderMouse, featureIdUnderMouse, mouseoverExtraInformation } =
-    model
+  const contents = getTooltipContents(model)
   const x = clientMouseCoord[0] + 15
   const y = clientMouseCoord[1]
 
-  const contents =
-    featureUnderMouse && mouseoverExtraInformation
-      ? getConf(model, 'mouseover', {
-          feature: featureUnderMouse,
-          mouseoverExtraInformation,
-        })
-      : undefined
-
-  return featureIdUnderMouse && contents ? (
+  return contents ? (
     <BaseTooltip clientPoint={{ x, y }}>
       <TooltipContents message={contents} />
     </BaseTooltip>
