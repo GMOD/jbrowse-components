@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
+  makeTrackId,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
@@ -47,6 +48,11 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
     useState<IndexTypeOptions>('TBI')
 
   const rootModel = getRoot<AbstractRootModel>(model)
+  const dataFileName = {
+    BigMafAdapter: 'Path to bigMaf',
+    MafTabixAdapter: 'Path to MAF tabix',
+    BgzipTaffyAdapter: 'Path to TAF.gz (Bgzipped TAF)',
+  }[fileTypeChoice]
   return (
     <Paper className={classes.paper}>
       <Paper>
@@ -59,25 +65,23 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
             setFileTypeChoice(value)
           }}
         />
+        <FileSelector
+          location={loc}
+          name={dataFileName}
+          rootModel={rootModel}
+          setLocation={arg => {
+            setLoc(arg)
+          }}
+        />
         {fileTypeChoice === 'BigMafAdapter' ? (
-          <>
-            <FileSelector
-              location={loc}
-              name="Path to bigMaf"
-              rootModel={rootModel}
-              setLocation={arg => {
-                setLoc(arg)
-              }}
-            />
-            <FileSelector
-              location={summaryLoc}
-              name="Path to bigMafSummary (.bb, optional — enables cheap zoom-out rendering)"
-              rootModel={rootModel}
-              setLocation={arg => {
-                setSummaryLoc(arg)
-              }}
-            />
-          </>
+          <FileSelector
+            location={summaryLoc}
+            name="Path to bigMafSummary (.bb, optional — enables cheap zoom-out rendering)"
+            rootModel={rootModel}
+            setLocation={arg => {
+              setSummaryLoc(arg)
+            }}
+          />
         ) : fileTypeChoice === 'MafTabixAdapter' ? (
           <>
             <RadioSelector
@@ -86,14 +90,6 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
               options={['TBI', 'CSI']}
               onChange={value => {
                 setIndexTypeChoice(value)
-              }}
-            />
-            <FileSelector
-              location={loc}
-              name="Path to MAF tabix"
-              rootModel={rootModel}
-              setLocation={arg => {
-                setLoc(arg)
               }}
             />
             <FileSelector
@@ -106,24 +102,14 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
             />
           </>
         ) : (
-          <>
-            <FileSelector
-              location={loc}
-              name="Path to TAF.gz (Bgzipped TAF)"
-              rootModel={rootModel}
-              setLocation={arg => {
-                setLoc(arg)
-              }}
-            />
-            <FileSelector
-              location={indexLoc}
-              name="Path to TAF.gz.tai (TAF index)"
-              rootModel={rootModel}
-              setLocation={arg => {
-                setIndexLoc(arg)
-              }}
-            />
-          </>
+          <FileSelector
+            location={indexLoc}
+            name="Path to TAF.gz.tai (TAF index)"
+            rootModel={rootModel}
+            setLocation={arg => {
+              setIndexLoc(arg)
+            }}
+          />
         )}
       </Paper>
       <div>
@@ -167,9 +153,10 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
             // Samples + tree are both optional: when neither is supplied the
             // adapter discovers the genomes from the data itself.
             const sampleNames = parseSampleNames(samples)
-            const safeName = trackName.toLowerCase().replaceAll(' ', '_')
-            const sessionSuffix = session.adminMode ? '' : '-sessionTrack'
-            const trackId = `${safeName}-${Date.now()}${sessionSuffix}`
+            const trackId = makeTrackId({
+              name: trackName,
+              adminMode: !!session.adminMode,
+            })
 
             if (isSessionWithAddTracks(session)) {
               session.addTrackConf({

@@ -43,43 +43,50 @@ const MafSequenceHoverHighlight = observer(function MafSequenceHoverHighlight({
 
   const widgets =
     'widgets' in session ? (session.widgets as Map<string, unknown>) : undefined
-  if (!widgets) {
-    return null
-  }
 
-  const highlights: React.ReactNode[] = []
+  return !widgets ? null : (
+    <>
+      {[...widgets.values()].flatMap(widget => {
+        if (
+          isConnectedMafSequenceWidget(widget, model.id) &&
+          widget.hoverHighlight
+        ) {
+          const { refName, start, end, assemblyName } = widget.hoverHighlight
+          const canonicalRefName =
+            assemblyManager.get(assemblyName)?.getCanonicalRefName(refName) ??
+            refName
+          const startPx = model.bpToPx({
+            refName: canonicalRefName,
+            coord: start,
+          })
+          const endPx = model.bpToPx({
+            refName: canonicalRefName,
+            coord: end,
+          })
 
-  for (const widget of widgets.values()) {
-    if (
-      isConnectedMafSequenceWidget(widget, model.id) &&
-      widget.hoverHighlight
-    ) {
-      const { refName, start, end, assemblyName } = widget.hoverHighlight
-      const assembly = assemblyManager.get(assemblyName)
-      const canonicalRefName = assembly?.getCanonicalRefName(refName) ?? refName
-
-      const startPx = model.bpToPx({
-        refName: canonicalRefName,
-        coord: start,
-      })
-      const endPx = model.bpToPx({ refName: canonicalRefName, coord: end })
-
-      if (startPx && endPx) {
-        const left = Math.min(startPx.offsetPx, endPx.offsetPx) - model.offsetPx
-        const width = Math.max(Math.abs(endPx.offsetPx - startPx.offsetPx), 3)
-
-        highlights.push(
-          <div
-            key={`maf-hover-${widget.id}`}
-            className={classes.highlight}
-            style={{ left, width }}
-          />,
-        )
-      }
-    }
-  }
-
-  return <>{highlights}</>
+          return startPx && endPx
+            ? [
+                <div
+                  key={`maf-hover-${widget.id}`}
+                  className={classes.highlight}
+                  style={{
+                    left:
+                      Math.min(startPx.offsetPx, endPx.offsetPx) -
+                      model.offsetPx,
+                    width: Math.max(
+                      Math.abs(endPx.offsetPx - startPx.offsetPx),
+                      3,
+                    ),
+                  }}
+                />,
+              ]
+            : []
+        } else {
+          return []
+        }
+      })}
+    </>
+  )
 })
 
 export default MafSequenceHoverHighlight
