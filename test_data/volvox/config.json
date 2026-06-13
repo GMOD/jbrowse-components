@@ -1332,6 +1332,9 @@
     {
       "type": "FeatureTrack",
       "trackId": "gff3tabix_genes_shorthand_color",
+      "metadata": {
+        "skipTextIndex": true
+      },
       "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes (shorthand color)",
       "category": ["Shorthand examples"],
@@ -1382,6 +1385,9 @@
     {
       "type": "VariantTrack",
       "trackId": "volvox_filtered_vcf_shorthand",
+      "metadata": {
+        "skipTextIndex": true
+      },
       "name": "volvox filtered vcf (shorthand display colors)",
       "assemblyNames": ["volvox"],
       "category": ["Shorthand examples"],

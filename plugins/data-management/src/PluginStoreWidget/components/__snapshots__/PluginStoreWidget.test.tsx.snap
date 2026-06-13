@@ -28,6 +28,7 @@ exports[`renders with the available plugins 1`] = `
           class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
         >
           <button
+            aria-label="Clear filter plugins"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"

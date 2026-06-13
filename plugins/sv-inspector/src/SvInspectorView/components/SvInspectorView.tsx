@@ -60,7 +60,6 @@ const SvInspectorView = observer(function SvInspectorView({
                 return model.spreadsheetView.resizeWidth(-ret1)
               }}
               vertical
-              flexbox
               className={classes.resizeHandleVert}
             />
             <div style={{ width: model.circularView.width }}>

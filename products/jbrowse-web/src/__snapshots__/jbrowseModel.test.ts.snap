@@ -1661,13 +1661,86 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "color": "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+          "displayId": "gff3tabix_genes_jexl_color_and_label_linear",
+          "labels": {
+            "name": "jexl:get(feature,'name')+' ['+get(feature,'type')+']'",
+          },
+          "type": "LinearBasicDisplay",
+        },
+      ],
+      "metadata": {
+        "skipTextIndex": true,
+      },
+      "name": "GFF3Tabix genes (per-feature jexl color + label)",
+      "trackId": "gff3tabix_genes_jexl_color_and_label",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sort.gff3.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
         "Shorthand examples",
       ],
       "displays": {
         "color": "#6a3d9a",
       },
+      "metadata": {
+        "skipTextIndex": true,
+      },
       "name": "GFF3Tabix genes (shorthand color)",
       "trackId": "gff3tabix_genes_shorthand_color",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sort.gff3.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Shorthand examples",
+      ],
+      "displays": {
+        "color": "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+        "labels": {
+          "name": "jexl:get(feature,'name')+' ['+get(feature,'type')+']'",
+        },
+      },
+      "metadata": {
+        "skipTextIndex": true,
+      },
+      "name": "GFF3Tabix genes (shorthand jexl color + label)",
+      "trackId": "gff3tabix_genes_shorthand_jexl",
       "type": "FeatureTrack",
     },
     {
@@ -1693,6 +1766,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": {
         "color": "#1f78b4",
         "strokeColor": "#e31a1c",
+      },
+      "metadata": {
+        "skipTextIndex": true,
       },
       "name": "volvox filtered vcf (shorthand display colors)",
       "trackId": "volvox_filtered_vcf_shorthand",
