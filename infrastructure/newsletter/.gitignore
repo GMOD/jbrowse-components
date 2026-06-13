@@ -1,0 +1,3 @@
+# Standalone npm project; npm ci requires the lockfile committed
+# (root .gitignore ignores **/package-lock.json for the pnpm monorepo)
+!package-lock.json
