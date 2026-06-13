@@ -48,7 +48,7 @@ export interface ConfigSlotDefinition {
  * saved sessions stay minimal. Per-slot metadata
  * (type/description/defaultValue/contextVariable) lives in the schema registry
  * (a WeakMap keyed by the MST type, see schemaRegistry.ts); jexl callbacks are
- * evaluated on read by `readConfObject`. See agent-docs/CONFIG_SLOT_COLLAPSE_PLAN.md.
+ * evaluated on read by `readConfObject`.
  */
 export default function ConfigSlot({
   model,

@@ -7,7 +7,7 @@ import type { JexlInstance } from '../util/jexlStrings.ts'
  * lives as methods on the per-slot MST model (`configurationSlot.ts`). These
  * operate on a bare `(value, type, defaultValue)` triple so the config editor
  * can drive a collapsed slot (a plain value-union property on the parent) with
- * no slot sub-model. See agent-docs/CONFIG_SLOT_COLLAPSE_PLAN.md.
+ * no slot sub-model.
  *
  * Behavior is pinned to the slot-model methods by slotValueUtils.test.ts.
  */

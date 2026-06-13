@@ -31,7 +31,7 @@ export function isConfigurationSlot(
  * touch MST internals — only this shape (see ColorEditor.test.tsx, which passes
  * a plain object). It is built from `(parentNode, slotName)` + the schema
  * metadata table. Collection editors edit immutably via `set` (build a new
- * array/map and assign it). See agent-docs/CONFIG_SLOT_COLLAPSE_PLAN.md.
+ * array/map and assign it).
  */
 export interface SlotFacade {
   name: string
