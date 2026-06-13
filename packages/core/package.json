@@ -177,6 +177,7 @@
     "@jbrowse/jexl": "^3.0.2",
     "@jbrowse/mobx-state-tree": "^5.11.1",
     "@jbrowse/quick-lru": "^7.3.5",
+    "@jbrowse/render-core": "workspace:^",
     "@leeoniya/ufuzzy": "^1.0.19",
     "@mui/icons-material": "^9.1.1",
     "@mui/material": "^9.1.1",

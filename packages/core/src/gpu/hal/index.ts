@@ -1,11 +1,3 @@
-export { createGpuHal } from './createHal.ts'
-export { MockHal } from './mockHal.ts'
-export { WebGL2Hal } from './webgl2Hal.ts'
-export { WebGPUHal } from './webgpuHal.ts'
-export type {
-  BlendState,
-  GlAttributeLayout,
-  GpuHal,
-  PassDescriptor,
-  TextureBinding,
-} from './types.ts'
+// Re-export shim: the HAL moved to @jbrowse/render-core.
+// Kept so existing `@jbrowse/core/gpu/hal` imports keep resolving.
+export * from '@jbrowse/render-core/hal'

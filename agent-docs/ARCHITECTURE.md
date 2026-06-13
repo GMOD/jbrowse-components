@@ -237,6 +237,21 @@ overridable hook list and test-file mapping.
 Canonical reference for the GPU rendering lifecycle across all display types.
 Read `PRD.md` first for invariants and active priorities.
 
+## Package layout
+
+The rendering primitives live in **`@jbrowse/render-core`**
+(`packages/render-core`) — the HAL, `RenderLifecycleMixin`, the backend base
+classes, the React backend hooks, and the clip/canvas/hp-math utilities. It is a
+leaf package (deps: `mobx` + `@jbrowse/mobx-state-tree` + `react` peer; **no**
+`@jbrowse/core`), so a third-party display can depend on it directly. The old
+`@jbrowse/core/gpu/*` import paths still resolve as thin re-export shims (new
+code should import `@jbrowse/render-core`). The shader-codegen pipeline
+(`packages/core/src/gpu/{shaders,passes}` + `scripts/build-shaders.ts`) and the
+display-integration layer (`MultiRegionDisplayMixin` / `GlobalDataDisplayMixin` /
+`DisplayChrome`, all in the LGV plugin) stay where they are. The GPU API is
+**static-import-only** — never exposed via the runtime `ReExports` registry. See
+ADR-030.
+
 ## Glossary
 
 - HAL — hardware abstraction layer; abstracts WebGL2 and WebGPU calls.
@@ -841,7 +856,7 @@ per region and refetches stale ones.
 
 ## HAL (Hardware Abstraction Layer)
 
-Hides the WebGPU/WebGL2 difference. Lives in `packages/core/src/gpu/hal/`.
+Hides the WebGPU/WebGL2 difference. Lives in `packages/render-core/src/hal/`.
 
 ```
 createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>

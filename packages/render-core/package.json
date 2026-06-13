@@ -1,0 +1,76 @@
+{
+  "name": "@jbrowse/render-core",
+  "version": "4.3.0",
+  "type": "module",
+  "description": "GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "webgl",
+    "webgpu",
+    "rendering"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/render-core"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./RenderLifecycleMixin": "./src/RenderLifecycleMixin.ts",
+    "./blockClipUtils": "./src/blockClipUtils.ts",
+    "./canvas2dUtils": "./src/canvas2dUtils.ts",
+    "./createRenderingBackend": "./src/createRenderingBackend.ts",
+    "./displayPhase": "./src/displayPhase.ts",
+    "./globalRenderingBackend": "./src/globalRenderingBackend.ts",
+    "./gpuDevice": "./src/gpuDevice.ts",
+    "./hal": "./src/hal/index.ts",
+    "./installPerRegionLifecycle": "./src/installPerRegionLifecycle.ts",
+    "./perRegionRenderingBackend": "./src/perRegionRenderingBackend.ts",
+    "./regionUploadSync": "./src/regionUploadSync.ts",
+    "./renderBlock": "./src/renderBlock.ts",
+    "./renderingBackendBase": "./src/renderingBackendBase.ts",
+    "./slangPass": "./src/slangPass.ts",
+    "./useRenderingBackend": "./src/useRenderingBackend.ts",
+    "./useTabVisibilityRerender": "./src/useTabVisibilityRerender.ts"
+  },
+  "scripts": {
+    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "build": "pnpm build:esm",
+    "test": "cd ../..; jest --passWithNoTests packages/render-core",
+    "clean": "rimraf esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@jbrowse/mobx-state-tree": "^5.11.1",
+    "mobx": "^6.16.1"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      },
+      "./*": {
+        "types": "./esm/*.d.ts",
+        "import": "./esm/*.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

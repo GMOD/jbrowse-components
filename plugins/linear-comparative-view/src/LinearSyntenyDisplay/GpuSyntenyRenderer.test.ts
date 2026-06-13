@@ -1,5 +1,6 @@
+import { MockHal } from '@jbrowse/core/gpu/hal'
+
 import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
-import { MockHal } from '../../../../packages/core/src/gpu/hal/mockHal.ts'
 
 import type {
   SyntenyRenderState,

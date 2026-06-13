@@ -389,6 +389,9 @@ importers:
       '@jbrowse/quick-lru':
         specifier: ^7.3.5
         version: 7.3.5
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../render-core
       '@leeoniya/ufuzzy':
         specifier: ^1.0.19
         version: 1.0.19
@@ -514,6 +517,18 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.2.7(react@19.2.7)
+
+  packages/render-core:
+    dependencies:
+      '@jbrowse/mobx-state-tree':
+        specifier: ^5.11.1
+        version: 5.11.1(mobx@6.16.1)
+      mobx:
+        specifier: ^6.16.1
+        version: 6.16.1
+      react:
+        specifier: '>=19.0.0'
+        version: 19.2.7
 
   packages/sv-core:
     dependencies:

@@ -1,106 +1,22 @@
 # packages/core/src/gpu
 
-Cross-plugin GPU rendering core: the HAL (WebGL2 / WebGPU / mock), the MST
-draw-lifecycle mixin, the per-region / global backend base classes, and the
-shared clip / canvas / hp-math utilities.
+**The GPU/Canvas2D rendering primitives moved to `@jbrowse/render-core`**
+(`packages/render-core`) — the HAL, the draw-lifecycle mixin, the backend base
+classes, the React backend hooks, and the clip/canvas/hp-math utilities. See
+`packages/render-core/CLAUDE.md` for the file map and invariants.
 
-## Naming convention
+What remains here:
 
-The `Gpu` prefix means **WebGL/WebGPU-specific** — `GpuHal` / `createGpuHal`,
-`gpuDevice`, `webgpuUtils`, and the GPU-side bases
-`GpuPerRegionRenderingBackend` / `GpuGlobalRenderingBackend`. Anything that
-drives **both** GPU and Canvas2D is backend-agnostic and carries a neutral name:
-`RenderLifecycleMixin`, the `PerRegionRenderingBackend` /
-`GlobalRenderingBackend` interfaces, the `Canvas2D*` bases, and the
-`useRenderer` / `useRenderingBackend` hooks. Don't reintroduce `Gpu` on an
-agnostic symbol — it reads as "GPU-only" and the same code path also runs the
-Canvas2D fallback. `Global*` mirrors `GlobalDataDisplayMixin` (the
-no-region-partition displays: HiC, LD, variant matrix).
+- **Re-export shims** (`RenderLifecycleMixin.ts`, `renderBlock.ts`, `hal/index.ts`,
+  …) — thin `export * from '@jbrowse/render-core/X'` files so the ~160 existing
+  `@jbrowse/core/gpu/*` imports keep resolving. New code should import from
+  `@jbrowse/render-core`. Don't add logic to a shim; if you need to change
+  behavior, edit the source in render-core.
+- `passes/` — shared "simple shape" GPU passes (arrow/chevron/line/rect) +
+  their `.generated.ts` shaders. Stays near the shader-codegen pipeline.
+- `shaders/` — shared cross-plugin `.slang` modules (`hpmath`, `colorPack`),
+  referenced by `scripts/build-shaders.ts`'s `SHARED_INCLUDE`.
+- `glAttributeSync.test.ts` — cross-plugin integration test (imports plugin
+  renderers), so it can't live in the leaf render-core package.
 
-The React hooks that drive the frame lifecycle live in `packages/core/src/util/`
-(`useRenderingBackend`, `useTabVisibilityRerender`), not in this directory.
-`useRenderingBackend` owns the whole canvas-init / context-loss / device-loss /
-pagehide / retry lifecycle and wires each event straight to the model's
-`RenderLifecycleMixin` actions (there is no separate generic `useRenderer`
-layer — it was folded in).
-
-**The conceptual reference is `agent-docs/ARCHITECTURE.md` → "GPU Rendering
-Architecture"** (life of a frame, the three upload patterns, hp-math precision,
-SVG export pipeline). This file documents only what bites when editing code _in
-this directory_.
-
-## File map
-
-- `hal/types.ts` — the `GpuHal` interface every backend implements +
-  `PassDescriptor`.
-- `hal/webgl2Hal.ts`, `hal/webgpuHal.ts` — the two real HALs. They must stay
-  behaviorally identical; `hal/mockHal.ts` mirrors the same interface for tests.
-- `hal/regionRegistry.ts` — the per-`(region, pass)` buffer map both HALs own.
-  Centralizes delete/prune/get-or-create so the two implementations can't drift.
-- `hal/createHal.ts` — WebGPU → WebGL2 → null ladder (`?renderer=` pins it).
-- `gpuDevice.ts` — module-level WebGPU `GPUDevice` singleton + device-lost
-  recovery.
-- `createRenderingBackend.ts` — `createGpuHal` returns a HAL → GPU backend, else
-  Canvas2D backend.
-- `RenderLifecycleMixin.ts` — the upload + render autorun pair
-  (`attachRenderingBackend`).
-- `installPerRegionLifecycle.ts` — per-key autoruns for per-region streamed
-  displays (O(N), not O(N²)).
-- `renderingBackendBase.ts` — `GpuRenderingBackendBase` (hal + uniform scratch +
-  HAL-delegating dispose) and `Canvas2DRenderingBackendBase` (canvas + 2D ctx +
-  no-op dispose), shared by the per-region and global bases below.
-- `perRegionRenderingBackend.ts`, `globalRenderingBackend.ts` — backend base
-  classes (GPU + Canvas2D), each extending the shared base in
-  `renderingBackendBase.ts`.
-- `slangPass.ts` — turns a `.generated.ts` shader module into a
-  `PassDescriptor`.
-- `blockClipUtils.ts` — GPU clip math + CPU hp-math split
-  (`splitPositionWithFrac`).
-- `canvas2dUtils.ts` — Canvas2D clip / dpr / color-ramp helpers +
-  `clampBlockScissor`.
-
-## Local invariants
-
-- **HAL parity.** A behavior change to one HAL must land in the other and in
-  `MockHal`. `glAttributeSync.test.ts` parses the generated GLSL and asserts
-  every `GL_ATTRIBUTE` matches a shader input — keep it green.
-- **Scissor/viewport are physical pixels, top-left origin.** WebGL flips Y
-  internally (`canvas.height - y - h`); WebGPU stores the rect and applies it
-  per `drawPass`. Both GPU and Canvas2D clamp the visible span through
-  `clampBlockScissor` (CSS px) so they clip the _same_ columns — don't reinline
-  the floor/ceil rounding.
-- **Two canvas-sizing helpers, on purpose.** `syncCanvasSize` sets the backing
-  store **and** CSS (the HAL owns its canvas). `prepareCanvas` sets only the
-  backing store — React/layout owns the CSS size. Don't add CSS to
-  `prepareCanvas`.
-- **WebGPU uniform ring buffer.** `writeUniforms` post-increments the slot;
-  `drawPass` reads slot `n-1`. Always pair one `writeUniforms` with the
-  `drawPass`(es) that consume it; the per-frame cap is `MAX_UNIFORM_SLOTS`.
-- **`gpuDevice` is a shared singleton.** `getGpuDevice` serves both the HAL and
-  the LD-matrix WebGPU compute path (`plugins/variants/.../getLDMatrixGPU.ts`),
-  so its `?renderer=` override checks are load-bearing in both. The `.lost`
-  handler guards on device identity — keep that guard when touching recovery.
-  Tests reset via `resetGpuDeviceForTests`.
-- **Don't redefine lifecycle state.** `canvasDrawn`, `currentRenderingBackend`,
-  `renderTick`, `autorunsInstalled`, `renderError` and their actions belong to
-  `RenderLifecycleMixin`; plugins compose, never re-declare. `renderError` is
-  the single source for the `renderError` terminal phase (`displayPhase`) —
-  `useRenderingBackend` writes it via `setRenderError`; don't fork a
-  display-local copy.
-  `attachRenderingBackend` is idempotent — re-calling only swaps the backend
-  (context-loss recovery), and the upload autorun bumps `renderTick` so render
-  re-fires after every upload.
-- **Renderers stay stateless.** No per-region `Map` on a renderer class —
-  delegate buffer lifecycle to `hal.pruneRegions(active)` and read per-region
-  data from the model's map passed into `renderBlocks(blocks, regions, state)`.
-- **Multi-pass renderers bracket `sync()` with `hal.beginUpload()` /
-  `hal.endUpload()`.** Between them every `uploadBuffer` is recorded;
-  `endUpload` destroys any pass buffer _not_ rewritten — so a pass whose data
-  went empty (and was skipped by an `if (n > 0)` guard) can't leave a stale
-  buffer, with no per-region pre-wipe. This is what makes those guards safe by
-  construction; `GpuAlignmentsRenderer` relies on it. Single-pass renderers
-  (wiggle, hic, maf, variants, manhattan) don't need it — they `deleteRegion`
-  explicitly on the empty case right next to their one upload, which is already
-  unambiguous.
-- **Never hand-edit `*.generated.ts`.** Edit the `.slang` source and run
-  `pnpm gen:shaders` (see root `CLAUDE.md` and ADR-005).
+Rationale for the split and the static-import-only policy: ADR-030.

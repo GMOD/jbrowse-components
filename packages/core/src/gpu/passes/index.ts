@@ -22,7 +22,7 @@ import * as chevronShader from './shaders/chevron.generated.ts'
 import * as lineShader from './shaders/line.generated.ts'
 import * as rectShader from './shaders/rect.generated.ts'
 
-import type { PassDescriptor } from '../hal/types.ts'
+import type { PassDescriptor } from '@jbrowse/render-core/hal'
 
 export { arrowShader, chevronShader, lineShader, rectShader }
 

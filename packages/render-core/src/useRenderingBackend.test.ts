@@ -1,9 +1,9 @@
 import { act, renderHook } from '@testing-library/react'
 
+import { onDeviceLost } from './gpuDevice.ts'
 import { useRenderingBackend } from './useRenderingBackend.ts'
-import { onDeviceLost } from '../gpu/gpuDevice.ts'
 
-jest.mock('../gpu/gpuDevice.ts', () => ({
+jest.mock('./gpuDevice.ts', () => ({
   onDeviceLost: jest.fn(() => jest.fn()),
 }))
 
