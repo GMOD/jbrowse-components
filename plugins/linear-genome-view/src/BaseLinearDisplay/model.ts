@@ -486,19 +486,19 @@ function stateModelFactory() {
          * only, never sent to the worker. includes displayModel and callbacks
          */
         renderingProps() {
+          // displayModel + these callbacks are the interface a server-side
+          // renderer's React "Rendering" component uses to report mouse events
+          // back to the display. No in-tree renderer remains (the GPU stack
+          // bypasses this), so the only consumers are third-party runtime-loaded
+          // renderers; keep this contract stable for them.
           return {
             displayModel: self,
-            // @deprecated - renderers should call displayModel methods directly
-            // e.g. displayModel.setFeatureIdUnderMouse(featureId)
             onMouseMove(_: unknown, featureId?: string) {
               self.setFeatureIdUnderMouse(featureId)
             },
-            // @deprecated - renderers should call displayModel methods directly
-            // e.g. displayModel.setFeatureIdUnderMouse(undefined)
             onMouseLeave(_: unknown) {
               self.setFeatureIdUnderMouse(undefined)
             },
-            // @deprecated - renderers should call displayModel methods directly
             onContextMenu(_: unknown) {
               self.setContextMenuFeature(undefined)
               self.clearFeatureSelection()
