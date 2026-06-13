@@ -48,7 +48,9 @@ export default class RpcServer {
     if (!libRpc) {
       return
     }
-    const methodFn = this.methods[method]
+    const methodFn = Object.hasOwn(this.methods, method)
+      ? this.methods[method]
+      : undefined
     if (methodFn) {
       // wrap so a synchronous throw inside methodFn still routes to .throw()
       ;(async () => methodFn(data))().then(
