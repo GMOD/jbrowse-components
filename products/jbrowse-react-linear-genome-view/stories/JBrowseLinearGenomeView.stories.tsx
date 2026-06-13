@@ -2225,6 +2225,7 @@ function WithGroupByTagRender() {
             trackId: 'volvox_bam',
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
+              height: 400,
               groupBy: { type: 'tag', tag: 'HP' },
             },
           },
@@ -2281,9 +2282,11 @@ function App() {
           {
             trackId: 'volvox_bam',
             // pass groupBy as a flat key in displaySnapshot — it is collected
-            // into the display's configOverrides map on load
+            // into the display's configOverrides map on load.
+            // increase height so all groups (HP:0, HP:1, unassigned) are visible
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
+              height: 400,
               groupBy: { type: 'tag', tag: 'HP' },
             },
           },
