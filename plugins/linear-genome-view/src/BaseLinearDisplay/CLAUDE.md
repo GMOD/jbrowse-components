@@ -1,11 +1,8 @@
 # BaseLinearDisplay fetch system
 
-## Production code
-
-| File                                | Purpose                                                           |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| `models/FetchMixin.ts`              | Stop-token rotation, staleness, `fetchGeneration`, `isLoading`    |
-| `models/MultiRegionDisplayMixin.ts` | Four autoruns, `fetchRegions`, `loadedRegions`, overridable hooks |
+`models/FetchMixin.ts` (stop-token rotation, staleness, `fetchGeneration`,
+`isLoading`) + `models/MultiRegionDisplayMixin.ts` (the four autoruns,
+`fetchRegions`, `loadedRegions`, overridable hooks).
 
 ## MultiRegionDisplayMixin
 
@@ -104,15 +101,9 @@ axis, not a `loadedRegions` bounds axis).
 
 ## Test files
 
-| File                              | What it tests                                   | Simplifications vs production                                                            |
-| --------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `fetchLifecycle.test.ts`          | Fetch state machine (no MobX)                   | `withFetchLifecycle` bundles `runFetch` + `fetchRegions`; field names differ (see below) |
-| `fetchAutorun.test.ts`            | `boundsValid` / `isCacheValid` logic            | Wrapped `{ region, displayedRegionIndex }` shape; production blocks are flat             |
-| `fetchAutorunIntegration.test.ts` | MobX autorun reactivity + `untracked` semantics | no assembly check; visible blocks used directly instead of `bufferedVisibleRegions`      |
-
-### `fetchLifecycle.test.ts` field name mapping
-
-| Test                 | Production (`FetchMixin`)                  |
-| -------------------- | ------------------------------------------ |
-| `renderingStopToken` | `activeStopToken`                          |
-| `dataVersion`        | test-only (counts `setLoadedRegion` calls) |
+Tests in `fetchLifecycle.test.ts` / `fetchAutorun.test.ts` /
+`fetchAutorunIntegration.test.ts` use simplified shapes vs production — notably
+`fetchLifecycle` renames `activeStopToken`→`renderingStopToken` and adds a
+test-only `dataVersion` counter, and uses wrapped `{ region,
+displayedRegionIndex }` blocks where production blocks are flat. Check the test
+helpers before assuming a field name matches the model.

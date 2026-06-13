@@ -42,12 +42,10 @@ getter), so sort-_position_ changes re-layout without refetching. Never put a
 fetch-result derivative in `rpcProps()` (infinite loop — see
 `agent-docs/ARCHITECTURE.md`).
 
-`colorTagMap` is the canonical example of why: it is **derived from** worker
-output (`newTagValues`) yet was once also **fed back** to the worker via
-`rpcProps()` to bake per-read colors — a discover→assign→refetch loop. It is now
-a tier-2 setting: the worker reports raw per-read tag values (`readTagValues`)
-and the main thread bakes `readTagColors` in `laidOutPileupMap`
-(`readTagColors.ts`). Keep `colorTagMap` out of `rpcProps()`.
+`colorTagMap` is the canonical trap: it's derived from worker output, so feeding
+it back through `rpcProps()` makes a discover→assign→refetch loop. It's now
+tier-2 — worker reports raw `readTagValues`, main thread bakes `readTagColors` in
+`laidOutPileupMap`. Keep `colorTagMap` out of `rpcProps()`.
 
 ## Layout architecture
 
@@ -80,17 +78,12 @@ connecting lines / Flatbush.
 
 ## SVG export pipeline
 
-`renderSvg.tsx` makes a single call to the pure
-`drawAlignmentsToCtx(ctx, { laidOutPileupMap, arcsRpcDataMap }, blocks, state)`
-— that wraps `buildAlignmentsRegionMap` + `drawAlignmentBlocks`, the latter
-being the same draw entry point the on-screen
-`Canvas2DAlignmentsRenderer.renderBlocks` uses. The context is a real canvas
-(when `opts.rasterizeLayers`) or an `SvgCanvas` (vector). No headless renderer
-instance — the on-screen `Canvas2DAlignmentsRenderer.sync(sources)` calls the
-same `buildAlignmentsRegionMap` directly, so on-screen and export literally
-share the builder. Coverage, indicators, paired arcs, pileup reads, mismatches,
-soft/hard clips, modifications, and connecting lines all flow through the
-unified pass — do not reintroduce parallel SVG-only draw functions.
+On-screen and SVG export share one builder: `renderSvg.tsx` calls
+`drawAlignmentsToCtx` (wraps `buildAlignmentsRegionMap` + `drawAlignmentBlocks`)
+— the same `drawAlignmentBlocks` the on-screen `Canvas2DAlignmentsRenderer` uses,
+against a real canvas or an `SvgCanvas`. Everything (coverage, arcs, pileup,
+mismatches, clips, modifications, connecting lines) flows through this unified
+pass — don't reintroduce parallel SVG-only draw functions.
 
 ### Arc band placement (`computeArcBand`) and z-order
 

@@ -13,86 +13,24 @@ without pulling in all of core. If you find yourself reaching for something in
 `@jbrowse/core`, either it belongs here too, or the code belongs in core, not
 here.
 
-## Public surface
+## Public surface + naming
 
-`src/index.ts` is the **curated, `@experimental` public API** (the barrel a
-third-party plugin imports). Per-file subpath exports
-(`@jbrowse/render-core/hal`, `/renderBlock`, …) also exist for fine-grained
-imports. `webgpuUtils` and any shader codegen are intentionally NOT in the
-barrel — internal building blocks.
+`src/index.ts` is the curated `@experimental` public API; per-file subpaths
+(`@jbrowse/render-core/hal`, …) exist for fine-grained imports. `webgpuUtils` and
+shader codegen are intentionally out of the barrel. The old `@jbrowse/core/gpu/*`
+paths still resolve as re-export shims (migration aid, not a second API) — new
+code imports from `@jbrowse/render-core`. Shader codegen + the shared `passes/`
+and `.slang` modules stayed in `@jbrowse/core/gpu`.
 
-The old `@jbrowse/core/gpu/*` import paths still resolve: they are thin
-re-export **shims** pointing here, kept so the ~160 in-tree call sites didn't
-have to change in one pass. New code (in-tree or third-party) should import from
-`@jbrowse/render-core`. The shims are a migration aid, not a second public API.
+`Gpu` prefix = WebGL/WebGPU-specific (`GpuHal`, `gpuDevice`, the `Gpu*Backend`
+bases). Anything driving **both** GPU and Canvas2D is backend-agnostic with a
+neutral name (`RenderLifecycleMixin`, `PerRegionRenderingBackend`, `Canvas2D*`,
+`useRenderingBackend`). Don't put `Gpu` on an agnostic symbol — the same path
+runs the Canvas2D fallback. `useRenderingBackend` owns the whole canvas-init /
+context-loss / device-loss / pagehide / retry lifecycle.
 
-## What stayed in `@jbrowse/core/gpu`
-
-- `passes/` — the shared "simple shape" GPU passes (arrow/chevron/line/rect)
-  with their `.generated.ts` shaders (runtime code imported by the canvas
-  plugin).
-- `shaders/` — the shared cross-plugin `.slang` modules (`hpmath.slang`,
-  `colorPack.slang`), the `SHARED_INCLUDE` of the shader codegen (now its own
-  package, `@jbrowse/shader-tools`).
-- `glAttributeSync.test.ts` — a cross-plugin integration test (imports plugin
-  renderers), so it can't live in this leaf package.
-
-## Naming convention
-
-The `Gpu` prefix means **WebGL/WebGPU-specific** — `GpuHal` / `createGpuHal`,
-`gpuDevice`, `webgpuUtils`, and the GPU-side bases
-`GpuPerRegionRenderingBackend` / `GpuGlobalRenderingBackend`. Anything that
-drives **both** GPU and Canvas2D is backend-agnostic and carries a neutral name:
-`RenderLifecycleMixin`, the `PerRegionRenderingBackend` /
-`GlobalRenderingBackend` interfaces, the `Canvas2D*` bases, and the
-`useRenderingBackend` / `useTabVisibilityRerender` hooks. Don't reintroduce
-`Gpu` on an agnostic symbol — it reads as "GPU-only" and the same code path also
-runs the Canvas2D fallback. `Global*` mirrors `GlobalDataDisplayMixin` (the
-no-region-partition displays: HiC, LD, variant matrix).
-
-`useRenderingBackend` owns the whole canvas-init / context-loss / device-loss /
-pagehide / retry lifecycle and wires each event straight to the model's
-`RenderLifecycleMixin` actions (there is no separate generic `useRenderer` layer
-— it was folded in).
-
-**The conceptual reference is `agent-docs/ARCHITECTURE.md` → "GPU Rendering
-Architecture"** (life of a frame, the three upload patterns, hp-math precision,
-SVG export pipeline). This file documents only what bites when editing code _in
-this package_.
-
-## File map
-
-- `hal/types.ts` — the `GpuHal` interface every backend implements +
-  `PassDescriptor`.
-- `hal/webgl2Hal.ts`, `hal/webgpuHal.ts` — the two real HALs. They must stay
-  behaviorally identical; `hal/mockHal.ts` mirrors the same interface for tests.
-- `hal/regionRegistry.ts` — the per-`(region, pass)` buffer map both HALs own.
-  Centralizes delete/prune/get-or-create so the two implementations can't drift.
-- `hal/createHal.ts` — WebGPU → WebGL2 → null ladder (`?renderer=` pins it).
-- `gpuDevice.ts` — module-level WebGPU `GPUDevice` singleton + device-lost
-  recovery.
-- `createRenderingBackend.ts` — `createGpuHal` returns a HAL → GPU backend, else
-  Canvas2D backend; `createCanvas2DBackend` is the Canvas2D-only on-ramp.
-- `RenderLifecycleMixin.ts` — the upload + render autorun pair
-  (`attachRenderingBackend`).
-- `useRenderingBackend.ts`, `useTabVisibilityRerender.ts` — the React hooks (+ a
-  local `useEventCallback.ts` copy so the package stays core-free).
-- `installPerRegionLifecycle.ts` — per-key autoruns for per-region streamed
-  displays (O(N), not O(N²)).
-- `regionUploadSync.ts` — incremental whole-map upload diff for
-  canvas/alignments.
-- `renderingBackendBase.ts` — `GpuRenderingBackendBase` (hal + uniform scratch +
-  HAL-delegating dispose) and `Canvas2DRenderingBackendBase` (canvas + 2D ctx +
-  no-op dispose), shared by the per-region and global bases below.
-- `perRegionRenderingBackend.ts`, `globalRenderingBackend.ts` — backend base
-  classes (GPU + Canvas2D), each extending the shared base in
-  `renderingBackendBase.ts`.
-- `slangPass.ts` — turns a `.generated.ts` shader module into a
-  `PassDescriptor`.
-- `blockClipUtils.ts` — GPU clip math + CPU hp-math split
-  (`splitPositionWithFrac`).
-- `canvas2dUtils.ts` — Canvas2D clip / dpr / color-ramp helpers +
-  `clampBlockScissor`.
+**Conceptual reference: `agent-docs/ARCHITECTURE.md` → "GPU Rendering
+Architecture."** This file documents only what bites when editing _this package_.
 
 ## Local invariants
 
