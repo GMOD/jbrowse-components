@@ -1,7 +1,7 @@
-import { measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './MultiSampleVariantColorLegend.tsx'
+import { getMaxLabelWidth } from '../variantLegend.ts'
 
 import type { LegendBarModel } from './types.ts'
 
@@ -19,17 +19,11 @@ const MultiSampleVariantLegendBar = observer(
     const svgFontSize = Math.min(rowHeight, 12)
     const clipid = `legend-${typeof jest === 'undefined' ? id : 'test'}`
 
-    let labelWidth = 0
-    if (sources) {
-      for (const s of sources) {
-        const width = canDisplayLabels
-          ? measureText(s.name, svgFontSize) + 10
-          : 20
-        if (width > labelWidth) {
-          labelWidth = width
-        }
-      }
-    }
+    const labelWidth = getMaxLabelWidth({
+      sources,
+      fontSize: svgFontSize,
+      canDisplayLabels,
+    })
 
     const nrow = sources?.length ?? 0
     const startIdx =
