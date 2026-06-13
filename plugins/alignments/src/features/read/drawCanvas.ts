@@ -4,6 +4,11 @@ import {
   bpToScreenX,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import {
+  CHEVRON_DIRLESS_MIN_WIDTH_PX,
+  CHEVRON_PX,
+  PAIR_MIN_SPAN_PX,
+} from '../../LinearAlignmentsDisplay/shaders/slang/read.generated.ts'
 
 import type {
   DrawBlock,
@@ -25,18 +30,17 @@ interface DrawReadsRegion {
   insertSizeStats?: { upper: number; lower: number }
 }
 
-// Chevron geometry + gating — SYNC(read.slang). The shader draws an 8px
-// arrowhead protruding past the read's leading (fwd) / trailing (rev) edge once
-// the row is tall enough and zoomed in enough. Direction-uninformative reads
-// (normal scheme, mate unmapped, mate on another chromosome) need extra width
-// before the arrow appears, and paired reads whose mates have collapsed on
-// screen drop the arrow entirely. Read-edge clipping that the shader's
-// edgeFlags handle is covered here by the per-block scissor clip: drawing the
-// arrowhead at the true genomic edge means a region-clipped edge falls outside
-// the clip and is suppressed automatically.
-const CHEVRON_PX = 8
-const CHEVRON_DIRLESS_MIN_WIDTH_PX = 30
-const PAIR_MIN_SPAN_PX = 10
+// Chevron geometry + gating. CHEVRON_PX / CHEVRON_DIRLESS_MIN_WIDTH_PX /
+// PAIR_MIN_SPAN_PX are imported from read.generated.ts (read.slang is the
+// source of truth), so this Canvas2D path can't drift from the shader. The
+// shader draws an arrowhead protruding past the read's leading (fwd) / trailing
+// (rev) edge once the row is tall enough and zoomed in enough. Direction-
+// uninformative reads (normal scheme, mate unmapped, mate on another
+// chromosome) need extra width before the arrow appears, and paired reads whose
+// mates have collapsed on screen drop the arrow entirely. Read-edge clipping
+// that the shader's edgeFlags handle is covered here by the per-block scissor
+// clip: drawing the arrowhead at the true genomic edge means a region-clipped
+// edge falls outside the clip and is suppressed automatically.
 const OUTLINE_STYLE = 'rgba(0,0,0,0.3)'
 const OUTLINE_WIDTH = 0.5
 

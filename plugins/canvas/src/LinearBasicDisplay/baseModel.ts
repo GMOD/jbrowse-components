@@ -98,8 +98,14 @@ export function getView(self: IAnyStateTreeNode): LGV {
 
 export type { Region } from '@jbrowse/core/util'
 
+const ColorByAttributeDialog = lazy(
+  () => import('./components/ColorByAttributeDialog.tsx'),
+)
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
+
+const STRAND_COLOR_JEXL =
+  "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
 
 // rgba string used when outline is toggled on via the menu; schema stores the
 // raw color so users can still set their own via setOverride('outlineColor', …).
@@ -346,12 +352,14 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Current solid color for the picker swatch. Reads the runtime override
-        // (not the config slot) so a per-feature jexl color in the config never
-        // evaluates here without a feature; the picker seeds from the schema
-        // default until the user sets a solid override.
+        // Solid color for the picker swatch. Falls back to the schema default
+        // when no override is set or when the override is a jexl expression
+        // (per-feature coloring) — jexl strings aren't valid CSS colors.
         get featureColor() {
-          return self.getOverride<string>('color') ?? FEATURE_COLOR_DEFAULT
+          const override = self.getOverride<string>('color')
+          return override !== undefined && !override.startsWith('jexl:')
+            ? override
+            : FEATURE_COLOR_DEFAULT
         },
 
         /**
@@ -1456,6 +1464,33 @@ export default function baseStateModelFactory(
                   { model: self, handleClose },
                 ])
               },
+            },
+            {
+              label: 'Color by...',
+              icon: PaletteIcon,
+              subMenu: [
+                {
+                  label: 'Default (solid color)',
+                  onClick: () => {
+                    self.setFeatureColor(undefined)
+                  },
+                },
+                {
+                  label: 'Strand',
+                  onClick: () => {
+                    self.setFeatureColor(STRAND_COLOR_JEXL)
+                  },
+                },
+                {
+                  label: 'Attribute...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      ColorByAttributeDialog,
+                      { model: self, handleClose },
+                    ])
+                  },
+                },
+              ],
             },
           ]
         },

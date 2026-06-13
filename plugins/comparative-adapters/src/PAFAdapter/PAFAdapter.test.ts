@@ -12,6 +12,7 @@ function makeRecord(
   tname: string,
   mappingQual: number | undefined,
   blockLen: number,
+  numMatches?: number,
 ): PAFRecord {
   return {
     qname,
@@ -21,7 +22,7 @@ function makeRecord(
     tstart: 0,
     tend: blockLen,
     strand: 1,
-    extra: { mappingQual, blockLen },
+    extra: { mappingQual, blockLen, numMatches },
   }
 }
 
@@ -56,6 +57,19 @@ test('getWeightedMeans normalizes scores correctly across different quality pair
   getWeightedMeans(records)
   expect(records[0]!.extra.meanScore).toBe(1)
   expect(records[1]!.extra.meanScore).toBe(0)
+})
+
+test('getWeightedMeans computes a true length-weighted mean identity per pair', () => {
+  // Two alignments in the same pair: 90% identity over 1000bp and 50% over
+  // 1000bp → length-weighted mean = (0.9*1000 + 0.5*1000)/2000 = 0.7. Unlike
+  // meanScore, meanIdentity is NOT min-max normalized.
+  const records = [
+    makeRecord('q1', 't1', 60, 1000, 900),
+    makeRecord('q1', 't1', 60, 1000, 500),
+  ]
+  getWeightedMeans(records)
+  expect(records[0]!.extra.meanIdentity).toBeCloseTo(0.7)
+  expect(records[1]!.extra.meanIdentity).toBeCloseTo(0.7)
 })
 
 function makeAdapter() {

@@ -532,7 +532,9 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
     >
       <g transform={`translate(0, ${yShift})`}>
         {readConnectionsDown ? (
-          <g transform={`translate(${AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET}, 0)`}>
+          <g
+            transform={`translate(${AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET}, 0)`}
+          >
             <YScaleBar ticks={insertSizeTicks} orientation="left" />
           </g>
         ) : (

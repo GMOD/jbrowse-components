@@ -16,6 +16,22 @@ export function pickColor(
   )
 }
 
+// Build a group→color map in first-appearance order so every source in the
+// same group shares a palette entry regardless of display mode.
+function buildGroupColors(sources: readonly Source[]): Map<string, string> {
+  const seen = new Set<string>()
+  const order: string[] = []
+  for (const s of sources) {
+    if (s.group !== undefined && !seen.has(s.group)) {
+      seen.add(s.group)
+      order.push(s.group)
+    }
+  }
+  return new Map(
+    order.map((g, i) => [g, overlayColors[i % overlayColors.length]!]),
+  )
+}
+
 // Merge adapter fields with the persisted layout, in layout order (or
 // adapter order when no layout has been set yet). No subtree filter and no
 // overlay-palette synthesis — this is what the edit dialog should see, so
@@ -45,9 +61,11 @@ export function buildEditableSources(
 }
 
 // What the canvas/SVG renderers consume: editable sources after subtree
-// filter, with overlay-palette synthesis filling unset colors. Palette index
-// is the post-filter position, so the visible rows always get the most
-// distinct hues (set1[0], set1[1], …) — see the re-index test.
+// filter, with color synthesis filling unset colors. Priority:
+//   explicit user color > group-derived color > overlay index palette > undefined
+// Group colors apply in both row and overlay mode so samples from the same
+// group always share a color. The overlay index palette fills remaining gaps
+// only in overlay mode (existing behavior for tracks without groups).
 export function buildSources(
   editableSources: Source[],
   subtreeFilter: readonly string[] | undefined,
@@ -57,8 +75,18 @@ export function buildSources(
   const base = filter
     ? editableSources.filter(s => filter.has(s.name))
     : editableSources
+  const groupColors = base.some(s => s.group !== undefined)
+    ? buildGroupColors(base)
+    : undefined
   return base.map((s, i) => ({
     ...s,
-    color: pickColor(i, isOverlay, s.color),
+    color:
+      s.color !== undefined
+        ? s.color
+        : s.group !== undefined
+          ? groupColors!.get(s.group)
+          : isOverlay
+            ? overlayColors[i % overlayColors.length]
+            : undefined,
   }))
 }

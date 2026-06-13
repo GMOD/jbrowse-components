@@ -5,6 +5,7 @@ import Palette from '@mui/icons-material/Palette'
 
 import { radioItems } from './menuHelpers.ts'
 import { modificationData } from '../../shared/modificationData.ts'
+import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
 
 import type {
   ArcColorByType,
@@ -113,6 +114,12 @@ function getModificationsSubMenu(model: ModificationsModel) {
   const isOnlyKey = (key: string) =>
     visibleModificationTypes.every(k => k === key || hidden.includes(k))
 
+  // omit threshold at its default so default sessions don't carry the field
+  const thresholdField =
+    modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD
+      ? {}
+      : { threshold: modificationThreshold }
+
   const applyModMode = (isTwoColor: boolean, onlyKey?: string) => {
     model.setColorScheme({
       type: 'modifications',
@@ -125,7 +132,7 @@ function getModificationsSubMenu(model: ModificationsModel) {
               ),
             }
           : {}),
-        threshold: modificationThreshold,
+        ...thresholdField,
       },
     })
   }
@@ -134,7 +141,7 @@ function getModificationsSubMenu(model: ModificationsModel) {
     model.setColorScheme({
       type: 'methylation',
       modifications: {
-        threshold: modificationThreshold,
+        ...thresholdField,
         ...(context === 'CG' ? {} : { cytosineContext: context }),
       },
     })

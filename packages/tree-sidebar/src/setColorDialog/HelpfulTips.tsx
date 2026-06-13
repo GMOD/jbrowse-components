@@ -13,6 +13,11 @@ export default function HelpfulTips() {
           Columns in the table can be hidden using a vertical '...' menu on the
           right side of each column
         </li>
+        <li>
+          Use "Show Bulk row editor" to paste CSV/TSV to set colors, groups, or
+          other fields for many sources at once. Click "Copy current as CSV"
+          first to get a template you can edit in a spreadsheet.
+        </li>
       </ul>
     </>
   )

@@ -62,6 +62,7 @@ import {
 } from './sectionLayout.ts'
 import { computeArcsRegionMap } from '../features/arcs/compute.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
+import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getColorForModification } from '../util.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
@@ -82,6 +83,7 @@ import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type {
   ArcColorByType,
   ColorBy,
+  ColorSchemeType,
   FilterBy,
   GroupBy,
   ModificationTypeWithColor,
@@ -195,13 +197,15 @@ export function maxRowsFor(maxHeight: number, rowHeight: number) {
   )
 }
 
-// colorBy.type → shader colorScheme index. Aliases listed explicitly:
+// colorBy.type → shader colorScheme index. Typed as a total map over
+// ColorSchemeType so a newly added scheme name fails to compile until it is
+// given a shader index here. Aliases listed explicitly:
 //   stranded → firstOfPairStrand
-//   methylation → modifications (same shader path, different config)
+//   methylation / bisulfite → modifications (same shader path, different config)
 //   perBaseQuality / perBaseLetter → normal (the per-base overlay paints
 //     colored rects on top of a neutral read body; shader uses normal coloring
 //     for the background pass).
-const COLOR_BY_TO_SCHEME: Record<string, number> = {
+const COLOR_BY_TO_SCHEME: Record<ColorSchemeType, number> = {
   normal: ColorScheme.normal,
   strand: ColorScheme.strand,
   mappingQuality: ColorScheme.mappingQuality,
@@ -1017,14 +1021,18 @@ export default function stateModelFactory(
          * #getter
          */
         get modificationThreshold() {
-          return self.colorBy.modifications?.threshold ?? 10
+          return (
+            self.colorBy.modifications?.threshold ??
+            DEFAULT_MODIFICATION_THRESHOLD
+          )
         },
 
         /**
          * #getter
          */
         get colorSchemeIndex() {
-          return COLOR_BY_TO_SCHEME[self.colorBy.type] ?? ColorScheme.normal
+          // No fallback: COLOR_BY_TO_SCHEME is total over ColorSchemeType.
+          return COLOR_BY_TO_SCHEME[self.colorBy.type]
         },
 
         /**

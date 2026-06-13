@@ -1,4 +1,16 @@
 import { ColorScheme } from './model.ts'
+import {
+  CS_FIRST_OF_PAIR,
+  CS_INSERT_SIZE,
+  CS_IS_AND_ORIENT,
+  CS_IS_GRADIENT,
+  CS_MAPQ,
+  CS_MODIFICATIONS,
+  CS_NORMAL,
+  CS_PAIR_ORIENT,
+  CS_STRAND,
+  CS_TAG,
+} from './shaders/slang/read.generated.ts'
 
 describe('ColorScheme', () => {
   test('has all expected color scheme indices', () => {
@@ -17,5 +29,24 @@ describe('ColorScheme', () => {
   test('all indices are unique', () => {
     const values = Object.values(ColorScheme)
     expect(new Set(values).size).toBe(values.length)
+  })
+
+  // Guards the codegen wiring: ColorScheme is built from read.slang's exported
+  // CS_* constants (read.generated.ts). A stale regen or manual edit that
+  // decoupled them would make the shader switch and the JS/Canvas2D path
+  // silently disagree on indices — this catches it.
+  test('matches the shader-generated CS_* constants', () => {
+    expect(ColorScheme).toEqual({
+      normal: CS_NORMAL,
+      strand: CS_STRAND,
+      mappingQuality: CS_MAPQ,
+      insertSize: CS_INSERT_SIZE,
+      firstOfPairStrand: CS_FIRST_OF_PAIR,
+      pairOrientation: CS_PAIR_ORIENT,
+      insertSizeAndOrientation: CS_IS_AND_ORIENT,
+      modifications: CS_MODIFICATIONS,
+      tag: CS_TAG,
+      insertSizeGradient: CS_IS_GRADIENT,
+    })
   })
 })

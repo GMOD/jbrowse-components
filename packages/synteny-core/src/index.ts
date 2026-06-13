@@ -14,6 +14,13 @@ export {
   strandCigarColors,
 } from './colorUtils.ts'
 export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
+export {
+  DEFAULT_IDENTITY_PIVOT,
+  continuousRampConfig,
+  divergingIdentityRgb,
+  hslRampRgb,
+} from './colorRamps.ts'
+export type { Rgb } from './colorRamps.ts'
 export type { SyntenyViewSharedInit } from './SyntenyViewInit.ts'
 export { default as SliderTooltip } from './SliderTooltip.tsx'
 export { default as SettingsPopover } from './SettingsPopover.tsx'

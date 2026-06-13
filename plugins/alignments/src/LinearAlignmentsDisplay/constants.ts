@@ -10,17 +10,33 @@ export {
 } from '@jbrowse/alignments-core'
 export type { InsertionType } from '@jbrowse/alignments-core'
 
+import {
+  CS_FIRST_OF_PAIR,
+  CS_INSERT_SIZE,
+  CS_IS_AND_ORIENT,
+  CS_IS_GRADIENT,
+  CS_MAPQ,
+  CS_MODIFICATIONS,
+  CS_NORMAL,
+  CS_PAIR_ORIENT,
+  CS_STRAND,
+  CS_TAG,
+} from './shaders/slang/read.generated.ts'
+
+// Maps each shader color-scheme name to its dispatch index. The values come
+// straight from read.slang's `export-consts` (see read.generated.ts), so this
+// map and the shader switch are generated from one source and cannot drift.
 export const ColorScheme = {
-  normal: 0,
-  strand: 1,
-  mappingQuality: 2,
-  insertSize: 3,
-  firstOfPairStrand: 4,
-  pairOrientation: 5,
-  insertSizeAndOrientation: 6,
-  modifications: 7,
-  tag: 8,
-  insertSizeGradient: 9,
+  normal: CS_NORMAL,
+  strand: CS_STRAND,
+  mappingQuality: CS_MAPQ,
+  insertSize: CS_INSERT_SIZE,
+  firstOfPairStrand: CS_FIRST_OF_PAIR,
+  pairOrientation: CS_PAIR_ORIENT,
+  insertSizeAndOrientation: CS_IS_AND_ORIENT,
+  modifications: CS_MODIFICATIONS,
+  tag: CS_TAG,
+  insertSizeGradient: CS_IS_GRADIENT,
 } as const
 
 export const ALIGNMENTS_FUDGE_FACTOR = 0.8

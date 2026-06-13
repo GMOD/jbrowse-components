@@ -2,13 +2,17 @@
 // segment. Verts 0..5 draw the body rectangle; 6..8 draw a chevron tip
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
+//! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX
 
 import alignmentsUniforms;
 import colorPack;
 
 
 public static const uint VERTS_PER_INSTANCE = 9u;
-// Color scheme constants — SYNC(rendererTypes.ts colorScheme enum)
+// Color scheme constants. SINGLE SOURCE OF TRUTH for the color-scheme index:
+// the `export-consts` directive above emits these into read.generated.ts, and
+// the TS `ColorScheme` map (constants.ts) is built from those exports — so the
+// shader switch below and the JS/Canvas2D path can never disagree on indices.
 static const int CS_NORMAL        = 0;
 static const int CS_STRAND        = 1;
 static const int CS_MAPQ          = 2;
@@ -21,6 +25,10 @@ static const int CS_TAG           = 8;
 static const int CS_IS_GRADIENT   = 9;
 
 static const int CM_LINKED_READ = 1;
+
+// Arrowhead size in CSS px (protrusion past the read edge + cap dimensions).
+// Exported so features/read/drawCanvas.ts (Canvas2D) uses the same value.
+static const float CHEVRON_PX = 8.0;
 
 // When a read's direction is uninformative (normal color scheme, mate unmapped,
 // or mate on another chromosome), only draw its strand arrow once the read is at
@@ -74,14 +82,20 @@ float3 insertSizeColor(float is, Uniforms u) {
 }
 
 float3 insertSizeGradientColor(float is, Uniforms u) {
+  // Normalize by the span (upper-lower = 6σ) so severity is measured in σ and
+  // saturates at ~9σ from the mean, independent of library insert-size scale.
+  // Must match insertSizeGradient in colorUtils.ts (Canvas2D / SVG export).
   float3 base = unpackRGBA(u.colorPairLR).xyz;
-  if (is > u.insertUpper) {
-    float t = clamp((is - u.insertUpper) / u.insertUpper, 0.0, 1.0);
-    return lerp(base, unpackRGBA(u.colorLongInsert).xyz, t);
-  }
-  if (is < u.insertLower) {
-    float t = clamp((u.insertLower - is) / u.insertLower, 0.0, 1.0);
-    return lerp(base, unpackRGBA(u.colorShortInsert).xyz, t);
+  float span = u.insertUpper - u.insertLower;
+  if (span > 0.0) {
+    if (is > u.insertUpper) {
+      float t = clamp((is - u.insertUpper) / span, 0.0, 1.0);
+      return lerp(base, unpackRGBA(u.colorLongInsert).xyz, t);
+    }
+    if (is < u.insertLower) {
+      float t = clamp((u.insertLower - is) / span, 0.0, 1.0);
+      return lerp(base, unpackRGBA(u.colorShortInsert).xyz, t);
+    }
   }
   return base;
 }
@@ -179,7 +193,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float syMid = (syTop + syBot) * 0.5;
 
   // 8px-wide chevron when featHeight>=3 and zoom supports it.
-  float chevronClip = 8.0 / u.canvasW * 2.0;
+  float chevronClip = CHEVRON_PX / u.canvasW * 2.0;
   float featWPx = (sx2 - sx1) * u.canvasW * 0.5;
   o.featSize = float2(featWPx, u.featHeight);
 
@@ -217,7 +231,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     bool drawFwd = inst.strand > 0 && isLast;
     bool drawRev = inst.strand < 0 && isFirst;
     ef = 2.0;
-    float chevW = 8.0;
+    float chevW = CHEVRON_PX;
     float halfH = u.featHeight * 0.5;
     float alt = chevW * u.featHeight / sqrt(halfH * halfH + chevW * chevW);
     if (drawFwd) {

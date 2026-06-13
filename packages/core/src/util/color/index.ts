@@ -85,9 +85,11 @@ export { isNamedColor, namedColorToHex } from './cssColorsLevel4.ts'
  * @returns A CSS color string in HSL format
  */
 export function randomColor(str: string): string {
-  let sum = 0
+  // djb2 hash — much better distribution than a char-code sum (anagrams and
+  // similar strings get well-separated hues).
+  let hash = 5381
   for (let i = 0; i < str.length; i++) {
-    sum += str.charCodeAt(i)
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i)
   }
-  return `hsl(${sum * 10}, 50%, 50%)`
+  return `hsl(${Math.abs(hash) % 360}, 55%, 45%)`
 }

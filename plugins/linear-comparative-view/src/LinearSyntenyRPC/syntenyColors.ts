@@ -1,14 +1,13 @@
 import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/alignments-core'
 import { category10 } from '@jbrowse/core/ui/colors'
+import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import {
-  cssColorToABGR,
-  getBlue,
-  getGreen,
-  getRed,
-  packAbgr,
-  parseCssColor,
-} from '@jbrowse/core/util/colorBits'
-import { colorSchemes, hashString } from '@jbrowse/synteny-core'
+  colorSchemes,
+  continuousRampConfig,
+  divergingIdentityRgb,
+  hashString,
+  hslRampRgb,
+} from '@jbrowse/synteny-core'
 
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
@@ -34,24 +33,32 @@ const BLACK = packAbgr(0, 0, 0, 255)
 
 const category10Packed = category10.map(hex => cssColorToABGR(hex))
 
-// Precomputed 256-bin LUTs mapping a normalized [0,1] value to packed ABGR
-// across an HSL hue range. Hue scales chosen to match the dotplot view:
-// 120° (red→green) for identity, 200° (red→cyan) for mean-score, 60°
-// (red→yellow) for MAPQ. Negative inputs (missing data) fall back to
-// DEFAULT_COLOR at the call site.
-function buildHslLut(hueRange: number) {
+// Precomputed 256-bin LUTs mapping a normalized [0,1] value to packed ABGR.
+// The ramp math lives in @jbrowse/synteny-core so the dotplot view evaluates
+// the identical curve per feature — the two views can no longer drift (they
+// previously disagreed on MAPQ scaling). Negative inputs (missing data) fall
+// back to DEFAULT_COLOR at the call site.
+function buildLut(toRgb: (norm: number) => readonly [number, number, number]) {
   const lut = new Uint32Array(256)
   for (let i = 0; i < 256; i++) {
-    const hue = (i / 255) * hueRange
-    const c = parseCssColor(`hsl(${hue}, 100%, 40%)`)
-    lut[i] = packAbgr(getRed(c), getGreen(c), getBlue(c), 255)
+    const [r, g, b] = toRgb(i / 255)
+    lut[i] = packAbgr(r, g, b, 255)
   }
   return lut
 }
 
-const IDENTITY_LUT = buildHslLut(120)
-const MEAN_SCORE_LUT = buildHslLut(200)
-const MAPQ_LUT = buildHslLut(60)
+const IDENTITY_LUT = buildLut(norm =>
+  hslRampRgb(norm, continuousRampConfig.identity.hueRange),
+)
+const MEAN_MAPQ_LUT = buildLut(norm =>
+  hslRampRgb(norm, continuousRampConfig.meanQueryMappingQuality.hueRange),
+)
+const MAPQ_LUT = buildLut(norm =>
+  hslRampRgb(norm, continuousRampConfig.mappingQuality.hueRange),
+)
+// Diverging LUT is indexed by identity directly (0..1) since the pivot remap
+// inside divergingIdentityRgb is non-linear — bin i encodes identity i/255.
+const IDENTITY_DIVERGING_LUT = buildLut(divergingIdentityRgb)
 
 function lutLookup(lut: Uint32Array, value: number, max = 1) {
   if (value < 0) {
@@ -64,9 +71,11 @@ function lutLookup(lut: Uint32Array, value: number, max = 1) {
 interface ColorInputs {
   strands: Int8Array
   refNames: readonly string[]
+  mateRefNames: readonly string[]
   identities: Float32Array
   mappingQuals: Float32Array
   meanScores: Float32Array
+  meanIdentities: Float32Array
 }
 
 function createColorFunction(
@@ -76,26 +85,42 @@ function createColorFunction(
   switch (colorBy) {
     case 'identity':
       return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
-    case 'mappingQuality':
-      return index => lutLookup(MAPQ_LUT, d.mappingQuals[index]!, 60)
+    case 'identityDiverging':
+      return index => lutLookup(IDENTITY_DIVERGING_LUT, d.identities[index]!)
     case 'meanQueryIdentity':
-      return index => lutLookup(MEAN_SCORE_LUT, d.meanScores[index]!)
+      return index => lutLookup(IDENTITY_LUT, d.meanIdentities[index]!)
+    case 'meanQueryMappingQuality':
+      return index => lutLookup(MEAN_MAPQ_LUT, d.meanScores[index]!)
+    case 'mappingQuality':
+      return index =>
+        lutLookup(
+          MAPQ_LUT,
+          d.mappingQuals[index]!,
+          continuousRampConfig.mappingQuality.maxValue,
+        )
     case 'strand':
       return index => (d.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
-    case 'query': {
-      const colorCache = new Map<string, number>()
-      return index => {
-        const refName = d.refNames[index]!
-        let c = colorCache.get(refName)
-        if (c === undefined) {
-          c = category10Packed[hashString(refName) % category10Packed.length]!
-          colorCache.set(refName, c)
-        }
-        return c
-      }
-    }
+    case 'query':
+      return nameColorFunction(d.refNames)
+    case 'target':
+      return nameColorFunction(d.mateRefNames)
     case 'default':
       return () => DEFAULT_COLOR
+  }
+}
+
+// Hash a per-feature name (query or target refName) to a stable category10
+// color, cached so repeated names don't re-hash.
+function nameColorFunction(names: readonly string[]) {
+  const colorCache = new Map<string, number>()
+  return (index: number) => {
+    const name = names[index]!
+    let c = colorCache.get(name)
+    if (c === undefined) {
+      c = category10Packed[hashString(name) % category10Packed.length]!
+      colorCache.set(name, c)
+    }
+    return c
   }
 }
 

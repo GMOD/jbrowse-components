@@ -4,8 +4,10 @@
 // blacking them out. The tint fades with on-screen width so wide/zoomed-in
 // overlaps read clearly while sub-pixel overlaps (zoomed out) disappear.
 // Row-height gating happens at the draw call (featureHeight >= 3).
-// Mirrors drawOverlaps() in features/overlap/drawCanvas.ts — keep constants in sync.
+// Source of truth for the overlap tint constants: features/overlap/drawCanvas.ts
+// (Canvas2D) imports the exported values, so the two paths cannot drift.
 //! targets: wgsl, glsl
+//! export-consts: OVERLAP_ALPHA, FADE_LO_PX, FADE_HI_PX
 
 import alignmentsUniforms;
 import hpmath;

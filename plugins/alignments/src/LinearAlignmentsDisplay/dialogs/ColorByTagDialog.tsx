@@ -16,11 +16,12 @@ const ColorByTagDialog = observer(function ColorByTagDialog({
   handleClose,
 }: {
   model: {
+    colorBy?: { tag?: string }
     setColorScheme: (arg: Tag) => void
   }
   handleClose: () => void
 }) {
-  const [tag, setTag] = useState('')
+  const [tag, setTag] = useState(model.colorBy?.tag ?? '')
   const validTag = TAG_REGEX.test(tag)
 
   return (

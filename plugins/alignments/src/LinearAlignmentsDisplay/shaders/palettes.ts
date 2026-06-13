@@ -12,12 +12,15 @@ import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import type { RGBColor } from './colors.ts'
 
+// Pixels of padding above the arc apex. Re-exported from arc.generated.ts
+// (arc.slang is the source of truth) so the shader and the Canvas2D / SVG arc
+// renderers share one value.
+export { ARC_HEIGHT_MARGIN } from './slang/arc.generated.ts'
+
 // Palette indices match the Slang arc shaders (u.arcColor0..7). Canvas2D / SVG
 // arc renderers reuse these same arrays, and the interchromosomal connector
 // ticks (arcLine) index into this palette too. Adding a color here requires
 // growing the Slang Uniforms struct and the writeUniforms() palette copy.
-// Pixels of padding above the arc apex (must match arc.slang).
-export const ARC_HEIGHT_MARGIN = 8
 
 const rgb = cssColorToNormalizedRgb
 

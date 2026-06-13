@@ -15,8 +15,10 @@ export interface DotplotRpcData {
   parsedCigars: number[][]
   identities: Float32Array
   meanScores: Float32Array
+  meanIdentities: Float32Array
   mappingQuals: Float32Array
   refNames: string[]
+  mateRefNames: string[]
   totalFeatureCount: number
   skippedFeatureCount: number
 }

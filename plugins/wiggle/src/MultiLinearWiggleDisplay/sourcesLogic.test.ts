@@ -146,4 +146,31 @@ describe('buildSources', () => {
     // 'b' had no explicit color, so palette synthesizes by its index
     expect(out[1]!.color).toBe(overlayColors[1])
   })
+
+  it('assigns same color to sources sharing a group, in both row and overlay mode', () => {
+    const editable = buildEditableSources(
+      [
+        { name: 'a', group: 'tumor' },
+        { name: 'b', group: 'normal' },
+        { name: 'c', group: 'tumor' },
+      ],
+      [],
+    )
+    for (const isOverlay of [false, true]) {
+      const out = buildSources(editable, undefined, isOverlay)
+      // 'a' and 'c' share 'tumor' → same color
+      expect(out[0]!.color).toBe(out[2]!.color)
+      // 'b' is 'normal' → different color from 'tumor'
+      expect(out[1]!.color).not.toBe(out[0]!.color)
+    }
+  })
+
+  it('explicit color takes priority over group color', () => {
+    const editable = buildEditableSources(
+      [{ name: 'a', color: '#ff0000', group: 'tumor' }],
+      [],
+    )
+    const out = buildSources(editable, undefined, false)
+    expect(out[0]!.color).toBe('#ff0000')
+  })
 })

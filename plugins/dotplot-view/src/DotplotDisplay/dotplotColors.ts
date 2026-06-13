@@ -6,35 +6,20 @@ import {
   packAbgr,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
-import { hashString } from '@jbrowse/synteny-core'
+import {
+  continuousRampConfig,
+  divergingIdentityRgb,
+  hashString,
+  hslRampRgb,
+} from '@jbrowse/synteny-core'
 
 import type { DotplotRpcData } from './types.ts'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { Rgb, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export type DotplotColorFn = (data: DotplotRpcData, index: number) => number
 
 function packColor(r: number, g: number, b: number, alpha: number) {
   return packAbgr(r, g, b, Math.round(alpha * 255))
-}
-
-// Pure HSL → packed-RGBA conversion. Previously this round-tripped through a
-// `hsl(...)` CSS string + parseCssColor; doing the math directly avoids
-// allocating a string per feature for identity/score-colored dotplots.
-// Reference: https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB_alternative
-function hslColor(hue: number, alpha: number) {
-  const s = 1
-  const l = 0.4
-  const a = s * Math.min(l, 1 - l)
-  const f = (n: number) => {
-    const k = (n + hue / 30) % 12
-    return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
-  }
-  return packColor(
-    Math.round(f(0) * 255),
-    Math.round(f(8) * 255),
-    Math.round(f(4) * 255),
-    alpha,
-  )
 }
 
 const category10Rgb = category10.map(hex => {
@@ -50,17 +35,26 @@ export function unpackColorToCSS(packed: number) {
   return `rgba(${r},${g},${b},${a})`
 }
 
-function scaledHueColorFn(
+// Bake a ramp into a 256-entry packed-ABGR LUT once per color-function build, so
+// the per-feature path (thousands of segments) is a single array index — no HSL
+// math, allocation, or destructuring in the hot loop. `max` normalizes the raw
+// value into the [0,1] LUT domain; negative values are the worker's
+// missing-data sentinel and paint red.
+function rampColorFn(
   values: Float32Array,
-  hueScale: number,
+  toRgb: (norm: number) => Rgb,
+  max: number,
   alpha: number,
 ): DotplotColorFn {
-  // Negative values are the "missing data" sentinel (-1 in the worker); paint
-  // red so they stand out against the otherwise green/yellow identity gradient.
   const missing = packColor(255, 0, 0, alpha)
+  const lut = new Uint32Array(256)
+  for (let i = 0; i < 256; i++) {
+    const [r, g, b] = toRgb(i / 255)
+    lut[i] = packColor(r, g, b, alpha)
+  }
   return (_data, i) => {
     const v = values[i]!
-    return v >= 0 ? hslColor(v * hueScale, alpha) : missing
+    return v < 0 ? missing : lut[Math.min(255, ((v / max) * 255 + 0.5) | 0)]!
   }
 }
 
@@ -70,11 +64,14 @@ function strandColorFn(alpha: number): DotplotColorFn {
   return (d, i) => (d.strands[i] === -1 ? neg : pos)
 }
 
-function queryColorFn(alpha: number): DotplotColorFn {
+function nameColorFn(
+  alpha: number,
+  pick: (d: DotplotRpcData, i: number) => string,
+): DotplotColorFn {
   const palette = category10Rgb.map(([r, g, b]) => packColor(r, g, b, alpha))
   const cache = new Map<string, number>()
   return (d, i) => {
-    const name = d.refNames[i]!
+    const name = pick(d, i)
     let color = cache.get(name)
     if (color === undefined) {
       color = palette[hashString(name) % palette.length]!
@@ -88,6 +85,20 @@ function constantColorFn(packed: number): DotplotColorFn {
   return () => packed
 }
 
+function hslRampColorFn(
+  values: Float32Array,
+  mode: keyof typeof continuousRampConfig,
+  alpha: number,
+): DotplotColorFn {
+  const { hueRange, maxValue } = continuousRampConfig[mode]
+  return rampColorFn(
+    values,
+    norm => hslRampRgb(norm, hueRange),
+    maxValue,
+    alpha,
+  )
+}
+
 export function createDotplotColorFunction(
   colorBy: SyntenyColorBy,
   alpha: number,
@@ -97,16 +108,23 @@ export function createDotplotColorFunction(
     case 'strand':
       return strandColorFn(alpha)
     case 'query':
-      return queryColorFn(alpha)
-    // Hue scales chosen so the visible range maps to a meaningful gradient:
-    // identity (0..1) → red→green; meanScore (0..1) → red→blue; MAPQ (0..60)
-    // → red→yellow (MAPQ is already a small-int hue).
+      return nameColorFn(alpha, (d, i) => d.refNames[i]!)
+    case 'target':
+      return nameColorFn(alpha, (d, i) => d.mateRefNames[i]!)
     case 'identity':
-      return scaledHueColorFn(data.identities, 120, alpha)
+      return hslRampColorFn(data.identities, 'identity', alpha)
+    // Diverging LUT is indexed by identity directly; the pivot remap is inside
+    // divergingIdentityRgb, so its normalization max is 1.
+    case 'identityDiverging':
+      return rampColorFn(data.identities, divergingIdentityRgb, 1, alpha)
     case 'meanQueryIdentity':
-      return scaledHueColorFn(data.meanScores, 200, alpha)
+      return hslRampColorFn(data.meanIdentities, 'meanQueryIdentity', alpha)
+    case 'meanQueryMappingQuality':
+      return hslRampColorFn(data.meanScores, 'meanQueryMappingQuality', alpha)
     case 'mappingQuality':
-      return scaledHueColorFn(data.mappingQuals, 1, alpha)
+      return hslRampColorFn(data.mappingQuals, 'mappingQuality', alpha)
+    // Dotplot keeps a plain black default (its conventional line color) rather
+    // than the synteny ribbon's red.
     case 'default':
       return constantColorFn(packColor(0, 0, 0, alpha))
   }

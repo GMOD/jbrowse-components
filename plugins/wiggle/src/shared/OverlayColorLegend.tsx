@@ -1,25 +1,90 @@
 import { measureText } from '@jbrowse/core/util'
 
+interface LegendSource {
+  name: string
+  label?: string
+  color?: string
+  labelColor?: string
+  group?: string
+}
+
+interface LegendEntry {
+  key: string
+  label: string
+  color?: string
+  labelColor?: string
+}
+
+// When sources have groups and every source within a group shares the same
+// color, collapse to one legend entry per group (showing the group name) so
+// a 50-source track with 2 groups shows 2 legend rows, not 50.
+// Falls back to per-source entries for ungrouped sources or groups with
+// inconsistent colors (e.g. the user explicitly overrode one sample).
+function buildLegendEntries(sources: LegendSource[]): LegendEntry[] {
+  if (!sources.some(s => s.group !== undefined)) {
+    return sources.map(s => ({
+      key: s.name,
+      label: s.label ?? s.name,
+      color: s.color,
+      labelColor: s.labelColor,
+    }))
+  }
+
+  const groupColor = new Map<string, string | undefined>()
+  const groupLabelColor = new Map<string, string | undefined>()
+  const groupConsistent = new Map<string, boolean>()
+
+  for (const s of sources) {
+    if (s.group === undefined) {
+      continue
+    }
+    if (!groupColor.has(s.group)) {
+      groupColor.set(s.group, s.color)
+      groupLabelColor.set(s.group, s.labelColor)
+      groupConsistent.set(s.group, true)
+    } else if (groupColor.get(s.group) !== s.color) {
+      groupConsistent.set(s.group, false)
+    }
+  }
+
+  const seen = new Set<string>()
+  const entries: LegendEntry[] = []
+  for (const s of sources) {
+    if (s.group !== undefined && groupConsistent.get(s.group)) {
+      if (!seen.has(s.group)) {
+        seen.add(s.group)
+        entries.push({
+          key: `group:${s.group}`,
+          label: s.group,
+          color: groupColor.get(s.group),
+          labelColor: groupLabelColor.get(s.group),
+        })
+      }
+    } else {
+      entries.push({
+        key: s.name,
+        label: s.label ?? s.name,
+        color: s.color,
+        labelColor: s.labelColor,
+      })
+    }
+  }
+  return entries
+}
+
 export default function OverlayColorLegend({
   sources,
   fallbackColor,
   canvasWidth,
 }: {
-  sources: {
-    name: string
-    label?: string
-    color?: string
-    labelColor?: string
-  }[]
+  sources: LegendSource[]
   fallbackColor: string
   canvasWidth: number
 }) {
-  // `label` from the adapter config is the displayed string when present;
-  // `name` stays the row identity.
-  const display = sources.map(s => s.label ?? s.name)
+  const entries = buildLegendEntries(sources)
   let labelWidth = 0
-  for (const d of display) {
-    const w = measureText(d, 10)
+  for (const e of entries) {
+    const w = measureText(e.label, 10)
     if (w > labelWidth) {
       labelWidth = w
     }
@@ -29,10 +94,10 @@ export default function OverlayColorLegend({
   const x = Math.max(0, canvasWidth - totalWidth - 4)
   return (
     <g transform={`translate(${x} 0)`}>
-      {sources.map((source, idx) => {
+      {entries.map((entry, idx) => {
         const y = idx * 14
         return (
-          <g key={source.name}>
+          <g key={entry.key}>
             <rect
               x={0}
               y={y}
@@ -45,15 +110,15 @@ export default function OverlayColorLegend({
               y={y + 2}
               width={10}
               height={10}
-              fill={source.color ?? fallbackColor}
+              fill={entry.color ?? fallbackColor}
             />
             <text
               x={16}
               y={y + 11}
               fontSize={10}
-              fill={source.labelColor ?? 'black'}
+              fill={entry.labelColor ?? 'black'}
             >
-              {display[idx]}
+              {entry.label}
             </text>
           </g>
         )

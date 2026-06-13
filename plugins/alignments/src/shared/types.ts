@@ -12,6 +12,10 @@ export type ArcColorByType =
   | 'insertSize'
   | 'orientation'
 
+// Minimum modification-call probability (%) shown by default. Stored threshold
+// is omitted at this value so default sessions don't carry a redundant field.
+export const DEFAULT_MODIFICATION_THRESHOLD = 10
+
 export interface ModificationColorBy {
   twoColor?: boolean
   // modification type codes to hide; absent/empty means show every detected
@@ -24,10 +28,12 @@ export interface ModificationColorBy {
   cytosineContext?: CytosineContext
 }
 
-// Every color-by scheme; mirrors the keys of COLOR_BY_TO_SCHEME in the display
-// model. 'stranded' is a legacy alias for firstOfPairStrand; 'perBaseQuality'
-// renders via the normal shader path. Typing this (vs a bare string) catches
-// scheme-name typos at every construction site.
+// Every color-by scheme. COLOR_BY_TO_SCHEME in the display model is typed
+// `Record<ColorSchemeType, number>`, so adding a member here forces a shader
+// index to be assigned there (compile error otherwise). 'stranded' is a legacy
+// alias for firstOfPairStrand; 'perBaseQuality' renders via the normal shader
+// path. Typing this (vs a bare string) catches scheme-name typos at every
+// construction site.
 export type ColorSchemeType =
   | 'normal'
   | 'strand'

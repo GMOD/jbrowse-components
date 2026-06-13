@@ -28,8 +28,10 @@ export interface DotplotFeaturesAndPositionsResult {
   ends: Uint32Array
   identities: Float32Array
   meanScores: Float32Array
+  meanIdentities: Float32Array
   mappingQuals: Float32Array
   refNames: string[]
+  mateRefNames: string[]
   parsedCigars: number[][]
   totalFeatureCount: number
   skippedFeatureCount: number
@@ -111,8 +113,10 @@ export async function executeDotplotFeaturesAndPositions({
     end: number
     identity: number
     meanScore: number
+    meanIdentity: number
     mappingQual: number
     refName: string
+    mateRefName: string
     cigar: number[]
   }
   const valid: ValidFeature[] = []
@@ -162,8 +166,10 @@ export async function executeDotplotFeaturesAndPositions({
       end,
       identity: (f.get('identity') as number | undefined) ?? -1,
       meanScore: (f.get('meanScore') as number | undefined) ?? -1,
+      meanIdentity: (f.get('meanIdentity') as number | undefined) ?? -1,
       mappingQual: (f.get('mappingQual') as number | undefined) ?? -1,
       refName: rawRefName,
+      mateRefName: mate.refName,
       cigar: parseCigar2((f.get('CIGAR') as string | undefined) ?? ''),
     })
   }
@@ -179,8 +185,10 @@ export async function executeDotplotFeaturesAndPositions({
     ends: new Uint32Array(n),
     identities: new Float32Array(n),
     meanScores: new Float32Array(n),
+    meanIdentities: new Float32Array(n),
     mappingQuals: new Float32Array(n),
     refNames: new Array<string>(n),
+    mateRefNames: new Array<string>(n),
     parsedCigars: new Array<number[]>(n),
     totalFeatureCount: features.length,
     skippedFeatureCount,
@@ -196,8 +204,10 @@ export async function executeDotplotFeaturesAndPositions({
     result.ends[i] = v.end
     result.identities[i] = v.identity
     result.meanScores[i] = v.meanScore
+    result.meanIdentities[i] = v.meanIdentity
     result.mappingQuals[i] = v.mappingQual
     result.refNames[i] = v.refName
+    result.mateRefNames[i] = v.mateRefName
     result.parsedCigars[i] = v.cigar
   }
 
@@ -211,6 +221,7 @@ export async function executeDotplotFeaturesAndPositions({
     result.ends.buffer,
     result.identities.buffer,
     result.meanScores.buffer,
+    result.meanIdentities.buffer,
     result.mappingQuals.buffer,
   ])
 }

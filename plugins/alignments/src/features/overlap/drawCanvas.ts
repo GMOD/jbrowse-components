@@ -2,6 +2,11 @@ import {
   bpToScreenX,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import {
+  FADE_HI_PX,
+  FADE_LO_PX,
+  OVERLAP_ALPHA,
+} from '../../LinearAlignmentsDisplay/shaders/slang/overlap.generated.ts'
 
 import type { OverlapsUploadData } from './types.ts'
 import type {
@@ -11,11 +16,9 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Mild dark tint at full strength; the px-width fade scales it down for narrow
-// overlaps so the underlying read color shows through. Keep in sync with
-// overlap.slang.
-const OVERLAP_ALPHA = 0.4
-const FADE_LO_PX = 1.5
-const FADE_HI_PX = 12
+// overlaps so the underlying read color shows through. OVERLAP_ALPHA /
+// FADE_LO_PX / FADE_HI_PX come from overlap.generated.ts (overlap.slang is the
+// source of truth), so this Canvas2D path can't drift from the shader.
 
 function smoothstep(e0: number, e1: number, x: number) {
   const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)))

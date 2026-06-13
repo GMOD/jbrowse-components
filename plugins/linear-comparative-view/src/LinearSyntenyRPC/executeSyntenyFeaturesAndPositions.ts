@@ -141,6 +141,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const identitiesArray = new Float32Array(count)
   const mappingQualsArray = new Float32Array(count)
   const meanScoresArray = new Float32Array(count)
+  const meanIdentitiesArray = new Float32Array(count)
 
   const featureIds: string[] = []
   const names: string[] = []
@@ -232,6 +233,8 @@ export async function executeSyntenyFeaturesAndPositions({
       (f.get('mappingQual') as number | undefined) ?? -1
     meanScoresArray[validCount] =
       (f.get('meanScore') as number | undefined) ?? -1
+    meanIdentitiesArray[validCount] =
+      (f.get('meanIdentity') as number | undefined) ?? -1
 
     mateStartsArray[validCount] = mate.start
     mateEndsArray[validCount] = mate.end
@@ -276,6 +279,7 @@ export async function executeSyntenyFeaturesAndPositions({
     identities: identitiesArray.subarray(0, validCount),
     mappingQuals: mappingQualsArray.subarray(0, validCount),
     meanScores: meanScoresArray.subarray(0, validCount),
+    meanIdentities: meanIdentitiesArray.subarray(0, validCount),
     featureIds,
     names,
     refNames,
@@ -322,6 +326,7 @@ export async function executeSyntenyFeaturesAndPositions({
     featureData.identities.buffer,
     featureData.mappingQuals.buffer,
     featureData.meanScores.buffer,
+    featureData.meanIdentities.buffer,
     featureData.mateStarts.buffer,
     featureData.mateEnds.buffer,
     instanceData.bp1Hi.buffer,

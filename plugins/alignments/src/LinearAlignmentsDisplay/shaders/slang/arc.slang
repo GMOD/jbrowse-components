@@ -14,6 +14,7 @@
 // height; for flat it is the line's Y. Samplot sets yBp = |tlen|; arc mode sets
 // yBp = |x2-x1|/2 (the genomic radius).
 //! targets: wgsl, glsl
+//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS
 
 import alignmentsUniforms;
 import colorPack;

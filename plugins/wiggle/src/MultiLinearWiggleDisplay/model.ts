@@ -414,7 +414,9 @@ export default function stateModelFactory(
             },
           },
           {
-            label: 'Edit colors/arrangement...',
+            label: self.sourcesVolatile.length
+              ? 'Edit colors/arrangement...'
+              : 'Edit colors/arrangement... (loading...)',
             icon: PaletteIcon,
             disabled: !self.sourcesVolatile.length,
             onClick: () => {

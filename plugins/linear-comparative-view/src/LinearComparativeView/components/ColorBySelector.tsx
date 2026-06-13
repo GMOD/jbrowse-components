@@ -9,37 +9,55 @@ const COLOR_MODES = [
     label: 'Default',
     value: 'default',
     helpText:
-      'Use the default color scheme with CIGAR operation coloring. Insertions, deletions, matches, and mismatches are shown in different colors with transparency.',
+      'Default ribbon color (red) with CIGAR operation coloring — insertions, deletions, and skips drawn in distinct colors over the alignment.',
   },
   {
     label: 'Strand',
     value: 'strand',
     helpText:
-      'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
+      'Color alignments by strand orientation. Forward and reverse strand alignments use different colors, making inversions and strand-specific patterns easy to spot.',
   },
   {
     label: 'Query',
     value: 'query',
     helpText:
-      'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
+      "Color by the query sequence (this assembly's own refName). Each unique sequence gets a consistent color, making it easy to distinguish different contigs/chromosomes.",
+  },
+  {
+    label: 'Target',
+    value: 'target',
+    helpText:
+      "Color by the target/mate sequence (the other assembly's refName). The complement of Query coloring — useful when one query maps across several targets.",
   },
   {
     label: 'Identity',
     value: 'identity',
     helpText:
-      'Color alignments by sequence identity percentage. Higher identity matches appear in warmer colors, lower identity matches appear cooler. Useful for identifying highly conserved vs divergent regions.',
+      'Color by per-alignment sequence identity: low identity is red, high identity is green. Useful for distinguishing divergent vs conserved regions.',
+  },
+  {
+    label: 'Identity (diverging)',
+    value: 'identityDiverging',
+    helpText:
+      'Per-alignment identity on a colorblind-safe diverging scale pivoted near 90%: divergent regions read warm/red, conserved regions cool/blue. Expands the high-identity range where synteny alignments cluster.',
   },
   {
     label: 'Mean query identity',
     value: 'meanQueryIdentity',
     helpText:
-      'Color alignments by the length-weighted mean identity across each query/target pair. Aggregates noise from local variations, giving a smoothed view of overall alignment quality across a query contig.',
+      'Color by the length-weighted mean sequence identity across all alignments of each query/target pair (a true 0–100% value). Smooths local noise — e.g. a contig split into many hits is colored by its overall identity to the target.',
+  },
+  {
+    label: 'Mean query mapping quality',
+    value: 'meanQueryMappingQuality',
+    helpText:
+      'Color by the length-weighted mean mapping quality (MAPQ) per query/target pair, normalized across pairs to highlight relatively strong vs weak synteny (e.g. polyploidy). Based on the dotPlotly weighted-mean method.',
   },
   {
     label: 'Mapping quality',
     value: 'mappingQuality',
     helpText:
-      'Color alignments by mapping quality (PAF MAPQ). Higher quality (more confident) mappings appear in warmer colors. Useful for identifying ambiguous or multi-mapping regions.',
+      'Color by per-alignment PAF mapping quality (MAPQ, 0–60): low MAPQ red, high MAPQ yellow. Highlights ambiguous or multi-mapping regions.',
   },
 ] as const
 

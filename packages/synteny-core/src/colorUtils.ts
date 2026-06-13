@@ -72,8 +72,11 @@ export type SyntenyColorBy =
   | 'default'
   | 'strand'
   | 'query'
+  | 'target'
   | 'identity'
+  | 'identityDiverging'
   | 'meanQueryIdentity'
+  | 'meanQueryMappingQuality'
   | 'mappingQuality'
 
 /**

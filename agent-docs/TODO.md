@@ -124,3 +124,21 @@ are all in [TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md).
   subscribes to the whole frozen `rpcProps` object; destructuring label fields out
   doesn't help). Partial mitigation via ADR-006: refetch still fires but
   `rawRpcDataMap` is no longer cleared, so labels don't visually disappear.
+
+
+## The SafFire identity "wiggle" — proposal (not built yet)
+
+SafFire draws, per alignment, a horizontal line at y = yscale_c(perid) in the band between the two genome rows — a step-plot of percent identity with its own ~89–100% axis. That maps cleanly onto
+LinearSyntenyDisplay: the data already exists (identities + p11/p12 give each block's top-row screen x-extent), so an overlay would draw a segment at y = bandTop + (1 - normIdentity)·bandHeight across
+[topMinX, topMaxX].
+
+Two viable paths:
+- Canvas2D overlay (recommended first cut) — a thin observer component over the existing synteny canvas reading computedColors/featureData. ~100 lines, no shader work, easy to gate behind a display
+toggle + a SafFire-style auto-scaled axis (min(89, dataMin)–100%).
+- GPU line pass — a new pass in GpuSyntenyRenderer reusing the instance buffers; faster at whole-genome scale but materially more work (shader + uniforms + the hp-math band geometry).
+
+I held off implementing it because it's a sizable standalone feature (new layout region, axis, toggle) and I didn't want to bundle it into this already-large color change. Want me to build the Canvas2D
+version next? It'd slot in as an optional overlay on the linear synteny display.
+
+One note: this touched getWeightedMeans, shared by the PAF/Delta/Chain/MashMap adapters — existing sessions with colorBy: 'meanQueryIdentity' will now show true identity instead of normalized MAPQ.
+That's the intended correctness fix, but flagging it as a behavior change.

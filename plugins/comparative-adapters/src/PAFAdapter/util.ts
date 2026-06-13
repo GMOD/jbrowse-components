@@ -1,3 +1,5 @@
+import { pafIdentity } from '../util.ts'
+
 export interface PAFRecord {
   qname: string
   qstart: number
@@ -12,6 +14,7 @@ export interface PAFRecord {
     mappingQual?: number
     numMatches?: number
     meanScore?: number
+    meanIdentity?: number
     [key: string]: string | number | undefined
   }
 }
@@ -55,8 +58,12 @@ export interface PAFRecord {
 // situations
 
 export function getWeightedMeans(ret: PAFRecord[]) {
-  // First pass: compute weighted sums per query-target pair
-  const scoreMap: Record<string, { valueSum: number; weightSum: number }> = {}
+  // One pass: length-weighted sums per query-target pair, for both MAPQ (→
+  // normalized "synteny strength") and sequence identity.
+  const map: Record<
+    string,
+    { mapqSum: number; idSum: number; weightSum: number }
+  > = {}
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
     // MAPQ 255 is the PAF spec sentinel for "not computed" — treat as missing,
@@ -64,34 +71,39 @@ export function getWeightedMeans(ret: PAFRecord[]) {
     const mapq = entry.extra.mappingQual
     const qual = mapq !== undefined && mapq !== 255 ? mapq : 1
     const len = entry.extra.blockLen ?? 1
-    const existing = scoreMap[key]
-    if (existing) {
-      existing.valueSum += qual * len
-      existing.weightSum += len
+    const id = pafIdentity(entry.extra)
+    const e = map[key]
+    if (e) {
+      e.mapqSum += qual * len
+      e.idSum += id * len
+      e.weightSum += len
     } else {
-      scoreMap[key] = { valueSum: qual * len, weightSum: len }
+      map[key] = { mapqSum: qual * len, idSum: id * len, weightSum: len }
     }
   }
 
-  // Convert sums to means and find min/max in one pass
-  const meanScoreMap: Record<string, number> = {}
+  // Mean MAPQ is min-max normalized across pairs (the dotPlotly "weighted mean"
+  // method — surfaces relative strong vs weak synteny, e.g. polyploidy). Mean
+  // identity stays a true [0,1] fraction so it shares the per-alignment
+  // identity color scale.
+  const meanMapq: Record<string, number> = {}
   let min = Infinity
   let max = -Infinity
-  for (const [key, { valueSum, weightSum }] of Object.entries(scoreMap)) {
-    const mean = valueSum / weightSum
-    meanScoreMap[key] = mean
+  for (const [key, { mapqSum, weightSum }] of Object.entries(map)) {
+    const mean = mapqSum / weightSum
+    meanMapq[key] = mean
     min = Math.min(mean, min)
     max = Math.max(mean, max)
   }
 
-  // Second pass: attach normalized scores
   const range = max - min
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
-    const score = meanScoreMap[key]!
+    const { idSum, weightSum } = map[key]!
     // When all pairs have identical quality (range === 0), use 0.5 rather than
     // 1 so the encoding reads as "neutral" instead of "maximum quality."
-    entry.extra.meanScore = range > 0 ? (score - min) / range : 0.5
+    entry.extra.meanScore = range > 0 ? (meanMapq[key]! - min) / range : 0.5
+    entry.extra.meanIdentity = idSum / weightSum
   }
 
   return ret

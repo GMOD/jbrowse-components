@@ -14,37 +14,55 @@ const COLOR_BY_OPTIONS: readonly {
     value: 'default',
     label: 'Default',
     helpText:
-      'Use the default color scheme specified in the track configuration. This respects the color settings defined in the config file.',
+      'Draw all alignments in black, the conventional dotplot line color.',
   },
   {
     value: 'identity',
     label: 'Identity',
     helpText:
-      'Color alignments by sequence identity percentage. Higher identity matches appear in warmer colors, while lower identity matches appear cooler. Useful for identifying highly conserved vs. divergent regions.',
+      'Color alignments by per-alignment sequence identity: low identity is red, high identity is green. Useful for distinguishing divergent vs. conserved regions.',
+  },
+  {
+    value: 'identityDiverging',
+    label: 'Identity (diverging)',
+    helpText:
+      'Per-alignment identity on a colorblind-safe diverging scale pivoted near 90%: divergent regions read warm/red, conserved regions cool/blue. Expands the high-identity range where alignments cluster.',
   },
   {
     value: 'meanQueryIdentity',
     label: 'Mean query identity',
     helpText:
-      'Color alignments based on the mean identity across the query sequence. This provides a smoothed view of overall alignment quality, reducing noise from local variations. For instance, a single long query of e.g. a contig of an assembly, when aligned to the target, may get split into many smaller "hits". This score aggregates across them, and colors them all the same. Similar code exists in the program dotPlotly',
+      'Color by the length-weighted mean sequence identity across all alignments of each query/target pair (a true 0–100% value). A single long query split into many smaller hits is colored by its overall identity to the target. Similar to the program dotPlotly.',
+  },
+  {
+    value: 'meanQueryMappingQuality',
+    label: 'Mean query mapping quality',
+    helpText:
+      'Color by the length-weighted mean mapping quality (MAPQ) per query/target pair, normalized across pairs to highlight relatively strong vs. weak synteny (e.g. polyploidy). Based on the dotPlotly weighted-mean method.',
   },
   {
     value: 'mappingQuality',
     label: 'Mapping quality',
     helpText:
-      'Color alignments by mapping quality score (MAPQ). Higher quality mappings (more unique/confident) appear in darker colors. Useful for identifying ambiguous or multi-mapping regions.',
+      'Color alignments by per-alignment PAF mapping quality (MAPQ, 0–60): low MAPQ red, high MAPQ yellow. Useful for identifying ambiguous or multi-mapping regions.',
   },
   {
     value: 'strand',
     label: 'Strand',
     helpText:
-      'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
+      'Color alignments by strand orientation. Forward and reverse strand alignments use different colors, making inversions and strand-specific patterns easy to spot.',
   },
   {
     value: 'query',
     label: 'Query',
     helpText:
-      'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
+      "Color by the query sequence (this assembly's own refName). Each unique sequence gets a consistent color, making it easy to distinguish different contigs/chromosomes.",
+  },
+  {
+    value: 'target',
+    label: 'Target',
+    helpText:
+      "Color by the target/mate sequence (the other assembly's refName). The complement of Query coloring — useful when one query maps across several targets.",
   },
 ]
 

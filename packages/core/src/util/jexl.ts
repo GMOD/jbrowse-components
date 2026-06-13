@@ -1,5 +1,6 @@
 import { Jexl } from '@jbrowse/jexl'
 
+import { randomColor } from './color/index.ts'
 import { colord } from './colord.ts'
 
 import type { Colord } from './colord.ts'
@@ -85,6 +86,7 @@ export default function JexlF(/* config?: any*/) {
   })
 
   // color helpers
+  j.addFunction('randomColor', randomColor)
   j.addFunction('alpha', (color: Colord, n: number) => color.alpha(n))
   j.addFunction('hsl', (color: Colord) => colord(color.toHsl()))
   j.addFunction('colorString', (color: Colord) => color.toHex())

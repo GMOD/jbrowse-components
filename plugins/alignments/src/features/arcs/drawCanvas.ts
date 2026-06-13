@@ -10,6 +10,7 @@ import {
   ARC_HEIGHT_MARGIN,
   arcColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+import { ARC_FAR_SCREEN_WIDTHS } from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
 
 import type { ArcsUploadData } from './types.ts'
 import type { RGBColor } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
@@ -35,12 +36,6 @@ interface DrawArcsOpts {
   // threshold below.
   screenWidthPx: number
 }
-
-// Once a pair spans more than this many screen widths — i.e. its endpoints no
-// longer both fit on screen — a paired arc switches from a band-capped rounded
-// dome to a full-size circle (the band clip then leaves near-vertical lines at
-// each endpoint). Mirrors ARC_FAR_SCREEN_WIDTHS in arc.slang.
-const ARC_FAR_SCREEN_WIDTHS = 1
 
 // Strokes one non-flat paired-read arc between screen-x sx1 and sx2. Caller
 // sets strokeStyle and clips to the band. `far` picks the shape:
