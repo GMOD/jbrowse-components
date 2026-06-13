@@ -82,6 +82,13 @@ function insertSizeCategory(
 
 // Classify read `i` under the active color scheme. Precedence:
 // chain-supplementary → unmapped mate → inter-chromosomal → per-scheme bucket.
+//
+// SYNC: `getReadColor` in shaders/slang/read.slang is the GPU twin and must
+// reproduce this exact precedence (it's the path most users see; this JS path
+// is the Canvas2D/SVG fallback + the legend's source). Scheme indices are the
+// one thing already shared by construction — the CS_* export-consts in
+// read.slang generate read.generated.ts, which builds the ColorScheme map. The
+// precedence/per-scheme rules below are hand-mirrored: change both together.
 export function readColorCategory(
   i: number,
   data: ReadColorData,
@@ -212,6 +219,10 @@ function gradientInsertColor(
 // uses (categorySwatchColor), so the flat category→palette mapping has a single
 // home. The `default` narrows to SwatchCategory, so a newly added *dynamic*
 // category fails to compile until it gets a case here.
+//
+// SYNC: the color helpers in read.slang (strandColor / insertSizeColor /
+// insertSizeGradientColor / pairOrientColor / modificationsColor / mapq hue)
+// are the GPU twins of these per-category colors — keep the two in sync.
 function categoryColor(
   cat: ReadColorCategory,
   i: number,
