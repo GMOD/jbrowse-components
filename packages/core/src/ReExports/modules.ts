@@ -31,11 +31,7 @@ import ViewType from '../pluggableElementTypes/ViewType.ts'
 import WidgetType from '../pluggableElementTypes/WidgetType.ts'
 import * as pluggableElementTypes from '../pluggableElementTypes/index.ts'
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models/index.ts'
-import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType.ts'
-import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType.tsx'
-import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType.ts'
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType.tsx'
-import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType.ts'
 import * as coreUi from '../ui/index.ts'
 import * as coreTheme from '../ui/theme.ts'
 import Base1DView from '../util/Base1DViewModel.ts'
@@ -143,14 +139,6 @@ const libs = {
   '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
   '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
   '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
-  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
-    ServerSideRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
-    CircularChordRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
-    BoxRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
-    FeatureRendererType,
 
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,

@@ -1,6 +1,5 @@
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
-import type { ResultsSerialized } from '../pluggableElementTypes/renderers/ServerSideRendererType.ts'
-import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
+import type { Feature } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { Region } from '../util/types/index.ts'
 
@@ -81,14 +80,6 @@ export interface RpcRegistry {
   CoreFreeResources: {
     args: Record<string, unknown>
     return: undefined
-  }
-  CoreRender: {
-    args: Record<string, unknown>
-    return: ResultsSerialized
-  }
-  CoreGetFeatureDetails: {
-    args: Record<string, unknown>
-    return: { feature: SimpleFeatureSerialized | undefined }
   }
 }
 

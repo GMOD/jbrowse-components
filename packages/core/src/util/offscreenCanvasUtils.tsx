@@ -4,8 +4,6 @@ import { isValidElement } from 'react'
 
 import { getSerializedSvg } from './offscreenCanvasGetSerializingSvg.ts'
 
-export { renderToAbstractCanvas } from './renderToAbstractCanvas.ts'
-
 export function ReactRendering({
   rendering,
 }: {
