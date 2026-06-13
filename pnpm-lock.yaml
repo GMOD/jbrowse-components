@@ -530,6 +530,8 @@ importers:
         specifier: '>=19.0.0'
         version: 19.2.7
 
+  packages/shader-tools: {}
+
   packages/sv-core:
     dependencies:
       '@gmod/vcf':

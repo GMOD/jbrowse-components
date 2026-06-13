@@ -1,0 +1,32 @@
+{
+  "name": "@jbrowse/shader-tools",
+  "version": "4.3.0",
+  "type": "module",
+  "description": "Slang → WGSL/GLSL + typed-TS shader codegen for JBrowse GPU displays (the `pnpm gen:shaders` pipeline)",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "slang",
+    "wgsl",
+    "glsl",
+    "shader",
+    "codegen"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/shader-tools"
+  },
+  "author": "JBrowse Team",
+  "main": "src/build-shaders.ts",
+  "bin": {
+    "jbrowse-build-shaders": "./src/build-shaders.ts"
+  },
+  "scripts": {
+    "test": "cd ../..; jest --passWithNoTests packages/shader-tools"
+  },
+  "sideEffects": false
+}

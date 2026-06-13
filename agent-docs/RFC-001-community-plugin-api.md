@@ -332,7 +332,7 @@ After the move, `GpuCanvasFeatureRenderer` imports `RectPass`, `LinePass`, `Arro
 
 ### 5e. Custom shaders for exotic plugins
 
-A plugin that needs a shader not in the library authors `.slang` and runs `pnpm gen:shaders` at the plugin's own build time. The slangc binary fetch is one-shot per platform; the script in `scripts/build-shaders.ts` is portable to plugin repos.
+A plugin that needs a shader not in the library authors `.slang` and runs `pnpm gen:shaders` at the plugin's own build time. The slangc binary fetch is one-shot per platform; the script in `packages/shader-tools/src/build-shaders.ts` is portable to plugin repos.
 
 This is acceptable friction — only the unusual minority of plugins needs custom shaders. The 80%+ case composes from the library.
 

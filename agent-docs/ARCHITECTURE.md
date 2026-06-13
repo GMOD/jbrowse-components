@@ -246,7 +246,7 @@ leaf package (deps: `mobx` + `@jbrowse/mobx-state-tree` + `react` peer; **no**
 `@jbrowse/core`), so a third-party display can depend on it directly. The old
 `@jbrowse/core/gpu/*` import paths still resolve as thin re-export shims (new
 code should import `@jbrowse/render-core`). The shader-codegen pipeline
-(`packages/core/src/gpu/{shaders,passes}` + `scripts/build-shaders.ts`) and the
+(`packages/core/src/gpu/{shaders,passes}` + `packages/shader-tools/src/build-shaders.ts`) and the
 display-integration layer (`MultiRegionDisplayMixin` / `GlobalDataDisplayMixin` /
 `DisplayChrome`, all in the LGV plugin) stay where they are. The GPU API is
 **static-import-only** — never exposed via the runtime `ReExports` registry. See
@@ -915,7 +915,7 @@ source of truth shifts.
 ## Shaders (Slang codegen)
 
 Production draw shaders are authored as `.slang`, compiled to WGSL (WebGPU)
-and GLSL ES 3.00 (WebGL2) by `scripts/build-shaders.ts`. See ADR-005.
+and GLSL ES 3.00 (WebGL2) by `packages/shader-tools/src/build-shaders.ts`. See ADR-005.
 
 **Layout:** display-specific shaders in
 `plugins/<plugin>/src/<display>/shaders/<name>.slang`; per-plugin shared in

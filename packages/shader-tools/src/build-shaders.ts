@@ -1,3 +1,4 @@
+#!/usr/bin/env -S node --experimental-strip-types
 // Compiles every `*.slang` source file in the workspace into its matching
 // `*.generated.ts` artifact. Emits WGSL + GLSL-ES-300 shader strings and a
 // reflection-derived TS layout (stride, field offsets, typed packer,
@@ -32,9 +33,12 @@ import path from 'node:path'
 import { emit as emitLayout, emitLayoutOnly } from './shader-codegen/codegen.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
 
+// This file lives at packages/shader-tools/src/build-shaders.ts, so the repo
+// root is three levels up. The codegen still walks the whole repo and writes
+// each `*.generated.ts` next to its `.slang` source.
 const REPO_ROOT = path.resolve(
   path.dirname(import.meta.url.replace('file://', '')),
-  '..',
+  '../../..',
 )
 
 const SLANG_VERSION = 'v2026.5.2'

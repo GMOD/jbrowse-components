@@ -46,10 +46,12 @@ way: `@jbrowse/core` and the LGV plugin consume render-core.
 surface is frozen under semver. The package's `exports` map *is* the public API
 contract — decoupled from file layout.
 
-**What stays in `@jbrowse/core/gpu`:** the shader-codegen-coupled `passes/` and
-`shaders/` dirs (the build pipeline in `scripts/build-shaders.ts` is untouched),
-and `glAttributeSync.test.ts` (a cross-plugin integration test that imports
-plugin renderers, so it can't live in a leaf package).
+**What stays in `@jbrowse/core/gpu`:** the shared `passes/` and `shaders/` dirs
+(the runtime simple-shape passes and the `.slang` codegen includes — the codegen
+*logic* was unchanged by this extraction and was subsequently moved to its own
+`@jbrowse/shader-tools` package), and `glAttributeSync.test.ts` (a cross-plugin
+integration test that imports plugin renderers, so it can't live in a leaf
+package).
 
 **What stays in the LGV plugin** (not primitives — they depend on view/display
 models): `MultiRegionDisplayMixin`, `GlobalDataDisplayMixin`, `DisplayChrome`.

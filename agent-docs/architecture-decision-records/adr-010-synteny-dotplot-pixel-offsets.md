@@ -42,7 +42,7 @@ The implementation hit problems unique to synteny/dotplot's shape:
   pair draw calls, scaling as O(N×M) with region counts. Fragmented
   contig assemblies in the wild reach 1000×1000 region pairs.
 - **The shader-side region table alternative is ugly.** The codegen
-  (`scripts/shader-codegen/codegen.ts`) only knows `scalar` and
+  (`packages/shader-tools/src/shader-codegen/codegen.ts`) only knows `scalar` and
   `vector` field kinds, no arrays. To get a table indexed by
   `regionIdx`, we declared 32 individual scalar uniforms
   (`regionOffsetA0..15`, `regionOffsetB0..15`) and a switch-statement
@@ -106,7 +106,7 @@ Rejected because it scales O(N×M); fragmented contig assemblies hit
 1000×1000 pairs which dominates draw-call submission.
 
 **Per-region uniform table with codegen array support.** Fix
-`scripts/shader-codegen/codegen.ts` to emit `array<f32, 64>` from
+`packages/shader-tools/src/shader-codegen/codegen.ts` to emit `array<f32, 64>` from
 slang declarations. Cleaner shader (`u.regionOffsetA[idx]`), no
 unrolled scalars, generous cap. Rejected because the codegen change
 is invasive (slang reflection, WGSL/GLSL emitters, byte-offset

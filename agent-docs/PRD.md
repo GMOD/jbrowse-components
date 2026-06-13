@@ -24,7 +24,7 @@ Verify against source, not memory.
 | --------------------------- | -------------------------------------------------------- |
 | GPU primitives / HAL        | `packages/core/src/gpu/`                                 |
 | Lifecycle mixin             | `packages/core/src/gpu/RenderLifecycleMixin.ts`  |
-| Shader codegen              | `scripts/build-shaders.ts`, `scripts/shader-codegen/`    |
+| Shader codegen              | `packages/shader-tools/src/build-shaders.ts`, `packages/shader-tools/src/shader-codegen/`    |
 | Shared slang modules        | `packages/core/src/gpu/shaders/`                         |
 | Browser tests               | `products/jbrowse-web/browser-tests/`                    |
 | Canvas display              | `plugins/canvas/`                                        |

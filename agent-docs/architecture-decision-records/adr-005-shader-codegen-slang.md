@@ -205,7 +205,7 @@ shipping.
   (gitignored). Developers run this once when they first need to regenerate
   shaders. `pnpm install` does **not** fetch it (only contributors editing
   shaders need the binary; generated outputs are committed).
-- `scripts/build-shaders.ts` — walks `**/*.slang`, invokes slangc +
+- `packages/shader-tools/src/build-shaders.ts` — walks `**/*.slang`, invokes slangc +
   post-processor
   - codegen, writes `*.generated.ts` next to the source.
 - `pnpm gen:shaders` — convenience alias.

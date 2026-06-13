@@ -6,7 +6,7 @@ import type {
 } from './hal'
 
 // Common surface exposed by every `.generated.ts` shader module (see
-// scripts/shader-codegen/codegen.ts). A plugin renderer imports the module
+// packages/shader-tools/src/shader-codegen/codegen.ts). A plugin renderer imports the module
 // and passes it here — keeps pass construction a one-liner and stops stride
 // / attribute layout from drifting away from the shader source.
 export interface ShaderModule {

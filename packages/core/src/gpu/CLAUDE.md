@@ -13,9 +13,11 @@ What remains here:
   `@jbrowse/render-core`. Don't add logic to a shim; if you need to change
   behavior, edit the source in render-core.
 - `passes/` — shared "simple shape" GPU passes (arrow/chevron/line/rect) +
-  their `.generated.ts` shaders. Stays near the shader-codegen pipeline.
+  their `.generated.ts` shaders. Runtime code (imported by the canvas plugin)
+  whose generated outputs the codegen writes here.
 - `shaders/` — shared cross-plugin `.slang` modules (`hpmath`, `colorPack`),
-  referenced by `scripts/build-shaders.ts`'s `SHARED_INCLUDE`.
+  hardcoded as `@jbrowse/shader-tools`'s `SHARED_INCLUDE` (moving them means
+  updating that constant in `packages/shader-tools/src/build-shaders.ts`).
 - `glAttributeSync.test.ts` — cross-plugin integration test (imports plugin
   renderers), so it can't live in the leaf render-core package.
 

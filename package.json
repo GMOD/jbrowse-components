@@ -21,7 +21,7 @@
     "gendocs": "rm -rf website/docs/config website/docs/models website/docs/api && node docs/generate.ts",
     "autogen": "pnpm gendocs",
     "postautogen": "pnpm format",
-    "gen:shaders": "node --experimental-strip-types scripts/build-shaders.ts",
+    "gen:shaders": "node --experimental-strip-types packages/shader-tools/src/build-shaders.ts",
     "lint-docs": "node --experimental-strip-types website/scripts/generate-guide-indexes.ts",
     "lint-docs-check": "node --experimental-strip-types website/scripts/generate-guide-indexes.ts --check",
     "fix-extensions": "node scripts/add-extensions.ts",

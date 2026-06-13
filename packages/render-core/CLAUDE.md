@@ -28,11 +28,11 @@ have to change in one pass. New code (in-tree or third-party) should import from
 ## What stayed in `@jbrowse/core/gpu`
 
 - `passes/` — the shared "simple shape" GPU passes (arrow/chevron/line/rect)
-  with their `.generated.ts` shaders. Coupled to the shader-codegen pipeline,
-  so they stay near it for now.
+  with their `.generated.ts` shaders (runtime code imported by the canvas
+  plugin).
 - `shaders/` — the shared cross-plugin `.slang` modules (`hpmath.slang`,
-  `colorPack.slang`), referenced by `scripts/build-shaders.ts`'s
-  `SHARED_INCLUDE`. The codegen pipeline is unchanged by the extraction.
+  `colorPack.slang`), the `SHARED_INCLUDE` of the shader codegen (now its own
+  package, `@jbrowse/shader-tools`).
 - `glAttributeSync.test.ts` — a cross-plugin integration test (imports plugin
   renderers), so it can't live in this leaf package.
 
