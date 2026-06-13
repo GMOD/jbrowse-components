@@ -36,7 +36,6 @@ function stateModelFactory() {
       rpcDriverName: types.maybe(types.string),
     })
     .volatile(() => ({
-      rendererTypeName: '',
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       statusMessage: undefined as string | undefined,
