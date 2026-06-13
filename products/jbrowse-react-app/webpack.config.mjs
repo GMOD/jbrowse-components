@@ -1,41 +1,7 @@
-import path from 'path'
+import umdConfig from '../../webpack/umdConfig.mjs'
 
-import webpack from 'webpack'
-
-export default {
-  mode: process.env.NODE_ENV || 'production',
-  entry: './src/webpack.ts',
-  devtool: 'source-map',
-  output: {
-    path: path.resolve('dist'),
-    filename: 'react-app.umd.production.min.js',
-    library: 'JBrowseReactApp',
-    libraryTarget: 'umd',
-  },
-  devServer: {
-    port: 9000,
-    open: 'umd_example/',
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': '*',
-    },
-  },
-  plugins: [new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 })],
-  resolve: {
-    extensions: ['.mjs', '.js', '.ts', '.tsx', '.jsx', '.json'],
-  },
-  module: {
-    rules: [
-      {
-        test: /\.m?[tj]sx?$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader',
-        options: { rootMode: 'upward' },
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
-      },
-    ],
-  },
-}
+export default umdConfig({
+  filename: 'react-app.umd.production.min.js',
+  library: 'JBrowseReactApp',
+  cssUse: ['style-loader', 'css-loader'],
+})
