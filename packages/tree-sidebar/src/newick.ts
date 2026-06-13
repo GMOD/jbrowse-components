@@ -26,7 +26,7 @@ export default function parseNewick(s: string): NewickNode {
   const ancestors: NewickNode[] = []
 
   let tree: NewickNode = {}
-  const tokens = s.split(/\s*(;|\(|\)|,|:)\s*/)
+  const tokens = s.replace(/\s+/g, '').split(/(;|\(|\)|,|:)/)
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]!
     const subtree: NewickNode = {}
