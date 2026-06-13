@@ -31,7 +31,7 @@ export default function RadioSelector<T extends string>({
             key={option}
             value={option}
             control={<Radio />}
-    label={option}
+            label={option}
           />
         ))}
       </RadioGroup>

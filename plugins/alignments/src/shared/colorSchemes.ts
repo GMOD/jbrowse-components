@@ -62,7 +62,11 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   insertSizeGradient: {
     type: 'insertSizeGradient',
     shaderScheme: 'insertSizeGradient',
-    menu: { kind: 'radio', label: 'Insert size (gradient)', group: 'pairedEnd' },
+    menu: {
+      kind: 'radio',
+      label: 'Insert size (gradient)',
+      group: 'pairedEnd',
+    },
   },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',

@@ -1,5 +1,5 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { Crosshairs } from '@jbrowse/core/ui'
+import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import MultiSampleVariantTooltip from './MultiSampleVariantTooltip.tsx'
@@ -22,7 +22,13 @@ const MultiSampleVariantCrosshairs = observer(
 
     return (
       <>
-        <Crosshairs mouseX={x} mouseY={y} width={width} height={height} zIndex={800} />
+        <Crosshairs
+          mouseX={x}
+          mouseY={y}
+          width={width}
+          height={height}
+          zIndex={800}
+        />
         {hoveredTooltipSource ? (
           <MultiSampleVariantTooltip
             source={hoveredTooltipSource}

@@ -2,9 +2,9 @@ import RpcMethodType from './RpcMethodType.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
 import SerializableFilterChain from './renderers/util/serializableFilterChain.ts'
 
+import type { Region } from '../util/index.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { SerializedFilterChain } from './renderers/util/serializableFilterChain.ts'
-import type { Region } from '../util/index.ts'
 
 // the subset of fields serializeArguments needs: `filters` plus the region
 // renaming contract required by renameRegionsIfNeeded

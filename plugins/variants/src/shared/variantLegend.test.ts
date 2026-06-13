@@ -96,7 +96,11 @@ describe('getMaxLabelWidth', () => {
 
   it('is 0 when there are no sources', () => {
     expect(
-      getMaxLabelWidth({ sources: undefined, fontSize: 12, canDisplayLabels: true }),
+      getMaxLabelWidth({
+        sources: undefined,
+        fontSize: 12,
+        canDisplayLabels: true,
+      }),
     ).toBe(0)
     expect(
       getMaxLabelWidth({ sources: [], fontSize: 12, canDisplayLabels: true }),

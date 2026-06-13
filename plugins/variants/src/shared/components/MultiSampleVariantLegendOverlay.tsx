@@ -1,6 +1,4 @@
-import {
-  FloatingLegend,
-} from '@jbrowse/plugin-linear-genome-view'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import MultiSampleVariantLegendBar from './MultiSampleVariantLegendBar.tsx'

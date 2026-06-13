@@ -27,7 +27,7 @@ function getFlags(feature: Feature) {
 // QNAME; the empty string is the sentinel for a read with no name, which
 // partitionChains treats as its own one-read chain.
 function getName(feature: Feature) {
-  return (feature.get('name')) ?? ''
+  return feature.get('name') ?? ''
 }
 
 interface GroupKey {

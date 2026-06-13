@@ -1,4 +1,5 @@
 #!/usr/bin/env -S node --experimental-strip-types
+/* eslint-disable no-console */
 // Compiles every `*.slang` source file in the workspace into its matching
 // `*.generated.ts` artifact. Emits WGSL + GLSL-ES-300 shader strings and a
 // reflection-derived TS layout (stride, field offsets, typed packer,

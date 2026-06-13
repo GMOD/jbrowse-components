@@ -438,7 +438,11 @@ const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
   const { coverageTicks, scrollTop, height, renderSections } = model
   const scroll = { isGrouped: true, scrollTop, canvasHeight: height }
   const section = renderSections.find(s =>
-    bandOnScreen(bandScreenTop(s.coverageTop, scroll), s.coverageHeight, scroll),
+    bandOnScreen(
+      bandScreenTop(s.coverageTop, scroll),
+      s.coverageHeight,
+      scroll,
+    ),
   )
   if (!section || !coverageTicks) {
     return null

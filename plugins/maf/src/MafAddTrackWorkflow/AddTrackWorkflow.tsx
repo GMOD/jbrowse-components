@@ -98,20 +98,26 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           label="File type"
           value={fileTypeChoice}
           options={['BigMafAdapter', 'MafTabixAdapter', 'BgzipTaffyAdapter']}
-          onChange={value => { setFileTypeChoice(value) }}
+          onChange={value => {
+            setFileTypeChoice(value)
+          }}
         />
         <FileSelector
           location={loc}
           name={dataFileName[fileTypeChoice]}
           rootModel={rootModel}
-          setLocation={arg => { setLoc(arg) }}
+          setLocation={arg => {
+            setLoc(arg)
+          }}
         />
         {fileTypeChoice === 'BigMafAdapter' ? (
           <FileSelector
             location={summaryLoc}
             name="Path to bigMafSummary (.bb, optional — enables cheap zoom-out rendering)"
             rootModel={rootModel}
-            setLocation={arg => { setSummaryLoc(arg) }}
+            setLocation={arg => {
+              setSummaryLoc(arg)
+            }}
           />
         ) : fileTypeChoice === 'MafTabixAdapter' ? (
           <>
@@ -119,13 +125,17 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
               label="Index type"
               value={indexTypeChoice}
               options={['TBI', 'CSI']}
-              onChange={value => { setIndexTypeChoice(value) }}
+              onChange={value => {
+                setIndexTypeChoice(value)
+              }}
             />
             <FileSelector
               location={indexLoc}
               name="Path to MAF tabix index"
               rootModel={rootModel}
-              setLocation={arg => { setIndexLoc(arg) }}
+              setLocation={arg => {
+                setIndexLoc(arg)
+              }}
             />
           </>
         ) : (
@@ -133,7 +143,9 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
             location={indexLoc}
             name="Path to TAF.gz.tai (TAF index)"
             rootModel={rootModel}
-            setLocation={arg => { setIndexLoc(arg) }}
+            setLocation={arg => {
+              setIndexLoc(arg)
+            }}
           />
         )}
       </div>
@@ -142,13 +154,17 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           location={nhLoc}
           name="Path to newick tree (.nh)"
           rootModel={rootModel}
-          setLocation={arg => { setNhLoc(arg) }}
+          setLocation={arg => {
+            setNhLoc(arg)
+          }}
         />
         <TextField
           multiline
           rows={10}
           value={samples}
-          onChange={event => { setSamples(event.target.value) }}
+          onChange={event => {
+            setSamples(event.target.value)
+          }}
           helperText="Sample names (optional — taken from the .nh tree, or auto-detected from the file, when left blank)"
           placeholder="Enter sample names from the MAF file, one per line, or JSON formatted array of samples"
           variant="outlined"
@@ -158,12 +174,16 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
       <TextField
         value={trackName}
         helperText="Track name"
-        onChange={event => { setTrackName(event.target.value) }}
+        onChange={event => {
+          setTrackName(event.target.value)
+        }}
       />
       <Button
         variant="contained"
         className={classes.submit}
-        onClick={() => { handleSubmit() }}
+        onClick={() => {
+          handleSubmit()
+        }}
       >
         Submit
       </Button>

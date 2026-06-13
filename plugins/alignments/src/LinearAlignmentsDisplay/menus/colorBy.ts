@@ -335,12 +335,21 @@ export function getColorByMenuItem(
         ]
       : []
 
-  const bisulfiteItem = hasModifications(model)
+  // Bisulfite applies to any alignments display (reference-based, no tags), but
+  // is only meaningful for bisulfite/EM-seq libraries. Tuck it under "Advanced"
+  // so it doesn't clutter the common case — users with such data know to look.
+  const advancedItem = hasModifications(model)
     ? [
         {
-          label: 'Bisulfite / EM-seq (C→T)',
+          label: 'Advanced',
           type: 'subMenu' as const,
-          subMenu: getBisulfiteSubMenu(model),
+          subMenu: [
+            {
+              label: 'Bisulfite / EM-seq (C→T)',
+              type: 'subMenu' as const,
+              subMenu: getBisulfiteSubMenu(model),
+            },
+          ],
         },
       ]
     : []
@@ -368,7 +377,7 @@ export function getColorByMenuItem(
       ...tagItem,
       ...pairedEndItem,
       ...modItem,
-      ...bisulfiteItem,
+      ...advancedItem,
       ...arcColorItem,
     ],
   }

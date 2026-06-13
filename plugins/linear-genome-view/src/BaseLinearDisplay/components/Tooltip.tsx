@@ -10,7 +10,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 type Coord = [number, number]
 
-type TooltipModel = {
+interface TooltipModel {
   featureUnderMouse: Feature | undefined
   configuration: AnyConfigurationModel
 }

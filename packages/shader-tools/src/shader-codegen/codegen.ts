@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Generates `${base}.generated.ts` from Slang's reflection JSON plus the
 // compiled WGSL / GLSL outputs. The generated file is the single source of
 // truth for:

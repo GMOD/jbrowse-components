@@ -93,7 +93,11 @@ describe('buildSources', () => {
 
   it('wraps the overlay palette modulo palette length', () => {
     const n = overlayColors.length
-    const out = buildSources(buildEditableSources(adapter(n + 2), []), undefined, true)
+    const out = buildSources(
+      buildEditableSources(adapter(n + 2), []),
+      undefined,
+      true,
+    )
     expect(out[n]!.color).toBe(overlayColors[0])
     expect(out[n + 1]!.color).toBe(overlayColors[1])
   })

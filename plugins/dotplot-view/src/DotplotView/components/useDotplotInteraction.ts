@@ -109,7 +109,8 @@ export function useDotplotInteraction(
       window.requestAnimationFrame(() => {
         transaction(() => {
           if (
-            Math.abs(distanceYRef.current) > Math.abs(distanceXRef.current) * 2 &&
+            Math.abs(distanceYRef.current) >
+              Math.abs(distanceXRef.current) * 2 &&
             anchor
           ) {
             const val = distanceYRef.current < 0 ? 1.07 : 0.935

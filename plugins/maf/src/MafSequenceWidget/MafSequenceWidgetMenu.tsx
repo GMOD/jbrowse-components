@@ -1,8 +1,5 @@
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { Button } from '@mui/material'
-import { observer } from 'mobx-react'
-
 import ContentCopy from '@mui/icons-material/ContentCopy'
 import Difference from '@mui/icons-material/Difference'
 import DownloadIcon from '@mui/icons-material/Download'
@@ -12,6 +9,8 @@ import LabelIcon from '@mui/icons-material/Label'
 import InsertionsIcon from '@mui/icons-material/PlaylistAdd'
 import AllLettersIcon from '@mui/icons-material/Subject'
 import TableRowsIcon from '@mui/icons-material/TableRows'
+import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { copyToClipboard, downloadAsFile } from '../util/clipboard.ts'
 

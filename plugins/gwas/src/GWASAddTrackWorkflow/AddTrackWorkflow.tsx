@@ -54,7 +54,10 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
 
   function doSubmit() {
     if (gwasLocation && assembly && isSessionWithAddTracks(session)) {
-      const trackId = makeTrackId({ name: trackName, adminMode: !!session.adminMode })
+      const trackId = makeTrackId({
+        name: trackName,
+        adminMode: !!session.adminMode,
+      })
       session.addTrackConf(
         buildGwasTrackConfig({
           trackId,

@@ -11,10 +11,10 @@ fetch + sort-tag values. Chain-only result fields are optional on
 
 ## Group-by partition: pileup per-read, chain per-chain
 
-`groupBy` partitions the single fetch into N ordered sections that the spine runs
-over once each. Pileup uses `partitionFeatures` (per read). Chain uses
-`partitionChains`: reads sharing a QNAME are one chain and move into a section as
-a unit (via the chain's representative read's key), so a chain never splits —
+`groupBy` partitions the single fetch into N ordered sections that the spine
+runs over once each. Pileup uses `partitionFeatures` (per read). Chain uses
+`partitionChains`: reads sharing a QNAME are one chain and move into a section
+as a unit (via the chain's representative read's key), so a chain never splits —
 which would break connecting lines and desync mate rows.
 
 Chain mode therefore only allows **chain-consistent** dimensions — ones where
@@ -22,17 +22,18 @@ every read of a chain yields the same key (`tag`, `firstOfPairStrand`,
 `pairOrientation`). Per-read dimensions (`strand`, `supplementary`, `mapq`,
 `duplicate`) are excluded; a disallowed value from an old session degrades to
 ungrouped (never splits). This is data-driven: the `chainConsistent` flag in
-`GROUP_BY_DIMENSIONS` (`shared/groupFeatures.ts`) is the single source the worker
-guard (`isChainGroupableType`) and the group-by dialog's menu both read, so they
-can't disagree. Adding a `GroupByType` member is a compile error until it's
-classified there.
+`GROUP_BY_DIMENSIONS` (`shared/groupFeatures.ts`) is the single source the
+worker guard (`isChainGroupableType`) and the group-by dialog's menu both read,
+so they can't disagree. Adding a `GroupByType` member is a compile error until
+it's classified there.
 
 Chain numbering (`readChainIndices` → chainIdx) is **per worker call** (per
-region *and* per group), so the same integer means different chains across calls.
-Anything unioning chains across calls must key by chain **name** (`chainNames`),
-not chainIdx — see `buildChainIdMap` / `mergeChains`. Cross-region edge: a chain
-whose grouping tag is present on some mates but missing on others can still split,
-since each region keys its local reads from what it can see.
+region _and_ per group), so the same integer means different chains across
+calls. Anything unioning chains across calls must key by chain **name**
+(`chainNames`), not chainIdx — see `buildChainIdMap` / `mergeChains`.
+Cross-region edge: a chain whose grouping tag is present on some mates but
+missing on others can still split, since each region keys its local reads from
+what it can see.
 
 ## Known limitation: `computeMultiRegionLayout`
 

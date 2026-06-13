@@ -17,6 +17,11 @@ test('pinned timestamp and index disambiguate a batch', () => {
     makeTrackId({ name: 'My Track', adminMode: true, timestamp: 42, index: 3 }),
   ).toBe('my_track-42-3')
   expect(
-    makeTrackId({ name: 'My Track', adminMode: false, timestamp: 42, index: 3 }),
+    makeTrackId({
+      name: 'My Track',
+      adminMode: false,
+      timestamp: 42,
+      index: 3,
+    }),
   ).toBe('my_track-42-3-sessionTrack')
 })

@@ -34,9 +34,9 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('includes "Supplementary/split" only when that bucket occurs', () => {
-    expect(
-      labels('insertSize', ['normalInsert', 'supplementary']),
-    ).toContain('Supplementary/split')
+    expect(labels('insertSize', ['normalInsert', 'supplementary'])).toContain(
+      'Supplementary/split',
+    )
     expect(labels('strand', ['fwdStrand', 'supplementary'])).toEqual([
       'Forward strand',
       'Supplementary/split',

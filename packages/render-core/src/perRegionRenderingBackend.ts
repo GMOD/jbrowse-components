@@ -66,13 +66,14 @@ export interface PerRegionRenderingBackend<
  * blurry on hi-DPI.
  */
 export abstract class Canvas2DPerRegionRenderingBackend<
-    UploadData,
-    RenderState extends FrameDimensions,
-    Block extends RenderBlock = RenderBlock,
-    RenderData = UploadData,
-  >
+  UploadData,
+  RenderState extends FrameDimensions,
+  Block extends RenderBlock = RenderBlock,
+  RenderData = UploadData,
+>
   extends Canvas2DRenderingBackendBase
-  implements PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData>
+  implements
+    PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData>
 {
   uploadRegion(): void {}
   pruneRegions(): void {}
@@ -112,13 +113,14 @@ export abstract class Canvas2DPerRegionRenderingBackend<
  * uniforms and issues draw passes for one already-clipped block.
  */
 export abstract class GpuPerRegionRenderingBackend<
-    UploadData,
-    RenderState extends FrameDimensions,
-    Block extends RenderBlock = RenderBlock,
-    RenderData = UploadData,
-  >
+  UploadData,
+  RenderState extends FrameDimensions,
+  Block extends RenderBlock = RenderBlock,
+  RenderData = UploadData,
+>
   extends GpuRenderingBackendBase
-  implements PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData>
+  implements
+    PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData>
 {
   pruneRegions(activeRegions: Iterable<number>): void {
     this.hal.pruneRegions(activeRegions)

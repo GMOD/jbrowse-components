@@ -5,10 +5,10 @@ mock), the MST draw-lifecycle mixin, the per-region / global backend base
 classes, the React backend hooks, and the shared clip / canvas / hp-math
 utilities.
 
-**This package depends only on `mobx` + `@jbrowse/mobx-state-tree` (+ `react`
-as a peer). It must NOT depend on `@jbrowse/core`** — the dependency runs the
-other way (`@jbrowse/core` and the LGV plugin consume render-core). Keeping it a
-leaf is the whole point: a third-party GPU/Canvas2D display can depend on this
+**This package depends only on `mobx` + `@jbrowse/mobx-state-tree` (+ `react` as
+a peer). It must NOT depend on `@jbrowse/core`** — the dependency runs the other
+way (`@jbrowse/core` and the LGV plugin consume render-core). Keeping it a leaf
+is the whole point: a third-party GPU/Canvas2D display can depend on this
 without pulling in all of core. If you find yourself reaching for something in
 `@jbrowse/core`, either it belongs here too, or the code belongs in core, not
 here.
@@ -16,9 +16,10 @@ here.
 ## Public surface
 
 `src/index.ts` is the **curated, `@experimental` public API** (the barrel a
-third-party plugin imports). Per-file subpath exports (`@jbrowse/render-core/hal`,
-`/renderBlock`, …) also exist for fine-grained imports. `webgpuUtils` and any
-shader codegen are intentionally NOT in the barrel — internal building blocks.
+third-party plugin imports). Per-file subpath exports
+(`@jbrowse/render-core/hal`, `/renderBlock`, …) also exist for fine-grained
+imports. `webgpuUtils` and any shader codegen are intentionally NOT in the
+barrel — internal building blocks.
 
 The old `@jbrowse/core/gpu/*` import paths still resolve: they are thin
 re-export **shims** pointing here, kept so the ~160 in-tree call sites didn't
@@ -51,8 +52,8 @@ no-region-partition displays: HiC, LD, variant matrix).
 
 `useRenderingBackend` owns the whole canvas-init / context-loss / device-loss /
 pagehide / retry lifecycle and wires each event straight to the model's
-`RenderLifecycleMixin` actions (there is no separate generic `useRenderer`
-layer — it was folded in).
+`RenderLifecycleMixin` actions (there is no separate generic `useRenderer` layer
+— it was folded in).
 
 **The conceptual reference is `agent-docs/ARCHITECTURE.md` → "GPU Rendering
 Architecture"** (life of a frame, the three upload patterns, hp-math precision,
@@ -74,11 +75,12 @@ this package_.
   Canvas2D backend; `createCanvas2DBackend` is the Canvas2D-only on-ramp.
 - `RenderLifecycleMixin.ts` — the upload + render autorun pair
   (`attachRenderingBackend`).
-- `useRenderingBackend.ts`, `useTabVisibilityRerender.ts` — the React hooks
-  (+ a local `useEventCallback.ts` copy so the package stays core-free).
+- `useRenderingBackend.ts`, `useTabVisibilityRerender.ts` — the React hooks (+ a
+  local `useEventCallback.ts` copy so the package stays core-free).
 - `installPerRegionLifecycle.ts` — per-key autoruns for per-region streamed
   displays (O(N), not O(N²)).
-- `regionUploadSync.ts` — incremental whole-map upload diff for canvas/alignments.
+- `regionUploadSync.ts` — incremental whole-map upload diff for
+  canvas/alignments.
 - `renderingBackendBase.ts` — `GpuRenderingBackendBase` (hal + uniform scratch +
   HAL-delegating dispose) and `Canvas2DRenderingBackendBase` (canvas + 2D ctx +
   no-op dispose), shared by the per-region and global bases below.
@@ -95,8 +97,9 @@ this package_.
 ## Local invariants
 
 - **HAL parity.** A behavior change to one HAL must land in the other and in
-  `MockHal`. `packages/core/src/gpu/glAttributeSync.test.ts` parses the generated
-  GLSL and asserts every `GL_ATTRIBUTE` matches a shader input — keep it green.
+  `MockHal`. `packages/core/src/gpu/glAttributeSync.test.ts` parses the
+  generated GLSL and asserts every `GL_ATTRIBUTE` matches a shader input — keep
+  it green.
 - **Scissor/viewport are physical pixels, top-left origin.** WebGL flips Y
   internally (`canvas.height - y - h`); WebGPU stores the rect and applies it
   per `drawPass`. Both GPU and Canvas2D clamp the visible span through
@@ -119,10 +122,9 @@ this package_.
   `RenderLifecycleMixin`; plugins compose, never re-declare. `renderError` is
   the single source for the `renderError` terminal phase (`displayPhase`) —
   `useRenderingBackend` writes it via `setRenderError`; don't fork a
-  display-local copy.
-  `attachRenderingBackend` is idempotent — re-calling only swaps the backend
-  (context-loss recovery), and the upload autorun bumps `renderTick` so render
-  re-fires after every upload.
+  display-local copy. `attachRenderingBackend` is idempotent — re-calling only
+  swaps the backend (context-loss recovery), and the upload autorun bumps
+  `renderTick` so render re-fires after every upload.
 - **Renderers stay stateless.** No per-region `Map` on a renderer class —
   delegate buffer lifecycle to `hal.pruneRegions(active)` and read per-region
   data from the model's map passed into `renderBlocks(blocks, regions, state)`.

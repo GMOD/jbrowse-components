@@ -28,8 +28,10 @@ const LGVHighlightSVG = observer(function LGVHighlightSVG({
         .map((r, idx) => {
           const coords = model.getHighlightCoords(r)
           return coords ? (
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- bookmarks have no id and can duplicate; idx only breaks ties
-            <g key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}>
+            <g
+              // eslint-disable-next-line @eslint-react/no-array-index-key
+              key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
+            >
               <rect
                 x={coords.left}
                 y={0}
