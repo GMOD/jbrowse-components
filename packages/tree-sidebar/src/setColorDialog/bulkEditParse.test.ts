@@ -108,7 +108,7 @@ describe('toCSV', () => {
       { name: 'HG1', color: 'red', source: 'HG1' },
       { name: 'HG2', color: 'blue', source: 'HG2' },
     ]
-    const csv = toCSV(rows as Record<string, unknown>[])
+    const csv = toCSV(rows)
     const lines = csv.split('\n')
     expect(lines[0]).toBe('name,color')
     expect(lines[1]).toBe('HG1,red')
@@ -116,13 +116,13 @@ describe('toCSV', () => {
 
   it('quotes fields containing commas', () => {
     const rows = [{ name: 'A,B', color: '' }]
-    const csv = toCSV(rows as Record<string, unknown>[])
+    const csv = toCSV(rows)
     expect(csv).toContain('"A,B"')
   })
 
   it('omits baseUri from export', () => {
     const rows = [{ name: 'HG1', baseUri: 'http://x', color: 'red' }]
-    const csv = toCSV(rows as Record<string, unknown>[])
+    const csv = toCSV(rows)
     expect(csv).not.toContain('baseUri')
   })
 
@@ -131,13 +131,13 @@ describe('toCSV', () => {
       { name: 'HG1', color: '#f00', group: 'tumor' },
       { name: 'HG2', color: '', group: 'normal' },
     ]
-    const csv = toCSV(rows as Record<string, unknown>[])
+    const csv = toCSV(rows)
     const parsed = parseRowsByName(csv)
-    expect(parsed['HG1']).toEqual({
+    expect(parsed.HG1).toEqual({
       name: 'HG1',
       color: '#f00',
       group: 'tumor',
     })
-    expect(parsed['HG2']).toEqual({ name: 'HG2', color: '', group: 'normal' })
+    expect(parsed.HG2).toEqual({ name: 'HG2', color: '', group: 'normal' })
   })
 })
