@@ -2209,6 +2209,95 @@ function App() {
 }
 
 // ---------------------------------------------------------------------------
+// WithGroupByTag — group alignments by HP tag
+// ---------------------------------------------------------------------------
+
+function WithGroupByTagRender() {
+  const { assembly, tracks } = getVolvoxConfig()
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{
+        loc: 'ctgA:39,728..40,459',
+        tracks: [
+          {
+            trackId: 'volvox_bam',
+            displaySnapshot: {
+              type: 'LinearAlignmentsDisplay',
+              groupBy: { type: 'tag', tag: 'HP' },
+            },
+          },
+        ],
+      }}
+    />
+  )
+}
+
+export const WithGroupByTag = {
+  render: WithGroupByTagRender,
+  parameters: {
+    docs: {
+      source: {
+        language: 'tsx',
+        code: `\
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+const assembly = {
+  name: 'volvox',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+    },
+  },
+}
+
+const tracks = [
+  {
+    type: 'AlignmentsTrack',
+    trackId: 'volvox_bam',
+    name: 'volvox-sorted.bam',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'BamAdapter',
+      bamLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox-sorted.bam' },
+      index: { location: { uri: 'https://jbrowse.org/genomes/volvox/volvox-sorted.bam.bai' } },
+    },
+  },
+]
+
+// managed API: props are initial values, the component owns the engine
+function App() {
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{
+        loc: 'ctgA:39,728..40,459',
+        tracks: [
+          {
+            trackId: 'volvox_bam',
+            // pass groupBy as a flat key in displaySnapshot — it is collected
+            // into the display's configOverrides map on load
+            displaySnapshot: {
+              type: 'LinearAlignmentsDisplay',
+              groupBy: { type: 'tag', tag: 'HP' },
+            },
+          },
+        ],
+      }}
+    />
+  )
+}`,
+      },
+    },
+  },
+}
+
+// ---------------------------------------------------------------------------
 // WithMultiSampleVariantDisplay
 // ---------------------------------------------------------------------------
 
