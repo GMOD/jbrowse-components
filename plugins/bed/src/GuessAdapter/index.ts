@@ -31,12 +31,10 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             bedpeLocation: file,
           }
         } else if (
-          testAdapter(
-            fileName,
-            /(star-?fusion|fusion_predictions).*\.tsv(\.gz)?$/i,
-            adapterHint,
-            'StarFusionAdapter',
-          )
+          adapterHint === 'StarFusionAdapter' ||
+          (!adapterHint &&
+            /(star-?fusion|fusion_predictions)/i.test(fileName) &&
+            /\.tsv(\.gz)?$/i.test(fileName))
         ) {
           return {
             type: 'StarFusionAdapter',

@@ -25,6 +25,7 @@
     "typeRoots": ["./node_modules/@types", "."]
   },
   "exclude": [
+    "infrastructure/",
     "**/build/",
     "**/docs/",
     "**/dist/",

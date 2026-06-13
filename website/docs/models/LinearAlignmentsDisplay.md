@@ -682,13 +682,6 @@ LazyExoticComponent<({ model, clientMouseCoord, offsetMouseCoord, }: { model: { 
 string[]
 ```
 
-#### getter: hasPairedReads
-
-```js
-// type
-boolean
-```
-
 #### getter: colorBy
 
 ```js
