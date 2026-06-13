@@ -10,6 +10,7 @@ import {
   removeComments,
   section,
   stripComposedBlock,
+  writeFormatted,
 } from './util.ts'
 
 import type { ComposedRef, Example, ExtractedNode } from './util.ts'
@@ -251,7 +252,7 @@ function memberSection(
     : ''
 }
 
-export function writeModelDocs(byFile: Record<string, StateModel>) {
+export async function writeModelDocs(byFile: Record<string, StateModel>) {
   const dir = 'website/docs/models'
   fs.mkdirSync(dir, { recursive: true })
   const withHeader = Object.values(byFile).filter((m): m is ModelWithHeader =>
@@ -267,7 +268,7 @@ export function writeModelDocs(byFile: Record<string, StateModel>) {
   }
   for (const model of withHeader) {
     const ancestors = collectAncestors(model, index)
-    fs.writeFileSync(
+    await writeFormatted(
       `${dir}/${model.header.name}.md`,
       renderModel(model, ancestors),
     )

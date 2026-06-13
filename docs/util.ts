@@ -1,9 +1,24 @@
 import { exec } from 'child_process'
+import fs from 'fs'
 import { promisify } from 'util'
 
+import { format, resolveConfig } from 'prettier'
 import * as ts from 'typescript'
 
 const exec2 = promisify(exec)
+
+// Generated markdown is hand-authored prose (docstrings) reassembled by code,
+// so its line breaks/blank lines don't reliably match what `pnpm format`
+// would produce. Run it through prettier before writing so generated output
+// is format-clean and `pnpm gendocs` is idempotent.
+export async function writeFormatted(path: string, content: string) {
+  const config = await resolveConfig(path)
+  const formatted = await format(content, {
+    ...config,
+    filepath: path,
+  })
+  fs.writeFileSync(path, formatted)
+}
 
 export type TagType = (typeof TAG_TYPES)[number]
 

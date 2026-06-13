@@ -9,6 +9,7 @@ import {
   parseTaggedComment,
   removeComments,
   section,
+  writeFormatted,
 } from './util.ts'
 
 import type { Example, ExtractedNode } from './util.ts'
@@ -243,7 +244,7 @@ function validateBaseConfig(config: ConfigWithHeader, bases: BaseRef[]) {
   }
 }
 
-export function writeConfigDocs(byFile: Record<string, Config>) {
+export async function writeConfigDocs(byFile: Record<string, Config>) {
   const dir = 'website/docs/config'
   fs.mkdirSync(dir, { recursive: true })
   const withHeader = Object.values(byFile).filter((c): c is ConfigWithHeader =>
@@ -258,7 +259,10 @@ export function writeConfigDocs(byFile: Record<string, Config>) {
   for (const cfg of withHeader) {
     const bases = collectBaseConfigs(cfg, byDeclId, byName)
     validateBaseConfig(cfg, bases)
-    fs.writeFileSync(`${dir}/${cfg.header.name}.md`, renderConfig(cfg, bases))
+    await writeFormatted(
+      `${dir}/${cfg.header.name}.md`,
+      renderConfig(cfg, bases),
+    )
   }
   const noExample = withHeader.filter(c => !c.header.examples.length)
   if (noExample.length) {

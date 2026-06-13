@@ -25,10 +25,10 @@ async function main() {
     accumulateModel(models, obj)
     accumulateApi(api, obj)
   })
-  writeConfigDocs(configs)
-  writeModelDocs(models)
-  writeApiDocs(api)
-  writeApiReadmes(api)
+  await writeConfigDocs(configs)
+  await writeModelDocs(models)
+  await writeApiDocs(api)
+  await writeApiReadmes(api)
   writeColorDocs()
 }
 

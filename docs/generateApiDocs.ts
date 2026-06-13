@@ -7,6 +7,7 @@ import {
   exampleSection,
   parseTaggedComment,
   section,
+  writeFormatted,
 } from './util.ts'
 
 import type { Example, ExtractedNode } from './util.ts'
@@ -99,11 +100,11 @@ ${section(...sorted.map(renderExport))}
 `
 }
 
-export function writeApiDocs(byGroup: Record<string, ApiGroup>) {
+export async function writeApiDocs(byGroup: Record<string, ApiGroup>) {
   const dir = 'website/docs/api'
   fs.mkdirSync(dir, { recursive: true })
   for (const grp of Object.values(byGroup)) {
-    fs.writeFileSync(`${dir}/${grp.id}.md`, renderGroup(grp))
+    await writeFormatted(`${dir}/${grp.id}.md`, renderGroup(grp))
   }
 }
 
@@ -144,7 +145,7 @@ function seedReadme(root: string) {
 // so regeneration is idempotent and never touches hand-written README prose. The
 // block is appended once (replaced in place thereafter). Packages without a
 // README get a minimal one seeded from package.json so the block has a home.
-export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
+export async function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
   const byPackage: Record<string, ApiExport[]> = {}
   for (const grp of Object.values(byGroup)) {
     for (const exp of grp.exports) {
@@ -161,7 +162,7 @@ export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
       : seedReadme(root)
     const block = `${README_START}\n\n${renderReadmeSection(exports)}\n\n${README_END}`
     const re = new RegExp(`${README_START}[\\s\\S]*?${README_END}`)
-    fs.writeFileSync(
+    await writeFormatted(
       readmePath,
       re.test(existing)
         ? existing.replace(re, block)
