@@ -17,21 +17,29 @@ const TrackSelector = observer(function TrackSelector({
   const filteredTracks = model.tracksForAssembly(selectedAssembly)
   const firstTrack = filteredTracks[0]
   const firstTrackId = firstTrack?.track.trackId ?? ''
-  const [selectedTrackId, setSelectedTrackId] = useState(firstTrackId)
 
-  // firstTrackId is a string primitive — stable dep that changes only when the
-  // assembly changes. firstTrack/model are intentionally NOT deps:
-  // tracksForAssembly() returns a fresh array each render, so firstTrack is a
-  // new ref every render — listing it reruns the effect on every render and
-  // clobbers the user's dropdown selection back to the first track.
-  useEffect(() => {
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- sync with MST model on first-track change
+  // Reset the dropdown to the first track when the assembly changes. Adjusting
+  // state during render (instead of in an effect) avoids the extra
+  // render-with-stale-value pass. firstTrackId is a string primitive so the
+  // guard fires only on an actual assembly change, not on every render.
+  const [selectedTrackId, setSelectedTrackId] = useState(firstTrackId)
+  const [prevFirstTrackId, setPrevFirstTrackId] = useState(firstTrackId)
+  if (firstTrackId !== prevFirstTrackId) {
+    setPrevFirstTrackId(firstTrackId)
     setSelectedTrackId(firstTrackId)
+  }
+
+  // Push the first track into the MST model so isReadyToOpen (and thus the Open
+  // button) is satisfied by default. This is a genuine external-store sync, so
+  // it stays in an effect. Gate on the firstTrackId primitive, not firstTrack:
+  // tracksForAssembly() returns a fresh array each render, so depending on
+  // firstTrack would re-run every render and clobber the user's selection.
+  useEffect(() => {
     if (firstTrack) {
       model.setFileSource(firstTrack.loc)
       model.setFileType(firstTrack.type)
     }
-    // eslint-disable-next-line @eslint-react/exhaustive-deps -- see comment above; only re-sync on assembly change
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- only re-sync on assembly change; see comment above
   }, [firstTrackId])
 
   return (
