@@ -1,3 +1,4 @@
+import { isModificationScheme } from './colorSchemes.ts'
 import {
   categorySwatchColor,
   rgb255,
@@ -90,12 +91,7 @@ export function getReadDisplayLegendItems(
       label,
     }))
   }
-  if (
-    (colorType === 'modifications' ||
-      colorType === 'methylation' ||
-      colorType === 'bisulfite') &&
-    visibleModifications
-  ) {
+  if (colorType && isModificationScheme(colorType) && visibleModifications) {
     const items: LegendItem[] = []
     for (const [type, mod] of visibleModifications.entries()) {
       items.push({ color: mod.color, label: type })

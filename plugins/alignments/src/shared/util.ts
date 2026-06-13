@@ -7,15 +7,6 @@ export const defaultFilterFlags = {
   flagExclude: 1540,
 }
 
-export const negFlags = {
-  flagInclude: 16,
-  flagExclude: 1540,
-}
-export const posFlags = {
-  flagInclude: 0,
-  flagExclude: 1556,
-}
-
 export function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {
   const desc = Object.getOwnPropertyDescriptor(ctor.prototype, prop)!
   const getter = desc.get!

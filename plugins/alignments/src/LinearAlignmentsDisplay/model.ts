@@ -64,6 +64,7 @@ import {
   computeStackedSections,
 } from './sectionLayout.ts'
 import { computeArcsRegionMap } from '../features/arcs/compute.ts'
+import { COLOR_SCHEMES, isModificationScheme } from '../shared/colorSchemes.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getColorForModification } from '../util.ts'
@@ -201,32 +202,12 @@ export function maxRowsFor(maxHeight: number, rowHeight: number) {
   )
 }
 
-// colorBy.type → shader colorScheme index. Typed as a total map over
-// ColorSchemeType so a newly added scheme name fails to compile until it is
-// given a shader index here. Aliases listed explicitly:
-//   stranded → firstOfPairStrand
-//   methylation / bisulfite → modifications (same shader path, different config)
-//   perBaseQuality / perBaseLetter → normal (the per-base overlay paints
-//     colored rects on top of a neutral read body; shader uses normal coloring
-//     for the background pass).
-const COLOR_BY_TO_SCHEME: Record<ColorSchemeType, number> = {
-  normal: ColorScheme.normal,
-  strand: ColorScheme.strand,
-  mappingQuality: ColorScheme.mappingQuality,
-  insertSize: ColorScheme.insertSize,
-  insertSizeGradient: ColorScheme.insertSizeGradient,
-  firstOfPairStrand: ColorScheme.firstOfPairStrand,
-  stranded: ColorScheme.firstOfPairStrand,
-  pairOrientation: ColorScheme.pairOrientation,
-  insertSizeAndOrientation: ColorScheme.insertSizeAndOrientation,
-  modifications: ColorScheme.modifications,
-  methylation: ColorScheme.modifications,
-  bisulfite: ColorScheme.modifications,
-  tag: ColorScheme.tag,
-  perBaseQuality: ColorScheme.normal,
-  // Like perBaseQuality, the read body uses the normal shader path; the
-  // per-base nucleotide quads paint over it (see showPerBaseLetter).
-  perBaseLetter: ColorScheme.normal,
+// colorBy.type → shader colorScheme index, resolved through the shared
+// COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
+// path → index map). Total over ColorSchemeType via the registry, so no
+// fallback is needed at the call sites.
+function colorSchemeIndexFor(type: ColorSchemeType) {
+  return ColorScheme[COLOR_SCHEMES[type].shaderScheme]
 }
 
 // Material UI 200-tone palette for color-by-tag values. The first value
@@ -862,7 +843,7 @@ export default function stateModelFactory(
         get colorLegendCategories(): Set<ReadColorCategory> {
           const present = new Set<ReadColorCategory>()
           if (this.showLegend) {
-            const colorScheme = COLOR_BY_TO_SCHEME[this.colorBy.type]
+            const colorScheme = colorSchemeIndexFor(this.colorBy.type)
             const opts = {
               linkedReads: self.linkedReads,
               flipStrandLongReadChains: self.flipStrandLongReadChains,
@@ -1068,16 +1049,14 @@ export default function stateModelFactory(
          * #getter
          */
         get colorSchemeIndex() {
-          // No fallback: COLOR_BY_TO_SCHEME is total over ColorSchemeType.
-          return COLOR_BY_TO_SCHEME[self.colorBy.type]
+          return colorSchemeIndexFor(self.colorBy.type)
         },
 
         /**
          * #getter
          */
         get showModifications() {
-          const t = self.colorBy.type
-          return ['modifications', 'methylation', 'bisulfite'].includes(t)
+          return isModificationScheme(self.colorBy.type)
         },
 
         /**

@@ -4,14 +4,12 @@ import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
 import { radioItems } from './menuHelpers.ts'
+import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
 
-import type {
-  ArcColorByType,
-  ColorBy,
-  ColorSchemeType,
-} from '../../shared/types.ts'
+import type { ColorOption } from '../../shared/colorSchemes.ts'
+import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
@@ -41,11 +39,6 @@ function hasModifications(
   return model.modificationsReady !== undefined
 }
 
-interface ColorOption {
-  label: string
-  type: ColorSchemeType
-}
-
 interface ColorByMenuOptions {
   includeTagOption?: boolean
   colorOptions?: ColorOption[]
@@ -58,88 +51,8 @@ interface ColorByMenuOptions {
   }
 }
 
-// Menu placement for each color scheme. Discriminated so a scheme is either a
-// plain radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu)
-// or 'special' — driven by its own dialog/submenu (tag, modifications,
-// methylation, bisulfite) or a legacy alias never shown on its own ('stranded').
-type ColorSchemeMenu =
-  | { type: ColorSchemeType; kind: 'radio'; label: string; group: ColorGroup }
-  | { type: ColorSchemeType; kind: 'special' }
-
-type ColorGroup = 'basic' | 'pairedEnd'
-
-// Total registry keyed by ColorSchemeType: adding a scheme to the union is a
-// compile error until it is classified here, mirroring COLOR_BY_TO_SCHEME's
-// shader-index map and GROUP_BY_DIMENSIONS. Insertion order is the menu order
-// (Object.values preserves it), so the derived radio lists need no re-sorting.
-const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeMenu> = {
-  normal: { type: 'normal', kind: 'radio', label: 'Normal', group: 'basic' },
-  strand: { type: 'strand', kind: 'radio', label: 'Strand', group: 'basic' },
-  mappingQuality: {
-    type: 'mappingQuality',
-    kind: 'radio',
-    label: 'Mapping quality',
-    group: 'basic',
-  },
-  perBaseQuality: {
-    type: 'perBaseQuality',
-    kind: 'radio',
-    label: 'Per-base quality',
-    group: 'basic',
-  },
-  perBaseLetter: {
-    type: 'perBaseLetter',
-    kind: 'radio',
-    label: 'Per-base lettering',
-    group: 'basic',
-  },
-  insertSize: {
-    type: 'insertSize',
-    kind: 'radio',
-    label: 'Insert size',
-    group: 'pairedEnd',
-  },
-  insertSizeGradient: {
-    type: 'insertSizeGradient',
-    kind: 'radio',
-    label: 'Insert size (gradient)',
-    group: 'pairedEnd',
-  },
-  firstOfPairStrand: {
-    type: 'firstOfPairStrand',
-    kind: 'radio',
-    label: 'First of pair strand',
-    group: 'pairedEnd',
-  },
-  pairOrientation: {
-    type: 'pairOrientation',
-    kind: 'radio',
-    label: 'Pair orientation',
-    group: 'pairedEnd',
-  },
-  insertSizeAndOrientation: {
-    type: 'insertSizeAndOrientation',
-    kind: 'radio',
-    label: 'Insert size and orientation',
-    group: 'pairedEnd',
-  },
-  // 'stranded' is a legacy alias for firstOfPairStrand; tag and the modification
-  // family have their own dialog/submenu rather than a flat radio.
-  stranded: { type: 'stranded', kind: 'special' },
-  tag: { type: 'tag', kind: 'special' },
-  modifications: { type: 'modifications', kind: 'special' },
-  methylation: { type: 'methylation', kind: 'special' },
-  bisulfite: { type: 'bisulfite', kind: 'special' },
-}
-
-type RadioColorScheme = Extract<ColorSchemeMenu, { kind: 'radio' }>
-
-function radioColorOptions(group: ColorGroup): RadioColorScheme[] {
-  return Object.values(COLOR_SCHEMES).filter(
-    (s): s is RadioColorScheme => s.kind === 'radio' && s.group === group,
-  )
-}
-
+// Derived from the shared COLOR_SCHEMES registry (single source of menu
+// placement + shader path), in registry order so the menu is unchanged.
 const basicColorOptions = radioColorOptions('basic')
 const pairedEndColorOptions = radioColorOptions('pairedEnd')
 

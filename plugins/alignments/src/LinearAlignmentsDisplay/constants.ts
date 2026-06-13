@@ -23,10 +23,14 @@ import {
   CS_TAG,
 } from './shaders/slang/read.generated.ts'
 
+import type { ShaderScheme } from '../shared/types.ts'
+
 // Maps each shader color-scheme name to its dispatch index. The values come
 // straight from read.slang's `export-consts` (see read.generated.ts), so this
 // map and the shader switch are generated from one source and cannot drift.
-export const ColorScheme = {
+// Typed `Record<ShaderScheme, number>` so it stays exhaustive over the shader
+// path names that `COLOR_SCHEMES` resolves through it.
+export const ColorScheme: Record<ShaderScheme, number> = {
   normal: CS_NORMAL,
   strand: CS_STRAND,
   mappingQuality: CS_MAPQ,
@@ -37,7 +41,7 @@ export const ColorScheme = {
   modifications: CS_MODIFICATIONS,
   tag: CS_TAG,
   insertSizeGradient: CS_IS_GRADIENT,
-} as const
+}
 
 export const ALIGNMENTS_FUDGE_FACTOR = 0.8
 

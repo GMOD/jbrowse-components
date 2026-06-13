@@ -93,8 +93,9 @@ export function getSortByMenuItem(model: SortByModel) {
   }
 }
 
-// Group-by creates session tracks named `${parentId}-<label>-sessionTrack`
-// (see GroupByDialog.createTrackId); this finds them again to support removal.
+// Older sessions' "split into separate tracks" group-by created session tracks
+// named `${parentId}-<label>-sessionTrack`; this finds them again so they can
+// still be cleaned up (the dialog now only does in-track stacked grouping).
 function getGroupChildTrackConfs(model: IAnyStateTreeNode) {
   const parentId = getContainingTrack(model).configuration.trackId
   const prefix = `${parentId}-`

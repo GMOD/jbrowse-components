@@ -28,11 +28,30 @@ export interface ModificationColorBy {
   cytosineContext?: CytosineContext
 }
 
-// Every color-by scheme. COLOR_BY_TO_SCHEME in the display model is typed
-// `Record<ColorSchemeType, number>`, so adding a member here forces a shader
-// index to be assigned there (compile error otherwise). 'stranded' is a legacy
-// alias for firstOfPairStrand; 'perBaseQuality' renders via the normal shader
-// path. Typing this (vs a bare string) catches scheme-name typos at every
+// Shader color-scheme dispatch paths — the distinct branches read.slang
+// actually implements. Several ColorSchemeTypes share one path: perBaseQuality/
+// perBaseLetter paint over the 'normal' body, methylation/bisulfite reuse
+// 'modifications' with different config, 'stranded' aliases 'firstOfPairStrand'.
+// `COLOR_SCHEMES` (shared/colorSchemes.ts) maps each ColorSchemeType to one of
+// these names; `ColorScheme` (display constants) is typed
+// `Record<ShaderScheme, number>`, so the name list and the shader index map
+// cannot drift.
+export type ShaderScheme =
+  | 'normal'
+  | 'strand'
+  | 'mappingQuality'
+  | 'insertSize'
+  | 'insertSizeGradient'
+  | 'firstOfPairStrand'
+  | 'pairOrientation'
+  | 'insertSizeAndOrientation'
+  | 'modifications'
+  | 'tag'
+
+// Every color-by scheme. `COLOR_SCHEMES` (shared/colorSchemes.ts) is typed
+// `Record<ColorSchemeType, ColorSchemeDef>`, so adding a member here is a
+// compile error until it is classified there with both a shader path and a menu
+// placement. Typing this (vs a bare string) catches scheme-name typos at every
 // construction site.
 export type ColorSchemeType =
   | 'normal'

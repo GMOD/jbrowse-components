@@ -12,6 +12,7 @@ import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
+import { isModificationScheme } from '../shared/colorSchemes.ts'
 import {
   computeChainInsertSizeStats,
   computePairedInsertSizeStats,
@@ -369,12 +370,7 @@ export async function executeRenderAlignmentData({
       drawSingletons,
       drawProperPairs,
     )
-  } else if (
-    (colorBy?.type === 'methylation' ||
-      colorBy?.type === 'modifications' ||
-      colorBy?.type === 'bisulfite') &&
-    sequenceAdapter
-  ) {
+  } else if (colorBy && isModificationScheme(colorBy.type) && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,
       sessionId,
@@ -432,10 +428,7 @@ export async function executeRenderAlignmentData({
   // Pileup tracks per-base strands + reference sequence for modification
   // coverage; chain omits both so runCoveragePipeline skips mod-coverage.
   const trackStrands =
-    !isChain &&
-    (colorBy?.type === 'modifications' ||
-      colorBy?.type === 'methylation' ||
-      colorBy?.type === 'bisulfite')
+    !isChain && !!colorBy && isModificationScheme(colorBy.type)
 
   const ctx: GroupContext = {
     isChain,
