@@ -17,9 +17,11 @@ regionStart-relative arithmetic crosses the worker boundary. See
 
 ## MST
 
-- `@jbrowse/mobx-state-tree` is our internal ESM fork; treat it like upstream MST.
-- Keep the main model chain in one file (e.g. `LinearGenomeView/model.ts`); don't
-  split `.views()`/`.actions()` across files. Small mixins/utilities can be extracted.
+- `@jbrowse/mobx-state-tree` is our internal ESM fork; treat it like upstream
+  MST.
+- Keep the main model chain in one file (e.g. `LinearGenomeView/model.ts`);
+  don't split `.views()`/`.actions()` across files. Small mixins/utilities can
+  be extracted.
 - For a setting that overrides a config-slot default, store `<name>Override` and
   keep the bare `<name>` getter returning a resolved value (never `undefined`).
 - In React, use `autorun` inside `useEffect` to track observables (prefer over

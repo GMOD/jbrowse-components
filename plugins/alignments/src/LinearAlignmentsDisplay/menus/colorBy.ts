@@ -10,6 +10,7 @@ import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
@@ -69,203 +70,223 @@ const cytosineContextOptions: { value: CytosineContext; label: string }[] = [
   { value: 'all', label: 'All cytosines' },
 ]
 
-function getModificationsSubMenu(model: ModificationsModel) {
-  const {
-    modificationThreshold,
-    modificationsReady,
-    visibleModificationTypes,
-  } = model
+const DIVIDER: MenuItem = { type: 'divider' }
 
-  if (!modificationsReady) {
-    return [
-      { label: 'Loading modifications...', disabled: true, onClick: () => {} },
-    ]
-  }
+// --- scheme setters: one place that writes each colorBy shape ---------------
 
-  const modName = (key: string) => modificationData[key]?.name ?? key
+// Preserve a non-default probability threshold across mode switches, but omit it
+// at the default so default sessions don't carry a redundant field.
+function modThresholdField(model: ModificationsModel) {
+  return model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD
+    ? {}
+    : { threshold: model.modificationThreshold }
+}
+
+function setByType(
+  model: ModificationsModel,
+  twoColor: boolean,
+  onlyKey?: string,
+) {
+  model.setColorScheme({
+    type: 'modifications',
+    modifications: {
+      ...(twoColor ? { twoColor: true } : {}),
+      ...(onlyKey
+        ? {
+            hiddenModifications: model.visibleModificationTypes.filter(
+              k => k !== onlyKey,
+            ),
+          }
+        : {}),
+      ...modThresholdField(model),
+    },
+  })
+}
+
+// methylation/bisulfite share the cytosine-context field; both omit the CpG
+// default so CpG sessions don't carry it.
+function setContextScheme(
+  model: ModificationsModel,
+  type: 'methylation' | 'bisulfite',
+  context: CytosineContext,
+) {
+  model.setColorScheme({
+    type,
+    modifications: {
+      ...(type === 'methylation' ? modThresholdField(model) : {}),
+      ...(context === 'CG' ? {} : { cytosineContext: context }),
+    },
+  })
+}
+
+// --- "Color by methylation": red/blue methylated-vs-unmethylated summary -----
+
+// Shown only when a cytosine methylation type (5mC/5hmC) is present — getMethBins
+// summarizes those, so a plain 6mA or RNA-mod track falls through to by-type.
+// The context picker is always visible (no activate-first reveal), and the
+// probability threshold does not apply (each site shows its most-likely state).
+function buildMethylationItem(model: ModificationsModel): MenuItem[] {
+  const isMeth = model.colorBy.type === 'methylation'
+  const context = model.colorBy.modifications?.cytosineContext ?? 'CG'
+  const hasCytosineMeth = model.visibleModificationTypes.some(
+    k => k === 'm' || k === 'h',
+  )
+  return hasCytosineMeth
+    ? [
+        {
+          label: 'Color by methylation',
+          subLabel: 'methylated vs. unmethylated (red / blue)',
+          helpText:
+            'Pick this to see methylation patterns — CpG islands, hypomethylated regions. Colors every cytosine in the chosen context, including ones the basecaller left implicit (so hypomethylation shows as blue), and merges 5mC/5hmC into one call per site. Each site shows its most-likely state (≈50% split), so the probability threshold does not apply here.',
+          subMenu: radioItems<CytosineContext>(
+            cytosineContextOptions,
+            isMeth ? context : undefined,
+            next => {
+              setContextScheme(model, 'methylation', next)
+            },
+          ),
+        },
+      ]
+    : []
+}
+
+// --- "Color by modification type": raw per-call view, any modification -------
+
+function buildByTypeItem(model: ModificationsModel): MenuItem {
+  const { visibleModificationTypes: types, modificationThreshold } = model
   const mods = model.colorBy.modifications
   const hidden = mods?.hiddenModifications ?? []
   const twoColor = !!mods?.twoColor
-  const cytosineContext = mods?.cytosineContext ?? 'CG'
   const isModType = model.colorBy.type === 'modifications'
-  const isMethType = model.colorBy.type === 'methylation'
-
-  // True when all visible types are shown (none in the hidden list).
-  const isAllVisible = !hidden.some(k => visibleModificationTypes.includes(k))
-  // True when exactly this key is visible (all others are hidden).
-  const isOnlyKey = (key: string) =>
-    visibleModificationTypes.every(k => k === key || hidden.includes(k))
-
-  // omit threshold at its default so default sessions don't carry the field
-  const thresholdField =
-    modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD
-      ? {}
-      : { threshold: modificationThreshold }
-
-  const applyModMode = (isTwoColor: boolean, onlyKey?: string) => {
-    model.setColorScheme({
-      type: 'modifications',
-      modifications: {
-        ...(isTwoColor ? { twoColor: true } : {}),
-        ...(onlyKey
-          ? {
-              hiddenModifications: visibleModificationTypes.filter(
-                k => k !== onlyKey,
-              ),
-            }
-          : {}),
-        ...thresholdField,
-      },
-    })
-  }
-
-  const applyMethylation = (context: CytosineContext) => {
-    model.setColorScheme({
-      type: 'methylation',
-      modifications: {
-        ...thresholdField,
-        ...(context === 'CG' ? {} : { cytosineContext: context }),
-      },
-    })
-  }
-
-  // With multiple types show per-type radios so the user filters in one click;
-  // with one type the all/only distinction is meaningless so use mode labels.
-  const multiType = visibleModificationTypes.length > 1
+  const modName = (k: string) => modificationData[k]?.name ?? k
+  // all types shown (none hidden) vs exactly one type shown (rest hidden)
+  const allVisible = !hidden.some(k => types.includes(k))
+  const onlyKey = (k: string) => types.every(t => t === k || hidden.includes(t))
+  // multiple types → per-type radios (filter in one click); single type → the
+  // all/only distinction is meaningless, so use a plain mode label.
+  const multiType = types.length > 1
 
   const byTypeHelpText = `Colors each modification call by its type. Only calls at or above the probability threshold (${modificationThreshold}%) are shown.`
   const twoColorHelpText =
-    'Colors every called base: at least 50% probability in the modification color, below 50% in blue.'
+    'Shades each called base by probability: at least 50% in the modification color, below 50% in blue. Only positions the caller listed are drawn.'
 
-  const byTypeItems = multiType
+  const byTypeRadios: MenuItem[] = multiType
     ? [
         {
           label: 'All modification types',
-          type: 'radio' as const,
-          checked: isModType && !twoColor && isAllVisible,
+          type: 'radio',
+          checked: isModType && !twoColor && allVisible,
           helpText: byTypeHelpText,
           onClick: () => {
-            applyModMode(false)
+            setByType(model, false)
           },
         },
-        ...visibleModificationTypes.map(key => ({
-          label: modName(key),
-          type: 'radio' as const,
-          checked: isModType && !twoColor && isOnlyKey(key),
-          onClick: () => {
-            applyModMode(false, key)
-          },
-        })),
+        ...types.map(
+          (k): MenuItem => ({
+            label: modName(k),
+            type: 'radio',
+            checked: isModType && !twoColor && onlyKey(k),
+            onClick: () => {
+              setByType(model, false, k)
+            },
+          }),
+        ),
       ]
     : [
         {
           label: 'By modification type',
-          type: 'radio' as const,
+          type: 'radio',
           checked: isModType && !twoColor,
           helpText: byTypeHelpText,
           onClick: () => {
-            applyModMode(false)
+            setByType(model, false)
           },
         },
       ]
 
-  const twoColorItems = [
-    ...(multiType ? [{ type: 'divider' as const }] : []),
+  const twoColorRadios: MenuItem[] = [
+    ...(multiType ? [DIVIDER] : []),
     {
       label: multiType ? 'Two-color (all)' : 'Two-color',
-      type: 'radio' as const,
-      checked: isModType && twoColor && (!multiType || isAllVisible),
+      type: 'radio',
+      checked: isModType && twoColor && (!multiType || allVisible),
       helpText: twoColorHelpText,
       onClick: () => {
-        applyModMode(true)
+        setByType(model, true)
       },
     },
     ...(multiType
-      ? visibleModificationTypes.map(key => ({
-          label: `Two-color: ${modName(key)}`,
-          type: 'radio' as const,
-          checked: isModType && twoColor && isOnlyKey(key),
-          onClick: () => {
-            applyModMode(true, key)
-          },
-        }))
-      : []),
-  ]
-
-  const contextLabel =
-    cytosineContextOptions.find(o => o.value === cytosineContext)?.label ??
-    cytosineContext
-
-  // Methylation lives here (not as a separate top-level entry) because it uses
-  // the same MM/ML input data as the modes above — IGV likewise has no separate
-  // methylation mode. The cytosine-context submenu only appears once the user
-  // has activated methylation, keeping it out of the way for most users.
-  const methylationItems = [
-    { type: 'divider' as const },
-    {
-      label: isMethType ? `Methylation (${contextLabel})` : 'Methylation',
-      type: 'radio' as const,
-      checked: isMethType,
-      helpText:
-        'Summarizes methylated vs unmethylated cytosines. Picks the single most likely state per position to avoid double-marking on ONT models that report both 5mC and 5hmC.',
-      onClick: () => {
-        applyMethylation(cytosineContext)
-      },
-    },
-    ...(isMethType
-      ? [
-          {
-            label: `Cytosine context (${contextLabel})`,
-            type: 'subMenu' as const,
-            subMenu: radioItems<CytosineContext>(
-              cytosineContextOptions,
-              cytosineContext,
-              applyMethylation,
-            ),
-          },
-        ]
-      : []),
-  ]
-
-  return [
-    ...byTypeItems,
-    ...twoColorItems,
-    ...methylationItems,
-    ...(isModType || isMethType
-      ? [
-          {
-            label: `Adjust threshold (${modificationThreshold}%)`,
-            helpText:
-              'Minimum probability for a modification call to be shown.',
+      ? types.map(
+          (k): MenuItem => ({
+            label: `Two-color: ${modName(k)}`,
+            type: 'radio',
+            checked: isModType && twoColor && onlyKey(k),
             onClick: () => {
-              getSession(model).queueDialog(handleClose => [
-                SetModificationThresholdDialog,
-                { model, handleClose },
-              ])
+              setByType(model, true, k)
             },
-          },
-        ]
+          }),
+        )
       : []),
   ]
+
+  // Threshold gates only the by-type radios above (see extractModifications:
+  // `prob >= modThreshold`); two-color ignores it (fixed 50% cutoff) and
+  // methylation ignores it (most-likely state). So it lives here, not at the
+  // modifications top level where it would imply it affects every mode.
+  const thresholdItem: MenuItem = {
+    label: `Adjust threshold (${modificationThreshold}%)`,
+    helpText:
+      'Hides modification calls below this probability. Applies to the by-type modes above only — Two-color uses a fixed 50% cutoff and "Color by methylation" shows every cytosine, neither affected by this.',
+    onClick: () => {
+      getSession(model).queueDialog(handleClose => [
+        SetModificationThresholdDialog,
+        { model, handleClose },
+      ])
+    },
+  }
+
+  return {
+    label: 'Color by modification type',
+    subLabel: 'each modification its own color (5mC, 5hmC, 6mA…)',
+    helpText:
+      'Pick this to inspect the raw per-call data or non-methylation modifications. Colors each call by its modification type; only positions the caller listed are drawn. Two-color instead shades each listed call red/blue by probability.',
+    subMenu: [...byTypeRadios, ...twoColorRadios, DIVIDER, thresholdItem],
+  }
 }
 
-// Bisulfite / EM-seq is reference-based (read-vs-reference C->T), so it needs no
-// MM/ML tags and is its own color-by. Each cytosine-context item activates the
-// bisulfite scheme with that context, like IGV's bisulfite context menu.
-function getBisulfiteSubMenu(model: ModificationsModel) {
-  const isBisType = model.colorBy.type === 'bisulfite'
+// MM/ML coloring: the methylation summary (when present) plus the per-call view.
+function buildModificationsItem(model: ModificationsModel): MenuItem {
+  return {
+    label: 'Base modifications (MM tag)',
+    subMenu: model.modificationsReady
+      ? [...buildMethylationItem(model), buildByTypeItem(model)]
+      : [{ label: 'Loading modifications...', disabled: true, onClick() {} }],
+  }
+}
+
+// Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
+// MM/ML tags and applies to any alignments display — but it's only meaningful
+// for bisulfite libraries, so it's tucked under "Advanced".
+function buildAdvancedItem(model: ModificationsModel): MenuItem {
+  const isBis = model.colorBy.type === 'bisulfite'
   const context = model.colorBy.modifications?.cytosineContext ?? 'CG'
-  return radioItems<CytosineContext>(
-    cytosineContextOptions,
-    isBisType ? context : undefined,
-    next => {
-      model.setColorScheme({
-        type: 'bisulfite',
-        // omit the default so CpG sessions don't carry a redundant field
-        modifications: next === 'CG' ? {} : { cytosineContext: next },
-      })
-    },
-  )
+  return {
+    label: 'Advanced',
+    subMenu: [
+      {
+        label: 'Bisulfite / EM-seq (no MM/ML tags)',
+        helpText:
+          'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated red, unmethylated blue, by cytosine context.',
+        subMenu: radioItems<CytosineContext>(
+          cytosineContextOptions,
+          isBis ? context : undefined,
+          next => {
+            setContextScheme(model, 'bisulfite', next)
+          },
+        ),
+      },
+    ],
+  }
 }
 
 export function getColorByMenuItem(
@@ -274,9 +295,9 @@ export function getColorByMenuItem(
 ) {
   const { includeTagOption = false, colorOptions, arcColor } = options
 
-  const colorRadio = ({ label, type }: ColorOption) => ({
+  const colorRadio = ({ label, type }: ColorOption): MenuItem => ({
     label,
-    type: 'radio' as const,
+    type: 'radio',
     checked: model.colorBy.type === type,
     onClick: () => {
       model.setColorScheme({ type })
@@ -285,11 +306,11 @@ export function getColorByMenuItem(
 
   const headItems = (colorOptions ?? basicColorOptions).map(colorRadio)
 
-  const tagItem = includeTagOption
+  const tagItem: MenuItem[] = includeTagOption
     ? [
         {
           label: 'Color by tag...',
-          type: 'radio' as const,
+          type: 'radio',
           checked: model.colorBy.type === 'tag',
           onClick: () => {
             getSession(model).queueDialog((onClose: () => void) => [
@@ -307,58 +328,36 @@ export function getColorByMenuItem(
   const isPairedColorActive = pairedEndColorOptions.some(
     o => model.colorBy.type === o.type,
   )
-  const pairedEndItem =
+  const pairedEndItem: MenuItem[] =
     hasModifications(model) && (model.hasPairedReads || isPairedColorActive)
       ? [
           {
             label: 'Paired end',
-            type: 'subMenu' as const,
             subMenu: pairedEndColorOptions.map(colorRadio),
           },
         ]
       : []
 
   // MM/ML modes only when the data actually carries modifications (still shown
-  // while loading); bisulfite is reference-based so it applies to any alignments
-  // display regardless of MM/ML tags. When regionTooLarge and no types have
-  // ever been loaded, skip the submenu entirely — nothing useful to show.
-  const modItem =
+  // while loading). When regionTooLarge and no types have ever loaded, skip the
+  // submenu — nothing useful to show. Bisulfite (Advanced) is reference-based so
+  // it applies to any alignments display regardless of MM/ML tags.
+  const showMods =
     hasModifications(model) &&
     ((!model.modificationsReady && !model.regionTooLarge) ||
       model.visibleModificationTypes.length > 0)
-      ? [
-          {
-            label: 'Base modifications (MM tag)',
-            type: 'subMenu' as const,
-            subMenu: getModificationsSubMenu(model),
-          },
-        ]
-      : []
 
-  // Bisulfite applies to any alignments display (reference-based, no tags), but
-  // is only meaningful for bisulfite/EM-seq libraries. Tuck it under "Advanced"
-  // so it doesn't clutter the common case — users with such data know to look.
-  const advancedItem = hasModifications(model)
+  const modItems: MenuItem[] = hasModifications(model)
     ? [
-        {
-          label: 'Advanced',
-          type: 'subMenu' as const,
-          subMenu: [
-            {
-              label: 'Bisulfite / EM-seq (C→T)',
-              type: 'subMenu' as const,
-              subMenu: getBisulfiteSubMenu(model),
-            },
-          ],
-        },
+        ...(showMods ? [buildModificationsItem(model)] : []),
+        buildAdvancedItem(model),
       ]
     : []
 
-  const arcColorItem = arcColor
+  const arcColorItem: MenuItem[] = arcColor
     ? [
         {
           label: 'Arc color',
-          type: 'subMenu' as const,
           subMenu: radioItems(
             arcColorOptions,
             arcColor.current,
@@ -376,8 +375,7 @@ export function getColorByMenuItem(
       ...headItems,
       ...tagItem,
       ...pairedEndItem,
-      ...modItem,
-      ...advancedItem,
+      ...modItems,
       ...arcColorItem,
     ],
   }

@@ -1221,7 +1221,7 @@ Track menu items
 
 ```js
 // type signature
-trackMenuItems: () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ ...; } | ... 2 more ... | { ...; })[]; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: contextMenuItems

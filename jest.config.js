@@ -37,7 +37,14 @@ const baseConfig = {
 }
 
 export default {
-  maxWorkers: '25%',
+  // '25%' resolves to a single worker on 4-core CI runners, which Jest runs
+  // in-band in the main process. The full-app integration suites each retain
+  // ~140MB (root model + RPC workers + autoruns are not torn down), so a lone
+  // accumulating process climbs to the heap ceiling and OOMs. Using >1 worker
+  // plus workerIdleMemoryLimit recycles a worker once it grows past the limit,
+  // capping memory regardless of the per-suite leak.
+  maxWorkers: '50%',
+  workerIdleMemoryLimit: '1500MB',
   projects: [
     {
       // Root-level integration test

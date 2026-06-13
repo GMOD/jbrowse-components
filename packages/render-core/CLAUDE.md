@@ -16,11 +16,11 @@ here.
 ## Public surface + naming
 
 `src/index.ts` is the curated `@experimental` public API; per-file subpaths
-(`@jbrowse/render-core/hal`, …) exist for fine-grained imports. `webgpuUtils` and
-shader codegen are intentionally out of the barrel. The old `@jbrowse/core/gpu/*`
-paths still resolve as re-export shims (migration aid, not a second API) — new
-code imports from `@jbrowse/render-core`. Shader codegen + the shared `passes/`
-and `.slang` modules stayed in `@jbrowse/core/gpu`.
+(`@jbrowse/render-core/hal`, …) exist for fine-grained imports. `webgpuUtils`
+and shader codegen are intentionally out of the barrel. The old
+`@jbrowse/core/gpu/*` paths still resolve as re-export shims (migration aid, not
+a second API) — new code imports from `@jbrowse/render-core`. Shader codegen +
+the shared `passes/` and `.slang` modules stayed in `@jbrowse/core/gpu`.
 
 `Gpu` prefix = WebGL/WebGPU-specific (`GpuHal`, `gpuDevice`, the `Gpu*Backend`
 bases). Anything driving **both** GPU and Canvas2D is backend-agnostic with a
@@ -30,7 +30,8 @@ runs the Canvas2D fallback. `useRenderingBackend` owns the whole canvas-init /
 context-loss / device-loss / pagehide / retry lifecycle.
 
 **Conceptual reference: `agent-docs/ARCHITECTURE.md` → "GPU Rendering
-Architecture."** This file documents only what bites when editing _this package_.
+Architecture."** This file documents only what bites when editing _this
+package_.
 
 ## Local invariants
 

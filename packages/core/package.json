@@ -75,7 +75,6 @@
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
-    "./rpc/coreRpcMethods": "./src/rpc/coreRpcMethods.ts",
     "./ui": "./src/ui/index.ts",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
     "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
@@ -421,10 +420,6 @@
       "./rpc/RpcRegistry": {
         "types": "./esm/rpc/RpcRegistry.d.ts",
         "import": "./esm/rpc/RpcRegistry.js"
-      },
-      "./rpc/coreRpcMethods": {
-        "types": "./esm/rpc/coreRpcMethods.d.ts",
-        "import": "./esm/rpc/coreRpcMethods.js"
       },
       "./ui": {
         "types": "./esm/ui/index.d.ts",
@@ -889,9 +884,6 @@
         ],
         "rpc/RpcRegistry": [
           "esm/rpc/RpcRegistry.d.ts"
-        ],
-        "rpc/coreRpcMethods": [
-          "esm/rpc/coreRpcMethods.d.ts"
         ],
         "ui": [
           "esm/ui/index.d.ts"

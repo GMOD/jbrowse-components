@@ -95,11 +95,20 @@ export function migrateAlignmentsSnapshot(
   if (result.PileupDisplay || result.SNPCoverageDisplay) {
     const { PileupDisplay, SNPCoverageDisplay, snpCovHeight, ...rest } = result
     const pileup = (PileupDisplay ?? {}) as Record<string, unknown>
+    // Released nested-format sessions stored the inner pileup settings under the
+    // `*Setting` names (`colorBySetting`/`filterBySetting`); only the very first
+    // builds used the bare `colorBy`/`filterBy`. Read both so the pileup's
+    // coloring survives. featureHeight/noSpacing/userByteSizeLimit are lifted
+    // out of the sub-display too (the rest of the pipeline folds them into the
+    // flat override keys) — otherwise the dense methylation pileup view is lost.
     result = {
       ...rest,
       showSoftClipping: pileup.showSoftClipping ?? false,
-      colorBySetting: pileup.colorBy,
-      filterBySetting: pileup.filterBy,
+      featureHeight: pileup.featureHeight,
+      noSpacing: pileup.noSpacing,
+      userByteSizeLimit: pileup.userByteSizeLimit ?? rest.userByteSizeLimit,
+      colorBySetting: pileup.colorBySetting ?? pileup.colorBy,
+      filterBySetting: pileup.filterBySetting ?? pileup.filterBy,
       coverageHeight: snpCovHeight ?? 45,
     }
   }

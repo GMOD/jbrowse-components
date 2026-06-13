@@ -23,13 +23,13 @@ The biggest piece of subtlety. Read this before changing any of:
 
 ### Why frozen + hydration
 
-`jbrowse.tracks` is `types.frozen` (plain JS objects) because holding 10k+ tracks
-as MST instances is prohibitive. Track configs hydrate to MST nodes **lazily** on
-first reference access, inside `TrackConfigurationReference.get()` via
-`frozenTrackCache` (a `WeakMap<frozenObj, MstNode>` in `configurationSchema.ts`):
-same frozen object → same MST node (identity-stable); `updateTrackConf` replacing
-the entry drops the WeakMap entry so the next access rehydrates; never-opened
-tracks never hydrate.
+`jbrowse.tracks` is `types.frozen` (plain JS objects) because holding 10k+
+tracks as MST instances is prohibitive. Track configs hydrate to MST nodes
+**lazily** on first reference access, inside `TrackConfigurationReference.get()`
+via `frozenTrackCache` (a `WeakMap<frozenObj, MstNode>` in
+`configurationSchema.ts`): same frozen object → same MST node (identity-stable);
+`updateTrackConf` replacing the entry drops the WeakMap entry so the next access
+rehydrates; never-opened tracks never hydrate.
 
 ### Invalid configs (lazy hydration can throw)
 

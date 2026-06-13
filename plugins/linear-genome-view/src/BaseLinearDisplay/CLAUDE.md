@@ -104,6 +104,6 @@ axis, not a `loadedRegions` bounds axis).
 Tests in `fetchLifecycle.test.ts` / `fetchAutorun.test.ts` /
 `fetchAutorunIntegration.test.ts` use simplified shapes vs production — notably
 `fetchLifecycle` renames `activeStopToken`→`renderingStopToken` and adds a
-test-only `dataVersion` counter, and uses wrapped `{ region,
-displayedRegionIndex }` blocks where production blocks are flat. Check the test
-helpers before assuming a field name matches the model.
+test-only `dataVersion` counter, and uses wrapped
+`{ region, displayedRegionIndex }` blocks where production blocks are flat.
+Check the test helpers before assuming a field name matches the model.

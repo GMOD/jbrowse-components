@@ -135,6 +135,37 @@ describe('migrateAlignmentsSnapshot', () => {
     expect(result).not.toHaveProperty('snpCovHeight')
   })
 
+  // Real released sessions (e.g. the COLO829 nanopore methylation demo) stored
+  // the inner pileup as `colorBySetting`/`noSpacing`/`featureHeight`, not the
+  // bare `colorBy`. Reading only `pileup.colorBy` silently dropped the coloring.
+  test('migrates nested PileupDisplay with colorBySetting + dense view', () => {
+    const snap = {
+      type: 'LinearAlignmentsDisplay',
+      PileupDisplay: {
+        type: 'LinearPileupDisplay',
+        featureHeight: 2,
+        noSpacing: true,
+        userByteSizeLimit: 15284906,
+        showSoftClipping: false,
+        colorBySetting: {
+          type: 'modifications',
+          modifications: { twoColor: true },
+        },
+      },
+      SNPCoverageDisplay: {},
+      snpCovHeight: 45,
+    }
+    const result = migrateAlignmentsSnapshot(snap)
+    expect(result.colorBy).toEqual({
+      type: 'modifications',
+      modifications: { twoColor: true },
+    })
+    expect(result.featureHeight).toBe(2)
+    expect(result.featureSpacing).toBe(0)
+    expect(result.userByteSizeLimit).toBe(15284906)
+    expect(result).not.toHaveProperty('PileupDisplay')
+  })
+
   test('migrates LinearSNPCoverageDisplay type and properties', () => {
     const snap = {
       type: 'LinearSNPCoverageDisplay',

@@ -168,8 +168,7 @@ export default class HicFile {
       const chr = {
         index: i,
         name: binaryParser.getString(),
-        size:
-          this.version < 9 ? binaryParser.getInt() : binaryParser.getLong(),
+        size: this.version < 9 ? binaryParser.getInt() : binaryParser.getLong(),
       }
       this.chromosomes.push(chr)
       this.chromosomeIndexMap[chr.name] = chr.index
@@ -347,7 +346,9 @@ export default class HicFile {
                 const y = rec.bin2
                 const nvnv = normVector1[x - nvX1]! * normVector2[y - nvY1]!
                 if (nvnv !== 0 && !isNaN(nvnv)) {
-                  contactRecords.push(new ContactRecord(x, y, rec.counts / nvnv))
+                  contactRecords.push(
+                    new ContactRecord(x, y, rec.counts / nvnv),
+                  )
                 }
               } else {
                 contactRecords.push(rec)
@@ -405,7 +406,9 @@ export default class HicFile {
         }
 
         const newBlocks = await Promise.all(
-          blockNumbersToQuery.map(blockNumber => this.readBlock(blockNumber, zd)),
+          blockNumbersToQuery.map(blockNumber =>
+            this.readBlock(blockNumber, zd),
+          ),
         )
         for (const block of newBlocks) {
           if (block) {
@@ -542,8 +545,7 @@ export default class HicFile {
         const idx = normVectorIndex[key]!
         const data = await this.file.read(idx.filePosition, 8)
         const parser = new BinaryParser(new DataView(data))
-        const nValues =
-          this.version < 9 ? parser.getInt() : parser.getLong()
+        const nValues = this.version < 9 ? parser.getInt() : parser.getLong()
         const dataType = this.version < 9 ? DOUBLE : FLOAT
         const filePosition =
           this.version < 9 ? idx.filePosition + 4 : idx.filePosition + 8
@@ -678,7 +680,8 @@ export default class HicFile {
       buf = await file.read(chunkStart + chunkSize, INT)
       parser = new BinaryParser(new DataView(buf))
       const nChrScaleFactors = parser.getInt()
-      chunkSize += INT + nChrScaleFactors * (INT + (version < 9 ? DOUBLE : FLOAT))
+      chunkSize +=
+        INT + nChrScaleFactors * (INT + (version < 9 ? DOUBLE : FLOAT))
 
       return remaining - 1 === 0
         ? p0 + chunkSize

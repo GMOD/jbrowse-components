@@ -131,3 +131,12 @@ version next? It'd slot in as an optional overlay on the linear synteny display.
 
 One note: this touched getWeightedMeans, shared by the PAF/Delta/Chain/MashMap adapters — existing sessions with colorBy: 'meanQueryIdentity' will now show true identity instead of normalized MAPQ.
 That's the intended correctness fix, but flagging it as a behavior change.
+
+
+## Document modifications
+
+
+ Capture the three-views distinction in the user guide. We did a lot of real-data analysis
+  (dorado thresholding, CpG-fill, plant CHH, 5mC/5hmC collapse). A short doc with a screenshot —
+  "methylation vs by-type vs bisulfite, when to use each" — would save the next confused user.
+  Optional.

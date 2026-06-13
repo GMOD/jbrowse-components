@@ -44,8 +44,8 @@ fetch-result derivative in `rpcProps()` (infinite loop — see
 
 `colorTagMap` is the canonical trap: it's derived from worker output, so feeding
 it back through `rpcProps()` makes a discover→assign→refetch loop. It's now
-tier-2 — worker reports raw `readTagValues`, main thread bakes `readTagColors` in
-`laidOutPileupMap`. Keep `colorTagMap` out of `rpcProps()`.
+tier-2 — worker reports raw `readTagValues`, main thread bakes `readTagColors`
+in `laidOutPileupMap`. Keep `colorTagMap` out of `rpcProps()`.
 
 ## Layout architecture
 
@@ -80,10 +80,10 @@ connecting lines / Flatbush.
 
 On-screen and SVG export share one builder: `renderSvg.tsx` calls
 `drawAlignmentsToCtx` (wraps `buildAlignmentsRegionMap` + `drawAlignmentBlocks`)
-— the same `drawAlignmentBlocks` the on-screen `Canvas2DAlignmentsRenderer` uses,
-against a real canvas or an `SvgCanvas`. Everything (coverage, arcs, pileup,
-mismatches, clips, modifications, connecting lines) flows through this unified
-pass — don't reintroduce parallel SVG-only draw functions.
+— the same `drawAlignmentBlocks` the on-screen `Canvas2DAlignmentsRenderer`
+uses, against a real canvas or an `SvgCanvas`. Everything (coverage, arcs,
+pileup, mismatches, clips, modifications, connecting lines) flows through this
+unified pass — don't reintroduce parallel SVG-only draw functions.
 
 ### Arc band placement (`computeArcBand`) and z-order
 

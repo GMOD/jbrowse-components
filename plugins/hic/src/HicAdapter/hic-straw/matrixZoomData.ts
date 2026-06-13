@@ -2,12 +2,7 @@
 // https://github.com/igvteam/hic-straw
 
 import type BinaryParser from './binary.ts'
-import type {
-  BlockIndexEntry,
-  Chromosome,
-  HicRegion,
-  Zoom,
-} from './types.ts'
+import type { BlockIndexEntry, Chromosome, HicRegion, Zoom } from './types.ts'
 
 class StaticBlockIndex {
   private blockIndex: Record<number, BlockIndexEntry> = {}
@@ -81,12 +76,14 @@ export default class MatrixZoomData {
       // PAD = positionAlongDiagonal (~projected). Depth is the axis
       // perpendicular to the diagonal; nearer means closer to the diagonal.
       const translatedLowerPAD = Math.floor((binX1 + binY1) / 2 / blockBinCount)
-      const translatedHigherPAD = Math.floor((binX2 + binY2) / 2 / blockBinCount)
+      const translatedHigherPAD = Math.floor(
+        (binX2 + binY2) / 2 / blockBinCount,
+      )
       const translatedNearerDepth = Math.floor(
-        Math.log2(1 + (Math.abs(binX1 - binY2) / Math.sqrt(2)) / blockBinCount),
+        Math.log2(1 + Math.abs(binX1 - binY2) / Math.sqrt(2) / blockBinCount),
       )
       const translatedFurtherDepth = Math.floor(
-        Math.log2(1 + (Math.abs(binX2 - binY1) / Math.sqrt(2)) / blockBinCount),
+        Math.log2(1 + Math.abs(binX2 - binY1) / Math.sqrt(2) / blockBinCount),
       )
 
       // code above assumes above diagonal, but we could be below it
