@@ -36,6 +36,8 @@ import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
 const SCROLLBAR_WIDTH = 12
 const COMPACT_AXIS_HEIGHT = 30
+// left-orientation g translates by AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET
+const AXIS_SVG_WIDTH = 50
 
 const useStyles = makeStyles()(theme => ({
   scrollbarTrack: {
@@ -445,7 +447,7 @@ const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
         right: SCROLLBAR_WIDTH + 2,
         pointerEvents: 'none',
         height: section.coverageHeight,
-        width: 50,
+        width: AXIS_SVG_WIDTH,
       }}
     >
       <YScaleBar ticks={coverageTicks} orientation="right" />
@@ -479,10 +481,10 @@ const UngroupedCoverageAxis = observer(function UngroupedCoverageAxis({
         left: scalebarOverlapLeft,
         pointerEvents: 'none',
         height: section.coverageHeight,
-        width: 50,
+        width: AXIS_SVG_WIDTH,
       }}
     >
-      <g transform="translate(45, 0)">
+      <g transform={`translate(${AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET}, 0)`}>
         <YScaleBar ticks={coverageTicks} orientation="left" />
       </g>
     </svg>
@@ -525,12 +527,12 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
         ...(readConnectionsDown ? { left: 0 } : { right: 0 }),
         pointerEvents: 'none',
         height,
-        width: 50,
+        width: AXIS_SVG_WIDTH,
       }}
     >
       <g transform={`translate(0, ${yShift})`}>
         {readConnectionsDown ? (
-          <g transform="translate(45, 0)">
+          <g transform={`translate(${AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET}, 0)`}>
             <YScaleBar ticks={insertSizeTicks} orientation="left" />
           </g>
         ) : (
