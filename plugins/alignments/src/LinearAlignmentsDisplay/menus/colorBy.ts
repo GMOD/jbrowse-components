@@ -26,7 +26,6 @@ interface ColorByModel {
 export interface ModificationsModel extends ColorByModel {
   modificationsReady: boolean
   regionTooLarge: boolean
-  hasPairedReads: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
 }
@@ -322,21 +321,14 @@ export function getColorByMenuItem(
       ]
     : []
 
-  // Paired-end options are only useful when paired reads are present. Hide the
-  // submenu until the first fetch confirms they exist. Also show if a paired-end
-  // color mode is already active (e.g. from a saved session before data loads).
-  const isPairedColorActive = pairedEndColorOptions.some(
-    o => model.colorBy.type === o.type,
-  )
-  const pairedEndItem: MenuItem[] =
-    hasModifications(model) && (model.hasPairedReads || isPairedColorActive)
-      ? [
-          {
-            label: 'Paired end',
-            subMenu: pairedEndColorOptions.map(colorRadio),
-          },
-        ]
-      : []
+  const pairedEndItem: MenuItem[] = hasModifications(model)
+    ? [
+        {
+          label: 'Paired end',
+          subMenu: pairedEndColorOptions.map(colorRadio),
+        },
+      ]
+    : []
 
   // MM/ML modes only when the data actually carries modifications (still shown
   // while loading). When regionTooLarge and no types have ever loaded, skip the

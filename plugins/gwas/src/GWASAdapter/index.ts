@@ -37,6 +37,8 @@ export default function GWASAdapterF(pluginManager: PluginManager) {
       name: 'GWASAdapter',
       displayName: 'GWAS adapter',
       configSchema,
+      // No GWAS-specific parsing: reuse BedTabixAdapter's class as-is, only the
+      // config defaults above differ.
       getAdapterClass: res.getAdapterClass,
     })
   })
