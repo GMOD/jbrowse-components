@@ -742,6 +742,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi2",
       "name": "MultiWig no names",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -777,6 +778,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi",
       "name": "MultiWig",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -818,6 +820,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi_multirowxy",
       "name": "MultiWig (multirowxy)",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -849,6 +852,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi_multirowdensity",
       "name": "MultiWig (multirowdensity)",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -880,6 +884,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi_multirowline",
       "name": "MultiWig (multirowline)",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -911,6 +916,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "mytrack",
       "name": "MultiWig (w/ colors and default line rendering)",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
