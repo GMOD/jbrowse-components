@@ -47,10 +47,7 @@ test('test stats estimation pileup, force load to see', async () => {
   expectCanvasMatch(findCanvasIn(display))
 }, 60000)
 
-// skip: canvas rendering for LinearVariantDisplay produces empty output
-// in jsdom (node-canvas mock doesn't cover the GPU canvas2d fallback path).
-// Move to browser-tests.
-test.skip('test stats estimation on vcf track, zoom in to see', async () => {
+test('test stats estimation on vcf track, zoom in to see', async () => {
   const { view, findAllByText, findByTestId, findAllByTestId } =
     await createView()
   view.setNewView(34, 5)
@@ -85,7 +82,7 @@ test.skip('test stats estimation on vcf track, zoom in to see', async () => {
   expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 30000)
 
-test.skip('test stats estimation on vcf track, force load to see', async () => {
+test('test stats estimation on vcf track, force load to see', async () => {
   const { view, findAllByText, findByTestId, findAllByTestId } =
     await createView()
   view.setNewView(34, 5)

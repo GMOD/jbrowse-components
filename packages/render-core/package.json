@@ -43,7 +43,7 @@
     "./useTabVisibilityRerender": "./src/useTabVisibilityRerender.ts"
   },
   "scripts": {
-    "build:esm": "tsgo -p tsconfig.build.esm.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/render-core",
     "clean": "rimraf esm *.tsbuildinfo",

@@ -21,6 +21,7 @@ export default defineConfig(
 
       // Config and tooling
       'config/jest',
+      'infrastructure',
       'jest.config.js',
       'babel.config.cjs',
       'eslint.config.mjs',
