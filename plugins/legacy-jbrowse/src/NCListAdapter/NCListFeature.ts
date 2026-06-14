@@ -97,7 +97,9 @@ export default class NCListFeature implements Feature {
       const mappedTag = this.jb1TagToJb2Tag(tag)
       const value = this.ncFeature.get(tag)
       if (mappedTag === 'subfeatures') {
-        data.subfeatures = ((value as NCListRawFeature[] | undefined) ?? []).map(
+        data.subfeatures = (
+          (value as NCListRawFeature[] | undefined) ?? []
+        ).map(
           // note: was new NCListFeature(f, `${this.id()}-${i}`, this).toJSON()
           f => new NCListFeature(f, this).toJSON(),
         )

@@ -8,7 +8,7 @@ import {
   chevronShader,
   lineShader,
   rectShader,
-} from '@jbrowse/core/gpu/passes'
+} from '../passes/index.ts'
 
 const ARROW_SHADER = arrowShader.WGSL_SOURCE
 const CHEVRON_SHADER = chevronShader.WGSL_SOURCE

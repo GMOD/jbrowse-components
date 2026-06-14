@@ -1,3 +1,7 @@
+import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+
+import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
 import {
   ARROW_PASS as PASS_ARROW,
   ArrowPass,
@@ -12,11 +16,7 @@ import {
   packLines,
   packRects,
   rectShader,
-} from '@jbrowse/core/gpu/passes'
-import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
-import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-
-import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
+} from '../passes/index.ts'
 
 import type {
   FeatureRenderBlock,

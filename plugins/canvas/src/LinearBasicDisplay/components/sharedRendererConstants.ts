@@ -23,4 +23,4 @@ export {
   MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
-} from '@jbrowse/core/gpu/passes'
+} from '../passes/index.ts'

@@ -1,9 +1,11 @@
-// Shared GPU pass library: the proven LGV feature-glyph passes (rect, line,
-// arrow, chevron) promoted out of the canvas plugin so any plugin can compose
-// them without re-authoring `.slang` (RFC-001 §5). These are building blocks —
-// a consuming renderer still owns its pass list, upload, and draw loop; the
-// library just supplies the shader modules, ready PassDescriptors, and the
-// generated struct-of-arrays packers.
+// The LGV feature-glyph passes (rect, line, arrow, chevron) for the canvas
+// plugin's GpuCanvasFeatureRenderer. Only this plugin consumes them today; they
+// were drafted as a cross-plugin "shared shape library" (RFC-001 §5) but until a
+// second consumer appears they live here, alongside the renderer that uses them.
+// Promote to @jbrowse/render-core if/when another plugin needs the same shapes.
+// These are building blocks — the renderer still owns its pass list, upload, and
+// draw loop; this module just supplies the shader modules, ready PassDescriptors,
+// and the generated struct-of-arrays packers.
 //
 // All four passes share the `FeatureGlyphUniforms` UBO (see
 // shaders/featureGlyphUniforms.slang): an hp-math bp range, canvas dimensions,

@@ -20,9 +20,9 @@ invoked by the root `gen:shaders` script and CI's
 
 - **Repo-coupled, for now.** `build-shaders.ts` derives `REPO_ROOT` from its own
   location (three levels up from `src/`) and walks the whole workspace;
-  `SHARED_INCLUDE` is hardcoded to `packages/core/src/gpu/shaders` (the shared
-  `.slang` modules `hpmath`/`colorPack`). It is **not yet** parameterized for
-  use in an external plugin repo — making it a portable third-party CLI (per
+  `SHARED_INCLUDE` is hardcoded to `packages/render-core/src/shaders` (the
+  shared `.slang` modules `hpmath`/`colorPack`). It is **not yet** parameterized
+  for use in an external plugin repo — making it a portable third-party CLI (per
   ADR-030) means lifting those two assumptions into args/config first.
 - **Never hand-edit `*.generated.ts`.** Edit the `.slang` source and run
   `pnpm gen:shaders`; CI's `git diff --exit-code` catches stale output. See

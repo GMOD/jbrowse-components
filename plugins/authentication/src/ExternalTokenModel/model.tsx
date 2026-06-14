@@ -12,7 +12,10 @@ import type {
   ExternalTokenInternetAccountConfig,
   ExternalTokenInternetAccountConfigModel,
 } from './configSchema.ts'
-import type { AbstractSessionModel, UriLocation } from '@jbrowse/core/util/types'
+import type {
+  AbstractSessionModel,
+  UriLocation,
+} from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // internet accounts live on the root model (a sibling of session), so read

@@ -847,7 +847,11 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg002_pacbio_hp_slice',
-              displaySnapshot: { type: 'LinearAlignmentsDisplay', height: 130 },
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                height: 130,
+                groupBy: { type: 'tag', tag: 'HP' },
+              },
             },
           ],
         },
@@ -860,26 +864,8 @@ export const specs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'waitForText', text: 'Group by...' },
-          { type: 'delay', ms: 300 },
-          { type: 'hover', text: 'Group by...' },
-          { type: 'waitForText', text: 'Group by tag or strand...' },
-          { type: 'delay', ms: 300 },
-          { type: 'click', text: 'Group by tag or strand...' },
-          { type: 'waitForText', text: 'creates one new session track' },
-          { type: 'delay', ms: 500 },
-          { type: 'click', selector: '[role="dialog"] [role="combobox"]' },
-          { type: 'waitForText', text: 'Tag' },
-          { type: 'delay', ms: 300 },
-          { type: 'click', text: 'Tag' },
-          {
-            type: 'type',
-            selector: '[data-testid="group-tag-name-input"]',
-            value: 'HP',
-          },
-          { type: 'waitForText', text: 'Found unique' },
-          { type: 'delay', ms: 500 },
+          { type: 'waitForText', text: 'HP:1' },
+          { type: 'delay', ms: 7000 },
         ],
         annotations: [
           {
@@ -890,13 +876,6 @@ export const specs: ScreenshotSpec[] = [
             background: 'rgba(0,0,0,0.78)',
             textColor: '#fff',
           },
-        ],
-      },
-      {
-        actions: [
-          { type: 'click', text: 'Submit' },
-          { type: 'waitForText', text: 'HP:1' },
-          { type: 'delay', ms: 7000 },
         ],
       },
     ],

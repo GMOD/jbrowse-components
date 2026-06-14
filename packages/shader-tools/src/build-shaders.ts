@@ -47,8 +47,11 @@ const SLANGC_CACHE = `${REPO_ROOT}/.cache/slangc/bin/slangc`
 const NAGA = process.env.NAGA ?? 'naga'
 const GLSLANG = process.env.GLSLANG ?? 'glslangValidator'
 // Shaders live alongside their plugin, but shared modules (hpmath, etc.) live
-// in core so any shader can `import hpmath;`.
-const SHARED_INCLUDE = path.resolve(REPO_ROOT, 'packages/core/src/gpu/shaders')
+// in render-core so any shader can `import hpmath;`.
+const SHARED_INCLUDE = path.resolve(
+  REPO_ROOT,
+  'packages/render-core/src/shaders',
+)
 
 function ensureSlangc() {
   if (process.env.SLANGC) {

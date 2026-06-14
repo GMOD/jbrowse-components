@@ -83,7 +83,7 @@ export function cssColorToABGR(color: string) {
 
 // Pack a 0..1 normalized RGB triple into an ABGR u32 (opaque alpha). Inverse
 // of cssColorToNormalizedRgb at the GPU write boundary — the shader side
-// unpacks with unpackRGBA() (see packages/core/src/gpu/shaders/colorPack.slang).
+// unpacks with unpackRGBA() (see packages/render-core/src/shaders/colorPack.slang).
 export function normalizedRgbToABGR(r: number, g: number, b: number) {
   return packAbgr(
     Math.round(r * 255),
