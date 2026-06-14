@@ -48,8 +48,9 @@ interface CanvasHandle {
 // The two subtree-replacing states (renderError, tooLarge) **early-`return`**
 // their own component; `error` and `loading` are overlays drawn *over* the
 // still-mounted canvas (the `ready` branch). Two non-obvious constraints make
-// this work — both confirmed by instrumenting StatsEstimation.test, both
-// reintroduce a real bug if violated:
+// this work — guarded directly by DisplayChrome.test.tsx (co-located, fast) and
+// originally confirmed by instrumenting StatsEstimation.test (the heavier
+// integration guard); both reintroduce a real bug if violated:
 //
 //   1. The terminal UI must be a literal early-`return`, NOT a branch of a
 //      single ternary `return`. The two produce an identical React element

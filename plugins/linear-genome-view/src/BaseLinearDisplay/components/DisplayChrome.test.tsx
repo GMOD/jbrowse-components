@@ -53,7 +53,7 @@ const TestChromeModel = types
     canvasDrawn: false,
     statusMessage: types.maybe(types.string),
   })
-  .volatile(() => ({
+  .volatile((): { error: unknown; renderError: unknown; loadingCondition: boolean } => ({
     error: undefined,
     renderError: undefined,
     loadingCondition: false,
