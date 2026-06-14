@@ -14,9 +14,11 @@ the same view yourself.
 
 ## What does RNA-seq look like in the genome browser?
 
-Here is an RNA-seq BAM file shown in JBrowse 2:
-
-<Figure caption="An RNA-seq BAM file in JBrowse 2. Each grey box is a read; the thin teal lines that jump across a gap are spliced alignments, where a read maps partly to one exon and partly to the next, skipping the intron between them. The histogram along the top shows read coverage at each position, and the orange and green track at top is the reference gene annotation (from a GFF downloaded from NCBI)." src="/img/rnaseq/basic_splicing.png" />
+Open the live demo to see an RNA-seq BAM file in JBrowse 2. Each grey box is a
+read; the thin teal lines that jump across a gap are spliced alignments, where a
+read maps partly to one exon and partly to the next, skipping the intron between
+them. The histogram along the top shows read coverage at each position, and the
+reference gene annotation (from a GFF downloaded from NCBI) sits above it.
 
 [Live demo — RNA-seq BAM at ACTB](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5567000-5570000","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
 

@@ -506,30 +506,66 @@ async function drawAnnotations(page: Page, annotations: Annotation[]) {
             svg.appendChild(text)
           }
         } else if (a.type === 'text' && a.text) {
+          // Uniform callout style: white pill, red border, black text, larger
+          // default font, with word-wrapping once a line exceeds maxWidth.
+          const fontFamily = 'system-ui, sans-serif'
+          const fontWeight = '600'
+          const fontSize = Math.max(a.fontSize ?? 22, 18)
+          const maxWidth = a.maxWidth ?? 420
+          const measure = (s: string) => {
+            const t = document.createElementNS(NS, 'text')
+            t.setAttribute('font-family', fontFamily)
+            t.setAttribute('font-size', String(fontSize))
+            t.setAttribute('font-weight', fontWeight)
+            t.textContent = s
+            svg.appendChild(t)
+            const w = t.getBBox().width
+            svg.removeChild(t)
+            return w
+          }
+          const lines: string[] = []
+          let cur = ''
+          for (const word of a.text.split(/\s+/)) {
+            const test = cur ? `${cur} ${word}` : word
+            if (cur && measure(test) > maxWidth) {
+              lines.push(cur)
+              cur = word
+            } else {
+              cur = test
+            }
+          }
+          if (cur) {
+            lines.push(cur)
+          }
+          const lineHeight = fontSize * 1.25
           const text = document.createElementNS(NS, 'text')
           text.setAttribute('x', String(cx))
           text.setAttribute('y', String(cy))
-          text.setAttribute('fill', a.textColor ?? color)
-          text.setAttribute('font-family', 'system-ui, sans-serif')
-          text.setAttribute('font-size', String(a.fontSize ?? 18))
-          text.setAttribute('font-weight', '600')
-          text.textContent = a.text
+          text.setAttribute('fill', '#000')
+          text.setAttribute('font-family', fontFamily)
+          text.setAttribute('font-size', String(fontSize))
+          text.setAttribute('font-weight', fontWeight)
+          lines.forEach((ln, i) => {
+            const tspan = document.createElementNS(NS, 'tspan')
+            tspan.setAttribute('x', String(cx))
+            tspan.setAttribute('dy', i === 0 ? '0' : String(lineHeight))
+            tspan.textContent = ln
+            text.appendChild(tspan)
+          })
           svg.appendChild(text)
-          if (a.background) {
-            // draw a rounded pill behind the text (inserted before it) so the
-            // label reads over busy page content
-            const bbox = text.getBBox()
-            const padX = 8
-            const padY = 5
-            const rect = document.createElementNS(NS, 'rect')
-            rect.setAttribute('x', String(bbox.x - padX))
-            rect.setAttribute('y', String(bbox.y - padY))
-            rect.setAttribute('width', String(bbox.width + padX * 2))
-            rect.setAttribute('height', String(bbox.height + padY * 2))
-            rect.setAttribute('rx', '5')
-            rect.setAttribute('fill', a.background)
-            svg.insertBefore(rect, text)
-          }
+          const bbox = text.getBBox()
+          const padX = 10
+          const padY = 7
+          const rect = document.createElementNS(NS, 'rect')
+          rect.setAttribute('x', String(bbox.x - padX))
+          rect.setAttribute('y', String(bbox.y - padY))
+          rect.setAttribute('width', String(bbox.width + padX * 2))
+          rect.setAttribute('height', String(bbox.height + padY * 2))
+          rect.setAttribute('rx', '6')
+          rect.setAttribute('fill', '#fff')
+          rect.setAttribute('stroke', a.color ?? '#e3242b')
+          rect.setAttribute('stroke-width', '3')
+          svg.insertBefore(rect, text)
         }
       }
     },

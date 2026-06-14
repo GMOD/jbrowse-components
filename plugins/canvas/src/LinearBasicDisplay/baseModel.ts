@@ -48,10 +48,7 @@ import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
-import type {
-  DisplayConfig,
-  DisplayMode,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
   FeatureItemEntry,
@@ -303,14 +300,14 @@ export default function baseStateModelFactory(
          * #getter
          */
         get displayMode() {
-          return self.getConfWithOverride('displayMode') as DisplayMode
+          return self.getConfWithOverride('displayMode')
         },
 
         /**
          * #getter
          */
         get showLabelsMode() {
-          return self.getConfWithOverride('showLabels') as ShowLabelsMode
+          return self.getConfWithOverride('showLabels')
         },
 
         /**
@@ -367,6 +364,35 @@ export default function baseStateModelFactory(
          */
         get utrColor() {
           return self.getOverride<string>('utrColor') ?? UTR_COLOR_DEFAULT
+        },
+
+        /**
+         * #getter
+         */
+        // Which "Color by..." choice is active, so the track menu can show a
+        // radio checkmark. 'strand' is the exact built-in jexl; any other jexl
+        // override is a per-attribute expression; anything else (no override or
+        // a solid color) reads as the default solid mode.
+        get colorByMode(): 'strand' | 'attribute' | 'solid' {
+          const override = self.getOverride<string>('color')
+          if (override === STRAND_COLOR_JEXL) {
+            return 'strand'
+          }
+          return override?.startsWith('jexl:') ? 'attribute' : 'solid'
+        },
+
+        /**
+         * #getter
+         */
+        // The attribute name baked into an active "Color by attribute" jexl, so
+        // the dialog reopens prefilled instead of blank. Empty unless that mode
+        // is active.
+        get colorByAttribute() {
+          if (this.colorByMode !== 'attribute') {
+            return ''
+          }
+          const override = self.getOverride<string>('color') ?? ''
+          return /get\(feature,'([^']+)'\)/.exec(override)?.[1] ?? ''
         },
 
         /**
@@ -985,22 +1011,14 @@ export default function baseStateModelFactory(
         // be a per-feature jexl color); a string sets a solid color for all
         // features. Flows to the worker via rpcProps -> displayConfig.color.
         setFeatureColor(color?: string) {
-          if (color === undefined) {
-            self.clearOverride('color')
-          } else {
-            self.setOverride('color', color)
-          }
+          self.setOverride('color', color)
         },
 
         /**
          * #action
          */
         setUtrColor(color?: string) {
-          if (color === undefined) {
-            self.clearOverride('utrColor')
-          } else {
-            self.setOverride('utrColor', color)
-          }
+          self.setOverride('utrColor', color)
         },
 
         /**
@@ -1471,22 +1489,32 @@ export default function baseStateModelFactory(
               subMenu: [
                 {
                   label: 'Default (solid color)',
+                  type: 'radio' as const,
+                  checked: self.colorByMode === 'solid',
                   onClick: () => {
                     self.setFeatureColor(undefined)
                   },
                 },
                 {
                   label: 'Strand',
+                  type: 'radio' as const,
+                  checked: self.colorByMode === 'strand',
                   onClick: () => {
                     self.setFeatureColor(STRAND_COLOR_JEXL)
                   },
                 },
                 {
                   label: 'Attribute...',
+                  type: 'radio' as const,
+                  checked: self.colorByMode === 'attribute',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       ColorByAttributeDialog,
-                      { model: self, handleClose },
+                      {
+                        model: self,
+                        handleClose,
+                        initialAttribute: self.colorByAttribute,
+                      },
                     ])
                   },
                 },

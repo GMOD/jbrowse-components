@@ -4,6 +4,7 @@ import type {
 } from './configurationSchema.ts'
 import type ConfigSlot from './configurationSlot.ts'
 import type {
+  ISimpleType,
   IStateTreeNode,
   Instance,
   SnapshotOut,
@@ -49,22 +50,28 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
             : never)
     : never
 
-// Value type of a single slot, derived from its `defaultValue` (the slot's
-// `type` string widens to `string` under generic inference and is unusable; the
-// `defaultValue` literal survives as its widened type, which IS the value type).
-// Only scalar slots (string/number/boolean) are typed precisely — arrays, maps,
+// Value type of a single slot. A `stringEnum` slot carries its precise literal
+// union on `model` (a `types.enumeration`), so prefer that — it recovers the
+// exact union (e.g. 'normal' | 'compact') instead of widening to `string`.
+// Otherwise fall back to `defaultValue` (the slot's `type` string widens to
+// `string` under generic inference and is unusable; the `defaultValue` literal
+// survives as its widened type, which IS the value type). Only scalar slots
+// (string/number/boolean) and enumerations are typed precisely — arrays, maps,
 // sub-schemas, frozen, and constants degrade to `any` so existing call sites
 // that relied on the old `any` return keep compiling. jexl callbacks are
 // declared to return the slot's own type, so this is correct for them too.
-type SlotValueFromDef<DEF> = DEF extends { defaultValue: infer V }
-  ? [V] extends [boolean]
-    ? V
-    : [V] extends [string]
-      ? V
-      : [V] extends [number]
+type SlotValueFromDef<DEF> =
+  DEF extends { model: ISimpleType<infer T extends string> }
+    ? T
+    : DEF extends { defaultValue: infer V }
+      ? [V] extends [boolean]
         ? V
-        : any
-  : any
+        : [V] extends [string]
+          ? V
+          : [V] extends [number]
+            ? V
+            : any
+      : any
 
 export type ConfigurationSlotValue<SCHEMA, K extends string> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>

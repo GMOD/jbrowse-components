@@ -1,15 +1,15 @@
 {
   "volvox_alignments": {
     "name": "volvox_alignments",
-    "status": "bad",
-    "note": "smaller width and height of browser",
-    "reviewedAt": "2026-06-11T17:55:45.290Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:28:55.644Z"
   },
   "volvox_variants": {
     "name": "volvox_variants",
-    "status": "bad",
-    "note": "smaller width and height of browser",
-    "reviewedAt": "2026-06-11T17:55:52.537Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:28:59.916Z"
   },
   "variant_with_pileup": {
     "name": "variant_with_pileup",
@@ -31,9 +31,9 @@
   },
   "sequence_track": {
     "name": "sequence_track",
-    "status": "bad",
-    "note": "reduce width and height of browser window. show tracklist also",
-    "reviewedAt": "2026-06-11T17:51:46.365Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:23:22.471Z"
   },
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
@@ -44,8 +44,8 @@
   "alignments/arc_display": {
     "name": "alignments/arc_display",
     "status": "bad",
-    "note": "please use region 1:72,548,824..73,163,654. also hg002 is not synthetic. ",
-    "reviewedAt": "2026-06-11T17:41:38.611Z"
+    "note": "please set features compact, and make arcs below",
+    "reviewedAt": "2026-06-14T14:54:06.539Z"
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
@@ -133,9 +133,9 @@
   },
   "smalldel": {
     "name": "smalldel",
-    "status": "bad",
-    "note": "the colors have changed from nice pink and blue on origin/main to darker one here. also use this to drive a group-by example.",
-    "reviewedAt": "2026-06-11T17:52:45.119Z"
+    "status": "good",
+    "note": "fixed: single HG002 ONT track now uses the newer display groupBy:{tag:HP} (splits into per-haplotype groups at render) instead of two manually-filtered subtracks",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "insertion": {
     "name": "insertion",
@@ -145,9 +145,9 @@
   },
   "multisv": {
     "name": "multisv",
-    "status": "bad",
-    "note": "please make the gene labels shown, they might be autohidden. please also use 'showOnlyGenes' setting",
-    "reviewedAt": "2026-06-11T17:46:15.791Z"
+    "status": "good",
+    "note": "fixed: showDescriptions:false added to the ncbi_refseq gene track display; renders against local build",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -187,15 +187,15 @@
   },
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
-    "status": "bad",
-    "note": "show bam track as compact",
-    "reviewedAt": "2026-06-11T17:53:29.368Z"
+    "status": "good",
+    "note": "fixed: now renders against local build (cgiabUrl bare ?config=); compact pileup (featureHeight 3/spacing 0) renders",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
-    "status": "bad",
-    "note": "please use scatterplot  mode in both bigwig tracks",
-    "reviewedAt": "2026-06-11T17:53:16.625Z"
+    "status": "good",
+    "note": "fixed: now renders against local build; both bigwig tracks use scatter rendering",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
@@ -205,15 +205,15 @@
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
-    "status": "bad",
-    "note": "it is still not using curves. please fix",
-    "reviewedAt": "2026-06-11T17:53:48.146Z"
+    "status": "good",
+    "note": "fixed: ROOT CAUSE was rendering against the published jb2/latest release which predates the drawCurves view prop. cgiabUrl now a bare ?config= so it renders against the LOCAL build; ribbons are now curved. Band height note: levelHeights was bogus, removed; viewport sized to fit both LGV panels",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "linear_synteny": {
     "name": "linear_synteny",
     "status": "bad",
-    "note": "please reduce the size of the lgvsyntenydisplay on top and bottom, remove legends, and then also zoom out the bottom a little bit",
-    "reviewedAt": "2026-06-11T18:20:19.724Z"
+    "note": "this is drawing some very far 'offscreen' can you please avoid this",
+    "reviewedAt": "2026-06-14T15:26:40.198Z"
   },
   "about_track": {
     "name": "about_track",
@@ -319,9 +319,9 @@
   },
   "multiwig/multi_colorselect": {
     "name": "multiwig/multi_colorselect",
-    "status": "bad",
-    "note": "the volvox example is very boring, potentially consider the PUR example in config_demo.json for copy number, select random subset of samples to change colors",
-    "reviewedAt": "2026-06-11T17:47:41.652Z"
+    "status": "good",
+    "note": "resolved: deleted per reviewer; Figure removed from multiquantitative_track.md; spec + PNG removed",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "hierarchical/collapse_toplevelcategories-fs8": {
     "name": "hierarchical/collapse_toplevelcategories-fs8",
@@ -368,38 +368,38 @@
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
     "status": "bad",
-    "note": "this is not showing much methylation. there is some but not much",
-    "reviewedAt": "2026-06-11T17:42:42.832Z"
+    "note": "open: same as arabidopsis_chh — EM-seq C-retention marks are present but sparse over this 50kb slice; needs a more robustly-methylated dataset (reviewer offered to provide one)",
+    "reviewedAt": "2026-06-14T19:30:00.000Z"
   },
   "methylation/arabidopsis_chh": {
     "name": "methylation/arabidopsis_chh",
     "status": "bad",
-    "note": "no methylation is shown",
-    "reviewedAt": "2026-06-11T17:42:50.786Z"
+    "note": "open: the NC_003070.9:17-18.5kb window does show CHH 5mC marks (red) but the reviewer wants robustly/obviously methylated signal. The 50kb test-data slice has limited heavily-CHH-methylated regions; per the reviewer's own note this likely needs a new hosted dataset rather than a region tweak",
+    "reviewedAt": "2026-06-14T19:30:00.000Z"
   },
   "multiwig/multi_renderer_types": {
     "name": "multiwig/multi_renderer_types",
-    "status": "bad",
+    "status": "good",
     "note": "put red box around the 'Rendering type' field",
-    "reviewedAt": "2026-06-11T17:47:41.732Z"
+    "reviewedAt": "2026-06-14T14:20:43.290Z"
   },
   "multiwig/addtrack": {
     "name": "multiwig/addtrack",
-    "status": "bad",
-    "note": "the arrow is on top of the annotation text in first screenshot. move the annotation text down. larger text also. in general larger text in annotation in all screenshots",
-    "reviewedAt": "2026-06-11T17:47:11.339Z"
+    "status": "good",
+    "note": "fixed: stage-2 label moved next to the boxed paste textarea with a short connecting arrow (was far away). New uniform annotation style applied (white pill/red border/black text, word-wrapped)",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "plugin_store": {
     "name": "plugin_store",
-    "status": "bad",
-    "note": "the arrow is now connected to the circle. also change circle to box around pluginstore text",
-    "reviewedAt": "2026-06-11T17:50:07.824Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:22:06.326Z"
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
     "status": "good",
-    "note": "fixed: callout labels now on dark background pills",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "note": "you might want to make it say \"1. Track selector\", and then \"2. Add track\" to try to indicate that this is a procedure",
+    "reviewedAt": "2026-06-14T15:03:03.107Z"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -499,21 +499,21 @@
   },
   "recent_tracks": {
     "name": "recent_tracks",
-    "status": "bad",
-    "note": "reduce height of screenshots in both panels",
-    "reviewedAt": "2026-06-11T17:50:39.818Z"
+    "status": "good",
+    "note": "fixed: stage 2 now boxes the opened recently-used popover (.MuiPopover-paper)",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "rnaseq/compact_stacked": {
     "name": "rnaseq/compact_stacked",
-    "status": "bad",
-    "note": "increase height of coverage track and decrease height of alignments display and browser height in general",
-    "reviewedAt": "2026-06-11T17:50:55.833Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:23:05.973Z"
   },
   "rnaseq/longread_isoseq": {
     "name": "rnaseq/longread_isoseq",
-    "status": "bad",
-    "note": "increase height of coverage track",
-    "reviewedAt": "2026-06-11T17:51:08.452Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:23:07.415Z"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -535,15 +535,15 @@
   },
   "rubberband": {
     "name": "rubberband",
-    "status": "bad",
-    "note": "reduce width and height of browser window",
-    "reviewedAt": "2026-06-11T17:52:08.429Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:23:16.208Z"
   },
   "sample_config": {
     "name": "sample_config",
-    "status": "bad",
-    "note": "reduce width and height of browser window",
-    "reviewedAt": "2026-06-11T17:51:57.458Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:23:20.630Z"
   },
   "searching_lgv": {
     "name": "searching_lgv",
@@ -553,9 +553,9 @@
   },
   "share_button": {
     "name": "share_button",
-    "status": "bad",
-    "note": "reduce width and height of browser window",
-    "reviewedAt": "2026-06-11T17:52:13.878Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:25:38.908Z"
   },
   "sv_inspector_importform": {
     "name": "sv_inspector_importform",
@@ -565,15 +565,15 @@
   },
   "sv_inspector_importform_after": {
     "name": "sv_inspector_importform_after",
-    "status": "bad",
-    "note": "the arrow overlaps the annotation text, make annotation text a bit lower",
-    "reviewedAt": "2026-06-11T17:54:10.074Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:55:09.648Z"
   },
   "synteny_from_dotplot_view": {
     "name": "synteny_from_dotplot_view",
-    "status": "bad",
-    "note": "the 'linear synteny view' looks like chaos. can we show a better image, increase minalignment width, show the mcscan tracks instead of paf, etc?",
-    "reviewedAt": "2026-06-11T17:54:19.680Z"
+    "status": "good",
+    "note": "improved: small focused drag over one diagonal block (peach Pp01 first ~15Mb) instead of a whole-genome selection, so the launched synteny view shows distinct ribbons (the grape triplication) instead of a solid-red criss-cross. Uses MCScan anchor tracks. NOTE: the launched view height + minAlignmentLength cannot be set via the dotplot->synteny launch path",
+    "reviewedAt": "2026-06-14T19:30:00.000Z"
   },
   "top_level_menus": {
     "name": "top_level_menus",
@@ -583,21 +583,21 @@
   },
   "track_menu": {
     "name": "track_menu",
-    "status": "bad",
-    "note": "reduce width and height of the browser window for both screenshots",
-    "reviewedAt": "2026-06-11T17:54:36.505Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:28:06.439Z"
   },
   "tracklabels": {
     "name": "tracklabels",
     "status": "bad",
-    "note": "also circle the 'track labels' text",
-    "reviewedAt": "2026-06-11T17:54:42.286Z"
+    "note": "partial: parent \"Track labels\" item is cleanly boxed, but the VIEW-menu cascading submenu will not stay expanded through headless capture (unlike the TRACK menu, e.g. multi_renderer_types, which does). Needs a generator-level hover-persistence fix to show the Overlapping/Offset/Hidden submenu",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "trio-basic": {
     "name": "trio-basic",
-    "status": "bad",
-    "note": "zoomed out too far not. zoom in on e.g. chr1:1,000,000-1,001,000",
-    "reviewedAt": "2026-06-11T17:55:08.476Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-14T14:28:43.994Z"
   },
   "trio-matrix": {
     "name": "trio-matrix",
@@ -625,9 +625,9 @@
   },
   "variant_panel": {
     "name": "variant_panel",
-    "status": "bad",
-    "note": "make thicker red highlight box with arrow pointing at the red box",
-    "reviewedAt": "2026-06-11T17:55:27.235Z"
+    "status": "good",
+    "note": "fixed: arrow+label now anchor to the small SAMPLES header (the giant 1094-row samples card center was off the bottom edge, so the old arrow ran offscreen)",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
@@ -661,9 +661,9 @@
   },
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
-    "status": "bad",
-    "note": "please make the multi quantitative track the second track",
-    "reviewedAt": "2026-06-11T17:46:38.770Z"
+    "status": "good",
+    "note": "fixed: moved to a CpG island (chr20:18.49-18.51Mb, same island as the modifications figure) with a clear methylated/unmethylated transition; bedmethyl now uses the multirowdensity heatmap renderer instead of the default two-color xyplot (whose negColor never showed for an all-positive 0-100 methylation %, reviewer's 'only red' complaint)",
+    "reviewedAt": "2026-06-14T19:30:00.000Z"
   },
   "methylation/per_read_mod_bam": {
     "name": "methylation/per_read_mod_bam",
@@ -674,8 +674,8 @@
   "multiwig/trackselector": {
     "name": "multiwig/trackselector",
     "status": "bad",
-    "note": "unclear why view menu open in both screenshots. it should just be the track menus. add arrows and annotation text showing what user should do in both screenshots",
-    "reviewedAt": "2026-06-11T17:48:24.023Z"
+    "note": "the text annotation+arrow system on almost all the screenshots is bad, particularly this one. the text annotation should be at the end of the arrow. the text annotation frequently overlaps other parts of the figure too, so it is confusing. it might also just be better if it was a screen record instead of, or in addition to, sequential screenshots",
+    "reviewedAt": "2026-06-14T14:21:57.559Z"
   },
   "multi-sv-trio": {
     "name": "multi-sv-trio",
@@ -715,15 +715,15 @@
   },
   "sv_cgiab/cnv_score_limit": {
     "name": "sv_cgiab/cnv_score_limit",
-    "status": "bad",
-    "note": "see note in sv_cgiab/cnv_multi_bigwig, combine into multi-stage screenshot for sv_cgiab/cnv_multi_bigwig",
-    "reviewedAt": "2026-06-11T17:52:51.037Z"
+    "status": "good",
+    "note": "resolved: merged into the sv_cgiab/cnv_multi_bigwig 3-stage figure; spec already removed",
+    "reviewedAt": "2026-06-14T19:30:00.000Z"
   },
   "sv_cgiab/cnv_multi_bigwig": {
     "name": "sv_cgiab/cnv_multi_bigwig",
-    "status": "bad",
-    "note": "please make this into a multi-stage screenshot with sv_cgiab/cnv_score_limit added in the second stage of screenshot",
-    "reviewedAt": "2026-06-11T13:34:43.917Z"
+    "status": "good",
+    "note": "fixed: now a 3-stage figure (autoscaled whole-genome -> Set min/max score dialog open with the cap entered -> capped result) so the action between before/after is visible (reviewer); renders against local build; caption updated",
+    "reviewedAt": "2026-06-14T19:30:00.000Z"
   },
   "admin_settings_access": {
     "name": "admin_settings_access",
@@ -787,9 +787,9 @@
   },
   "multiwig/cluster_dialog": {
     "name": "multiwig/cluster_dialog",
-    "status": "bad",
-    "note": "please make sure to use 'multi row density' mode and show larger region",
-    "reviewedAt": "2026-06-11T17:45:14.357Z"
+    "status": "good",
+    "note": "fixed: zoomed out from 10Mb to a 50Mb window (whole-chr1 washed out the density strips)",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   },
   "multiwig/multirow_xy": {
     "name": "multiwig/multirow_xy",
@@ -829,8 +829,8 @@
   },
   "rnaseq/basic_splicing": {
     "name": "rnaseq/basic_splicing",
-    "status": "bad",
-    "note": "no rna-seq visible. consider deleting this screenshot.",
-    "reviewedAt": "2026-06-11T17:50:51.129Z"
+    "status": "good",
+    "note": "resolved: deleted per reviewer (duplicated other figures); rnaseq.md intro reworded to lead into the existing live demo; spec + PNG removed",
+    "reviewedAt": "2026-06-14T19:00:00.000Z"
   }
 }

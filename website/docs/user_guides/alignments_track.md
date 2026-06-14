@@ -78,17 +78,18 @@ any read carrying the tag.
 
 ### Grouping reads
 
-**Group by** splits the pileup into stacked sub-tracks. Grouping by the HP tag
-turns a phased BAM into one pileup per haplotype, which is easier to read than
-coloring alone. Strand, read group (RG), or any other tag work the same way.
+**Group by** splits the pileup into stacked sections inside the track, one per
+group, sharing a single coverage scale. Grouping by the HP tag turns a phased
+BAM into one pileup per haplotype, which is easier to read than coloring alone.
+Strand, read group (RG), or any other tag work the same way.
 
 <Figure caption="Group by strand splits the track into a forward-strand pileup (top) and a reverse-strand pileup (bottom)." src="/img/alignments/group_by_strand.png" />
 
 The track menu's **Group by...** opens a dialog where you pick strand or a tag
-(e.g. `HP` for haplotype); submitting spawns one new session sub-track per
-group.
+(e.g. `HP` for haplotype). Each group becomes its own coverage+pileup section
+with a divider label, so the haplotypes read separately.
 
-<Figure caption="Top: the Group by dialog grouping a phased HG002 PacBio BAM by the HP tag. Bottom: the result — one sub-track per haplotype (HP:1, HP:2, and untagged reads)." src="/img/alignments/group_by_hp.png" />
+<Figure caption="A 27 bp heterozygous deletion in HG002 ONT reads, with the pileup separated by HP tag into haplotype 1 (pink) and haplotype 2 (blue). The deletion-supporting reads concentrate in a single haplotype." src="/img/smalldel.png" />
 
 ### Color by modifications/methylation
 

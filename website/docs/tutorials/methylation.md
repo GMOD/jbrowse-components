@@ -107,11 +107,9 @@ per-read modification coloring restricted to the **CHH** context.
 
 <Figure caption="Arabidopsis chr1 ONT alignments colored by 5mC/5hmC modification, restricted to the CHH cytosine context. Only cytosines in a CHH context are colored." src="/img/methylation/arabidopsis_chh.png" />
 
-The same region can also be examined with **bisulfite** (or EM-seq) data. In
-bisulfite mode JBrowse infers methylation from C-to-T conversion in the read
-alignment rather than from MM/ML tags, again restricted here to the CHH context.
-
-<Figure caption="Arabidopsis chr1 EM-seq (bisulfite-style) alignments in bisulfite coloring mode, restricted to the CHH cytosine context. Methylation is inferred from C-to-T conversion patterns rather than modification tags." src="/img/methylation/arabidopsis_bisulfite_chh.png" />
+JBrowse 2 can also infer methylation from **bisulfite** (or EM-seq) data via
+C-to-T conversion in the read alignment (the `bisulfite` coloring mode) rather
+than from MM/ML tags.
 
 ## Choosing between the two approaches
 

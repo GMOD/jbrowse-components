@@ -21,8 +21,6 @@ In the multi-row modes the subtracks keep their configured colors. In the
 overlapping modes the subtracks are auto-assigned colors from the palette. You
 can edit colors and ordering from the track menu.
 
-<Figure caption="The color/arrangement editor lets you change subtrack colors and reorder them in the row-based layouts." src="/img/multiwig/multi_colorselect.png" />
-
 An outlier on one subtrack can blow out the shared Y axis. The "Local ± 3σ"
 autoscale type clips to three standard deviations of the visible data, which
 usually gives a more readable view. You can also pin the min and max from the

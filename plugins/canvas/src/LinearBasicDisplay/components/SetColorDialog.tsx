@@ -49,7 +49,6 @@ const SetColorDialog = observer(function SetColorDialog({
             model.setUtrColor(undefined)
           }}
           color="secondary"
-          variant="contained"
         >
           Restore default
         </Button>
@@ -60,7 +59,7 @@ const SetColorDialog = observer(function SetColorDialog({
             handleClose()
           }}
         >
-          Submit
+          Close
         </Button>
       </DialogActions>
     </Dialog>

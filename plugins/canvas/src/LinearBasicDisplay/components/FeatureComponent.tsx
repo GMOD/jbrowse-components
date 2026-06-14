@@ -143,6 +143,11 @@ const useStyles = makeStyles()({
   },
 })
 
+function OverlayLayer({ children }: { children: React.ReactNode }) {
+  const { classes } = useStyles()
+  return children ? <div className={classes.overlay}>{children}</div> : null
+}
+
 const ContextMenu = observer(function ContextMenu({
   model,
   contextCoord,
@@ -377,15 +382,9 @@ const FeatureBody = observer(function FeatureBody({
             }}
           />
 
-          {highlightOverlays ? (
-            <div className={classes.overlay}>{highlightOverlays}</div>
-          ) : null}
-          {floatingLabelElements ? (
-            <div className={classes.overlay}>{floatingLabelElements}</div>
-          ) : null}
-          {aminoAcidOverlayElements ? (
-            <div className={classes.overlay}>{aminoAcidOverlayElements}</div>
-          ) : null}
+          <OverlayLayer>{highlightOverlays}</OverlayLayer>
+          <OverlayLayer>{floatingLabelElements}</OverlayLayer>
+          <OverlayLayer>{aminoAcidOverlayElements}</OverlayLayer>
         </div>
       </div>
 

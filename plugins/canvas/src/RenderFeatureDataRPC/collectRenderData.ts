@@ -267,6 +267,27 @@ function emitStrandArrow(
   })
 }
 
+// Top-level glyphs (no parent) get a strand arrow so they show direction like
+// every other glyph; nested ones inherit it from their container.
+function emitTopLevelStrandArrow(
+  layout: FeatureLayout,
+  flatbushIdx: number,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { feature } = layout
+  if (!feature.parent?.()) {
+    emitStrandArrow(
+      feature,
+      0,
+      layout.height,
+      colorToUint32(strokeColor(feature, ctx)),
+      flatbushIdx,
+      collector.arrows,
+    )
+  }
+}
+
 function emitExonRects(
   transcript: FeatureLayout,
   transcriptTopPx: number,
@@ -510,7 +531,6 @@ function processMatureProteinLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { feature } = layout
   for (const childLayout of layout.children) {
     pushBoxRect(
       childLayout.feature,
@@ -521,16 +541,7 @@ function processMatureProteinLayout(
       collector.rects,
     )
   }
-  if (!feature.parent?.()) {
-    emitStrandArrow(
-      feature,
-      0,
-      layout.height,
-      colorToUint32(strokeColor(feature, ctx)),
-      flatbushIdx,
-      collector.arrows,
-    )
-  }
+  emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }
 
 function processDefaultLayout(
@@ -539,18 +550,15 @@ function processDefaultLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { feature } = layout
-  pushBoxRect(feature, 0, layout.height, flatbushIdx, ctx, collector.rects)
-  if (!feature.parent?.()) {
-    emitStrandArrow(
-      feature,
-      0,
-      layout.height,
-      colorToUint32(strokeColor(feature, ctx)),
-      flatbushIdx,
-      collector.arrows,
-    )
-  }
+  pushBoxRect(
+    layout.feature,
+    0,
+    layout.height,
+    flatbushIdx,
+    ctx,
+    collector.rects,
+  )
+  emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }
 
 export function collectRenderData(

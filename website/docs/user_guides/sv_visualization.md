@@ -117,7 +117,7 @@ is a useful companion reference.
   suggest a deletion spanning the pair
 - With paired arcs enabled, unusually long arcs point to a deletion
 
-<Figure caption="A 27 bp heterozygous deletion (orange variant bar labeled '27bp DEL' in the top track) in HG002 ONT reads. The SNP coverage panel above the pileup shows the local depth; the pileup is sorted by HP tag, separating haplotype 1 (pink rows) and haplotype 2 (blue rows). Supporting reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
+<Figure caption="A 27 bp heterozygous deletion (orange variant bar labeled '27bp DEL' in the top track) in HG002 ONT reads. The SNP coverage panel above the pileup shows the local depth; the pileup is grouped by HP tag into stacked sections, separating haplotype 1 (pink) and haplotype 2 (blue). Supporting reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
 
 ### Insertion
 

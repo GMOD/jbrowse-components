@@ -177,7 +177,7 @@ export default function sharedModelFactory(
         return self.getConfWithOverride('lineZoneHeight')
       },
       get ldMetric() {
-        return self.getConfWithOverride('ldMetric') as LDMetric
+        return self.getConfWithOverride('ldMetric')
       },
       get showLegend() {
         return self.getConfWithOverride('showLegend')

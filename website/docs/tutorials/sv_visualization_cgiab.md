@@ -264,7 +264,7 @@ Apply a manual **min/max score** limit from the track menu to cap the y-axis so
 a few high-coverage spikes (centromeres, repeats) don't flatten the copy-number
 signal — for the normalized indexcov scale a max of ~2.5 works well.
 
-<Figure caption="A multi-bigwig track with tumor and normal coverage across all chromosomes (top), then the same track after capping the y-axis with a manual max score (bottom). These bigWigs are indexcov coverage estimates (computed in seconds from the BAM indexes) normalized so a copy-number-neutral region sits near 1." src="/img/sv_cgiab/cnv_multi_bigwig.png" />
+<Figure caption="A multi-bigwig track with tumor and normal coverage across all chromosomes (top, autoscaled), then the track menu's Set min/max score dialog where a manual y-axis cap is entered (middle), then the same track after capping (bottom) — the copy-number band is no longer compressed by a few centromere/repeat spikes. These bigWigs are indexcov coverage estimates (computed in seconds from the BAM indexes) normalized so a copy-number-neutral region sits near 1." src="/img/sv_cgiab/cnv_multi_bigwig.png" />
 
 Switch the fill mode to **No fill** for a clearer line-style trace, zoom into a
 region of interest, and open the benchmark CNV BED track to check whether
