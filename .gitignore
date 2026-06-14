@@ -51,3 +51,7 @@ test_data/hprc/*.paf.gz.tbi
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz.tbi
 test_data/volvox/*.og
 .claude
+
+# component_tests install npm packages without a committed lockfile (see
+# .github/workflows/push.yml); yarn.lock here is a local-only generated artifact
+component_tests/*/yarn.lock
