@@ -129,3 +129,29 @@ test('submitting adds the tracks to the session', () => {
   const adapter = readConfObject(added, 'adapter')
   expect(adapter.index.location.uri).toBe('https://x.com/a.bam.bai')
 })
+
+test('notifies when submitted tracks are for an assembly not open in the view', () => {
+  const { session, model } = getSession()
+  // Add a second assembly then target it — the open view stays on volMyt1
+  session.addAssemblyConf({
+    name: 'hg38',
+    sequence: {
+      trackId: 'ref-hg38',
+      type: 'ReferenceSequenceTrack',
+      adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+    },
+  })
+  model.setAssembly('hg38')
+
+  const notifySpy = jest.spyOn(session, 'notify')
+  const { getByLabelText, getByRole } = render(
+    <BulkAddTracksWorkflow model={model} />,
+  )
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
+  fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
+
+  expect(notifySpy).toHaveBeenCalledWith(
+    expect.stringContaining('hg38'),
+    'warning',
+  )
+})

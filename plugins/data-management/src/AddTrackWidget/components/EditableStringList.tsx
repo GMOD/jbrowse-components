@@ -102,7 +102,10 @@ export default function EditableStringList({
                         onClick={() => {
                           addValue()
                         }}
-                        disabled={input.trim() === ''}
+                        disabled={
+                          input.trim() === '' ||
+                          values.includes(input.trim())
+                        }
                         data-testid={testId}
                       >
                         <AddIcon />

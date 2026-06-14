@@ -88,6 +88,12 @@ export function submitBulkTracks({
         model.view?.showTrack(conf.trackId)
       }
     }
+    if (!showInView) {
+      session.notify(
+        `Tracks added but not shown: the current view is not on assembly "${assembly}"`,
+        'warning',
+      )
+    }
     model.clearData()
     if (isSessionModelWithWidgets(session)) {
       session.hideWidget(model)

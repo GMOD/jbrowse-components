@@ -48,7 +48,7 @@ export function filterTracks(
         return true
       }
       const trackType = pluginManager.getTrackType(c.type)
-      return trackType.displayTypes.some(d => viewDisplaysSet.has(d.name))
+      return trackType?.displayTypes.some(d => viewDisplaysSet.has(d.name))
     })
   }
   return []

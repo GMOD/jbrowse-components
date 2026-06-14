@@ -60,7 +60,6 @@ export function pairLocations(locations: FileLocation[]): LocationPair[] {
     const name = getFileName(loc)
     return { loc, lower: name.toLowerCase(), suffix: indexSuffixOf(name) }
   })
-  const indexEntries = named.filter(e => e.suffix !== undefined)
   // Dedupe data files repeated under the same location (e.g. a URL pasted
   // twice). Callers that pre-dedupe (the workflow component) keep this as a
   // harmless no-op; direct callers and tests rely on it.
@@ -71,18 +70,25 @@ export function pairLocations(locations: FileLocation[]): LocationPair[] {
         .map(e => [locationId(e.loc), e] as const),
     ).values(),
   ]
-  const usedIndexes = new Set<FileLocation>()
+  // Build a map from stripLastExt(indexLower) → index entry for O(N) lookup.
+  // Index "foo.bam.bai" → key "foo.bam" (matches data "foo.bam" directly).
+  // Index "foo.bai"     → key "foo"     (matches data "foo.bam" via stripLastExt).
+  // First entry at a given key wins (earlier in the list); duplicates are skipped.
+  const indexMap = new Map<string, (typeof named)[number]>()
+  for (const entry of named) {
+    if (entry.suffix !== undefined) {
+      const key = stripLastExt(entry.lower)
+      if (!indexMap.has(key)) {
+        indexMap.set(key, entry)
+      }
+    }
+  }
 
   return dataEntries.map(({ loc, lower: dataLower }) => {
-    const match = indexEntries.find(
-      ({ loc: indexLoc, lower: indexLower, suffix }) =>
-        suffix !== undefined &&
-        !usedIndexes.has(indexLoc) &&
-        (indexLower === `${dataLower}${suffix}` ||
-          indexLower === `${stripLastExt(dataLower)}${suffix}`),
-    )
+    const match =
+      indexMap.get(dataLower) ?? indexMap.get(stripLastExt(dataLower))
     if (match) {
-      usedIndexes.add(match.loc)
+      indexMap.delete(stripLastExt(match.lower))
     }
     return { file: loc, index: match?.loc }
   })
