@@ -4,17 +4,14 @@ import { FileLocation } from '../util/types/mst.ts'
 
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
-function isValidColorString(_str: string) {
-  // placeholder — all strings accepted; real CSS validation can be added later
-  return true
-}
-
 const typeModels: Record<string, IAnyType> = {
   stringArray: types.array(types.string),
   stringArrayMap: types.map(types.array(types.string)),
   numberMap: types.map(types.number),
   boolean: types.boolean,
-  color: types.refinement('Color', types.string, isValidColorString),
+  // a color is just a string; the editor picks a color widget off the slot's
+  // `type` metadata, and values are accepted unvalidated (CSS names, hex, jexl)
+  color: types.string,
   integer: types.integer,
   number: types.number,
   string: types.string,
@@ -38,6 +35,11 @@ export interface ConfigSlotDefinition {
   defaultValue: unknown
   /** parameter names of the function callback */
   contextVariable?: string[]
+  /**
+   * hide this slot behind a "Show advanced settings" toggle in the config
+   * editor, so common slots aren't crowded out by rarely-changed ones
+   */
+  advanced?: boolean
 }
 
 /**
