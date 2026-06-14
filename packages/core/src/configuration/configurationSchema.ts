@@ -409,12 +409,12 @@ export function ConfigurationReference<
     getConfigurationSchemaMetadata(schemaType)?.options.explicitIdentifier
   if (id === 'trackId') {
     return TrackConfigurationReference(schemaType)
-  }
-  if (id === 'displayId') {
+  } else if (id === 'displayId') {
     return DisplayConfigurationReference(schemaType)
+  } else {
+    // Plain (non-track/display) ref. The union accepts either an id string
+    // (resolved via `types.reference`) or an inline schema snapshot (held as a
+    // standalone schema instance).
+    return types.union(types.reference(schemaType), schemaType)
   }
-  // Plain (non-track/display) ref. The union accepts either an id string
-  // (resolved via `types.reference`) or an inline schema snapshot (held as a
-  // standalone schema instance).
-  return types.union(types.reference(schemaType), schemaType)
 }

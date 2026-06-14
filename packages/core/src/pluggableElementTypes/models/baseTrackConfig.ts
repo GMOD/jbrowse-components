@@ -73,6 +73,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         description:
           'RPC driver to use for this track. Leave empty to use the display-level or global default.',
         defaultValue: '',
+        advanced: true,
       },
       /**
        * #slot

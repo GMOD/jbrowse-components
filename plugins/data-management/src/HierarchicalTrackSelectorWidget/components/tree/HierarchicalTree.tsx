@@ -30,7 +30,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
     <div
       ref={containerRef}
       style={{ height, overflowY: 'auto' }}
-      onScroll={(e) => {
+      onScroll={e => {
         setScrollTop(e.currentTarget.scrollTop)
       }}
     >

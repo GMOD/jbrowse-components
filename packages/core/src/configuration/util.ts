@@ -289,7 +289,9 @@ export function isConstantEntry(def: unknown): def is string | number {
 export function isSlotDefinitionEntry(
   def: unknown,
 ): def is ConfigSlotDefinition {
-  return typeof def === 'object' && def !== null && !isType(def) && 'type' in def
+  return (
+    typeof def === 'object' && def !== null && !isType(def) && 'type' in def
+  )
 }
 
 // Cache for isConfigurationModel results to avoid expensive repeated type checks

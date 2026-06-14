@@ -572,7 +572,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         )
       },
       get flattenedItemOffsets() {
-        const items = self.flattenedItems
+        const items = this.flattenedItems
         const offsets: number[] = []
         let cumulativeHeight = 0
         for (const item of items) {
@@ -600,7 +600,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           findIndexAtOffset(offsets, scrollTop + height) + overscan,
         )
 
-        return { startIndex: start, endIndex: end, totalHeight: cumulativeHeight }
+        return {
+          startIndex: start,
+          endIndex: end,
+          totalHeight: cumulativeHeight,
+        }
       },
       get folderCategoryStats() {
         const stats = new Map<string, { active: number; total: number }>()

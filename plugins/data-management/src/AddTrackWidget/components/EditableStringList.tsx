@@ -103,8 +103,7 @@ export default function EditableStringList({
                           addValue()
                         }}
                         disabled={
-                          input.trim() === '' ||
-                          values.includes(input.trim())
+                          input.trim() === '' || values.includes(input.trim())
                         }
                         data-testid={testId}
                       >

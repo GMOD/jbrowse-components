@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { doBeforeEach, getPluginManager } from './util.tsx'
 
@@ -73,6 +74,24 @@ test('admin edits update the jbrowse config in place, no override', () => {
 
   expect(session.sessionTracks).toHaveLength(0)
   const resolved = session.tracks.find(t => t.trackId === TRACK_ID)!
+  expect(readConfObject(resolved, 'name')).toBe('Edited name')
+})
+
+test('a non-admin override survives session export + reload (shareable)', () => {
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  session.updateTrackConfiguration(editedSnapshot(session))
+
+  // serialize the session as export/share would
+  const exported = getSnapshot(rootModel.session)
+
+  // reload into a fresh app instance
+  const { rootModel: reloaded } = getPluginManager(undefined, false)
+  reloaded.setSession(exported)
+  const session2 = reloaded.session as unknown as TestSession
+
+  expect(session2.sessionTracks.some(t => t.trackId === TRACK_ID)).toBe(true)
+  const resolved = session2.tracks.find(t => t.trackId === TRACK_ID)!
   expect(readConfObject(resolved, 'name')).toBe('Edited name')
 })
 

@@ -199,8 +199,12 @@ const Schema = observer(function Schema({
     ([slotName, slotSchema]) =>
       !query || memberMatches(schema, slotName, slotSchema, query),
   )
-  const normal = visible.filter(([slotName]) => !isAdvancedSlot(schema, slotName))
-  const advanced = visible.filter(([slotName]) => isAdvancedSlot(schema, slotName))
+  const normal = visible.filter(
+    ([slotName]) => !isAdvancedSlot(schema, slotName),
+  )
+  const advanced = visible.filter(([slotName]) =>
+    isAdvancedSlot(schema, slotName),
+  )
   const renderMember = ([slotName, slotSchema]: [string, IAnyType]) => (
     <Member
       key={slotName}

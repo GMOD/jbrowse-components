@@ -1051,7 +1051,11 @@ export default function baseStateModelFactory(
         openColorByAttributeDialog() {
           getSession(self).queueDialog(handleClose => [
             ColorByAttributeDialog,
-            { model: self, handleClose, initialAttribute: self.colorByAttribute },
+            {
+              model: self,
+              handleClose,
+              initialAttribute: self.colorByAttribute,
+            },
           ])
         },
 

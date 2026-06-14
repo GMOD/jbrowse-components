@@ -60,18 +60,19 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
 // sub-schemas, frozen, and constants degrade to `any` so existing call sites
 // that relied on the old `any` return keep compiling. jexl callbacks are
 // declared to return the slot's own type, so this is correct for them too.
-type SlotValueFromDef<DEF> =
-  DEF extends { model: ISimpleType<infer T extends string> }
-    ? T
-    : DEF extends { defaultValue: infer V }
-      ? [V] extends [boolean]
+type SlotValueFromDef<DEF> = DEF extends {
+  model: ISimpleType<infer T extends string>
+}
+  ? T
+  : DEF extends { defaultValue: infer V }
+    ? [V] extends [boolean]
+      ? V
+      : [V] extends [string]
         ? V
-        : [V] extends [string]
+        : [V] extends [number]
           ? V
-          : [V] extends [number]
-            ? V
-            : any
-      : any
+          : any
+    : any
 
 export type ConfigurationSlotValue<SCHEMA, K extends string> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>

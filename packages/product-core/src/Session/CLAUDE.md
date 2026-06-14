@@ -12,7 +12,7 @@ Tracks come from two places, combined by the `#getter tracks` in
 
 `tracks` lists `sessionTracks` first and **shadows** any `jbrowse.tracks` entry
 with the same `trackId` (filtered out), so a session track of the same id
-*replaces* the config track everywhere it resolves (`tracksById`, the track
+_replaces_ the config track everywhere it resolves (`tracksById`, the track
 selector, open displays via `TrackConfigurationReference`) with no duplicate.
 
 ### How a config edit is saved
@@ -24,7 +24,7 @@ selector, open displays via `TrackConfigurationReference`) with no duplicate.
   `TracksManagerSessionMixin`) → `jbrowse.updateTrackConf` edits the config in
   place.
 - **Everyone else** → upsert the full snapshot into `sessionTracks` under the
-  **same trackId**. This same-id entry is an *override*: it shadows the admin
+  **same trackId**. This same-id entry is an _override_: it shadows the admin
   track, so the edit persists with the session and is shareable instead of being
   a throwaway in-memory mutation of an admin-owned track.
 
@@ -41,6 +41,10 @@ track menu swaps **Delete track** for **Reset track settings** when
 same-id config track re-resolves in place, so an open track stays open and
 simply reverts to the admin default. (Plain `#action deleteTrackConf`
 dereferences and closes; don't use it for reset.)
+
+`isTrackOverride` also drives an "edited" badge on the track row in the
+hierarchical selector (`TrackLabel.tsx`), so users can see which tracks differ
+from the admin defaults.
 
 ### Why Settings is always enabled
 
