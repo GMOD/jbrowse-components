@@ -464,6 +464,9 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'arc',
+                readConnectionsDown: true,
+                featureHeight: 3,
+                featureSpacing: 0,
                 userByteSizeLimit: 500_000_000,
               },
             },
@@ -844,17 +847,27 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'linear_synteny',
-    // Reviewer's own share link (share-4MjF5YGM_G) used directly rather than a
-    // hand-encoded session — the MCScan grape/peach synteny with curved ribbons.
-    // Bare ?config= (no jb2/latest host) so it renders against the local build;
-    // the share session + password resolve from the JBrowse share server either
-    // way.
-    url: '?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt',
-    // wait for the synteny ribbons to actually paint, else the panels capture
-    // empty (the bug the review flagged)
+    // Whole-genome grape vs peach MCScan synteny as an explicit controlled
+    // session (was a reviewer share link whose mismatched per-panel zoom fanned
+    // ribbons far off the left edge — the "drawing offscreen" the review
+    // flagged). Both panels span their full assemblies at matched scale, so the
+    // bezier ribbons stay inside the view. minAlignmentLength drops short-anchor
+    // noise; drawCurves + per-query color + low alpha keep them legible.
+    url: sessionSpec('test_data/config_dotplot.json', {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: ['grape_peach_synteny_mcscan'],
+          drawCurves: true,
+          colorBy: 'query',
+          alpha: 0.5,
+          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+        },
+      ],
+    }),
     readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 30000,
-    settleMs: 6000,
+    readyTimeout: 60000,
+    settleMs: 10000,
   },
 
   // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the
@@ -886,9 +899,10 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Center line over the pileup (single static frame; the reviewer found the
-  // two-stage menu+result version unnecessary — the plain center-line shot is
-  // enough to illustrate the feature).
+  // Center line over the pileup with the View menu's Show... → Show center line
+  // item boxed in the same frame (reviewer: show the menu path and the result
+  // together). showCenterLine starts true so the line is already visible behind
+  // the open menu.
   {
     mode: 'url',
     name: 'alignments_center_line',
@@ -908,6 +922,15 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 650,
     settleMs: 4000,
+    actions: [
+      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'waitForText', text: 'Show...' },
+      { type: 'delay', ms: 300 },
+      { type: 'hover', text: 'Show...' },
+      { type: 'waitForText', text: 'Show center line' },
+      { type: 'delay', ms: 500 },
+    ],
+    annotations: [{ type: 'box', anchor: { text: 'Show center line' } }],
   },
 
   // Sort by base at a SNP, showing the right-click workflow (reviewer wanted the
@@ -1595,25 +1618,27 @@ export const specs: ScreenshotSpec[] = [
   // clip+insertion indicators and short-vs-long-read comparison match the doc
   // captions.
 
-  // Colored clip/insertion indicator ticks above the coverage of a SKBR3
-  // illumina CRAM (blue = left-clip, red = right-clip, purple = insertion).
+  // Colored clip indicator ticks above the coverage band. Uses the volvox
+  // long-read SV BAM zoomed onto an SV breakpoint, where the reads clip hard at
+  // a single column — producing a tall, unmistakable clip-indicator stack
+  // (blue = left-clip, red = right-clip). The earlier SKBR3 illumina view was a
+  // wide 28kb window where the ticks were tiny and scattered (reviewer).
   {
     mode: 'url',
     name: 'alignment_clipping_indicators',
-    url: sessionSpec(DEMO_CONFIG, {
+    url: sessionSpec(VOLVOX, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '1:22,518,136-22,546,627',
+          assembly: 'volvox',
+          loc: 'ctgA:2,560-2,760',
           tracks: [
             {
-              trackId:
-                'SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram',
+              trackId: 'volvox-long-reads-sv-bam',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                // taller coverage band so the small clip-indicator ticks above
-                // it are large enough to read (default coverageHeight is 45)
+                // taller coverage band so the clip-indicator ticks above it are
+                // large enough to read (default coverageHeight is 45)
                 coverageHeight: 120,
               },
             },
@@ -1621,9 +1646,9 @@ export const specs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'SKBR3',
+    readyText: 'ctgA',
     readyTimeout: 60000,
-    settleMs: 20000,
+    settleMs: 8000,
   },
 
   // Inverted duplication (CPX/INVdup HGSV_2721) on real 1000-genomes data: the
@@ -2413,20 +2438,20 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'add_track_form',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
+          assembly: 'hg19',
+          loc: 'chr1:1,000,000-1,100,000',
+          tracks: ['ncbi_gff_hg19'],
         },
       ],
     }),
-    readyText: 'ctgA',
+    readyText: 'NCBI RefSeq',
     // smaller window so the File menu + add-track drawer are easy to read
     viewportWidth: 1000,
-    viewportHeight: 600,
+    viewportHeight: 560,
     settleMs: 3000,
     actions: [
       { type: 'click', text: 'File' },
@@ -2443,11 +2468,12 @@ export const specs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Enter track data' },
           { type: 'delay', ms: 1000 },
         ],
-        // ring the AddTrackWidget drawer that opened in the sidebar
+        // box just the add-track workflow form (not the whole full-height
+        // drawer, whose box ran off the bottom of the capture)
         annotations: [
           {
             type: 'box',
-            anchor: { selector: '[data-testid="drawer-widget"]' },
+            anchor: { selector: '[data-testid="addTrackWorkflow"]' },
           },
         ],
       },
@@ -2508,8 +2534,9 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         text: 'Add track',
         anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
-        dx: -110,
-        dy: 4,
+        // sit well above-left of the FAB so the label clears the button
+        dx: -70,
+        dy: -52,
         background: 'rgba(0,0,0,0.78)',
         textColor: '#fff',
       },
@@ -2593,12 +2620,15 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes', 'volvox_cram_alignments'],
+          // no alignments track here: its canvas keeps repainting and closes
+          // the MUI cascade before capture, so the Track labels submenu never
+          // shows. A static feature track keeps the cascade open.
+          tracks: ['gff3tabix_genes'],
         },
       ],
     }),
     readyText: 'ctgA',
-    settleMs: 6000,
+    settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       { type: 'waitForText', text: 'Track labels' },

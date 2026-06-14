@@ -65,37 +65,6 @@ export function getReadsMenuItem(model: ReadsModel) {
       checkboxItem('Show soft clipping', model.showSoftClipping, () => {
         model.toggleSoftClipping()
       }),
-      checkboxItem(
-        'Show interbase indicators',
-        model.showInterbaseIndicators,
-        () => {
-          model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
-        },
-      ),
-      checkboxItem(
-        'Show mismatches faded by base quality',
-        model.mismatchAlpha,
-        () => {
-          model.toggleMismatchAlpha()
-        },
-      ),
-      checkboxItem(
-        'Show low-frequency mismatches',
-        model.showLowFreqMismatches,
-        () => {
-          model.toggleShowLowFreqMismatches()
-        },
-      ),
-      checkboxItem('Show outlines', model.showOutline, () => {
-        model.setShowOutline(!model.showOutline)
-      }),
-      checkboxItem(
-        'Color supplementary alignments by primary strand',
-        model.flipStrandLongReadChains,
-        () => {
-          model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
-        },
-      ),
       checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
         model.toggleSashimiArcs()
       }),
@@ -109,18 +78,51 @@ export function getReadsMenuItem(model: ReadsModel) {
           ])
         },
       },
-      checkboxItem(
-        'Show read links as bezier curves',
-        model.showBezierConnections,
-        () => {
-          model.setShowBezierConnections(!model.showBezierConnections)
-        },
-      ),
       getArcDirectionMenuItem(model),
       {
         label: 'Advanced',
         type: 'subMenu' as const,
+        // less-common toggles, kept out of the top-level Show list so it
+        // doesn't grow unwieldy
         subMenu: [
+          checkboxItem(
+            'Show interbase indicators',
+            model.showInterbaseIndicators,
+            () => {
+              model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
+            },
+          ),
+          checkboxItem(
+            'Show mismatches faded by base quality',
+            model.mismatchAlpha,
+            () => {
+              model.toggleMismatchAlpha()
+            },
+          ),
+          checkboxItem(
+            'Show low-frequency mismatches',
+            model.showLowFreqMismatches,
+            () => {
+              model.toggleShowLowFreqMismatches()
+            },
+          ),
+          checkboxItem('Show outlines', model.showOutline, () => {
+            model.setShowOutline(!model.showOutline)
+          }),
+          checkboxItem(
+            'Color supplementary alignments by primary strand',
+            model.flipStrandLongReadChains,
+            () => {
+              model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
+            },
+          ),
+          checkboxItem(
+            'Show read links as bezier curves',
+            model.showBezierConnections,
+            () => {
+              model.setShowBezierConnections(!model.showBezierConnections)
+            },
+          ),
           checkboxItem(
             'Show off-screen mate connections',
             model.drawLongRange,

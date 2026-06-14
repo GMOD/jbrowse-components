@@ -79,7 +79,7 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
   }
 
   return (
-    <div className={classes.root}>
+    <div className={classes.root} data-testid="addTrackWorkflow">
       <Typography variant="body2" color="textSecondary">
         Have multiple files?{' '}
         <Link
