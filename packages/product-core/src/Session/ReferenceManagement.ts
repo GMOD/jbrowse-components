@@ -67,6 +67,47 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
         })
         return refs
       },
+
+      /**
+       * Batch version of getReferring: walks the tree once and returns a map
+       * from trackId to referring nodes. Use this instead of calling
+       * getReferring() in a loop to avoid O(n × treeSize) traversals.
+       */
+      getReferringMultiple(tracks: IAnyStateTreeNode[]) {
+        const byTrackId = new Map<string, IAnyStateTreeNode>()
+        const byIdentity = new Map<IAnyStateTreeNode, string>()
+        for (const t of tracks) {
+          const id = (t as { trackId?: string }).trackId
+          if (id) {
+            byTrackId.set(id, t)
+            byIdentity.set(t, id)
+          }
+        }
+        const result = new Map<string, ReferringNode[]>()
+        if (byTrackId.size === 0) {
+          return result
+        }
+        walk(getParent(self), node => {
+          if (isModelType(getType(node))) {
+            const members = getMembers(node)
+            for (const [key, value] of Object.entries(members.properties)) {
+              if (isReferenceType(value)) {
+                const ref = node[key]
+                const trackId =
+                  (ref?.trackId !== undefined && byTrackId.has(ref.trackId)
+                    ? ref.trackId
+                    : undefined) ?? byIdentity.get(ref)
+                if (trackId !== undefined) {
+                  const existing = result.get(trackId) ?? []
+                  existing.push({ node, key })
+                  result.set(trackId, existing)
+                }
+              }
+            }
+          }
+        })
+        return result
+      },
     }))
     .actions(self => ({
       /**

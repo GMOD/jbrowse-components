@@ -69,9 +69,10 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         if (!connection) {
           return undefined
         }
+        const referringByTrackId = root.getReferringMultiple(connection.tracks)
         for (const track of connection.tracks) {
-          const ref = root.getReferring(track)
-          root.removeReferring(ref, track, callbacksToDeref, derefTypeCount)
+          const refs = referringByTrackId.get(track.trackId) ?? []
+          root.removeReferring(refs, track, callbacksToDeref, derefTypeCount)
         }
         return [
           () => {
