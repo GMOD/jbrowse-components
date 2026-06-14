@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { normalizeUriSnapshot } from '../normalizeUriSnapshot.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -7,17 +9,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * can read "sequence_report.tsv" type files from NCBI
  */
 
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        location: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
+export const normalizeSnapshot = normalizeUriSnapshot
 
 const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   'NcbiSequenceReportAliasAdapter',

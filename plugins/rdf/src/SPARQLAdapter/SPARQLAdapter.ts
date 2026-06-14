@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import type { SPARQLAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -112,19 +113,25 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
 
   private async querySparql(
     query: string,
-    _opts?: BaseOptions,
+    opts?: BaseOptions,
   ): Promise<SPARQLResponse> {
     let additionalQueryParams = ''
     if (this.additionalQueryParams.length) {
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
     }
-    // TODO:ABORT
+    checkStopToken(opts?.stopToken)
     const url = `${this.endpoint}?query=${query}${additionalQueryParams}`
     const response = await fetch(url, {
       headers: {
         accept: 'application/json,application/sparql-results+json',
       },
     })
+    if (!response.ok) {
+      throw new Error(
+        `SPARQL query failed: ${response.status} ${response.statusText}`,
+      )
+    }
+    checkStopToken(opts?.stopToken)
     return response.json() as Promise<SPARQLResponse>
   }
 

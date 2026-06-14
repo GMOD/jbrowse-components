@@ -57,10 +57,12 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusion
           rightIdx = columnNames.indexOf('RightBreakpoint')
         } else if (leftIdx >= 0 && rightIdx >= 0) {
           const cols = line.split('\t')
-          const leftRef = cols[leftIdx]!.split(':', 1)[0]!
-          const rightRef = cols[rightIdx]!.split(':', 1)[0]!
-          ;(feats1[leftRef] ??= []).push(line)
-          ;(feats2[rightRef] ??= []).push(line)
+          const leftRef = cols[leftIdx]?.split(':', 1)[0]
+          const rightRef = cols[rightIdx]?.split(':', 1)[0]
+          if (leftRef && rightRef) {
+            ;(feats1[leftRef] ??= []).push(line)
+            ;(feats2[rightRef] ??= []).push(line)
+          }
         }
         return true
       },

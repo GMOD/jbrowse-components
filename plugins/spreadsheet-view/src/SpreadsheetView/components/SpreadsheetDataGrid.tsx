@@ -1,5 +1,3 @@
-import { startTransition } from 'react'
-
 import { DataGrid, useGridApiRef } from '@mui/x-data-grid'
 import { gridVisibleRowsLookupSelector } from '@mui/x-data-grid/hooks'
 import { observer } from 'mobx-react'
@@ -22,9 +20,7 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
       columnHeaderHeight={35}
       columnVisibilityModel={visibleColumns}
       onFilterModelChange={() => {
-        startTransition(() => {
-          model.setVisibleRows(gridVisibleRowsLookupSelector(apiRef))
-        })
+        model.setVisibleRows(gridVisibleRowsLookupSelector(apiRef))
       }}
       onColumnVisibilityModelChange={n => {
         model.setVisibleColumns(n)

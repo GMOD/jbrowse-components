@@ -95,7 +95,7 @@ const stateModelFactory = (
           if (refreshToken) {
             const newToken =
               await self.exchangeRefreshForAccessToken(refreshToken)
-            return this.validateToken(newToken, location)
+            return self.validateToken(newToken, location)
           }
           throw new Error(
             await getDescriptiveErrorMessage(
