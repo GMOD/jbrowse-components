@@ -23,9 +23,10 @@ export function filterTracks(
     const viewAssemblyNames = self.assemblyNames
       .map(a => assemblyManager.getCanonicalAssemblyName(a))
       .filter(notEmpty)
-    const { displayTypes } = pluginManager.getViewType(view.type)
     const viewDisplaysSet = new Set(
-      displayTypes.map((d: { name: string }) => d.name),
+      pluginManager
+        .getViewType(view.type)
+        ?.displayTypes.map((d: { name: string }) => d.name) ?? [],
     )
     return tracks.filter(c => {
       const trackConfigAssemblyNames = readConfObject(c, 'assemblyNames') as

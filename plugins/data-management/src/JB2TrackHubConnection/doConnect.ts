@@ -10,7 +10,6 @@ import type { UriLocation } from '@jbrowse/core/util'
 
 export async function doConnect(self: ConnectionDoConnectArg) {
   const session = getSession(self)
-  const addedAssemblies: string[] = []
   try {
     const configJsonLocation = getConf(
       self,
@@ -29,7 +28,6 @@ export async function doConnect(self: ConnectionDoConnectArg) {
       for (const assembly of configJson.assemblies) {
         if (!session.assemblyManager.get(assembly.name)) {
           session.addSessionAssembly?.(assembly)
-          addedAssemblies.push(assembly.name)
         }
       }
     }
@@ -42,8 +40,5 @@ export async function doConnect(self: ConnectionDoConnectArg) {
     console.error(e)
     session.notifyError(`${getConf(self, 'name')}: "${e}"`, e)
     session.breakConnection?.(self.configuration)
-    for (const name of addedAssemblies) {
-      session.removeSessionAssembly?.(name)
-    }
   }
 }

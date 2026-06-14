@@ -48,7 +48,6 @@ export async function doConnect(self: ConnectionDoConnectArg) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
   const notLoadedAssemblies: string[] = []
-  const addedAssemblies: string[] = []
   try {
     const hubFileLocation = getConf(self, 'hubTxtLocation') as UriLocation
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
@@ -100,7 +99,6 @@ export async function doConnect(self: ConnectionDoConnectArg) {
         if (!assemblyManager.get(genomeName)) {
           if (session.addSessionAssembly) {
             session.addSessionAssembly(generateAssembly(genome, genomesBaseUri))
-            addedAssemblies.push(genomeName)
           } else {
             notLoadedAssemblies.push(genomeName)
             continue
@@ -126,8 +124,5 @@ export async function doConnect(self: ConnectionDoConnectArg) {
     console.error(e)
     session.notifyError(`${getConf(self, 'name')}: "${e}"`, e)
     session.breakConnection?.(self.configuration)
-    for (const name of addedAssemblies) {
-      session.removeSessionAssembly?.(name)
-    }
   }
 }
