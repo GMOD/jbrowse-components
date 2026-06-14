@@ -162,7 +162,7 @@
     "prebuild": "pnpm clean",
     "prepack": "pnpm build",
     "generate:exports": "node scripts/generateExports.mjs",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsgo --build tsconfig.build.esm.json",
     "build": "pnpm build:esm"
   },
   "dependencies": {
