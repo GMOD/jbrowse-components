@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/shader-tools",
   "version": "4.3.0",
+  "private": true,
   "type": "module",
   "description": "Slang → WGSL/GLSL + typed-TS shader codegen for JBrowse GPU displays (the `pnpm gen:shaders` pipeline)",
   "keywords": [
