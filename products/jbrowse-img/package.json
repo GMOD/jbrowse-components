@@ -34,7 +34,7 @@
     "build:esm": "tsgo --build tsconfig.build.esm.json",
     "prepack": "pnpm build",
     "preversion": "pnpm build",
-    "test:integration": "npx tsx --tsconfig ../../tsconfig.json --test test/*.test.mjs"
+    "test:integration": "npx tsx --tsconfig ../../tsconfig.json --test src/**/*.test.mjs"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

@@ -17,7 +17,7 @@ this directory:
 pnpm test:integration
 ```
 
-The integration tests live in `test/` and import from `src/` directly via tsx.
+The integration tests live in `src/` alongside unit tests and import from `src/` directly via tsx.
 They do **not** use Jest because jsdom (required by `setupEnv` for
 `document.createElement`) brings in pure-ESM dependencies (`@exodus/bytes`,
 `parse5`) that Jest's Babel-CJS transform pipeline cannot handle. tsx resolves
