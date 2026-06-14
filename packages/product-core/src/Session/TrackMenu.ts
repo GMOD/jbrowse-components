@@ -6,6 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
+import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
 
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -59,38 +60,40 @@ interface TrackActionSession<C> {
   ) => void
   addTrackConf: (conf: C) => unknown
   deleteTrackConf: (conf: AnyConfigurationModel) => void
+  resetTrackConfiguration?: (trackId: string) => void
 }
 
 /**
  * The shared Settings / Copy / Copy-and-open / Delete track actions. Each
  * product supplies `makeCopy` (its own session-track/category rules) and
- * `canEdit`; reference sequence tracks can't be copied or deleted.
+ * `canEdit`; reference sequence tracks can't be copied or deleted. When
+ * `isSessionOverride` is set the track is a session edit shadowing an
+ * admin-owned config track, so the final action resets it instead of deleting.
  */
 export function trackActionItems<C extends { trackId: string }>({
   session,
   config,
   view,
   canEdit,
+  isSessionOverride,
   makeCopy,
 }: {
   session: TrackActionSession<C>
   config: BaseTrackConfig
   view?: { showTrack: (id: string) => void }
   canEdit: boolean
+  isSessionOverride?: boolean
   makeCopy: () => C
 }): MenuItem[] {
   const isRefSeq = config.type === 'ReferenceSequenceTrack'
   return [
     {
+      // always available: editing a non-session (admin-owned) track applies
+      // in-memory for the current session even when the user can't persist it
       label: 'Settings',
       icon: SettingsIcon,
-      disabled: !canEdit,
       onClick: () => {
-        // guard in addition to `disabled` so a non-session track can never be
-        // edited even if a renderer ignores the disabled flag
-        if (canEdit) {
-          session.editConfiguration(config)
-        }
+        session.editConfiguration(config)
       },
     },
     {
@@ -112,14 +115,24 @@ export function trackActionItems<C extends { trackId: string }>({
         }
       },
     },
-    {
-      label: 'Delete track',
-      icon: DeleteIcon,
-      disabled: !canEdit || isRefSeq,
-      onClick: () => {
-        session.deleteTrackConf(config)
-      },
-    },
+    isSessionOverride
+      ? {
+          // a session edit of an admin-owned track: the underlying config track
+          // can't be deleted, so offer to discard the edits instead
+          label: 'Reset track settings',
+          icon: SettingsBackupRestoreIcon,
+          onClick: () => {
+            session.resetTrackConfiguration?.(config.trackId)
+          },
+        }
+      : {
+          label: 'Delete track',
+          icon: DeleteIcon,
+          disabled: !canEdit || isRefSeq,
+          onClick: () => {
+            session.deleteTrackConf(config)
+          },
+        },
   ]
 }
 

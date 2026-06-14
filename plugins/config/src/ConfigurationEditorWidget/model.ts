@@ -5,6 +5,7 @@ import { autorun } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { SessionWithConfigEditing } from '@jbrowse/core/util'
 
 export default function stateModelFactory(_pluginManager: PluginManager) {
   return types
@@ -26,20 +27,27 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         let timeout: ReturnType<typeof setTimeout> | undefined
         // Auto-save configuration changes with 400ms debounce. The autorun
         // reacts to any changes in the target configuration model and persists
-        // them back to the session after a short delay. Note: updateTrackConf
-        // is a no-op for snapshots without a matching trackId, so this widget
-        // is only safe to open on track configs (see editConfiguration, which
-        // enforces a trackId). Non-track configs (assembly/connection) edit the
-        // ConfigurationEditor component directly and mutate live nodes in place.
+        // them back to the session after a short delay via
+        // updateTrackConfiguration, which routes admin edits to the jbrowse
+        // config in place and everyone else's to a shareable session-track
+        // override. It keys off trackId, so this widget is only safe to open on
+        // track configs (see editConfiguration, which enforces a trackId).
+        // Non-track configs (assembly/connection) edit the ConfigurationEditor
+        // component directly and mutate live nodes in place.
         addDisposer(
           self,
           autorun(() => {
             if (self.target) {
-              const snapshot = getSnapshot(self.target)
+              // the widget only opens on track configs (see comment above), so
+              // the snapshot always carries a trackId
+              const snapshot = getSnapshot(self.target) as {
+                trackId: string
+                [key: string]: unknown
+              }
               clearTimeout(timeout)
               timeout = setTimeout(() => {
-                const session = getSession(self)
-                session.jbrowse.updateTrackConf(snapshot)
+                const session = getSession(self) as SessionWithConfigEditing
+                session.updateTrackConfiguration(snapshot)
               }, 400)
             }
           }),

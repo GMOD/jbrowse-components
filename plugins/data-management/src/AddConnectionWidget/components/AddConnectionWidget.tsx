@@ -80,7 +80,6 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
                 <ConfigureConnection
                   connectionType={connectionType}
                   model={configModel}
-                  session={session}
                 />
               )}
               <div className={classes.actionsContainer}>

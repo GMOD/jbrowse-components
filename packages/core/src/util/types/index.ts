@@ -184,6 +184,12 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 /** abstract interface for a session allows editing configurations */
 export interface SessionWithConfigEditing extends AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
+  // persist an edited track snapshot (admins → jbrowse config in place, others
+  // → a shareable same-id session-track override)
+  updateTrackConfiguration(trackConf: {
+    trackId: string
+    [key: string]: unknown
+  }): void
 }
 export function isSessionModelWithConfigEditing(
   t: unknown,

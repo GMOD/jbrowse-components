@@ -28,9 +28,18 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * Session tracks come first and shadow any config (jbrowse.tracks) track
+       * with the same trackId, so a non-admin's edits to a config track (stored
+       * as a same-id session override, see updateTrackConfiguration) replace the
+       * original everywhere it's resolved without showing a duplicate.
        */
       get tracks(): AnyConfigurationModel[] {
-        return [...self.sessionTracks, ...self.jbrowse.tracks]
+        const overridden = new Set(self.sessionTracks.map(t => t.trackId))
+        const configTracks = self.jbrowse.tracks as AnyConfigurationModel[]
+        return [
+          ...self.sessionTracks,
+          ...configTracks.filter(t => !overridden.has(t.trackId)),
+        ]
       },
     }))
     .actions(self => {
@@ -70,6 +79,54 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               e,
             )
             return undefined
+          }
+        },
+
+        /**
+         * #action
+         * Persist edited track config. Admins edit the jbrowse config in place;
+         * everyone else gets a session-track override (same trackId) so the
+         * edits persist with the session and are shared, instead of being a
+         * throwaway in-memory mutation of an admin-owned config track.
+         */
+        updateTrackConfiguration(trackConf: {
+          trackId: string
+          [key: string]: unknown
+        }) {
+          if (self.adminMode) {
+            self.jbrowse.updateTrackConf(trackConf)
+          } else {
+            const { trackId } = trackConf
+            const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
+            // sessionTracks is a typed MST array, so an invalid config throws on
+            // write — surface it as a snackbar rather than crashing the app
+            try {
+              if (idx === -1) {
+                self.sessionTracks.push(trackConf)
+              } else {
+                self.sessionTracks[idx] = trackConf
+              }
+            } catch (e) {
+              self.notifyError(
+                `Track "${trackId}" has an invalid configuration: ${e}`,
+                e,
+              )
+            }
+          }
+        },
+
+        /**
+         * #action
+         * Drop a session-track override (see updateTrackConfiguration) so the
+         * track reverts to its underlying config (jbrowse.tracks) default. Unlike
+         * deleteTrackConf this does not dereference the track from open views —
+         * the same-trackId config track re-resolves in place, so an open track
+         * stays open and simply reverts.
+         */
+        resetTrackConfiguration(trackId: string) {
+          const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
+          if (idx !== -1) {
+            self.sessionTracks.splice(idx, 1)
           }
         },
 

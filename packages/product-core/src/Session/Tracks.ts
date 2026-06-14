@@ -82,6 +82,19 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Persist edited track config back to the in-memory jbrowse config. The
+       * session-tracks mixin overrides this so a non-admin's edits become a
+       * shareable session-track override instead.
+       */
+      updateTrackConfiguration(trackConf: {
+        trackId: string
+        [key: string]: unknown
+      }) {
+        self.jbrowse.updateTrackConf(trackConf)
+      },
+
+      /**
+       * #action
        */
       deleteTrackConf(trackConf: AnyConfigurationModel) {
         const callbacksToDereferenceTrack: (() => void)[] = []

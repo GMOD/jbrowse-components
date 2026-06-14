@@ -156,6 +156,71 @@ test('filters slots by description (not just name)', () => {
   expect(queryByLabelText('fooColor')).toBeNull()
 })
 
+test('hides advanced slots behind a toggle, and reveals them', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    basicName: {
+      name: 'basicName',
+      description: 'a basic slot',
+      type: 'string',
+      defaultValue: 'hello',
+    },
+    fancyName: {
+      name: 'fancyName',
+      description: 'an advanced slot',
+      type: 'string',
+      defaultValue: 'world',
+      advanced: true,
+    },
+  })
+
+  const { getByText, queryByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor
+        model={{ target: TestSchema.create(undefined, { pluginManager }) }}
+      />
+    </ThemeProvider>,
+  )
+
+  // advanced slot hidden initially, basic slot visible
+  expect(queryByLabelText('basicName')).toBeTruthy()
+  expect(queryByLabelText('fancyName')).toBeNull()
+
+  fireEvent.click(getByText(/Show advanced settings/))
+  expect(queryByLabelText('fancyName')).toBeTruthy()
+})
+
+test('an active filter reveals matching advanced slots inline', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    basicName: {
+      name: 'basicName',
+      description: 'a basic slot',
+      type: 'string',
+      defaultValue: 'hello',
+    },
+    fancyName: {
+      name: 'fancyName',
+      description: 'an advanced slot',
+      type: 'string',
+      defaultValue: 'world',
+      advanced: true,
+    },
+  })
+
+  const { getByLabelText, queryByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor
+        model={{ target: TestSchema.create(undefined, { pluginManager }) }}
+      />
+    </ThemeProvider>,
+  )
+
+  fireEvent.change(getByLabelText('Filter options'), {
+    target: { value: 'fancy' },
+  })
+  expect(queryByLabelText('fancyName')).toBeTruthy()
+  expect(queryByLabelText('basicName')).toBeNull()
+})
+
 // Removed: PileupTrack schema test — Alignments plugin no longer registers
 // renderers (moved to GPU pipeline), so baseLinearDisplayConfigSchema
 // with only Alignments produces an empty renderer union.

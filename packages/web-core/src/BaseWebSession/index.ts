@@ -92,12 +92,8 @@ export function BaseWebSessionModel({
       pendingFileHandleIds: [] as string[],
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get tracks(): AnyConfigurationModel[] {
-        return [...self.sessionTracks, ...self.jbrowse.tracks]
-      },
+      // `tracks` (with session-override shadowing) comes from
+      // SessionTracksManagerSessionMixin — no need to redefine it here
       /**
        * #getter
        */
@@ -114,9 +110,28 @@ export function BaseWebSessionModel({
     }))
 
     .views(self => ({
+      /**
+       * #method
+       * whether the user may edit this track's config (admins may edit any;
+       * everyone else only their own session tracks)
+       */
       canEditTrack(trackId: string): boolean {
         return (
           self.adminMode || self.sessionTracks.some(t => t.trackId === trackId)
+        )
+      },
+
+      /**
+       * #method
+       * whether `trackId` is a session-track edit (see updateTrackConfiguration)
+       * shadowing an admin-owned config track of the same trackId, rather than a
+       * standalone user-added session track
+       */
+      isTrackOverride(trackId: string): boolean {
+        const configTracks = self.jbrowse.tracks as AnyConfigurationModel[]
+        return (
+          self.sessionTracks.some(t => t.trackId === trackId) &&
+          configTracks.some(t => t.trackId === trackId)
         )
       },
 
@@ -179,13 +194,13 @@ export function BaseWebSessionModel({
     .actions(self => ({
       /**
        * #action
+       * opens the config editor for a track. Available for any track: edits to
+       * a non-session (admin-owned) track apply in-memory for the current
+       * session even when the user lacks rights to persist them.
        */
       editTrackConfiguration(
         configuration: AnyConfigurationModel | { trackId: string },
       ) {
-        if (!self.canEditTrack(configuration.trackId)) {
-          throw new Error("Can't edit the configuration of a non-session track")
-        }
         self.editConfiguration(configuration)
       },
     }))
@@ -203,6 +218,7 @@ export function BaseWebSessionModel({
           config,
           view,
           canEdit: self.canEditTrack(config.trackId),
+          isSessionOverride: self.isTrackOverride(config.trackId),
           // non-admin copies become session tracks (routed to a special
           // category, so the original category is also cleared)
           makeCopy: () =>

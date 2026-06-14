@@ -12,12 +12,14 @@ import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import ClearIcon from '@mui/icons-material/Clear'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import SearchIcon from '@mui/icons-material/Search'
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Button,
   IconButton,
   InputAdornment,
   TextField,
@@ -54,6 +56,10 @@ const useStyles = makeStyles()(theme => ({
     margin: theme.spacing(2),
     fontStyle: 'italic',
   },
+  advancedToggle: {
+    margin: theme.spacing(1, 0),
+    textTransform: 'none',
+  },
 }))
 
 // matches a slot or sub-schema against a lowercased filter string, recursing
@@ -89,6 +95,17 @@ function schemaMatches(schema: AnyConfigurationModel, query: string): boolean {
   const { properties } = getMembers(schema)
   return Object.entries(properties).some(([slotName, slotSchema]) =>
     memberMatches(schema, slotName, slotSchema, query),
+  )
+}
+
+// a slot flagged `advanced` in its schema definition, hidden behind a toggle
+function isAdvancedSlot(
+  schema: AnyConfigurationModel,
+  slotName: string,
+): boolean {
+  return (
+    isConfigurationSlot(schema, slotName) &&
+    !!getSlotDefinition(schema, slotName).advanced
   )
 }
 
@@ -174,25 +191,44 @@ const Schema = observer(function Schema({
   path?: string[]
   filter?: string
 }) {
+  const { classes } = useStyles()
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const query = filter.toLowerCase()
   const properties = getMembers(schema).properties
+  const visible = Object.entries(properties).filter(
+    ([slotName, slotSchema]) =>
+      !query || memberMatches(schema, slotName, slotSchema, query),
+  )
+  const normal = visible.filter(([slotName]) => !isAdvancedSlot(schema, slotName))
+  const advanced = visible.filter(([slotName]) => isAdvancedSlot(schema, slotName))
+  const renderMember = ([slotName, slotSchema]: [string, IAnyType]) => (
+    <Member
+      key={slotName}
+      slotName={slotName}
+      slotSchema={slotSchema}
+      path={path}
+      schema={schema}
+      filter={filter}
+    />
+  )
   return (
     <>
-      {Object.entries(properties)
-        .filter(
-          ([slotName, slotSchema]) =>
-            !query || memberMatches(schema, slotName, slotSchema, query),
-        )
-        .map(([slotName, slotSchema]) => (
-          <Member
-            key={slotName}
-            slotName={slotName}
-            slotSchema={slotSchema}
-            path={path}
-            schema={schema}
-            filter={filter}
-          />
-        ))}
+      {normal.map(renderMember)}
+      {/* an active filter reveals matching advanced slots inline so search can
+          find them; otherwise they hide behind the toggle */}
+      {advanced.length && !query ? (
+        <Button
+          className={classes.advancedToggle}
+          size="small"
+          startIcon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          onClick={() => {
+            setShowAdvanced(!showAdvanced)
+          }}
+        >
+          {showAdvanced ? 'Hide' : 'Show'} advanced settings ({advanced.length})
+        </Button>
+      ) : null}
+      {showAdvanced || query ? advanced.map(renderMember) : null}
     </>
   )
 })
