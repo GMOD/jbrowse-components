@@ -24,6 +24,7 @@ import {
   resolveLateType,
 } from '../util/mst-reflection.ts'
 
+import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -147,19 +148,16 @@ export function getConfSnapshot(confObject: AnyConfigurationModel) {
   const result: Record<string, unknown> = {}
   const table = getConfigurationSchemaMetadata(getType(confObject))?.definition
   for (const [key, def] of Object.entries(table ?? {})) {
-    // skip constants (string/number entries in the schema definition)
-    if (typeof def !== 'object') {
-      continue
-    }
     const v = confObject[key]
-    if (isConfigurationModel(v)) {
-      result[key] = getConfSnapshot(v)
-    } else if (!isType(def)) {
-      // a slot (def is a ConfigSlotDefinition plain object). jexl callback
-      // strings pass through raw for per-feature evaluation in the worker.
-      // arrays/maps of sub-schemas (def is an MST type) are intentionally
-      // dropped — no current caller needs them.
+    if (isSlotDefinitionEntry(def)) {
+      // jexl callback strings pass through raw for per-feature evaluation in
+      // the worker.
       result[key] = isStateTreeNode(v) ? getSnapshot(v) : v
+    } else if (isConfigurationSchemaType(def) && isConfigurationModel(v)) {
+      // a direct sub-configuration recurses; arrays/maps of sub-schemas (whose
+      // value isn't a single config model) are intentionally dropped — no
+      // current caller needs them. Constants are skipped entirely.
+      result[key] = getConfSnapshot(v)
     }
   }
   return result
@@ -271,6 +269,27 @@ export function isConfigurationSchemaType(
   } else {
     return false
   }
+}
+
+/**
+ * A configuration schema definition maps each key to exactly one of three kinds
+ * of entry. Together with `isConfigurationSchemaType` (the sub-schema case),
+ * these predicates are the single source of truth for that classification —
+ * shared by schema construction and every reader, so "what kind of entry is
+ * this?" has one answer everywhere.
+ *
+ *  - constant   → a bare string/number (becomes a volatile instance constant)
+ *  - slot       → a ConfigSlotDefinition object (has a `type` field, not a type)
+ *  - sub-schema → an MST configuration-schema type, see isConfigurationSchemaType
+ */
+export function isConstantEntry(def: unknown): def is string | number {
+  return typeof def === 'string' || typeof def === 'number'
+}
+
+export function isSlotDefinitionEntry(
+  def: unknown,
+): def is ConfigSlotDefinition {
+  return typeof def === 'object' && def !== null && !isType(def) && 'type' in def
 }
 
 // Cache for isConfigurationModel results to avoid expensive repeated type checks

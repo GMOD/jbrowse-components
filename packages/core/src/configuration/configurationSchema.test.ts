@@ -347,6 +347,35 @@ describe('configuration schemas', () => {
   })
 })
 
+describe('schema definition entry classification', () => {
+  test('a slot definition missing its type throws a specific error', () => {
+    expect(() =>
+      // @ts-expect-error intentionally omitting the required `type`
+      ConfigurationSchema('Bad', { broken: { defaultValue: 1 } }),
+    ).toThrow(/no type set for config slot Bad.broken/)
+  })
+
+  test('a non-slot, non-constant, non-schema entry throws', () => {
+    expect(() =>
+      // @ts-expect-error a bare boolean is not a valid definition entry
+      ConfigurationSchema('Bad', { broken: true }),
+    ).toThrow(/invalid configuration schema definition/)
+  })
+
+  test('string/number entries become read-only volatile constants', () => {
+    const schema = ConfigurationSchema('WithConstants', {
+      label: 'hello',
+      count: 42,
+      real: { type: 'string', defaultValue: 'x' },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(node.label).toBe('hello')
+    expect(node.count).toBe(42)
+    // constants are not part of the persisted snapshot
+    expect(getSnapshot(node)).toEqual({})
+  })
+})
+
 describe('union error scoping', () => {
   // ConfigurationSchema with explicitlyTyped:true produces types.optional(model)
   // members. The MST discriminator must drill through that wrapper so errors are

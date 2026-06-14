@@ -2,10 +2,8 @@ import {
   getEnv,
   getRoot,
   isArrayType,
-  isLateType,
   isMapType,
   isStateTreeNode,
-  isType,
   resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -15,7 +13,11 @@ import {
   getConfigurationSchemaMetadata,
   registerConfigurationSchema,
 } from './schemaRegistry.ts'
-import { isConfigurationSchemaType } from './util.ts'
+import {
+  isConfigurationSchemaType,
+  isConstantEntry,
+  isSlotDefinitionEntry,
+} from './util.ts'
 import { getContainingTrack, getSession } from '../util/index.ts'
 import { ElementId } from '../util/types/mst.ts'
 
@@ -124,14 +126,11 @@ function makeConfigurationSchemaModel<
   // not on the instance.
   const volatileConstants: Record<string, unknown> = {}
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
-    if (
-      (isType(slotDefinition) && isLateType(slotDefinition)) ||
-      isConfigurationSchemaType(slotDefinition)
-    ) {
-      // an MST late() type (assumed to be a sub-configuration), or an actual
-      // sub-configuration. A bare sub-schema is already stripDefault-wrapped (so
-      // it strips when all-default); an array/map of sub-schemas gets wrapped so
-      // an empty/default collection is likewise omitted from the snapshot.
+    if (isConfigurationSchemaType(slotDefinition)) {
+      // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
+      // (so it strips when all-default); an array/map of sub-schemas gets
+      // wrapped so an empty/default collection is likewise omitted from the
+      // snapshot.
       if (isArrayType(slotDefinition)) {
         modelDefinition[slotName] = types.stripDefault(slotDefinition, [])
       } else if (isMapType(slotDefinition)) {
@@ -139,26 +138,22 @@ function makeConfigurationSchemaModel<
       } else {
         modelDefinition[slotName] = slotDefinition
       }
-    } else if (
-      typeof slotDefinition === 'string' ||
-      typeof slotDefinition === 'number'
-    ) {
+    } else if (isConstantEntry(slotDefinition)) {
       volatileConstants[slotName] = slotDefinition
-    } else if (typeof slotDefinition === 'object') {
-      // this is a slot definition
-      if (!slotDefinition.type) {
-        throw new Error(`no type set for config slot ${modelName}.${slotName}`)
-      }
+    } else if (isSlotDefinitionEntry(slotDefinition)) {
+      // slotDefinition is narrowed to ConfigSlotDefinition here (no cast)
       try {
-        modelDefinition[slotName] = ConfigSlot(
-          slotDefinition as ConfigSlotDefinition,
-        )
+        modelDefinition[slotName] = ConfigSlot(slotDefinition)
       } catch (e) {
         throw new Error(
           `invalid config slot definition for ${modelName}.${slotName}: ${e}`,
           { cause: e },
         )
       }
+    } else if (typeof slotDefinition === 'object') {
+      // an object that's neither a sub-schema nor a slot is almost always a
+      // slot definition missing its required `type` field
+      throw new Error(`no type set for config slot ${modelName}.${slotName}`)
     } else {
       throw new Error(
         `invalid configuration schema definition, "${slotName}" must be either a valid configuration slot definition, a constant, or a nested configuration schema`,
@@ -217,18 +212,20 @@ function makeConfigurationSchemaModel<
     completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
   }
 
-  // register the inner model type (not just the stripDefault wrapper below) so
-  // metadata is reachable from a live node via getType(node) — the config
-  // editor's slot facade looks it up from there.
-  registerConfigurationSchema(completeModel, {
-    definition: schemaDefinition,
-    options,
-  })
-
   // stripDefault (not optional) so a nested all-default sub-schema is omitted
   // from its parent's snapshot: the slot props strip themselves, the sub-schema
   // collapses to its default, and the parent's stripDefault drops the key.
-  return types.stripDefault(completeModel, modelDefault)
+  const wrappedModel = types.stripDefault(completeModel, modelDefault)
+
+  // Register metadata against BOTH handles: the inner model (what getType(node)
+  // returns for a live config — the config editor's slot facade looks it up
+  // from there) and the stripDefault wrapper (what ConfigurationSchema returns
+  // and what sub-schema properties hold), so a lookup succeeds from either.
+  const metadata = { definition: schemaDefinition, options }
+  registerConfigurationSchema(completeModel, metadata)
+  registerConfigurationSchema(wrappedModel, metadata)
+
+  return wrappedModel
 }
 
 export interface ConfigurationSchemaType<
@@ -254,16 +251,11 @@ export function ConfigurationSchema<
     inputSchemaDefinition,
     inputOptions,
   )
-  const schemaType = makeConfigurationSchemaModel(
+  return makeConfigurationSchemaModel(
     modelName,
     schemaDefinition,
     options,
   ) as AnyConfigurationSchemaType
-  registerConfigurationSchema(schemaType, {
-    definition: schemaDefinition,
-    options,
-  })
-  return schemaType
 }
 
 // Lazy hydration cache for frozen track configs. jbrowse.tracks is

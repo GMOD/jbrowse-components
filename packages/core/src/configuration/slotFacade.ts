@@ -1,6 +1,7 @@
-import { getType, isType } from '@jbrowse/mobx-state-tree'
+import { getType } from '@jbrowse/mobx-state-tree'
 
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
+import { isSlotDefinitionEntry } from './util.ts'
 import { getEnv } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 
@@ -13,17 +14,26 @@ function slotTable(node: AnyConfigurationModel) {
 }
 
 /**
+ * The slot's metadata entry, or undefined when `slotName` names a nested
+ * sub-schema or a string/number constant rather than a slot.
+ */
+function slotDefinition(
+  node: AnyConfigurationModel,
+  slotName: string,
+): ConfigSlotDefinition | undefined {
+  const def = slotTable(node)?.[slotName]
+  return isSlotDefinitionEntry(def) ? def : undefined
+}
+
+/**
  * Whether `slotName` on a config node is a slot (vs a nested sub-schema or a
- * string/number constant). The metadata table is the single source of truth: a
- * slot's entry is a plain ConfigSlotDefinition object, a sub-schema's entry is
- * an MST type, a constant's entry is a string/number.
+ * string/number constant).
  */
 export function isConfigurationSlot(
   node: AnyConfigurationModel,
   slotName: string,
 ): boolean {
-  const def = slotTable(node)?.[slotName]
-  return !!def && typeof def === 'object' && !isType(def) && 'type' in def
+  return !!slotDefinition(node, slotName)
 }
 
 /**
@@ -56,11 +66,11 @@ export function getSlotDefinition(
   node: AnyConfigurationModel,
   slotName: string,
 ): ConfigSlotDefinition {
-  const def = slotTable(node)?.[slotName]
-  if (!def || typeof def !== 'object') {
+  const def = slotDefinition(node, slotName)
+  if (!def) {
     throw new Error(`no slot metadata for ${slotName}`)
   }
-  return def as ConfigSlotDefinition
+  return def
 }
 
 export function makeSlotFacade(
