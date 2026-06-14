@@ -2354,7 +2354,7 @@ export const specs: ScreenshotSpec[] = [
   // Gencode GFF) don't expose the "Genomic w/ full introns" option in the
   // sequence panel (only plain "Genomic +/- Nbp"), because the clicked gene
   // feature's CDS subfeatures aren't recognized; the Gencode track also labels by
-  // Ensembl ID, not "FAF1". See SCREENSHOT_REVIEW_HANDOFF.md §feature_detail_sequence.
+  // Ensembl ID, not "FAF1".
   {
     mode: 'url',
     name: 'feature_detail_sequence',

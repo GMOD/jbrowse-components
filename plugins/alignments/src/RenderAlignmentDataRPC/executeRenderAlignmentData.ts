@@ -344,7 +344,7 @@ export async function executeRenderAlignmentData({
   // firstOfPairStrand / pairOrientation), where every read of a chain yields the
   // same key so partitionChains keeps the chain whole. A disallowed dimension
   // (e.g. an old session with strand + chain) degrades to ungrouped rather than
-  // splitting chains. See agent-docs/GROUP_BY_CHAIN_MODE_PLAN.md.
+  // splitting chains. See ./CLAUDE.md.
   const groupBy =
     isChain && !isChainGroupableType(groupByArg?.type) ? undefined : groupByArg
 

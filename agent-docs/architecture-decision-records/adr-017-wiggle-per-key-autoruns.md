@@ -80,7 +80,7 @@ correct here.
 For canvas/alignments the equivalent fix would be making the whole-map
 computed return *stable references* for entries whose inputs didn't change, so
 per-key autoruns reading `.get(key)` could short-circuit. Not currently
-implemented; tracked in `agent-docs/TODO.md`. In practice canvas's whole-
+implemented. In practice canvas's whole-
 genome view (N=24) is the only place where N²=576 is perceptible — alignments
 N is 4–8 in realistic zooms.
 

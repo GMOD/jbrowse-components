@@ -1,8 +1,8 @@
 # Plan: external "legacy server-side rendering" compat plugin
 
 **Audience:** a future agent (or human) tasked with restoring the block-based
-server-side render path *after* the `webgl-poc` rip
-(`HANDOFF-serverside-rip-complete.md`) has deleted it from the main tree.
+server-side render path *after* the `webgl-poc` rip has deleted it from the
+main tree.
 
 **Why this doc exists:** the rip removes the last in-tree reference for how the
 block path is wired. This captures the exact recovery sources, file manifest,

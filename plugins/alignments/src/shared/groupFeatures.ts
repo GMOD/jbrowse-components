@@ -179,7 +179,7 @@ export interface GroupByDimension {
   // True iff every read of a chain yields the same key for this dimension, so
   // chain-aware partitioning keeps a chain whole — including across separate
   // per-region worker calls. Per-read dimensions split chains and are excluded
-  // from chain (linked-reads) mode. See agent-docs/GROUP_BY_CHAIN_MODE_PLAN.md.
+  // from chain (linked-reads) mode.
   chainConsistent: boolean
   // The group-key generator for this dimension. Co-located with the metadata so
   // each dimension is defined in exactly one place — `groupKeyFor` just looks it

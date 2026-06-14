@@ -61,7 +61,7 @@ test('group by strand stacks two sections in one track', async () => {
   await screen.findByText(/Reverse strand \(\d+\)/, ...opts)
 }, 60000)
 
-// READ_CONNECTIONS_GROUPED_PLAN Stage 3: paired-end arcs draw per stacked
+// Paired-end arcs draw per stacked
 // section on a shared Y-domain. Grouping by first-of-pair strand keeps both
 // mates in the same section (unlike plain strand), so each section's arcs are
 // meaningful. Asserts the per-section arc feed is populated, then snapshots.
@@ -132,7 +132,7 @@ test('group draws per-section read-cloud (samplot) lines', async () => {
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
-// READ_CONNECTIONS_GROUPED_PLAN Stage 4: sashimi junction arcs draw per stacked
+// Sashimi junction arcs draw per stacked
 // section. Grouping spliced RNA-seq reads by strand keeps each junction in its
 // read's strand group, so both sections carry their own sashimi arcs.
 test('group draws per-section sashimi arcs', async () => {
@@ -169,7 +169,7 @@ test('group draws per-section sashimi arcs', async () => {
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
-// Chain (linked-read) mode + HP-tag grouping (GROUP_BY_CHAIN_MODE_PLAN): the
+// Chain (linked-read) mode + HP-tag grouping: the
 // worker partitions whole chains into per-haplotype sections (partitionChains),
 // so each chain's mates stay on shared rows inside one section and connecting
 // lines stay intact. Only the chain-consistent dimensions are allowed; HP
