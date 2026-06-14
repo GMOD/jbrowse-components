@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,
+  showUtrColor = true,
 }: {
   model: {
     featureColor: string
@@ -17,6 +18,7 @@ const SetColorDialog = observer(function SetColorDialog({
     setUtrColor: (arg?: string) => void
   }
   handleClose: () => void
+  showUtrColor?: boolean
 }) {
   return (
     <Dialog
@@ -34,13 +36,17 @@ const SetColorDialog = observer(function SetColorDialog({
             model.setFeatureColor(color)
           }}
         />
-        <Typography>UTR color (gene/transcript UTRs)</Typography>
-        <ColorPicker
-          color={model.utrColor}
-          onChange={color => {
-            model.setUtrColor(color)
-          }}
-        />
+        {showUtrColor ? (
+          <>
+            <Typography>UTR color (gene/transcript UTRs)</Typography>
+            <ColorPicker
+              color={model.utrColor}
+              onChange={color => {
+                model.setUtrColor(color)
+              }}
+            />
+          </>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button

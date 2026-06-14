@@ -1,5 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
+import PaletteIcon from '@mui/icons-material/Palette'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -40,7 +41,7 @@ export default function stateModelFactory(
        */
       type: types.literal('LinearVariantDisplay'),
     })
-    .views(() => ({
+    .views(self => ({
       /**
        * #getter
        */
@@ -49,6 +50,30 @@ export default function stateModelFactory(
           type: 'VariantFeatureWidget',
           id: 'variantFeature',
         }
+      },
+
+      /**
+       * #method
+       */
+      // Variants have no UTRs, so drop the gene-oriented solid+UTR "Color"
+      // picker and surface a single "Color by..." entry. Custom solid color is
+      // still reachable via the "Solid color..." submenu option.
+      colorMenuItems() {
+        return [
+          {
+            label: 'Color by...',
+            icon: PaletteIcon,
+            subMenu: [
+              {
+                label: 'Solid color...',
+                onClick: () => {
+                  self.openSetColorDialog(false)
+                },
+              },
+              ...self.colorBySubMenuItems({ strand: false }),
+            ],
+          },
+        ]
       },
     }))
 }

@@ -1036,6 +1036,18 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        // Opens the solid-color picker. UTR row hidden for displays without UTRs
+        // (e.g. variants).
+        openSetColorDialog(showUtrColor = true) {
+          getSession(self).queueDialog(handleClose => [
+            SetColorDialog,
+            { model: self, handleClose, showUtrColor },
+          ])
+        },
+
+        /**
+         * #action
+         */
         async fetchFullFeature(
           featureId: string,
           displayedRegionIndex: number,
@@ -1465,6 +1477,77 @@ export default function baseStateModelFactory(
 
         /**
          * #method
+         * The "Color by..." radio choices (solid/strand/attribute). Split out so
+         * subclasses can reuse them while assembling their own color menu;
+         * `strand` can be omitted for displays without a strand (e.g. variants).
+         */
+        colorBySubMenuItems({ strand = true }: { strand?: boolean } = {}) {
+          return [
+            {
+              label: 'Default (solid color)',
+              type: 'radio' as const,
+              checked: self.colorByMode === 'solid',
+              onClick: () => {
+                self.setFeatureColor(undefined)
+              },
+            },
+            ...(strand
+              ? [
+                  {
+                    label: 'Strand',
+                    type: 'radio' as const,
+                    checked: self.colorByMode === 'strand',
+                    onClick: () => {
+                      self.setFeatureColor(STRAND_COLOR_JEXL)
+                    },
+                  },
+                ]
+              : []),
+            {
+              label: 'Attribute...',
+              type: 'radio' as const,
+              checked: self.colorByMode === 'attribute',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  ColorByAttributeDialog,
+                  {
+                    model: self,
+                    handleClose,
+                    initialAttribute: self.colorByAttribute,
+                  },
+                ])
+              },
+            },
+          ]
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * Color-related track menu entries. Default surfaces the solid+UTR color
+         * picker alongside "Color by..."; subclasses (e.g. variants) override to
+         * drop the gene-oriented UTR picker and show only "Color by...".
+         */
+        colorMenuItems() {
+          return [
+            {
+              label: 'Color',
+              icon: PaletteIcon,
+              onClick: () => {
+                self.openSetColorDialog()
+              },
+            },
+            {
+              label: 'Color by...',
+              icon: PaletteIcon,
+              subMenu: self.colorBySubMenuItems(),
+            },
+          ]
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
          */
         trackMenuItems() {
           return [
@@ -1473,53 +1556,7 @@ export default function baseStateModelFactory(
               icon: VisibilityIcon,
               subMenu: self.showSubmenuMenuItems(),
             },
-            {
-              label: 'Color',
-              icon: PaletteIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetColorDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-            {
-              label: 'Color by...',
-              icon: PaletteIcon,
-              subMenu: [
-                {
-                  label: 'Default (solid color)',
-                  type: 'radio' as const,
-                  checked: self.colorByMode === 'solid',
-                  onClick: () => {
-                    self.setFeatureColor(undefined)
-                  },
-                },
-                {
-                  label: 'Strand',
-                  type: 'radio' as const,
-                  checked: self.colorByMode === 'strand',
-                  onClick: () => {
-                    self.setFeatureColor(STRAND_COLOR_JEXL)
-                  },
-                },
-                {
-                  label: 'Attribute...',
-                  type: 'radio' as const,
-                  checked: self.colorByMode === 'attribute',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      ColorByAttributeDialog,
-                      {
-                        model: self,
-                        handleClose,
-                        initialAttribute: self.colorByAttribute,
-                      },
-                    ])
-                  },
-                },
-              ],
-            },
+            ...self.colorMenuItems(),
           ]
         },
       }))
