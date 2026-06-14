@@ -37,7 +37,13 @@
     "@jbrowse/plugin-wiggle": "file:./packed/jbrowse-plugin-wiggle.tgz",
     "@jbrowse/product-core": "file:./packed/jbrowse-product-core.tgz",
     "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
+    "@jbrowse/alignments-core": "file:./packed/jbrowse-alignments-core.tgz",
+    "@jbrowse/cigar-utils": "file:./packed/jbrowse-cigar-utils.tgz",
+    "@jbrowse/ld-core": "file:./packed/jbrowse-ld-core.tgz",
+    "@jbrowse/modifications-utils": "file:./packed/jbrowse-modifications-utils.tgz",
     "@jbrowse/render-core": "file:./packed/jbrowse-render-core.tgz",
+    "@jbrowse/tree-sidebar": "file:./packed/jbrowse-tree-sidebar.tgz",
+    "@jbrowse/wiggle-core": "file:./packed/jbrowse-wiggle-core.tgz",
     "@jbrowse/embedded-core": "file:./packed/jbrowse-embedded-core.tgz",
     "@jbrowse/react-circular-genome-view2": "file:./packed/jbrowse-react-circular-genome-view2.tgz"
   },
