@@ -41,7 +41,6 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
   expect(colorItems.map(item => item.label)).toEqual(['Color by...'])
   expect(colorItems[0]!.subMenu?.map(item => item.label)).toEqual([
     'Solid color...',
-    'Default (solid color)',
     'Attribute...',
   ])
 

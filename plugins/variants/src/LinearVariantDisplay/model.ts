@@ -55,9 +55,9 @@ export default function stateModelFactory(
       /**
        * #method
        */
-      // Variants have no UTRs, so drop the gene-oriented solid+UTR "Color"
-      // picker and surface a single "Color by..." entry. Custom solid color is
-      // still reachable via the "Solid color..." submenu option.
+      // Variants have no UTRs and no strand, so skip the gene-oriented solid+UTR
+      // "Color" picker and surface a single "Color by..." entry. Each radio opens
+      // its own dialog (solid -> color picker, attribute -> jexl builder).
       colorMenuItems() {
         return [
           {
@@ -66,11 +66,20 @@ export default function stateModelFactory(
             subMenu: [
               {
                 label: 'Solid color...',
+                type: 'radio' as const,
+                checked: self.colorByMode === 'solid',
                 onClick: () => {
                   self.openSetColorDialog(false)
                 },
               },
-              ...self.colorBySubMenuItems({ strand: false }),
+              {
+                label: 'Attribute...',
+                type: 'radio' as const,
+                checked: self.colorByMode === 'attribute',
+                onClick: () => {
+                  self.openColorByAttributeDialog()
+                },
+              },
             ],
           },
         ]

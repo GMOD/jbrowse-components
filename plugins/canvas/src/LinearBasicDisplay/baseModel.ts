@@ -1048,6 +1048,16 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        openColorByAttributeDialog() {
+          getSession(self).queueDialog(handleClose => [
+            ColorByAttributeDialog,
+            { model: self, handleClose, initialAttribute: self.colorByAttribute },
+          ])
+        },
+
+        /**
+         * #action
+         */
         async fetchFullFeature(
           featureId: string,
           displayedRegionIndex: number,
@@ -1478,10 +1488,9 @@ export default function baseStateModelFactory(
         /**
          * #method
          * The "Color by..." radio choices (solid/strand/attribute). Split out so
-         * subclasses can reuse them while assembling their own color menu;
-         * `strand` can be omitted for displays without a strand (e.g. variants).
+         * subclasses can reuse them while assembling their own color menu.
          */
-        colorBySubMenuItems({ strand = true }: { strand?: boolean } = {}) {
+        colorBySubMenuItems() {
           return [
             {
               label: 'Default (solid color)',
@@ -1491,31 +1500,20 @@ export default function baseStateModelFactory(
                 self.setFeatureColor(undefined)
               },
             },
-            ...(strand
-              ? [
-                  {
-                    label: 'Strand',
-                    type: 'radio' as const,
-                    checked: self.colorByMode === 'strand',
-                    onClick: () => {
-                      self.setFeatureColor(STRAND_COLOR_JEXL)
-                    },
-                  },
-                ]
-              : []),
+            {
+              label: 'Strand',
+              type: 'radio' as const,
+              checked: self.colorByMode === 'strand',
+              onClick: () => {
+                self.setFeatureColor(STRAND_COLOR_JEXL)
+              },
+            },
             {
               label: 'Attribute...',
               type: 'radio' as const,
               checked: self.colorByMode === 'attribute',
               onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  ColorByAttributeDialog,
-                  {
-                    model: self,
-                    handleClose,
-                    initialAttribute: self.colorByAttribute,
-                  },
-                ])
+                self.openColorByAttributeDialog()
               },
             },
           ]
