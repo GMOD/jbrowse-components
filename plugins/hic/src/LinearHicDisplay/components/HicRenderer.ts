@@ -1,4 +1,4 @@
-import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
+import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
 
 import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
 import {
@@ -10,11 +10,10 @@ import {
 import type { HicRenderingBackend } from './hicRenderingBackendTypes.ts'
 
 export function HicRenderer(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<HicRenderingBackend>(
-    canvas,
-    HIC_PASSES,
-    HIC_UNIFORM_BYTE_SIZE,
-    hal => new GpuHicRenderer(hal),
-    c => new Canvas2DHicRenderer(c),
-  )
+  return createRenderingBackend<HicRenderingBackend>(canvas, {
+    passes: HIC_PASSES,
+    uniformByteSize: HIC_UNIFORM_BYTE_SIZE,
+    createGpuBackend: hal => new GpuHicRenderer(hal),
+    createCanvas2DBackend: c => new Canvas2DHicRenderer(c),
+  })
 }

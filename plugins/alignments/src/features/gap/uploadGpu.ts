@@ -1,7 +1,7 @@
 import { PASS_GAP, packGaps } from './packGpu.ts'
 
 import type { GapUploadData } from './types.ts'
-import type { GpuHal } from '@jbrowse/core/gpu/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 
 export function uploadGaps(
   hal: GpuHal,

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { buildVariantHit } from '../../shared/buildVariantHit.ts'

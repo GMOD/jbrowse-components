@@ -25,9 +25,9 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 type LGV = LinearGenomeViewModel
 

@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react'
 
-import { setGpuOverride } from '@jbrowse/core/gpu/gpuDevice'
+import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 
 import Loading from './components/Loading.tsx'
 import { initAuthWindow } from './initAuthWindow.ts'

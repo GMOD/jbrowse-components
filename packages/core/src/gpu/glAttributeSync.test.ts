@@ -7,7 +7,10 @@ import { VARIANT_PASSES } from '../../../../plugins/variants/src/LinearMultiSamp
 import { VARIANT_MATRIX_PASSES } from '../../../../plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/GpuVariantMatrixRenderer.ts'
 import { WIGGLE_PASSES } from '../../../../plugins/wiggle/src/shared/GpuWiggleRenderer.ts'
 
-import type { GlAttributeLayout, PassDescriptor } from './hal/index.ts'
+import type {
+  GlAttributeLayout,
+  PassDescriptor,
+} from '@jbrowse/render-core/hal'
 // Multi-synteny and alignments have deep import chains that hit jest module
 // resolution issues, so they are tested via their own plugin test suites instead.
 

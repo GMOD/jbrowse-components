@@ -1,5 +1,5 @@
-import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
 import { types } from '@jbrowse/mobx-state-tree'
+import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
 import FetchMixin from './FetchMixin.ts'
 

@@ -201,7 +201,7 @@ export function emit(inputs: CodegenInputs) {
     halImports.push('TextureBinding')
   }
   lines.push(
-    `import type { ${halImports.join(', ')} } from '@jbrowse/core/gpu/hal'`,
+    `import type { ${halImports.join(', ')} } from '@jbrowse/render-core/hal'`,
     '',
   )
 

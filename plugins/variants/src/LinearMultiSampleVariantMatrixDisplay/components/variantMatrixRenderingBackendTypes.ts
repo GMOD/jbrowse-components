@@ -13,7 +13,7 @@ export interface VariantMatrixUploadData {
   numFeatures: number
 }
 
-import type { GlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
+import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 export type VariantMatrixRenderingBackend = GlobalRenderingBackend<
   VariantMatrixUploadData,

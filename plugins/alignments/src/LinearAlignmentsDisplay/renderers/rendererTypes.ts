@@ -2,7 +2,7 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 export type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 export type {
@@ -125,7 +125,7 @@ export interface AlignmentsRenderingBackend {
   dispose(): void
 }
 
-export type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+export type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export function ensureRegion<T>(
   regions: Map<number, T>,

@@ -1,16 +1,16 @@
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   bpToScreenPx,
   clipBlockForCanvas,
-} from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+} from '@jbrowse/render-core/canvas2dUtils'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const TWO_PI = Math.PI * 2
 

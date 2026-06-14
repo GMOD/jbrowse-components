@@ -17,10 +17,12 @@ here.
 
 `src/index.ts` is the curated `@experimental` public API; per-file subpaths
 (`@jbrowse/render-core/hal`, …) exist for fine-grained imports. `webgpuUtils`
-and shader codegen are intentionally out of the barrel. The old
-`@jbrowse/core/gpu/*` paths still resolve as re-export shims (migration aid, not
-a second API) — new code imports from `@jbrowse/render-core`. Shader codegen +
-the shared `passes/` and `.slang` modules stayed in `@jbrowse/core/gpu`.
+and shader codegen are intentionally out of the barrel. This is the only import
+path — the old `@jbrowse/core/gpu/*` re-export shims were removed once every
+in-tree import migrated here (ADR-030 shim-retirement follow-up). Shader codegen
+
+- the shared `passes/` and `.slang` modules stayed in `@jbrowse/core/gpu`; the
+  codegen emits `@jbrowse/render-core/hal` imports into every `.generated.ts`.
 
 `Gpu` prefix = WebGL/WebGPU-specific (`GpuHal`, `gpuDevice`, the `Gpu*Backend`
 bases). Anything driving **both** GPU and Canvas2D is backend-agnostic with a

@@ -1,4 +1,4 @@
-import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
+import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
 
 import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
 import {
@@ -10,11 +10,10 @@ import {
 import type { LDRenderingBackend } from './ldRenderingBackendTypes.ts'
 
 export function LDRenderer(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<LDRenderingBackend>(
-    canvas,
-    LD_PASSES,
-    LD_UNIFORM_BYTE_SIZE,
-    hal => new GpuLDRenderer(hal),
-    c => new Canvas2DLDRenderer(c),
-  )
+  return createRenderingBackend<LDRenderingBackend>(canvas, {
+    passes: LD_PASSES,
+    uniformByteSize: LD_UNIFORM_BYTE_SIZE,
+    createGpuBackend: hal => new GpuLDRenderer(hal),
+    createCanvas2DBackend: c => new Canvas2DLDRenderer(c),
+  })
 }

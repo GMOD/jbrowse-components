@@ -1,4 +1,4 @@
-import { MockHal } from '@jbrowse/core/gpu/hal'
+import { MockHal } from '@jbrowse/render-core/hal'
 
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
 import {
@@ -13,7 +13,7 @@ import {
   SCALE_TYPE_LOG,
 } from './wiggleComponentUtils.ts'
 
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {

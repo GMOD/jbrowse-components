@@ -1,7 +1,7 @@
 import { PASS_READ, packReadSegments } from './packGpu.ts'
 
 import type { ReadUploadData } from '../../shared/uploadTypes.ts'
-import type { GpuHal } from '@jbrowse/core/gpu/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 
 // Read-pass HAL upload. Stale buffers from a prior sync are cleared by the
 // renderer's beginUpload/endUpload bracket, not here, so this only uploads the

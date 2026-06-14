@@ -30,6 +30,9 @@ test/data
 debug-storybook.log
 website/.astro/
 
+# generated each build/dev start with the current git hash
+products/jbrowse-web/src/buildInfo.ts
+
 # Graph test data - generated and large
 test_data/chr20_region.gfa
 test_data/chr20_region*.bed.gz

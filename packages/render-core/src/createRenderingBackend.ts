@@ -2,19 +2,30 @@ import { createGpuHal } from './hal/index.ts'
 
 import type { GpuHal, PassDescriptor } from './hal/types.ts'
 
+/**
+ * Options for `createRenderingBackend`. The two factories are an options object
+ * (not positional args) on purpose: both are single-arg `(x) => new Backend(x)`
+ * lambdas, so positionally they're trivially swappable by mistake — naming them
+ * makes the GPU vs Canvas2D path unambiguous at every call site.
+ */
+export interface RenderingBackendOptions<TRenderingBackend> {
+  passes: PassDescriptor[]
+  uniformByteSize: number
+  createGpuBackend: (hal: GpuHal) => TRenderingBackend
+  createCanvas2DBackend: (canvas: HTMLCanvasElement) => TRenderingBackend
+}
+
 export async function createRenderingBackend<TRenderingBackend>(
   canvas: HTMLCanvasElement,
-  passes: PassDescriptor[],
-  uniformByteSize: number,
-  createGpuRenderingBackend: (hal: GpuHal) => TRenderingBackend,
-  createCanvas2DRenderingBackend: (
-    canvas: HTMLCanvasElement,
-  ) => TRenderingBackend,
+  {
+    passes,
+    uniformByteSize,
+    createGpuBackend,
+    createCanvas2DBackend,
+  }: RenderingBackendOptions<TRenderingBackend>,
 ): Promise<TRenderingBackend> {
   const hal = await createGpuHal(canvas, passes, uniformByteSize)
-  return hal
-    ? createGpuRenderingBackend(hal)
-    : createCanvas2DRenderingBackend(canvas)
+  return hal ? createGpuBackend(hal) : createCanvas2DBackend(canvas)
 }
 
 /**

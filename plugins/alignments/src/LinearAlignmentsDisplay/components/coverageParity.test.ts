@@ -5,7 +5,7 @@ import {
   packInterbaseSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
-import { MockHal } from '@jbrowse/core/gpu/hal'
+import { MockHal } from '@jbrowse/render-core/hal'
 
 import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
 import {

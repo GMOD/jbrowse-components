@@ -1,9 +1,9 @@
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   clipBlockForCanvas,
   makeBpMapper,
-} from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+} from '@jbrowse/render-core/canvas2dUtils'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import {
   CHEVRON_H_PX,
@@ -21,8 +21,8 @@ import type {
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BpRegionBounds } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
 const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5

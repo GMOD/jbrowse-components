@@ -1,4 +1,4 @@
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import { drawMafBlocks } from './drawMafBlocks.ts'
 

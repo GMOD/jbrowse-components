@@ -1,6 +1,6 @@
-import { bpRangeXTuple } from '@jbrowse/core/gpu/blockClipUtils'
-import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as mafShader from './shaders/maf.generated.ts'
 import {
@@ -14,8 +14,8 @@ import type {
   MafRenderBlock,
   MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
-import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_RECT = 'rect'
 

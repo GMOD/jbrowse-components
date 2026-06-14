@@ -1,7 +1,7 @@
 import {
   clipBlockForCanvas,
   prepareCanvas,
-} from '@jbrowse/core/gpu/canvas2dUtils'
+} from '@jbrowse/render-core/canvas2dUtils'
 
 import {
   type AlignmentsRenderingBackend,

@@ -1,4 +1,4 @@
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { splitHiLo } from './hiLoUtils.ts'
 import * as dotplotShader from './shaders/dotplot.generated.ts'
@@ -8,7 +8,7 @@ import type {
   DotplotRenderState,
   DotplotRenderingBackend,
 } from './dotplotRenderingBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_LINE = 'line'
 const UNIFORMS_SIZE_BYTES = dotplotShader.UNIFORMS_SIZE_BYTES

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { setGpuOverride } from '@jbrowse/core/gpu/gpuDevice'
 import { ErrorMessage, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
+import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 

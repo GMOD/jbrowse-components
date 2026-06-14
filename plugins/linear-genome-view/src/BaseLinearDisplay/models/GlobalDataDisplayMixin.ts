@@ -1,11 +1,11 @@
-import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
-import { computeDisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import { types } from '@jbrowse/mobx-state-tree'
+import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
+import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 import FetchMixin from './FetchMixin.ts'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 
-import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 export type { FetchContext } from './FetchMixin.ts'
 

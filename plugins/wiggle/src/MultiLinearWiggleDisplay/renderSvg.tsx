@@ -1,9 +1,9 @@
 import type React from 'react'
 
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgTreePath } from '@jbrowse/tree-sidebar'
 import { waitForRenderableState } from '@jbrowse/wiggle-core'
 

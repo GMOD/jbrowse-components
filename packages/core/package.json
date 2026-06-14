@@ -43,20 +43,7 @@
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
     "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
-    "./gpu/RenderLifecycleMixin": "./src/gpu/RenderLifecycleMixin.ts",
-    "./gpu/blockClipUtils": "./src/gpu/blockClipUtils.ts",
-    "./gpu/canvas2dUtils": "./src/gpu/canvas2dUtils.ts",
-    "./gpu/createRenderingBackend": "./src/gpu/createRenderingBackend.ts",
-    "./gpu/displayPhase": "./src/gpu/displayPhase.ts",
-    "./gpu/globalRenderingBackend": "./src/gpu/globalRenderingBackend.ts",
-    "./gpu/gpuDevice": "./src/gpu/gpuDevice.ts",
-    "./gpu/hal": "./src/gpu/hal/index.ts",
-    "./gpu/installPerRegionLifecycle": "./src/gpu/installPerRegionLifecycle.ts",
     "./gpu/passes": "./src/gpu/passes/index.ts",
-    "./gpu/perRegionRenderingBackend": "./src/gpu/perRegionRenderingBackend.ts",
-    "./gpu/regionUploadSync": "./src/gpu/regionUploadSync.ts",
-    "./gpu/renderBlock": "./src/gpu/renderBlock.ts",
-    "./gpu/slangPass": "./src/gpu/slangPass.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -293,61 +280,9 @@
         "types": "./esm/data_adapters/dataAdapterCache.d.ts",
         "import": "./esm/data_adapters/dataAdapterCache.js"
       },
-      "./gpu/RenderLifecycleMixin": {
-        "types": "./esm/gpu/RenderLifecycleMixin.d.ts",
-        "import": "./esm/gpu/RenderLifecycleMixin.js"
-      },
-      "./gpu/blockClipUtils": {
-        "types": "./esm/gpu/blockClipUtils.d.ts",
-        "import": "./esm/gpu/blockClipUtils.js"
-      },
-      "./gpu/canvas2dUtils": {
-        "types": "./esm/gpu/canvas2dUtils.d.ts",
-        "import": "./esm/gpu/canvas2dUtils.js"
-      },
-      "./gpu/createRenderingBackend": {
-        "types": "./esm/gpu/createRenderingBackend.d.ts",
-        "import": "./esm/gpu/createRenderingBackend.js"
-      },
-      "./gpu/displayPhase": {
-        "types": "./esm/gpu/displayPhase.d.ts",
-        "import": "./esm/gpu/displayPhase.js"
-      },
-      "./gpu/globalRenderingBackend": {
-        "types": "./esm/gpu/globalRenderingBackend.d.ts",
-        "import": "./esm/gpu/globalRenderingBackend.js"
-      },
-      "./gpu/gpuDevice": {
-        "types": "./esm/gpu/gpuDevice.d.ts",
-        "import": "./esm/gpu/gpuDevice.js"
-      },
-      "./gpu/hal": {
-        "types": "./esm/gpu/hal/index.d.ts",
-        "import": "./esm/gpu/hal/index.js"
-      },
-      "./gpu/installPerRegionLifecycle": {
-        "types": "./esm/gpu/installPerRegionLifecycle.d.ts",
-        "import": "./esm/gpu/installPerRegionLifecycle.js"
-      },
       "./gpu/passes": {
         "types": "./esm/gpu/passes/index.d.ts",
         "import": "./esm/gpu/passes/index.js"
-      },
-      "./gpu/perRegionRenderingBackend": {
-        "types": "./esm/gpu/perRegionRenderingBackend.d.ts",
-        "import": "./esm/gpu/perRegionRenderingBackend.js"
-      },
-      "./gpu/regionUploadSync": {
-        "types": "./esm/gpu/regionUploadSync.d.ts",
-        "import": "./esm/gpu/regionUploadSync.js"
-      },
-      "./gpu/renderBlock": {
-        "types": "./esm/gpu/renderBlock.d.ts",
-        "import": "./esm/gpu/renderBlock.js"
-      },
-      "./gpu/slangPass": {
-        "types": "./esm/gpu/slangPass.d.ts",
-        "import": "./esm/gpu/slangPass.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -789,47 +724,8 @@
         "data_adapters/dataAdapterCache": [
           "esm/data_adapters/dataAdapterCache.d.ts"
         ],
-        "gpu/RenderLifecycleMixin": [
-          "esm/gpu/RenderLifecycleMixin.d.ts"
-        ],
-        "gpu/blockClipUtils": [
-          "esm/gpu/blockClipUtils.d.ts"
-        ],
-        "gpu/canvas2dUtils": [
-          "esm/gpu/canvas2dUtils.d.ts"
-        ],
-        "gpu/createRenderingBackend": [
-          "esm/gpu/createRenderingBackend.d.ts"
-        ],
-        "gpu/displayPhase": [
-          "esm/gpu/displayPhase.d.ts"
-        ],
-        "gpu/globalRenderingBackend": [
-          "esm/gpu/globalRenderingBackend.d.ts"
-        ],
-        "gpu/gpuDevice": [
-          "esm/gpu/gpuDevice.d.ts"
-        ],
-        "gpu/hal": [
-          "esm/gpu/hal/index.d.ts"
-        ],
-        "gpu/installPerRegionLifecycle": [
-          "esm/gpu/installPerRegionLifecycle.d.ts"
-        ],
         "gpu/passes": [
           "esm/gpu/passes/index.d.ts"
-        ],
-        "gpu/perRegionRenderingBackend": [
-          "esm/gpu/perRegionRenderingBackend.d.ts"
-        ],
-        "gpu/regionUploadSync": [
-          "esm/gpu/regionUploadSync.d.ts"
-        ],
-        "gpu/renderBlock": [
-          "esm/gpu/renderBlock.d.ts"
-        ],
-        "gpu/slangPass": [
-          "esm/gpu/slangPass.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"

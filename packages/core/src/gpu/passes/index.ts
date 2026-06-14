@@ -16,7 +16,8 @@
 // second consumer. Add one when a second point-shape display appears (RFC-001
 // §5c — don't pre-design the family).
 
-import { slangPass } from '../slangPass.ts'
+import { slangPass } from '@jbrowse/render-core/slangPass'
+
 import * as arrowShader from './shaders/arrow.generated.ts'
 import * as chevronShader from './shaders/chevron.generated.ts'
 import * as lineShader from './shaders/line.generated.ts'

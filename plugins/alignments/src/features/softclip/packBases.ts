@@ -1,4 +1,4 @@
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 // Softclip-base bases reuse the mismatch pass's shader/geometry — same
 // instanced quad with a base-letter slot. The frequency slot stays 0 since

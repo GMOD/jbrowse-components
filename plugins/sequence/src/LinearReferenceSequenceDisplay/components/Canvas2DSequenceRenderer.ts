@@ -1,11 +1,11 @@
-import { createCanvas2DBackend } from '@jbrowse/core/gpu/createRenderingBackend'
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
+import { createCanvas2DBackend } from '@jbrowse/render-core/createRenderingBackend'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import { drawSequenceBlocks } from './drawSequence.ts'
 
 import type { DrawSequenceState } from './drawSequence.ts'
 import type { SequenceRegionData } from '../model.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Sequence is text — there is no GPU shader path, so this is Canvas2D-only
 // (no `createRenderingBackend` HAL ladder). It plugs into the shared

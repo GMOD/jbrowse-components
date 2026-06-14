@@ -1,9 +1,4 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import {
-  type DisplayPhase,
-  computeDisplayPhase,
-} from '@jbrowse/core/gpu/displayPhase'
-import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   dedupe,
@@ -17,6 +12,11 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import {
+  type DisplayPhase,
+  computeDisplayPhase,
+} from '@jbrowse/render-core/displayPhase'
+import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
 
 import type { Canvas2DSequenceRenderer } from './components/Canvas2DSequenceRenderer.ts'

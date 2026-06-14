@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingView,
@@ -14,6 +13,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   TreeSidebarMixin,
   buildSpatialIndex,

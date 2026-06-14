@@ -1,5 +1,5 @@
-import { GpuGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { GpuGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as ldGenomicShader from './shaders/ldGenomic.generated.ts'
 import * as ldUniformShader from './shaders/ldUniform.generated.ts'
@@ -9,7 +9,7 @@ import type {
   LDRenderingBackend,
   LDUploadData,
 } from './ldRenderingBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_MAIN = 'main'
 const PASS_GENOMIC = 'genomic'

@@ -1,7 +1,7 @@
 import { PASS_PER_BASE_LETTER, packPerBaseLetter } from './packGpu.ts'
 
 import type { PerBaseLetterUploadData } from './types.ts'
-import type { GpuHal } from '@jbrowse/core/gpu/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 
 export function uploadPerBaseLetter(
   hal: GpuHal,

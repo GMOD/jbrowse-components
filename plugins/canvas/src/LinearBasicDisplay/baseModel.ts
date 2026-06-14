@@ -6,7 +6,6 @@ import {
   getConfSnapshot,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { createRegionUploadSync } from '@jbrowse/core/gpu/regionUploadSync'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -25,6 +24,7 @@ import {
   getDisplayStr,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
+import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'

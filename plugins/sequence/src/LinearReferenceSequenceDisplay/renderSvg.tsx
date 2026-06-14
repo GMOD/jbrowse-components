@@ -10,11 +10,11 @@ import {
 import { buildColorPalette } from './components/sequenceGeometry.ts'
 
 import type { SequenceRegionData } from './model.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 type LGV = LinearGenomeViewModel
 

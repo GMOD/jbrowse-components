@@ -1,6 +1,6 @@
-import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
+import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 import { f2 } from '../../shared/constants.ts'
 

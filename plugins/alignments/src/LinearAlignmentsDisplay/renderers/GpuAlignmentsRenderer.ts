@@ -1,8 +1,8 @@
 import { coverageLayout } from '@jbrowse/alignments-core'
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/blockClipUtils'
-import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
+import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import {
   buildReadIdToIndex,
@@ -110,7 +110,7 @@ import type {
   RenderState,
 } from './rendererTypes.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 // Shader strides — every pass shares the same Uniforms struct (see
 // shaders/slang/alignmentsUniforms.slang) so we use any module's

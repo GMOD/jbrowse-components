@@ -26,6 +26,7 @@ export {
   createCanvas2DBackend,
   createRenderingBackend,
 } from './createRenderingBackend.ts'
+export type { RenderingBackendOptions } from './createRenderingBackend.ts'
 
 // --- Backend base classes + contracts ---
 export {

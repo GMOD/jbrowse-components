@@ -1,5 +1,5 @@
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { PerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 export interface ManhattanRenderState {
   domainY: [number, number]

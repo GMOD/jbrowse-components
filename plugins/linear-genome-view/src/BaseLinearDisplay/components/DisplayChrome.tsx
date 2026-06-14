@@ -8,8 +8,8 @@ import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 
-import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // `renderError`/`setRenderError` are NOT here — they live on
 // `RenderLifecycleModel`, which the chrome's model is always intersected with.

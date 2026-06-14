@@ -1,4 +1,4 @@
-import type { GlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
+import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 export interface HicRenderState {
   binWidth: number

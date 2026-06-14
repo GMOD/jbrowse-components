@@ -8,12 +8,12 @@ import {
 import {
   clipBlockForCanvas,
   makeBpMapper,
-} from '@jbrowse/core/gpu/canvas2dUtils'
+} from '@jbrowse/render-core/canvas2dUtils'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { Theme } from '@mui/material'
 
 interface DrawMafCoverageState {

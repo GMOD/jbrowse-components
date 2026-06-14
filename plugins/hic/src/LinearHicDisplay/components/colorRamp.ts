@@ -145,7 +145,7 @@ export function getLegendSvgStops(colorScheme: HicColorScheme | undefined) {
   }))
 }
 
-export { lookupColorRamp } from '@jbrowse/core/gpu/canvas2dUtils'
+export { lookupColorRamp } from '@jbrowse/render-core/canvas2dUtils'
 
 // Map a contact count into [0, 1] for color-ramp sampling. Mirrors the logic
 // in hic.slang's fragment shader so Canvas2D + SVG rendering stay consistent

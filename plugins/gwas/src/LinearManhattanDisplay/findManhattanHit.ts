@@ -1,11 +1,11 @@
-import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
+import { bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type Flatbush from '@jbrowse/core/util/flatbush'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface ManhattanHit {
   refName: string

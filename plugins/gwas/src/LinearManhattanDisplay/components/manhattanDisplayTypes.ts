@@ -4,8 +4,8 @@ import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
 } from '../manhattanRenderingBackendTypes.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type Flatbush from '@jbrowse/core/util/flatbush'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled to avoid

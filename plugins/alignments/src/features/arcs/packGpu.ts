@@ -1,4 +1,4 @@
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as arcShader from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
 import * as arcLineShader from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.generated.ts'

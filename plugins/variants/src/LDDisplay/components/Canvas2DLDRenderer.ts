@@ -2,8 +2,8 @@ import {
   lookupColorRamp,
   makeRampFillStyleLut,
   prepareCanvas,
-} from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
+} from '@jbrowse/render-core/canvas2dUtils'
+import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 import { mapLDValue } from './ldColorRamp.ts'
 

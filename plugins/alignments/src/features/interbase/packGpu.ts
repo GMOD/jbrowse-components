@@ -1,4 +1,4 @@
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as interbaseShader from '../../LinearAlignmentsDisplay/shaders/slang/interbaseHistogram.generated.ts'
 

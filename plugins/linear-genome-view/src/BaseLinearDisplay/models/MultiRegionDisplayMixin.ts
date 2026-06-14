@@ -1,6 +1,3 @@
-import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
-import { computeDisplayPhase } from '@jbrowse/core/gpu/displayPhase'
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import {
   getContainingTrack,
   getContainingView,
@@ -9,6 +6,9 @@ import {
 } from '@jbrowse/core/util'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
+import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { autorun, observable, untracked } from 'mobx'
 
 import FetchMixin from './FetchMixin.ts'
@@ -18,9 +18,9 @@ import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 import type { FetchContext } from './FetchMixin.ts'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
-import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'

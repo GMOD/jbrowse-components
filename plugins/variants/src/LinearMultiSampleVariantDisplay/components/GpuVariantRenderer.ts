@@ -1,6 +1,6 @@
-import { writeBpRangeUniforms } from '@jbrowse/core/gpu/blockClipUtils'
-import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as variantShader from './shaders/variant.generated.ts'
 import { interleaveVariantInstances } from './variantShaders.ts'
@@ -10,8 +10,8 @@ import type {
   VariantRenderState,
   VariantUploadData,
 } from './variantRenderingBackendTypes.ts'
-import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_MAIN = 'main'
 const UNIFORMS_SIZE_BYTES = variantShader.UNIFORMS_SIZE_BYTES

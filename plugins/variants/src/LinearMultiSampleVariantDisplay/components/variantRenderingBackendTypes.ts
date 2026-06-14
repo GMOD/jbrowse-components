@@ -1,6 +1,6 @@
-import type { PerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-export type { RenderBlock as VariantRenderBlock } from '@jbrowse/core/gpu/renderBlock'
+export type { RenderBlock as VariantRenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface VariantUploadData {
   // Absolute genomic uint32 (start, renderEnd) per cell — shader hp-splits

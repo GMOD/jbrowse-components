@@ -1,4 +1,3 @@
-import { bpRangeXTuple } from '@jbrowse/core/gpu/blockClipUtils'
 import {
   ARROW_PASS as PASS_ARROW,
   ArrowPass,
@@ -14,7 +13,8 @@ import {
   packRects,
   rectShader,
 } from '@jbrowse/core/gpu/passes'
-import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
+import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
 
@@ -23,8 +23,8 @@ import type {
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 export const CANVAS_FEATURE_UNIFORM_BYTE_SIZE = FEATURE_GLYPH_UNIFORM_BYTE_SIZE
 

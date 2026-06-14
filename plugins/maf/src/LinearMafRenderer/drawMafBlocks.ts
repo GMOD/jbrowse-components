@@ -1,7 +1,7 @@
 import {
   clipBlockForCanvas,
   makeBpMapper,
-} from '@jbrowse/core/gpu/canvas2dUtils'
+} from '@jbrowse/render-core/canvas2dUtils'
 
 import { renderBases } from './rendering/bases.ts'
 import { renderDeletions } from './rendering/deletions.ts'
@@ -11,8 +11,8 @@ import type {
   MafGPURenderState,
   MafRegionData,
 } from './mafRenderingBackendTypes.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export function drawMafBlocks(
   ctx: Ctx2D,

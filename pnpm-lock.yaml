@@ -674,6 +674,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^5.11.1
         version: 5.11.1(mobx@6.16.1)
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../render-core
       '@mui/icons-material':
         specifier: ^9.1.1
         version: 9.1.1(@mui/material@9.1.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
@@ -713,6 +716,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core
@@ -876,6 +882,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@mui/icons-material':
         specifier: ^9.1.1
         version: 9.1.1(@mui/material@9.1.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
@@ -1063,6 +1072,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
@@ -1213,6 +1225,9 @@ importers:
       '@jbrowse/plugin-wiggle':
         specifier: workspace:^
         version: link:../wiggle
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/wiggle-core':
         specifier: workspace:^
         version: link:../../packages/wiggle-core
@@ -1246,6 +1261,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/wiggle-core':
         specifier: workspace:^
         version: link:../../packages/wiggle-core
@@ -1336,6 +1354,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
@@ -1372,6 +1393,9 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@mui/icons-material':
         specifier: ^9.1.1
         version: 9.1.1(@mui/material@9.1.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
@@ -1411,6 +1435,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/tree-sidebar':
         specifier: workspace:^
         version: link:../../packages/tree-sidebar
@@ -1507,6 +1534,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@mui/material':
         specifier: ^9.1.1
         version: 9.1.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1651,6 +1681,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core
@@ -1705,6 +1738,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/tree-sidebar':
         specifier: workspace:^
         version: link:../../packages/tree-sidebar
@@ -1870,6 +1906,9 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/text-indexing':
         specifier: workspace:^
         version: link:../../packages/text-indexing
@@ -2378,6 +2417,9 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/web-core':
         specifier: workspace:^
         version: link:../../packages/web-core

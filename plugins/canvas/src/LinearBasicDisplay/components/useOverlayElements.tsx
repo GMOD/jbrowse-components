@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
-import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { useTheme } from '@mui/material'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'

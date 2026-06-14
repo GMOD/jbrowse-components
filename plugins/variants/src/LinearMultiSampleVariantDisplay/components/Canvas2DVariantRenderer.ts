@@ -1,9 +1,9 @@
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   clipBlockForCanvas,
   makeBpMapper,
-} from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+} from '@jbrowse/render-core/canvas2dUtils'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import { drawVariantShape } from './variantShape.ts'
 

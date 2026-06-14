@@ -243,9 +243,10 @@ The rendering primitives live in **`@jbrowse/render-core`**
 (`packages/render-core`) — the HAL, `RenderLifecycleMixin`, the backend base
 classes, the React backend hooks, and the clip/canvas/hp-math utilities. It is a
 leaf package (deps: `mobx` + `@jbrowse/mobx-state-tree` + `react` peer; **no**
-`@jbrowse/core`), so a third-party display can depend on it directly. The old
-`@jbrowse/core/gpu/*` import paths still resolve as thin re-export shims (new
-code should import `@jbrowse/render-core`). The shader-codegen pipeline
+`@jbrowse/core`), so a third-party display can depend on it directly. Import
+rendering primitives from `@jbrowse/render-core`; the former
+`@jbrowse/core/gpu/*` re-export shims were removed once every in-tree import
+migrated (ADR-030 follow-up). The shader-codegen pipeline
 (`packages/core/src/gpu/{shaders,passes}` + `packages/shader-tools/src/build-shaders.ts`) and the
 display-integration layer (`MultiRegionDisplayMixin` / `GlobalDataDisplayMixin` /
 `DisplayChrome`, all in the LGV plugin) stay where they are. The GPU API is
@@ -332,7 +333,7 @@ Every display renders its canvas through the shared `DisplayChrome`, which calls
 exactly one place, so a display can't bury it where the chrome can't see it. It
 owns every terminal state, all collapsed into one model getter — `displayPhase`
 ('renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'), whose precedence is
-single-sourced in `computeDisplayPhase` (`@jbrowse/core/gpu/displayPhase`). The
+single-sourced in `computeDisplayPhase` (`@jbrowse/render-core/displayPhase`). The
 chrome branches on it: `renderError` and `tooLarge` early-`return` their own
 component (`DisplayRenderErrorOverlay` / `TooLargeMessage`); `error` + `loading`
 are overlays (`DisplayErrorBar` / `DisplayLoadingOverlay`) drawn over the
@@ -434,7 +435,7 @@ the display's real feature counts.
 
 Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle)
 specialize one generic type and inherit from one of two abstract base
-classes in `@jbrowse/core/gpu/perRegionRenderingBackend`:
+classes in `@jbrowse/render-core/perRegionRenderingBackend`:
 
 ```ts
 // Plugin specializes the interface (used in model + React code):
@@ -558,7 +559,7 @@ entire map, every `rpcDataMap.set(key, data)` call re-fires the autorun and
 re-uploads all N regions — O(N²) total GPU uploads when N regions arrive
 sequentially.
 
-**The fix lives in `@jbrowse/core/gpu/installPerRegionLifecycle`** and is
+**The fix lives in `@jbrowse/render-core/installPerRegionLifecycle`** and is
 used by every per-region plugin (wiggle, multi-wiggle, manhattan, MAF,
 multi-variant, multi-variant-matrix). Each plugin's `startRenderingBackend`
 action collapses to a single call:
@@ -1077,7 +1078,7 @@ pixels at any DPR. Do not manually scale by `devicePixelRatio`.
 caller owns DPR. Set `canvas.width = w * dpr` + `canvas.height = h * dpr` in
 the effect, call `ctx.scale(dpr, dpr)`, then put CSS `width`/`height` in the
 style block. Skipping this renders blurry on Retina displays. `prepareCanvas`
-(in `packages/core/src/gpu/canvas2dUtils.ts`) does this for the on-screen
+(in `packages/render-core/src/canvas2dUtils.ts`) does this for the on-screen
 Canvas2D backend path; standalone overlay components must replicate it.
 
 ---
@@ -1100,7 +1101,7 @@ key on a tuple of two displayedRegion indices.
 - **Types** — `MyData`, `MyRenderState`, `MyRenderingBackend`.
 - **Shader** — author `my.slang`; `pnpm gen:shaders` emits `my.generated.ts`.
 - **Renderers + factory** — `createRenderingBackend<MyRenderingBackend>` from
-  `packages/core/src/gpu/createRenderingBackend.ts`. Use `slangPass()` to build
+  `packages/render-core/src/createRenderingBackend.ts`. Use `slangPass()` to build
   the `PassDescriptor`.
 - **MST model:**
   - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays
@@ -1160,7 +1161,7 @@ key on a tuple of two displayedRegion indices.
   The model's `rpcDataMap` / `laidOutDataMap` is the single source of truth;
   pass it into `renderBlocks(blocks, regions, state)` instead. For GPU buffer
   lifecycle delegate to `hal.pruneRegions(active)` rather than mirroring HAL's
-  region map. See `PerRegionRenderingBackend` in `@jbrowse/core/gpu/perRegionRenderingBackend`.
+  region map. See `PerRegionRenderingBackend` in `@jbrowse/render-core/perRegionRenderingBackend`.
 - Don't add or redefine volatiles/actions owned by the slot mixin
   (`canvasDrawn`, `renderTick`, `currentRenderingBackend`, `renderError`,
   `markCanvasDrawn`, `resetCanvasDrawn`, `renderNow`, `setRenderError`,

@@ -1,5 +1,5 @@
 import type { WiggleScaleType } from './normalize.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export type WiggleRenderingType = 0 | 1 | 2 | 3
 

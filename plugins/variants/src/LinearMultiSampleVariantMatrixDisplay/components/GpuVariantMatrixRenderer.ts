@@ -1,5 +1,5 @@
-import { GpuGlobalRenderingBackend } from '@jbrowse/core/gpu/globalRenderingBackend'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { GpuGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as variantMatrixShader from './shaders/variantMatrix.generated.ts'
 import { interleaveMatrixInstances } from './variantMatrixShaders.ts'
@@ -8,7 +8,7 @@ import type {
   MatrixRenderState,
   VariantMatrixUploadData,
 } from './variantMatrixRenderingBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_MAIN = 'main'
 const REGION_KEY = 0

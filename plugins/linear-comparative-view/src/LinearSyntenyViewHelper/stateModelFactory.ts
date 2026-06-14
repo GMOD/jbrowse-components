@@ -1,4 +1,3 @@
-import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
 import {
   hideTrackGeneric,
   showTrackGeneric,
@@ -6,6 +5,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {

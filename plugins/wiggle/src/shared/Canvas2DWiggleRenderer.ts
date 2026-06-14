@@ -1,5 +1,5 @@
-import { clipBlockForCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
+import { clipBlockForCanvas } from '@jbrowse/render-core/canvas2dUtils'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import {
   RENDERING_TYPE_DENSITY,
@@ -13,8 +13,8 @@ import {
   drawXYPlot,
 } from './wiggleDrawFunctions.ts'
 
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   SourceRenderData,
   WiggleGPURenderState,

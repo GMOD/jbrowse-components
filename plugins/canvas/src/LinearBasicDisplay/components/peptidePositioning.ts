@@ -1,10 +1,10 @@
-import { makeBpMapper } from '@jbrowse/core/gpu/canvas2dUtils'
+import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BpRegionBounds } from '@jbrowse/core/gpu/renderBlock'
+import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 const PEPTIDE_MAX_FONT_SIZE = 16
 // Show the residue number after the amino-acid letter once the cell is at

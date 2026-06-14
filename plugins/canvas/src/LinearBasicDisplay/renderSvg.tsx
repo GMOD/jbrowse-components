@@ -1,7 +1,7 @@
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { when } from 'mobx'
 
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
@@ -11,12 +11,12 @@ import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { BpRegionBounds } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 type LGV = LinearGenomeViewModel
 type SvgRegionBounds = BpRegionBounds

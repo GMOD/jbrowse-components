@@ -2,7 +2,6 @@ import type React from 'react'
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { RenderLifecycleMixin } from '@jbrowse/core/gpu/RenderLifecycleMixin'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -20,6 +19,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { observable } from 'mobx'

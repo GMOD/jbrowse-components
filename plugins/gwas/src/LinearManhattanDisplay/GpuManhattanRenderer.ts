@@ -1,15 +1,15 @@
-import { writeBpRangeUniforms } from '@jbrowse/core/gpu/blockClipUtils'
-import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
 import * as shader from './shaders/manhattan.generated.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { BlockClipResult } from '@jbrowse/core/gpu/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const PASS = 'point'
 const U = shader.UNIFORM_OFFSET_F32

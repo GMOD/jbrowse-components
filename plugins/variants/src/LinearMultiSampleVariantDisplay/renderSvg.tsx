@@ -1,6 +1,6 @@
-import { buildRenderBlocks } from '@jbrowse/core/gpu/renderBlock'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { when } from 'mobx'
 
 import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'

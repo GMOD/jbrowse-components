@@ -1,5 +1,5 @@
-import { splitPositionWithFrac } from '@jbrowse/core/gpu/blockClipUtils'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { interleaveInstances } from './instanceInterleave.ts'
 import * as syntenyEdgeCurveShader from './shaders/syntenyEdgeCurve.generated.ts'
@@ -15,7 +15,7 @@ import type {
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/core/gpu/hal'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_FILL_STRAIGHT = 'fillStraight'
 const PASS_FILL_CURVE = 'fillCurve'

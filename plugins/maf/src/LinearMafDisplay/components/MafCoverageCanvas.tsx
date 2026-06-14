@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 
-import { getPreparedCanvas2D } from '@jbrowse/core/gpu/canvas2dUtils'
 import { getContainingView } from '@jbrowse/core/util'
+import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'

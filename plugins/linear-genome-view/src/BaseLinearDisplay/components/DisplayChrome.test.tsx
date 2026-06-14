@@ -1,11 +1,11 @@
-import { computeDisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import { types } from '@jbrowse/mobx-state-tree'
+import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 import { act, render } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
 
-import type { DisplayPhase } from '@jbrowse/core/gpu/displayPhase'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // Direct, fast guard for the commit rules documented in DisplayChrome.tsx (and
 // displayPhase.ts): the terminal banners must be literal `if (...) return`s, and

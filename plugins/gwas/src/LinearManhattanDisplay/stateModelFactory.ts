@@ -4,7 +4,6 @@ import {
   ConfigurationReference,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { installPerRegionLifecycle } from '@jbrowse/core/gpu/installPerRegionLifecycle'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingView,
@@ -19,6 +18,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
+import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   YSCALEBAR_LABEL_OFFSET,
   computeYTicks,

@@ -1,4 +1,4 @@
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { INTERBASE_HARDCLIP, INTERBASE_SOFTCLIP } from './types.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
@@ -10,7 +10,7 @@ import type {
   ResolvedBlock,
 } from './hitTestTypes.ts'
 import type { CigarUploadData } from './uploadTypes.ts'
-import type { GpuHal } from '@jbrowse/core/gpu/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 
 export const PASS_CLIP = 'clip'
 

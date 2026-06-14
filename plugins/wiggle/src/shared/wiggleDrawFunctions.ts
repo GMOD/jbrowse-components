@@ -1,4 +1,4 @@
-import { bpToScreenPx } from '@jbrowse/core/gpu/canvas2dUtils'
+import { bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
 import { SCALE_TYPE_LOG } from './wiggleComponentUtils.ts'
@@ -8,8 +8,8 @@ import {
   makeScoreNormalizer,
 } from '../util.ts'
 
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 function makeScoreToY(

@@ -1,4 +1,4 @@
-import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
+import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
 
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
 import {
@@ -10,11 +10,10 @@ import {
 import type { SyntenyRenderingBackend } from './syntenyRenderingBackendTypes.ts'
 
 export function SyntenyRendererFactory(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<SyntenyRenderingBackend>(
-    canvas,
-    SYNTENY_PASSES,
-    SYNTENY_UNIFORM_BYTE_SIZE,
-    hal => new GpuSyntenyRenderer(hal, canvas),
-    c => new Canvas2DSyntenyRenderer(c),
-  )
+  return createRenderingBackend<SyntenyRenderingBackend>(canvas, {
+    passes: SYNTENY_PASSES,
+    uniformByteSize: SYNTENY_UNIFORM_BYTE_SIZE,
+    createGpuBackend: hal => new GpuSyntenyRenderer(hal, canvas),
+    createCanvas2DBackend: c => new Canvas2DSyntenyRenderer(c),
+  })
 }

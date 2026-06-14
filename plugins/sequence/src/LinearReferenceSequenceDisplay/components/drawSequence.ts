@@ -1,16 +1,16 @@
+import { codonTable, complement, revcom } from '@jbrowse/core/util'
 import {
   bpToScreenPx,
   clipBlockForCanvas,
-} from '@jbrowse/core/gpu/canvas2dUtils'
-import { codonTable, complement, revcom } from '@jbrowse/core/util'
+} from '@jbrowse/render-core/canvas2dUtils'
 
 import { frameShiftBounds, startsSet, stopsSet } from './sequenceGeometry.ts'
 
 import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
 import type { SequenceRegionData } from '../model.ts'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
 import type { Frame } from '@jbrowse/core/util'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { Theme } from '@mui/material'
 
 const BORDER_COLOR = 'rgb(85,85,85)'

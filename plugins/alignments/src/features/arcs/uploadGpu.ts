@@ -1,7 +1,7 @@
 import { PASS_ARC, PASS_ARC_LINE, packArcLines, packArcs } from './packGpu.ts'
 
 import type { ArcsUploadData } from './types.ts'
-import type { GpuHal } from '@jbrowse/core/gpu/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 
 export function uploadArcs(
   hal: GpuHal,

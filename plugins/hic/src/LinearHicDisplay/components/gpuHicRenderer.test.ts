@@ -1,4 +1,4 @@
-import { MockHal } from '@jbrowse/core/gpu/hal'
+import { MockHal } from '@jbrowse/render-core/hal'
 
 import {
   GpuHicRenderer,

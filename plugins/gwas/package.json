@@ -36,6 +36,7 @@
     "@jbrowse/plugin-data-management": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
+    "@jbrowse/render-core": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
     "@mui/icons-material": "^9.1.1",
     "@mui/material": "^9.1.1",
