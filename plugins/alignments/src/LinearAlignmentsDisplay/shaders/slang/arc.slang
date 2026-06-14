@@ -159,6 +159,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float d = abs(fragIn.dist);
   float aa = fwidth(fragIn.dist);
   float alpha = clamp((hw - d) / aa + 0.5, 0.0, 1.0);
-  // Output straight alpha — see shaders/AGENTS.md, blend does the premultiply.
+  // Output straight alpha — the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }
