@@ -54,6 +54,7 @@ const SetColorDialog = observer(function SetColorDialog({
             model.setFeatureColor(undefined)
             model.setUtrColor(undefined)
           }}
+          variant="contained"
           color="secondary"
         >
           Restore default
