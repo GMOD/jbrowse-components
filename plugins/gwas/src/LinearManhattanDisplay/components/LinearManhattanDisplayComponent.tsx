@@ -190,26 +190,7 @@ const ManhattanBody = observer(function ManhattanBody({
           onClose={() => {
             setContextMenu(undefined)
           }}
-          menuItems={[
-            {
-              label: 'Open feature details',
-              onClick: () => {
-                model.selectFeature(contextMenu.hit)
-              },
-            },
-            ...(model.hasLdData
-              ? [
-                  {
-                    label: `Color by LD to ${contextMenu.hit.refName}:${
-                      contextMenu.hit.start + 1
-                    }`,
-                    onClick: () => {
-                      model.colorByLdToHit(contextMenu.hit)
-                    },
-                  },
-                ]
-              : []),
-          ]}
+          menuItems={model.contextMenuItems(contextMenu.hit)}
         />
       ) : null}
     </>

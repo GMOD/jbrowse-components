@@ -8,6 +8,7 @@ import {
   ListSubheader,
   Menu,
   MenuItem,
+  Tooltip,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -30,11 +31,32 @@ function makeTestId(kind: string, label: React.ReactNode) {
     : undefined
 }
 
+// A disabled MenuItem has pointer-events:none, so a Tooltip placed directly on
+// it never fires; the span wrapper (per MUI guidance) restores hover. Disabled
+// rows aren't keyboard-focusable, so the extra wrapper doesn't affect menu
+// navigation. With no title it renders children untouched.
+function DisabledTooltip({
+  title,
+  children,
+}: {
+  title?: React.ReactNode
+  children: React.ReactElement
+}) {
+  return title ? (
+    <Tooltip title={title} placement="left">
+      <span>{children}</span>
+    </Tooltip>
+  ) : (
+    children
+  )
+}
+
 function CascadingSubmenu({
   title,
   Icon,
   inset,
   disabled,
+  helpText,
   menuItems,
   onMenuItemClick,
   closeAfterItemClick,
@@ -49,6 +71,7 @@ function CascadingSubmenu({
   Icon: React.ElementType | undefined
   inset: boolean
   disabled?: boolean
+  helpText?: string
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
   onCloseRoot: () => void
@@ -61,33 +84,35 @@ function CascadingSubmenu({
 
   return (
     <>
-      <MenuItem
-        ref={setAnchorEl}
-        data-testid={makeTestId('submenu', title)}
-        disabled={disabled}
-        onMouseOver={() => {
-          onOpen()
-        }}
-        onClick={() => {
-          onOpen()
-        }}
-        onKeyDown={e => {
-          if (e.key === 'ArrowRight') {
+      <DisabledTooltip title={disabled ? helpText : undefined}>
+        <MenuItem
+          ref={setAnchorEl}
+          data-testid={makeTestId('submenu', title)}
+          disabled={disabled}
+          onMouseOver={() => {
             onOpen()
-          } else if (e.key === 'ArrowLeft') {
-            e.stopPropagation()
-            onNavigateBack?.()
-          }
-        }}
-      >
-        {Icon ? (
-          <ListItemIcon>
-            <Icon />
-          </ListItemIcon>
-        ) : null}
-        <ListItemText primary={title} inset={inset} />
-        <ChevronRight />
-      </MenuItem>
+          }}
+          onClick={() => {
+            onOpen()
+          }}
+          onKeyDown={e => {
+            if (e.key === 'ArrowRight') {
+              onOpen()
+            } else if (e.key === 'ArrowLeft') {
+              e.stopPropagation()
+              onNavigateBack?.()
+            }
+          }}
+        >
+          {Icon ? (
+            <ListItemIcon>
+              <Icon />
+            </ListItemIcon>
+          ) : null}
+          <ListItemText primary={title} inset={inset} />
+          <ChevronRight />
+        </MenuItem>
+      </DisabledTooltip>
       <HoverMenu
         open={isOpen}
         anchorEl={anchorEl}
@@ -150,6 +175,7 @@ function CascadingMenuList({
               Icon={item.icon}
               inset={hasIcon && !item.icon}
               disabled={item.disabled}
+              helpText={item.helpText}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
               closeAfterItemClick={closeAfterItemClick}
@@ -180,54 +206,60 @@ function CascadingMenuList({
         }
 
         const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
+        // a disabled row can't open the help popover (pointer-events:none), so
+        // its helpText is surfaced as a hover tooltip instead of the icon button
         return (
-          <MenuItem
+          <DisabledTooltip
             key={`${item.label}`}
-            data-testid={makeTestId('menuitem', item.label)}
-            disabled={item.disabled}
-            onClick={() => {
-              if (closeAfterItemClick) {
-                onCloseRoot()
-              }
-              onMenuItemClick(item.onClick)
-            }}
-            onMouseOver={() => {
-              closeSubmenu()
-            }}
-            onKeyDown={e => {
-              if (e.key === 'ArrowLeft') {
-                e.stopPropagation()
-                onNavigateBack?.()
-              }
-            }}
+            title={item.disabled ? item.helpText : undefined}
           >
-            {item.icon ? (
-              <ListItemIcon>
-                <item.icon />
-              </ListItemIcon>
-            ) : null}
-            <ListItemText
-              primary={item.label}
-              secondary={item.subLabel}
-              inset={hasIcon && !item.icon}
-            />
-            <div style={{ flexGrow: 1, minWidth: 10 }} />
-            {isCheckOrRadio ? (
-              <MenuItemEndDecoration
-                type={item.type}
-                checked={item.checked}
-                disabled={item.disabled}
+            <MenuItem
+              data-testid={makeTestId('menuitem', item.label)}
+              disabled={item.disabled}
+              onClick={() => {
+                if (closeAfterItemClick) {
+                  onCloseRoot()
+                }
+                onMenuItemClick(item.onClick)
+              }}
+              onMouseOver={() => {
+                closeSubmenu()
+              }}
+              onKeyDown={e => {
+                if (e.key === 'ArrowLeft') {
+                  e.stopPropagation()
+                  onNavigateBack?.()
+                }
+              }}
+            >
+              {item.icon ? (
+                <ListItemIcon>
+                  <item.icon />
+                </ListItemIcon>
+              ) : null}
+              <ListItemText
+                primary={item.label}
+                secondary={item.subLabel}
+                inset={hasIcon && !item.icon}
               />
-            ) : null}
-            {item.helpText ? (
-              <CascadingMenuHelpIconButton
-                helpText={item.helpText}
-                label={item.label}
-              />
-            ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
-              <CascadingMenuHelpIconSpacer />
-            ) : null}
-          </MenuItem>
+              <div style={{ flexGrow: 1, minWidth: 10 }} />
+              {isCheckOrRadio ? (
+                <MenuItemEndDecoration
+                  type={item.type}
+                  checked={item.checked}
+                  disabled={item.disabled}
+                />
+              ) : null}
+              {item.helpText && !item.disabled ? (
+                <CascadingMenuHelpIconButton
+                  helpText={item.helpText}
+                  label={item.label}
+                />
+              ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
+                <CascadingMenuHelpIconSpacer />
+              ) : null}
+            </MenuItem>
+          </DisabledTooltip>
         )
       })}
     </>

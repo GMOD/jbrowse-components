@@ -4,6 +4,7 @@ import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
 } from '../manhattanRenderingBackendTypes.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
@@ -21,11 +22,10 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   renderState: ManhattanRenderState | undefined
   featureUnderMouse: ManhattanHit | undefined
   colorBy: 'normal' | 'ld'
-  hasLdData: boolean
   indexSnpMissing: boolean
   showLdLegend: boolean
   setFeatureUnderMouse: (hit: ManhattanHit | undefined) => void
   selectFeature: (hit: ManhattanHit) => void
-  colorByLdToHit: (hit: ManhattanHit) => void
+  contextMenuItems: (hit: ManhattanHit) => MenuItem[]
   setShowLdLegend: (val: boolean) => void
 }

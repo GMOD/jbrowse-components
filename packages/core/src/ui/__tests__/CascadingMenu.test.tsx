@@ -139,4 +139,26 @@ describe('CascadingMenu', () => {
       expect(screen.queryByText('Sub Item 1')).toBeNull()
     })
   })
+
+  it('should show a tooltip explaining why a disabled item is disabled', async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 })
+    render(
+      <CascadingMenuButton
+        data-testid="menu-button"
+        menuItems={[
+          {
+            label: 'Disabled item',
+            disabled: true,
+            helpText: 'Needs a configured adapter',
+            onClick: () => {},
+          },
+        ]}
+      >
+        <span>Open Menu</span>
+      </CascadingMenuButton>,
+    )
+    await user.click(screen.getByTestId('menu-button'))
+    await user.hover(await screen.findByText('Disabled item'))
+    expect(await screen.findByText('Needs a configured adapter')).toBeTruthy()
+  })
 })

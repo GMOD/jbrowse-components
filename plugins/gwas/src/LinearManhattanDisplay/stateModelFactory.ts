@@ -39,6 +39,7 @@ import type {
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -369,6 +370,7 @@ export function stateModelFactory(
             // whole submenu greys out without a configured .ld adapter
             label: 'LD options',
             disabled: !self.hasLdData,
+            helpText: 'Requires a configured LD (PLINK .ld) adapter',
             subMenu: [
               {
                 label: 'Color by LD to index SNP',
@@ -397,6 +399,31 @@ export function stateModelFactory(
               },
             ],
           },
+        ]
+      },
+      /**
+       * #method
+       * right-click menu for a clicked point: feature details plus, when an LD
+       * adapter is configured, a shortcut to recolor by LD to that SNP
+       */
+      contextMenuItems(hit: ManhattanHit): MenuItem[] {
+        return [
+          {
+            label: 'Open feature details',
+            onClick: () => {
+              self.selectFeature(hit)
+            },
+          },
+          ...(self.hasLdData
+            ? [
+                {
+                  label: `Color by LD to ${hit.refName}:${hit.start + 1}`,
+                  onClick: () => {
+                    self.colorByLdToHit(hit)
+                  },
+                },
+              ]
+            : []),
         ]
       },
     }))
