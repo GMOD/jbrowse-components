@@ -53,11 +53,17 @@ const TestChromeModel = types
     canvasDrawn: false,
     statusMessage: types.maybe(types.string),
   })
-  .volatile((): { error: unknown; renderError: unknown; loadingCondition: boolean } => ({
-    error: undefined,
-    renderError: undefined,
-    loadingCondition: false,
-  }))
+  .volatile(
+    (): {
+      error: unknown
+      renderError: unknown
+      loadingCondition: boolean
+    } => ({
+      error: undefined,
+      renderError: undefined,
+      loadingCondition: false,
+    }),
+  )
   .views(self => ({
     get displayPhase(): DisplayPhase {
       return computeDisplayPhase(

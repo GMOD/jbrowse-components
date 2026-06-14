@@ -61,6 +61,10 @@ export default defineConfig(
       'products/jbrowse-web/scripts',
       'products/jbrowse-img/src/bin.js',
 
+      // jbrowse-img integration tests + their tsx loader hook run via node:test
+      // (not jest/typed-lint); see products/jbrowse-img/CLAUDE.md
+      'products/jbrowse-img/src/**/*.mjs',
+
       'packages/core/src/util/p-limit.ts',
 
       // AWS Lambda functions

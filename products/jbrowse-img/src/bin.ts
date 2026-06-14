@@ -23,6 +23,28 @@ import {
 
 const scriptName = 'jb2export'
 
+// Write the rendered SVG: to stdout when no --out, else by extension. .png/.pdf
+// route through rsvg-convert (.pdf via the `-f pdf` flag); anything else is the
+// raw SVG.
+function writeOutput(
+  result: string,
+  outFile: string | undefined,
+  width: number,
+) {
+  if (!outFile) {
+    console.log(result)
+  } else {
+    const lower = outFile.toLowerCase()
+    if (lower.endsWith('.png')) {
+      convert(result, { out: outFile, pngwidth: String(width) })
+    } else if (lower.endsWith('.pdf')) {
+      convert(result, { out: outFile }, ['-f', 'pdf'])
+    } else {
+      fs.writeFileSync(outFile, result)
+    }
+  }
+}
+
 async function main() {
   const argv = process.argv.slice(2)
   // A leading positional token (not a --flag) selects a comparative
@@ -85,19 +107,7 @@ async function main() {
       trackList,
     })
 
-    const outFile = getString(rest, 'out')
-    if (!outFile) {
-      console.log(result)
-    } else {
-      const lower = outFile.toLowerCase()
-      if (lower.endsWith('.png')) {
-        convert(result, { out: outFile, pngwidth: String(width) })
-      } else if (lower.endsWith('.pdf')) {
-        convert(result, { out: outFile }, ['-f', 'pdf'])
-      } else {
-        fs.writeFileSync(outFile, result)
-      }
-    }
+    writeOutput(result, getString(rest, 'out'), width)
   }
 }
 

@@ -136,7 +136,8 @@ export function getNumber(
   fallback: number,
 ) {
   const v = rest[key]
-  return typeof v === 'string' ? Number(v) : fallback
+  const n = typeof v === 'string' ? Number(v) : NaN
+  return Number.isFinite(n) ? n : fallback
 }
 
 export function getTrackLabels(rest: Record<string, unknown>) {

@@ -142,11 +142,12 @@ follows the track file argument. Full list of available modifiers:
 
 Reads & coloring:
 
-| Modifier                         | Example                        | Description                                                   |
-| -------------------------------- | ------------------------------ | ------------------------------------------------------------- |
-| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below)                                |
-| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`) |
-| `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                       |
+| Modifier                         | Example                        | Description                                                                                                                                         |
+| -------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below)                                                                                                                      |
+| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                                       |
+| `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `supplementary`, `duplicate`, `mapq`, or `tag:<TAG>`) |
+| `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                                             |
 
 Overlays & subtracks:
 
@@ -194,6 +195,17 @@ Available `color:type` values:
 | `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                         |
 | `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier)  |
 | `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only) |
+
+### Raw display settings (JSON)
+
+Any track modifier that starts with `{` is parsed as JSON and merged into the
+display's settings — an escape hatch for settings without a dedicated modifier
+above. Use compact JSON (a single shell token, no spaces):
+
+```bash
+jb2export --fasta ref.fa --bam reads.bam '{"colorBy":{"type":"strand"}}' \
+  --loc chr1:1-10000 --out out.svg
+```
 
 ### Force render a large region
 
@@ -427,8 +439,7 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 
 - `--themeName` — theme to use for rendering (`default` or `dark`)
 - `--showGridlines` — draw genomic coordinate gridlines
-- `--trackLabels` — label position: `offset` (default), `overlapping`, or
-  `hidden`
+- `--trackLabels` — label position: `offset`, `overlay`, `left`, or `none`
 
 ## Use --help
 
