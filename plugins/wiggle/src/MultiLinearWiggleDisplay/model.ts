@@ -212,6 +212,15 @@ export default function stateModelFactory(
       get showRowSeparators() {
         return self.getOverride<boolean>('showRowSeparators') ?? false
       },
+
+      /**
+       * #getter
+       * Offset the track label above the visualization so the stacked
+       * per-source rows aren't hidden behind an overlapping label.
+       */
+      get prefersOffset() {
+        return true
+      },
     }))
     .views(self => ({
       get hierarchy() {

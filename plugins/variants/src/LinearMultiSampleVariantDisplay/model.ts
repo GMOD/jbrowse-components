@@ -77,6 +77,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
       })
       .views(self => ({
+        get prefersOffset() {
+          return true
+        },
         // Map view of perRegionCellData for renderBlocks. Object.entries every
         // render is cheap (typical view shows 1-3 regions); MobX caches the
         // computed so only cellData changes invalidate it.

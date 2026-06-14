@@ -741,6 +741,15 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Offset the track label above the visualization when grouping, so the
+         * stacked group sections aren't hidden behind an overlapping label.
+         */
+        get prefersOffset() {
+          return this.groupBy !== undefined
+        },
+
+        /**
          * #method
          * Whether a stacked group's pileup is collapsed to just its coverage.
          */
