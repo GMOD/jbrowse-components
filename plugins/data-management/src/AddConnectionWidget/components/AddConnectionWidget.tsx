@@ -6,7 +6,6 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { isSessionWithConnections } from '@jbrowse/product-core'
 import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -49,19 +48,13 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
   )
 
   // useMemo is needed for react@18+mobx-react@9, previous code called configSchema.create directly in a setConfigModel useState hook setter but this caused infinite loop
-  const { configModel, defaultSnapshot } = useMemo(() => {
-    const m = connectionType.configSchema.create(
-      { connectionId },
-      getEnv(model),
-    )
-    return { configModel: m, defaultSnapshot: JSON.stringify(getSnapshot(m)) }
-  }, [connectionId, connectionType, model])
+  const configModel = useMemo(
+    () =>
+      connectionType.configSchema.create({ connectionId }, getEnv(model)),
+    [connectionId, connectionType, model],
+  )
 
-  // guard against connecting with the untouched placeholder config (e.g. the
-  // default hub.txt url), which always fails
   const isLastStep = activeStep === steps.length - 1
-  const isUnconfigured =
-    JSON.stringify(getSnapshot(configModel)) === defaultSnapshot
 
   return (
     <div className={classes.root}>
@@ -87,6 +80,7 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
                 <ConfigureConnection
                   connectionType={connectionType}
                   model={configModel}
+                  session={session}
                 />
               )}
               <div className={classes.actionsContainer}>
@@ -100,7 +94,6 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
                   Back
                 </Button>
                 <Button
-                  disabled={isLastStep && isUnconfigured}
                   variant="contained"
                   color="primary"
                   onClick={() => {
