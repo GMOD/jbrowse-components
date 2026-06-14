@@ -111,25 +111,19 @@ function sortedTreeChildren(
   return [...tracks, ...folders, ...categories]
 }
 
-// Binary search in a sorted array of cumulative pixel offsets; returns the
-// index of the item whose offset range contains `offset`.
+// Binary search: returns the index of the last item whose offset <= `offset`.
 function findIndexAtOffset(offsets: number[], offset: number) {
-  let low = 0
-  let high = offsets.length - 1
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2)
-    if (
-      offsets[mid]! <= offset &&
-      (mid === offsets.length - 1 || offsets[mid + 1]! > offset)
-    ) {
-      return mid
-    } else if (offsets[mid]! < offset) {
-      low = mid + 1
+  let lo = 0
+  let hi = offsets.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (offsets[mid]! <= offset) {
+      lo = mid + 1
     } else {
-      high = mid - 1
+      hi = mid
     }
   }
-  return 0
+  return Math.max(0, lo - 1)
 }
 
 function flattenTree(
@@ -578,7 +572,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         )
       },
       get flattenedItemOffsets() {
-        const items = this.flattenedItems
+        const items = self.flattenedItems
         const offsets: number[] = []
         let cumulativeHeight = 0
         for (const item of items) {
@@ -594,30 +588,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { cumulativeHeight, offsets } = flattenedItemOffsets
 
         if (offsets.length === 0) {
-          return {
-            startIndex: 0,
-            endIndex: 0,
-            totalHeight: 0,
-            itemOffsets: offsets,
-          }
+          return { startIndex: 0, endIndex: -1, totalHeight: 0 }
         }
 
         const start = Math.max(
           0,
           findIndexAtOffset(offsets, scrollTop) - overscan,
         )
-        const targetHeight = scrollTop + height + overscan * defaultItemHeight
         const end = Math.min(
           offsets.length - 1,
-          findIndexAtOffset(offsets, targetHeight) + overscan,
+          findIndexAtOffset(offsets, scrollTop + height) + overscan,
         )
 
-        return {
-          startIndex: start,
-          endIndex: end,
-          totalHeight: cumulativeHeight,
-          itemOffsets: offsets,
-        }
+        return { startIndex: start, endIndex: end, totalHeight: cumulativeHeight }
       },
       get folderCategoryStats() {
         const stats = new Map<string, { active: number; total: number }>()
