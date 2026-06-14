@@ -6,6 +6,7 @@ import { RemoteFile } from 'generic-filehandle2'
 
 import NCListFeature from './NCListFeature.ts'
 
+import type { NCListRawFeature } from './NCListFeature.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -14,7 +15,7 @@ import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
-  private nclist: any
+  private nclist: NCListStore
 
   private configRefNames?: string[]
 
@@ -51,7 +52,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { stopToken } = opts
-      for await (const feature of this.nclist.getFeatures(region, opts)) {
+      for await (const feature of this.nclist.getFeatures(region)) {
         checkStopToken(stopToken)
         observer.next(this.wrapFeature(feature))
       }
@@ -59,7 +60,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  wrapFeature(ncFeature: any): NCListFeature {
+  wrapFeature(ncFeature: NCListRawFeature): NCListFeature {
     return new NCListFeature(
       ncFeature,
       undefined,

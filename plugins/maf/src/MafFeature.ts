@@ -36,14 +36,16 @@ export default class MafFeature implements Feature {
   }
 
   get(name: 'refName' | 'seq'): string
-  get(name: 'name' | 'type'): string | undefined
-  get(name: 'start' | 'end' | 'strand'): number
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score'): number | undefined
   get(name: 'phase'): 0 | 1 | 2 | undefined
   get(name: 'subfeatures'): Feature[] | undefined
   get(name: 'alignments'): Record<string, AlignmentRecord>
   get(name: 'empties'): Record<string, EmptyRecord>
-  get(name: string): any
-  get(name: string): any {
+  get(name: string): unknown
+  get(name: string): unknown {
     switch (name) {
       case 'start':
         return this._start

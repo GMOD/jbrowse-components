@@ -52,7 +52,7 @@ export function findParentThat(
       return currentNode
     }
     if (hasParent(currentNode)) {
-      currentNode = getParent<any>(currentNode)
+      currentNode = getParent<IAnyStateTreeNode>(currentNode)
     } else {
       break
     }

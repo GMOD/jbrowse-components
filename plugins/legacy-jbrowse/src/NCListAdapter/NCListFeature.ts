@@ -8,14 +8,24 @@ const jb2ToJb1: Record<string, string | undefined> = { refName: 'seq_id' }
 const jb1ToJb2: Record<string, string | undefined> = { seq_id: 'refName' }
 
 /**
+ * the duck-typed shape of a raw @gmod/nclist feature (which the library types
+ * only as `any`)
+ */
+export interface NCListRawFeature {
+  id(): string
+  get(attr: string): unknown
+  tags(): string[]
+}
+
+/**
  * wrapper to adapt nclist features to act like jbrowse 2 features
  */
 export default class NCListFeature implements Feature {
   private parentHandle?: Feature
   private uniqueId: string
-  private ncFeature: any
+  private ncFeature: NCListRawFeature
 
-  constructor(ncFeature: any, parent?: Feature, id?: string) {
+  constructor(ncFeature: NCListRawFeature, parent?: Feature, id?: string) {
     this.ncFeature = ncFeature
     this.uniqueId = id || ncFeature.id()
     this.parentHandle = parent
@@ -34,10 +44,20 @@ export default class NCListFeature implements Feature {
     return jb1ToJb2[t] ?? t
   }
 
-  get(attrName: string): any {
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
+  get(name: string): unknown
+  get(attrName: string): unknown {
     const attr = this.ncFeature.get(this.jb2TagToJb1Tag(attrName))
     if (attr && attrName === 'subfeatures') {
-      return attr.map((subfeature: any) => new NCListFeature(subfeature, this))
+      return (attr as NCListRawFeature[]).map(
+        subfeature => new NCListFeature(subfeature, this),
+      )
     }
     return attr
   }
@@ -77,10 +97,10 @@ export default class NCListFeature implements Feature {
       const mappedTag = this.jb1TagToJb2Tag(tag)
       const value = this.ncFeature.get(tag)
       if (mappedTag === 'subfeatures') {
-        data.subfeatures = (value || []).map((f: Feature) => {
+        data.subfeatures = ((value as NCListRawFeature[] | undefined) ?? []).map(
           // note: was new NCListFeature(f, `${this.id()}-${i}`, this).toJSON()
-          return new NCListFeature(f, this).toJSON()
-        })
+          f => new NCListFeature(f, this).toJSON(),
+        )
       } else {
         data[mappedTag] = value
       }

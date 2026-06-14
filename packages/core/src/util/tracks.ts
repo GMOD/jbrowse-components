@@ -69,7 +69,11 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
   }
   let highestRpcSessionId: string | undefined
 
-  for (let node = thisNode; !isRoot(node); node = getParent<any>(node)) {
+  for (
+    let node = thisNode;
+    !isRoot(node);
+    node = getParent<IAnyStateTreeNode>(node)
+  ) {
     if ('rpcSessionId' in node) {
       highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
     }
@@ -89,13 +93,16 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
  * @returns renderprops, or empty object if none found
  */
 export function getParentRenderProps(node: IAnyStateTreeNode) {
+  interface NodeWithRenderProps extends IAnyStateTreeNode {
+    renderProps: () => Record<string, unknown>
+  }
   for (
-    let currentNode = getParent<any>(node);
+    let currentNode = getParent<IAnyStateTreeNode>(node);
     !isRoot(currentNode);
-    currentNode = getParent(currentNode)
+    currentNode = getParent<IAnyStateTreeNode>(currentNode)
   ) {
     if ('renderProps' in currentNode) {
-      return currentNode.renderProps()
+      return (currentNode as NodeWithRenderProps).renderProps()
     }
   }
 

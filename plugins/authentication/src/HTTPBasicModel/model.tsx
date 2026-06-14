@@ -12,8 +12,14 @@ import type {
   HTTPBasicInternetAccountConfig,
   HTTPBasicInternetAccountConfigModel,
 } from './configSchema.ts'
-import type { UriLocation } from '@jbrowse/core/util/types'
+import type { AbstractSessionModel, UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+// internet accounts live on the root model (a sibling of session), so read
+// session off the root rather than walking up via getSession
+interface RootWithSession {
+  session: AbstractSessionModel
+}
 
 /**
  * #stateModel HTTPBasicInternetAccount
@@ -54,7 +60,7 @@ const stateModelFactory = (
         resolve: (token: string) => void,
         reject: (error: Error) => void,
       ) {
-        const { session } = getRoot<any>(self)
+        const { session } = getRoot<RootWithSession>(self)
         session.queueDialog((doneCallback: () => void) => [
           HTTPBasicLoginForm,
           {
