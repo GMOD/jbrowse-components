@@ -95,22 +95,54 @@ export function stateModelFactory(
       showLdLegend: true,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get DisplayMessageComponent() {
         return LinearManhattanDisplayComponent
       },
+      /**
+       * #getter
+       */
       get TooltipComponent() {
         return TooltipComponent
       },
+      /**
+       * #getter
+       * resolved point color (config slot value or its override)
+       */
       get color(): string {
         return self.getConfWithOverride('color')
       },
+      /**
+       * #getter
+       * resolved coloring mode: 'normal' uses `color`, 'ld' colors by r² to the
+       * index SNP
+       */
       get colorBy(): 'normal' | 'ld' {
         return self.getConfWithOverride('colorBy')
       },
+      /**
+       * #getter
+       * the configured PLINK .ld adapter, or undefined when none is set (the
+       * slot defaults to null, normalized here to undefined for "absent")
+       */
       get ldAdapterConfig(): Record<string, unknown> | undefined {
-        // unset slot defaults to null; normalize to undefined for "absent"
         return readConfObject(self.configuration, 'ldAdapter') ?? undefined
       },
+      /**
+       * #getter
+       * LD coloring needs a configured .ld adapter; without one the
+       * colorBy='ld' controls are inert, so they're hidden/disabled
+       */
+      get hasLdData(): boolean {
+        return this.ldAdapterConfig !== undefined
+      },
+      /**
+       * #getter
+       * nice-rounded [min, max] -log10 p domain across loaded regions, or
+       * undefined before any data loads
+       */
       get domain(): [number, number] | undefined {
         let scoreMin = Infinity
         let scoreMax = -Infinity
@@ -136,9 +168,12 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      // Manhattan plots are linear-only (pre-transformed -log10 p values);
-      // the inherited scaleType config is intentionally ignored here so the
-      // axis ticks stay consistent with the linear `domain` above.
+      /**
+       * #getter
+       * y-axis tick positions. Manhattan plots are linear-only (pre-transformed
+       * -log10 p values); the inherited scaleType config is intentionally
+       * ignored so the axis ticks stay consistent with the linear `domain`.
+       */
       get ticks() {
         return computeYTicks({
           height: self.height,
@@ -147,9 +182,12 @@ export function stateModelFactory(
           minimalTicks: self.getOverride<boolean>('minimalTicks') ?? false,
         })
       },
-      // SettingsInvalidate watches this shape — any change (color, colorBy,
-      // index SNP, LD adapter) triggers a refetch, since the worker bakes
-      // per-feature color into the result.
+      /**
+       * #method
+       * fetch inputs watched by SettingsInvalidate — any change (color, colorBy,
+       * index SNP, LD adapter) triggers a refetch, since the worker bakes
+       * per-feature color into the result
+       */
       rpcProps(): {
         color: string
         colorBy: 'normal' | 'ld'
@@ -163,10 +201,13 @@ export function stateModelFactory(
           ldAdapterConfig: self.ldAdapterConfig,
         }
       },
-      // canvasHeight is the inner canvas (between top/bottom YScaleBar
-      // label offsets) — this is the area both the GPU renderer and
-      // findManhattanHit work in. Using self.height directly would drift
-      // the hit-test off the rendered points.
+      /**
+       * #getter
+       * render geometry for the inner canvas (between top/bottom YScaleBar label
+       * offsets) — the area both the GPU renderer and findManhattanHit work in.
+       * Using self.height directly would drift the hit-test off the rendered
+       * points.
+       */
       get renderState(): ManhattanRenderState | undefined {
         const view = getContainingView(self) as LinearGenomeViewModel
         const canvasWidth = view.trackWidthPx
@@ -177,9 +218,12 @@ export function stateModelFactory(
           domainY => ({ domainY, canvasWidth, canvasHeight }),
         )
       },
-      // displayedRegionIndex → refName lookup. Hit-testing reads this on
-      // every mousemove; MobX caches the view so visibleRegions changes
-      // invalidate it once rather than rebuilding per event.
+      /**
+       * #getter
+       * displayedRegionIndex → refName lookup. Hit-testing reads this on every
+       * mousemove; MobX caches the view so visibleRegions changes invalidate it
+       * once rather than rebuilding per event.
+       */
       get regionRefNames(): ReadonlyMap<number, string> {
         const view = getContainingView(self) as LinearGenomeViewModel
         return new Map(
@@ -188,9 +232,12 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      // Highest-scoring loaded SNP as a `chr:bp` (1-based) string — the default
-      // LD index SNP. Derived from loaded data (not a fetch input), so it's
-      // applied via the auto-pick autorun rather than read into rpcProps.
+      /**
+       * #getter
+       * highest-scoring loaded SNP as a `chr:bp` (1-based) string — the default
+       * LD index SNP. Derived from loaded data (not a fetch input), so it's
+       * applied via the auto-pick autorun rather than read into rpcProps.
+       */
       get topSnp(): string | undefined {
         let bestScore = -Infinity
         let bestPos = 0
@@ -209,9 +256,12 @@ export function stateModelFactory(
           bestIdx === -1 ? undefined : self.regionRefNames.get(bestIdx)
         return refName ? `${refName}:${bestPos + 1}` : undefined
       },
-      // True when LD coloring is active with data loaded, but no region's LD
-      // data referenced the index SNP — so every point is grey. LD is a
-      // single-region analysis, so "found in no loaded region" means missing.
+      /**
+       * #getter
+       * true when LD coloring is active with data loaded, but no region's LD
+       * data referenced the index SNP — so every point is grey. LD is a
+       * single-region analysis, so "found in no loaded region" means missing.
+       */
       get indexSnpMissing(): boolean {
         const ldActive = self.colorBy === 'ld' && self.indexSnp !== undefined
         return (
@@ -222,6 +272,10 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * open the feature details widget for a clicked point
+       */
       selectFeature(hit: ManhattanHit) {
         openFeatureWidget(self, {
           uniqueId: `manhattan-${hit.refName}-${hit.start}`,
@@ -232,6 +286,9 @@ export function stateModelFactory(
           r2: hit.r2,
         })
       },
+      /**
+       * #action
+       */
       setRpcData(idx: number, data: ManhattanRpcResult) {
         self.rpcDataMap.set(idx, data)
         if (data.flatbushData) {
@@ -240,46 +297,70 @@ export function stateModelFactory(
           self.flatbushes.delete(idx)
         }
       },
+      /**
+       * #action
+       */
       setFeatureUnderMouse(hit: ManhattanHit | undefined) {
         self.featureUnderMouse = hit
       },
+      /**
+       * #action
+       */
       setShowLdLegend(val: boolean) {
         self.showLdLegend = val
       },
+      /**
+       * #action
+       */
       setColorBy(mode: 'normal' | 'ld') {
         self.setOverride('colorBy', mode)
       },
+      /**
+       * #action
+       */
       setIndexSnp(snp?: string) {
         self.indexSnp = snp
       },
-      // Right-click "Color by LD to this SNP": switch into LD mode and pin the
-      // index on the clicked point, so the auto-pick stops tracking the top
-      // hit. Keyed by chr:bp (1-based) to match the worker's posKey. All
-      // mutations happen in one action so rpcProps settles once and only a
-      // single recolor fetch fires.
+      /**
+       * #action
+       * right-click "Color by LD to this SNP": switch into LD mode and pin the
+       * index on the clicked point, so the auto-pick stops tracking the top hit.
+       * Keyed by chr:bp (1-based) to match the worker's posKey. All mutations
+       * happen in one action so rpcProps settles once and only a single recolor
+       * fetch fires.
+       */
       colorByLdToHit(hit: ManhattanHit) {
         self.setOverride('colorBy', 'ld')
         self.indexSnp = `${hit.refName}:${hit.start + 1}`
         self.indexSnpPinned = true
       },
-      // Release a pinned index back to auto-tracking, seeded at the current top
-      // hit (the auto-pick autorun then keeps it on the top hit as data loads).
+      /**
+       * #action
+       * release a pinned index back to auto-tracking, seeded at the current top
+       * hit (the auto-pick autorun then keeps it on the top hit as data loads)
+       */
       // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST action named for its semantic meaning, not a React hook
       useTopHitAsIndex() {
         self.indexSnpPinned = false
         self.indexSnp = self.topSnp
       },
+      /**
+       * #action
+       */
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
         self.flatbushes.clear()
       },
     }))
     .views(self => ({
-      // Manhattan menu: shared Score submenu plus LD-coloring controls.
-      // Rendering type / Resolution / Scale type don't apply to single-point
-      // rendering of pre-transformed -log10 p values. Placed after the
-      // color/index actions so referencing them doesn't make MST inference
-      // circular.
+      /**
+       * #method
+       * Manhattan track menu: shared Score submenu plus LD-coloring controls.
+       * Rendering type / Resolution / Scale type don't apply to single-point
+       * rendering of pre-transformed -log10 p values. Placed after the
+       * color/index actions so referencing them doesn't make MST inference
+       * circular.
+       */
       trackMenuItems() {
         return [
           makeScoreSubMenu(self, { scaleType: false }),
@@ -297,6 +378,7 @@ export function stateModelFactory(
             label: 'Color by LD to index SNP',
             type: 'checkbox' as const,
             checked: self.colorBy === 'ld',
+            disabled: !self.hasLdData,
             onClick: () => {
               self.setColorBy(self.colorBy === 'ld' ? 'normal' : 'ld')
             },
@@ -313,12 +395,14 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
-      // Manhattan features are 1:1 with the underlying SNPs (pre-transformed
-      // -log10 p values) and don't downsample by zoom, so we never need to
-      // refetch on bpPerPx change. We intentionally don't call
-      // setLoadedBpPerPx — the inherited isCacheValid short-circuits to true
-      // whenever loadedBpPerPx is undefined, which is exactly the behavior
-      // we want here.
+      /**
+       * #action
+       * Manhattan features are 1:1 with the underlying SNPs (pre-transformed
+       * -log10 p values) and don't downsample by zoom, so we never need to
+       * refetch on bpPerPx change. We intentionally don't call setLoadedBpPerPx
+       * — the inherited isCacheValid short-circuits to true whenever
+       * loadedBpPerPx is undefined, which is exactly the behavior we want here.
+       */
       async fetchNeeded(
         needed: { region: Region; displayedRegionIndex: number }[],
       ) {
@@ -354,11 +438,17 @@ export function stateModelFactory(
           )
         })
       },
+      /**
+       * #action
+       */
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self, opts)
       },
-      // Identity encode — RPC result is the upload payload.
+      /**
+       * #action
+       * identity encode — RPC result is the upload payload
+       */
       startRenderingBackend(backend: ManhattanRenderingBackend) {
         installPerRegionLifecycle(
           self,
