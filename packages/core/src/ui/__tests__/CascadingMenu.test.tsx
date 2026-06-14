@@ -4,9 +4,11 @@ import { userEvent } from '@testing-library/user-event'
 
 import CascadingMenuButton from '../CascadingMenuButton.tsx'
 
+import type { MenuItem } from '../MenuTypes.ts'
+
 jest.spyOn(console, 'warn').mockImplementation(() => {})
 
-const menuItems = [
+const menuItems: MenuItem[] = [
   { label: 'Item 1', onClick: () => {} },
   { label: 'Item 2', onClick: () => {} },
   {
@@ -19,7 +21,7 @@ const menuItems = [
   },
 ]
 
-async function setup(items: typeof menuItems = menuItems) {
+async function setup(items: MenuItem[] = menuItems) {
   const user = userEvent.setup()
   render(
     <CascadingMenuButton data-testid="menu-button" menuItems={items}>
@@ -109,5 +111,32 @@ describe('CascadingMenu', () => {
   it('should disable the button for an empty array of items', async () => {
     await setup([])
     expect(screen.getByTestId('menu-button')).toBeDisabled()
+  })
+
+  it('should render a disabled submenu that cannot be opened', async () => {
+    // pointerEventsCheck off so we can attempt to hover the disabled item
+    const user = userEvent.setup({ pointerEventsCheck: 0 })
+    render(
+      <CascadingMenuButton
+        data-testid="menu-button"
+        menuItems={[
+          {
+            label: 'Submenu',
+            type: 'subMenu',
+            disabled: true,
+            subMenu: [{ label: 'Sub Item 1', onClick: () => {} }],
+          },
+        ]}
+      >
+        <span>Open Menu</span>
+      </CascadingMenuButton>,
+    )
+    await user.click(screen.getByTestId('menu-button'))
+    const submenu = await screen.findByText('Submenu')
+    expect(submenu.closest('li')).toHaveClass('Mui-disabled')
+    await user.hover(submenu)
+    await waitFor(() => {
+      expect(screen.queryByText('Sub Item 1')).toBeNull()
+    })
   })
 })

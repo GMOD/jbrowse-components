@@ -366,30 +366,36 @@ export function stateModelFactory(
           makeScoreSubMenu(self, { scaleType: false }),
           makeCrossHatchItem(self),
           {
-            label: 'Show LD legend',
-            type: 'checkbox' as const,
-            checked: self.showLdLegend,
-            disabled: self.colorBy !== 'ld',
-            onClick: () => {
-              self.setShowLdLegend(!self.showLdLegend)
-            },
-          },
-          {
-            label: 'Color by LD to index SNP',
-            type: 'checkbox' as const,
-            checked: self.colorBy === 'ld',
+            // whole submenu greys out without a configured .ld adapter
+            label: 'LD options',
             disabled: !self.hasLdData,
-            onClick: () => {
-              self.setColorBy(self.colorBy === 'ld' ? 'normal' : 'ld')
-            },
-          },
-          {
-            label: 'Set index SNP to top hit',
-            disabled:
-              self.colorBy !== 'ld' || !self.topSnp || !self.indexSnpPinned,
-            onClick: () => {
-              self.useTopHitAsIndex()
-            },
+            subMenu: [
+              {
+                label: 'Color by LD to index SNP',
+                type: 'checkbox' as const,
+                checked: self.colorBy === 'ld',
+                onClick: () => {
+                  self.setColorBy(self.colorBy === 'ld' ? 'normal' : 'ld')
+                },
+              },
+              {
+                label: 'Show LD legend',
+                type: 'checkbox' as const,
+                checked: self.showLdLegend,
+                disabled: self.colorBy !== 'ld',
+                onClick: () => {
+                  self.setShowLdLegend(!self.showLdLegend)
+                },
+              },
+              {
+                label: 'Set index SNP to top hit',
+                disabled:
+                  self.colorBy !== 'ld' || !self.topSnp || !self.indexSnpPinned,
+                onClick: () => {
+                  self.useTopHitAsIndex()
+                },
+              },
+            ],
           },
         ]
       },

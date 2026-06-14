@@ -34,6 +34,7 @@ function CascadingSubmenu({
   title,
   Icon,
   inset,
+  disabled,
   menuItems,
   onMenuItemClick,
   closeAfterItemClick,
@@ -47,6 +48,7 @@ function CascadingSubmenu({
   onMenuItemClick: (callback: () => void) => void
   Icon: React.ElementType | undefined
   inset: boolean
+  disabled?: boolean
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
   onCloseRoot: () => void
@@ -62,6 +64,7 @@ function CascadingSubmenu({
       <MenuItem
         ref={setAnchorEl}
         data-testid={makeTestId('submenu', title)}
+        disabled={disabled}
         onMouseOver={() => {
           onOpen()
         }}
@@ -146,14 +149,17 @@ function CascadingMenuList({
               title={item.label}
               Icon={item.icon}
               inset={hasIcon && !item.icon}
+              disabled={item.disabled}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
               closeAfterItemClick={closeAfterItemClick}
               onCloseRoot={onCloseRoot}
               onNavigateBack={onNavigateBack}
-              isOpen={openSubmenuIdx === idx}
+              isOpen={openSubmenuIdx === idx && !item.disabled}
               onOpen={() => {
-                setOpenSubmenuIdx(idx)
+                if (!item.disabled) {
+                  setOpenSubmenuIdx(idx)
+                }
               }}
               onClose={() => {
                 closeSubmenu()
