@@ -108,7 +108,7 @@ jobs:
           WINDOWS_SIGN_CREDENTIAL_ID: ${{ secrets.WINDOWS_SIGN_CREDENTIAL_ID }}
           WINDOWS_SIGN_USER_TOTP: ${{ secrets.WINDOWS_SIGN_USER_TOTP }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm build-electron:win
+        run: pnpm release-electron:win
         working-directory: products/jbrowse-desktop
 
   buildmac:
@@ -153,7 +153,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLEID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLEIDPASS }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm build-electron:mac
+        run: pnpm release-electron:mac
         working-directory: products/jbrowse-desktop
       - name: Clean up keychain
         if: always()
@@ -186,7 +186,7 @@ jobs:
       - name: Build Linux app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm build-electron:linux
+        run: pnpm release-electron:linux
         working-directory: products/jbrowse-desktop
 
   buildjbrowseweb:

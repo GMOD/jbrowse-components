@@ -119,10 +119,10 @@ function main() {
   }
 
   if (!process.env.GH_TOKEN && !process.env.GITHUB_TOKEN) {
-    console.error(
-      'Error: GH_TOKEN or GITHUB_TOKEN environment variable required for publishing',
+    console.warn(
+      'Warning: GH_TOKEN or GITHUB_TOKEN environment variable not set. Skipping publishing.',
     )
-    process.exit(1)
+    return
   }
 
   const artifacts = getArtifacts(platforms)
