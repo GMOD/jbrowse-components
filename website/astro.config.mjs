@@ -1,9 +1,12 @@
+import { unified } from '@astrojs/markdown-remark'
 import react from '@astrojs/react'
 import { defineConfig } from 'astro/config'
 import icon from 'astro-icon'
 import fs from 'node:fs/promises'
 import { glob } from 'node:fs/promises'
 import path from 'node:path'
+
+import rehypeBaseUrls from './src/lib/rehype-base-urls.ts'
 
 // allows deploying to an alternative suburi, e.g. for staging builds
 const BASE = process.env.SITE_BASE_PATH || '/jb2'
@@ -36,4 +39,9 @@ export default defineConfig({
   publicDir: './static',
   trailingSlash: 'always',
   integrations: [react(), icon(), fixAbsoluteLinks()],
+  markdown: {
+    processor: unified({
+      rehypePlugins: [[rehypeBaseUrls, { base: BASE }]],
+    }),
+  },
 })

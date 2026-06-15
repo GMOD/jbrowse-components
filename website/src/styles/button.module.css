@@ -52,3 +52,11 @@
 .btnSecondary:hover {
   background-color: #b3b3b3;
 }
+.btnAccent {
+  background-color: var(--color-accent);
+  color: white;
+}
+.btnAccent:hover {
+  background-color: var(--color-accent-dark);
+  color: white;
+}

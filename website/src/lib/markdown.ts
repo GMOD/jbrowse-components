@@ -8,6 +8,7 @@ import { unified } from 'unified'
 
 import { baseUrl } from './base-url.ts'
 import rehypeAdmonitions from './rehype-admonitions.ts'
+import rehypeBaseUrls from './rehype-base-urls.ts'
 import rehypeHeadingLinks from './rehype-heading-links.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
 import remarkFigure from './remark-figure.ts'
@@ -20,6 +21,7 @@ const processor = unified()
   .use(rehypeRaw)
   .use(rehypeAdmonitions)
   .use(rehypeTrailingSlash)
+  .use(rehypeBaseUrls, { base: baseUrl })
   .use(rehypeSlug)
   .use(rehypeHeadingLinks)
   .use(rehypeStringify, { allowDangerousHtml: true })

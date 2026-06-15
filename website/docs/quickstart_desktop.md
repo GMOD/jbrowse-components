@@ -9,7 +9,7 @@ there's no `--load copy`, no hosting, and no CORS to worry about.
 
 ## Installing JBrowse desktop
 
-Go to the [download page](/jb2/download/) and download the installer for your
+Go to the [download page](/download/) and download the installer for your
 platform, or grab the latest release directly from
 [GitHub releases](https://github.com/GMOD/jbrowse-components/releases/latest).
 
