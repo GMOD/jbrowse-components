@@ -103,7 +103,10 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       preProcessSnapshot: s => {
         const snap = JSON.parse(JSON.stringify(s))
         const displayTypes = new Set()
-        const { displays = [] } = snap
+        // Other track types accept `displays` as a shorthand settings object
+        // (not an array); when MST probes this schema against such a
+        // snapshot while determining a union member, fall back to [].
+        const displays = Array.isArray(snap.displays) ? snap.displays : []
         if (snap.trackId !== 'placeholderId') {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the

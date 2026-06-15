@@ -193,7 +193,11 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           ),
           pluginManager,
         ) as TrackConfigSnapshot
-        const { displays = [] } = snap
+        // expandTrackConfigShorthand normally converts a shorthand `displays`
+        // object into an array, but its early-return branches can pass one
+        // through unchanged; guard so MST union-type probing never crashes on
+        // a non-array `displays`.
+        const displays = Array.isArray(snap.displays) ? snap.displays : []
         if (snap.trackId !== 'placeholderId') {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the
