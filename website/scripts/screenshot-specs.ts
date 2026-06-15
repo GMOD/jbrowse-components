@@ -867,6 +867,42 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 10000,
   },
 
+  // For the gallery: peach Pp05 vs grape chr2, the same pair shown in the
+  // gallery's live-demo share link (config_dotplot.json, share-4MjF5YGM_G).
+  // Both the per-gene MCScan connections and the larger synteny blocks (the
+  // red/blue inverted-vs-non-inverted blocks on each panel) are shown, with
+  // default colorBy/drawCurves to match that session.
+  {
+    mode: 'url',
+    name: 'linear_synteny_gallery',
+    url: sessionSpec('test_data/config_dotplot.json', {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [
+            'grape_peach_synteny_mcscan',
+            'grape_peach_synteny_mcscan_simple',
+          ],
+          views: [
+            {
+              assembly: 'peach',
+              loc: 'Pp05',
+              tracks: ['grape_peach_synteny_mcscan_simple'],
+            },
+            {
+              assembly: 'grape',
+              loc: 'chr2',
+              tracks: ['grape_peach_synteny_mcscan_simple'],
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 10000,
+  },
+
   // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the
   // hs1_vs_mm39 config defaultSession: 500k minlen drops short-alignment
   // hairball noise, autoDiagonalize reorders mm39 chroms into clean diagonals,
@@ -2649,7 +2685,7 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
+          tracks: ['volvox_bam'],
         },
       ],
     }),

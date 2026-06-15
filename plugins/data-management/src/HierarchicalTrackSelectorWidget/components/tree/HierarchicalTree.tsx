@@ -4,7 +4,6 @@ import { observer } from 'mobx-react'
 
 import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
-import { useSearchHighlight } from '../../../shared/useSearchHighlight.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
@@ -17,11 +16,6 @@ const HierarchicalTree = observer(function HierarchicalTree({
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
-  useSearchHighlight(
-    containerRef,
-    model.filterText,
-    'jbrowse-hierarchical-search',
-  )
   const { flattenedItems } = model
   const { offsets, cumulativeHeight } = model.flattenedItemOffsets
   const { startIndex, endIndex } = model.itemOffsets(height, scrollTop)
