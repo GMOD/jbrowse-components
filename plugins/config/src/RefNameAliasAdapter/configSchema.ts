@@ -33,6 +33,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
     refNameColumn: {
       type: 'number',
       defaultValue: 0,
+      advanced: true,
     },
 
     /**
@@ -44,6 +45,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
       description:
         'alternative to refNameColumn, instead looks at header (starts with # and finds column name)',
       defaultValue: '',
+      advanced: true,
     },
   },
   {

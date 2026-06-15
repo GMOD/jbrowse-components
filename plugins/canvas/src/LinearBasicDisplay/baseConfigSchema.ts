@@ -26,6 +26,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 1200,
         description: 'Maximum height of the display in pixels',
+        advanced: true,
       },
       /**
        * #slot
@@ -35,6 +36,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: 1,
         description:
           'Maximum features per pixel before showing region too large message',
+        advanced: true,
       },
       /**
        * #slot
@@ -63,6 +65,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: MAX_LABEL_FEATURE_DENSITY,
         description:
           'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
+        advanced: true,
       },
       /**
        * #slot

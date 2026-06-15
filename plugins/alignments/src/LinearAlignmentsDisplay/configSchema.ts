@@ -46,6 +46,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: 6000,
         description:
           'Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)',
+        advanced: true,
       },
       /**
        * #slot
@@ -61,6 +62,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'frozen',
         defaultValue: { type: 'normal' },
         description: 'Color scheme for reads',
+        advanced: true,
       },
       /**
        * #slot
@@ -72,6 +74,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
           flagExclude: 1540,
         },
         description: 'Filter settings for reads',
+        advanced: true,
       },
       /**
        * #slot
@@ -92,6 +95,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: Number.MIN_VALUE,
         description: 'Minimum coverage depth bound',
+        advanced: true,
       },
       /**
        * #slot
@@ -100,6 +104,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: Number.MAX_VALUE,
         description: 'Maximum coverage depth bound',
+        advanced: true,
       },
       /**
        * #slot
@@ -117,6 +122,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 3,
         description: 'Number of standard deviations for localsd autoscale',
+        advanced: true,
       },
     },
     {

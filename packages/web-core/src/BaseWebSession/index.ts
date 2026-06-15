@@ -44,6 +44,7 @@ import type {
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { TrackActionView } from '@jbrowse/core/util/types'
 import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -211,7 +212,7 @@ export function BaseWebSessionModel({
        */
       getTrackActions(
         config: BaseTrackConfig,
-        view?: { showTrack: (id: string) => void },
+        view?: TrackActionView,
       ): MenuItem[] {
         return trackActionItems({
           session: self,
@@ -236,7 +237,7 @@ export function BaseWebSessionModel({
        */
       getTrackListMenuItems(
         config: BaseTrackConfig,
-        view?: { showTrack: (id: string) => void },
+        view?: TrackActionView,
       ): MenuItem[] {
         return trackListMenuItems(
           self,
@@ -250,12 +251,17 @@ export function BaseWebSessionModel({
        * @param config - track configuration
        * @param extraTrackActions - additional items to merge into "Track actions" submenu
        */
-      getTrackActionMenuItems(
-        config: BaseTrackConfig,
-        extraTrackActions: MenuItem[] | undefined,
-        effectiveConfig: Record<string, unknown>,
-        view?: { showTrack: (id: string) => void },
-      ): MenuItem[] {
+      getTrackActionMenuItems({
+        config,
+        effectiveConfig,
+        extraTrackActions,
+        view,
+      }: {
+        config: BaseTrackConfig
+        effectiveConfig: Record<string, unknown>
+        extraTrackActions?: MenuItem[]
+        view?: TrackActionView
+      }): MenuItem[] {
         return trackActionMenuItems(
           self,
           effectiveConfig,

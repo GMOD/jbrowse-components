@@ -26,6 +26,7 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       windowSize: {
         type: 'number',
         defaultValue: 100,
+        advanced: true,
       },
       /**
        * #slot
@@ -33,6 +34,7 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       windowDelta: {
         type: 'number',
         defaultValue: 100,
+        advanced: true,
       },
       /**
        * #slot

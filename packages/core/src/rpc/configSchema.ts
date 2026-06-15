@@ -18,6 +18,7 @@ export default ConfigurationSchema(
       description:
         'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
       defaultValue: '',
+      advanced: true,
     },
     /**
      * #slot
@@ -29,6 +30,7 @@ export default ConfigurationSchema(
       description:
         'The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.',
       defaultValue: 0,
+      advanced: true,
     },
   },
   {

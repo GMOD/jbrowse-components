@@ -14,6 +14,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { DialogComponentType } from '@jbrowse/core/util'
+import type { TrackActionView } from '@jbrowse/core/util/types'
 
 const AboutDialog = lazy(() => import('../ui/AboutDialog.tsx'))
 
@@ -57,6 +58,7 @@ export function copyTrackSnapshot(
 interface TrackActionSession<C> {
   editConfiguration: (
     config: AnyConfigurationModel | { trackId: string },
+    opts?: { expandedDisplayId?: string },
   ) => void
   addTrackConf: (conf: C) => unknown
   deleteTrackConf: (conf: AnyConfigurationModel) => void
@@ -80,12 +82,15 @@ export function trackActionItems<C extends { trackId: string }>({
 }: {
   session: TrackActionSession<C>
   config: BaseTrackConfig
-  view?: { showTrack: (id: string) => void }
+  view?: TrackActionView
   canEdit: boolean
   isSessionOverride?: boolean
   makeCopy: () => C
 }): MenuItem[] {
   const isRefSeq = config.type === 'ReferenceSequenceTrack'
+  // the display active in this view expands in the config editor, so the
+  // track's other (incompatible/inactive) displays start collapsed
+  const expandedDisplayId = view?.getActiveDisplayId?.(config.trackId)
   return [
     {
       // always available: editing a non-session (admin-owned) track applies
@@ -93,7 +98,7 @@ export function trackActionItems<C extends { trackId: string }>({
       label: 'Settings',
       icon: SettingsIcon,
       onClick: () => {
-        session.editConfiguration(config)
+        session.editConfiguration(config, { expandedDisplayId })
       },
     },
     {
@@ -208,12 +213,15 @@ export function TrackMenuSessionMixin(_pluginManager: PluginManager) {
       /**
        * #method
        */
-      getTrackActionMenuItems(
-        _config: AnyConfigurationModel,
-        extraTrackActions: MenuItem[] | undefined,
-        effectiveConfig: Record<string, unknown>,
-        _view?: { showTrack: (id: string) => void },
-      ): MenuItem[] {
+      getTrackActionMenuItems({
+        effectiveConfig,
+        extraTrackActions,
+      }: {
+        config: AnyConfigurationModel
+        effectiveConfig: Record<string, unknown>
+        extraTrackActions?: MenuItem[]
+        view?: TrackActionView
+      }): MenuItem[] {
         return [
           aboutTrackMenuItem(self, effectiveConfig),
           ...(extraTrackActions ?? []),

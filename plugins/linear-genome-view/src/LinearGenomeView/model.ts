@@ -778,6 +778,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #method
+       * displayId of the active (shown) display for a track in this view, used
+       * by the config editor to expand the relevant display and collapse the
+       * track's other displays
+       */
+      getActiveDisplayId(trackId: string): string | undefined {
+        return this.getTrack(trackId)?.activeDisplay.configuration.displayId
+      },
+
+      /**
        * #getter
        */
       get trackTypeActions() {

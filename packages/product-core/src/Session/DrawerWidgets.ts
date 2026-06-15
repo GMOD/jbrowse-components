@@ -168,6 +168,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       editConfiguration(
         configuration: AnyConfigurationModel | { trackId: string },
+        opts?: { expandedDisplayId?: string },
       ) {
         let targetConfig: AnyConfigurationModel
 
@@ -194,6 +195,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         )
         // Set target via action since it's now volatile
         editor.setTarget(targetConfig)
+        editor.setExpandedDisplayId(opts?.expandedDisplayId)
         this.showWidget(editor)
       },
 

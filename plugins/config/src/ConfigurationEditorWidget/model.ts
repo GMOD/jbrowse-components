@@ -18,10 +18,17 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
       // The target is an MST model from track.configuration (which creates
       // an MST model from frozen config via ConfigurationReference).
       target: undefined as AnyConfigurationModel | undefined,
+      // displayId of the display active in the view this editor was opened
+      // from; its config accordion expands by default while the track's other
+      // (incompatible/inactive) displays start collapsed
+      expandedDisplayId: undefined as string | undefined,
     }))
     .actions(self => ({
       setTarget(newTarget: AnyConfigurationModel | undefined) {
         self.target = newTarget
+      },
+      setExpandedDisplayId(displayId: string | undefined) {
+        self.expandedDisplayId = displayId
       },
       afterCreate() {
         let timeout: ReturnType<typeof setTimeout> | undefined

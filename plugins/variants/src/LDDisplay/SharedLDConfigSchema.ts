@@ -19,6 +19,7 @@ export default function sharedLDConfigFactory() {
       minorAlleleFrequencyFilter: {
         type: 'number',
         defaultValue: 0.1,
+        advanced: true,
       },
       /**
        * #slot
@@ -27,6 +28,7 @@ export default function sharedLDConfigFactory() {
       lengthCutoffFilter: {
         type: 'number',
         defaultValue: Number.MAX_SAFE_INTEGER,
+        advanced: true,
       },
       /**
        * #slot
@@ -35,6 +37,7 @@ export default function sharedLDConfigFactory() {
       lineZoneHeight: {
         type: 'number',
         defaultValue: 100,
+        advanced: true,
       },
       /**
        * #slot
@@ -76,6 +79,7 @@ export default function sharedLDConfigFactory() {
       recombinationZoneHeight: {
         type: 'number',
         defaultValue: 50,
+        advanced: true,
       },
       /**
        * #slot
@@ -84,6 +88,7 @@ export default function sharedLDConfigFactory() {
       fitToHeight: {
         type: 'boolean',
         defaultValue: false,
+        advanced: true,
       },
       /**
        * #slot
@@ -93,6 +98,7 @@ export default function sharedLDConfigFactory() {
       hweFilterThreshold: {
         type: 'number',
         defaultValue: 0,
+        advanced: true,
       },
       /**
        * #slot
@@ -102,6 +108,7 @@ export default function sharedLDConfigFactory() {
       callRateFilter: {
         type: 'number',
         defaultValue: 0,
+        advanced: true,
       },
       /**
        * #slot
@@ -110,6 +117,7 @@ export default function sharedLDConfigFactory() {
       showVerticalGuides: {
         type: 'boolean',
         defaultValue: true,
+        advanced: true,
       },
       /**
        * #slot
@@ -118,6 +126,7 @@ export default function sharedLDConfigFactory() {
       showLabels: {
         type: 'boolean',
         defaultValue: false,
+        advanced: true,
       },
       /**
        * #slot
@@ -126,6 +135,7 @@ export default function sharedLDConfigFactory() {
       tickHeight: {
         type: 'number',
         defaultValue: 6,
+        advanced: true,
       },
       /**
        * #slot
@@ -135,6 +145,7 @@ export default function sharedLDConfigFactory() {
       useGenomicPositions: {
         type: 'boolean',
         defaultValue: false,
+        advanced: true,
       },
       /**
        * #slot
@@ -144,6 +155,7 @@ export default function sharedLDConfigFactory() {
       signedLD: {
         type: 'boolean',
         defaultValue: false,
+        advanced: true,
       },
       /**
        * #slot
@@ -152,6 +164,7 @@ export default function sharedLDConfigFactory() {
       jexlFilters: {
         type: 'stringArray',
         defaultValue: [],
+        advanced: true,
       },
     },
     {

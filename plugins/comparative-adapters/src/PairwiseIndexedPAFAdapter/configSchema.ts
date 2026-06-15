@@ -75,6 +75,7 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
     coarseBpPerPxThreshold: {
       type: 'number',
       defaultValue: 10000,
+      advanced: true,
     },
     /**
      * #slot

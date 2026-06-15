@@ -27,6 +27,7 @@ export const sharedVariantConfigSlots = {
   minorAlleleFrequencyFilter: {
     type: 'number',
     defaultValue: 0,
+    advanced: true,
   },
   colorBy: {
     type: 'string',

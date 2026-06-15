@@ -46,6 +46,7 @@ const configSchema = ConfigurationSchema(
       description:
         'size in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 3_000_000,
+      advanced: true,
     },
 
     /**

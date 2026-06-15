@@ -78,6 +78,16 @@ export type DialogComponentType =
   | React.LazyExoticComponent<React.FC<any>>
   | React.FC<any>
 
+/**
+ * the slice of a view that track-action menu items need: opening a track, and
+ * (for views that show tracks) reporting which display is active for a given
+ * track so the config editor can expand it and collapse the rest
+ */
+export interface TrackActionView {
+  showTrack: (id: string) => void
+  getActiveDisplayId?: (trackId: string) => string | undefined
+}
+
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
   tracksById: Record<string, AnyConfigurationModel>
@@ -115,19 +125,19 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblyManager: AssemblyManager
   version: string
   gitCommit?: string
-  getTrackActionMenuItems?: (
-    config: AnyConfigurationModel,
-    extraTrackActions: MenuItem[] | undefined,
-    effectiveConfig: Record<string, unknown>,
-    view?: { showTrack: (id: string) => void },
-  ) => MenuItem[]
+  getTrackActionMenuItems?: (arg: {
+    config: AnyConfigurationModel
+    effectiveConfig: Record<string, unknown>
+    extraTrackActions?: MenuItem[]
+    view?: TrackActionView
+  }) => MenuItem[]
   getTrackActions?: (
     arg: AnyConfigurationModel,
-    view?: { showTrack: (id: string) => void },
+    view?: TrackActionView,
   ) => MenuItem[]
   getTrackListMenuItems?: (
     arg: AnyConfigurationModel,
-    view?: { showTrack: (id: string) => void },
+    view?: TrackActionView,
   ) => MenuItem[]
   addAssembly?: (conf: Record<string, unknown>) => void
   addSessionAssembly?: (conf: Record<string, unknown>) => void
@@ -183,7 +193,10 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 
 /** abstract interface for a session allows editing configurations */
 export interface SessionWithConfigEditing extends AbstractSessionModel {
-  editConfiguration(configuration: AnyConfigurationModel): void
+  editConfiguration(
+    configuration: AnyConfigurationModel,
+    opts?: { expandedDisplayId?: string },
+  ): void
   // persist an edited track snapshot (admins → jbrowse config in place, others
   // → a shareable same-id session-track override)
   updateTrackConfiguration(trackConf: {

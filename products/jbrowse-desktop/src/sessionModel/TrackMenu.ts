@@ -21,6 +21,7 @@ import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { TrackActionView } from '@jbrowse/core/util/types'
 import type {
   BaseSession,
   SessionWithDrawerWidgets,
@@ -42,7 +43,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
        */
       getTrackActions(
         trackConfig: BaseTrackConfig,
-        view?: { showTrack: (id: string) => void },
+        view?: TrackActionView,
       ): MenuItem[] {
         const session = self as SessionBase
         // snapshot kept for the Index action's adapter/textSearching reads
@@ -99,7 +100,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
        */
       getTrackListMenuItems(
         trackConfig: BaseTrackConfig,
-        view?: { showTrack: (id: string) => void },
+        view?: TrackActionView,
       ): MenuItem[] {
         return trackListMenuItems(
           self as unknown as SessionBase,
@@ -111,16 +112,21 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
       /**
        * #method
        */
-      getTrackActionMenuItems(
-        trackConfig: BaseTrackConfig,
-        extraTrackActions: MenuItem[] | undefined,
-        effectiveConfig: Record<string, unknown>,
-        view?: { showTrack: (id: string) => void },
-      ): MenuItem[] {
+      getTrackActionMenuItems({
+        config,
+        effectiveConfig,
+        extraTrackActions,
+        view,
+      }: {
+        config: BaseTrackConfig
+        effectiveConfig: Record<string, unknown>
+        extraTrackActions?: MenuItem[]
+        view?: TrackActionView
+      }): MenuItem[] {
         return trackActionMenuItems(
           self as unknown as SessionBase,
           effectiveConfig,
-          self.getTrackActions(trackConfig, view),
+          self.getTrackActions(config, view),
           extraTrackActions,
         )
       },

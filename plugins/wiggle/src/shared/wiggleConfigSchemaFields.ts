@@ -17,16 +17,19 @@ export const wiggleConfigSchemaFields = {
     type: 'number',
     defaultValue: 0,
     description: 'Pivot value for bicolor mode',
+    advanced: true,
   },
   minScore: {
     type: 'number',
     defaultValue: Number.MIN_VALUE,
     description: 'Minimum score bound',
+    advanced: true,
   },
   maxScore: {
     type: 'number',
     defaultValue: Number.MAX_VALUE,
     description: 'Maximum score bound',
+    advanced: true,
   },
   scaleType: {
     type: 'stringEnum',
@@ -50,5 +53,6 @@ export const wiggleConfigSchemaFields = {
     defaultValue: 3,
     description:
       'Number of standard deviations to use for autoscale types globalsd or localsd',
+    advanced: true,
   },
 } as const

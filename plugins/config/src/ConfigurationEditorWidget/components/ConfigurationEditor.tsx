@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   getSlotDefinition,
   getTypeNamesFromExplicitlyTypedUnion,
+  isConfigurationModel,
   isConfigurationSchemaType,
   isConfigurationSlot,
   makeSlotFacade,
@@ -109,6 +110,19 @@ function isAdvancedSlot(
   )
 }
 
+// a display config is the only sub-schema carrying a displayId; when the editor
+// was opened from a view, only the active display expands by default so the
+// track's other (incompatible/inactive) displays don't crowd the panel
+function displayDefaultExpanded(
+  slot: AnyConfigurationModel,
+  expandedDisplayId: string | undefined,
+): boolean {
+  const displayId = isConfigurationModel(slot)
+    ? (readConfObject(slot, 'displayId') as string | undefined)
+    : undefined
+  return !displayId || !expandedDisplayId || displayId === expandedDisplayId
+}
+
 const Member = observer(function Member(props: {
   slotName: string
   slotSchema: IAnyType
@@ -116,6 +130,7 @@ const Member = observer(function Member(props: {
   slot?: AnyConfigurationModel | AnyConfigurationModel[]
   path?: string[]
   filter?: string
+  expandedDisplayId?: string
 }) {
   const { classes } = useStyles()
   const {
@@ -125,6 +140,7 @@ const Member = observer(function Member(props: {
     slot = schema[slotName],
     path = [],
     filter = '',
+    expandedDisplayId,
   } = props
   // when the sub-schema's own name matches, drop the filter for its children so
   // the whole group stays visible; otherwise keep filtering descendants
@@ -144,7 +160,10 @@ const Member = observer(function Member(props: {
     // that can be used to change its type
     const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
     return (
-      <Accordion defaultExpanded className={classes.accordion}>
+      <Accordion
+        defaultExpanded={displayDefaultExpanded(slot, expandedDisplayId)}
+        className={classes.accordion}
+      >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.icon} />}
         >
@@ -170,6 +189,7 @@ const Member = observer(function Member(props: {
               schema={slot}
               path={[...path, slotName]}
               filter={childFilter}
+              expandedDisplayId={expandedDisplayId}
             />
           </div>
         </AccordionDetails>
@@ -186,10 +206,12 @@ const Schema = observer(function Schema({
   schema,
   path = [],
   filter = '',
+  expandedDisplayId,
 }: {
   schema: AnyConfigurationModel
   path?: string[]
   filter?: string
+  expandedDisplayId?: string
 }) {
   const { classes } = useStyles()
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -213,6 +235,7 @@ const Schema = observer(function Schema({
       path={path}
       schema={schema}
       filter={filter}
+      expandedDisplayId={expandedDisplayId}
     />
   )
   return (
@@ -242,6 +265,7 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
 }: {
   model: {
     target?: AnyConfigurationModel
+    expandedDisplayId?: string
   }
 }) {
   const { classes } = useStyles()
@@ -305,7 +329,11 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
             No options match “{filter}”
           </Typography>
         ) : (
-          <Schema schema={target} filter={filter} />
+          <Schema
+            schema={target}
+            filter={filter}
+            expandedDisplayId={model.expandedDisplayId}
+          />
         )}
       </AccordionDetails>
     </Accordion>

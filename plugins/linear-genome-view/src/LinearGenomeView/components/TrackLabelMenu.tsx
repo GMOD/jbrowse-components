@@ -33,12 +33,12 @@ function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
     const effectiveConfig = track.activeDisplay.effectiveTrackConfig
 
     const sessionItems =
-      session.getTrackActionMenuItems?.(
-        trackConf,
-        saveTrackData ? [saveTrackData] : [],
+      session.getTrackActionMenuItems?.({
+        config: trackConf,
         effectiveConfig,
+        extraTrackActions: saveTrackData ? [saveTrackData] : [],
         view,
-      ) ?? []
+      }) ?? []
 
     return [
       {

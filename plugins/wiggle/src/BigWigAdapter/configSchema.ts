@@ -59,6 +59,7 @@ const BigWigAdapter = ConfigurationSchema(
       defaultValue: 1,
       description:
         'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
+      advanced: true,
     },
   },
   {
