@@ -24,4 +24,66 @@ I checked the Canvas2D backend first: it also keeps a this.regions map built in 
 
 What I did instead targets the actual fragility — the GPU sync() mutated-and-manually-pruned (active array + activeSet delete loop), the dual-tracking that can desync. Canvas2D just rebuilds wholesale. Now the GPU sync() does too: this.regions.clear() up front, and the manual prune + active bookkeeping are deleted. HAL buffer lifecycle was already handled by beginUpload/endUpload, so the prune was redundant; removing it makes a stale region impossible by construction. The two existing "buffer drops out" tests still pass (they assert on HAL buffer counts, which endUpload owns).
 
+## Add prefix to autogen docs
 
+Help organize things
+
+## Scatterplot multiwiggle
+
+Check why https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-wf0KdUtw3b&password=n8LDU
+didn't load overlapping scatterplot
+
+## Coloring
+
+Swap order in colo829
+
+## Cluster
+
+No cluster by row when overlapping
+
+## Reset resolution
+
+Why checkbox
+
+## Not loading compact or small feature height from https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-WmmP_Ac-iD&password=54jn1
+
+Check
+
+## Tooltip on breakpoint split view bezier
+
+Check
+
+## Share link for methylation not loading
+
+https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-VG6GwCJP6B&password=9tmtk
+
+
+## Data clone error
+
+DataCloneError: Proxy object could not be cloned.
+
+from https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-MDNPnGjRM-&password=90Fts
+
+long time 'computing sample info'...any more fine grained progress? Any indicator that it is 'doing too much' e.g. to cancel it also?
+
+
+## No resize bar on tree sidebar...
+
+
+## Not phased link
+
+https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-7Bxg2u78GE&password=QFlRG
+
+## Protein viewer
+
+When mouse-overing the lgv, dont show the 3codon view
+
+Compactify header more
+
+Thinner tracks
+
+## links for coloy by strand, PUR
+
+## Update docs: have live link for everything
+
+## resize bars for groupby tracks not working well

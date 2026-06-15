@@ -264,7 +264,7 @@ To test:
 ✻ Cooked for 1m 8s
 
 ❯ this appeared to have worked. is there anything else you would suggest? one
-this is that the start scren in products/jbrowse-desktop launches browser which
+this is that the start screen in products/jbrowse-desktop launches browser which
 is not desirable. I am also curious why this issue suddenly 'appeared'. was this
 just because we are testing our local zip file build or what?
 

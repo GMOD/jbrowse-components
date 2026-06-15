@@ -71,8 +71,8 @@ of 5' to 3', which can help when looking at anti-sense genes or features
 This screenshot shows whole-genome sequencing coverage from the COLO829 melanoma
 cancer cell line. It shows both "normal" (blue) and "tumor" (red) sequencing
 coverage on the same track (a
-["multi-quantitative"](/docs/user_guides/multiquantitative_track/) track).
-The sequencing coverage is computed from mosdepth and stored in BigWig files
+["multi-quantitative"](/docs/user_guides/multiquantitative_track/) track). The
+sequencing coverage is computed from mosdepth and stored in BigWig files
 ([live link](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64))
 
 ---

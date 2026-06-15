@@ -11,7 +11,7 @@
   "dependencies": {
     "@astrojs/react": "^5.0.7",
     "@jbrowse/react-linear-genome-view2": "workspace:*",
-    "astro": "^6.4.6",
+    "astro": "^6.4.7",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },

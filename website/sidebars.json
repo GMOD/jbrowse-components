@@ -58,7 +58,6 @@
         "jbrowser"
       ]
     },
-    "cli",
     {
       "type": "category",
       "label": "API reference (auto-generated)",
@@ -95,6 +94,7 @@
         }
       ]
     },
+    "cli",
     "initializing_views",
     "urlparams",
     "faq"
