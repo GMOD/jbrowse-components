@@ -47,6 +47,7 @@ export function variantShowSubmenuItems(
       type: 'checkbox',
       checked: self.showTree,
       disabled: !self.clusterTree,
+      disabledHelpText: 'Run clustering first',
       onClick: () => {
         self.setShowTree(!self.showTree)
       },
@@ -135,6 +136,9 @@ export function variantTrackMenuItems(
           helpText:
             'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1-HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
           disabled: !self.hasPhased,
+          disabledHelpText: !self.featuresVolatile
+            ? 'Checking for phased variants...'
+            : 'No phased variants found in this dataset',
           checked: self.renderingMode === 'phased',
           type: 'radio',
           onClick: () => {

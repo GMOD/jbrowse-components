@@ -380,6 +380,7 @@ export default function stateModelFactory(
                 type: 'checkbox',
                 checked: self.showTree,
                 disabled: !self.clusterTree,
+                disabledHelpText: 'Run clustering first',
                 onClick: () => {
                   self.setShowTree(!self.showTree)
                 },
