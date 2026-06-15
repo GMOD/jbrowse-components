@@ -43,7 +43,6 @@
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
     "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
-    "./gpu/passes": "./src/gpu/passes.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -281,10 +280,6 @@
       "./data_adapters/dataAdapterCache": {
         "types": "./esm/data_adapters/dataAdapterCache.d.ts",
         "import": "./esm/data_adapters/dataAdapterCache.js"
-      },
-      "./gpu/passes": {
-        "types": "./esm/gpu/passes.d.ts",
-        "import": "./esm/gpu/passes.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -733,9 +728,6 @@
         ],
         "data_adapters/dataAdapterCache": [
           "esm/data_adapters/dataAdapterCache.d.ts"
-        ],
-        "gpu/passes": [
-          "esm/gpu/passes.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"

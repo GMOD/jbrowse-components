@@ -28,7 +28,7 @@ function findAllImports() {
   try {
     // Find static imports: from '@jbrowse/core/...'
     const staticImports = execSync(
-      `grep -roh "from '@jbrowse/core[^']*'" packages plugins products --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | sed "s/from '//;s/'$//" | sort -u`,
+      `grep -roh "from '@jbrowse/core[^']*'" packages plugins products --include="*.ts" --include="*.tsx" --exclude="*.d.ts" 2>/dev/null | grep -v node_modules | sed "s/from '//;s/'$//" | sort -u`,
       { cwd: repoRoot, encoding: 'utf8' },
     )
       .trim()
@@ -37,7 +37,7 @@ function findAllImports() {
 
     // Find dynamic imports: import('@jbrowse/core/...')
     const dynamicImports = execSync(
-      `grep -roh "import('@jbrowse/core[^']*')" packages plugins products --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | sed "s/import('//;s/')$//" | sort -u`,
+      `grep -roh "import('@jbrowse/core[^']*')" packages plugins products --include="*.ts" --include="*.tsx" --exclude="*.d.ts" 2>/dev/null | grep -v node_modules | sed "s/import('//;s/')$//" | sort -u`,
       { cwd: repoRoot, encoding: 'utf8' },
     )
       .trim()
