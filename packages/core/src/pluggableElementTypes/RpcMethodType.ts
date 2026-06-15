@@ -230,19 +230,6 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     rpcDriverClassName: string,
   ): Promise<unknown>
 
-  /**
-   * Execute directly without serialization. Override in subclasses that support
-   * direct execution (e.g., CoreRender). Returns undefined by default, signaling
-   * that the driver should fall back to serialized execution.
-   */
-  async executeDirect(_args: Record<string, unknown>): Promise<unknown> {
-    return undefined
-  }
-
-  supportsDirectExecution(): boolean {
-    return this.executeDirect !== RpcMethodType.prototype.executeDirect
-  }
-
   async serializeReturn(
     originalReturn: unknown,
     _args: unknown,

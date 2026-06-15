@@ -3,8 +3,6 @@ import BaseRpcDriver from './BaseRpcDriver.ts'
 import RpcManager from './RpcManager.ts'
 import { AuthNeededError } from '../util/types/index.ts'
 
-import type { WorkerHandle } from './BaseRpcDriver.ts'
-
 // Stub of AppRootModel that satisfies isAppRootModel and records the ephemeral
 // accounts withAuthRetry creates so dedup behavior is observable.
 function withMockRootModel(manager: RpcManager) {
@@ -21,22 +19,11 @@ function withMockRootModel(manager: RpcManager) {
   return internetAccounts
 }
 
-class NoopWorker implements WorkerHandle {
-  destroy() {}
-  async call() {
-    return undefined
-  }
-}
-
 class StubDriver extends BaseRpcDriver {
   name = 'StubDriver'
   freedSessions: string[] = []
   callLog: { sessionId: string; functionName: string }[] = []
   destroyed = false
-
-  async makeWorker() {
-    return new NoopWorker()
-  }
 
   destroy() {
     this.destroyed = true
@@ -46,6 +33,12 @@ class StubDriver extends BaseRpcDriver {
   freeSession(sessionId: string) {
     this.freedSessions.push(sessionId)
     super.freeSession(sessionId)
+  }
+
+  // these tests drive RpcManager dispatch, overriding call() directly, so the
+  // transport hook is never reached
+  protected async transport(): Promise<unknown> {
+    return undefined
   }
 
   async call(

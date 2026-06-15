@@ -1,5 +1,5 @@
-import BaseRpcDriver from './BaseRpcDriver.ts'
 import RpcClient from './RpcClient.ts'
+import WorkerPoolRpcDriver from './WorkerPoolRpcDriver.ts'
 import { deserializeError } from './serializeError/index.ts'
 import { nanoid } from '../util/nanoid.ts'
 
@@ -50,7 +50,7 @@ class WebWorkerHandle {
   }
 }
 
-export default class WebWorkerRpcDriver extends BaseRpcDriver {
+export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
   name = 'WebWorkerRpcDriver'
 
   makeWorkerInstance: () => Worker

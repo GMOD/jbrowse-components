@@ -1,175 +1,92 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
-import type { WorkerHandle } from './BaseRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
+import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 
-function makeConfig(overrides: { workerCount?: number } = {}) {
-  return rpcConfigSchema.create(overrides)
-}
+// captures exactly what the call() envelope hands to a driver's transport, so
+// we can assert the serialize/statusCallback/deserialize behavior without any
+// worker or in-band machinery
+class CapturingDriver extends BaseRpcDriver {
+  name = 'CapturingDriver'
+  transportCalls: {
+    rpcMethod: RpcMethodType
+    serializedArgs: Record<string, unknown>
+    statusCallback: ((message: unknown) => void) | undefined
+    options: Record<string, unknown>
+  }[] = []
 
-class FakeWorker implements WorkerHandle {
-  destroyed = false
-  calls: { fn: string; args: unknown; opts?: unknown }[] = []
-
-  destroy() {
-    this.destroyed = true
+  constructor() {
+    super({ config: rpcConfigSchema.create({}) })
   }
 
-  async call(fn: string, args?: unknown, opts?: unknown) {
-    this.calls.push({ fn, args, opts })
-    return args
-  }
-}
-
-class TestDriver extends BaseRpcDriver {
-  name = 'TestDriver'
-  workers: FakeWorker[] = []
-  failNextMake = false
-
-  constructor(config = makeConfig()) {
-    super({ config })
-  }
-
-  async makeWorker() {
-    if (this.failNextMake) {
-      this.failNextMake = false
-      throw new Error('boom')
-    }
-    const w = new FakeWorker()
-    this.workers.push(w)
-    return w
+  protected async transport(
+    _pluginManager: PluginManager,
+    _sessionId: string,
+    rpcMethod: RpcMethodType,
+    serializedArgs: Record<string, unknown>,
+    statusCallback: ((message: unknown) => void) | undefined,
+    options: Record<string, unknown>,
+  ) {
+    this.transportCalls.push({
+      rpcMethod,
+      serializedArgs,
+      statusCallback,
+      options,
+    })
+    return { raw: serializedArgs }
   }
 }
 
-describe('BaseRpcDriver.call statusCallback handling', () => {
-  // identity rpc method + minimal plugin manager so we can observe what the
-  // driver hands the worker
-  const rpcMethod = {
-    serializeArguments: async (args: unknown) => args,
-    deserializeReturn: (ret: unknown) => ret,
-  }
-  const pluginManager = {
-    getRpcMethodType: () => rpcMethod,
-    evaluateExtensionPoint: (_name: string, worker: unknown) => worker,
-  } as unknown as PluginManager
+const rpcMethod = {
+  name: 'SomeMethod',
+  serializeArguments: async (args: Record<string, unknown>) => ({
+    ...args,
+    serialized: true,
+  }),
+  deserializeReturn: (ret: unknown) => ({ deserialized: ret }),
+}
+const pluginManager = {
+  getRpcMethodType: () => rpcMethod,
+} as unknown as PluginManager
 
-  test('extracts statusCallback out of the serialized payload, passes it via options', async () => {
-    const driver = new TestDriver()
+describe('BaseRpcDriver.call envelope', () => {
+  test('splits statusCallback out of the payload and passes it to transport', async () => {
+    const driver = new CapturingDriver()
     const statusCallback = () => {}
-    const callArgs: Record<string, unknown> & { statusCallback: () => void } = {
+    await driver.call(pluginManager, 'sid', 'SomeMethod', {
       sessionId: 'sid',
       data: 1,
       statusCallback,
-    }
-    await driver.call(pluginManager, 'sid', 'SomeMethod', callArgs)
-    const { args, opts } = driver.workers[0]!.calls[0]!
-    // statusCallback never reaches the serialized payload...
-    expect(args).toEqual({ sessionId: 'sid', data: 1 })
-    expect((args as Record<string, unknown>).statusCallback).toBeUndefined()
-    // ...it travels out-of-band via the worker call options instead
-    expect((opts as { statusCallback: unknown }).statusCallback).toBe(
-      statusCallback,
-    )
-  })
-})
-
-describe('BaseRpcDriver worker assignment', () => {
-  test('assigns sessions round-robin across the pool', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
-    const w1 = await driver.getWorker('s1')
-    const w2 = await driver.getWorker('s2')
-    const w3 = await driver.getWorker('s3')
-    const w4 = await driver.getWorker('s4')
-    // s1 and s4 should reuse the same worker after wrapping the pool
-    expect(w1).toBe(w4)
-    expect(w1).not.toBe(w2)
-    expect(w2).not.toBe(w3)
+    })
+    const { serializedArgs, statusCallback: cb } = driver.transportCalls[0]!
+    // statusCallback travels out-of-band, the rest is run through serialize
+    expect(serializedArgs).toEqual({ sessionId: 'sid', data: 1, serialized: true })
+    expect(cb).toBe(statusCallback)
   })
 
-  test('repeated calls for the same session return the same worker', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
-    const first = await driver.getWorker('sticky')
-    const second = await driver.getWorker('sticky')
-    expect(first).toBe(second)
+  test('deserializes the transport result before returning', async () => {
+    const driver = new CapturingDriver()
+    const result = await driver.call(pluginManager, 'sid', 'SomeMethod', {
+      sessionId: 'sid',
+    })
+    expect(result).toEqual({
+      deserialized: { raw: { sessionId: 'sid', serialized: true } },
+    })
   })
 
-  test('freeSession drops the assignment so the next assign picks a fresh slot', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
-    await driver.getWorker('s1')
-    await driver.getWorker('s2')
-
-    driver.freeSession('s1')
-    // re-requesting s1 should now get a new round-robin slot, not the original
-    const reassigned = await driver.getWorker('s1')
-    const next = await driver.getWorker('s3')
-    expect(reassigned).not.toBe(next)
-  })
-})
-
-describe('BaseRpcDriver.destroy', () => {
-  test('terminates every booted worker in the pool', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
-    await driver.getWorker('s1')
-    await driver.getWorker('s2')
-    await driver.getWorker('s3')
-    expect(driver.workers).toHaveLength(3)
-
-    driver.destroy()
-    await Promise.resolve()
-    expect(driver.workers.every(w => w.destroyed)).toBe(true)
+  test('throws without a sessionId', async () => {
+    const driver = new CapturingDriver()
+    await expect(
+      driver.call(pluginManager, '', 'SomeMethod', {}),
+    ).rejects.toThrow('sessionId is required')
   })
 
-  test('does not boot workers that were never requested', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
-    await driver.getWorker('s1')
-
-    driver.destroy()
-    await Promise.resolve()
-    // only the one lazily-booted worker was ever created
-    expect(driver.workers).toHaveLength(1)
-  })
-
-  test('a failed worker boot does not throw on destroy', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
-    driver.failNextMake = true
-    await expect(driver.getWorker('s')).rejects.toThrow('boom')
+  test('freeSession and destroy are no-ops by default', () => {
+    const driver = new CapturingDriver()
     expect(() => {
+      driver.freeSession('sid')
       driver.destroy()
     }).not.toThrow()
-  })
-
-  test('a fresh slot is assigned after destroy resets the pool', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
-    const before = await driver.getWorker('s')
-    driver.destroy()
-    const after = await driver.getWorker('s')
-    expect(after).not.toBe(before)
-    expect(driver.workers).toHaveLength(2)
-    // the original worker was terminated, the replacement stays live
-    expect(driver.workers[0]!.destroyed).toBe(true)
-    expect(driver.workers[1]!.destroyed).toBe(false)
-  })
-})
-
-describe('BaseRpcDriver LazyWorker retry on failure', () => {
-  test('a failed makeWorker call lets a subsequent call retry', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
-    driver.failNextMake = true
-    await expect(driver.getWorker('s')).rejects.toThrow('boom')
-    // second call should succeed because the failure was cleared
-    const w = await driver.getWorker('s')
-    expect(w).toBeDefined()
-  })
-
-  test('concurrent callers share the in-flight worker promise', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
-    const [a, b] = await Promise.all([
-      driver.getWorker('s'),
-      driver.getWorker('s'),
-    ])
-    expect(a).toBe(b)
-    // only one worker was actually created
-    expect(driver.workers).toHaveLength(1)
   })
 })

@@ -1,4 +1,5 @@
 import { serializeError } from './serializeError/index.ts'
+import { isRpcResult } from '../util/rpc.ts'
 
 import type { ErrorObject } from './serializeError/index.ts'
 
@@ -18,10 +19,6 @@ export interface RpcResult {
 
 export function rpcResult(value: unknown, transferables: Transferable[]) {
   return { __rpcResult: true, value, transferables } as RpcResult
-}
-
-function isRpcResult(value: unknown): value is RpcResult {
-  return typeof value === 'object' && value !== null && '__rpcResult' in value
 }
 
 type Procedure = (data: unknown) => Promise<unknown>
@@ -66,33 +63,30 @@ export default class RpcServer {
     }
   }
 
+  // every outgoing message carries the libRpc tag so the client can tell our
+  // frames apart from unrelated worker traffic
+  private post(payload: Record<string, unknown>, transferables: Transferable[]) {
+    workerSelf!.postMessage({ ...payload, libRpc: true }, transferables)
+  }
+
   protected reply(uid: string, method: string, response: unknown) {
+    // a renderer may return an rpcResult wrapper carrying transferables for
+    // zero-copy; a plain return travels as data with nothing to transfer
+    const { value, transferables } = isRpcResult(response)
+      ? response
+      : { value: response, transferables: [] }
     try {
-      if (isRpcResult(response)) {
-        const { value, transferables } = response
-        workerSelf!.postMessage(
-          { uid, method, data: value, libRpc: true },
-          transferables,
-        )
-      } else {
-        workerSelf!.postMessage(
-          { uid, method, data: response, libRpc: true },
-          [],
-        )
-      }
+      this.post({ uid, method, data: value }, transferables)
     } catch (e) {
       this.throw(uid, serializeError(e))
     }
   }
 
   protected throw(uid: string, error: ErrorObject | string) {
-    workerSelf!.postMessage({ uid, error, libRpc: true })
+    this.post({ uid, error }, [])
   }
 
   emit(eventName: string, data: unknown, transferables?: Transferable[]) {
-    workerSelf!.postMessage(
-      { eventName, data, libRpc: true },
-      transferables ?? [],
-    )
+    this.post({ eventName, data }, transferables ?? [])
   }
 }
