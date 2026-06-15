@@ -1,5 +1,5 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { getEffectiveTrackConfig } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
