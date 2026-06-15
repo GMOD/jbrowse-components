@@ -70,6 +70,7 @@ export async function packageApp(
       overwrite: true,
       asar: true,
       prune: false,
+      quiet: true,
       appCategoryType: 'public.app-category.science',
       extraResource: [appUpdateYmlPath],
       osxSign,
