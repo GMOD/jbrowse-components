@@ -39,7 +39,9 @@ export async function buildMac({ noInstaller = false } = {}) {
       `hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${electronAppDir}" -ov -format UDZO "${dmgPath}"`,
     )
   } finally {
-    fs.rmSync(applicationsLink, { force: true })
+    try {
+      fs.unlinkSync(applicationsLink)
+    } catch {}
   }
 
   // Sign the DMG too
