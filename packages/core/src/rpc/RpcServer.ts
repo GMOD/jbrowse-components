@@ -65,7 +65,10 @@ export default class RpcServer {
 
   // every outgoing message carries the libRpc tag so the client can tell our
   // frames apart from unrelated worker traffic
-  private post(payload: Record<string, unknown>, transferables: Transferable[]) {
+  private post(
+    payload: Record<string, unknown>,
+    transferables: Transferable[],
+  ) {
     workerSelf!.postMessage({ ...payload, libRpc: true }, transferables)
   }
 

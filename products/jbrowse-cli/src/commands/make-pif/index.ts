@@ -53,10 +53,17 @@ export async function run(args?: string[]) {
     '$ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also',
   ]
 
+  const notes =
+    'Use --csi for assemblies containing sequences longer than ~512 Mb. The ' +
+    'default TBI index cannot address coordinates beyond 2^29 (~536 Mb), so a ' +
+    'CSI index is required for large chromosomes (e.g. some plant and ' +
+    'amphibian genomes). Requires sh, sort, bgzip, and tabix on the PATH.'
+
   if (flags.help) {
     printHelp({
       description,
       examples,
+      notes,
       usage: 'jbrowse make-pif <file> [options]',
       options,
     })

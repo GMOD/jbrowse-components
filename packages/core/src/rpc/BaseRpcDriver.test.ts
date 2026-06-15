@@ -61,7 +61,11 @@ describe('BaseRpcDriver.call envelope', () => {
     })
     const { serializedArgs, statusCallback: cb } = driver.transportCalls[0]!
     // statusCallback travels out-of-band, the rest is run through serialize
-    expect(serializedArgs).toEqual({ sessionId: 'sid', data: 1, serialized: true })
+    expect(serializedArgs).toEqual({
+      sessionId: 'sid',
+      data: 1,
+      serialized: true,
+    })
     expect(cb).toBe(statusCallback)
   })
 

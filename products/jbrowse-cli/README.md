@@ -270,6 +270,22 @@ Options:
 
       --bed2                 Used only for mcscan anchors/simpleAnchors types
 
+Notes:
+
+--load controls how the data file is placed relative to config.json: copy, move,
+or symlink it into the install directory, or inPlace to reference it where it
+already sits (use inPlace for URLs or pre-staged files). The matching index
+(.bai/.csi/.tbi/.fai) is inferred from the data file name; pass --indexFile when
+it differs.
+
+--config takes inline JSON (not a file path) that is merged into the generated
+track config, so you can set fields the dedicated flags do not cover, e.g.
+--config '{"metadata":{"skipTextIndex":true}}' to exclude the track from jbrowse
+text-index.
+
+For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — the
+reverse of the minimap2/nucmer input order.
+
 # copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json
 $ jbrowse add-track /path/to/my.bam --load copy
 
@@ -394,6 +410,13 @@ Options:
 
       --bodySizeLimit        Size limit of the update message (default: 25mb)
 
+Notes:
+
+The admin-server lets a browser session write changes back to config.json on
+disk, authorized by a one-time key printed in the startup URL. It is meant for
+local configuration only: run it on a trusted machine and do not expose the port
+to untrusted networks or the public internet.
+
 $ jbrowse admin-server
 $ jbrowse admin-server -p 8888
 ```
@@ -468,6 +491,13 @@ Options:
 
       --no-coarse            Do not emit the coarse no-CIGAR tier; write only
                              the per-row CIGAR fine tier.
+
+Notes:
+
+Use --csi for assemblies containing sequences longer than ~512 Mb. The default
+TBI index cannot address coordinates beyond 2^29 (~536 Mb), so a CSI index is
+required for large chromosomes (e.g. some plant and amphibian genomes). Requires
+sh, sort, bgzip, and tabix on the PATH.
 
 $ jbrowse make-pif input.paf # creates input.pif.gz in same directory
 

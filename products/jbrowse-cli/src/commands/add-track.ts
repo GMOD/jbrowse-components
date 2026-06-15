@@ -121,6 +121,19 @@ export async function run(args?: string[]) {
 
   const description = 'Add a track to a JBrowse 2 configuration'
 
+  const notes =
+    '--load controls how the data file is placed relative to config.json: ' +
+    'copy, move, or symlink it into the install directory, or inPlace to ' +
+    'reference it where it already sits (use inPlace for URLs or pre-staged ' +
+    'files). The matching index (.bai/.csi/.tbi/.fai) is inferred from the ' +
+    'data file name; pass --indexFile when it differs.\n\n' +
+    '--config takes inline JSON (not a file path) that is merged into the ' +
+    'generated track config, so you can set fields the dedicated flags do not ' +
+    'cover, e.g. --config \'{"metadata":{"skipTextIndex":true}}\' to exclude ' +
+    'the track from jbrowse text-index.\n\n' +
+    'For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — ' +
+    'the reverse of the minimap2/nucmer input order.'
+
   const examples = [
     '# copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json',
     '$ jbrowse add-track /path/to/my.bam --load copy',
@@ -145,6 +158,7 @@ export async function run(args?: string[]) {
     printHelp({
       description,
       examples,
+      notes,
       usage: 'jbrowse add-track <track> [options]',
       options,
     })

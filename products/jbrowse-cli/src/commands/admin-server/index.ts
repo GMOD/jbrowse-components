@@ -48,10 +48,18 @@ export async function run(args?: string[]) {
 
   const examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
 
+  const notes =
+    'The admin-server lets a browser session write changes back to ' +
+    'config.json on disk, authorized by a one-time key printed in the ' +
+    'startup URL. It is meant for local configuration only: run it on a ' +
+    'trusted machine and do not expose the port to untrusted networks or the ' +
+    'public internet.'
+
   if (flags.help) {
     printHelp({
       description,
       examples,
+      notes,
       usage: 'jbrowse admin-server [options]',
       options,
     })

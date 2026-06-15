@@ -69,7 +69,8 @@ export async function renameRegionsIfNeeded<
   return {
     ...args,
     regions: regions.map((region, i) => {
-      const { refNameMap, getSeqAdapterRefName } = assemblyData[assemblyNames[i]!]
+      const { refNameMap, getSeqAdapterRefName } =
+        assemblyData[assemblyNames[i]!]
       return renameRegionIfNeeded(refNameMap, region, getSeqAdapterRefName)
     }),
   }

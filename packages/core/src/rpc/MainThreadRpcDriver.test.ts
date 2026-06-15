@@ -50,7 +50,9 @@ describe('MainThreadRpcDriver', () => {
     // MainThreadRpcDriver intentionally has no makeWorker; freeSession/destroy
     // are inherited no-ops
     const { driver } = makeDriver({})
-    expect((driver as unknown as { makeWorker?: unknown }).makeWorker).toBeUndefined()
+    expect(
+      (driver as unknown as { makeWorker?: unknown }).makeWorker,
+    ).toBeUndefined()
     expect(() => {
       driver.freeSession('sid')
       driver.destroy()
