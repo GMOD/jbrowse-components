@@ -53,7 +53,7 @@ export default async function startWebpack(config: webpack.Configuration) {
           ? 3000
           : 'auto',
       hot: false,
-      open: true,
+      open: appName === '@jbrowse/web',
       client: {
         webSocketURL: {
           hostname: 'localhost',
