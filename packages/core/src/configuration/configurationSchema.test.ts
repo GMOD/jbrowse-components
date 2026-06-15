@@ -350,7 +350,6 @@ describe('configuration schemas', () => {
 describe('schema definition entry classification', () => {
   test('a slot definition missing its type throws a specific error', () => {
     expect(() =>
-      // // @ts-expect-error intentionally omitting the required `type`
       ConfigurationSchema('Bad', { broken: { defaultValue: 1 } }),
     ).toThrow(/no type set for config slot Bad.broken/)
   })
