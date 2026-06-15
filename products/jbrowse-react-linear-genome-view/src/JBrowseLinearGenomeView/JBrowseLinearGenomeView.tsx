@@ -78,7 +78,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                 : { gridTemplateColumns: gridColumns }
             }
           >
-            {drawerPosition === 'left' && visibleWidget ? (
+            {drawerPosition === 'left' && drawerVisible ? (
               <Suspense fallback={null}>
                 <DrawerWidget session={session} />
               </Suspense>
@@ -90,7 +90,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                 </Suspense>
               </EmbeddedViewContainer>
             </div>
-            {drawerPosition === 'right' && visibleWidget ? (
+            {drawerPosition === 'right' && drawerVisible ? (
               <Suspense fallback={null}>
                 <DrawerWidget session={session} />
               </Suspense>
