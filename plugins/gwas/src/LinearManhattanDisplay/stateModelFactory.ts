@@ -370,7 +370,7 @@ export function stateModelFactory(
             // whole submenu greys out without a configured .ld adapter
             label: 'LD options',
             disabled: !self.hasLdData,
-            helpText: 'Requires a configured LD (PLINK .ld) adapter',
+            disabledHelpText: 'Requires a configured LD (PLINK .ld) adapter',
             subMenu: [
               {
                 label: 'Color by LD to index SNP',

@@ -18,7 +18,11 @@ import CascadingMenuHelpIconButton, {
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemEndDecoration } from './MenuItems.tsx'
 
-import type { MenuItem as JBMenuItem, MenuItemsGetter } from './MenuTypes.ts'
+import type {
+  BaseMenuItem,
+  MenuItem as JBMenuItem,
+  MenuItemsGetter,
+} from './MenuTypes.ts'
 import type { PopoverOrigin } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
@@ -34,16 +38,17 @@ function makeTestId(kind: string, label: React.ReactNode) {
 // A disabled MenuItem has pointer-events:none, so a Tooltip placed directly on
 // it never fires; the span wrapper (per MUI guidance) restores hover. Disabled
 // rows aren't keyboard-focusable, so the extra wrapper doesn't affect menu
-// navigation. With no title it renders children untouched.
+// navigation. Renders children untouched unless the item is disabled and has
+// disabledHelpText.
 function DisabledTooltip({
-  title,
+  item,
   children,
 }: {
-  title?: React.ReactNode
+  item: Pick<BaseMenuItem, 'disabled' | 'disabledHelpText'>
   children: React.ReactElement
 }) {
-  return title ? (
-    <Tooltip title={title} placement="left">
+  return item.disabled && item.disabledHelpText ? (
+    <Tooltip title={item.disabledHelpText} placement="left">
       <span>{children}</span>
     </Tooltip>
   ) : (
@@ -56,7 +61,7 @@ function CascadingSubmenu({
   Icon,
   inset,
   disabled,
-  helpText,
+  disabledHelpText,
   menuItems,
   onMenuItemClick,
   closeAfterItemClick,
@@ -71,7 +76,7 @@ function CascadingSubmenu({
   Icon: React.ElementType | undefined
   inset: boolean
   disabled?: boolean
-  helpText?: string
+  disabledHelpText?: string
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
   onCloseRoot: () => void
@@ -84,7 +89,7 @@ function CascadingSubmenu({
 
   return (
     <>
-      <DisabledTooltip title={disabled ? helpText : undefined}>
+      <DisabledTooltip item={{ disabled, disabledHelpText }}>
         <MenuItem
           ref={setAnchorEl}
           data-testid={makeTestId('submenu', title)}
@@ -175,7 +180,7 @@ function CascadingMenuList({
               Icon={item.icon}
               inset={hasIcon && !item.icon}
               disabled={item.disabled}
-              helpText={item.helpText}
+              disabledHelpText={item.disabledHelpText}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
               closeAfterItemClick={closeAfterItemClick}
@@ -207,12 +212,9 @@ function CascadingMenuList({
 
         const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
         // a disabled row can't open the help popover (pointer-events:none), so
-        // its helpText is surfaced as a hover tooltip instead of the icon button
+        // disabledHelpText is surfaced as a hover tooltip instead of the icon button
         return (
-          <DisabledTooltip
-            key={`${item.label}`}
-            title={item.disabled ? item.helpText : undefined}
-          >
+          <DisabledTooltip key={`${item.label}`} item={item}>
             <MenuItem
               data-testid={makeTestId('menuitem', item.label)}
               disabled={item.disabled}

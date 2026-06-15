@@ -149,7 +149,7 @@ describe('CascadingMenu', () => {
           {
             label: 'Disabled item',
             disabled: true,
-            helpText: 'Needs a configured adapter',
+            disabledHelpText: 'Needs a configured adapter',
             onClick: () => {},
           },
         ]}

@@ -24,6 +24,8 @@ export interface BaseMenuItem {
   icon?: React.ElementType
   disabled?: boolean
   helpText?: string
+  /** tooltip shown when the item is disabled, in place of helpText */
+  disabledHelpText?: string
 }
 
 export interface NormalMenuItem extends BaseMenuItem {
