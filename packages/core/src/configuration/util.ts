@@ -294,21 +294,10 @@ export function isSlotDefinitionEntry(
   )
 }
 
-// Cache for isConfigurationModel results to avoid expensive repeated type checks
-const configurationModelCache = new WeakMap<object, boolean>()
-
 export function isConfigurationModel(
   thing: unknown,
 ): thing is AnyConfigurationModel {
-  if (!thing || typeof thing !== 'object') {
-    return false
-  }
-  let cached = configurationModelCache.get(thing)
-  if (cached === undefined) {
-    cached = isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
-    configurationModelCache.set(thing, cached)
-  }
-  return cached
+  return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
 }
 
 function resolveConfigValue(
