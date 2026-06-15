@@ -1,4 +1,5 @@
 import { type IAnyStateTreeNode, getSnapshot } from '@jbrowse/mobx-state-tree'
+import deepEqual from 'fast-deep-equal'
 import { toJS } from 'mobx'
 
 import { isCallbackValue } from '../configuration/slotValueUtils.ts'
@@ -61,9 +62,12 @@ function buildDisplayEntry(
   for (const [key, value] of Object.entries(overrides)) {
     const overrideValue = toJS(value)
     const configValue = displayConf[key]
+    // deepEqual (not ===) so object/array slots (colorBy, filterBy, sortedBy)
+    // that toJS-clone to a fresh reference are still recognized as equal to the
+    // config default and omitted from the copied config.
     if (
       overrideValue !== undefined &&
-      overrideValue !== configValue &&
+      !deepEqual(overrideValue, configValue) &&
       !isCallbackValue(configValue)
     ) {
       entry[key] = overrideValue

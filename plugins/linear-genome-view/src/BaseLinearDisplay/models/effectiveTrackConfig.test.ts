@@ -108,16 +108,14 @@ describe('getEffectiveTrackConfig with a live ConfigOverrideMixin display', () =
     expect((result.displays as any)[0].color).toBeUndefined()
   })
 
-  // Documents a current limitation: getEffectiveTrackConfig dedupes against the
-  // default with `!==`, which only works for scalars. An object/array override
-  // toJS-clones to a fresh reference, so it is emitted even when value-equal to
-  // the default (here colorBy back to {type:'normal'}). Harmless noise in the
-  // copied config; would need a deep-equal to suppress.
-  test('object override equal to the default is still emitted (reference compare)', () => {
+  // getEffectiveTrackConfig dedupes against the default with deepEqual, so an
+  // object/array override value-equal to the default (here colorBy back to
+  // {type:'normal'}) is omitted despite toJS cloning it to a fresh reference.
+  test('object override equal to the default is omitted (deep-equal)', () => {
     const { track, display } = setup()
     display.setOverride('colorBy', { type: 'normal' })
     const result = getEffectiveTrackConfig(track, display)
-    expect((result.displays as any)[0].colorBy).toEqual({ type: 'normal' })
+    expect((result.displays as any)[0].colorBy).toBeUndefined()
   })
 
   test('clearOverride reverts the effective config to the default', () => {

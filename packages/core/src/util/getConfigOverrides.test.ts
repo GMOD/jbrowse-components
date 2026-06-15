@@ -15,6 +15,7 @@ const WiggleDisplay = ConfigurationSchema(
     minScore: { type: 'number', defaultValue: 0 },
     maxScore: { type: 'number', defaultValue: 100 },
     showLabels: { type: 'boolean', defaultValue: true },
+    colorBy: { type: 'frozen', defaultValue: { type: 'normal' } },
   },
   { explicitlyTyped: true, explicitIdentifier: 'displayId' },
 )
@@ -213,6 +214,28 @@ describe('getEffectiveTrackConfig', () => {
     const d = (result.displays as any)[0]
     expect(d.displayId).toBe('d1')
     expect(d.color).toBeUndefined()
+  })
+
+  test('object-valued override different from default is included', () => {
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0], {
+      colorBy: { type: 'methylation' },
+    })
+    const result = getEffectiveTrackConfig(track, display)
+    expect((result.displays as any)[0].colorBy).toEqual({ type: 'methylation' })
+  })
+
+  test('object-valued override deep-equal to default is omitted', () => {
+    const track = makeTrack({}, [
+      { type: 'LinearWiggleDisplay', displayId: 'd1' },
+    ])
+    const display = makeDisplay(track.displays[0], {
+      colorBy: { type: 'normal' },
+    })
+    const result = getEffectiveTrackConfig(track, display)
+    expect((result.displays as any)[0].colorBy).toBeUndefined()
   })
 
   test('non-matching display gets type but no slot values', () => {
