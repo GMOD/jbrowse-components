@@ -56,6 +56,9 @@ export async function loadFiles({
   force?: boolean
 }) {
   if (mode) {
+    if (subDir) {
+      fs.mkdirSync(path.join(destDir, subDir), { recursive: true })
+    }
     await Promise.all(
       files
         .filter((f): f is string => !!f)

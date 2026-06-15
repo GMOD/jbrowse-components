@@ -32,7 +32,7 @@ export function buildTrackConfig({
   assemblyNames,
   category,
   description,
-  config,
+  configObj = {},
   adapter,
 }: {
   trackType: string
@@ -41,10 +41,9 @@ export function buildTrackConfig({
   assemblyNames: string
   category?: string
   description?: string
-  config?: string
+  configObj?: Record<string, unknown>
   adapter: { type: string; [key: string]: unknown }
 }): Track {
-  const configObj = config ? JSON.parse(config) : {}
   return {
     type: trackType,
     trackId,

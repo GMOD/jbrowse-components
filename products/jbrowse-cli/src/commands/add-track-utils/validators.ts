@@ -1,9 +1,14 @@
-import fs from 'fs'
-import path from 'path'
-
 import { isURL } from '../../types/common.ts'
 
 import type { Config } from '../../base.ts'
+
+export function parseConfigFlag(config: string): Record<string, unknown> {
+  try {
+    return JSON.parse(config) as Record<string, unknown>
+  } catch {
+    throw new Error(`--config is not valid JSON: ${config}`)
+  }
+}
 
 export function validateLoadOption(load?: string): void {
   if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
@@ -56,11 +61,3 @@ export function validateAssemblies(
   }
 }
 
-export function createTargetDirectory(
-  configDir: string,
-  subDir?: string,
-): void {
-  if (subDir) {
-    fs.mkdirSync(path.join(configDir, subDir), { recursive: true })
-  }
-}

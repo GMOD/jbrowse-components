@@ -176,6 +176,7 @@ export async function run(args?: string[]) {
     target,
     itemType: 'assembly',
     itemName: assembly.name,
+    itemId: assembly.name,
     wasOverwritten,
   })
 }

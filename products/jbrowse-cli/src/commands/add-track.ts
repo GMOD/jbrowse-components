@@ -14,7 +14,7 @@ import {
   mapLocationForFiles,
 } from './add-track-utils/track-config.ts'
 import {
-  createTargetDirectory,
+  parseConfigFlag,
   validateAdapterType,
   validateAssemblies,
   validateLoadAndLocation,
@@ -186,11 +186,13 @@ export async function run(args?: string[]) {
     adapterType,
   } = flags
 
+  const location = track!
+  validateLoadAndLocation(location, load)
+
+  const configObj = config ? parseConfigFlag(config) : undefined
+
   const targetConfigPath = await resolveConfigPath(target, out)
   const configDir = path.dirname(targetConfigPath)
-
-  createTargetDirectory(configDir, subDir)
-  const location = track!
 
   const mapLoc = (p: string) => mapLocationForFiles(p, load, subDir)
   const mapOpt = (p?: string) => (p ? mapLoc(p) : undefined)
@@ -206,7 +208,6 @@ export async function run(args?: string[]) {
 
   adapter = addSyntenyAssemblyNames(adapter, flags.assemblyNames)
 
-  validateLoadAndLocation(location, load)
   validateAdapterType(adapter.type)
 
   const configContents: Config = await readJsonFile(targetConfigPath)
@@ -226,7 +227,7 @@ export async function run(args?: string[]) {
     assemblyNames,
     category,
     description: trackDescription,
-    config,
+    configObj,
     adapter,
   })
 

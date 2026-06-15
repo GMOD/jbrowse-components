@@ -1,7 +1,14 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
-import { debug, printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
+import {
+  debug,
+  parseCommaSeparatedString,
+  printHelp,
+  readJsonFile,
+  resolveConfigPath,
+} from '../utils.ts'
+import { parseConfigFlag } from './add-track-utils/validators.ts'
 import {
   findAndUpdateOrAdd,
   saveConfigAndReport,
@@ -113,9 +120,10 @@ export async function run(args?: string[]) {
     )
   }
 
-  const target = await resolveConfigPath(flags.target, flags.out)
-
   const { assemblyNames, type, name, config, connectionId, force } = flags
+  const configObj = config ? parseConfigFlag(config) : undefined
+
+  const target = await resolveConfigPath(flags.target, flags.out)
 
   const url = resolveURL(connectionUrlOrPath)
   const configContents = await readJsonFile<Config>(target)
@@ -153,11 +161,11 @@ export async function run(args?: string[]) {
       : {}),
     connectionId: id,
     assemblyNames: assemblyNames
-      ? assemblyNames.split(',')
+      ? parseCommaSeparatedString(assemblyNames)
       : configType === 'JBrowse1Connection'
         ? [configContents.assemblies[0]?.name]
         : undefined,
-    ...(config ? JSON.parse(config) : {}),
+    ...configObj,
   }
 
   const { updatedItems: connections, wasOverwritten } = findAndUpdateOrAdd({

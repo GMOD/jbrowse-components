@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import { isURL } from '../../types/common.ts'
 import {
   debug,
   ignoreNotFound,
@@ -10,6 +9,7 @@ import {
   readJsonFile,
 } from '../../utils.ts'
 import { mapLocationForFiles } from '../add-track-utils/track-config.ts'
+import { validateLoadAndLocation } from '../add-track-utils/validators.ts'
 import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
 import type { Assembly, Config, Sequence } from '../../base.ts'
@@ -102,15 +102,7 @@ export async function getAssembly({
   runFlags: AssemblyFlags
   argsSequence: string
 }): Promise<{ assembly: Assembly; filesToLoad: string[] }> {
-  if (!isURL(argsSequence) && !runFlags.load) {
-    throw new Error(
-      'Please specify the loading operation for this file with --load copy|symlink|move|inPlace',
-    )
-  } else if (isURL(argsSequence) && runFlags.load) {
-    throw new Error(
-      'URL detected with --load flag. Please rerun the function without the --load flag',
-    )
-  }
+  validateLoadAndLocation(argsSequence, runFlags.load)
 
   let { name } = runFlags
   let { type } = runFlags
