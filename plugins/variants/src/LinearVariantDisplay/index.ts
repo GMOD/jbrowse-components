@@ -12,6 +12,8 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearVariantDisplay',
       displayName: 'Variant display',
+      helpText:
+        'GPU-accelerated variant display with smooth zoom/pan. Data is uploaded once to GPU, enabling instant navigation.',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',

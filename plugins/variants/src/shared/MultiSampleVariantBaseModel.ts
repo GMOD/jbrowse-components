@@ -25,7 +25,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
 
-import { GENOTYPE_SPLITTER } from './constants.ts'
+import { GENOTYPE_SPLITTER, VARIANT_FEATURE_WIDGET } from './constants.ts'
 import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
 import {
   variantContextMenuItems,
@@ -149,7 +149,7 @@ async function callMultiSampleVariantCellData(args: {
   mode: 'regular' | 'matrix'
   setStatusMessage: (msg?: string) => void
   ctx: FetchContext
-}) {
+}): Promise<CellDataResult> {
   const {
     node,
     adapterConfig,
@@ -415,10 +415,7 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         get featureWidgetType() {
-          return {
-            type: 'VariantFeatureWidget',
-            id: 'variantFeature',
-          }
+          return VARIANT_FEATURE_WIDGET
         },
 
         get fetchSizeLimit(): number {

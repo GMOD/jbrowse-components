@@ -2,6 +2,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 import PaletteIcon from '@mui/icons-material/Palette'
 
+import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -46,10 +48,7 @@ export default function stateModelFactory(
        * #getter
        */
       get featureWidgetType() {
-        return {
-          type: 'VariantFeatureWidget',
-          id: 'variantFeature',
-        }
+        return VARIANT_FEATURE_WIDGET
       },
 
       /**

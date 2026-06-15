@@ -2,6 +2,14 @@ export const GENOTYPE_SPLITTER = /[/|]/
 
 export const f2 = 0.3
 
+// Feature-detail widget opened when a variant is clicked. Shared by the
+// single-track and multi-sample variant displays so the registered widget
+// name/id can't drift between them.
+export const VARIANT_FEATURE_WIDGET = {
+  type: 'VariantFeatureWidget',
+  id: 'variantFeature',
+}
+
 // Sidebar and label background opacity
 export const SIDEBAR_BACKGROUND_OPACITY = 0.8
 
