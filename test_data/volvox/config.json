@@ -1274,6 +1274,29 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_contigA_alias",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (contigA alias)",
+      "category": ["Miscellaneous"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.contigA.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.contigA.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "gff3tabix_genes_jexl_color",
       "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes (per-feature jexl color)",

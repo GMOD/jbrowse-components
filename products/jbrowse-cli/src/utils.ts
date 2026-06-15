@@ -286,11 +286,13 @@ export function printHelp({
   description,
   options,
   examples,
+  notes,
   usage,
 }: {
   description: string
   options: Record<string, unknown>
   examples: string[]
+  notes?: string
   usage?: string
 }) {
   const termWidth = process.stdout.columns || 80
@@ -314,7 +316,10 @@ export function printHelp({
     }
 
     const wrapped = desc ? wrapText(desc, descWidth, indent) : ''
-    console.log(`${prefix}${namePadded} ${wrapped}\n`)
+    console.log(`${`${prefix}${namePadded} ${wrapped}`.trimEnd()}\n`)
+  }
+  if (notes) {
+    console.log(`Notes:\n\n${wrapText(notes, termWidth, '')}\n`)
   }
   console.log(examples.join('\n'))
 }

@@ -18,7 +18,7 @@ export async function run(args?: string[]) {
     excludeTracks: {
       type: 'string',
       description:
-        'Specific tracks to exclude from indexing, formatted as comma separated trackIds',
+        'Specific tracks to exclude from indexing, formatted as comma separated trackIds. To exclude a track permanently, set metadata.skipTextIndex on it in config.json instead (see Notes)',
     },
     target: {
       type: 'string',
@@ -55,7 +55,8 @@ export async function run(args?: string[]) {
     },
     exclude: {
       type: 'string',
-      description: 'Adds gene type to list of excluded types',
+      description:
+        'Comma separated list of feature types to exclude from indexing',
       default: 'CDS,exon',
     },
     prefixSize: {
@@ -88,6 +89,15 @@ export async function run(args?: string[]) {
 
   const description = 'Make a text-indexing file for any given track(s).'
 
+  const notes =
+    'Individual tracks in config.json can be permanently excluded from ' +
+    'indexing by setting "metadata": { "skipTextIndex": true } on the track. ' +
+    'Such tracks are skipped even when indexing all tracks or a whole ' +
+    'assembly, so you do not have to pass --excludeTracks on every run.\n\n' +
+    'Only tracks with an indexable adapter type (e.g. Gff3TabixAdapter, ' +
+    'VcfTabixAdapter) are indexed; tracks with other adapter types are ' +
+    'skipped automatically.'
+
   const examples = [
     "# indexes all tracks that it can find in the current directory's config.json",
     '$ jbrowse text-index',
@@ -112,6 +122,7 @@ export async function run(args?: string[]) {
     printHelp({
       description,
       examples,
+      notes,
       usage: 'jbrowse text-index [options]',
       options,
     })

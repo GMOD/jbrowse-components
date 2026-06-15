@@ -23,7 +23,9 @@ export interface RenderFeatureDataArgs {
     start: number
     end: number
     assemblyName: string
-    seqAdapterRefName?: string
+    // sequence-adapter (FASTA) refName, set by the data-adapter renaming pass;
+    // used to fetch reference sequence for peptide translation
+    originalRefName?: string
   }
   bpPerPx: number
   colorByCDS?: boolean

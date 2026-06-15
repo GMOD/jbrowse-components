@@ -1,19 +1,11 @@
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
+import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts'
 
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
-import type { RpcArgs } from '../RpcRegistry.ts'
 
-export default class CoreGetExportData extends RpcMethodType {
+export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions {
   name = 'CoreGetExportData'
-
-  async serializeArguments(
-    args: RpcArgs<'CoreGetExportData'> & { sessionId: string },
-    rpcDriver: string,
-  ) {
-    return super.serializeArguments(await this.renameRegions(args), rpcDriver)
-  }
 
   async execute(
     args: {

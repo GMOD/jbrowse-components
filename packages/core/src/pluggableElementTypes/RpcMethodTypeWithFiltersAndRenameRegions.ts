@@ -1,5 +1,4 @@
-import RpcMethodType from './RpcMethodType.ts'
-import { renameRegionsIfNeeded } from '../util/index.ts'
+import RpcMethodTypeWithRenameRegions from './RpcMethodTypeWithRenameRegions.ts'
 import SerializableFilterChain from './renderers/util/serializableFilterChain.ts'
 
 import type { Region } from '../util/index.ts'
@@ -7,7 +6,7 @@ import type { StopToken } from '../util/stopToken.ts'
 import type { SerializedFilterChain } from './renderers/util/serializableFilterChain.ts'
 
 // the subset of fields serializeArguments needs: `filters` plus the region
-// renaming contract required by renameRegionsIfNeeded
+// renaming contract handled by the base class
 interface FilterRenameArgs {
   sessionId: string
   regions?: Region[]
@@ -15,7 +14,7 @@ interface FilterRenameArgs {
   filters?: SerializableFilterChain
 }
 
-export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends RpcMethodType {
+export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends RpcMethodTypeWithRenameRegions {
   async deserializeArguments<T>(
     // filters is `unknown` rather than SerializedFilterChain: callers' T types
     // it as the deserialized SerializableFilterChain, so a string[] intersection
@@ -44,17 +43,11 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends R
     },
     rpcDriverClassName: string,
   ) {
-    const pm = this.pluginManager
-    const assemblyManager = pm.rootModel?.session?.assemblyManager
-    if (!assemblyManager) {
-      throw new Error('no assembly manager')
-    }
-
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
-      ...args,
-      filters: args.filters?.toJSON().filters,
-    })
-
-    return super.serializeArguments(renamedArgs, rpcDriverClassName)
+    // serialize the filter chain to its on-wire string[] form, then let the
+    // base class rename region refNames and finish serialization
+    return super.serializeArguments(
+      { ...args, filters: args.filters?.toJSON().filters },
+      rpcDriverClassName,
+    )
   }
 }

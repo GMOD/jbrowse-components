@@ -1,5 +1,4 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -42,26 +41,21 @@ export default class GetManhattanData extends RpcMethodType {
   name = 'GetManhattanData'
 
   async serializeArguments(args: GetManhattanDataArgs, rpcDriver: string) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
-    if (assemblyManager) {
-      const indexRegion = indexSnpAsRegion(args)
-      const { regions } = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: args.sessionId,
-        adapterConfig: args.adapterConfig,
-        regions: indexRegion ? [args.region, indexRegion] : [args.region],
-      })
-      const renamedRegion = regions[0] ?? args.region
-      const renamedIndex = indexRegion && regions[1]
-      const indexSnp = renamedIndex
-        ? `${regions[1]!.refName}:${regions[1]!.end}`
-        : args.indexSnp
-      return super.serializeArguments(
-        { ...args, region: renamedRegion, indexSnp },
-        rpcDriver,
-      )
-    }
-    return super.serializeArguments(args, rpcDriver)
+    // bundle the query region and (when parseable) the index-SNP position into
+    // one regions array so both ride through the same renaming pass and land in
+    // the data adapter's alias space
+    const indexRegion = indexSnpAsRegion(args)
+    const { regions } = await this.renameRegions({
+      ...args,
+      regions: indexRegion ? [args.region, indexRegion] : [args.region],
+    })
+    const indexSnp = indexRegion
+      ? `${regions[1]!.refName}:${regions[1]!.end}`
+      : args.indexSnp
+    return super.serializeArguments(
+      { ...args, region: regions[0]!, indexSnp },
+      rpcDriver,
+    )
   }
 
   async execute(args: GetManhattanDataArgs, _rpcDriver: string) {

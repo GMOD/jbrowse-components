@@ -43,6 +43,7 @@
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
     "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
+    "./gpu/passes": "./src/gpu/passes.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -50,6 +51,8 @@
     "./pluggableElementTypes/InternetAccountType": "./src/pluggableElementTypes/InternetAccountType.ts",
     "./pluggableElementTypes/RpcMethodType": "./src/pluggableElementTypes/RpcMethodType.ts",
     "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts",
+    "./pluggableElementTypes/RpcMethodTypeWithRenameRegion": "./src/pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts",
+    "./pluggableElementTypes/RpcMethodTypeWithRenameRegions": "./src/pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts",
     "./pluggableElementTypes/TextSearchAdapterType": "./src/pluggableElementTypes/TextSearchAdapterType.ts",
     "./pluggableElementTypes/TrackType": "./src/pluggableElementTypes/TrackType.ts",
     "./pluggableElementTypes/ViewType": "./src/pluggableElementTypes/ViewType.ts",
@@ -279,6 +282,10 @@
         "types": "./esm/data_adapters/dataAdapterCache.d.ts",
         "import": "./esm/data_adapters/dataAdapterCache.js"
       },
+      "./gpu/passes": {
+        "types": "./esm/gpu/passes.d.ts",
+        "import": "./esm/gpu/passes.js"
+      },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
         "import": "./esm/pluggableElementTypes/index.js"
@@ -306,6 +313,14 @@
       "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": {
         "types": "./esm/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.d.ts",
         "import": "./esm/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.js"
+      },
+      "./pluggableElementTypes/RpcMethodTypeWithRenameRegion": {
+        "types": "./esm/pluggableElementTypes/RpcMethodTypeWithRenameRegion.d.ts",
+        "import": "./esm/pluggableElementTypes/RpcMethodTypeWithRenameRegion.js"
+      },
+      "./pluggableElementTypes/RpcMethodTypeWithRenameRegions": {
+        "types": "./esm/pluggableElementTypes/RpcMethodTypeWithRenameRegions.d.ts",
+        "import": "./esm/pluggableElementTypes/RpcMethodTypeWithRenameRegions.js"
       },
       "./pluggableElementTypes/TextSearchAdapterType": {
         "types": "./esm/pluggableElementTypes/TextSearchAdapterType.d.ts",
@@ -719,6 +734,9 @@
         "data_adapters/dataAdapterCache": [
           "esm/data_adapters/dataAdapterCache.d.ts"
         ],
+        "gpu/passes": [
+          "esm/gpu/passes.d.ts"
+        ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"
         ],
@@ -739,6 +757,12 @@
         ],
         "pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": [
           "esm/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.d.ts"
+        ],
+        "pluggableElementTypes/RpcMethodTypeWithRenameRegion": [
+          "esm/pluggableElementTypes/RpcMethodTypeWithRenameRegion.d.ts"
+        ],
+        "pluggableElementTypes/RpcMethodTypeWithRenameRegions": [
+          "esm/pluggableElementTypes/RpcMethodTypeWithRenameRegions.d.ts"
         ],
         "pluggableElementTypes/TextSearchAdapterType": [
           "esm/pluggableElementTypes/TextSearchAdapterType.d.ts"

@@ -2,16 +2,16 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
+import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
 
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
 import type { SimpleFeatureSerialized } from '../../util/simpleFeature.ts'
 import type { StopToken } from '../../util/stopToken.ts'
-import type { RpcArgs, RpcReturn } from '../RpcRegistry.ts'
+import type { RpcReturn } from '../RpcRegistry.ts'
 
-export default class CoreGetFeatures extends RpcMethodType {
+export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions {
   name = 'CoreGetFeatures'
 
   async deserializeReturn(
@@ -25,13 +25,6 @@ export default class CoreGetFeatures extends RpcMethodType {
       rpcDriver,
     )) as SimpleFeatureSerialized[]
     return superDeserialized.map(feat => new SimpleFeature(feat))
-  }
-
-  async serializeArguments(
-    args: RpcArgs<'CoreGetFeatures'> & { sessionId: string },
-    rpcDriver: string,
-  ) {
-    return super.serializeArguments(await this.renameRegions(args), rpcDriver)
   }
 
   async execute(

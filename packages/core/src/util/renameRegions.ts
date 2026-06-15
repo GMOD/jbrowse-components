@@ -47,29 +47,30 @@ export async function renameRegionsIfNeeded<
   const uniqueAssemblyNames = [...new Set(assemblyNames)]
   const assemblyData = Object.fromEntries(
     await Promise.all(
-      uniqueAssemblyNames.map(async name => [
-        name,
-        {
-          refNameMap: await assemblyManager.getRefNameMapForAdapter(
-            adapterConfig,
-            name,
-            args,
-          ),
-          assembly: assemblyManager.get(name),
-        },
-      ]),
+      uniqueAssemblyNames.map(async name => {
+        const assembly = assemblyManager.get(name)
+        return [
+          name,
+          {
+            refNameMap: await assemblyManager.getRefNameMapForAdapter(
+              adapterConfig,
+              name,
+              args,
+            ),
+            getSeqAdapterRefName: assembly
+              ? (r: string) => assembly.getSeqAdapterRefName(r)
+              : undefined,
+          },
+        ]
+      }),
     ),
   )
 
   return {
     ...args,
     regions: regions.map((region, i) => {
-      const { refNameMap, assembly } = assemblyData[assemblyNames[i]!]
-      return renameRegionIfNeeded(
-        refNameMap,
-        region,
-        assembly ? r => assembly.getSeqAdapterRefName(r) : undefined,
-      )
+      const { refNameMap, getSeqAdapterRefName } = assemblyData[assemblyNames[i]!]
+      return renameRegionIfNeeded(refNameMap, region, getSeqAdapterRefName)
     }),
   }
 }

@@ -1,7 +1,6 @@
 import { getClip } from '@jbrowse/cigar-utils'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -66,7 +65,7 @@ export interface BreakpointSerializedFeature {
   INFO?: BreakpointVcfInfo
 }
 
-export default class BreakpointGetFeatures extends RpcMethodType {
+export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegions {
   name = 'BreakpointGetFeatures'
 
   async deserializeReturn(
@@ -82,13 +81,6 @@ export default class BreakpointGetFeatures extends RpcMethodType {
     return superDeserialized.map(
       feat => new SimpleFeature(feat as unknown as SimpleFeatureSerialized),
     )
-  }
-
-  async serializeArguments(args: BreakpointGetFeaturesArgs, rpcDriver: string) {
-    const { rootModel } = this.pluginManager
-    const assemblyManager = rootModel!.session!.assemblyManager
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
-    return super.serializeArguments(renamedArgs, rpcDriver)
   }
 
   async execute(

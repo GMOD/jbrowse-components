@@ -4,17 +4,11 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 import type { BaseSequenceAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
 import type { StopToken } from '../../util/stopToken.ts'
-import type { RpcArgs } from '../RpcRegistry.ts'
 
+// CoreGetSequence takes a single region whose refName fetchSeq() has already
+// resolved to the sequence adapter's name, so no region renaming is needed here
 export default class CoreGetSequence extends RpcMethodType {
   name = 'CoreGetSequence'
-
-  async serializeArguments(
-    args: RpcArgs<'CoreGetSequence'> & { sessionId: string },
-    rpcDriver: string,
-  ) {
-    return super.serializeArguments(await this.renameRegions(args), rpcDriver)
-  }
 
   async execute(
     args: {

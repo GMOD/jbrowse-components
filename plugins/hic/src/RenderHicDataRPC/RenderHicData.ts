@@ -1,5 +1,4 @@
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
 import type { HicDataResult, RenderHicDataArgs } from './types.ts'
 
@@ -12,25 +11,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class RenderHicData extends RpcMethodType {
+export default class RenderHicData extends RpcMethodTypeWithRenameRegions {
   name = 'RenderHicData'
-
-  async serializeArguments(args: RenderHicDataArgs, rpcDriver: string) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
-
-    if (assemblyManager && args.regions.length) {
-      const { regions } = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: args.sessionId,
-        adapterConfig: args.adapterConfig,
-        regions: args.regions,
-      })
-
-      return super.serializeArguments({ ...args, regions }, rpcDriver)
-    }
-
-    return super.serializeArguments(args, rpcDriver)
-  }
 
   async execute(args: RenderHicDataArgs, _rpcDriver: string) {
     const { executeRenderHicData } = await import('./executeRenderHicData.ts')

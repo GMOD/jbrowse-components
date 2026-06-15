@@ -254,6 +254,50 @@ const suite: TestSuite = {
       },
     },
     {
+      // The contigA gene track names its features 'contigA' (a volvox alias for
+      // ctgA), while the sequence adapter (volvox.2bit) uses 'ctgA'. So the
+      // renamed region has refName 'contigA' (gene adapter) but originalRefName
+      // 'ctgA' (FASTA). Peptide translation must fetch sequence by
+      // originalRefName, or the FASTA lookup misses and no amino-acid text is
+      // emitted — making this the discriminating test for the originalRefName
+      // (formerly seqAdapterRefName) sequence-fetch path.
+      name: 'exports SVG gene track peptides across a refName alias',
+      fn: async page => {
+        const downloadDir = await setupDownloadInterception(page)
+        await page.goto(`http://localhost:${PORT}/`)
+        await page.evaluate(() => {
+          localStorage.setItem('lgv-colorByCDS', 'true')
+        })
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1201-1350',
+              tracks: ['gff3tabix_genes_contigA_alias'],
+            },
+          ],
+        })
+        await page.waitForSelector('[data-testid$="-done"]', {
+          timeout: 60000,
+        })
+        await waitForLoadingToComplete(page)
+
+        const svg = await exportSvgAndSave(
+          page,
+          downloadDir,
+          'svg-export-genes-peptides-alias',
+        )
+        const textCount = (svg.match(/<text/g) ?? []).length
+        console.log(`    ${textCount} text elements`)
+        if (!svg.includes('font-family="monospace"')) {
+          throw new Error(
+            'Peptide text missing across alias: sequence fetch did not use originalRefName',
+          )
+        }
+      },
+    },
+    {
       name: 'exports SVG with alignments including sashimi arcs',
       fn: async page => {
         const downloadDir = await setupDownloadInterception(page)

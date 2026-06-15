@@ -20,6 +20,23 @@ import type { FileHandleLocation, UriLocation } from '../util/types/index.ts'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
+// the arg shape renameRegions (and RpcMethodTypeWithRenameRegions) operate on
+export interface RenameRegionsArgs {
+  assemblyName?: string
+  regions?: Region[]
+  stopToken?: StopToken
+  adapterConfig: Record<string, unknown>
+  sessionId: string
+  statusCallback?: (arg: string) => void
+}
+
+// singular-region counterpart, for RpcMethodTypeWithRenameRegion
+export interface RenameRegionArgs {
+  region: Region
+  adapterConfig: Record<string, unknown>
+  sessionId: string
+}
+
 function convertFileHandleToBlob(
   loc: FileHandleLocation,
   blobMap: Record<string, File>,
@@ -180,16 +197,9 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
   }
 
-  protected async renameRegions<
-    T extends {
-      assemblyName?: string
-      regions?: Region[]
-      stopToken?: StopToken
-      adapterConfig: Record<string, unknown>
-      sessionId: string
-      statusCallback?: (arg: string) => void
-    },
-  >(args: T): Promise<T> {
+  protected async renameRegions<T extends RenameRegionsArgs>(
+    args: T,
+  ): Promise<T> {
     const { rootModel } = this.pluginManager
     return renameRegionsIfNeeded(rootModel!.session!.assemblyManager, args)
   }

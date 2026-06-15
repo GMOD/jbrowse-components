@@ -1,5 +1,4 @@
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion'
 
 import type { SourceInfo, WiggleDataResult } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -26,28 +25,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class RenderMultiWiggleData extends RpcMethodType {
+export default class RenderMultiWiggleData extends RpcMethodTypeWithRenameRegion {
   name = 'RenderMultiWiggleData'
-
-  async serializeArguments(args: RenderMultiWiggleDataArgs, rpcDriver: string) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
-
-    if (assemblyManager) {
-      const { regions } = await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: args.sessionId,
-        adapterConfig: args.adapterConfig,
-        regions: [args.region],
-      })
-
-      return super.serializeArguments(
-        regions[0] ? { ...args, region: regions[0] } : args,
-        rpcDriver,
-      )
-    }
-
-    return super.serializeArguments(args, rpcDriver)
-  }
 
   async execute(args: RenderMultiWiggleDataArgs, _rpcDriver: string) {
     const { executeRenderMultiWiggleData } =

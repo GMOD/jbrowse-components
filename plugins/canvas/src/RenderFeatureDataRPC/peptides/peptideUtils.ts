@@ -14,13 +14,13 @@ import type { Feature, Region } from '@jbrowse/core/util'
 export interface PeptideFetchProps {
   sessionId: string
   sequenceAdapter: Record<string, unknown>
-  regions: (Region & { seqAdapterRefName?: string })[]
+  regions: (Region & { originalRefName?: string })[]
 }
 
 async function fetchSequence(
   pluginManager: PluginManager,
   props: PeptideFetchProps,
-  region: Region & { seqAdapterRefName?: string },
+  region: Region & { originalRefName?: string },
 ) {
   const { sessionId, sequenceAdapter } = props
   try {
@@ -34,7 +34,7 @@ async function fetchSequence(
       (dataAdapter as BaseFeatureDataAdapter)
         .getFeatures({
           ...region,
-          refName: region.seqAdapterRefName ?? region.refName,
+          refName: region.originalRefName ?? region.refName,
           start: Math.max(0, region.start),
         })
         .pipe(toArray()),

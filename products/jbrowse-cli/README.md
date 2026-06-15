@@ -304,7 +304,9 @@ Options:
                              available tracks
 
       --excludeTracks        Specific tracks to exclude from indexing, formatted
-                             as comma separated trackIds
+                             as comma separated trackIds. To exclude a track
+                             permanently, set metadata.skipTextIndex on it in
+                             config.json instead (see Notes)
 
       --target               Path to config file in JB2 installation directory
                              to read from.
@@ -325,8 +327,8 @@ Options:
 
       --perTrack             If set, creates an index per track [default: false]
 
-      --exclude              Adds gene type to list of excluded types [default:
-                             CDS,exon]
+      --exclude              Comma separated list of feature types to exclude
+                             from indexing [default: CDS,exon]
 
       --prefixSize           Specify the prefix size for the ixx index. We
                              attempt to automatically calculate this, but you
@@ -344,6 +346,17 @@ Options:
 
       --dryrun               Just print out tracks that will be indexed by the
                              process, without doing any indexing
+
+Notes:
+
+Individual tracks in config.json can be permanently excluded from indexing by
+setting "metadata": { "skipTextIndex": true } on the track. Such tracks are
+skipped even when indexing all tracks or a whole assembly, so you do not have to
+pass --excludeTracks on every run.
+
+Only tracks with an indexable adapter type (e.g. Gff3TabixAdapter,
+VcfTabixAdapter) are indexed; tracks with other adapter types are skipped
+automatically.
 
 # indexes all tracks that it can find in the current directory's config.json
 $ jbrowse text-index
