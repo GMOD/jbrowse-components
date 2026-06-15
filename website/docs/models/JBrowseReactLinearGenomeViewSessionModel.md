@@ -67,7 +67,7 @@ deleteConnection, addConnectionConf, clearConnections
 
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
-**Methods:** getReferring
+**Methods:** getReferring, getReferringMultiple
 
 **Actions:** removeReferring
 
@@ -77,13 +77,14 @@ deleteConnection, addConnectionConf, clearConnections
 
 **Getters:** tracks
 
-**Actions:** addTrackConf, deleteTrackConf
+**Actions:** addTrackConf, updateTrackConfiguration, resetTrackConfiguration,
+deleteTrackConf
 
 ### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
 
 **Getters:** tracks, getTracksById, tracksById
 
-**Actions:** addTrackConf, deleteTrackConf
+**Actions:** addTrackConf, updateTrackConfiguration, deleteTrackConf
 
 ### Available via [TrackMenuSessionMixin](../trackmenusessionmixin)
 

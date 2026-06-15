@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; workerCount: { type: string; description: string; defaultValue: number; }; }, ConfigurationSchemaOptions<undefined, undefined>>; ... 4 more ...; theme: { ....
+IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; }; }, ConfigurationSchemaOptions<...>>; ... 4 more ...
 // code
 config: createConfigModel(pluginManager, assemblyConfig)
 ```
@@ -137,7 +137,7 @@ version
 
 ```js
 // type
-ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; workerCount: { type: string; description: string; defaultValue: number; }; }, ConfigurationSchemaOptions<undefined, undefined>>; ... 4 more ......
+ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; }; }, ConfigurationSchemaOptions<...>>;...
 ```
 
 ### JBrowseReactLinearGenomeViewRootModel - Actions

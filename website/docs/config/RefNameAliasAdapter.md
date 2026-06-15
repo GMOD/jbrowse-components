@@ -55,6 +55,7 @@ column (0), change this variable if needed
 refNameColumn: {
       type: 'number',
       defaultValue: 0,
+      advanced: true,
     }
 ```
 
@@ -68,5 +69,6 @@ refNameColumnHeaderName: {
       description:
         'alternative to refNameColumn, instead looks at header (starts with # and finds column name)',
       defaultValue: '',
+      advanced: true,
     }
 ```

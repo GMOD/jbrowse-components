@@ -68,24 +68,26 @@ contextMenuInfo, userFeatureDensityLimit, heightBeforeExpand, incrementalLayout
 **Getters:** conf, visibleFeatureDensityPerPx, renderState,
 DisplayMessageComponent, showTooltipsEnabled, showLegend, maxHeight, autoHeight,
 displayMode, showLabelsMode, showLabels, showDescriptions, showOutline,
-featureColor, utrColor, effectiveShowDescriptions, selectedFeatureId,
-maxFeatureDensity, colorByCDS, sequenceAdapter, regionKeys, reversedRegions,
-featureWidgetType, bytesEstimateTooLarge, densityTooLarge, regionTooLarge,
-regionTooLargeReason, laidOutDataMap, maxY, hasOverflow, featureIdIndex,
-subfeatureIdIndex, hoveredFeature, hoveredSubfeature, featureItemMap,
-flatbushIndexes
+featureColor, utrColor, colorByMode, colorByAttribute,
+effectiveShowDescriptions, selectedFeatureId, maxFeatureDensity, colorByCDS,
+sequenceAdapter, regionKeys, reversedRegions, featureWidgetType,
+bytesEstimateTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
+laidOutDataMap, maxY, hasOverflow, featureIdIndex, subfeatureIdIndex,
+hoveredFeature, hoveredSubfeature, featureItemMap, flatbushIndexes
 
 **Methods:** rpcProps, getFeatureById, searchFeatureByID, renderSvg,
-showSubmenuMenuItems, contextMenuItems, trackMenuItems
+showSubmenuMenuItems, contextMenuItems, colorBySubMenuItems, colorMenuItems,
+trackMenuItems
 
 **Actions:** expandToFit, collapseFromExpand, clearHeightBeforeExpand,
 setRpcData, setDensityStats, clearDisplaySpecificData, pruneRpcDataMapToVisible,
 startRenderingBackend, setFeatureDensityStatsLimit, setHover, clearHover,
 setContextMenuFeature, setContextMenuInfo, selectFeature, clearSelection,
 setShowLabels, setAutoHeight, setShowDescriptions, setShowOutline,
-setFeatureColor, setUtrColor, showContextMenuForFeature, fetchFullFeature,
-selectFeatureById, isCacheValid, getByteEstimateConfig, selectFullFeature,
-reload, fetchNeeded, clearStaleDensityState, afterAttach
+setFeatureColor, setUtrColor, showContextMenuForFeature, openSetColorDialog,
+openColorByAttributeDialog, fetchFullFeature, selectFeatureById, isCacheValid,
+getByteEstimateConfig, selectFullFeature, reload, fetchNeeded,
+clearStaleDensityState, afterAttach
 
 ### Available via [BaseDisplay](../basedisplay)
 
@@ -167,13 +169,6 @@ setRenderError, attachRenderingBackend
 ```js
 // type
 ;'none' | 'overlay' | 'below'
-```
-
-#### getter: displayMode
-
-```js
-// type
-DisplayMode
 ```
 
 #### getter: geneGlyphMode

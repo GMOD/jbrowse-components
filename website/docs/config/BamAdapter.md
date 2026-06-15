@@ -92,5 +92,6 @@ fetchSizeLimit: {
       description:
         'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 5_000_000,
+      advanced: true,
     }
 ```

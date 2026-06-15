@@ -606,14 +606,14 @@ boolean
 
 ```js
 // type
-string
+'linear' | 'log'
 ```
 
 #### getter: autoscaleType
 
 ```js
 // type
-string
+'local' | 'localsd'
 ```
 
 #### getter: minScore
@@ -760,6 +760,16 @@ via rpcProps; the worker partitions one fetch into N sections.
 ```js
 // type
 GroupBy | undefined
+```
+
+#### getter: prefersOffset
+
+Offset the track label above the visualization when grouping, so the stacked
+group sections aren't hidden behind an overlapping label.
+
+```js
+// type
+boolean
 ```
 
 #### getter: coverageIsLog

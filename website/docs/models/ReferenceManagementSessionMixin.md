@@ -31,6 +31,17 @@ See if any MST nodes currently have a types.reference to this object.
 getReferring: (object: IAnyStateTreeNode) => ReferringNode[]
 ```
 
+#### method: getReferringMultiple
+
+Batch version of getReferring: walks the tree once and returns a map from
+trackId to referring nodes. Use this instead of calling getReferring() in a loop
+to avoid O(n × treeSize) traversals.
+
+```js
+// type signature
+getReferringMultiple: (tracks: IAnyStateTreeNode[]) => Map<string, ReferringNode[]>
+```
+
 ### ReferenceManagementSessionMixin - Actions
 
 #### action: removeReferring

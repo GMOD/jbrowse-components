@@ -69,11 +69,11 @@ deleteConnection, addConnectionConf, clearConnections
 
 **Getters:** tracks, getTracksById, tracksById
 
-**Actions:** addTrackConf, deleteTrackConf
+**Actions:** addTrackConf, updateTrackConfiguration, deleteTrackConf
 
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
-**Methods:** getReferring
+**Methods:** getReferring, getReferringMultiple
 
 **Actions:** removeReferring
 

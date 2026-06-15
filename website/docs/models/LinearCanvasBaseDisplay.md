@@ -281,7 +281,7 @@ boolean
 
 ```js
 // type
-DisplayMode
+;'normal' | 'compact' | 'superCompact' | 'reducedRepresentation' | 'collapse'
 ```
 
 #### getter: showLabelsMode
@@ -320,6 +320,20 @@ string
 ```
 
 #### getter: utrColor
+
+```js
+// type
+string
+```
+
+#### getter: colorByMode
+
+```js
+// type
+;'strand' | 'attribute' | 'solid'
+```
+
+#### getter: colorByAttribute
 
 ```js
 // type
@@ -525,11 +539,32 @@ showSubmenuMenuItems: () => ({ label: string; subMenu: { label: string; type: "r
 contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
+#### method: colorBySubMenuItems
+
+The "Color by..." radio choices (solid/strand/attribute). Split out so
+subclasses can reuse them while assembling their own color menu.
+
+```js
+// type signature
+colorBySubMenuItems: () => { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]
+```
+
+#### method: colorMenuItems
+
+Color-related track menu entries. Default surfaces the solid+UTR color picker
+alongside "Color by..."; subclasses (e.g. variants) override to drop the
+gene-oriented UTR picker and show only "Color by...".
+
+```js
+// type signature
+colorMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; })[]
+```
+
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; })[]; onClick?: undefined; } | { ...; } | { ...; })[]
+trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
 ```
 
 ### LinearCanvasBaseDisplay - Actions
@@ -686,6 +721,20 @@ setUtrColor: (color?: string | undefined) => void
 ```js
 // type signature
 showContextMenuForFeature: (featureInfo: FlatbushItem, displayedRegionIndex: number) => void
+```
+
+#### action: openSetColorDialog
+
+```js
+// type signature
+openSetColorDialog: (showUtrColor?: any) => void
+```
+
+#### action: openColorByAttributeDialog
+
+```js
+// type signature
+openColorByAttributeDialog: () => void
 ```
 
 #### action: fetchFullFeature

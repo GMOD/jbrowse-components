@@ -88,6 +88,7 @@ fine tier.
 coarseBpPerPxThreshold: {
       type: 'number',
       defaultValue: 10000,
+      advanced: true,
     }
 ```
 

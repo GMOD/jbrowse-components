@@ -35,6 +35,7 @@ sequenceAdapter: {
 windowSize: {
         type: 'number',
         defaultValue: 100,
+        advanced: true,
       }
 ```
 
@@ -44,6 +45,7 @@ windowSize: {
 windowDelta: {
         type: 'number',
         defaultValue: 100,
+        advanced: true,
       }
 ```
 

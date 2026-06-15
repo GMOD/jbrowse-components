@@ -48,7 +48,7 @@ removeSnackbarMessage
 
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
-**Methods:** getReferring
+**Methods:** getReferring, getReferringMultiple
 
 **Actions:** removeReferring
 
@@ -90,6 +90,17 @@ Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slot
 ```js
 // type signature
 addTrackConf: (trackConf: AnyConfiguration) => any
+```
+
+#### action: updateTrackConfiguration
+
+Persist edited track config back to the in-memory jbrowse config. The
+session-tracks mixin overrides this so a non-admin's edits become a shareable
+session-track override instead.
+
+```js
+// type signature
+updateTrackConfiguration: (trackConf: { [key: string]: unknown; trackId: string; }) => void
 ```
 
 #### action: deleteTrackConf

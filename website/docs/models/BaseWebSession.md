@@ -59,13 +59,6 @@ pendingFileHandleIds: [] as string[]
 
 ### BaseWebSession - Getters
 
-#### getter: tracks
-
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
-```
-
 #### getter: root
 
 ```js
@@ -100,9 +93,23 @@ TextSearchManager
 
 #### method: canEditTrack
 
+whether the user may edit this track's config (admins may edit any; everyone
+else only their own session tracks)
+
 ```js
 // type signature
 canEditTrack: (trackId: string) => boolean
+```
+
+#### method: isTrackOverride
+
+whether `trackId` is a session-track edit (see updateTrackConfiguration)
+shadowing an admin-owned config track of the same trackId, rather than a
+standalone user-added session track
+
+```js
+// type signature
+isTrackOverride: (trackId: string) => boolean
 ```
 
 #### method: getTrackActions
@@ -111,7 +118,7 @@ raw track actions (Settings, Copy, Delete) without submenu wrapper
 
 ```js
 // type signature
-getTrackActions: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
+getTrackActions: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
 ```
 
 #### method: getTrackListMenuItems
@@ -120,14 +127,14 @@ flattened menu items for use in hierarchical track selector
 
 ```js
 // type signature
-getTrackListMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
+getTrackListMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, extraTrackActions: MenuItem[] | undefined, effectiveConfig: Record<...>, view?: { ...; } | undefined) => MenuItem[]
+getTrackActionMenuItems: ({ config, effectiveConfig, extraTrackActions, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] ...
 ```
 
 ### BaseWebSession - Actions
@@ -168,6 +175,10 @@ setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps
 ```
 
 #### action: editTrackConfiguration
+
+opens the config editor for a track. Available for any track: edits to a
+non-session (admin-owned) track apply in-memory for the current session even
+when the user lacks rights to persist them.
 
 ```js
 // type signature

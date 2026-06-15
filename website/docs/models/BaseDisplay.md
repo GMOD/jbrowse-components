@@ -165,7 +165,10 @@ display. these are serialized and sent to the worker for server-side rendering
 
 ```js
 // type signature
-renderProps: () => any
+renderProps: () => {
+  notReady: boolean
+  rpcDriverName: any
+}
 ```
 
 #### method: renderingProps

@@ -34,6 +34,7 @@ maxHeight: {
         type: 'number',
         defaultValue: 1200,
         description: 'Maximum height of the display in pixels',
+        advanced: true,
       }
 ```
 
@@ -45,6 +46,7 @@ maxFeatureScreenDensity: {
         defaultValue: 1,
         description:
           'Maximum features per pixel before showing region too large message',
+        advanced: true,
       }
 ```
 
@@ -79,6 +81,7 @@ maxLabelFeatureDensity: {
         defaultValue: MAX_LABEL_FEATURE_DENSITY,
         description:
           'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
+        advanced: true,
       }
 ```
 
@@ -270,6 +273,7 @@ maxFeatureScreenDensity: {
       description:
         'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
       defaultValue: 0.3,
+      advanced: true,
     }
 ```
 
@@ -281,6 +285,7 @@ fetchSizeLimit: {
       defaultValue: 1_000_000,
       description:
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+      advanced: true,
     }
 ```
 

@@ -1000,7 +1000,10 @@ getTrackYOffset: (trackId: string) => number | undefined
 
 ```js
 // type signature
-renderProps: () => any
+renderProps: () => {
+  bpPerPx: number
+  colorByCDS: boolean
+}
 ```
 
 #### method: searchScope
@@ -1015,6 +1018,17 @@ searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateI
 ```js
 // type signature
 getTrack: (id: string) => any
+```
+
+#### method: getActiveDisplayId
+
+displayId of the active (shown) display for a track in this view, used by the
+config editor to expand the relevant display and collapse the track's other
+displays
+
+```js
+// type signature
+getActiveDisplayId: (trackId: string) => string | undefined
 ```
 
 #### method: getSelectedRegions

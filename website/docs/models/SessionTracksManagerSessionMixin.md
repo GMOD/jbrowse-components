@@ -29,7 +29,7 @@ and docs.
 
 **Getters:** tracks, getTracksById, tracksById
 
-**Actions:** addTrackConf, deleteTrackConf
+**Actions:** addTrackConf, updateTrackConfiguration, deleteTrackConf
 
 ### Available via [BaseSessionModel](../basesessionmodel)
 
@@ -54,7 +54,7 @@ removeSnackbarMessage
 
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
-**Methods:** getReferring
+**Methods:** getReferring, getReferringMultiple
 
 **Actions:** removeReferring
 
@@ -76,6 +76,11 @@ sessionTracks: types.stripDefault(
 
 #### getter: tracks
 
+Session tracks come first and shadow any config (jbrowse.tracks) track with the
+same trackId, so a non-admin's edits to a config track (stored as a same-id
+session override, see updateTrackConfiguration) replace the original everywhere
+it's resolved without showing a duplicate.
+
 ```js
 // type
 (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
@@ -88,6 +93,31 @@ sessionTracks: types.stripDefault(
 ```js
 // type signature
 addTrackConf: (trackConf: AnyConfiguration) => any
+```
+
+#### action: updateTrackConfiguration
+
+Persist edited track config. Admins edit the jbrowse config in place; everyone
+else gets a session-track override (same trackId) so the edits persist with the
+session and are shared, instead of being a throwaway in-memory mutation of an
+admin-owned config track.
+
+```js
+// type signature
+updateTrackConfiguration: (trackConf: { [key: string]: unknown; trackId: string; }) => void
+```
+
+#### action: resetTrackConfiguration
+
+Drop a session-track override (see updateTrackConfiguration) so the track
+reverts to its underlying config (jbrowse.tracks) default. Unlike
+deleteTrackConf this does not dereference the track from open views — the
+same-trackId config track re-resolves in place, so an open track stays open and
+simply reverts.
+
+```js
+// type signature
+resetTrackConfiguration: (trackId: string) => void
 ```
 
 #### action: deleteTrackConf

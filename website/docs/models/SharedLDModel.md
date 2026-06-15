@@ -166,7 +166,7 @@ number
 
 ```js
 // type
-LDMetric
+'r2' | 'dprime'
 ```
 
 #### getter: showLegend
@@ -358,7 +358,7 @@ model.fitToHeight, rpcData contents, …) re-fires it.
 
 ```js
 // type signature
-rpcProps: () => { ldMetric: LDMetric; minorAlleleFrequencyFilter: number; lengthCutoffFilter: number; hweFilterThreshold: number; callRateFilter: number; jexlFilters: string[]; signedLD: boolean; useGenomicPositions: boolean; }
+rpcProps: () => { ldMetric: "r2" | "dprime"; minorAlleleFrequencyFilter: number; lengthCutoffFilter: number; hweFilterThreshold: number; callRateFilter: number; jexlFilters: string[]; signedLD: boolean; useGenomicPositions: boolean; }
 ```
 
 #### method: hitTest

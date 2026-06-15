@@ -546,7 +546,10 @@ unknown
 
 ```js
 // type signature
-renderProps: () => any
+renderProps: () => {
+  drawCigar: boolean
+  highResolutionScaling: any
+}
 ```
 
 #### method: getHHighlightCoords

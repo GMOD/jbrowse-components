@@ -317,7 +317,7 @@ getRefSeqTrackConf: (assemblyName: string) => (ModelInstanceTypeProps<Record<str
 
 ```js
 // type signature
-itemOffsets: (height: number, scrollTop: number) => { startIndex: number; endIndex: number; totalHeight: number; itemOffsets: number[]; }
+itemOffsets: (height: number, scrollTop: number) => { startIndex: number; endIndex: number; totalHeight: number; }
 ```
 
 ### HierarchicalTrackSelectorWidget - Actions

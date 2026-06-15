@@ -29,6 +29,7 @@ threshold will be hidden
 minorAlleleFrequencyFilter: {
         type: 'number',
         defaultValue: 0.1,
+        advanced: true,
       }
 ```
 
@@ -40,6 +41,7 @@ Maximum length of variants to include (in bp)
 lengthCutoffFilter: {
         type: 'number',
         defaultValue: Number.MAX_SAFE_INTEGER,
+        advanced: true,
       }
 ```
 
@@ -51,6 +53,7 @@ Height of the zone for connecting lines at the top
 lineZoneHeight: {
         type: 'number',
         defaultValue: 100,
+        advanced: true,
       }
 ```
 
@@ -107,6 +110,7 @@ Height of the recombination track zone at the top
 recombinationZoneHeight: {
         type: 'number',
         defaultValue: 50,
+        advanced: true,
       }
 ```
 
@@ -118,6 +122,7 @@ When true, squash the LD triangle to fit the display height
 fitToHeight: {
         type: 'boolean',
         defaultValue: false,
+        advanced: true,
       }
 ```
 
@@ -130,6 +135,7 @@ to disable HWE filtering
 hweFilterThreshold: {
         type: 'number',
         defaultValue: 0,
+        advanced: true,
       }
 ```
 
@@ -142,6 +148,7 @@ non-missing genotypes are excluded. Set to 0 to disable.
 callRateFilter: {
         type: 'number',
         defaultValue: 0,
+        advanced: true,
       }
 ```
 
@@ -153,6 +160,7 @@ Whether to show vertical guides at the connected genome positions on hover
 showVerticalGuides: {
         type: 'boolean',
         defaultValue: true,
+        advanced: true,
       }
 ```
 
@@ -164,6 +172,7 @@ Whether to show variant labels above the tick marks
 showLabels: {
         type: 'boolean',
         defaultValue: false,
+        advanced: true,
       }
 ```
 
@@ -175,6 +184,7 @@ Height of the vertical tick marks at the genomic position
 tickHeight: {
         type: 'number',
         defaultValue: 6,
+        advanced: true,
       }
 ```
 
@@ -187,6 +197,7 @@ than uniform squares
 useGenomicPositions: {
         type: 'boolean',
         defaultValue: false,
+        advanced: true,
       }
 ```
 
@@ -199,6 +210,7 @@ For R², this shows R (correlation) instead. For D', this preserves the sign.
 signedLD: {
         type: 'boolean',
         defaultValue: false,
+        advanced: true,
       }
 ```
 
@@ -210,6 +222,7 @@ JEXL filter expressions to apply to variants (one per line, starting with jexl:)
 jexlFilters: {
         type: 'stringArray',
         defaultValue: [],
+        advanced: true,
       }
 ```
 
@@ -228,6 +241,7 @@ maxFeatureScreenDensity: {
       description:
         'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
       defaultValue: 0.3,
+      advanced: true,
     }
 ```
 
@@ -239,6 +253,7 @@ fetchSizeLimit: {
       defaultValue: 1_000_000,
       description:
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+      advanced: true,
     }
 ```
 

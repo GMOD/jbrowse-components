@@ -60,6 +60,7 @@ maxHeight: {
         defaultValue: 6000,
         description:
           'Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)',
+        advanced: true,
       }
 ```
 
@@ -79,6 +80,7 @@ colorBy: {
         type: 'frozen',
         defaultValue: { type: 'normal' },
         description: 'Color scheme for reads',
+        advanced: true,
       }
 ```
 
@@ -92,6 +94,7 @@ filterBy: {
           flagExclude: 1540,
         },
         description: 'Filter settings for reads',
+        advanced: true,
       }
 ```
 
@@ -116,6 +119,7 @@ minScore: {
         type: 'number',
         defaultValue: Number.MIN_VALUE,
         description: 'Minimum coverage depth bound',
+        advanced: true,
       }
 ```
 
@@ -126,6 +130,7 @@ maxScore: {
         type: 'number',
         defaultValue: Number.MAX_VALUE,
         description: 'Maximum coverage depth bound',
+        advanced: true,
       }
 ```
 
@@ -147,6 +152,7 @@ numStdDev: {
         type: 'number',
         defaultValue: 3,
         description: 'Number of standard deviations for localsd autoscale',
+        advanced: true,
       }
 ```
 
@@ -165,6 +171,7 @@ maxFeatureScreenDensity: {
       description:
         'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
       defaultValue: 0.3,
+      advanced: true,
     }
 ```
 
@@ -176,6 +183,7 @@ fetchSizeLimit: {
       defaultValue: 1_000_000,
       description:
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+      advanced: true,
     }
 ```
 

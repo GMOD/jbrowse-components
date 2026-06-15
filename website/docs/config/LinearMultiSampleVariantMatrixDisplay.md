@@ -50,6 +50,7 @@ maxFeatureScreenDensity: {
       description:
         'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
       defaultValue: 0.3,
+      advanced: true,
     }
 ```
 
@@ -61,6 +62,7 @@ fetchSizeLimit: {
       defaultValue: 1_000_000,
       description:
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+      advanced: true,
     }
 ```
 
