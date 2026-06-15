@@ -67,4 +67,6 @@ variants, quantitative/coverage, and Hi-C data.
 ## Contact information
 
 Feel free to [contact us](/contact) if you have questions, issues, suggestions,
-improvements, or feedback. Enjoy!
+improvements, or feedback.
+
+Enjoy!

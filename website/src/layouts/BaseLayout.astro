@@ -115,6 +115,9 @@ const navActive = styles.navActive!
             </a>
           ))
         }
+      </div>
+
+      <div class={styles.navRight}>
         <a
           href={`${baseUrl}/search/`}
           class:list={[
@@ -137,10 +140,6 @@ const navActive = styles.navActive!
             ></path>
           </svg>Search
         </a>
-      </div>
-
-      <div class={styles.navRight}>
-        <a href="https://jbrowse.org/jbrowse1.html">Looking for JBrowse 1?</a>
         <a
           href="https://github.com/GMOD/jbrowse-components"
           class:list={[styles.socialIcon, styles.githubIcon]}
@@ -153,6 +152,10 @@ const navActive = styles.navActive!
           href="https://bsky.app/profile/jbrowse.org"
           class:list={[styles.socialIcon, styles.blueskyIcon]}
           aria-label="Bluesky"></a>
+        <a
+          href="https://www.youtube.com/@jbrowse6740"
+          class:list={[styles.socialIcon, styles.youtubeIcon]}
+          aria-label="YouTube"></a>
       </div>
 
       <button
@@ -200,6 +203,13 @@ const navActive = styles.navActive!
                 href="https://genomic.social/@usejbrowse"
                 target="_blank"
                 rel="noopener noreferrer">Mastodon ↗</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://www.youtube.com/@jbrowse6740"
+                target="_blank"
+                rel="noopener noreferrer">YouTube ↗</a
               >
             </li>
           </ul>
