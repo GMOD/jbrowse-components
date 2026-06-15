@@ -105,6 +105,3 @@ export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
 export type AnyConfiguration =
   | AnyConfigurationModel
   | SnapshotOut<AnyConfigurationModel>
-
-export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
-  Instance<SCHEMA>

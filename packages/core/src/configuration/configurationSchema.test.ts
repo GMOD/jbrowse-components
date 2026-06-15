@@ -729,3 +729,66 @@ describe('ConfigurationReference', () => {
     })
   })
 })
+
+describe('readConfObject path resolution', () => {
+  test('no path returns the whole config snapshot (defaults stripped)', () => {
+    const schema = ConfigurationSchema('Whole', {
+      a: { type: 'number', defaultValue: 1 },
+      b: { type: 'string', defaultValue: 'x' },
+    })
+    const node = schema.create({ b: 'y' }, { pluginManager })
+    expect(readConfObject(node)).toEqual({ b: 'y' })
+  })
+
+  test('a nested array path evaluates a jexl callback with args', () => {
+    const schema = ConfigurationSchema('Outer', {
+      labels: ConfigurationSchema('Labels', {
+        name: {
+          type: 'string',
+          defaultValue: "jexl:get(feature,'n')",
+          contextVariable: ['feature'],
+        },
+      }),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    const out = readConfObject(node, ['labels', 'name'], {
+      feature: { get: (k: string) => (k === 'n' ? 'HELLO' : undefined) },
+    })
+    expect(out).toBe('HELLO')
+  })
+
+  test('a missing sub-config in an array path yields undefined, not a throw', () => {
+    const schema = ConfigurationSchema('Outer', {
+      a: { type: 'number', defaultValue: 1 },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(readConfObject(node, ['missing', 'deeper'])).toBeUndefined()
+  })
+
+  // A top-level config can itself be a types.map (e.g. an assembly's per-key
+  // configs). rawSlotValue falls back from property access to map.get() so the
+  // same readConfObject API drills into map entries. Easy to break unknowingly.
+  describe('top-level types.map config (rawSlotValue map fallback)', () => {
+    const MapConfig = types.map(
+      ConfigurationSchema('Item', { val: { type: 'number', defaultValue: 1 } }),
+    )
+    const make = () =>
+      MapConfig.create({ a: { val: 5 }, b: { val: 1 } }, { pluginManager })
+
+    test('reading a key returns that entry as a snapshot', () => {
+      expect(readConfObject(make(), 'a')).toEqual({ val: 5 })
+    })
+
+    test('an all-default entry snapshots as an empty object', () => {
+      expect(readConfObject(make(), 'b')).toEqual({})
+    })
+
+    test('a missing key returns undefined', () => {
+      expect(readConfObject(make(), 'zzz')).toBeUndefined()
+    })
+
+    test('an array path drills into a map entry slot', () => {
+      expect(readConfObject(make(), ['a', 'val'])).toBe(5)
+    })
+  })
+})

@@ -275,8 +275,8 @@
     {
       "type": "GWASTrack",
       "trackId": "volvox_gwas",
-      "name": "GWAS test",
-      "category": ["Annotation"],
+      "name": "Manhattan plot",
+      "category": ["Variants"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "GWASAdapter",

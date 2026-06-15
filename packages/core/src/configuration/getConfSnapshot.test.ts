@@ -1,3 +1,5 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { getConfSnapshot, readConfObject, readConfigValue } from './util.ts'
@@ -117,6 +119,32 @@ describe('getConfSnapshot', () => {
     const snap = getConfSnapshot(config)
     const labels = snap.labels as Record<string, unknown>
     expect(labels.name).toBe("jexl:get(feature,'name')")
+  })
+
+  it('drops arrays/maps of sub-schemas and string/number constants', () => {
+    // Only scalars + direct sub-configs survive. An array/map of sub-schemas
+    // would otherwise recurse to a meaningless `{}` (its MST node reports as a
+    // config model but the array/map type has no slot table); constants are
+    // editor metadata, not config the worker reads.
+    const schema = ConfigurationSchema('WithCollections', {
+      scalar: { type: 'number', defaultValue: 7 },
+      sub: ConfigurationSchema('Sub', {
+        x: { type: 'number', defaultValue: 1 },
+      }),
+      arr: types.array(
+        ConfigurationSchema('Arr', { y: { type: 'number', defaultValue: 2 } }),
+      ),
+      mp: types.map(
+        ConfigurationSchema('Mp', { z: { type: 'number', defaultValue: 3 } }),
+      ),
+      label: 'constant',
+    })
+    const node = schema.create(
+      { arr: [{ y: 9 }], mp: { k: { z: 4 } } },
+      { pluginManager: pm },
+    )
+
+    expect(getConfSnapshot(node)).toEqual({ scalar: 7, sub: { x: 1 } })
   })
 })
 

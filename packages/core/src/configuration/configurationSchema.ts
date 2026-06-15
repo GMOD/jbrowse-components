@@ -202,15 +202,14 @@ function makeConfigurationSchemaModel<
   if (options.extend) {
     completeModel = completeModel.extend(options.extend)
   }
+  if (options.preProcessSnapshot) {
+    completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
+  }
 
   const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
   const modelDefault = options.explicitlyTyped
     ? { type: modelName, ...identifierDefault }
     : identifierDefault
-
-  if (options.preProcessSnapshot) {
-    completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
-  }
 
   // stripDefault (not optional) so a nested all-default sub-schema is omitted
   // from its parent's snapshot: the slot props strip themselves, the sub-schema
@@ -233,19 +232,20 @@ export interface ConfigurationSchemaType<
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
 > extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
   type: string
-  [key: string]: unknown
 }
 
 export function ConfigurationSchema<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined = undefined,
   EXPLICIT_IDENTIFIER extends string | undefined = undefined,
 >(
   modelName: string,
   inputSchemaDefinition: DEFINITION,
   inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
-): ConfigurationSchemaType<DEFINITION, OPTIONS> {
+): ConfigurationSchemaType<
+  DEFINITION,
+  ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>
+> {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
     inputSchemaDefinition,

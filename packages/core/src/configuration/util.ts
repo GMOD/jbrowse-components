@@ -34,6 +34,7 @@ import type {
 } from './types.ts'
 import type { Feature } from '../util/index.ts'
 import type { JexlInstance } from '../util/jexlStrings.ts'
+import type { IMSTMap } from '@jbrowse/mobx-state-tree'
 
 // Evaluate a slot's `jexl:...` callback string. The pluginManager's jexl
 // instance (carrying plugin-registered functions) comes from the config node's
@@ -50,17 +51,52 @@ function evalConfigCallback(
   return evaluateJexl(expr, args, jexl)
 }
 
-// Read a slot's raw stored value. Top-level configs can themselves be a
-// types.map (e.g. an assembly's per-key configs), where stored entries are
-// reachable via `.get()` rather than property access — fall back to that when
-// plain indexing misses.
-function rawSlotValue(confObject: AnyConfigurationModel, slotName: string) {
-  const value = confObject[slotName]
-  return value === undefined &&
-    isStateTreeNode(confObject) &&
-    isMapType(getType(confObject))
+// A config readable by readConfObject: a normal schema model, or a top-level
+// types.map of sub-schemas (e.g. an assembly's per-key configs) whose entries
+// are reachable via `.get()` rather than property access.
+type ReadableConfig =
+  | AnyConfigurationModel
+  | IMSTMap<AnyConfigurationSchemaType>
+
+function isConfigMap(
+  confObject: ReadableConfig,
+): confObject is IMSTMap<AnyConfigurationSchemaType> {
+  return isStateTreeNode(confObject) && isMapType(getType(confObject))
+}
+
+// Read a slot's raw stored value, drilling into a map entry via `.get()` when
+// the config is itself a types.map.
+function rawSlotValue(confObject: ReadableConfig, slotName: string) {
+  return isConfigMap(confObject)
     ? confObject.get(slotName)
+    : confObject[slotName]
+}
+
+// Read and resolve a single slot: raw value, jexl callback evaluation, then a
+// referentially-stable snapshot for sub-config nodes.
+function readSlot(
+  confObject: ReadableConfig,
+  slotName: string,
+  args: Record<string, unknown>,
+) {
+  // strict undefined check, not truthiness — a slot value can legitimately be
+  // falsy (0, '', false, null)
+  const value = rawSlotValue(confObject, slotName)
+  if (value === undefined) {
+    return undefined
+  }
+  const val = isCallbackValue(value)
+    ? evalConfigCallback(value, args, confObject)
     : value
+  // Fast path for primitives (most common case)
+  if (val === null || typeof val !== 'object') {
+    return val
+  }
+  // Return the live, referentially-stable snapshot (frozen in dev) rather than
+  // a per-read clone: stable identity lets downstream computeds memoize, and
+  // the old structuredClone was both a hot-path allocation and a source of
+  // spurious recomputation. Treat as read-only.
+  return isStateTreeNode(val) ? getSnapshot(val) : val
 }
 
 /**
@@ -86,11 +122,19 @@ export function readConfObject<
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
   : any
+// A top-level config can itself be a types.map of sub-schemas (e.g. an
+// assembly's per-key configs); rawSlotValue falls back to map.get() for these.
+// The map node lacks the schema model's actions, so it needs its own overload.
+export function readConfObject(
+  confObject: IMSTMap<AnyConfigurationSchemaType>,
+  slotPath?: string | string[],
+  args?: Record<string, unknown>,
+): any
 // loose implementation signature: the body returns values that are `any` by
 // nature (raw slot values, snapshots); the typed overload above is what callers
 // see.
 export function readConfObject(
-  confObject: AnyConfigurationModel,
+  confObject: ReadableConfig,
   slotPath?: string | string[],
   args: Record<string, unknown> = {},
 ): any {
@@ -99,25 +143,7 @@ export function readConfObject(
     // snapshot (frozen in dev), not a fresh clone — treat as read-only
     return isStateTreeNode(confObject) ? getSnapshot(confObject) : confObject
   } else if (typeof slotPath === 'string') {
-    // slot value, sub-configuration node, primitive, or undefined. Use a strict
-    // undefined check, not truthiness — a slot value can legitimately be falsy
-    // (0, '', false, null).
-    const value = rawSlotValue(confObject, slotPath)
-    if (value === undefined) {
-      return undefined
-    }
-    const val = isCallbackValue(value)
-      ? evalConfigCallback(value, args, confObject)
-      : value
-    // Fast path for primitives (most common case)
-    if (val === null || typeof val !== 'object') {
-      return val
-    }
-    // Return the live, referentially-stable snapshot (frozen in dev) rather than
-    // a per-read clone: stable identity lets downstream computeds memoize, and
-    // the old structuredClone was both a hot-path allocation and a source of
-    // spurious recomputation. Treat as read-only.
-    return isStateTreeNode(val) ? getSnapshot(val) : val
+    return readSlot(confObject, slotPath, args)
   } else if (Array.isArray(slotPath)) {
     const slotName = slotPath[0]!
     if (slotPath.length > 1) {
@@ -126,7 +152,7 @@ export function readConfObject(
         ? undefined
         : readConfObject(subConf, slotPath.slice(1), args)
     }
-    return readConfObject(confObject, slotName, args)
+    return readSlot(confObject, slotName, args)
   }
   throw new TypeError('slotPath must be a string or array')
 }
@@ -153,10 +179,18 @@ export function getConfSnapshot(confObject: AnyConfigurationModel) {
       // jexl callback strings pass through raw for per-feature evaluation in
       // the worker.
       result[key] = isStateTreeNode(v) ? getSnapshot(v) : v
-    } else if (isConfigurationSchemaType(def) && isConfigurationModel(v)) {
-      // a direct sub-configuration recurses; arrays/maps of sub-schemas (whose
-      // value isn't a single config model) are intentionally dropped — no
-      // current caller needs them. Constants are skipped entirely.
+    } else if (
+      isConfigurationSchemaType(def) &&
+      !isArrayType(def) &&
+      !isMapType(def) &&
+      isConfigurationModel(v)
+    ) {
+      // a direct sub-configuration recurses. Arrays/maps of sub-schemas are
+      // dropped: their MST node also reports as a config model, but the
+      // array/map type carries no registered slot table, so recursing would
+      // emit a meaningless `{}` (a type-confusion hazard for a consumer
+      // expecting the array). No current caller (rpcProps) needs them.
+      // Constants are skipped entirely.
       result[key] = getConfSnapshot(v)
     }
   }

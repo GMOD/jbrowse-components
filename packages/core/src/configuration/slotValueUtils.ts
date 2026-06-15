@@ -81,7 +81,7 @@ export function toFixedValue(
     if (result !== undefined) {
       return result
     }
-  } catch (e) {
+  } catch {
     /* fall through to default */
   }
   if (isCallbackValue(defaultValue)) {
