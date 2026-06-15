@@ -211,9 +211,9 @@
   },
   "linear_synteny": {
     "name": "linear_synteny",
-    "status": "good",
-    "note": "this is a good screenshot and we could keep it for another screenshot in linear_synteny_view.md but i want this one https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt in the gallery.",
-    "reviewedAt": "2026-06-15T13:19:48.150Z"
+    "status": "bad",
+    "note": "this is a good screenshot and we could keep it for another screenshot in linear_synteny_view.md, but i want this one to be used for this image: https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt in the gallery.",
+    "reviewedAt": "2026-06-15T16:51:24.177Z"
   },
   "about_track": {
     "name": "about_track",
@@ -397,9 +397,9 @@
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
-    "status": "good",
-    "note": "fixed: Add track label moved above-left of the FAB (dx -70, dy -52) so it no longer overlaps the button; FAB still boxed.",
-    "reviewedAt": "2026-06-14T20:30:00.000Z"
+    "status": "bad",
+    "note": "please use volvox-bam for this instead of the gff",
+    "reviewedAt": "2026-06-15T16:19:24.684Z"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -469,9 +469,9 @@
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
-    "status": "good",
-    "note": "fixed: volvox_bam in both stages (testid htsTrackEntryMenu-Tracks,volvox_bam; filter volvox-sorted); viewportHeight 560.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "we may want to turn off text match highlight on hierarchical tracklist by default at least, it is distracting",
+    "reviewedAt": "2026-06-15T16:22:51.619Z"
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
