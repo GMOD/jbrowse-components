@@ -1,0 +1,23 @@
+---
+import { Code } from 'astro:components'
+
+import WithInit from '../examples/WithInit.tsx'
+import withInitSource from '../examples/WithInit.tsx?raw'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>JBrowse Linear Genome View — WithInit example</title>
+  </head>
+  <body>
+    <h1>WithInit</h1>
+    <p>
+      Initializes the view with an assembly, a track, and a starting
+      location.
+    </p>
+    <WithInit client:only="react" />
+    <h2>Source</h2>
+    <Code code={withInitSource} lang="tsx" />
+  </body>
+</html>

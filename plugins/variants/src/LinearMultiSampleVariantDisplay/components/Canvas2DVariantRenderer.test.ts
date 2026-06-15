@@ -270,11 +270,11 @@ describe('Canvas2DVariantRenderer', () => {
       renderer.renderBlocks([makeBlock()], regions, DEFAULT_STATE)
 
       // span = 80px ≥ INS_TRI_SPAN_PX so triBlend = 1: a triangle whose base
-      // is the full span (0..80) collapsing to an apex (bottom width 0) at the
-      // span center (px 40). Bottom edge is two coincident apex points.
+      // is capped at INS_TRI_SPAN_PX (10px), centered on the span center (px
+      // 40), collapsing to an apex (bottom width 0) at that same center.
       const moveOp = pathOps.find(op => op.startsWith('moveTo'))
-      expect(moveOp).toBe('moveTo(0,0)')
-      expect(pathOps).toContain('lineTo(80,0)')
+      expect(moveOp).toBe('moveTo(35,0)')
+      expect(pathOps).toContain('lineTo(45,0)')
       expect(pathOps).toContain('lineTo(40,10)')
       expect(pathOps).toContain('fill')
     })

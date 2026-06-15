@@ -1,6 +1,7 @@
 packages:
   - 'packages/*'
   - 'products/*'
+  - 'products/*/examples-site'
   - 'plugins/*'
   - 'website'
 blockExoticSubdeps: true

@@ -12,7 +12,8 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // Insertion glyph triangle↔line fade. These MIRROR `insertionGlyph` in
 // ../variantShape.ts (the canonical definition) — edit both together. span ≤
 // INS_LINE_SPAN_PX px collapses to a line; ≥ INS_TRI_SPAN_PX px is a full
-// triangle; INS_LINE_WIDTH_PX is the collapsed line thickness / min width.
+// triangle whose base width caps at INS_TRI_SPAN_PX; INS_LINE_WIDTH_PX is the
+// collapsed line thickness / min width.
 static const float INS_LINE_SPAN_PX = 2.0;
 static const float INS_TRI_SPAN_PX = 10.0;
 static const float INS_LINE_WIDTH_PX = 2.0;
@@ -83,7 +84,8 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   if (inst.shapeType == 3u) {
     float spanPx = (clipX2 - clipX1) * u.canvasWidth * 0.5;
     triBlend = smoothstep(INS_LINE_SPAN_PX, INS_TRI_SPAN_PX, spanPx);
-    float topWidthPx = lerp(INS_LINE_WIDTH_PX, max(spanPx, INS_LINE_WIDTH_PX), triBlend);
+    float cappedSpan = min(spanPx, INS_TRI_SPAN_PX);
+    float topWidthPx = lerp(INS_LINE_WIDTH_PX, max(cappedSpan, INS_LINE_WIDTH_PX), triBlend);
     float halfClip = topWidthPx / u.canvasWidth;
     float center = (cx1 + cx2) * 0.5;
     xLeft = center - halfClip;

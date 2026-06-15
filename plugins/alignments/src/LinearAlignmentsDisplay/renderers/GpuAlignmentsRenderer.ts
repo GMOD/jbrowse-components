@@ -128,7 +128,6 @@ const PASS_FLAT_QUAD = 'flatQuad'
 // alignmentsUniforms.slang; adding a new field means updating both.
 function fillFrameUniforms(
   f: Float32Array,
-  u: Uint32Array,
   i: Int32Array,
   state: RenderState,
   frame: BlockFrame,
@@ -206,7 +205,7 @@ interface ArcFrame {
   dpr: number
   covOffset: number
 }
-function fillArcUniforms(f: Float32Array, u: Uint32Array, a: ArcFrame) {
+function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   const { block, state, scissorX, scissorW, arcViewportH, dpr, covOffset } = a
   const blockW = block.screenEndPx - block.screenStartPx
   const [hi, lo] = splitPositionWithFrac(block.start)
@@ -340,14 +339,164 @@ interface LocalRegion extends ChainBoundsRegion {
 
 const OVERLAY_REGION = 999999
 
+// A device-px vertical span: scissor/viewport top + height in backing-store px.
+interface DevBand {
+  top: number
+  height: number
+}
+
 // Convert a CSS-px vertical band [top, top+height] to a device-px scissor band,
 // clamped to the backing store. Rounding the top and bottom edges separately
 // (rather than top + round(height)) keeps the single-section case bit-exact
 // with the prior `bufH - round(top*dpr)` math.
-function devBand(top: number, height: number, dpr: number, bufH: number) {
+function devBand(
+  top: number,
+  height: number,
+  dpr: number,
+  bufH: number,
+): DevBand {
   const t = Math.max(0, Math.round(top * dpr))
   const b = Math.min(bufH, Math.round((top + height) * dpr))
   return { top: t, height: Math.max(0, b - t) }
+}
+
+// Per-block screen geometry shared by every section: the on-screen scissor span
+// (CSS px), the genomic window that span maps to, and the device-px viewport.
+// `scissorW <= 0` means the block is fully off-screen and the caller skips it.
+interface BlockGeom {
+  scissorX: number
+  scissorW: number
+  clippedBpStart: number
+  clippedBpEnd: number
+  bpHi: number
+  bpLo: number
+  vpX: number
+  vpW: number
+}
+
+// Pure: clip a block to the canvas and derive the bp window of the visible
+// slice. `reversed` blocks measure the clipped offset from the right edge.
+function computeBlockGeom(
+  block: RenderBlock,
+  canvasWidth: number,
+  dpr: number,
+): BlockGeom {
+  const scissorX = Math.max(0, Math.floor(block.screenStartPx))
+  const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
+  const scissorW = scissorEnd - scissorX
+
+  const fullBlockWidth = block.screenEndPx - block.screenStartPx
+  const bpPerPx =
+    fullBlockWidth > 0 ? (block.end - block.start) / fullBlockWidth : 1
+  const pxFromEdge = block.reversed
+    ? block.screenEndPx - scissorEnd
+    : scissorX - block.screenStartPx
+  const clippedBpStart = block.start + pxFromEdge * bpPerPx
+  const clippedBpEnd = clippedBpStart + scissorW * bpPerPx
+  const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
+
+  return {
+    scissorX,
+    scissorW,
+    clippedBpStart,
+    clippedBpEnd,
+    bpHi,
+    bpLo,
+    vpX: Math.round(scissorX * dpr),
+    vpW: Math.round(scissorW * dpr),
+  }
+}
+
+// Pileup draw passes in z-order (back to front). Each pass draws only when its
+// flag is set; the order here IS the on-screen layering, so it's the one place
+// to look when a layer paints over another. READ and CLIP are unconditional.
+function pileupPassPlan(
+  state: RenderState,
+): [pass: string, enabled: boolean][] {
+  return [
+    [PASS_CONN_LINE, state.linkedReads === 'normal'],
+    [PASS_LINKED_READ_LINE, state.showLinkedReadLines],
+    [PASS_READ, true],
+    [PASS_OVERLAP, shouldDrawOverlaps(state)],
+    [PASS_MOD, state.showModifications],
+    [PASS_PER_BASE_QUAL, state.showPerBaseQuality],
+    [PASS_GAP, state.showMismatches],
+    [PASS_MISMATCH, state.showMismatches],
+    [PASS_INSERTION, state.showMismatches],
+    [PASS_CLIP, true],
+    [PASS_SOFTCLIP_BASES, state.showSoftClipping],
+    [PASS_PER_BASE_LETTER, state.showPerBaseLetter],
+  ]
+}
+
+// Coverage-band passes in z-order. All unconditional within the band; the band
+// itself is gated by `showCoverage` at the call site.
+const COVERAGE_PASSES = [
+  PASS_COVERAGE,
+  PASS_SNP_COV,
+  PASS_MOD_COV,
+  PASS_INTERBASE,
+  PASS_INDICATOR,
+]
+
+// JBrowse brand blue (#00B8FF approx) in normalized linear RGB.
+const SELECTION_RGBA = [0, 0.722, 1, 1] as const
+
+// A clip-space selection rectangle, as returned by `toClipRect`.
+interface ClipRect {
+  sx1: number
+  sx2: number
+  syTop: number
+  syBot: number
+}
+
+// Append 4 quads forming a 2px-wide selection frame (top + bottom + two sides)
+// to `out`. 2 CSS px matches Canvas2D's strokeRect(lineWidth=2) so the box looks
+// identical on the GPU fallback; tx/ty convert that to clip space. Each quad is
+// 8 floats: x1,y1,x2,y2,r,g,b,a.
+function pushSelectionFrame(
+  out: number[],
+  c: ClipRect,
+  scissorW: number,
+  canvasHeight: number,
+) {
+  const tx = 2 / scissorW
+  const ty = 2 / canvasHeight
+  const [r, g, b, a] = SELECTION_RGBA
+  out.push(
+    c.sx1,
+    c.syTop,
+    c.sx2,
+    c.syTop - ty,
+    r,
+    g,
+    b,
+    a,
+    c.sx1,
+    c.syBot + ty,
+    c.sx2,
+    c.syBot,
+    r,
+    g,
+    b,
+    a,
+    c.sx1,
+    c.syTop,
+    c.sx1 + tx,
+    c.syBot,
+    r,
+    g,
+    b,
+    a,
+    c.sx2 - tx,
+    c.syTop,
+    c.sx2,
+    c.syBot,
+    r,
+    g,
+    b,
+    a,
+  )
 }
 
 export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
@@ -377,22 +526,21 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   }
 
   sync(sources: AlignmentsSources) {
-    // Bracket every upload in one rebuild transaction: endUpload() destroys any
-    // pass buffer not rewritten below, so a pass whose data went empty (and was
-    // therefore skipped by its `if (n > 0)` guard) can't leave a stale buffer —
-    // no per-region pre-wipe needed, and the guards stay safe by construction.
+    // Full rebuild each sync, mirroring Canvas2DAlignmentsRenderer.sync. The HAL
+    // side is bracketed by beginUpload/endUpload: endUpload destroys any pass
+    // buffer not rewritten below, so a pass whose data went empty (and was
+    // skipped by its `if (n > 0)` guard) can't leave a stale buffer. The
+    // renderer-side metadata map is rebuilt the same way — cleared up front and
+    // repopulated only for regions present this sync, so it can never hold a
+    // stale entry. No manual prune, no `active` bookkeeping to drift out of sync
+    // with the HAL. Each (section, region) pair is namespaced via
+    // sectionRegionKey; section 0 keys equal the raw region index, so the
+    // ungrouped path is byte-identical to pre-grouping.
     this.hal.beginUpload()
-    // `active` must union every section's keys plus arcs before the metadata
-    // prune: arcs can arrive for a region whose pileup hasn't loaded yet, and
-    // pruning by pileup-only would drop the arc region's renderer-side
-    // metadata. Each (section, region) pair is namespaced via sectionRegionKey;
-    // section 0 keys equal the raw region index, so the ungrouped path is
-    // byte-identical to pre-grouping.
-    const active: number[] = []
+    this.regions.clear()
     sources.sections.forEach((section, s) => {
       for (const [regionIdx, data] of section.laidOutPileupMap) {
         const idx = sectionRegionKey(s, regionIdx)
-        active.push(idx)
         this.uploadReads(idx, data)
         uploadGaps(this.hal, idx, data)
         uploadMismatches(this.hal, idx, data)
@@ -423,27 +571,18 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
           uploadOverlaps(this.hal, idx, data)
         }
       }
-      // Each section draws its own arcs. A region with arcs but no pileup
-      // (mate off-screen) still needs its renderer-side metadata + active slot.
+      // Each section draws its own arcs. A region with arcs but no pileup (mate
+      // off-screen) still needs an empty metadata entry so renderBlocks can find
+      // it; the pileup loop above already populated every region it touched.
       for (const [regionIdx, data] of section.arcsRpcDataMap) {
         const idx = sectionRegionKey(s, regionIdx)
         if (!section.laidOutPileupMap.has(regionIdx)) {
-          active.push(idx)
           ensureRegion(this.regions, idx, emptyRegion)
         }
         uploadArcs(this.hal, idx, data)
       }
     })
-    // Sweeps every HAL buffer not rewritten above — stale passes in active
-    // regions and every pass of regions that dropped out this sync.
     this.hal.endUpload()
-    // Prune the renderer-side metadata map for regions endUpload just cleared.
-    const activeSet = new Set(active)
-    for (const idx of this.regions.keys()) {
-      if (!activeSet.has(idx)) {
-        this.regions.delete(idx)
-      }
-    }
   }
 
   uploadReads(displayedRegionIndex: number, data: ReadUploadData) {
@@ -500,7 +639,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   }
 
   private writeUniforms(state: RenderState, frame: BlockFrame) {
-    fillFrameUniforms(this.uF32, this.uU32, this.uI32, state, frame)
+    fillFrameUniforms(this.uF32, this.uI32, state, frame)
     writePaletteToUbo(this.uU32, state.colors)
     if (state.showModifications) {
       // Canvas equivalent: buildBaseColorTupleMap / buildCigarOpDrawColors in
@@ -525,154 +664,15 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
     let hasDrawn = false
     for (const block of blocks) {
-      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
-      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-      const scissorW = scissorEnd - scissorX
-      if (scissorW <= 0) {
-        continue
-      }
-
-      const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const bpPerPx =
-        fullBlockWidth > 0 ? (block.end - block.start) / fullBlockWidth : 1
-
-      const pxFromEdge = block.reversed
-        ? block.screenEndPx - scissorEnd
-        : scissorX - block.screenStartPx
-      const clippedBpStart = block.start + pxFromEdge * bpPerPx
-      const clippedBpEnd = clippedBpStart + scissorW * bpPerPx
-      const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
-
-      const vpX = Math.round(scissorX * dpr)
-      const vpW = Math.round(scissorW * dpr)
-
-      // Each stacked section sets its own coverage/pileup vertical offsets and
-      // clip bands. Section 0's region key equals the raw region index, so the
-      // ungrouped (single-section) case reproduces the prior draw exactly.
-      for (let s = 0; s < state.sections.length; s++) {
-        const sec = state.sections[s]!
-        const regionKey = sectionRegionKey(s, block.displayedRegionIndex)
-        const region = this.regions.get(regionKey)
-        if (!region) {
-          continue
-        }
-        const frame: BlockFrame = {
-          region,
-          bpHi,
-          bpLo,
-          clippedBpStart,
-          clippedBpEnd,
-          canvasW: scissorW,
-          reversed: block.reversed,
-        }
-        const sectionState: RenderState = {
-          ...state,
-          pileupTopOffset: sec.pileupTopOffset,
-          coverageTopOffset: sec.coverageTopOffset,
-        }
-        this.writeUniforms(sectionState, frame)
-
-        const cov = devBand(sec.covClipTop, sec.covClipHeight, dpr, bufH)
-        const pileup = devBand(
-          sec.pileupClipTop,
-          sec.pileupClipHeight,
-          dpr,
-          bufH,
-        )
-
-        this.hal.setViewport(vpX, 0, vpW, bufH)
-
-        const drewCoverage = state.showCoverage && cov.height > 0
-        if (drewCoverage) {
-          this.hal.setScissor(vpX, cov.top, vpW, cov.height)
-          this.hal.drawPass(PASS_COVERAGE, regionKey)
-          this.hal.drawPass(PASS_SNP_COV, regionKey)
-          this.hal.drawPass(PASS_MOD_COV, regionKey)
-          this.hal.drawPass(PASS_INTERBASE, regionKey)
-          this.hal.drawPass(PASS_INDICATOR, regionKey)
-        }
-
-        // Pileup passes are skipped when the band collapses to zero height
-        // (read-cloud/samplot mode draws no stacked pileup), but the arc band
-        // and `hasDrawn` below must NOT be — see the comment on the arc draw.
-        if (pileup.height > 0) {
-          this.hal.setScissor(vpX, pileup.top, vpW, pileup.height)
-
-          if (state.linkedReads === 'normal') {
-            this.hal.drawPass(PASS_CONN_LINE, regionKey)
+      const geom = computeBlockGeom(block, canvasWidth, dpr)
+      if (geom.scissorW > 0) {
+        // Each stacked section sets its own vertical offsets and clip bands.
+        // Section 0's region key equals the raw region index, so the ungrouped
+        // (single-section) case reproduces the prior draw exactly.
+        for (let s = 0; s < state.sections.length; s++) {
+          if (this.drawSection(block, geom, state, s, dpr, bufH)) {
+            hasDrawn = true
           }
-          if (state.showLinkedReadLines) {
-            this.hal.drawPass(PASS_LINKED_READ_LINE, regionKey)
-          }
-          this.hal.drawPass(PASS_READ, regionKey)
-          if (shouldDrawOverlaps(state)) {
-            this.hal.drawPass(PASS_OVERLAP, regionKey)
-          }
-
-          if (state.showModifications) {
-            this.hal.drawPass(PASS_MOD, regionKey)
-          }
-
-          if (state.showPerBaseQuality) {
-            this.hal.drawPass(PASS_PER_BASE_QUAL, regionKey)
-          }
-
-          if (state.showMismatches) {
-            this.hal.drawPass(PASS_GAP, regionKey)
-            this.hal.drawPass(PASS_MISMATCH, regionKey)
-            this.hal.drawPass(PASS_INSERTION, regionKey)
-          }
-
-          this.hal.drawPass(PASS_CLIP, regionKey)
-          if (state.showSoftClipping) {
-            this.hal.drawPass(PASS_SOFTCLIP_BASES, regionKey)
-          }
-
-          if (state.showPerBaseLetter) {
-            this.hal.drawPass(PASS_PER_BASE_LETTER, regionKey)
-          }
-
-          this.renderFeatureOverlays(
-            block,
-            sectionState,
-            frame,
-            scissorX,
-            scissorW,
-            bufH,
-            pileup.top,
-            pileup.height,
-            dpr,
-          )
-        }
-
-        // Up- and down-mode arcs both draw here, after the pileup, in their own
-        // band: the arc band never overlaps the pileup region, so a single pass
-        // suffices and up-mode arcs still land in front of the coverage
-        // histogram (drawn earlier). The band is decoupled from the pileup, so
-        // it must draw even when the pileup band is empty (read-cloud/samplot,
-        // where the cloud IS the whole visualization). Each section carries its
-        // own (scrolled) band; undefined when arcs are off or this section
-        // reserves none.
-        if (sec.arcBand) {
-          this.drawArcsPass(
-            block,
-            region,
-            sectionState,
-            regionKey,
-            scissorX,
-            scissorW,
-            sec.arcBand,
-            dpr,
-            bufH,
-          )
-        }
-
-        // The region exists and at least one band issued draws; report a paint
-        // so `canvasDrawn` flips (a coverage- or arcs-only section with an empty
-        // pileup band still painted real content — gating this on the pileup
-        // band left read-cloud stuck on "Loading").
-        if (drewCoverage || pileup.height > 0 || sec.arcBand) {
-          hasDrawn = true
         }
       }
     }
@@ -689,13 +689,94 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     return hasDrawn
   }
 
+  // Draw one stacked section of one block. Returns whether any band painted, so
+  // the caller can flip `canvasDrawn`. A coverage- or arcs-only section (empty
+  // pileup band, e.g. read-cloud/samplot) still counts as a paint — gating this
+  // on the pileup band once left read-cloud stuck on "Loading".
+  private drawSection(
+    block: RenderBlock,
+    geom: BlockGeom,
+    state: RenderState,
+    sectionIdx: number,
+    dpr: number,
+    bufH: number,
+  ) {
+    const sec = state.sections[sectionIdx]!
+    const regionKey = sectionRegionKey(sectionIdx, block.displayedRegionIndex)
+    const region = this.regions.get(regionKey)
+    if (!region) {
+      return false
+    }
+
+    const frame: BlockFrame = {
+      region,
+      bpHi: geom.bpHi,
+      bpLo: geom.bpLo,
+      clippedBpStart: geom.clippedBpStart,
+      clippedBpEnd: geom.clippedBpEnd,
+      canvasW: geom.scissorW,
+      reversed: block.reversed,
+    }
+    const sectionState: RenderState = {
+      ...state,
+      pileupTopOffset: sec.pileupTopOffset,
+      coverageTopOffset: sec.coverageTopOffset,
+    }
+    this.writeUniforms(sectionState, frame)
+    this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
+
+    const cov = devBand(sec.covClipTop, sec.covClipHeight, dpr, bufH)
+    const drewCoverage = state.showCoverage && cov.height > 0
+    if (drewCoverage) {
+      this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)
+      for (const pass of COVERAGE_PASSES) {
+        this.hal.drawPass(pass, regionKey)
+      }
+    }
+
+    // Pileup passes are skipped when the band collapses to zero height
+    // (read-cloud/samplot draws no stacked pileup); the arc band below is
+    // decoupled and still draws.
+    const pileup = devBand(sec.pileupClipTop, sec.pileupClipHeight, dpr, bufH)
+    const drewPileup = pileup.height > 0
+    if (drewPileup) {
+      this.hal.setScissor(geom.vpX, pileup.top, geom.vpW, pileup.height)
+      for (const [pass, enabled] of pileupPassPlan(state)) {
+        if (enabled) {
+          this.hal.drawPass(pass, regionKey)
+        }
+      }
+      this.renderFeatureOverlays(block, sectionState, frame, geom, pileup, bufH)
+    }
+
+    // Up- and down-mode arcs both draw here, after the pileup, in their own
+    // band: the band never overlaps the pileup, so a single pass suffices and
+    // up-mode arcs still land in front of the coverage histogram (drawn
+    // earlier). Decoupled from the pileup, so it draws even when the pileup band
+    // is empty (read-cloud/samplot, where the cloud IS the visualization). Each
+    // section carries its own (scrolled) band; undefined when arcs are off.
+    if (sec.arcBand) {
+      this.drawArcsPass(
+        block,
+        region,
+        sectionState,
+        regionKey,
+        geom,
+        sec.arcBand,
+        dpr,
+        bufH,
+      )
+    }
+
+    return drewCoverage || drewPileup || sec.arcBand !== undefined
+  }
+
   private drawArcsPass(
     block: RenderBlock,
     region: LocalRegion,
     state: RenderState,
     regionKey: number,
-    scissorX: number,
-    scissorW: number,
+    geom: BlockGeom,
     band: ArcBand,
     dpr: number,
     bufH: number,
@@ -707,173 +788,119 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     const viewportTop = Math.round(band.top * dpr)
     const viewportH = Math.round(band.height * dpr)
     const scissor = devBand(band.top, band.height, dpr, bufH)
-    if (scissor.height <= 0 || viewportH <= 0) {
-      return
+    if (scissor.height > 0 && viewportH > 0) {
+      // saveUBO/restoreUBO bracket a temporary clobber of the shared UBO with
+      // arc-viewport uniforms. There's no try/finally, so everything between
+      // them MUST stay synchronous and exception-free: an early return or throw
+      // here would leave the UBO holding arc uniforms for the rest of the frame,
+      // corrupting every later pass. Keep this block straight-line; if it ever
+      // needs a guard that can bail, wrap the save/restore in try/finally.
+      this.saveUBO()
+      fillArcUniforms(this.uF32, {
+        region,
+        block,
+        state,
+        scissorX: geom.scissorX,
+        scissorW: geom.scissorW,
+        arcViewportH: viewportH,
+        dpr,
+        // Up mode anchors at the band bottom (offset down by its full height);
+        // down mode anchors at the top (no offset).
+        covOffset: band.down ? 0 : viewportH / dpr,
+      })
+      this.hal.writeUniforms(this.uData)
+
+      this.hal.setViewport(geom.vpX, viewportTop, geom.vpW, viewportH)
+      this.hal.setScissor(geom.vpX, scissor.top, geom.vpW, scissor.height)
+      this.hal.drawPass(PASS_ARC, regionKey)
+      this.hal.drawPass(PASS_ARC_LINE, regionKey)
+
+      this.restoreUBO()
+      this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
+      this.hal.writeUniforms(this.uData)
     }
-    this.saveUBO()
-    fillArcUniforms(this.uF32, this.uU32, {
-      region,
-      block,
-      state,
-      scissorX,
-      scissorW,
-      arcViewportH: viewportH,
-      dpr,
-      // Up mode anchors at the band bottom (offset down by its full height);
-      // down mode anchors at the top (no offset).
-      covOffset: band.down ? 0 : viewportH / dpr,
-    })
-    this.hal.writeUniforms(this.uData)
-
-    const vpX = Math.round(scissorX * dpr)
-    const vpW = Math.round(scissorW * dpr)
-    this.hal.setViewport(vpX, viewportTop, vpW, viewportH)
-    this.hal.setScissor(vpX, scissor.top, vpW, scissor.height)
-
-    this.hal.drawPass(PASS_ARC, regionKey)
-    this.hal.drawPass(PASS_ARC_LINE, regionKey)
-
-    this.restoreUBO()
-    this.hal.setViewport(vpX, 0, vpW, bufH)
-    this.hal.writeUniforms(this.uData)
   }
 
   private renderFeatureOverlays(
     block: RenderBlock,
     state: RenderState,
     frame: BlockFrame,
-    scissorX: number,
-    scissorW: number,
+    geom: BlockGeom,
+    pileup: DevBand,
     bufH: number,
-    pileupTop: number,
-    pileupH: number,
-    dpr: number,
   ) {
     const { region, clippedBpStart, clippedBpEnd } = frame
-    const bpLen = clippedBpEnd - clippedBpStart
     const regionSelectIdx = state.selectedFeatureId
       ? (region.readIdToIndex.get(state.selectedFeatureId) ?? -1)
       : -1
 
-    // Nothing selected in this block — skip all allocs below.
-    if (regionSelectIdx < 0 && state.selectedChainIds.length === 0) {
-      return
-    }
+    // Skip all the allocations below unless something is actually selected.
+    const hasChainSelection = state.selectedChainIds.length > 0
+    if (regionSelectIdx >= 0 || hasChainSelection) {
+      const bpLen = clippedBpEnd - clippedBpStart
+      // Capture per-block transforms so the toClipRect call sites below don't
+      // each repeat the same 7 uniform-derived args.
+      const clipFor = (absStart: number, absEnd: number, y: number) =>
+        toClipRect(
+          absStart,
+          absEnd,
+          y,
+          state,
+          clippedBpStart,
+          bpLen,
+          state.pileupTopOffset,
+          state.canvasHeight,
+          block.reversed,
+        )
 
-    // After the guard: if no chains are selected then regionSelectIdx >= 0 (implied).
-    const needsFeatureSelection = state.selectedChainIds.length === 0
+      // Selection frames (single read + chain) accumulate into one quad buffer
+      // and draw together — the hover highlight moved to the HighlightOverlay div.
+      const quads: number[] = []
 
-    const covOff = state.pileupTopOffset
-    // Capture per-block transforms so the toClipRect call sites below
-    // don't each have to repeat the same 7 uniform-derived args.
-    const clipFor = (absStart: number, absEnd: number, y: number) =>
-      toClipRect(
-        absStart,
-        absEnd,
-        y,
-        state,
-        clippedBpStart,
-        bpLen,
-        covOff,
-        state.canvasHeight,
-        block.reversed,
-      )
-    // 2 CSS pixels matches Canvas2D's strokeRect(..., lineWidth=2) so the
-    // selection box looks the same when the GPU fallback fires.
-    const tx = 2 / scissorW
-    const ty = 2 / state.canvasHeight
-    // JBrowse brand blue (#00B8FF approx) in normalized linear RGB.
-    const [SR, SG, SB, SA] = [0, 0.722, 1, 1]
-    // 4 quads forming a 2px-wide selection frame (top + bottom + two sides).
-    const pushSelectionFrame = (
-      out: number[],
-      c: { sx1: number; sx2: number; syTop: number; syBot: number },
-    ) => {
-      out.push(
-        c.sx1,
-        c.syTop,
-        c.sx2,
-        c.syTop - ty,
-        SR,
-        SG,
-        SB,
-        SA,
-        c.sx1,
-        c.syBot + ty,
-        c.sx2,
-        c.syBot,
-        SR,
-        SG,
-        SB,
-        SA,
-        c.sx1,
-        c.syTop,
-        c.sx1 + tx,
-        c.syBot,
-        SR,
-        SG,
-        SB,
-        SA,
-        c.sx2 - tx,
-        c.syTop,
-        c.sx2,
-        c.syBot,
-        SR,
-        SG,
-        SB,
-        SA,
-      )
-    }
-
-    // Selection frames (single read + chain) accumulate into one quad buffer
-    // and draw together — the hover highlight moved to the HighlightOverlay div.
-    const quads: number[] = []
-
-    if (needsFeatureSelection) {
-      const idx = regionSelectIdx
-      pushSelectionFrame(
-        quads,
-        clipFor(
-          region.readPositions[idx * 2]!,
-          region.readPositions[idx * 2 + 1]!,
-          region.readYs[idx]!,
-        ),
-      )
-    }
-
-    if (state.selectedChainIds.length > 0) {
-      const bounds = getChainBounds(state.selectedChainIds, region)
-      if (bounds) {
+      // A chain selection supersedes the single-read frame (the chain bounds
+      // already cover the read), matching the prior either/or behavior.
+      if (hasChainSelection) {
+        const bounds = getChainBounds(state.selectedChainIds, region)
+        if (bounds) {
+          pushSelectionFrame(
+            quads,
+            clipFor(bounds.startBp, bounds.endBp, bounds.yRow),
+            geom.scissorW,
+            state.canvasHeight,
+          )
+        }
+      } else {
+        const idx = regionSelectIdx
         pushSelectionFrame(
           quads,
-          clipFor(bounds.startBp, bounds.endBp, bounds.yRow),
+          clipFor(
+            region.readPositions[idx * 2]!,
+            region.readPositions[idx * 2 + 1]!,
+            region.readYs[idx]!,
+          ),
+          geom.scissorW,
+          state.canvasHeight,
         )
       }
-    }
 
-    if (quads.length > 0) {
-      this.drawOverlayQuads(
-        new Float32Array(quads),
-        quads.length / 8,
-        scissorX,
-        scissorW,
-        pileupTop,
-        pileupH,
-        bufH,
-        dpr,
-      )
+      if (quads.length > 0) {
+        this.drawOverlayQuads(
+          new Float32Array(quads),
+          quads.length / 8,
+          geom,
+          pileup,
+          bufH,
+        )
+      }
     }
   }
 
   private drawOverlayQuads(
     quads: Float32Array,
     count: number,
-    scissorX: number,
-    scissorW: number,
-    pileupTop: number,
-    pileupH: number,
+    geom: BlockGeom,
+    pileup: DevBand,
     bufH: number,
-    dpr: number,
   ) {
     this.hal.uploadBuffer(
       OVERLAY_REGION,
@@ -881,10 +908,8 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       quads.buffer as ArrayBuffer,
       count,
     )
-    const vpX = Math.round(scissorX * dpr)
-    const vpW = Math.round(scissorW * dpr)
-    this.hal.setViewport(vpX, 0, vpW, bufH)
-    this.hal.setScissor(vpX, pileupTop, vpW, pileupH)
+    this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
+    this.hal.setScissor(geom.vpX, pileup.top, geom.vpW, pileup.height)
     this.hal.drawPass(PASS_FLAT_QUAD, OVERLAY_REGION)
   }
 

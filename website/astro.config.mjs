@@ -5,7 +5,8 @@ import fs from 'node:fs/promises'
 import { glob } from 'node:fs/promises'
 import path from 'node:path'
 
-const BASE = '/jb2'
+// allows deploying to an alternative suburi, e.g. for staging builds
+const BASE = process.env.SITE_BASE_PATH || '/jb2'
 
 function fixAbsoluteLinks() {
   return {
@@ -17,7 +18,7 @@ function fixAbsoluteLinks() {
           const fullPath = path.join(dirPath, file)
           const content = await fs.readFile(fullPath, 'utf-8')
           const fixed = content.replace(
-            /(<a\s[^>]*href=")(\/)(?!jb2\/|\/)/g,
+            new RegExp(`(<a\\s[^>]*href=")(/)(?!${BASE.slice(1)}/|/)`, 'g'),
             `$1${BASE}/`,
           )
           if (fixed !== content) {
@@ -31,7 +32,7 @@ function fixAbsoluteLinks() {
 
 export default defineConfig({
   site: 'https://jbrowse.org',
-  base: '/jb2',
+  base: BASE,
   publicDir: './static',
   trailingSlash: 'always',
   integrations: [react(), icon(), fixAbsoluteLinks()],

@@ -18,6 +18,7 @@ export default defineConfig(
       '**/esm',
       '**/public',
       '**/storybook-static',
+      '**/.astro',
 
       // Config and tooling
       'config/jest',

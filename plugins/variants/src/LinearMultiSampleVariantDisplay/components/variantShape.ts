@@ -20,11 +20,13 @@ interface ShapePath {
 // --- Insertion glyph: one zoom-driven shape (triangle near / line far) ---
 //
 // An insertion (SHAPE_TRI_DOWN) is drawn as a down-pointing triangle whose base
-// spans the alt-allele / SVLEN width. The single thing that drives its look is
-// that span measured in *screen px*: wide (zoomed in, or a large insertion) →
-// full triangle; narrow (zoomed out, or a point insertion) → thin vertical
-// line. Larger insertions keep a wide span longer, so they collapse later — the
-// fade is a pure function of on-screen size, with no per-feature tuning.
+// spans the alt-allele / SVLEN width, up to a max of INS_TRI_SPAN_PX. The
+// single thing that drives its look is that span measured in *screen px*: wide
+// (zoomed in, or a large insertion) → full triangle capped at INS_TRI_SPAN_PX
+// wide; narrow (zoomed out, or a point insertion) → thin vertical line. Larger
+// insertions keep a wide span longer, so they collapse later, but never grow a
+// triangle wider than the cap — the fade is a pure function of on-screen size,
+// with no per-feature tuning.
 //
 // `insertionGlyph` below is the ONE definition of that morph. Two renderers
 // consume it and must agree:
@@ -36,7 +38,8 @@ interface ShapePath {
 
 // span ≤ this many px → fully collapsed to a line
 const INS_LINE_SPAN_PX = 2
-// span ≥ this many px → full triangle
+// span ≥ this many px → full triangle, and the triangle's base width caps here
+// too (so a wide insertion zoomed in stays a small triangle, not a giant one)
 const INS_TRI_SPAN_PX = 10
 // thickness of the collapsed line, and the minimum visible glyph width
 const INS_LINE_WIDTH_PX = 2
@@ -59,7 +62,9 @@ interface InsertionGlyph {
 // Resolve an insertion's on-screen span (px) to its morphed glyph geometry.
 export function insertionGlyph(spanPx: number): InsertionGlyph {
   const triBlend = smoothstep(INS_LINE_SPAN_PX, INS_TRI_SPAN_PX, spanPx)
-  const widenToSpan = Math.max(spanPx, INS_LINE_WIDTH_PX) - INS_LINE_WIDTH_PX
+  const cappedSpan = Math.min(spanPx, INS_TRI_SPAN_PX)
+  const widenToSpan =
+    Math.max(cappedSpan, INS_LINE_WIDTH_PX) - INS_LINE_WIDTH_PX
   const topWidthPx = INS_LINE_WIDTH_PX + widenToSpan * triBlend
   const bottomWidthPx = topWidthPx * (1 - triBlend)
   return { triBlend, topWidthPx, bottomWidthPx }

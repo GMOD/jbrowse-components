@@ -1497,11 +1497,11 @@ export default function baseStateModelFactory(
         colorBySubMenuItems() {
           return [
             {
-              label: 'Default (solid color)',
+              label: 'Solid color...',
               type: 'radio' as const,
               checked: self.colorByMode === 'solid',
               onClick: () => {
-                self.setFeatureColor(undefined)
+                self.openSetColorDialog()
               },
             },
             {
@@ -1526,19 +1526,12 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Color-related track menu entries. Default surfaces the solid+UTR color
-         * picker alongside "Color by..."; subclasses (e.g. variants) override to
-         * drop the gene-oriented UTR picker and show only "Color by...".
+         * Color-related track menu entries: a single "Color by..." entry whose
+         * "Solid color..." choice opens the solid+UTR color picker. Subclasses
+         * (e.g. variants) override to drop the gene-oriented UTR picker.
          */
         colorMenuItems() {
           return [
-            {
-              label: 'Color',
-              icon: PaletteIcon,
-              onClick: () => {
-                self.openSetColorDialog()
-              },
-            },
             {
               label: 'Color by...',
               icon: PaletteIcon,

@@ -38,9 +38,32 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
+// A pair is only "proper" when its mates have the normal FR orientation
+// (F1R2 / F2R1). Discordant orientations (RL, RR, LL) signal structural
+// variants and stay visible even when proper pairs are hidden, regardless of
+// whether the aligner set the 0x2 flag.
+function isConcordantOrientation(f: Feature) {
+  const orientation = f.get('pair_orientation') as string | undefined
+  return (
+    orientation === undefined ||
+    orientation === 'F1R2' ||
+    orientation === 'F2R1'
+  )
+}
+
+// A chain counts as a proper pair only when every read carries the 0x2 flag
+// and has a concordant orientation.
+function isProperPairChain(chain: Feature[]) {
+  return chain.every(
+    (f: Feature) =>
+      !!(((f.get('flags') as number | undefined) ?? 0) & 2) &&
+      isConcordantOrientation(f),
+  )
+}
+
 // Chain mode groups reads into chains by name, then optionally drops
-// singletons (chains of one) and proper pairs (every read has the 0x2 flag).
-function filterChainFeatures(
+// singletons (chains of one) and proper pairs.
+export function filterChainFeatures(
   features: Feature[],
   drawSingletons: boolean,
   drawProperPairs: boolean,
@@ -55,12 +78,7 @@ function filterChainFeatures(
     rawChains = rawChains.filter(c => c.length > 1)
   }
   if (!drawProperPairs) {
-    rawChains = rawChains.filter(
-      c =>
-        !c.every(
-          (f: Feature) => !!(((f.get('flags') as number | undefined) ?? 0) & 2),
-        ),
-    )
+    rawChains = rawChains.filter(c => !isProperPairChain(c))
   }
   const keptIds = new Set<string>()
   for (const chain of rawChains) {

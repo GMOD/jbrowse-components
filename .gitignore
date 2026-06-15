@@ -55,3 +55,4 @@ test_data/volvox/*.og
 # component_tests install npm packages without a committed lockfile (see
 # .github/workflows/push.yml); yarn.lock here is a local-only generated artifact
 component_tests/*/yarn.lock
+**/.astro

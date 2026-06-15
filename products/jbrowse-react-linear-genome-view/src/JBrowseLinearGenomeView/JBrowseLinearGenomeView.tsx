@@ -4,7 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
+import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -89,7 +89,6 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                   <ReactComponent model={view} session={session} />
                 </Suspense>
               </EmbeddedViewContainer>
-              <ModalWidget session={session} />
             </div>
             {drawerPosition === 'right' && visibleWidget ? (
               <Suspense fallback={null}>

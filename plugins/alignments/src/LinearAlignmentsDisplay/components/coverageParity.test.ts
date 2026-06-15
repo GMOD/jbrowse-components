@@ -15,9 +15,11 @@ import {
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type {
+  ColorPalette,
   CoverageUploadData,
   ReadUploadData,
   RenderState,
+  SectionRender,
 } from '../renderers/rendererTypes.ts'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
@@ -471,5 +473,156 @@ describe('GPU sync rebuild transaction', () => {
 
     gpu.sync({ sections: [] })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
+  })
+})
+
+// `renderBlocks` returns whether anything painted; the model feeds that into
+// `canvasDrawn`. A coverage- or arcs-only section (empty pileup band, e.g.
+// read-cloud/samplot) still paints real content — gating the return on the
+// pileup band once left read-cloud stuck on "Loading". Lock that in.
+describe('GPU renderBlocks canvasDrawn gating', () => {
+  const triple: [number, number, number] = [0, 0, 0]
+  const fullColors: ColorPalette = {
+    colorFwdStrand: triple,
+    colorRevStrand: triple,
+    colorNostrand: triple,
+    colorPairLR: triple,
+    colorPairRL: triple,
+    colorPairRR: triple,
+    colorPairLL: triple,
+    colorBaseA: triple,
+    colorBaseC: triple,
+    colorBaseG: triple,
+    colorBaseT: triple,
+    colorBaseN: triple,
+    colorInsertion: triple,
+    colorDeletion: triple,
+    colorSkip: triple,
+    colorSoftclip: triple,
+    colorHardclip: triple,
+    colorCoverage: triple,
+    colorModificationFwd: triple,
+    colorModificationRev: triple,
+    colorMutedSnpBase: triple,
+    colorLongInsert: triple,
+    colorShortInsert: triple,
+    colorSupplementary: triple,
+    colorUnmappedMate: triple,
+    colorInterchrom: triple,
+  }
+
+  const block = {
+    displayedRegionIndex: 0,
+    start: REGION_START,
+    end: REGION_START + 20,
+    screenStartPx: 0,
+    screenEndPx: 200,
+    reversed: false,
+  }
+
+  function makeState(
+    section: Partial<SectionRender>,
+    extra?: Partial<RenderState>,
+  ): RenderState {
+    const sec: SectionRender = {
+      pileupTopOffset: 0,
+      coverageTopOffset: 0,
+      covClipTop: 0,
+      covClipHeight: 0,
+      pileupClipTop: 0,
+      pileupClipHeight: 0,
+      ...section,
+    }
+    return {
+      canvasWidth: 200,
+      canvasHeight: 200,
+      scrollTop: 0,
+      colorScheme: 0,
+      featureHeight: 10,
+      featureSpacing: 1,
+      showCoverage: false,
+      coverageHeight: 100,
+      coverageYOffset: 5,
+      coverageMaxDepth: 50,
+      coverageIsLog: false,
+      showMismatches: false,
+      filterMismatchesByFrequency: false,
+      showSoftClipping: false,
+      showInterbaseIndicators: false,
+      showModifications: false,
+      showPerBaseQuality: false,
+      showPerBaseLetter: false,
+      selectedChainIds: [],
+      colors: fullColors,
+      linkedReads: 'off',
+      showLinkedReadLines: false,
+      readConnections: 'off',
+      pileupTopOffset: sec.pileupTopOffset,
+      coverageTopOffset: sec.coverageTopOffset,
+      sections: [sec],
+      ...extra,
+    }
+  }
+
+  // A renderer with region 0 synced (coverage + empty pileup), ready to draw.
+  function syncedRenderer() {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    gpu.sync({
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([
+            [0, makeMinimalPileupResult(makeCoverageData())],
+          ]),
+          arcsRpcDataMap: new Map(),
+        },
+      ],
+    })
+    return gpu
+  }
+
+  it('returns true for a coverage-only section with an empty pileup band', () => {
+    const drew = syncedRenderer().renderBlocks(
+      [block],
+      makeState(
+        { covClipHeight: 100, pileupClipTop: 100, pileupClipHeight: 0 },
+        { showCoverage: true },
+      ),
+    )
+    expect(drew).toBe(true)
+  })
+
+  it('returns true for an arcs-only section (read-cloud) with empty pileup and no coverage', () => {
+    const drew = syncedRenderer().renderBlocks(
+      [block],
+      makeState({
+        covClipHeight: 0,
+        pileupClipHeight: 0,
+        arcBand: { top: 0, height: 100, down: false },
+      }),
+    )
+    expect(drew).toBe(true)
+  })
+
+  it('returns false when no band paints', () => {
+    const drew = syncedRenderer().renderBlocks(
+      [block],
+      makeState({ covClipHeight: 0, pileupClipHeight: 0 }),
+    )
+    expect(drew).toBe(false)
+  })
+
+  it('returns false when the block has no synced region', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const drew = gpu.renderBlocks(
+      [block],
+      makeState(
+        { covClipHeight: 100, pileupClipHeight: 100 },
+        { showCoverage: true },
+      ),
+    )
+    expect(drew).toBe(false)
   })
 })
