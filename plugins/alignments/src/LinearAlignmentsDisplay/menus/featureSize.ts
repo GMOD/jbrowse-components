@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import HeightIcon from '@mui/icons-material/Height'
 
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
@@ -41,6 +42,7 @@ interface FeatureHeightModel {
 export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
   return {
     label: 'Set feature height...',
+    icon: HeightIcon,
     type: 'subMenu' as const,
     subMenu: [
       ...Object.values(COMPACTNESS_PRESETS).map(preset => ({

@@ -30,6 +30,12 @@ Keyboard shortcuts (when the view is focused):
 - `Ctrl`/`Cmd` + `↓`: zoom out
 - `Ctrl`/`Cmd` + `←` / `→`: pan left/right
 
+The scroll-to-zoom toggle button in the LGV header lets the mouse wheel zoom the
+view directly, without holding `Ctrl`/`Cmd`. Hold `Shift` while scrolling to
+scroll normally instead.
+
+<Figure caption="Click the scroll-to-zoom toggle button in the LGV header (top) to enable it; once enabled, the mouse wheel zooms the view (bottom)." src="/img/scroll_zoom_toggle.png" />
+
 #### Re-ordering tracks
 
 Click and drag up or down on the drag handle on the track labels (indicated by
@@ -198,10 +204,14 @@ The track menu provides access to the "About track" dialog.
 
 ### Editing track configs
 
-Non-admin users must copy a track before editing it. The copy is saved to your
-"session tracks", which you can modify freely.
+You can edit the settings of any track directly from the track menu's **Track
+actions → Settings** item — there is no longer any need to copy the track first.
+For non-admin users, the edits are saved as a "session track" override that
+shadows the original, so they persist with (and are shareable via) your session
+without modifying the underlying admin-owned track. Admin users editing in admin
+mode change the track config in place.
 
-<Figure caption="Screenshot showing the procedure to copy the track before being able to edit the settings" src="/img/edit_track_settings.png" />
+<Figure caption="Opening Settings from the track menu's Track actions submenu to edit any track's configuration directly." src="/img/edit_track_settings.png" />
 
 ### Rubberband selection
 

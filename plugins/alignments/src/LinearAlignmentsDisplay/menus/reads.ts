@@ -1,17 +1,9 @@
-import { lazy } from 'react'
-
-import { getSession } from '@jbrowse/core/util'
-import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { checkboxItem } from './menuHelpers.ts'
 import { getArcDirectionMenuItem } from './readConnections.ts'
 
 import type { ReadConnectionsMode } from '../constants.ts'
-
-const SetSashimiScoreDialog = lazy(
-  () => import('../dialogs/SetSashimiScoreDialog.tsx'),
-)
 
 interface ReadsModel {
   showLegend: boolean
@@ -34,8 +26,6 @@ interface ReadsModel {
   setFlipStrandLongReadChains: (flag: boolean) => void
   showSashimiArcs: boolean
   toggleSashimiArcs: () => void
-  minSashimiScore: number
-  setMinSashimiScore: (score: number) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
   readConnections: ReadConnectionsMode
@@ -45,9 +35,17 @@ interface ReadsModel {
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
   setDrawInter: (draw: boolean) => void
+  drawSingletons?: boolean
+  drawProperPairs?: boolean
+  setDrawSingletons?: (arg: boolean) => void
+  setDrawProperPairs?: (arg: boolean) => void
 }
 
-export function getReadsMenuItem(model: ReadsModel) {
+export function getReadsMenuItem(
+  model: ReadsModel,
+  opts: { showPairFilters?: boolean },
+) {
+  const showPairFilters = opts.showPairFilters ?? false
   return {
     label: 'Show...',
     icon: VisibilityIcon,
@@ -68,16 +66,24 @@ export function getReadsMenuItem(model: ReadsModel) {
       checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
         model.toggleSashimiArcs()
       }),
-      {
-        label: 'Filter sashimi arcs by score...',
-        icon: FilterListIcon,
-        onClick: () => {
-          getSession(model).queueDialog(handleClose => [
-            SetSashimiScoreDialog,
-            { model, handleClose },
-          ])
-        },
-      },
+      ...(showPairFilters
+        ? [
+            checkboxItem(
+              'Show singletons',
+              model.drawSingletons ?? false,
+              () => {
+                model.setDrawSingletons?.(!model.drawSingletons)
+              },
+            ),
+            checkboxItem(
+              'Show proper pairs',
+              model.drawProperPairs ?? false,
+              () => {
+                model.setDrawProperPairs?.(!model.drawProperPairs)
+              },
+            ),
+          ]
+        : []),
       getArcDirectionMenuItem(model),
       {
         label: 'Advanced',

@@ -36,6 +36,7 @@ export interface VcfAdapter {
 }
 
 export interface Track {
+  type?: string
   adapter?: { type: string; [key: string]: unknown }
   textSearching?: {
     indexingFeatureTypesToExclude?: string[]
@@ -51,6 +52,8 @@ export interface Track {
   name: string
   assemblyNames: string[]
   trackId: string
+  category?: string[]
+  description?: string
 }
 
 export const defaultAttributesToIndex = ['Name', 'ID']

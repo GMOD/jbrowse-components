@@ -195,7 +195,7 @@ variants and misassemblies.
 
 Enable paired arcs from the track menu's **Read connections** submenu.
 
-<Figure caption="Paired arcs drawn over HG002 (the GIAB Ashkenazi son reference sample) Illumina reads across a structural variant; bezier curves connect mates, with long-range and discordant pairs standing out from the short local arcs." src="/img/alignments/arc_display.png" />
+<Figure caption="Paired arcs drawn over HG002 Illumina reads across a structural variant; bezier curves connect mates, with long-range and discordant pairs standing out from the short local arcs." src="/img/alignments/arc_display.png" />
 
 <Figure caption="Enabling paired arcs from the Read connections submenu, showing arcs alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
 

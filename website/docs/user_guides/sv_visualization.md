@@ -226,8 +226,9 @@ directionality.
 
 <Figure caption="Breakpoint split view for an interchromosomal translocation. The two panels are each centered on one breakpoint locus. Black splines connect supporting reads that span the junction — each spline represents a single read seen in both panels. The green line with arrowheads ('feet') is the variant call drawn across both panels to indicate directionality." src="/img/breakpoint_split_view.png" />
 
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l)
-— SKBR3 interchromosomal translocation in breakpoint split view
+[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22BreakpointSplitView%22%2C%22showIntraviewLinks%22%3Afalse%2C%22views%22%3A%5B%7B%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%221%3A229%2C347%2C000-229%2C362%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ngmlr_splitters_cram%22%2C%22displaySnapshot%22%3A%7B%22height%22%3A140%7D%7D%2C%22breast_cancer_sniffles_hg19%22%5D%7D%2C%7B%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%225%3A137%2C877%2C000-137%2C892%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ngmlr_splitters_cram%22%2C%22displaySnapshot%22%3A%7B%22height%22%3A140%7D%7D%2C%22breast_cancer_sniffles_hg19%22%5D%7D%5D%7D%5D%7D&sessionName=Screenshot)
+— SKBR3 interchromosomal translocation in breakpoint split view (the same
+session this figure is captured from)
 
 The header bar accepts location searches directly in either panel.
 

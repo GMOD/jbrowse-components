@@ -582,7 +582,8 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
         this.hal.setViewport(vpX, 0, vpW, bufH)
 
-        if (state.showCoverage && cov.height > 0) {
+        const drewCoverage = state.showCoverage && cov.height > 0
+        if (drewCoverage) {
           this.hal.setScissor(vpX, cov.top, vpW, cov.height)
           this.hal.drawPass(PASS_COVERAGE, regionKey)
           this.hal.drawPass(PASS_SNP_COV, regionKey)
@@ -591,62 +592,67 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
           this.hal.drawPass(PASS_INDICATOR, regionKey)
         }
 
-        if (pileup.height <= 0) {
-          continue
-        }
-        this.hal.setScissor(vpX, pileup.top, vpW, pileup.height)
+        // Pileup passes are skipped when the band collapses to zero height
+        // (read-cloud/samplot mode draws no stacked pileup), but the arc band
+        // and `hasDrawn` below must NOT be — see the comment on the arc draw.
+        if (pileup.height > 0) {
+          this.hal.setScissor(vpX, pileup.top, vpW, pileup.height)
 
-        if (state.linkedReads === 'normal') {
-          this.hal.drawPass(PASS_CONN_LINE, regionKey)
-        }
-        if (state.showLinkedReadLines) {
-          this.hal.drawPass(PASS_LINKED_READ_LINE, regionKey)
-        }
-        this.hal.drawPass(PASS_READ, regionKey)
-        if (shouldDrawOverlaps(state)) {
-          this.hal.drawPass(PASS_OVERLAP, regionKey)
+          if (state.linkedReads === 'normal') {
+            this.hal.drawPass(PASS_CONN_LINE, regionKey)
+          }
+          if (state.showLinkedReadLines) {
+            this.hal.drawPass(PASS_LINKED_READ_LINE, regionKey)
+          }
+          this.hal.drawPass(PASS_READ, regionKey)
+          if (shouldDrawOverlaps(state)) {
+            this.hal.drawPass(PASS_OVERLAP, regionKey)
+          }
+
+          if (state.showModifications) {
+            this.hal.drawPass(PASS_MOD, regionKey)
+          }
+
+          if (state.showPerBaseQuality) {
+            this.hal.drawPass(PASS_PER_BASE_QUAL, regionKey)
+          }
+
+          if (state.showMismatches) {
+            this.hal.drawPass(PASS_GAP, regionKey)
+            this.hal.drawPass(PASS_MISMATCH, regionKey)
+            this.hal.drawPass(PASS_INSERTION, regionKey)
+          }
+
+          this.hal.drawPass(PASS_CLIP, regionKey)
+          if (state.showSoftClipping) {
+            this.hal.drawPass(PASS_SOFTCLIP_BASES, regionKey)
+          }
+
+          if (state.showPerBaseLetter) {
+            this.hal.drawPass(PASS_PER_BASE_LETTER, regionKey)
+          }
+
+          this.renderFeatureOverlays(
+            block,
+            sectionState,
+            frame,
+            scissorX,
+            scissorW,
+            bufH,
+            pileup.top,
+            pileup.height,
+            dpr,
+          )
         }
 
-        if (state.showModifications) {
-          this.hal.drawPass(PASS_MOD, regionKey)
-        }
-
-        if (state.showPerBaseQuality) {
-          this.hal.drawPass(PASS_PER_BASE_QUAL, regionKey)
-        }
-
-        if (state.showMismatches) {
-          this.hal.drawPass(PASS_GAP, regionKey)
-          this.hal.drawPass(PASS_MISMATCH, regionKey)
-          this.hal.drawPass(PASS_INSERTION, regionKey)
-        }
-
-        this.hal.drawPass(PASS_CLIP, regionKey)
-        if (state.showSoftClipping) {
-          this.hal.drawPass(PASS_SOFTCLIP_BASES, regionKey)
-        }
-
-        if (state.showPerBaseLetter) {
-          this.hal.drawPass(PASS_PER_BASE_LETTER, regionKey)
-        }
-
-        this.renderFeatureOverlays(
-          block,
-          sectionState,
-          frame,
-          scissorX,
-          scissorW,
-          bufH,
-          pileup.top,
-          pileup.height,
-          dpr,
-        )
-
-        // Up- and down-mode arcs both draw here, after the pileup: the arc band
-        // never overlaps the pileup region, so a single pass suffices and
-        // up-mode arcs still land in front of the coverage histogram (drawn
-        // earlier). Each section carries its own (scrolled) band; undefined when
-        // arcs are off or this section reserves none.
+        // Up- and down-mode arcs both draw here, after the pileup, in their own
+        // band: the arc band never overlaps the pileup region, so a single pass
+        // suffices and up-mode arcs still land in front of the coverage
+        // histogram (drawn earlier). The band is decoupled from the pileup, so
+        // it must draw even when the pileup band is empty (read-cloud/samplot,
+        // where the cloud IS the whole visualization). Each section carries its
+        // own (scrolled) band; undefined when arcs are off or this section
+        // reserves none.
         if (sec.arcBand) {
           this.drawArcsPass(
             block,
@@ -661,7 +667,13 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
           )
         }
 
-        hasDrawn = true
+        // The region exists and at least one band issued draws; report a paint
+        // so `canvasDrawn` flips (a coverage- or arcs-only section with an empty
+        // pileup band still painted real content — gating this on the pileup
+        // band left read-cloud stuck on "Loading").
+        if (drewCoverage || pileup.height > 0 || sec.arcBand) {
+          hasDrawn = true
+        }
       }
     }
 

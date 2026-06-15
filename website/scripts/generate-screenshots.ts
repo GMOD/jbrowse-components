@@ -310,6 +310,7 @@ async function captureUrl(
   const fullUrl = spec.url.startsWith('http')
     ? spec.url
     : `http://localhost:${port}/${spec.url}`
+  // TODO: only log if e.g. debug true: console.log({ fullUrl })
   await page.goto(fullUrl, {
     waitUntil:
       spec.waitUntil ??

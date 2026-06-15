@@ -102,10 +102,8 @@ JBrowse 2 lets you restrict modification coloring to a specific cytosine context
 via the `cytosineContext` setting, which is useful for examining plant
 methylation patterns.
 
-The screenshot below shows an _Arabidopsis_ chromosome 1 ONT dataset with
-per-read modification coloring restricted to the **CHH** context.
-
-<Figure caption="Arabidopsis chr1 ONT alignments colored by 5mC/5hmC modification, restricted to the CHH cytosine context. Only cytosines in a CHH context are colored." src="/img/methylation/arabidopsis_chh.png" />
+For example, on an _Arabidopsis_ ONT dataset you can set `cytosineContext` to
+**CHH** so that only cytosines in a CHH context are colored.
 
 JBrowse 2 can also infer methylation from **bisulfite** (or EM-seq) data via
 C-to-T conversion in the read alignment (the `bisulfite` coloring mode) rather

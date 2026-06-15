@@ -44,14 +44,14 @@
   "alignments/arc_display": {
     "name": "alignments/arc_display",
     "status": "good",
-    "note": "fixed: display now compact (featureHeight 3, featureSpacing 0) and arcs drawn below the coverage band (readConnectionsDown). Regenerated against local build.",
-    "reviewedAt": "2026-06-14T20:30:00.000Z"
+    "note": "fixed: caption no longer says \"Ashkenazi son\" (just HG002); zoomed in to chr1:72.65-73.06Mb. No clean pileup-hide toggle exists (coverage+pileup displays merged), so pileup kept.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "good",
-    "note": "fixed (code): the TLEN insert-size ruler now thins to readable ticks (just min 1bp + max 34kb on the short read-cloud band) instead of a crammed log ladder, and rounds large labels (33950 -> 34kb, not 34.0kb). insertSizeTicks.ts + test; jbrowse-web rebuilt.",
-    "reviewedAt": "2026-06-11T16:19:39.899Z"
+    "status": "bad",
+    "note": "spec edits in place (coverageHeight 100, readConnectionsHeight 260, viewportHeight 520) BUT the samplot read-cloud display hangs on Loading in the current build — same CRAM loads fine via group_by_strand, so it is a samplot load regression, not a spec issue. committed PNG kept until the regression is fixed.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "dotplot": {
     "name": "dotplot",
@@ -128,14 +128,14 @@
   "cnv": {
     "name": "cnv",
     "status": "good",
-    "note": "fixed: even finer binning (resolution 5 -> 10) so the whole-genome tumor/normal scatter resolves more copy-number structure",
-    "reviewedAt": "2026-06-11T14:28:24.775Z"
+    "note": "fixed: pinned explicit subadapter colors (tumor=#e41a1c red, normal=#377eb8 blue). The multiwig source color is now assigned by post-filter index which had flipped them vs origin/main.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "smalldel": {
     "name": "smalldel",
     "status": "good",
-    "note": "fixed: single HG002 ONT track now uses the newer display groupBy:{tag:HP} (splits into per-haplotype groups at render) instead of two manually-filtered subtracks",
-    "reviewedAt": "2026-06-14T19:00:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-15T13:24:51.687Z"
   },
   "insertion": {
     "name": "insertion",
@@ -145,15 +145,15 @@
   },
   "multisv": {
     "name": "multisv",
-    "status": "good",
-    "note": "fixed: showDescriptions:false added to the ncbi_refseq gene track display; renders against local build",
-    "reviewedAt": "2026-06-14T19:00:00.000Z"
+    "status": "bad",
+    "note": "INVESTIGATED (inconclusive): the only branch diff found is LABEL_FONT_SIZE 11 (webgl-poc) vs 12 (main) in plugins/canvas/src/RenderFeatureDataRPC/constants.ts — a 1px change whose math actually predicts webgl-poc should be TIGHTER, so it does not clearly explain the looser packing. Changing it is a global per-track-app change, too risky to apply blindly for a screenshot. Needs maintainer decision.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-11T01:29:40.251Z"
+    "note": "fixed: reconstructed the old share session as a DECLARATIVE sessionSpec (loc-based BreakpointSplitView). Pileups shortened (alignments display height 140 via per-track displaySnapshot). Intra-view links turned off. To do this declaratively+typed, LaunchView-BreakpointSplitView now forwards ALL view-level snapshot props (typed via SnapshotIn<BreakpointViewStateModel> through the ExtensionPointRegistry) into addView, and BreakpointSplitViewInitView.tracks widened to accept {trackId,displaySnapshot} (source changes in plugins/breakpoint-split-view). Doc Live-demo link updated to the same session spec (was a different share). Rebuilt jbrowse-web; rendered+verified.",
+    "reviewedAt": "2026-06-15T14:30:49.585Z"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -170,8 +170,8 @@
   "inverted_duplication": {
     "name": "inverted_duplication",
     "status": "good",
-    "note": "fixed: taller window (viewportHeight 1300) + circle around the CPX_TYPE INFO field in the variant feature-details sidebar",
-    "reviewedAt": "2026-06-11T14:06:37.359Z"
+    "note": "fixed: replaced the small CPX_TYPE circle with a large \"Annotated as INVdup\" label + arrow + an explanation of the read evidence (green LL/RR pairs = inversion, elevated coverage + arcs = duplication). featureHeight 9, track height 1300, viewportHeight 1600 so green pairs/arcs are visible.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -188,14 +188,14 @@
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
     "status": "good",
-    "note": "fixed: now renders against local build (cgiabUrl bare ?config=); compact pileup (featureHeight 3/spacing 0) renders",
-    "reviewedAt": "2026-06-14T19:00:00.000Z"
+    "note": "fixed: reads sorted by base at screen-center (chr10:122,836,434); showCenterLine marks the sort column.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
     "status": "good",
-    "note": "fixed: now renders against local build; both bigwig tracks use scatter rendering",
-    "reviewedAt": "2026-06-14T19:00:00.000Z"
+    "note": "fixed: both bigwigs now in a single MultiQuantitativeTrack (MultiWiggleAdapter, multiscatter) above the CNV bed calls.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
@@ -206,14 +206,14 @@
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
     "status": "good",
-    "note": "fixed: ROOT CAUSE was rendering against the published jb2/latest release which predates the drawCurves view prop. cgiabUrl now a bare ?config= so it renders against the LOCAL build; ribbons are now curved. Band height note: levelHeights was bogus, removed; viewport sized to fit both LGV panels",
-    "reviewedAt": "2026-06-14T19:00:00.000Z"
+    "note": "fixed: synteny band taller via levels:[{height:260}] (LinearSyntenyViewHelper.height); viewportHeight 620.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "linear_synteny": {
     "name": "linear_synteny",
     "status": "good",
-    "note": "fixed: replaced the reviewer share link (whose mismatched per-panel zoom fanned ribbons far off the left edge) with an explicit whole-genome grape-vs-peach MCScan LinearSyntenyView session (both panels span full assemblies at matched scale, drawCurves + colorBy query + alpha 0.5). Ribbons now stay inside the view.",
-    "reviewedAt": "2026-06-14T20:30:00.000Z"
+    "note": "this is a good screenshot and we could keep it for another screenshot in linear_synteny_view.md but i want this one https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt in the gallery.",
+    "reviewedAt": "2026-06-15T13:19:48.150Z"
   },
   "about_track": {
     "name": "about_track",
@@ -248,8 +248,8 @@
   "alignments_soft_clipped_menu": {
     "name": "alignments_soft_clipped_menu",
     "status": "good",
-    "note": "fixed: trimmed the Show... submenu — moved less-common toggles (interbase indicators, base-quality fade, low-freq mismatches, outlines, supplementary strand color, bezier links, off-screen mate/inter-chrom) into the existing Advanced submenu, leaving legend/coverage/mismatches/soft clipping/sashimi at top level. reads.ts; jbrowse-web rebuilt.",
-    "reviewedAt": "2026-06-14T20:30:00.000Z"
+    "note": "fixed: viewportHeight 480 so both stages (esp. the result frame) are shorter.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
@@ -260,8 +260,8 @@
   "alignments/group_by_strand": {
     "name": "alignments/group_by_strand",
     "status": "good",
-    "note": "resolved: the strand figure is fine; added the requested HP (haplotype) grouping example as alignments/group_by_hp — a two-stage figure driving the Group-by dialog (Tag=HP) then showing the per-haplotype subtracks, on the rehosted HG002 haplotagged PacBio slice. alignments_track.md updated.",
-    "reviewedAt": "2026-06-11T15:03:43.384Z"
+    "note": "fixed: now uses the new in-track groupBy:{type:strand} (single display split into Forward/Reverse stacked sections), not the legacy launch-subtracks approach. viewportHeight trimmed to 440.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -290,8 +290,8 @@
   "bookmark_widget_edit_label": {
     "name": "bookmark_widget_edit_label",
     "status": "good",
-    "note": "fixed: reduced viewport height further (620 -> 520) per reviewer",
-    "reviewedAt": "2026-06-11T13:30:00.000Z"
+    "note": "the annotation 'Single click the label to edit' goes off screen",
+    "reviewedAt": "2026-06-15T13:11:54.953Z"
   },
   "bookmark_widget_export_dialog": {
     "name": "bookmark_widget_export_dialog",
@@ -367,15 +367,15 @@
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
-    "status": "bad",
-    "note": "open: same as arabidopsis_chh — EM-seq C-retention marks are present but sparse over this 50kb slice; needs a more robustly-methylated dataset (reviewer offered to provide one)",
-    "reviewedAt": "2026-06-14T19:30:00.000Z"
+    "status": "good",
+    "note": "resolved: spec + png already removed in a prior session; nothing renders it anymore.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "methylation/arabidopsis_chh": {
     "name": "methylation/arabidopsis_chh",
-    "status": "bad",
-    "note": "i dont see any methylation here. just delete figure",
-    "reviewedAt": "2026-06-14T20:13:44.869Z"
+    "status": "good",
+    "note": "resolved: figure + spec + png deleted per reviewer; methylation.md CHH section reworded (no figure).",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "multiwig/multi_renderer_types": {
     "name": "multiwig/multi_renderer_types",
@@ -458,20 +458,20 @@
   "drawer_widget_toggle": {
     "name": "drawer_widget_toggle",
     "status": "good",
-    "note": "fixed: smaller window (1150x560) + arrow added pointing from the ringed position button to the boxed left option",
-    "reviewedAt": "2026-06-11T14:06:37.359Z"
+    "note": "fixed: volvox_bam instead of gff; viewportHeight 470.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "edit_track_settings": {
     "name": "edit_track_settings",
     "status": "good",
-    "note": "deferred: keep current figure pending upstream always-editable-settings change",
-    "reviewedAt": "2026-06-10T19:35:06.000Z"
+    "note": "fixed: Settings is now boxed in the Track actions submenu; doc (basic_usage.md) rewritten — any track is editable directly (non-admin edits land as a session override), no copy-first step. Delete still gated, Settings always enabled.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
     "status": "good",
-    "note": "fixed: regenerated against the current build — the favorites dropdown popover now hangs below the star icon (the track-selector CascadingMenuButton positioning was improved by recent commits; the reviewer had seen an older capture). recent-items popover (recent_tracks) likewise.",
-    "reviewedAt": "2026-06-11T16:22:54.675Z"
+    "note": "fixed: volvox_bam in both stages (testid htsTrackEntryMenu-Tracks,volvox_bam; filter volvox-sorted); viewportHeight 560.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
@@ -590,8 +590,8 @@
   "tracklabels": {
     "name": "tracklabels",
     "status": "good",
-    "note": "fixed: dropped the volvox_cram_alignments track whose canvas repaints kept closing the MUI cascade; the View-menu Track labels submenu (Overlapping/Offset/Hidden) now stays expanded through headless capture and is captured.",
-    "reviewedAt": "2026-06-14T20:30:00.000Z"
+    "note": "fixed: switched to volvox_bam (light local data settles fast so the View-menu cascade stays open); Track labels boxed.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "trio-basic": {
     "name": "trio-basic",
@@ -650,8 +650,8 @@
   "link_to_split_view": {
     "name": "link_to_split_view",
     "status": "good",
-    "note": "make callout text larger, and arrow not as long. also please make all callout text also use black text on white rectangle background with black border.",
-    "reviewedAt": "2026-06-11T18:21:17.449Z"
+    "note": "fixed: merged the two overlapping text annotations into one word-wrapped callout with a single arrow to the boxed split-view link.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "menu_demo": {
     "name": "menu_demo",
@@ -662,8 +662,8 @@
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
     "status": "good",
-    "note": "fixed: moved to a CpG island (chr20:18.49-18.51Mb, same island as the modifications figure) with a clear methylated/unmethylated transition; bedmethyl now uses the multirowdensity heatmap renderer instead of the default two-color xyplot (whose negColor never showed for an all-positive 0-100 methylation %, reviewer's 'only red' complaint)",
-    "reviewedAt": "2026-06-14T19:30:00.000Z"
+    "note": "fixed: colorBy switched from two-color methylation to one-color modifications, matching the positive-only bedmethyl track below.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "methylation/per_read_mod_bam": {
     "name": "methylation/per_read_mod_bam",
@@ -680,8 +680,8 @@
   "multi-sv-trio": {
     "name": "multi-sv-trio",
     "status": "good",
-    "note": "fixed: autogenerated via kgUrl at 1:40,481,472-40,524,349 — 1KGP Illumina ensemble SV VCF over HG02030 child / HG02031 mother / HG02032 father reads (userByteSizeLimit raised to auto-load). Shows the deletion inherited in child+mother, full coverage in father.",
-    "reviewedAt": "2026-06-11T15:30:00.000Z"
+    "note": "fixed: sliced each trio CRAM (HG02030/31/32) to chr1:40,476,000-40,530,000 (~12-14k reads, <1MB BAM) and rehosted to s3://jbrowse.org/demos/kgp-trio. Spec now overrides the 3 tracks with sessionTracks BamAdapter slices, so reads auto-load reliably instead of depending on the intermittently-503 NCBI CRAMs. Renders + verified.",
+    "reviewedAt": "2026-06-15T14:10:37.514Z"
   },
   "product_architecture": {
     "name": "product_architecture",
@@ -757,9 +757,9 @@
   },
   "desktop-add-track": {
     "name": "desktop-add-track",
-    "status": "good",
-    "note": "autogenerated by products/jbrowse-desktop/test/screenshots.ts (capture 'desktop-add-track.png'); desktop autogen is a separate Selenium+Electron generator. Now classified autogenerated via desktopAutogenNames in screenshot-review-lib.ts",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "might benefit from adding annotations, e.g. \"File->Open track\" menu visible with red highlight or something. this worked on puppeteer, not sure for desktop",
+    "reviewedAt": "2026-06-15T13:14:19.061Z"
   },
   "desktop-available-genomes": {
     "name": "desktop-available-genomes",
@@ -788,8 +788,8 @@
   "multiwig/cluster_dialog": {
     "name": "multiwig/cluster_dialog",
     "status": "good",
-    "note": "fixed: zoomed out from 10Mb to a 50Mb window (whole-chr1 washed out the density strips)",
-    "reviewedAt": "2026-06-14T19:00:00.000Z"
+    "note": "fixed: region changed to chr3:162,275,163-163,360,944.",
+    "reviewedAt": "2026-06-15T14:04:54.761Z"
   },
   "multiwig/multirow_xy": {
     "name": "multiwig/multirow_xy",

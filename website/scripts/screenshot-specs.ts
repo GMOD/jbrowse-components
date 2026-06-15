@@ -394,7 +394,7 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     viewportWidth: 1100,
-    viewportHeight: 600,
+    viewportHeight: 400,
     readyText: 'ctgA',
     settleMs: 3000,
     actions: [
@@ -456,7 +456,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: 'chr1:72,548,824-73,163,654',
+          loc: 'chr1:72,650,000-73,060,000',
           tracks: [
             'variants_hg002',
             {
@@ -509,6 +509,10 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'samplot',
                 readConnectionsDown: true,
+                coverageHeight: 100,
+                readConnectionsHeight: 100,
+                height: 600,
+                userByteSizeLimit: 500_000_000,
               },
             },
           ],
@@ -516,8 +520,13 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    viewportHeight: 800,
-    settleMs: 6000,
+    viewportHeight: 520,
+    // NOTE: the samplot read-cloud display currently hangs on "Loading" in the
+    // local build (the same CRAM loads fine via group_by_strand), so this spec
+    // can't be regenerated until that load regression is fixed; the committed
+    // PNG predates it. The coverageHeight/readConnectionsHeight bumps above are
+    // the reviewer's taller-panels fix for when it can re-render.
+    settleMs: 25000,
   },
 
   // The top-level "Add" menu (Circular / Dotplot / Linear genome / Linear
@@ -642,8 +651,10 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    // narrower window keeps the breakpoint in focus (reviewer request)
+    // narrower + shorter window keeps the breakpoint in focus and trims the
+    // empty space below the short result-frame pileup (reviewer request)
     viewportWidth: 900,
+    viewportHeight: 480,
     settleMs: 4000,
     stages: [
       {
@@ -769,9 +780,10 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Group by strand: two session sub-tracks of volvox_sv_cram, one filtered to
-  // forward reads and one to reverse (the same flag filters the Group by dialog
-  // applies), each colored by strand so the split reads cleanly.
+  // Group by strand: the new in-track grouping (display groupBy option) splits a
+  // single alignments display into stacked sections, one per strand, each with
+  // its own coverage band + pileup. Replaces the legacy approach of launching
+  // two separate filtered subtracks.
   {
     mode: 'url',
     name: 'alignments/group_by_strand',
@@ -779,15 +791,8 @@ export const specs: ScreenshotSpec[] = [
       sessionTracks: [
         {
           type: 'AlignmentsTrack',
-          trackId: 'volvox_sv_cram_fwd',
-          name: 'volvox-sv (+)',
-          assemblyNames: ['volvox'],
-          adapter: VOLVOX_SV_CRAM_ADAPTER,
-        },
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'volvox_sv_cram_rev',
-          name: 'volvox-sv (-)',
+          trackId: 'volvox_sv_cram',
+          name: 'volvox-sv',
           assemblyNames: ['volvox'],
           adapter: VOLVOX_SV_CRAM_ADAPTER,
         },
@@ -799,19 +804,10 @@ export const specs: ScreenshotSpec[] = [
           loc: 'ctgA:1-50000',
           tracks: [
             {
-              trackId: 'volvox_sv_cram_fwd',
+              trackId: 'volvox_sv_cram',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                filterBy: { flagInclude: 0, flagExclude: 1556 },
-                colorBy: { type: 'strand' },
-                showLegend: false,
-              },
-            },
-            {
-              trackId: 'volvox_sv_cram_rev',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                filterBy: { flagInclude: 16, flagExclude: 1540 },
+                groupBy: { type: 'strand' },
                 colorBy: { type: 'strand' },
                 showLegend: false,
               },
@@ -821,7 +817,8 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    viewportHeight: 1000,
+    // two compact stacked strand sections; trim the empty viewport below them
+    viewportHeight: 440,
     settleMs: 5000,
   },
 
@@ -1123,7 +1120,11 @@ export const specs: ScreenshotSpec[] = [
             {
               trackId: 'COLO829_tumor.ht',
               displaySnapshot: {
-                colorBy: { type: 'methylation' },
+                // one-color modifications rendering (only methylated calls
+                // colored) rather than the two-color methylation mode whose
+                // blue "unmethylated" signal has no counterpart in the
+                // bedmethyl track below (reviewer)
+                colorBy: { type: 'modifications' },
               },
             },
             {
@@ -1254,6 +1255,10 @@ export const specs: ScreenshotSpec[] = [
               {
                 type: 'BigWigAdapter',
                 source: 'COLO829 tumor',
+                // explicit colors: the multiwig source color is now assigned by
+                // post-filter index, which flipped tumor/normal vs origin/main
+                // (reviewer). Pin tumor=red, normal=blue (set1 palette).
+                color: '#e41a1c',
                 bigWigLocation: {
                   uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw',
                   locationType: 'UriLocation',
@@ -1262,6 +1267,7 @@ export const specs: ScreenshotSpec[] = [
               {
                 type: 'BigWigAdapter',
                 source: 'COLO829 normal',
+                color: '#377eb8',
                 bigWigLocation: {
                   uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_normal.bw',
                   locationType: 'UriLocation',
@@ -1491,12 +1497,77 @@ export const specs: ScreenshotSpec[] = [
 
   // Trio SV: the Kinh-Vietnamese trio (HG02030 child / HG02031 mother / HG02032
   // father) Illumina reads stacked over the 1000 Genomes Illumina ensemble SV
-  // callset, at a ~43kb SV locus. Reads auto-load via a raised userByteSizeLimit;
-  // per-track heights capped so all four tracks fit one viewport.
+  // callset, at a ~43kb SV locus. The full NCBI 1000genomes CRAMs 503'd
+  // intermittently (reviewer saw an error), so each is sliced to this locus
+  // (chr1:40,476,000-40,530,000, ~12-14k reads, <1MB BAM) and rehosted on
+  // jbrowse.org/demos/kgp-trio so the reads auto-load fast and reliably.
+  // Per-track heights capped so all four tracks fit one viewport.
   {
     mode: 'url',
     name: 'multi-sv-trio',
     url: kgUrl({
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'HG02030_trio_slice',
+          name: 'HG02030 (child)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'https://jbrowse.org/demos/kgp-trio/HG02030_trio_slice.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/demos/kgp-trio/HG02030_trio_slice.bam.bai',
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'HG02031_trio_slice',
+          name: 'HG02031 (mother)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'https://jbrowse.org/demos/kgp-trio/HG02031_trio_slice.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/demos/kgp-trio/HG02031_trio_slice.bam.bai',
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'HG02032_trio_slice',
+          name: 'HG02032 (father)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'https://jbrowse.org/demos/kgp-trio/HG02032_trio_slice.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/demos/kgp-trio/HG02032_trio_slice.bam.bai',
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1505,16 +1576,16 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
-              trackId: 'HG02030.final',
-              displaySnapshot: { height: 180, userByteSizeLimit: 200_000_000 },
+              trackId: 'HG02030_trio_slice',
+              displaySnapshot: { height: 180 },
             },
             {
-              trackId: 'HG02031.final',
-              displaySnapshot: { height: 180, userByteSizeLimit: 200_000_000 },
+              trackId: 'HG02031_trio_slice',
+              displaySnapshot: { height: 180 },
             },
             {
-              trackId: 'HG02032.final',
-              displaySnapshot: { height: 180, userByteSizeLimit: 200_000_000 },
+              trackId: 'HG02032_trio_slice',
+              displaySnapshot: { height: 180 },
             },
           ],
         },
@@ -1568,17 +1639,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 270,
-        text: 'Automatically launches a breakpoint split view for the TRA SV',
-        background: 'rgba(0,0,0,0.78)',
-        textColor: '#fff',
-      },
-      {
-        type: 'text',
-        x: 60,
-        y: 300,
-        text: 'Paired-end and long reads also have this in their feature details',
-        background: 'rgba(0,0,0,0.78)',
-        textColor: '#fff',
+        text: 'Automatically launches a breakpoint split view for the TRA SV. Paired-end and long reads also have this in their feature details.',
       },
     ],
   },
@@ -1586,15 +1647,51 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'breakpoint_split_view',
-    // bare ?config= so it renders against the local build (the share session +
-    // password are fetched from the JBrowse share server either way)
-    url: '?config=test_data%2Fconfig_demo.json&session=share-ITpNXoz07O&password=Brtps',
+    // Declarative reconstruction of the old share session (share-ITpNXoz07O):
+    // SKBR3 ngmlr split-read CRAM + Sniffles VCF over the chr1<->chr5
+    // interchromosomal translocation. Each panel is a loc window centered on
+    // its breakpoint (chr1:229,354,402 // chr5:137,884,948). The alignments
+    // display height is shortened to 140 (was ~250) so the pileups aren't tall
+    // (reviewer); the intra-view links are toggled off via the view menu below
+    // so only the cross-panel junction splines draw (reviewer).
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'BreakpointSplitView',
+          showIntraviewLinks: false,
+          views: [
+            {
+              assembly: 'hg19',
+              loc: '1:229,347,000-229,362,000',
+              tracks: [
+                {
+                  trackId: 'ngmlr_splitters_cram',
+                  displaySnapshot: { height: 140 },
+                },
+                'breast_cancer_sniffles_hg19',
+              ],
+            },
+            {
+              assembly: 'hg19',
+              loc: '5:137,877,000-137,892,000',
+              tracks: [
+                {
+                  trackId: 'ngmlr_splitters_cram',
+                  displaySnapshot: { height: 140 },
+                },
+                'breast_cancer_sniffles_hg19',
+              ],
+            },
+          ],
+        },
+      ],
+    }),
     readyText: 'SKBR3',
-    // both panels + connecting curves fit in ~850px; was 1200 which left a tall
-    // band of empty whitespace below the lower panel
-    viewportHeight: 900,
+    // both panels + connecting splines fit comfortably now that the pileups are
+    // shorter
+    viewportHeight: 760,
     readyTimeout: 60000,
-    settleMs: 12000,
+    settleMs: 15000,
   },
 
   // Read-vs-reference of a SKBR3 PacBio read spanning a ~500bp insertion. The
@@ -1678,8 +1775,11 @@ export const specs: ScreenshotSpec[] = [
                 linkedReads: 'normal',
                 readConnections: 'arc',
                 readConnectionsDown: false,
-                height: 900,
+                height: 1300,
                 coverageHeight: 120,
+                // taller reads so the minority green (same-orientation /
+                // inverted) pairs are legible instead of 3px slivers (reviewer)
+                featureHeight: 9,
                 colorBy: { type: 'pairOrientation' },
                 // legend is opt-in now; show the pair-orientation key so the
                 // inversion color signature is readable
@@ -1692,9 +1792,9 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    // taller window so more of the pileup + the feature-details sidebar fit
+    // taller window so the enlarged pileup + the feature-details sidebar fit
     // (reviewer request)
-    viewportHeight: 1300,
+    viewportHeight: 1600,
     settleMs: 30000,
     // click the HGSV_2721 variant's floating feature label (stable per-feature
     // testid) to open its feature details
@@ -1705,8 +1805,29 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 4000 },
     ],
-    // ring the CPX_TYPE INFO field in the variant feature-details sidebar
-    annotations: [{ type: 'circle', anchor: { text: 'CPX_TYPE' } }],
+    // label the CPX_TYPE INFO field and explain the read evidence (the small
+    // circle ring was hard to see — reviewer)
+    annotations: [
+      {
+        type: 'arrow',
+        from: { x: 980, y: 360 },
+        anchor: { text: 'CPX_TYPE' },
+      },
+      {
+        type: 'text',
+        x: 700,
+        y: 300,
+        text: 'Annotated as "INVdup" (inverted duplication)',
+        fontSize: 26,
+      },
+      {
+        type: 'text',
+        x: 60,
+        y: 470,
+        text: 'The read pileup supports an INVdup: green same-orientation (LL/RR) pairs flag the inverted segment, while elevated coverage and the arc connections across the locus mark the extra duplicated copy.',
+        maxWidth: 520,
+      },
+    ],
   },
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
@@ -1864,6 +1985,9 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr10:122,822,042-122,850,825',
+          // center line marks the sort column (the screen-center base the pileup
+          // is sorted by — reviewer)
+          showCenterLine: true,
           // The somatic SV VCF's SV_85 <DEL> call marks the deletion against the
           // NCBI RefSeq gene context (CUZD1), with the rehosted PacBio read slice
           // showing the supporting reads across the deletion.
@@ -1879,6 +2003,13 @@ export const specs: ScreenshotSpec[] = [
                 height: 300,
                 featureHeight: 3,
                 featureSpacing: 0,
+                // sort reads by the base at the screen-center column (reviewer)
+                sortedBy: {
+                  type: 'basePair',
+                  pos: 122836434,
+                  refName: 'chr10',
+                  assemblyName: 'GRCh38_GIABv3',
+                },
               },
             },
           ],
@@ -1893,36 +2024,38 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_with_bed_track',
-    // Whole chr5 with BOTH tumor and normal coverage as separate scatter bigwigs
-    // (reviewer) above the somatic CNV benchmark bed calls, so the coverage
-    // gains/losses can be compared against the called intervals. Uses the
-    // normalized indexcov bigwigs (median≈1 → reads directly as copy number).
+    // Whole chr5 with BOTH tumor and normal coverage in a single
+    // MultiQuantitativeTrack (reviewer) above the somatic CNV benchmark bed
+    // calls, so the coverage gains/losses can be compared against the called
+    // intervals. Uses the normalized indexcov bigwigs (median≈1 → reads
+    // directly as copy number).
     url: cgiabUrl({
       sessionTracks: [
         {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_normal_indexcov',
-          name: 'HG008-N (normal) coverage',
+          type: 'MultiQuantitativeTrack',
+          trackId: 'hg008_cnv_indexcov_chr5',
+          name: 'HG008 normal vs tumor coverage (indexcov)',
           assemblyNames: ['GRCh38_GIABv3'],
           adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_tumor_indexcov',
-          name: 'HG008-T (tumor) coverage',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
-              locationType: 'UriLocation',
-            },
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              {
+                name: 'HG008-N (normal)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+              {
+                name: 'HG008-T (tumor)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+            ],
           },
         },
       ],
@@ -1933,19 +2066,12 @@ export const specs: ScreenshotSpec[] = [
           loc: 'chr5',
           tracks: [
             {
-              trackId: 'hg008_normal_indexcov',
+              trackId: 'hg008_cnv_indexcov_chr5',
               displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'scatter',
+                type: 'MultiLinearWiggleDisplay',
+                defaultRendering: 'multiscatter',
                 autoscale: 'localsd',
-              },
-            },
-            {
-              trackId: 'hg008_tumor_indexcov',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'scatter',
-                autoscale: 'localsd',
+                height: 200,
               },
             },
             'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
@@ -2156,6 +2282,9 @@ export const specs: ScreenshotSpec[] = [
           // build (cgiabUrl is now a bare ?config= url) so drawCurves is honored
           // — the published jb2/latest release predates it.
           drawCurves: true,
+          // taller synteny band (LinearSyntenyViewHelper.height, default 100) so
+          // the ribbons have room to spread out (reviewer)
+          levels: [{ height: 260 }],
           tracks: ['HG008T.hap1_pif'],
           views: [
             {
@@ -2173,8 +2302,9 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr3',
     readyTimeout: 90000,
     viewportWidth: 1800,
-    // fit the curved synteny band + both LGV panels without a tall white margin
-    viewportHeight: 460,
+    // fit the taller curved synteny band + both LGV panels without a tall
+    // white margin
+    viewportHeight: 620,
     // giant remote assembly PAF; synteny_canvas_done can exceed 90s, so settle
     // long rather than gate on it
     settleMs: 45000,
@@ -2297,42 +2427,6 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 3000 },
     ],
   },
-  {
-    mode: 'url',
-    name: 'methylation/arabidopsis_chh',
-    // ONT 5mC/5hmC per-read modifications (MM/ML), colored by methylation.
-    // Must stay within the 50kb local reference (NC_003070.9 is only 50kb here)
-    // so the cytosine context can be resolved. Region chosen by decoding the MM/ML
-    // 5mC calls against the reference CHH contexts: 16-17kb is essentially
-    // unmethylated (~2-4% high-prob CHH-5mC) while 17.0-18.5kb is a heavily
-    // CHH-methylated RdDM/TE patch (66-81% high-prob CHH-5mC), so the methylated
-    // (red) marks actually fill the view. The old 16-18kb window was dominated by
-    // the unmethylated 16-17kb half, which read as "no methylation shown".
-    url: sessionSpec('test_data/arabidopsis_methylation/config.json', {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'arabidopsis',
-          loc: 'NC_003070.9:17,000-18,500',
-          tracks: [
-            {
-              trackId: 'arabidopsis_meth',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                colorBy: {
-                  type: 'methylation',
-                  modifications: { cytosineContext: 'CHH' },
-                },
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'NC_003070',
-    readyTimeout: 60000,
-    settleMs: 12000,
-  },
   // ────────────────────────────────────────────────────────────────────────
   // Basic UI guides
   // ────────────────────────────────────────────────────────────────────────
@@ -2428,6 +2522,69 @@ export const specs: ScreenshotSpec[] = [
         fontSize: 14,
         background: 'rgba(0,0,0,0.8)',
         textColor: '#fff',
+      },
+    ],
+  },
+
+  // Scroll-to-zoom toggle: two-stage figure. Top frame rings the toggle button
+  // in its default (off) state with a callout explaining the click; bottom
+  // frame clicks it, showing the button's "selected" (pressed) appearance once
+  // enabled. Narrow/short viewport keeps the figure cropped to the LGV header.
+  {
+    mode: 'url',
+    name: 'scroll_zoom_toggle',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-20000',
+          tracks: ['volvox_cram_alignments'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    viewportWidth: 1000,
+    viewportHeight: 220,
+    stages: [
+      {
+        actions: [{ type: 'delay', ms: 500 }],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: {
+              selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+            },
+          },
+          {
+            type: 'text',
+            text: 'Click to enable scroll-to-zoom',
+            anchor: {
+              selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+            },
+            dx: 70,
+          },
+        ],
+      },
+      {
+        actions: [
+          {
+            type: 'click',
+            selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+          },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            text: 'Enabled: the mouse wheel now zooms the view',
+            anchor: {
+              selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+            },
+            dx: 70,
+          },
+        ],
       },
     ],
   },
@@ -2607,10 +2764,10 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // Track label positioning submenu in the view menu, over volvox tracks. Uses
-  // light local volvox data (not a remote BAM): a heavy remote track keeps
-  // repainting the canvas, which closes the MUI cascade before capture so the
-  // submenu never shows. The view menu (hamburger) icon is ringed so the reader
-  // can see where the menu was opened from; the expanded submenu is boxed.
+  // the light local volvox BAM (reviewer); local data settles quickly so the
+  // MUI cascade stays open through capture. The view menu (hamburger) icon is
+  // ringed so the reader can see where the menu was opened from; the expanded
+  // submenu is boxed.
   {
     mode: 'url',
     name: 'tracklabels',
@@ -2620,10 +2777,7 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
-          // no alignments track here: its canvas keeps repainting and closes
-          // the MUI cascade before capture, so the Track labels submenu never
-          // shows. A static feature track keeps the cascade open.
-          tracks: ['gff3tabix_genes'],
+          tracks: ['volvox_bam'],
         },
       ],
     }),
@@ -2647,8 +2801,9 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track settings: track menu showing Settings and Copy track options,
-  // illustrating that a track must be copied before its settings can be edited.
+  // Track settings: the track menu's "Track actions" submenu with "Settings"
+  // boxed — any track's settings can now be edited directly (a non-admin's
+  // edits are saved as a session override), no Copy-track-first step needed.
   {
     mode: 'url',
     name: 'edit_track_settings',
@@ -2658,6 +2813,7 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
+          // static feature track keeps the MUI cascade open through capture
           tracks: ['gff3tabix_genes'],
         },
       ],
@@ -2672,6 +2828,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Settings' },
       { type: 'delay', ms: 500 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'Settings' } }],
   },
 
   // Drawer widget position, two-stage figure. Top frame opens the drawer's
@@ -2687,14 +2844,14 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
+          tracks: ['volvox_bam'],
         },
       ],
     }),
     readyText: 'ctgA',
     // smaller capture window in both dimensions (reviewer request)
     viewportWidth: 1150,
-    viewportHeight: 560,
+    viewportHeight: 470,
     settleMs: 3000,
     actions: [
       // open the track selector to get a widget in the drawer
@@ -3139,12 +3296,12 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
+          tracks: ['volvox_bam'],
         },
       ],
     }),
     readyText: 'ctgA',
-    viewportHeight: 650,
+    viewportHeight: 560,
     settleMs: 4000,
     actions: [
       // open track selector
@@ -3158,12 +3315,12 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 500 },
       // filter the (virtualized) list so the target row is rendered
-      { type: 'type', text: 'Filter tracks', value: 'GFF3Tabix' },
+      { type: 'type', text: 'Filter tracks', value: 'volvox-sorted' },
       { type: 'delay', ms: 800 },
       // open the track's per-track menu (showing "Add to favorites")
       {
         type: 'click',
-        selector: '[data-testid="htsTrackEntryMenu-Tracks,gff3tabix_genes"]',
+        selector: '[data-testid="htsTrackEntryMenu-Tracks,volvox_bam"]',
       },
       { type: 'waitForText', text: 'Add to favorites' },
       { type: 'delay', ms: 300 },
@@ -3177,7 +3334,7 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', text: 'Add to favorites' },
           { type: 'delay', ms: 500 },
           { type: 'click', selector: '[data-testid="favorite-tracks-button"]' },
-          { type: 'waitForText', text: 'GFF3Tabix genes' },
+          { type: 'waitForText', text: 'volvox-sorted.bam' },
           { type: 'delay', ms: 500 },
         ],
         annotations: [
@@ -4211,10 +4368,8 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          // 50Mb window (reviewer: zoom out further, was 10Mb) — wide enough to
-          // span several copy-number features per individual without the
-          // density strips washing out as they do at whole-chromosome scale
-          loc: 'chr1:75,000,000-125,000,000',
+          // reviewer-specified region
+          loc: 'chr3:162,275,163-163,360,944',
           tracks: [
             {
               trackId: 'pur_copynumber_1000g',
