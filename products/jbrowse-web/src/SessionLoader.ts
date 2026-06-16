@@ -26,7 +26,7 @@ type ReloadPluginManagerCallback = (
 ) => void
 
 const SessionLoader = types
-  .model({
+  .model('SessionLoader', {
     /**
      * #property
      */
@@ -239,7 +239,12 @@ const SessionLoader = types
      * #getter
      */
     get ready(): boolean {
-      return self.isSessionLoaded && !self.configError && self.pluginsLoaded
+      return (
+        self.isSessionLoaded &&
+        !self.configError &&
+        self.pluginsLoaded &&
+        self.configSnapshot
+      )
     },
     /**
      * #getter
