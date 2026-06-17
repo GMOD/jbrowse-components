@@ -48,9 +48,11 @@ export function makeResolutionAndSummarySubMenus(
           },
         },
         {
-          label: 'Reset resolution',
-          type: 'checkbox',
-          checked: self.resolution === 1,
+          label:
+            self.resolution === 1
+              ? 'Default resolution (current)'
+              : 'Reset to default resolution',
+          disabled: self.resolution === 1,
           onClick: () => {
             self.setResolution(1)
           },
