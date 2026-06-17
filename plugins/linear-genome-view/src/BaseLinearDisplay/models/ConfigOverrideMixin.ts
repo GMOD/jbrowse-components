@@ -1,5 +1,5 @@
 import { isCallbackValue, readConfObject } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import type {
   AnyConfigurationModel,
@@ -135,14 +135,20 @@ export default function ConfigOverrideMixin<
         const conf = (
           self as unknown as { configuration: AnyConfigurationModel }
         ).configuration
-        // Return the live config value (referentially stable across reads) so
-        // computed getters reading this don't spuriously invalidate when an
-        // unrelated override changes. Only jexl callbacks need readConfObject's
-        // evaluation; readConfObject would otherwise clone object values into a
-        // fresh reference each call.
+        // Read the live config value rather than going through
+        // readConfObject (which clones object/array values into a fresh
+        // reference on every call). Object/array-typed slots (e.g.
+        // `stringArray`) are still MST nodes here — snapshot them so callers
+        // never receive a Proxy (which can't cross postMessage into an RPC
+        // worker); `getSnapshot` is a cached computed on the node, so it
+        // stays referentially stable across reads until the node mutates,
+        // same as returning `raw` would for scalars. Only jexl callbacks need
+        // readConfObject's evaluation.
         const raw = (conf as unknown as Record<string, unknown>)[key]
         return (
-          isCallbackValue(raw) ? readConfObject(conf, key) : raw
+          isCallbackValue(raw) ? readConfObject(conf, key)
+          : isStateTreeNode(raw) ? getSnapshot(raw)
+          : raw
         ) as ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
       },
     }))
