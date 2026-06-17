@@ -232,22 +232,49 @@ const PileupBody = observer(function PileupBody({
   )
 })
 
-const CoverageResizeHandle = observer(function CoverageResizeHandle({
-  model,
+// Shared horizontal drag handle for the pileup's resizable bands. Callers pass
+// the final screen-space `top` and the canvas height; styling, the off-screen
+// cull (every handle is YSCALEBAR_LABEL_OFFSET tall), and the void-returning
+// `onDrag` contract are uniform across coverage, arc/sashimi, and group handles.
+function PileupResizeHandle({
+  top,
+  canvasHeight,
+  onDrag,
+  title,
 }: {
-  model: LinearAlignmentsDisplayModel
+  top: number
+  canvasHeight: number
+  onDrag: (dy: number) => void
+  title: string
 }) {
   const { classes } = useStyles()
-  if (!model.showCoverage) {
+  if (top + YSCALEBAR_LABEL_OFFSET < 0 || top > canvasHeight) {
     return null
   }
   return (
     <ResizeHandle
       className={classes.resizeHandle}
-      style={{ top: model.coverageHeight - YSCALEBAR_LABEL_OFFSET }}
+      style={{ top }}
+      onDrag={onDrag}
+      title={title}
+    />
+  )
+}
+
+const CoverageResizeHandle = observer(function CoverageResizeHandle({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  if (!model.showCoverage) {
+    return null
+  }
+  return (
+    <PileupResizeHandle
+      top={model.coverageHeight - YSCALEBAR_LABEL_OFFSET}
+      canvasHeight={model.height}
       onDrag={dy => {
-        model.setCoverageHeight(Math.max(20, model.coverageHeight + dy))
-        return undefined
+        model.setCoverageHeight(model.coverageHeight + dy)
       }}
       title="Drag to resize coverage track"
     />
@@ -265,7 +292,6 @@ const ConnectionBandResizeHandles = observer(
   }: {
     model: LinearAlignmentsDisplayModel
   }) {
-    const { classes } = useStyles()
     const { belowCoverageBands: bands, isGrouped, scrollTop, height } = model
     const scroll = { isGrouped, scrollTop, canvasHeight: height }
     const arcHandleTop = bandScreenTop(
@@ -276,33 +302,25 @@ const ConnectionBandResizeHandles = observer(
       bands.bottom - YSCALEBAR_LABEL_OFFSET,
       scroll,
     )
-    const onScreen = (top: number) =>
-      top >= -YSCALEBAR_LABEL_OFFSET && top <= height
     return (
       <>
-        {bands.hasArcsBand && onScreen(arcHandleTop) ? (
-          <ResizeHandle
-            className={classes.resizeHandle}
-            style={{ top: arcHandleTop }}
+        {bands.hasArcsBand ? (
+          <PileupResizeHandle
+            top={arcHandleTop}
+            canvasHeight={height}
             onDrag={dy => {
-              model.setReadConnectionsHeight(
-                Math.max(20, model.readConnectionsHeight + dy),
-              )
-              return undefined
+              model.setReadConnectionsHeight(model.readConnectionsHeight + dy)
             }}
             title="Drag to resize arcs area"
           />
         ) : null}
 
-        {bands.hasSashimiBand && onScreen(sashimiHandleTop) ? (
-          <ResizeHandle
-            className={classes.resizeHandle}
-            style={{ top: sashimiHandleTop }}
+        {bands.hasSashimiBand ? (
+          <PileupResizeHandle
+            top={sashimiHandleTop}
+            canvasHeight={height}
             onDrag={dy => {
-              model.setSashimiArcsHeight(
-                Math.max(20, model.sashimiArcsHeight + dy),
-              )
-              return undefined
+              model.setSashimiArcsHeight(model.sashimiArcsHeight + dy)
             }}
             title="Drag to resize sashimi arcs area"
           />
@@ -320,7 +338,6 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { classes } = useStyles()
   if (!model.isGrouped) {
     return null
   }
@@ -336,17 +353,13 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
           section.topOffset + section.pileupHeight,
           scroll,
         )
-        if (bottom < 0 || bottom > height) {
-          return null
-        }
         return (
-          <ResizeHandle
+          <PileupResizeHandle
             key={section.groupKey || 'ungrouped'}
-            className={classes.resizeHandle}
-            style={{ top: bottom - YSCALEBAR_LABEL_OFFSET }}
+            top={bottom - YSCALEBAR_LABEL_OFFSET}
+            canvasHeight={height}
             onDrag={dy => {
               model.resizeGroupHeight(section.groupKey, dy)
-              return undefined
             }}
             title={`Drag to resize "${section.label || 'group'}"`}
           />

@@ -192,6 +192,9 @@ const AlignmentsTooltip = lazy(
 
 export { ColorScheme } from './constants.ts'
 
+// Floor for the user-resizable coverage / arc / sashimi bands, in px.
+const MIN_BAND_HEIGHT = 20
+
 // Max pileup rows the layout may produce before overflow reads collapse to the
 // bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
 // `readYs`) and the overflow sentinel never wrap.
@@ -1897,18 +1900,31 @@ export default function stateModelFactory(
           /**
            * #action
            * Drag a stacked group's pileup band taller/shorter by `dy` px, capping
-           * how many rows that group lays out. Based on the section's current
-           * displayed height so dragging a truncated group expands it toward its
-           * full read set and dragging shrinks it; one row is the floor.
+           * how many rows that group lays out; one row is the floor.
+           *
+           * The override accumulates continuously across drag frames. It must not
+           * re-seed from the section's displayed `pileupHeight` each frame: that
+           * height is row-snapped (`maxY * rowHeight`) and content-capped, so a
+           * sub-row `dy` rounds away to nothing while a sub-row negative `dy`
+           * snaps off a whole row — the drag stutters and biases toward shrinking.
+           * Instead grow the stored px value directly, seeding from the displayed
+           * height only on the first frame. When the override already runs past
+           * the real content (displayed height < override), clamp back to one row
+           * of headroom so reversing the drag responds immediately.
            */
           resizeGroupHeight(key: string, dy: number) {
             const rowHeight = self.featureHeight + self.featureSpacing
-            const current =
+            const displayed =
               self.sections.sections.find(s => s.groupKey === key)
                 ?.pileupHeight ?? 0
+            const existing = self.groupMaxHeightOverrides.get(key)
+            const base =
+              existing === undefined
+                ? displayed
+                : Math.min(existing, displayed + rowHeight)
             self.groupMaxHeightOverrides.set(
               key,
-              Math.max(rowHeight, current + dy),
+              Math.max(rowHeight, base + dy),
             )
             self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
           },
@@ -2028,21 +2044,21 @@ export default function stateModelFactory(
            * #action
            */
           setCoverageHeight(height: number) {
-            self.coverageHeight = height
+            self.coverageHeight = Math.max(MIN_BAND_HEIGHT, height)
           },
 
           /**
            * #action
            */
           setReadConnectionsHeight(height: number) {
-            self.readConnectionsHeight = height
+            self.readConnectionsHeight = Math.max(MIN_BAND_HEIGHT, height)
           },
 
           /**
            * #action
            */
           setSashimiArcsHeight(height: number) {
-            self.sashimiArcsHeight = height
+            self.sashimiArcsHeight = Math.max(MIN_BAND_HEIGHT, height)
           },
 
           /**
