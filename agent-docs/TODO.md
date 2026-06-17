@@ -58,7 +58,6 @@ https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&sess
 long time 'computing sample info'...any more fine grained progress? Any indicator that it is 'doing too much' e.g. to cancel it also?
 
 
-## No resize bar on tree sidebar...
 
 
 ## Not phased link
@@ -98,9 +97,6 @@ plugins/linear-genome-view/src/BaseLinearDisplay/models/ConfigOverrideMixin.test
 1. Nested-submodel slots — the real risk wasn't another clone error, it'd be getSnapshot silently freezing un-evaluated jexl strings if any getConfWithOverride call targeted a nested config sub-model. Checked every slot key used across every call site against its schema definition — the only frozen-typed ones (colorBy/filterBy in alignments) are already plain JS, not MST nodes, so isStateTreeNode correctly skips them. No nested-model case exists today.
 2. Test coverage gap — ConfigOverrideMixin.test.ts existed but never exercised getConfWithOverride at all, only getOverride/setOverride. That's the exact function I changed, in shared infra used by every linear display. I added 4 tes-wins,
 
-## Show legend hides coloring
-
-multisamplevariant
 
 ## treesidebar
 

@@ -21,6 +21,11 @@ const paramsToDelete = [
   'sessionName',
 ] as const
 
+// Pure read of the session-relevant URL params. No side effects, so it is
+// safe under React StrictMode's double-invoked useState initializer (a second
+// call must observe the same params as the first). Stripping the consumed
+// params from the address bar is a separate one-time side effect performed by
+// stripConsumedSessionParams once the loader is committed/mounted.
 export function createSessionLoaderFromUrl(initialTimestamp: number) {
   const p = readQueryParams([
     'config',
@@ -37,7 +42,6 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     'hubURL',
     'sessionName',
   ])
-  deleteQueryParams(paramsToDelete)
   return SessionLoader.create({
     configPath: p.config,
     sessionQuery: p.session,
@@ -54,6 +58,14 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     sessionName: p.sessionName,
     initialTimestamp,
   })
+}
+
+// Removes the one-time URL params (password, loc, tracks, ...) from the address
+// bar. Kept separate from createSessionLoaderFromUrl so the read stays pure;
+// called from the loader lifecycle effect, which only fires for the committed
+// instance and is naturally idempotent (deleting absent params is a no-op).
+export function stripConsumedSessionParams() {
+  deleteQueryParams(paramsToDelete)
 }
 
 export function reloadSessionLoader(

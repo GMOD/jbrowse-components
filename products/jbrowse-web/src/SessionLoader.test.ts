@@ -5,6 +5,7 @@ import SessionLoader from './SessionLoader.ts'
 import {
   createSessionLoaderFromUrl,
   reloadSessionLoader,
+  stripConsumedSessionParams,
 } from './createSessionLoader.ts'
 import { readSessionFromStorage } from './sessionLoaderHelpers.ts'
 
@@ -417,18 +418,51 @@ describe('SessionLoader', () => {
     })
   })
 
-  // afterCreate is async, so these tests use `when` to wait for the loader to
-  // settle. They verify the full config-load → session-dispatch pipeline.
-  describe('afterCreate integration', () => {
+  // Guards the StrictMode-safety property behind the share-session decrypt bug:
+  // the useState lazy initializer builds a loader for BOTH StrictMode
+  // invocations (the second from a URL already stripped of its `password`), so
+  // construction must have no side effects — loading only starts on activate().
+  describe('construction does not start loading', () => {
+    it('leaves the loader idle until activated, then loads once', async () => {
+      const spec = { views: [{ type: 'LinearGenomeView' }] }
+      const loader = SessionLoader.create({
+        sessionQuery: `spec-${JSON.stringify(spec)}`,
+        configSnapshot: {},
+        initialTimestamp: Date.now(),
+      })
+      expect(loader.initializeStarted).toBe(false)
+      // generous flush: a stray afterCreate-style load would have resolved here
+      await new Promise(resolve => setTimeout(resolve, 50))
+      expect(loader.sessionSource).toBeUndefined()
+
+      loader.activate(() => {})
+      expect(loader.initializeStarted).toBe(true)
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      expect(loader.sessionSource).toEqual({ type: 'spec', spec })
+      loader.deactivate()
+    })
+  })
+
+  // initialize() runs from activate() (a host attach), not afterCreate, so
+  // these model-only tests trigger it explicitly. It is async, so they use
+  // `when` to wait for the loader to settle, verifying the full config-load →
+  // session-dispatch pipeline.
+  describe('initialize integration', () => {
+    function createAndInit(args: Parameters<typeof SessionLoader.create>[0]) {
+      const loader = SessionLoader.create(args)
+      void loader.initialize()
+      return loader
+    }
+
     it('fetches config and sets default session when no session query', async () => {
-      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      const loader = createAndInit({ initialTimestamp: Date.now() })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
       expect(loader.configSnapshot).toBeDefined()
       expect(loader.sessionSource).toEqual({ type: 'default' })
     })
 
     it('skips config fetch when configSnapshot is pre-set (HMR/plugin reload path)', async () => {
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         configSnapshot: { assemblies: [] },
         initialTimestamp: Date.now(),
       })
@@ -439,7 +473,7 @@ describe('SessionLoader', () => {
 
     it('restores pre-set sessionSource snapshot and loads plugins (plugin reload path)', async () => {
       const snapshot = { id: 'restored-id', name: 'Restored' }
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         configSnapshot: {},
         sessionSource: { type: 'snapshot', snapshot },
         initialTimestamp: Date.now(),
@@ -459,7 +493,7 @@ describe('SessionLoader', () => {
     it('reload path restores own session with an untrusted plugin without re-triaging', async () => {
       const { checkPlugins } = jest.requireMock('./util')
       checkPlugins.mockResolvedValueOnce(false)
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         configSnapshot: {},
         sessionSource: {
           type: 'snapshot',
@@ -501,7 +535,7 @@ describe('SessionLoader', () => {
         }),
       )
       checkPlugins.mockResolvedValueOnce(false)
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         sessionQuery: 'share-abc',
         configSnapshot: {},
         initialTimestamp: Date.now(),
@@ -521,7 +555,7 @@ describe('SessionLoader', () => {
       openLocation.mockReturnValueOnce({
         readFile: jest.fn().mockRejectedValue(new Error('Network error')),
       })
-      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      const loader = createAndInit({ initialTimestamp: Date.now() })
       await when(() => !!loader.configError, { timeout: 5000 })
       expect(loader.configError).toBeDefined()
       expect(loader.sessionSource).toBeUndefined()
@@ -529,7 +563,7 @@ describe('SessionLoader', () => {
 
     it('dispatches spec session', async () => {
       const spec = { views: [{ type: 'LinearGenomeView' }] }
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         sessionQuery: `spec-${JSON.stringify(spec)}`,
         initialTimestamp: Date.now(),
       })
@@ -538,7 +572,7 @@ describe('SessionLoader', () => {
     })
 
     it('dispatches JB1-style session (loc + assembly)', async () => {
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         loc: 'chr1:1-1000',
         assembly: 'hg38',
         tracks: 'track1,track2',
@@ -556,7 +590,7 @@ describe('SessionLoader', () => {
     })
 
     it('dispatches hub session — sets a hub sessionSource', async () => {
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         hubURL: ['https://example.com/hub.txt'],
         initialTimestamp: Date.now(),
       })
@@ -568,7 +602,7 @@ describe('SessionLoader', () => {
     })
 
     it('sets an error sessionSource for unrecognized session format', async () => {
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         sessionQuery: 'unrecognized-format-xyz',
         initialTimestamp: Date.now(),
       })
@@ -577,7 +611,7 @@ describe('SessionLoader', () => {
     })
 
     it('sets an error sessionSource when a session loader throws', async () => {
-      const loader = SessionLoader.create({
+      const loader = createAndInit({
         sessionQuery: 'local-nonexistent',
         initialTimestamp: Date.now(),
       })
@@ -591,7 +625,7 @@ describe('SessionLoader', () => {
       window.history.replaceState(null, '', `${window.location.pathname}${qs}`)
     }
 
-    it('parses scalar params and strips consumed keys from URL', () => {
+    it('parses scalar params without mutating the URL', () => {
       setSearch(
         '?config=foo.json&session=local-abc&loc=chr1:1-100&assembly=hg38&password=p&adminKey=a',
       )
@@ -603,6 +637,19 @@ describe('SessionLoader', () => {
       expect(loader.password).toBe('p')
       expect(loader.adminKey).toBe('a')
       expect(loader.initialTimestamp).toBe(123)
+
+      // the read is pure: params are still present (so StrictMode's double
+      // initializer call reads the same thing both times)
+      const after = new URLSearchParams(window.location.search)
+      expect(after.get('password')).toBe('p')
+      expect(after.get('loc')).toBe('chr1:1-100')
+    })
+
+    it('stripConsumedSessionParams removes one-time keys, keeps config/session/adminKey', () => {
+      setSearch(
+        '?config=foo.json&session=local-abc&loc=chr1:1-100&assembly=hg38&password=p&adminKey=a',
+      )
+      stripConsumedSessionParams()
 
       // adminKey, config, session preserved; loc, assembly, password stripped
       const after = new URLSearchParams(window.location.search)

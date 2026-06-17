@@ -127,6 +127,13 @@ const SessionLoader = types
      * #volatile
      */
     buildAutorunDisposer: undefined as (() => void) | undefined,
+    /**
+     * #volatile
+     * guards initialize() to run exactly once per loader, even across the
+     * activate/deactivate/activate cycle StrictMode drives on mount. Not reset
+     * by deactivate (unlike buildAutorunDisposer) so a remount never refetches.
+     */
+    initializeStarted: false,
   }))
   .views(self => ({
     /**
@@ -569,11 +576,18 @@ const SessionLoader = types
     },
     /**
      * #action
-     * Attaches a React host: starts an autorun that fires
-     * `buildPluginManager` once `ready` flips true. Idempotent — a second
-     * call while already activated is a no-op.
+     * Attaches a React host: kicks off the one-time config/session load and
+     * starts an autorun that fires `buildPluginManager` once `ready` flips
+     * true. Idempotent — a second call while already activated is a no-op, and
+     * the load only ever runs once (see initializeStarted). Loading lives here
+     * rather than in afterCreate so model construction stays side-effect-free
+     * and safe under StrictMode's double-invoked useState initializer.
      */
     activate(reloadCallback: ReloadPluginManagerCallback) {
+      if (!self.initializeStarted) {
+        self.initializeStarted = true
+        void this.initialize()
+      }
       if (self.buildAutorunDisposer) {
         return
       }
@@ -592,12 +606,6 @@ const SessionLoader = types
       self.buildAutorunDisposer?.()
       self.buildAutorunDisposer = undefined
       self.disposePluginManager()
-    },
-    /**
-     * #aftercreate
-     */
-    afterCreate() {
-      void this.initialize()
     },
   }))
 
