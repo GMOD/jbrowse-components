@@ -1,4 +1,5 @@
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import ConfigOverrideMixin, {
   migrateOldSettingSnapshots,
@@ -158,6 +159,47 @@ describe('ConfigOverrideMixin — composition with outer preProcessSnapshot', ()
     const model2 = MigratingModel.create(snap)
     expect(model2.getOverride('color')).toBe('red')
     expect(model2.getOverride('displayMode')).toBe('compact')
+  })
+})
+
+const TestConfigSchema = ConfigurationSchema('TestConfig', {
+  color: { type: 'color', defaultValue: 'red' },
+  tags: { type: 'stringArray', defaultValue: ['a', 'b'] },
+})
+
+const TestModelWithConfig = types.compose(
+  'TestDisplayWithConfig',
+  ConfigOverrideMixin(['color', 'tags']),
+  types.model({
+    configuration: types.optional(TestConfigSchema, {}),
+  }),
+)
+
+describe('ConfigOverrideMixin — getConfWithOverride', () => {
+  it('falls back to the config slot value when no override is set', () => {
+    const model = TestModelWithConfig.create({})
+    expect(model.getConfWithOverride('color')).toBe('red')
+  })
+
+  it('override wins over the config slot value', () => {
+    const model = TestModelWithConfig.create({})
+    model.setOverride('color', 'blue')
+    expect(model.getConfWithOverride('color')).toBe('blue')
+  })
+
+  it('an array-typed slot is returned as a plain, clonable array, not a live MST node', () => {
+    const model = TestModelWithConfig.create({})
+    const tags = model.getConfWithOverride('tags')
+    expect(tags).toEqual(['a', 'b'])
+    expect(isStateTreeNode(tags)).toBe(false)
+    expect(() => structuredClone(tags)).not.toThrow()
+  })
+
+  it('an array-typed slot is referentially stable across reads when unchanged', () => {
+    const model = TestModelWithConfig.create({})
+    expect(model.getConfWithOverride('tags')).toBe(
+      model.getConfWithOverride('tags'),
+    )
   })
 })
 

@@ -413,6 +413,8 @@ export default function stateModelFactory(
           makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
           {
             label: 'Cluster rows by score',
+            disabled: !self.renderingType.startsWith('multirow'),
+            disabledHelpText: 'Only available for multi-row rendering types',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 WiggleClusterDialog,

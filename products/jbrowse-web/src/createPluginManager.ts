@@ -10,6 +10,7 @@ import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
 import type { WebRootModel } from './rootModel/rootModel.ts'
+import type { SessionSource } from './types.ts'
 import type { PluginRecord } from '@jbrowse/core/PluginLoader'
 
 // Structural read-only view of SessionLoader. Kept narrow so it can be
@@ -21,10 +22,7 @@ export interface PluginManagerSource {
   readonly configSnapshot?: Record<string, unknown>
   readonly configPath?: string
   readonly adminKey?: string
-  readonly sessionError: unknown
-  readonly sessionSpec?: Record<string, unknown>
-  readonly sessionSnapshot?: Record<string, unknown>
-  readonly hubSpec?: Record<string, unknown>
+  readonly sessionSource?: SessionSource
   readonly sessionName?: string
   readonly initialTimestamp: number
   readonly sessionQuery?: string
@@ -89,36 +87,32 @@ export function createPluginManager(
   return pluginManager
 }
 
-// Bootstraps the session from whichever source the loader resolved. Any
-// failure (a pre-resolved sessionError, or a thrown snapshot) falls back to the
-// default session with a user-facing notification.
+// Applies the single session the loader resolved. The loader already
+// discriminated which kind of session this is; here we just dispatch on
+// sessionSource.type. Any failure (a resolved error, or a thrown snapshot)
+// falls back to the default session with a user-facing notification.
 function initSession(
   rootModel: WebRootModel,
   pluginManager: PluginManager,
   model: PluginManagerSource,
 ) {
-  const {
-    sessionError,
-    sessionSpec,
-    sessionSnapshot,
-    hubSpec,
-    sessionName,
-    defaultSessionViewInit,
-  } = model
+  const { sessionSource, sessionName, defaultSessionViewInit } = model
   try {
-    if (sessionError) {
-      // eslint-disable-next-line @typescript-eslint/only-throw-error
-      throw sessionError
-    } else if (sessionSnapshot) {
-      rootModel.setSession(sessionSnapshot)
-    } else if (hubSpec) {
+    if (sessionSource?.type === 'error') {
+      throw sessionSource.error
+    } else if (sessionSource?.type === 'snapshot') {
+      rootModel.setSession(sessionSource.snapshot)
+    } else if (sessionSource?.type === 'hub') {
       // @ts-expect-error hubSpec is dynamic JSON (Record<string,unknown>); the
       // required shape is validated at runtime inside loadHubSpec
-      void loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
-    } else if (sessionSpec) {
-      // @ts-expect-error sessionSpec is dynamic JSON (Record<string,unknown>);
-      // the required shape is validated at runtime inside loadSessionSpec
-      void loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
+      void loadHubSpec({ ...sessionSource.hubSpec, sessionName }, pluginManager)
+    } else if (sessionSource?.type === 'spec') {
+      // @ts-expect-error spec is dynamic JSON (Record<string,unknown>); the
+      // required shape is validated at runtime inside loadSessionSpec
+      void loadSessionSpec(
+        { ...sessionSource.spec, sessionName },
+        pluginManager,
+      )
     } else {
       rootModel.setDefaultSession()
       if (defaultSessionViewInit) {
@@ -132,8 +126,8 @@ function initSession(
     rootModel.setDefaultSession()
     rootModel.session?.notifyError(
       `${formatSessionError(e)}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
-      model.sessionError,
-      model.sessionSnapshot,
+      e,
+      sessionSource?.type === 'snapshot' ? sessionSource.snapshot : undefined,
     )
     console.error(e)
   }

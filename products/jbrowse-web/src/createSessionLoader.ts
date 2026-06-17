@@ -65,6 +65,6 @@ export function reloadSessionLoader(
     ...getSnapshot(prev),
     initialTimestamp: Date.now(),
     configSnapshot,
-    sessionSnapshot,
+    sessionSource: { type: 'snapshot', snapshot: sessionSnapshot },
   })
 }

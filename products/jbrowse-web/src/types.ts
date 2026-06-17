@@ -76,4 +76,18 @@ export interface SessionTriagedInfo {
   reason: PluginDefinition[]
 }
 
+/**
+ * The single resolved session the loader hands to createPluginManager. The
+ * loader's job is to turn whatever the URL/HMR/storage provided into exactly
+ * one of these variants; initSession then applies it. One discriminated value
+ * replaces the former scattered sessionSnapshot/sessionSpec/hubSpec/
+ * blankSession/sessionError flags.
+ */
+export type SessionSource =
+  | { type: 'snapshot'; snapshot: Snap }
+  | { type: 'spec'; spec: Snap }
+  | { type: 'hub'; hubSpec: Snap }
+  | { type: 'default' }
+  | { type: 'error'; error: unknown }
+
 export { type SessionMetadata } from '@jbrowse/web-core'

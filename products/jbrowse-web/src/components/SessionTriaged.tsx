@@ -21,7 +21,7 @@ const SessionTriaged = observer(function SessionTriaged({
         loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {
-        loader.setBlankSession(true)
+        loader.setSessionSource({ type: 'default' })
         loader.setSessionTriaged(undefined)
       }}
       reason={sessionTriaged.reason}

@@ -146,9 +146,11 @@ export default function ConfigOverrideMixin<
         // readConfObject's evaluation.
         const raw = (conf as unknown as Record<string, unknown>)[key]
         return (
-          isCallbackValue(raw) ? readConfObject(conf, key)
-          : isStateTreeNode(raw) ? getSnapshot(raw)
-          : raw
+          isCallbackValue(raw)
+            ? readConfObject(conf, key)
+            : isStateTreeNode(raw)
+              ? getSnapshot(raw)
+              : raw
         ) as ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
       },
     }))

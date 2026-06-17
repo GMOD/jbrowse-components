@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -16,11 +17,35 @@ interface MenuAnchor {
   names: string[]
 }
 
+// Permanent centered line plus a contrasting halo on each side, so the handle
+// stays visible against colored sample/genotype boxes instead of relying on
+// hover-only highlighting.
+const useStyles = makeStyles()(theme => ({
+  resizeHandle: {
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: '50%',
+      width: 1,
+      transform: 'translateX(-50%)',
+      background: theme.palette.text.primary,
+      opacity: 0.4,
+      boxShadow: `0 0 0 1px ${alpha('#fff', 0.6)}`,
+    },
+    '&:hover::after': {
+      opacity: 0.9,
+    },
+  },
+}))
+
 const TreeSidebar = observer(function TreeSidebar({
   model,
 }: {
   model: TreeSidebarModel
 }) {
+  const { classes } = useStyles()
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
@@ -148,6 +173,7 @@ const TreeSidebar = observer(function TreeSidebar({
           onDrag={distance => {
             model.setTreeAreaWidth(Math.max(10, treeAreaWidth + distance))
           }}
+          className={classes.resizeHandle}
           style={{
             position: 'absolute',
             top: lineZoneHeight,

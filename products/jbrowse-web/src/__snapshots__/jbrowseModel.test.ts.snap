@@ -459,7 +459,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
       ],
       "category": [
-        "Annotation",
+        "Variants",
       ],
       "displays": [
         {
@@ -467,7 +467,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearManhattanDisplay",
         },
       ],
-      "name": "GWAS test",
+      "name": "Manhattan plot",
       "trackId": "volvox_gwas",
       "type": "GWASTrack",
     },
@@ -1023,6 +1023,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "MultiWiggle",
+      ],
       "name": "MultiWig no names",
       "trackId": "volvox_microarray_multi2",
       "type": "MultiQuantitativeTrack",
@@ -1066,6 +1069,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "MultiWiggle",
+      ],
       "name": "MultiWig",
       "trackId": "volvox_microarray_multi",
       "type": "MultiQuantitativeTrack",
@@ -1092,6 +1098,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "assemblyNames": [
         "volvox",
+      ],
+      "category": [
+        "MultiWiggle",
       ],
       "displays": [
         {
@@ -1126,6 +1135,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "MultiWiggle",
+      ],
       "displays": [
         {
           "defaultRendering": "multirowdensity",
@@ -1158,6 +1170,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "assemblyNames": [
         "volvox",
+      ],
+      "category": [
+        "MultiWiggle",
       ],
       "displays": [
         {
@@ -1195,6 +1210,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "assemblyNames": [
         "volvox",
+      ],
+      "category": [
+        "MultiWiggle",
       ],
       "displays": [
         {
@@ -1607,6 +1625,33 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "name": "GFF3Tabix genes",
       "trackId": "gff3tabix_genes",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.contigA.gff3.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sort.contigA.gff3.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "metadata": {
+        "skipTextIndex": true,
+      },
+      "name": "GFF3Tabix genes (contigA alias)",
+      "trackId": "gff3tabix_genes_contigA_alias",
       "type": "FeatureTrack",
     },
     {

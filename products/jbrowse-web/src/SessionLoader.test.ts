@@ -1,5 +1,5 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { when } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import SessionLoader from './SessionLoader.ts'
 import {
@@ -7,6 +7,8 @@ import {
   reloadSessionLoader,
 } from './createSessionLoader.ts'
 import { readSessionFromStorage } from './sessionLoaderHelpers.ts'
+
+import type { SessionSource } from './types.ts'
 
 // Mock dependencies
 jest.mock('@jbrowse/core/util/io', () => ({
@@ -53,48 +55,15 @@ describe('SessionLoader', () => {
   })
 
   describe('session type detection getters', () => {
-    it('detects shared session', () => {
-      const loader = SessionLoader.create({
-        sessionQuery: 'share-abc123',
-        initialTimestamp: Date.now(),
-      })
-      expect(loader.isSharedSession).toBe(true)
-      expect(loader.isLocalSession).toBe(false)
-      expect(loader.isEncodedSession).toBe(false)
-    })
-
-    it('detects local session', () => {
-      const loader = SessionLoader.create({
-        sessionQuery: 'local-abc123',
-        initialTimestamp: Date.now(),
-      })
-      expect(loader.isLocalSession).toBe(true)
-      expect(loader.isSharedSession).toBe(false)
-    })
-
-    it('detects encoded session', () => {
-      const loader = SessionLoader.create({
-        sessionQuery: 'encoded-abc123',
-        initialTimestamp: Date.now(),
-      })
-      expect(loader.isEncodedSession).toBe(true)
-      expect(loader.isLocalSession).toBe(false)
-    })
-
-    it('detects json session', () => {
-      const loader = SessionLoader.create({
-        sessionQuery: 'json-{"session":{}}',
-        initialTimestamp: Date.now(),
-      })
-      expect(loader.isJsonSession).toBe(true)
-    })
-
-    it('detects spec session', () => {
-      const loader = SessionLoader.create({
-        sessionQuery: 'spec-{"views":[]}',
-        initialTimestamp: Date.now(),
-      })
-      expect(loader.isSpecSession).toBe(true)
+    it('detects session query type from the prefix', () => {
+      const type = (sessionQuery: string) =>
+        SessionLoader.create({ sessionQuery, initialTimestamp: Date.now() })
+          .sessionQueryType
+      expect(type('share-abc123')).toBe('share')
+      expect(type('local-abc123')).toBe('local')
+      expect(type('encoded-abc123')).toBe('encoded')
+      expect(type('json-{"session":{}}')).toBe('json')
+      expect(type('spec-{"views":[]}')).toBe('spec')
     })
 
     it('detects hub session', () => {
@@ -178,66 +147,57 @@ describe('SessionLoader', () => {
         initialTimestamp: Date.now(),
       })
       await loader.loadSessionByType()
-      // no fresh sessionSpec built: falls through to setDefaultSession
-      expect(loader.sessionSpec).toBeUndefined()
-      expect(loader.blankSession).toBe(true)
+      // no spec built: resolves to the default session
+      expect(loader.sessionSource).toEqual({ type: 'default' })
     })
 
-    it('returns false for all session types when no query', () => {
+    it('returns no session type when no query', () => {
       const loader = SessionLoader.create({
         initialTimestamp: Date.now(),
       })
-      expect(loader.isSharedSession).toBe(false)
-      expect(loader.isLocalSession).toBe(false)
-      expect(loader.isEncodedSession).toBe(false)
-      expect(loader.isJsonSession).toBe(false)
-      expect(loader.isSpecSession).toBe(false)
+      expect(loader.sessionQueryType).toBeUndefined()
       expect(loader.isHubSession).toBe(false)
       expect(loader.isJb1StyleSession).toBe(false)
     })
   })
 
   describe('ready state getters', () => {
-    it('isSessionLoaded is true when sessionSnapshot exists', () => {
-      const loader = SessionLoader.create({
-        sessionSnapshot: { id: 'test', name: 'Test Session' },
-        initialTimestamp: Date.now(),
-      })
+    it('isSessionLoaded is true once a sessionSource is resolved', () => {
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      expect(loader.isSessionLoaded).toBe(false)
+      loader.setSessionSource({ type: 'default' })
       expect(loader.isSessionLoaded).toBe(true)
     })
 
-    it('isSessionLoaded is true when blankSession is true', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      loader.setBlankSession(true)
-      expect(loader.isSessionLoaded).toBe(true)
+    it('isSessionLoaded is true for every sessionSource variant', () => {
+      const isLoaded = (source: SessionSource) => {
+        const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+        loader.setSessionSource(source)
+        return loader.isSessionLoaded
+      }
+      expect(isLoaded({ type: 'snapshot', snapshot: { id: 'x' } })).toBe(true)
+      expect(isLoaded({ type: 'spec', spec: {} })).toBe(true)
+      expect(isLoaded({ type: 'hub', hubSpec: {} })).toBe(true)
+      expect(isLoaded({ type: 'default' })).toBe(true)
+      expect(isLoaded({ type: 'error', error: new Error('x') })).toBe(true)
     })
 
-    it('isSessionLoaded is true when sessionError exists', () => {
+    it('pluginsLoaded requires only runtimePlugins for a non-snapshot session', () => {
       const loader = SessionLoader.create({
         initialTimestamp: Date.now(),
       })
-      loader.setSessionError(new Error('test error'))
-      expect(loader.isSessionLoaded).toBe(true)
-    })
-
-    it('pluginsLoaded requires runtimePlugins for blank session', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      loader.setBlankSession(true)
+      loader.setSessionSource({ type: 'default' })
       expect(loader.pluginsLoaded).toBe(false)
 
       loader.setRuntimePlugins([])
       expect(loader.pluginsLoaded).toBe(true)
     })
 
-    it('pluginsLoaded requires both runtime and session plugins for session with snapshot', () => {
+    it('pluginsLoaded requires both runtime and session plugins for a snapshot session', () => {
       const loader = SessionLoader.create({
-        sessionSnapshot: { id: 'test' },
         initialTimestamp: Date.now(),
       })
+      loader.setSessionSource({ type: 'snapshot', snapshot: { id: 'test' } })
       expect(loader.pluginsLoaded).toBe(false)
 
       loader.setRuntimePlugins([])
@@ -252,7 +212,7 @@ describe('SessionLoader', () => {
         configSnapshot: { assemblies: [] },
         initialTimestamp: Date.now(),
       })
-      loader.setBlankSession(true)
+      loader.setSessionSource({ type: 'default' })
       loader.setRuntimePlugins([])
       expect(loader.ready).toBe(true)
     })
@@ -261,30 +221,42 @@ describe('SessionLoader', () => {
       const loader = SessionLoader.create({
         initialTimestamp: Date.now(),
       })
-      loader.setBlankSession(true)
+      loader.setSessionSource({ type: 'default' })
       loader.setRuntimePlugins([])
       loader.setConfigError(new Error('config error'))
       expect(loader.ready).toBe(false)
     })
+
+    // regression: applyTriagedConfig used to set runtimePlugins (flipping
+    // `ready` true at the await boundary) before setting configSnapshot, so the
+    // build autorun could fire with configSnapshot still undefined
+    it('configSnapshot is set whenever ready flips true on triage accept', async () => {
+      const loader = SessionLoader.create({
+        initialTimestamp: Date.now(),
+      })
+      loader.setSessionSource({ type: 'default' })
+      let readyWithoutConfig = false
+      const dispose = autorun(() => {
+        if (loader.ready && !loader.configSnapshot) {
+          readyWithoutConfig = true
+        }
+      })
+      await loader.applyTriagedConfig({ assemblies: [] })
+      dispose()
+      expect(loader.ready).toBe(true)
+      expect(loader.configSnapshot).toBeDefined()
+      expect(readyWithoutConfig).toBe(false)
+    })
   })
 
   describe('actions', () => {
-    it('setSessionSnapshot updates sessionSnapshot', () => {
+    it('setSessionSource updates sessionSource', () => {
       const loader = SessionLoader.create({
         initialTimestamp: Date.now(),
       })
-      const snap = { id: 'test-id', name: 'Test' }
-      loader.setSessionSnapshot(snap)
-      expect(loader.sessionSnapshot).toEqual(snap)
-    })
-
-    it('setBlankSession updates blankSession', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      expect(loader.blankSession).toBe(false)
-      loader.setBlankSession(true)
-      expect(loader.blankSession).toBe(true)
+      const snapshot = { id: 'test-id', name: 'Test' }
+      loader.setSessionSource({ type: 'snapshot', snapshot })
+      expect(loader.sessionSource).toEqual({ type: 'snapshot', snapshot })
     })
 
     it('setConfigSnapshot updates configSnapshot', () => {
@@ -294,15 +266,6 @@ describe('SessionLoader', () => {
       const snap = { assemblies: [{ name: 'test' }] }
       loader.setConfigSnapshot(snap)
       expect(loader.configSnapshot).toEqual(snap)
-    })
-
-    it('setSessionError updates sessionError', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      const err = new Error('test error')
-      loader.setSessionError(err)
-      expect(loader.sessionError).toBe(err)
     })
 
     it('setConfigError updates configError', () => {
@@ -341,12 +304,12 @@ describe('SessionLoader', () => {
         initialTimestamp: Date.now(),
       })
       loader.decodeSessionSpec()
-      expect(loader.sessionSpec).toEqual(spec)
+      expect(loader.sessionSource).toEqual({ type: 'spec', spec })
     })
   })
 
   describe('decodeJb1StyleSession', () => {
-    it('creates sessionSpec from loc and assembly', () => {
+    it('creates a spec sessionSource from loc and assembly', () => {
       const loader = SessionLoader.create({
         loc: 'chr1:1-1000',
         assembly: 'hg38',
@@ -354,28 +317,32 @@ describe('SessionLoader', () => {
         initialTimestamp: Date.now(),
       })
       loader.decodeJb1StyleSession()
-      expect(loader.sessionSpec).toMatchObject({
-        views: [
-          {
-            type: 'LinearGenomeView',
-            loc: 'chr1:1-1000',
-            assembly: 'hg38',
-            tracks: ['track1', 'track2'],
-          },
-        ],
+      expect(loader.sessionSource).toMatchObject({
+        type: 'spec',
+        spec: {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              loc: 'chr1:1-1000',
+              assembly: 'hg38',
+              tracks: ['track1', 'track2'],
+            },
+          ],
+        },
       })
     })
   })
 
   describe('decodeHubSpec', () => {
-    it('creates hubSpec from hubURL', () => {
+    it('creates a hub sessionSource from hubURL', () => {
       const loader = SessionLoader.create({
         hubURL: ['https://example.com/hub.txt'],
         initialTimestamp: Date.now(),
       })
       loader.decodeHubSpec()
-      expect(loader.hubSpec).toMatchObject({
-        hubURL: ['https://example.com/hub.txt'],
+      expect(loader.sessionSource).toMatchObject({
+        type: 'hub',
+        hubSpec: { hubURL: ['https://example.com/hub.txt'] },
       })
     })
   })
@@ -393,7 +360,7 @@ describe('SessionLoader', () => {
       // not ready yet
       expect(createPluginManager).not.toHaveBeenCalled()
       // becoming ready in the model triggers the autorun
-      loader.setBlankSession(true)
+      loader.setSessionSource({ type: 'default' })
       loader.setRuntimePlugins([])
       await when(() => loader.ready)
       expect(createPluginManager).toHaveBeenCalledTimes(1)
@@ -417,7 +384,7 @@ describe('SessionLoader', () => {
         initialTimestamp: Date.now(),
       })
       loader.activate(reloadCb)
-      loader.setBlankSession(true)
+      loader.setSessionSource({ type: 'default' })
       loader.setRuntimePlugins([])
       await when(() => loader.ready)
       expect(createPluginManager).toHaveBeenCalledTimes(1)
@@ -453,11 +420,11 @@ describe('SessionLoader', () => {
   // afterCreate is async, so these tests use `when` to wait for the loader to
   // settle. They verify the full config-load → session-dispatch pipeline.
   describe('afterCreate integration', () => {
-    it('fetches config and sets blank session when no session query', async () => {
+    it('fetches config and sets default session when no session query', async () => {
       const loader = SessionLoader.create({ initialTimestamp: Date.now() })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
       expect(loader.configSnapshot).toBeDefined()
-      expect(loader.blankSession).toBe(true)
+      expect(loader.sessionSource).toEqual({ type: 'default' })
     })
 
     it('skips config fetch when configSnapshot is pre-set (HMR/plugin reload path)', async () => {
@@ -466,37 +433,43 @@ describe('SessionLoader', () => {
         initialTimestamp: Date.now(),
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
-      expect(loader.blankSession).toBe(true)
+      expect(loader.sessionSource).toEqual({ type: 'default' })
       expect(loader.runtimePlugins).toBeDefined()
     })
 
-    it('restores pre-set sessionSnapshot and loads plugins (plugin reload path)', async () => {
-      const sessionSnapshot = { id: 'restored-id', name: 'Restored' }
+    it('restores pre-set sessionSource snapshot and loads plugins (plugin reload path)', async () => {
+      const snapshot = { id: 'restored-id', name: 'Restored' }
       const loader = SessionLoader.create({
         configSnapshot: {},
-        sessionSnapshot,
+        sessionSource: { type: 'snapshot', snapshot },
         initialTimestamp: Date.now(),
       })
       await when(() => loader.ready, { timeout: 5000 })
-      expect(loader.sessionSnapshot).toMatchObject({ name: 'Restored' })
+      expect(loader.sessionSource).toMatchObject({
+        type: 'snapshot',
+        snapshot: { name: 'Restored' },
+      })
       expect(loader.sessionPlugins).toBeDefined()
     })
 
-    // The plugin-reload/HMR path pre-sets sessionSnapshot from the user's own
-    // live session. Its plugins were already accepted when added in-session, so
-    // restoring must not bounce the user back through triage even if a plugin
-    // is from an untrusted (non-store) URL.
+    // The plugin-reload/HMR path pre-sets a snapshot sessionSource from the
+    // user's own live session. Its plugins were already accepted when added
+    // in-session, so restoring must not bounce the user back through triage
+    // even if a plugin is from an untrusted (non-store) URL.
     it('reload path restores own session with an untrusted plugin without re-triaging', async () => {
       const { checkPlugins } = jest.requireMock('./util')
       checkPlugins.mockResolvedValueOnce(false)
       const loader = SessionLoader.create({
         configSnapshot: {},
-        sessionSnapshot: {
-          id: 'restored-id',
-          name: 'Restored',
-          sessionPlugins: [
-            { name: 'Custom', url: 'https://example.com/custom.js' },
-          ],
+        sessionSource: {
+          type: 'snapshot',
+          snapshot: {
+            id: 'restored-id',
+            name: 'Restored',
+            sessionPlugins: [
+              { name: 'Custom', url: 'https://example.com/custom.js' },
+            ],
+          },
         },
         initialTimestamp: Date.now(),
       })
@@ -512,7 +485,7 @@ describe('SessionLoader', () => {
 
     // Guards the vetting boundary the reload fix must NOT erode: an incoming
     // shared-session URL is not the user's own session, so an untrusted plugin
-    // still routes to triage (no pre-set sessionSnapshot → fetchSharedSession
+    // still routes to triage (no pre-set sessionSource → fetchSharedSession
     // path, which vets via checkPlugins without userAcceptedConfirmation).
     it('shared session with an untrusted plugin still triages on initial load', async () => {
       const { readSessionFromDynamo } = jest.requireMock('./sessionSharing')
@@ -536,11 +509,11 @@ describe('SessionLoader', () => {
       await when(
         () =>
           loader.sessionTriaged !== undefined ||
-          loader.sessionSnapshot !== undefined,
+          loader.sessionSource !== undefined,
         { timeout: 5000 },
       )
       expect(loader.sessionTriaged).toMatchObject({ origin: 'session' })
-      expect(loader.sessionSnapshot).toBeUndefined()
+      expect(loader.sessionSource).toBeUndefined()
     })
 
     it('sets configError and skips session loading when config fetch fails', async () => {
@@ -551,7 +524,7 @@ describe('SessionLoader', () => {
       const loader = SessionLoader.create({ initialTimestamp: Date.now() })
       await when(() => !!loader.configError, { timeout: 5000 })
       expect(loader.configError).toBeDefined()
-      expect(loader.blankSession).toBe(false)
+      expect(loader.sessionSource).toBeUndefined()
     })
 
     it('dispatches spec session', async () => {
@@ -561,7 +534,7 @@ describe('SessionLoader', () => {
         initialTimestamp: Date.now(),
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
-      expect(loader.sessionSpec).toEqual(spec)
+      expect(loader.sessionSource).toEqual({ type: 'spec', spec })
     })
 
     it('dispatches JB1-style session (loc + assembly)', async () => {
@@ -572,41 +545,44 @@ describe('SessionLoader', () => {
         initialTimestamp: Date.now(),
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
-      expect(loader.sessionSpec).toMatchObject({
-        views: [
-          expect.objectContaining({ loc: 'chr1:1-1000', assembly: 'hg38' }),
-        ],
+      expect(loader.sessionSource).toMatchObject({
+        type: 'spec',
+        spec: {
+          views: [
+            expect.objectContaining({ loc: 'chr1:1-1000', assembly: 'hg38' }),
+          ],
+        },
       })
     })
 
-    it('dispatches hub session — sets hubSpec and blankSession', async () => {
+    it('dispatches hub session — sets a hub sessionSource', async () => {
       const loader = SessionLoader.create({
         hubURL: ['https://example.com/hub.txt'],
         initialTimestamp: Date.now(),
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
-      expect(loader.hubSpec).toMatchObject({
-        hubURL: ['https://example.com/hub.txt'],
+      expect(loader.sessionSource).toMatchObject({
+        type: 'hub',
+        hubSpec: { hubURL: ['https://example.com/hub.txt'] },
       })
-      expect(loader.blankSession).toBe(true)
     })
 
-    it('sets sessionError for unrecognized session format', async () => {
+    it('sets an error sessionSource for unrecognized session format', async () => {
       const loader = SessionLoader.create({
         sessionQuery: 'unrecognized-format-xyz',
         initialTimestamp: Date.now(),
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
-      expect(loader.sessionError).toBeDefined()
+      expect(loader.sessionSource).toMatchObject({ type: 'error' })
     })
 
-    it('sets sessionError when a session loader throws', async () => {
+    it('sets an error sessionSource when a session loader throws', async () => {
       const loader = SessionLoader.create({
         sessionQuery: 'local-nonexistent',
         initialTimestamp: Date.now(),
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
-      expect(loader.sessionError).toBeDefined()
+      expect(loader.sessionSource).toMatchObject({ type: 'error' })
     })
   })
 
@@ -680,7 +656,10 @@ describe('SessionLoader', () => {
       expect(next.adminKey).toBe('admin')
       expect(next.sessionQuery).toBe('local-x')
       expect(next.configSnapshot).toEqual({ assemblies: ['hg38'] })
-      expect(next.sessionSnapshot).toEqual({ id: 'new', name: 'new session' })
+      expect(next.sessionSource).toEqual({
+        type: 'snapshot',
+        snapshot: { id: 'new', name: 'new session' },
+      })
       expect(next.initialTimestamp).not.toBe(1)
     })
   })
@@ -710,7 +689,7 @@ describe('SessionLoader', () => {
         initialTimestamp: 1234567890,
         hubURL: ['https://example.com/hub.txt'],
         configSnapshot: { assemblies: [] },
-        sessionSnapshot: { id: 'test' },
+        sessionSource: { type: 'snapshot', snapshot: { id: 'test' } },
       })
       const snap = getSnapshot(loader)
       expect(snap.configPath).toBe('/path/to/config.json')

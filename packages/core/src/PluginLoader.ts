@@ -71,18 +71,17 @@ function promisifiedLoadScript(src: string) {
 
 async function loadScript(scriptUrl: string) {
   if (!isInWebWorker()) {
+    console.log('wtf2', { scriptUrl })
     return promisifiedLoadScript(scriptUrl)
-  }
-
-  if ('importScripts' in globalThis) {
-    ;(
-      globalThis as unknown as { importScripts(url: string): void }
-    ).importScripts(scriptUrl)
+  } else if ('importScripts' in globalThis) {
+    console.log('wtf', { scriptUrl })
+    globalThis.importScripts(scriptUrl)
     return
+  } else {
+    throw new Error(
+      'cannot figure out how to load external JS scripts in this environment',
+    )
   }
-  throw new Error(
-    'cannot figure out how to load external JS scripts in this environment',
-  )
 }
 
 export function isCJSPluginDefinition(

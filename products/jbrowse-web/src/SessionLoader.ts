@@ -15,7 +15,7 @@ import {
 import { readSessionFromDynamo } from './sessionSharing.ts'
 import { checkPlugins, fromUrlSafeB64, readConf } from './util.ts'
 
-import type { SessionTriagedInfo, Snap } from './types.ts'
+import type { SessionSource, SessionTriagedInfo, Snap } from './types.ts'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -89,8 +89,10 @@ const SessionLoader = types
     configSnapshot: types.frozen<Snap | undefined>(undefined),
     /**
      * #property
+     * the single resolved session, also the HMR/reload restore vehicle (preset
+     * to a `snapshot` variant when rebuilding from a live session)
      */
-    sessionSnapshot: types.frozen<Snap | undefined>(undefined),
+    sessionSource: types.frozen<SessionSource | undefined>(undefined),
   })
   .volatile(() => ({
     /**
@@ -100,29 +102,11 @@ const SessionLoader = types
     /**
      * #volatile
      */
-    sessionSpec: undefined as Snap | undefined,
-    /**
-     * #volatile
-     */
-    hubSpec: undefined as Snap | undefined,
-    /**
-     * #volatile
-     */
-    blankSession: false,
-    /**
-     * #volatile
-     */
     runtimePlugins: undefined as PluginRecord[] | undefined,
     /**
      * #volatile
      */
     sessionPlugins: undefined as PluginRecord[] | undefined,
-    /**
-     * #volatile
-     */
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    sessionError: undefined as unknown,
     /**
      * #volatile
      */
@@ -147,15 +131,12 @@ const SessionLoader = types
   .views(self => ({
     /**
      * #getter
+     * the `session=` URL param's type prefix (`share`/`spec`/`encoded`/`json`/
+     * `local`), or undefined when there's no recognized prefix. Mirrors the
+     * prefixes stripped by stripPrefix()
      */
-    get isSharedSession() {
-      return !!self.sessionQuery?.startsWith('share-')
-    },
-    /**
-     * #getter
-     */
-    get isSpecSession() {
-      return !!self.sessionQuery?.startsWith('spec-')
+    get sessionQueryType() {
+      return self.sessionQuery?.match(/^(share|spec|encoded|json|local)-/)?.[1]
     },
     /**
      * #getter
@@ -180,32 +161,12 @@ const SessionLoader = types
         | undefined
       return !!config?.extendDefaultSessionWithUrlParams
     },
-
-    /**
-     * #getter
-     */
-    get isEncodedSession() {
-      return !!self.sessionQuery?.startsWith('encoded-')
-    },
-    /**
-     * #getter
-     */
-    get isJsonSession() {
-      return !!self.sessionQuery?.startsWith('json-')
-    },
-    /**
-     * #getter
-     */
-    get isLocalSession() {
-      return !!self.sessionQuery?.startsWith('local-')
-    },
     /**
      * #getter
      */
     get pluginsLoaded() {
-      // session-plugins are only needed when we're loading from a snapshot
-      const needSessionPlugins =
-        !self.sessionError && !self.blankSession && !self.sessionSpec
+      // session-plugins are only needed when restoring a full session snapshot
+      const needSessionPlugins = self.sessionSource?.type === 'snapshot'
       return Boolean(
         self.runtimePlugins && (!needSessionPlugins || self.sessionPlugins),
       )
@@ -214,12 +175,7 @@ const SessionLoader = types
      * #getter
      */
     get isSessionLoaded() {
-      return (
-        self.blankSession ||
-        self.sessionError !== undefined ||
-        self.sessionSnapshot !== undefined ||
-        self.sessionSpec !== undefined
-      )
+      return self.sessionSource !== undefined
     },
     /**
      * #getter
@@ -239,12 +195,9 @@ const SessionLoader = types
      * #getter
      */
     get ready(): boolean {
-      return (
-        self.isSessionLoaded &&
-        !self.configError &&
-        self.pluginsLoaded &&
-        self.configSnapshot
-      )
+      // runtimePlugins and configSnapshot are committed together in
+      // loadConfigAndPlugins, so pluginsLoaded implies configSnapshot is set
+      return self.isSessionLoaded && !self.configError && self.pluginsLoaded
     },
     /**
      * #getter
@@ -277,12 +230,6 @@ const SessionLoader = types
     /**
      * #action
      */
-    setSessionError(error: unknown) {
-      self.sessionError = error
-    },
-    /**
-     * #action
-     */
     setRuntimePlugins(plugins: PluginRecord[]) {
       self.runtimePlugins = plugins
     },
@@ -300,9 +247,13 @@ const SessionLoader = types
     },
     /**
      * #action
+     * Commits config + plugins in a single action so reactions never observe
+     * runtimePlugins set while configSnapshot is still undefined (which would
+     * build the rootModel with `jbrowse: undefined`).
      */
-    setBlankSession(flag: boolean) {
-      self.blankSession = flag
+    setConfigAndPlugins(snap: Snap, plugins: PluginRecord[]) {
+      self.runtimePlugins = plugins
+      self.configSnapshot = snap
     },
     /**
      * #action
@@ -312,9 +263,11 @@ const SessionLoader = types
     },
     /**
      * #action
+     * Sets the resolved session that the build will apply. Producer of every
+     * loadSessionByType branch; consumed once by initSession.
      */
-    setSessionSnapshot(snap: Snap) {
-      self.sessionSnapshot = snap
+    setSessionSource(source: SessionSource) {
+      self.sessionSource = source
     },
     /**
      * #action
@@ -346,8 +299,8 @@ const SessionLoader = types
     },
     /**
      * #action
-     * Tears down the rootModel. Saves the live session snapshot back to the
-     * loader first so HMR (which reuses this loader) can restore it.
+     * Tears down the rootModel. Saves the live session back into sessionSource
+     * first so HMR (which reuses this loader) can restore it.
      */
     disposePluginManager() {
       const pm = self.pluginManager
@@ -358,7 +311,10 @@ const SessionLoader = types
         // snapshotted and the safeReference in activeWidgets is stripped from
         // the snapshot (xref #5414)
         if (session && isAlive(session)) {
-          self.sessionSnapshot = getSnapshot(session)
+          self.sessionSource = {
+            type: 'snapshot',
+            snapshot: getSnapshot(session),
+          }
         }
         destroy(rootModel)
       }
@@ -368,10 +324,14 @@ const SessionLoader = types
   .actions(self => ({
     /**
      * #action
+     * Resolves a config: loads its plugin records, then commits them together
+     * with configSnapshot in a single action (setConfigAndPlugins) so `ready`
+     * never observes plugins-loaded-but-config-undefined.
      */
-    async fetchPlugins(config: { plugins?: PluginDefinition[] }) {
+    async loadConfigAndPlugins(snap: Snap & { plugins?: PluginDefinition[] }) {
       try {
-        self.setRuntimePlugins(await loadPluginRecords(config.plugins ?? []))
+        const plugins = await loadPluginRecords(snap.plugins ?? [])
+        self.setConfigAndPlugins(snap, plugins)
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -388,7 +348,7 @@ const SessionLoader = types
         const sessionPlugins = snap.sessionPlugins ?? []
         if ((await checkPlugins(sessionPlugins)) || userAcceptedConfirmation) {
           self.setSessionPlugins(await loadPluginRecords(sessionPlugins))
-          self.setSessionSnapshot(snap)
+          self.setSessionSource({ type: 'snapshot', snapshot: snap })
         } else {
           self.setSessionTriaged({
             snap,
@@ -398,7 +358,7 @@ const SessionLoader = types
         }
       } catch (e) {
         console.error(e)
-        self.setSessionError(e)
+        self.setSessionSource({ type: 'error', error: e })
       }
     },
     /**
@@ -409,10 +369,9 @@ const SessionLoader = types
       // ?config=none skips loading; useful for ?hubURL which may not need a
       // config (but can still be combined with one if e.g. config has plugins)
       if (configPath === 'none') {
-        // still mark plugins as loaded (empty set) so `ready` can flip true;
-        // otherwise runtimePlugins stays undefined and the app loads forever
-        await this.fetchPlugins({})
-        self.setConfigSnapshot({})
+        // commit an empty config so `ready` can flip true; otherwise
+        // runtimePlugins stays undefined and the app loads forever
+        await this.loadConfigAndPlugins({})
       } else {
         const { config, configUri } = await fetchRemoteConfig(configPath)
         const configPlugins = config.plugins ?? []
@@ -424,8 +383,7 @@ const SessionLoader = types
             reason: configPlugins,
           })
         } else {
-          await this.fetchPlugins(config)
-          self.setConfigSnapshot(config)
+          await this.loadConfigAndPlugins(config)
         }
       }
     },
@@ -451,8 +409,7 @@ const SessionLoader = types
      * loads its plugins and applies it with a fresh ID.
      */
     async applyTriagedConfig(snap: Snap) {
-      await this.fetchPlugins(snap)
-      self.setConfigSnapshot({ ...snap, id: createElementId() })
+      await this.loadConfigAndPlugins({ ...snap, id: createElementId() })
     },
     /**
      * #action
@@ -500,27 +457,33 @@ const SessionLoader = types
      * #action
      */
     decodeSessionSpec() {
-      self.sessionSpec = JSON.parse(stripPrefix(self.sessionQuery!))
+      self.setSessionSource({
+        type: 'spec',
+        spec: JSON.parse(stripPrefix(self.sessionQuery!)),
+      })
     },
     /**
      * #action
      */
     decodeJb1StyleSession() {
-      self.sessionSpec = buildJb1SessionSpec({
-        loc: self.loc,
-        tracks: self.tracks,
-        assembly: self.assembly,
-        tracklist: self.tracklist,
-        nav: self.nav,
-        highlight: self.highlight,
-        sessionTracks: self.sessionTracksParsed,
+      self.setSessionSource({
+        type: 'spec',
+        spec: buildJb1SessionSpec({
+          loc: self.loc,
+          tracks: self.tracks,
+          assembly: self.assembly,
+          tracklist: self.tracklist,
+          nav: self.nav,
+          highlight: self.highlight,
+          sessionTracks: self.sessionTracksParsed,
+        }),
       })
     },
     /**
      * #action
      */
     decodeHubSpec() {
-      self.hubSpec = { hubURL: self.hubURL }
+      self.setSessionSource({ type: 'hub', hubSpec: { hubURL: self.hubURL } })
     },
   }))
   .actions(self => ({
@@ -529,54 +492,53 @@ const SessionLoader = types
      */
     async loadSessionByType() {
       try {
-        if (self.sessionSnapshot) {
-          // HMR / reload path: snapshot pre-set from the user's own live
-          // session, whose plugins were already accepted when added in-session.
-          // Pass userAcceptedConfirmation so an untrusted (non-store) plugin
-          // URL doesn't bounce the user back through triage on reload. Incoming
-          // URL sessions never reach here — they vet via fetchSharedSession etc.
-          if (!self.sessionPlugins) {
+        if (self.sessionSource) {
+          // HMR / reload path: sessionSource pre-set to the user's own live
+          // session snapshot, whose plugins were already accepted when added
+          // in-session. Load those (already-trusted) session plugins without
+          // re-triaging. Incoming URL sessions never reach here — they vet via
+          // fetchSharedSession etc.
+          if (self.sessionSource.type === 'snapshot' && !self.sessionPlugins) {
             await self.loadSession(
-              self.sessionSnapshot as {
+              self.sessionSource.snapshot as {
                 sessionPlugins?: PluginDefinition[]
                 id: string
               },
               true,
             )
           }
-        } else if (self.isSharedSession) {
+        } else if (self.sessionQueryType === 'share') {
           await self.fetchSharedSession()
-        } else if (self.isSpecSession) {
+        } else if (self.sessionQueryType === 'spec') {
           self.decodeSessionSpec()
         } else if (self.isJb1StyleSession) {
           if (self.extendDefaultSession) {
             // layer loc/tracks onto the configured defaultSession (applied in
             // initSession via defaultSessionViewInit) rather than replacing it
-            self.setBlankSession(true)
+            self.setSessionSource({ type: 'default' })
           } else {
             self.decodeJb1StyleSession()
           }
-        } else if (self.isEncodedSession) {
+        } else if (self.sessionQueryType === 'encoded') {
           await self.decodeEncodedUrlSession()
-        } else if (self.isJsonSession) {
+        } else if (self.sessionQueryType === 'json') {
           await self.decodeJsonUrlSession()
-        } else if (self.isLocalSession) {
+        } else if (self.sessionQueryType === 'local') {
           await self.fetchLocalSession()
         } else if (self.isHubSession) {
           // lower priority than local session: hubURL is left in URL even
           // when a local session exists
           self.decodeHubSpec()
-          self.setBlankSession(true)
         } else if (self.sessionQuery) {
           throw new Error(
             `Unrecognized URL session format: "${self.sessionQuery}"`,
           )
         } else {
-          self.setBlankSession(true)
+          self.setSessionSource({ type: 'default' })
         }
       } catch (e) {
         console.error(e)
-        self.setSessionError(e)
+        self.setSessionSource({ type: 'error', error: e })
       }
     },
     /**
@@ -584,10 +546,9 @@ const SessionLoader = types
      */
     async loadConfig() {
       if (self.configSnapshot) {
-        // HMR / reload: snapshot already URI-stamped, just load plugins
-        await self.fetchPlugins(
-          self.configSnapshot as { plugins?: PluginDefinition[] },
-        )
+        // HMR / reload: snapshot already URI-stamped, just (re)load plugins;
+        // re-committing the same configSnapshot is a harmless no-op
+        await self.loadConfigAndPlugins(self.configSnapshot)
       } else {
         await self.fetchConfig()
       }

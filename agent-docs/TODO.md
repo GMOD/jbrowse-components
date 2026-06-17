@@ -37,9 +37,7 @@ didn't load overlapping scatterplot
 
 Swap order in colo829
 
-## Cluster
 
-No cluster by row when overlapping
 
 ## Reset resolution
 
@@ -49,20 +47,13 @@ Why checkbox
 
 Check
 
-## Tooltip on breakpoint split view bezier
-
-Check
 
 ## Share link for methylation not loading
 
 https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-VG6GwCJP6B&password=9tmtk
 
 
-## Data clone error
-
-DataCloneError: Proxy object could not be cloned.
-
-from https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-MDNPnGjRM-&password=90Fts
+## Progress
 
 long time 'computing sample info'...any more fine grained progress? Any indicator that it is 'doing too much' e.g. to cancel it also?
 
@@ -76,8 +67,6 @@ https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&sess
 
 ## Protein viewer
 
-When mouse-overing the lgv, dont show the 3codon view
-
 Compactify header more
 
 Thinner tracks
@@ -86,4 +75,56 @@ Thinner tracks
 
 ## Update docs: have live link for everything
 
-## resize bars for groupby tracks not working well
+
+
+## xref
+
+https://github.com/GMOD/jbrowse-components/issues/5582#issuecomment-4725004577
+
+
+## config model testing
+
+we saw an issue with ldheatmap giving error
+
+ ldheatmap display is producing Fetch failed: DOMException: Proxy object could not be cloned.
+      call webpack://@jbrowse/web/../../packages/core/src/rpc/RpcClient.ts?:108
+      call webpack://@jbrowse/web/../../packages/core/src/rpc/RpcClient.ts?:103
+      call webpack://@jbrowse/web/../../packages/core/src/rpc/WebWorkerRpcDriver.ts?:36
+      transport webpack://@jbrowse/web/../../packages/core/src/rpc/WorkerPoolRpcDriver.ts?:94
+  FetchMixin.ts:125:19
+      runFetch webpack://@jbrowse/web/../../plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts?:125
+      MobX 7
+
+  the diagnosis:
+
+
+Root cause: LDDisplay's jexlFilters getter (plugins/variants/src/LDDisplay/shared.ts:219-221) returned the live MST/MobX-observable array straight from getConfWithOverride('jexlFilters'). That getter intentionally returns the raw config value (for referential stability — see ConfigOverrideMixin.ts:138-142) rather than a snapshot, since most callers read scalar slots. jexlFilters is the only stringArray-typed slot read this way, and the resulting MST array (a Proxy) was passed directly into the RenderLDData RPC payload (rpcProps()) and failed postMessage's structured clone.
+plugins/linear-genome-view/src/BaseLinearDisplay/models/ConfigOverrideMixin.test.ts
+
+1. Nested-submodel slots — the real risk wasn't another clone error, it'd be getSnapshot silently freezing un-evaluated jexl strings if any getConfWithOverride call targeted a nested config sub-model. Checked every slot key used across every call site against its schema definition — the only frozen-typed ones (colorBy/filterBy in alignments) are already plain JS, not MST nodes, so isStateTreeNode correctly skips them. No nested-model case exists today.
+2. Test coverage gap — ConfigOverrideMixin.test.ts existed but never exercised getConfWithOverride at all, only getOverride/setOverride. That's the exact function I changed, in shared infra used by every linear display. I added 4 tes-wins,
+
+## Show legend hides coloring
+
+multisamplevariant
+
+## treesidebar
+
+
+
+1. Halo color is hardcoded to '#fff' — on a dark theme this would look like a stray white smudge instead of blending in. Should use theme.palette.background.default (or .paper) instead so it adapts to light/dark themes.
+2. Hit area is still only 4px wide, same as before — visibility is better now but grabbing it precisely is still fiddly compared to the alignments/maf handles which use a wider band. Could widen to 6-8px without changing the visible line width.
+3. Same hover-only invisibility pattern exists in MafCoverageResizeHandle.tsx and PileupComponent.tsx's resizeHandle/PileupResizeHandle — if those are also hard to spot over colored read/coverage bars, the same permanent-line treatment could be factored into the shared ResizeHandle (or a shared variant) rather than duplicated per call site.
+
+## vendor electron-updater
+
+
+## removal of parentRegion
+
+might need workaround for apollo or restore
+
+## stuck downloading alignments
+
+https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-sgi_pQ7gMw&password=VcJbT
+
+also investigate slowness
