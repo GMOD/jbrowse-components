@@ -872,6 +872,52 @@ describe('derived regionTooLarge', () => {
     expect(display.featureDensityStats).toBeUndefined()
   })
 
+  it('force load past the byte estimate flips banner false and renders', async () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view, mockRpcCall } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 5_000_000, refName: 'ctgA' },
+    ])
+
+    mockRpcCall.mockImplementation(
+      (
+        _sid: string,
+        method: string,
+        args: { regions?: { start: number; end: number }[] },
+      ) => {
+        if (method === 'CoreGetFeatureDensityStats') {
+          const bytes = (args.regions ?? []).reduce(
+            (sum, r) => sum + (r.end - r.start),
+            0,
+          )
+          return Promise.resolve({ bytes, fetchSizeLimit: 1_000_000 })
+        }
+        return Promise.resolve(makeEmptyFeatureData())
+      },
+    )
+
+    view.zoomTo(view.maxBpPerPx)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    // Force-load raises userByteSizeLimit past the current scaled estimate, so
+    // the derived banner recomputes false and the gated fetch proceeds.
+    display.forceLoad()
+    expect(display.regionTooLarge).toBe(false)
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBeGreaterThan(0)
+    })
+    expect(display.regionTooLarge).toBe(false)
+  })
+
   it('force load with density limit flips banner false via derived recomputation', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
@@ -981,6 +1027,62 @@ describe('derived regionTooLarge', () => {
 
     expect(display.regionTooLarge).toBe(true)
     expect(mockRpcCall.mock.calls.length).toBe(callCountBefore)
+  })
+
+  // Regression: zoom out until the byte estimate trips, then zoom back into a
+  // small region. The byte estimate is a snapshot measured at the zoomed-out
+  // span, and it survives the viewport-change clearAllRpcData. Reading it raw
+  // kept bytesEstimateTooLarge true forever — and FetchVisibleRegions won't
+  // re-estimate while regionTooLarge holds, so the banner stuck permanently.
+  // Scaling the estimate to the current span lets it drop below the limit on
+  // zoom-in, reopening the gate so a real re-estimate clears the banner.
+  it('byte-estimate banner self-releases on zoom back in', async () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view, mockRpcCall } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 5_000_000, refName: 'ctgA' },
+    ])
+
+    // Byte estimate scales with the queried span: ~5MB zoomed out, ~50kB
+    // zoomed in. Limit is 1MB.
+    mockRpcCall.mockImplementation(
+      (
+        _sid: string,
+        method: string,
+        args: { regions?: { start: number; end: number }[] },
+      ) => {
+        if (method === 'CoreGetFeatureDensityStats') {
+          const bytes = (args.regions ?? []).reduce(
+            (sum, r) => sum + (r.end - r.start),
+            0,
+          )
+          return Promise.resolve({ bytes, fetchSizeLimit: 1_000_000 })
+        }
+        return Promise.resolve(makeEmptyFeatureData())
+      },
+    )
+
+    // Zoom all the way out: the full 5MB span estimates ~5MB > 1MB.
+    view.zoomTo(view.maxBpPerPx)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+    const callsWhileTooLarge = mockRpcCall.mock.calls.length
+
+    // Zoom back into ~50kB: the scaled estimate drops below the limit, the
+    // gate reopens, a real re-estimate runs, and the banner clears.
+    view.zoomTo(62.5)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.loadedRegions.size).toBeGreaterThan(0)
+    })
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsWhileTooLarge)
   })
 })
 

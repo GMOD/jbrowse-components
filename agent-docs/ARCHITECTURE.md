@@ -92,8 +92,17 @@ expressed through the `regionTooLarge` getter so consumers
   clears the flag on viewport change so `FetchVisibleRegions` can retry.
 - **Derived** (canvas's `LinearCanvasBaseDisplay`): a pure function of cached
   stats × current `bpPerPx` + visible regions, mirroring `FeatureDensityMixin`.
-  - `bytesEstimateTooLarge` reads `featureDensityStats.bytes` (set by the
-    byte-estimate RPC) against `userByteSizeLimit ?? adapter limit ?? config`.
+  - `bytesEstimateTooLarge` tests `estimatedVisibleBytes` against
+    `userByteSizeLimit ?? adapter limit ?? config`. The byte-estimate RPC sets
+    `featureDensityStats.bytes` for the span visible *at fetch time*, recorded
+    as `byteEstimateVisibleBp`; `estimatedVisibleBytes` rescales it to the
+    current span (`bytes × view.visibleBp / byteEstimateVisibleBp`). The
+    rescale is what makes the byte gate a pure function of the view (like
+    `densityTooLarge` scaling featureCount by `bpPerPx`) so it self-releases on
+    zoom-in. Reading raw `bytes` instead deadlocks: the estimate survives
+    `clearAllRpcData`, stays above the limit after zooming back into a small
+    region, and `FetchVisibleRegions` won't re-estimate while `regionTooLarge`
+    holds — the banner sticks forever (the 50kb→5mb→50kb stuck-banner bug).
   - `densityTooLarge` walks `view.visibleRegions`, looks up
     `densityStatsPerRegion[idx]` (populated for both successful fetches and
     worker-side too-large responses), and tests

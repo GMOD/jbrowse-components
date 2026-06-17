@@ -203,6 +203,15 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
+        // visibleBp at which the current `featureDensityStats` byte estimate was
+        // measured. The estimate scales with span, so a value taken while zoomed
+        // out doesn't describe a smaller zoomed-in span; tracking the capture
+        // span lets `estimatedVisibleBytes` rescale it to the current view
+        // instead of letting a stale estimate gate refetch forever.
+        byteEstimateVisibleBp: undefined as number | undefined,
+        /**
+         * #volatile
+         */
         heightBeforeExpand: undefined as number | undefined,
         /**
          * #volatile
@@ -540,21 +549,41 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The cached byte estimate scaled from the span it was measured over
+         * (`byteEstimateVisibleBp`) to the currently visible span. The estimate
+         * is roughly proportional to span, so scaling makes it a pure function
+         * of the current view — mirroring densityTooLarge. Crucially it
+         * self-releases on zoom-in: without scaling, a large zoomed-out estimate
+         * stays above the limit forever and gates refetch (FetchVisibleRegions
+         * won't re-estimate while regionTooLarge holds) — a permanently stuck
+         * banner.
          */
-        get bytesEstimateTooLarge() {
-          const view = getView(self)
-          if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
-            return false
-          }
+        get estimatedVisibleBytes() {
           const stats = self.featureDensityStats
           if (!stats?.bytes) {
+            return undefined
+          }
+          const captureBp = self.byteEstimateVisibleBp
+          return captureBp
+            ? (stats.bytes * getView(self).visibleBp) / captureBp
+            : stats.bytes
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         */
+        get bytesEstimateTooLarge() {
+          const stats = self.featureDensityStats
+          const bytes = self.estimatedVisibleBytes
+          if (getView(self).visibleBp < AUTO_FORCE_LOAD_BP || bytes === undefined) {
             return false
           }
           const limit =
             self.userByteSizeLimit ??
-            stats.fetchSizeLimit ??
+            stats?.fetchSizeLimit ??
             readConfObject(self.conf, 'fetchSizeLimit')
-          return stats.bytes > limit
+          return bytes > limit
         },
 
         /**
@@ -580,8 +609,7 @@ export default function baseStateModelFactory(
          */
         get regionTooLargeReason() {
           if (self.bytesEstimateTooLarge) {
-            const bytes = self.featureDensityStats?.bytes ?? 0
-            return `Requested too much data (${getDisplayStr(bytes)})`
+            return `Requested too much data (${getDisplayStr(self.estimatedVisibleBytes ?? 0)})`
           }
           return self.densityTooLarge ? 'Too many features' : ''
         },
@@ -890,7 +918,14 @@ export default function baseStateModelFactory(
           self.userByteSizeLimit = undefined
           self.userFeatureDensityLimit = undefined
           if (stats?.bytes) {
-            self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
+            // Raise the gate past the estimate scaled to the *current* view,
+            // not the raw captured bytes — the gate compares against
+            // estimatedVisibleBytes, so basing the limit on the same scaled
+            // value keeps force-load reliable even if the view zoomed between
+            // the estimate and the click (mirrors the density branch below,
+            // which uses density observed at the current bpPerPx).
+            const bytes = self.estimatedVisibleBytes ?? stats.bytes
+            self.userByteSizeLimit = Math.ceil(bytes * 1.5)
           } else if (self.maxFeatureDensity !== undefined) {
             // Push the gate past the highest observed density across visible
             // regions, not past the current `maxFeatureDensity`. The latter
@@ -1296,6 +1331,25 @@ export default function baseStateModelFactory(
               }
               applyFetchResults(results)
             })
+          },
+        }
+      })
+      .actions(self => {
+        const superSetFeatureDensityStats = self.setFeatureDensityStats
+        return {
+          /**
+           * #action
+           * Records the span the byte estimate was measured at so
+           * `estimatedVisibleBytes` can scale it to the current view (see
+           * `byteEstimateVisibleBp`).
+           */
+          setFeatureDensityStats(
+            stats?: Parameters<typeof superSetFeatureDensityStats>[0],
+          ) {
+            self.byteEstimateVisibleBp = stats
+              ? getView(self).visibleBp
+              : undefined
+            superSetFeatureDensityStats(stats)
           },
         }
       })

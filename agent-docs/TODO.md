@@ -48,9 +48,6 @@ Why checkbox
 Check
 
 
-## Share link for methylation not loading
-
-https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-VG6GwCJP6B&password=9tmtk
 
 
 ## Progress
@@ -59,18 +56,13 @@ long time 'computing sample info'...any more fine grained progress? Any indicato
 
 
 
-
-## Not phased link
-
-https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-7Bxg2u78GE&password=QFlRG
-
 ## Protein viewer
 
 Compactify header more
 
 Thinner tracks
 
-## links for coloy by strand, PUR
+## links for color by strand, PUR
 
 ## Update docs: have live link for everything
 

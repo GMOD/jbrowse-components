@@ -250,6 +250,7 @@ const SessionLoader = types
      * #action
      */
     setConfigSnapshot(snap: Snap) {
+      console.log({ snap })
       self.configSnapshot = snap
     },
     /**
@@ -259,6 +260,7 @@ const SessionLoader = types
      * build the rootModel with `jbrowse: undefined`).
      */
     setConfigAndPlugins(snap: Snap, plugins: PluginRecord[]) {
+      console.log({ snap })
       self.runtimePlugins = plugins
       self.configSnapshot = snap
     },
@@ -355,7 +357,10 @@ const SessionLoader = types
         const sessionPlugins = snap.sessionPlugins ?? []
         if ((await checkPlugins(sessionPlugins)) || userAcceptedConfirmation) {
           self.setSessionPlugins(await loadPluginRecords(sessionPlugins))
-          self.setSessionSource({ type: 'snapshot', snapshot: snap })
+          self.setSessionSource({
+            type: 'snapshot',
+            snapshot: snap,
+          })
         } else {
           self.setSessionTriaged({
             snap,
@@ -365,7 +370,10 @@ const SessionLoader = types
         }
       } catch (e) {
         console.error(e)
-        self.setSessionSource({ type: 'error', error: e })
+        self.setSessionSource({
+          type: 'error',
+          error: e,
+        })
       }
     },
     /**
@@ -405,8 +413,12 @@ const SessionLoader = types
       session: Snap,
       userAcceptedConfirmation?: boolean,
     ) {
+      console.log({ session })
       await this.loadSession(
-        { ...session, id: createElementId() },
+        {
+          ...session,
+          id: createElementId(),
+        },
         userAcceptedConfirmation,
       )
     },
@@ -490,7 +502,10 @@ const SessionLoader = types
      * #action
      */
     decodeHubSpec() {
-      self.setSessionSource({ type: 'hub', hubSpec: { hubURL: self.hubURL } })
+      self.setSessionSource({
+        type: 'hub',
+        hubSpec: { hubURL: self.hubURL },
+      })
     },
   }))
   .actions(self => ({
