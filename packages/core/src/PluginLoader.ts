@@ -69,13 +69,18 @@ function promisifiedLoadScript(src: string) {
   })
 }
 
+function hasImportScripts(
+  scope: typeof globalThis,
+): scope is typeof globalThis & { importScripts: (url: string) => void } {
+  return 'importScripts' in scope
+}
+
 async function loadScript(scriptUrl: string) {
+  const scope = globalThis
   if (!isInWebWorker()) {
-    console.log('wtf2', { scriptUrl })
     return promisifiedLoadScript(scriptUrl)
-  } else if ('importScripts' in globalThis) {
-    console.log('wtf', { scriptUrl })
-    globalThis.importScripts(scriptUrl)
+  } else if (hasImportScripts(scope)) {
+    scope.importScripts(scriptUrl)
     return
   } else {
     throw new Error(

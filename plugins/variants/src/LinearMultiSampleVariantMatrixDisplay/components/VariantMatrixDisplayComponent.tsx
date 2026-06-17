@@ -51,8 +51,8 @@ const VariantMatrixDisplayComponent = observer(
                 canvas={canvas}
               />
             </div>
-            <TreeSidebar model={model} />
             <LegendOverlay model={model} top={lineZoneHeight} />
+            <TreeSidebar model={model} />
             {inMatrix ? (
               <Crosshair mouseState={mouseState} model={model} />
             ) : null}

@@ -32,8 +32,8 @@ const VariantDisplayComponent = observer(
       >
         {({ canvasRef, canvas }) => (
           <>
-            <TreeSidebar model={model} />
             <LegendOverlay model={model} />
+            <TreeSidebar model={model} />
             <div style={{ position: 'absolute', left: 0 }}>
               <VariantBody
                 model={model}

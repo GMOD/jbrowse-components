@@ -3,21 +3,14 @@ import { observer } from 'mobx-react'
 import ColorLegend from './MultiSampleVariantColorLegend.tsx'
 import { getMaxLabelWidth } from '../variantLegend.ts'
 
-import type { LegendBarModel } from './types.ts'
+import type { RowColorsModel } from './types.ts'
 
-const MultiSampleVariantLegendBar = observer(
-  function MultiSampleVariantLegendBar({ model }: { model: LegendBarModel }) {
-    const {
-      id,
-      scrollTop,
-      height,
-      canDisplayLabels,
-      rowHeight,
-      sources,
-      showLegend,
-    } = model
+const MultiSampleVariantRowColors = observer(
+  function MultiSampleVariantRowColors({ model }: { model: RowColorsModel }) {
+    const { id, scrollTop, height, canDisplayLabels, rowHeight, sources } =
+      model
     const svgFontSize = Math.min(rowHeight, 12)
-    const clipid = `legend-${typeof jest === 'undefined' ? id : 'test'}`
+    const clipid = `row-colors-${typeof jest === 'undefined' ? id : 'test'}`
 
     const labelWidth = getMaxLabelWidth({
       sources,
@@ -33,7 +26,7 @@ const MultiSampleVariantLegendBar = observer(
         ? Math.min(nrow, Math.ceil((scrollTop + height) / rowHeight))
         : 0
 
-    return sources && showLegend ? (
+    return sources ? (
       <>
         <defs>
           <clipPath id={clipid}>
@@ -55,4 +48,4 @@ const MultiSampleVariantLegendBar = observer(
   },
 )
 
-export default MultiSampleVariantLegendBar
+export default MultiSampleVariantRowColors

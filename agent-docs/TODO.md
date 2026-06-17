@@ -76,12 +76,6 @@ Thinner tracks
 ## Update docs: have live link for everything
 
 
-
-## xref
-
-https://github.com/GMOD/jbrowse-components/issues/5582#issuecomment-4725004577
-
-
 ## config model testing
 
 we saw an issue with ldheatmap giving error
@@ -119,9 +113,6 @@ multisamplevariant
 ## vendor electron-updater
 
 
-## removal of parentRegion
-
-might need workaround for apollo or restore
 
 ## stuck downloading alignments
 

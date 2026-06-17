@@ -1,7 +1,7 @@
 import type { Source } from '../types.ts'
 import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
-export interface LegendBarModel {
+export interface RowColorsModel {
   id: string
   scrollTop: number
   height: number
@@ -12,7 +12,6 @@ export interface LegendBarModel {
   rowHeight: number
   sources?: Source[]
   showTree: boolean
-  showLegend: boolean
 }
 
 export interface MouseState {
