@@ -5,10 +5,10 @@ import { fetchJson as fetchjson, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
 
-import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
 import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
+import { useNotifyError } from '../../NotifyContext.ts'
 import defaultFavs from '../defaultFavs.ts'
 import { addRelativeUris, loadPluginManager } from '../util.tsx'
 
@@ -48,7 +48,7 @@ export default function LeftSidePanel({
   setPluginManager: (arg0: PluginManager) => void
 }) {
   const { classes } = useStyles()
-  const [error, setError] = useState<unknown>()
+  const notifyError = useNotifyError()
   const [loading, setLoading] = useState('')
 
   const [favorites, setFavorites] = useLocalStorage<Fav[]>(
@@ -72,7 +72,7 @@ export default function LeftSidePanel({
       )
     } catch (e) {
       console.error(e)
-      setError(e)
+      notifyError(e)
     } finally {
       setLoading('')
     }
@@ -87,7 +87,6 @@ export default function LeftSidePanel({
 
   return (
     <div className={classes.form}>
-      {error ? <NetworkErrorMessage error={error} /> : null}
       {loading ? (
         <LoadingEllipses variant="h6" message={loading} />
       ) : (

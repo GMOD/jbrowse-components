@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { ErrorMessage } from '@jbrowse/core/ui'
 import { useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -21,6 +22,7 @@ import { mutate } from 'swr'
 
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
+import { useNotifyError } from '../../NotifyContext.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
 import { loadPluginManager } from '../util.tsx'
@@ -81,13 +83,12 @@ function IconButtonWithTooltip({
 }
 
 export default function RecentSessionPanel({
-  setError,
   setPluginManager,
 }: {
-  setError: (e: unknown) => void
   setPluginManager: (pm: PluginManager) => void
 }) {
   const { classes } = useStyles()
+  const notifyError = useNotifyError()
   const [sessionLoading, setSessionLoading] = useState(false)
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
@@ -105,19 +106,16 @@ export default function RecentSessionPanel({
     'startScreen-favoriteSessions',
     [] as string[],
   )
-
-  const { data: sessions = [], mutate: mutateSessions } = useFetch(
+  const {
+    data: sessions = [],
+    error: listSessionsError,
+    mutate: mutateSessions,
+  } = useFetch(
     ['listSessions', showAutosaves],
     () =>
       ipcRenderer.invoke('listSessions', showAutosaves) as Promise<
         RecentSessionData[]
       >,
-    {
-      onError: e => {
-        console.error(e)
-        setError(e)
-      },
-    },
   )
 
   const launch = async (path: string) => {
@@ -126,7 +124,7 @@ export default function RecentSessionPanel({
       setPluginManager(await loadPluginManager(path))
     } catch (e) {
       console.error(e)
-      setError(e)
+      notifyError(e)
     } finally {
       setSessionLoading(false)
     }
@@ -146,7 +144,7 @@ export default function RecentSessionPanel({
       await mutate('listQuickstarts')
     } catch (e) {
       console.error(e)
-      setError(e)
+      notifyError(e)
     }
   }
 
@@ -167,6 +165,7 @@ export default function RecentSessionPanel({
 
   return (
     <div>
+      {listSessionsError ? <ErrorMessage error={listSessionsError} /> : null}
       {sessionToRename ? (
         <RenameSessionDialog
           sessionToRename={sessionToRename}

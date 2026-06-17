@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import { ErrorMessage, createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import JBrowse from './JBrowse.tsx'
+import { NotificationProvider } from './Notifications.tsx'
+import { useNotifyError } from './NotifyContext.ts'
 import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import { destroyPluginManager, loadPluginManager } from './StartScreen/util.tsx'
@@ -48,36 +50,46 @@ function useConfigLoad(
   }, [config, onLoad, onError])
 }
 
-const Loader = observer(function Loader() {
+const LoaderContents = observer(function LoaderContents() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [config, setConfig] = useQueryParam('config')
-  const [error, setError] = useState<unknown>()
+  const notifyError = useNotifyError()
 
-  const handleSetPluginManager = useCallback(
-    (pm: PluginManager) => {
-      ;(
-        pm.rootModel as DesktopRootModel | undefined
-      )?.setOpenNewSessionCallback(async (path: string) => {
+  const handleSetPluginManager = (pm: PluginManager) => {
+    ;(pm.rootModel as DesktopRootModel | undefined)?.setOpenNewSessionCallback(
+      async (path: string) => {
         handleSetPluginManager(await loadPluginManager(path))
-      })
+      },
+    )
 
-      setPluginManager(prev => {
-        // a new session/plugin-reload replaces the manager: tear down the old
-        // one so its RPC workers + autosave loop don't leak. destroy is
-        // idempotent (guarded by isAlive) so this stays safe under re-renders.
-        if (prev && prev !== pm) {
-          destroyPluginManager(prev)
-        }
-        return pm
-      })
-      setError(undefined)
-      setConfig('')
-    },
-    [setConfig],
-  )
+    setPluginManager(prev => {
+      // a new session/plugin-reload replaces the manager: tear down the old
+      // one so its RPC workers + autosave loop don't leak. destroy is
+      // idempotent (guarded by isAlive) so this stays safe under re-renders.
+      if (prev && prev !== pm) {
+        destroyPluginManager(prev)
+      }
+      return pm
+    })
+    setConfig('')
+  }
 
-  useConfigLoad(config, handleSetPluginManager, setError)
+  const handleConfigError = (e: unknown) => {
+    notifyError(e)
+    // fall back to the start screen so the user can pick another config
+    setConfig('')
+  }
 
+  useConfigLoad(config, handleSetPluginManager, handleConfigError)
+
+  return pluginManager?.rootModel?.session ? (
+    <JBrowse pluginManager={pluginManager} />
+  ) : !config ? (
+    <StartScreen setPluginManager={handleSetPluginManager} />
+  ) : null
+})
+
+export default function Loader() {
   const theme = useMemo(
     () =>
       createJBrowseTheme(
@@ -91,17 +103,9 @@ const Loader = observer(function Loader() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {error ? <ErrorMessage error={error} /> : null}
-      {pluginManager?.rootModel?.session ? (
-        <JBrowse pluginManager={pluginManager} />
-      ) : !config || error ? (
-        <StartScreen
-          setError={setError}
-          setPluginManager={handleSetPluginManager}
-        />
-      ) : null}
+      <NotificationProvider>
+        <LoaderContents />
+      </NotificationProvider>
     </ThemeProvider>
   )
-})
-
-export default Loader
+}

@@ -32,10 +32,8 @@ const useStyles = makeStyles()({
 
 export default function StartScreen({
   setPluginManager,
-  setError,
 }: {
   setPluginManager: (arg: PluginManager) => void
-  setError: (arg: unknown) => void
 }) {
   const { classes } = useStyles()
 
@@ -49,10 +47,7 @@ export default function StartScreen({
         </Paper>
         <Paper elevation={3} className={classes.recentPanel}>
           <Typography variant="h5">Recently opened sessions</Typography>
-          <RecentSessionPanel
-            setPluginManager={setPluginManager}
-            setError={setError}
-          />
+          <RecentSessionPanel setPluginManager={setPluginManager} />
         </Paper>
       </div>
     </div>
