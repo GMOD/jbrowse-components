@@ -57,6 +57,13 @@ export function getPairDirection(pair_orientation?: string) {
   return orientationTypes.fr[pair_orientation ?? '']
 }
 
+const pairOrientationLabels: Record<PairDirection, string> = {
+  LR: 'normal (concordant) pair orientation',
+  LL: 'same-strand pair orientation (LL) — possible inversion',
+  RR: 'same-strand pair orientation (RR) — possible inversion',
+  RL: 'outward-facing pair orientation (RL) — possible duplication/insertion',
+}
+
 export function useOrientationColor() {
   const { palette } = useTheme()
   const { pairLR, pairRL, pairLL, pairRR } = palette.alignmentFill
@@ -72,16 +79,32 @@ export function useOrientationColor() {
     getPairedOrientation(f: { pair_orientation?: string }) {
       const r = getPairDirection(f.pair_orientation)
       const abnormal = r !== undefined && r !== 'LR'
-      return { abnormal, color: abnormal ? colors[r] : unknown }
+      return {
+        abnormal,
+        color: abnormal ? colors[r] : unknown,
+        label: r ? pairOrientationLabels[r] : 'unknown pair orientation',
+      }
     },
     getLongReadOrientation(s1: number, s2: number) {
       if (s1 === -1 && s2 === 1) {
-        return { abnormal: true, color: colors.RR }
+        return {
+          abnormal: true,
+          color: colors.RR,
+          label: 'strand-flip split read — possible inversion',
+        }
       }
       if (s1 === 1 && s2 === -1) {
-        return { abnormal: true, color: colors.LL }
+        return {
+          abnormal: true,
+          color: colors.LL,
+          label: 'strand-flip split read — possible inversion',
+        }
       }
-      return { abnormal: false, color: unknown }
+      return {
+        abnormal: false,
+        color: unknown,
+        label: 'co-linear split read (same strand)',
+      }
     },
   }
 }

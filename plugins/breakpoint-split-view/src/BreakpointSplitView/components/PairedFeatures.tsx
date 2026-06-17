@@ -12,10 +12,13 @@ export default function PairedFeatures(props: OverlayProps) {
       {...props}
       pathTestId="r2"
       render={ctx =>
-        [...canonicalPairs(ctx)].map<PathSpec>(({ f1, x1, y1, x2, y2 }) => ({
-          id: f1.id(),
-          path: buildSimplePath(x1, y1, x2, y2),
-        }))
+        [...canonicalPairs(ctx)].map<PathSpec>(
+          ({ f1, x1, y1, x2, y2, tooltip }) => ({
+            id: f1.id(),
+            path: buildSimplePath(x1, y1, x2, y2),
+            tooltip,
+          }),
+        )
       }
     />
   )

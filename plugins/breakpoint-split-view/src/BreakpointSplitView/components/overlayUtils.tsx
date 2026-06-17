@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getSession,
+  truncateMiddle,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import BreakpointTooltip from './BreakpointTooltip.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { OverlayMatch } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { Feature } from '@jbrowse/core/util'
 
 export const LEFT = 0
 export const RIGHT = 2
@@ -140,9 +147,33 @@ export function buildBreakpointPath(
     : `M ${x1Tick} ${y1} L ${x1} ${y1} L ${x2} ${y2} L ${x2Tick} ${y2}`
 }
 
+export function featureTooltipLabel(feature: Feature) {
+  const name = feature.get('name')
+  const loc = assembleLocString({
+    refName: feature.get('refName'),
+    start: feature.get('start'),
+    end: feature.get('end'),
+  })
+  return name ? `${truncateMiddle(name)} (${loc})` : loc
+}
+
+// shared by every overlay type's hover tooltip: two endpoint labels plus an
+// optional reason (e.g. why the connecting curve is colored a certain way)
+export function buildPairTooltip(
+  f1: Feature,
+  target: Feature | string,
+  reason?: string,
+) {
+  const f2Label =
+    typeof target === 'string' ? target : featureTooltipLabel(target)
+  const base = `${featureTooltipLabel(f1)} → ${f2Label}`
+  return reason ? `${base}<br/>${reason}` : base
+}
+
 export interface PathSpec {
   id: string
   path: string
+  tooltip?: string
 }
 
 export interface VariantOverlayContext {
@@ -181,6 +212,7 @@ export const VariantOverlay = observer(function VariantOverlay({
     return null
   }
   const specs = render({ match, assembly, views, ...overlayData })
+  const hoveredSpec = specs.find(spec => spec.id === mouseoverElt)
   return (
     <g
       stroke={theme.palette.success.main}
@@ -203,6 +235,9 @@ export const VariantOverlay = observer(function VariantOverlay({
           )}
         />
       ))}
+      {hoveredSpec?.tooltip ? (
+        <BreakpointTooltip contents={hoveredSpec.tooltip} />
+      ) : null}
     </g>
   )
 })
@@ -255,6 +290,7 @@ export function* canonicalPairs({
         x2,
         y1: getY(level1, c1),
         y2: getY(level2, c2),
+        tooltip: buildPairTooltip(f1, f2),
       }
     }
   }

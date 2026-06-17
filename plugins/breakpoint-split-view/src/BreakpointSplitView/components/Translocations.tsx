@@ -1,9 +1,11 @@
+import { assembleLocString } from '@jbrowse/core/util'
 import { readTranslocationMate } from '@jbrowse/sv-core'
 
 import {
   LEFT,
   VariantOverlay,
   buildBreakpointPath,
+  buildPairTooltip,
   isLevelPairMinimized,
   strandToSign,
   tickX,
@@ -60,6 +62,11 @@ export default function Translocations(props: OverlayProps) {
               const y2 = getY(level2, c2)
               const reversed1 = views[level1]!.pxToBp(x1).reversed
               const reversed2 = views[level2]!.pxToBp(x2).reversed
+              const mateLoc = assembleLocString({
+                refName: mate.chr,
+                start: matePos,
+                end: matePos + 1,
+              })
               return [
                 {
                   id: f1.id(),
@@ -71,6 +78,7 @@ export default function Translocations(props: OverlayProps) {
                     tickX(x1, strandToSign(mate.myDir), reversed1),
                     tickX(x2, strandToSign(mate.mateDir), reversed2),
                   ),
+                  tooltip: buildPairTooltip(f1, mateLoc),
                 },
               ]
             },
