@@ -48,6 +48,7 @@ const JobsSection = observer(function JobsSection({
         </Typography>
         {onClear && jobs.length ? (
           <Button
+            component="span"
             size="small"
             onClick={e => {
               e.stopPropagation()
