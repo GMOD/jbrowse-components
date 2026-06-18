@@ -144,7 +144,7 @@ export function computeVariantCells({
 
   let featureIdx = 0
   for (const { feature, mostFrequentAlt } of mafs) {
-    report?.(featureIdx)
+    report?.()
     const featureId = feature.id()
     const start = feature.get('start')
     const end = feature.get('end')

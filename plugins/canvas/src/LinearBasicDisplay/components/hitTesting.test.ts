@@ -436,7 +436,6 @@ test('subfeature label hit area is reserved only when showSubfeatureLabels is tr
             color: '#000',
             textWidth: 200,
             isOverlay: false,
-            tooltip: '',
           },
         },
       },

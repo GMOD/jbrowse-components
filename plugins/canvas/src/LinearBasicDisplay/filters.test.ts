@@ -124,7 +124,9 @@ function createDisplay(jexlFilters: string[] = []) {
 describe('canvas display runtime filters', () => {
   it('activeFilters() prefixes the config jexlFilters slot when no override is set', () => {
     const display = createDisplay([`get(feature,'type')=='gene'`])
-    expect(display.activeFilters()).toEqual([`jexl:get(feature,'type')=='gene'`])
+    expect(display.activeFilters()).toEqual([
+      `jexl:get(feature,'type')=='gene'`,
+    ])
   })
 
   it('the runtime override replaces (shadows) the config jexlFilters slot', () => {
@@ -143,7 +145,9 @@ describe('canvas display runtime filters', () => {
     const display = createDisplay([`get(feature,'type')=='gene'`])
     display.setJexlFilters([`jexl:get(feature,'score')>5`])
     display.setJexlFilters(undefined)
-    expect(display.activeFilters()).toEqual([`jexl:get(feature,'type')=='gene'`])
+    expect(display.activeFilters()).toEqual([
+      `jexl:get(feature,'type')=='gene'`,
+    ])
   })
 
   it('rpcProps().displayConfig.jexlFilters carries the effective filters', () => {

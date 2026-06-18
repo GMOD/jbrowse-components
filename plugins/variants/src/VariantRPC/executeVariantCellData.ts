@@ -139,27 +139,6 @@ function computeSampleInfo(
   }
 }
 
-/**
- * Drive a determinate `report` across a per-region map, advancing a running
- * offset so the progress bar reflects features completed across all regions.
- * `fn` receives a region-local reporter that maps 0-based region indices back
- * onto the global feature count.
- */
-function forEachRegionWithProgress<T>(
-  perRegion: Iterable<[number, T[]]>,
-  report: ProgressReporter,
-  fn: (regionNum: number, items: T[], report: ProgressReporter) => void,
-) {
-  let base = 0
-  for (const [regionNum, items] of perRegion) {
-    const offset = base
-    fn(regionNum, items, cur => {
-      report(offset + cur)
-    })
-    base += items.length
-  }
-}
-
 export async function executeVariantCellData({
   pluginManager,
   args,
@@ -262,23 +241,21 @@ export async function executeVariantCellData({
         total: rawFeatures.length,
       },
       report => {
+        // one shared reporter spans all regions: per-region calls accumulate
+        // into one global bar with no offset bookkeeping
         const result = new Map<number, MAFFilteredFeature[]>()
-        forEachRegionWithProgress(
-          perRegionRawFeatures,
-          report,
-          (regionNum, features, report) => {
-            result.set(
-              regionNum,
-              getFeaturesThatPassMinorAlleleFrequencyFilter({
-                features,
-                minorAlleleFrequencyFilter,
-                filterChain: filters,
-                genotypesCache,
-                report,
-              }),
-            )
-          },
-        )
+        for (const [regionNum, features] of perRegionRawFeatures) {
+          result.set(
+            regionNum,
+            getFeaturesThatPassMinorAlleleFrequencyFilter({
+              features,
+              minorAlleleFrequencyFilter,
+              filterChain: filters,
+              genotypesCache,
+              report,
+            }),
+          )
+        }
         return result
       },
     )
@@ -332,21 +309,20 @@ export async function executeVariantCellData({
       { ...progressOpts, label: 'Computing variant cells', total: mafs.length },
       report => {
         if (perRegionMafs) {
+          // one shared reporter spans all regions: it owns the running counter,
+          // so per-region calls accumulate into one global bar with no offset
+          // bookkeeping
           const result: Record<number, VariantCellData> = {}
-          forEachRegionWithProgress(
-            perRegionMafs,
-            report,
-            (regionNum, regionMafs, report) => {
-              result[regionNum] = computeVariantCells({
-                mafs: regionMafs,
-                sources: effectiveSources,
-                renderingMode,
-                referenceDrawingMode: referenceDrawingMode ?? 'skip',
-                genotypesCache,
-                report,
-              })
-            },
-          )
+          for (const [regionNum, regionMafs] of perRegionMafs) {
+            result[regionNum] = computeVariantCells({
+              mafs: regionMafs,
+              sources: effectiveSources,
+              renderingMode,
+              referenceDrawingMode: referenceDrawingMode ?? 'skip',
+              genotypesCache,
+              report,
+            })
+          }
           return result
         }
         return {

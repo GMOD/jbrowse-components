@@ -1,6 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
-import { updateStatus } from '@jbrowse/core/util'
+import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -99,12 +99,17 @@ export async function executeRenderFeatureData({
     }
   }
 
-  const layouts = await updateStatus(
-    'Computing layout',
-    statusCallback,
-    async () => {
+  const layouts = await withProgress(
+    {
+      label: 'Computing layout',
+      total: features.size,
+      statusCallback,
+      stopToken,
+    },
+    report => {
       const records: FeatureLayout[] = []
       for (const feature of features.values()) {
+        report()
         records.push(
           findGlyph(
             feature,

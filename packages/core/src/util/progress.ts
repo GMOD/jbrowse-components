@@ -63,8 +63,49 @@ export function downloadStatusReporter(
     : undefined
 }
 
-/** Call once per outer-loop iteration with the number of items completed. */
-export type ProgressReporter = (current: number) => void
+/**
+ * Combine the in-flight statuses of several concurrent operations (one RPC per
+ * visible region, say) into the single status the loading UI shows. Because
+ * `current`/`total` are unit-agnostic and additive, determinate statuses are
+ * summed into one Σcurrent/Σtotal bar — so N regions downloading in parallel
+ * read as one honest bar instead of each clobbering the shared field. The
+ * message is borrowed from a determinate status when any is present (regions
+ * downloading at once share the same phase label), else the first status.
+ * Returns undefined when nothing is in flight.
+ */
+export function aggregateStatus(
+  statuses: (RpcStatus | undefined)[],
+): RpcStatus | undefined {
+  const present = statuses.filter((s): s is RpcStatus => s !== undefined)
+  const determinate = present.filter(
+    (s): s is StatusWithProgress => typeof s === 'object',
+  )
+  if (determinate.length > 0) {
+    let current = 0
+    let total = 0
+    for (const s of determinate) {
+      current += s.current
+      total += s.total
+    }
+    const [first] = determinate
+    return { message: first ? first.message : '', current, total }
+  } else {
+    return present[0]
+  }
+}
+
+/**
+ * Call once per outer-loop iteration. With no argument it auto-increments an
+ * internal counter (the elegant default — `for (…) report()`); pass an explicit
+ * `current` when the caller tracks its own position, e.g. a running offset that
+ * spans several batches.
+ */
+export type ProgressReporter = (current?: number) => void
+
+// How often the status branch is allowed to read the clock, as a power-of-two
+// mask (every 1024 calls). The throttleMs is the real rate limit; this just
+// avoids a Date.now() on every iteration of a tight loop.
+const EMIT_CHECK_MASK = 0x3ff
 
 /**
  * The single per-iteration callback for long synchronous worker loops. The
@@ -82,6 +123,14 @@ export type ProgressReporter = (current: number) => void
  * throttled cancellation tick (the replacement for calling {@link
  * checkStopToken2} directly in a loop), so a loop has exactly one inner
  * callback whether or not it drives the progress UI.
+ *
+ * Cheap enough to call on *every* iteration of a tight loop: cancellation is
+ * gated inside {@link checkStopToken2} (a counter modulo, not a syscall) and
+ * the status branch gates its `Date.now()` behind the same kind of counter, so
+ * the per-call cost is an increment and a compare — no clock read or emit on
+ * the vast majority of calls. Keep the loop a plain `for`; just call `report()`
+ * once per item (it owns the counter) — or `report(n)` to report an explicit
+ * position.
  *
  * Reuses {@link createStopTokenChecker}, matching the cancellation convention
  * already used across the variant/alignments/gwas RPC paths.
@@ -103,9 +152,18 @@ export function createProgressReporter({
 }): ProgressReporter {
   const checker = stopTokenCheck ?? createStopTokenChecker(stopToken)
   let lastReport = 0
-  return current => {
+  let count = 0
+  return (current = count) => {
+    count = current + 1
     checkStopToken2(checker)
-    if (statusCallback !== undefined && total !== undefined) {
+    // Only consult the clock every (EMIT_CHECK_MASK + 1) calls; the bitmask
+    // keeps the common path a single integer compare so this is safe to call
+    // per-iteration in a hot loop without a Date.now() each time.
+    if (
+      statusCallback !== undefined &&
+      total !== undefined &&
+      (current & EMIT_CHECK_MASK) === 0
+    ) {
       const now = Date.now()
       if (now - lastReport >= throttleMs) {
         lastReport = now

@@ -1,4 +1,5 @@
 import {
+  aggregateStatus,
   isAbortException,
   statusFraction,
   statusMessageText,
@@ -82,6 +83,16 @@ export default function FetchMixin() {
        * undefined when the in-flight phase is indeterminate
        */
       statusProgress: undefined as number | undefined,
+
+      /**
+       * #volatile
+       * latest status of each concurrent in-flight operation, keyed by an
+       * arbitrary id (the canvas display uses displayedRegionIndex). Plain
+       * bookkeeping — not read reactively; setRegionStatus derives the
+       * observable statusMessage/statusProgress from it on every update so N
+       * parallel region fetches aggregate into one bar instead of clobbering.
+       */
+      regionStatuses: new Map<number, RpcStatus>(),
     }))
     .views(self => ({
       /**
@@ -108,6 +119,23 @@ export default function FetchMixin() {
       },
       /**
        * #action
+       * Record one concurrent operation's latest status (keyed) and recompute
+       * the shared statusMessage/statusProgress as the aggregate across all
+       * in-flight keys. Pass undefined to drop a key. Used by displays that fan
+       * a single fetch out into parallel per-region RPCs.
+       */
+      setRegionStatus(key: number, status?: RpcStatus) {
+        if (status === undefined) {
+          self.regionStatuses.delete(key)
+        } else {
+          self.regionStatuses.set(key, status)
+        }
+        const aggregate = aggregateStatus([...self.regionStatuses.values()])
+        self.statusMessage = statusMessageText(aggregate)
+        self.statusProgress = statusFraction(aggregate)
+      },
+      /**
+       * #action
        * cancel any in-flight fetch and bump fetchGeneration (always bumps, so
        * callers can retrigger fetch autoruns even when nothing was in flight)
        */
@@ -117,6 +145,7 @@ export default function FetchMixin() {
           self.activeStopToken = undefined
           self.statusMessage = undefined
           self.statusProgress = undefined
+          self.regionStatuses.clear()
         }
         self.fetchGeneration++
       },
@@ -155,6 +184,7 @@ export default function FetchMixin() {
             self.activeStopToken = undefined
             self.statusMessage = undefined
             self.statusProgress = undefined
+            self.regionStatuses.clear()
             self.fetchGeneration++
           }
         }

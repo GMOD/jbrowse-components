@@ -93,9 +93,7 @@ export default ConfigurationSchema(
         typeof defaultRendering === 'string'
           ? SINGLE_TO_MULTI_RENDERING[defaultRendering]
           : undefined
-      return remapped
-        ? { ...rest, defaultRendering: remapped }
-        : snap
+      return remapped ? { ...rest, defaultRendering: remapped } : snap
     },
   },
 )

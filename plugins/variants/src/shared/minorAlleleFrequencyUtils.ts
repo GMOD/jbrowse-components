@@ -88,7 +88,6 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
 }) {
   const results: MAFFilteredFeature[] = []
 
-  let featureIdx = 0
   for (const feature of features) {
     if (!filterChain || filterChain.passes(feature)) {
       const alleleCounts = computeAlleleCounts(feature, genotypesCache)
@@ -101,7 +100,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
         results.push({ feature, mostFrequentAlt })
       }
     }
-    report?.(featureIdx++)
+    report?.()
   }
 
   return results

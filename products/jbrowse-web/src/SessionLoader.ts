@@ -250,7 +250,6 @@ const SessionLoader = types
      * #action
      */
     setConfigSnapshot(snap: Snap) {
-      console.log({ snap })
       self.configSnapshot = snap
     },
     /**
@@ -260,7 +259,6 @@ const SessionLoader = types
      * build the rootModel with `jbrowse: undefined`).
      */
     setConfigAndPlugins(snap: Snap, plugins: PluginRecord[]) {
-      console.log({ snap })
       self.runtimePlugins = plugins
       self.configSnapshot = snap
     },
@@ -413,7 +411,6 @@ const SessionLoader = types
       session: Snap,
       userAcceptedConfirmation?: boolean,
     ) {
-      console.log({ session })
       await this.loadSession(
         {
           ...session,

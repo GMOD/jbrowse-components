@@ -42,10 +42,39 @@ through `statusCallback`.
 | Helper | Use |
 | --- | --- |
 | `downloadStatusReporter(statusCallback, label)` | Adapts the byte-granularity `onProgress(bytes,total)` from `@gmod/tabix`/`@gmod/bam`/`@gmod/cram` to the structured transport; returns `undefined` when no `statusCallback` so the reader skips bookkeeping. **One home for this** — reuse it, don't re-inline. |
-| `createProgressReporter({label,total,statusCallback,stopToken})` | Per-iteration `report(current)` for long worker CPU loops: throttled cancel-check + throttled object emit. With no `statusCallback`/`total` it's a pure cancel-tick. |
+| `createProgressReporter({label,total,statusCallback,stopToken})` | Per-iteration `report()` for long worker CPU loops: throttled cancel-check + throttled object emit. **Bare `report()` auto-increments** an internal counter (the elegant default — `for (…) report()`); pass `report(n)` only when the caller tracks its own running position across batches. Cheap enough to call every iteration: cancel-check and the emit's `Date.now()` are both counter-gated (bitmask), so the common path is an int compare — no clock read. With no `statusCallback`/`total` it's a pure cancel-tick. |
 | `withProgress({label,total,statusCallback,stopToken}, fn)` | Determinate phase wrapper; the counterpart to `updateStatus`. |
 | `updateStatus(label, statusCallback, fn)` | Indeterminate phase: sets `label`, runs `fn`, clears. |
 | `statusMessageText(status)` / `statusFraction(status)` | Extract text / `[0,1]` fraction from any `RpcStatus`. |
+| `aggregateStatus(statuses[])` | Combine several concurrent statuses into one: determinate ones sum to `Σcurrent/Σtotal`, message borrowed from a determinate entry (else the first). For displays that fan one fetch into parallel per-region RPCs. |
+
+## Concurrent fetches share one status field — aggregate, don't clobber
+
+A single fetch generation can fan out into **N parallel RPCs** — canvas's
+`fetchNeeded` does `Promise.all(needed.map(fetchFeaturesForRegion))`, one per
+visible region. They all report into the *same* `statusMessage`/`statusProgress`
+volatiles, so a naive `statusCallback: msg => self.setStatusMessage(msg)` makes
+the bar thrash (region A at 60%, region B at 5%, last-writer-wins).
+
+Fix: route each concurrent op's status through `FetchMixin.setRegionStatus(key,
+status)` (keyed by `displayedRegionIndex`) instead of `setStatusMessage`. It
+keeps a per-key `regionStatuses` map and re-derives the shared fields via
+`aggregateStatus` on every update — N parallel downloads read as one honest
+`Σcurrent/Σtotal` bar. `runFetch`/`cancelFetch` clear the map. The single-region
+case (`needed.length === 1`) is unchanged. `runFetch` still guarantees only one
+fetch generation at a time, so this conflict only ever exists *within* one
+`Promise.all`.
+
+The per-phase loops are now determinate too — bam/cram `Processing alignments`
+and the canvas worker's `Computing layout` use `withProgress` + `report()`, so a
+region in its processing phase still contributes a fraction to the aggregate
+rather than dropping to a spinner.
+
+Residual gap: the summed fraction mixes units across phases — a region counting
+download *bytes* and another counting processed *records* are added into one
+`Σcurrent/Σtotal`. Within a single phase the units match; across phases the bar
+is a rough blend (download bytes dominate the magnitude). Acceptable — download
+is the wall-clock-dominant phase and the bar stays monotonic-ish.
 
 ## Pattern: forwarding download progress in a feature adapter
 
@@ -75,13 +104,13 @@ Do **not** spread `...opts` into `getLines` — that was the old footgun (jbrows
 
 ## TODO / follow-ups
 
-- **Wire bam/cram download progress.** Installed `@gmod/bam` is still **7.2.4**
-  (no `onProgress`) even though 7.3.0 is published and dep is `^7.2.4`. Bump the
-  lockfile (`pnpm install` / update bam+cram), then in
-  `plugins/alignments/src/{BamAdapter,CramAdapter}` add
-  `onProgress: downloadStatusReporter(statusCallback, 'Downloading alignments')`
-  to the `getRecordsForRange` opts (currently wrapped only in `updateStatus`).
-  Same for bed/gff tabix adapters if desired.
+- **DONE — bam/cram + bed/gff/gtf download progress wired.** Bumped
+  `@gmod/bam`→`^7.3.0`, `@gmod/cram`→`^8.3.0` (tabix already `^3.4.0`) and added
+  `onProgress: downloadStatusReporter(statusCallback, 'Downloading …')` to
+  `getRecordsForRange`/`getLines` in `plugins/alignments/src/{BamAdapter,CramAdapter}`
+  and `plugins/{bed,gff3,gtf}/src/*TabixAdapter`. The gff3/gtf adapters switched
+  from the positional `getLines` callback to the `{lineCallback, onProgress}`
+  options object.
 - **Co-edited holdout:** `plugins/canvas/src/LinearBasicDisplay/baseModel.ts` has
   another agent's "Filter by" feature uncommitted. My 1-line `RpcStatus` lambda
   fix (the `statusCallback: (msg: RpcStatus) => ...` at the RPC call) is left

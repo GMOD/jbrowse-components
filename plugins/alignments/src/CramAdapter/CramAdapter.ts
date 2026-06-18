@@ -1,6 +1,11 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { sum, updateStatus } from '@jbrowse/core/util'
+import {
+  downloadStatusReporter,
+  sum,
+  updateStatus,
+  withProgress,
+} from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -183,7 +188,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
         records = await updateStatus(
           'Downloading alignments',
           statusCallback,
-          () => cram.getRecordsForRange(refId, start, end),
+          () =>
+            cram.getRecordsForRange(refId, start, end, {
+              onProgress: downloadStatusReporter(
+                statusCallback,
+                'Downloading alignments',
+              ),
+            }),
         )
       } catch (e) {
         // Clear caches on error so reload works
@@ -192,49 +203,58 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
         throw e
       }
       checkStopToken(stopToken)
-      await updateStatus('Processing alignments', statusCallback, () => {
-        const {
-          flagInclude = 0,
-          flagExclude = 0,
-          tagFilter,
-          readName,
-        } = filterBy ?? {}
+      await withProgress(
+        {
+          label: 'Processing alignments',
+          total: records.length,
+          statusCallback,
+          stopToken,
+        },
+        report => {
+          const {
+            flagInclude = 0,
+            flagExclude = 0,
+            tagFilter,
+            readName,
+          } = filterBy ?? {}
 
-        for (const record of records) {
-          if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
-            continue
-          }
-          if (
-            tagFilter &&
-            filterTagValue(
-              tagFilter.tag === 'RG'
-                ? samHeader.readGroups[record.readGroupId]
-                : record.tags[tagFilter.tag],
-              tagFilter.value,
-            )
-          ) {
-            continue
-          }
-          if (readName && record.readName !== readName) {
-            continue
-          }
-
-          if (record.readLength > 5_000) {
-            const ret = this.ultraLongFeatureCache.get(record.uniqueId)
-            if (ret) {
-              observer.next(ret)
-            } else {
-              const elt = new CramSlightlyLazyFeature(record, this)
-              this.ultraLongFeatureCache.set(record.uniqueId, elt)
-              observer.next(elt)
+          for (const record of records) {
+            report()
+            if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
+              continue
             }
-          } else {
-            observer.next(new CramSlightlyLazyFeature(record, this))
-          }
-        }
+            if (
+              tagFilter &&
+              filterTagValue(
+                tagFilter.tag === 'RG'
+                  ? samHeader.readGroups[record.readGroupId]
+                  : record.tags[tagFilter.tag],
+                tagFilter.value,
+              )
+            ) {
+              continue
+            }
+            if (readName && record.readName !== readName) {
+              continue
+            }
 
-        observer.complete()
-      })
+            if (record.readLength > 5_000) {
+              const ret = this.ultraLongFeatureCache.get(record.uniqueId)
+              if (ret) {
+                observer.next(ret)
+              } else {
+                const elt = new CramSlightlyLazyFeature(record, this)
+                this.ultraLongFeatureCache.set(record.uniqueId, elt)
+                observer.next(elt)
+              }
+            } else {
+              observer.next(new CramSlightlyLazyFeature(record, this))
+            }
+          }
+
+          observer.complete()
+        },
+      )
     }, stopToken)
   }
 

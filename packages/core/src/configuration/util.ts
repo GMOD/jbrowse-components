@@ -362,5 +362,7 @@ export function readConfigValue<T>(
   jexl?: JexlInstance,
 ) {
   const raw = resolveConfigValue(config, key)
-  return (isCallbackValue(raw) ? evaluateJexl(raw, { feature }, jexl) : raw) as T
+  return (
+    isCallbackValue(raw) ? evaluateJexl(raw, { feature }, jexl) : raw
+  ) as T
 }

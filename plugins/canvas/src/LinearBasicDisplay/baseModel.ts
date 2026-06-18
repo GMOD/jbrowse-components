@@ -1295,9 +1295,12 @@ export default function baseStateModelFactory(
               region,
               bpPerPx,
               stopToken,
+              // keyed by region so concurrent per-region fetches aggregate
+              // into one bar (FetchMixin.setRegionStatus) instead of each
+              // overwriting the shared statusMessage/statusProgress
               statusCallback: (msg: RpcStatus) => {
                 if (isAlive(self)) {
-                  self.setStatusMessage(msg)
+                  self.setRegionStatus(displayedRegionIndex, msg)
                 }
               },
             },

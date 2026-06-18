@@ -86,31 +86,11 @@ plugins/linear-genome-view/src/BaseLinearDisplay/models/ConfigOverrideMixin.test
 
 
 
-## stuck downloading alignments
-
-https://jbrowse.org/code/jb2/webgl-poc/?config=test_data%2Fconfig_demo.json&session=share-sgi_pQ7gMw&password=VcJbT
-
-also investigate slowness
-
-## jexl
 
 
-Done this session (working tree, webgl-poc, uncommitted, all tested)
 
-- mouseover slot evaluated worker-side per top-level feature — custom plugin tooltips work again; glyph + label unified to one string.
-- color/utrColor/connectorColor callbacks now use the plugin jexl instance.
-- featureAdmission.ts — new feature-admission stage restoring the standard SerializableFilterChain boundary (config jexlFilters + showOnlyGenes) the canvas display had dropped.
-- Simplifications: mouseover/jexlFilters made honest required DisplayConfig fields, collapsed featureTooltip, replaced a brittle hand-mirrored showOnlyGenes test with real buildFeatureAdmission tests.
-- 310 canvas + 94 core-config tests pass; tsgo + eslint clean.
+## When cancelling, need a 'retry' too
 
-Not done — handed off (you were right, both are first-class)
+## Fused abortsignal+stoptoken?
 
-I'd just started #1 when you said stop; no partial edits landed (the types.ts edit failed the read-guard, so the tree is clean/consistent).
-
-1. jexl labels — the labels.name/labels.description defaults are jexl, so plugin functions must work like mouseover. Render-pass fix is one line (readFeatureLabels(ctx.config, feature, ctx.jexl) in processFeatureRecord); layout-pass needs jexl added to LayoutArgs and threaded to applyLabelDimensions for width-consistency. ...args already propagates to child glyphs, so it's shallow.
-
-2. Filter UI — restore the runtime "Filter by" track menu. Reference impl is plugins/linear-genome-view/src/LinearFeatureDisplay/ on main (jexlFiltersSetting + activeFilters() + AddFiltersDialog.tsx + trackMenuItems). Add a runtime override on the canvas baseModel (the <name>Override pattern), feed it into rpcProps() as a cache key, and have the worker prefer runtime filters over config filters — buildFeatureAdmission already does the work, just widen its input.
-
-Full step-by-step for both is saved in memory at project-canvas-worker-config-jexl.md so the next agent can pick it up cold.
-
-One decision left for you/the next agent: whether runtime filters should replace or AND-with the config jexlFilters — main's activeFilters() replaces (the setting shadows the config default), so I'd mirror that unless you want different semantics.
+## Still need ultralong read cache?

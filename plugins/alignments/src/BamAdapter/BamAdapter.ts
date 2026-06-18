@@ -1,6 +1,10 @@
 import { BamFile } from '@gmod/bam'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import {
+  downloadStatusReporter,
+  updateStatus,
+  withProgress,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
@@ -115,59 +119,75 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
       const records = await updateStatus(
         'Downloading alignments',
         statusCallback,
-        () => bam.getRecordsForRange(refName, start, end, { filterBy }),
+        () =>
+          bam.getRecordsForRange(refName, start, end, {
+            filterBy,
+            onProgress: downloadStatusReporter(
+              statusCallback,
+              'Downloading alignments',
+            ),
+          }),
       )
       checkStopToken(stopToken)
 
-      await updateStatus('Processing alignments', statusCallback, async () => {
-        const { readName, tagFilter } = filterBy ?? {}
+      await withProgress(
+        {
+          label: 'Processing alignments',
+          total: records.length,
+          statusCallback,
+          stopToken,
+        },
+        async report => {
+          const { readName, tagFilter } = filterBy ?? {}
 
-        // Pre-fetch reference sequence for all records that need it
-        let regionSeq: string | undefined
-        let seqFetchStart = Infinity
-        let seqFetchEnd = 0
-        if (sequenceAdapter) {
-          for (const record of records) {
-            if (!record.NUMERIC_MD) {
-              seqFetchStart = Math.min(seqFetchStart, record.start)
-              seqFetchEnd = Math.max(seqFetchEnd, record.end)
+          // Pre-fetch reference sequence for all records that need it
+          let regionSeq: string | undefined
+          let seqFetchStart = Infinity
+          let seqFetchEnd = 0
+          if (sequenceAdapter) {
+            for (const record of records) {
+              if (!record.NUMERIC_MD) {
+                seqFetchStart = Math.min(seqFetchStart, record.start)
+                seqFetchEnd = Math.max(seqFetchEnd, record.end)
+              }
+            }
+            if (seqFetchEnd > 0) {
+              regionSeq = await sequenceAdapter.getSequence({
+                refName: originalRefName || refName,
+                start: seqFetchStart,
+                end: seqFetchEnd,
+              })
             }
           }
-          if (seqFetchEnd > 0) {
-            regionSeq = await sequenceAdapter.getSequence({
-              refName: originalRefName || refName,
-              start: seqFetchStart,
-              end: seqFetchEnd,
-            })
-          }
-        }
 
-        for (const record of records) {
-          if (readName && record.name !== readName) {
-            continue
-          }
-          if (
-            tagFilter &&
-            filterTagValue(record.tags[tagFilter.tag], tagFilter.value)
-          ) {
-            continue
-          }
+          for (const record of records) {
+            report()
+            if (readName && record.name !== readName) {
+              continue
+            }
+            if (
+              tagFilter &&
+              filterTagValue(record.tags[tagFilter.tag], tagFilter.value)
+            ) {
+              continue
+            }
 
-          // Set adapter reference for id() and refIdToName()
-          record.adapter = this
+            // Set adapter reference for id() and refIdToName()
+            record.adapter = this
 
-          // Only fetch reference sequence if MD tag is missing
-          if (!record.NUMERIC_MD && regionSeq) {
-            record.ref = regionSeq.slice(
-              record.start - seqFetchStart,
-              record.end - seqFetchStart,
-            )
+            // Only fetch reference sequence if MD tag is missing
+            if (!record.NUMERIC_MD && regionSeq) {
+              record.ref = regionSeq.slice(
+                record.start - seqFetchStart,
+                record.end - seqFetchStart,
+              )
+            }
+
+            observer.next(record)
           }
-
-          observer.next(record)
-        }
-        observer.complete()
-      })
+          observer.complete()
+        },
+      )
     })
   }
 

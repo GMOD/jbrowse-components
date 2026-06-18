@@ -1,7 +1,12 @@
 import BED from '@gmod/bed'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, unzip, updateStatus } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  downloadStatusReporter,
+  unzip,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
@@ -162,6 +167,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
               ),
             )
           },
+          onProgress: downloadStatusReporter(
+            statusCallback,
+            'Downloading features',
+          ),
         }),
       )
       observer.complete()

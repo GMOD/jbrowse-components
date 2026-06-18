@@ -95,7 +95,7 @@ export function computeVariantMatrixCells({
   const isPhasedMode = renderingMode === 'phased'
 
   for (let idx = 0; idx < numFeatures; idx++) {
-    report?.(idx)
+    report?.()
     const { feature, mostFrequentAlt } = mafs[idx]!
     const featureId = feature.id()
     const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
