@@ -62,7 +62,7 @@ test('close button is absent when onClose is not provided', () => {
   expect(queryByRole('button')).toBeNull()
 })
 
-test('close button calls onClose with backdropClick', () => {
+test('close button calls onClose with closeButtonClick', () => {
   const onClose = jest.fn()
   const { getByRole } = render(
     <Dialog open title="closeable" onClose={onClose}>
@@ -70,7 +70,7 @@ test('close button calls onClose with backdropClick', () => {
     </Dialog>,
   )
   fireEvent.click(getByRole('button'))
-  expect(onClose).toHaveBeenCalledWith(expect.anything(), 'backdropClick')
+  expect(onClose).toHaveBeenCalledWith(expect.anything(), 'closeButtonClick')
 })
 
 test('error boundary catches errors thrown by children', async () => {

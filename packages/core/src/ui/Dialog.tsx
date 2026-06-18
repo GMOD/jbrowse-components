@@ -41,9 +41,17 @@ function DialogError({ error }: { error: unknown }) {
   )
 }
 
-export interface Props extends DialogProps {
+export interface Props extends Omit<DialogProps, 'onClose'> {
   header?: React.ReactNode
   titleNode?: React.ReactNode
+  onClose?:
+    | {
+        bivarianceHack(
+          event: object,
+          reason: 'backdropClick' | 'escapeKeyDown' | 'closeButtonClick',
+        ): void
+      }['bivarianceHack']
+    | undefined
 }
 
 function Dialog(props: Props) {
@@ -80,7 +88,7 @@ function Dialog(props: Props) {
               <IconButton
                 className={classes.closeButton}
                 onClick={event => {
-                  onClose(event, 'backdropClick')
+                  onClose(event, 'closeButtonClick')
                 }}
               >
                 <CloseIcon />
