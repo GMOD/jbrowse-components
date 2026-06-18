@@ -3,6 +3,7 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts'
 
 import type { Region } from '../../util/index.ts'
+import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
 export default class CoreGetFeatureDensityStats extends RpcMethodTypeWithRenameRegions {
@@ -14,7 +15,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodTypeWithRenameR
       regions: Region[]
       stopToken?: StopToken
       headers?: Record<string, string>
-      statusCallback?: (arg: string) => void
+      statusCallback?: StatusCallback
       sessionId: string
     },
     rpcDriver: string,

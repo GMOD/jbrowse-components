@@ -1,4 +1,5 @@
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
+import type { StatusCallback } from '../util/progress.ts'
 import type { Feature } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { Region } from '../util/types/index.ts'
@@ -38,7 +39,7 @@ export interface RpcRegistry {
     args: {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
-      statusCallback?: (arg: string) => void
+      statusCallback?: StatusCallback
       stopToken?: StopToken
       opts?: Record<string, unknown>
     }
@@ -50,7 +51,7 @@ export interface RpcRegistry {
       regions: RegionLike[]
       stopToken?: StopToken
       headers?: Record<string, string>
-      statusCallback?: (arg: string) => void
+      statusCallback?: StatusCallback
     }
     return: FeatureDensityStats
   }

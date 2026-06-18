@@ -8,7 +8,7 @@
  */
 
 import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -37,7 +37,7 @@ export interface RenderAlignmentDataArgs {
   linkedReads?: 'off' | 'normal'
   drawSingletons?: boolean
   drawProperPairs?: boolean
-  statusCallback?: (status: string) => void
+  statusCallback?: StatusCallback
   stopToken?: StopToken
 }
 

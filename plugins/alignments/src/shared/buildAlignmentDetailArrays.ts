@@ -20,7 +20,7 @@ import type {
 } from './webglRpcTypes.ts'
 import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 /**
  * Build the gap / mismatch / interbase / modification / segment /
@@ -61,7 +61,7 @@ export async function buildAlignmentDetailArrays({
   region: Region
   getReadIndex: (id: string) => number
   showSoftClipping?: boolean
-  statusCallback: (s: string) => void
+  statusCallback: StatusCallback
 }) {
   const { start: regionStart } = region
   return updateStatus(

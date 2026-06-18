@@ -40,7 +40,7 @@ import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -457,7 +457,7 @@ export function stateModelFactory(
                   region: r.region,
                   ...self.rpcProps(),
                   stopToken: ctx.stopToken,
-                  statusCallback: (msg: string) => {
+                  statusCallback: (msg: RpcStatus) => {
                     if (isAlive(self)) {
                       self.setStatusMessage(msg)
                     }

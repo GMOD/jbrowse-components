@@ -12,7 +12,7 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 /**
@@ -37,7 +37,7 @@ export async function fetchFeaturesFromAdapter({
   sequenceAdapter?: Record<string, unknown>
   region: Region
   filterBy?: FilterBy
-  statusCallback: (s: string) => void
+  statusCallback: StatusCallback
   stopToken?: StopToken
 }) {
   const stopTokenCheck = createStopTokenChecker(stopToken)

@@ -6,7 +6,7 @@ import { subscribeToObservable } from '../util/observableUtils.ts'
 import type { MafSummaryRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Observable } from 'rxjs'
 
@@ -38,7 +38,7 @@ export interface LinearMafGetSummaryDataArgs {
   sessionId: string
   region: Region
   stopToken?: StopToken
-  statusCallback?: (msg: string) => void
+  statusCallback?: StatusCallback
 }
 
 export interface LinearMafGetSummaryDataResult {

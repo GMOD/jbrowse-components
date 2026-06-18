@@ -2,6 +2,7 @@ import RpcMethodTypeWithRenameRegions from './RpcMethodTypeWithRenameRegions.ts'
 import SerializableFilterChain from './renderers/util/serializableFilterChain.ts'
 
 import type { Region } from '../util/index.ts'
+import type { StatusCallback } from '../util/progress.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { SerializedFilterChain } from './renderers/util/serializableFilterChain.ts'
 
@@ -39,7 +40,7 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends R
   async serializeArguments(
     args: FilterRenameArgs & {
       stopToken?: StopToken
-      statusCallback?: (arg: string) => void
+      statusCallback?: StatusCallback
     },
     rpcDriverClassName: string,
   ) {

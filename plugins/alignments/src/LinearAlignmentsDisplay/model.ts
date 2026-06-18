@@ -96,7 +96,12 @@ import type {
 } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  Feature,
+  Region,
+  RpcStatus,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -2354,7 +2359,7 @@ export default function stateModelFactory(
               regions: [region],
               ...self.rpcProps(),
               stopToken,
-              statusCallback: (msg: string) => {
+              statusCallback: (msg: RpcStatus) => {
                 if (isAlive(self)) {
                   self.setStatusMessage(msg)
                 }

@@ -19,7 +19,7 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const EMPTY_CIGAR = new Uint32Array(0)
@@ -59,7 +59,7 @@ export async function executeSyntenyFeaturesAndPositions({
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
   lodMode?: BaseOptions['lodMode']
-  statusCallback?: (msg: string) => void
+  statusCallback?: StatusCallback
 }) {
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)

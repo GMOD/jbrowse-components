@@ -1,7 +1,11 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
+import {
+  downloadStatusReporter,
+  fetchAndMaybeUnzipText,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -107,10 +111,13 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = query
       const { vcf, parser } = await this.configure(opts)
+      const { statusCallback } = opts
 
-      const { onProgress } = opts
-      await updateStatus('Downloading variants', opts.statusCallback, () =>
+      // updateStatus shows the label and clears when done; onProgress upgrades
+      // the in-between status to a determinate bar as the blocks download
+      await updateStatus('Downloading variants', statusCallback, () =>
         vcf.getLines(refName, start, end, {
+          signal: opts.signal,
           lineCallback: (line, fileOffset) => {
             observer.next(
               new VcfFeature({
@@ -120,12 +127,10 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
               }),
             )
           },
-          ...opts,
-          onProgress: onProgress
-            ? (current, total) => {
-                onProgress({ message: 'Downloading variants', current, total })
-              }
-            : undefined,
+          onProgress: downloadStatusReporter(
+            statusCallback,
+            'Downloading variants',
+          ),
         }),
       )
       observer.complete()

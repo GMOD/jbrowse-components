@@ -29,6 +29,7 @@ import type { HicColorScheme } from './components/colorRamp.ts'
 import type { HicRenderingBackend } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfig } from './configSchema.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -518,7 +519,7 @@ export default function stateModelFactory(
               stopToken: ctx.stopToken,
             },
             {
-              statusCallback: (msg: string) => {
+              statusCallback: (msg: RpcStatus) => {
                 if (isAlive(self)) {
                   self.setStatusMessage(msg)
                 }

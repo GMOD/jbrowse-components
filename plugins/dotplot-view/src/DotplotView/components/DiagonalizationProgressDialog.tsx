@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
+import { statusMessageText } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   Button,
@@ -38,7 +39,9 @@ const DiagonalizationProgressDialog = observer(
         setMessage('Preparing diagonalization...')
         const result = await runDotplotDiagonalize(model, {
           stopToken: token,
-          statusCallback: setMessage,
+          statusCallback: msg => {
+            setMessage(statusMessageText(msg) ?? '')
+          },
         })
         setMessage(
           result

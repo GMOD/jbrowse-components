@@ -3,7 +3,6 @@ import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { firstValueFrom, toArray } from 'rxjs'
 
-
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
@@ -205,12 +204,7 @@ export async function executeVariantCellData({
     statusCallback,
     () =>
       firstValueFrom(
-        adapter
-          .getFeaturesInMultipleRegions(regions, {
-            ...args,
-            onProgress: statusCallback,
-          })
-          .pipe(toArray()),
+        adapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
       ),
   )
 
@@ -262,7 +256,11 @@ export async function executeVariantCellData({
   let perRegionMafs: Map<number, MAFFilteredFeature[]> | undefined
   if (perRegionRawFeatures) {
     perRegionMafs = await withProgress(
-      { ...progressOpts, label: 'Filtering variants', total: rawFeatures.length },
+      {
+        ...progressOpts,
+        label: 'Filtering variants',
+        total: rawFeatures.length,
+      },
       report => {
         const result = new Map<number, MAFFilteredFeature[]>()
         forEachRegionWithProgress(
@@ -293,7 +291,11 @@ export async function executeVariantCellData({
     mafs = allMafs
   } else {
     mafs = await withProgress(
-      { ...progressOpts, label: 'Filtering variants', total: rawFeatures.length },
+      {
+        ...progressOpts,
+        label: 'Filtering variants',
+        total: rawFeatures.length,
+      },
       report =>
         getFeaturesThatPassMinorAlleleFrequencyFilter({
           features: rawFeatures,

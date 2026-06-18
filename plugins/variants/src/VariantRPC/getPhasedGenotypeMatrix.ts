@@ -11,7 +11,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
+import type {
+  LastStopTokenCheck,
+  Region,
+  StatusCallback,
+} from '@jbrowse/core/util'
 
 export async function getPhasedGenotypeMatrix({
   pluginManager,
@@ -29,7 +33,7 @@ export async function getPhasedGenotypeMatrix({
     minorAlleleFrequencyFilter: number
     filters?: SerializableFilterChain
     sampleInfo: Record<string, SampleInfo>
-    statusCallback?: (arg: string) => void
+    statusCallback?: StatusCallback
   }
 }) {
   const {

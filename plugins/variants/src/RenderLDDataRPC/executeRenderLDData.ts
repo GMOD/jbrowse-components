@@ -8,9 +8,10 @@ import type { RenderLDDataArgs } from './RenderLDData.ts'
 import type { LDDataResult } from './types.ts'
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { StatusCallback } from '@jbrowse/core/util'
 
 type ExecuteArgs = RenderLDDataArgs & {
-  statusCallback?: (msg: string) => void
+  statusCallback?: StatusCallback
 }
 
 function emptyResult(signedLD: boolean, metric: LDMetric): LDDataResult {

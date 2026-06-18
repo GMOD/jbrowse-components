@@ -1,7 +1,7 @@
 import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion'
 
 import type { WiggleDataResult } from '../util.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface RenderWiggleDataArgs {
@@ -13,7 +13,7 @@ interface RenderWiggleDataArgs {
   stopToken?: StopToken
   bpPerPx?: number
   resolution?: number
-  statusCallback?: (msg: string) => void
+  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

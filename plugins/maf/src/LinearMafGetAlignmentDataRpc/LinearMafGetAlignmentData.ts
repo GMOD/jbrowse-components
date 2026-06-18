@@ -12,7 +12,7 @@ import type {
 import type { AlignmentRecord, EmptyRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type MafAdapter = BaseFeatureDataAdapter & {
@@ -41,7 +41,7 @@ export interface LinearMafGetAlignmentDataArgs {
   // first fetch — falls back to canonical sample order. Mirrors variants.
   orderedSampleIds?: string[]
   stopToken?: StopToken
-  statusCallback?: (msg: string) => void
+  statusCallback?: StatusCallback
 }
 
 export interface LinearMafGetAlignmentDataResult {

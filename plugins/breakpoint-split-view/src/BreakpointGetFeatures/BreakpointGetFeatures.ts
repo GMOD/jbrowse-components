@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -15,7 +15,7 @@ export interface BreakpointGetFeaturesArgs {
   regions: Region[]
   adapterConfig: Record<string, unknown>
   assemblyName?: string
-  statusCallback?: (arg: string) => void
+  statusCallback?: StatusCallback
   stopToken?: StopToken
   opts?: Record<string, unknown>
 }

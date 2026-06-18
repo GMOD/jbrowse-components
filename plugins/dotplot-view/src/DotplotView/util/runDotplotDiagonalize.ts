@@ -3,6 +3,7 @@ import { transaction } from 'mobx'
 
 import type { DiagonalizeDotplotArgs } from '../../DiagonalizeDotplotRpc.ts'
 import type { DotplotViewModel } from '../model.ts'
+import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface RunDotplotDiagonalizeResult {
@@ -12,7 +13,7 @@ export interface RunDotplotDiagonalizeResult {
 
 export interface RunDotplotDiagonalizeOpts {
   stopToken?: StopToken
-  statusCallback?: (message: string) => void
+  statusCallback?: StatusCallback
 }
 
 // Wraps the DiagonalizeDotplot RPC + region apply step in a shape both the

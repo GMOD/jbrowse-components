@@ -2,6 +2,7 @@ import {
   getContainingView,
   getSession,
   isAbortException,
+  statusMessageText,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -11,6 +12,7 @@ import { autorun, untracked } from 'mobx'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // SYNC: stop-token autorun fetch skeleton mirrors afterAttach.ts in dotplot-view
@@ -96,9 +98,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               drawCIGARMatchesOnly,
               drawLocationMarkers,
               lodMode,
-              statusCallback: (msg: string) => {
+              statusCallback: (msg: RpcStatus) => {
                 if (thisStopToken === currentStopToken && isAlive(self)) {
-                  self.setStatusMessage(msg)
+                  self.setStatusMessage(statusMessageText(msg))
                 }
               },
             },

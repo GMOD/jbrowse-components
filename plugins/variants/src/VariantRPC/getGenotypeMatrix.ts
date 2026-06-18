@@ -17,7 +17,12 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Feature, LastStopTokenCheck, Region } from '@jbrowse/core/util'
+import type {
+  Feature,
+  LastStopTokenCheck,
+  Region,
+  StatusCallback,
+} from '@jbrowse/core/util'
 
 interface VCFFeatureLike extends Feature {
   processGenotypes(cb: GenotypeCallback): void
@@ -42,7 +47,7 @@ export async function getGenotypeMatrix({
     bpPerPx?: number
     minorAlleleFrequencyFilter: number
     filters?: SerializableFilterChain
-    statusCallback?: (arg: string) => void
+    statusCallback?: StatusCallback
   }
 }) {
   const {

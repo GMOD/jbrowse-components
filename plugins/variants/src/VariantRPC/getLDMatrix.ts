@@ -21,7 +21,7 @@ import {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
 const SLASH_CODE = 47 // '/'
 const PIPE_CODE = 124 // '|'
@@ -689,7 +689,7 @@ export async function getLDMatrix({
     jexlFilters?: string[]
     ldMetric?: LDMetric
     signedLD?: boolean
-    statusCallback?: (msg: string) => void
+    statusCallback?: StatusCallback
   }
 }): Promise<LDMatrixResult> {
   const {

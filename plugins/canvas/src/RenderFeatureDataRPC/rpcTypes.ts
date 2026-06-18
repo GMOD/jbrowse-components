@@ -1,5 +1,6 @@
 import type { DisplayConfig } from './renderConfig.ts'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
+import type { StatusCallback } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -34,7 +35,7 @@ export interface RenderFeatureDataArgs {
   maxFeatureDensity?: number
   theme?: SerializableThemeArgs
   stopToken?: StopToken
-  statusCallback?: (msg: string) => void
+  statusCallback?: StatusCallback
 }
 
 export interface GetFeatureDetailsArgs {

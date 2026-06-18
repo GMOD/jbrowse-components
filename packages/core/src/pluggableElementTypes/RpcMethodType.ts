@@ -15,6 +15,7 @@ import {
 
 import type PluginManager from '../PluginManager.ts'
 import type { Region } from '../util/index.ts'
+import type { StatusCallback } from '../util/progress.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { FileHandleLocation, UriLocation } from '../util/types/index.ts'
 
@@ -27,7 +28,7 @@ export interface RenameRegionsArgs {
   stopToken?: StopToken
   adapterConfig: Record<string, unknown>
   sessionId: string
-  statusCallback?: (arg: string) => void
+  statusCallback?: StatusCallback
 }
 
 // singular-region counterpart, for RpcMethodTypeWithRenameRegion

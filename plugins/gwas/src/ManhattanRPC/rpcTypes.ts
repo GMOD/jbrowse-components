@@ -1,4 +1,4 @@
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface GetManhattanDataArgs {
@@ -17,7 +17,7 @@ export interface GetManhattanDataArgs {
   // PLINK .ld adapter config snapshot resolved on the worker for LD coloring.
   ldAdapterConfig?: Record<string, unknown>
   stopToken?: StopToken
-  statusCallback?: (msg: string) => void
+  statusCallback?: StatusCallback
 }
 
 // One region's worth of GWAS points. Flat by design — GWAS doesn't bin or

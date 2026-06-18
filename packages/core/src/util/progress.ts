@@ -22,6 +22,14 @@ export interface StatusWithProgress {
 
 export type RpcStatus = string | StatusWithProgress
 
+/**
+ * The single out-of-band status transport carried across the RPC boundary. A
+ * plain string is an indeterminate phase label; a {@link StatusWithProgress}
+ * adds a determinate fraction. Adapters wrap raw byte/block/feature counts into
+ * this; the loading UI renders the message and (when present) a progress bar.
+ */
+export type StatusCallback = (status: RpcStatus) => void
+
 /** Extract the human-readable text from any status value. */
 export function statusMessageText(status: RpcStatus | undefined) {
   return typeof status === 'string' ? status : status?.message
@@ -34,6 +42,24 @@ export function statusMessageText(status: RpcStatus | undefined) {
 export function statusFraction(status: RpcStatus | undefined) {
   return typeof status === 'object' && status.total > 0
     ? Math.min(1, status.current / status.total)
+    : undefined
+}
+
+/**
+ * Adapt the byte-granularity download callback exposed by the index readers
+ * (@gmod/tabix `getLines`, @gmod/bam / @gmod/cram `getRecordsForRange`) to the
+ * structured {@link StatusCallback} transport, labelling each tick with
+ * `message`. Returns undefined when there's no `statusCallback`, so the reader
+ * can skip its progress bookkeeping entirely.
+ */
+export function downloadStatusReporter(
+  statusCallback: StatusCallback | undefined,
+  message: string,
+) {
+  return statusCallback
+    ? (current: number, total: number) => {
+        statusCallback({ message, current, total })
+      }
     : undefined
 }
 

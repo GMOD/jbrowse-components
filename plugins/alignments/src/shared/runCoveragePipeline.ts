@@ -21,7 +21,7 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 /**
@@ -68,7 +68,7 @@ export async function runCoveragePipeline({
   trackStrands?: boolean
   regionSequence?: string
   regionSequenceStart?: number
-  statusCallback: (s: string) => void
+  statusCallback: StatusCallback
   stopTokenCheck: StopTokenChecker
 }) {
   const { start: regionStart, end: regionEnd } = region

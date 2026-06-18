@@ -5,6 +5,7 @@ import type {
   SyntenyViewSnap,
 } from './executeSyntenyFeaturesAndPositions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface SyntenyGetFeaturesAndPositionsArgs {
@@ -18,7 +19,7 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
   lodMode?: BaseOptions['lodMode']
-  statusCallback?: (msg: string) => void
+  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

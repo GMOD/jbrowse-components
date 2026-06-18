@@ -11,7 +11,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -31,7 +31,7 @@ export interface DiagonalizeDotplotArgs {
   }
   adapterConfig: Record<string, unknown>
   stopToken?: StopToken
-  statusCallback?: (message: string) => void
+  statusCallback?: StatusCallback
 }
 
 export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRenameRegions {

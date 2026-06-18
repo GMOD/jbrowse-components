@@ -11,7 +11,7 @@ import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Region, StopToken } from '@jbrowse/core/util'
+import type { Region, StatusCallback, StopToken } from '@jbrowse/core/util'
 
 export async function executeClusterGenotypeMatrix({
   pluginManager,
@@ -27,7 +27,7 @@ export async function executeClusterGenotypeMatrix({
     bpPerPx?: number
     minorAlleleFrequencyFilter: number
     filters?: SerializableFilterChain
-    statusCallback: (arg: string) => void
+    statusCallback: StatusCallback
     sources: Source[]
     renderingMode?: string
     sampleInfo?: Record<string, SampleInfo>

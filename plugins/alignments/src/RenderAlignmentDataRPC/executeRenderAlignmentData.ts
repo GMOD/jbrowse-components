@@ -35,7 +35,7 @@ import type {
 } from './types.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 // A pair is only "proper" when its mates have the normal FR orientation
@@ -148,7 +148,7 @@ interface GroupContext {
   // Shared insert-size color scale, pooled across every group of the fetch so
   // all stacked sections color long/short inserts on one comparable scale.
   insertSizeStats: { upper: number; lower: number } | undefined
-  statusCallback: (status: string) => void
+  statusCallback: StatusCallback
   stopTokenCheck: StopTokenChecker
 }
 

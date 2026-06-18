@@ -52,7 +52,7 @@ import type {
   WiggleFeatureUnderMouse,
 } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -335,7 +335,7 @@ export default function stateModelFactory(
                     ...self.rpcProps(),
                     stopToken: ctx.stopToken,
                     bpPerPx,
-                    statusCallback: (msg: string) => {
+                    statusCallback: (msg: RpcStatus) => {
                       if (isAlive(self)) {
                         self.setStatusMessage(msg)
                       }

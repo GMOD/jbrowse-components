@@ -5,6 +5,7 @@ import {
   getContainingView,
   getSession,
   isAbortException,
+  statusMessageText,
   useLocalStorage,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -23,6 +24,7 @@ import { observer } from 'mobx-react'
 import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 
 import type { ReducedModel } from './types.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -122,8 +124,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                     stopToken,
                     bpPerPx:
                       view.bpPerPx / parseSamplesPerPixel(samplesPerPixel),
-                    statusCallback: (arg: string) => {
-                      setProgress(arg)
+                    statusCallback: (arg: RpcStatus) => {
+                      setProgress(statusMessageText(arg) ?? '')
                     },
                   },
                 )

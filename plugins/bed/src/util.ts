@@ -12,6 +12,7 @@ import {
 
 import type { MinimalFeature } from './types.ts'
 import type BED from '@gmod/bed'
+import type { StatusCallback } from '@jbrowse/core/util'
 
 interface BedData {
   strand?: string | number
@@ -45,7 +46,7 @@ export interface FeatureData {
 // data lines by the first tab-separated column (refName).
 export function bucketBedLines(
   buffer: Uint8Array,
-  statusCallback?: (s: string) => void,
+  statusCallback?: StatusCallback,
 ) {
   const features: Record<string, string[]> = {}
   const headerLines: string[] = []
