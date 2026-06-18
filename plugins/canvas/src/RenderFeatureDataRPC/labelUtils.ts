@@ -5,6 +5,7 @@ import { hasVisibleText, truncateLabel } from './util.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // A label value may be a string, a multi-valued array (e.g. a GFF attribute
 // whose value contained unescaped commas, parsed into multiple values), or
@@ -23,16 +24,22 @@ export function getFeatureName(feature: Feature): string | undefined {
   return toLabelString(feature.get('name')) ?? toLabelString(feature.get('id'))
 }
 
-// Reads the config-jexl name/description for a top-level feature.
+// Reads the config-jexl name/description for a top-level feature. The
+// labels.name/labels.description defaults ARE jexl, so a plugin-registered jexl
+// function only resolves when the worker pluginManager's jexl instance is
+// passed (same contract as the `mouseover` slot).
 // Returns undefined for empty/falsy values so callers can use simple truthiness.
 export function readFeatureLabels(
   config: DisplayConfig,
   feature: Feature,
+  jexl?: JexlInstance,
 ): { name: string | undefined; description: string | undefined } {
   return {
-    name: toLabelString(readConfigValue(config, ['labels', 'name'], feature)),
+    name: toLabelString(
+      readConfigValue(config, ['labels', 'name'], feature, jexl),
+    ),
     description: toLabelString(
-      readConfigValue(config, ['labels', 'description'], feature),
+      readConfigValue(config, ['labels', 'description'], feature, jexl),
     ),
   }
 }
@@ -44,9 +51,10 @@ export function applyLabelDimensions(
     config: DisplayConfig
     isNested: boolean
     isTranscriptChild: boolean
+    jexl?: JexlInstance
   },
 ) {
-  const { feature, config, isNested, isTranscriptChild } = args
+  const { feature, config, isNested, isTranscriptChild, jexl } = args
   const { subfeatureLabels } = config
   const showSubfeatureLabels = subfeatureLabels !== 'none'
 
@@ -54,7 +62,7 @@ export function applyLabelDimensions(
     const { name: configName, description: configDescription } =
       isTranscriptChild
         ? { name: undefined, description: undefined }
-        : readFeatureLabels(config, feature)
+        : readFeatureLabels(config, feature, jexl)
     const name = isTranscriptChild
       ? truncateLabel(getFeatureName(feature) ?? '')
       : (configName ?? '')

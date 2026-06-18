@@ -5,7 +5,10 @@ import type { Feature } from '@jbrowse/core/util'
 
 function feat(type: string, attrs: Record<string, unknown> = {}): Feature {
   const map: Record<string, unknown> = { type, ...attrs }
-  return { get: (k: string) => map[k], id: () => String(map.id ?? type) } as Feature
+  return {
+    get: (k: string) => map[k],
+    id: () => String(map.id ?? type),
+  } as Feature
 }
 
 describe('buildFeatureAdmission', () => {
@@ -25,13 +28,22 @@ describe('buildFeatureAdmission', () => {
     expect(admit(feat('mRNA'))).toBe(false)
   })
 
+  it('accepts already-prefixed filters (the runtime "Filter by..." form)', () => {
+    // activeFilters() in the model emits `jexl:`-prefixed expressions; admission
+    // must normalize them identically to the unprefixed config-slot form.
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig({
+        jexlFilters: [`jexl:get(feature,'type')=='gene'`],
+      }),
+    })
+    expect(admit(feat('gene'))).toBe(true)
+    expect(admit(feat('mRNA'))).toBe(false)
+  })
+
   it('ANDs multiple filters together', () => {
     const admit = buildFeatureAdmission({
       config: mockDisplayConfig({
-        jexlFilters: [
-          `get(feature,'type')=='gene'`,
-          `get(feature,'score')>5`,
-        ],
+        jexlFilters: [`get(feature,'type')=='gene'`, `get(feature,'score')>5`],
       }),
     })
     expect(admit(feat('gene', { score: 10 }))).toBe(true)

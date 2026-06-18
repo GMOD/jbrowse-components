@@ -1,5 +1,6 @@
 import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export interface PeptideData {
   protein: string
@@ -26,6 +27,11 @@ export interface LayoutArgs {
   feature: Feature
   config: DisplayConfig
   parentFeature?: Feature
+  // worker pluginManager's jexl instance, threaded so layout-pass label
+  // measurement (applyLabelDimensions → readFeatureLabels) resolves the same
+  // plugin-registered jexl functions the render pass uses, keeping label widths
+  // consistent with what is drawn.
+  jexl?: JexlInstance
 }
 
 export type GlyphType =

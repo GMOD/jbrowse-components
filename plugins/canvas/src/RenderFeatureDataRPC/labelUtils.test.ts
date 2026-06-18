@@ -1,3 +1,5 @@
+import createJexlInstance from '@jbrowse/core/util/jexl'
+
 import { LABEL_FONT_SIZE } from './constants.ts'
 import {
   applyLabelDimensions,
@@ -84,6 +86,24 @@ describe('readFeatureLabels', () => {
     expect(readFeatureLabels(mockDisplayConfig(), feature).description).toBe(
       undefined,
     )
+  })
+
+  it('evaluates a jexl labels.name against the feature', () => {
+    const config = mockDisplayConfig()
+    config.labels.name = `jexl:get(feature,'name')`
+    expect(readFeatureLabels(config, feature).name).toBe('GENE')
+  })
+
+  it('resolves a plugin-registered jexl function in labels.name when the instance is passed', () => {
+    // labels.name defaults ARE jexl, so a plugin-registered function only
+    // resolves when the worker pluginManager's jexl instance is threaded in
+    // (same contract as the mouseover slot). The expression string is unique so
+    // stringToJexlExpression's compilation cache binds it to this instance.
+    const jexl = createJexlInstance()
+    jexl.addFunction('shoutLabelUnique', (s: string) => `${s}!`)
+    const config = mockDisplayConfig()
+    config.labels.name = `jexl:shoutLabelUnique(get(feature,'name'))`
+    expect(readFeatureLabels(config, feature, jexl).name).toBe('GENE!')
   })
 })
 

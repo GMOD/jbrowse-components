@@ -84,6 +84,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
       config,
       isNested: true,
       isTranscriptChild: isChildTranscript,
+      jexl: args.jexl,
     })
 
     childLayout.y = currentYPx

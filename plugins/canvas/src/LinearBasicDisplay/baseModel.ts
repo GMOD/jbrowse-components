@@ -15,7 +15,7 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
@@ -26,11 +26,12 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, toJS } from 'mobx'
 
 import {
   fetchCanvasFeatureDetails,
@@ -65,7 +66,7 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
@@ -100,6 +101,7 @@ const ColorByAttributeDialog = lazy(
 )
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 
 const STRAND_COLOR_JEXL =
   "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
@@ -155,6 +157,14 @@ export default function baseStateModelFactory(
            * #property
            */
           configuration: ConfigurationReference(configSchema),
+          /**
+           * #property
+           * Runtime "Filter by..." override. When set (even to an empty list) it
+           * replaces the `jexlFilters` config slot; when undefined the config
+           * default applies. Stored as already-`jexl:`-prefixed expressions
+           * (runtime convention), unlike the deferred-evaluation config slot.
+           */
+          jexlFiltersSetting: types.maybe(types.array(types.string)),
         }),
       )
       .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
@@ -454,6 +464,22 @@ export default function baseStateModelFactory(
         },
 
         /**
+         * #method
+         * The filters actually applied, as `jexl:`-prefixed expressions. The
+         * runtime override shadows the config slot when set; otherwise the
+         * deferred-evaluation `jexlFilters` config slot is prefixed on read.
+         * This is the single source of truth for both the worker (via rpcProps)
+         * and the "Filter by..." dialog (so existing config filters show up and
+         * are editable).
+         */
+        activeFilters(): string[] {
+          return (
+            toJS(self.jexlFiltersSetting) ??
+            getConf(self, 'jexlFilters').map((f: string) => `jexl:${f}`)
+          )
+        },
+
+        /**
          * #getter
          */
         get sequenceAdapter() {
@@ -529,7 +555,14 @@ export default function baseStateModelFactory(
             ...self.configOverrides,
           }
           return {
-            displayConfig: { ...rest } as DisplayConfig,
+            // jexlFilters carries the effective runtime filters (mirrors the
+            // effectiveGeneGlyphMode substitution in the concrete model); reading
+            // activeFilters() here makes it an RPC cache key so toggling filters
+            // refetches. buildFeatureAdmission normalizes the prefix either way.
+            displayConfig: {
+              ...rest,
+              jexlFilters: self.activeFilters(),
+            } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
             // Structurally-serializable theme description so worker-side coloring
@@ -576,7 +609,10 @@ export default function baseStateModelFactory(
         get bytesEstimateTooLarge() {
           const stats = self.featureDensityStats
           const bytes = self.estimatedVisibleBytes
-          if (getView(self).visibleBp < AUTO_FORCE_LOAD_BP || bytes === undefined) {
+          if (
+            getView(self).visibleBp < AUTO_FORCE_LOAD_BP ||
+            bytes === undefined
+          ) {
             return false
           }
           const limit =
@@ -1034,6 +1070,16 @@ export default function baseStateModelFactory(
 
         /**
          * #action
+         * Sets the runtime filter override (already-`jexl:`-prefixed
+         * expressions). Pass undefined to clear it and fall back to the config
+         * `jexlFilters` slot.
+         */
+        setJexlFilters(filters?: string[]) {
+          self.jexlFiltersSetting = cast(filters)
+        },
+
+        /**
+         * #action
          */
         setShowOutline(value: boolean) {
           self.setOverride('outlineColor', value ? OUTLINE_DEFAULT_RGBA : '')
@@ -1091,6 +1137,16 @@ export default function baseStateModelFactory(
               handleClose,
               initialAttribute: self.colorByAttribute,
             },
+          ])
+        },
+
+        /**
+         * #action
+         */
+        openFilterDialog() {
+          getSession(self).queueDialog(handleClose => [
+            AddFiltersDialog,
+            { model: self, handleClose },
           ])
         },
 
@@ -1239,7 +1295,7 @@ export default function baseStateModelFactory(
               region,
               bpPerPx,
               stopToken,
-              statusCallback: (msg: string) => {
+              statusCallback: (msg: RpcStatus) => {
                 if (isAlive(self)) {
                   self.setStatusMessage(msg)
                 }
@@ -1606,6 +1662,13 @@ export default function baseStateModelFactory(
               subMenu: self.showSubmenuMenuItems(),
             },
             ...self.colorMenuItems(),
+            {
+              label: 'Filter by...',
+              icon: ClearAllIcon,
+              onClick: () => {
+                self.openFilterDialog()
+              },
+            },
           ]
         },
       }))

@@ -115,6 +115,7 @@
     "./util/getRelativeX": "./src/util/getRelativeX.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
+    "./util/jexl": "./src/util/jexl.ts",
     "./util/jexlStrings": "./src/util/jexlStrings.ts",
     "./util/layouts": "./src/util/layouts/index.ts",
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
@@ -568,6 +569,10 @@
       "./util/io/RemoteFileWithRangeCache": {
         "types": "./esm/util/io/RemoteFileWithRangeCache.d.ts",
         "import": "./esm/util/io/RemoteFileWithRangeCache.js"
+      },
+      "./util/jexl": {
+        "types": "./esm/util/jexl.d.ts",
+        "import": "./esm/util/jexl.js"
       },
       "./util/jexlStrings": {
         "types": "./esm/util/jexlStrings.d.ts",

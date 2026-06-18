@@ -28,8 +28,9 @@ export interface DisplayConfig {
   // hover tooltip slot — raw `jexl:...` string (or a plain string), evaluated
   // per-feature in the worker
   mouseover: string
-  // feature-admission filters — jexl expression strings WITHOUT the `jexl:`
-  // prefix (deferred-evaluation convention of the config slot)
+  // feature-admission filters — jexl expression strings. The raw config slot
+  // omits the `jexl:` prefix (deferred-evaluation convention); the runtime
+  // "Filter by..." override carries it. buildFeatureAdmission normalizes both.
   jexlFilters: string[]
   featureHeight: number
   color: string

@@ -161,7 +161,9 @@ function emitCodonRects(
 // drives the text. Done worker-side because the full feature is already here;
 // shipping a large feature back just to format a string would be wasteful.
 function featureTooltip(feature: Feature, ctx: RenderContext) {
-  return String(readConfigValue(ctx.config, 'mouseover', feature, ctx.jexl) ?? '')
+  return String(
+    readConfigValue(ctx.config, 'mouseover', feature, ctx.jexl) ?? '',
+  )
 }
 
 function boxColor(feature: Feature, ctx: RenderContext) {
@@ -399,7 +401,7 @@ function processFeatureRecord(
   const featureEnd = feature.get('end')
   const strand = feature.get('strand') ?? 0
 
-  const { name, description } = readFeatureLabels(ctx.config, feature)
+  const { name, description } = readFeatureLabels(ctx.config, feature, ctx.jexl)
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     name,
     description,
