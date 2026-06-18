@@ -86,6 +86,16 @@ export default function FetchMixin() {
 
       /**
        * #volatile
+       * true after the user explicitly cancels a load (the loading overlay's
+       * cancel button → `cancelFetchByUser`). A durable, blocking state — unlike
+       * `cancelFetch`, it does not retrigger the fetch autoruns — so the load
+       * stays stopped until the user retries (`reload`) or the viewport changes.
+       * Any new fetch clears it (`runFetch` resets it at the start).
+       */
+      fetchCanceled: false,
+
+      /**
+       * #volatile
        * latest status of each concurrent in-flight operation, keyed by an
        * arbitrary id (the canvas display uses displayedRegionIndex). Plain
        * bookkeeping — not read reactively; setRegionStatus derives the
@@ -137,7 +147,9 @@ export default function FetchMixin() {
       /**
        * #action
        * cancel any in-flight fetch and bump fetchGeneration (always bumps, so
-       * callers can retrigger fetch autoruns even when nothing was in flight)
+       * callers can retrigger fetch autoruns even when nothing was in flight).
+       * This is the *internal* reset used by clearAllRpcData/invalidateLoadedRegions
+       * — it clears any user-cancel flag so the retrigger actually re-fetches.
        */
       cancelFetch() {
         if (self.activeStopToken) {
@@ -147,7 +159,26 @@ export default function FetchMixin() {
           self.statusProgress = undefined
           self.regionStatuses.clear()
         }
+        self.fetchCanceled = false
         self.fetchGeneration++
+      },
+      /**
+       * #action
+       * User-initiated cancel from the loading overlay. Stops the in-flight
+       * fetch and lands in a durable `fetchCanceled` state. Unlike
+       * `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns
+       * don't immediately restart the load. The user retries via `reload`
+       * (the overlay's retry button), or it clears on the next viewport change.
+       */
+      cancelFetchByUser() {
+        if (self.activeStopToken) {
+          stopStopToken(self.activeStopToken)
+          self.activeStopToken = undefined
+          self.statusMessage = undefined
+          self.statusProgress = undefined
+          self.regionStatuses.clear()
+        }
+        self.fetchCanceled = true
       },
       /**
        * #action
@@ -164,6 +195,10 @@ export default function FetchMixin() {
         const gen = self.fetchGeneration
         self.activeStopToken = stopToken
         self.error = undefined
+        // a load is starting, so the display is no longer in a user-canceled
+        // state — this is the single clear point that covers every retrigger
+        // path (reload, viewport change, settings invalidate)
+        self.fetchCanceled = false
 
         const isStale = () =>
           !isAlive(self) ||

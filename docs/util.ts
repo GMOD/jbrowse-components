@@ -615,7 +615,9 @@ function displayTrackLink(node: ts.Node): DisplayTrackLink | undefined {
 function stringPropValue(obj: ts.ObjectLiteralExpression, key: string) {
   const prop = obj.properties.find(
     (p): p is ts.PropertyAssignment =>
-      ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === key,
+      ts.isPropertyAssignment(p) &&
+      ts.isIdentifier(p.name) &&
+      p.name.text === key,
   )
   return prop && ts.isStringLiteral(prop.initializer)
     ? prop.initializer.text
@@ -734,7 +736,9 @@ export function parseTaggedComment(
 // into a sidebar-friendly label ("Assembly Management"). Shared by the config and
 // state-model generators so a new category tag needs no label-table update.
 export function categoryLabel(key: string): string {
-  return key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, c => c.toUpperCase())
+  return key
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, c => c.toUpperCase())
 }
 
 // Strip JSDoc/inline comments from extracted source. Token-aware (via the TS

@@ -45,7 +45,12 @@ export default function GlobalDataDisplayMixin() {
        * `loading` axis is simply "fetch in flight".
        */
       get displayPhase(): DisplayPhase {
-        return computeDisplayPhase(self, () => self.isLoading)
+        // fetchCanceled keeps the overlay up (showing its retry affordance)
+        // even though isLoading has gone false after the user canceled
+        return computeDisplayPhase(
+          self,
+          () => self.isLoading || self.fetchCanceled,
+        )
       },
     }))
     .views(self => ({

@@ -99,7 +99,7 @@
     "eslint-plugin-tss-unused-classes": "^1.0.4",
     "express": "^5.2.1",
     "express-basic-auth": "^1.2.1",
-    "generic-filehandle2": "^2.1.10",
+    "generic-filehandle2": "^2.2.0",
     "globals": "^17.6.0",
     "html-webpack-plugin": "^5.6.7",
     "jest": "^30.4.2",

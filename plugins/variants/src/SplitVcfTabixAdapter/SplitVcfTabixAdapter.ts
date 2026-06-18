@@ -2,7 +2,7 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
-  downloadStatusReporter,
+  downloadStatus,
   fetchAndMaybeUnzipText,
   updateStatus,
 } from '@jbrowse/core/util'
@@ -72,9 +72,10 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
       const { vcf, parser } = await this.configure(refName, opts)
       const { statusCallback } = opts
 
-      // updateStatus shows the label and clears when done; onProgress upgrades
-      // the in-between status to a determinate bar as the blocks download
-      await updateStatus('Downloading variants', statusCallback, () =>
+      // downloadStatus shows the label and clears when done; the onProgress it
+      // hands back upgrades the in-between status to a determinate bar as the
+      // blocks download
+      await downloadStatus('Downloading variants', statusCallback, onProgress =>
         vcf.getLines(refName, start, end, {
           signal: opts.signal,
           lineCallback: (line, fileOffset) => {
@@ -86,10 +87,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
               }),
             )
           },
-          onProgress: downloadStatusReporter(
-            statusCallback,
-            'Downloading variants',
-          ),
+          onProgress,
         }),
       )
       observer.complete()

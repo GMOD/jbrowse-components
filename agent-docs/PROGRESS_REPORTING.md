@@ -39,9 +39,14 @@ through `statusCallback`.
 
 ## Helpers (`packages/core/src/util/progress.ts`)
 
+All status helpers now live in **one file** — `progress.ts`. `updateStatus` /
+`updateStatus2` moved here from `util/index.ts` (which still re-exports them via
+`export * from './progress.ts'`, so `@jbrowse/core/util` imports are unchanged).
+
 | Helper | Use |
 | --- | --- |
-| `downloadStatusReporter(statusCallback, label)` | Adapts the byte-granularity `onProgress(bytes,total)` from `@gmod/tabix`/`@gmod/bam`/`@gmod/cram` to the structured transport; returns `undefined` when no `statusCallback` so the reader skips bookkeeping. **One home for this** — reuse it, don't re-inline. |
+| `downloadStatus(label, statusCallback, fn(onProgress))` | **Preferred for download phases.** Combines `updateStatus` (label + clear) with `downloadStatusReporter` and hands the reporter to `fn`, so the phase label lives in **one** place — no risk of the `updateStatus` label and the `downloadStatusReporter` label drifting apart. All 7 download adapters (bam/cram/bed/gff3/gtf/vcf/splitvcf) + `fetchAndMaybeUnzip` use this. |
+| `downloadStatusReporter(statusCallback, label)` | The lower-level adapter behind `downloadStatus`. Adapts the byte-granularity `onProgress(bytes, total?)` from generic-filehandle2 / `@gmod/tabix` / `@gmod/bam` / `@gmod/cram` to the structured transport; returns `undefined` when no `statusCallback` so the reader skips bookkeeping. `total` is **optional** — readers that don't know the size up front (generic-filehandle2 with no Content-Length) emit just the label (indeterminate); with a total it's a determinate bar. Prefer `downloadStatus` over calling this directly. |
 | `createProgressReporter({label,total,statusCallback,stopToken})` | Per-iteration `report()` for long worker CPU loops: throttled cancel-check + throttled object emit. **Bare `report()` auto-increments** an internal counter (the elegant default — `for (…) report()`); pass `report(n)` only when the caller tracks its own running position across batches. Cheap enough to call every iteration: cancel-check and the emit's `Date.now()` are both counter-gated (bitmask), so the common path is an int compare — no clock read. With no `statusCallback`/`total` it's a pure cancel-tick. |
 | `withProgress({label,total,statusCallback,stopToken}, fn)` | Determinate phase wrapper; the counterpart to `updateStatus`. |
 | `updateStatus(label, statusCallback, fn)` | Indeterminate phase: sets `label`, runs `fn`, clears. |
@@ -78,44 +83,85 @@ is the wall-clock-dominant phase and the bar stays monotonic-ish.
 
 ## Pattern: forwarding download progress in a feature adapter
 
-See `plugins/variants/src/VcfTabixAdapter/VcfTabixAdapter.ts` (and SplitVcf). The
-`updateStatus` wrapper owns the label + clear; `onProgress` upgrades the
-in-between status to a determinate bar:
+See `plugins/variants/src/VcfTabixAdapter/VcfTabixAdapter.ts` (and SplitVcf).
+`downloadStatus` owns the label + clear and hands you the `onProgress` to pass
+straight through:
 
 ```ts
-await updateStatus('Downloading variants', statusCallback, () =>
+await downloadStatus('Downloading variants', statusCallback, onProgress =>
   vcf.getLines(refName, start, end, {
     signal: opts.signal,
     lineCallback: (line, fileOffset) => { observer.next(...) },
-    onProgress: downloadStatusReporter(statusCallback, 'Downloading variants'),
+    onProgress,
   }),
 )
 ```
 
-Do **not** spread `...opts` into `getLines` — that was the old footgun (jbrowse
-`onProgress` object collided with tabix `onProgress(bytes,total)`). Pass only
-`signal` + `lineCallback` + `onProgress`.
+Do **not** spread `...opts` into `getLines` — that was the old footgun (a stray
+`onProgress` object would collide with tabix's `onProgress(bytes,total)`). Pass
+only `signal` + `lineCallback` + `onProgress`. (`fetchAndMaybeUnzip` *does*
+spread `...opts` into `readFile`, but that's safe: `BaseOptions` carries no
+`onProgress`, so the explicit `onProgress` we add is the only one.)
+
+## Whole-file reads: `fetchAndMaybeUnzip`
+
+`fetchAndMaybeUnzip` (`util/index.ts`) is the central whole-file reader behind
+the BigWig/BigBed/Hic/comparative/sequence adapters. It now forwards download
+progress through generic-filehandle2's `readFile({ onProgress })`, so a single
+wiring lights up determinate "Downloading file" bars across all of them:
+
+```ts
+const buf = await downloadStatus('Downloading file', statusCallback, onProgress =>
+  loc.readFile({ ...opts, onProgress }) as Promise<Uint8Array>,
+)
+```
+
+This required generic-filehandle2 **2.2.0** (`onProgress` in `FilehandleOptions`,
+streams the body with byte-granularity ticks; `total` omitted when no
+Content-Length). Bumped to `^2.2.0` repo-wide and added to
+`minimumReleaseAgeExclude` in `pnpm-workspace.yaml`.
 
 ## gmod libraries (published, separate repos)
 
-- `generic-filehandle2` 2.2.0 — `FilehandleOptions.onProgress(bytesReceived, total?)`; streams body into one pre-sized buffer when Content-Length known.
+- `generic-filehandle2` 2.2.0 — `FilehandleOptions.onProgress(bytesReceived, total?)`; streams body into one pre-sized buffer when Content-Length known. **Wired** through `fetchAndMaybeUnzip` (see above); `^2.2.0` repo-wide.
 - `@gmod/tabix` 3.4.0 — `getLines({ onProgress(bytesDownloaded, totalBytes) })`, block granularity (cache hits tick instantly). **Not modified** — positional byte callback is the correct low-level primitive.
 - `@gmod/bam` 7.3.0, `@gmod/cram` 8.3.0 — `getRecordsForRange({ onProgress })`.
 
+## Cancel + retry (`FetchMixin`)
+
+The loading overlay's cancel button used to be a no-op trap: `cancelFetch()`
+bumps `fetchGeneration`, which `FetchVisibleRegions` watches — so cancel just
+**restarted** the load ~600 ms later. There was no durable "canceled" state.
+
+Now there are two distinct cancels on `FetchMixin`:
+
+- `cancelFetch()` — *internal* reset (used by `clearAllRpcData` /
+  `invalidateLoadedRegions`). Stops the fetch, **bumps** `fetchGeneration` to
+  retrigger, and clears `fetchCanceled` (a reset must be allowed to re-fetch).
+- `cancelFetchByUser()` — what the overlay's cancel button calls. Stops the
+  fetch and sets the durable `fetchCanceled` volatile. **Does not bump**
+  `fetchGeneration`, so nothing restarts.
+
+`fetchCanceled` behaves like `error`/`regionTooLarge`: a blocking state.
+`FetchVisibleRegions` early-returns on it (tracked); `ClearBlockingStateOnViewportChange`
+clears it on viewport change (pan/zoom retries). Retry is the existing
+`reload()` (universal across MultiRegion + HiC/LD/canvas). The **single clear
+point** is `runFetch` start (`self.fetchCanceled = false`) — so every retrigger
+path (reload, viewport, settings) un-cancels, including HiC/LD whose `reload()`
+goes through `reloadCounter` rather than `cancelFetch`.
+
+Both `displayPhase` loading thunks (MultiRegion + Global) OR in `fetchCanceled`
+so the overlay stays visible (showing its **Retry** button) after `isLoading`
+has gone false. `DisplayLoadingOverlay` passes `canceled`/`onCancel`
+(→`cancelFetchByUser`)/`onRetry` (→`reload`); `LoadingOverlay` renders "Loading
+canceled" + a refresh button in the canceled branch.
+
 ## TODO / follow-ups
 
-- **DONE — bam/cram + bed/gff/gtf download progress wired.** Bumped
-  `@gmod/bam`→`^7.3.0`, `@gmod/cram`→`^8.3.0` (tabix already `^3.4.0`) and added
-  `onProgress: downloadStatusReporter(statusCallback, 'Downloading …')` to
-  `getRecordsForRange`/`getLines` in `plugins/alignments/src/{BamAdapter,CramAdapter}`
-  and `plugins/{bed,gff3,gtf}/src/*TabixAdapter`. The gff3/gtf adapters switched
-  from the positional `getLines` callback to the `{lineCallback, onProgress}`
-  options object.
-- **Co-edited holdout:** `plugins/canvas/src/LinearBasicDisplay/baseModel.ts` has
-  another agent's "Filter by" feature uncommitted. My 1-line `RpcStatus` lambda
-  fix (the `statusCallback: (msg: RpcStatus) => ...` at the RPC call) is left
-  **uncommitted in the working tree** to ride along with their commit — don't
-  drop it. If they've already committed, commit just that hunk.
+- **DONE — all download adapters wired + consolidated.** bam/cram/bed/gff3/gtf/
+  vcf/splitvcf use `downloadStatus`; `fetchAndMaybeUnzip` forwards
+  generic-filehandle2 progress (covers bigwig/bigbed/hic/comparative/sequence).
+- **DONE — cancel is durable + retryable** (see the cancel section above).
 - **Legacy string-only consumers** (synteny display, dotplot/wiggle progress
   dialogs) extract `statusMessageText(msg)` and show no bar. Upgrading them to a
   determinate bar means storing `RpcStatus` (not a `string`) in their state /

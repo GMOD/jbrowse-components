@@ -214,7 +214,14 @@ function displayTypesSection(name: string, links: DisplayLinkContext) {
 }
 
 function renderConfig(
-  { header, derives, identifier, preProcess, slots, filename }: ConfigWithHeader,
+  {
+    header,
+    derives,
+    identifier,
+    preProcess,
+    slots,
+    filename,
+  }: ConfigWithHeader,
   bases: BaseRef[],
   links: DisplayLinkContext,
 ): string {

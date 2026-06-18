@@ -1,6 +1,6 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { downloadStatusReporter, updateStatus } from '@jbrowse/core/util'
+import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -83,23 +83,23 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
     const { gff, dontRedispatchSet } = await this.configureOnce()
     const lines: LineRecord[] = []
 
-    await updateStatus('Downloading features', opts.statusCallback, () =>
-      gff.getLines(query.refName, query.start, query.end, {
-        lineCallback: (line, fileOffset, start, end) => {
-          lines.push({
-            line,
-            lineHash: fileOffset,
-            start,
-            end,
-            hasEscapes: line.includes('%'),
-            type: extractType(line),
-          })
-        },
-        onProgress: downloadStatusReporter(
-          opts.statusCallback,
-          'Downloading features',
-        ),
-      }),
+    await downloadStatus(
+      'Downloading features',
+      opts.statusCallback,
+      onProgress =>
+        gff.getLines(query.refName, query.start, query.end, {
+          lineCallback: (line, fileOffset, start, end) => {
+            lines.push({
+              line,
+              lineHash: fileOffset,
+              start,
+              end,
+              hasEscapes: line.includes('%'),
+              type: extractType(line),
+            })
+          },
+          onProgress,
+        }),
     )
 
     if (allowRedispatch && lines.length) {

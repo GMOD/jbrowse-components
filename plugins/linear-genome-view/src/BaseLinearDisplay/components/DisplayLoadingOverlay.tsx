@@ -8,7 +8,9 @@ const DisplayLoadingOverlay = observer(function DisplayLoadingOverlay({
     statusMessage?: string
     statusProgress?: number
     loadingOverlayVisible: boolean
-    cancelFetch?: () => void
+    fetchCanceled?: boolean
+    cancelFetchByUser?: () => void
+    reload?: () => void
   }
 }) {
   return (
@@ -16,7 +18,11 @@ const DisplayLoadingOverlay = observer(function DisplayLoadingOverlay({
       statusMessage={model.statusMessage}
       progress={model.statusProgress}
       isVisible={model.loadingOverlayVisible}
-      onCancel={model.cancelFetch ? () => model.cancelFetch?.() : undefined}
+      canceled={model.fetchCanceled}
+      onCancel={
+        model.cancelFetchByUser ? () => model.cancelFetchByUser?.() : undefined
+      }
+      onRetry={model.reload ? () => model.reload?.() : undefined}
     />
   )
 })

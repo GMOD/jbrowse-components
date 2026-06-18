@@ -1,10 +1,6 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  SimpleFeature,
-  downloadStatusReporter,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { SimpleFeature, downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -98,16 +94,16 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
     const { gtf, dontRedispatchSet } = await this.configureOnce()
     const lines: GtfLine[] = []
 
-    await updateStatus('Downloading features', opts.statusCallback, () =>
-      gtf.getLines(query.refName, query.start, query.end, {
-        lineCallback: (line, _fo, s, e) => {
-          lines.push({ line, start: s, end: e, type: extractType(line) })
-        },
-        onProgress: downloadStatusReporter(
-          opts.statusCallback,
-          'Downloading features',
-        ),
-      }),
+    await downloadStatus(
+      'Downloading features',
+      opts.statusCallback,
+      onProgress =>
+        gtf.getLines(query.refName, query.start, query.end, {
+          lineCallback: (line, _fo, s, e) => {
+            lines.push({ line, start: s, end: e, type: extractType(line) })
+          },
+          onProgress,
+        }),
     )
 
     if (allowRedispatch && lines.length) {

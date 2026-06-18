@@ -3,7 +3,7 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   SimpleFeature,
-  downloadStatusReporter,
+  downloadStatus,
   unzip,
   updateStatus,
 } from '@jbrowse/core/util'
@@ -142,7 +142,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
       const stopTokenCheck = createStopTokenChecker(stopToken)
       checkStopToken(stopToken)
-      await updateStatus('Downloading features', statusCallback, () =>
+      await downloadStatus('Downloading features', statusCallback, onProgress =>
         this.bed.getLines(query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             checkStopToken2(stopTokenCheck)
@@ -167,10 +167,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
               ),
             )
           },
-          onProgress: downloadStatusReporter(
-            statusCallback,
-            'Downloading features',
-          ),
+          onProgress,
         }),
       )
       observer.complete()

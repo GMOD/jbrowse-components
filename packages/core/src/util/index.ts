@@ -9,11 +9,10 @@ import { coarseStripHTML } from './coarseStripHTML.ts'
 import { colord } from './colord.ts'
 import { measureText } from './measureText.ts'
 import { max, toLocale } from './numericUtils.ts'
-import { checkStopToken } from './stopToken.ts'
+import { downloadStatus, updateStatus } from './progress.ts'
 import { storeBlobLocation } from './tracks.ts'
 import { isUriLocation } from './types/index.ts'
 
-import type { StopToken } from './stopToken.ts'
 import type { FileLocation } from './types/index.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type { GenericFilehandle } from 'generic-filehandle2'
@@ -161,33 +160,6 @@ export const rIC =
         cb()
       }
 
-// call statusCallback with current status and clear when finished
-export async function updateStatus<U>(
-  msg: string,
-  cb: ((arg: string) => void) | undefined,
-  fn: () => U | Promise<U>,
-) {
-  cb?.(msg)
-  const res = await fn()
-  cb?.('')
-  return res
-}
-
-// call statusCallback with current status and clear when finished, and check
-// stopToken afterwards
-export async function updateStatus2<U>(
-  msg: string,
-  cb: (arg: string) => void,
-  stopToken: StopToken | undefined,
-  fn: () => U | Promise<U>,
-) {
-  cb(msg)
-  const res = await fn()
-  checkStopToken(stopToken)
-  cb('')
-  return res
-}
-
 // Supported adapter types by text indexer ensure that this matches the method
 // found in @jbrowse/text-indexing/util
 export function isSupportedIndexingAdapter(type = '') {
@@ -325,10 +297,10 @@ export async function fetchAndMaybeUnzip(
   opts: BaseOptions = {},
 ) {
   const { statusCallback = () => {} } = opts
-  const buf = await updateStatus(
+  const buf = await downloadStatus(
     'Downloading file',
     statusCallback,
-    () => loc.readFile(opts) as Promise<Uint8Array>,
+    onProgress => loc.readFile({ ...opts, onProgress }) as Promise<Uint8Array>,
   )
   return isGzip(buf)
     ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))

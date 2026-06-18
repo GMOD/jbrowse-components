@@ -1,10 +1,6 @@
 import { BamFile } from '@gmod/bam'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  downloadStatus,
-  updateStatus,
-  withProgress,
-} from '@jbrowse/core/util'
+import { downloadStatus, updateStatus, withProgress } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
@@ -41,7 +37,10 @@ function seqFetchSpan(
 export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig> {
   public samHeader?: ParsedSamHeader
 
-  private setupP?: Promise<{ samHeader: ParsedSamHeader; bam: BamFile<BamSlightlyLazyFeature> }>
+  private setupP?: Promise<{
+    samHeader: ParsedSamHeader
+    bam: BamFile<BamSlightlyLazyFeature>
+  }>
 
   protected configureResult?: { bam: BamFile<BamSlightlyLazyFeature> }
 
@@ -53,9 +52,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
       const location = this.getConf(['index', 'location'])
       this.configureResult = {
         bam: new BamFile({
-          bamFilehandle: openLocation(this.getConf('bamLocation'), this.pluginManager),
-          csiFilehandle: csi ? openLocation(location, this.pluginManager) : undefined,
-          baiFilehandle: !csi ? openLocation(location, this.pluginManager) : undefined,
+          bamFilehandle: openLocation(
+            this.getConf('bamLocation'),
+            this.pluginManager,
+          ),
+          csiFilehandle: csi
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+          baiFilehandle: !csi
+            ? openLocation(location, this.pluginManager)
+            : undefined,
           recordClass: BamSlightlyLazyFeature,
         }),
       }

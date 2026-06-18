@@ -1,10 +1,6 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  downloadStatus,
-  sum,
-  withProgress,
-} from '@jbrowse/core/util'
+import { downloadStatus, sum, withProgress } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -20,19 +16,24 @@ import {
 import type { CramAdapterConfig } from './configSchema.ts'
 import type { FilterBy } from '../shared/types.ts'
 import type { ParsedSamHeader } from '../shared/util.ts'
+import type { CramRecord } from '@gmod/cram'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { CramRecord } from '@gmod/cram'
 
 function shouldFilterRecord(
   record: CramRecord,
   filterBy: FilterBy | undefined,
   samHeader: ParsedSamHeader,
 ) {
-  const { flagInclude = 0, flagExclude = 0, tagFilter, readName } = filterBy ?? {}
+  const {
+    flagInclude = 0,
+    flagExclude = 0,
+    tagFilter,
+    readName,
+  } = filterBy ?? {}
   if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
     return true
   }

@@ -146,6 +146,46 @@ describe('FetchMixin: cancellation', () => {
   })
 })
 
+describe('FetchMixin: user cancel + retry', () => {
+  it('cancelFetchByUser stops the fetch and sets a durable fetchCanceled flag', () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {})) // never resolves
+    expect(m.isLoading).toBe(true)
+    m.cancelFetchByUser()
+    expect(m.isLoading).toBe(false)
+    expect(m.fetchCanceled).toBe(true)
+    expect(m.activeStopToken).toBeUndefined()
+  })
+
+  it('cancelFetchByUser does NOT bump fetchGeneration (so autoruns do not restart)', () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {}))
+    const before = m.fetchGeneration
+    m.cancelFetchByUser()
+    expect(m.fetchGeneration).toBe(before)
+  })
+
+  it('a new runFetch clears fetchCanceled (the retry path)', async () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {}))
+    m.cancelFetchByUser()
+    expect(m.fetchCanceled).toBe(true)
+    m.runFetch(async () => {})
+    expect(m.fetchCanceled).toBe(false)
+    await tick()
+    await tick()
+  })
+
+  it('internal cancelFetch clears fetchCanceled (it is a retrigger, not a stop)', () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {}))
+    m.cancelFetchByUser()
+    expect(m.fetchCanceled).toBe(true)
+    m.cancelFetch()
+    expect(m.fetchCanceled).toBe(false)
+  })
+})
+
 describe('FetchMixin: fetchGeneration bump semantics', () => {
   it('bumps once on successful completion', async () => {
     const m = makeModel()

@@ -95,6 +95,3 @@ plugins/linear-genome-view/src/BaseLinearDisplay/models/ConfigOverrideMixin.test
 
 ## Still need ultralong read cache?
 
-## state model groupings in website
-
-## Link from the 'track' to 'display' docs associated with them, and make ample 'examples' that help people understand advanced configurations

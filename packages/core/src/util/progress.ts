@@ -7,6 +7,35 @@ import {
 import type { StopToken, StopTokenChecker } from './stopToken.ts'
 
 /**
+ * Indeterminate phase: set `label` on the status channel, run `fn`, then clear
+ * it. The determinate counterpart is {@link withProgress}.
+ */
+export async function updateStatus<U>(
+  msg: string,
+  cb: StatusCallback | undefined,
+  fn: () => U | Promise<U>,
+) {
+  cb?.(msg)
+  const res = await fn()
+  cb?.('')
+  return res
+}
+
+/** {@link updateStatus} that also checks the stop token before clearing. */
+export async function updateStatus2<U>(
+  msg: string,
+  cb: StatusCallback,
+  stopToken: StopToken | undefined,
+  fn: () => U | Promise<U>,
+) {
+  cb(msg)
+  const res = await fn()
+  checkStopToken(stopToken)
+  cb('')
+  return res
+}
+
+/**
  * A value flowing through the RPC `statusCallback` channel.
  *
  * Historically this was always a plain human-readable string (e.g. "Loading
@@ -46,21 +75,46 @@ export function statusFraction(status: RpcStatus | undefined) {
 }
 
 /**
- * Adapt the byte-granularity download callback exposed by the index readers
- * (@gmod/tabix `getLines`, @gmod/bam / @gmod/cram `getRecordsForRange`) to the
- * structured {@link StatusCallback} transport, labelling each tick with
- * `message`. Returns undefined when there's no `statusCallback`, so the reader
- * can skip its progress bookkeeping entirely.
+ * Adapt the byte-granularity download callback exposed by the readers
+ * (generic-filehandle2 `readFile`, @gmod/tabix `getLines`, @gmod/bam /
+ * @gmod/cram `getRecordsForRange`) to the structured {@link StatusCallback}
+ * transport, labelling each tick with `message`. Returns undefined when there's
+ * no `statusCallback`, so the reader can skip its progress bookkeeping entirely.
+ *
+ * `total` is optional because not every reader knows the size up front
+ * (generic-filehandle2 omits it when the response has no Content-Length): with a
+ * total we emit a determinate bar, without one we emit just the label so the UI
+ * still shows the phase as an indeterminate spinner.
  */
 export function downloadStatusReporter(
   statusCallback: StatusCallback | undefined,
   message: string,
 ) {
   return statusCallback
-    ? (current: number, total: number) => {
-        statusCallback({ message, current, total })
+    ? (current: number, total?: number) => {
+        statusCallback(
+          total === undefined ? message : { message, current, total },
+        )
       }
     : undefined
+}
+
+/**
+ * Run a download phase with byte-granularity progress. Shows `label`, hands
+ * `fn` the {@link downloadStatusReporter} to pass straight to an index reader's
+ * `onProgress` (byte ticks upgrade the same label to a determinate bar), then
+ * clears the status. Combines {@link updateStatus} with the reporter so the
+ * label is written in exactly one place — the phase label and the progress
+ * label can't drift apart.
+ */
+export async function downloadStatus<T>(
+  label: string,
+  statusCallback: StatusCallback | undefined,
+  fn: (onProgress: ReturnType<typeof downloadStatusReporter>) => T | Promise<T>,
+): Promise<T> {
+  return updateStatus(label, statusCallback, () =>
+    fn(downloadStatusReporter(statusCallback, label)),
+  )
 }
 
 /**

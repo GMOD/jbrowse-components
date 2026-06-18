@@ -1,4 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close'
+import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
 
 import LoadingDots from './LoadingDots.tsx'
@@ -63,12 +64,16 @@ export default function LoadingOverlay({
   statusMessage,
   progress,
   isVisible,
+  canceled,
   onCancel,
+  onRetry,
 }: {
   statusMessage?: string
   progress?: number
   isVisible?: boolean
+  canceled?: boolean
   onCancel?: () => void
+  onRetry?: () => void
 }) {
   const { classes } = useStyles()
   const hasProgress = progress !== undefined
@@ -79,33 +84,58 @@ export default function LoadingOverlay({
       data-testid={isVisible ? 'loading-overlay' : undefined}
     >
       <span className={classes.content}>
-        <span className={classes.row}>
-          <span className={classes.text}>
-            {statusMessage || 'Loading'}
-            {hasProgress ? ` ${Math.round(progress * 100)}%` : <LoadingDots />}
+        {canceled ? (
+          <span className={classes.row}>
+            <span className={classes.text}>Loading canceled</span>
+            {onRetry ? (
+              <Tooltip title="Retry">
+                <IconButton
+                  size="small"
+                  data-testid="loading-overlay-retry"
+                  onClick={() => {
+                    onRetry()
+                  }}
+                >
+                  <RefreshIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            ) : null}
           </span>
-          {onCancel ? (
-            <Tooltip title="Cancel">
-              <IconButton
-                size="small"
-                data-testid="loading-overlay-cancel"
-                onClick={() => {
-                  onCancel()
-                }}
-              >
-                <CloseIcon fontSize="inherit" />
-              </IconButton>
-            </Tooltip>
-          ) : null}
-        </span>
-        {hasProgress ? (
-          <span className={classes.bar}>
-            <span
-              className={classes.barFill}
-              style={{ width: `${Math.min(100, progress * 100)}%` }}
-            />
-          </span>
-        ) : null}
+        ) : (
+          <>
+            <span className={classes.row}>
+              <span className={classes.text}>
+                {statusMessage || 'Loading'}
+                {hasProgress ? (
+                  ` ${Math.round(progress * 100)}%`
+                ) : (
+                  <LoadingDots />
+                )}
+              </span>
+              {onCancel ? (
+                <Tooltip title="Cancel">
+                  <IconButton
+                    size="small"
+                    data-testid="loading-overlay-cancel"
+                    onClick={() => {
+                      onCancel()
+                    }}
+                  >
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+            </span>
+            {hasProgress ? (
+              <span className={classes.bar}>
+                <span
+                  className={classes.barFill}
+                  style={{ width: `${Math.min(100, progress * 100)}%` }}
+                />
+              </span>
+            ) : null}
+          </>
+        )}
       </span>
     </span>
   )

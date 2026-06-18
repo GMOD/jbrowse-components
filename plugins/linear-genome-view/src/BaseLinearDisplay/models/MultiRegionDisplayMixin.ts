@@ -124,9 +124,14 @@ export default function MultiRegionDisplayMixin() {
        * pre-refetch debounce.
        */
       get displayPhase(): DisplayPhase {
+        // fetchCanceled keeps the overlay up (showing its retry affordance)
+        // after the user canceled mid-load
         return computeDisplayPhase(
           self,
-          () => !self.isReady || !self.viewportWithinLoadedData,
+          () =>
+            !self.isReady ||
+            !self.viewportWithinLoadedData ||
+            self.fetchCanceled,
         )
       },
     }))
@@ -300,7 +305,12 @@ export default function MultiRegionDisplayMixin() {
             () => {
               const view = getContainingView(self) as LinearGenomeViewModel
               void self.fetchGeneration
-              if (!view.initialized || self.error || self.regionTooLarge) {
+              if (
+                !view.initialized ||
+                self.error ||
+                self.regionTooLarge ||
+                self.fetchCanceled
+              ) {
                 return
               }
 
@@ -393,11 +403,11 @@ export default function MultiRegionDisplayMixin() {
           )
         }
 
-        // When zoom or viewport position changes while regionTooLarge
-        // or error is set, clear so the fetch autorun retries. Reads
-        // error/regionTooLarge untracked so setting them doesn't
-        // trigger this autorun to immediately wipe them — only the
-        // viewport read should fire it.
+        // When zoom or viewport position changes while regionTooLarge,
+        // error, or fetchCanceled is set, clear so the fetch autorun
+        // retries. Reads them untracked so setting them doesn't trigger
+        // this autorun to immediately wipe them — only the viewport read
+        // should fire it.
         addDisposer(
           self,
           autorun(
@@ -407,7 +417,11 @@ export default function MultiRegionDisplayMixin() {
                 return
               }
               void view.visibleRegions
-              if (untracked(() => self.regionTooLarge || self.error)) {
+              if (
+                untracked(
+                  () => self.regionTooLarge || self.fetchCanceled || self.error,
+                )
+              ) {
                 self.clearAllRpcData()
               }
             },
