@@ -4,6 +4,7 @@ import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { RpcStatus } from '@jbrowse/core/util'
 
 declare global {
   interface Window {
@@ -67,7 +68,7 @@ function wrapForRpc(func: RpcFunc) {
     return func(
       {
         ...wrappedArgs,
-        statusCallback: (message: string) => {
+        statusCallback: (message: RpcStatus) => {
           self.rpcServer?.emit(channel, message)
         },
       },

@@ -90,7 +90,6 @@ describe('floatingLabels', () => {
       featureHeight: 10,
       subfeatureLabels: 'below',
       parentFeatureId: 'parent-gene-123',
-      tooltip: 'Gene: BRCA1',
     }
 
     it('includes parentFeatureId in the result', () => {

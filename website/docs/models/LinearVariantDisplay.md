@@ -57,7 +57,8 @@ and docs.
 
 **Volatiles:** rpcDataMap, densityStatsPerRegion, featureIdUnderMouse,
 subfeatureIdUnderMouse, mouseoverExtraInformation, contextMenuFeature,
-contextMenuInfo, userFeatureDensityLimit, heightBeforeExpand, incrementalLayout
+contextMenuInfo, userFeatureDensityLimit, byteEstimateVisibleBp,
+heightBeforeExpand, incrementalLayout
 
 **Getters:** conf, visibleFeatureDensityPerPx, renderState,
 DisplayMessageComponent, showTooltipsEnabled, showLegend, maxHeight, autoHeight,
@@ -65,9 +66,10 @@ displayMode, showLabelsMode, showLabels, showDescriptions, showOutline,
 featureColor, utrColor, colorByMode, colorByAttribute,
 effectiveShowDescriptions, selectedFeatureId, maxFeatureDensity, colorByCDS,
 sequenceAdapter, regionKeys, reversedRegions, featureWidgetType,
-bytesEstimateTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
-laidOutDataMap, maxY, hasOverflow, featureIdIndex, subfeatureIdIndex,
-hoveredFeature, hoveredSubfeature, featureItemMap, flatbushIndexes
+estimatedVisibleBytes, bytesEstimateTooLarge, densityTooLarge, regionTooLarge,
+regionTooLargeReason, laidOutDataMap, maxY, hasOverflow, featureIdIndex,
+subfeatureIdIndex, hoveredFeature, hoveredSubfeature, featureItemMap,
+flatbushIndexes
 
 **Methods:** rpcProps, getFeatureById, searchFeatureByID, renderSvg,
 showSubmenuMenuItems, contextMenuItems, colorBySubMenuItems, colorMenuItems,
@@ -81,7 +83,7 @@ setShowLabels, setAutoHeight, setShowDescriptions, setShowOutline,
 setFeatureColor, setUtrColor, showContextMenuForFeature, openSetColorDialog,
 openColorByAttributeDialog, fetchFullFeature, selectFeatureById, isCacheValid,
 getByteEstimateConfig, selectFullFeature, reload, fetchNeeded,
-clearStaleDensityState, afterAttach
+setFeatureDensityStats, clearStaleDensityState, afterAttach
 
 ### Available via [BaseDisplay](../basedisplay)
 

@@ -44,7 +44,7 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -147,7 +147,7 @@ async function callMultiSampleVariantCellData(args: {
     referenceDrawingMode: string
   }
   mode: 'regular' | 'matrix'
-  setStatusMessage: (msg?: string) => void
+  setStatusMessage: (status?: RpcStatus) => void
   ctx: FetchContext
 }): Promise<CellDataResult> {
   const {
@@ -171,9 +171,9 @@ async function callMultiSampleVariantCellData(args: {
       sessionId,
       adapterConfig,
       stopToken: ctx.stopToken,
-      statusCallback: (msg: string) => {
+      statusCallback: (status: RpcStatus) => {
         if (isAlive(node)) {
-          setStatusMessage(msg)
+          setStatusMessage(status)
         }
       },
     },

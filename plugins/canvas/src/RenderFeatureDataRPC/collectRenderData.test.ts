@@ -115,6 +115,61 @@ describe('collectRenderData peptide overlay', () => {
   })
 })
 
+describe('collectRenderData tooltip (mouseover slot)', () => {
+  it('evaluates a custom mouseover jexl override against the feature', () => {
+    const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
+    const cfg = mockDisplayConfig({
+      mouseover: `jexl:"score: "+get(feature,'id')`,
+    })
+    const result = collectRenderData(
+      [boxLayout(feature)],
+      0,
+      1000,
+      cfg,
+      theme,
+      false,
+    )
+    expect(result.flatbushItems[0]!.tooltip).toBe('score: g1')
+  })
+
+  it('honors a plain (non-jexl) mouseover string', () => {
+    const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
+    const cfg = mockDisplayConfig({ mouseover: 'static text' })
+    const result = collectRenderData(
+      [boxLayout(feature)],
+      0,
+      1000,
+      cfg,
+      theme,
+      false,
+    )
+    expect(result.flatbushItems[0]!.tooltip).toBe('static text')
+  })
+
+  it('the default slot resolves to the feature id when there is no name', () => {
+    const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
+    const result = collectRenderData(
+      [boxLayout(feature)],
+      0,
+      1000,
+      config,
+      theme,
+      false,
+    )
+    expect(result.flatbushItems[0]!.tooltip).toBe('g1')
+  })
+
+  it('top-level feature tooltip is the single hover source (subfeatures carry no tooltip)', () => {
+    const { layout } = twoExonTranscript()
+    const cfg = mockDisplayConfig({ mouseover: `jexl:get(feature,'id')` })
+    const result = collectRenderData([layout], 0, 1000, cfg, theme, false)
+    expect(result.flatbushItems[0]!.tooltip).toBe('tx1')
+    // subfeatures no longer carry their own tooltip — hover unifies on the
+    // top-level feature's resolved mouseover
+    expect(result.subfeatureInfos.every(s => !('tooltip' in s))).toBe(true)
+  })
+})
+
 describe('collectRenderData intron chevrons', () => {
   // twoExonTranscript has exons 100-104 and 200-205, so a single intron line
   // spans the 104-200 gap. The line's `direction` drives chevron rendering.

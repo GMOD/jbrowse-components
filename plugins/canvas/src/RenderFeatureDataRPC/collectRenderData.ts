@@ -1,3 +1,4 @@
+import { readConfigValue } from '@jbrowse/core/configuration'
 import {
   cssColorToABGR as colorToUint32,
   formatHEX,
@@ -29,12 +30,16 @@ import type {
 import type { FeatureLayout, PeptideData } from './types.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 interface RenderContext {
   config: DisplayConfig
   theme: Theme
   colorByCDS: boolean
   peptideDataMap?: Map<string, PeptideData>
+  // worker pluginManager's jexl instance, so a custom `mouseover` slot can call
+  // plugin-registered jexl functions. Undefined in tests → default instance.
+  jexl?: JexlInstance
 }
 
 interface Collector {
@@ -150,47 +155,13 @@ function emitCodonRects(
   }
 }
 
-function rangeLine(type: string | undefined, start: number, end: number) {
-  return `${type ? `${type}: ` : ''}${start.toLocaleString()}-${end.toLocaleString()}`
-}
-
-function buildTranscriptTooltip(args: {
-  parentName: string | undefined
-  transcriptName: string | undefined
-  transcriptType: string | undefined
-  transcriptStart: number
-  transcriptEnd: number
-}) {
-  const {
-    parentName,
-    transcriptName,
-    transcriptType,
-    transcriptStart,
-    transcriptEnd,
-  } = args
-  const parts: string[] = []
-  if (parentName) {
-    parts.push(`Gene: ${parentName}`)
-  }
-  if (transcriptName) {
-    parts.push(`Transcript: ${transcriptName}`)
-  }
-  parts.push(rangeLine(transcriptType, transcriptStart, transcriptEnd))
-  return parts.join('\n')
-}
-
-function buildFeatureTooltip(args: {
-  name: string | undefined
-  description: string | undefined
-  featureType: string | undefined
-  featureStart: number
-  featureEnd: number
-}) {
-  const { name, description, featureType, featureStart, featureEnd } = args
-  if (name) {
-    return `${name}${description ? ` - ${description}` : ''}`
-  }
-  return rangeLine(featureType, featureStart, featureEnd)
+// Hover tooltip = the display's `mouseover` config slot evaluated against the
+// full feature (the same slot the old SVG renderer used on the main thread), so
+// a custom override — including one calling a plugin-registered jexl function —
+// drives the text. Done worker-side because the full feature is already here;
+// shipping a large feature back just to format a string would be wasteful.
+function featureTooltip(feature: Feature, ctx: RenderContext) {
+  return String(readConfigValue(ctx.config, 'mouseover', feature, ctx.jexl) ?? '')
 }
 
 function boxColor(feature: Feature, ctx: RenderContext) {
@@ -199,11 +170,17 @@ function boxColor(feature: Feature, ctx: RenderContext) {
     config: ctx.config,
     colorByCDS: ctx.colorByCDS,
     theme: ctx.theme,
+    jexl: ctx.jexl,
   })
 }
 
 function strokeColor(feature: Feature, ctx: RenderContext) {
-  return getStrokeColor({ feature, config: ctx.config, theme: ctx.theme })
+  return getStrokeColor({
+    feature,
+    config: ctx.config,
+    theme: ctx.theme,
+    jexl: ctx.jexl,
+  })
 }
 
 // CDS segments in transcription order (ascending genomic start on +, descending
@@ -369,15 +346,7 @@ function processTranscriptLayout(
   const transcriptStart = transcriptFeature.get('start')
   const transcriptEnd = transcriptFeature.get('end')
   const transcriptType = transcriptFeature.get('type')
-  const parentName = getFeatureName(parentFeature)
   const transcriptName = getFeatureName(transcriptFeature)
-  const tooltip = buildTranscriptTooltip({
-    parentName,
-    transcriptName,
-    transcriptType,
-    transcriptStart,
-    transcriptEnd,
-  })
 
   collector.subfeatureInfos.push({
     kind: 'subfeature',
@@ -389,7 +358,6 @@ function processTranscriptLayout(
     topPx: transcriptTopPx,
     bottomPx: transcriptTopPx + transcript.totalLayoutHeight,
     displayLabel: transcriptName,
-    tooltip,
   })
 
   const { config } = ctx
@@ -399,7 +367,6 @@ function processTranscriptLayout(
       featureHeight: transcript.height,
       subfeatureLabels: config.subfeatureLabels,
       parentFeatureId: parentFeature.id(),
-      tooltip,
     })
     collector.floatingLabelsData[transcriptFeature.id()] = {
       featureId: transcriptFeature.id(),
@@ -451,13 +418,6 @@ function processFeatureRecord(
   }
 
   const featureType = feature.get('type')
-  const tooltip = buildFeatureTooltip({
-    name,
-    description,
-    featureType,
-    featureStart,
-    featureEnd,
-  })
 
   collector.flatbushItems.push({
     kind: 'feature',
@@ -468,7 +428,7 @@ function processFeatureRecord(
     topPx: 0,
     bottomPx: layout.height,
     featureHeightPx: layout.height,
-    tooltip,
+    tooltip: featureTooltip(feature, ctx),
     name,
     strand: strand !== 0 ? strand : undefined,
   })
@@ -569,12 +529,14 @@ export function collectRenderData(
   theme: Theme,
   colorByCDS: boolean,
   peptideDataMap?: Map<string, PeptideData>,
+  jexl?: JexlInstance,
 ) {
   const ctx: RenderContext = {
     config,
     theme,
     colorByCDS,
     peptideDataMap,
+    jexl,
   }
 
   const collector: Collector = {

@@ -264,11 +264,13 @@ const FeatureBody = observer(function FeatureBody({
     setClientXY([e.clientX, e.clientY])
     const result = hitTestAtEvent(e)
     if (result.feature) {
-      const sub = result.subfeature
+      // One tooltip per top-level feature (the resolved `mouseover` slot),
+      // shared by the glyph, its subfeatures, and its label — they can't
+      // diverge. subfeatureId is still tracked for selection/highlight.
       model.setHover(
         result.feature.featureId,
-        sub?.featureId ?? null,
-        sub ? (sub.tooltip ?? sub.type) : result.feature.tooltip,
+        result.subfeature?.featureId ?? null,
+        result.feature.tooltip,
       )
     } else {
       model.clearHover()

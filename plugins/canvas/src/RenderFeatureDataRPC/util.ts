@@ -5,6 +5,7 @@ import { THEME_DERIVED_COLOR, readConfigValue } from './renderConfig.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 const MAX_LABEL_LENGTH = 50
 const UTR_REGEX = /(\bUTR|_UTR|untranslated[_\s]region)\b/i
@@ -62,15 +63,17 @@ export function getBoxColor({
   config,
   colorByCDS,
   theme,
+  jexl,
 }: {
   feature: Feature
   config: DisplayConfig
   colorByCDS: boolean
   theme: Theme
+  jexl?: JexlInstance
 }) {
   let fill = isUTR(feature)
-    ? readConfigValue<string>(config, 'utrColor', feature)
-    : readConfigValue<string>(config, 'color', feature)
+    ? readConfigValue<string>(config, 'utrColor', feature, jexl)
+    : readConfigValue<string>(config, 'color', feature, jexl)
 
   const featureStrand = feature.get('strand')
   const featurePhase = feature.get('phase')
@@ -102,12 +105,14 @@ export function getStrokeColor({
   feature,
   config,
   theme,
+  jexl,
 }: {
   feature: Feature
   config: DisplayConfig
   theme: Theme
+  jexl?: JexlInstance
 }) {
-  const c = readConfigValue<string>(config, 'connectorColor', feature)
+  const c = readConfigValue<string>(config, 'connectorColor', feature, jexl)
   return c === THEME_DERIVED_COLOR
     ? stripAlpha(theme.palette.text.secondary)
     : c

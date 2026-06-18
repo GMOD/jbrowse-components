@@ -162,7 +162,6 @@ export interface SubfeatureInfo extends HitItemBase {
   kind: 'subfeature'
   parentFeatureId: string
   displayLabel?: string
-  tooltip?: string
 }
 
 export interface FeatureLabelData {
@@ -174,7 +173,7 @@ export interface FeatureLabelData {
   nameLabel?: LabelItem
   descriptionLabel?: LabelItem
   parentFeatureId?: string
-  subfeatureLabel?: LabelItem & { isOverlay: boolean; tooltip: string }
+  subfeatureLabel?: LabelItem & { isOverlay: boolean }
 }
 
 // Returns the max rendered width of any label that will actually display for

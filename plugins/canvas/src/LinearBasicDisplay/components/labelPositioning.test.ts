@@ -126,7 +126,6 @@ describe('forEachRenderedLabel', () => {
         subfeatureLabel: {
           ...makeLabel({ text: 'sub' }),
           isOverlay: true,
-          tooltip: '',
         },
       }),
     })

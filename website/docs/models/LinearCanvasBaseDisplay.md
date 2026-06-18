@@ -192,6 +192,15 @@ number | undefined
 userFeatureDensityLimit: undefined as number | undefined
 ```
 
+#### volatile: byteEstimateVisibleBp
+
+```js
+// type signature
+number | undefined
+// code
+byteEstimateVisibleBp: undefined as number | undefined
+```
+
 #### volatile: heightBeforeExpand
 
 ```js
@@ -399,6 +408,21 @@ Set<number>
 }
 ```
 
+#### getter: estimatedVisibleBytes
+
+The cached byte estimate scaled from the span it was measured over
+(`byteEstimateVisibleBp`) to the currently visible span. The estimate is roughly
+proportional to span, so scaling makes it a pure function of the current view —
+mirroring densityTooLarge. Crucially it self-releases on zoom-in: without
+scaling, a large zoomed-out estimate stays above the limit forever and gates
+refetch (FetchVisibleRegions won't re-estimate while regionTooLarge holds) — a
+permanently stuck banner.
+
+```js
+// type
+number | undefined
+```
+
 #### getter: bytesEstimateTooLarge
 
 ```js
@@ -551,20 +575,20 @@ colorBySubMenuItems: () => { label: string; type: "radio"; checked: boolean; onC
 
 #### method: colorMenuItems
 
-Color-related track menu entries. Default surfaces the solid+UTR color picker
-alongside "Color by..."; subclasses (e.g. variants) override to drop the
-gene-oriented UTR picker and show only "Color by...".
+Color-related track menu entries: a single "Color by..." entry whose "Solid
+color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants)
+override to drop the gene-oriented UTR picker.
 
 ```js
 // type signature
-colorMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; })[]
+colorMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; }[]
 ```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
+trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; })[]
 ```
 
 ### LinearCanvasBaseDisplay - Actions
@@ -784,6 +808,16 @@ reload: () => Promise<void>
 ```js
 // type signature
 fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => void
+```
+
+#### action: setFeatureDensityStats
+
+Records the span the byte estimate was measured at so `estimatedVisibleBytes`
+can scale it to the current view (see `byteEstimateVisibleBp`).
+
+```js
+// type signature
+setFeatureDensityStats: (stats?: FeatureDensityStats | undefined) => void
 ```
 
 #### action: clearStaleDensityState

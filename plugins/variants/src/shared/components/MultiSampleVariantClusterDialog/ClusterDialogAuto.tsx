@@ -5,6 +5,7 @@ import {
   getContainingView,
   getSession,
   isAbortException,
+  statusMessageText,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -16,6 +17,7 @@ import { observer } from 'mobx-react'
 import { expandSourcesToHaplotypes } from '../../getSources.ts'
 
 import type { ReducedModel } from './types.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -98,8 +100,8 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                     stopToken,
                     renderingMode,
                     sampleInfo,
-                    statusCallback: (arg: string) => {
-                      setProgress(arg)
+                    statusCallback: (status: RpcStatus) => {
+                      setProgress(statusMessageText(status) ?? '')
                     },
                   },
                 )

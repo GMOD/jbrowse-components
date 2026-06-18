@@ -23,7 +23,7 @@ import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
 export type FeatureGenotypeInfo = VariantFeatureInfo
 
@@ -79,12 +79,14 @@ export function computeVariantCells({
   renderingMode,
   referenceDrawingMode,
   genotypesCache,
+  report,
 }: {
   mafs: MAFFilteredFeature[]
   sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode: string
   genotypesCache: Map<string, Record<string, string>>
+  report?: ProgressReporter
 }): VariantCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
   const rawColorCache = new Map<number, string>()
@@ -142,6 +144,7 @@ export function computeVariantCells({
 
   let featureIdx = 0
   for (const { feature, mostFrequentAlt } of mafs) {
+    report?.(featureIdx)
     const featureId = feature.id()
     const start = feature.get('start')
     const end = feature.get('end')

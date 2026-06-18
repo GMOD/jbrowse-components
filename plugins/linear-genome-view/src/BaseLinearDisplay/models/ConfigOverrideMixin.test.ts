@@ -187,7 +187,7 @@ describe('ConfigOverrideMixin — getConfWithOverride', () => {
     expect(model.getConfWithOverride('color')).toBe('blue')
   })
 
-  it('an array-typed slot is returned as a plain, clonable array, not a live MST node', () => {
+  it('an array-typed slot is returned as a plain, cloneable array, not a live MST node', () => {
     const model = TestModelWithConfig.create({})
     const tags = model.getConfWithOverride('tags')
     expect(tags).toEqual(['a', 'b'])

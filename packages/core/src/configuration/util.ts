@@ -351,13 +351,16 @@ function resolveConfigValue(
 /**
  * Read a value from a plain config snapshot object. Automatically evaluates
  * "jexl:..." strings per-feature. Works without MST — intended for use in
- * rendering code (GPU, Canvas2D, workers).
+ * rendering code (GPU, Canvas2D, workers). Pass the worker pluginManager's jexl
+ * instance to make plugin-registered jexl functions available (e.g. a custom
+ * `mouseover` slot); omit it to use the default instance.
  */
 export function readConfigValue<T>(
   config: Record<string, unknown>,
   key: string | string[],
   feature: Feature,
+  jexl?: JexlInstance,
 ) {
   const raw = resolveConfigValue(config, key)
-  return (isCallbackValue(raw) ? evaluateJexl(raw, { feature }) : raw) as T
+  return (isCallbackValue(raw) ? evaluateJexl(raw, { feature }, jexl) : raw) as T
 }

@@ -1,28 +1,61 @@
-// Tests for logic extracted from executeRenderFeatureData.ts.
+import { buildFeatureAdmission } from './featureAdmission.ts'
+import { mockDisplayConfig } from './testUtils.ts'
 
-// Mirrors the showOnlyGenes filter in executeRenderFeatureData:
-//   featuresArray.filter(f =>
-//     ['gene', 'mRNA', 'transcript', 'CDS'].includes(f.get('type'))
-//   )
-function passesGeneFilter(type: string) {
-  return ['gene', 'mRNA', 'transcript', 'CDS'].includes(type)
+import type { Feature } from '@jbrowse/core/util'
+
+function feat(type: string, attrs: Record<string, unknown> = {}): Feature {
+  const map: Record<string, unknown> = { type, ...attrs }
+  return { get: (k: string) => map[k], id: () => String(map.id ?? type) } as Feature
 }
 
-describe('showOnlyGenes type filter', () => {
-  it('keeps top-level gene-like types', () => {
-    expect(passesGeneFilter('gene')).toBe(true)
-    expect(passesGeneFilter('mRNA')).toBe(true)
-    expect(passesGeneFilter('transcript')).toBe(true)
-    expect(passesGeneFilter('CDS')).toBe(true)
+describe('buildFeatureAdmission', () => {
+  it('admits everything when no filters and showOnlyGenes is off', () => {
+    const admit = buildFeatureAdmission({ config: mockDisplayConfig() })
+    expect(admit(feat('gene'))).toBe(true)
+    expect(admit(feat('region'))).toBe(true)
   })
 
-  it('filters out subfeature and non-gene types', () => {
-    expect(passesGeneFilter('exon')).toBe(false)
-    expect(passesGeneFilter('UTR')).toBe(false)
-    expect(passesGeneFilter('three_prime_UTR')).toBe(false)
-    expect(passesGeneFilter('five_prime_UTR')).toBe(false)
-    expect(passesGeneFilter('intron')).toBe(false)
-    expect(passesGeneFilter('region')).toBe(false)
-    expect(passesGeneFilter('match')).toBe(false)
+  it('applies config jexlFilters (slot strings carry no jexl: prefix)', () => {
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig({
+        jexlFilters: [`get(feature,'type')=='gene'`],
+      }),
+    })
+    expect(admit(feat('gene'))).toBe(true)
+    expect(admit(feat('mRNA'))).toBe(false)
+  })
+
+  it('ANDs multiple filters together', () => {
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig({
+        jexlFilters: [
+          `get(feature,'type')=='gene'`,
+          `get(feature,'score')>5`,
+        ],
+      }),
+    })
+    expect(admit(feat('gene', { score: 10 }))).toBe(true)
+    expect(admit(feat('gene', { score: 1 }))).toBe(false)
+  })
+
+  it('showOnlyGenes keeps gene-like top-level types and drops the rest', () => {
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig({ transcriptTypes: ['mRNA'] }),
+      showOnlyGenes: true,
+    })
+    expect(admit(feat('gene'))).toBe(true)
+    expect(admit(feat('mRNA'))).toBe(true)
+    expect(admit(feat('exon'))).toBe(false)
+    expect(admit(feat('region'))).toBe(false)
+  })
+
+  it('showOnlyGenes and jexlFilters both apply (admission is their AND)', () => {
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig({ jexlFilters: [`get(feature,'score')>5`] }),
+      showOnlyGenes: true,
+    })
+    expect(admit(feat('gene', { score: 10 }))).toBe(true)
+    expect(admit(feat('gene', { score: 1 }))).toBe(false)
+    expect(admit(feat('exon', { score: 10 }))).toBe(false)
   })
 })

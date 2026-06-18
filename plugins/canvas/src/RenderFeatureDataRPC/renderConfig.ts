@@ -25,6 +25,12 @@ export interface DisplayConfig {
   subParts: string
   impliedUTRs: boolean
   displayDirectionalChevrons: boolean
+  // hover tooltip slot — raw `jexl:...` string (or a plain string), evaluated
+  // per-feature in the worker
+  mouseover: string
+  // feature-admission filters — jexl expression strings WITHOUT the `jexl:`
+  // prefix (deferred-evaluation convention of the config slot)
+  jexlFilters: string[]
   featureHeight: number
   color: string
   connectorColor: string

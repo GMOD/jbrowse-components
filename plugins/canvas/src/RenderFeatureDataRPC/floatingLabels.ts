@@ -51,13 +51,11 @@ export function createTranscriptFloatingLabel({
   featureHeight,
   subfeatureLabels,
   parentFeatureId,
-  tooltip,
 }: {
   displayLabel: string
   featureHeight: number
   subfeatureLabels: string
   parentFeatureId: string
-  tooltip: string
 }) {
   const truncatedName = truncateLabel(displayLabel)
 
@@ -71,7 +69,6 @@ export function createTranscriptFloatingLabel({
       color: FEATURE_NAME_COLOR,
       textWidth: measureText(truncatedName, LABEL_FONT_SIZE),
       isOverlay,
-      tooltip,
     },
     parentFeatureId,
   }

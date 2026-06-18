@@ -108,6 +108,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       const { refName, start, end } = query
       const { vcf, parser } = await this.configure(opts)
 
+      const { onProgress } = opts
       await updateStatus('Downloading variants', opts.statusCallback, () =>
         vcf.getLines(refName, start, end, {
           lineCallback: (line, fileOffset) => {
@@ -120,6 +121,11 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
             )
           },
           ...opts,
+          onProgress: onProgress
+            ? (current, total) => {
+                onProgress({ message: 'Downloading variants', current, total })
+              }
+            : undefined,
         }),
       )
       observer.complete()

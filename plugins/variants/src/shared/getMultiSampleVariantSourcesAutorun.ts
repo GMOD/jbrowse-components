@@ -7,6 +7,7 @@ import { autorun } from 'mobx'
 
 import type { Source } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -17,7 +18,7 @@ export function getMultiSampleVariantSourcesAutorun(self: {
   reloadCount: number
   setSourcesLoading: (aborter: StopToken) => void
   setError: (error?: unknown) => void
-  setStatusMessage: (str: string) => void
+  setStatusMessage: (status?: RpcStatus) => void
   setSources: (sources: Source[]) => void
 }) {
   addDisposer(
@@ -46,9 +47,9 @@ export function getMultiSampleVariantSourcesAutorun(self: {
               sessionId,
               adapterConfig,
               stopToken,
-              statusCallback: (arg: string) => {
+              statusCallback: (status: RpcStatus) => {
                 if (isAlive(self)) {
-                  self.setStatusMessage(arg)
+                  self.setStatusMessage(status)
                 }
               },
             },

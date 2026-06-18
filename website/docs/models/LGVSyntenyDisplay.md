@@ -230,7 +230,7 @@ contextMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconType
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
+trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; })[]
 ```
 
 ### LGVSyntenyDisplay - Actions

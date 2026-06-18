@@ -1,7 +1,8 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { updateStatus } from '@jbrowse/core/util'
+import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { firstValueFrom, toArray } from 'rxjs'
+
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
@@ -15,6 +16,7 @@ import type { MAFFilteredFeature } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { SampleInfo } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { ProgressReporter } from '@jbrowse/core/util'
 
 export interface SimplifiedVariantFeature {
   id: string
@@ -48,13 +50,16 @@ export type CellDataResult =
 function computeSampleInfo(
   mafs: MAFFilteredFeature[],
   genotypesCache: Map<string, Record<string, string>>,
+  report?: ProgressReporter,
 ) {
   const sampleInfo: Record<string, SampleInfo> = {}
   let hasPhased = false
   let hasSecondaryAlt = false
   let hasUnphased = false
 
+  let featureIdx = 0
   for (const { feature } of mafs) {
+    report?.(featureIdx++)
     const alt = feature.get('ALT') as string[] | undefined
     if (alt && alt.length > 1) {
       hasSecondaryAlt = true
@@ -135,6 +140,27 @@ function computeSampleInfo(
   }
 }
 
+/**
+ * Drive a determinate `report` across a per-region map, advancing a running
+ * offset so the progress bar reflects features completed across all regions.
+ * `fn` receives a region-local reporter that maps 0-based region indices back
+ * onto the global feature count.
+ */
+function forEachRegionWithProgress<T>(
+  perRegion: Iterable<[number, T[]]>,
+  report: ProgressReporter,
+  fn: (regionNum: number, items: T[], report: ProgressReporter) => void,
+) {
+  let base = 0
+  for (const [regionNum, items] of perRegion) {
+    const offset = base
+    fn(regionNum, items, cur => {
+      report(offset + cur)
+    })
+    base += items.length
+  }
+}
+
 export async function executeVariantCellData({
   pluginManager,
   args,
@@ -153,6 +179,7 @@ export async function executeVariantCellData({
     adapterConfig,
     sessionId,
     statusCallback,
+    stopToken,
     displayedRegionIndices,
   } = args
 
@@ -178,7 +205,12 @@ export async function executeVariantCellData({
     statusCallback,
     () =>
       firstValueFrom(
-        adapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+        adapter
+          .getFeaturesInMultipleRegions(regions, {
+            ...args,
+            onProgress: statusCallback,
+          })
+          .pipe(toArray()),
       ),
   )
 
@@ -221,32 +253,55 @@ export async function executeVariantCellData({
     }
   }
 
+  const progressOpts = {
+    statusCallback,
+    stopToken,
+  }
+
   let mafs: MAFFilteredFeature[]
   let perRegionMafs: Map<number, MAFFilteredFeature[]> | undefined
   if (perRegionRawFeatures) {
-    perRegionMafs = new Map()
+    perRegionMafs = await withProgress(
+      { ...progressOpts, label: 'Filtering variants', total: rawFeatures.length },
+      report => {
+        const result = new Map<number, MAFFilteredFeature[]>()
+        forEachRegionWithProgress(
+          perRegionRawFeatures,
+          report,
+          (regionNum, features, report) => {
+            result.set(
+              regionNum,
+              getFeaturesThatPassMinorAlleleFrequencyFilter({
+                features,
+                minorAlleleFrequencyFilter,
+                filterChain: filters,
+                genotypesCache,
+                report,
+              }),
+            )
+          },
+        )
+        return result
+      },
+    )
     const allMafs: MAFFilteredFeature[] = []
-    for (const [regionNum, features] of perRegionRawFeatures) {
-      const regionMafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
-        features,
-        minorAlleleFrequencyFilter,
-        filterChain: filters,
-        genotypesCache,
-      })
-      perRegionMafs.set(regionNum, regionMafs)
+    for (const regionMafs of perRegionMafs.values()) {
       for (const maf of regionMafs) {
         allMafs.push(maf)
       }
     }
     mafs = allMafs
   } else {
-    mafs = await updateStatus('Filtering variants', statusCallback, () =>
-      getFeaturesThatPassMinorAlleleFrequencyFilter({
-        features: rawFeatures,
-        minorAlleleFrequencyFilter,
-        filterChain: filters,
-        genotypesCache,
-      }),
+    mafs = await withProgress(
+      { ...progressOpts, label: 'Filtering variants', total: rawFeatures.length },
+      report =>
+        getFeaturesThatPassMinorAlleleFrequencyFilter({
+          features: rawFeatures,
+          minorAlleleFrequencyFilter,
+          filterChain: filters,
+          genotypesCache,
+          report,
+        }),
     )
   }
 
@@ -256,8 +311,9 @@ export async function executeVariantCellData({
     hasSecondaryAlt,
     hasUnphased,
     simplifiedFeatures,
-  } = await updateStatus('Computing sample info', statusCallback, () =>
-    computeSampleInfo(mafs, genotypesCache),
+  } = await withProgress(
+    { ...progressOpts, label: 'Computing sample info', total: mafs.length },
+    report => computeSampleInfo(mafs, genotypesCache, report),
   )
 
   // For phased mode: expand sources into per-haplotype rows. The client sends
@@ -270,21 +326,25 @@ export async function executeVariantCellData({
       : sources
 
   if (mode === 'regular') {
-    const perRegionCellData = await updateStatus(
-      'Computing variant cells',
-      statusCallback,
-      () => {
+    const perRegionCellData = await withProgress(
+      { ...progressOpts, label: 'Computing variant cells', total: mafs.length },
+      report => {
         if (perRegionMafs) {
           const result: Record<number, VariantCellData> = {}
-          for (const [regionNum, regionMafs] of perRegionMafs) {
-            result[regionNum] = computeVariantCells({
-              mafs: regionMafs,
-              sources: effectiveSources,
-              renderingMode,
-              referenceDrawingMode: referenceDrawingMode ?? 'skip',
-              genotypesCache,
-            })
-          }
+          forEachRegionWithProgress(
+            perRegionMafs,
+            report,
+            (regionNum, regionMafs, report) => {
+              result[regionNum] = computeVariantCells({
+                mafs: regionMafs,
+                sources: effectiveSources,
+                renderingMode,
+                referenceDrawingMode: referenceDrawingMode ?? 'skip',
+                genotypesCache,
+                report,
+              })
+            },
+          )
           return result
         }
         return {
@@ -294,6 +354,7 @@ export async function executeVariantCellData({
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             genotypesCache,
+            report,
           }),
         }
       },
@@ -326,15 +387,19 @@ export async function executeVariantCellData({
       transferables,
     )
   } else {
-    const cellData = await updateStatus(
-      'Computing variant matrix cells',
-      statusCallback,
-      () =>
+    const cellData = await withProgress(
+      {
+        ...progressOpts,
+        label: 'Computing variant matrix cells',
+        total: mafs.length,
+      },
+      report =>
         computeVariantMatrixCells({
           mafs,
           sources: effectiveSources,
           renderingMode,
           genotypesCache,
+          report,
         }),
     )
 

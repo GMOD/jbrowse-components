@@ -107,9 +107,9 @@ function initSession(
       // required shape is validated at runtime inside loadHubSpec
       void loadHubSpec({ ...sessionSource.hubSpec, sessionName }, pluginManager)
     } else if (sessionSource?.type === 'spec') {
-      // @ts-expect-error spec is dynamic JSON (Record<string,unknown>); the
-      // required shape is validated at runtime inside loadSessionSpec
       void loadSessionSpec(
+        // @ts-expect-error spec is dynamic JSON (Record<string,unknown>); the
+        // required shape is validated at runtime inside loadSessionSpec
         { ...sessionSource.spec, sessionName },
         pluginManager,
       )

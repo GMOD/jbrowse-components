@@ -1,5 +1,3 @@
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
-
 import {
   calculateAlleleCounts,
   calculateAlleleCountsFast,
@@ -9,7 +7,7 @@ import { getRawCallGenotype } from './rawGenotypes.ts'
 
 import type VcfFeature from '../VcfFeature/index.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
+import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
 export function calculateMinorAlleleFrequency(
   alleleCounts: Record<string, number>,
@@ -79,17 +77,18 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   features,
   minorAlleleFrequencyFilter,
   filterChain,
-  stopTokenCheck,
   genotypesCache,
+  report,
 }: {
   features: Iterable<Feature>
   minorAlleleFrequencyFilter: number
   filterChain?: SerializableFilterChain
-  stopTokenCheck?: LastStopTokenCheck
   genotypesCache?: Map<string, Record<string, string>>
+  report?: ProgressReporter
 }) {
   const results: MAFFilteredFeature[] = []
 
+  let featureIdx = 0
   for (const feature of features) {
     if (!filterChain || filterChain.passes(feature)) {
       const alleleCounts = computeAlleleCounts(feature, genotypesCache)
@@ -102,7 +101,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
         results.push({ feature, mostFrequentAlt })
       }
     }
-    checkStopToken2(stopTokenCheck)
+    report?.(featureIdx++)
   }
 
   return results

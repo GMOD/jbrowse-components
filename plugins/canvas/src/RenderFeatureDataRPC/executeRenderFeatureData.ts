@@ -10,6 +10,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { collectRenderData } from './collectRenderData.ts'
+import { buildFeatureAdmission } from './featureAdmission.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
@@ -58,39 +59,31 @@ export async function executeRenderFeatureData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  let featuresArray = await updateStatus(
+  const featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
     () => firstValueFrom(dataAdapter.getFeatures(region).pipe(toArray())),
   )
   checkStopToken2(stopTokenCheck)
 
-  if (showOnlyGenes) {
-    const geneLikeTypes = new Set<string>(
-      [
-        ...displayConfig.transcriptTypes,
-        ...displayConfig.containerTypes,
-        'gene',
-        'pseudogene',
-        'CDS',
-      ].map(t => t.toLowerCase()),
-    )
-    featuresArray = featuresArray.filter(f =>
-      geneLikeTypes.has((f.get('type') ?? '').toLowerCase()),
-    )
-  }
-
   // region.start / region.end are integer bp by contract — see
   // RenderFeatureDataArgs.region. No defensive rounding here.
 
-  // Dedup before density-gating: multiple adapter passes can yield the same
-  // feature id, and the returned featureCount is the dedup'd size — the gate
-  // must use the same count it reports so main-thread and worker decisions stay
-  // in sync.
+  // Feature admission (config jexlFilters + showOnlyGenes) runs before dedup and
+  // density-gating, so filtered-out features neither count toward density nor
+  // reach layout. Dedup before density-gating: multiple adapter passes can yield
+  // the same feature id, and the returned featureCount is the dedup'd size — the
+  // gate must use the same count it reports so main-thread and worker decisions
+  // stay in sync.
+  const admit = buildFeatureAdmission({
+    config: displayConfig,
+    jexl: pluginManager.jexl,
+    showOnlyGenes,
+  })
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {
     const id = f.id()
-    if (!features.has(id)) {
+    if (!features.has(id) && admit(f)) {
       features.set(id, f)
     }
   }
@@ -158,6 +151,7 @@ export async function executeRenderFeatureData({
         theme,
         !!colorByCDS,
         peptideDataMap,
+        pluginManager.jexl,
       ),
   )
 

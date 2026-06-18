@@ -15,7 +15,7 @@ import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
 type FeatureData = VariantFeatureInfo & { featureId: string }
 
@@ -49,11 +49,13 @@ export function computeVariantMatrixCells({
   sources,
   renderingMode,
   genotypesCache,
+  report,
 }: {
   mafs: MAFFilteredFeature[]
   sources: ProcessedSource[]
   renderingMode: string
   genotypesCache: Map<string, Record<string, string>>
+  report?: ProgressReporter
 }): MatrixCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
   const rawColorCache = new Map<number, string>()
@@ -93,6 +95,7 @@ export function computeVariantMatrixCells({
   const isPhasedMode = renderingMode === 'phased'
 
   for (let idx = 0; idx < numFeatures; idx++) {
+    report?.(idx)
     const { feature, mostFrequentAlt } = mafs[idx]!
     const featureId = feature.id()
     const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(

@@ -1,7 +1,7 @@
 import type { ProcessedSource, SampleInfo, Source } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Region, StopToken } from '@jbrowse/core/util'
+import type { Region, RpcStatus, StopToken } from '@jbrowse/core/util'
 
 interface BaseVariantRpcArgs {
   adapterConfig: AnyConfigurationModel
@@ -22,7 +22,7 @@ export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
 }
 
 export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
-  statusCallback: (arg: string) => void
+  statusCallback: (status: RpcStatus) => void
   sources: Source[]
   renderingMode?: string
   sampleInfo?: Record<string, SampleInfo>
@@ -34,7 +34,7 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
   referenceDrawingMode?: string
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]
-  statusCallback: (arg: string) => void
+  statusCallback: (status: RpcStatus) => void
 }
 
 export interface MultiSampleVariantGetSourcesArgs {
@@ -44,5 +44,5 @@ export interface MultiSampleVariantGetSourcesArgs {
   headers?: Record<string, string>
   regions?: Region[]
   bpPerPx?: number
-  statusCallback?: (arg: string) => void
+  statusCallback?: (status: RpcStatus) => void
 }

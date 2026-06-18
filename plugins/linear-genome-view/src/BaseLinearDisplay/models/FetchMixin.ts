@@ -1,7 +1,12 @@
-import { isAbortException } from '@jbrowse/core/util'
+import {
+  isAbortException,
+  statusFraction,
+  statusMessageText,
+} from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface FetchContext {
@@ -70,6 +75,13 @@ export default function FetchMixin() {
        * work-in-progress status string
        */
       statusMessage: undefined as string | undefined,
+
+      /**
+       * #volatile
+       * determinate progress fraction [0,1] for the current status, or
+       * undefined when the in-flight phase is indeterminate
+       */
+      statusProgress: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -90,8 +102,9 @@ export default function FetchMixin() {
       /**
        * #action
        */
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
+      setStatusMessage(status?: RpcStatus) {
+        self.statusMessage = statusMessageText(status)
+        self.statusProgress = statusFraction(status)
       },
       /**
        * #action
@@ -103,6 +116,7 @@ export default function FetchMixin() {
           stopStopToken(self.activeStopToken)
           self.activeStopToken = undefined
           self.statusMessage = undefined
+          self.statusProgress = undefined
         }
         self.fetchGeneration++
       },
@@ -140,6 +154,7 @@ export default function FetchMixin() {
           if (!isStale()) {
             self.activeStopToken = undefined
             self.statusMessage = undefined
+            self.statusProgress = undefined
             self.fetchGeneration++
           }
         }

@@ -12,6 +12,8 @@ export function mockDisplayConfig(
     subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
     impliedUTRs: false,
     displayDirectionalChevrons: true,
+    mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
+    jexlFilters: [],
     color: 'goldenrod',
     connectorColor: '#f0f',
     utrColor: '#357089',

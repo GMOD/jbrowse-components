@@ -1224,7 +1224,7 @@ Track menu items
 
 ```js
 // type signature
-trackMenuItems: () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
 ```
 
 #### method: contextMenuItems
@@ -1413,9 +1413,16 @@ toggleGroupCollapsed: (key: string) => void
 #### action: resizeGroupHeight
 
 Drag a stacked group's pileup band taller/shorter by `dy` px, capping how many
-rows that group lays out. Based on the section's current displayed height so
-dragging a truncated group expands it toward its full read set and dragging
-shrinks it; one row is the floor.
+rows that group lays out; one row is the floor.
+
+The override accumulates continuously across drag frames. It must not re-seed
+from the section's displayed `pileupHeight` each frame: that height is
+row-snapped (`maxY * rowHeight`) and content-capped, so a sub-row `dy` rounds
+away to nothing while a sub-row negative `dy` snaps off a whole row — the drag
+stutters and biases toward shrinking. Instead grow the stored px value directly,
+seeding from the displayed height only on the first frame. When the override
+already runs past the real content (displayed height < override), clamp back to
+one row of headroom so reversing the drag responds immediately.
 
 ```js
 // type signature
