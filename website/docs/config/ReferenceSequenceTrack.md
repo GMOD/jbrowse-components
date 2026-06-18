@@ -1,6 +1,7 @@
 ---
 id: referencesequencetrack
 title: ReferenceSequenceTrack
+sidebar_label: Track -> ReferenceSequenceTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

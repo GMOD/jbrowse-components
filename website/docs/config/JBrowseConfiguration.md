@@ -1,6 +1,7 @@
 ---
 id: jbrowseconfiguration
 title: JBrowseConfiguration
+sidebar_label: General -> JBrowseConfiguration
 ---
 
 Note: this document is automatically generated from configuration objects in our

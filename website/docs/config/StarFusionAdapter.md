@@ -1,6 +1,7 @@
 ---
 id: starfusionadapter
 title: StarFusionAdapter
+sidebar_label: Adapter -> StarFusionAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: bigmafadapter
 title: BigMafAdapter
+sidebar_label: Adapter -> BigMafAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

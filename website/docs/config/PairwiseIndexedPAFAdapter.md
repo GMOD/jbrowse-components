@@ -1,6 +1,7 @@
 ---
 id: pairwiseindexedpafadapter
 title: PairwiseIndexedPAFAdapter
+sidebar_label: Adapter -> PairwiseIndexedPAFAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

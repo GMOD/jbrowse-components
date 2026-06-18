@@ -1,6 +1,7 @@
 ---
 id: baseinternetaccount
 title: BaseInternetAccount
+sidebar_label: Internet Account -> BaseInternetAccount
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: jbrowserootconfig
 title: JBrowseRootConfig
+sidebar_label: General -> JBrowseRootConfig
 ---
 
 Note: this document is automatically generated from configuration objects in our

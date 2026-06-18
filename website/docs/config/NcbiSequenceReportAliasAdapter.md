@@ -1,6 +1,7 @@
 ---
 id: ncbisequencereportaliasadapter
 title: NcbiSequenceReportAliasAdapter
+sidebar_label: Adapter -> NcbiSequenceReportAliasAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

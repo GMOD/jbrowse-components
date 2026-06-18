@@ -1,6 +1,7 @@
 ---
 id: sequencesearchadapter
 title: SequenceSearchAdapter
+sidebar_label: Adapter -> SequenceSearchAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: alignmentstrack
 title: AlignmentsTrack
+sidebar_label: Track -> AlignmentsTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

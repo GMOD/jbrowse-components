@@ -1,6 +1,7 @@
 ---
 id: jbrowse1textsearchadapter
 title: JBrowse1TextSearchAdapter
+sidebar_label: Adapter -> JBrowse1TextSearchAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

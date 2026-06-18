@@ -1,6 +1,7 @@
 ---
 id: plinkldtabixadapter
 title: PlinkLDTabixAdapter
+sidebar_label: Adapter -> PlinkLDTabixAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

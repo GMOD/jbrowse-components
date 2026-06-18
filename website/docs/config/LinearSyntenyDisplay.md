@@ -1,6 +1,7 @@
 ---
 id: linearsyntenydisplay
 title: LinearSyntenyDisplay
+sidebar_label: Display -> LinearSyntenyDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: linearbasicdisplay
 title: LinearBasicDisplay
+sidebar_label: Display -> LinearBasicDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

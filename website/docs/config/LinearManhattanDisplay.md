@@ -1,6 +1,7 @@
 ---
 id: linearmanhattandisplay
 title: LinearManhattanDisplay
+sidebar_label: Display -> LinearManhattanDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

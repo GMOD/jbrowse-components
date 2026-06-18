@@ -1,6 +1,7 @@
 ---
 id: bgzipfastaadapter
 title: BgzipFastaAdapter
+sidebar_label: Adapter -> BgzipFastaAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

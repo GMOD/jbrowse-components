@@ -1,6 +1,7 @@
 ---
 id: chromsizesadapter
 title: ChromSizesAdapter
+sidebar_label: Adapter -> ChromSizesAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

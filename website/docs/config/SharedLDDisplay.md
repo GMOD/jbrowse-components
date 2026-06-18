@@ -1,6 +1,7 @@
 ---
 id: sharedlddisplay
 title: SharedLDDisplay
+sidebar_label: Display -> SharedLDDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

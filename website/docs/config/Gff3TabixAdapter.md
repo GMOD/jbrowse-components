@@ -1,6 +1,7 @@
 ---
 id: gff3tabixadapter
 title: Gff3TabixAdapter
+sidebar_label: Adapter -> Gff3TabixAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

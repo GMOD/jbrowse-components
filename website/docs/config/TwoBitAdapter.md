@@ -1,6 +1,7 @@
 ---
 id: twobitadapter
 title: TwoBitAdapter
+sidebar_label: Adapter -> TwoBitAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

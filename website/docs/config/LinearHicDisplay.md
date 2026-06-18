@@ -1,6 +1,7 @@
 ---
 id: linearhicdisplay
 title: LinearHicDisplay
+sidebar_label: Display -> LinearHicDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

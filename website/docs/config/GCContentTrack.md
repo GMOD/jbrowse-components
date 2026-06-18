@@ -1,6 +1,7 @@
 ---
 id: gccontenttrack
 title: GCContentTrack
+sidebar_label: Track -> GCContentTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

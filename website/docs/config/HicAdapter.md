@@ -1,6 +1,7 @@
 ---
 id: hicadapter
 title: HicAdapter
+sidebar_label: Adapter -> HicAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

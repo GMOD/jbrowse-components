@@ -1,6 +1,7 @@
 ---
 id: multiquantitativetrack
 title: MultiQuantitativeTrack
+sidebar_label: Track -> MultiQuantitativeTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

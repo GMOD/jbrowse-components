@@ -1,6 +1,7 @@
 ---
 id: vcfadapter
 title: VcfAdapter
+sidebar_label: Adapter -> VcfAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

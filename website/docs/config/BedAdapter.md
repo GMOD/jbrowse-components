@@ -1,6 +1,7 @@
 ---
 id: bedadapter
 title: BedAdapter
+sidebar_label: Adapter -> BedAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

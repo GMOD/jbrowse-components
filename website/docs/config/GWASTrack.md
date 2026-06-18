@@ -1,6 +1,7 @@
 ---
 id: gwastrack
 title: GWASTrack
+sidebar_label: Track -> GWASTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

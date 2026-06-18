@@ -1,6 +1,7 @@
 ---
 id: hictrack
 title: HicTrack
+sidebar_label: Track -> HicTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

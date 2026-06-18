@@ -1,6 +1,7 @@
 ---
 id: vcftabixadapter
 title: VcfTabixAdapter
+sidebar_label: Adapter -> VcfTabixAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

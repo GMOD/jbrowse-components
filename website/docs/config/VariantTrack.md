@@ -1,6 +1,7 @@
 ---
 id: varianttrack
 title: VariantTrack
+sidebar_label: Track -> VariantTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: basetrack
 title: BaseTrack
+sidebar_label: Track -> BaseTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

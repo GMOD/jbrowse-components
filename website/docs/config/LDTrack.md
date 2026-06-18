@@ -1,6 +1,7 @@
 ---
 id: ldtrack
 title: LDTrack
+sidebar_label: Track -> LDTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

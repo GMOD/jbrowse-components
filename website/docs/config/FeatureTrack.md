@@ -1,6 +1,7 @@
 ---
 id: featuretrack
 title: FeatureTrack
+sidebar_label: Track -> FeatureTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

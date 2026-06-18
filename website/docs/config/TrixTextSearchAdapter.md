@@ -1,6 +1,7 @@
 ---
 id: trixtextsearchadapter
 title: TrixTextSearchAdapter
+sidebar_label: Adapter -> TrixTextSearchAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

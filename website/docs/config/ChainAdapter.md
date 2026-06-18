@@ -1,6 +1,7 @@
 ---
 id: chainadapter
 title: ChainAdapter
+sidebar_label: Adapter -> ChainAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

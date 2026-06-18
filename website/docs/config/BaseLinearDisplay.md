@@ -1,6 +1,7 @@
 ---
 id: baselineardisplay
 title: BaseLinearDisplay
+sidebar_label: Display -> BaseLinearDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: bigbedadapter
 title: BigBedAdapter
+sidebar_label: Adapter -> BigBedAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

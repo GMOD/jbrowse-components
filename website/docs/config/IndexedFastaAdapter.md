@@ -1,6 +1,7 @@
 ---
 id: indexedfastaadapter
 title: IndexedFastaAdapter
+sidebar_label: Adapter -> IndexedFastaAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

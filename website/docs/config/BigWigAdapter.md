@@ -1,6 +1,7 @@
 ---
 id: bigwigadapter
 title: BigWigAdapter
+sidebar_label: Adapter -> BigWigAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

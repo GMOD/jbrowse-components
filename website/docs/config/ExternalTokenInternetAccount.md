@@ -1,6 +1,7 @@
 ---
 id: externaltokeninternetaccount
 title: ExternalTokenInternetAccount
+sidebar_label: Internet Account -> ExternalTokenInternetAccount
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: quantitativetrack
 title: QuantitativeTrack
+sidebar_label: Track -> QuantitativeTrack
 ---
 
 Note: this document is automatically generated from configuration objects in our

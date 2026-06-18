@@ -1,6 +1,7 @@
 ---
 id: baseconnection
 title: BaseConnection
+sidebar_label: Connection -> BaseConnection
 ---
 
 Note: this document is automatically generated from configuration objects in our

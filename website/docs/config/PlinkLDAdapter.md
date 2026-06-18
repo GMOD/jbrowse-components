@@ -1,6 +1,7 @@
 ---
 id: plinkldadapter
 title: PlinkLDAdapter
+sidebar_label: Adapter -> PlinkLDAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

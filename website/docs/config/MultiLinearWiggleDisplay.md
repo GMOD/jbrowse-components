@@ -1,6 +1,7 @@
 ---
 id: multilinearwiggledisplay
 title: MultiLinearWiggleDisplay
+sidebar_label: Display -> MultiLinearWiggleDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

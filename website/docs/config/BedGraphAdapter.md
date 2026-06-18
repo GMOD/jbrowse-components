@@ -1,6 +1,7 @@
 ---
 id: bedgraphadapter
 title: BedGraphAdapter
+sidebar_label: Adapter -> BedGraphAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

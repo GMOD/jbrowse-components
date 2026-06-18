@@ -1,6 +1,7 @@
 ---
 id: gff3adapter
 title: Gff3Adapter
+sidebar_label: Adapter -> Gff3Adapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

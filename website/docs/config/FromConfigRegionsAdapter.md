@@ -1,6 +1,7 @@
 ---
 id: fromconfigregionsadapter
 title: FromConfigRegionsAdapter
+sidebar_label: Adapter -> FromConfigRegionsAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

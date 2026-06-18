@@ -1,6 +1,7 @@
 ---
 id: deltaadapter
 title: DeltaAdapter
+sidebar_label: Adapter -> DeltaAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

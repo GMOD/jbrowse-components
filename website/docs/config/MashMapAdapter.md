@@ -1,6 +1,7 @@
 ---
 id: mashmapadapter
 title: MashMapAdapter
+sidebar_label: Adapter -> MashMapAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

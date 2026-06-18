@@ -1,6 +1,7 @@
 ---
 id: multiwiggleadapter
 title: MultiWiggleAdapter
+sidebar_label: Adapter -> MultiWiggleAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

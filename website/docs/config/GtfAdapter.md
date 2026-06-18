@@ -1,6 +1,7 @@
 ---
 id: gtfadapter
 title: GtfAdapter
+sidebar_label: Adapter -> GtfAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

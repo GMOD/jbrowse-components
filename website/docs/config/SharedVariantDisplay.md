@@ -1,6 +1,7 @@
 ---
 id: sharedvariantdisplay
 title: SharedVariantDisplay
+sidebar_label: Display -> SharedVariantDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

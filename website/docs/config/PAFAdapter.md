@@ -1,6 +1,7 @@
 ---
 id: pafadapter
 title: PAFAdapter
+sidebar_label: Adapter -> PAFAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

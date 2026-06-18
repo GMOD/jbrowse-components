@@ -1,6 +1,7 @@
 ---
 id: linearmultisamplevariantdisplay
 title: LinearMultiSampleVariantDisplay
+sidebar_label: Display -> LinearMultiSampleVariantDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: lineargenomeviewconfigschema
 title: LinearGenomeViewConfigSchema
+sidebar_label: General -> LinearGenomeViewConfigSchema
 ---
 
 Note: this document is automatically generated from configuration objects in our

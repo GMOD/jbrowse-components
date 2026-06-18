@@ -1,6 +1,7 @@
 ---
 id: cytobandadapter
 title: CytobandAdapter
+sidebar_label: Adapter -> CytobandAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

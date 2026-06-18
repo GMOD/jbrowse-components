@@ -1,6 +1,7 @@
 ---
 id: mcscananchorsadapter
 title: MCScanAnchorsAdapter
+sidebar_label: Adapter -> MCScanAnchorsAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

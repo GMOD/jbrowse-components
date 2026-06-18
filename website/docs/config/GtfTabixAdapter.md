@@ -1,6 +1,7 @@
 ---
 id: gtftabixadapter
 title: GtfTabixAdapter
+sidebar_label: Adapter -> GtfTabixAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

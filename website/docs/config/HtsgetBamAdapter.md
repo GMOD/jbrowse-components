@@ -1,6 +1,7 @@
 ---
 id: htsgetbamadapter
 title: HtsgetBamAdapter
+sidebar_label: Adapter -> HtsgetBamAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

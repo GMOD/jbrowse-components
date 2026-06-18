@@ -151,6 +151,25 @@ function inheritedSlotsSection(bases: BaseRef[]) {
     : ''
 }
 
+// Buckets configs into a sidebar category by name suffix, so the flat
+// alphabetically-sorted sidebar list (website/src/lib/docs-sidebar.ts) groups
+// related configs together once sidebar_label is prefixed with this.
+function configCategory(name: string): string {
+  if (name.endsWith('Adapter')) {
+    return 'Adapter'
+  } else if (name.endsWith('Track')) {
+    return 'Track'
+  } else if (name.endsWith('Display')) {
+    return 'Display'
+  } else if (name.endsWith('Connection')) {
+    return 'Connection'
+  } else if (name.endsWith('InternetAccount')) {
+    return 'Internet Account'
+  } else {
+    return 'General'
+  }
+}
+
 function renderConfig(
   {
     header,
@@ -205,6 +224,7 @@ function renderConfig(
   return `---
 id: ${header.id}
 title: ${header.name}
+sidebar_label: ${configCategory(header.name)} -> ${header.name}
 ---
 
 Note: this document is automatically generated from configuration objects in

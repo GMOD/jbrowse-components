@@ -1,6 +1,7 @@
 ---
 id: linearreferencesequencedisplay
 title: LinearReferenceSequenceDisplay
+sidebar_label: Display -> LinearReferenceSequenceDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: linearpairedarcdisplay
 title: LinearPairedArcDisplay
+sidebar_label: Display -> LinearPairedArcDisplay
 ---
 
 Note: this document is automatically generated from configuration objects in our

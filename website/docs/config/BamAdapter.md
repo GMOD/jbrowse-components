@@ -1,6 +1,7 @@
 ---
 id: bamadapter
 title: BamAdapter
+sidebar_label: Adapter -> BamAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

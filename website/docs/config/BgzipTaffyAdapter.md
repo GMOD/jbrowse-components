@@ -1,6 +1,7 @@
 ---
 id: bgziptaffyadapter
 title: BgzipTaffyAdapter
+sidebar_label: Adapter -> BgzipTaffyAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

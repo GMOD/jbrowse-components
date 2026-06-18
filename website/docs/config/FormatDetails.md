@@ -1,6 +1,7 @@
 ---
 id: formatdetails
 title: FormatDetails
+sidebar_label: General -> FormatDetails
 ---
 
 Note: this document is automatically generated from configuration objects in our

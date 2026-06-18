@@ -1,6 +1,7 @@
 ---
 id: ucsctrackhubconnection
 title: UCSCTrackHubConnection
+sidebar_label: Connection -> UCSCTrackHubConnection
 ---
 
 Note: this document is automatically generated from configuration objects in our

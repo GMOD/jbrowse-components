@@ -1,6 +1,7 @@
 ---
 id: splitvcftabixadapter
 title: SplitVcfTabixAdapter
+sidebar_label: Adapter -> SplitVcfTabixAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

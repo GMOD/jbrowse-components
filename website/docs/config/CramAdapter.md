@@ -1,6 +1,7 @@
 ---
 id: cramadapter
 title: CramAdapter
+sidebar_label: Adapter -> CramAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

@@ -1,6 +1,7 @@
 ---
 id: refnamealiasadapter
 title: RefNameAliasAdapter
+sidebar_label: Adapter -> RefNameAliasAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

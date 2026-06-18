@@ -1,6 +1,7 @@
 ---
 id: nclistadapter
 title: NCListAdapter
+sidebar_label: Adapter -> NCListAdapter
 ---
 
 Note: this document is automatically generated from configuration objects in our

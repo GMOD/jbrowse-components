@@ -1,6 +1,7 @@
 ---
 id: jbrowse1connection
 title: JBrowse1Connection
+sidebar_label: Connection -> JBrowse1Connection
 ---
 
 Note: this document is automatically generated from configuration objects in our
