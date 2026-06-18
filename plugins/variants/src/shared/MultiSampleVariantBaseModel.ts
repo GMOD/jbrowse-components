@@ -201,6 +201,7 @@ function getGenotypeMapForFeature(
 
 /**
  * #stateModel MultiSampleVariantBaseModel
+ * #category display
  *
  * #example
  * `renderingMode`, `colorBy`, and `minorAlleleFrequencyFilter` are config slots

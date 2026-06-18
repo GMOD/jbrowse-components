@@ -1,6 +1,7 @@
 ---
 id: basedisplay
 title: BaseDisplay
+sidebar_label: Display -> BaseDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

@@ -1,6 +1,7 @@
 ---
 id: jbrowsereactlineargenomeviewsessionmodel
 title: JBrowseReactLinearGenomeViewSessionModel
+sidebar_label: Session -> JBrowseReactLinearGenomeViewSessionModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

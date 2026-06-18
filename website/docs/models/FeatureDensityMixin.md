@@ -1,6 +1,7 @@
 ---
 id: featuredensitymixin
 title: FeatureDensityMixin
+sidebar_label: Mixin -> FeatureDensityMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

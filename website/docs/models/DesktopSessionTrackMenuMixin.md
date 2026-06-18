@@ -1,6 +1,7 @@
 ---
 id: desktopsessiontrackmenumixin
 title: DesktopSessionTrackMenuMixin
+sidebar_label: Mixin -> DesktopSessionTrackMenuMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

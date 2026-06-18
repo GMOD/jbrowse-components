@@ -1,6 +1,7 @@
 ---
 id: drawerwidgetsessionmixin
 title: DrawerWidgetSessionMixin
+sidebar_label: Mixin -> DrawerWidgetSessionMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

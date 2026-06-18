@@ -53,6 +53,7 @@ function upperBoundFloat32(arr: Float32Array, val: number) {
 
 /**
  * #stateModel SharedLDModel
+ * #category display
  * Shared state model for LD displays
  */
 export default function sharedModelFactory(

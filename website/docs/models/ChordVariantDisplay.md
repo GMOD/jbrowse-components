@@ -1,6 +1,7 @@
 ---
 id: chordvariantdisplay
 title: ChordVariantDisplay
+sidebar_label: Display -> ChordVariantDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

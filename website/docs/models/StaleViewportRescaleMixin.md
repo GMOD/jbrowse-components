@@ -1,6 +1,7 @@
 ---
 id: staleviewportrescalemixin
 title: StaleViewportRescaleMixin
+sidebar_label: Mixin -> StaleViewportRescaleMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

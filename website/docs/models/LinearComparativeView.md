@@ -1,6 +1,7 @@
 ---
 id: linearcomparativeview
 title: LinearComparativeView
+sidebar_label: View -> LinearComparativeView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

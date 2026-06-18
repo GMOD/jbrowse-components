@@ -32,6 +32,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   /**
    * #config LinearGenomeViewConfigSchema
+   * #category root
    */
   configurationSchema = ConfigurationSchema('LinearGenomeViewConfigSchema', {
     /**

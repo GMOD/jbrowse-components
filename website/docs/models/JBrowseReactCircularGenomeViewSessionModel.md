@@ -1,6 +1,7 @@
 ---
 id: jbrowsereactcirculargenomeviewsessionmodel
 title: JBrowseReactCircularGenomeViewSessionModel
+sidebar_label: Session -> JBrowseReactCircularGenomeViewSessionModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

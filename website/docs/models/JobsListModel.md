@@ -1,6 +1,7 @@
 ---
 id: jobslistmodel
 title: JobsListModel
+sidebar_label: Widget -> JobsListModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

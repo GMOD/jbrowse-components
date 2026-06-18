@@ -1,6 +1,7 @@
 ---
 id: basetrackmodel
 title: BaseTrackModel
+sidebar_label: Track -> BaseTrackModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

@@ -1,6 +1,7 @@
 ---
 id: thememanagersessionmixin
 title: ThemeManagerSessionMixin
+sidebar_label: Mixin -> ThemeManagerSessionMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

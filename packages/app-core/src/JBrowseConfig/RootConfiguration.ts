@@ -10,6 +10,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config JBrowseConfiguration
+ * #category root
  * this is the entry under the `configuration` key
  * e.g.
  * ```json

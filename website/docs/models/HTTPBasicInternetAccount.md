@@ -1,6 +1,7 @@
 ---
 id: httpbasicinternetaccount
 title: HTTPBasicInternetAccount
+sidebar_label: Internet Account -> HTTPBasicInternetAccount
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

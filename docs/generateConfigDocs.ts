@@ -3,12 +3,14 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import {
+  categoryLabel,
   codeBlock,
   exampleSection,
   overviewSection,
   parseTaggedComment,
   removeComments,
   section,
+  warnCoverageGap,
   writeFormatted,
 } from './util.ts'
 
@@ -29,6 +31,9 @@ interface ConfigHeader {
   // config's `baseConfiguration:` slot resolves (alias-followed) to this same
   // id, so it's how we link the derivation graph.
   declId?: string
+  // explicit #category tag value, e.g. "assemblyManagement" — wins over the
+  // name-suffix heuristic in configCategory() when present
+  category?: string
 }
 export interface Config {
   header?: ConfigHeader
@@ -47,13 +52,13 @@ interface BaseRef {
   config?: ConfigWithHeader
 }
 
-function buildItem(obj: ExtractedNode): Item {
-  const { name, docs, examples } = parseTaggedComment(
+function buildItem(obj: ExtractedNode): Item & { category?: string } {
+  const { name, docs, examples, category } = parseTaggedComment(
     obj.comment,
     obj.type,
     obj.name,
   )
-  return { name, docs, examples, code: removeComments(obj.node) }
+  return { name, docs, examples, category, code: removeComments(obj.node) }
 }
 
 const cwd = `${process.cwd()}/`
@@ -76,6 +81,7 @@ export function accumulateConfig(
       examples: item.examples,
       id: slugify(item.name, { lower: true }),
       declId: obj.selfDeclId,
+      category: item.category,
     }
   } else if (obj.type === 'baseConfiguration') {
     file.derives = item
@@ -151,20 +157,23 @@ function inheritedSlotsSection(bases: BaseRef[]) {
     : ''
 }
 
-// Determine the subdirectory and category name for organizing configs
-function configCategory(name: string): { label: string } {
-  if (name.endsWith('Adapter')) {
-    return { label: 'Adapter' }
+// Determine the sidebar category for a config: an explicit #category tag wins,
+// else fall back to a name-suffix heuristic.
+function configCategory(name: string, explicit?: string): string {
+  if (explicit) {
+    return categoryLabel(explicit)
+  } else if (name.endsWith('Adapter')) {
+    return 'Adapter'
   } else if (name.endsWith('Track')) {
-    return { label: 'Track' }
+    return 'Track'
   } else if (name.endsWith('Display')) {
-    return { label: 'Display' }
+    return 'Display'
   } else if (name.endsWith('Connection')) {
-    return { label: 'Connection' }
+    return 'Connection'
   } else if (name.endsWith('InternetAccount')) {
-    return { label: 'Internet Account' }
+    return 'Internet Account'
   } else {
-    return { label: 'General' }
+    return 'General'
   }
 }
 
@@ -219,11 +228,11 @@ function renderConfig(
   )
   const docsSection = overviewSection(header.docs, sections)
 
-  const category = configCategory(header.name)
+  const category = configCategory(header.name, header.category)
   return `---
 id: ${header.id}
 title: ${header.name}
-sidebar_label: ${category.label} -> ${header.name}
+sidebar_label: ${category} -> ${header.name}
 ---
 
 Note: this document is automatically generated from configuration objects in
@@ -283,10 +292,20 @@ export async function writeConfigDocs(byFile: Record<string, Config>) {
       renderConfig(cfg, bases),
     )
   }
-  const noExample = withHeader.filter(c => !c.header.examples.length)
-  if (noExample.length) {
-    console.warn(
-      `${noExample.length}/${withHeader.length} configs have no #example: ${noExample.map(c => c.header.name).join(', ')}`,
-    )
-  }
+  warnCoverageGap(
+    withHeader.filter(c => !c.header.examples.length),
+    withHeader.length,
+    'configs',
+    'have no #example',
+    c => c.header.name,
+  )
+  warnCoverageGap(
+    withHeader.filter(
+      c => configCategory(c.header.name, c.header.category) === 'General',
+    ),
+    withHeader.length,
+    'configs',
+    'resolved to the General category (consider adding #category)',
+    c => c.header.name,
+  )
 }

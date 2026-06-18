@@ -1,6 +1,7 @@
 ---
 id: baseinternetaccountmodel
 title: BaseInternetAccountModel
+sidebar_label: Internet Account -> BaseInternetAccountModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

@@ -26,6 +26,7 @@ interface JBrowseModelParent {
 
 /**
  * #stateModel AppCoreJBrowseModel
+ * #category root
  * built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model —
  * config models are MST trees themselves, which is why this state model is
  * allowed to build on one. Generally found on a property named rootModel.jbrowse

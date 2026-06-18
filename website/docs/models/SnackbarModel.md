@@ -1,6 +1,7 @@
 ---
 id: snackbarmodel
 title: SnackbarModel
+sidebar_label: Session -> SnackbarModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

@@ -1,6 +1,7 @@
 ---
 id: rootappmenumixin
 title: RootAppMenuMixin
+sidebar_label: Mixin -> RootAppMenuMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

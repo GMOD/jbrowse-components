@@ -1,6 +1,7 @@
 ---
 id: baseconnectionmodel
 title: BaseConnectionModel
+sidebar_label: Connection -> BaseConnectionModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

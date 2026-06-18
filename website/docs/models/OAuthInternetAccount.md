@@ -1,6 +1,7 @@
 ---
 id: oauthinternetaccount
 title: OAuthInternetAccount
+sidebar_label: Internet Account -> OAuthInternetAccount
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

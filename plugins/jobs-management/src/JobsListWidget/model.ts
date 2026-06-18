@@ -22,6 +22,7 @@ export interface JobInput {
 
 /**
  * #stateModel JobsListModel
+ * #category widget
  */
 export function stateModelFactory(_pluginManager: PluginManager) {
   return types

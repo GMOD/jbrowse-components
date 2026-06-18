@@ -1,6 +1,7 @@
 ---
 id: addtrackmodel
 title: AddTrackModel
+sidebar_label: Widget -> AddTrackModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

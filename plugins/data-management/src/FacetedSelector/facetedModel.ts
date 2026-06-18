@@ -22,6 +22,7 @@ const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
 /**
  * #stateModel FacetedModel
+ * #category widget
  */
 export function facetedStateTreeF() {
   return types

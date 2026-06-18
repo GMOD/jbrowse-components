@@ -1,6 +1,7 @@
 ---
 id: appsessionmixin
 title: AppSessionMixin
+sidebar_label: Mixin -> AppSessionMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

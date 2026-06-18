@@ -636,6 +636,7 @@ export function parseTaggedComment(
   const tag = `#${type}`
   const lines = comment.split('\n')
   let name = fallbackName
+  let category: string | undefined
   const docs: string[] = []
   const examples: Example[] = []
   let current: { label: string; lines: string[] } | undefined
@@ -654,7 +655,7 @@ export function parseTaggedComment(
         name = fromTag
       }
     } else if (line.includes('#category')) {
-      // skip
+      category = line.replace(/.*#category\s*/, '').trim() || undefined
     } else if (current) {
       current.lines.push(line)
     } else {
@@ -669,9 +670,17 @@ export function parseTaggedComment(
   }
   return {
     name,
+    category,
     docs: docs.join('\n'),
     examples,
   }
+}
+
+// Turns a #category tag value (a bare camelCase word, e.g. "assemblyManagement")
+// into a sidebar-friendly label ("Assembly Management"). Shared by the config and
+// state-model generators so a new category tag needs no label-table update.
+export function categoryLabel(key: string): string {
+  return key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, c => c.toUpperCase())
 }
 
 // Strip JSDoc/inline comments from extracted source. Token-aware (via the TS
@@ -703,6 +712,24 @@ export function removeComments(string: string) {
 // Shared markdown builders used by both generators.
 export function codeBlock(...lines: string[]) {
   return ['```js', ...lines, '```'].join('\n')
+}
+
+// Logs a coverage-gap warning shared by both generators' write*Docs entry
+// points, e.g. "6/102 configs have no #example: Foo, Bar" or
+// "8/95 models resolved to the General category: Foo, Bar". Silent when
+// `items` is empty, so a fully-covered run prints nothing.
+export function warnCoverageGap<T>(
+  items: T[],
+  total: number,
+  kind: string,
+  reason: string,
+  getName: (item: T) => string,
+) {
+  if (items.length) {
+    console.warn(
+      `${items.length}/${total} ${kind} ${reason}: ${items.map(getName).join(', ')}`,
+    )
+  }
 }
 
 // Join non-empty parts with blank lines between them. Falsy parts (including the

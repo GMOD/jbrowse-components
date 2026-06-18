@@ -1,6 +1,7 @@
 ---
 id: websessionconnectionsmixin
 title: WebSessionConnectionsMixin
+sidebar_label: Mixin -> WebSessionConnectionsMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

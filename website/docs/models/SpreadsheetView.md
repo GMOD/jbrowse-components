@@ -1,6 +1,7 @@
 ---
 id: spreadsheetview
 title: SpreadsheetView
+sidebar_label: View -> SpreadsheetView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

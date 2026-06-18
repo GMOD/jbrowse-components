@@ -1,6 +1,7 @@
 ---
 id: jbrowsedesktopsessionmodel
 title: JBrowseDesktopSessionModel
+sidebar_label: Session -> JBrowseDesktopSessionModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

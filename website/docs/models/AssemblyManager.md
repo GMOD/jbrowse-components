@@ -1,6 +1,7 @@
 ---
 id: assemblymanager
 title: AssemblyManager
+sidebar_label: Assembly Management -> AssemblyManager
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

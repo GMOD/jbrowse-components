@@ -1,6 +1,7 @@
 ---
 id: jbrowsedesktopconfigmodel
 title: JBrowseDesktopConfigModel
+sidebar_label: Root -> JBrowseDesktopConfigModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

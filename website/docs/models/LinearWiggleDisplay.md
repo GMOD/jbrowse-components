@@ -1,6 +1,7 @@
 ---
 id: linearwiggledisplay
 title: LinearWiggleDisplay
+sidebar_label: Display -> LinearWiggleDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

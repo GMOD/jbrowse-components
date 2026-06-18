@@ -1,6 +1,7 @@
 ---
 id: jbrowsewebconfigmodel
 title: JBrowseWebConfigModel
+sidebar_label: Root -> JBrowseWebConfigModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

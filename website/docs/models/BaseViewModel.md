@@ -1,6 +1,7 @@
 ---
 id: baseviewmodel
 title: BaseViewModel
+sidebar_label: View -> BaseViewModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

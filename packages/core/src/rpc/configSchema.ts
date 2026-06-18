@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '../configuration/index.ts'
 
 /**
  * #config RpcOptions
+ * #category root
  */
 export default ConfigurationSchema(
   'RpcOptions',

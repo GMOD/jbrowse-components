@@ -1,6 +1,7 @@
 ---
 id: linearvariantdisplay
 title: LinearVariantDisplay
+sidebar_label: Display -> LinearVariantDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

@@ -1,6 +1,7 @@
 ---
 id: tracksmanagersessionmixin
 title: TracksManagerSessionMixin
+sidebar_label: Mixin -> TracksManagerSessionMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

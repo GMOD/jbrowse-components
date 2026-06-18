@@ -1,7 +1,7 @@
 ---
 id: baseassembly
 title: BaseAssembly
-sidebar_label: General -> BaseAssembly
+sidebar_label: Assembly Management -> BaseAssembly
 ---
 
 Note: this document is automatically generated from configuration objects in our

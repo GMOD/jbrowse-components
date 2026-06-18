@@ -1,6 +1,7 @@
 ---
 id: assembliesmixin
 title: AssembliesMixin
+sidebar_label: Mixin -> AssembliesMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

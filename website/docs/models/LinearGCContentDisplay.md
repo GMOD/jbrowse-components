@@ -1,6 +1,7 @@
 ---
 id: lineargccontentdisplay
 title: LinearGCContentDisplay
+sidebar_label: Display -> LinearGCContentDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

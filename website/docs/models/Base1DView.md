@@ -1,6 +1,7 @@
 ---
 id: base1dview
 title: Base1DView
+sidebar_label: View -> Base1DView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

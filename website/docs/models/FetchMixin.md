@@ -1,6 +1,7 @@
 ---
 id: fetchmixin
 title: FetchMixin
+sidebar_label: Mixin -> FetchMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

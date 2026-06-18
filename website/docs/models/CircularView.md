@@ -1,6 +1,7 @@
 ---
 id: circularview
 title: CircularView
+sidebar_label: View -> CircularView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

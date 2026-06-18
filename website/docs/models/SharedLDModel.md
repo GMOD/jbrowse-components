@@ -1,6 +1,7 @@
 ---
 id: sharedldmodel
 title: SharedLDModel
+sidebar_label: Display -> SharedLDModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

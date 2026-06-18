@@ -1,6 +1,7 @@
 ---
 id: jb2trackhubconnection
 title: JB2TrackHubConnection
+sidebar_label: Connection -> JB2TrackHubConnection
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

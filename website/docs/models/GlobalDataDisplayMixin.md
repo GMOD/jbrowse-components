@@ -1,6 +1,7 @@
 ---
 id: globaldatadisplaymixin
 title: GlobalDataDisplayMixin
+sidebar_label: Mixin -> GlobalDataDisplayMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

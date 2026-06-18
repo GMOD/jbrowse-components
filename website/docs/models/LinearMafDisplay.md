@@ -1,6 +1,7 @@
 ---
 id: linearmafdisplay
 title: LinearMafDisplay
+sidebar_label: Display -> LinearMafDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

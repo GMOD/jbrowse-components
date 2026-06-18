@@ -1,6 +1,7 @@
 ---
 id: linearcanvasbasedisplay
 title: LinearCanvasBaseDisplay
+sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

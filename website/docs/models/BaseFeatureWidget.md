@@ -1,6 +1,7 @@
 ---
 id: basefeaturewidget
 title: BaseFeatureWidget
+sidebar_label: Widget -> BaseFeatureWidget
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

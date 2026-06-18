@@ -1,7 +1,7 @@
 ---
 id: formatabout
 title: FormatAbout
-sidebar_label: General -> FormatAbout
+sidebar_label: Root -> FormatAbout
 ---
 
 Note: this document is automatically generated from configuration objects in our

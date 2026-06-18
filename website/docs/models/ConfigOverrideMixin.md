@@ -1,6 +1,7 @@
 ---
 id: configoverridemixin
 title: ConfigOverrideMixin
+sidebar_label: Mixin -> ConfigOverrideMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

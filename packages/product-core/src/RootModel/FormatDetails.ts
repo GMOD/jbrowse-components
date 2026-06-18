@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config FormatDetails
+ * #category root
  * generally exists on the tracks in the config.json or as a 'session' config as
  * configuration.formatDetails
  */

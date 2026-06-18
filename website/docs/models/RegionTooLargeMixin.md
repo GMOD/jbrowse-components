@@ -1,6 +1,7 @@
 ---
 id: regiontoolargemixin
 title: RegionTooLargeMixin
+sidebar_label: Mixin -> RegionTooLargeMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

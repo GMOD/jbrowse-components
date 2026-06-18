@@ -1,6 +1,7 @@
 ---
 id: spreadsheetimportwizard
 title: SpreadsheetImportWizard
+sidebar_label: View -> SpreadsheetImportWizard
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

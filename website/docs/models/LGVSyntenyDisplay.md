@@ -1,6 +1,7 @@
 ---
 id: lgvsyntenydisplay
 title: LGVSyntenyDisplay
+sidebar_label: Display -> LGVSyntenyDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

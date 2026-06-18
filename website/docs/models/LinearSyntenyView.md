@@ -1,6 +1,7 @@
 ---
 id: linearsyntenyview
 title: LinearSyntenyView
+sidebar_label: View -> LinearSyntenyView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

@@ -1,6 +1,7 @@
 ---
 id: multiregiondisplaymixin
 title: MultiRegionDisplayMixin
+sidebar_label: Mixin -> MultiRegionDisplayMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

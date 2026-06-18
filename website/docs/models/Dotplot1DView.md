@@ -1,6 +1,7 @@
 ---
 id: dotplot1dview
 title: Dotplot1DView
+sidebar_label: View -> Dotplot1DView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

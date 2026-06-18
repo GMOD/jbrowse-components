@@ -1,6 +1,7 @@
 ---
 id: jbrowsewebsessionmodel
 title: JBrowseWebSessionModel
+sidebar_label: Session -> JBrowseWebSessionModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

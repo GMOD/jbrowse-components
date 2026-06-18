@@ -4,6 +4,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel
+ * #category widget
  */
 export const Job = types
   .model('Job', {

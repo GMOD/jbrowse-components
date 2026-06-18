@@ -1,6 +1,7 @@
 ---
 id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
+sidebar_label: Internet Account -> GoogleDriveOAuthInternetAccount
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

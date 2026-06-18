@@ -1,6 +1,7 @@
 ---
 id: dropboxoauthinternetaccount
 title: DropboxOAuthInternetAccount
+sidebar_label: Internet Account -> DropboxOAuthInternetAccount
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

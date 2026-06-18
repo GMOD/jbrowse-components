@@ -1,6 +1,7 @@
 ---
 id: lineargenomeview
 title: LinearGenomeView
+sidebar_label: View -> LinearGenomeView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

@@ -1,6 +1,7 @@
 ---
 id: svinspectorview
 title: SvInspectorView
+sidebar_label: View -> SvInspectorView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

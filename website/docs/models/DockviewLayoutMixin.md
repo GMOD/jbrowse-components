@@ -1,6 +1,7 @@
 ---
 id: dockviewlayoutmixin
 title: DockviewLayoutMixin
+sidebar_label: Mixin -> DockviewLayoutMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

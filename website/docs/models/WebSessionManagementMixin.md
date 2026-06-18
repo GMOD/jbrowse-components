@@ -1,6 +1,7 @@
 ---
 id: websessionmanagementmixin
 title: WebSessionManagementMixin
+sidebar_label: Mixin -> WebSessionManagementMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

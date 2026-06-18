@@ -1,6 +1,7 @@
 ---
 id: jbrowsereactcirculargenomeviewrootmodel
 title: JBrowseReactCircularGenomeViewRootModel
+sidebar_label: Root -> JBrowseReactCircularGenomeViewRootModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

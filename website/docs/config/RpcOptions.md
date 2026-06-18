@@ -1,7 +1,7 @@
 ---
 id: rpcoptions
 title: RpcOptions
-sidebar_label: General -> RpcOptions
+sidebar_label: Root -> RpcOptions
 ---
 
 Note: this document is automatically generated from configuration objects in our

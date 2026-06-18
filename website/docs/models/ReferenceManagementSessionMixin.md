@@ -1,6 +1,7 @@
 ---
 id: referencemanagementsessionmixin
 title: ReferenceManagementSessionMixin
+sidebar_label: Mixin -> ReferenceManagementSessionMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

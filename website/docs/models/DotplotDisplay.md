@@ -1,6 +1,7 @@
 ---
 id: dotplotdisplay
 title: DotplotDisplay
+sidebar_label: Display -> DotplotDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

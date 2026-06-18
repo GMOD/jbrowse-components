@@ -1,6 +1,7 @@
 ---
 id: wigglecommonmixin
 title: WiggleCommonMixin
+sidebar_label: Mixin -> WiggleCommonMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

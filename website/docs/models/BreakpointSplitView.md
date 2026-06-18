@@ -1,6 +1,7 @@
 ---
 id: breakpointsplitview
 title: BreakpointSplitView
+sidebar_label: View -> BreakpointSplitView
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

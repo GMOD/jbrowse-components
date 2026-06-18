@@ -1,6 +1,7 @@
 ---
 id: lineararcdisplay
 title: LinearArcDisplay
+sidebar_label: Display -> LinearArcDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

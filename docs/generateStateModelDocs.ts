@@ -3,6 +3,7 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import {
+  categoryLabel,
   codeBlock,
   exampleSection,
   overviewSection,
@@ -10,6 +11,7 @@ import {
   removeComments,
   section,
   stripComposedBlock,
+  warnCoverageGap,
   writeFormatted,
 } from './util.ts'
 
@@ -32,6 +34,10 @@ interface ModelHeader {
   selfDeclId?: string
   // the models this one composes (derived from its types.compose call)
   composedOf: ComposedRef[]
+  // explicit #category tag value, e.g. "session" — wins over the name-suffix
+  // heuristic in stateModelCategory() when present (except *Mixin names, which
+  // always bucket under "Mixin" regardless of this tag)
+  category?: string
 }
 export interface StateModel {
   header?: ModelHeader
@@ -51,8 +57,8 @@ interface ModelIndex {
   bySlug: Map<string, ModelWithHeader>
 }
 
-function buildMember(obj: ExtractedNode): Member {
-  const { name, docs, examples } = parseTaggedComment(
+function buildMember(obj: ExtractedNode): Member & { category?: string } {
+  const { name, docs, examples, category } = parseTaggedComment(
     obj.comment,
     obj.type,
     obj.name,
@@ -61,6 +67,7 @@ function buildMember(obj: ExtractedNode): Member {
     name,
     docs,
     examples,
+    category,
     code: removeComments(obj.node),
     signature: obj.signature,
   }
@@ -94,6 +101,7 @@ export function accumulateModel(
       id: slugify(member.name, { lower: true }),
       selfDeclId: obj.selfDeclId,
       composedOf: obj.composedOf ?? [],
+      category: member.category,
     }
   } else if (obj.type === 'property') {
     file.properties.push(member)
@@ -132,6 +140,38 @@ function collectAncestors(
     }
   }
   return out
+}
+
+// Determine the sidebar category for a state model. A `*Mixin` name always
+// wins, regardless of any #category tag: composition mixins are never used
+// standalone, so grouping them under one "Mixin" bucket keeps the domain
+// categories (Display, Session, Root, ...) limited to models a reader would
+// actually instantiate. Otherwise an explicit #category tag wins, else a
+// name-suffix heuristic, else General.
+function stateModelCategory(name: string, explicit?: string): string {
+  if (name.endsWith('Mixin')) {
+    return 'Mixin'
+  } else if (explicit) {
+    return categoryLabel(explicit)
+  } else if (name.endsWith('View')) {
+    return 'View'
+  } else if (name.endsWith('Display')) {
+    return 'Display'
+  } else if (name.endsWith('Connection') || name.endsWith('ConnectionModel')) {
+    return 'Connection'
+  } else if (name.endsWith('InternetAccount')) {
+    return 'Internet Account'
+  } else if (name.endsWith('Widget') || name.endsWith('WidgetModel')) {
+    return 'Widget'
+  } else if (name.endsWith('SessionModel')) {
+    return 'Session'
+  } else if (name.endsWith('RootModel') || name.endsWith('ConfigModel')) {
+    return 'Root'
+  } else if (name === 'Assembly' || name === 'AssemblyManager') {
+    return 'Assembly Management'
+  } else {
+    return 'General'
+  }
 }
 
 function memberLine(label: string, members: Member[]) {
@@ -207,9 +247,11 @@ function renderModel(
     sections,
   )
 
+  const category = stateModelCategory(header.name, header.category)
   return `---
 id: ${header.id}
 title: ${header.name}
+sidebar_label: ${category} -> ${header.name}
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree objects in
@@ -273,10 +315,20 @@ export async function writeModelDocs(byFile: Record<string, StateModel>) {
       renderModel(model, ancestors),
     )
   }
-  const noExample = withHeader.filter(m => !m.header.examples.length)
-  if (noExample.length) {
-    console.warn(
-      `${noExample.length}/${withHeader.length} models have no #example: ${noExample.map(m => m.header.name).join(', ')}`,
-    )
-  }
+  warnCoverageGap(
+    withHeader.filter(m => !m.header.examples.length),
+    withHeader.length,
+    'models',
+    'have no #example',
+    m => m.header.name,
+  )
+  warnCoverageGap(
+    withHeader.filter(
+      m => stateModelCategory(m.header.name, m.header.category) === 'General',
+    ),
+    withHeader.length,
+    'models',
+    'resolved to the General category (consider adding #category)',
+    m => m.header.name,
+  )
 }

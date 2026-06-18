@@ -1,6 +1,7 @@
 ---
 id: basesessionmodel
 title: BaseSessionModel
+sidebar_label: Session -> BaseSessionModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

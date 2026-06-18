@@ -1,6 +1,7 @@
 ---
 id: multipleviewssessionmixin
 title: MultipleViewsSessionMixin
+sidebar_label: Mixin -> MultipleViewsSessionMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

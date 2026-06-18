@@ -46,13 +46,13 @@ function docHref(baseUrl: string, slug: string): string {
   return `${baseUrl}/docs/${slug}${slug ? '/' : ''}`
 }
 
-function groupConfigsByCategory(
-  links: SidebarLink[],
-): SidebarEntry[] {
+// Splits a "<Category> -> <Name>" sidebar_label (config and state-model docs
+// both emit this format) into a collapsible group per category.
+function groupByCategory(links: SidebarLink[]): SidebarEntry[] {
   const grouped = new Map<string, SidebarLink[]>()
 
   for (const link of links) {
-    const match = link.label.match(/^(.+?)\s*->\s*(.+)$/)
+    const match = /^(.+?)\s*->\s*(.+)$/.exec(link.label)
     let category: string
     let label: string
     if (match && match.length > 2) {
@@ -108,8 +108,8 @@ function getAutoItems(
     })
     .sort((a, b) => a.label.localeCompare(b.label))
 
-  if (dirName === 'config') {
-    return groupConfigsByCategory(links)
+  if (dirName === 'config' || dirName === 'models') {
+    return groupByCategory(links)
   }
   return links
 }

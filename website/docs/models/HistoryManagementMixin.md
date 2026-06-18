@@ -1,6 +1,7 @@
 ---
 id: historymanagementmixin
 title: HistoryManagementMixin
+sidebar_label: Mixin -> HistoryManagementMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

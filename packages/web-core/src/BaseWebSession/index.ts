@@ -336,6 +336,7 @@ export function finalizeWebSession<T extends IAnyModelType>(
 
 /**
  * #stateModel BaseWebSession
+ * #category session
  * Finalized web session without the session-database management surface. Used
  * by the embedded react-app; jbrowse-web composes `WebSessionManagementMixin`
  * before finalizing.

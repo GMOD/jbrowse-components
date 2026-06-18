@@ -1,6 +1,7 @@
 ---
 id: appcorejbrowsemodel
 title: AppCoreJBrowseModel
+sidebar_label: Root -> AppCoreJBrowseModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

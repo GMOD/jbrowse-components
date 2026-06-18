@@ -1,6 +1,7 @@
 ---
 id: internetaccountsmixin
 title: InternetAccountsMixin
+sidebar_label: Mixin -> InternetAccountsMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

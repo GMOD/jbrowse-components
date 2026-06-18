@@ -1,6 +1,7 @@
 ---
 id: multisamplevariantbasemodel
 title: MultiSampleVariantBaseModel
+sidebar_label: Display -> MultiSampleVariantBaseModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

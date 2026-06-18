@@ -1,6 +1,7 @@
 ---
 id: baserootmodel
 title: BaseRootModel
+sidebar_label: Root -> BaseRootModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

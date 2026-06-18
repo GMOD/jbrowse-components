@@ -40,6 +40,7 @@ const defaultVolatileState = {
 
 /**
  * #stateModel AddTrackModel
+ * #category widget
  */
 export default function f(pluginManager: PluginManager) {
   return types

@@ -1,6 +1,7 @@
 ---
 id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
+sidebar_label: Display -> LinearAlignmentsDisplay
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

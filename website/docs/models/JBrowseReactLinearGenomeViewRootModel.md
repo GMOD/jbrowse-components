@@ -1,6 +1,7 @@
 ---
 id: jbrowsereactlineargenomeviewrootmodel
 title: JBrowseReactLinearGenomeViewRootModel
+sidebar_label: Root -> JBrowseReactLinearGenomeViewRootModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree

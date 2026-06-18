@@ -1,6 +1,7 @@
 ---
 id: gridbookmarkwidgetmodel
 title: GridBookmarkWidgetModel
+sidebar_label: Widget -> GridBookmarkWidgetModel
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree
