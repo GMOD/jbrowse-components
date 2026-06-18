@@ -1,9 +1,8 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
-  downloadStatusReporter,
+  downloadStatus,
   sum,
-  updateStatus,
   withProgress,
 } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
@@ -26,6 +25,28 @@ import type {
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { CramRecord } from '@gmod/cram'
+
+function shouldFilterRecord(
+  record: CramRecord,
+  filterBy: FilterBy | undefined,
+  samHeader: ParsedSamHeader,
+) {
+  const { flagInclude = 0, flagExclude = 0, tagFilter, readName } = filterBy ?? {}
+  if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
+    return true
+  }
+  if (tagFilter) {
+    const tagValue =
+      tagFilter.tag === 'RG'
+        ? samHeader.readGroups[record.readGroupId]
+        : record.tags[tagFilter.tag]
+    if (filterTagValue(tagValue, tagFilter.value)) {
+      return true
+    }
+  }
+  return readName !== undefined && record.readName !== readName
+}
 
 export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfig> {
   public samHeader?: ParsedSamHeader
@@ -48,15 +69,18 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
   private seqAdapterRefNamesP?: Promise<Set<string>>
 
   private async getSeqAdapterRefNames() {
-    this.seqAdapterRefNamesP ??= this.getSequenceAdapter().then(
-      async adapter => {
+    this.seqAdapterRefNamesP ??= this.getSequenceAdapter()
+      .then(async adapter => {
         if (!adapter) {
           return new Set<string>()
         }
         const refNames = await adapter.getRefNames()
         return new Set(refNames)
-      },
-    )
+      })
+      .catch((e: unknown) => {
+        this.seqAdapterRefNamesP = undefined
+        throw e
+      })
     return this.seqAdapterRefNamesP
   }
 
@@ -74,39 +98,47 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
     return originalName || cramName
   }
 
+  private async seqFetch(seqId: number, start: number, end: number) {
+    const sequenceAdapter = await this.getSequenceAdapter()
+    if (!sequenceAdapter) {
+      throw new Error('no sequenceAdapter available')
+    }
+    const refName = await this.resolveSeqFetchRefName(seqId)
+    if (!refName) {
+      throw new Error('unknown refName')
+    }
+    const seq = await sequenceAdapter.getSequence({
+      refName,
+      start: start - 1,
+      end,
+    })
+    return seq ?? ''
+  }
+
   private configure() {
-    if (!this.configureResult) {
-      const cramLocation = this.getConf('cramLocation')
-      const craiLocation = this.getConf('craiLocation')
-
-      this.configureResult = {
-        cram: new IndexedCramFile({
-          cramFilehandle: openLocation(cramLocation, this.pluginManager),
-          index: new CraiIndex({
-            filehandle: openLocation(craiLocation, this.pluginManager),
-          }),
-          seqFetch: async (seqId: number, start: number, end: number) => {
-            const sequenceAdapter = await this.getSequenceAdapter()
-            if (!sequenceAdapter) {
-              throw new Error('no sequenceAdapter available')
-            }
-            const refName = await this.resolveSeqFetchRefName(seqId)
-            if (!refName) {
-              throw new Error('unknown refName')
-            }
-
-            const seq = await sequenceAdapter.getSequence({
-              refName,
-              start: start - 1,
-              end,
-            })
-            return seq ?? ''
-          },
-          checkSequenceMD5: false,
+    this.configureResult ??= {
+      cram: new IndexedCramFile({
+        cramFilehandle: openLocation(
+          this.getConf('cramLocation'),
+          this.pluginManager,
+        ),
+        index: new CraiIndex({
+          filehandle: openLocation(
+            this.getConf('craiLocation'),
+            this.pluginManager,
+          ),
         }),
-      }
+        seqFetch: (seqId: number, start: number, end: number) =>
+          this.seqFetch(seqId, start, end),
+        checkSequenceMD5: false,
+      }),
     }
     return this.configureResult
+  }
+
+  private clearCaches() {
+    this.setupP = undefined
+    this.configureResult = undefined
   }
 
   async getSequenceAdapter() {
@@ -136,8 +168,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
       this.samHeader = samHeader
       return { samHeader, cram }
     })().catch((e: unknown) => {
-      this.setupP = undefined
-      this.configureResult = undefined
+      this.clearCaches()
       throw e
     })
 
@@ -159,6 +190,16 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
 
   refIdToOriginalName(refId: number) {
     return this.seqIdToOriginalRefName[refId]
+  }
+
+  private getOrCacheFeature(record: CramRecord) {
+    const cached = this.ultraLongFeatureCache.get(record.uniqueId)
+    if (cached) {
+      return cached
+    }
+    const feat = new CramSlightlyLazyFeature(record, this)
+    this.ultraLongFeatureCache.set(record.uniqueId, feat)
+    return feat
   }
 
   getFeatures(
@@ -185,21 +226,16 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
       }
       let records
       try {
-        records = await updateStatus(
+        records = await downloadStatus(
           'Downloading alignments',
           statusCallback,
-          () =>
+          onProgress =>
             cram.getRecordsForRange(refId, start, end, {
-              onProgress: downloadStatusReporter(
-                statusCallback,
-                'Downloading alignments',
-              ),
+              onProgress,
             }),
         )
       } catch (e) {
-        // Clear caches on error so reload works
-        this.setupP = undefined
-        this.configureResult = undefined
+        this.clearCaches()
         throw e
       }
       checkStopToken(stopToken)
@@ -211,51 +247,21 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
           stopToken,
         },
         report => {
-          const {
-            flagInclude = 0,
-            flagExclude = 0,
-            tagFilter,
-            readName,
-          } = filterBy ?? {}
-
           for (const record of records) {
             report()
-            if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
+            if (shouldFilterRecord(record, filterBy, samHeader)) {
               continue
             }
-            if (
-              tagFilter &&
-              filterTagValue(
-                tagFilter.tag === 'RG'
-                  ? samHeader.readGroups[record.readGroupId]
-                  : record.tags[tagFilter.tag],
-                tagFilter.value,
-              )
-            ) {
-              continue
-            }
-            if (readName && record.readName !== readName) {
-              continue
-            }
-
-            if (record.readLength > 5_000) {
-              const ret = this.ultraLongFeatureCache.get(record.uniqueId)
-              if (ret) {
-                observer.next(ret)
-              } else {
-                const elt = new CramSlightlyLazyFeature(record, this)
-                this.ultraLongFeatureCache.set(record.uniqueId, elt)
-                observer.next(elt)
-              }
-            } else {
-              observer.next(new CramSlightlyLazyFeature(record, this))
-            }
+            const feat =
+              record.readLength > 5_000
+                ? this.getOrCacheFeature(record)
+                : new CramSlightlyLazyFeature(record, this)
+            observer.next(feat)
           }
-
           observer.complete()
         },
       )
-    }, stopToken)
+    })
   }
 
   /**

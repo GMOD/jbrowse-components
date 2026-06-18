@@ -12,12 +12,10 @@ export default class HtsgetBamAdapter extends BamAdapter {
       // this.config is BamAdapterConfig at the type level (from the parent),
       // but at runtime it is always HtsgetBamAdapterConfig for this class
       const conf = this.config as unknown as HtsgetBamAdapterConfig
-      const htsgetBase = readConfObject(conf, 'htsgetBase')
-      const htsgetTrackId = readConfObject(conf, 'htsgetTrackId')
       this.configureResult = {
         bam: new HtsgetFile<BamSlightlyLazyFeature>({
-          baseUrl: htsgetBase,
-          trackId: htsgetTrackId,
+          baseUrl: readConfObject(conf, 'htsgetBase'),
+          trackId: readConfObject(conf, 'htsgetTrackId'),
           recordClass: BamSlightlyLazyFeature,
         }),
       }

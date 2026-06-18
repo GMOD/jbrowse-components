@@ -1,7 +1,7 @@
 import { BamFile } from '@gmod/bam'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
-  downloadStatusReporter,
+  downloadStatus,
   updateStatus,
   withProgress,
 } from '@jbrowse/core/util'
@@ -22,10 +22,26 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
+// Returns the [start, end) span of records that lack an MD tag and need
+// reference sequence for mismatch rendering, or null if none do.
+function seqFetchSpan(
+  records: readonly { NUMERIC_MD: unknown; start: number; end: number }[],
+) {
+  let start = Infinity
+  let end = 0
+  for (const record of records) {
+    if (!record.NUMERIC_MD) {
+      start = Math.min(start, record.start)
+      end = Math.max(end, record.end)
+    }
+  }
+  return end > 0 ? { start, end } : null
+}
+
 export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig> {
   public samHeader?: ParsedSamHeader
 
-  private setupP?: Promise<ParsedSamHeader>
+  private setupP?: Promise<{ samHeader: ParsedSamHeader; bam: BamFile<BamSlightlyLazyFeature> }>
 
   protected configureResult?: { bam: BamFile<BamSlightlyLazyFeature> }
 
@@ -33,24 +49,23 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
 
   protected configure() {
     if (!this.configureResult) {
-      const bamLocation = this.getConf('bamLocation')
+      const csi = this.getConf(['index', 'indexType']) === 'CSI'
       const location = this.getConf(['index', 'location'])
-      const indexType = this.getConf(['index', 'indexType'])
-      const csi = indexType === 'CSI'
       this.configureResult = {
         bam: new BamFile({
-          bamFilehandle: openLocation(bamLocation, this.pluginManager),
-          csiFilehandle: csi
-            ? openLocation(location, this.pluginManager)
-            : undefined,
-          baiFilehandle: !csi
-            ? openLocation(location, this.pluginManager)
-            : undefined,
+          bamFilehandle: openLocation(this.getConf('bamLocation'), this.pluginManager),
+          csiFilehandle: csi ? openLocation(location, this.pluginManager) : undefined,
+          baiFilehandle: !csi ? openLocation(location, this.pluginManager) : undefined,
           recordClass: BamSlightlyLazyFeature,
         }),
       }
     }
     return this.configureResult
+  }
+
+  private clearCaches() {
+    this.setupP = undefined
+    this.configureResult = undefined
   }
 
   async getSequenceAdapter() {
@@ -87,10 +102,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
           const { bam } = this.configure()
           const rawHeader = await bam.getHeader()
           this.samHeader = parseSamHeader(rawHeader ?? [])
-          return this.samHeader
+          return { samHeader: this.samHeader, bam }
         } catch (e) {
-          this.setupP = undefined
-          this.configureResult = undefined
+          this.clearCaches()
           throw e
         }
       },
@@ -99,8 +113,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
   }
 
   async getRefNames(opts?: BaseOptions) {
-    const { idToName } = await this.setup(opts)
-    return idToName
+    const { samHeader } = await this.setup(opts)
+    return samHeader.idToName
   }
 
   getFeatures(
@@ -112,23 +126,37 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
     const { refName, start, end, originalRefName } = region
     const { stopToken, filterBy, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { bam } = this.configure()
       const sequenceAdapter = await this.getSequenceAdapter()
-      await this.setup(opts)
+      const { bam } = await this.setup(opts)
       checkStopToken(stopToken)
-      const records = await updateStatus(
-        'Downloading alignments',
-        statusCallback,
-        () =>
-          bam.getRecordsForRange(refName, start, end, {
-            filterBy,
-            onProgress: downloadStatusReporter(
-              statusCallback,
-              'Downloading alignments',
-            ),
-          }),
-      )
+
+      let records
+      try {
+        records = await downloadStatus(
+          'Downloading alignments',
+          statusCallback,
+          onProgress =>
+            bam.getRecordsForRange(refName, start, end, {
+              filterBy,
+              onProgress,
+            }),
+        )
+      } catch (e) {
+        this.clearCaches()
+        throw e
+      }
       checkStopToken(stopToken)
+
+      const { readName, tagFilter } = filterBy ?? {}
+      const span = seqFetchSpan(records)
+      const regionSeq =
+        sequenceAdapter && span
+          ? await sequenceAdapter.getSequence({
+              refName: originalRefName ?? refName,
+              start: span.start,
+              end: span.end,
+            })
+          : undefined
 
       await withProgress(
         {
@@ -137,29 +165,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
           statusCallback,
           stopToken,
         },
-        async report => {
-          const { readName, tagFilter } = filterBy ?? {}
-
-          // Pre-fetch reference sequence for all records that need it
-          let regionSeq: string | undefined
-          let seqFetchStart = Infinity
-          let seqFetchEnd = 0
-          if (sequenceAdapter) {
-            for (const record of records) {
-              if (!record.NUMERIC_MD) {
-                seqFetchStart = Math.min(seqFetchStart, record.start)
-                seqFetchEnd = Math.max(seqFetchEnd, record.end)
-              }
-            }
-            if (seqFetchEnd > 0) {
-              regionSeq = await sequenceAdapter.getSequence({
-                refName: originalRefName || refName,
-                start: seqFetchStart,
-                end: seqFetchEnd,
-              })
-            }
-          }
-
+        report => {
           for (const record of records) {
             report()
             if (readName && record.name !== readName) {
@@ -172,14 +178,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
               continue
             }
 
-            // Set adapter reference for id() and refIdToName()
             record.adapter = this
 
-            // Only fetch reference sequence if MD tag is missing
-            if (!record.NUMERIC_MD && regionSeq) {
+            if (!record.NUMERIC_MD && regionSeq && span) {
               record.ref = regionSeq.slice(
-                record.start - seqFetchStart,
-                record.end - seqFetchStart,
+                record.start - span.start,
+                record.end - span.start,
               )
             }
 
