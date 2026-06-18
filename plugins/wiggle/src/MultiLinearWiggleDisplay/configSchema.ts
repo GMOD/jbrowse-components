@@ -4,6 +4,17 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { MULTI_WIGGLE_RENDERING_TYPES } from '../util.ts'
 
+// Configs are sometimes hand-authored (or copy-pasted from a single-source
+// wiggle track) with a single-source rendering name even though this display
+// only draws multi-source renderings. Map each to its closest multi-source
+// equivalent rather than throwing an opaque MST union error.
+const SINGLE_TO_MULTI_RENDERING: Record<string, string> = {
+  xyplot: 'multixyplot',
+  density: 'multirowdensity',
+  line: 'multiline',
+  scatter: 'multiscatter',
+}
+
 /**
  * #config MultiLinearWiggleDisplay
  * #category display
@@ -73,5 +84,18 @@ export default ConfigurationSchema(
       description: 'Default rendering type',
     },
   },
-  { explicitlyTyped: true, explicitIdentifier: 'displayId' },
+  {
+    explicitlyTyped: true,
+    explicitIdentifier: 'displayId',
+    preProcessSnapshot: (snap: Record<string, unknown>) => {
+      const { defaultRendering, ...rest } = snap
+      const remapped =
+        typeof defaultRendering === 'string'
+          ? SINGLE_TO_MULTI_RENDERING[defaultRendering]
+          : undefined
+      return remapped
+        ? { ...rest, defaultRendering: remapped }
+        : snap
+    },
+  },
 )

@@ -20,3 +20,12 @@ test('LinearWiggleDisplay config schema has autoscale and numStdDev defaults', (
   expect(readConfObject(config, 'autoscale')).toBe('local')
   expect(readConfObject(config, 'numStdDev')).toBe(3)
 })
+
+test('MultiLinearWiggleDisplay remaps single-source defaultRendering names', () => {
+  const config = multiConfigSchema.create({
+    type: 'MultiLinearWiggleDisplay',
+    displayId: 'test',
+    defaultRendering: 'xyplot',
+  })
+  expect(readConfObject(config, 'defaultRendering')).toBe('multixyplot')
+})
