@@ -59,7 +59,7 @@ and docs.
 
 ### Available via [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 
-**Properties:** configuration
+**Properties:** configuration, jexlFiltersSetting
 
 **Volatiles:** rpcDataMap, densityStatsPerRegion, featureIdUnderMouse,
 subfeatureIdUnderMouse, mouseoverExtraInformation, contextMenuFeature,
@@ -77,19 +77,20 @@ regionTooLargeReason, laidOutDataMap, maxY, hasOverflow, featureIdIndex,
 subfeatureIdIndex, hoveredFeature, hoveredSubfeature, featureItemMap,
 flatbushIndexes
 
-**Methods:** rpcProps, getFeatureById, searchFeatureByID, renderSvg,
-showSubmenuMenuItems, contextMenuItems, colorBySubMenuItems, colorMenuItems,
-trackMenuItems
+**Methods:** activeFilters, rpcProps, getFeatureById, searchFeatureByID,
+renderSvg, showSubmenuMenuItems, contextMenuItems, colorBySubMenuItems,
+colorMenuItems, trackMenuItems
 
 **Actions:** expandToFit, collapseFromExpand, clearHeightBeforeExpand,
 setRpcData, setDensityStats, clearDisplaySpecificData, pruneRpcDataMapToVisible,
 startRenderingBackend, setFeatureDensityStatsLimit, setHover, clearHover,
 setContextMenuFeature, setContextMenuInfo, selectFeature, clearSelection,
-setShowLabels, setAutoHeight, setShowDescriptions, setShowOutline,
-setFeatureColor, setUtrColor, showContextMenuForFeature, openSetColorDialog,
-openColorByAttributeDialog, fetchFullFeature, selectFeatureById, isCacheValid,
-getByteEstimateConfig, selectFullFeature, reload, fetchNeeded,
-setFeatureDensityStats, clearStaleDensityState, afterAttach
+setShowLabels, setAutoHeight, setShowDescriptions, setJexlFilters,
+setShowOutline, setFeatureColor, setUtrColor, showContextMenuForFeature,
+openSetColorDialog, openColorByAttributeDialog, openFilterDialog,
+fetchFullFeature, selectFeatureById, isCacheValid, getByteEstimateConfig,
+selectFullFeature, reload, fetchNeeded, setFeatureDensityStats,
+clearStaleDensityState, afterAttach
 
 ### Available via [BaseDisplay](../basedisplay)
 
@@ -150,11 +151,12 @@ setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
-**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage,
+statusProgress, regionStatuses
 
 **Getters:** isLoading
 
-**Actions:** setError, setStatusMessage, cancelFetch, runFetch
+**Actions:** setError, setStatusMessage, setRegionStatus, cancelFetch, runFetch
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
@@ -207,7 +209,7 @@ boolean
 
 ```js
 // type signature
-rpcProps: () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 7 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: number | undefined; colorByCDS: boolean; the...
+rpcProps: () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: number | undefined; colorByCDS: boolean; the...
 ```
 
 #### method: showSubmenuMenuItems

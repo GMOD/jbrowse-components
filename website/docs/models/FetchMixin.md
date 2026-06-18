@@ -72,6 +72,33 @@ string | undefined
 statusMessage: undefined as string | undefined
 ```
 
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate
+
+```js
+// type signature
+number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
+#### volatile: regionStatuses
+
+latest status of each concurrent in-flight operation, keyed by an arbitrary id
+(the canvas display uses displayedRegionIndex). Plain bookkeeping — not read
+reactively; setRegionStatus derives the observable statusMessage/statusProgress
+from it on every update so N parallel region fetches aggregate into one bar
+instead of clobbering.
+
+```js
+// type signature
+Map<number, RpcStatus>
+// code
+regionStatuses: new Map<number, RpcStatus>()
+```
+
 ### FetchMixin - Getters
 
 #### getter: isLoading
@@ -96,7 +123,19 @@ setError: (error?: unknown) => void
 
 ```js
 // type signature
-setStatusMessage: (msg?: string | undefined) => void
+setStatusMessage: (status?: RpcStatus | undefined) => void
+```
+
+#### action: setRegionStatus
+
+Record one concurrent operation's latest status (keyed) and recompute the shared
+statusMessage/statusProgress as the aggregate across all in-flight keys. Pass
+undefined to drop a key. Used by displays that fan a single fetch out into
+parallel per-region RPCs.
+
+```js
+// type signature
+setRegionStatus: (key: number, status?: RpcStatus | undefined) => void
 ```
 
 #### action: cancelFetch

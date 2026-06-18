@@ -91,11 +91,12 @@ setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
-**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage,
+statusProgress, regionStatuses
 
 **Getters:** isLoading
 
-**Actions:** setError, setStatusMessage, cancelFetch, runFetch
+**Actions:** setError, setStatusMessage, setRegionStatus, cancelFetch, runFetch
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
@@ -114,6 +115,20 @@ setRenderError, attachRenderingBackend
 ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: jexlFiltersSetting
+
+Runtime "Filter by..." override. When set (even to an empty list) it replaces
+the `jexlFilters` config slot; when undefined the config default applies. Stored
+as already-`jexl:`-prefixed expressions (runtime convention), unlike the
+deferred-evaluation config slot.
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+jexlFiltersSetting: types.maybe(types.array(types.string))
 ```
 
 ### LinearCanvasBaseDisplay - Volatiles
@@ -516,6 +531,19 @@ Map<number, FlatbushRegionIndexes>
 
 ### LinearCanvasBaseDisplay - Methods
 
+#### method: activeFilters
+
+The filters actually applied, as `jexl:`-prefixed expressions. The runtime
+override shadows the config slot when set; otherwise the deferred-evaluation
+`jexlFilters` config slot is prefixed on read. This is the single source of
+truth for both the worker (via rpcProps) and the "Filter by..." dialog (so
+existing config filters show up and are editable).
+
+```js
+// type signature
+activeFilters: () => string[]
+```
+
 #### method: rpcProps
 
 ```js
@@ -588,7 +616,7 @@ colorMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap
 
 ```js
 // type signature
-trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; })[]
+trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; } | { ...; })[]
 ```
 
 ### LinearCanvasBaseDisplay - Actions
@@ -719,6 +747,16 @@ setAutoHeight: (value: boolean) => void
 setShowDescriptions: (value: boolean) => void
 ```
 
+#### action: setJexlFilters
+
+Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass
+undefined to clear it and fall back to the config `jexlFilters` slot.
+
+```js
+// type signature
+setJexlFilters: (filters?: string[] | undefined) => void
+```
+
 #### action: setShowOutline
 
 ```js
@@ -759,6 +797,13 @@ openSetColorDialog: (showUtrColor?: any) => void
 ```js
 // type signature
 openColorByAttributeDialog: () => void
+```
+
+#### action: openFilterDialog
+
+```js
+// type signature
+openFilterDialog: () => void
 ```
 
 #### action: fetchFullFeature

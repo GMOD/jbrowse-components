@@ -151,22 +151,20 @@ function inheritedSlotsSection(bases: BaseRef[]) {
     : ''
 }
 
-// Buckets configs into a sidebar category by name suffix, so the flat
-// alphabetically-sorted sidebar list (website/src/lib/docs-sidebar.ts) groups
-// related configs together once sidebar_label is prefixed with this.
-function configCategory(name: string): string {
+// Determine the subdirectory and category name for organizing configs
+function configCategory(name: string): { label: string } {
   if (name.endsWith('Adapter')) {
-    return 'Adapter'
+    return { label: 'Adapter' }
   } else if (name.endsWith('Track')) {
-    return 'Track'
+    return { label: 'Track' }
   } else if (name.endsWith('Display')) {
-    return 'Display'
+    return { label: 'Display' }
   } else if (name.endsWith('Connection')) {
-    return 'Connection'
+    return { label: 'Connection' }
   } else if (name.endsWith('InternetAccount')) {
-    return 'Internet Account'
+    return { label: 'Internet Account' }
   } else {
-    return 'General'
+    return { label: 'General' }
   }
 }
 
@@ -221,10 +219,11 @@ function renderConfig(
   )
   const docsSection = overviewSection(header.docs, sections)
 
+  const category = configCategory(header.name)
   return `---
 id: ${header.id}
 title: ${header.name}
-sidebar_label: ${configCategory(header.name)} -> ${header.name}
+sidebar_label: ${category.label} -> ${header.name}
 ---
 
 Note: this document is automatically generated from configuration objects in

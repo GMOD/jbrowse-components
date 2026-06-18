@@ -46,13 +46,51 @@ function docHref(baseUrl: string, slug: string): string {
   return `${baseUrl}/docs/${slug}${slug ? '/' : ''}`
 }
 
+function groupConfigsByCategory(
+  links: SidebarLink[],
+): SidebarEntry[] {
+  const grouped = new Map<string, SidebarLink[]>()
+
+  for (const link of links) {
+    const match = link.label.match(/^(.+?)\s*->\s*(.+)$/)
+    let category: string
+    let label: string
+    if (match && match.length > 2) {
+      category = match[1]!.trim()
+      label = match[2]!.trim()
+    } else {
+      category = 'General'
+      label = link.label
+    }
+
+    if (!grouped.has(category)) {
+      grouped.set(category, [])
+    }
+    const categoryItems = grouped.get(category)
+    if (categoryItems) {
+      categoryItems.push({
+        ...link,
+        label,
+      })
+    }
+  }
+
+  return Array.from(grouped.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([category, items]) => ({
+      type: 'group' as const,
+      label: category,
+      items: items.sort((a, b) => a.label.localeCompare(b.label)),
+    }))
+}
+
 function getAutoItems(
   dirName: string,
   allDocs: DocEntry[],
   baseUrl: string,
-): SidebarLink[] {
+): SidebarEntry[] {
   const dirDepth = dirName.split('/').length + 1
-  return allDocs
+  const links = allDocs
     .flatMap(d => {
       const slug = entrySlug(d.id)
       const parts = slug.split('/')
@@ -69,6 +107,11 @@ function getAutoItems(
       ]
     })
     .sort((a, b) => a.label.localeCompare(b.label))
+
+  if (dirName === 'config') {
+    return groupConfigsByCategory(links)
+  }
+  return links
 }
 
 function convertItems(

@@ -54,11 +54,12 @@ setRenderError, attachRenderingBackend
 
 ### Available via [FetchMixin](../fetchmixin)
 
-**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage
+**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage,
+statusProgress, regionStatuses
 
 **Getters:** isLoading
 
-**Actions:** setError, setStatusMessage, cancelFetch, runFetch
+**Actions:** setError, setStatusMessage, setRegionStatus, cancelFetch, runFetch
 
 ### MultiRegionDisplayMixin - Volatiles
 
