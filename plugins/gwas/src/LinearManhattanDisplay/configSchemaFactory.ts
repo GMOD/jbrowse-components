@@ -9,6 +9,34 @@ import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
  * #config LinearManhattanDisplay
  * #category display
  * configuration for the Manhattan plot display used by GWAS tracks
+ *
+ * #example
+ * A complete `GWASTrack` config to paste into `tracks`, LocusZoom-style:
+ * `colorBy: 'ld'` colors each point by its r² to the index SNP, read from
+ * `ldAdapter`:
+ * ```js
+ * {
+ *   type: 'GWASTrack',
+ *   trackId: 'gwas',
+ *   name: 'GWAS results',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'GWASAdapter',
+ *     uri: 'https://example.com/gwas.bed.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearManhattanDisplay',
+ *       displayId: 'gwas-LinearManhattanDisplay',
+ *       colorBy: 'ld',
+ *       ldAdapter: {
+ *         type: 'PlinkLDTabixAdapter',
+ *         uri: 'https://example.com/plink.ld.gz',
+ *       },
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export function configSchemaFactory() {
   return ConfigurationSchema(

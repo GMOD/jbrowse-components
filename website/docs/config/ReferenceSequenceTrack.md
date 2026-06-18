@@ -39,6 +39,16 @@ _See the **Slots** section below for all available configuration fields._
 
 used to display base level DNA sequence tracks
 
+### ReferenceSequenceTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [LinearGCContentDisplay](../lineargccontentdisplay)
+  ([state model](../../models/lineargccontentdisplay))
+- [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+  ([state model](../../models/linearreferencesequencedisplay))
+
 ### ReferenceSequenceTrack - Identifier
 
 #### slot: explicitIdentifier

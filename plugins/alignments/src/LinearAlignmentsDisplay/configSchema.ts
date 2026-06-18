@@ -9,6 +9,67 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config LinearAlignmentsDisplay
  * #category display
  * configuration schema for the LinearAlignmentsDisplay
+ *
+ * #example
+ * The display goes in a track's `displays` array; here are three complete
+ * `AlignmentsTrack` configs to paste into `tracks`.
+ *
+ * Basic BAM, opened taller:
+ * ```js
+ * {
+ *   type: 'AlignmentsTrack',
+ *   trackId: 'ngs_reads',
+ *   name: 'NGS reads',
+ *   assemblyNames: ['hg38'],
+ *   adapter: { type: 'BamAdapter', uri: 'https://example.com/sample.bam' },
+ *   displays: [
+ *     {
+ *       type: 'LinearAlignmentsDisplay',
+ *       displayId: 'ngs_reads-LinearAlignmentsDisplay',
+ *       height: 250,
+ *     },
+ *   ],
+ * }
+ * ```
+ *
+ * CRAM colored by CpG methylation (modBAM MM/ML tags):
+ * ```js
+ * {
+ *   type: 'AlignmentsTrack',
+ *   trackId: 'methylation',
+ *   name: 'Methylation',
+ *   assemblyNames: ['hg38'],
+ *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
+ *   displays: [
+ *     {
+ *       type: 'LinearAlignmentsDisplay',
+ *       displayId: 'methylation-LinearAlignmentsDisplay',
+ *       colorBy: { type: 'methylation' },
+ *     },
+ *   ],
+ * }
+ * ```
+ *
+ * Long reads with soft-clipping shown and split/mate reads connected by arcs:
+ * ```js
+ * {
+ *   type: 'AlignmentsTrack',
+ *   trackId: 'long_reads',
+ *   name: 'Long reads',
+ *   assemblyNames: ['hg38'],
+ *   adapter: { type: 'BamAdapter', uri: 'https://example.com/longreads.bam' },
+ *   displays: [
+ *     {
+ *       type: 'LinearAlignmentsDisplay',
+ *       displayId: 'long_reads-LinearAlignmentsDisplay',
+ *       height: 400,
+ *       showSoftClipping: true,
+ *       linkedReads: 'normal',
+ *       readConnections: 'arc',
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export default function configSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(

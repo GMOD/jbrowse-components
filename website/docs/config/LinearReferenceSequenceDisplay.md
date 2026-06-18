@@ -16,3 +16,29 @@ reference the markdown files in our repo of the checked out git tag
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/configSchema.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearReferenceSequenceDisplay.md)
+
+## Example usage
+
+A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
+`sequence` track takes the same shape). `showForward`, `showReverse`, and
+`showTranslation` toggle the strand/translation rows:
+
+```js
+{
+  type: 'ReferenceSequenceTrack',
+  trackId: 'refseq',
+  name: 'Reference sequence',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'IndexedFastaAdapter',
+    uri: 'https://example.com/genome.fa',
+  },
+  displays: [
+    {
+      type: 'LinearReferenceSequenceDisplay',
+      displayId: 'refseq-LinearReferenceSequenceDisplay',
+      showTranslation: false,
+    },
+  ],
+}
+```

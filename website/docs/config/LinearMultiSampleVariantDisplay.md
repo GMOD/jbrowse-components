@@ -17,6 +17,35 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearMultiSampleVariantDisplay.md)
 
+## Example usage
+
+A complete `VariantTrack` config to paste into `tracks`, for a multi-sample
+(cohort) VCF. `renderingMode: 'phased'` draws each sample's two haplotypes as
+separate rows instead of one allele-count row per sample:
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'cohort',
+  name: 'Cohort variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/cohort.vcf.gz',
+  },
+  displays: [
+    {
+      type: 'LinearMultiSampleVariantDisplay',
+      displayId: 'cohort-LinearMultiSampleVariantDisplay',
+      height: 400,
+      renderingMode: 'phased',
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 ### LinearMultiSampleVariantDisplay - Slots

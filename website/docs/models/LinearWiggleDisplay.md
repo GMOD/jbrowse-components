@@ -112,11 +112,12 @@ setRenderError, attachRenderingBackend
 ### Available via [FetchMixin](../fetchmixin)
 
 **Volatiles:** activeStopToken, fetchGeneration, error, statusMessage,
-statusProgress, regionStatuses
+statusProgress, fetchCanceled, regionStatuses
 
 **Getters:** isLoading
 
-**Actions:** setError, setStatusMessage, setRegionStatus, cancelFetch, runFetch
+**Actions:** setError, setStatusMessage, setRegionStatus, cancelFetch,
+cancelFetchByUser, runFetch
 
 ### Available via [WiggleCommonMixin](../wigglecommonmixin)
 

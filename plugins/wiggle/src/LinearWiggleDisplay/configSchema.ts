@@ -28,6 +28,28 @@ import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
  *   ]
  * }
  * ```
+ *
+ * #example
+ * A complete `QuantitativeTrack` config to paste into `tracks`. `height` is the
+ * common display-level override; score-range and rendering options (autoscale,
+ * min/max score, renderer) are config slots on the track itself — see the
+ * `QuantitativeTrack` config:
+ * ```js
+ * {
+ *   type: 'QuantitativeTrack',
+ *   trackId: 'coverage',
+ *   name: 'Coverage',
+ *   assemblyNames: ['hg38'],
+ *   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
+ *   displays: [
+ *     {
+ *       type: 'LinearWiggleDisplay',
+ *       displayId: 'coverage-LinearWiggleDisplay',
+ *       height: 100,
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export default ConfigurationSchema(
   'LinearWiggleDisplay',

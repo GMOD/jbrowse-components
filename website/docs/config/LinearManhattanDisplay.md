@@ -17,6 +17,38 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearManhattanDisplay.md)
 
+## Example usage
+
+A complete `GWASTrack` config to paste into `tracks`, LocusZoom-style:
+`colorBy: 'ld'` colors each point by its r² to the index SNP, read from
+`ldAdapter`:
+
+```js
+{
+  type: 'GWASTrack',
+  trackId: 'gwas',
+  name: 'GWAS results',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'GWASAdapter',
+    uri: 'https://example.com/gwas.bed.gz',
+  },
+  displays: [
+    {
+      type: 'LinearManhattanDisplay',
+      displayId: 'gwas-LinearManhattanDisplay',
+      colorBy: 'ld',
+      ldAdapter: {
+        type: 'PlinkLDTabixAdapter',
+        uri: 'https://example.com/plink.ld.gz',
+      },
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 configuration for the Manhattan plot display used by GWAS tracks

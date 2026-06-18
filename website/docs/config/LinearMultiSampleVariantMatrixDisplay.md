@@ -17,6 +17,35 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearMultiSampleVariantMatrixDisplay.md)
 
+## Example usage
+
+A complete `VariantTrack` config to paste into `tracks`, laying samples out as a
+matrix (columns = features, rows = samples) instead of stacked rows.
+`minorAlleleFrequencyFilter` hides common variants below the given MAF:
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'cohort',
+  name: 'Cohort variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/cohort.vcf.gz',
+  },
+  displays: [
+    {
+      type: 'LinearMultiSampleVariantMatrixDisplay',
+      displayId: 'cohort-LinearMultiSampleVariantMatrixDisplay',
+      height: 400,
+      minorAlleleFrequencyFilter: 0.05,
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 ### LinearMultiSampleVariantMatrixDisplay - Slots

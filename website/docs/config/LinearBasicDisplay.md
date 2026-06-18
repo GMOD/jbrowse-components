@@ -17,6 +17,33 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearBasicDisplay.md)
 
+## Example usage
+
+A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
+`tracks`. `displayMode` switches between `normal`, `compact`, `superCompact`,
+`reducedRepresentation`, and `collapse`:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'genes',
+  name: 'Genes',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://example.com/genes.gff3.gz',
+  },
+  displays: [
+    {
+      type: 'LinearBasicDisplay',
+      displayId: 'genes-LinearBasicDisplay',
+      height: 200,
+      displayMode: 'compact',
+    },
+  ],
+}
+```
+
 ## Overview
 
 configuration for the basic linear feature display (genes, BED, GFF, etc.)

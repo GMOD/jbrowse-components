@@ -4,6 +4,30 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config ChordVariantDisplay
+ *
+ * #example
+ * The circular-view display for a `VariantTrack` of structural variants;
+ * translocations are drawn as chords across the circle. `bezierRadiusRatio`
+ * controls how far the chords bow toward the center:
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'sv',
+ *   name: 'Structural variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/sv.vcf.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'ChordVariantDisplay',
+ *       displayId: 'sv-ChordVariantDisplay',
+ *       bezierRadiusRatio: 0.1,
+ *     },
+ *   ],
+ * }
+ * ```
  */
 
 function configSchemaF(_pluginManager: PluginManager) {

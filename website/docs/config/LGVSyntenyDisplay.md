@@ -17,6 +17,35 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LGVSyntenyDisplay.md)
 
+## Example usage
+
+Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
+two-row synteny view). Same track config as a synteny track — just pick this
+display type:
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'hg38_vs_mm10',
+  name: 'hg38 vs mm10',
+  assemblyNames: ['hg38', 'mm10'],
+  adapter: {
+    type: 'PAFAdapter',
+    uri: 'https://example.com/hg38_vs_mm10.paf',
+    queryAssembly: 'hg38',
+    targetAssembly: 'mm10',
+  },
+  displays: [
+    {
+      type: 'LGVSyntenyDisplay',
+      displayId: 'hg38_vs_mm10-LGVSyntenyDisplay',
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 ## Inherited config slots

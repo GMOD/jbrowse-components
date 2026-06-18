@@ -17,6 +17,32 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearWiggleDisplay.md)
 
+## Example usage
+
+A complete `QuantitativeTrack` config to paste into `tracks`. `height` is the
+common display-level override; score-range and rendering options (autoscale,
+min/max score, renderer) are config slots on the track itself — see the
+`QuantitativeTrack` config:
+
+```js
+{
+  type: 'QuantitativeTrack',
+  trackId: 'coverage',
+  name: 'Coverage',
+  assemblyNames: ['hg38'],
+  adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
+  displays: [
+    {
+      type: 'LinearWiggleDisplay',
+      displayId: 'coverage-LinearWiggleDisplay',
+      height: 100,
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 configuration for the wiggle (quantitative/numeric) display showing XY plot,

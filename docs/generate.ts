@@ -11,6 +11,7 @@ import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import type { ApiGroup } from './generateApiDocs.ts'
 import type { Config } from './generateConfigDocs.ts'
 import type { StateModel } from './generateStateModelDocs.ts'
+import type { DisplayTrackLink } from './util.ts'
 
 // Build the TypeScript program over the whole repo ONCE and route each tagged
 // node into the config, state-model, and API accumulators. Previously the
@@ -20,12 +21,36 @@ async function main() {
   const configs: Record<string, Config> = {}
   const models: Record<string, StateModel> = {}
   const api: Record<string, ApiGroup> = {}
-  extractWithComment(await getAllFiles(), obj => {
-    accumulateConfig(configs, obj)
-    accumulateModel(models, obj)
-    accumulateApi(api, obj)
-  })
-  await writeConfigDocs(configs)
+  const displayLinks: DisplayTrackLink[] = []
+  extractWithComment(
+    await getAllFiles(),
+    obj => {
+      accumulateConfig(configs, obj)
+      accumulateModel(models, obj)
+      accumulateApi(api, obj)
+    },
+    link => displayLinks.push(link),
+  )
+
+  // Reverse index: a Track config's "Display types" section looks up displays
+  // by the track's own name, the only end of this link a Track's source code
+  // doesn't itself carry.
+  const displayTypesByTrack = new Map<string, string[]>()
+  for (const { displayName, trackType } of displayLinks) {
+    const displayNames = displayTypesByTrack.get(trackType)
+    if (displayNames) {
+      displayNames.push(displayName)
+    } else {
+      displayTypesByTrack.set(trackType, [displayName])
+    }
+  }
+  const modelNames = new Set(
+    Object.values(models)
+      .map(m => m.header?.name)
+      .filter((name): name is string => Boolean(name)),
+  )
+
+  await writeConfigDocs(configs, displayTypesByTrack, modelNames)
   await writeModelDocs(models)
   await writeApiDocs(api)
   await writeApiReadmes(api)

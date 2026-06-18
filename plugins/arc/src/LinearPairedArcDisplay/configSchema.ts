@@ -5,6 +5,28 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config LinearPairedArcDisplay
+ *
+ * #example
+ * Selected on a `VariantTrack` of structural variants — arcs connect each
+ * breakend to its mate, even across displayed regions:
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'sv',
+ *   name: 'Structural variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/sv.vcf.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearPairedArcDisplay',
+ *       displayId: 'sv-LinearPairedArcDisplay',
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export function configSchemaFactory() {
   return ConfigurationSchema(

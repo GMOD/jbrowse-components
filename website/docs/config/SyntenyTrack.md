@@ -17,7 +17,48 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/SyntenyTrack.md)
 
+## Example usage
+
+A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs the
+query (first) and target (second) assembly names, matched by the track's
+`assemblyNames`:
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'hg38_vs_mm10',
+  name: 'hg38 vs mm10',
+  assemblyNames: ['hg38', 'mm10'],
+  adapter: {
+    type: 'PAFAdapter',
+    uri: 'https://example.com/hg38_vs_mm10.paf',
+    queryAssembly: 'hg38',
+    targetAssembly: 'mm10',
+  },
+  displays: [
+    {
+      type: 'LinearSyntenyDisplay',
+      displayId: 'hg38_vs_mm10-LinearSyntenyDisplay',
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+### SyntenyTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [DotplotDisplay](../dotplotdisplay)
+  ([state model](../../models/dotplotdisplay))
+- [LGVSyntenyDisplay](../lgvsyntenydisplay)
+  ([state model](../../models/lgvsyntenydisplay))
+- [LinearSyntenyDisplay](../linearsyntenydisplay)
+  ([state model](../../models/linearsyntenydisplay))
 
 ## Inherited config slots
 

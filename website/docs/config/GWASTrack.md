@@ -17,9 +17,38 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GWASTrack.md)
 
+## Example usage
+
+`GWASAdapter` is a `BedTabixAdapter` that defaults `scoreColumn` to
+`neg_log_pvalue`. Override it if your BED has the p-value (not -log10 p) in a
+different column:
+
+```js
+{
+  type: 'GWASTrack',
+  trackId: 'gwas',
+  name: 'GWAS results',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'GWASAdapter',
+    uri: 'https://example.com/gwas.bed.gz',
+    scoreColumn: 'p_value',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display
+
+### GWASTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [LinearManhattanDisplay](../linearmanhattandisplay)
 
 ## Inherited config slots
 

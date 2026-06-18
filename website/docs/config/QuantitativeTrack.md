@@ -58,6 +58,14 @@ _See the **Slots** section below for all available configuration fields._
 a numerical signal track (coverage, conservation, etc.), typically backed by a
 BigWig file and drawn as an XY plot or density
 
+### QuantitativeTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [LinearWiggleDisplay](../linearwiggledisplay)
+  ([state model](../../models/linearwiggledisplay))
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so

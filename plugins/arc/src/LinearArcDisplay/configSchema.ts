@@ -8,6 +8,29 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config LinearArcDisplay
+ *
+ * #example
+ * Selected on a `FeatureTrack`; each feature is drawn as an arc from its start
+ * to its end. `displayMode` is `arcs` or `semicircles`:
+ * ```js
+ * {
+ *   type: 'FeatureTrack',
+ *   trackId: 'interactions',
+ *   name: 'Interactions',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'Gff3TabixAdapter',
+ *     uri: 'https://example.com/interactions.gff3.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearArcDisplay',
+ *       displayId: 'interactions-LinearArcDisplay',
+ *       displayMode: 'semicircles',
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export function configSchemaFactory() {
   return ConfigurationSchema(

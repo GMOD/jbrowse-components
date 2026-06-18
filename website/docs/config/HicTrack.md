@@ -17,7 +17,40 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/HicTrack.md)
 
+## Example usage
+
+A complete `HicTrack` config to paste into `tracks`. `resolutionBias` nudges the
+auto-picked binsize (negative = finer, positive = coarser):
+
+```js
+{
+  type: 'HicTrack',
+  trackId: 'hic',
+  name: 'Hi-C',
+  assemblyNames: ['hg38'],
+  adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
+  displays: [
+    {
+      type: 'LinearHicDisplay',
+      displayId: 'hic-LinearHicDisplay',
+      useLogScale: true,
+      resolutionBias: 1,
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+### HicTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [LinearHicDisplay](../linearhicdisplay)
+  ([state model](../../models/linearhicdisplay))
 
 ## Inherited config slots
 

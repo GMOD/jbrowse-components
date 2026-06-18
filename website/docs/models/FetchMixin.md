@@ -85,6 +85,21 @@ number | undefined
 statusProgress: undefined as number | undefined
 ```
 
+#### volatile: fetchCanceled
+
+true after the user explicitly cancels a load (the loading overlay's cancel
+button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`,
+it does not retrigger the fetch autoruns — so the load stays stopped until the
+user retries (`reload`) or the viewport changes. Any new fetch clears it
+(`runFetch` resets it at the start).
+
+```js
+// type signature
+false
+// code
+fetchCanceled: false
+```
+
 #### volatile: regionStatuses
 
 latest status of each concurrent in-flight operation, keyed by an arbitrary id
@@ -142,11 +157,26 @@ setRegionStatus: (key: number, status?: RpcStatus | undefined) => void
 #### action: cancelFetch
 
 cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers
-can retrigger fetch autoruns even when nothing was in flight)
+can retrigger fetch autoruns even when nothing was in flight). This is the
+_internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any
+user-cancel flag so the retrigger actually re-fetches.
 
 ```js
 // type signature
 cancelFetch: () => void
+```
+
+#### action: cancelFetchByUser
+
+User-initiated cancel from the loading overlay. Stops the in-flight fetch and
+lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump
+fetchGeneration — so the fetch autoruns don't immediately restart the load. The
+user retries via `reload` (the overlay's retry button), or it clears on the next
+viewport change.
+
+```js
+// type signature
+cancelFetchByUser: () => void
 ```
 
 #### action: runFetch

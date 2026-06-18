@@ -60,6 +60,14 @@ _See the **Slots** section below for all available configuration fields._
 
 has very little config; most config and state logic is on the display
 
+### AlignmentsTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+  ([state model](../../models/linearalignmentsdisplay))
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so

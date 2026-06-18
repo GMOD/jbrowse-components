@@ -40,6 +40,33 @@ const SINGLE_TO_MULTI_RENDERING: Record<string, string> = {
  *   ]
  * }
  * ```
+ *
+ * #example
+ * A complete `MultiQuantitativeTrack` config to paste into `tracks`, overlaying
+ * two samples in one shared plot (`multixyplot`) instead of the default
+ * stacked-per-subtrack layout:
+ * ```js
+ * {
+ *   type: 'MultiQuantitativeTrack',
+ *   trackId: 'coverage_by_sample',
+ *   name: 'Coverage by sample',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'MultiWiggleAdapter',
+ *     bigWigs: [
+ *       'https://example.com/sample1.bw',
+ *       'https://example.com/sample2.bw',
+ *     ],
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'MultiLinearWiggleDisplay',
+ *       displayId: 'coverage_by_sample-MultiLinearWiggleDisplay',
+ *       defaultRendering: 'multixyplot',
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export default ConfigurationSchema(
   'MultiLinearWiggleDisplay',

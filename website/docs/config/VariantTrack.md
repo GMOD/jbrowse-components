@@ -59,6 +59,20 @@ _See the **Slots** section below for all available configuration fields._
 Mostly similar to feature track, but has `ChordDisplayType` registered to it,
 and custom feature details in `LinearVariantDisplay`
 
+### VariantTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [LinearPairedArcDisplay](../linearpairedarcdisplay)
+  ([state model](../../models/linearpairedarcdisplay))
+- [ChordVariantDisplay](../chordvariantdisplay)
+  ([state model](../../models/chordvariantdisplay))
+- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- [LinearVariantDisplay](../linearvariantdisplay)
+  ([state model](../../models/linearvariantdisplay))
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so

@@ -8,6 +8,28 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config LinearVariantDisplay
  *
  * Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
+ *
+ * #example
+ * A complete `VariantTrack` config to paste into `tracks`:
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'variants',
+ *   name: 'Variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/variants.vcf.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearVariantDisplay',
+ *       displayId: 'variants-LinearVariantDisplay',
+ *       height: 150,
+ *     },
+ *   ],
+ * }
+ * ```
  */
 
 export default function configSchemaF(pluginManager: PluginManager) {

@@ -177,19 +177,50 @@ function configCategory(name: string, explicit?: string): string {
   }
 }
 
+// Everything renderConfig/displayTypesSection need to resolve a Track's
+// "Display types" links: which Displays declare `trackType: 'ThisTrack'`
+// (see DisplayTrackLink in util.ts), the config-doc index to turn a Display
+// name into a page, and which Displays also have a documented state model.
+interface DisplayLinkContext {
+  displayTypesByTrack: Map<string, string[]>
+  byName: Map<string, ConfigWithHeader>
+  modelNames: Set<string>
+}
+
+// Reverse-links a Track config to the Display types that attach to it.
+// Displays parameterized from a shared factory at runtime (e.g.
+// LDDisplay/LDTrackDisplay) carry no individually-tagged #config and so
+// resolve to nothing here; silently skipped, same as an empty Slots section.
+function displayTypesSection(name: string, links: DisplayLinkContext) {
+  const lines = (links.displayTypesByTrack.get(name) ?? []).flatMap(
+    displayName => {
+      const display = links.byName.get(displayName)
+      if (!display) {
+        return []
+      }
+      const modelLink = links.modelNames.has(displayName)
+        ? ` ([state model](../../models/${display.header.id}))`
+        : ''
+      return [`- [${displayName}](../${display.header.id})${modelLink}`]
+    },
+  )
+  return lines.length
+    ? section(
+        `### ${name} - Display types`,
+        'A track is just a container; the actual rendering behavior and config slots live on its display type(s):',
+        lines.join('\n'),
+      )
+    : ''
+}
+
 function renderConfig(
-  {
-    header,
-    derives,
-    identifier,
-    preProcess,
-    slots,
-    filename,
-  }: ConfigWithHeader,
+  { header, derives, identifier, preProcess, slots, filename }: ConfigWithHeader,
   bases: BaseRef[],
+  links: DisplayLinkContext,
 ): string {
   const directBase = bases[0]?.config
   const sections = section(
+    displayTypesSection(header.name, links),
     preProcess &&
       section(
         `### ${header.name} - Pre-processor / simplified config`,
@@ -272,7 +303,11 @@ function validateBaseConfig(config: ConfigWithHeader, bases: BaseRef[]) {
   }
 }
 
-export async function writeConfigDocs(byFile: Record<string, Config>) {
+export async function writeConfigDocs(
+  byFile: Record<string, Config>,
+  displayTypesByTrack: Map<string, string[]>,
+  modelNames: Set<string>,
+) {
   const dir = 'website/docs/config'
   fs.mkdirSync(dir, { recursive: true })
   const withHeader = Object.values(byFile).filter((c): c is ConfigWithHeader =>
@@ -284,12 +319,13 @@ export async function writeConfigDocs(byFile: Record<string, Config>) {
       .map(c => [c.header.declId!, c] as const),
   )
   const byName = new Map(withHeader.map(c => [c.header.name, c] as const))
+  const links: DisplayLinkContext = { displayTypesByTrack, byName, modelNames }
   for (const cfg of withHeader) {
     const bases = collectBaseConfigs(cfg, byDeclId, byName)
     validateBaseConfig(cfg, bases)
     await writeFormatted(
       `${dir}/${cfg.header.name}.md`,
-      renderConfig(cfg, bases),
+      renderConfig(cfg, bases, links),
     )
   }
   warnCoverageGap(

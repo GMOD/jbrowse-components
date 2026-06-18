@@ -62,6 +62,16 @@ export interface ComposedRef {
   name?: string
 }
 
+// A `trackType: 'X'` link declared on a `new DisplayType({ name, trackType })`
+// registration — the only place in the codebase a Display says which Track it
+// attaches to. Structural, not JSDoc-driven: a Display's index.ts registration
+// carries no #config/#stateModel tag itself (those tags sit on the config/model
+// factories it imports), so this can't piggyback on the tag pass above.
+export interface DisplayTrackLink {
+  displayName: string
+  trackType: string
+}
+
 const TAG_TYPES = [
   'stateModel',
   'config',
@@ -91,6 +101,7 @@ const LIFECYCLE_HOOKS = new Set([
 export function extractWithComment(
   fileNames: string[],
   cb: (obj: ExtractedNode) => void,
+  onDisplayLink: (link: DisplayTrackLink) => void,
   options: ts.CompilerOptions = {},
 ) {
   const program = ts.createProgram(fileNames, options)
@@ -103,12 +114,21 @@ export function extractWithComment(
       // #stateModel, so non-model helper files with their own .views()/
       // .actions() chains don't contribute spurious members.
       const isStateModel = hasTag(sourceFile.getFullText(), 'stateModel')
-      ts.forEachChild(sourceFile, node => visit(node, isStateModel))
+      const isTestFile = /\.test\.tsx?$/.test(sourceFile.fileName)
+      ts.forEachChild(sourceFile, node => visit(node, isStateModel, isTestFile))
     }
   }
   reportBlindSpots(blindSpots)
 
-  function visit(node: ts.Node, isStateModel: boolean) {
+  function visit(node: ts.Node, isStateModel: boolean, isTestFile: boolean) {
+    // Unlike the JSDoc-tag pass below, this structural check isn't gated by a
+    // tag a test fixture would never carry — a unit test that constructs its
+    // own `new DisplayType(...)` fixture would otherwise show up as a real
+    // track/display link, so test files are excluded outright.
+    const link = isTestFile ? undefined : displayTrackLink(node)
+    if (link) {
+      onDisplayLink(link)
+    }
     const comment = getOwnJSDocText(node)
     const tags = comment ? TAG_TYPES.filter(t => hasTag(comment, t)) : []
     if (tags.length) {
@@ -140,7 +160,7 @@ export function extractWithComment(
       // is examined here, so no member is ever emitted twice.
       emitUntaggedMember(checker, node, comment, cb, blindSpots)
     }
-    ts.forEachChild(node, n => visit(n, isStateModel))
+    ts.forEachChild(node, n => visit(n, isStateModel, isTestFile))
   }
 }
 
@@ -566,6 +586,40 @@ function findStringLiteral(node: ts.Node): string | undefined {
   }
   walk(node)
   return found
+}
+
+// Matches `new DisplayType({ name: 'X', trackType: 'Y', ... })` — the only
+// place in the codebase a Display declares which Track it attaches to. Plain
+// structural pattern match, not tied to any import path, so it also catches a
+// default-imported local alias.
+function displayTrackLink(node: ts.Node): DisplayTrackLink | undefined {
+  if (
+    !ts.isNewExpression(node) ||
+    !ts.isIdentifier(node.expression) ||
+    node.expression.text !== 'DisplayType' ||
+    !node.arguments?.length
+  ) {
+    return undefined
+  }
+  const arg = node.arguments[0]!
+  if (!ts.isObjectLiteralExpression(arg)) {
+    return undefined
+  }
+  const displayName = stringPropValue(arg, 'name')
+  const trackType = stringPropValue(arg, 'trackType')
+  return displayName && trackType ? { displayName, trackType } : undefined
+}
+
+// The string-literal value of a `key: '...'` property in an object literal, or
+// undefined when the property is absent or not a plain string literal.
+function stringPropValue(obj: ts.ObjectLiteralExpression, key: string) {
+  const prop = obj.properties.find(
+    (p): p is ts.PropertyAssignment =>
+      ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === key,
+  )
+  return prop && ts.isStringLiteral(prop.initializer)
+    ? prop.initializer.text
+    : undefined
 }
 
 function hasTag(comment: string, tag: TagType) {

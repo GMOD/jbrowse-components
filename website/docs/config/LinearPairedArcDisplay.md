@@ -17,6 +17,32 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearPairedArcDisplay.md)
 
+## Example usage
+
+Selected on a `VariantTrack` of structural variants — arcs connect each breakend
+to its mate, even across displayed regions:
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'sv',
+  name: 'Structural variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/sv.vcf.gz',
+  },
+  displays: [
+    {
+      type: 'LinearPairedArcDisplay',
+      displayId: 'sv-LinearPairedArcDisplay',
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 ### LinearPairedArcDisplay - Slots

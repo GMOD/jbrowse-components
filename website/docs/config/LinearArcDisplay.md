@@ -17,6 +17,33 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearArcDisplay.md)
 
+## Example usage
+
+Selected on a `FeatureTrack`; each feature is drawn as an arc from its start to
+its end. `displayMode` is `arcs` or `semicircles`:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'interactions',
+  name: 'Interactions',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://example.com/interactions.gff3.gz',
+  },
+  displays: [
+    {
+      type: 'LinearArcDisplay',
+      displayId: 'interactions-LinearArcDisplay',
+      displayMode: 'semicircles',
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 ### LinearArcDisplay - Slots

@@ -7,6 +7,31 @@ import type { Feature } from '@jbrowse/core/util'
 
 /**
  * #config LGVSyntenyDisplay
+ *
+ * #example
+ * Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
+ * two-row synteny view). Same track config as a synteny track — just pick this
+ * display type:
+ * ```js
+ * {
+ *   type: 'SyntenyTrack',
+ *   trackId: 'hg38_vs_mm10',
+ *   name: 'hg38 vs mm10',
+ *   assemblyNames: ['hg38', 'mm10'],
+ *   adapter: {
+ *     type: 'PAFAdapter',
+ *     uri: 'https://example.com/hg38_vs_mm10.paf',
+ *     queryAssembly: 'hg38',
+ *     targetAssembly: 'mm10',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LGVSyntenyDisplay',
+ *       displayId: 'hg38_vs_mm10-LGVSyntenyDisplay',
+ *     },
+ *   ],
+ * }
+ * ```
  */
 function configSchemaF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('lgvSyntenyTooltip', (f: Feature) => {

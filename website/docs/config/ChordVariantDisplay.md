@@ -17,6 +17,34 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/ChordVariantDisplay.md)
 
+## Example usage
+
+The circular-view display for a `VariantTrack` of structural variants;
+translocations are drawn as chords across the circle. `bezierRadiusRatio`
+controls how far the chords bow toward the center:
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'sv',
+  name: 'Structural variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/sv.vcf.gz',
+  },
+  displays: [
+    {
+      type: 'ChordVariantDisplay',
+      displayId: 'sv-ChordVariantDisplay',
+      bezierRadiusRatio: 0.1,
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 ### ChordVariantDisplay - Slots

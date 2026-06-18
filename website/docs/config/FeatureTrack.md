@@ -61,6 +61,16 @@ _See the **Slots** section below for all available configuration fields._
 
 used for basic gene and feature tracks, generally used with LinearBasicDisplay
 
+### FeatureTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [LinearArcDisplay](../lineararcdisplay)
+  ([state model](../../models/lineararcdisplay))
+- [LinearBasicDisplay](../linearbasicdisplay)
+  ([state model](../../models/linearbasicdisplay))
+
 ### FeatureTrack - Identifier
 
 #### slot: explicitIdentifier

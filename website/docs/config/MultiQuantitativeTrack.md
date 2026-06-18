@@ -17,7 +17,38 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/MultiQuantitativeTrack.md)
 
+## Example usage
+
+Overlays several bigwig files as one track. `bigWigs` is the shorthand form of
+`MultiWiggleAdapter` — equivalent to a `subadapters` array of individual
+`BigWigAdapter` configs, one per source/sample:
+
+```js
+{
+  type: 'MultiQuantitativeTrack',
+  trackId: 'coverage_by_sample',
+  name: 'Coverage by sample',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    bigWigs: [
+      'https://example.com/sample1.bw',
+      'https://example.com/sample2.bw',
+    ],
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+### MultiQuantitativeTrack - Display types
+
+A track is just a container; the actual rendering behavior and config slots live
+on its display type(s):
+
+- [MultiLinearWiggleDisplay](../multilinearwiggledisplay)
 
 ## Inherited config slots
 

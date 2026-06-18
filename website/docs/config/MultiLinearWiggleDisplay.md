@@ -17,6 +17,37 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/MultiLinearWiggleDisplay.md)
 
+## Example usage
+
+A complete `MultiQuantitativeTrack` config to paste into `tracks`, overlaying
+two samples in one shared plot (`multixyplot`) instead of the default
+stacked-per-subtrack layout:
+
+```js
+{
+  type: 'MultiQuantitativeTrack',
+  trackId: 'coverage_by_sample',
+  name: 'Coverage by sample',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    bigWigs: [
+      'https://example.com/sample1.bw',
+      'https://example.com/sample2.bw',
+    ],
+  },
+  displays: [
+    {
+      type: 'MultiLinearWiggleDisplay',
+      displayId: 'coverage_by_sample-MultiLinearWiggleDisplay',
+      defaultRendering: 'multixyplot',
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 configuration for the multi-wiggle display, which draws several quantitative

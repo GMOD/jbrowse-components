@@ -17,6 +17,32 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearVariantDisplay.md)
 
+## Example usage
+
+A complete `VariantTrack` config to paste into `tracks`:
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'variants',
+  name: 'Variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/variants.vcf.gz',
+  },
+  displays: [
+    {
+      type: 'LinearVariantDisplay',
+      displayId: 'variants-LinearVariantDisplay',
+      height: 150,
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.

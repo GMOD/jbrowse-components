@@ -17,6 +17,38 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearGCContentTrackDisplay.md)
 
+## Example usage
+
+A standalone `GCContentTrack` whose `GCContentAdapter` wraps a sequence adapter
+(use this instead of the `ReferenceSequenceTrack` display when you want GC as
+its own track):
+
+```js
+{
+  type: 'GCContentTrack',
+  trackId: 'gc',
+  name: 'GC content',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'GCContentAdapter',
+    sequenceAdapter: {
+      type: 'IndexedFastaAdapter',
+      fastaLocation: { uri: 'https://example.com/genome.fa' },
+      faiLocation: { uri: 'https://example.com/genome.fa.fai' },
+    },
+  },
+  displays: [
+    {
+      type: 'LinearGCContentTrackDisplay',
+      displayId: 'gc-LinearGCContentTrackDisplay',
+      gcMode: 'skew',
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 used specifically for GCContentTrack

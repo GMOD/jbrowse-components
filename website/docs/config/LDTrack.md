@@ -17,6 +17,27 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LDTrack.md)
 
+## Example usage
+
+`PlinkLDTabixAdapter` accepts the minimal `uri` shorthand below — it expects a
+sibling `<uri>.tbi` index, equivalent to writing out the full
+`ldLocation`/`index.location` slots:
+
+```js
+{
+  type: 'LDTrack',
+  trackId: 'ld',
+  name: 'Linkage disequilibrium',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'PlinkLDTabixAdapter',
+    uri: 'https://example.com/plink.ld.gz',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 Track type for displaying pre-computed linkage disequilibrium data (e.g., from
