@@ -1,4 +1,4 @@
-import { PORT, appendGpuParam, waitForDataLoaded } from '../helpers.ts'
+import { navigateToUrl, waitForDataLoaded } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
@@ -17,11 +17,9 @@ const suite: TestSuite = {
     {
       name: 'NCBI alias adapter',
       fn: async page => {
-        await page.goto(
-          appendGpuParam(
-            `http://localhost:${PORT}/?config=test_data/cfam2/config.json&sessionName=Test%20Session`,
-          ),
-          { waitUntil: 'networkidle0', timeout: 60000 },
+        await navigateToUrl(
+          page,
+          'config=test_data/cfam2/config.json&sessionName=Test%20Session',
         )
 
         await page.waitForSelector('[data-testid$="-done"] canvas', {

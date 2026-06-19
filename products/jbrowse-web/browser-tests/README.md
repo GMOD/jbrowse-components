@@ -109,6 +109,11 @@ RPC boundary — see `suites/gpu-quirks.ts`.
 
 - `navigateWithSessionSpec(page, spec, config?)` / `navigateToApp(page, ...)` -
   load the app at a session spec / config
+- `navigateToUrl(page, query)` - low-level goto for a raw `?<query>` string
+  (share links, custom session params); uses the backend-aware wait so it
+  doesn't stall the webgpu backend. Prefer the two above when they fit.
+- `zoomOut(page, times?)` - click the zoom-out button N times, then wait for the
+  re-fetch to settle
 - `findByTestId(page, testId, timeout)` / `findByText(page, text, timeout)`
 - `waitForDataLoaded(page)` / `waitForLoadingToComplete(page)` - wait on the
   `loading-overlay` test-id (data fetched). For canvas _paint_, wait on the

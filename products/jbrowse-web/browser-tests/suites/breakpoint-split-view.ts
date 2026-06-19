@@ -1,8 +1,7 @@
 import {
-  PORT,
-  appendGpuParam,
   delay,
   findByTestId,
+  navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
@@ -16,12 +15,7 @@ const suite: TestSuite = {
     {
       name: 'breakpoint split view loads default session (hg19)',
       fn: async page => {
-        await page.goto(
-          appendGpuParam(
-            `http://localhost:${PORT}/?config=test_data/breakpoint/config.json`,
-          ),
-          { waitUntil: 'networkidle0', timeout: 60000 },
-        )
+        await navigateToUrl(page, 'config=test_data/breakpoint/config.json')
 
         // BSV has two LGV sub-views with alignments tracks
         await findByTestId(page, 'pileup-display-done', 60000)
@@ -32,12 +26,7 @@ const suite: TestSuite = {
     {
       name: 'breakpoint split view canvas screenshot',
       fn: async page => {
-        await page.goto(
-          appendGpuParam(
-            `http://localhost:${PORT}/?config=test_data/breakpoint/config.json`,
-          ),
-          { waitUntil: 'networkidle0', timeout: 60000 },
-        )
+        await navigateToUrl(page, 'config=test_data/breakpoint/config.json')
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)

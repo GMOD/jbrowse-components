@@ -1,8 +1,8 @@
 import {
-  PORT,
   delay,
   findByTestId,
   findByText,
+  navigateToUrl,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { capturePageSnapshot, dualSnapshot } from '../snapshot.ts'
@@ -26,9 +26,9 @@ async function gotoStat4(page: Page) {
     ],
   }
   const specParam = encodeURIComponent(JSON.stringify(spec))
-  await page.goto(
-    `http://localhost:${PORT}/?config=test_data/config_gwas.json&session=spec-${specParam}&sessionName=GWAS%20LocusZoom`,
-    { waitUntil: 'networkidle0', timeout: 60000 },
+  await navigateToUrl(
+    page,
+    `config=test_data/config_gwas.json&session=spec-${specParam}&sessionName=GWAS%20LocusZoom`,
   )
   await findByTestId(page, 'manhattan-display-done', 60000)
   await waitForDataLoaded(page)

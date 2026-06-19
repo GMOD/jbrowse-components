@@ -1,9 +1,8 @@
 import {
-  PORT,
-  appendGpuParam,
   delay,
   findByTestId,
   findByText,
+  navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
@@ -30,10 +29,7 @@ async function loadDemoAndCheck(
     }
   })
 
-  const url = appendGpuParam(
-    `http://localhost:${PORT}/?config=${config}&sessionName=Demo%20Test`,
-  )
-  await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+  await navigateToUrl(page, `config=${config}&sessionName=Demo%20Test`)
 
   if (waitForText) {
     await findByText(page, waitForText, 30000)
@@ -59,91 +55,48 @@ async function loadDemoAndCheck(
   }
 }
 
+// Load checks (no error overlay, no fatal console errors). `[name, config]`,
+// with an optional text to wait for before the error sweep.
+const loadChecks: [string, string, string?][] = [
+  ['Volvox', 'test_data/volvox/config.json', 'ctgA'],
+  ['SARS-CoV2', 'test_data/sars-cov2/config.json'],
+  ['Breakpoint split view', 'test_data/breakpoint/config.json'],
+  ['Dotplot', 'test_data/config_dotplot.json'],
+  ['Yeast synteny', 'test_data/yeast_synteny/config.json'],
+  ['Hi-C', 'extra_test_data/hic_integration_test.json'],
+  ['Methylation test', 'test_data/methylation_test/config.json'],
+  ['Modifications test', 'test_data/modifications_test/config.json'],
+  ['Honeybee', 'test_data/honeybee/config.json'],
+  ['Grape-peach synteny', 'test_data/config_synteny_grape_peach.json'],
+  ['CFAM2 (dog genome)', 'test_data/cfam2/config.json'],
+]
+
 const localDemos: TestSuite = {
   name: 'Demo Inventory (Local)',
   tests: [
-    // --- Load checks (no error overlay, no fatal console errors) ---
-    {
-      name: 'Volvox demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/volvox/config.json', 'ctgA')
-      },
-    },
-    {
-      name: 'SARS-CoV2 demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/sars-cov2/config.json')
-      },
-    },
-    {
-      name: 'Breakpoint split view demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/breakpoint/config.json')
-      },
-    },
-    {
-      name: 'Dotplot demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/config_dotplot.json')
-      },
-    },
-    {
-      name: 'Yeast synteny demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/yeast_synteny/config.json')
-      },
-    },
-    {
-      name: 'Hi-C demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(
-          page,
-          'extra_test_data/hic_integration_test.json',
-        )
-      },
-    },
-    {
-      name: 'Methylation test demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/methylation_test/config.json')
-      },
-    },
-    {
-      name: 'Modifications test demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/modifications_test/config.json')
-      },
-    },
-    {
-      name: 'Honeybee demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/honeybee/config.json')
-      },
-    },
-    {
-      name: 'Grape-peach synteny demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(
-          page,
-          'test_data/config_synteny_grape_peach.json',
-        )
-      },
-    },
-    {
-      name: 'CFAM2 (dog genome) demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(page, 'test_data/cfam2/config.json')
-      },
-    },
+    ...loadChecks.map(([label, config, waitText]) => ({
+      name: `${label} demo loads`,
+      fn: (page: Page) => loadDemoAndCheck(page, config, waitText),
+    })),
 
     // --- Snapshot tests (rendered canvas verification) ---
     {
       name: 'Volvox demo has rendered canvas',
       fn: async page => {
-        const url = appendGpuParam(
-          `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${encodeURIComponent(JSON.stringify({ views: [{ type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-10000', tracks: ['volvox_filtered_vcf'] }] }))}&sessionName=Demo%20Test`,
+        const spec = {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-10000',
+              tracks: ['volvox_filtered_vcf'],
+            },
+          ],
+        }
+        await navigateToUrl(
+          page,
+          `config=test_data/volvox/config.json&session=spec-${encodeURIComponent(JSON.stringify(spec))}&sessionName=Demo%20Test`,
         )
-        await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
         await findByText(page, 'ctgA')
         await waitForDataLoaded(page)
 
@@ -205,11 +158,9 @@ const localDemos: TestSuite = {
     {
       name: 'Dotplot demo screenshot',
       fn: async page => {
-        await page.goto(
-          appendGpuParam(
-            `http://localhost:${PORT}/?config=test_data/config_dotplot.json&sessionName=Demo%20Test`,
-          ),
-          { waitUntil: 'networkidle0', timeout: 60000 },
+        await navigateToUrl(
+          page,
+          'config=test_data/config_dotplot.json&sessionName=Demo%20Test',
         )
 
         await page.waitForSelector(
@@ -259,12 +210,7 @@ const localDemos: TestSuite = {
     {
       name: 'Breakpoint split view demo screenshot',
       fn: async page => {
-        await page.goto(
-          appendGpuParam(
-            `http://localhost:${PORT}/?config=test_data/breakpoint/config.json`,
-          ),
-          { waitUntil: 'networkidle0', timeout: 60000 },
-        )
+        await navigateToUrl(page, 'config=test_data/breakpoint/config.json')
 
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)

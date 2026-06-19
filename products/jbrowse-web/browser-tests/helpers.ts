@@ -104,18 +104,24 @@ function gotoWaitUntil(): 'load' | 'networkidle0' {
   return snapshotConfig.backend === 'webgpu' ? 'load' : 'networkidle0'
 }
 
+// Navigate to an app URL given the query string after `?` (e.g.
+// `config=...&sessionName=...`). Centralizes the gpu-param append and the
+// backend-aware wait so suites stop hardcoding `networkidle0`, which stalls the
+// webgpu (Firefox BiDi) backend — see gotoWaitUntil.
+export async function navigateToUrl(page: Page, query: string) {
+  const url = appendGpuParam(`http://localhost:${PORT}/?${query}`)
+  await page.goto(url, { waitUntil: gotoWaitUntil(), timeout: 60000 })
+}
+
 export async function navigateToApp(
   page: Page,
   config = 'test_data/volvox/config.json',
   sessionName = 'Test Session',
 ) {
-  const url = appendGpuParam(
-    `http://localhost:${PORT}/?config=${config}&sessionName=${encodeURIComponent(sessionName)}`,
+  await navigateToUrl(
+    page,
+    `config=${config}&sessionName=${encodeURIComponent(sessionName)}`,
   )
-  await page.goto(url, {
-    waitUntil: gotoWaitUntil(),
-    timeout: 60000,
-  })
   await findByText(page, 'ctgA')
 }
 
@@ -124,10 +130,21 @@ export async function navigateWithSessionSpec(
   spec: Record<string, unknown>,
   config = 'test_data/volvox/config.json',
 ) {
-  const url = appendGpuParam(
-    `http://localhost:${PORT}/?config=${config}&session=${encodeSessionSpec(spec)}&sessionName=Test%20Session`,
+  await navigateToUrl(
+    page,
+    `config=${config}&session=${encodeSessionSpec(spec)}&sessionName=Test%20Session`,
   )
-  await page.goto(url, { waitUntil: gotoWaitUntil(), timeout: 60000 })
+}
+
+// Click the zoom-out button `times` times, then wait for the re-fetch to
+// settle. Used by redraw tests that verify a track repaints after zooming.
+export async function zoomOut(page: Page, times = 1) {
+  const button = await findByTestId(page, 'zoom_out', 10000)
+  for (let i = 0; i < times; i++) {
+    await button?.click()
+  }
+  await delay(2000)
+  await waitForDataLoaded(page, 90000)
 }
 
 export async function openTrack(page: Page, trackId: string) {
