@@ -439,27 +439,33 @@ const SessionLoader = types
     },
     /**
      * #action
-     * Restores an already-local session named by the URL's `local-<id>`. Tries
-     * sessionStorage (current) then IndexedDB (autosaved), and keeps the
-     * existing id (unlike `loadImportedSession`) so the URL keeps pointing at a
-     * session that is already persisted.
+     * Restores the session named by the URL's `local-<id>`, tried in
+     * sessionStorage (this tab's current) then IndexedDB (shared autosave).
+     *
+     * A sessionStorage hit means this same tab is reloading its own session, so
+     * we keep id = query: the URL keeps pointing at a session this tab already
+     * persisted (a fresh id would race the debounced autosave -> "not found" on
+     * a fast refresh, and orphan a new IndexedDB entry every reload).
+     *
+     * An IndexedDB-only hit means another context (a new tab off a copied URL, a
+     * link, a fresh visit) is adopting an id this tab never owned. IndexedDB is
+     * shared across tabs, so we fork a fresh id via `loadImportedSession`;
+     * otherwise both tabs would autosave over the same slot and fight.
      */
     async fetchLocalSession() {
       const query = stripPrefix(self.sessionQuery!)
       const fromStorage = readSessionFromStorage(query)
       const fromIDB = fromStorage ? undefined : await readSessionFromIDB(query)
-      const snap = fromStorage ?? fromIDB
       console.log('[localsession] fetchLocalSession', {
         query,
         foundInStorage: !!fromStorage,
         foundInIDB: !!fromIDB,
         time: performance.now(),
       })
-      if (snap) {
-        // keep id = query: a fresh id would point the URL at a session not yet
-        // written by the debounced autosave (refresh -> "not found") and orphan
-        // a new IndexedDB autosave entry on every reload
-        await this.loadSession({ ...snap, id: query })
+      if (fromStorage) {
+        await this.loadSession({ ...fromStorage, id: query })
+      } else if (fromIDB) {
+        await this.loadImportedSession(fromIDB)
       } else {
         throw new Error('Local session not found')
       }
