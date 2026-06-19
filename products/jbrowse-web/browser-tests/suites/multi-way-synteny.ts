@@ -3,6 +3,7 @@ import {
   findByTestId,
   navigateWithSessionSpec,
   waitForDataLoaded,
+  waitForElementCount,
 } from '../helpers.ts'
 import { pageSnapshot } from '../snapshot.ts'
 import { viewSnapshotTest } from '../suiteHelpers.ts'
@@ -34,11 +35,10 @@ const suite: TestSuite = {
         await navigateWithSessionSpec(page, { views: [threeWayView] })
         await findByTestId(page, 'synteny_canvas_done', 60000)
         await waitForDataLoaded(page)
-        await page.waitForFunction(
-          () =>
-            document.querySelectorAll('[data-testid="synteny_canvas_done"]')
-              .length >= 2,
-          { timeout: 60000 },
+        await waitForElementCount(
+          page,
+          '[data-testid="synteny_canvas_done"]',
+          2,
         )
         await delay(2000)
         await pageSnapshot(page, 'multiway-synteny-3way-fullpage')

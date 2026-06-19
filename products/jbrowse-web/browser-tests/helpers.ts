@@ -164,6 +164,65 @@ export async function waitForDisplay(
   await page.waitForSelector(`[data-testid^="display-${trackId}"]`, { timeout })
 }
 
+// Wait until at least `count` elements match `selector` — used by tests that
+// add a second view/display and must wait for it to mount before snapshotting.
+export async function waitForElementCount(
+  page: Page,
+  selector: string,
+  count: number,
+  timeout = 60000,
+) {
+  await page.waitForFunction(
+    (sel: string, n: number) => document.querySelectorAll(sel).length >= n,
+    { timeout },
+    selector,
+    count,
+  )
+}
+
+// waitForSelector + boundingBox with the null-checks every caller repeats.
+async function elementBox(page: Page, selector: string, timeout = 60000) {
+  const el = await page.waitForSelector(selector, { timeout })
+  if (!el) {
+    throw new Error(`element not found: ${selector}`)
+  }
+  const box = await el.boundingBox()
+  if (!box) {
+    throw new Error(`bounding box not found: ${selector}`)
+  }
+  return box
+}
+
+// Right-click an element at a fractional position within its box (0..1 on each
+// axis), e.g. (0.5, 0.3) is horizontal-center, 30% down. Used to land a
+// right-click on rendered canvas content for context-menu tests.
+export async function rightClickAtFraction(
+  page: Page,
+  selector: string,
+  fractionX: number,
+  fractionY: number,
+) {
+  const box = await elementBox(page, selector)
+  await page.mouse.click(
+    box.x + box.width * fractionX,
+    box.y + box.height * fractionY,
+    { button: 'right' },
+  )
+}
+
+export async function getContextMenuItems(page: Page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('[role="menuitem"]')].map(m => m.textContent),
+  )
+}
+
+export async function assertContextMenuContains(page: Page, label: string) {
+  const items = await getContextMenuItems(page)
+  if (!items.includes(label)) {
+    throw new Error(`"${label}" not in context menu. Got: ${items.join(', ')}`)
+  }
+}
+
 // Asserts a rendered element actually drew something interesting — not a
 // blank or single-color fill. The snapshot system treats blank captures as
 // passes (auto-creates goldens, skips blank WebGL frames), so this is the

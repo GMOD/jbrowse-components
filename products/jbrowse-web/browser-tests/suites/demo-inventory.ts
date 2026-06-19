@@ -5,6 +5,7 @@ import {
   navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
+  waitForElementCount,
 } from '../helpers.ts'
 import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
@@ -138,11 +139,7 @@ const localDemos: TestSuite = {
 
         await findByText(page, 'ctgA')
         await waitForDataLoaded(page)
-        await page.waitForFunction(
-          () =>
-            document.querySelectorAll('[data-testid^="display-"]').length >= 3,
-          { timeout: 60000 },
-        )
+        await waitForElementCount(page, '[data-testid^="display-"]', 3)
         await delay(2000)
         await pageSnapshot(page, 'demo-volvox-multitrack-fullpage')
       },

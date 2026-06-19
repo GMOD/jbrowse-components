@@ -4,6 +4,7 @@ import {
   findByText,
   navigateWithSessionSpec,
   waitForDataLoaded,
+  waitForElementCount,
 } from '../helpers.ts'
 import { pageSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest } from '../suiteHelpers.ts'
@@ -157,11 +158,10 @@ const suite: TestSuite = {
 
         // A new LGV is added with displayedRegions set to the EDEN exon
         // blocks; wait for its pileup canvas to finish drawing
-        await page.waitForFunction(
-          () =>
-            document.querySelectorAll('[data-testid="pileup-display-done"]')
-              .length >= 2,
-          { timeout: 60000 },
+        await waitForElementCount(
+          page,
+          '[data-testid="pileup-display-done"]',
+          2,
         )
         await waitForDataLoaded(page)
 

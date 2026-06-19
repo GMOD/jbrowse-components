@@ -1,9 +1,11 @@
 import {
+  assertContextMenuContains,
   delay,
   findByTestId,
   navigateToApp,
   navigateWithSessionSpec,
   openTrack,
+  rightClickAtFraction,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
@@ -101,33 +103,12 @@ const suite: TestSuite = {
         await waitForDataLoaded(page)
         await delay(1000)
 
-        const canvas = await page.$(`[data-testid="${pileup}"] canvas`)
-        if (!canvas) {
-          throw new Error('Pileup canvas not found')
-        }
-        const box = await canvas.boundingBox()
-        if (!box) {
-          throw new Error('Canvas bounding box not found')
-        }
-
         // Right-click at 30% height (in the dense pileup area, below coverage).
         // At ctgA:500-700 zoomed in, this reliably hits a read.
-        const clickX = box.x + box.width * 0.5
-        const clickY = box.y + box.height * 0.3
-        await page.mouse.click(clickX, clickY, { button: 'right' })
+        await rightClickAtFraction(page, `[data-testid="${pileup}"] canvas`, 0.5, 0.3)
         await delay(500)
 
-        // Verify "Linear read vs ref" appears in the context menu
-        const items = await page.evaluate(() =>
-          Array.from(document.querySelectorAll('[role="menuitem"]')).map(
-            m => m.textContent,
-          ),
-        )
-        if (!items.includes('Linear read vs ref')) {
-          throw new Error(
-            `"Linear read vs ref" not in context menu. Got: ${items.join(', ')}`,
-          )
-        }
+        await assertContextMenuContains(page, 'Linear read vs ref')
       },
     },
     lgvSnapshotTest({
