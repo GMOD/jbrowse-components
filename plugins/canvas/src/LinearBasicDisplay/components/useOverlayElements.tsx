@@ -39,12 +39,25 @@ interface HighlightModel {
   hoveredSubfeature: SubfeatureInfo | null
 }
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
+  // Default label color is theme-responsive (white in dark mode) since the
+  // worker-computed label.color is theme-blind. Description labels and the
+  // light-background overlay labels override it below.
   floatingLabel: {
     position: 'absolute',
     fontSize: LABEL_FONT_SIZE,
     lineHeight: 1,
     whiteSpace: 'nowrap',
+    color: theme.palette.text.primary,
+  },
+  // Keep a blue accent for descriptions, but use a softer, lighter blue in dark
+  // mode so it stays readable against the dark track background instead of the
+  // old near-black CSS 'blue'.
+  floatingLabelDescription: {
+    color:
+      theme.palette.mode === 'dark'
+        ? theme.palette.info.light
+        : theme.palette.info.main,
   },
   floatingLabelClickable: {
     pointerEvents: 'auto',
@@ -55,6 +68,7 @@ const useStyles = makeStyles()({
   },
   floatingLabelOverlay: {
     background: 'rgba(255,255,255,0.65)',
+    color: theme.palette.common.black,
   },
   aminoAcid: {
     position: 'absolute',
@@ -66,7 +80,7 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     WebkitFontSmoothing: 'antialiased',
   },
-})
+}))
 
 export function useFloatingLabels(
   laidOutDataMap: Map<number, FeatureDataResult>,
@@ -97,26 +111,6 @@ export function useFloatingLabels(
     selectFeatureById,
   } = model
   const decimateLabels = displayMode === 'collapse'
-  // Pre-build the four (clickable × isOverlay) className combinations once
-  // per style/cx identity; per-label rendering then just picks the right
-  // string instead of calling cx() in the hot loop.
-  const labelClasses = useMemo(
-    () => ({
-      clickable: cx(classes.floatingLabel, classes.floatingLabelClickable),
-      clickableOverlay: cx(
-        classes.floatingLabel,
-        classes.floatingLabelClickable,
-        classes.floatingLabelOverlay,
-      ),
-      static: cx(classes.floatingLabel, classes.floatingLabelStatic),
-      staticOverlay: cx(
-        classes.floatingLabel,
-        classes.floatingLabelStatic,
-        classes.floatingLabelOverlay,
-      ),
-    }),
-    [classes, cx],
-  )
   return useMemo(() => {
     if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
       return null
@@ -181,26 +175,25 @@ export function useFloatingLabels(
             // (not the kind) also avoids rendering an inert pointer-cursor label
             // whose onClick is undefined.
             const clickable = !!handleLabelClick
-            const className = clickable
-              ? label.isOverlay
-                ? labelClasses.clickableOverlay
-                : labelClasses.clickable
-              : label.isOverlay
-                ? labelClasses.staticOverlay
-                : labelClasses.static
             elements.push(
               <div
                 key={`${displayedRegionIndex}-${featureId}-${kind}`}
                 data-testid={
                   clickable ? `feature-${kind}-${label.text}` : undefined
                 }
-                className={className}
+                className={cx(
+                  classes.floatingLabel,
+                  clickable
+                    ? classes.floatingLabelClickable
+                    : classes.floatingLabelStatic,
+                  label.isOverlay && classes.floatingLabelOverlay,
+                  kind === 'desc' && classes.floatingLabelDescription,
+                )}
                 onClick={clickable ? handleLabelClick : undefined}
                 onContextMenu={clickable ? handleLabelContextMenu : undefined}
                 onMouseMove={clickable ? handleLabelMouseMove : undefined}
                 style={{
                   transform: `translate(${labelX}px, ${labelY}px)`,
-                  color: label.color,
                 }}
               >
                 {label.text}
@@ -226,7 +219,8 @@ export function useFloatingLabels(
     selectFeatureById,
     openContextMenu,
     onLabelMouseOver,
-    labelClasses,
+    classes,
+    cx,
   ])
 }
 
