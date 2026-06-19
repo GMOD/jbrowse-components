@@ -31,8 +31,8 @@ back to their genomic positions.
 The matrix display has a "phased" rendering mode, available when the genotypes
 use the `0|1` (phased) separator instead of `0/1` (unphased).
 
-Ideally, your variants will be "completely phased". This sometimes
-requires specialized programs like SHAPEIT.
+Ideally, your variants will be "completely phased". This sometimes requires
+specialized programs like SHAPEIT.
 
 <Figure caption="Screenshot showing the phased rendering mode along with the menu item used to select it 'Rendering mode'->'Phased'" src="/img/trio-matrix-phased.png"/>
 

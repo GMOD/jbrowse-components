@@ -76,7 +76,10 @@ describe('migrateWiggleSnapshot', () => {
   test('empty-string selectedRendering does not become a defaultRendering override', () => {
     // Legacy configs saved `selectedRendering: ''`; it must NOT migrate to
     // `defaultRendering: ''` (which throws "Unknown wiggle rendering type:")
-    const result = migrateWiggleSnapshot({ selectedRendering: '', resolution: 1 })
+    const result = migrateWiggleSnapshot({
+      selectedRendering: '',
+      resolution: 1,
+    })
     expect(result).toEqual({ resolution: 1 })
   })
 

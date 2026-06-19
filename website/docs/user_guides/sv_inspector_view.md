@@ -13,7 +13,7 @@ For an end-to-end walkthrough using real cancer sequencing data, see the
 Launch it from the **Add** menu in the main menu bar; an import form then
 appears asking for your SV data.
 
-<Figure caption="Launching the SV inspector from the Add menu (top), and the import form it opens (bottom)." src="/img/sv_cgiab/translocation_sv_inspector_start.png" />
+<Figure caption="Launching the SV inspector from the Add menu." src="/img/sv_cgiab/translocation_sv_inspector_start.png" />
 
 The following formats are supported:
 

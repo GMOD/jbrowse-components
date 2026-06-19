@@ -20,9 +20,9 @@ app, and as embeddable React components inside other websites.
   arcs, and the spreadsheet-style SV inspector. This was the original motivation
   for JBrowse 2 and remains a core strength
 
-- **Deep alignments inspection** - sort, color, and filter reads by BAM/CRAM tag,
-  including base modification / methylation coloring, with per-track display
-  modes for pileup and coverage
+- **Deep alignments inspection** - sort, color, and filter reads by BAM/CRAM
+  tag, including base modification / methylation coloring, with per-track
+  display modes for pileup and coverage
 
 - **Hi-C contact matrices** - render `.hic` contact data alongside other tracks
 

@@ -9,7 +9,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // slot, so it must run before the display types.union validates the snapshot —
 // the config-schema preProcessSnapshot alone does not (see
 // addDisplayConfigMigration).
-export default function MigrateMultiWiggleConfigF(pluginManager: PluginManager) {
+export default function MigrateMultiWiggleConfigF(
+  pluginManager: PluginManager,
+) {
   addDisplayConfigMigration(
     pluginManager,
     ['MultiLinearWiggleDisplay'],

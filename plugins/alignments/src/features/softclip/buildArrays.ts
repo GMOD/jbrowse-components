@@ -4,9 +4,7 @@ import type { SoftclipData } from '../../shared/webglRpcTypes.ts'
 // showSoftClipping is on). Each base in each clipped sequence becomes one
 // instance in the softclip-bases pass. Bases at clipStart < regionStart
 // are clipped by the GPU rasterizer, so we don't filter on regionStart here.
-export function buildSoftclipBaseArrays(
-  softclips: SoftclipData[],
-) {
+export function buildSoftclipBaseArrays(softclips: SoftclipData[]) {
   const count = softclips.reduce(
     (sum, sc) => sum + (sc.sequence?.length ?? 0),
     0,

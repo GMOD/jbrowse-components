@@ -147,7 +147,11 @@ export function makeTicks(
  * scalebar coordinate labels, and SVG export so their positions can't drift.
  */
 export function makeBlockTicks(
-  { start, end, reversed = false }: { start: number; end: number; reversed?: boolean },
+  {
+    start,
+    end,
+    reversed = false,
+  }: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
   emitMajor = true,
   emitMinor = true,

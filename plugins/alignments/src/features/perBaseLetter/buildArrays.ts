@@ -1,8 +1,6 @@
 import type { PerBaseLetterEntry } from './types.ts'
 
-export function buildPerBaseLetterArrays(
-  entries: PerBaseLetterEntry[],
-) {
+export function buildPerBaseLetterArrays(entries: PerBaseLetterEntry[]) {
   const n = entries.length
   const perBaseLetterPositions = new Uint32Array(n)
   const perBaseLetterYs = new Uint16Array(n)

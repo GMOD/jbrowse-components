@@ -300,9 +300,9 @@ jb2export --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz 
 
 ### Dark theme
 
-`--themeName` selects a built-in theme: `default`, `lightStock`,
-`lightMinimal`, `darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not
-theme names — use the keys above.)
+`--themeName` selects a built-in theme: `default`, `lightStock`, `lightMinimal`,
+`darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names — use
+the keys above.)
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
@@ -350,8 +350,8 @@ jb2export synteny \
 ![yeast chr1 synteny](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/yeast_synteny.png)
 
 Omitting `--loc`/`--loc2` shows the whole assembly on that axis (note: `dotplot`
-ignores `--loc` and always shows the whole genome). Run `jb2export dotplot
---help` for the full list of comparative options.
+ignores `--loc` and always shows the whole genome). Run
+`jb2export dotplot --help` for the full list of comparative options.
 
 ### Multi-way synteny (three or more assemblies)
 
@@ -393,14 +393,14 @@ subcommand is optional here — the render mode is taken from the spec's view
 The spec also accepts the same view-level fields the web app uses, which are
 what make a busy whole-genome comparison legible:
 
-| Field               | Effect                                                          |
-| ------------------- | --------------------------------------------------------------- |
-| `autoDiagonalize`   | Reorders the second assembly's chromosomes for least overlap    |
+| Field                | Effect                                                          |
+| -------------------- | --------------------------------------------------------------- |
+| `autoDiagonalize`    | Reorders the second assembly's chromosomes for least overlap    |
 | `minAlignmentLength` | Hides alignments shorter than N bp — the main de-spaghetti knob |
-| `colorBy`           | `query` tints each ribbon by its query chromosome               |
-| `alpha`             | Ribbon opacity (0–1); lower values reveal overlap density       |
-| `drawCurves`        | Bezier ribbons instead of straight trapezoids                   |
-| `levelHeights`      | Per-level pixel height between adjacent assemblies               |
+| `colorBy`            | `query` tints each ribbon by its query chromosome               |
+| `alpha`              | Ribbon opacity (0–1); lower values reveal overlap density       |
+| `drawCurves`         | Bezier ribbons instead of straight trapezoids                   |
+| `levelHeights`       | Per-level pixel height between adjacent assemblies              |
 
 A whole-genome example (peach vs grape, the chrom.sizes come from this repo and
 the alignment PAF from S3). Config and spec are checked in under

@@ -20,7 +20,12 @@ describe('isMismatchFeature', () => {
 
   test('feature exposing forEachMismatch is a mismatch feature', () => {
     const feature = Object.assign(
-      new SimpleFeature({ uniqueId: 'read-1', refName: 'chr1', start: 0, end: 10 }),
+      new SimpleFeature({
+        uniqueId: 'read-1',
+        refName: 'chr1',
+        start: 0,
+        end: 10,
+      }),
       { forEachMismatch: () => {} },
     )
     expect(isMismatchFeature(feature)).toBe(true)

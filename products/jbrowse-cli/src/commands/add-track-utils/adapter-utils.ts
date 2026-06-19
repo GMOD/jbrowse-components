@@ -237,7 +237,10 @@ function buildFromSpec(
   switch (spec.kind) {
     case 'single':
       return {
-        adapter: { type: spec.adapterType, [spec.locField]: makeLocation(location) },
+        adapter: {
+          type: spec.adapterType,
+          [spec.locField]: makeLocation(location),
+        },
         files: [location],
       }
     case 'bam': {

@@ -178,7 +178,9 @@ export function applyTrackModifier(
     // rendering type (see migrateWiggleSnapshot); `fill:true` is plain `xyplot`.
     case 'fill': {
       if (isScoreDisplay) {
-        patch.defaultRendering = booleanize(val1 || 'true') ? 'xyplot' : 'scatter'
+        patch.defaultRendering = booleanize(val1 || 'true')
+          ? 'xyplot'
+          : 'scatter'
       }
       break
     }

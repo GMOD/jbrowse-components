@@ -48,7 +48,12 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
               txt === want || (el.childElementCount === 0 && txt.includes(want))
             const rect = el.getBoundingClientRect()
             const area = rect.width * rect.height
-            if (matches && rect.width > 0 && rect.height > 0 && area < bestArea) {
+            if (
+              matches &&
+              rect.width > 0 &&
+              rect.height > 0 &&
+              area < bestArea
+            ) {
               best = el
               bestArea = area
             }

@@ -81,9 +81,9 @@ sequencing coverage is computed from mosdepth and stored in BigWig files
 
 Whole-genome sequencing copy-number profiles for many 1000 Genomes individuals
 in a single "multi-quantitative" track, rendered as a multi-row density heatmap.
-The in-app "Cluster by score" workflow reorders the rows by signal similarity
-and draws a dendrogram on the left, grouping individuals with similar
-copy-number patterns ([guide](/docs/user_guides/multiquantitative_track/))
+The in-app "Cluster by score" workflow reorders the rows by signal similarity,
+grouping individuals with similar copy-number patterns
+([guide](/docs/user_guides/multiquantitative_track/))
 
 ---
 

@@ -45,7 +45,11 @@ export async function renderSvg(
 
   if (model.error) {
     return (
-      <SVGErrorBox error={model.error} width={view.width} height={model.height} />
+      <SVGErrorBox
+        error={model.error}
+        width={view.width}
+        height={model.height}
+      />
     )
   }
 

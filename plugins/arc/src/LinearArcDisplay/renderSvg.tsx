@@ -20,7 +20,9 @@ export async function renderArcSvg(
   const view = getContainingView(model) as LinearGenomeViewModel
   const width = view.dynamicBlocks.totalWidthPx
   if (model.error) {
-    return <SVGErrorBox error={model.error} width={width} height={model.height} />
+    return (
+      <SVGErrorBox error={model.error} width={width} height={model.height} />
+    )
   }
   return (
     <SvgClipRect id={`arc-${model.id}`} width={width} height={model.height}>

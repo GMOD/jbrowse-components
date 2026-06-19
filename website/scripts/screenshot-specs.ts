@@ -220,7 +220,10 @@ function hpyloriSyntenyWithGenes() {
             tracks: ['hpylori_chc155.gff'],
           },
           {
-            loc: 'NZ_CP011330.1:872350-884982',
+            // j99 aligns to chc155 in inverted orientation, so the [rev]
+            // suffix flips this panel (declarative loc-string reverse) to
+            // straighten the level-1 ribbons — otherwise they cross in an X
+            loc: 'NZ_CP011330.1:872350-884982[rev]',
             assembly: 'hpylori_j99',
             tracks: ['hpylori_j99.gff'],
           },
@@ -444,7 +447,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     // narrower window keeps the soft-clip breakpoint in focus (reviewer request)
-    viewportWidth: 900,
+    viewportWidth: 700,
     settleMs: 4000,
   },
 
@@ -760,8 +763,8 @@ export const specs: ScreenshotSpec[] = [
     // narrower + a touch shorter than before (reviewer), but still tall enough
     // that the SAMPLES card (low in the variant-details panel) stays on-screen —
     // the callouts anchor to it, so it must be visible
-    viewportWidth: 1250,
-    viewportHeight: 1000,
+    viewportWidth: 1150,
+    viewportHeight: 880,
     actions: [
       { type: 'click', text: 'C -> T' },
       { type: 'waitForText', text: 'HG00096' },
@@ -810,48 +813,6 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Group by strand: the new in-track grouping (display groupBy option) splits a
-  // single alignments display into stacked sections, one per strand, each with
-  // its own coverage band + pileup. Replaces the legacy approach of launching
-  // two separate filtered subtracks.
-  {
-    mode: 'url',
-    name: 'alignments/group_by_strand',
-    url: sessionSpec(VOLVOX, {
-      sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'volvox_sv_cram',
-          name: 'volvox-sv',
-          assemblyNames: ['volvox'],
-          adapter: VOLVOX_SV_CRAM_ADAPTER,
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: [
-            {
-              trackId: 'volvox_sv_cram',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                groupBy: { type: 'strand' },
-                colorBy: { type: 'strand' },
-                showLegend: false,
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    // two compact stacked strand sections; trim the empty viewport below them
-    viewportHeight: 440,
-    settleMs: 5000,
-  },
-
   {
     mode: 'url',
     name: 'dotplot',
@@ -889,9 +850,10 @@ export const specs: ScreenshotSpec[] = [
           colorBy: 'query',
           // higher alpha + a taller synteny band give the ribbons room to read,
           // and autoDiagonalize reorders the panels into clean diagonals
-          // (reviewer: increase height, add opacity, diagonalize). levelHeights
-          // (not a `levels` snapshot) is the key the launch init consumes.
-          alpha: 0.5,
+          // (reviewer: increase height, add opacity, diagonalize; then opacity
+          // bumped a little more). levelHeights (not a `levels` snapshot) is the
+          // key the launch init consumes.
+          alpha: 0.65,
           levelHeights: [360],
           autoDiagonalize: true,
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
@@ -1166,10 +1128,10 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          // zoomed into a ~5kb core of the CpG island (was ~18kb) so the
-          // per-base methylation calls + bedmethyl transition are legible
-          // rather than a tiny large-scale smear (reviewer)
-          loc: 'chr20:18,499,500-18,504,500',
+          // zoomed into a ~2.5kb core of the CpG island (was ~18kb, then ~5kb)
+          // so the per-base methylation calls + bedmethyl transition are legible
+          // rather than a tiny large-scale smear (reviewer asked to zoom further)
+          loc: 'chr20:18,500,750-18,503,250',
           tracks: [
             {
               trackId: 'COLO829_tumor.ht',
@@ -1344,8 +1306,12 @@ export const specs: ScreenshotSpec[] = [
                 numStdDev: 3,
                 defaultRendering: 'multiscatter',
                 // even finer binning (basesPerSpan = bpPerPx/resolution) so the
-                // scatter resolves copy-number structure (reviewer: even finer)
-                resolution: 10,
+                // scatter resolves copy-number structure (reviewer: even finer,
+                // then bumped again for slightly higher resolution)
+                resolution: 20,
+                // shrink scatter points (default 2px) so the dense CNV cloud
+                // reads as fine structure rather than blobs (reviewer)
+                scatterPointSize: 1,
               },
             },
           ],
@@ -1870,9 +1836,11 @@ export const specs: ScreenshotSpec[] = [
         anchor: { text: 'CPX_TYPE' },
       },
       {
+        // drop into the empty white pileup band so it doesn't cover the arcs
+        // at the top of the pileup, which are the key INVdup evidence (reviewer)
         type: 'text',
         x: 700,
-        y: 300,
+        y: 760,
         text: 'Annotated as "INVdup" (inverted duplication)',
         fontSize: 26,
       },
@@ -1888,11 +1856,9 @@ export const specs: ScreenshotSpec[] = [
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
 
-  // Three-stage SV-inspector launch figure: (1) the app "Add" menu with the "SV
-  // inspector" item boxed; (2) the import form that item opens; (3) the somatic
-  // SV VCF URL pasted into the import form's URL box (reviewer asked to also show
-  // pasting a file into the URL box). Replaces the old single-frame
-  // sv_inspector_begin (menu launch) and sv_inspector_importform (import form).
+  // Single-frame SV-inspector launch: the app "Add" menu with the "SV inspector"
+  // item boxed (reviewer: drop the second import-form stage — the import form
+  // with the pasted VCF URL is its own figure, sv_inspector_importform_after).
   {
     mode: 'url',
     name: 'sv_cgiab/translocation_sv_inspector_start',
@@ -1900,45 +1866,14 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
     settleMs: 2000,
-    // crop off the empty viewport below the menu / import form in each frame
+    // crop off the empty viewport below the menu
     crop: { x: 0, y: 0, width: 1500, height: 460 },
-    stages: [
-      {
-        actions: [
-          { type: 'click', text: 'Add' },
-          { type: 'waitForText', text: 'SV inspector' },
-          { type: 'delay', ms: 500 },
-        ],
-        annotations: [{ type: 'box', anchor: { text: 'SV inspector' } }],
-      },
-      {
-        // open the import form and paste the URL in one frame (the bare
-        // form-only middle frame was redundant per reviewer)
-        actions: [
-          { type: 'click', text: 'SV inspector' },
-          { type: 'waitForText', text: 'Open file from URL or local computer' },
-          { type: 'delay', ms: 1500 },
-          {
-            type: 'type',
-            selector: '[data-testid="urlInput"]',
-            value:
-              'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz',
-          },
-          { type: 'delay', ms: 800 },
-        ],
-        annotations: [
-          { type: 'box', anchor: { selector: '[data-testid="urlInput"]' } },
-          {
-            type: 'text',
-            x: 60,
-            y: 120,
-            text: 'Paste a file URL (here, the somatic SV VCF) and open it',
-            background: 'rgba(0,0,0,0.78)',
-            textColor: '#fff',
-          },
-        ],
-      },
+    actions: [
+      { type: 'click', text: 'Add' },
+      { type: 'waitForText', text: 'SV inspector' },
+      { type: 'delay', ms: 500 },
     ],
+    annotations: [{ type: 'box', anchor: { text: 'SV inspector' } }],
   },
 
   {
@@ -2134,7 +2069,7 @@ export const specs: ScreenshotSpec[] = [
                 autoscale: 'localsd',
                 // finer binning (basesPerSpan = bpPerPx/resolution) so the
                 // whole-chromosome scatter resolves more CNV detail (reviewer)
-                resolution: 5,
+                resolution: 8,
                 height: 200,
               },
             },
@@ -2204,15 +2139,19 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 90000,
-    viewportWidth: 1800,
+    // narrower + shorter capture (reviewer) — still wide enough for the 24
+    // chromosomes and tall enough for the centered score dialog in stage 2
+    viewportWidth: 1500,
+    viewportHeight: 520,
     settleMs: 25000,
-    // Three-stage figure (reviewer, absorbs the former cnv_score_limit spec and
+    // Four-stage figure (reviewer, absorbs the former cnv_score_limit spec and
     // makes the workflow legible): stage 1 is the autoscaled whole-genome
     // multi-bigwig; stage 2 shows the "Set min/max score" dialog open with the
     // cap entered (so the reader sees the action between before/after — reviewer:
-    // it was unclear what happened); stage 3 is the capped result. The
-    // normalized indexcov domain runs ~0-2, so capping at 0-2.5 keeps a few
-    // centromere/repeat spikes from compressing the copy-number band.
+    // it was unclear what happened); stage 3 is the capped result; stage 4
+    // switches to overlapping scatter so normal vs tumor coverage share one band
+    // (reviewer). The normalized indexcov domain runs ~0-2, so capping at 0-2.5
+    // keeps a few centromere/repeat spikes from compressing the copy-number band.
     stages: [
       {},
       {
@@ -2252,6 +2191,28 @@ export const specs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Submit' },
           { type: 'delay', ms: 12000 },
+        ],
+      },
+      {
+        closeMenusFirst: true,
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          { type: 'waitForText', text: 'Rendering type' },
+          { type: 'delay', ms: 300 },
+          { type: 'hover', text: 'Rendering type' },
+          { type: 'waitForText', text: 'Overlapping scatter' },
+          { type: 'delay', ms: 300 },
+          { type: 'click', text: 'Overlapping scatter' },
+          { type: 'delay', ms: 12000 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 40,
+            y: 150,
+            maxWidth: 360,
+            text: 'Switch to overlapping scatter (Rendering type → Overlapping scatter) to plot normal and tumor coverage in one band',
+          },
         ],
       },
     ],
@@ -2351,6 +2312,11 @@ export const specs: ScreenshotSpec[] = [
           // handler consumes `levelHeights`, not a `levels` snapshot — the
           // latter is silently dropped, which is why the band stayed short.
           levelHeights: [260],
+          // drop short noisy alignments and lighten the ribbons so the dense
+          // "dark areas" (many tiny overlapping anchors stacking opacity) read
+          // as clean syntenic blocks (reviewer)
+          minAlignmentLength: 10000,
+          alpha: 0.15,
           tracks: ['HG008T.hap1_pif'],
           views: [
             {
@@ -2387,42 +2353,11 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'Select assemblies for dotplot view',
     readyTimeout: 60000,
     settleMs: 3000,
-    // arrows point at the two assembly select boxes. The x/y axis assignment is
-    // purely which assembly goes on which axis here — "query"/"target" is a
-    // track-level distinction the dotplot view itself doesn't impose, so the
-    // callouts avoid that wording (reviewer note).
-    annotations: [
-      {
-        type: 'text',
-        x: 120,
-        y: 110,
-        text: 'Pick the x-axis assembly',
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
-        fontSize: 15,
-      },
-      {
-        type: 'arrow',
-        from: { x: 300, y: 128 },
-        anchor: { text: 'x-axis assembly' },
-        dy: -44,
-      },
-      {
-        type: 'text',
-        x: 950,
-        y: 110,
-        text: 'Pick the y-axis assembly',
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
-        fontSize: 15,
-      },
-      {
-        type: 'arrow',
-        from: { x: 1130, y: 128 },
-        anchor: { text: 'y-axis assembly' },
-        dy: -44,
-      },
-    ],
+    // No callouts: the import form already labels its two selectors ("x-axis
+    // assembly"/"y-axis assembly"), and which assembly goes on which axis is
+    // arbitrary here (the old "query"/"target" framing was a track-level
+    // distinction the view doesn't impose), so added annotations only mislead
+    // (reviewer).
   },
 
   {
@@ -2518,78 +2453,72 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 5000,
+    // Each label is a callout pill placed in clear space (the dark app bar or the
+    // sparse overview-ruler band) with an arrow pointing at the control it names,
+    // so the text no longer overlaps the icons or stacks on top of the other
+    // labels in the cramped track-header row (reviewer). Targets are anchored, so
+    // each arrow head tracks the real element; only the pill/tail use absolute
+    // viewport CSS px (default 1500x800 capture).
     annotations: [
+      // app-bar band: the two track-header controls, with long arrows down
       {
         type: 'text',
-        text: 'Add view',
+        text: 'Drag to reorder track',
+        x: 250,
+        y: 18,
+        fontSize: 14,
+      },
+      {
+        type: 'arrow',
+        from: { x: 300, y: 38 },
+        anchor: { selector: '[data-testid^="dragHandle-"]' },
+      },
+      { type: 'text', text: 'Track menu', x: 500, y: 18, fontSize: 14 },
+      {
+        type: 'arrow',
+        from: { x: 540, y: 38 },
+        anchor: { selector: '[data-testid="track_menu_icon"]' },
+      },
+      // "Add view" sits just under the Add menu it labels
+      { type: 'text', text: 'Add view', x: 70, y: 50, fontSize: 14 },
+      {
+        type: 'arrow',
+        from: { x: 95, y: 48 },
         anchor: { text: 'Add' },
-        dx: -10,
-        dy: 26,
-        fontSize: 14,
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
       },
+      // overview-ruler band: the four navigation controls, arrows pointing down
+      // into the controls row
+      { type: 'text', text: 'Pan', x: 520, y: 70, fontSize: 14 },
       {
-        type: 'text',
-        text: 'Pan',
+        type: 'arrow',
+        from: { x: 540, y: 88 },
         anchor: { selector: 'button[aria-label="Pan left"]' },
-        dx: -10,
-        dy: 50,
-        fontSize: 14,
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
       },
+      { type: 'text', text: 'Search box', x: 680, y: 70, fontSize: 14 },
       {
-        type: 'text',
-        text: 'Zoom',
-        anchor: { selector: '[data-testid="zoom_in"]' },
-        dx: -12,
-        dy: 26,
-        fontSize: 14,
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
-      },
-      {
-        type: 'text',
-        text: 'Search box',
+        type: 'arrow',
+        from: { x: 750, y: 88 },
         anchor: { selector: 'input[placeholder="Search for location"]' },
-        dx: -30,
-        dy: 50,
-        fontSize: 14,
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
+      },
+      { type: 'text', text: 'Zoom', x: 900, y: 70, fontSize: 14 },
+      {
+        type: 'arrow',
+        from: { x: 935, y: 88 },
+        anchor: { selector: '[data-testid="zoom_in"]' },
       },
       {
         type: 'text',
         text: 'Scroll-to-zoom toggle',
+        x: 1030,
+        y: 70,
+        fontSize: 14,
+      },
+      {
+        type: 'arrow',
+        from: { x: 1110, y: 88 },
         anchor: {
           selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
         },
-        dx: -60,
-        dy: 26,
-        fontSize: 14,
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
-      },
-      {
-        type: 'text',
-        text: 'Drag to reorder track',
-        anchor: { selector: '[data-testid^="dragHandle-"]' },
-        dx: 4,
-        dy: 24,
-        fontSize: 14,
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
-      },
-      {
-        type: 'text',
-        text: 'Track menu',
-        anchor: { selector: '[data-testid="track_menu_icon"]' },
-        dx: -30,
-        dy: 24,
-        fontSize: 14,
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
       },
     ],
   },
@@ -2633,9 +2562,11 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Add track: two-stage figure. Top frame opens the File menu with a box around
-  // the "Open track..." item; bottom frame shows the AddTrackWidget drawer that
-  // item opens.
+  // Add track: single frame (reviewer). The "Open track..." File-menu item and
+  // the AddTrackWidget drawer it opens are shown together — open the drawer, then
+  // reopen the File menu (clicking the item closes it) so both the menu path and
+  // the resulting form are visible, with an arrow from the boxed menu item across
+  // to the boxed add-track panel.
   {
     mode: 'url',
     name: 'add_track_form',
@@ -2658,25 +2589,25 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
       { type: 'delay', ms: 300 },
+      // open the add-track drawer
+      { type: 'click', text: 'Open track...' },
+      { type: 'waitForText', text: 'Enter track data' },
+      { type: 'delay', ms: 1000 },
+      // reopen the File menu so the menu path and the open form show together
+      { type: 'click', text: 'File' },
+      { type: 'waitForText', text: 'Open track...' },
+      { type: 'delay', ms: 400 },
     ],
-    stages: [
+    annotations: [
+      { type: 'box', anchor: { text: 'Open track...' } },
+      // box just the add-track workflow form (not the whole full-height drawer,
+      // whose box ran off the bottom of the capture)
+      { type: 'box', anchor: { selector: '[data-testid="addTrackWorkflow"]' } },
+      // arrow from the menu item across to the panel it opens
       {
-        annotations: [{ type: 'box', anchor: { text: 'Open track...' } }],
-      },
-      {
-        actions: [
-          { type: 'click', text: 'Open track...' },
-          { type: 'waitForText', text: 'Enter track data' },
-          { type: 'delay', ms: 1000 },
-        ],
-        // box just the add-track workflow form (not the whole full-height
-        // drawer, whose box ran off the bottom of the capture)
-        annotations: [
-          {
-            type: 'box',
-            anchor: { selector: '[data-testid="addTrackWorkflow"]' },
-          },
-        ],
+        type: 'arrow',
+        from: { x: 235, y: 150 },
+        anchor: { selector: '[data-testid="addTrackWorkflow"]' },
       },
     ],
   },
@@ -2709,24 +2640,15 @@ export const specs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
       },
+      { type: 'delay', ms: 500 },
+      // click the add-track FAB so the add-track form opens (reviewer: show the
+      // add track menu the FAB launches, not just a ring around it)
+      { type: 'click', selector: '[data-testid="hierarchical-add-track-fab"]' },
+      { type: 'waitForText', text: 'Enter track data' },
       { type: 'delay', ms: 800 },
     ],
-    // ring each control (leaving the icon itself visible) with a text label
-    // beside it, rather than a numbered badge centered on — and hiding — the icon
     annotations: [
-      {
-        type: 'box',
-        anchor: { selector: 'button[title="Open track selector"]' },
-      },
-      {
-        type: 'text',
-        text: 'Track selector',
-        anchor: { selector: 'button[title="Open track selector"]' },
-        dx: 18,
-        dy: 36,
-        background: 'rgba(0,0,0,0.78)',
-        textColor: '#fff',
-      },
+      // box + label the FAB that launched the form
       {
         type: 'box',
         anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
@@ -2735,12 +2657,13 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         text: 'Add track',
         anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
-        // sit well above-left of the FAB so the label clears the button
         dx: -70,
         dy: -52,
         background: 'rgba(0,0,0,0.78)',
         textColor: '#fff',
       },
+      // box the add-track form the FAB opened
+      { type: 'box', anchor: { selector: '[data-testid="addTrackWorkflow"]' } },
     ],
   },
 
@@ -3374,7 +3297,17 @@ export const specs: ScreenshotSpec[] = [
     ],
     stages: [
       {
-        annotations: [{ type: 'box', anchor: { text: 'Add to favorites' } }],
+        // ring the per-track moreVert menu trigger that was clicked, plus box
+        // the "Add to favorites" item it opened (reviewer)
+        annotations: [
+          {
+            type: 'circle',
+            anchor: {
+              selector: '[data-testid="htsTrackEntryMenu-Tracks,volvox_bam"]',
+            },
+          },
+          { type: 'box', anchor: { text: 'Add to favorites' } },
+        ],
       },
       {
         actions: [
@@ -3446,8 +3379,8 @@ export const specs: ScreenshotSpec[] = [
     // smaller capture in both dimensions (reviewer); narrower than default but
     // still wide enough for the category "..." menu to cascade without clipping,
     // and the "Integration test" wiggle category renders within this height
-    viewportWidth: 1100,
-    viewportHeight: 680,
+    viewportWidth: 950,
+    viewportHeight: 600,
     stages: [
       {
         actions: [
@@ -3652,7 +3585,7 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'sle_gwas_ld',
-              displaySnapshot: { type: 'LinearManhattanDisplay', height: 250 },
+              displaySnapshot: { type: 'LinearManhattanDisplay', height: 200 },
             },
           ],
         },
@@ -3660,9 +3593,10 @@ export const specs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 60000,
-    // taller capture so the full 250px Manhattan track shows — the old 350px
-    // viewport clipped the bottom of the plot (the low-score SNPs) (reviewer)
-    viewportHeight: 440,
+    // shorter Manhattan track (250 -> 200) so the bottom axis + low-score SNPs
+    // clear the viewport edge with margin below, instead of sitting flush
+    // against it where they read as clipped (reviewer)
+    viewportHeight: 410,
     // settle past the index auto-pick + recolor fetch that follows first paint
     settleMs: 12000,
   },
@@ -4251,6 +4185,9 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'Open file from URL or local computer',
     settleMs: 3000,
+    // smaller capture (reviewer) — the import form is compact and centered
+    viewportWidth: 1150,
+    viewportHeight: 620,
     actions: [
       { type: 'click', text: 'VCF' },
       {
@@ -4261,24 +4198,18 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 1500 },
     ],
-    // call out the "Open from track" workflow with the text off to the right and
-    // the arrow pointing right-to-left at the radio, so neither overlaps the URL
-    // text box below
+    // ring the "Open from track" radio and label it; anchored so the callout
+    // tracks the centered form at the reduced viewport width (reviewer). Not
+    // made multi-stage: this fresh SvInspectorView has no in-session VCF track,
+    // so the "Open from track" dropdown would render empty.
     annotations: [
+      { type: 'circle', anchor: { text: 'Open from track' } },
       {
         type: 'text',
-        text: 'You can also load SV calls from a VCF track already in the session',
-        x: 870,
-        y: 310,
-        background: 'rgba(0,0,0,0.8)',
-        textColor: '#fff',
-        fontSize: 15,
-      },
-      {
-        type: 'arrow',
-        from: { x: 1080, y: 270 },
         anchor: { text: 'Open from track' },
-        dy: -6,
+        dy: -58,
+        maxWidth: 320,
+        text: 'You can also load SV calls from a VCF track already in the session',
       },
     ],
   },
@@ -4407,10 +4338,11 @@ export const specs: ScreenshotSpec[] = [
   // (reviewer). Shown in multi-row density mode across a wide chr1 window
   // spanning the AMY1 locus (hg38), a classic copy-number-polymorphic region, so
   // the per-individual copy-number differences drive a meaningful clustering.
-  // Top frame: the "Cluster by score" dialog open
-  // (auto/manual mode, before). Bottom frame: after "Run clustering", the 104
-  // rows are reordered by signal similarity with a dendrogram on the left.
-  // Combines the old cluster_dialog + clustered_result into one before/after.
+  // Top frame: the "Cluster by score" dialog open (auto/manual mode, before).
+  // Bottom frame: after "Run clustering", the 104 rows are reordered by signal
+  // similarity. showTree:false hides the dendrogram (reviewer: only the row
+  // reordering matters; a tree wrongly implies phylogeny). Combines the old
+  // cluster_dialog + clustered_result into one before/after.
   {
     mode: 'url',
     name: 'multiwig/cluster_dialog',
@@ -4431,6 +4363,9 @@ export const specs: ScreenshotSpec[] = [
                 // strip per individual; `defaultRendering` is a config slot, so
                 // this flat key routes into the display's configOverrides
                 defaultRendering: 'multirowdensity',
+                // hide the post-clustering dendrogram — the reordered rows are
+                // the point; a tree implies a phylogeny we don't mean (reviewer)
+                showTree: false,
               },
             },
           ],

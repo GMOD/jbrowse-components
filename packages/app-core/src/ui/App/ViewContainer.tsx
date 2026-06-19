@@ -90,7 +90,10 @@ const ViewContainer = observer(function ViewContainer({
         className={backgroundColorClassName}
       />
       <Paper elevation={0}>
-        <div ref={bodyRef} style={visible ? undefined : { height: placeholderHeight }}>
+        <div
+          ref={bodyRef}
+          style={visible ? undefined : { height: placeholderHeight }}
+        >
           {visible ? <ViewWrapper view={view} session={session} /> : null}
         </div>
       </Paper>

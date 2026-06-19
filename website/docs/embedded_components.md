@@ -12,12 +12,12 @@ tracks, etc.).
 
 ## Choosing the right package
 
-| Goal                                                           | Package                                                                                                                                                             |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Goal                                                           | Package                                                                                                                                                       |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Full JBrowse UI (multiple views, synteny, file import dialogs) | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2) — [Examples](https://jbrowse.org/storybook/app/)                                   |
 | Single linear genome view, API-controlled data                 | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2) — [Examples](https://jbrowse.org/storybook/lgv/)     |
 | Single circular genome view (e.g. for SV chord diagrams)       | [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2) — [Examples](https://jbrowse.org/storybook/cgv/) |
-| Static deployment with no build step (script tag)              | [jbrowse-web UMD bundle](/docs/tutorials/embed_linear_genome_view)                                                                                                  |
+| Static deployment with no build step (script tag)              | [jbrowse-web UMD bundle](/docs/tutorials/embed_linear_genome_view)                                                                                            |
 
 ## @jbrowse/react-app2
 

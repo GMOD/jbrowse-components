@@ -221,9 +221,7 @@ function getChangedSet(): Set<string> {
           .trim()
           .split('\n')
           .filter(Boolean)
-          .map(p =>
-            p.replace('website/static/img/', '').replace(/\.png$/, ''),
-          ),
+          .map(p => p.replace('website/static/img/', '').replace(/\.png$/, '')),
       )
     } catch {
       changedSet = new Set()

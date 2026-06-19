@@ -1,8 +1,6 @@
 import type { PerBaseQualityEntry } from './types.ts'
 
-export function buildPerBaseQualityArrays(
-  entries: PerBaseQualityEntry[],
-) {
+export function buildPerBaseQualityArrays(entries: PerBaseQualityEntry[]) {
   const n = entries.length
   const perBaseQualPositions = new Uint32Array(n)
   const perBaseQualYs = new Uint16Array(n)

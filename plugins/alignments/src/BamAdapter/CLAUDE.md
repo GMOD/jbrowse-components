@@ -32,6 +32,6 @@ accessor; don't reintroduce it into the render path.
 all reads-without-MD in the region (`Math.min(start)`/`Math.max(end)` across
 reads, via `seqFetchSpan`). Each no-MD record stores `record.ref = regionSeq`
 (the shared string) plus `record.refOffset = start - span.start`;
-`forEachMismatchNumeric` indexes `ref.charCodeAt(refOffset + roffset + j)`.
-No per-read substring is copied. The sequence adapter is also only loaded when
+`forEachMismatchNumeric` indexes `ref.charCodeAt(refOffset + roffset + j)`. No
+per-read substring is copied. The sequence adapter is also only loaded when
 `seqFetchSpan` returns non-null, so MD-tagged BAMs skip it entirely.

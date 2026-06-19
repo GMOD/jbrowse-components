@@ -32,7 +32,9 @@ export interface MismatchFeature extends Feature {
 // routed through the alignments render path — notably synteny features shown in
 // an LGVSyntenyDisplay — have no `forEachMismatch`, so skip CIGAR extraction for
 // them (mirrors the pre-refactor `if (feature.get('mismatches'))` guard).
-export function isMismatchFeature(feature: Feature): feature is MismatchFeature {
+export function isMismatchFeature(
+  feature: Feature,
+): feature is MismatchFeature {
   return 'forEachMismatch' in feature
 }
 

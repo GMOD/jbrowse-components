@@ -92,7 +92,8 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   // debounced one — the debounce only delays the optional preview fetch, so
   // gating Submit on it would needlessly disable the button for ~1s after a
   // valid tag is typed (handleSubmit acts on the live `groupByTag` anyway).
-  const submitDisabled = !type || (type === 'tag' && !TAG_REGEX.test(groupByTag))
+  const submitDisabled =
+    !type || (type === 'tag' && !TAG_REGEX.test(groupByTag))
 
   const handleSubmit = () => {
     // submitDisabled gates an empty type; the guard also narrows away undefined.

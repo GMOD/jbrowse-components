@@ -57,7 +57,10 @@ test('reversed region mirrors label x positions through the region end', () => {
     [0, regionData('AAAAA', 'ACGTA')],
   ])
   const labels = computeVisibleLabels({
-    view: { ...view, visibleRegions: [{ ...view.visibleRegions[0]!, reversed: true }] },
+    view: {
+      ...view,
+      visibleRegions: [{ ...view.visibleRegions[0]!, reversed: true }],
+    },
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,

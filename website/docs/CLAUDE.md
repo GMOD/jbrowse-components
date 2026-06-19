@@ -14,7 +14,7 @@ the source instead.
 | `api/*.md` (plugin-export API)                           | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`docs/generateApiDocs.ts`)                     |
 | color swatch tables between `<!-- COLOR_TABLE … -->`     | `pnpm autogen` (repo root)   | color constants in `theme.ts` + alignments `color.ts` (`docs/generateColorDocs.ts`) |
 | `user_guide.md`, `config_guide.md`, `developer_guide.md` | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                 |
-| `img.md` (@jbrowse/img static-export tool)               | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)             |
+| `img.md` (@jbrowse/img static-export tool)               | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)            |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
   `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`

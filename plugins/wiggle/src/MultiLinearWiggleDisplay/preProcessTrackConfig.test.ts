@@ -25,7 +25,9 @@ test('remaps a legacy single-source defaultRendering to its multi equivalent', (
   const out = evaluate({
     type: 'MultiQuantitativeTrack',
     trackId: 't1',
-    displays: [{ type: 'MultiLinearWiggleDisplay', defaultRendering: 'xyplot' }],
+    displays: [
+      { type: 'MultiLinearWiggleDisplay', defaultRendering: 'xyplot' },
+    ],
   })
   expect(out.displays![0]!.defaultRendering).toBe('multixyplot')
 })

@@ -103,7 +103,12 @@ function drawBaseRow({
   palette,
   textColors,
 }: RowDrawCommon & { isDna: boolean }) {
-  const { start, end } = visibleRange(block.start, block.end, seqStart, seq.length)
+  const { start, end } = visibleRange(
+    block.start,
+    block.end,
+    seqStart,
+    seq.length,
+  )
 
   for (let i = start; i < end; i++) {
     const letter = seq[i]!
@@ -173,7 +178,8 @@ function drawTranslationRow({
 
     // background was already painted for normal codons, so the no-border path
     // only repaints start/stop highlights
-    const cell = kind === 'start' ? palette.start : kind === 'stop' ? palette.stop : bg
+    const cell =
+      kind === 'start' ? palette.start : kind === 'stop' ? palette.stop : bg
     if (showBorders) {
       ctx.fillStyle = cell.style
       ctx.fillRect(x, y, w, rowHeight)
@@ -184,7 +190,15 @@ function drawTranslationRow({
           : kind === 'stop'
             ? textColors.stopContrast
             : '#000'
-      centerText(ctx, codonTable[normalizedCodon] ?? '', x, w, y, rowHeight, textColor)
+      centerText(
+        ctx,
+        codonTable[normalizedCodon] ?? '',
+        x,
+        w,
+        y,
+        rowHeight,
+        textColor,
+      )
     } else if (kind !== 'normal') {
       ctx.fillStyle = cell.style
       ctx.fillRect(x, y, w, rowHeight)
@@ -268,7 +282,13 @@ export function drawSequenceBlocks(
     }
 
     for (const frame of topFrames) {
-      drawTranslationRow({ ...common, seq: data.seq, frame, y: currentY, reversed })
+      drawTranslationRow({
+        ...common,
+        seq: data.seq,
+        frame,
+        y: currentY,
+        reversed,
+      })
       currentY += rowHeight
     }
 

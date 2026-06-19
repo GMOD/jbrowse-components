@@ -19,7 +19,10 @@ export const textSelector = (text: string) => `::-p-text(${text})`
 export function waitForVisible(
   page: Page,
   selector: string,
-  { hidden = false, timeout = FIND_TIMEOUT }: { hidden?: boolean; timeout?: number } = {},
+  {
+    hidden = false,
+    timeout = FIND_TIMEOUT,
+  }: { hidden?: boolean; timeout?: number } = {},
 ) {
   return page.waitForSelector(selector, {
     [hidden ? 'hidden' : 'visible']: true,

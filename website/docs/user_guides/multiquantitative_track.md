@@ -110,17 +110,16 @@ modes:
   `hclust`. Run the script in R, then paste the resulting row ordering back into
   the dialog and click **Apply clustering**.
 
-After clustering, a dendrogram appears on the left side of the track and rows
-are reordered by similarity.
+After clustering, the rows are reordered by similarity so that individuals with
+similar copy-number patterns sit together.
 
-<Figure caption="Clustering a multi-wiggle track. Top: the 'Cluster by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity with a dendrogram on the left." src="/img/multiwig/cluster_dialog.png" />
+<Figure caption="Clustering a multi-wiggle track. Top: the 'Cluster by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
 
-Click any internal node in the dendrogram to collapse the view to that clade.
-Click the same node again to clear the subtree filter.
-
-The "Show tree" toggle in the track menu shows or hides the dendrogram sidebar
-after clustering. Clustering uses only the signal in the currently visible
-region, so navigate to a region of interest before running it.
+The "Show tree" toggle in the track menu displays a dendrogram sidebar alongside
+the reordered rows. With the tree shown, click any internal node to collapse the
+view to that clade, and click it again to clear the subtree filter. Clustering
+uses only the signal in the currently visible region, so navigate to a region of
+interest before running it.
 
 ### Encoding a clustering result in a session URL
 

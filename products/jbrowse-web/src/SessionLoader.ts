@@ -469,7 +469,9 @@ const SessionLoader = types
         self.sessionQuery ?? '',
         self.password ?? '',
       )
-      await this.loadImportedSession(JSON.parse(await fromUrlSafeB64(decrypted)))
+      await this.loadImportedSession(
+        JSON.parse(await fromUrlSafeB64(decrypted)),
+      )
     },
     /**
      * #action

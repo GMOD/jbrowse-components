@@ -1,7 +1,6 @@
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
 
-
 import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 

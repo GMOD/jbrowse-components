@@ -64,17 +64,21 @@ export async function runDiagonalize(
         return Promise.resolve(null)
       }
       const sessionId = getRpcSessionId(displays[0])
-      return getSession(model).rpcManager.call(sessionId, 'DiagonalizeSynteny', {
+      return getSession(model).rpcManager.call(
         sessionId,
-        adapterConfigs: displays.map(
-          (d: LinearSyntenyDisplayModel) => d.adapterConfig,
-        ),
-        referenceRegions: model.views[i]!.displayedRegions,
-        currentRegions: model.views[i + 1]!.displayedRegions,
-        bpPerPx: model.views[i]!.bpPerPx,
-        stopToken: opts.stopToken,
-        statusCallback: opts.statusCallback,
-      } satisfies DiagonalizeSyntenyArgs)
+        'DiagonalizeSynteny',
+        {
+          sessionId,
+          adapterConfigs: displays.map(
+            (d: LinearSyntenyDisplayModel) => d.adapterConfig,
+          ),
+          referenceRegions: model.views[i]!.displayedRegions,
+          currentRegions: model.views[i + 1]!.displayedRegions,
+          bpPerPx: model.views[i]!.bpPerPx,
+          stopToken: opts.stopToken,
+          statusCallback: opts.statusCallback,
+        } satisfies DiagonalizeSyntenyArgs,
+      )
     }),
   )
 

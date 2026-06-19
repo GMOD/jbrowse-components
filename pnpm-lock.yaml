@@ -808,8 +808,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0
       '@gmod/bed':
-        specifier: ^2.2.5
-        version: 2.2.5
+        specifier: ^2.2.6
+        version: 2.2.6
       '@gmod/tabix':
         specifier: ^3.4.0
         version: 3.4.0
@@ -1000,8 +1000,8 @@ importers:
   plugins/data-management:
     dependencies:
       '@gmod/ucsc-hub':
-        specifier: ^2.0.9
-        version: 2.0.9
+        specifier: ^2.0.10
+        version: 2.0.10
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -4100,8 +4100,8 @@ packages:
   '@gmod/bbi@9.2.0':
     resolution: {integrity: sha512-IhVQ+shoJBnaV2ERkLzRZ81HwzxfxdZqzCr1fU6cI7kxsuXJj6nxuA/h4p6M/2QHrlbbtxr6/ajlqVZNTnR72w==}
 
-  '@gmod/bed@2.2.5':
-    resolution: {integrity: sha512-bk+D5yrV1cxNCuiJ771iK68jmU8yEGV2vufdJW1SjeByl7ievJoYKgRdSwEol4hleqV1cNcmlMvfmj3t+n+OMw==}
+  '@gmod/bed@2.2.6':
+    resolution: {integrity: sha512-6L2EaYIHts/C3BQ4bcERUH24MPlQ2jpuq+qKWzG7ZWNOLrHx2YplYlXMuVZEiLmmiNShJnH1PFYWNGtM1QaS6Q==}
 
   '@gmod/bgzf-filehandle@6.2.0':
     resolution: {integrity: sha512-az2V3+hhpEUHBdJsN6SuSHu7rHFqIIssuZFeerRe8fvEcI/qW+BqB3vT5YC0CNU/SqQB8HREeWu8RoLQbmumdw==}
@@ -4131,8 +4131,8 @@ packages:
   '@gmod/twobit@6.0.9':
     resolution: {integrity: sha512-8X0QERQbJ152ITLQEEujrYG3Ho19FOMCj4LnOkxB8A9EynNp+ensmIh4/aQAzwgtrqqzb8DOFubET6c4bVdzwA==}
 
-  '@gmod/ucsc-hub@2.0.9':
-    resolution: {integrity: sha512-De/30Zy4vGtEOG9cCO73fqLlTSgIr365k8VeZJqab0zQnK/1lTUyDA3qeit0OpW8x0BthhIAuPgpjOchRnj7dw==}
+  '@gmod/ucsc-hub@2.0.10':
+    resolution: {integrity: sha512-qc5h2QfSLZreqyq7lpdEn//VlM1HZFHRlMXxUj8Ok60XMiCmW0u5XhadKJYGKs9AwvAhHZmV1kwIT6cCPnsKBg==}
 
   '@gmod/vcf@7.0.9':
     resolution: {integrity: sha512-3QuZSblZ/larjVNOXyoTFV905s0lyZvOs2+7GALsWR6d9Fuj/+KNnrpNFr3LWCShgE+JqwYEUOfbUv0koct5Kw==}
@@ -8326,8 +8326,8 @@ packages:
     resolution: {integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg==}
     hasBin: true
 
-  nanoid@3.3.12:
-    resolution: {integrity: sha512-ZB9RH/39qpq5Vu6Y+NmUaFhQR6pp+M2Xt76XBnEwDaGcVAqhlvxrl3B2bKS5D3NH3QR76v3aSrKaF/Kiy7lEtQ==}
+  nanoid@3.3.13:
+    resolution: {integrity: sha512-sPdqC6ByMVVGvF1ynvvMo0/o+oD1VX7DaHhijt1bFgjvBkHBib4t49GoNDhf2NDta4oeUNlaGbSt5K7qjZ955Q==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -11896,7 +11896,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.2.0
 
-  '@gmod/bed@2.2.5': {}
+  '@gmod/bed@2.2.6': {}
 
   '@gmod/bgzf-filehandle@6.2.0':
     dependencies:
@@ -11941,7 +11941,7 @@ snapshots:
     dependencies:
       generic-filehandle2: 2.2.0
 
-  '@gmod/ucsc-hub@2.0.9': {}
+  '@gmod/ucsc-hub@2.0.10': {}
 
   '@gmod/vcf@7.0.9': {}
 
@@ -16927,7 +16927,7 @@ snapshots:
       dns-packet: 5.6.1
       thunky: 1.1.0
 
-  nanoid@3.3.12: {}
+  nanoid@3.3.13: {}
 
   napi-build-utils@2.0.0: {}
 
@@ -17281,7 +17281,7 @@ snapshots:
 
   postcss@8.5.15:
     dependencies:
-      nanoid: 3.3.12
+      nanoid: 3.3.13
       picocolors: 1.1.1
       source-map-js: 1.2.1
 

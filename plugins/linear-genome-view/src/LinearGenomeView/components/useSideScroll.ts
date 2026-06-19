@@ -56,7 +56,11 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     // draggable element, a resize handle, or a button (e.g. the menu button on
     // a highlight/bookmark chip, whose actual target is the icon inside it)
     const target = event.target as HTMLElement
-    if (target.draggable || target.dataset.resizer || target.closest('button')) {
+    if (
+      target.draggable ||
+      target.dataset.resizer ||
+      target.closest('button')
+    ) {
       return
     }
 

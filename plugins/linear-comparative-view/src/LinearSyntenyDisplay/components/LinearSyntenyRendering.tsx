@@ -13,8 +13,13 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const { tooltipText, statusMessage, statusProgress, loading, contextMenuAnchor } =
-    model
+  const {
+    tooltipText,
+    statusMessage,
+    statusProgress,
+    loading,
+    contextMenuAnchor,
+  } = model
 
   return (
     <>

@@ -1,9 +1,6 @@
 import type { GapData } from '../../shared/webglRpcTypes.ts'
 
-export function buildGapArrays(
-  gaps: GapData[],
-  regionStart: number,
-) {
+export function buildGapArrays(gaps: GapData[], regionStart: number) {
   const filtered = gaps.filter(g => g.end > regionStart)
   const gapPositions = new Uint32Array(filtered.length * 2)
   const gapYs = new Uint16Array(filtered.length)

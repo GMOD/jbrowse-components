@@ -91,9 +91,16 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
       return null
     }
 
-    statusCallback?.(`Running diagonalization on ${alignments.length} alignments`)
-    return diagonalizeRegions(alignments, referenceRegions, currentRegions, () => {
-      checkStopToken(stopToken)
-    })
+    statusCallback?.(
+      `Running diagonalization on ${alignments.length} alignments`,
+    )
+    return diagonalizeRegions(
+      alignments,
+      referenceRegions,
+      currentRegions,
+      () => {
+        checkStopToken(stopToken)
+      },
+    )
   }
 }

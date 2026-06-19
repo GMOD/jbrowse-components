@@ -25,3 +25,8 @@ modified:   static/img/about_track.png
 	modified:   static/img/alignments/group_by_strand.png
 	modified:   static/img/alignments_center_line.png
 	modified:   static/img/sv_cgiab/translocation_sv_inspector_start.png
+
+# website
+
+collapsible sections in autogen
+
