@@ -36,7 +36,8 @@ export const optionDefs: OptionDef[] = [
   { name: 'cytobands', description: 'Path to cytoband file for the assembly' },
   {
     name: 'themeName',
-    description: 'Theme name for rendering (e.g. default, dark)',
+    description:
+      'Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal',
   },
   {
     name: 'showGridlines',

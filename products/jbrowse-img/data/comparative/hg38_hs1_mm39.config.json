@@ -1,0 +1,62 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": { "localPath": "hg38.chrom.sizes" }
+        }
+      }
+    },
+    {
+      "name": "hs1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hs1-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": { "localPath": "hs1.chrom.sizes" }
+        }
+      }
+    },
+    {
+      "name": "mm39",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "mm39-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": { "localPath": "mm39.chrom.sizes" }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg38ToHs1.over.chain",
+      "name": "hg38 vs hs1 (liftOver chain)",
+      "assemblyNames": ["hg38", "hs1"],
+      "adapter": {
+        "type": "ChainAdapter",
+        "chainLocation": { "localPath": "hg38ToHs1.over.chain.gz" },
+        "targetAssembly": "hg38",
+        "queryAssembly": "hs1"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hs1ToMm39.over.chain.pif",
+      "name": "hs1 vs mm39 (liftOver)",
+      "assemblyNames": ["mm39", "hs1"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz",
+        "assemblyNames": ["mm39", "hs1"]
+      }
+    }
+  ]
+}

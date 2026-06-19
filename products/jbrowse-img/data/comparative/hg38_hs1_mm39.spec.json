@@ -1,0 +1,19 @@
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": [["hg38ToHs1.over.chain"], ["hs1ToMm39.over.chain.pif"]],
+      "minAlignmentLength": 500000,
+      "drawCurves": true,
+      "autoDiagonalize": true,
+      "colorBy": "query",
+      "alpha": 0.4,
+      "levelHeights": [300, 300],
+      "views": [
+        { "assembly": "hg38" },
+        { "assembly": "hs1" },
+        { "assembly": "mm39" }
+      ]
+    }
+  ]
+}

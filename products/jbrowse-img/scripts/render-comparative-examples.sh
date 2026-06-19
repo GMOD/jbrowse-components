@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Regenerates the comparative-view example images in ../img. These are the
-# screenshots referenced from the README "Compare two assemblies" section.
+# Regenerates the example images in ../img referenced from the README:
+# comparative views (dotplot, synteny, multi-way), a circular chord plot, a
+# gene/feature track, and a dark-theme render.
 #
 # Requires `jb2export` on PATH (npm i -g @jbrowse/img) and `rsvg-convert`
 # (apt install librsvg2-bin). Override the command for in-repo dev runs:
@@ -46,4 +47,24 @@ $JB2EXPORT \
   --spec data/comparative/hs1_mm39.spec.json \
   --width 1400 --out img/hs1_mm39_synteny.png
 
-echo "wrote img/yeast_dotplot.png img/yeast_synteny.png img/grape_peach_synteny.png img/hs1_mm39_synteny.png"
+# Three-level stack: hg38 / hs1 / mm39 (one ribbon per adjacent pair — a UCSC
+# liftOver chain for hg38<->hs1, the .pif for hs1<->mm39).
+$JB2EXPORT \
+  --config data/comparative/hg38_hs1_mm39.config.json \
+  --spec data/comparative/hg38_hs1_mm39.spec.json \
+  --width 1400 --out img/hg38_hs1_mm39_synteny.png
+
+# Circular structural-variant chord plot (bundled volvox SV VCF).
+$JB2EXPORT circular \
+  --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.dup.vcf.gz \
+  --width 800 --out img/circular_chords.png
+
+# Gene/feature track and dark theme (bundled volvox annotations).
+$JB2EXPORT --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz \
+  --loc ctgA:1-50000 --width 1200 --out img/gene_track.png
+$JB2EXPORT --fasta data/volvox/volvox.fa \
+  --bigwig data/volvox/volvox-sorted.bam.coverage.bw \
+  --gffgz data/volvox/volvox.sort.gff3.gz \
+  --loc ctgA:1-20000 --themeName darkStock --width 1200 --out img/dark_theme.png
+
+echo "wrote comparative + circular + gene-track + dark-theme images to img/"
