@@ -1,9 +1,15 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { lazy } from 'react'
+
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import DisplayError from './DisplayError.tsx'
 import Loading from './Loading.tsx'
 import SVChordsReactComponent from '../../ChordRenderer/ReactComponent.tsx'
+
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+)
 
 import type { Block } from '../../ChordRenderer/types.ts'
 import type { CircularViewModel } from '../../CircularView/model.ts'
@@ -30,7 +36,18 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
   const radius = view.radiusPx
 
   if (display.error) {
-    return <DisplayError model={display} radius={radius} />
+    return (
+      <DisplayError
+        model={display}
+        radius={radius}
+        onClick={() => {
+          getSession(view).queueDialog(onClose => [
+            ErrorMessageStackTraceDialog,
+            { onClose, error: display.error },
+          ])
+        }}
+      />
+    )
   }
   if (!display.features) {
     return <Loading radius={radius} />

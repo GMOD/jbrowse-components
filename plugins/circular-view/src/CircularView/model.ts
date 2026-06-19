@@ -14,6 +14,7 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
@@ -458,6 +459,15 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * reset rotation, pan, and zoom back to the default fit-to-window view
+       */
+      resetView() {
+        self.offsetRadians = defaultOffsetRadians
+        this.fitToWindow()
+      },
+
+      /**
+       * #action
        */
       zoomInButton() {
         this.setBpPerPx(self.bpPerPx / 1.4)
@@ -658,6 +668,13 @@ function stateModelFactory(pluginManager: PluginManager) {
               self.setDisplayedRegions([])
             },
             icon: FolderOpenIcon,
+          },
+          {
+            label: 'Reset view',
+            onClick: () => {
+              self.resetView()
+            },
+            icon: CenterFocusStrongIcon,
           },
           {
             label: 'Export SVG',

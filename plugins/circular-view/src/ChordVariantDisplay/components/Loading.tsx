@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 import HatchCircle from './HatchCircle.tsx'
@@ -30,6 +31,7 @@ const useStyles = makeStyles()(() => ({
 
 const Loading = observer(function Loading({ radius }: { radius: number }) {
   const { classes } = useStyles()
+  const theme = useTheme()
 
   // only show the loading message after 400ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
@@ -45,8 +47,8 @@ const Loading = observer(function Loading({ radius }: { radius: number }) {
   return !shown ? null : (
     <HatchCircle
       radius={radius}
-      fill="#f1f1f1"
-      hatchColor="rgba(255,255,255,0.5)"
+      fill={theme.palette.action.hover}
+      hatchColor={theme.palette.action.disabledBackground}
       text="Loading…"
     >
       <circle

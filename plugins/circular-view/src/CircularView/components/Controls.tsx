@@ -1,5 +1,6 @@
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import RotateLeftIcon from '@mui/icons-material/RotateLeft'
 import RotateRightIcon from '@mui/icons-material/RotateRight'
@@ -13,6 +14,7 @@ import type { CircularViewModel } from '../model.ts'
 const useStyles = makeStyles()(theme => ({
   controls: {
     position: 'absolute',
+    background: theme.palette.background.paper,
     borderRight: `1px solid ${theme.palette.divider}`,
     borderBottom: `1px solid ${theme.palette.divider}`,
     left: 0,
@@ -32,7 +34,7 @@ const Controls = observer(function Controls({
         onClick={() => {
           model.zoomOutButton()
         }}
-        title="zoom out"
+        title="Zoom out"
         disabled={model.atMaxBpPerPx}
       >
         <ZoomOutIcon />
@@ -43,7 +45,7 @@ const Controls = observer(function Controls({
           model.zoomInButton()
         }}
         disabled={model.atMinBpPerPx}
-        title="zoom in"
+        title="Zoom in"
       >
         <ZoomInIcon />
       </IconButton>
@@ -52,7 +54,7 @@ const Controls = observer(function Controls({
         onClick={() => {
           model.rotateCounterClockwiseButton()
         }}
-        title="rotate counter-clockwise"
+        title="Rotate counter-clockwise"
       >
         <RotateLeftIcon />
       </IconButton>
@@ -61,9 +63,18 @@ const Controls = observer(function Controls({
         onClick={() => {
           model.rotateClockwiseButton()
         }}
-        title="rotate clockwise"
+        title="Rotate clockwise"
       >
         <RotateRightIcon />
+      </IconButton>
+
+      <IconButton
+        onClick={() => {
+          model.resetView()
+        }}
+        title="Reset view"
+      >
+        <CenterFocusStrongIcon />
       </IconButton>
 
       <IconButton

@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { ReactNode } from 'react'
 
+import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 const HatchCircle = observer(function HatchCircle({
@@ -16,6 +17,7 @@ const HatchCircle = observer(function HatchCircle({
   text: ReactNode
   children?: ReactNode
 }) {
+  const theme = useTheme()
   const uniqueId = useId()
   const patternId = `hatch${uniqueId.replace(/:/g, '')}`
   return (
@@ -45,6 +47,7 @@ const HatchCircle = observer(function HatchCircle({
         transform="rotate(90 0 0)"
         dominantBaseline="middle"
         textAnchor="middle"
+        fill={theme.palette.text.primary}
       >
         {text}
       </text>
