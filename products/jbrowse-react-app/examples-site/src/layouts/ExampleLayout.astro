@@ -1,6 +1,10 @@
 ---
 import { Code } from 'astro:components'
 
+import Shell from './Shell.astro'
+import { examples } from '../examples.ts'
+import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+
 interface Props {
   title: string
   description?: string
@@ -8,62 +12,53 @@ interface Props {
 }
 
 const { title, description, code } = Astro.props
-const base = import.meta.env.BASE_URL
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <title>{title} — JBrowse React App examples</title>
-    <style is:global>
-      body {
-        margin: 0;
-        font-family:
-          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-          Arial, sans-serif;
-        color: #1a1a1a;
-      }
-      header {
-        padding: 8px 16px;
-        border-bottom: 1px solid #ddd;
-        background: #fafafa;
-      }
-      header a {
-        color: #135ba8;
-        text-decoration: none;
-      }
-      main {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 16px;
-      }
-      h1 {
-        margin-top: 0;
-      }
-      .demo {
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-bottom: 24px;
-        height: 80vh;
-        overflow: hidden;
-      }
-      pre {
-        padding: 16px;
-        border-radius: 4px;
-        overflow: auto;
-      }
-    </style>
-  </head>
-  <body>
-    <header><a href={base}>← All examples</a></header>
-    <main>
-      <h1>{title}</h1>
-      {description && <p>{description}</p>}
-      <div class="demo"><slot /></div>
-      <h2>Source</h2>
-      <Code code={code} lang="tsx" />
-    </main>
-  </body>
-</html>
+<Shell
+  title={title}
+  componentLabel={componentLabel}
+  examples={examples}
+  mainMaxWidth={mainMaxWidth}
+>
+  <style is:global>
+    .lead {
+      font-size: 1.05em;
+      color: var(--muted);
+    }
+    .demo {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 16px;
+      height: 80vh;
+      overflow: hidden;
+    }
+    details.source {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 24px;
+    }
+    details.source > summary {
+      cursor: pointer;
+      padding: 8px 12px;
+      font-weight: 600;
+      user-select: none;
+    }
+    details.source[open] > summary {
+      border-bottom: 1px solid var(--border);
+    }
+    details.source pre {
+      padding: 16px;
+      border-radius: 0 0 4px 4px;
+      overflow: auto;
+      margin: 0;
+    }
+  </style>
+  <h1>{title}</h1>
+  {description && <p class="lead">{description}</p>}
+  <h2>Live demo</h2>
+  <div class="demo"><slot /></div>
+  <details class="source">
+    <summary>View source</summary>
+    <Code code={code} lang="tsx" />
+  </details>
+</Shell>

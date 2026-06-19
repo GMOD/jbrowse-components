@@ -1,0 +1,200 @@
+---
+// Shared chrome for every product's examples-site (lgv / cgv / app). Each site
+// symlinks src/layouts/Shell.astro to this file, so it must stay self-contained
+// — NO relative imports (`astro check` resolves them from the symlink's own
+// directory, not this file's real path, so they fail). All site-specific data
+// arrives via props; the example shape is inlined for the same reason.
+interface ExampleMeta {
+  slug: string
+  title: string
+  group: string
+}
+
+interface Props {
+  title: string
+  componentLabel: string
+  examples: ExampleMeta[]
+  mainMaxWidth?: string
+}
+
+const { title, componentLabel, examples, mainMaxWidth = '920px' } = Astro.props
+const base = import.meta.env.BASE_URL
+const groups = [...new Set(examples.map(e => e.group))]
+const docsHref = 'https://jbrowse.org/jb2/docs/embedded_components/'
+
+// highlight the current example in the sidebar by matching the URL, so pages
+// don't need to thread their slug through
+const trimSlash = (s: string) => s.replace(/\/+$/, '')
+const here = trimSlash(Astro.url.pathname)
+const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <title>{title} — JBrowse {componentLabel}</title>
+    <style is:global>
+      :root {
+        --accent: #135ba8;
+        --border: #e2e2e2;
+        --muted: #5a5a5a;
+        --sidebar-width: 260px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+          Arial, sans-serif;
+        color: #1a1a1a;
+        line-height: 1.55;
+      }
+      a {
+        color: var(--accent);
+      }
+      header.topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 20px;
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+      }
+      header.topbar .brand {
+        font-weight: 700;
+        color: #1a1a1a;
+        text-decoration: none;
+        font-size: 1.05em;
+      }
+      header.topbar .brand span {
+        color: var(--muted);
+        font-weight: 400;
+      }
+      header.topbar nav {
+        display: flex;
+        gap: 18px;
+        font-size: 0.92em;
+      }
+      header.topbar nav a {
+        text-decoration: none;
+      }
+      header.topbar nav a:hover {
+        text-decoration: underline;
+      }
+      .layout {
+        display: flex;
+        align-items: flex-start;
+      }
+      aside.sidebar {
+        flex: 0 0 var(--sidebar-width);
+        width: var(--sidebar-width);
+        position: sticky;
+        top: 53px;
+        align-self: flex-start;
+        height: calc(100vh - 53px);
+        overflow-y: auto;
+        border-right: 1px solid var(--border);
+        padding: 16px 12px 48px;
+      }
+      aside.sidebar .group-title {
+        font-size: 0.72em;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        margin: 18px 8px 6px;
+      }
+      aside.sidebar .group-title:first-child {
+        margin-top: 0;
+      }
+      aside.sidebar ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      aside.sidebar a {
+        display: block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #333;
+        font-size: 0.9em;
+      }
+      aside.sidebar a:hover {
+        background: #f1f5fa;
+      }
+      aside.sidebar a[aria-current='page'] {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+      main {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 24px 28px 80px;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      @media (max-width: 820px) {
+        .layout {
+          display: block;
+        }
+        aside.sidebar {
+          position: static;
+          width: 100%;
+          height: auto;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href={base}>
+        JBrowse 2 <span>· {componentLabel} examples</span>
+      </a>
+      <nav>
+        <a href={docsHref}>Embedding docs</a>
+        <a href="https://jbrowse.org/jb2/">jbrowse.org</a>
+      </nav>
+    </header>
+    <div class="layout">
+      <aside class="sidebar">
+        {
+          groups.map(group => (
+            <>
+              <div class="group-title">{group}</div>
+              <ul>
+                {examples
+                  .filter(e => e.group === group)
+                  .map(e => (
+                    <li>
+                      <a
+                        href={`${base}${e.slug}/`}
+                        aria-current={isActive(e.slug) ? 'page' : undefined}
+                      >
+                        {e.title}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </>
+          ))
+        }
+      </aside>
+      <main style={`max-width:${mainMaxWidth}`}>
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
