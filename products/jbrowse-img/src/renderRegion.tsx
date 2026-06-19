@@ -149,6 +149,10 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   if (loc) {
     const { name } = data.assembly
     if (loc === 'all') {
+      // showAllRegionsInAssembly reads assemblyManager.get(name).regions
+      // synchronously and no-ops if the assembly hasn't loaded yet, so wait for
+      // it first (navToLocString does this internally for the single-loc case).
+      await session.assemblyManager.waitForAssembly(name)
       view.showAllRegionsInAssembly(name)
     } else {
       await view.navToLocString(loc, name)

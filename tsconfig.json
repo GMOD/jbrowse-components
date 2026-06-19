@@ -33,6 +33,7 @@
     "**/config/jest/",
     "**/embedded_demos/",
     "**/component_tests/",
+    "**/examples-site/",
     "**/website",
     "products/jbrowse-desktop/test",
     "products/jbrowse-desktop/electron"

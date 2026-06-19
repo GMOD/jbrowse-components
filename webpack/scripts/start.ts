@@ -42,23 +42,18 @@ export default async function startWebpack(config: webpack.Configuration) {
   const wsProtocol = process.env.HTTPS === 'true' ? 'wss' : 'ws'
 
   // Quiet webpack-dev-server's startup chatter (Project is running at /
-  // Loopback / Content not from webpack). Compile status and errors still
-  // print via webpack's own 'errors-warnings' stats output.
+  // Loopback / Content not from webpack).
   config.infrastructureLogging = { level: 'warn' }
   const compiler = webpack(config)
-
-  // Re-print the URL after every successful compile so the port stays visible
-  // instead of scrolling off above the recompile messages.
-  let viewMessage = ''
-  compiler.hooks.done.tap('print-url', stats => {
-    if (viewMessage && !stats.hasErrors()) {
-      console.log(viewMessage)
-    }
-  })
 
   const devServer = new WebpackDevServer(
     {
       host: HOST,
+      // webpack-dev-middleware unconditionally console.logs stats.toString()
+      // after every compile. Limiting stats to errors/warnings makes a clean
+      // recompile produce an empty string (so nothing prints) while still
+      // surfacing problems.
+      devMiddleware: { stats: { all: false, errors: true, warnings: true } },
       port: process.env.PORT
         ? Number.parseInt(process.env.PORT, 10)
         : (await isPortFree(3000))
@@ -88,8 +83,9 @@ export default async function startWebpack(config: webpack.Configuration) {
     }
     const addr = devServer.server?.address()
     if (typeof addr === 'object' && addr) {
-      viewMessage = `You can view ${chalk.bold(appName)} at http://localhost:${chalk.bold(addr.port)}`
-      console.log(viewMessage)
+      console.log(
+        `You can view ${chalk.bold(appName)} at http://localhost:${chalk.bold(addr.port)}`,
+      )
     }
   })
 }

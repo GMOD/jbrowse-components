@@ -10,21 +10,27 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export type TrackDisplay =
   LinearGenomeViewModel['tracks'][number]['displays'][number]
 
-// Merge a raw JSON object into the display snapshot — an escape hatch (e.g.
-// '{"colorBy":{"type":"strand"}}') for any setting with no dedicated modifier.
-export function mergeDisplaySnapshot(display: TrackDisplay, json: string) {
-  const current: Record<string, unknown> = getSnapshot(display)
-  const overrides = JSON.parse(json) as Record<string, unknown>
-  applySnapshot(display, { ...current, ...overrides })
-}
+// Score/scale/color settings for wiggle-family displays are stored as flat
+// config-override keys on the display snapshot (ConfigOverrideMixin serializes
+// them flat), so we specify them declaratively as a snapshot patch and apply it
+// in one applySnapshot. This is sturdier than per-setting actions, whose names
+// drift as the GPU-migrated display models evolve (e.g. the old setFill /
+// setCrossHatches actions no longer exist).
+export type SnapshotPatch = Record<string, unknown>
 
-// Apply a single `prefix:val1:val2` track modifier to a display.
+// Apply a single `prefix:val1:val2` track modifier. Action-style modifiers
+// (sort, grouping, arcs, …) dispatch immediately; declarative score-display
+// settings accumulate into `patch`, which the caller applies once at the end.
 export function applyTrackModifier(
   display: TrackDisplay,
   prefix: string,
   val1: string,
   val2: string | undefined,
+  patch: SnapshotPatch = {},
 ) {
+  // Wiggle/quantitative displays expose setScaleType; gate score-only settings
+  // on it so they no-op (rather than corrupt the snapshot) on other displays.
+  const isScoreDisplay = typeof display.setScaleType === 'function'
   switch (prefix) {
     case 'height': {
       if (val1) {
@@ -45,8 +51,11 @@ export function applyTrackModifier(
     case 'color': {
       if (display.setColorScheme) {
         display.setColorScheme({ type: val1, tag: val2 })
-      } else {
-        display.setColor?.(val1)
+      } else if (isScoreDisplay) {
+        // Wiggle: render in one solid color. The bicolor default routes through
+        // pos/negColor and ignores `color`, so turn it off to honor the request.
+        patch.color = val1
+        patch.useBicolor = false
       }
       break
     }
@@ -136,34 +145,49 @@ export function applyTrackModifier(
       break
     }
     case 'autoscale': {
-      display.setAutoscale(val1)
+      if (isScoreDisplay) {
+        patch.autoscale = val1
+      }
       break
     }
     case 'minmax': {
-      if (val1) {
-        display.setMinScore(+val1)
-      }
-      if (val2) {
-        display.setMaxScore(+val2)
+      if (isScoreDisplay) {
+        if (val1) {
+          patch.minScore = +val1
+        }
+        if (val2) {
+          patch.maxScore = +val2
+        }
       }
       break
     }
     case 'scaletype': {
-      display.setScaleType(val1)
+      if (isScoreDisplay) {
+        patch.scaleType = val1
+      }
       break
     }
     case 'crosshatch': {
-      display.setCrossHatches(booleanize(val1 || 'true'))
+      if (isScoreDisplay) {
+        patch.displayCrossHatches = booleanize(val1 || 'true')
+      }
       break
     }
+    // Legacy fill toggle. `fill:false` historically meant "no fill" on
+    // xyplot-family renderers, which the wiggle migration maps to the `scatter`
+    // rendering type (see migrateWiggleSnapshot); `fill:true` is plain `xyplot`.
     case 'fill': {
-      display.setFill(booleanize(val1 || 'true'))
+      if (isScoreDisplay) {
+        patch.defaultRendering = booleanize(val1 || 'true') ? 'xyplot' : 'scatter'
+      }
       break
     }
     case 'resolution': {
-      const val =
-        val1 === 'fine' ? 10 : val1 === 'superfine' ? 100 : Number(val1)
-      display.setResolution(Number.isNaN(val) ? 1 : val)
+      if (isScoreDisplay) {
+        const val =
+          val1 === 'fine' ? 10 : val1 === 'superfine' ? 100 : Number(val1)
+        patch.resolution = Number.isNaN(val) ? 1 : val
+      }
       break
     }
     // 'snpcov' is applied after the modifier loop (see applyCoverageOnly), so
@@ -196,13 +220,23 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
     throw new Error('invalid command line args')
   }
   const display = view.showTrack(path.basename(track)).displays[0]
+
+  // Accumulate declarative snapshot settings (score-display config + any `{...}`
+  // JSON escape-hatch overrides) and apply them in one merge after the loop, so
+  // action-style modifiers and config settings can be freely interleaved.
+  const patch: SnapshotPatch = {}
   for (const opt of opts) {
     if (opt.startsWith('{')) {
-      mergeDisplaySnapshot(display, opt)
+      Object.assign(patch, JSON.parse(opt) as SnapshotPatch)
     } else {
       const [prefix = '', val1 = '', val2] = opt.split(':')
-      applyTrackModifier(display, prefix, val1, val2)
+      applyTrackModifier(display, prefix, val1, val2, patch)
     }
   }
+  if (Object.keys(patch).length > 0) {
+    const current: Record<string, unknown> = getSnapshot(display)
+    applySnapshot(display, { ...current, ...patch })
+  }
+
   applyCoverageOnly(display, opts)
 }

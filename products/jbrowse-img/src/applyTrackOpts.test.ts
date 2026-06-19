@@ -58,10 +58,47 @@ describe('applyTrackModifier', () => {
     expect(display.setColor).not.toHaveBeenCalled()
   })
 
-  test('color falls back to setColor when no setColorScheme', () => {
-    const display = mockDisplay({ setColorScheme: undefined })
-    applyTrackModifier(display, 'color', 'purple', undefined)
-    expect(display.setColor).toHaveBeenCalledWith('purple')
+  test('color on a score display patches color + disables bicolor', () => {
+    const display = mockDisplay({
+      setColorScheme: undefined,
+      setScaleType: jest.fn(),
+    })
+    const patch = {}
+    applyTrackModifier(display, 'color', 'purple', undefined, patch)
+    expect(patch).toEqual({ color: 'purple', useBicolor: false })
+  })
+
+  test('score-display settings accumulate into a declarative snapshot patch', () => {
+    const display = mockDisplay({ setScaleType: jest.fn() })
+    const patch = {}
+    applyTrackModifier(display, 'scaletype', 'log', undefined, patch)
+    applyTrackModifier(display, 'fill', 'false', undefined, patch)
+    applyTrackModifier(display, 'minmax', '1', '1024', patch)
+    applyTrackModifier(display, 'crosshatch', 'true', undefined, patch)
+    applyTrackModifier(display, 'resolution', 'superfine', undefined, patch)
+    expect(patch).toEqual({
+      scaleType: 'log',
+      defaultRendering: 'scatter',
+      minScore: 1,
+      maxScore: 1024,
+      displayCrossHatches: true,
+      resolution: 100,
+    })
+  })
+
+  test('fill:true maps to the xyplot rendering type', () => {
+    const display = mockDisplay({ setScaleType: jest.fn() })
+    const patch = {}
+    applyTrackModifier(display, 'fill', 'true', undefined, patch)
+    expect(patch).toEqual({ defaultRendering: 'xyplot' })
+  })
+
+  test('score settings no-op on a non-score display', () => {
+    const display = mockDisplay()
+    const patch = {}
+    applyTrackModifier(display, 'scaletype', 'log', undefined, patch)
+    applyTrackModifier(display, 'fill', 'false', undefined, patch)
+    expect(patch).toEqual({})
   })
 
   test('featureHeight presets route to setCompactness', () => {

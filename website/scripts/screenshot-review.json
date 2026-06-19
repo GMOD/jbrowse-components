@@ -37,21 +37,21 @@
   },
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
-    "status": "good",
-    "note": "resolved: kept as result-only for sv_visualization; menu+result combine lives in alignments_soft_clipped_menu",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "please reduce browser width",
+    "reviewedAt": "2026-06-19T12:06:35.878Z"
   },
   "alignments/arc_display": {
     "name": "alignments/arc_display",
-    "status": "good",
-    "note": "fixed: caption no longer says \"Ashkenazi son\" (just HG002); zoomed in to chr1:72.65-73.06Mb. No clean pileup-hide toggle exists (coverage+pileup displays merged), so pileup kept.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "we susuggested previously to allow hiding pileup. we should make a hide pileup toggle. the alternative is creating a 'additive construction' system, that is default on, so we dont have a maze of 'hide' binaries, but not sure what is best",
+    "reviewedAt": "2026-06-19T13:25:22.204Z"
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "bad",
-    "note": "spec edits in place (coverageHeight 100, readConnectionsHeight 260, viewportHeight 520) BUT the samplot read-cloud display hangs on Loading in the current build — same CRAM loads fine via group_by_strand, so it is a samplot load regression, not a spec issue. committed PNG kept until the regression is fixed.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "note": "if possible make it so read cloud is at least 1px wide...the 'short insert size' are hard to see (pairs so close together, barely 1px?)",
+    "reviewedAt": "2026-06-19T12:11:24.264Z"
   },
   "dotplot": {
     "name": "dotplot",
@@ -79,15 +79,15 @@
   },
   "sv_cgiab/translocation_sv_inspector_start": {
     "name": "sv_cgiab/translocation_sv_inspector_start",
-    "status": "good",
-    "note": "bigger annotation text. remove the second screenshot",
-    "reviewedAt": "2026-06-11T17:54:09.999Z"
+    "status": "bad",
+    "note": "can probably remove second stage screenshot",
+    "reviewedAt": "2026-06-19T12:31:49.793Z"
   },
   "sv_synteny/dotplot_import": {
     "name": "sv_synteny/dotplot_import",
-    "status": "good",
-    "note": "fixed: arrows now point at the select boxes; callouts on pills",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "it is unclear that using the term 'query' and 'target' to label x and y axis is correct. that is a 'track level' config, the view doesnt care. might remove annotations. ",
+    "reviewedAt": "2026-06-19T12:35:30.479Z"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -97,15 +97,15 @@
   },
   "sv_synteny/linear_synteny_genes": {
     "name": "sv_synteny/linear_synteny_genes",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-02T07:19:34.647Z"
+    "status": "bad",
+    "note": "the 'second layer' of linearsyntenyviewhelper is not displaying synteny ribbons. only layer 1 vs 2 is dispalying. not 2 vs 3.",
+    "reviewedAt": "2026-06-19T12:34:40.575Z"
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
-    "status": "good",
-    "note": "fixed: added finer binning (resolution 5) to the whole-genome scatter so copy-number structure resolves (reviewer: finer resolution ~2x)",
-    "reviewedAt": "2026-06-11T14:28:24.775Z"
+    "status": "bad",
+    "note": "if possible, make a multi-stage screenshot showing how to set up this screenshot, or short video even with puppeteer screencast",
+    "reviewedAt": "2026-06-19T12:12:23.227Z"
   },
   "modifications": {
     "name": "modifications",
@@ -127,9 +127,9 @@
   },
   "cnv": {
     "name": "cnv",
-    "status": "good",
-    "note": "fixed: pinned explicit subadapter colors (tumor=#e41a1c red, normal=#377eb8 blue). The multiwig source color is now assigned by post-filter index which had flipped them vs origin/main.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "in the old screenshot we made the 'scatterplot point size' smaller. is there any mechanism for this that we can use or do we need to build it?",
+    "reviewedAt": "2026-06-19T12:13:37.058Z"
   },
   "smalldel": {
     "name": "smalldel",
@@ -146,14 +146,14 @@
   "multisv": {
     "name": "multisv",
     "status": "bad",
-    "note": "INVESTIGATED (inconclusive): the only branch diff found is LABEL_FONT_SIZE 11 (webgl-poc) vs 12 (main) in plugins/canvas/src/RenderFeatureDataRPC/constants.ts — a 1px change whose math actually predicts webgl-poc should be TIGHTER, so it does not clearly explain the looser packing. Changing it is a global per-track-app change, too risky to apply blindly for a screenshot. Needs maintainer decision.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "note": "we were interested in increasing the packing density of gene glyphs. the old screenshot on origin/main seemingly has more density. the agent said they investigated it but did not find soliution. if you think you can continue investigation please try. looks like there is extra padding on 'right side' of glyphs perhaps. INVESTIGATED (inconclusive): the only branch diff found is LABEL_FONT_SIZE 11 (webgl-poc) vs 12 (main) in plugins/canvas/src/RenderFeatureDataRPC/constants.ts — a 1px change whose math actually predicts webgl-poc should be TIGHTER, so it does not clearly explain the looser packing. Changing it is a global per-track-app change, too risky to apply blindly for a screenshot. Needs maintainer decision.",
+    "reviewedAt": "2026-06-19T12:25:17.325Z"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
-    "status": "good",
-    "note": "fixed: reconstructed the old share session as a DECLARATIVE sessionSpec (loc-based BreakpointSplitView). Pileups shortened (alignments display height 140 via per-track displaySnapshot). Intra-view links turned off. To do this declaratively+typed, LaunchView-BreakpointSplitView now forwards ALL view-level snapshot props (typed via SnapshotIn<BreakpointViewStateModel> through the ExtensionPointRegistry) into addView, and BreakpointSplitViewInitView.tracks widened to accept {trackId,displaySnapshot} (source changes in plugins/breakpoint-split-view). Doc Live-demo link updated to the same session spec (was a different share). Rebuilt jbrowse-web; rendered+verified.",
-    "reviewedAt": "2026-06-15T14:30:49.585Z"
+    "status": "bad",
+    "note": "in the old screenshot, on the top view, the order of tracks is \"reads,variants\" and on bottom view \"variants,reads\"",
+    "reviewedAt": "2026-06-19T12:14:57.499Z"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -169,21 +169,21 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "good",
-    "note": "fixed: replaced the small CPX_TYPE circle with a large \"Annotated as INVdup\" label + arrow + an explanation of the read evidence (green LL/RR pairs = inversion, elevated coverage + arcs = duplication). featureHeight 9, track height 1300, viewportHeight 1600 so green pairs/arcs are visible.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "we have a coloring 'orange' when read chains contain supplementary alignments (e.g. the read was split aligned to multiple locations). but is this the best coloring we can get for this? the navy and green colorings are very important for showing discordant read patterns while orange (read chain has supplementary) causes this pattern to almost 'go away'. please investigate",
+    "reviewedAt": "2026-06-19T12:19:55.661Z"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-02T07:56:32.558Z"
+    "status": "bad",
+    "note": "if our old screenshot, we had one 'chord' that went from chr3 to chr13 highlighted (black mouseover)",
+    "reviewedAt": "2026-06-19T12:32:25.333Z"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
-    "status": "good",
-    "note": "fixed: crop height 175->230 so the import form helper text + 'Show all regions in assembly' button show in full",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "circle the 'show all regions in assembly'",
+    "reviewedAt": "2026-06-19T12:30:57.536Z"
   },
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
@@ -193,9 +193,9 @@
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
-    "status": "good",
-    "note": "fixed: both bigwigs now in a single MultiQuantitativeTrack (MultiWiggleAdapter, multiscatter) above the CNV bed calls.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "if possible increase the resolution a bit, and also, use trackLabels->offset",
+    "reviewedAt": "2026-06-19T12:30:53.366Z"
   },
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
@@ -205,39 +205,39 @@
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
-    "status": "good",
-    "note": "fixed: synteny band taller via levels:[{height:260}] (LinearSyntenyViewHelper.height); viewportHeight 620.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "the previous agent said \"fixed: synteny band taller via levels:[{height:260}] (LinearSyntenyViewHelper.height); viewportHeight 620.\" but the synteny area is still short. not sure if it was fixed",
+    "reviewedAt": "2026-06-19T12:31:35.039Z"
   },
   "linear_synteny": {
     "name": "linear_synteny",
-    "status": "good",
-    "note": "kept as-is for linear_synteny_view.md (whole-genome grape vs peach, drawCurves+query color). The gallery now uses a new linear_synteny_gallery spec/image instead.",
-    "reviewedAt": "2026-06-15T19:22:58.000Z"
+    "status": "bad",
+    "note": "increase height of synteny area. also add some opacity. diagonalize it too if not done already",
+    "reviewedAt": "2026-06-19T12:40:17.512Z"
   },
   "about_track": {
     "name": "about_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-04T17:51:16.352Z"
+    "reviewedAt": "2026-06-19T14:37:26.641Z"
   },
   "add_hg38_assembly": {
     "name": "add_hg38_assembly",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-10T19:35:06.000Z"
+    "reviewedAt": "2026-06-19T14:37:40.410Z"
   },
   "add_track_form": {
     "name": "add_track_form",
-    "status": "good",
-    "note": "fixed: switched to config_demo hg19 (ncbi_gff_hg19 over chr1:1-1.1Mb); browser height reduced 600->560; stage-2 box now wraps just the addTrackWorkflow form (new data-testid) instead of the full-height drawer that ran off the bottom.",
-    "reviewedAt": "2026-06-14T20:30:00.000Z"
+    "status": "bad",
+    "note": "this might be able to be a single level screenshot with arrow pointing from open track to the add track panel",
+    "reviewedAt": "2026-06-19T13:23:28.147Z"
   },
   "alignments_center_line": {
     "name": "alignments_center_line",
-    "status": "good",
-    "note": "fixed: single frame now shows the View menu open with Show... -> Show center line boxed (checked), with the dashed center line visible over the volvox_bam pileup behind it.",
-    "reviewedAt": "2026-06-14T20:35:00.000Z"
+    "status": "bad",
+    "note": "the red box is not hovering over anything, the 'show' submenu is not open. if needed add console logging to investigate",
+    "reviewedAt": "2026-06-19T13:24:48.134Z"
   },
   "alignments_center_line_menu": {
     "name": "alignments_center_line_menu",
@@ -247,9 +247,9 @@
   },
   "alignments_soft_clipped_menu": {
     "name": "alignments_soft_clipped_menu",
-    "status": "good",
-    "note": "fixed: viewportHeight 480 so both stages (esp. the result frame) are shorter.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "if possible also circle the 'Show...' menu",
+    "reviewedAt": "2026-06-19T12:06:55.803Z"
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
@@ -259,9 +259,9 @@
   },
   "alignments/group_by_strand": {
     "name": "alignments/group_by_strand",
-    "status": "good",
-    "note": "fixed: now uses the new in-track groupBy:{type:strand} (single display split into Forward/Reverse stacked sections), not the legacy launch-subtracks approach. viewportHeight trimmed to 440.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "if possible delete this group by strand figure and docs, focus on the group by hp example in smalldel",
+    "reviewedAt": "2026-06-19T13:25:22.285Z"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -271,15 +271,15 @@
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
-    "status": "good",
-    "note": "fixed: now COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a UCSC CpG island on chr20 + the CpG island track (reviewer). Made declarative (colorBy modifications) rather than driving the 3-level Color-by hover menu live, which is unreliable over the COLO829 GPU display (mod-data load keeps repainting the canvas, closing the MUI menu mid-cascade); caption references the menu path.",
-    "reviewedAt": "2026-06-11T15:51:07.800Z"
+    "status": "bad",
+    "note": "if it helps, open the track menu->color by->modifications for this. ",
+    "reviewedAt": "2026-06-19T13:25:58.126Z"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
-    "status": "good",
-    "note": "fixed: replaced the Show pair overlay radio submenu with two checkboxes (Show read arcs / Show read cloud) directly under Read connections; mutually exclusive since read cloud repurposes the band Y axis to |tlen|. Spec regenerated to box both checkboxes + tick Show read arcs.",
-    "reviewedAt": "2026-06-11T15:00:00.000Z"
+    "status": "bad",
+    "note": "please highlight the 'Read connections' submenu also",
+    "reviewedAt": "2026-06-19T12:11:33.513Z"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -289,9 +289,9 @@
   },
   "bookmark_widget_edit_label": {
     "name": "bookmark_widget_edit_label",
-    "status": "good",
+    "status": "bad",
     "note": "the annotation 'Single click the label to edit' goes off screen",
-    "reviewedAt": "2026-06-15T13:11:54.953Z"
+    "reviewedAt": "2026-06-19T12:12:35.516Z"
   },
   "bookmark_widget_export_dialog": {
     "name": "bookmark_widget_export_dialog",
@@ -331,9 +331,9 @@
   },
   "hierarchical/hierarchical_user_menu-fs8": {
     "name": "hierarchical/hierarchical_user_menu-fs8",
-    "status": "good",
-    "note": "fixed: red boxes on both Collapse menu items",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "remove the gff3tabix gene track that is open...distracting",
+    "reviewedAt": "2026-06-19T12:41:13.813Z"
   },
   "hs1_vs_mm39_synteny": {
     "name": "hs1_vs_mm39_synteny",
@@ -355,9 +355,9 @@
   },
   "lgv_usage_guide": {
     "name": "lgv_usage_guide",
-    "status": "good",
-    "note": "fixed: replaced numbered badges with text labels on pills",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "some of the track labels overlap their icons, should they be arrows pointing at the things they are indicating with text connected to the arrows",
+    "reviewedAt": "2026-06-19T12:20:40.392Z"
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
@@ -391,15 +391,15 @@
   },
   "plugin_store": {
     "name": "plugin_store",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-14T14:22:06.326Z"
+    "status": "bad",
+    "note": "if possible circle the 'Tools' top level menu also, and the pluginstore sidebar widget itself",
+    "reviewedAt": "2026-06-19T12:25:47.500Z"
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
-    "status": "good",
-    "note": "switched the spec to volvox_bam (alignments pileup) instead of gff3tabix_genes, per reviewer request; regenerated.",
-    "reviewedAt": "2026-06-15T19:22:58.000Z"
+    "status": "bad",
+    "note": "this might just want to show the 'Open track' dropdown from file...i dont think people will easily understand the multistep process being implied here",
+    "reviewedAt": "2026-06-19T14:38:11.953Z"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -421,9 +421,9 @@
   },
   "customized_feature_details": {
     "name": "customized_feature_details",
-    "status": "good",
-    "note": "fixed: callout label switched to white-on-dark pill to match the other annotated figures",
-    "reviewedAt": "2026-06-11T14:06:37.359Z"
+    "status": "bad",
+    "note": "the text \"The callback turns the name into a clickable link\" is too vague. improve text",
+    "reviewedAt": "2026-06-19T12:14:15.562Z"
   },
   "customized_theme": {
     "name": "customized_theme",
@@ -446,8 +446,8 @@
   "dotplot_add": {
     "name": "dotplot_add",
     "status": "good",
-    "note": "fixed: two-stage Add-menu + import form (import form only); merged old dotplot_menu",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-19T12:15:44.664Z"
   },
   "dotplot_menu": {
     "name": "dotplot_menu",
@@ -463,15 +463,15 @@
   },
   "edit_track_settings": {
     "name": "edit_track_settings",
-    "status": "good",
-    "note": "fixed: Settings is now boxed in the Track actions submenu; doc (basic_usage.md) rewritten — any track is editable directly (non-admin edits land as a session override), no copy-first step. Delete still gated, Settings always enabled.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "please highlight the 'Track actions' text also",
+    "reviewedAt": "2026-06-19T12:15:52.927Z"
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
-    "status": "good",
-    "note": "removed the useSearchHighlight call from HierarchicalTree.tsx (the yellow text-match highlight on the hierarchical tracklist was distracting); FacetedDataGrid highlight left as-is. Rebuilt jbrowse-web and regenerated; \"volvox-sorted\" filter text no longer highlighted.",
-    "reviewedAt": "2026-06-15T19:22:58.000Z"
+    "status": "bad",
+    "note": "please circle the 'track menu' 'moreVert' icon that was clicked in the first screenshot. in the second screenshot the hierarchcal track selector header is not visible for some reason. might be fluke?",
+    "reviewedAt": "2026-06-19T12:28:06.125Z"
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
@@ -499,15 +499,15 @@
   },
   "recent_tracks": {
     "name": "recent_tracks",
-    "status": "good",
-    "note": "fixed: stage 2 now boxes the opened recently-used popover (.MuiPopover-paper)",
-    "reviewedAt": "2026-06-14T19:00:00.000Z"
+    "status": "bad",
+    "note": "turn this into a single stage screenshot where the 'recent changes icon' and the 'recent changes popover' are both highlighted",
+    "reviewedAt": "2026-06-19T12:26:49.486Z"
   },
   "rnaseq/compact_stacked": {
     "name": "rnaseq/compact_stacked",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-14T14:23:05.973Z"
+    "status": "bad",
+    "note": "avoid making too many 'biological conclusions' like \"The depth of read coverage is a direct, quantitative measure of expression level.\". though mostly true, can be nuanced",
+    "reviewedAt": "2026-06-19T12:29:07.138Z"
   },
   "rnaseq/longread_isoseq": {
     "name": "rnaseq/longread_isoseq",
@@ -565,15 +565,15 @@
   },
   "sv_inspector_importform_after": {
     "name": "sv_inspector_importform_after",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-14T14:55:09.648Z"
+    "status": "bad",
+    "note": "you can make this a multi-stage screenshot showing the open from track dialog mode too. decrease width  and height of browser too.",
+    "reviewedAt": "2026-06-19T12:32:59.192Z"
   },
   "synteny_from_dotplot_view": {
     "name": "synteny_from_dotplot_view",
-    "status": "good",
-    "note": "improved: small focused drag over one diagonal block (peach Pp01 first ~15Mb) instead of a whole-genome selection, so the launched synteny view shows distinct ribbons (the grape triplication) instead of a solid-red criss-cross. Uses MCScan anchor tracks. NOTE: the launched view height + minAlignmentLength cannot be set via the dotplot->synteny launch path",
-    "reviewedAt": "2026-06-14T19:30:00.000Z"
+    "status": "bad",
+    "note": "try to make the click-and-drag segment a little smaller (maybe 75% size)",
+    "reviewedAt": "2026-06-19T12:34:00.249Z"
   },
   "top_level_menus": {
     "name": "top_level_menus",
@@ -607,15 +607,15 @@
   },
   "trio-matrix-phased": {
     "name": "trio-matrix-phased",
-    "status": "good",
-    "note": "fixed: red box on the Phased rendering-mode item",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "for whatever reason, on origin/main, the screenshot looks 'lighter'. not sure if it is rendering subpixel better. the black linesconnectingtogenomicposition look better too on origin/main",
+    "reviewedAt": "2026-06-19T12:37:02.871Z"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-04T18:40:42.324Z"
+    "status": "bad",
+    "note": "similar to trio-matrix-phased notes: for whatever reason, on origin/main, the screenshot looks 'lighter'. not sure if it is rendering subpixel better. the black linesconnectingtogenomicposition look better too on origin/main",
+    "reviewedAt": "2026-06-19T12:37:43.716Z"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -625,21 +625,21 @@
   },
   "variant_panel": {
     "name": "variant_panel",
-    "status": "good",
-    "note": "fixed: arrow+label now anchor to the small SAMPLES header (the giant 1094-row samples card center was off the bottom edge, so the old arrow ran offscreen)",
-    "reviewedAt": "2026-06-14T19:00:00.000Z"
+    "status": "bad",
+    "note": "unclear why the 'per sample genotype' text is in top left while screenshot is far right. also can reduce browser width and height a bit",
+    "reviewedAt": "2026-06-19T12:38:11.998Z"
   },
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-04T18:41:10.554Z"
+    "status": "bad",
+    "note": "we may want to have a 'show more' for legend...there are too many labels...also might want to have a richer 'legend metadata' because it mixes the variant 'homozygous alt' coloring with sidebar label coloring",
+    "reviewedAt": "2026-06-19T12:39:15.954Z"
   },
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
-    "status": "good",
-    "note": "fixed: reduced track height (display 250, viewportHeight 350)",
-    "reviewedAt": "2026-06-11T14:06:37.359Z"
+    "status": "bad",
+    "note": "the screenshot is 'too short now' and cutting off low score snps. can  decrease the height of the gwastrack to help perhaps",
+    "reviewedAt": "2026-06-19T12:17:06.253Z"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
@@ -661,9 +661,9 @@
   },
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
-    "status": "good",
-    "note": "fixed: colorBy switched from two-color methylation to one-color modifications, matching the positive-only bedmethyl track below.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "we might want to zoom in a bit for this screenshot, it is hard to see what is going on at large scale",
+    "reviewedAt": "2026-06-19T12:23:25.339Z"
   },
   "methylation/per_read_mod_bam": {
     "name": "methylation/per_read_mod_bam",
@@ -673,9 +673,9 @@
   },
   "multiwig/trackselector": {
     "name": "multiwig/trackselector",
-    "status": "good",
-    "note": "addressed: annotation now follows the requested pattern — text label sits in empty space at the arrow tail (no longer overlapping the menu/figure) and the arrow points to the boxed target item, on both stages. The broader screen-recording suggestion is a separate docs-tooling decision, out of scope for the static screenshot generator.",
-    "reviewedAt": "2026-06-14T20:30:00.000Z"
+    "status": "bad",
+    "note": "decrease browser width and height for both screenshots",
+    "reviewedAt": "2026-06-19T12:26:30.151Z"
   },
   "multi-sv-trio": {
     "name": "multi-sv-trio",
@@ -721,9 +721,9 @@
   },
   "sv_cgiab/cnv_multi_bigwig": {
     "name": "sv_cgiab/cnv_multi_bigwig",
-    "status": "good",
-    "note": "fixed: now a 3-stage figure (autoscaled whole-genome -> Set min/max score dialog open with the cap entered -> capped result) so the action between before/after is visible (reviewer); renders against local build; caption updated",
-    "reviewedAt": "2026-06-14T19:30:00.000Z"
+    "status": "bad",
+    "note": "reduce width and height in all screenshots please. add a forth stage to enable overlapping scatter also",
+    "reviewedAt": "2026-06-19T12:29:45.739Z"
   },
   "admin_settings_access": {
     "name": "admin_settings_access",
@@ -787,9 +787,9 @@
   },
   "multiwig/cluster_dialog": {
     "name": "multiwig/cluster_dialog",
-    "status": "good",
-    "note": "fixed: region changed to chr3:162,275,163-163,360,944.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "status": "bad",
+    "note": "looks good, add this to the gallery.md also. potentially turn off the show tree though",
+    "reviewedAt": "2026-06-19T12:23:25.239Z"
   },
   "multiwig/multirow_xy": {
     "name": "multiwig/multirow_xy",
@@ -835,8 +835,14 @@
   },
   "linear_synteny_gallery": {
     "name": "linear_synteny_gallery",
-    "status": "good",
-    "note": "new spec added matching the gallery live-demo share session (config_dotplot.json, share-4MjF5YGM_G): peach Pp05 vs grape chr2, level0 tracks grape_peach_synteny_mcscan + grape_peach_synteny_mcscan_simple, default colorBy/drawCurves, with the simple-anchors track also shown as red/blue blocks on each panel. gallery.md now points to this image.",
-    "reviewedAt": "2026-06-15T19:22:58.000Z"
+    "status": "bad",
+    "note": "please literally just screenshot the share link https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt or use https://localhost:ourport/?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt",
+    "reviewedAt": "2026-06-19T12:22:00.537Z"
+  },
+  "scroll_zoom_toggle": {
+    "name": "scroll_zoom_toggle",
+    "status": "bad",
+    "note": "the second screenshot likely unnecessary",
+    "reviewedAt": "2026-06-19T12:28:13.279Z"
   }
 }
