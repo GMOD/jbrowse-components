@@ -57,7 +57,7 @@ entire set of reads that stack up. Tools like
 many reads align to each gene (the orange boxes in the genome browser), which
 tells you, genome-wide, how much each gene is being expressed.
 
-<Figure caption="The compact visualization showing reads stacking up over a gene. The depth of read coverage is a direct, quantitative measure of expression level." src="/img/rnaseq/compact_stacked.png" />
+<Figure caption="The compact visualization showing reads stacking up over a gene. Read coverage depth broadly tracks how much a gene is expressed, though turning it into an accurate expression estimate requires normalization (for gene length, library size, and mapping biases)." src="/img/rnaseq/compact_stacked.png" />
 
 [Live demo — ACTB read pileup (turn on "compact" from the track menu)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5566500-5570500","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
 

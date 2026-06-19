@@ -22,6 +22,7 @@ const knownInitKeyMap: Record<keyof InitState, true> = {
   nav: true,
   highlight: true,
   showCenterLine: true,
+  trackLabels: true,
 }
 const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
 
@@ -198,6 +199,9 @@ async function applyInit(self: LinearGenomeViewModel, init: InitState) {
   }
   if (init.showCenterLine !== undefined) {
     self.setShowCenterLine(init.showCenterLine)
+  }
+  if (init.trackLabels !== undefined) {
+    self.setTrackLabels(init.trackLabels)
   }
   backfillHighlightAssemblies(self)
   applyInitHighlights(self, session, init)

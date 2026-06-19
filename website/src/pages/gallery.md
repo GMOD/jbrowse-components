@@ -77,6 +77,16 @@ sequencing coverage is computed from mosdepth and stored in BigWig files
 
 ---
 
+![Clustered multi-sample copy-number track](/img/multiwig/cluster_dialog.png)
+
+Whole-genome sequencing copy-number profiles for many 1000 Genomes individuals
+in a single "multi-quantitative" track, rendered as a multi-row density heatmap.
+The in-app "Cluster by score" workflow reorders the rows by signal similarity
+and draws a dendrogram on the left, grouping individuals with similar
+copy-number patterns ([guide](/docs/user_guides/multiquantitative_track/))
+
+---
+
 ![Breakpoint split view](/img/breakpoint_split_view.png)
 
 Image of a possible translocation in the SKBR3 dataset using the "breakpoint

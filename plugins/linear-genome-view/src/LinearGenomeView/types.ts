@@ -72,4 +72,7 @@ export interface InitState {
   // a HighlightType object directly
   highlight?: (string | HighlightType)[]
   showCenterLine?: boolean
+  // track-label placement mode, matching the view's setTrackLabels action (not
+  // the ExportSvg TrackLabelMode enum)
+  trackLabels?: 'overlapping' | 'offset' | 'hidden'
 }

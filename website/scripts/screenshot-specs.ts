@@ -196,7 +196,11 @@ function hpyloriSyntenyWithGenes() {
     views: [
       {
         type: 'LinearSyntenyView',
-        tracks: ['26695_vs_chc155.pif', 'chc155_vs_j99.pif'],
+        // 2-D form: tracks[i] is the synteny shown between views[i] and
+        // views[i+1]. A flat string[] is treated as a single level-0 entry, so
+        // the level-1 band (chc155 vs j99) stayed empty — this nests each track
+        // onto its own adjacent-pair level.
+        tracks: [['26695_vs_chc155.pif'], ['chc155_vs_j99.pif']],
         views: [
           {
             loc: 'NC_018939.1:177696-190329',
@@ -432,6 +436,8 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
+    // narrower window keeps the soft-clip breakpoint in focus (reviewer request)
+    viewportWidth: 900,
     settleMs: 4000,
   },
 
@@ -665,7 +671,12 @@ export const specs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Show soft clipping' },
           { type: 'delay', ms: 500 },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Show soft clipping' } }],
+        // box both the parent "Show..." submenu and the "Show soft clipping"
+        // item it opens (reviewer asked to also circle "Show...")
+        annotations: [
+          { type: 'box', anchor: { text: 'Show...' } },
+          { type: 'box', anchor: { text: 'Show soft clipping' } },
+        ],
       },
       {
         // click the boxed item to actually enable soft clipping; the menu closes
@@ -725,30 +736,28 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // tall enough that the SAMPLES card (low in the long variant-details panel)
-    // is on-screen, so the callout box/arrow don't point off the bottom edge
-    viewportHeight: 1100,
+    // narrower + a touch shorter than before (reviewer), but still tall enough
+    // that the SAMPLES card (low in the variant-details panel) stays on-screen —
+    // the callouts anchor to it, so it must be visible
+    viewportWidth: 1250,
+    viewportHeight: 1000,
     actions: [
       { type: 'click', text: 'C -> T' },
       { type: 'waitForText', text: 'HG00096' },
       { type: 'delay', ms: 1500 },
     ],
-    // point at the SAMPLES header (a small on-screen element — anchoring to the
-    // whole 1094-row card put the box/arrow center far off the bottom edge)
+    // label the SAMPLES genotype table directly: pill sits just above the
+    // SAMPLES header (anchored, so it tracks the card instead of floating far
+    // away in the top-left), with a short arrow into it (reviewer)
     annotations: [
-      {
-        type: 'arrow',
-        from: { x: 180, y: 250 },
-        anchor: { text: 'SAMPLES' },
-        dx: -12,
-      },
+      { type: 'box', anchor: { text: 'SAMPLES' } },
       {
         type: 'text',
-        x: 40,
-        y: 244,
+        anchor: { text: 'SAMPLES' },
+        dy: -52,
+        dx: -40,
+        maxWidth: 220,
         text: 'Per-sample genotypes',
-        background: 'rgba(0,0,0,0.78)',
-        textColor: '#fff',
       },
     ],
   },
@@ -857,7 +866,13 @@ export const specs: ScreenshotSpec[] = [
           tracks: ['grape_peach_synteny_mcscan'],
           drawCurves: true,
           colorBy: 'query',
+          // higher alpha + a taller synteny band give the ribbons room to read,
+          // and autoDiagonalize reorders the panels into clean diagonals
+          // (reviewer: increase height, add opacity, diagonalize). levelHeights
+          // (not a `levels` snapshot) is the key the launch init consumes.
           alpha: 0.5,
+          levelHeights: [360],
+          autoDiagonalize: true,
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
         },
       ],
@@ -867,37 +882,16 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 10000,
   },
 
-  // For the gallery: peach Pp05 vs grape chr2, the same pair shown in the
-  // gallery's live-demo share link (config_dotplot.json, share-4MjF5YGM_G).
-  // Both the per-gene MCScan connections and the larger synteny blocks (the
-  // red/blue inverted-vs-non-inverted blocks on each panel) are shown, with
-  // default colorBy/drawCurves to match that session.
+  // For the gallery: load the exact curated share session the reviewer wants
+  // captured verbatim (peach Pp05 vs grape chr2 with the per-gene MCScan
+  // connections + the red/blue inverted-vs-non-inverted synteny blocks). The
+  // bare ?config= url is served against the local build; the password param
+  // auto-decrypts the shared session so it loads with no interaction. The
+  // docs live-link becomes the same query on jbrowse.org/code/jb2/latest.
   {
     mode: 'url',
     name: 'linear_synteny_gallery',
-    url: sessionSpec('test_data/config_dotplot.json', {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: [
-            'grape_peach_synteny_mcscan',
-            'grape_peach_synteny_mcscan_simple',
-          ],
-          views: [
-            {
-              assembly: 'peach',
-              loc: 'Pp05',
-              tracks: ['grape_peach_synteny_mcscan_simple'],
-            },
-            {
-              assembly: 'grape',
-              loc: 'chr2',
-              tracks: ['grape_peach_synteny_mcscan_simple'],
-            },
-          ],
-        },
-      ],
-    }),
+    url: '?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt',
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 10000,
@@ -1151,7 +1145,10 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr20:18,493,346-18,511,070',
+          // zoomed into a ~5kb core of the CpG island (was ~18kb) so the
+          // per-base methylation calls + bedmethyl transition are legible
+          // rather than a tiny large-scale smear (reviewer)
+          loc: 'chr20:18,499,500-18,504,500',
           tracks: [
             {
               trackId: 'COLO829_tumor.ht',
@@ -1710,12 +1707,14 @@ export const specs: ScreenshotSpec[] = [
             {
               assembly: 'hg19',
               loc: '5:137,877,000-137,892,000',
+              // bottom panel mirrors the top: variants above reads (so the two
+              // pileups sit adjacent across the junction) — reviewer
               tracks: [
+                'breast_cancer_sniffles_hg19',
                 {
                   trackId: 'ngmlr_splitters_cram',
                   displaySnapshot: { height: 140 },
                 },
-                'breast_cancer_sniffles_hg19',
               ],
             },
           ],
@@ -1892,14 +1891,12 @@ export const specs: ScreenshotSpec[] = [
         annotations: [{ type: 'box', anchor: { text: 'SV inspector' } }],
       },
       {
+        // open the import form and paste the URL in one frame (the bare
+        // form-only middle frame was redundant per reviewer)
         actions: [
           { type: 'click', text: 'SV inspector' },
           { type: 'waitForText', text: 'Open file from URL or local computer' },
-          { type: 'delay', ms: 2000 },
-        ],
-      },
-      {
-        actions: [
+          { type: 'delay', ms: 1500 },
           {
             type: 'type',
             selector: '[data-testid="urlInput"]',
@@ -1961,6 +1958,10 @@ export const specs: ScreenshotSpec[] = [
     // the import form is short; crop off the empty viewport below it, but
     // keep enough height to show the form's helper text in full
     crop: { x: 0, y: 0, width: 1500, height: 230 },
+    // highlight the "Show all regions in assembly" button (reviewer request)
+    annotations: [
+      { type: 'box', anchor: { text: 'Show all regions in assembly' } },
+    ],
   },
 
   {
@@ -2100,6 +2101,9 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr5',
+          // offset track labels so they overlay the tracks instead of taking a
+          // dedicated row (reviewer)
+          trackLabels: 'offset',
           tracks: [
             {
               trackId: 'hg008_cnv_indexcov_chr5',
@@ -2107,6 +2111,9 @@ export const specs: ScreenshotSpec[] = [
                 type: 'MultiLinearWiggleDisplay',
                 defaultRendering: 'multiscatter',
                 autoscale: 'localsd',
+                // finer binning (basesPerSpan = bpPerPx/resolution) so the
+                // whole-chromosome scatter resolves more CNV detail (reviewer)
+                resolution: 5,
                 height: 200,
               },
             },
@@ -2319,8 +2326,10 @@ export const specs: ScreenshotSpec[] = [
           // — the published jb2/latest release predates it.
           drawCurves: true,
           // taller synteny band (LinearSyntenyViewHelper.height, default 100) so
-          // the ribbons have room to spread out (reviewer)
-          levels: [{ height: 260 }],
+          // the ribbons have room to spread out (reviewer). NB the launch init
+          // handler consumes `levelHeights`, not a `levels` snapshot — the
+          // latter is silently dropped, which is why the band stayed short.
+          levelHeights: [260],
           tracks: ['HG008T.hap1_pif'],
           views: [
             {
@@ -2357,14 +2366,16 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'Select assemblies for dotplot view',
     readyTimeout: 60000,
     settleMs: 3000,
-    // arrows point at the select boxes themselves (anchored to the helper label
-    // below each, nudged up onto the dropdown), with callouts on dark pills
+    // arrows point at the two assembly select boxes. The x/y axis assignment is
+    // purely which assembly goes on which axis here — "query"/"target" is a
+    // track-level distinction the dotplot view itself doesn't impose, so the
+    // callouts avoid that wording (reviewer note).
     annotations: [
       {
         type: 'text',
         x: 120,
         y: 110,
-        text: 'Select the query (x-axis) assembly',
+        text: 'Pick the x-axis assembly',
         background: 'rgba(0,0,0,0.8)',
         textColor: '#fff',
         fontSize: 15,
@@ -2379,7 +2390,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 950,
         y: 110,
-        text: 'Select the target (y-axis) assembly',
+        text: 'Pick the y-axis assembly',
         background: 'rgba(0,0,0,0.8)',
         textColor: '#fff',
         fontSize: 15,
@@ -2562,10 +2573,10 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Scroll-to-zoom toggle: two-stage figure. Top frame rings the toggle button
-  // in its default (off) state with a callout explaining the click; bottom
-  // frame clicks it, showing the button's "selected" (pressed) appearance once
-  // enabled. Narrow/short viewport keeps the figure cropped to the LGV header.
+  // Scroll-to-zoom toggle: a single frame ringing the toggle button with a
+  // callout explaining the click (the old second "enabled" frame was redundant
+  // per reviewer). Narrow/short viewport keeps the figure cropped to the LGV
+  // header.
   {
     mode: 'url',
     name: 'scroll_zoom_toggle',
@@ -2583,44 +2594,20 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     viewportWidth: 1000,
     viewportHeight: 220,
-    stages: [
+    annotations: [
       {
-        actions: [{ type: 'delay', ms: 500 }],
-        annotations: [
-          {
-            type: 'circle',
-            anchor: {
-              selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
-            },
-          },
-          {
-            type: 'text',
-            text: 'Click to enable scroll-to-zoom',
-            anchor: {
-              selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
-            },
-            dx: 70,
-          },
-        ],
+        type: 'circle',
+        anchor: {
+          selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+        },
       },
       {
-        actions: [
-          {
-            type: 'click',
-            selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
-          },
-          { type: 'delay', ms: 500 },
-        ],
-        annotations: [
-          {
-            type: 'text',
-            text: 'Enabled: the mouse wheel now zooms the view',
-            anchor: {
-              selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
-            },
-            dx: 70,
-          },
-        ],
+        type: 'text',
+        text: 'Click to enable scroll-to-zoom',
+        anchor: {
+          selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+        },
+        dx: 70,
       },
     ],
   },
@@ -2864,7 +2851,12 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Settings' },
       { type: 'delay', ms: 500 },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'Settings' } }],
+    // box the "Track actions" parent submenu and the "Settings" item it opens
+    // (reviewer asked to also highlight "Track actions")
+    annotations: [
+      { type: 'box', anchor: { text: 'Track actions' } },
+      { type: 'box', anchor: { text: 'Settings' } },
+    ],
   },
 
   // Drawer widget position, two-stage figure. Top frame opens the drawer's
@@ -3043,14 +3035,17 @@ export const specs: ScreenshotSpec[] = [
     ],
     // anchor to the "Label" column header in the bookmark widget (the edited
     // value lives in an <input>, which has no textContent to anchor to, so the
-    // old anchor fell back to the top-left corner)
+    // old anchor fell back to the top-left corner). The callout text is
+    // left-aligned, so it's pulled well left of the right-side widget header and
+    // width-clamped to keep it from running off the right edge (reviewer)
     annotations: [
       {
         type: 'text',
         text: 'Single-click the label to edit it',
         anchor: { text: 'Bookmark link' },
-        dx: -10,
-        dy: 70,
+        dx: -260,
+        dy: 60,
+        maxWidth: 230,
       },
     ],
   },
@@ -3134,7 +3129,10 @@ export const specs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Show read arcs' },
           { type: 'delay', ms: 600 },
         ],
+        // box the "Read connections" parent submenu plus the two options it
+        // opens (reviewer asked to also highlight "Read connections")
         annotations: [
+          { type: 'box', anchor: { text: 'Read connections' } },
           { type: 'box', anchor: { text: 'Show read arcs' } },
           { type: 'box', anchor: { text: 'Show read cloud' } },
         ],
@@ -3200,7 +3198,10 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
-          tracks: ['gff3tabix_genes'],
+          // no track opened — the figure is about the track-selector hamburger
+          // menu, and an open gene track in the LGV behind it was distracting
+          // (reviewer)
+          tracks: [],
         },
       ],
     }),
@@ -3432,9 +3433,11 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // shorter viewport (reviewer: the old 1600px figure was way too tall); the
-    // "Integration test" wiggle category still renders within this height
-    viewportHeight: 760,
+    // smaller capture in both dimensions (reviewer); narrower than default but
+    // still wide enough for the category "..." menu to cascade without clipping,
+    // and the "Integration test" wiggle category renders within this height
+    viewportWidth: 1100,
+    viewportHeight: 680,
     stages: [
       {
         actions: [
@@ -3647,7 +3650,9 @@ export const specs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 60000,
-    viewportHeight: 350,
+    // taller capture so the full 250px Manhattan track shows — the old 350px
+    // viewport clipped the bottom of the plot (the low-score SNPs) (reviewer)
+    viewportHeight: 440,
     // settle past the index auto-pick + recolor fetch that follows first paint
     settleMs: 12000,
   },
@@ -3689,14 +3694,13 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Plugin store' },
       { type: 'delay', ms: 600 },
     ],
+    // ring the "Tools" top-level menu, box the "Plugin store" menu item, and box
+    // the opened Plugin store widget itself (anchored to its "Installed plugins"
+    // heading) — reviewer asked to also highlight Tools + the widget
     annotations: [
+      { type: 'circle', anchor: { text: 'Tools' } },
       { type: 'box', anchor: { text: 'Plugin store' } },
-      {
-        type: 'arrow',
-        from: { x: 300, y: 250 },
-        anchor: { text: 'Plugin store' },
-        dy: 30,
-      },
+      { type: 'box', anchor: { text: 'Installed plugins' } },
     ],
   },
 
@@ -3763,8 +3767,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
     actions: [
       // small rubberband-drag over a single diagonal block in the lower-left
-      // (a focused subsection, not the whole region — reviewer)
-      { type: 'drag', from: { x: 110, y: 250 }, to: { x: 240, y: 320 } },
+      // (a focused subsection, not the whole region — reviewer; ~75% of the
+      // previous drag span, centered on the same block)
+      { type: 'drag', from: { x: 126, y: 259 }, to: { x: 224, y: 311 } },
       { type: 'waitForText', text: 'Open linear synteny view' },
       { type: 'delay', ms: 1000 },
     ],

@@ -31,7 +31,7 @@ Here is an example track with a formatter:
 }
 ```
 
-<Figure src="/img/customized_feature_details.png" caption="Example screenshot showing a customized feature detail panel. The red callout highlights the name field, which the formatDetails callback has turned into a clickable link."/>
+<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name) instead of plain text; the same callback also injects the extra 'newfield' row and drops the default 'type' row."/>
 
 This formatter links the `name` field to a Google search — useful for linking to
 gene pages. It also adds a custom `newfield` and removes `type` from the
