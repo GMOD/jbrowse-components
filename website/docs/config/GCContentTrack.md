@@ -41,7 +41,9 @@ its own track):
 ```
 
 GC-skew mode with a small, overlapping sliding window for a smoother signal
-(`windowDelta` smaller than `windowSize` means windows overlap):
+(`windowDelta` smaller than `windowSize` means windows overlap). The `displays`
+object shorthand applies settings to whichever display uses them — equivalent to
+writing a full `displays: [{ type, displayId, ... }]` array:
 
 ```js
 {
@@ -57,15 +59,7 @@ GC-skew mode with a small, overlapping sliding window for a smoother signal
       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
     },
   },
-  displays: [
-    {
-      type: 'LinearGCContentTrackDisplay',
-      displayId: 'gc-LinearGCContentTrackDisplay',
-      gcMode: 'skew',
-      windowSize: 50,
-      windowDelta: 10,
-    },
-  ],
+  displays: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
 }
 ```
 

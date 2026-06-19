@@ -4,8 +4,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config LinearSyntenyDisplay
  *
  * #example
- * A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs
- * the query (first) and target (second) assembly names, matched by the track's
+ * A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
+ * (first) and target (second) assembly names, matched by the track's
  * `assemblyNames`:
  * ```js
  * {
@@ -19,12 +19,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  *     queryAssembly: 'hg38',
  *     targetAssembly: 'mm10',
  *   },
- *   displays: [
- *     {
- *       type: 'LinearSyntenyDisplay',
- *       displayId: 'hg38_vs_mm10-LinearSyntenyDisplay',
- *     },
- *   ],
  * }
  * ```
  */

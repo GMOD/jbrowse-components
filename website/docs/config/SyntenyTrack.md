@@ -19,8 +19,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs the
-query (first) and target (second) assembly names, matched by the track's
+A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
+(first) and target (second) assembly names, matched by the track's
 `assemblyNames`:
 
 ```js
@@ -35,12 +35,6 @@ query (first) and target (second) assembly names, matched by the track's
     queryAssembly: 'hg38',
     targetAssembly: 'mm10',
   },
-  displays: [
-    {
-      type: 'LinearSyntenyDisplay',
-      displayId: 'hg38_vs_mm10-LinearSyntenyDisplay',
-    },
-  ],
 }
 ```
 

@@ -26,15 +26,28 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
  *     },
  *   },
- *   displays: [
- *     {
- *       type: 'LinearGCContentTrackDisplay',
- *       displayId: 'gc-LinearGCContentTrackDisplay',
- *       gcMode: 'skew',
- *       windowSize: 50,
- *       windowDelta: 10,
+ * }
+ * ```
+ *
+ * #example
+ * GC-skew mode with overlapping windows for a smoother signal. The `displays`
+ * object shorthand applies settings to whichever display uses them — equivalent
+ * to a full `displays: [{ type, displayId, ... }]` array:
+ * ```js
+ * {
+ *   type: 'GCContentTrack',
+ *   trackId: 'gc',
+ *   name: 'GC skew',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'GCContentAdapter',
+ *     sequenceAdapter: {
+ *       type: 'IndexedFastaAdapter',
+ *       fastaLocation: { uri: 'https://example.com/genome.fa' },
+ *       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
  *     },
- *   ],
+ *   },
+ *   displays: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
  * }
  * ```
  */
