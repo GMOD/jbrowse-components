@@ -1,5 +1,7 @@
 import {
+  SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
+  SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
@@ -133,7 +135,10 @@ describe('computePileupBezierArcs — exclusions', () => {
   it('excludes normal within-region paired reads', () => {
     const data = makeData({
       names: ['p', 'p'],
-      flags: [SAM_FLAG_PAIRED, SAM_FLAG_PAIRED],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
       strands: [1, -1],
       positions: [
         [100, 200],

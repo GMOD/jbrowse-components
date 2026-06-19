@@ -162,6 +162,9 @@ export function getLengthSansClipping(cigar: string) {
 // clip at the end of the CIGAR string = start of a reverse-strand read,
 // clip at the start of the CIGAR string = start of a forward-strand read
 export function getClip(cigar: string, strand: number) {
+  if (!cigar) {
+    return 0
+  }
   if (strand === -1) {
     const last = cigar.length - 1
     const op = cigar[last]

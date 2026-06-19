@@ -2,12 +2,15 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
-  SAM_FLAG_SECONDARY,
-  SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
+import { featurizeSA } from '@jbrowse/cigar-utils'
+
+import { readGroupConnections } from '../../shared/readGroupConnections.ts'
+import { readLeadingBp, readTrailingBp } from '../../shared/splitReadEndpoints.ts'
 
 import type { ArcsUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ReadConnection } from '../../shared/readGroupConnections.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 
 // Arc shape enum. Values are shared with arc.slang (which checks them via
@@ -126,6 +129,7 @@ function insertSizeColor(tlen: number, stats: InsertSizeStats | undefined) {
 function getArcColorType(args: {
   colorByType: ArcColorByType
   hasPaired: boolean
+  isSplit: boolean
   longRange: boolean
   largeInsert: boolean
   pairOrientationNum: number
@@ -137,6 +141,7 @@ function getArcColorType(args: {
   const {
     colorByType,
     hasPaired,
+    isSplit,
     longRange,
     largeInsert,
     pairOrientationNum,
@@ -150,7 +155,13 @@ function getArcColorType(args: {
   if (longRange && largeInsert) {
     return COLOR_LONG_INSERT
   }
-  if (!hasPaired) {
+  // A split-read junction carries no pair semantics (no template length, no
+  // pair orientation), so it colors by its own segment strands — opposite
+  // strands flag the inversion — regardless of whether OTHER reads in the view
+  // are paired. Keying on the per-connection `isSplit` instead of the dataset-
+  // global `hasPaired` is what lets a paired read that is itself SA-split show
+  // its inversion junctions correctly.
+  if (!hasPaired || isSplit) {
     return colorByType === 'insertSize'
       ? COLOR_DEFAULT
       : unpairedOrientationColor(p1Strand, p2Strand)
@@ -167,11 +178,13 @@ function getArcColorType(args: {
   }
 }
 
-interface SAAlignment {
+interface SegAln {
   refName: string
   start: number
   end: number
   strand: number
+  // soft/hard-clip at the 5' start of the read — read-order sort key
+  clipAtStart: number
 }
 
 interface ArcEndpoint {
@@ -202,49 +215,6 @@ interface PendingArc {
   pairOrientationNum: number | undefined
   tlen: number | undefined
   isSplit: boolean
-}
-
-function parseSATag(sa: string): SAAlignment[] {
-  if (!sa) {
-    return []
-  }
-  const result: SAAlignment[] = []
-  for (const aln of sa.split(';')) {
-    if (!aln) {
-      continue
-    }
-    const parts = aln.split(',')
-    // Spec: rname,pos,strand,CIGAR,mapQ,NM — skip anything truncated or with
-    // an unparsable position / placeholder CIGAR rather than emitting a
-    // junk arc at NaN.
-    if (parts.length < 4) {
-      continue
-    }
-    const ref = parts[0]
-    const posRaw = parts[1]
-    const strandStr = parts[2]
-    const cigar = parts[3]
-    if (!ref || !cigar || cigar === '*') {
-      continue
-    }
-    const pos = Number(posRaw) - 1
-    if (!Number.isFinite(pos) || pos < 0) {
-      continue
-    }
-    const strand = strandStr === '-' ? -1 : 1
-    let lengthOnRef = 0
-    const re = /(\d+)([MIDNSHP=X])/g
-    let m: RegExpExecArray | null
-    while ((m = re.exec(cigar)) !== null) {
-      const len = +m[1]!
-      const op = m[2]!
-      if ('MDN=X'.includes(op)) {
-        lengthOnRef += len
-      }
-    }
-    result.push({ refName: ref, start: pos, end: pos + lengthOnRef, strand })
-  }
-  return result
 }
 
 // Deterministic 0..1 hash from arc endpoints — gives each pair a stable jitter
@@ -377,30 +347,48 @@ function mateArc(entry: ReadEntry): PendingArc {
   }
 }
 
-// A lone read carrying an SA tag: chain primary → supplementary blocks. Each
-// a1.end→a2.start gap is a genomic junction; fwd→rev / rev→fwd junctions cluster
-// narrow arcs at each inversion breakpoint.
+// A lone read carrying an SA tag: chain primary → supplementary blocks in true
+// read order (sorted by clip-at-start-of-read), connecting each segment's
+// read-trailing edge to the next segment's read-leading edge. Strand-correct so
+// fwd→rev / rev→fwd inversion junctions join at the breakpoint rather than the
+// far edge of the reverse segment.
 function splitArcsFromSA(entry: ReadEntry): PendingArc[] {
   const { data, readIdx, refName } = entry
-  const allAlns: SAAlignment[] = [
+  const allAlns: SegAln[] = [
     {
       refName,
       start: data.readPositions[readIdx * 2]!,
       end: data.readPositions[readIdx * 2 + 1]!,
       strand: data.readStrands[readIdx]!,
+      clipAtStart: data.readClipAtStart?.[readIdx] ?? 0,
     },
-    ...parseSATag(data.readSuppAlignments?.[readIdx] ?? ''),
-  ]
+    ...featurizeSA(
+      data.readSuppAlignments?.[readIdx],
+      data.readIds[readIdx]!,
+      data.readStrands[readIdx],
+      data.readNames[readIdx],
+    )
+      // Drop truncated / placeholder-CIGAR / non-numeric-position SA entries —
+      // they parse to a zero-length or NaN span and would emit a junk arc.
+      .filter(sa => Number.isFinite(sa.start) && sa.end > sa.start)
+      .map(sa => ({
+        refName: sa.refName,
+        start: sa.start,
+        end: sa.end,
+        strand: sa.strand,
+        clipAtStart: sa.clipLengthAtStartOfRead,
+      })),
+  ].sort((a, b) => a.clipAtStart - b.clipAtStart)
   const arcs: PendingArc[] = []
   for (let j = 0; j < allAlns.length - 1; j++) {
     const a1 = allAlns[j]!
     const a2 = allAlns[j + 1]!
     arcs.push({
       p1Ref: a1.refName,
-      p1Bp: a1.end,
+      p1Bp: readTrailingBp(a1.strand, a1.start, a1.end),
       p1Strand: a1.strand,
       p2Ref: a2.refName,
-      p2Bp: a2.start,
+      p2Bp: readLeadingBp(a2.strand, a2.start, a2.end),
       p2Strand: a2.strand,
       pairOrientationNum: undefined,
       tlen: undefined,
@@ -410,52 +398,39 @@ function splitArcsFromSA(entry: ReadEntry): PendingArc[] {
   return arcs
 }
 
-// Multiple reads sharing a name: a mate pair (paired data) or a split-read
-// chain. Drop supplementary/mate-unmapped (paired) or secondary (unpaired)
-// entries, then connect consecutive survivors.
-function chainArcs(entries: ReadEntry[], hasPaired: boolean): PendingArc[] {
-  const filtered = hasPaired
-    ? entries.filter(
-        e =>
-          !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SUPPLEMENTARY) &&
-          !(e.data.readFlags[e.readIdx]! & SAM_FLAG_MATE_UNMAPPED),
-      )
-    : entries.filter(e => !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SECONDARY))
-
-  const arcs: PendingArc[] = []
-  for (let j = 0; j < filtered.length - 1; j++) {
-    const e1 = filtered[j]!
-    const e2 = filtered[j + 1]!
-    const f1 = e1.data.readFlags[e1.readIdx]!
-    const f2 = e2.data.readFlags[e2.readIdx]!
-    const s1 = e1.data.readStrands[e1.readIdx]!
-    const s2 = e2.data.readStrands[e2.readIdx]!
-    const start1 = e1.data.readPositions[e1.readIdx * 2]!
-    const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
-    const start2 = e2.data.readPositions[e2.readIdx * 2]!
-    const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
-    // A supplementary alignment sharing this read name is a split-read junction,
-    // not a mate pair: it carries no template_length or pair orientation. Mark
-    // it so samplot renders a dashed line at the gap span — leaving tlen here
-    // would feed |0| into the samplot Y and collapse the line to the baseline.
-    // Matches splitArcsFromSA (orientation/tlen undefined for the same reason).
-    const isSplit = !!((f1 | f2) & SAM_FLAG_SUPPLEMENTARY)
-    arcs.push({
-      p1Ref: e1.refName,
-      // Unpaired: end1→start2 = genomic gap, giving narrow inversion bp arcs.
-      p1Bp: hasPaired && s1 === -1 ? start1 : end1,
-      p1Strand: s1,
-      p2Ref: e2.refName,
-      p2Bp: hasPaired ? (s2 === -1 ? start2 : end2) : start2,
-      p2Strand: s2,
-      pairOrientationNum: isSplit
-        ? undefined
-        : e1.data.readPairOrientations[e1.readIdx],
-      tlen: isSplit ? undefined : e1.data.readInsertSizes[e1.readIdx],
-      isSplit,
-    })
+// Build a pending arc from one resolved connection. Split junctions carry no
+// template length / pair orientation (so samplot draws a dashed line at the gap
+// span rather than collapsing |0| to the baseline); the mate link sources both
+// from its first read's primary. Endpoints: a split junction joins the first
+// segment's read-trailing (3') edge to the next segment's read-leading (5')
+// edge — the inversion breakpoint, not the far edge of the reverse segment — and
+// the mate link joins each read's 3' end.
+function pendingArcFromConnection({
+  e1,
+  e2,
+  isSplit,
+}: ReadConnection<ReadEntry>): PendingArc {
+  const s1 = e1.data.readStrands[e1.readIdx]!
+  const s2 = e2.data.readStrands[e2.readIdx]!
+  const start1 = e1.data.readPositions[e1.readIdx * 2]!
+  const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
+  const start2 = e2.data.readPositions[e2.readIdx * 2]!
+  const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
+  return {
+    p1Ref: e1.refName,
+    p1Bp: readTrailingBp(s1, start1, end1),
+    p1Strand: s1,
+    p2Ref: e2.refName,
+    p2Bp: isSplit
+      ? readLeadingBp(s2, start2, end2)
+      : readTrailingBp(s2, start2, end2),
+    p2Strand: s2,
+    pairOrientationNum: isSplit
+      ? undefined
+      : e1.data.readPairOrientations[e1.readIdx],
+    tlen: isSplit ? undefined : e1.data.readInsertSizes[e1.readIdx],
+    isSplit,
   }
-  return arcs
 }
 
 function collectPendingArcs(
@@ -477,7 +452,12 @@ function collectPendingArcs(
         )
       }
     } else {
-      pendingArcs.push(...chainArcs(entries, hasPaired))
+      // ≥2 on-screen alignments sharing a name: resolve into per-mate split
+      // junctions + the mate link (handles paired reads that are themselves
+      // SA-split), then materialize each as an arc.
+      pendingArcs.push(
+        ...readGroupConnections(entries).map(pendingArcFromConnection),
+      )
     }
   }
   return pendingArcs
@@ -543,6 +523,7 @@ export function computeArcsFromPileupData(
     const colorType = getArcColorType({
       colorByType,
       hasPaired,
+      isSplit,
       longRange,
       largeInsert,
       pairOrientationNum: pairOrientationNum ?? 0,

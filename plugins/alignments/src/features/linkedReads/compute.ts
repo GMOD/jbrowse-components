@@ -1,9 +1,5 @@
-import {
-  SAM_FLAG_MATE_UNMAPPED,
-  SAM_FLAG_PAIRED,
-  SAM_FLAG_SECONDARY,
-  SAM_FLAG_SUPPLEMENTARY,
-} from '@jbrowse/alignments-core'
+import { readGroupConnections } from '../../shared/readGroupConnections.ts'
+import { readLeadingBp, readTrailingBp } from '../../shared/splitReadEndpoints.ts'
 
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -25,11 +21,11 @@ export interface ReadEntry {
   data: PileupDataResult
 }
 
-// Genomic connection endpoint for a linked-read line.
-// For paired reads: the 3' end of each read (strand-dependent).
-// For split reads: always the inner junction edge (end for e1, start for e2),
-// regardless of strand — the gap is between the right edge of the left
-// alignment and the left edge of the right alignment on the reference.
+// Genomic connection endpoint for a linked-read line, in read coordinates.
+// Paired: the 3' end of each read (mate trailing edge). Split: the first
+// segment's read-trailing (3') edge joins the next segment's read-leading (5')
+// edge — strand-correct, so inversion junctions land on the breakpoint rather
+// than the far edge of the reverse segment.
 export function connectionBp(
   hasPaired: boolean,
   strand: number,
@@ -38,9 +34,11 @@ export function connectionBp(
   isSecond: boolean,
 ) {
   if (!hasPaired) {
-    return isSecond ? start : end
+    return isSecond
+      ? readLeadingBp(strand, start, end)
+      : readTrailingBp(strand, start, end)
   }
-  return strand === -1 ? start : end
+  return readTrailingBp(strand, start, end)
 }
 
 // Normal LR pairs (orient 0/1) and same-strand split reads get a straight line;
@@ -96,31 +94,6 @@ export function groupReadsByName(
   return readsByName
 }
 
-// Filter entries per-read rather than per-dataset so paired short reads and
-// split long reads can coexist in the same view:
-//   - Always exclude secondary alignments.
-//   - For paired reads: also exclude supplementary and unmapped-mate entries
-//     (chimeric/unmapped short reads that would create spurious connections).
-//   - For non-paired (long-read) entries: supplementary alignments are kept —
-//     they are the connection targets.
-export function filterEntries(entries: ReadEntry[]) {
-  return entries.filter(e => {
-    const f = e.data.readFlags[e.readIdx]!
-    if (f & SAM_FLAG_SECONDARY) {
-      return false
-    }
-    if (f & SAM_FLAG_PAIRED) {
-      if (f & SAM_FLAG_SUPPLEMENTARY) {
-        return false
-      }
-      if (f & SAM_FLAG_MATE_UNMAPPED) {
-        return false
-      }
-    }
-    return true
-  })
-}
-
 export interface ClassifiedPair {
   bp1: number
   bp2: number
@@ -133,14 +106,16 @@ export interface ClassifiedPair {
   hasPaired: boolean
 }
 
-// Classify a pair of read entries, determining per-pair whether to use
-// paired-read or split-read semantics based on the SAM flags of each entry.
-// This allows paired short reads and split long reads to coexist in the same
-// view without a global hasPaired flag that would suppress one or the other.
-export function classifyPair(e1: ReadEntry, e2: ReadEntry): ClassifiedPair {
-  const f1 = e1.data.readFlags[e1.readIdx]!
-  const f2 = e2.data.readFlags[e2.readIdx]!
-  const hasPaired = !!(f1 & SAM_FLAG_PAIRED) && !!(f2 & SAM_FLAG_PAIRED)
+// Classify a resolved connection. `isSplit` (from readGroupConnections) selects
+// the semantics: a mate link uses paired-read rules, a split junction uses
+// split-read rules. This lets paired short reads, split long reads, and paired
+// reads that are themselves SA-split all coexist in one view.
+export function classifyPair(
+  e1: ReadEntry,
+  e2: ReadEntry,
+  isSplit: boolean,
+): ClassifiedPair {
+  const hasPaired = !isSplit
   const s1 = e1.data.readStrands[e1.readIdx]!
   const s2 = e2.data.readStrands[e2.readIdx]!
   const bp1 = connectionBp(
@@ -175,23 +150,19 @@ export interface LinkedPair {
   c: ClassifiedPair
 }
 
-// Enumerate consecutive read pairs across all displayed regions: group reads by
-// name, drop secondary/supplementary/unmapped-mate entries, then classify each
-// adjacent pair. Both the straight-line emitter (computeLinkedReadLinesByRegion)
+// Enumerate the connections across all displayed regions: group reads by name,
+// then resolve each group into per-mate split junctions + the mate link
+// (readGroupConnections owns filtering, read-order sorting, and paired/split
+// partitioning). Both the straight-line emitter (computeLinkedReadLinesByRegion)
 // and the bezier-curve emitter (computePileupBezierArcs) iterate this, so the
-// grouping/filtering/pairing rules that define "a linked pair" live here only.
+// rules that define "a linked pair" live in one place.
 export function* iterLinkedPairs(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
 ): Generator<LinkedPair> {
   for (const [, entries] of groupReadsByName(laidOutPileupMap)) {
     if (entries.length >= 2) {
-      const filtered = filterEntries(entries)
-      if (filtered.length >= 2) {
-        for (let j = 0; j < filtered.length - 1; j++) {
-          const e1 = filtered[j]!
-          const e2 = filtered[j + 1]!
-          yield { e1, e2, c: classifyPair(e1, e2) }
-        }
+      for (const { e1, e2, isSplit } of readGroupConnections(entries)) {
+        yield { e1, e2, c: classifyPair(e1, e2, isSplit) }
       }
     }
   }

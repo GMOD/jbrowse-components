@@ -1,6 +1,8 @@
 import {
+  SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
+  SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
@@ -369,7 +371,7 @@ describe('computeArcsFromPileupData', () => {
     const data0 = makePileupData({
       regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
-      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR]),
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([1]),
@@ -378,7 +380,7 @@ describe('computeArcsFromPileupData', () => {
     const data1 = makePileupData({
       regionStart: 5000,
       readPositions: new Uint32Array([5000, 5100]),
-      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR]),
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([1]),
@@ -674,6 +676,127 @@ describe('computeArcsFromPileupData', () => {
     ).arcs
     expect(del[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
     expect(del[0]!.colorType).toBe(0)
+  })
+
+  test('in-view split inversion connects a2↔b2, not a2↔b1', () => {
+    // Primary fwd a=[1000,1500], supplementary rev b=[3001,3201]. The read
+    // traverses a1→a2→b2→b1, so the junction joins a.end (a2=1500) to b.end
+    // (b2=3201) — the breakpoint — not b.start (b1=3001), the far edge.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1500, 3001, 3201]),
+      readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
+      readStrands: new Int8Array([1, -1]),
+      readInsertSizes: new Float32Array([0, 0]),
+      readPairOrientations: new Uint8Array([0, 0]),
+      readNames: ['readA', 'readA'],
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.p1.bp).toBe(1500) // a.end (a2)
+    expect(arcs[0]!.p2.bp).toBe(3201) // b.end (b2), not 3001 (b1)
+  })
+
+  test('SA-tag split inversion connects a.end↔b.end (b rev)', () => {
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1500]),
+      readFlags: new Uint16Array([0]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([0]),
+      readNames: ['readA'],
+      readSuppAlignments: ['chr1,3001,-,200M,60,0;'],
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.p1.bp).toBe(1500) // primary fwd: a.end
+    expect(arcs[0]!.p2.bp).toBe(3200) // SA rev (pos 3001→start 3000, end 3200): b.end
+  })
+
+  test('3 split segments chain in read order (clip), not genomic order', () => {
+    // Genomic order is seg0<seg1<seg2, but clip-at-start makes read order
+    // seg1→seg2→seg0, so the two junctions are (seg1,seg2) and (seg2,seg0).
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([
+        1000, 1200, 2000, 2200, 3000, 3200,
+      ]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_SUPPLEMENTARY,
+        0,
+        SAM_FLAG_SUPPLEMENTARY,
+      ]),
+      readStrands: new Int8Array([1, 1, 1]),
+      readInsertSizes: new Float32Array([0, 0, 0]),
+      readPairOrientations: new Uint8Array([0, 0, 0]),
+      readNames: ['readA', 'readA', 'readA'],
+      readClipAtStart: new Uint32Array([200, 0, 100]),
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    expect(arcs).toHaveLength(2)
+    // seg1.end (2200) → seg2.start (3000)
+    expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([2200, 3000])
+    // seg2.end (3200) → seg0.start (1000)
+    expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([3200, 1000])
+  })
+
+  test('paired + SA-split: split junction colored by its own strands, not pair', () => {
+    // read1 (first-in-pair) is SA-split fwd→rev — an inversion junction — and
+    // read2 (second-in-pair) is its mate. The dataset is paired (global
+    // hasPaired=true), but the split junction must still color by its segment
+    // strands (FR slot 4), not fall into the paired insert-size branch.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1200, 3000, 3200, 5000, 5200]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ]),
+      readStrands: new Int8Array([1, -1, -1]),
+      readInsertSizes: new Float32Array([600, 0, 600]),
+      readPairOrientations: new Uint8Array([1, 0, 1]),
+      readNames: ['readA', 'readA', 'readA'],
+      readClipAtStart: new Uint32Array([0, 100, 0]),
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    expect(arcs).toHaveLength(2)
+    // arc[0] = read1's fwd→rev split junction (a.end 1200 → b.end 3200).
+    expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([1200, 3200])
+    // Colored FR (4) by its own strands — NOT the paired insert-size default
+    // (0) the global hasPaired branch would have produced.
+    expect(arcs[0]!.colorType).toBe(4)
+    // arc[1] = the read1↔read2 mate link, still colored by pair semantics.
+    expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([1200, 5000])
   })
 })
 

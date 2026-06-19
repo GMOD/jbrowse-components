@@ -175,6 +175,7 @@ async function buildGroupResult(
     nextRefs,
     nextPositions,
     suppAlignments,
+    clipAtStart,
     detectedModifications,
   } = extraction
   const {
@@ -287,6 +288,7 @@ async function buildGroupResult(
     newTagValues: uniqueTagValues,
     readNextPositions: new Uint32Array(nextPositions),
     readSuppAlignments: suppAlignments,
+    readClipAtStart: new Uint32Array(clipAtStart),
 
     // One shared insert-size scale for every group of the fetch (pooled in the
     // worker entry), so stacked sections stay color-comparable.

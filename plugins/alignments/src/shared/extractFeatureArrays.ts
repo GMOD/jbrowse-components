@@ -1,3 +1,4 @@
+import { getClip } from '@jbrowse/cigar-utils'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import {
@@ -66,6 +67,11 @@ export function extractFeatureArrays<T extends FeatureData>(
   const nextPositions: number[] = []
   const nextRefs: string[] = []
   const suppAlignments: string[] = []
+  // Soft/hard-clip length at the 5' start of the read in read coordinates
+  // (getClip already accounts for strand). This is the read-order sort key that
+  // lets the main thread chain split segments in true read order rather than
+  // genomic order. Synteny features have no CIGAR and contribute 0.
+  const clipAtStart: number[] = []
   const isTagColorMode = colorBy?.type === 'tag' && !!colorBy.tag
   const sortTagValues: string[] | undefined = sortTag ? [] : undefined
 
@@ -85,6 +91,8 @@ export function extractFeatureArrays<T extends FeatureData>(
     suppAlignments.push(
       ((tags?.SA ?? feature.get('SA')) as string | undefined) ?? '',
     )
+    const cigar = feature.get('CIGAR') as string | undefined
+    clipAtStart.push(cigar ? getClip(cigar, strand) : 0)
 
     if (isTagColorMode) {
       tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
@@ -179,6 +187,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     nextPositions,
     nextRefs,
     suppAlignments,
+    clipAtStart,
     detectedModifications,
     detectedSimplexModifications,
     // Raw (strand, type) pairs seen in this call. When extraction is run per

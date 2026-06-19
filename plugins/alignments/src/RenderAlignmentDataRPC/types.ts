@@ -282,6 +282,11 @@ export interface PileupDataResult {
 
   // Per-read SA tag strings for main-thread arc computation
   readSuppAlignments?: string[]
+
+  // Per-read soft/hard-clip length at the 5' start of the read, in read
+  // coordinates (getClip, strand-aware). Read-order sort key so split segments
+  // chain in true read order rather than genomic order (see splitReadEndpoints).
+  readClipAtStart?: Uint32Array
 }
 
 // The chain-only fields are emitted as a group by `buildChainResultFields`
