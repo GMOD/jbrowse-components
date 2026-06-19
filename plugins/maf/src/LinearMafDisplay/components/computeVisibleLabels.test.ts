@@ -47,6 +47,27 @@ test('mismatched bases produce labels', () => {
     showAsUpperCase: false,
   })
   expect(labels.map(l => l.text)).toEqual(['C', 'G', 'T'])
+  // Cell centers: scale = 1/0.05 = 20, center = (bp + 0.5 - start) * 20.
+  // C at bp 101 → 30, G at 102 → 50, T at 103 → 70.
+  expect(labels.map(l => l.x)).toEqual([30, 50, 70])
+})
+
+test('reversed region mirrors label x positions through the region end', () => {
+  const rpcDataMap = new Map<number, MafRegionData>([
+    [0, regionData('AAAAA', 'ACGTA')],
+  ])
+  const labels = computeVisibleLabels({
+    view: { ...view, visibleRegions: [{ ...view.visibleRegions[0]!, reversed: true }] },
+    rpcDataMap,
+    rowHeight: 15,
+    rowProportion: 0.8,
+    showAllLetters: false,
+    showAsUpperCase: false,
+  })
+  expect(labels.map(l => l.text)).toEqual(['C', 'G', 'T'])
+  // Reversed: center = (end - (bp + 0.5)) * 20, end = 110.
+  // C at bp 101 → 170, G at 102 → 150, T at 103 → 130.
+  expect(labels.map(l => l.x)).toEqual([170, 150, 130])
 })
 
 test('space chars in alignment are treated as gaps, not labeled', () => {
