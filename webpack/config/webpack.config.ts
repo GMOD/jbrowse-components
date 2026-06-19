@@ -52,7 +52,15 @@ export default function webpackBuilder(): webpack.Configuration {
     stats: 'errors-warnings',
     mode: isEnvProduction ? 'production' : 'development',
     bail: isEnvProduction,
-    cache: { type: 'memory' },
+    // filesystem cache persists across dev-server restarts so cold starts
+    // after the first are fast; production builds (often a fresh CI checkout)
+    // gain nothing from it, so keep them in memory
+    cache: isEnvDevelopment
+      ? {
+          type: 'filesystem',
+          buildDependencies: { config: [import.meta.filename] },
+        }
+      : { type: 'memory' },
     devtool: isEnvProduction
       ? shouldUseSourceMap
         ? 'source-map'
