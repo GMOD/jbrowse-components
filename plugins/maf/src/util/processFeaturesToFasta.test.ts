@@ -461,3 +461,47 @@ test('includeInsertions - mixed visible/non-visible insertions', () => {
   // every other column maps to its reference position.
   expect(result.colToGenomePos).toEqual([100, 101, -1, 102, 103, 104, 105])
 })
+
+test('includeInsertions - insertion trailing the last reference base', () => {
+  // The insertion sits after the final reference column, so insertPos === rlen.
+  // This exercises the `insertPos <= rlen` boundary (note: <=, not <) — a
+  // trailing insertion must still be emitted, not dropped off the end.
+  //
+  // seq:       ACGT-- (4-bp reference, then a 2-col gap = trailing insertion)
+  // assembly1: ACGTTT (TT inserted after the last ref base)
+  // assembly2: ACGT-- (no insertion)
+  const mockFeature = new SimpleFeature({
+    uniqueId: '123',
+    refName: 'abc',
+    start: 100,
+    end: 104,
+    seq: 'ACGT--',
+    alignments: {
+      assembly1: { chr: 'chr1', start: 100, seq: 'ACGTTT', strand: 1 },
+      assembly2: { chr: 'chr2', start: 200, seq: 'ACGT--', strand: 1 },
+    },
+  })
+
+  const result = processFeaturesToFasta({
+    features: makeMap([mockFeature]),
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
+    includeInsertions: true,
+    showAllLetters: true,
+    regions: [
+      {
+        refName: 'chr1',
+        start: 100,
+        end: 104,
+        assemblyName: 'assembly1',
+      },
+    ],
+  })
+
+  expect(result.rows[0]).toBe('acgttt')
+  expect(result.rows[1]).toBe('acgt--')
+  // Two trailing inserted columns (the `tt`) have no reference base → -1.
+  expect(result.colToGenomePos).toEqual([100, 101, 102, 103, -1, -1])
+})
