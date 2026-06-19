@@ -22,7 +22,10 @@ const PNG_SCALE = 2
 function scaleSvgMarkup(html: string, scale: number) {
   return html.replace(/<svg\b[^>]*>/, tag =>
     tag
-      .replace(/(\bwidth=")([\d.]+)(")/, (_m, p, n, s) => `${p}${+n * scale}${s}`)
+      .replace(
+        /(\bwidth=")([\d.]+)(")/,
+        (_m, p, n, s) => `${p}${+n * scale}${s}`,
+      )
       .replace(
         /(\bheight=")([\d.]+)(")/,
         (_m, p, n, s) => `${p}${+n * scale}${s}`,

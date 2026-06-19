@@ -25,7 +25,6 @@ export function appendGpuParam(url: string) {
   return `${url}${sep}renderer=${backend}`
 }
 
-
 export async function findByTestId(
   page: Page,
   testId: string,

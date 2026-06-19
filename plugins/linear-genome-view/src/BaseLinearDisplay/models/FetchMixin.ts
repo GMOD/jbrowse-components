@@ -153,7 +153,9 @@ export default function FetchMixin() {
         } else {
           self.regionStatuses.set(key, status)
         }
-        self.setStatusMessage(aggregateStatus([...self.regionStatuses.values()]))
+        self.setStatusMessage(
+          aggregateStatus([...self.regionStatuses.values()]),
+        )
       },
       /**
        * #action

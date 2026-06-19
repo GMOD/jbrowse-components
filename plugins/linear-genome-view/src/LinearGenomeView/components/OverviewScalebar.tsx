@@ -177,8 +177,11 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
   className: string
 }) {
   const theme = useTheme()
-  const { showCytobands, cytobandOffset, overviewContentBlocksPxSpan: span } =
-    model
+  const {
+    showCytobands,
+    cytobandOffset,
+    overviewContentBlocksPxSpan: span,
+  } = model
   if (!span) {
     return null
   }

@@ -98,24 +98,30 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
     return bam.getHeaderText()
   }
 
-  private async setup(opts?: BaseOptions) {
-    const { statusCallback } = opts ?? {}
-    this.setupP ??= downloadStatus(
-      'Downloading index',
-      statusCallback,
-      async onProgress => {
-        try {
-          const { bam } = this.configure()
-          const rawHeader = await bam.getHeader({ onProgress })
-          this.samHeader = parseSamHeader(rawHeader ?? [])
-          return { samHeader: this.samHeader, bam }
-        } catch (e) {
-          this.clearCaches()
-          throw e
-        }
-      },
-    )
+  // The index download itself is memoized in setupP so it runs exactly once.
+  private setupOnce(onProgress?: (bytes: number, total?: number) => void) {
+    this.setupP ??= (async () => {
+      try {
+        const { bam } = this.configure()
+        const rawHeader = await bam.getHeader({ onProgress })
+        this.samHeader = parseSamHeader(rawHeader ?? [])
+        return { samHeader: this.samHeader, bam }
+      } catch (e) {
+        this.clearCaches()
+        throw e
+      }
+    })()
     return this.setupP
+  }
+
+  // downloadStatus wraps the memoized work *per caller*, so every concurrent
+  // caller gets the "Downloading index" status and waits on the shared promise.
+  // The first caller's onProgress drives the determinate bar; later callers
+  // still see the label (their onProgress no-ops against the cached download).
+  private async setup(opts?: BaseOptions) {
+    return downloadStatus('Downloading index', opts?.statusCallback, onProgress =>
+      this.setupOnce(onProgress),
+    )
   }
 
   async getRefNames(opts?: BaseOptions) {
