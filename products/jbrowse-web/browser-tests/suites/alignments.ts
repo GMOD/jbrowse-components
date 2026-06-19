@@ -105,7 +105,12 @@ const suite: TestSuite = {
 
         // Right-click at 30% height (in the dense pileup area, below coverage).
         // At ctgA:500-700 zoomed in, this reliably hits a read.
-        await rightClickAtFraction(page, `[data-testid="${pileup}"] canvas`, 0.5, 0.3)
+        await rightClickAtFraction(
+          page,
+          `[data-testid="${pileup}"] canvas`,
+          0.5,
+          0.3,
+        )
         await delay(500)
 
         await assertContextMenuContains(page, 'Linear read vs ref')

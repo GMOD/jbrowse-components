@@ -23,7 +23,10 @@ const suite: TestSuite = {
     {
       name: 'alignments track redraws after zoom out',
       fn: async page => {
-        await navigateWithSessionSpec(page, lgvSpec('ctgA:1000-2000', 'volvox_cram'))
+        await navigateWithSessionSpec(
+          page,
+          lgvSpec('ctgA:1000-2000', 'volvox_cram'),
+        )
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display-done', 60000)
         await waitForDataLoaded(page)
