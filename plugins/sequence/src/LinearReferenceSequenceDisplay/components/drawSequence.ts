@@ -61,18 +61,30 @@ function bpRangeToScreen(block: RenderBlock, absBp: number, bpWidth: number) {
   return x1 < x2 ? { x: x1, w: x2 - x1 } : { x: x2, w: x1 - x2 }
 }
 
-function drawBaseRow(
-  ctx: Ctx2D,
-  block: RenderBlock,
-  seq: string,
-  seqStart: number,
-  y: number,
-  rowHeight: number,
-  showBorders: boolean,
-  isDna: boolean,
-  palette: ColorPalette,
-  textColors: TextColors,
-) {
+interface RowDrawCommon {
+  ctx: Ctx2D
+  block: RenderBlock
+  seq: string
+  seqStart: number
+  y: number
+  rowHeight: number
+  showBorders: boolean
+  palette: ColorPalette
+  textColors: TextColors
+}
+
+function drawBaseRow({
+  ctx,
+  block,
+  seq,
+  seqStart,
+  y,
+  rowHeight,
+  showBorders,
+  isDna,
+  palette,
+  textColors,
+}: RowDrawCommon & { isDna: boolean }) {
   const iStart = Math.max(0, Math.floor(block.start - seqStart))
   const iEnd = Math.min(seq.length, Math.ceil(block.end - seqStart))
 
@@ -95,19 +107,19 @@ function drawBaseRow(
   }
 }
 
-function drawTranslationRow(
-  ctx: Ctx2D,
-  block: RenderBlock,
-  seq: string,
-  seqStart: number,
-  frame: Frame,
-  y: number,
-  rowHeight: number,
-  reversed: boolean,
-  showBorders: boolean,
-  palette: ColorPalette,
-  textColors: TextColors,
-) {
+function drawTranslationRow({
+  ctx,
+  block,
+  seq,
+  seqStart,
+  frame,
+  y,
+  rowHeight,
+  reversed,
+  showBorders,
+  palette,
+  textColors,
+}: RowDrawCommon & { frame: Frame; reversed: boolean }) {
   const bg = palette.frames.get(frame) ?? palette.fallback
   const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
 
@@ -231,72 +243,41 @@ export function drawSequenceBlocks(
     ctx.clip()
 
     let currentY = 0
+    const common = {
+      ctx,
+      block,
+      seqStart: data.start,
+      rowHeight,
+      showBorders,
+      palette,
+      textColors,
+    }
 
     for (const frame of topFrames) {
-      drawTranslationRow(
-        ctx,
-        block,
-        data.seq,
-        data.start,
-        frame,
-        currentY,
-        rowHeight,
-        reversed,
-        showBorders,
-        palette,
-        textColors,
-      )
+      drawTranslationRow({ ...common, seq: data.seq, frame, y: currentY, reversed })
       currentY += rowHeight
     }
 
     if (showForward) {
       const fwdSeq = reversed ? complement(data.seq) : data.seq
-      drawBaseRow(
-        ctx,
-        block,
-        fwdSeq,
-        data.start,
-        currentY,
-        rowHeight,
-        showBorders,
-        isDna,
-        palette,
-        textColors,
-      )
+      drawBaseRow({ ...common, seq: fwdSeq, y: currentY, isDna })
       currentY += rowHeight
     }
 
     if (showReverse) {
       const revSeq = reversed ? data.seq : complement(data.seq)
-      drawBaseRow(
-        ctx,
-        block,
-        revSeq,
-        data.start,
-        currentY,
-        rowHeight,
-        showBorders,
-        isDna,
-        palette,
-        textColors,
-      )
+      drawBaseRow({ ...common, seq: revSeq, y: currentY, isDna })
       currentY += rowHeight
     }
 
     for (const frame of bottomFrames) {
-      drawTranslationRow(
-        ctx,
-        block,
-        data.seq,
-        data.start,
+      drawTranslationRow({
+        ...common,
+        seq: data.seq,
         frame,
-        currentY,
-        rowHeight,
-        !reversed,
-        showBorders,
-        palette,
-        textColors,
-      )
+        y: currentY,
+        reversed: !reversed,
+      })
       currentY += rowHeight
     }
 
