@@ -416,11 +416,6 @@ const SessionLoader = types
       userAcceptedConfirmation?: boolean,
     ) {
       const newId = createElementId()
-      console.log('[localsession] loadImportedSession mint id', {
-        oldId: (session as { id?: string }).id,
-        newId,
-        time: performance.now(),
-      })
       await this.loadSession(
         {
           ...session,
@@ -456,12 +451,6 @@ const SessionLoader = types
       const query = stripPrefix(self.sessionQuery!)
       const fromStorage = readSessionFromStorage(query)
       const fromIDB = fromStorage ? undefined : await readSessionFromIDB(query)
-      console.log('[localsession] fetchLocalSession', {
-        query,
-        foundInStorage: !!fromStorage,
-        foundInIDB: !!fromIDB,
-        time: performance.now(),
-      })
       if (fromStorage) {
         await this.loadSession({ ...fromStorage, id: query })
       } else if (fromIDB) {

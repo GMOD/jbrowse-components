@@ -26,9 +26,6 @@ const JBrowse = observer(function JBrowse({
   const { id, theme } = session
 
   useEffect(() => {
-    console.log('[localsession] set URL -> local-', id, {
-      time: performance.now(),
-    })
     setQueryParams({ session: `local-${id}` })
     window.JBrowseRootModel = rootModel
     window.JBrowseSession = session
