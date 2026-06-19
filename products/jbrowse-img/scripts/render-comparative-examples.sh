@@ -112,9 +112,24 @@ render img/alignments_haplotype.png \
   --bam "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam" \
   group:tag:HP color:tag:HP height:400 --loc 1:63,005,675-63,007,432 --width 1200
 
+# color:methylation paints per-base CpG calls from a modified-base CRAM. COLO829
+# nanopore (hg38) over a CpG island; --aliases reconciles chr20/20 refnames.
+render img/methylation.png \
+  --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
+  --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
+  --cram "https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram" \
+  color:methylation height:350 --loc 20:18,500,750-18,503,250 --width 1200
+
 # Variant track (bundled volvox VCF).
 render img/variants.png --fasta data/volvox/volvox.fa \
   --vcfgz data/volvox/volvox.filtered.vcf.gz --loc ctgA:1-20000 --width 1200
+
+# SKBR3 cell-line whole-genome coverage (hg19, --loc all), log scale — the
+# cancer karyotype's amplifications/deletions stand out.
+render img/skbr3_cov.png --loc all \
+  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw scaletype:log fill:false resolution:superfine height:400 color:purple minmax:1:1024 \
+  --width 1400
 
 # Shrink the committed PNGs (flat-color renders quantize cleanly). --nofs matches
 # the website pipeline: no dithering, so an unchanged render re-quantizes to the

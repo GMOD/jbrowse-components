@@ -37,8 +37,8 @@ const localImgUrl = '/img/jbrowse-img/'
 
 const title = 'Static image export (@jbrowse/img)'
 
-// Repo-relative links (EXAMPLES.md, data/*, scripts/*) only resolve inside the
-// repo, so point them at GitHub. Absolute (http), anchor (#), and root (/) links
+// Repo-relative links (data/*, scripts/*) only resolve inside the repo, so point
+// them at GitHub. Absolute (http), anchor (#), and root (/) links
 // are left alone. GitHub redirects /blob/ to /tree/ for directories.
 function rewriteRelativeLinks(md: string) {
   return md.replace(/\]\(([^)]+)\)/g, (match, target: string) => {

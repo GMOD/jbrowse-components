@@ -36,9 +36,6 @@ jb2export \
   --loc 1:19,197,000-19,233,000 --width 1200 --out overview.png
 ```
 
-More examples
-[EXAMPLES.md](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img/EXAMPLES.md)
-
 ## Setup
 
 You can install the `@jbrowse/img` package from npm, which, if your node is
@@ -288,19 +285,23 @@ jb2export --config data/skbr3/config.json \
 ### Plot whole-genome overview of bigwig
 
 The special flag --loc all shows the full assembly, and there are a number of
-custom bigwig plotting options that can help draw the bigwig genome wide
+custom bigwig plotting options that can help draw the bigwig genome wide.
 
-Example with logscale, manual setting of minmax score
+This logscale, manual-minmax example plots the SKBR3 breast-cancer cell line's
+read coverage genome-wide (hg19, public bigwig), where the amplifications and
+deletions of the cancer karyotype stand out:
 
 ```bash
 jb2export --loc all \
-  --bigwig coverage.bw scaletype:log fill:false resolution:superfine height:400 color:purple minmax:1:1024 \
-  --assembly hg19 \
-  --config data/config.json
+  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw scaletype:log fill:false resolution:superfine height:400 color:purple minmax:1:1024 \
+  --width 1400 --out skbr3_coverage.png
 ```
 
-Example with linearscale, autoscore adjusted to "localsd" or mean plus/minus
-three standard deviations
+<Figure src="/img/jbrowse-img/skbr3_cov.png" caption="SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions" />
+
+The score scaling can also autoscale — here to "localsd" (mean plus/minus three
+standard deviations) on a linear scale:
 
 ```bash
 jb2export --loc all \
@@ -346,6 +347,21 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 ```
 
 <Figure src="/img/jbrowse-img/alignments_haplotype.png" caption="Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype" />
+
+`color:methylation` paints per-base CpG methylation calls from a modified-base
+(`MM`/`ML`) BAM/CRAM — methylated cytosines red, unmethylated blue. This COLO829
+nanopore CRAM (hg38, streamed from the ONT open-data S3) over a CpG island shows
+the methylated-to-unmethylated transition:
+
+```bash
+jb2export \
+  --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
+  --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
+  --cram https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram color:methylation height:350 \
+  --loc 20:18,500,750-18,503,250 --width 1200 --out methylation.png
+```
+
+<Figure src="/img/jbrowse-img/methylation.png" caption="COLO829 nanopore reads colored by per-base CpG methylation over a CpG island" />
 
 ### Variant tracks
 
