@@ -4,7 +4,7 @@ import type { Feature } from '@jbrowse/core/util'
 export function emitSoftclip(
   start: number,
   cliplen: number,
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   feature: Feature,
   softclipsData: SoftclipData[],
@@ -22,7 +22,7 @@ export function emitSoftclip(
       )
     : undefined
   softclipsData.push({
-    featureId,
+    readIndex,
     position: featureStart + start,
     clipStart,
     length: cliplen,

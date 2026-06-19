@@ -16,13 +16,13 @@ function feat(id: string, start: number, end: number): FeatureData {
   }
 }
 
-function skip(featureId: string, start: number, end: number): GapData {
-  return { featureId, start, end, type: 'skip', strand: 1, featureStrand: 1 }
+function skip(readIndex: number, start: number, end: number): GapData {
+  return { readIndex, start, end, type: 'skip', strand: 1, featureStrand: 1 }
 }
 
-function del(featureId: string, start: number, end: number): GapData {
+function del(readIndex: number, start: number, end: number): GapData {
   return {
-    featureId,
+    readIndex,
     start,
     end,
     type: 'deletion',
@@ -37,21 +37,12 @@ function segments(
   regionStart: number,
   regionEnd: number,
 ) {
-  const idToIdx = new Map<string, number>()
-  for (const [i, f] of features.entries()) {
-    idToIdx.set(f.id, i)
-  }
-  const result = buildSegmentArrays(
-    features,
-    gaps,
-    {
-      refName: 'ctgA',
-      assemblyName: 'volvox',
-      start: regionStart,
-      end: regionEnd,
-    },
-    id => idToIdx.get(id) ?? 0,
-  )
+  const result = buildSegmentArrays(features, gaps, {
+    refName: 'ctgA',
+    assemblyName: 'volvox',
+    start: regionStart,
+    end: regionEnd,
+  })
   const segs = []
   for (let i = 0; i < result.numSegments; i++) {
     segs.push({
@@ -74,7 +65,7 @@ describe('buildSegmentArrays', () => {
   test('deletions are ignored (only skips split reads)', () => {
     const result = segments(
       [feat('r1', 1000, 1200)],
-      [del('r1', 1050, 1060)],
+      [del(0, 1050, 1060)],
       1000,
       1200,
     )
@@ -84,7 +75,7 @@ describe('buildSegmentArrays', () => {
   test('single skip splits read into two exon segments', () => {
     const result = segments(
       [feat('r1', 1000, 2000)],
-      [skip('r1', 1200, 1800)],
+      [skip(0, 1200, 1800)],
       1000,
       2000,
     )
@@ -97,7 +88,7 @@ describe('buildSegmentArrays', () => {
   test('multiple skips produce multiple exon segments', () => {
     const result = segments(
       [feat('r1', 1000, 5000)],
-      [skip('r1', 1200, 1800), skip('r1', 2100, 4800)],
+      [skip(0, 1200, 1800), skip(0, 2100, 4800)],
       1000,
       5000,
     )
@@ -111,7 +102,7 @@ describe('buildSegmentArrays', () => {
   test('multiple reads each get their own segments', () => {
     const result = segments(
       [feat('r1', 1000, 2000), feat('r2', 1000, 1500)],
-      [skip('r1', 1200, 1800)],
+      [skip(0, 1200, 1800)],
       1000,
       2000,
     )
@@ -126,7 +117,7 @@ describe('buildSegmentArrays', () => {
     test('segments extend to full feature end (GPU handles clipping)', () => {
       const result = segments(
         [feat('r1', 1000, 50000)],
-        [skip('r1', 1200, 49800)],
+        [skip(0, 1200, 49800)],
         1000,
         1300,
       )
@@ -139,7 +130,7 @@ describe('buildSegmentArrays', () => {
     test('read starting before region has no first-edge flag', () => {
       const result = segments(
         [feat('r1', 1000, 50000)],
-        [skip('r1', 1200, 49800)],
+        [skip(0, 1200, 49800)],
         49700,
         50100,
       )
@@ -151,7 +142,7 @@ describe('buildSegmentArrays', () => {
     test('read entirely intronic produces off-screen exon segments', () => {
       const result = segments(
         [feat('r1', 1000, 50000)],
-        [skip('r1', 1200, 49800)],
+        [skip(0, 1200, 49800)],
         5000,
         5300,
       )
@@ -163,7 +154,7 @@ describe('buildSegmentArrays', () => {
     test('skip gap entirely before region — segment extends to full read end', () => {
       const result = segments(
         [feat('r1', 1000, 50000)],
-        [skip('r1', 1200, 1800)],
+        [skip(0, 1200, 1800)],
         2000,
         2300,
       )
@@ -173,7 +164,7 @@ describe('buildSegmentArrays', () => {
     test('skip gap entirely after region — full segments emitted', () => {
       const result = segments(
         [feat('r1', 1000, 50000)],
-        [skip('r1', 49000, 49800)],
+        [skip(0, 49000, 49800)],
         1000,
         1300,
       )
@@ -208,7 +199,7 @@ describe('buildSegmentArrays', () => {
     test('with skips, first flag on first segment, last flag on last segment', () => {
       const result = segments(
         [feat('r1', 1000, 2000)],
-        [skip('r1', 1200, 1800)],
+        [skip(0, 1200, 1800)],
         1000,
         2000,
       )
@@ -220,7 +211,7 @@ describe('buildSegmentArrays', () => {
   test('unsorted skip gaps are handled correctly', () => {
     const result = segments(
       [feat('r1', 1000, 5000)],
-      [skip('r1', 2100, 4800), skip('r1', 1200, 1800)],
+      [skip(0, 2100, 4800), skip(0, 1200, 1800)],
       1000,
       5000,
     )

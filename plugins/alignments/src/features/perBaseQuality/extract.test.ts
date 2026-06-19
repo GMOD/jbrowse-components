@@ -40,7 +40,7 @@ function run(opts: {
   const out: PerBaseQualityEntry[] = []
   extractPerBaseQuality(
     makeFeature(opts),
-    'f',
+    0,
     {
       refName: 'ctgA',
       assemblyName: 'volvox',
@@ -153,7 +153,7 @@ describe('extractPerBaseQuality', () => {
     } as unknown as Feature
     extractPerBaseQuality(
       feature,
-      'f',
+      0,
       { refName: 'ctgA', assemblyName: 'volvox', start: 0, end: 1000 },
       out,
     )

@@ -193,19 +193,7 @@ async function buildGroupResult(
   // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread via
   // `laidOutPileupMap` (pileup) / `computeChainLayout` (chain) — the worker
   // emits zero-filled Y arrays.
-  const { readArrays, featureIdToIndex } = buildBaseReadArrays(
-    features,
-    region.start,
-  )
-  const getReadIndex = (id: string) => {
-    const idx = featureIdToIndex.get(id)
-    if (idx === undefined) {
-      throw new Error(
-        `no read index for feature id ${id} (detail/read mismatch)`,
-      )
-    }
-    return idx
-  }
+  const { readArrays } = buildBaseReadArrays(features, region.start)
 
   // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
   const chainFields: Partial<PileupDataResult> = isChain
@@ -236,7 +224,6 @@ async function buildGroupResult(
     perBaseLetters,
     detectedModifications,
     region,
-    getReadIndex,
     showSoftClipping: effShowSoftClipping,
     statusCallback,
   })

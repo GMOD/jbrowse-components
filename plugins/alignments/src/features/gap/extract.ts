@@ -18,14 +18,14 @@ export function emitGap(
   type: 'deletion' | 'skip',
   start: number,
   length: number,
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   strand: number,
   feature: Feature,
   gapsData: GapData[],
 ) {
   gapsData.push({
-    featureId,
+    readIndex,
     start: featureStart + start,
     end: featureStart + start + length,
     type,

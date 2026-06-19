@@ -16,7 +16,7 @@ import type { Feature, Region } from '@jbrowse/core/util'
 // score entries the main thread paints as overlay rects.
 export function extractPerBaseQuality(
   feature: Feature,
-  featureId: string,
+  readIndex: number,
   region: Region,
   out: PerBaseQualityEntry[],
 ) {
@@ -46,7 +46,7 @@ export function extractPerBaseQuality(
           const visEnd = Math.min(len, regionEnd - opStart)
           for (let m = visStart; m < visEnd; m++) {
             out.push({
-              featureId,
+              readIndex,
               position: opStart + m,
               score: scores[soffset + m]!,
             })

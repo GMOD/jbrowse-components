@@ -44,7 +44,6 @@ export async function buildAlignmentDetailArrays({
   perBaseLetters,
   detectedModifications,
   region,
-  getReadIndex,
   showSoftClipping = false,
   statusCallback,
 }: {
@@ -59,7 +58,6 @@ export async function buildAlignmentDetailArrays({
   perBaseLetters: PerBaseLetterEntry[]
   detectedModifications: Set<string>
   region: Region
-  getReadIndex: (id: string) => number
   showSoftClipping?: boolean
   statusCallback: StatusCallback
 }) {
@@ -68,38 +66,25 @@ export async function buildAlignmentDetailArrays({
     'Building alignment arrays',
     statusCallback,
     async () => ({
-      gapArrays: buildGapArrays(gaps, regionStart, getReadIndex),
-      mismatchArrays: buildMismatchArrays(
-        mismatches,
-        regionStart,
-        getReadIndex,
-      ),
+      gapArrays: buildGapArrays(gaps, regionStart),
+      mismatchArrays: buildMismatchArrays(mismatches, regionStart),
       softclipBaseArrays: buildSoftclipBaseArrays(
         showSoftClipping ? softclips : [],
-        getReadIndex,
       ),
       interbaseArrays: buildInterbaseArrays(
         insertions,
         softclips,
         hardclips,
         regionStart,
-        getReadIndex,
       ),
       modificationArrays: buildModificationArrays(
         modifications,
         regionStart,
-        getReadIndex,
         detectedModifications,
       ),
-      perBaseQualityArrays: buildPerBaseQualityArrays(
-        perBaseQualities,
-        getReadIndex,
-      ),
-      perBaseLetterArrays: buildPerBaseLetterArrays(
-        perBaseLetters,
-        getReadIndex,
-      ),
-      segmentArrays: buildSegmentArrays(features, gaps, region, getReadIndex),
+      perBaseQualityArrays: buildPerBaseQualityArrays(perBaseQualities),
+      perBaseLetterArrays: buildPerBaseLetterArrays(perBaseLetters),
+      segmentArrays: buildSegmentArrays(features, gaps, region),
     }),
   )
 }

@@ -17,7 +17,7 @@ import type { Feature, Region } from '@jbrowse/core/util'
 // directly — mirrors extractPerBaseQuality, swapping the score for the base.
 export function extractPerBaseLetter(
   feature: Feature,
-  featureId: string,
+  readIndex: number,
   region: Region,
   out: PerBaseLetterEntry[],
 ) {
@@ -49,7 +49,7 @@ export function extractPerBaseLetter(
             // Uppercase ASCII so lowercase soft-masked bases hit the same color
             // switch as the GPU/Canvas base palette (A/C/G/T, else N).
             out.push({
-              featureId,
+              readIndex,
               position: opStart + m,
               base: seq.charCodeAt(soffset + m) & ~0x20,
             })

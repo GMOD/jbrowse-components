@@ -3,12 +3,12 @@ import type { HardclipData } from '../../shared/webglRpcTypes.ts'
 export function emitHardclip(
   start: number,
   cliplen: number,
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   hardclipsData: HardclipData[],
 ) {
   hardclipsData.push({
-    featureId,
+    readIndex,
     position: featureStart + start,
     length: cliplen,
   })

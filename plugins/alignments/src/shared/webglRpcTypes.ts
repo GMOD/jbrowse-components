@@ -18,7 +18,7 @@ export interface ChainFeatureData extends FeatureData {
 }
 
 export interface GapData {
-  featureId: string
+  readIndex: number
   start: number
   end: number
   type: 'deletion' | 'skip'
@@ -27,21 +27,21 @@ export interface GapData {
 }
 
 export interface MismatchData {
-  featureId: string
+  readIndex: number
   position: number
   base: number
   strand: number // -1=reverse, 1=forward
 }
 
 export interface InsertionData {
-  featureId: string
+  readIndex: number
   position: number
   length: number
   sequence?: string
 }
 
 export interface SoftclipData {
-  featureId: string
+  readIndex: number
   position: number // alignment edge (for coverage area interbase indicator)
   clipStart: number // actual genomic start of the soft-clipped bases
   length: number
@@ -49,13 +49,13 @@ export interface SoftclipData {
 }
 
 export interface HardclipData {
-  featureId: string
+  readIndex: number
   position: number
   length: number
 }
 
 export interface ModificationEntry {
-  featureId: string
+  readIndex: number
   position: number // absolute genomic position
   base: string // canonical base (e.g., 'C' for 5mC)
   modType: string // modification type code (e.g., 'm', 'h')

@@ -19,7 +19,7 @@ const regionSequence = `${'N'.repeat(POS)}C`
 
 function modEntry(over: Partial<ModificationEntry>): ModificationEntry {
   return {
-    featureId: 'r',
+    readIndex: 0,
     position: POS,
     base: 'C',
     modType: 'm',

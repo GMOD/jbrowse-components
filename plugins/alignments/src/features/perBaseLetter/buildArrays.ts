@@ -2,7 +2,6 @@ import type { PerBaseLetterEntry } from './types.ts'
 
 export function buildPerBaseLetterArrays(
   entries: PerBaseLetterEntry[],
-  getReadIndex: (id: string) => number,
 ) {
   const n = entries.length
   const perBaseLetterPositions = new Uint32Array(n)
@@ -13,7 +12,7 @@ export function buildPerBaseLetterArrays(
     const e = entries[i]!
     perBaseLetterPositions[i] = e.position
     perBaseLetterBases[i] = e.base
-    perBaseLetterReadIndices[i] = getReadIndex(e.featureId)
+    perBaseLetterReadIndices[i] = e.readIndex
   }
   return {
     perBaseLetterPositions,

@@ -4,12 +4,12 @@ export function emitInsertion(
   start: number,
   insertlen: number,
   insertedBases: string,
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   insertionsData: InsertionData[],
 ) {
   insertionsData.push({
-    featureId,
+    readIndex,
     position: featureStart + start,
     length: insertlen,
     sequence: insertedBases,

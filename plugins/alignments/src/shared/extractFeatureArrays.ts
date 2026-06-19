@@ -67,8 +67,11 @@ export function extractFeatureArrays<T extends FeatureData>(
   const isTagColorMode = colorBy?.type === 'tag' && !!colorBy.tag
   const sortTagValues: string[] | undefined = sortTag ? [] : undefined
 
-  for (const feature of featuresArray) {
-    const featureId = feature.id()
+  // readIndex is the feature's position here; it equals its index in the
+  // returned `features` array and the per-read TypedArrays (buildBaseReadArrays),
+  // so every primitive carries that integer instead of the string feature id.
+  for (let readIndex = 0; readIndex < featuresArray.length; readIndex++) {
+    const feature = featuresArray[readIndex]!
     const featureStart = feature.get('start')
     const strand = feature.get('strand')!
 
@@ -93,7 +96,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     // extraction off it directly rather than allocating a Mismatch[] per read
     extractCigarFeatures(
       feature as MismatchFeature,
-      featureId,
+      readIndex,
       featureStart,
       strand,
       cigarOutput,
@@ -102,7 +105,7 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     const modData = extractModifications(
       feature,
-      featureId,
+      readIndex,
       featureStart,
       strand,
       colorBy,
@@ -113,7 +116,7 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     if (colorBy?.type === 'methylation' && modData) {
       extractMethylation(
-        featureId,
+        readIndex,
         featureStart,
         strand,
         region,
@@ -126,7 +129,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     if (colorBy?.type === 'bisulfite' && regionSequence !== undefined) {
       extractBisulfite(
         feature,
-        featureId,
+        readIndex,
         featureStart,
         strand,
         region,
@@ -138,11 +141,11 @@ export function extractFeatureArrays<T extends FeatureData>(
     }
 
     if (isPerBaseQualityMode) {
-      extractPerBaseQuality(feature, featureId, region, perBaseQualities)
+      extractPerBaseQuality(feature, readIndex, region, perBaseQualities)
     }
 
     if (isPerBaseLetterMode) {
-      extractPerBaseLetter(feature, featureId, region, perBaseLetters)
+      extractPerBaseLetter(feature, readIndex, region, perBaseLetters)
     }
   }
 

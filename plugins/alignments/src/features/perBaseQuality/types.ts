@@ -7,7 +7,7 @@ export interface PerBaseQualityUploadData {
 }
 
 export interface PerBaseQualityEntry {
-  featureId: string
+  readIndex: number
   position: number
   score: number
 }

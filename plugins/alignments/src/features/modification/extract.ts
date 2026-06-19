@@ -54,7 +54,7 @@ function methColorAndProb(
 
 export function extractModifications(
   feature: Feature,
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   strand: number,
   colorBy: ColorBy | undefined,
@@ -118,7 +118,7 @@ export function extractModifications(
           ? methColorAndProb(prob, modRgb, METH_5MC_UNMETHYLATED_RGB)
           : { r: modRgb[0], g: modRgb[1], b: modRgb[2], prob, noMod: false }
         modificationsData.push({
-          featureId,
+          readIndex,
           position: featureStart + refPos,
           base,
           modType: type,
@@ -143,7 +143,7 @@ export function extractModifications(
 }
 
 export function extractMethylation(
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   strand: number,
   region: Region,
@@ -198,7 +198,7 @@ export function extractMethylation(
             }
 
     modificationsData.push({
-      featureId,
+      readIndex,
       position: genomicPos,
       base: 'C',
       modType: winner.modType,
@@ -218,7 +218,7 @@ export function extractMethylation(
 // modBAM methylation path so all downstream rendering is shared.
 export function extractBisulfite(
   feature: Feature,
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   strand: number,
   region: Region,
@@ -280,7 +280,7 @@ export function extractBisulfite(
               METH_5MC_UNMETHYLATED_RGB,
             )
             modificationsData.push({
-              featureId,
+              readIndex,
               position: genomicPos,
               base: 'C',
               modType: 'm',

@@ -3,7 +3,6 @@ import type { MismatchData } from '../../shared/webglRpcTypes.ts'
 export function buildMismatchArrays(
   mismatches: MismatchData[],
   regionStart: number,
-  getReadIndex: (featureId: string) => number,
 ) {
   const filtered = mismatches.filter(mm => mm.position >= regionStart)
   const mismatchPositions = new Uint32Array(filtered.length)
@@ -16,7 +15,7 @@ export function buildMismatchArrays(
     mismatchPositions[i] = mm.position
     mismatchBases[i] = mm.base
     mismatchStrands[i] = mm.strand
-    mismatchReadIndices[i] = getReadIndex(mm.featureId)
+    mismatchReadIndices[i] = mm.readIndex
   }
   return {
     mismatchPositions,

@@ -8,7 +8,7 @@ export interface PerBaseLetterUploadData {
 }
 
 export interface PerBaseLetterEntry {
-  featureId: string
+  readIndex: number
   position: number
   base: number
 }

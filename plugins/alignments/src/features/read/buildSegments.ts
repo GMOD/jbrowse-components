@@ -12,24 +12,24 @@ export function buildSegmentArrays(
   features: FeatureData[],
   gaps: GapData[],
   region: Region,
-  getReadIndex: (featureId: string) => number,
 ) {
   const { start: regionStart, end: regionEnd } = region
-  const skipsByFeature = new Map<string, GapData[]>()
+  // read index is the feature's position in `features` (see extractFeatureArrays)
+  const skipsByFeature = new Map<number, GapData[]>()
   for (const g of gaps) {
     if (g.type === 'skip') {
-      let list = skipsByFeature.get(g.featureId)
+      let list = skipsByFeature.get(g.readIndex)
       if (!list) {
         list = []
-        skipsByFeature.set(g.featureId, list)
+        skipsByFeature.set(g.readIndex, list)
       }
       list.push(g)
     }
   }
 
   let maxSegments = 0
-  for (const f of features) {
-    const skips = skipsByFeature.get(f.id)
+  for (let ri = 0; ri < features.length; ri++) {
+    const skips = skipsByFeature.get(ri)
     maxSegments += skips ? skips.length + 1 : 1
   }
 
@@ -38,11 +38,11 @@ export function buildSegmentArrays(
   const segmentEdgeFlags = new Uint8Array(maxSegments)
 
   let segIdx = 0
-  for (const f of features) {
-    const readIdx = getReadIndex(f.id)
+  for (let readIdx = 0; readIdx < features.length; readIdx++) {
+    const f = features[readIdx]!
     const readStart = Math.max(regionStart, f.start)
     const readEnd = f.end
-    const skips = skipsByFeature.get(f.id)
+    const skips = skipsByFeature.get(readIdx)
 
     // Chevron only at the true read start/end, not at region-clipped edges
     const edgeFlags =

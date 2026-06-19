@@ -35,7 +35,7 @@ function run(colorBy: ColorBy) {
   const out: ModificationEntry[] = []
   extractModifications(
     makeFeature(),
-    'r1',
+    0,
     100,
     1,
     colorBy,
@@ -112,7 +112,7 @@ describe('extractModifications', () => {
     const region = { refName: 'ctgA', start: 100, end: 108 } as Region
     const modData = extractModifications(
       feature,
-      'meth1',
+      0,
       100,
       1,
       colorBy,
@@ -120,7 +120,7 @@ describe('extractModifications', () => {
       new Map<string, ModificationType>(),
       out,
     )!
-    extractMethylation('meth1', 100, 1, region, modData, out, 'CG')
+    extractMethylation(0, 100, 1, region, modData, out, 'CG')
 
     // exactly one mark per CpG, no purple unmethylated-5hmC flooding
     expect(out.map(m => m.position)).toEqual([100, 102, 104, 106])

@@ -5,7 +5,6 @@ import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 export function buildModificationArrays(
   modifications: ModificationEntry[],
   regionStart: number,
-  getReadIndex: (featureId: string) => number,
   detectedModifications?: Set<string> | string[],
 ) {
   const filtered = modifications.filter(m => m.position >= regionStart)
@@ -31,7 +30,7 @@ export function buildModificationArrays(
     const a = Math.round(Math.min(1, m.prob * m.prob + 0.1) * 255) & 0xff
     modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
     modificationProbabilities[i] = Math.round(m.prob * 255) & 0xff
-    modificationReadIndices[i] = getReadIndex(m.featureId)
+    modificationReadIndices[i] = m.readIndex
     if (modificationTypeIndices && modTypeToIdx) {
       modificationTypeIndices[i] = modTypeToIdx.get(m.modType) ?? 0
     }

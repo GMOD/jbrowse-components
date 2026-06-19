@@ -3,13 +3,13 @@ import type { MismatchData } from '../../shared/webglRpcTypes.ts'
 export function emitMismatch(
   start: number,
   base: string,
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   strand: number,
   mismatchesData: MismatchData[],
 ) {
   mismatchesData.push({
-    featureId,
+    readIndex,
     position: featureStart + start,
     // uppercase the single ASCII base without allocating a string (CRAM may
     // emit lowercase); ~2x faster than base.toUpperCase().charCodeAt(0)

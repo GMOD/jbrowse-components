@@ -37,7 +37,7 @@ function run(
   })
   extractBisulfite(
     feature,
-    'r1',
+    0,
     0,
     opts.strand,
     { refName: 'ctg', start: 0, end: REF.length, assemblyName: 'a' },

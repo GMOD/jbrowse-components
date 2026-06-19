@@ -40,7 +40,7 @@ function run(opts: {
   const out: PerBaseLetterEntry[] = []
   extractPerBaseLetter(
     makeFeature(opts),
-    'f',
+    0,
     {
       refName: 'ctgA',
       assemblyName: 'volvox',
@@ -132,7 +132,7 @@ describe('extractPerBaseLetter', () => {
     } as unknown as Feature
     extractPerBaseLetter(
       feature,
-      'f',
+      0,
       { refName: 'ctgA', assemblyName: 'volvox', start: 0, end: 1000 },
       out,
     )

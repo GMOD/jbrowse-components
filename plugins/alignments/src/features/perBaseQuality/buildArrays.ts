@@ -2,7 +2,6 @@ import type { PerBaseQualityEntry } from './types.ts'
 
 export function buildPerBaseQualityArrays(
   entries: PerBaseQualityEntry[],
-  getReadIndex: (id: string) => number,
 ) {
   const n = entries.length
   const perBaseQualPositions = new Uint32Array(n)
@@ -13,7 +12,7 @@ export function buildPerBaseQualityArrays(
     const e = entries[i]!
     perBaseQualPositions[i] = e.position
     perBaseQualScores[i] = e.score
-    perBaseQualReadIndices[i] = getReadIndex(e.featureId)
+    perBaseQualReadIndices[i] = e.readIndex
   }
   return {
     perBaseQualPositions,

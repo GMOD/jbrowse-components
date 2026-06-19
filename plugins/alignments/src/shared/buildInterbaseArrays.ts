@@ -11,7 +11,7 @@ import type {
 } from './webglRpcTypes.ts'
 
 interface InterbaseInput {
-  featureId: string
+  readIndex: number
   position: number
   length: number
   sequence?: string
@@ -26,7 +26,6 @@ export function buildInterbaseArrays(
   softclips: SoftclipData[],
   hardclips: HardclipData[],
   regionStart: number,
-  getReadIndex: (featureId: string) => number,
 ) {
   const filteredInsertions = insertions.filter(
     ins => ins.position >= regionStart,
@@ -52,7 +51,7 @@ export function buildInterbaseArrays(
       interbasePositions[idx] = item.position
       interbaseLengths[idx] = Math.min(65535, item.length)
       interbaseTypes[idx] = type
-      interbaseReadIndices[idx] = getReadIndex(item.featureId)
+      interbaseReadIndices[idx] = item.readIndex
       interbaseSequences.push(item.sequence ?? '')
       idx++
     }

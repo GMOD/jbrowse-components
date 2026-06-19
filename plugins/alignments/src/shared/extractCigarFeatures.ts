@@ -45,7 +45,7 @@ export interface CigarEmitOutput {
 // extractFeatureArrays runs this for thousands of features per region.
 export function extractCigarFeatures(
   feature: MismatchFeature,
-  featureId: string,
+  readIndex: number,
   featureStart: number,
   strand: number,
   output: CigarEmitOutput,
@@ -57,7 +57,7 @@ export function extractCigarFeatures(
         emitMismatch(
           start,
           base,
-          featureId,
+          readIndex,
           featureStart,
           strand,
           output.mismatches,
@@ -67,7 +67,7 @@ export function extractCigarFeatures(
           start,
           cliplen!,
           base,
-          featureId,
+          readIndex,
           featureStart,
           output.insertions,
         )
@@ -75,7 +75,7 @@ export function extractCigarFeatures(
         emitSoftclip(
           start,
           cliplen!,
-          featureId,
+          readIndex,
           featureStart,
           feature,
           output.softclips,
@@ -86,7 +86,7 @@ export function extractCigarFeatures(
           'deletion',
           start,
           length,
-          featureId,
+          readIndex,
           featureStart,
           strand,
           feature,
@@ -97,14 +97,14 @@ export function extractCigarFeatures(
           'skip',
           start,
           length,
-          featureId,
+          readIndex,
           featureStart,
           strand,
           feature,
           output.gaps,
         )
       } else {
-        emitHardclip(start, cliplen!, featureId, featureStart, output.hardclips)
+        emitHardclip(start, cliplen!, readIndex, featureStart, output.hardclips)
       }
     },
   )

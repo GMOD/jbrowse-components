@@ -6,7 +6,6 @@ import type { SoftclipData } from '../../shared/webglRpcTypes.ts'
 // are clipped by the GPU rasterizer, so we don't filter on regionStart here.
 export function buildSoftclipBaseArrays(
   softclips: SoftclipData[],
-  getReadIndex: (featureId: string) => number,
 ) {
   const count = softclips.reduce(
     (sum, sc) => sum + (sc.sequence?.length ?? 0),
@@ -21,7 +20,7 @@ export function buildSoftclipBaseArrays(
     if (!sc.sequence) {
       continue
     }
-    const ri = getReadIndex(sc.featureId)
+    const ri = sc.readIndex
     for (let k = 0; k < sc.sequence.length; k++) {
       softclipBasePositions[i] = sc.clipStart + k
       softclipBaseBases[i] = sc.sequence.charCodeAt(k)
