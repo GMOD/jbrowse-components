@@ -1,86 +1,14 @@
 /* eslint-disable no-console */
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { startOAuthServer } from '../servers.ts'
 
-import bodyParser from 'body-parser'
-import cors from 'cors'
-import express, { Router, static as serveStatic } from 'express'
-
-import oauthServer from './oauth/server.ts'
-
-import type { Request } from 'express'
-
-const router = Router()
-
-const filePath = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  './public/oauthAuthenticate.html',
-)
-
-router.get('/', (req, res) => {
-  // send back a simple form for the oauth
-  res.sendFile(filePath)
-})
-
-router.post(
-  '/authorize',
-  (req, res, next) => {
-    const { username, password } = req.body
-    if (username === 'username' && password === 'password') {
-      req.body.user = { user: 1 }
-      next()
-      return
-    }
-    const params = [
-      // Send params back down
-      'client_id',
-      'redirect_uri',
-      'response_type',
-      'grant_type',
-      'state',
-    ]
-      .map(a => `${a}=${req.body[a]}`)
-      .join('&')
-    res.redirect(`/oauth?success=false&${params}`)
-  },
-  oauthServer.authorize({
-    authenticateHandler: {
-      handle: (req: Request) => {
-        return req.body.user
-      },
-    },
-  }),
-)
-
-router.post('/token', oauthServer.token()) // Sends back token
-
-const app = express()
-const port = 3030
-
-app.use(cors())
-
-// Here we are configuring express to use body-parser as middle-ware.
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-
-app.use('/oauth', router) // routes to access the auth stuff
-app.use(
-  '/data',
-  oauthServer.authenticate(),
-  serveStatic(
-    path.join(
-      path.dirname(fileURLToPath(import.meta.url)),
-      '..',
-      '..',
-      'test_data',
-      'volvox',
-    ),
-  ),
-)
-
+// Standalone manual-run OAuth test server (port 3030), for local development.
+// The redirect-uri is http://localhost:3000, so run jbrowse-web on that port
+// (the default dev server port). The runner starts the same server
+// programmatically via startOAuthServer — this is just a CLI entrypoint.
 console.log(
-  'The redirect-uri is http://localhost:3000, must be running jbrowse-web on this port e.g. the default dev server port',
+  'The redirect-uri is http://localhost:3000 — run jbrowse-web there (default dev server port)',
 )
-
-console.log('OAuth Server listening on port', port)
-app.listen(port)
+startOAuthServer({ port: 3030, redirectPort: 3000 }).catch((e: unknown) => {
+  console.error(e)
+  process.exit(1)
+})

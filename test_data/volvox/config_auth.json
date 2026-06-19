@@ -267,6 +267,20 @@
       "internetAccountId": "customBasicAuth",
       "name": "HTTP BasicAuth test account",
       "description": "HTTP BasicAuth account for testing"
+    },
+    {
+      "type": "HTTPBasicInternetAccount",
+      "internetAccountId": "basicAuthPublic",
+      "name": "HTTP BasicAuth (public path)",
+      "description": "Path-scoped account; matched by domain to /data/public",
+      "domains": ["localhost:3040/data/public"]
+    },
+    {
+      "type": "HTTPBasicInternetAccount",
+      "internetAccountId": "basicAuthPrivate",
+      "name": "HTTP BasicAuth (private path)",
+      "description": "Path-scoped account; matched by domain to /data/private",
+      "domains": ["localhost:3040/data/private"]
     }
   ]
 }

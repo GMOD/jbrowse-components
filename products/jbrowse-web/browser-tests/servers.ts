@@ -208,6 +208,20 @@ export function startBasicAuthServer(
   return new Promise(resolve => {
     const app = express()
     app.use(cors())
+    // Per-path credentials must mount BEFORE the catch-all `/data`: express
+    // matches in registration order, and a failed expressBasicAuth on `/data`
+    // 401s before the more-specific handler is reached. These back the
+    // "multiple BasicAuth credentials on same domain" test (alice/bob).
+    app.use(
+      '/data/public',
+      expressBasicAuth({ users: { alice: 'public123' } }),
+      serveStatic(dataPath),
+    )
+    app.use(
+      '/data/private',
+      expressBasicAuth({ users: { bob: 'private456' } }),
+      serveStatic(dataPath),
+    )
     app.use(
       '/data',
       expressBasicAuth({ users: { admin: 'password' } }),

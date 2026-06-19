@@ -1,53 +1,11 @@
-/* eslint-disable no-console */
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { startBasicAuthServer } from '../servers.ts'
 
-import cors from 'cors'
-import express, { static as serveStatic } from 'express'
-import expressBasicAuth from 'express-basic-auth'
-
-const app = express()
-const port = 3040
-
-app.use(cors())
-
-const dataPath = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..',
-  '..',
-  'test_data',
-  'volvox',
-)
-
-app.use(
-  '/data',
-  expressBasicAuth({
-    users: {
-      admin: 'password',
-    },
-  }),
-  serveStatic(dataPath),
-)
-
-app.use(
-  '/data/public',
-  expressBasicAuth({
-    users: {
-      alice: 'public123',
-    },
-  }),
-  serveStatic(dataPath),
-)
-
-app.use(
-  '/data/private',
-  expressBasicAuth({
-    users: {
-      bob: 'private456',
-    },
-  }),
-  serveStatic(dataPath),
-)
-
-console.log('HTTP BasicAuth Server listening on port', port)
-app.listen(port)
+// Standalone manual-run HTTP Basic Auth test server (port 3040), for local
+// development against the jbrowse-web dev server. The runner starts the very
+// same server programmatically via startBasicAuthServer — this is just a CLI
+// entrypoint so the two never drift (it serves /data with admin/password plus
+// the path-scoped /data/public and /data/private credentials).
+startBasicAuthServer({ port: 3040 }).catch((e: unknown) => {
+  console.error(e)
+  process.exit(1)
+})
