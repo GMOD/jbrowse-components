@@ -1072,17 +1072,19 @@ export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
 
 // Wrap content in an expanded-by-default `<details>` block (collapsible via the
 // `<summary>` section title) so a reader can fold sections away but sees them all
-// up front. The blank lines around the body are required: by CommonMark (which
-// Astro's remark follows) a blank line ends the raw-HTML block, so the enclosed
-// headings/code render as markdown instead of literal HTML. Returns empty string
-// when all parts are falsy, matching section().
+// up front. The `<summary>` is styled like a section heading by the docs site CSS
+// (`.docs-content details > summary` in DocsLayout.astro), not inline here. The
+// blank lines around the body are required: by CommonMark (which Astro's remark
+// follows) a blank line ends the raw-HTML block, so the enclosed headings/code
+// render as markdown instead of literal HTML. Returns empty string when all parts
+// are falsy, matching section().
 export function collapsible(
   summary: string,
   ...parts: (string | false | 0 | undefined)[]
 ) {
   const body = section(...parts)
   return body
-    ? `<details open>\n<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">${summary}</summary>\n\n${body}\n\n</details>`
+    ? `<details open>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
     : ''
 }
 

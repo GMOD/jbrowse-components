@@ -4,6 +4,7 @@ import slugify from 'slugify'
 
 import {
   codeBlock,
+  collapsible,
   collectTransitive,
   docPage,
   exampleSection,
@@ -133,8 +134,11 @@ function inheritedSlotsSection(bases: ConfigWithHeader[]) {
   const blocks = bases.flatMap(config =>
     config.slots.length
       ? [
-          section(
-            `### Inherited from [${config.header.name}](../${config.header.id})`,
+          collapsible(
+            `Inherited from ${config.header.name}`,
+            // a markdown link inside <summary> renders literally, so the link to
+            // the base config's own page leads the body instead
+            `[${config.header.name} config →](../${config.header.id})`,
             ...config.slots.map(s => slotBlock(s)),
           ),
         ]
@@ -224,10 +228,7 @@ function renderConfig(
         `#### slot: ${identifier.name}`,
       ),
     slots.length &&
-      section(
-        `### ${header.name} - Slots`,
-        slots.map(s => slotBlock(s)).join('\n'),
-      ),
+      collapsible(`${header.name} - Slots`, ...slots.map(s => slotBlock(s))),
     inheritedSlotsSection(bases),
     derives &&
       section(
