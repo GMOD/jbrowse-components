@@ -1,9 +1,13 @@
+import { useEffect, useState } from 'react'
+
 import CloseIcon from '@mui/icons-material/Close'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
 
 import LoadingDots from './LoadingDots.tsx'
 import { cx, makeStyles } from '../util/tss-react/index.ts'
+
+const cancelDelayMs = 5000
 
 const useStyles = makeStyles()({
   overlay: {
@@ -78,6 +82,23 @@ export default function LoadingOverlay({
   const { classes } = useStyles()
   const hasProgress = progress !== undefined
 
+  // only offer cancel after the overlay has been continuously visible for a few
+  // seconds, so a quick load can't be canceled by an accidental click
+  const [cancelable, setCancelable] = useState(false)
+  useEffect(() => {
+    if (isVisible) {
+      const id = setTimeout(() => {
+        setCancelable(true)
+      }, cancelDelayMs)
+      return () => {
+        clearTimeout(id)
+      }
+    } else {
+      setCancelable(false)
+      return undefined
+    }
+  }, [isVisible])
+
   return (
     <span
       className={cx(classes.overlay, isVisible && classes.visible)}
@@ -112,7 +133,7 @@ export default function LoadingOverlay({
                   <LoadingDots />
                 )}
               </span>
-              {onCancel ? (
+              {onCancel && cancelable ? (
                 <Tooltip title="Cancel">
                   <IconButton
                     size="small"
