@@ -10,6 +10,7 @@ import type {
   Region as MUIRegion,
   UriLocation as MUUriLocation,
 } from './mst.ts'
+import type { PluginDefinition } from '../../PluginLoader.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
 import type assemblyManager from '../../assemblyManager/index.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
@@ -333,9 +334,9 @@ export function isSessionModelWithConnectionEditing(
 }
 
 export interface SessionWithSessionPlugins extends AbstractSessionModel {
-  sessionPlugins: JBrowsePlugin[]
-  addSessionPlugin: (plugin: BasePlugin) => void
-  removeSessionPlugin: (plugin: Record<string, unknown> | undefined) => void
+  sessionPlugins: (PluginDefinition & { name: string })[]
+  addSessionPlugin: (plugin: PluginDefinition & { name: string }) => void
+  removeSessionPlugin: (plugin: PluginDefinition) => void
 }
 export function isSessionWithSessionPlugins(
   thing: unknown,

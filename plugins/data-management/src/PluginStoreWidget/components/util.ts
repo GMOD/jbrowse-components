@@ -1,3 +1,4 @@
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import {
   fetchJson,
   getEnv,
@@ -27,9 +28,8 @@ export function isSessionPlugin(
   session: AbstractSessionModel,
 ) {
   const { pluginManager } = getEnv(session)
+  const installedUrl = pluginManager.pluginMetadata[plugin.name]?.url
   return isSessionWithSessionPlugins(session)
-    ? session.sessionPlugins.some(
-        p => pluginManager.pluginMetadata[plugin.name]?.url === p.url,
-      )
+    ? session.sessionPlugins.some(p => pluginUrl(p) === installedUrl)
     : false
 }

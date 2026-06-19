@@ -24,6 +24,7 @@ import { observer } from 'mobx-react'
 import { isSessionPlugin } from './util.ts'
 
 import type { PluginStoreModel } from '../model.ts'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type { PluginUpdate } from '@jbrowse/core/util'
 import type { BasePlugin, JBrowsePlugin } from '@jbrowse/core/util/types'
 
@@ -58,12 +59,13 @@ function LockedPluginIconButton() {
 const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
   plugin,
   model,
+  definition,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
+  definition: PluginDefinition
 }) {
   const { classes } = useStyles()
-  const { pluginManager } = getEnv(model)
   const session = getSession(model)
   const { jbrowse, adminMode } = session
   return (
@@ -77,13 +79,10 @@ const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
               plugin: plugin.name,
               onClose: (name?: string) => {
                 if (name) {
-                  const pluginMetadata =
-                    pluginManager.pluginMetadata[plugin.name]
-
                   if (adminMode) {
-                    jbrowse.removePlugin(pluginMetadata)
+                    jbrowse.removePlugin(definition)
                   } else if (isSessionWithSessionPlugins(session)) {
-                    session.removeSessionPlugin(pluginMetadata)
+                    session.removeSessionPlugin(definition)
                   }
                 }
                 onClose()
@@ -102,14 +101,15 @@ const UpdatePluginButton = observer(function UpdatePluginButton({
   plugin,
   model,
   update,
+  current,
   fromVersion,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
   update: PluginUpdate
+  current: PluginDefinition
   fromVersion?: string
 }) {
-  const { pluginManager } = getEnv(model)
   const session = getSession(model)
   const { jbrowse, adminMode } = session
   const [queued, setQueued] = useState(false)
@@ -125,7 +125,6 @@ const UpdatePluginButton = observer(function UpdatePluginButton({
           // swap the version-pinned definition: remove the current url, add the
           // newer one. Both actions flag pluginsUpdated, prompting a reload that
           // loads the new build.
-          const current = pluginManager.pluginMetadata[plugin.name]
           const next = { ...update.definition, name: plugin.name }
           if (adminMode) {
             jbrowse.removePlugin(current)
@@ -159,20 +158,31 @@ const InstalledPlugin = observer(function InstalledPlugin({
   const session = getSession(model)
   const { adminMode } = session
   const updatable = adminMode || isSessionPlugin(plugin, session)
+
+  // the install url is recorded in the plugin metadata at load time; the matching
+  // runtime definition is the concrete, version-pinned thing we remove/replace
+  const installedUrl = pluginManager.pluginMetadata[plugin.name]?.url
+  const definition = pluginManager.runtimePluginDefinitions.find(
+    d => pluginUrl(d) === installedUrl,
+  )
   // read the installed version from the store-minted, version-pinned url rather
   // than the plugin's self-declared version, which is optional and often unset
-  const metadata = pluginManager.pluginMetadata[plugin.name]
-  const installedVersion = metadata
-    ? installedVersionFromUrl(pluginUrl(metadata), storeEntry?.packageName)
-    : undefined
+  const installedVersion = installedVersionFromUrl(
+    installedUrl,
+    storeEntry?.packageName,
+  )
   const update = storeEntry
     ? getPluginUpdate(storeEntry, session.version, installedVersion)
     : undefined
 
   return (
     <ListItem key={plugin.name}>
-      {updatable ? (
-        <UninstallPluginIconButton plugin={plugin} model={model} />
+      {updatable && definition ? (
+        <UninstallPluginIconButton
+          plugin={plugin}
+          model={model}
+          definition={definition}
+        />
       ) : (
         <LockedPluginIconButton />
       )}
@@ -180,11 +190,12 @@ const InstalledPlugin = observer(function InstalledPlugin({
         {plugin.name}
         {plugin.version ? ` (v${plugin.version})` : ''}
       </Typography>
-      {update && updatable ? (
+      {update && updatable && definition ? (
         <UpdatePluginButton
           plugin={plugin}
           model={model}
           update={update}
+          current={definition}
           fromVersion={installedVersion}
         />
       ) : null}

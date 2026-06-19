@@ -132,13 +132,17 @@ export type ExtensionPointProps<N extends ExtensionPointName> =
     : Record<string, unknown>
 
 /**
- * free-form string-to-unknown mapping of metadata related to the instance of
- * this plugin. `isCore` is typically set to `Boolean(true)` if the plugin was
- * loaded as part of the "core" set of plugins for this application. Can also
- * use this metadata to stash other things about why the plugin is loaded, such
- * as where it came from, what plugin depends on it, etc.
+ * metadata related to the instance of this plugin. `isCore` is set when the
+ * plugin was loaded as part of the "core" set of plugins for this application,
+ * and `url` records the resolved location it was loaded from. The index
+ * signature keeps it free-form so other things about why the plugin is loaded
+ * (where it came from, what depends on it, etc.) can be stashed too.
  */
-export type PluginMetadata = Record<string, unknown>
+export interface PluginMetadata {
+  isCore?: boolean
+  url?: string
+  [key: string]: unknown
+}
 
 export interface PluginLoadRecord {
   metadata?: PluginMetadata

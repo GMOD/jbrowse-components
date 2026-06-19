@@ -163,17 +163,37 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
 }, 20000)
 
 test('plugin store admin - removes a custom plugin correctly', async () => {
-  const { user, session, model, reloadPluginManagerMock } = setup({}, true)
-  session.jbrowse.addPlugin(plugins.plugins[0])
+  const user = userEvent.setup()
+  const definition = {
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+  }
+  class MsaViewPlugin extends Plugin {
+    name = 'MsaView'
+    version = '1.0.0'
+  }
+  const session = createTestSession({
+    adminMode: true,
+    jbrowseConfig: { plugins: [definition] },
+    runtimePlugins: [{ plugin: new MsaViewPlugin(), definition }],
+  })
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  // @ts-expect-error
+  getRoot(session).setReloadPluginManagerCallback(() => {})
+
   const { findByText, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
-  await user.click(await findByTestId('removePlugin-CanvasPlugin'))
+  expect(getSnapshot(session.jbrowse).plugins).toHaveLength(1)
+  await user.click(await findByTestId('removePlugin-MsaView'))
   await user.click(await findByText('Remove'))
   await waitFor(() => {
-    expect(reloadPluginManagerMock).toHaveBeenCalled()
+    expect(getSnapshot(session.jbrowse).plugins).toHaveLength(0)
   })
 })
