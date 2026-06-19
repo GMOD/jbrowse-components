@@ -335,7 +335,7 @@ async function main() {
 
   let passed = 0
   let failed = 0
-  const failures: string[] = []
+  const failures: { name: string; error: string }[] = []
 
   async function runSpec(spec: ScreenshotSpec) {
     if (spec.curated) {
@@ -362,9 +362,10 @@ async function main() {
       await captureSpec(page, spec, port)
       passed++
     } catch (err) {
-      console.error(`  ✗ ${spec.name}: ${err}`)
+      const error = err instanceof Error ? err.message : String(err)
+      console.error(`  ✗ ${spec.name}: ${error}`)
       failed++
-      failures.push(spec.name)
+      failures.push({ name: spec.name, error })
     } finally {
       await browser.close()
     }
@@ -388,7 +389,14 @@ async function main() {
 
   console.log(`\n${passed} succeeded, ${failed} failed`)
   if (failures.length > 0) {
-    console.error('Failed:', failures.join(', '))
+    console.error(`\n${'='.repeat(60)}`)
+    console.error(`FAILURE SUMMARY (${failures.length})`)
+    console.error('='.repeat(60))
+    for (const { name, error } of failures) {
+      console.error(`\n• ${name}`)
+      console.error(`  ${error.replace(/\n/g, '\n  ')}`)
+    }
+    console.error(`\n${'='.repeat(60)}`)
     process.exit(1)
   }
 }
