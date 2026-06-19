@@ -57,9 +57,6 @@ export type {
   WiggleSourceData,
 } from './dataTypes.ts'
 
-export {
-  type WiggleGpuDisplayModel,
-  waitForRenderableState,
-} from './displayModel.ts'
+export { type WiggleGpuDisplayModel } from './displayModel.ts'
 
 export { collectWiggleTransferables } from './transferables.ts'

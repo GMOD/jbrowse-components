@@ -1,11 +1,10 @@
+import type { SvgExportable } from '@jbrowse/core/util/svgReady'
 import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
-export interface RenderSvgBaseModel {
+export interface RenderSvgBaseModel extends SvgExportable {
   id: string
   cellData: unknown
-  error: unknown
   regionTooLarge: boolean
-  svgReady: boolean
   rowHeight: number
   scrollTop: number
   availableHeight: number

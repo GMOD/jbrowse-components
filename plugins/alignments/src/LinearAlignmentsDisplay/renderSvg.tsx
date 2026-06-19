@@ -3,10 +3,13 @@ import type React from 'react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import {
+  SVGErrorBox,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { YScaleBar } from '@jbrowse/wiggle-core'
-import { when } from 'mobx'
 
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
@@ -32,7 +35,7 @@ export async function renderSvg(
   const view = getContainingView(model) as LinearGenomeViewModel
   // svgReady waits for ALL visible regions, not just the first to stream in, so
   // whole-genome / multi-region exports aren't partially drawn.
-  await when(() => model.svgReady)
+  await awaitSvgReady(model)
 
   if (model.error) {
     return (

@@ -1,5 +1,3 @@
-import { when } from 'mobx'
-
 import type { WiggleDataResult } from './dataTypes.ts'
 import type { YScaleTicks } from './index.ts'
 import type { WiggleRenderingBackend } from './renderingBackendTypes.ts'
@@ -32,12 +30,4 @@ export interface WiggleGpuDisplayModel<
   forceLoad: () => void
   displayCrossHatches: boolean
   scalebarOverlapLeft: number
-}
-
-// SVG export and any other off-screen renderer must wait until the display has
-// reached a terminal state before reading its data. That whole policy lives in
-// the `svgReady` getter (MultiRegionDisplayMixin) so it stays in one place and
-// out of the renderers; this just awaits it.
-export function waitForRenderableState(model: { svgReady: boolean }) {
-  return when(() => model.svgReady)
 }

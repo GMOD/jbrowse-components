@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { when } from 'mobx'
+import { SVGErrorBox, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawVariantMatrixBlocks } from './components/Canvas2DVariantMatrixRenderer.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
@@ -22,7 +22,16 @@ export async function renderSvg(
   // svgReady waits for every visible region to load (not just the first datum)
   // and goes false during an in-place refetch, so exports never capture a
   // partial or stale viewport.
-  await when(() => model.svgReady)
+  await awaitSvgReady(model)
+  if (model.error) {
+    return (
+      <SVGErrorBox
+        error={model.error}
+        width={view.width}
+        height={model.height}
+      />
+    )
+  }
   const cellData = model.cellData as MatrixCellData | undefined
   if (!cellData || cellData.numCells === 0) {
     return null

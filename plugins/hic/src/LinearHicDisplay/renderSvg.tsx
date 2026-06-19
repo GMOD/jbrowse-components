@@ -1,7 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { when } from 'mobx'
+import {
+  SVGErrorBox,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import { drawHicBlocks } from './components/Canvas2DHicRenderer.ts'
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
@@ -23,7 +26,11 @@ export async function renderSvg(
   // svgReady (GlobalDataDisplayMixin) waits out an in-place refetch — which
   // holds stale rpcData until the new result commits — so exports never
   // capture a partial or stale viewport.
-  await when(() => self.svgReady)
+  await awaitSvgReady(self)
+  const height = opts.overrideHeight ?? self.height
+  if (self.error) {
+    return <SVGErrorBox error={self.error} width={view.width} height={height} />
+  }
   const {
     rpcData,
     useLogScale,
@@ -37,7 +44,6 @@ export async function renderSvg(
   }
 
   const { positions, counts, numContacts, binWidth } = rpcData
-  const height = opts.overrideHeight ?? self.height
   const visibleWidth = view.width
   const ramp = generateColorRamp(colorScheme)
 

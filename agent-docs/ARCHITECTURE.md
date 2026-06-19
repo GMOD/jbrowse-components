@@ -696,7 +696,7 @@ between raw data and paint, not on its upload pattern.
 SVG export in `renderSvg.tsx` follows this recipe:
 
 ```tsx
-await when(() => model.svgReady)
+await awaitSvgReady(model)
 if (model.error) return <SVGErrorBox …/>
 const renderBlocks = buildRenderBlocks(view.visibleRegions)
 const node = paintLayer(totalWidth, height, opts, ctx => {
@@ -704,6 +704,14 @@ const node = paintLayer(totalWidth, height, opts, ctx => {
   // OR, for multi-source: drawXxxToCtx(ctx, sources, renderBlocks, state)
 })
 ```
+
+Two invariants hold for **every** GPU display, no exceptions: gate the read with
+`awaitSvgReady(model)` (the one shared helper, `@jbrowse/core/util/svgExport`,
+re-exported from `@jbrowse/plugin-linear-genome-view` — never re-inline
+`when(() => …)`), and on `model.error` return `<SVGErrorBox>` rather than `null`,
+so an errored track shows feedback instead of vanishing from the export. The
+duck-typed model interfaces each `extends SvgExportable` (`{ svgReady; error }`)
+so a missing field is a compile error, not a runtime hang.
 
 ### The `svgReady` gate (single source of truth for "safe to export")
 

@@ -115,8 +115,21 @@ export default function MultiRegionDisplayMixin() {
         return (
           (this.viewportWithinLoadedData && self.loadedRegions.size > 0) ||
           !!self.error ||
-          self.regionTooLarge
+          self.regionTooLarge ||
+          this.svgReadyExtraTerminal
         )
+      },
+
+      /**
+       * #getter
+       * Overridable hook (default false): a subclass returns true to mark an
+       * extra terminal state where off-screen export can proceed with no loaded
+       * data. Sequence sets it when zoomed past base resolution — it renders a
+       * static "zoom in" message and fetches nothing, so `svgReady` would
+       * otherwise never resolve.
+       */
+      get svgReadyExtraTerminal(): boolean {
+        return false
       },
 
       /**

@@ -158,6 +158,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         const view = getContainingView(self) as LGV
         return view.bpPerPx > ZOOMED_OUT_BP_PER_PX
       },
+      /**
+       * #getter
+       * zoomedOut is a terminal renderable state (static "zoom in" message, no
+       * fetch), so it makes `svgReady` resolve even though no data loads. See
+       * MultiRegionDisplayMixin.svgReadyExtraTerminal.
+       */
+      get svgReadyExtraTerminal() {
+        return this.zoomedOut
+      },
       get numRows() {
         const baseRows =
           (self.showForward ? 1 : 0) + (self.effectiveShowReverse ? 1 : 0)

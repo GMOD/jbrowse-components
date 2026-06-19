@@ -1,7 +1,10 @@
 import { getContainingView, max } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { when } from 'mobx'
+import {
+  SVGErrorBox,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
@@ -28,9 +31,12 @@ export async function renderSvg(
   // svgReady (GlobalDataDisplayMixin) waits out an in-place refetch — which
   // holds stale rpcData until the new result commits — so exports never
   // capture a partial or stale viewport.
-  await when(() => self.svgReady)
-  const { rpcData } = self
+  await awaitSvgReady(self)
   const height = opts.overrideHeight ?? self.height
+  if (self.error) {
+    return <SVGErrorBox error={self.error} width={view.width} height={height} />
+  }
+  const { rpcData } = self
 
   const {
     ldMetric,

@@ -1,6 +1,8 @@
 // Reusable SVG-export building blocks. Co-located with `paintLayer.tsx` so
 // non-LGV plugins (dotplot, linear-synteny, etc.) can use them without
-// pulling in the linear-genome-view plugin.
+// pulling in the linear-genome-view plugin. The non-component `svgReady` gate
+// (interface + awaitSvgReady) lives in `./svgReady.ts` so this stays
+// component-only for react-refresh.
 
 export function SVGErrorBox({
   error,

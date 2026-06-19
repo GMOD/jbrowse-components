@@ -1,8 +1,11 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { when } from 'mobx'
+import {
+  SVGErrorBox,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import {
   buildTextColors,
@@ -15,19 +18,21 @@ import type { SequenceRegionData } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
+  SvgExportable,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 type LGV = LinearGenomeViewModel
 
-interface SequenceDisplayModel {
+interface SequenceDisplayModel extends SvgExportable {
   id: string
   height: number
   sequenceData: ReadonlyMap<number, SequenceRegionData>
   renderBlocks: RenderBlock[]
   renderState: DrawSequenceState
+  // terminal "zoom in" message state, folded into svgReady via
+  // svgReadyExtraTerminal; still read here to skip painting bases
   zoomedOut: boolean
-  svgReady: boolean
 }
 
 export async function renderSvg(
@@ -36,10 +41,13 @@ export async function renderSvg(
 ) {
   const view = getContainingView(model) as LGV
 
-  // Wait for all visible regions to load before reading sequenceData (it streams
-  // in one region at a time). zoomedOut is also terminal — it renders the "zoom
-  // in" message with no fetch, so svgReady alone would never resolve.
-  await when(() => model.svgReady || model.zoomedOut)
+  await awaitSvgReady(model)
+
+  if (model.error) {
+    return (
+      <SVGErrorBox error={model.error} width={view.width} height={model.height} />
+    )
+  }
 
   const { sequenceData } = model
   if (sequenceData.size === 0 || model.zoomedOut) {

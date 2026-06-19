@@ -130,6 +130,7 @@
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
     "./util/svgExport": "./src/util/svgExport.tsx",
+    "./util/svgReady": "./src/util/svgReady.ts",
     "./util/tracks": "./src/util/tracks.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
@@ -629,6 +630,10 @@
         "types": "./esm/util/svgExport.d.ts",
         "import": "./esm/util/svgExport.js"
       },
+      "./util/svgReady": {
+        "types": "./esm/util/svgReady.d.ts",
+        "import": "./esm/util/svgReady.js"
+      },
       "./util/tracks": {
         "types": "./esm/util/tracks.d.ts",
         "import": "./esm/util/tracks.js"
@@ -949,6 +954,9 @@
         "util/io/RemoteFileWithRangeCache": [
           "esm/util/io/RemoteFileWithRangeCache.d.ts"
         ],
+        "util/jexl": [
+          "esm/util/jexl.d.ts"
+        ],
         "util/jexlStrings": [
           "esm/util/jexlStrings.d.ts"
         ],
@@ -990,6 +998,9 @@
         ],
         "util/svgExport": [
           "esm/util/svgExport.d.ts"
+        ],
+        "util/svgReady": [
+          "esm/util/svgReady.d.ts"
         ],
         "util/tracks": [
           "esm/util/tracks.d.ts"

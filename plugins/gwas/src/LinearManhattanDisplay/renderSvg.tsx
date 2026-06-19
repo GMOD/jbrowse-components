@@ -2,19 +2,20 @@ import type React from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import {
-  YSCALEBAR_LABEL_OFFSET,
-  YScaleBar,
-  waitForRenderableState,
-} from '@jbrowse/wiggle-core'
+  SVGErrorBox,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
+import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 import { LD_LEGEND } from './ldBins.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { SvgExportable } from '@jbrowse/core/util/svgReady'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -26,15 +27,13 @@ type LGV = LinearGenomeViewModel
 // Duck-typed model contract: importing the full LinearManhattanDisplayModel
 // here would close a type cycle (factory return type → renderSvg action →
 // model instance → factory return type), so we depend only on the fields read.
-interface RenderSvgModel {
+interface RenderSvgModel extends SvgExportable {
   id: string
   height: number
   ticks?: YScaleTicks
   rpcDataMap: ReadonlyMap<number, ManhattanRpcResult>
   renderState?: ManhattanRenderState
-  error: unknown
   regionTooLarge: boolean
-  svgReady: boolean
   colorBy: 'normal' | 'ld'
   showLdLegend: boolean
 }
@@ -44,7 +43,7 @@ export async function renderSvg(
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  await waitForRenderableState(model)
+  await awaitSvgReady(model)
   const { offsetPx } = view
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)

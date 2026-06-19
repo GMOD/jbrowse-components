@@ -2,13 +2,13 @@ import type React from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import {
-  YSCALEBAR_LABEL_OFFSET,
-  YScaleBar,
-  waitForRenderableState,
-} from '@jbrowse/wiggle-core'
+  SVGErrorBox,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
+import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
@@ -27,7 +27,7 @@ export async function renderSvg(
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  await waitForRenderableState(model)
+  await awaitSvgReady(model)
   const { offsetPx } = view
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)

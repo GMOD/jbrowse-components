@@ -1,8 +1,11 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import {
+  SVGErrorBox,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { when } from 'mobx'
 
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
 import { forEachRenderedLabel } from './components/labelPositioning.ts'
@@ -12,6 +15,7 @@ import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { SvgExportable } from '@jbrowse/core/util/svgReady'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -21,12 +25,10 @@ import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 type LGV = LinearGenomeViewModel
 type SvgRegionBounds = BpRegionBounds
 
-export interface RenderSvgModel {
+export interface RenderSvgModel extends SvgExportable {
   id: string
   height: number
-  error: unknown
   regionTooLarge: boolean
-  svgReady: boolean
   laidOutDataMap: Map<number, FeatureDataResult>
   showLabels: boolean
   effectiveShowDescriptions: boolean
@@ -93,7 +95,7 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   // svgReady waits for ALL visible regions, not just the first to stream in, so
   // whole-genome / multi-region exports aren't partially drawn.
-  await when(() => model.svgReady)
+  await awaitSvgReady(model)
 
   if (model.error) {
     return (

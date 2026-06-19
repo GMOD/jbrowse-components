@@ -3,11 +3,14 @@ import React from 'react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SVGErrorBox, SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import {
+  SVGErrorBox,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
-import { when } from 'mobx'
 
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
@@ -33,7 +36,7 @@ export async function renderSvg(
   // svgReady waits for every visible region to load (not just sources to
   // resolve) and goes false during an in-place refetch, so exports never
   // capture a partial or stale viewport.
-  await when(() => model.svgReady)
+  await awaitSvgReady(model)
 
   if (model.error) {
     return (
