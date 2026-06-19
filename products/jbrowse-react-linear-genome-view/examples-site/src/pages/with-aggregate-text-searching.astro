@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/ExampleLayout.astro'
+import Example from '../examples/WithAggregateTextSearching.tsx'
+import code from '../examples/WithAggregateTextSearching.tsx?raw'
+import { examples } from '../examples.ts'
+
+const meta = examples.find(e => e.slug === 'with-aggregate-text-searching')!
+---
+
+<Layout title={meta.title} description={meta.description} code={code}>
+  <Example client:only="react" />
+</Layout>

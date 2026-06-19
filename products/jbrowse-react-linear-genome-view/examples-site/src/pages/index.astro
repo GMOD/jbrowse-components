@@ -1,23 +1,101 @@
 ---
-import { Code } from 'astro:components'
+import { examples } from '../examples.ts'
 
-import WithInit from '../examples/WithInit.tsx'
-import withInitSource from '../examples/WithInit.tsx?raw'
+const base = import.meta.env.BASE_URL
+const groups = [...new Set(examples.map(e => e.group))]
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>JBrowse Linear Genome View — WithInit example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <title>JBrowse Linear Genome View — examples</title>
+    <style is:global>
+      body {
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+          Arial, sans-serif;
+        color: #1a1a1a;
+        background: #fff;
+      }
+      main {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
+      h1 {
+        margin-bottom: 4px;
+      }
+      .intro {
+        color: #555;
+        margin-top: 0;
+      }
+      section {
+        margin-top: 32px;
+      }
+      h2 {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 4px;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 12px;
+      }
+      li a {
+        display: block;
+        padding: 12px 14px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+      }
+      li a:hover {
+        border-color: #135ba8;
+        background: #f5f9fd;
+      }
+      .title {
+        font-weight: 600;
+        color: #135ba8;
+      }
+      .desc {
+        color: #555;
+        font-size: 0.9em;
+        margin-top: 4px;
+      }
+    </style>
   </head>
   <body>
-    <h1>WithInit</h1>
-    <p>
-      Initializes the view with an assembly, a track, and a starting
-      location.
-    </p>
-    <WithInit client:only="react" />
-    <h2>Source</h2>
-    <Code code={withInitSource} lang="tsx" />
+    <main>
+      <h1>JBrowse Linear Genome View</h1>
+      <p class="intro">
+        Live examples of the <code>@jbrowse/react-linear-genome-view2</code> React
+        component. Each page renders the component and shows its full source.
+      </p>
+      {
+        groups.map(group => (
+          <section>
+            <h2>{group}</h2>
+            <ul>
+              {examples
+                .filter(e => e.group === group)
+                .map(e => (
+                  <li>
+                    <a href={`${base}${e.slug}/`}>
+                      <div class="title">{e.title}</div>
+                      <div class="desc">{e.description}</div>
+                    </a>
+                  </li>
+                ))}
+            </ul>
+          </section>
+        ))
+      }
+    </main>
   </body>
 </html>

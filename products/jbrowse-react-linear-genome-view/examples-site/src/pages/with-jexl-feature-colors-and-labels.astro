@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/ExampleLayout.astro'
+import Example from '../examples/WithJexlFeatureColorsAndLabels.tsx'
+import code from '../examples/WithJexlFeatureColorsAndLabels.tsx?raw'
+import { examples } from '../examples.ts'
+
+const meta = examples.find(e => e.slug === 'with-jexl-feature-colors-and-labels')!
+---
+
+<Layout title={meta.title} description={meta.description} code={code}>
+  <Example client:only="react" />
+</Layout>

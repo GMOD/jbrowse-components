@@ -2,18 +2,48 @@
 
 ## Status
 
-**POC validated (2026-06-15).** This directory (`examples-site/`) is a working,
-isolated Astro project with one live example (`WithInit`). It proves the
-approach end-to-end:
+**LGV migration complete (2026-06-18).** All 41 LGV stories are now live Astro
+pages. `pnpm build` produces a static `dist/` (42 pages incl. index) with
+`base: '/storybook/lgv'` baked in, and a browser smoke test (Puppeteer, headless
+Chrome) confirms **40/41 examples render with no console/page errors**.
 
-- `pnpm dev` renders the real `@jbrowse/react-linear-genome-view2` component
-  (tracks load, canvas draws, RPC worker runs) as a `client:only="react"`
-  island.
-- `pnpm build` produces a static `dist/` with the configured
-  `base: '/storybook/lgv'` correctly baked into asset URLs.
+Structure:
 
-Everything below this point is **not done yet** — it's the plan for continuing
-the migration.
+- `src/examples/<Name>.tsx` — one self-contained, default-exported example per
+  story (public API only). The displayed source _is_ this file.
+- `src/pages/<slug>.astro` — a ~10-line page per example: imports the component
+  + its `?raw` source, looks up title/description in the registry, renders via
+  the shared layout.
+- `src/examples.ts` — single source of truth (slug/name/title/description/group)
+  driving the gallery index and each page's metadata.
+- `src/layouts/ExampleLayout.astro` — shared chrome (live demo + `<Code>` source).
+- `src/pages/index.astro` — grouped gallery linking every example.
+
+Known issue — **`with-web-worker`** is the one example that does not render. The
+RPC worker (imported via Vite's `?worker`) bundles the whole JBrowse worker
+graph, and under Rollup's strict ESM that graph hits a circular-dependency
+init-order error (`Cannot access TextSearchManager before initialization`).
+Webpack's CJS interop tolerates the same cycle, which is why the published
+package's webpack-built worker is fine. This is a real Rollup-vs-webpack
+difference, not a config typo (disabling minification did not change it — the
+error survives with the unminified symbol name). Resolving it means either
+breaking the core circular dependency or shipping the worker as a prebuilt
+classic asset; left as a follow-up.
+
+Convention changes made during the migration:
+
+- **GWAS is now a core plugin** of `@jbrowse/react-linear-genome-view2`
+  (`src/corePlugins.ts`), joining Variants. The LocusZoom/Pan-UKB GWAS examples
+  therefore need no runtime plugin loading.
+- Several inline volvox URLs in the old `source.code` strings were **broken**
+  (`jbrowse.org/genomes/volvox/volvox.sort.gff3.gz` 404s) — they were never
+  load-tested because the old live render used local `test_data/`. Fixed to the
+  working `jbrowse.org/code/jb2/main/test_data/volvox/` paths. The `Managed`
+  examples also needed `refNameAliases` added (the hg38 prefix FASTA uses
+  non-`chr` refnames).
+
+Everything below this point is the original plan / remaining work (CGV +
+react-app sites, CI, removal of old Storybook).
 
 ## Why
 

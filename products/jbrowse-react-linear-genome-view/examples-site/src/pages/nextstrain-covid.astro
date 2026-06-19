@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/ExampleLayout.astro'
+import Example from '../examples/NextstrainCovid.tsx'
+import code from '../examples/NextstrainCovid.tsx?raw'
+import { examples } from '../examples.ts'
+
+const meta = examples.find(e => e.slug === 'nextstrain-covid')!
+---
+
+<Layout title={meta.title} description={meta.description} code={code}>
+  <Example client:only="react" />
+</Layout>
