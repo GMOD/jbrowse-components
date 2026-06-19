@@ -96,7 +96,11 @@ export default function webpackBuilder(): webpack.Configuration {
           oneOf: [
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
+              // getWorkspaces() includes the monorepo root, so node_modules
+              // sits under an included path; exclude it so only our own
+              // untranspiled workspace source runs through babel.
               include: [appSrc, getWorkspaces()],
+              exclude: /node_modules/,
               loader: 'babel-loader',
               options: babelOptions,
             },
