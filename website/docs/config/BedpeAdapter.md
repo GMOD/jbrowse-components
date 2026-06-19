@@ -37,23 +37,23 @@ preprocessor to allow minimal config:
 #### slot: bedpeLocation
 
 ```js
-bedpeLocation: {
-      type: 'fileLocation',
-      description:
-        'can be plaintext or gzipped, not indexed so loaded into memory on startup',
-      defaultValue: {
-        uri: '/path/to/my.bedpe.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description:
+    'can be plaintext or gzipped, not indexed so loaded into memory on startup',
+  defaultValue: {
+    uri: '/path/to/my.bedpe.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: columnNames
 
 ```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
+{
+  type: 'stringArray',
+  description: 'List of column names',
+  defaultValue: [],
+}
 ```

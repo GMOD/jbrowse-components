@@ -45,33 +45,33 @@ Preprocessor to allow minimal config:
 Location of the bgzipped PLINK LD file (.ld.gz)
 
 ```js
-ldLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/plink.ld.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/plink.ld.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: index.indexType
 
 ```js
-indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      }
+{
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'TBI',
+}
 ```
 
 #### slot: index.location
 
 ```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/plink.ld.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/plink.ld.gz.tbi',
+    locationType: 'UriLocation',
+  },
+}
 ```

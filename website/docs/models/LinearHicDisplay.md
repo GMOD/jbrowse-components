@@ -77,7 +77,7 @@ DisplayMessageComponent, viewMenuActions
 
 ### Available via [GlobalDataDisplayMixin](../globaldatadisplaymixin)
 
-**Getters:** displayPhase, loadingOverlayVisible
+**Getters:** displayPhase, loadingOverlayVisible, svgReady
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 

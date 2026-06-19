@@ -38,13 +38,13 @@ preprocessor to allow minimal config:
 #### slot: location
 
 ```js
-location: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my/aliases.txt',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my/aliases.txt',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: refNameColumn
@@ -53,11 +53,11 @@ by default, the "ref names that match the fasta" are assumed to be in the first
 column (0), change this variable if needed
 
 ```js
-refNameColumn: {
-      type: 'number',
-      defaultValue: 0,
-      advanced: true,
-    }
+{
+  type: 'number',
+  defaultValue: 0,
+  advanced: true,
+}
 ```
 
 #### slot: refNameColumnHeaderName
@@ -65,11 +65,11 @@ refNameColumn: {
 refNameColumnHeaderName
 
 ```js
-refNameColumnHeaderName: {
-      type: 'string',
-      description:
-        'alternative to refNameColumn, instead looks at header (starts with # and finds column name)',
-      defaultValue: '',
-      advanced: true,
-    }
+{
+  type: 'string',
+  description:
+    'alternative to refNameColumn, instead looks at header (starts with # and finds column name)',
+  defaultValue: '',
+  advanced: true,
+}
 ```

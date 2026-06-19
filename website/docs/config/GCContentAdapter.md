@@ -24,39 +24,39 @@ reference the markdown files in our repo of the checked out git tag
 #### slot: sequenceAdapter
 
 ```js
-sequenceAdapter: {
-        type: 'frozen',
-        defaultValue: null,
-      }
+{
+  type: 'frozen',
+  defaultValue: null,
+}
 ```
 
 #### slot: windowSize
 
 ```js
-windowSize: {
-        type: 'number',
-        defaultValue: 100,
-        advanced: true,
-      }
+{
+  type: 'number',
+  defaultValue: 100,
+  advanced: true,
+}
 ```
 
 #### slot: windowDelta
 
 ```js
-windowDelta: {
-        type: 'number',
-        defaultValue: 100,
-        advanced: true,
-      }
+{
+  type: 'number',
+  defaultValue: 100,
+  advanced: true,
+}
 ```
 
 #### slot: gcMode
 
 ```js
-gcMode: {
-        type: 'stringEnum',
-        model: types.enumeration('gcMode', ['content', 'skew']),
-        defaultValue: 'content',
-        description: 'calculate GC content fraction or GC skew (G-C)/(G+C)',
-      }
+{
+  type: 'stringEnum',
+  model: types.enumeration('gcMode', ['content', 'skew']),
+  defaultValue: 'content',
+  description: 'calculate GC content fraction or GC skew (G-C)/(G+C)',
+}
 ```

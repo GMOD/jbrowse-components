@@ -35,25 +35,25 @@ preprocessor to allow minimal config, where `uri` points at the hub.txt:
 #### slot: hubTxtLocation
 
 ```js
-hubTxtLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'https://mysite.com/path/to/hub.txt',
-        locationType: 'UriLocation',
-      },
-      description: 'location of the hub file (usually called hub.txt)',
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: 'https://mysite.com/path/to/hub.txt',
+    locationType: 'UriLocation',
+  },
+  description: 'location of the hub file (usually called hub.txt)',
+}
 ```
 
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'optional list of genomes to import from this track hub, if empty all genomes will be imported',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description:
+    'optional list of genomes to import from this track hub, if empty all genomes will be imported',
+}
 ```
 
 ## Inherited config slots
@@ -66,21 +66,21 @@ this page is self-contained.
 #### slot: name
 
 ```js
-name: {
-      type: 'string',
-      defaultValue: 'nameOfConnection',
-      description: 'a unique name for this connection',
-    }
+{
+  type: 'string',
+  defaultValue: 'nameOfConnection',
+  description: 'a unique name for this connection',
+}
 ```
 
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'optional list of names of assemblies in this connection',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description: 'optional list of names of assemblies in this connection',
+}
 ```
 
 ### UCSCTrackHubConnection - Derives from

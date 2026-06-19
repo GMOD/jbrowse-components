@@ -27,17 +27,17 @@ stable identifier used as the adapter cache key; avoids hashing the (potentially
 large) features array. optional — falls back to hash.
 
 ```js
-adapterId: {
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: features
 
 ```js
-features: {
-      type: 'frozen',
-      defaultValue: [],
-    }
+{
+  type: 'frozen',
+  defaultValue: [],
+}
 ```

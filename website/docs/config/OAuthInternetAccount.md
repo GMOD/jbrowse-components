@@ -24,82 +24,82 @@ reference the markdown files in our repo of the checked out git tag
 #### slot: tokenType
 
 ```js
-tokenType: {
-      description: 'a custom name for a token to include in the header',
-      type: 'string',
-      defaultValue: 'Bearer',
-    }
+{
+  description: 'a custom name for a token to include in the header',
+  type: 'string',
+  defaultValue: 'Bearer',
+}
 ```
 
 #### slot: authEndpoint
 
 ```js
-authEndpoint: {
-      description: 'the authorization code endpoint of the internet account',
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  description: 'the authorization code endpoint of the internet account',
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: tokenEndpoint
 
 ```js
-tokenEndpoint: {
-      description: 'the token endpoint of the internet account',
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  description: 'the token endpoint of the internet account',
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: needsPKCE
 
 ```js
-needsPKCE: {
-      description: 'boolean to indicate if the endpoint needs a PKCE code',
-      type: 'boolean',
-      defaultValue: false,
-    }
+{
+  description: 'boolean to indicate if the endpoint needs a PKCE code',
+  type: 'boolean',
+  defaultValue: false,
+}
 ```
 
 #### slot: clientId
 
 ```js
-clientId: {
-      description: 'id for the OAuth application',
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  description: 'id for the OAuth application',
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: scopes
 
 ```js
-scopes: {
-      description: 'optional scopes for the authorization call',
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  description: 'optional scopes for the authorization call',
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: state
 
 ```js
-state: {
-      description: 'optional state for the authorization call',
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  description: 'optional state for the authorization call',
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: responseType
 
 ```js
-responseType: {
-      description:
-        "the type of response from the authorization endpoint. can be 'token' or 'code'",
-      type: 'string',
-      defaultValue: 'code',
-    }
+{
+  description:
+    "the type of response from the authorization endpoint. can be 'token' or 'code'",
+  type: 'string',
+  defaultValue: 'code',
+}
 ```
 
 ## Inherited config slots
@@ -112,52 +112,52 @@ this page is self-contained.
 #### slot: name
 
 ```js
-name: {
-      description: 'descriptive name of the internet account',
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  description: 'descriptive name of the internet account',
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: description
 
 ```js
-description: {
-      description: 'a description of the internet account',
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  description: 'a description of the internet account',
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: authHeader
 
 ```js
-authHeader: {
-      description: 'request header for credentials',
-      type: 'string',
-      defaultValue: 'Authorization',
-    }
+{
+  description: 'request header for credentials',
+  type: 'string',
+  defaultValue: 'Authorization',
+}
 ```
 
 #### slot: tokenType
 
 ```js
-tokenType: {
-      description: 'a custom name for a token to include in the header',
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  description: 'a custom name for a token to include in the header',
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: domains
 
 ```js
-domains: {
-      description:
-        'array of valid domains the url can contain to use this account',
-      type: 'stringArray',
-      defaultValue: [],
-    }
+{
+  description:
+    'array of valid domains the url can contain to use this account',
+  type: 'stringArray',
+  defaultValue: [],
+}
 ```
 
 ### OAuthInternetAccount - Derives from

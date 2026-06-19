@@ -50,35 +50,35 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
 #### slot: gtfGzLocation
 
 ```js
-gtfGzLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.gtf.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.gtf.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: index.indexType
 
 ```js
-indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      }
+{
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'TBI',
+}
 ```
 
 #### slot: index.location
 
 ```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.gtf.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.gtf.gz.tbi',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: dontRedispatch
@@ -88,19 +88,19 @@ finds inside that region extend outside the region we requested. you can disable
 this for certain feature types to avoid fetching e.g. the entire chromosome
 
 ```js
-dontRedispatch: {
-      type: 'stringArray',
-      defaultValue: ['chromosome', 'region', 'contig'],
-    }
+{
+  type: 'stringArray',
+  defaultValue: ['chromosome', 'region', 'contig'],
+}
 ```
 
 #### slot: aggregateField
 
 ```js
-aggregateField: {
-      type: 'string',
-      description:
-        'field used to aggregate multiple transcripts into a single parent gene feature',
-      defaultValue: 'gene_name',
-    }
+{
+  type: 'string',
+  description:
+    'field used to aggregate multiple transcripts into a single parent gene feature',
+  defaultValue: 'gene_name',
+}
 ```

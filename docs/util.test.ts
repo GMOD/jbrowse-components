@@ -8,6 +8,7 @@ import {
   repoRelative,
   section,
   stripComposedBlock,
+  stripPropertyName,
 } from './util.ts'
 
 describe('parseTaggedComment', () => {
@@ -76,6 +77,42 @@ describe('removeComments', () => {
     expect(removeComments("const u = 'http://example.com'")).toBe(
       "const u = 'http://example.com'",
     )
+  })
+})
+
+describe('stripPropertyName', () => {
+  test('drops the slot-name prefix and keeps just the value', () => {
+    expect(stripPropertyName("theme: { type: 'frozen', defaultValue: {} }")).toBe(
+      "{ type: 'frozen', defaultValue: {} }",
+    )
+  })
+
+  test('ignores colons inside the value (URLs, nested objects, string keys)', () => {
+    expect(
+      stripPropertyName("uri: { value: 'http://example.com', a: { b: 1 } }"),
+    ).toBe("{ value: 'http://example.com', a: { b: 1 } }")
+    expect(stripPropertyName("'a: b': { type: 'string' }")).toBe(
+      "{ type: 'string' }",
+    )
+  })
+
+  test('re-flushes multi-line values so the closing brace aligns at column 0', () => {
+    const code = `bamLocation: {
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/my.bam',
+      },
+    }`
+    expect(stripPropertyName(code)).toBe(`{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bam',
+  },
+}`)
+  })
+
+  test('returns the value unchanged when there is no top-level colon', () => {
+    expect(stripPropertyName("{ type: 'string' }")).toBe("{ type: 'string' }")
   })
 })
 

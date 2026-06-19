@@ -53,35 +53,35 @@ preprocessor to allow minimal config, assumes yourfile.cram.crai:
 #### slot: fetchSizeLimit
 
 ```js
-fetchSizeLimit: {
-      type: 'number',
-      description:
-        'size in bytes over which to display a warning to the user that too much data will be fetched',
-      defaultValue: 3_000_000,
-      advanced: true,
-    }
+{
+  type: 'number',
+  description:
+    'size in bytes over which to display a warning to the user that too much data will be fetched',
+  defaultValue: 3_000_000,
+  advanced: true,
+}
 ```
 
 #### slot: cramLocation
 
 ```js
-cramLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.cram',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.cram',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: craiLocation
 
 ```js
-craiLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.cram.crai',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.cram.crai',
+    locationType: 'UriLocation',
+  },
+}
 ```

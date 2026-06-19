@@ -35,43 +35,43 @@ preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 #### slot: bedGraphGzLocation
 
 ```js
-bedGraphGzLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bedgraph',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bedgraph',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: index.indexType
 
 ```js
-indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      }
+{
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'TBI',
+}
 ```
 
 #### slot: index.location
 
 ```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.bedgraph.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bedgraph.gz.tbi',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: columnNames
 
 ```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
+{
+  type: 'stringArray',
+  description: 'List of column names',
+  defaultValue: [],
+}
 ```

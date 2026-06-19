@@ -35,83 +35,83 @@ preprocessor to allow minimal config:
 #### slot: bedLocation
 
 ```js
-bedLocation: {
-      type: 'fileLocation',
-      description: 'path to bed file, also allows gzipped bed',
-      defaultValue: {
-        uri: '/path/to/my.bed.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'path to bed file, also allows gzipped bed',
+  defaultValue: {
+    uri: '/path/to/my.bed.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: columnNames
 
 ```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
+{
+  type: 'stringArray',
+  description: 'List of column names',
+  defaultValue: [],
+}
 ```
 
 #### slot: scoreColumn
 
 ```js
-scoreColumn: {
-      type: 'string',
-      description: 'The column to use as a "score" attribute',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  description: 'The column to use as a "score" attribute',
+  defaultValue: '',
+}
 ```
 
 #### slot: autoSql
 
 ```js
-autoSql: {
-      type: 'string',
-      description: 'The autoSql definition for the data fields in the file',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  description: 'The autoSql definition for the data fields in the file',
+  defaultValue: '',
+}
 ```
 
 #### slot: colRef
 
 ```js
-colRef: {
-      type: 'number',
-      description: 'The column to use as a "refName" attribute',
-      defaultValue: 0,
-    }
+{
+  type: 'number',
+  description: 'The column to use as a "refName" attribute',
+  defaultValue: 0,
+}
 ```
 
 #### slot: colStart
 
 ```js
-colStart: {
-      type: 'number',
-      description: 'The column to use as a "start" attribute',
-      defaultValue: 1,
-    }
+{
+  type: 'number',
+  description: 'The column to use as a "start" attribute',
+  defaultValue: 1,
+}
 ```
 
 #### slot: colEnd
 
 ```js
-colEnd: {
-      type: 'number',
-      description: 'The column to use as a "end" attribute',
-      defaultValue: 2,
-    }
+{
+  type: 'number',
+  description: 'The column to use as a "end" attribute',
+  defaultValue: 2,
+}
 ```
 
 #### slot: disableGeneHeuristic
 
 ```js
-disableGeneHeuristic: {
-      type: 'boolean',
-      description:
-        'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
-      defaultValue: false,
-    }
+{
+  type: 'boolean',
+  description:
+    'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
+  defaultValue: false,
+}
 ```

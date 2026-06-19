@@ -37,45 +37,45 @@ preprocessor to allow minimal config, assumes file.pif.gz.tbi:
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description:
+    'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
+}
 ```
 
 #### slot: targetAssembly
 
 ```js
-targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the target assembly name',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+  description: 'Alternative to assemblyNames: the target assembly name',
+}
 ```
 
 #### slot: queryAssembly
 
 ```js
-queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the query assembly name',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+  description: 'Alternative to assemblyNames: the query assembly name',
+}
 ```
 
 #### slot: pifGzLocation
 
 ```js
-pifGzLocation: {
-      type: 'fileLocation',
-      description: 'location of pairwise tabix indexed PAF (pif)',
-      defaultValue: {
-        uri: '/path/to/data/file.pif.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'location of pairwise tabix indexed PAF (pif)',
+  defaultValue: {
+    uri: '/path/to/data/file.pif.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: coarseBpPerPxThreshold
@@ -86,17 +86,17 @@ make-pif was run with --coarse. No coarse tier present in the file = always uses
 fine tier.
 
 ```js
-coarseBpPerPxThreshold: {
-      type: 'number',
-      defaultValue: 10000,
-      advanced: true,
-    }
+{
+  type: 'number',
+  defaultValue: 10000,
+  advanced: true,
+}
 ```
 
 #### slot: index
 
 ```js
-index: ConfigurationSchema('TabixIndex', {
+ConfigurationSchema('TabixIndex', {
   indexType: {
     model: types.enumeration('IndexType', ['TBI', 'CSI']),
     type: 'stringEnum',
@@ -116,21 +116,21 @@ index: ConfigurationSchema('TabixIndex', {
 #### slot: index.indexType
 
 ```js
-indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      }
+{
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'TBI',
+}
 ```
 
 #### slot: index.location
 
 ```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.paf.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.paf.gz.tbi',
+    locationType: 'UriLocation',
+  },
+}
 ```

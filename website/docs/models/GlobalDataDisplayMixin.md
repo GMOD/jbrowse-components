@@ -99,3 +99,20 @@ read the sibling `displayPhase` getter.
 // type
 boolean
 ```
+
+#### getter: svgReady
+
+Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an
+off-screen (SVG) export can read final data. A global display has no per-region
+spatial axis, so "settled" is simply `displayPhase !== 'loading'` — it has its
+one dataset, is in a terminal state (error / tooLarge), or is intentionally
+empty. This waits out an in-place refetch (which keeps stale `rpcData` until the
+new result commits) and, unlike `isReady`, never gates on `canvasDrawn`, which
+an off-screen export never sets. Off-screen renderers gate on it via
+`awaitSvgReady(model)` instead of inlining a `data != null || error || ...`
+condition.
+
+```js
+// type
+boolean
+```

@@ -101,6 +101,33 @@ resolution-staleness gap.
 boolean
 ```
 
+#### getter: svgReady
+
+true once an off-screen (SVG) export can safely read this display's data: every
+visible region has loaded, or the fetch reached a terminal error / too-large
+state. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of
+inlining the condition. Regions stream in one at a time, so gating on
+`viewportWithinLoadedData` (not the first datum) is what keeps
+multi-region/whole-genome exports complete; `loadedRegions.size` guards the
+vacuously-true empty-viewport case.
+
+```js
+// type
+boolean
+```
+
+#### getter: svgReadyExtraTerminal
+
+Overridable hook (default false): a subclass returns true to mark an extra
+terminal state where off-screen export can proceed with no loaded data. Sequence
+sets it when zoomed past base resolution — it renders a static "zoom in" message
+and fetches nothing, so `svgReady` would otherwise never resolve.
+
+```js
+// type
+boolean
+```
+
 #### getter: renderBlocks
 
 Shared cached view for every LGV-based GPU display. A single displayedRegion may

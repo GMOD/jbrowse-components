@@ -37,22 +37,22 @@ preprocessor to allow minimal config:
 #### slot: location
 
 ```js
-location: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my/sequence_report.tsv',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my/sequence_report.tsv',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: useNameOverride
 
 ```js
-useNameOverride: {
-      type: 'boolean',
-      defaultValue: true,
-      description:
-        'forces usage of the UCSC names over the NCBI style names from a FASTA',
-    }
+{
+  type: 'boolean',
+  defaultValue: true,
+  description:
+    'forces usage of the UCSC names over the NCBI style names from a FASTA',
+}
 ```

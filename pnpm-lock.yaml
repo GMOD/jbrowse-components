@@ -2664,6 +2664,9 @@ importers:
       sharp:
         specifier: ^0.35.1
         version: 0.35.1
+      shiki:
+        specifier: ^4.2.0
+        version: 4.2.0
       unified:
         specifier: ^11.0.5
         version: 11.0.5

@@ -26,54 +26,54 @@ generally exists on the config.json or root config as configuration.hierarchical
 #### slot: configuration.hierarchical.sort.trackNames
 
 ```js
-trackNames: {
-        type: 'boolean',
-        defaultValue: false,
-      }
+{
+  type: 'boolean',
+  defaultValue: false,
+}
 ```
 
 #### slot: configuration.hierarchical.sort.categories
 
 ```js
-categories: {
-        type: 'boolean',
-        defaultValue: false,
-      }
+{
+  type: 'boolean',
+  defaultValue: false,
+}
 ```
 
 #### slot: configuration.hierarchical.defaultFolderCategories
 
 ```js
-defaultFolderCategories: {
-      type: 'stringArray',
-      description: 'list of category names to display as folders by default',
-      defaultValue: [],
-    }
+{
+  type: 'stringArray',
+  description: 'list of category names to display as folders by default',
+  defaultValue: [],
+}
 ```
 
 #### slot: configuration.hierarchical.defaultCollapsed.categoryNames
 
 ```js
-categoryNames: {
-        type: 'stringArray',
-        defaultValue: [],
-      }
+{
+  type: 'stringArray',
+  defaultValue: [],
+}
 ```
 
 #### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
 
 ```js
-topLevelCategories: {
-        type: 'boolean',
-        defaultValue: false,
-      }
+{
+  type: 'boolean',
+  defaultValue: false,
+}
 ```
 
 #### slot: configuration.hierarchical.defaultCollapsed.subCategories
 
 ```js
-subCategories: {
-        type: 'boolean',
-        defaultValue: false,
-      }
+{
+  type: 'boolean',
+  defaultValue: false,
+}
 ```

@@ -26,45 +26,45 @@ used to configure BigMaf adapter
 #### slot: samples
 
 ```js
-samples: {
-      type: 'frozen',
-      description: 'string[] or {id:string,label:string,color?:string}[]',
-      defaultValue: [],
-    }
+{
+  type: 'frozen',
+  description: 'string[] or {id:string,label:string,color?:string}[]',
+  defaultValue: [],
+}
 ```
 
 #### slot: bigBedLocation
 
 ```js
-bigBedLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bb',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bb',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: nhLocation
 
 ```js
-nhLocation: {
-      type: 'fileLocation',
-      description: 'newick tree',
-      defaultValue: {
-        uri: '/path/to/my.nh',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'newick tree',
+  defaultValue: {
+    uri: '/path/to/my.nh',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: summaryAdapter
 
 ```js
-summaryAdapter: {
-      type: 'frozen',
-      description:
-        'optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
-      defaultValue: null,
-    }
+{
+  type: 'frozen',
+  description:
+    'optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
+  defaultValue: null,
+}
 ```

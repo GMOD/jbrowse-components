@@ -52,45 +52,45 @@ _See the **Slots** section below for all available configuration fields._
 #### slot: onChordClick
 
 ```js
-onChordClick: {
-        type: 'boolean',
-        description:
-          'callback that should be run when a chord in the track is clicked',
-        defaultValue: false,
-        contextVariable: ['feature', 'track', 'pluginManager'],
-      }
+{
+  type: 'boolean',
+  description:
+    'callback that should be run when a chord in the track is clicked',
+  defaultValue: false,
+  contextVariable: ['feature', 'track', 'pluginManager'],
+}
 ```
 
 #### slot: strokeColor
 
 ```js
-strokeColor: {
-        type: 'color',
-        description: 'the line color of each arc',
-        defaultValue: 'rgba(255,133,0,0.32)',
-        contextVariable: ['feature'],
-      }
+{
+  type: 'color',
+  description: 'the line color of each arc',
+  defaultValue: 'rgba(255,133,0,0.32)',
+  contextVariable: ['feature'],
+}
 ```
 
 #### slot: strokeColorSelected
 
 ```js
-strokeColorSelected: {
-        type: 'color',
-        description: 'the line color of an arc that has been selected',
-        defaultValue: 'black',
-        contextVariable: ['feature'],
-      }
+{
+  type: 'color',
+  description: 'the line color of an arc that has been selected',
+  defaultValue: 'black',
+  contextVariable: ['feature'],
+}
 ```
 
 #### slot: strokeColorHover
 
 ```js
-strokeColorHover: {
-        type: 'color',
-        description:
-          'the line color of an arc that is being hovered over with the mouse',
-        defaultValue: '#555',
-        contextVariable: ['feature'],
-      }
+{
+  type: 'color',
+  description:
+    'the line color of an arc that is being hovered over with the mouse',
+  defaultValue: '#555',
+  contextVariable: ['feature'],
+}
 ```

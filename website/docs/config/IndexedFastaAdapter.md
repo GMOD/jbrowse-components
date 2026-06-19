@@ -48,30 +48,30 @@ preprocessor to allow minimal config, assumes yourfile.fa.fai:
 #### slot: fastaLocation
 
 ```js
-fastaLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
+}
 ```
 
 #### slot: faiLocation
 
 ```js
-faiLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
+}
 ```
 
 #### slot: metadataLocation
 
 ```js
-metadataLocation: {
-      description: 'Optional metadata file',
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/fa.metadata.yaml',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  description: 'Optional metadata file',
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/fa.metadata.yaml',
+    locationType: 'UriLocation',
+  },
+}
 ```

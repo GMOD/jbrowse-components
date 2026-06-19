@@ -27,19 +27,19 @@ library
 #### slot: htsgetBase
 
 ```js
-htsgetBase: {
-      type: 'string',
-      description: 'the base URL to fetch from',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  description: 'the base URL to fetch from',
+  defaultValue: '',
+}
 ```
 
 #### slot: htsgetTrackId
 
 ```js
-htsgetTrackId: {
-      type: 'string',
-      description: 'the trackId, which is appended to the base URL',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  description: 'the trackId, which is appended to the base URL',
+  defaultValue: '',
+}
 ```

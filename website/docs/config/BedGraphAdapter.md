@@ -35,21 +35,21 @@ preprocessor to allow minimal config:
 #### slot: bedGraphLocation
 
 ```js
-bedGraphLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bedgraph',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bedgraph',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: columnNames
 
 ```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
+{
+  type: 'stringArray',
+  description: 'List of column names',
+  defaultValue: [],
+}
 ```

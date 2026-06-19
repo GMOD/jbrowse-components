@@ -49,74 +49,74 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 #### slot: bedGzLocation
 
 ```js
-bedGzLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bed.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bed.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: index.indexType
 
 ```js
-indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      }
+{
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'TBI',
+}
 ```
 
 #### slot: index.location
 
 ```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.bed.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bed.gz.tbi',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: columnNames
 
 ```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
+{
+  type: 'stringArray',
+  description: 'List of column names',
+  defaultValue: [],
+}
 ```
 
 #### slot: scoreColumn
 
 ```js
-scoreColumn: {
-      type: 'string',
-      description: 'The column to use as a "score" attribute',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  description: 'The column to use as a "score" attribute',
+  defaultValue: '',
+}
 ```
 
 #### slot: autoSql
 
 ```js
-autoSql: {
-      type: 'string',
-      description: 'The autoSql definition for the data fields in the file',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  description: 'The autoSql definition for the data fields in the file',
+  defaultValue: '',
+}
 ```
 
 #### slot: disableGeneHeuristic
 
 ```js
-disableGeneHeuristic: {
-      type: 'boolean',
-      description:
-        'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
-      defaultValue: false,
-    }
+{
+  type: 'boolean',
+  description:
+    'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
+  defaultValue: false,
+}
 ```

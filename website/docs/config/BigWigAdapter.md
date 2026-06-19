@@ -48,13 +48,13 @@ preprocessor to allow minimal config:
 #### slot: bigWigLocation
 
 ```js
-bigWigLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bw',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bw',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: source
@@ -62,21 +62,21 @@ bigWigLocation: {
 added as feature.get('source') on all features
 
 ```js
-source: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Used for multiwiggle',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+  description: 'Used for multiwiggle',
+}
 ```
 
 #### slot: resolutionMultiplier
 
 ```js
-resolutionMultiplier: {
-      type: 'number',
-      defaultValue: 1,
-      description:
-        'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
-      advanced: true,
-    }
+{
+  type: 'number',
+  defaultValue: 1,
+  description:
+    'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
+  advanced: true,
+}
 ```

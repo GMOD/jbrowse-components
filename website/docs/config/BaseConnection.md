@@ -28,19 +28,19 @@ reference the markdown files in our repo of the checked out git tag
 #### slot: name
 
 ```js
-name: {
-      type: 'string',
-      defaultValue: 'nameOfConnection',
-      description: 'a unique name for this connection',
-    }
+{
+  type: 'string',
+  defaultValue: 'nameOfConnection',
+  description: 'a unique name for this connection',
+}
 ```
 
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'optional list of names of assemblies in this connection',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description: 'optional list of names of assemblies in this connection',
+}
 ```

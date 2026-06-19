@@ -26,48 +26,48 @@ used to configure BgzipTaffy adapter
 #### slot: samples
 
 ```js
-samples: {
-      type: 'frozen',
-      description: 'string[] or {id:string,label:string,color?:string}[]',
-      defaultValue: [],
-    }
+{
+  type: 'frozen',
+  description: 'string[] or {id:string,label:string,color?:string}[]',
+  defaultValue: [],
+}
 ```
 
 #### slot: tafGzLocation
 
 ```js
-tafGzLocation: {
-      type: 'fileLocation',
-      description: 'bgzip taffy file',
-      defaultValue: {
-        uri: '/path/to/my.taf.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'bgzip taffy file',
+  defaultValue: {
+    uri: '/path/to/my.taf.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: taiLocation
 
 ```js
-taiLocation: {
-      type: 'fileLocation',
-      description: 'taffy index',
-      defaultValue: {
-        uri: '/path/to/my.taf.gz.tai',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'taffy index',
+  defaultValue: {
+    uri: '/path/to/my.taf.gz.tai',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: nhLocation
 
 ```js
-nhLocation: {
-      type: 'fileLocation',
-      description: 'newick tree',
-      defaultValue: {
-        uri: '/path/to/my.nh',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'newick tree',
+  defaultValue: {
+    uri: '/path/to/my.nh',
+    locationType: 'UriLocation',
+  },
+}
 ```

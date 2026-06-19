@@ -26,10 +26,10 @@ reference the markdown files in our repo of the checked out git tag
 object like `{chr1:{uri:'url to file'}}`
 
 ```js
-vcfGzLocationMap: {
-      type: 'frozen',
-      defaultValue: {},
-    }
+{
+  type: 'frozen',
+  defaultValue: {},
+}
 ```
 
 #### slot: indexLocationMap
@@ -37,31 +37,31 @@ vcfGzLocationMap: {
 object like `{chr1:{uri:'url to index'}}`
 
 ```js
-indexLocationMap: {
-      type: 'frozen',
-      defaultValue: {},
-    }
+{
+  type: 'frozen',
+  defaultValue: {},
+}
 ```
 
 #### slot: indexType
 
 ```js
-indexType: {
-      type: 'string',
-      defaultValue: 'TBI',
-    }
+{
+  type: 'string',
+  defaultValue: 'TBI',
+}
 ```
 
 #### slot: samplesTsvLocation
 
 ```js
-samplesTsvLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/samples.tsv',
-        description:
-          'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/samples.tsv',
+    description:
+      'tsv with header like "name\tpopulation\tetc" where the first column is required, and corresponds to the sample names in the VCF files',
+    locationType: 'UriLocation',
+  },
+}
 ```

@@ -34,25 +34,25 @@ this is the entry under the `configuration` key e.g.
 #### slot: configuration.rpc
 
 ```js
-rpc: RpcManager.configSchema
+RpcManager.configSchema
 ```
 
 #### slot: configuration.highResolutionScaling
 
 ```js
-highResolutionScaling: {
-      type: 'number',
-      defaultValue: 2,
-    }
+{
+  type: 'number',
+  defaultValue: 2,
+}
 ```
 
 #### slot: configuration.disableAnalytics
 
 ```js
-disableAnalytics: {
-      type: 'boolean',
-      defaultValue: false,
-    }
+{
+  type: 'boolean',
+  defaultValue: false,
+}
 ```
 
 #### slot: configuration.extendDefaultSessionWithUrlParams
@@ -61,38 +61,38 @@ when true, URL params like `&loc=` navigate within the configured defaultSession
 (preserving its tracks and settings) instead of starting a fresh session
 
 ```js
-extendDefaultSessionWithUrlParams: {
-      type: 'boolean',
-      defaultValue: false,
-    }
+{
+  type: 'boolean',
+  defaultValue: false,
+}
 ```
 
 #### slot: configuration.theme
 
 ```js
-theme: {
-      type: 'frozen',
-      defaultValue: {},
-    }
+{
+  type: 'frozen',
+  defaultValue: {},
+}
 ```
 
 #### slot: configuration.extraThemes
 
 ```js
-extraThemes: {
-      type: 'frozen',
-      defaultValue: {},
-    }
+{
+  type: 'frozen',
+  defaultValue: {},
+}
 ```
 
 #### slot: configuration.logoPath
 
 ```js
-logoPath: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '',
+    locationType: 'UriLocation',
+  },
+}
 ```

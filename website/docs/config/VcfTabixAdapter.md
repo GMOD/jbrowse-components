@@ -51,47 +51,47 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 #### slot: vcfGzLocation
 
 ```js
-vcfGzLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.vcf.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.vcf.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: index.indexType
 
 ```js
-indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      }
+{
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'TBI',
+}
 ```
 
 #### slot: index.location
 
 ```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.vcf.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.vcf.gz.tbi',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: samplesTsvLocation
 
 ```js
-samplesTsvLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/samples.tsv',
-        description:
-          'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/samples.tsv',
+    description:
+      'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
+    locationType: 'UriLocation',
+  },
+}
 ```

@@ -24,45 +24,45 @@ reference the markdown files in our repo of the checked out git tag
 #### slot: search
 
 ```js
-search: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Search string or regex to search for',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+  description: 'Search string or regex to search for',
+}
 ```
 
 #### slot: sequenceAdapter
 
 ```js
-sequenceAdapter: {
-      type: 'frozen',
-      defaultValue: null,
-    }
+{
+  type: 'frozen',
+  defaultValue: null,
+}
 ```
 
 #### slot: searchForward
 
 ```js
-searchForward: {
-      type: 'boolean',
-      defaultValue: true,
-    }
+{
+  type: 'boolean',
+  defaultValue: true,
+}
 ```
 
 #### slot: searchReverse
 
 ```js
-searchReverse: {
-      type: 'boolean',
-      defaultValue: true,
-    }
+{
+  type: 'boolean',
+  defaultValue: true,
+}
 ```
 
 #### slot: caseInsensitive
 
 ```js
-caseInsensitive: {
-      type: 'boolean',
-      defaultValue: true,
-    }
+{
+  type: 'boolean',
+  defaultValue: true,
+}
 ```

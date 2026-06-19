@@ -81,8 +81,8 @@ DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, viewportWithinLoadedData, renderBlocks, displayPhase,
-loadingOverlayVisible
+**Getters:** isReady, viewportWithinLoadedData, svgReady, svgReadyExtraTerminal,
+renderBlocks, displayPhase, loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
 invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
@@ -315,21 +315,6 @@ string | undefined
 treeNewickVolatile: undefined as string | undefined
 ```
 
-#### volatile: colorPalette
-
-Theme-derived color palette (per-base colors + match/gap/mismatch/
-unknown/insertion). Pushed in from the React component via `setColorPalette`.
-Read by `gpuProps()` and `renderState`, so theme changes trigger a main-thread
-re-encode but never an RPC refetch. Mirrors the `ColorPalette` pattern in
-plugin-alignments.
-
-```js
-// type signature
-MafColorPalette | undefined
-// code
-colorPalette: undefined as MafColorPalette | undefined
-```
-
 ### LinearMafDisplay - Getters
 
 #### getter: conf
@@ -430,6 +415,19 @@ PositionedHierarchyNode<NewickNode> | undefined
 ```js
 // type
 { index: Flatbush; nodes: ClusterHierarchyNode[]; } | undefined
+```
+
+#### getter: colorPalette
+
+Theme-derived color palette (per-base colors + match/gap/mismatch/
+unknown/insertion), read by `gpuProps()` and `renderState`. Derived from the
+session theme so it's always available — including headless SVG export and RPC,
+where no component mounts to seed it. Theme changes trigger a main-thread
+re-encode but never an RPC refetch.
+
+```js
+// type
+MafColorPalette
 ```
 
 #### getter: renderState
@@ -551,7 +549,7 @@ driven by shader uniforms).
 
 ```js
 // type signature
-gpuProps: () => MafGpuProps | undefined
+gpuProps: () => MafGpuProps
 ```
 
 #### method: rpcProps
@@ -642,16 +640,6 @@ setShowAllLetters: (f: boolean) => void
 ```js
 // type signature
 setMismatchRendering: (f: boolean) => void
-```
-
-#### action: setColorPalette
-
-Push the theme-derived color palette in from the React layer. Callers useMemo by
-theme so the reference is stable across renders.
-
-```js
-// type signature
-setColorPalette: (p: MafColorPalette) => void
 ```
 
 #### action: setSamples

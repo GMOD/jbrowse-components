@@ -78,23 +78,23 @@ change its defaults (setting them at the track top level has no effect).
 #### slot: height
 
 ```js
-height: {
-      type: 'number',
-      defaultValue: 200,
-      description: 'Default height of the track',
-    }
+{
+  type: 'number',
+  defaultValue: 200,
+  description: 'Default height of the track',
+}
 ```
 
 #### slot: summaryScoreMode
 
 ```js
-summaryScoreMode: {
-      type: 'stringEnum',
-      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
-      description:
-        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
-      defaultValue: 'avg',
-    }
+{
+  type: 'stringEnum',
+  model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+  description:
+    'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+  defaultValue: 'avg',
+}
 ```
 
 #### slot: defaultRendering
@@ -105,12 +105,12 @@ overlapping modes (`multixyplot`, `multiline`, `multiscatter`) draw all
 subtracks together in one shared plot.
 
 ```js
-defaultRendering: {
-      type: 'stringEnum',
-      model: types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
-      defaultValue: 'multirowxy',
-      description: 'Default rendering type',
-    }
+{
+  type: 'stringEnum',
+  model: types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
+  defaultValue: 'multirowxy',
+  description: 'Default rendering type',
+}
 ```
 
 **Example:**

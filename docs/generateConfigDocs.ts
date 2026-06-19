@@ -13,6 +13,7 @@ import {
   parseNode,
   repoRelative,
   section,
+  stripPropertyName,
   suffixCategory,
   warnDuplicateHeader,
   warnHeaderGaps,
@@ -270,7 +271,7 @@ function slotBlock({ name, docs, examples, code }: Item) {
   return section(
     `#### slot: ${name}`,
     docs,
-    codeBlock(code),
+    codeBlock(stripPropertyName(code)),
     exampleSection(examples, '**Example:**'),
   )
 }

@@ -24,26 +24,26 @@ reference the markdown files in our repo of the checked out git tag
 #### slot: dataDirLocation
 
 ```js
-dataDirLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'https://mysite.com/jbrowse/data/',
-        locationType: 'UriLocation',
-      },
-      description:
-        'the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/',
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: 'https://mysite.com/jbrowse/data/',
+    locationType: 'UriLocation',
+  },
+  description:
+    'the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/',
+}
 ```
 
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      description:
-        'name of the assembly the connection belongs to, should be a single entry',
-      type: 'stringArray',
-      defaultValue: [],
-    }
+{
+  description:
+    'name of the assembly the connection belongs to, should be a single entry',
+  type: 'stringArray',
+  defaultValue: [],
+}
 ```
 
 ## Inherited config slots
@@ -56,21 +56,21 @@ this page is self-contained.
 #### slot: name
 
 ```js
-name: {
-      type: 'string',
-      defaultValue: 'nameOfConnection',
-      description: 'a unique name for this connection',
-    }
+{
+  type: 'string',
+  defaultValue: 'nameOfConnection',
+  description: 'a unique name for this connection',
+}
 ```
 
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'optional list of names of assemblies in this connection',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description: 'optional list of names of assemblies in this connection',
+}
 ```
 
 ### JBrowse1Connection - Derives from

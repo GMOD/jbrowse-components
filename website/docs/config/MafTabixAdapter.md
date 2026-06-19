@@ -36,64 +36,64 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 #### slot: samples
 
 ```js
-samples: {
-      type: 'frozen',
-      description: 'string[] or {id:string,label:string,color?:string}[]',
-      defaultValue: [],
-    }
+{
+  type: 'frozen',
+  description: 'string[] or {id:string,label:string,color?:string}[]',
+  defaultValue: [],
+}
 ```
 
 #### slot: bedGzLocation
 
 ```js
-bedGzLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bed.gz',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bed.gz',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: refAssemblyName
 
 ```js
-refAssemblyName: {
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: index.location
 
 ```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.bed.gz.tbi',
-        },
-      }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bed.gz.tbi',
+  },
+}
 ```
 
 #### slot: index.indexType
 
 ```js
-indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      }
+{
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'TBI',
+}
 ```
 
 #### slot: nhLocation
 
 ```js
-nhLocation: {
-      type: 'fileLocation',
-      description: 'newick tree',
-      defaultValue: {
-        uri: '/path/to/my.nh',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'newick tree',
+  defaultValue: {
+    uri: '/path/to/my.nh',
+    locationType: 'UriLocation',
+  },
+}
 ```

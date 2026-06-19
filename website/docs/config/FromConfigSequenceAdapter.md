@@ -24,17 +24,17 @@ reference the markdown files in our repo of the checked out git tag
 #### slot: adapterId
 
 ```js
-adapterId: {
-      type: 'string',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+}
 ```
 
 #### slot: features
 
 ```js
-features: {
-      type: 'frozen',
-      defaultValue: [],
-    }
+{
+  type: 'frozen',
+  defaultValue: [],
+}
 ```

@@ -137,6 +137,13 @@ any
 any[]
 ```
 
+#### getter: theme
+
+```js
+// type
+Theme
+```
+
 ### JBrowseReactCircularGenomeViewSessionModel - Methods
 
 #### method: renderProps

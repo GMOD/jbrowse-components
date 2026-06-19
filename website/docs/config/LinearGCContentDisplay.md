@@ -61,12 +61,12 @@ this page is self-contained.
 Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
 ```js
-defaultRendering: {
-      type: 'stringEnum',
-      model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
-      defaultValue: 'xyplot',
-      description: 'Default rendering type',
-    }
+{
+  type: 'stringEnum',
+  model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
+  defaultValue: 'xyplot',
+  description: 'Default rendering type',
+}
 ```
 
 **Example:**
@@ -81,44 +81,44 @@ defaultRendering: {
 #### slot: height
 
 ```js
-height: {
-      type: 'number',
-      defaultValue: 100,
-      description: 'Default height of the track',
-    }
+{
+  type: 'number',
+  defaultValue: 100,
+  description: 'Default height of the track',
+}
 ```
 
 #### slot: useBicolor
 
 ```js
-useBicolor: {
-      type: 'boolean',
-      defaultValue: true,
-      description:
-        'Use separate positive/negative colors instead of a single color',
-    }
+{
+  type: 'boolean',
+  defaultValue: true,
+  description:
+    'Use separate positive/negative colors instead of a single color',
+}
 ```
 
 #### slot: color
 
 ```js
-color: {
-      type: 'color',
-      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
-      description: 'Color for the wiggle bars (when not using bicolor mode)',
-    }
+{
+  type: 'color',
+  defaultValue: WIGGLE_POS_COLOR_DEFAULT,
+  description: 'Color for the wiggle bars (when not using bicolor mode)',
+}
 ```
 
 #### slot: summaryScoreMode
 
 ```js
-summaryScoreMode: {
-      type: 'stringEnum',
-      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
-      description:
-        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
-      defaultValue: 'whiskers',
-    }
+{
+  type: 'stringEnum',
+  model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+  description:
+    'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+  defaultValue: 'whiskers',
+}
 ```
 
 ### LinearGCContentDisplay - Derives from

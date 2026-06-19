@@ -35,11 +35,11 @@ preprocessor to allow minimal config:
 #### slot: gffLocation
 
 ```js
-gffLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.gff',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.gff',
+    locationType: 'UriLocation',
+  },
+}
 ```

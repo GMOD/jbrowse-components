@@ -35,11 +35,11 @@ preprocessor to allow minimal config:
 #### slot: hicLocation
 
 ```js
-hicLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.hic',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.hic',
+    locationType: 'UriLocation',
+  },
+}
 ```

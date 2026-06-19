@@ -55,10 +55,10 @@ _See the **Slots** section below for all available configuration fields._
 currently unused
 
 ```js
-trackIds: {
-        type: 'stringArray',
-        defaultValue: [],
-      }
+{
+  type: 'stringArray',
+  defaultValue: [],
+}
 ```
 
 #### slot: middle
@@ -66,8 +66,8 @@ trackIds: {
 currently unused
 
 ```js
-middle: {
-        type: 'boolean',
-        defaultValue: true,
-      }
+{
+  type: 'boolean',
+  defaultValue: true,
+}
 ```

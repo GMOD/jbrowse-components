@@ -35,23 +35,23 @@ preprocessor to allow minimal config:
 #### slot: gtfLocation
 
 ```js
-gtfLocation: {
-      type: 'fileLocation',
-      description: 'path to gtf file, also allows for gzipped gtf',
-      defaultValue: {
-        uri: '/path/to/my.gtf',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'path to gtf file, also allows for gzipped gtf',
+  defaultValue: {
+    uri: '/path/to/my.gtf',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: aggregateField
 
 ```js
-aggregateField: {
-      type: 'string',
-      description:
-        'field used to aggregate multiple transcripts into a single parent gene feature',
-      defaultValue: 'gene_name',
-    }
+{
+  type: 'string',
+  description:
+    'field used to aggregate multiple transcripts into a single parent gene feature',
+  defaultValue: 'gene_name',
+}
 ```

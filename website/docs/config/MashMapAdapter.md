@@ -37,42 +37,42 @@ preprocessor to allow minimal config:
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description:
+    'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
+}
 ```
 
 #### slot: targetAssembly
 
 ```js
-targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the target assembly',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+  description: 'Alternative to assemblyNames array: the target assembly',
+}
 ```
 
 #### slot: queryAssembly
 
 ```js
-queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the query assembly',
-    }
+{
+  type: 'string',
+  defaultValue: '',
+  description: 'Alternative to assemblyNames array: the query assembly',
+}
 ```
 
 #### slot: outLocation
 
 ```js
-outLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/mashmap.out',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/mashmap.out',
+    locationType: 'UriLocation',
+  },
+}
 ```

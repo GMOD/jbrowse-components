@@ -121,6 +121,13 @@ string
 number
 ```
 
+#### getter: scatterPointSize
+
+```js
+// type
+number
+```
+
 #### getter: summaryScoreMode
 
 ```js

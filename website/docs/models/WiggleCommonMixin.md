@@ -38,8 +38,8 @@ and docs.
 **Volatiles:** loadedBpPerPx
 
 **Getters:** scalebarOverlapLeft, posColor, negColor, bicolorPivot, scaleType,
-autoscaleType, numStdDev, summaryScoreMode, renderingType, minScore, maxScore,
-minScoreBound, maxScoreBound, hasResolution
+autoscaleType, numStdDev, scatterPointSize, summaryScoreMode, renderingType,
+minScore, maxScore, minScoreBound, maxScoreBound, hasResolution
 
 **Actions:** toggleCrossHatches, setResolution, setLoadedBpPerPx, setScaleType,
 setColor, setMinScore, setMaxScore, setRenderingType, setSummaryScoreMode,

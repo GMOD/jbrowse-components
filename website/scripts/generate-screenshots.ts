@@ -183,7 +183,14 @@ async function captureUrl(
     )
   }
 
-  await waitForLoadingComplete(page, { waitForDownloads: true })
+  // readyText is just the track label, which appears as soon as the track is
+  // added — well before a slow remote BAM finishes downloading. Slow specs
+  // bump readyTimeout, so reuse it here too, otherwise the loading-overlay wait
+  // throws at its 30s default while the data is still in flight.
+  await waitForLoadingComplete(page, {
+    waitForDownloads: true,
+    timeout: readyTimeout,
+  })
   await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 

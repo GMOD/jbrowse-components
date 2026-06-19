@@ -28,11 +28,11 @@ the box
 #### slot: scoreColumn
 
 ```js
-scoreColumn: {
-          type: 'string',
-          description: 'BED column to read as the Manhattan plot score',
-          defaultValue: 'neg_log_pvalue',
-        }
+{
+  type: 'string',
+  description: 'BED column to read as the Manhattan plot score',
+  defaultValue: 'neg_log_pvalue',
+}
 ```
 
 ### GWASAdapter - Derives from

@@ -121,8 +121,8 @@ DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, viewportWithinLoadedData, renderBlocks, displayPhase,
-loadingOverlayVisible
+**Getters:** isReady, viewportWithinLoadedData, svgReady, svgReadyExtraTerminal,
+renderBlocks, displayPhase, loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
 invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
@@ -575,15 +575,6 @@ hoverCoverageBand: undefined as
             | undefined
 ```
 
-#### volatile: colorPalette
-
-```js
-// type signature
-ColorPalette | null
-// code
-colorPalette: null as ColorPalette | null
-```
-
 ### LinearAlignmentsDisplay - Getters
 
 #### getter: isChainMode
@@ -814,6 +805,13 @@ rpcDataMap + scheme + mode.
 ```js
 // type
 Set<ReadColorCategory>
+```
+
+#### getter: colorPalette
+
+```js
+// type
+ColorPalette
 ```
 
 #### getter: laidOutByGroup
@@ -1060,6 +1058,18 @@ whole coverage+pileup stack as one.
 boolean
 ```
 
+#### getter: scrollModel
+
+The scroll-projection inputs (`sectionScreen.ts`) every overlay needs to map a
+content-space Y into screen space. Built once here so the label / resize-handle
+/ coverage-axis overlays don't each re-assemble
+`{ isGrouped, scrollTop, canvasHeight }` inline.
+
+```js
+// type
+ScrollModel
+```
+
 #### getter: pileupViewportHeight
 
 Height of the scrollable viewport. Ungrouped excludes the sticky coverage band;
@@ -1279,13 +1289,6 @@ clearDisplaySpecificData: () => void
 ```js
 // type signature
 setOverCigarItem: (flag: boolean) => void
-```
-
-#### action: setColorPalette
-
-```js
-// type signature
-setColorPalette: (palette: ColorPalette | null) => void
 ```
 
 #### action: setScrollTop

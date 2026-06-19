@@ -54,45 +54,45 @@ preprocessor to allow minimal config, assumes yourfile.bam.bai:
 #### slot: bamLocation
 
 ```js
-bamLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bam',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bam',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: index.indexType
 
 ```js
-indexType: {
-        model: types.enumeration('IndexType', ['BAI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'BAI',
-      }
+{
+  model: types.enumeration('IndexType', ['BAI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'BAI',
+}
 ```
 
 #### slot: index.location
 
 ```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.bam.bai',
-          locationType: 'UriLocation',
-        },
-      }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bam.bai',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: fetchSizeLimit
 
 ```js
-fetchSizeLimit: {
-      type: 'number',
-      description:
-        'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
-      defaultValue: 5_000_000,
-      advanced: true,
-    }
+{
+  type: 'number',
+  description:
+    'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
+  defaultValue: 5_000_000,
+  advanced: true,
+}
 ```

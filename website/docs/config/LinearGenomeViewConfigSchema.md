@@ -24,13 +24,13 @@ reference the markdown files in our repo of the checked out git tag
 #### slot: configuration.LinearGenomeViewPlugin.trackLabels
 
 ```js
-trackLabels: {
-      type: 'string',
-      defaultValue: 'overlapping',
-      model: types.enumeration('trackLabelOptions', [
-        'offset',
-        'overlapping',
-        'hidden',
-      ]),
-    }
+{
+  type: 'string',
+  defaultValue: 'overlapping',
+  model: types.enumeration('trackLabelOptions', [
+    'offset',
+    'overlapping',
+    'hidden',
+  ]),
+}
 ```

@@ -35,11 +35,11 @@ preprocessor to allow minimal config:
 #### slot: chromSizesLocation
 
 ```js
-chromSizesLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/species.chrom.sizes',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/species.chrom.sizes',
+    locationType: 'UriLocation',
+  },
+}
 ```

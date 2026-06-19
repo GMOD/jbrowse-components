@@ -35,26 +35,26 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 #### slot: configJsonLocation
 
 ```js
-configJsonLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'https://mysite.com/path/to/config.json',
-        locationType: 'UriLocation',
-      },
-      description:
-        'location of the jb2 config file (usually called config.json)',
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: 'https://mysite.com/path/to/config.json',
+    locationType: 'UriLocation',
+  },
+  description:
+    'location of the jb2 config file (usually called config.json)',
+}
 ```
 
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'optional list of genomes to import from this config.json, if empty all genomes will be imported',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description:
+    'optional list of genomes to import from this config.json, if empty all genomes will be imported',
+}
 ```
 
 ## Inherited config slots
@@ -67,21 +67,21 @@ this page is self-contained.
 #### slot: name
 
 ```js
-name: {
-      type: 'string',
-      defaultValue: 'nameOfConnection',
-      description: 'a unique name for this connection',
-    }
+{
+  type: 'string',
+  defaultValue: 'nameOfConnection',
+  description: 'a unique name for this connection',
+}
 ```
 
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'optional list of names of assemblies in this connection',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description: 'optional list of names of assemblies in this connection',
+}
 ```
 
 ### JB2TrackHubConnection - Derives from

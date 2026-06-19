@@ -824,7 +824,6 @@ loop per component.
 ```js
 // type
 {
-  key: string
   x: number
   major: boolean
 }

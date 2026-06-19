@@ -780,6 +780,59 @@ export function suffixCategory(
     : (suffixes.find(([suffix]) => name.endsWith(suffix))?.[1] ?? 'General')
 }
 
+// A slot's extracted source is a property assignment `<name>: <value>` (e.g.
+// `bamLocation: { type: 'fileLocation', ... }`). The name already heads the slot
+// section, so the leading `<name>:` is redundant noise in the code block — strip
+// it and show just the value. Token-aware (via the TS scanner) so the colon
+// inside a `'http://...'` URL or a nested defaultValue object is never mistaken
+// for the assignment colon: only a `:` at bracket/brace/paren depth 0 counts.
+export function stripPropertyName(code: string) {
+  const scanner = ts.createScanner(
+    ts.ScriptTarget.Latest,
+    /* skipTrivia */ false,
+    ts.LanguageVariant.Standard,
+    code,
+  )
+  let depth = 0
+  let valueStart = -1
+  for (
+    let token = scanner.scan();
+    token !== ts.SyntaxKind.EndOfFileToken && valueStart < 0;
+    token = scanner.scan()
+  ) {
+    if (
+      token === ts.SyntaxKind.OpenBraceToken ||
+      token === ts.SyntaxKind.OpenBracketToken ||
+      token === ts.SyntaxKind.OpenParenToken
+    ) {
+      depth++
+    } else if (
+      token === ts.SyntaxKind.CloseBraceToken ||
+      token === ts.SyntaxKind.CloseBracketToken ||
+      token === ts.SyntaxKind.CloseParenToken
+    ) {
+      depth--
+    } else if (token === ts.SyntaxKind.ColonToken && depth === 0) {
+      valueStart = scanner.getTokenEnd()
+    }
+  }
+  return valueStart < 0 ? code.trim() : dedentValue(code.slice(valueStart).trim())
+}
+
+// After dropping the `<name>:` prefix the value's first line (its opening `{`)
+// sits at column 0 but the remaining lines keep the source's nesting
+// indentation, leaving the body over-indented and the closing brace floating.
+// Re-flush it: subtract the smallest indent among the trailing lines (the
+// closing brace, which should align under the opening one) from each of them.
+function dedentValue(value: string) {
+  const [first, ...rest] = value.split('\n')
+  const indents = rest
+    .filter(line => line.trim())
+    .map(line => line.length - line.trimStart().length)
+  const dedent = indents.length ? Math.min(...indents) : 0
+  return [first, ...rest.map(line => line.slice(dedent))].join('\n')
+}
+
 // Strip JSDoc/inline comments from extracted source. Token-aware (via the TS
 // scanner) so `//` inside string literals — e.g. a `http://...` URL in a slot
 // defaultValue or description — is preserved rather than truncated.

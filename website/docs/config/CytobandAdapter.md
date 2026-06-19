@@ -35,10 +35,10 @@ preprocessor to allow minimal config:
 #### slot: cytobandLocation
 
 ```js
-cytobandLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/cytoband.txt.gz',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/cytoband.txt.gz',
+  },
+}
 ```

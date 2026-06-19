@@ -24,21 +24,21 @@ reference the markdown files in our repo of the checked out git tag
 #### slot: rootUrlTemplate
 
 ```js
-rootUrlTemplate: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my/{refseq}/trackData.json',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my/{refseq}/trackData.json',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: refNames
 
 ```js
-refNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of refNames used by the NCList used for aliasing',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description: 'List of refNames used by the NCList used for aliasing',
+}
 ```

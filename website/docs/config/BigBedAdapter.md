@@ -46,42 +46,42 @@ preprocessor to allow minimal config:
 #### slot: bigBedLocation
 
 ```js
-bigBedLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bb',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bb',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: scoreColumn
 
 ```js
-scoreColumn: {
-      type: 'string',
-      description: 'The column to use as a "score" attribute',
-      defaultValue: '',
-    }
+{
+  type: 'string',
+  description: 'The column to use as a "score" attribute',
+  defaultValue: '',
+}
 ```
 
 #### slot: aggregateField
 
 ```js
-aggregateField: {
-      type: 'string',
-      description: 'An attribute to aggregate features with',
-      defaultValue: 'geneName2',
-    }
+{
+  type: 'string',
+  description: 'An attribute to aggregate features with',
+  defaultValue: 'geneName2',
+}
 ```
 
 #### slot: disableGeneHeuristic
 
 ```js
-disableGeneHeuristic: {
-      type: 'boolean',
-      description:
-        'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
-      defaultValue: false,
-    }
+{
+  type: 'boolean',
+  description:
+    'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
+  defaultValue: false,
+}
 ```

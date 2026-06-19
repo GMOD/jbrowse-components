@@ -26,19 +26,19 @@ generally exists on the config.json or root config as configuration.formatAbout
 #### slot: configuration.formatAbout.config
 
 ```js
-config: {
-      type: 'frozen',
-      description: 'formats configuration object in about dialog',
-      defaultValue: {},
-      contextVariable: ['config'],
-    }
+{
+  type: 'frozen',
+  description: 'formats configuration object in about dialog',
+  defaultValue: {},
+  contextVariable: ['config'],
+}
 ```
 
 #### slot: configuration.formatAbout.hideUris
 
 ```js
-hideUris: {
-      type: 'boolean',
-      defaultValue: false,
-    }
+{
+  type: 'boolean',
+  defaultValue: false,
+}
 ```

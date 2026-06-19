@@ -41,55 +41,55 @@ preprocessor to allow minimal config, assumes file.ixx also exists:
 #### slot: ixFilePath
 
 ```js
-ixFilePath: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'out.ix',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: 'out.ix',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: ixxFilePath
 
 ```js
-ixxFilePath: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'out.ixx',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: 'out.ixx',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: metaFilePath
 
 ```js
-metaFilePath: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'meta.json',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: 'meta.json',
+    locationType: 'UriLocation',
+  },
+}
 ```
 
 #### slot: tracks
 
 ```js
-tracks: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of tracks covered by text search adapter',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description: 'List of tracks covered by text search adapter',
+}
 ```
 
 #### slot: assemblyNames
 
 ```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of assemblies covered by text search adapter',
-    }
+{
+  type: 'stringArray',
+  defaultValue: [],
+  description: 'List of assemblies covered by text search adapter',
+}
 ```

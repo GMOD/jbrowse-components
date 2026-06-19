@@ -82,8 +82,8 @@ DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, viewportWithinLoadedData, renderBlocks, displayPhase,
-loadingOverlayVisible
+**Getters:** isReady, viewportWithinLoadedData, svgReady, svgReadyExtraTerminal,
+renderBlocks, displayPhase, loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
 invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
@@ -179,21 +179,6 @@ ObservableMap<number, SequenceRegionData>
 sequenceData: observable.map<number, SequenceRegionData>()
 ```
 
-#### volatile: colorState
-
-theme-derived colors, pushed from the component (theme lives in React/MUI).
-Feeds `renderState`; until set, `renderState` is undefined and the render
-autorun skips — same pattern as wiggle/MAF.
-
-```js
-// type signature
-{ palette: ColorPalette; textColors: TextColors; } | undefined
-// code
-colorState: undefined as
-        | { palette: ColorPalette; textColors: TextColors }
-        | undefined
-```
-
 ### LinearReferenceSequenceDisplay - Getters
 
 #### getter: sequenceType
@@ -201,6 +186,20 @@ colorState: undefined as
 ```js
 // type
 any
+```
+
+#### getter: colorState
+
+Theme-derived palette + text colors, derived from the session theme so they're
+always available — including headless SVG export and RPC, where no component
+mounts to seed them.
+
+```js
+// type
+{
+  palette: ColorPalette
+  textColors: TextColors
+}
 ```
 
 #### getter: isDna
@@ -234,6 +233,17 @@ boolean
 #### getter: zoomedOut
 
 the view is too zoomed out to show individual bases
+
+```js
+// type
+boolean
+```
+
+#### getter: svgReadyExtraTerminal
+
+zoomedOut is a terminal renderable state (static "zoom in" message, no fetch),
+so it makes `svgReady` resolve even though no data loads. See
+MultiRegionDisplayMixin.svgReadyExtraTerminal.
 
 ```js
 // type
@@ -283,12 +293,11 @@ number
 
 #### getter: renderState
 
-everything the Canvas2D backend needs to paint a frame, or undefined until the
-theme-derived colors arrive (render autorun skips on undefined).
+everything the Canvas2D backend needs to paint a frame
 
 ```js
 // type
-DrawSequenceState | undefined
+DrawSequenceState
 ```
 
 #### getter: displayPhase
@@ -326,15 +335,6 @@ trackMenuItems: () => { label: string; type: string; checked: boolean; onClick: 
 ```js
 // type signature
 setSequenceRegion: (idx: number, data: SequenceRegionData) => void
-```
-
-#### action: setColorState
-
-push theme-derived colors in from the component
-
-```js
-// type signature
-setColorState: (palette: ColorPalette, textColors: TextColors) => void
 ```
 
 #### action: clearDisplaySpecificData

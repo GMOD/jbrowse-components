@@ -115,8 +115,8 @@ DisplayMessageComponent, viewMenuActions
 
 **Volatiles:** loadedRegions
 
-**Getters:** isReady, viewportWithinLoadedData, renderBlocks, displayPhase,
-loadingOverlayVisible
+**Getters:** isReady, viewportWithinLoadedData, svgReady, svgReadyExtraTerminal,
+renderBlocks, displayPhase, loadingOverlayVisible
 
 **Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
 invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,

@@ -50,12 +50,12 @@ _See the **Slots** section below for all available configuration fields._
 #### slot: color
 
 ```js
-color: {
-        type: 'color',
-        description: 'the color of the arcs',
-        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
-        contextVariable: ['feature', 'alt'],
-      }
+{
+  type: 'color',
+  description: 'the color of the arcs',
+  defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
+  contextVariable: ['feature', 'alt'],
+}
 ```
 
 ## Inherited config slots
@@ -68,46 +68,46 @@ this page is self-contained.
 #### slot: maxFeatureScreenDensity
 
 ```js
-maxFeatureScreenDensity: {
-      type: 'number',
-      description:
-        'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-      defaultValue: 0.3,
-      advanced: true,
-    }
+{
+  type: 'number',
+  description:
+    'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
+  defaultValue: 0.3,
+  advanced: true,
+}
 ```
 
 #### slot: fetchSizeLimit
 
 ```js
-fetchSizeLimit: {
-      type: 'number',
-      defaultValue: 1_000_000,
-      description:
-        "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
-      advanced: true,
-    }
+{
+  type: 'number',
+  defaultValue: 1_000_000,
+  description:
+    "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+  advanced: true,
+}
 ```
 
 #### slot: height
 
 ```js
-height: {
-      type: 'number',
-      defaultValue: 100,
-      description: 'default height for the track',
-    }
+{
+  type: 'number',
+  defaultValue: 100,
+  description: 'default height for the track',
+}
 ```
 
 #### slot: mouseover
 
 ```js
-mouseover: {
-      type: 'string',
-      description: 'text to display when the cursor hovers over a feature',
-      defaultValue: `jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')`,
-      contextVariable: ['feature', 'mouseoverExtraInformation'],
-    }
+{
+  type: 'string',
+  description: 'text to display when the cursor hovers over a feature',
+  defaultValue: `jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')`,
+  contextVariable: ['feature', 'mouseoverExtraInformation'],
+}
 ```
 
 #### slot: jexlFilters
@@ -116,12 +116,12 @@ config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
 ```js
-jexlFilters: {
-      type: 'stringArray',
-      description:
-        'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
-      defaultValue: [],
-    }
+{
+  type: 'stringArray',
+  description:
+    'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
+  defaultValue: [],
+}
 ```
 
 ### LinearPairedArcDisplay - Derives from

@@ -32,12 +32,12 @@ Allows minimal config:
 #### slot: starFusionLocation
 
 ```js
-starFusionLocation: {
-      type: 'fileLocation',
-      description: 'STAR-Fusion TSV output file (plain text or gzipped)',
-      defaultValue: {
-        uri: '/path/to/star-fusion.fusion_predictions.tsv',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'STAR-Fusion TSV output file (plain text or gzipped)',
+  defaultValue: {
+    uri: '/path/to/star-fusion.fusion_predictions.tsv',
+    locationType: 'UriLocation',
+  },
+}
 ```
